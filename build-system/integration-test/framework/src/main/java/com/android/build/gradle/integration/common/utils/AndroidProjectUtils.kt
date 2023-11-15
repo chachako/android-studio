@@ -25,21 +25,6 @@ import com.android.builder.model.SigningConfig
 import com.android.builder.model.Variant
 import com.android.builder.model.VariantBuildInformation
 
-/**
- * Returns a Variant object from a given name
- * @param name the name of the variant to return
- * @return the matching variant or null if not found
- */
-fun AndroidProject.findVariantByName(name: String): Variant? {
-    for (item in variants) {
-        if (name == item.name) {
-            return item
-        }
-    }
-
-    return null
-}
-
 fun AndroidProject.getVariantByName(name: String): Variant {
     return searchForExistingItem(variants, name, Variant::getName, "Variant")
 }
@@ -53,16 +38,6 @@ fun AndroidProject.getDebugVariant() = getVariantByName("debug")
 fun AndroidProject.getArtifactMetaData(name: String): ArtifactMetaData {
     return searchForExistingItem(
             extraArtifacts, name, ArtifactMetaData::getName, "ArtifactMetaData")
-}
-
-fun AndroidProject.getProductFlavor(name: String): ProductFlavorContainer {
-    return searchForExistingItem(
-            productFlavors, name, { it.productFlavor.name }, "ProductFlavorContainer")
-}
-
-fun AndroidProject.getBuildType(name: String): BuildTypeContainer {
-    return searchForExistingItem(
-        buildTypes, name, { it.buildType.name }, "BuildTypeContainer")
 }
 
 fun AndroidProject.findTestedBuildType(): String? {

@@ -1,0 +1,73 @@
+> VariantDependencies:
+   - name                 = "freeIcsDebug"
+   - mainArtifact:
+      - compileDependencies    = []
+      - runtimeDependencies    = []
+      - unresolvedDependencies = []
+   - androidTestArtifact:
+      - compileDependencies:
+         - :|:|debug|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies    = []
+      - unresolvedDependencies = []
+   > unitTestArtifact:
+      - compileDependencies:
+         - :|:|debug|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies:
+         - :|:|debug|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsDebug, org.gradle.usage>java-runtime|:project:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:|debug|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors:
+               * "api -> ics"
+               * "model -> free"
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> freeIcsDebug"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * ":project:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|debug|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified
+      > :|:|debug|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsDebug, org.gradle.usage>java-runtime|:project:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors:
+               * "api -> ics"
+               * "model -> free"
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> freeIcsDebug"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * ":project:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|debug|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsDebug, org.gradle.usage>java-runtime|:project:unspecified
+   < libraries
+< VariantDependencies

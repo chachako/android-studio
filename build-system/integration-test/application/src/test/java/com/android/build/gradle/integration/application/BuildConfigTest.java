@@ -7,12 +7,12 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.BuildType;
-import com.android.builder.model.ClassField;
-import com.android.builder.model.ProductFlavor;
+import com.android.builder.model.v2.dsl.BuildType;
+import com.android.builder.model.v2.dsl.ClassField;
+import com.android.builder.model.v2.dsl.ProductFlavor;
+import com.android.builder.model.v2.models.AndroidDsl;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
@@ -35,7 +35,7 @@ public class BuildConfigTest {
     public static GradleTestProject project =
             GradleTestProject.builder().fromTestApp(HelloWorldApp.noBuildFile()).create();
 
-    private static AndroidProject model;
+    private static AndroidDsl dslModel;
 
     @BeforeClass
     public static void setUp() throws IOException {
@@ -99,20 +99,20 @@ public class BuildConfigTest {
                         + "  }\n"
                         + "}\n");
 
-        model =
-                project.executeAndReturnModel(
-                                "clean",
-                                "generateFlavor1DebugBuildConfig",
-                                "generateFlavor1ReleaseBuildConfig",
-                                "generateFlavor2DebugBuildConfig",
-                                "generateFlavor2ReleaseBuildConfig")
-                        .getOnlyModel();
+        project.execute(
+                "clean",
+                "generateFlavor1DebugBuildConfig",
+                "generateFlavor1ReleaseBuildConfig",
+                "generateFlavor2DebugBuildConfig",
+                "generateFlavor2ReleaseBuildConfig");
+
+        dslModel = project.modelV2().fetchModels().getContainer().getProject().getAndroidDsl();
     }
 
     @AfterClass
     public static void cleanUp() {
         project = null;
-        model = null;
+        dslModel = null;
     }
 
     @Test
@@ -127,10 +127,8 @@ public class BuildConfigTest {
         map.put("VALUE_FLOAT", "5f");
         map.put("VALUE_LONG", "50L");
         map.put("VALUE_VARIANT", "1");
-        checkMaps(
-                map,
-                model.getDefaultConfig().getProductFlavor().getBuildConfigFields(),
-                "defaultConfig");
+
+        checkMaps(map, dslModel.getDefaultConfig().getBuildConfigFields(), "defaultConfig");
     }
 
     @Test
@@ -176,7 +174,7 @@ public class BuildConfigTest {
         map.put("VALUE_FLAVOR", "10");
         map.put("VALUE_DEBUG", "10");
         map.put("VALUE_VARIANT", "10");
-        checkFlavor(model, "flavor1", map);
+        checkFlavor(dslModel, "flavor1", map);
     }
 
     @Test
@@ -221,7 +219,7 @@ public class BuildConfigTest {
         Map<String, String> map = Maps.newHashMap();
         map.put("VALUE_DEBUG", "100");
         map.put("VALUE_VARIANT", "100");
-        checkBuildType(model, "debug", map);
+        checkBuildType(dslModel, "debug", map);
     }
 
     @Test
@@ -267,7 +265,7 @@ public class BuildConfigTest {
         map.put("VALUE_FLAVOR", "10");
         map.put("VALUE_DEBUG", "10");
         map.put("VALUE_VARIANT", "10");
-        checkFlavor(model, "flavor1", map);
+        checkFlavor(dslModel, "flavor1", map);
     }
 
     @Test
@@ -310,7 +308,7 @@ public class BuildConfigTest {
     @Test
     public void modelRelease() {
         Map<String, String> map = Maps.newHashMap();
-        checkBuildType(model, "release", map);
+        checkBuildType(dslModel, "release", map);
     }
 
     private static void doCheckBuildConfig(@NonNull String expected, @NonNull String variantDir)
@@ -345,24 +343,21 @@ public class BuildConfigTest {
     }
 
     private static void checkFlavor(
-            @NonNull AndroidProject androidProject,
+            @NonNull AndroidDsl androidDsl,
             @NonNull final String flavorName,
             @Nullable Map<String, String> valueMap) {
         ProductFlavor productFlavor =
-                AndroidProjectUtils.getProductFlavor(androidProject, flavorName).getProductFlavor();
+                AndroidProjectUtilsV2.getProductFlavor(androidDsl, flavorName);
         assertNotNull(flavorName + " flavor null-check", productFlavor);
-
         checkMaps(valueMap, productFlavor.getBuildConfigFields(), flavorName);
     }
 
     private static void checkBuildType(
-            @NonNull AndroidProject androidProject,
+            @NonNull AndroidDsl androidDsl,
             @NonNull final String buildTypeName,
             @Nullable Map<String, String> valueMap) {
-        BuildType buildType =
-                AndroidProjectUtils.getBuildType(androidProject, buildTypeName).getBuildType();
+        BuildType buildType = AndroidProjectUtilsV2.getBuildType(androidDsl, buildTypeName);
         assertNotNull(buildTypeName + " flavor null-check", buildType);
-
         checkMaps(valueMap, buildType.getBuildConfigFields(), buildTypeName);
     }
 

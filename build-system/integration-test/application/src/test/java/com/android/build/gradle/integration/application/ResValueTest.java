@@ -24,13 +24,13 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.internal.generators.ResValueGenerator;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.BuildType;
-import com.android.builder.model.ClassField;
-import com.android.builder.model.ProductFlavor;
+import com.android.builder.model.v2.dsl.BuildType;
+import com.android.builder.model.v2.dsl.ClassField;
+import com.android.builder.model.v2.dsl.ProductFlavor;
+import com.android.builder.model.v2.models.AndroidDsl;
 import com.google.common.collect.Maps;
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class ResValueTest {
     public static GradleTestProject project =
             GradleTestProject.builder().fromTestApp(HelloWorldApp.noBuildFile()).create();
 
-    private static AndroidProject model;
+    private static AndroidDsl dslModel;
 
     @BeforeClass
     public static void setUp() throws IOException, InterruptedException {
@@ -104,24 +104,24 @@ public class ResValueTest {
                         + "            }\n"
                         + "            ");
 
-        model =
-                project.executeAndReturnModel(
-                                "clean",
-                                "generateFlavor1DebugResValue",
-                                "generateFlavor1ReleaseResValue",
-                                "generateFlavor2DebugResValue",
-                                "generateFlavor2ReleaseResValue")
-                        .getOnlyModel();
+        project.execute(
+                "clean",
+                "generateFlavor1DebugResValue",
+                "generateFlavor1ReleaseResValue",
+                "generateFlavor2DebugResValue",
+                "generateFlavor2ReleaseResValue");
+
+        dslModel = project.modelV2().fetchModels().getContainer().getProject().getAndroidDsl();
     }
 
     @AfterClass
     public static void cleanUp() {
         project = null;
-        model = null;
+        dslModel = null;
     }
 
     @Test
-    public void buildFlavor1Debug() throws IOException {
+    public void buildFlavor1Debug() {
         String expected =
                 ""
                         + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
@@ -148,7 +148,7 @@ public class ResValueTest {
         map.put("string/VALUE_FLAVOR", "10");
         map.put("string/VALUE_DEBUG", "10");
         map.put("string/VALUE_VARIANT", "10");
-        checkFlavor(model, "flavor1", map);
+        checkFlavor(dslModel, "flavor1", map);
     }
 
     @Test
@@ -179,11 +179,11 @@ public class ResValueTest {
         map.put("string/VALUE_FLAVOR", "20");
         map.put("string/VALUE_DEBUG", "20");
         map.put("string/VALUE_VARIANT", "20");
-        checkFlavor(model, "flavor2", map);
+        checkFlavor(dslModel, "flavor2", map);
     }
 
     @Test
-    public void buildFlavor1Release() throws IOException {
+    public void buildFlavor1Release() {
         String expected =
                 ""
                         + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
@@ -209,14 +209,13 @@ public class ResValueTest {
         Map<String, String> map = Maps.newHashMap();
         map.put("string/VALUE_DEBUG", "100");
         map.put("string/VALUE_VARIANT", "100");
-        checkBuildType(model, "debug", map);
+        checkBuildType(dslModel, "debug", map);
     }
 
     @Test
-    public void buildFlavor2Release() throws IOException {
+    public void buildFlavor2Release() {
         String expected =
-                ""
-                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
                         + "<resources>\n"
                         + "\n"
                         + "    <!-- Automatically generated file. DO NOT MODIFY -->\n"
@@ -237,7 +236,7 @@ public class ResValueTest {
     @Test
     public void modelRelease() {
         Map<String, String> map = Maps.newHashMap();
-        checkBuildType(model, "release", map);
+        checkBuildType(dslModel, "release", map);
     }
 
     @Test
@@ -248,11 +247,10 @@ public class ResValueTest {
         map.put("string/VALUE_DEBUG", "1");
         map.put("string/VALUE_VARIANT", "1");
 
-        checkMaps(map, model.getDefaultConfig().getProductFlavor().getResValues(), "DefaultConfig");
+        checkMaps(map, dslModel.getDefaultConfig().getResValues(), "DefaultConfig");
     }
 
-    private static void checkBuildConfig(@NonNull String expected, @NonNull String variantDir)
-            throws IOException {
+    private static void checkBuildConfig(@NonNull String expected, @NonNull String variantDir) {
         File outputFile =
                 new File(
                         project.getProjectDir(),
@@ -265,24 +263,21 @@ public class ResValueTest {
     }
 
     private static void checkFlavor(
-            @NonNull AndroidProject androidProject,
+            @NonNull AndroidDsl androidDsl,
             @NonNull final String flavorName,
             @Nullable Map<String, String> valueMap) {
         ProductFlavor productFlavor =
-                AndroidProjectUtils.getProductFlavor(androidProject, flavorName).getProductFlavor();
+                AndroidProjectUtilsV2.getProductFlavor(androidDsl, flavorName);
         assertNotNull(flavorName + " flavor null-check", productFlavor);
-
         checkMaps(valueMap, productFlavor.getResValues(), flavorName);
     }
 
     private static void checkBuildType(
-            @NonNull AndroidProject androidProject,
+            @NonNull AndroidDsl androidDsl,
             @NonNull final String buildTypeName,
             @Nullable Map<String, String> valueMap) {
-        BuildType buildType =
-                AndroidProjectUtils.getBuildType(androidProject, buildTypeName).getBuildType();
+        BuildType buildType = AndroidProjectUtilsV2.getBuildType(androidDsl, buildTypeName);
         assertNotNull(buildTypeName + " flavor null-check", buildType);
-
         checkMaps(valueMap, buildType.getResValues(), buildTypeName);
     }
 

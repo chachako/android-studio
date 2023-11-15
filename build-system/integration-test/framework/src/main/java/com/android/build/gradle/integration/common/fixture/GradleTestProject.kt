@@ -1329,12 +1329,6 @@ allprojects { proj ->
     }
 
     /** Fluent method to get the model.  */
-    @Deprecated("Use modelV2()")
-    fun model(): ModelBuilder {
-        return applyOptions(ModelBuilder(this, projectConnection))
-    }
-
-    /** Fluent method to get the model.  */
     fun modelV2(): ModelBuilderV2 {
         return applyOptions(ModelBuilderV2(this, projectConnection)).withPerTestPrefsRoot(true)
     }
@@ -1407,17 +1401,6 @@ allprojects { proj ->
             _buildResult = this
             exception
         }
-    }
-
-    /**
-     * Runs gradle on the project, and returns the project model. Throws exception on failure.
-     *
-     * @param tasks Variadic list of tasks to execute.
-     * @return the AndroidProject model for the project.
-     */
-    fun executeAndReturnModel(vararg tasks: String): ModelContainer<AndroidProject> {
-        _buildResult = executor().run(*tasks)
-        return model().fetchAndroidProjects()
     }
 
     override fun setLastBuildResult(lastBuildResult: GradleBuildResult) {

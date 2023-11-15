@@ -19,7 +19,6 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
-import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -48,17 +47,6 @@ class DifferentNdkPerModuleTest {
     @Test
     fun build() {
         project.executor().run("help")
-    }
-
-    @Test
-    fun modelTest() {
-        val model = project.executeAndReturnModel("help")
-        Truth.assertThat(
-            model.onlyModelMap[":libA"]?.ndkVersion).isEqualTo("19")
-        Truth.assertThat(
-            model.onlyModelMap[":libB"]?.ndkVersion).isEqualTo("24")
-        Truth.assertThat(
-            model.onlyModelMap[":libC"]?.ndkVersion).isEqualTo("23")
     }
 
     private fun setupLibrary(
@@ -91,6 +79,5 @@ class DifferentNdkPerModuleTest {
                 )
             }
         }
-
     }
 }

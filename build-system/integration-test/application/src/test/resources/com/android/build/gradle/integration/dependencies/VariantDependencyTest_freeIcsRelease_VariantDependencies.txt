@@ -1,0 +1,67 @@
+> VariantDependencies:
+   - name                 = "freeIcsRelease"
+   - mainArtifact:
+      - compileDependencies    = []
+      - runtimeDependencies    = []
+      - unresolvedDependencies = []
+   - androidTestArtifact  = (null)
+   > unitTestArtifact:
+      - compileDependencies:
+         - :|:|release|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsRelease, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - runtimeDependencies:
+         - :|:|release|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsRelease, org.gradle.usage>java-runtime|:project:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:|release|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsRelease, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors:
+               * "api -> ics"
+               * "model -> free"
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> freeIcsRelease"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * ":project:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|release|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsRelease, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified
+      > :|:|release|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsRelease, org.gradle.usage>java-runtime|:project:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors:
+               * "api -> ics"
+               * "model -> free"
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> freeIcsRelease"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * ":project:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|release|api>ics, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeIcsRelease, org.gradle.usage>java-runtime|:project:unspecified
+   < libraries
+< VariantDependencies

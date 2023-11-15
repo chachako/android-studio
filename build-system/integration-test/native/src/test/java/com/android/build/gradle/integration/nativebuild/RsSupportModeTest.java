@@ -18,25 +18,15 @@ package com.android.build.gradle.integration.nativebuild;
 
 import static com.android.build.gradle.integration.common.fixture.GradleTestProject.DEFAULT_NDK_SIDE_BY_SIDE_VERSION;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
-import static com.android.build.gradle.integration.common.utils.LibraryGraphHelper.Type.JAVA;
 
 import com.android.SdkConstants;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
-import com.android.build.gradle.integration.common.utils.LibraryGraphHelper;
 import com.android.build.gradle.internal.cxx.configure.CMakeVersion;
 import com.android.build.gradle.options.BooleanOption;
-import com.android.builder.model.AndroidArtifact;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.Variant;
-import com.android.builder.model.level2.DependencyGraphs;
-import com.android.builder.model.level2.Library;
+import com.android.builder.model.v2.ide.Library;
+import com.android.builder.model.v2.models.VariantDependencies;
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import java.util.Map;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -52,36 +42,23 @@ public class RsSupportModeTest {
                     .addGradleProperties(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
                     .create();
 
-    private static ModelContainer<AndroidProject> model;
-
-    @BeforeClass
-    public static void setUp() throws IOException, InterruptedException {
-        project.executor().run("clean", "assembleDebug", "assembleX86DebugAndroidTest");
-        model = project.model().ignoreSyncIssues().fetchAndroidProjects();
-    }
-
-    @AfterClass
-    public static void cleanUp() {
-        project = null;
-        model = null;
-    }
-
     @Test
-    public void testRsSupportMode() throws Exception {
-        LibraryGraphHelper helper = new LibraryGraphHelper(model);
+    public void testRsSupportMode() {
+        project.execute("clean", "assembleDebug", "assembleX86DebugAndroidTest");
 
-        Variant debugVariant =
-                AndroidProjectUtils.getVariantByName(model.getOnlyModel(), "x86Debug");
+        VariantDependencies x86Debug =
+                project.modelV2()
+                        .ignoreSyncIssues()
+                        .fetchModels("x86Debug", null)
+                        .getContainer()
+                        .getProject()
+                        .getVariantDependencies();
 
-        AndroidArtifact mainArtifact = debugVariant.getMainArtifact();
-
-        DependencyGraphs graph = mainArtifact.getDependencyGraphs();
-
-        List<Library> libraries = helper.on(graph).withType(JAVA).asLibraries();
+        Map<String, Library> libraries = x86Debug.getLibraries();
         assertThat(libraries).isNotEmpty();
 
         boolean foundSupportJar = false;
-        for (Library lib : libraries) {
+        for (Library lib : libraries.values()) {
             File file = lib.getArtifact();
             if (SdkConstants.FN_RENDERSCRIPT_V8_JAR.equals(file.getName())) {
                 foundSupportJar = true;

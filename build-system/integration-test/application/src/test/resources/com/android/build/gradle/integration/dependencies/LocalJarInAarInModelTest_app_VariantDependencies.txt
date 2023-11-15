@@ -1,0 +1,226 @@
+> VariantDependencies:
+   - name                 = "debug"
+   > mainArtifact:
+      - compileDependencies:
+         - com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-v4:24.0.0:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.android.support|support-annotations|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:24.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+      - runtimeDependencies:
+         - com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-v4:24.0.0:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.android.support|support-annotations|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-annotations:24.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+      - unresolvedDependencies = []
+   < mainArtifact
+   > androidTestArtifact:
+      > compileDependencies:
+         - com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-v4:24.0.0:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.android.support|support-annotations|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:24.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+         - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-v4:24.0.0:
+                  - dependencies = "*visited*"
+      < compileDependencies
+      - runtimeDependencies    = []
+      - unresolvedDependencies = []
+   < androidTestArtifact
+   > unitTestArtifact:
+      > compileDependencies:
+         - com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-v4:24.0.0:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.android.support|support-annotations|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:24.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+         - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-v4:24.0.0:
+                  - dependencies = "*visited*"
+      < compileDependencies
+      > runtimeDependencies:
+         - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:project:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies:
+               - com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-v4:24.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - com.android.support|support-annotations|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-annotations:24.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies         = []
+         - com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-v4:24.0.0:
+            - dependencies = "*visited*"
+      < runtimeDependencies
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * ":project:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified
+      > :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:project:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "debug"
+            - productFlavors = []
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * ":project:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:project:unspecified
+      > com.android.support|support-annotations|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:24.0.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/com/android/support/support-annotations/24.0.0/support-annotations-24.0.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-annotations"
+            - version        = "24.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "com.android.support:support-annotations:24.0.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.android.support|support-annotations|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:24.0.0
+      > com.android.support|support-annotations|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-annotations:24.0.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/com/android/support/support-annotations/24.0.0/support-annotations-24.0.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-annotations"
+            - version        = "24.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "com.android.support:support-annotations:24.0.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.android.support|support-annotations|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-annotations:24.0.0
+      > com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-v4:24.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/support-v4/24.0.0/support-v4-24.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-v4"
+            - version        = "24.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "com.android.support:support-v4:24.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/jars/classes.jar{F}, {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/jars/libs/internal_impl-24.0.0.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/jars/classes.jar{F}, {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/jars/libs/internal_impl-24.0.0.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/aidl{D}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/proguard.txt{F}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/annotations.zip{F}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/R.txt{!}
+         < androidLibraryData
+      < com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-v4:24.0.0
+      > com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-v4:24.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/support-v4/24.0.0/support-v4-24.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-v4"
+            - version        = "24.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "com.android.support:support-v4:24.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/jars/classes.jar{F}, {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/jars/libs/internal_impl-24.0.0.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/jars/classes.jar{F}, {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/jars/libs/internal_impl-24.0.0.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/aidl{D}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/proguard.txt{F}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/annotations.zip{F}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-v4-24.0.0/R.txt{!}
+         < androidLibraryData
+      < com.android.support|support-v4|24.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-v4:24.0.0
+   < libraries
+< VariantDependencies

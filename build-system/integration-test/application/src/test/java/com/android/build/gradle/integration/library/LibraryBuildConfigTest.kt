@@ -22,8 +22,8 @@ import com.android.build.gradle.integration.common.fixture.app.TestSourceFile
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.integration.common.utils.getBuildType
 import com.android.build.gradle.integration.common.utils.getProductFlavor
-import com.android.builder.model.AndroidProject
-import com.android.builder.model.ClassField
+import com.android.builder.model.v2.dsl.ClassField
+import com.android.builder.model.v2.models.AndroidDsl
 import com.google.common.base.Charsets
 import com.google.common.collect.Maps
 import com.google.common.io.Files
@@ -102,18 +102,19 @@ class LibraryBuildConfigTest {
                 )
             }).create()
 
-        private lateinit var model: AndroidProject
+        private lateinit var dslModel: AndroidDsl
 
         @JvmStatic
         @BeforeClass
         fun setUp() {
-            model = project.executeAndReturnModel(
+            project.execute(
                 "clean",
                 "generateFlavor1DebugBuildConfig",
                 "generateFlavor1ReleaseBuildConfig",
                 "generateFlavor2DebugBuildConfig",
                 "generateFlavor2ReleaseBuildConfig"
-            ).onlyModel
+            )
+            dslModel = project.modelV2().fetchModels().container.getProject().androidDsl!!
         }
     }
 
@@ -153,7 +154,7 @@ class LibraryBuildConfigTest {
         map["VALUE_FLAVOR"] = "1"
         map["VALUE_DEBUG"] = "1"
         map["VALUE_VARIANT"] = "1"
-        checkMaps(map, model.defaultConfig.productFlavor.buildConfigFields, "defaultConfig")
+        checkMaps(map, dslModel.defaultConfig.buildConfigFields, "defaultConfig")
     }
 
     @Test
@@ -162,7 +163,7 @@ class LibraryBuildConfigTest {
         map["VALUE_FLAVOR"] = "10"
         map["VALUE_DEBUG"] = "10"
         map["VALUE_VARIANT"] = "10"
-        checkFlavor(model, "flavor1", map)
+        checkFlavor(dslModel, "flavor1", map)
     }
 
     @Test
@@ -199,7 +200,7 @@ class LibraryBuildConfigTest {
         map["VALUE_FLAVOR"] = "20"
         map["VALUE_DEBUG"] = "20"
         map["VALUE_VARIANT"] = "20"
-        checkFlavor(model, "flavor2", map)
+        checkFlavor(dslModel, "flavor2", map)
     }
 
     @Test
@@ -234,7 +235,7 @@ class LibraryBuildConfigTest {
         val map = Maps.newHashMap<String, String>()
         map["VALUE_DEBUG"] = "100"
         map["VALUE_VARIANT"] = "100"
-        checkBuildType(model, "debug", map)
+        checkBuildType(dslModel, "debug", map)
     }
 
     @Test
@@ -267,7 +268,7 @@ class LibraryBuildConfigTest {
 
     @Test
     fun modelRelease() {
-        checkBuildType(model, "release", emptyMap())
+        checkBuildType(dslModel, "release", emptyMap())
     }
 
     private fun doCheckBuildConfig(expected: String, variantDir: String) {
@@ -289,22 +290,22 @@ class LibraryBuildConfigTest {
     }
 
     private fun checkFlavor(
-        androidProject: AndroidProject,
+        androidDsl: AndroidDsl,
         flavorName: String,
         valueMap: Map<String, String>?
     ) {
-        val productFlavor = androidProject.getProductFlavor(flavorName).productFlavor
+        val productFlavor = androidDsl.getProductFlavor(flavorName)
         assertNotNull("$flavorName variant null-check", productFlavor)
 
         checkMaps(valueMap, productFlavor.buildConfigFields, flavorName)
     }
 
     private fun checkBuildType(
-        androidProject: AndroidProject,
+        androidDsl: AndroidDsl,
         buildTypeName: String,
         valueMap: Map<String, String>?
     ) {
-        val buildType = androidProject.getBuildType(buildTypeName).buildType
+        val buildType = androidDsl.getBuildType(buildTypeName)
         assertNotNull("$buildTypeName flavor null-check", buildType)
         checkMaps(valueMap, buildType.buildConfigFields, buildTypeName)
     }

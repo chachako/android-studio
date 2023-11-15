@@ -1,0 +1,1635 @@
+> VariantDependencies:
+   - name                 = "paidIcsRelease"
+   > mainArtifact:
+      > compileDependencies:
+         > com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:appcompat-v7:28.0.0:
+            - requestedCoordinates = (null)
+            > dependencies:
+               - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+               > com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                  - requestedCoordinates = (null)
+                  > dependencies:
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:collections:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                     > android.arch.lifecycle|runtime|1.1.1|org.gradle.status>release|android.arch.lifecycle:runtime:1.1.1:
+                        - requestedCoordinates = (null)
+                        > dependencies:
+                           - android.arch.lifecycle|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.lifecycle:common:1.1.1:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                           - android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                        < dependencies
+                     < android.arch.lifecycle|runtime|1.1.1|org.gradle.status>release|android.arch.lifecycle:runtime:1.1.1
+                     - com.android.support|versionedparcelable|28.0.0|org.gradle.status>release|com.android.support:versionedparcelable:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                           - com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:collections:28.0.0:
+                              - dependencies = "*visited*"
+                  < dependencies
+               < com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0
+               - com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:collections:28.0.0:
+                  - dependencies = "*visited*"
+               - com.android.support|cursoradapter|28.0.0|org.gradle.status>release|com.android.support:cursoradapter:28.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+               > com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0:
+                  - requestedCoordinates = (null)
+                  > dependencies:
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|documentfile|28.0.0|org.gradle.status>release|com.android.support:documentfile:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                     > com.android.support|loader|28.0.0|org.gradle.status>release|com.android.support:loader:28.0.0:
+                        - requestedCoordinates = (null)
+                        > dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                           - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                              - dependencies = "*visited*"
+                           > android.arch.lifecycle|livedata|1.1.1|org.gradle.status>release|android.arch.lifecycle:livedata:1.1.1:
+                              - requestedCoordinates = (null)
+                              > dependencies:
+                                 - android.arch.core|runtime|1.1.1|org.gradle.status>release|android.arch.core:runtime:1.1.1:
+                                    - requestedCoordinates = (null)
+                                    - dependencies:
+                                       - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                          - dependencies = "*visited*"
+                                       - android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1:
+                                          - dependencies = "*visited*"
+                                 - android.arch.lifecycle|livedata-core|1.1.1|org.gradle.status>release|android.arch.lifecycle:livedata-core:1.1.1:
+                                    - requestedCoordinates = (null)
+                                    - dependencies:
+                                       - android.arch.lifecycle|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.lifecycle:common:1.1.1:
+                                          - dependencies = "*visited*"
+                                       - android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1:
+                                          - dependencies = "*visited*"
+                                       - android.arch.core|runtime|1.1.1|org.gradle.status>release|android.arch.core:runtime:1.1.1:
+                                          - dependencies = "*visited*"
+                                 - android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1:
+                                    - dependencies = "*visited*"
+                              < dependencies
+                           < android.arch.lifecycle|livedata|1.1.1|org.gradle.status>release|android.arch.lifecycle:livedata:1.1.1
+                           - android.arch.lifecycle|viewmodel|1.1.1|org.gradle.status>release|android.arch.lifecycle:viewmodel:1.1.1:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                        < dependencies
+                     < com.android.support|loader|28.0.0|org.gradle.status>release|com.android.support:loader:28.0.0
+                     - com.android.support|localbroadcastmanager|28.0.0|org.gradle.status>release|com.android.support:localbroadcastmanager:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                     - com.android.support|print|28.0.0|org.gradle.status>release|com.android.support:print:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                  < dependencies
+               < com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0
+               > com.android.support|support-fragment|28.0.0|org.gradle.status>release|com.android.support:support-fragment:28.0.0:
+                  - requestedCoordinates = (null)
+                  > dependencies:
+                     - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                        - dependencies = "*visited*"
+                     > com.android.support|support-core-ui|28.0.0|org.gradle.status>release|com.android.support:support-core-ui:28.0.0:
+                        - requestedCoordinates = (null)
+                        > dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                           - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                              - dependencies = "*visited*"
+                           - com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0:
+                              - dependencies = "*visited*"
+                           - com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|viewpager|28.0.0|org.gradle.status>release|com.android.support:viewpager:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|coordinatorlayout|28.0.0|org.gradle.status>release|com.android.support:coordinatorlayout:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|drawerlayout|28.0.0|org.gradle.status>release|com.android.support:drawerlayout:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|slidingpanelayout|28.0.0|org.gradle.status>release|com.android.support:slidingpanelayout:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|interpolator|28.0.0|org.gradle.status>release|com.android.support:interpolator:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|swiperefreshlayout|28.0.0|org.gradle.status>release|com.android.support:swiperefreshlayout:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|interpolator|28.0.0|org.gradle.status>release|com.android.support:interpolator:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|asynclayoutinflater|28.0.0|org.gradle.status>release|com.android.support:asynclayoutinflater:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|cursoradapter|28.0.0|org.gradle.status>release|com.android.support:cursoradapter:28.0.0:
+                              - dependencies = "*visited*"
+                        < dependencies
+                     < com.android.support|support-core-ui|28.0.0|org.gradle.status>release|com.android.support:support-core-ui:28.0.0
+                     - com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|loader|28.0.0|org.gradle.status>release|com.android.support:loader:28.0.0:
+                        - dependencies = "*visited*"
+                     - android.arch.lifecycle|viewmodel|1.1.1|org.gradle.status>release|android.arch.lifecycle:viewmodel:1.1.1:
+                        - dependencies = "*visited*"
+                  < dependencies
+               < com.android.support|support-fragment|28.0.0|org.gradle.status>release|com.android.support:support-fragment:28.0.0
+               - com.android.support|support-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:support-vector-drawable:28.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                        - dependencies = "*visited*"
+               - com.android.support|animated-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:animated-vector-drawable:28.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - com.android.support|support-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:support-vector-drawable:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-core-ui|28.0.0|org.gradle.status>release|com.android.support:support-core-ui:28.0.0:
+                        - dependencies = "*visited*"
+            < dependencies
+         < com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:appcompat-v7:28.0.0
+      < compileDependencies
+      > runtimeDependencies:
+         > com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:appcompat-v7:28.0.0:
+            - requestedCoordinates = (null)
+            > dependencies:
+               - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-annotations:28.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+               - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                  - dependencies = "*visited*"
+               - com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:collections:28.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+               - com.android.support|cursoradapter|28.0.0|org.gradle.status>release|com.android.support:cursoradapter:28.0.0:
+                  - dependencies = "*visited*"
+               - com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0:
+                  - dependencies = "*visited*"
+               - com.android.support|support-fragment|28.0.0|org.gradle.status>release|com.android.support:support-fragment:28.0.0:
+                  - dependencies = "*visited*"
+               - com.android.support|support-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:support-vector-drawable:28.0.0:
+                  - dependencies = "*visited*"
+               - com.android.support|animated-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:animated-vector-drawable:28.0.0:
+                  - dependencies = "*visited*"
+            < dependencies
+         < com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:appcompat-v7:28.0.0
+      < runtimeDependencies
+      - unresolvedDependencies = []
+   < mainArtifact
+   - androidTestArtifact  = (null)
+   > unitTestArtifact:
+      > compileDependencies:
+         > com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:appcompat-v7:28.0.0:
+            - requestedCoordinates = (null)
+            > dependencies:
+               - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies         = []
+               > com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                  - requestedCoordinates = (null)
+                  > dependencies:
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:collections:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                     > android.arch.lifecycle|runtime|1.1.1|org.gradle.status>release|android.arch.lifecycle:runtime:1.1.1:
+                        - requestedCoordinates = (null)
+                        > dependencies:
+                           - android.arch.lifecycle|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.lifecycle:common:1.1.1:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                           - android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                        < dependencies
+                     < android.arch.lifecycle|runtime|1.1.1|org.gradle.status>release|android.arch.lifecycle:runtime:1.1.1
+                     - com.android.support|versionedparcelable|28.0.0|org.gradle.status>release|com.android.support:versionedparcelable:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                           - com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:collections:28.0.0:
+                              - dependencies = "*visited*"
+                  < dependencies
+               < com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0
+               - com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:collections:28.0.0:
+                  - dependencies = "*visited*"
+               - com.android.support|cursoradapter|28.0.0|org.gradle.status>release|com.android.support:cursoradapter:28.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+               > com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0:
+                  - requestedCoordinates = (null)
+                  > dependencies:
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|documentfile|28.0.0|org.gradle.status>release|com.android.support:documentfile:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                     > com.android.support|loader|28.0.0|org.gradle.status>release|com.android.support:loader:28.0.0:
+                        - requestedCoordinates = (null)
+                        > dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                           - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                              - dependencies = "*visited*"
+                           > android.arch.lifecycle|livedata|1.1.1|org.gradle.status>release|android.arch.lifecycle:livedata:1.1.1:
+                              - requestedCoordinates = (null)
+                              > dependencies:
+                                 - android.arch.core|runtime|1.1.1|org.gradle.status>release|android.arch.core:runtime:1.1.1:
+                                    - requestedCoordinates = (null)
+                                    - dependencies:
+                                       - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                          - dependencies = "*visited*"
+                                       - android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1:
+                                          - dependencies = "*visited*"
+                                 - android.arch.lifecycle|livedata-core|1.1.1|org.gradle.status>release|android.arch.lifecycle:livedata-core:1.1.1:
+                                    - requestedCoordinates = (null)
+                                    - dependencies:
+                                       - android.arch.lifecycle|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.lifecycle:common:1.1.1:
+                                          - dependencies = "*visited*"
+                                       - android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1:
+                                          - dependencies = "*visited*"
+                                       - android.arch.core|runtime|1.1.1|org.gradle.status>release|android.arch.core:runtime:1.1.1:
+                                          - dependencies = "*visited*"
+                                 - android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1:
+                                    - dependencies = "*visited*"
+                              < dependencies
+                           < android.arch.lifecycle|livedata|1.1.1|org.gradle.status>release|android.arch.lifecycle:livedata:1.1.1
+                           - android.arch.lifecycle|viewmodel|1.1.1|org.gradle.status>release|android.arch.lifecycle:viewmodel:1.1.1:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                        < dependencies
+                     < com.android.support|loader|28.0.0|org.gradle.status>release|com.android.support:loader:28.0.0
+                     - com.android.support|localbroadcastmanager|28.0.0|org.gradle.status>release|com.android.support:localbroadcastmanager:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                     - com.android.support|print|28.0.0|org.gradle.status>release|com.android.support:print:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                  < dependencies
+               < com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0
+               > com.android.support|support-fragment|28.0.0|org.gradle.status>release|com.android.support:support-fragment:28.0.0:
+                  - requestedCoordinates = (null)
+                  > dependencies:
+                     - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                        - dependencies = "*visited*"
+                     > com.android.support|support-core-ui|28.0.0|org.gradle.status>release|com.android.support:support-core-ui:28.0.0:
+                        - requestedCoordinates = (null)
+                        > dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                           - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                              - dependencies = "*visited*"
+                           - com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0:
+                              - dependencies = "*visited*"
+                           - com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|viewpager|28.0.0|org.gradle.status>release|com.android.support:viewpager:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|coordinatorlayout|28.0.0|org.gradle.status>release|com.android.support:coordinatorlayout:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|drawerlayout|28.0.0|org.gradle.status>release|com.android.support:drawerlayout:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|slidingpanelayout|28.0.0|org.gradle.status>release|com.android.support:slidingpanelayout:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|interpolator|28.0.0|org.gradle.status>release|com.android.support:interpolator:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|swiperefreshlayout|28.0.0|org.gradle.status>release|com.android.support:swiperefreshlayout:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|interpolator|28.0.0|org.gradle.status>release|com.android.support:interpolator:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|asynclayoutinflater|28.0.0|org.gradle.status>release|com.android.support:asynclayoutinflater:28.0.0:
+                              - requestedCoordinates = (null)
+                              - dependencies:
+                                 - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                                    - dependencies = "*visited*"
+                                 - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                                    - dependencies = "*visited*"
+                           - com.android.support|cursoradapter|28.0.0|org.gradle.status>release|com.android.support:cursoradapter:28.0.0:
+                              - dependencies = "*visited*"
+                        < dependencies
+                     < com.android.support|support-core-ui|28.0.0|org.gradle.status>release|com.android.support:support-core-ui:28.0.0
+                     - com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|loader|28.0.0|org.gradle.status>release|com.android.support:loader:28.0.0:
+                        - dependencies = "*visited*"
+                     - android.arch.lifecycle|viewmodel|1.1.1|org.gradle.status>release|android.arch.lifecycle:viewmodel:1.1.1:
+                        - dependencies = "*visited*"
+                  < dependencies
+               < com.android.support|support-fragment|28.0.0|org.gradle.status>release|com.android.support:support-fragment:28.0.0
+               - com.android.support|support-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:support-vector-drawable:28.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                        - dependencies = "*visited*"
+               - com.android.support|animated-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:animated-vector-drawable:28.0.0:
+                  - requestedCoordinates = (null)
+                  - dependencies:
+                     - com.android.support|support-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:support-vector-drawable:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-core-ui|28.0.0|org.gradle.status>release|com.android.support:support-core-ui:28.0.0:
+                        - dependencies = "*visited*"
+            < dependencies
+         < com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:appcompat-v7:28.0.0
+         - :|:|release|api>ics, model>paid|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>paidIcsRelease, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+      < compileDependencies
+      > runtimeDependencies:
+         > :|:|release|api>ics, model>paid|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>paidIcsRelease, org.gradle.usage>java-runtime|:project:unspecified:
+            - requestedCoordinates = (null)
+            > dependencies:
+               > com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:appcompat-v7:28.0.0:
+                  - requestedCoordinates = (null)
+                  > dependencies:
+                     - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-annotations:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies         = []
+                     - com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:collections:28.0.0:
+                        - requestedCoordinates = (null)
+                        - dependencies:
+                           - com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-annotations:28.0.0:
+                              - dependencies = "*visited*"
+                     - com.android.support|cursoradapter|28.0.0|org.gradle.status>release|com.android.support:cursoradapter:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-fragment|28.0.0|org.gradle.status>release|com.android.support:support-fragment:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|support-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:support-vector-drawable:28.0.0:
+                        - dependencies = "*visited*"
+                     - com.android.support|animated-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:animated-vector-drawable:28.0.0:
+                        - dependencies = "*visited*"
+                  < dependencies
+               < com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:appcompat-v7:28.0.0
+            < dependencies
+         < :|:|release|api>ics, model>paid|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>paidIcsRelease, org.gradle.usage>java-runtime|:project:unspecified
+         - com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:appcompat-v7:28.0.0:
+            - dependencies = "*visited*"
+      < runtimeDependencies
+      - unresolvedDependencies = []
+   < unitTestArtifact
+   - testFixturesArtifact = (null)
+   > libraries:
+      > :|:|release|api>ics, model>paid|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>paidIcsRelease, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors:
+               * "api -> ics"
+               * "model -> paid"
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> paidIcsRelease"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * ":project:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|release|api>ics, model>paid|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>paidIcsRelease, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified
+      > :|:|release|api>ics, model>paid|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>paidIcsRelease, org.gradle.usage>java-runtime|:project:unspecified:
+         - type               = PROJECT
+         - artifact           = (null)
+         > projectInfo:
+            - buildId        = ":"
+            - projectPath    = ":"
+            - isTestFixtures = false
+            - buildType      = "release"
+            - productFlavors:
+               * "api -> ics"
+               * "model -> paid"
+            - attributes:
+               * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
+               * "com.android.build.gradle.internal.attributes.VariantAttr -> paidIcsRelease"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * ":project:unspecified"
+         < projectInfo
+         - libraryInfo        = (null)
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < :|:|release|api>ics, model>paid|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>paidIcsRelease, org.gradle.usage>java-runtime|:project:unspecified
+      > android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/android/arch/core/common/1.1.1/common-1.1.1.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "android.arch.core"
+            - name           = "common"
+            - version        = "1.1.1"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "android.arch.core:common:1.1.1"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1
+      > android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|android.arch.core:common:1.1.1:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/android/arch/core/common/1.1.1/common-1.1.1.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "android.arch.core"
+            - name           = "common"
+            - version        = "1.1.1"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "android.arch.core:common:1.1.1"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|android.arch.core:common:1.1.1
+      > android.arch.core|runtime|1.1.1|org.gradle.status>release|android.arch.core:runtime:1.1.1:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/android/arch/core/runtime/1.1.1/runtime-1.1.1.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "android.arch.core"
+            - name           = "runtime"
+            - version        = "1.1.1"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "android.arch.core:runtime:1.1.1"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/R.txt{F}
+         < androidLibraryData
+      < android.arch.core|runtime|1.1.1|org.gradle.status>release|android.arch.core:runtime:1.1.1
+      > android.arch.lifecycle|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.lifecycle:common:1.1.1:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/android/arch/lifecycle/common/1.1.1/common-1.1.1.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "android.arch.lifecycle"
+            - name           = "common"
+            - version        = "1.1.1"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "android.arch.lifecycle:common:1.1.1"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < android.arch.lifecycle|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.lifecycle:common:1.1.1
+      > android.arch.lifecycle|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|android.arch.lifecycle:common:1.1.1:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/android/arch/lifecycle/common/1.1.1/common-1.1.1.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "android.arch.lifecycle"
+            - name           = "common"
+            - version        = "1.1.1"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "android.arch.lifecycle:common:1.1.1"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < android.arch.lifecycle|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|android.arch.lifecycle:common:1.1.1
+      > android.arch.lifecycle|livedata-core|1.1.1|org.gradle.status>release|android.arch.lifecycle:livedata-core:1.1.1:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/android/arch/lifecycle/livedata-core/1.1.1/livedata-core-1.1.1.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "android.arch.lifecycle"
+            - name           = "livedata-core"
+            - version        = "1.1.1"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "android.arch.lifecycle:livedata-core:1.1.1"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-core-1.1.1/R.txt{F}
+         < androidLibraryData
+      < android.arch.lifecycle|livedata-core|1.1.1|org.gradle.status>release|android.arch.lifecycle:livedata-core:1.1.1
+      > android.arch.lifecycle|livedata|1.1.1|org.gradle.status>release|android.arch.lifecycle:livedata:1.1.1:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/android/arch/lifecycle/livedata/1.1.1/livedata-1.1.1.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "android.arch.lifecycle"
+            - name           = "livedata"
+            - version        = "1.1.1"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "android.arch.lifecycle:livedata:1.1.1"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/livedata-1.1.1/R.txt{F}
+         < androidLibraryData
+      < android.arch.lifecycle|livedata|1.1.1|org.gradle.status>release|android.arch.lifecycle:livedata:1.1.1
+      > android.arch.lifecycle|runtime|1.1.1|org.gradle.status>release|android.arch.lifecycle:runtime:1.1.1:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/android/arch/lifecycle/runtime/1.1.1/runtime-1.1.1.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "android.arch.lifecycle"
+            - name           = "runtime"
+            - version        = "1.1.1"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "android.arch.lifecycle:runtime:1.1.1"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/proguard.txt{F}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/runtime-1.1.1/R.txt{F}
+         < androidLibraryData
+      < android.arch.lifecycle|runtime|1.1.1|org.gradle.status>release|android.arch.lifecycle:runtime:1.1.1
+      > android.arch.lifecycle|viewmodel|1.1.1|org.gradle.status>release|android.arch.lifecycle:viewmodel:1.1.1:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/android/arch/lifecycle/viewmodel/1.1.1/viewmodel-1.1.1.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "android.arch.lifecycle"
+            - name           = "viewmodel"
+            - version        = "1.1.1"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "android.arch.lifecycle:viewmodel:1.1.1"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/proguard.txt{F}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewmodel-1.1.1/R.txt{F}
+         < androidLibraryData
+      < android.arch.lifecycle|viewmodel|1.1.1|org.gradle.status>release|android.arch.lifecycle:viewmodel:1.1.1
+      > com.android.support|animated-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:animated-vector-drawable:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/animated-vector-drawable/28.0.0/animated-vector-drawable-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "animated-vector-drawable"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:animated-vector-drawable:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/proguard.txt{F}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/animated-vector-drawable-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|animated-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:animated-vector-drawable:28.0.0
+      > com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:appcompat-v7:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/appcompat-v7/28.0.0/appcompat-v7-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "appcompat-v7"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "com.android.support:appcompat-v7:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/res{D}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/proguard.txt{F}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/annotations.zip{F}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/public.txt{F}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:appcompat-v7:28.0.0
+      > com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:appcompat-v7:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/appcompat-v7/28.0.0/appcompat-v7-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "appcompat-v7"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "com.android.support:appcompat-v7:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/res{D}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/proguard.txt{F}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/annotations.zip{F}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/public.txt{F}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/appcompat-v7-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|appcompat-v7|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:appcompat-v7:28.0.0
+      > com.android.support|asynclayoutinflater|28.0.0|org.gradle.status>release|com.android.support:asynclayoutinflater:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/asynclayoutinflater/28.0.0/asynclayoutinflater-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "asynclayoutinflater"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:asynclayoutinflater:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/asynclayoutinflater-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|asynclayoutinflater|28.0.0|org.gradle.status>release|com.android.support:asynclayoutinflater:28.0.0
+      > com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:collections:28.0.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/com/android/support/collections/28.0.0/collections-28.0.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "collections"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "com.android.support:collections:28.0.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:collections:28.0.0
+      > com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:collections:28.0.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/com/android/support/collections/28.0.0/collections-28.0.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "collections"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "com.android.support:collections:28.0.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.android.support|collections|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:collections:28.0.0
+      > com.android.support|coordinatorlayout|28.0.0|org.gradle.status>release|com.android.support:coordinatorlayout:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/coordinatorlayout/28.0.0/coordinatorlayout-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "coordinatorlayout"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:coordinatorlayout:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/res{D}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/proguard.txt{F}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/annotations.zip{F}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/public.txt{F}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/coordinatorlayout-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|coordinatorlayout|28.0.0|org.gradle.status>release|com.android.support:coordinatorlayout:28.0.0
+      > com.android.support|cursoradapter|28.0.0|org.gradle.status>release|com.android.support:cursoradapter:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/cursoradapter/28.0.0/cursoradapter-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "cursoradapter"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:cursoradapter:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/cursoradapter-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|cursoradapter|28.0.0|org.gradle.status>release|com.android.support:cursoradapter:28.0.0
+      > com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/customview/28.0.0/customview-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "customview"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:customview:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/customview-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|customview|28.0.0|org.gradle.status>release|com.android.support:customview:28.0.0
+      > com.android.support|documentfile|28.0.0|org.gradle.status>release|com.android.support:documentfile:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/documentfile/28.0.0/documentfile-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "documentfile"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:documentfile:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/documentfile-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|documentfile|28.0.0|org.gradle.status>release|com.android.support:documentfile:28.0.0
+      > com.android.support|drawerlayout|28.0.0|org.gradle.status>release|com.android.support:drawerlayout:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/drawerlayout/28.0.0/drawerlayout-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "drawerlayout"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:drawerlayout:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/annotations.zip{F}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/drawerlayout-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|drawerlayout|28.0.0|org.gradle.status>release|com.android.support:drawerlayout:28.0.0
+      > com.android.support|interpolator|28.0.0|org.gradle.status>release|com.android.support:interpolator:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/interpolator/28.0.0/interpolator-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "interpolator"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:interpolator:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/interpolator-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|interpolator|28.0.0|org.gradle.status>release|com.android.support:interpolator:28.0.0
+      > com.android.support|loader|28.0.0|org.gradle.status>release|com.android.support:loader:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/loader/28.0.0/loader-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "loader"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:loader:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/loader-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|loader|28.0.0|org.gradle.status>release|com.android.support:loader:28.0.0
+      > com.android.support|localbroadcastmanager|28.0.0|org.gradle.status>release|com.android.support:localbroadcastmanager:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/localbroadcastmanager/28.0.0/localbroadcastmanager-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "localbroadcastmanager"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:localbroadcastmanager:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/localbroadcastmanager-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|localbroadcastmanager|28.0.0|org.gradle.status>release|com.android.support:localbroadcastmanager:28.0.0
+      > com.android.support|print|28.0.0|org.gradle.status>release|com.android.support:print:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/print/28.0.0/print-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "print"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:print:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/annotations.zip{F}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/print-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|print|28.0.0|org.gradle.status>release|com.android.support:print:28.0.0
+      > com.android.support|slidingpanelayout|28.0.0|org.gradle.status>release|com.android.support:slidingpanelayout:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/slidingpanelayout/28.0.0/slidingpanelayout-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "slidingpanelayout"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:slidingpanelayout:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/slidingpanelayout-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|slidingpanelayout|28.0.0|org.gradle.status>release|com.android.support:slidingpanelayout:28.0.0
+      > com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/com/android/support/support-annotations/28.0.0/support-annotations-28.0.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-annotations"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-api"
+            - capabilities:
+               * "com.android.support:support-annotations:28.0.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:support-annotations:28.0.0
+      > com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-annotations:28.0.0:
+         - type               = JAVA_LIBRARY
+         - artifact           = {LOCAL_REPO}/com/android/support/support-annotations/28.0.0/support-annotations-28.0.0.jar{F}
+         - projectInfo        = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-annotations"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.category -> library"
+               * "org.gradle.libraryelements -> jar"
+               * "org.gradle.status -> release"
+               * "org.gradle.usage -> java-runtime"
+            - capabilities:
+               * "com.android.support:support-annotations:28.0.0"
+         < libraryInfo
+         - lintJar            = (null)
+         - androidLibraryData = (null)
+      < com.android.support|support-annotations|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.android.support:support-annotations:28.0.0
+      > com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/support-compat/28.0.0/support-compat-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-compat"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:support-compat:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/res{D}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/aidl{D}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/proguard.txt{F}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/annotations.zip{F}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/public.txt{F}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-compat-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|support-compat|28.0.0|org.gradle.status>release|com.android.support:support-compat:28.0.0
+      > com.android.support|support-core-ui|28.0.0|org.gradle.status>release|com.android.support:support-core-ui:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/support-core-ui/28.0.0/support-core-ui-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-core-ui"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:support-core-ui:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-ui-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|support-core-ui|28.0.0|org.gradle.status>release|com.android.support:support-core-ui:28.0.0
+      > com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/support-core-utils/28.0.0/support-core-utils-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-core-utils"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:support-core-utils:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-core-utils-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|support-core-utils|28.0.0|org.gradle.status>release|com.android.support:support-core-utils:28.0.0
+      > com.android.support|support-fragment|28.0.0|org.gradle.status>release|com.android.support:support-fragment:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/support-fragment/28.0.0/support-fragment-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-fragment"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:support-fragment:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/annotations.zip{F}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-fragment-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|support-fragment|28.0.0|org.gradle.status>release|com.android.support:support-fragment:28.0.0
+      > com.android.support|support-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:support-vector-drawable:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/support-vector-drawable/28.0.0/support-vector-drawable-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "support-vector-drawable"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:support-vector-drawable:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/support-vector-drawable-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|support-vector-drawable|28.0.0|org.gradle.status>release|com.android.support:support-vector-drawable:28.0.0
+      > com.android.support|swiperefreshlayout|28.0.0|org.gradle.status>release|com.android.support:swiperefreshlayout:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/swiperefreshlayout/28.0.0/swiperefreshlayout-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "swiperefreshlayout"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:swiperefreshlayout:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/annotations.zip{F}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/swiperefreshlayout-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|swiperefreshlayout|28.0.0|org.gradle.status>release|com.android.support:swiperefreshlayout:28.0.0
+      > com.android.support|versionedparcelable|28.0.0|org.gradle.status>release|com.android.support:versionedparcelable:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/versionedparcelable/28.0.0/versionedparcelable-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "versionedparcelable"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:versionedparcelable:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/aidl{D}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/proguard.txt{F}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/versionedparcelable-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|versionedparcelable|28.0.0|org.gradle.status>release|com.android.support:versionedparcelable:28.0.0
+      > com.android.support|viewpager|28.0.0|org.gradle.status>release|com.android.support:viewpager:28.0.0:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {LOCAL_REPO}/com/android/support/viewpager/28.0.0/viewpager-28.0.0.aar{F}
+         - projectInfo = (null)
+         > libraryInfo:
+            - group          = "com.android.support"
+            - name           = "viewpager"
+            - version        = "28.0.0"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes:
+               * "org.gradle.status -> release"
+            - capabilities:
+               * "com.android.support:viewpager:28.0.0"
+         < libraryInfo
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/viewpager-28.0.0/R.txt{F}
+         < androidLibraryData
+      < com.android.support|viewpager|28.0.0|org.gradle.status>release|com.android.support:viewpager:28.0.0
+   < libraries
+< VariantDependencies

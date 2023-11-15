@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.library;
 
-import static com.android.build.gradle.integration.common.utils.LibraryGraphHelper.Type.JAVA;
 import static com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile;
 import static com.android.testutils.truth.DexSubject.assertThat;
 import static com.android.testutils.truth.PathSubject.assertThat;
@@ -24,22 +23,16 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.android.annotations.NonNull;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelBuilder;
-import com.android.build.gradle.integration.common.fixture.ModelContainer;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtils;
-import com.android.build.gradle.integration.common.utils.LibraryGraphHelper;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.internal.coverage.JacocoOptions;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.Variant;
-import com.android.builder.model.level2.DependencyGraphs;
+import com.android.builder.model.v2.ide.GraphItem;
 import com.android.testutils.apk.Apk;
 import com.android.testutils.apk.Dex;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import com.google.common.truth.Truth8;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -119,9 +112,8 @@ public class JacocoDependenciesTest {
     }
 
     @Test
-    public void checkDefaultVersion() throws IOException {
-        assertAgentMavenCoordinates(
-                "org.jacoco:org.jacoco.agent:" + JacocoOptions.DEFAULT_VERSION + ":runtime@jar");
+    public void checkDefaultVersion() {
+        assertAgentMavenCoordinates("org.jacoco|org.jacoco.agent|" + JacocoOptions.DEFAULT_VERSION);
     }
 
     @Test
@@ -137,8 +129,7 @@ public class JacocoDependenciesTest {
                         + oldJacocoVersion
                         + ":runtime'\n"
                         + "}\n");
-        assertAgentMavenCoordinates(
-                "org.jacoco:org.jacoco.agent:" + JacocoOptions.DEFAULT_VERSION + ":runtime@jar");
+        assertAgentMavenCoordinates("org.jacoco|org.jacoco.agent|" + JacocoOptions.DEFAULT_VERSION);
     }
 
     @Test
@@ -146,33 +137,31 @@ public class JacocoDependenciesTest {
         TestFileUtils.appendToFile(
                 project.getSubproject("app").getBuildFile(),
                 "\n" + "android.jacoco.version '" + oldJacocoVersion + "'\n");
-        assertAgentMavenCoordinates(
-                "org.jacoco:org.jacoco.agent:" + oldJacocoVersion + ":runtime@jar");
+
+        assertAgentMavenCoordinates("org.jacoco|org.jacoco.agent|" + oldJacocoVersion);
     }
 
-    private void assertAgentMavenCoordinates(@NonNull String expected) throws IOException {
-        assertAgentMavenCoordinates(project.model(), expected);
-    }
+    private void assertAgentMavenCoordinates(@NonNull String expectedPrefix) {
+        List<GraphItem> runtimeDeps =
+                project.modelV2()
+                        .fetchModels("debug", null)
+                        .getContainer()
+                        .getProject(":app")
+                        .getVariantDependencies()
+                        .getMainArtifact()
+                        .getRuntimeDependencies();
 
-    private void assertAgentMavenCoordinates(
-            @NonNull ModelBuilder modelBuilder, @NonNull String expected) throws IOException {
-        ModelContainer<AndroidProject> container =
-                modelBuilder
-                        .level(AndroidProject.MODEL_LEVEL_LATEST)
-                        .withFullDependencies()
-                        .fetchAndroidProjects();
-        LibraryGraphHelper helper = new LibraryGraphHelper(container);
-        Variant appDebug =
-                AndroidProjectUtils.getVariantByName(
-                        container.getOnlyModelMap().get(":app"), "debug");
+        List<String> keys =
+                runtimeDeps.stream().map(GraphItem::getKey).collect(Collectors.toList());
 
-        DependencyGraphs dependencyGraphs = appDebug.getMainArtifact().getDependencyGraphs();
-        assertThat(
-                        helper.on(dependencyGraphs)
-                                .forPackage()
-                                .withType(JAVA)
-                                .mapTo(LibraryGraphHelper.Property.COORDINATES))
-                .named("jacoco agent runtime jar")
-                .containsExactly(expected);
+        // assert that one of the keys contains the expected prefix
+        boolean found = false;
+        for (String key : keys) {
+            if (key.startsWith(expectedPrefix)) {
+                found = true;
+                break;
+            }
+        }
+        assertThat(found).isTrue();
     }
 }

@@ -17,18 +17,10 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.ModelContainer
-import com.android.build.gradle.integration.common.utils.getVariantByName
-import com.android.build.gradle.integration.common.utils.testSubModuleDependencies
-import com.android.builder.model.AndroidProject
+import com.android.build.gradle.integration.common.fixture.model.ModelComparator
 import com.google.common.truth.Truth.assertThat
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import java.io.File
-import kotlin.test.fail
 
 /**
  * Test the dependencies of a complex multi module/multi build setup with android modules
@@ -55,22 +47,7 @@ import kotlin.test.fail
  * TestCompositeLib4 :           -> java
  *
  */
-@RunWith(Parameterized::class)
-class MultiCompositeBuildTest {
-
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "model_level_{0}")
-        fun data(): Iterable<Any> {
-            return listOf(
-                    AndroidProject.MODEL_LEVEL_3_VARIANT_OUTPUT_POST_BUILD,
-                    AndroidProject.MODEL_LEVEL_4_NEW_DEP_MODEL)
-        }
-    }
-
-    @JvmField
-    @Parameterized.Parameter
-    var modelLevel: Int = 0
+class MultiCompositeBuildTest: ModelComparator() {
 
     @JvmField
     @Rule
@@ -79,90 +56,46 @@ class MultiCompositeBuildTest {
             .withIncludedBuilds(
                     "TestCompositeApp",
                     "TestCompositeLib1",
-                    "TestCompositeLib3")
-            .create()
-
-    lateinit var modelContainer: ModelContainer<AndroidProject>
-
-    @Before
-    fun setup() {
-        modelContainer = project.getSubproject("TestCompositeApp")
-            .model()
-            .withFailOnWarning(false)
-            .level(modelLevel)
-            .fetchAndroidProjects()
-    }
+                    "TestCompositeLib3"
+            ).create()
 
     @Test
     fun `dependencies for root app module`() {
-        // get the root project, and its :app module
-        val rootModelMap: Map<String, AndroidProject> = modelContainer.rootBuildModelMap
+        val model = project
+            .getSubproject("TestCompositeApp")
+            .modelV2()
+            .withFailOnWarning(false)
+            .fetchModels(variantName = "debug")
+
+        val rootModelMap = model.container.rootInfoMap
 
         assertThat(rootModelMap.entries).hasSize(2)
         assertThat(rootModelMap.keys).containsExactly(":app", ":composite0")
 
-        val rootApp: AndroidProject = rootModelMap[":app"]!!
 
-        rootApp.getVariantByName("debug").testSubModuleDependencies(
-                moduleName = "<root>:app",
-                expectedAndroidModules = listOf(
-                    ":" to ":composite0",
-                    ":TestCompositeLib1" to ":composite1",
-                    ":TestCompositeLib3" to ":composite3"),
-                expectedJavaModules = listOf(
-                    ":TestCompositeLib2" to ":",
-                    ":TestCompositeLib4" to ":"),
-                globalLibrary = getGlobalLibrary())
+        with(model).compareVariantDependencies(
+            projectAction = { getProject(":app") }, goldenFile = "TestCompositeApp_app_VariantDependencies"
+        )
     }
 
     @Test
     fun `dependencies for included build module`() {
-        val modelMap =
-            findModelMapByRootDir(File(project.projectDir, "TestCompositeLib1").absolutePath)
+        val model = project
+            .getSubproject("TestCompositeLib1")
+            .modelV2()
+            .withFailOnWarning(false)
+            .fetchModels(variantName = "debug")
 
-        assertThat(modelMap.entries).hasSize(2)
-        assertThat(modelMap.keys).containsExactly(":app", ":composite1")
+        val rootModelMap = model.container.rootInfoMap
+        assertThat(rootModelMap.entries).hasSize(2)
+        assertThat(rootModelMap.keys).containsExactly(":app", ":composite1")
 
-        // test the composite1 module
-        modelMap[":composite1"]!!.getVariantByName("debug").testSubModuleDependencies(
-            moduleName = "TestCompositeLib1:composite1",
-            expectedAndroidModules = listOf(":TestCompositeLib3" to ":composite3"),
-            expectedJavaModules = listOf(
-                ":TestCompositeLib2" to ":",
-                ":TestCompositeLib4" to ":"
-            ),
-            globalLibrary = getGlobalLibrary()
+        with(model).compareVariantDependencies(
+            projectAction = { getProject(":composite1") }, goldenFile = "TestCompositeLib1_composite1_VariantDependencies"
         )
 
-        // test the app module
-        modelMap[":app"]!!.getVariantByName("debug").testSubModuleDependencies(
-            moduleName = "TestCompositeLib1:app",
-            expectedAndroidModules = listOf(
-                ":TestCompositeLib1" to ":composite1",
-                ":TestCompositeLib3" to ":composite3"
-            ),
-            expectedJavaModules = listOf(
-                ":TestCompositeLib2" to ":",
-                ":TestCompositeLib4" to ":"
-            ),
-            globalLibrary = getGlobalLibrary()
+        with(model).compareVariantDependencies(
+            projectAction = { getProject(":app") }, goldenFile = "TestCompositeLib1_app_VariantDependencies"
         )
     }
-
-    private fun findModelMapByRootDir(rootDir: String): Map<String, AndroidProject> {
-        for ((buildId, map) in modelContainer.modelMaps) {
-            if (buildId.rootDir.absolutePath == rootDir) {
-                return map
-            }
-        }
-
-        fail("Failed to find model map with rootDir=$rootDir")
-    }
-
-    private fun getGlobalLibrary() =
-            if (modelLevel == AndroidProject.MODEL_LEVEL_4_NEW_DEP_MODEL)
-                modelContainer.globalLibraryMap
-            else
-                null
-
 }
