@@ -1,0 +1,2 @@
+#!/bin/bash
+"$(dirname "$0")/../bazel" --max_idle_secs=60 run //tools/base/bazel/ci -- $1
