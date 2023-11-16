@@ -1,13 +1,12 @@
 package com.android.tools.preview.multipreview
 
+import com.android.tools.preview.multipreview.visitors.AnnotationClassVisitor
+import com.android.tools.preview.multipreview.visitors.MethodsClassVisitor
 import com.android.tools.preview.multipreview.visitors.MethodsFilter
-import com.android.tools.preview.multipreview.visitors.MultipreviewClassVisitor
 import java.util.zip.ZipFile
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.Opcodes
 import java.io.File
-import java.nio.file.Files
-import kotlin.io.path.extension
-import kotlin.io.path.readBytes
 
 /** Consumer interface processing class bytecode. */
 fun interface ClassProcessor {
@@ -39,10 +38,13 @@ fun buildMultipreview(
   val multipreviewGraph = Graph()
   provider.forEachClass {
     val cr = ClassReader(it)
-    cr.accept(
-      MultipreviewClassVisitor(settings, cr.className.classPathToName, multipreviewGraph, methodsFilter),
-      0
-    )
+    val classVisitor = if ((cr.access and Opcodes.ACC_ANNOTATION) != 0) {
+      val recorder = multipreviewGraph.addAnnotationNode(DerivedAnnotationRepresentation(cr.className.classPathToName))
+      AnnotationClassVisitor(settings.baseAnnotation, recorder)
+    } else {
+      MethodsClassVisitor(settings, cr.className.classPathToName, multipreviewGraph, methodsFilter)
+    }
+    cr.accept(classVisitor, 0)
   }
   multipreviewGraph.prune()
   return multipreviewGraph
