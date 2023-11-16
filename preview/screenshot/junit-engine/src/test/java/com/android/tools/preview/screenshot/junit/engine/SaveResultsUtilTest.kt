@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.preview.screenshot
+package com.android.tools.preview.screenshot.junit.engine
 
 import com.google.common.truth.Truth.assertThat
 import java.io.File
@@ -64,4 +64,5 @@ class SaveResultsUtilTest {
         assertThat(file.readText()).isEqualTo(expectedContent)
     }
 }
+
 

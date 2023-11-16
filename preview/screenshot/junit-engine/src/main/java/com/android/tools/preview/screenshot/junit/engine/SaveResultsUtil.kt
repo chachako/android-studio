@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.preview.screenshot
+package com.android.tools.preview.screenshot.junit.engine
 
 import com.android.SdkConstants
 import org.kxml2.io.KXmlSerializer

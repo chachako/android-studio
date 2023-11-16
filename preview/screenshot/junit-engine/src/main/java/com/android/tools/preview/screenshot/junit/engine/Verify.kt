@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.preview.screenshot
+package com.android.tools.preview.screenshot.junit.engine
 
 import java.awt.image.BufferedImage
 import java.nio.file.Path

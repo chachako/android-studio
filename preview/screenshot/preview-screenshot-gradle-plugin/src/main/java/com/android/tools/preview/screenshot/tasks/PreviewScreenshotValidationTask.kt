@@ -16,40 +16,30 @@
 
 package com.android.tools.preview.screenshot.tasks
 
-import com.android.tools.preview.screenshot.ImageDetails
-import com.android.tools.preview.screenshot.ImageDiffer
-import com.android.tools.preview.screenshot.PreviewResult
-import com.android.tools.preview.screenshot.Verify
-import com.android.tools.preview.screenshot.saveResults
 import com.android.tools.preview.screenshot.services.AnalyticsService
-import com.android.tools.preview.screenshot.toPreviewResponse
-import com.android.tools.render.compose.ComposeScreenshot
 import com.android.tools.render.compose.readComposeScreenshotsJson
-import com.android.utils.FileUtils
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.VerificationTask
-import javax.imageio.ImageIO
-import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.VerificationTask
 
 /**
  * Runs screenshot tests of a variant.
  */
 @CacheableTask
-abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask {
-
+abstract class PreviewScreenshotValidationTask : Test(), VerificationTask {
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val referenceImageDir: DirectoryProperty
@@ -78,92 +68,24 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
     fun run() {
         val screenshots = readComposeScreenshotsJson(previewFile.get().asFile.reader())
         if (screenshots.isNotEmpty()) {
-            val resultsToSave = mutableListOf<PreviewResult>()
-            var allTestsPass = true
-            for (screenshot in screenshots) {
-                val imageComparison = compareImages(screenshot)
-                resultsToSave.add(imageComparison)
-                if (imageComparison.responseCode != 0) {
-                    allTestsPass = false
-                }
-            }
-
-            saveResults(resultsToSave, resultsFile.get().asFile.absolutePath)
-
             analyticsService.get().recordPreviewScreenshotTestRun(
                 totalTestCount = screenshots.size,
-                project.gradle.sharedServices)
-
-            if (!allTestsPass) {
-                val reportUrl = File(reportFilePath.get().asFile, "index.html").toURI().toASCIIString()
-                throw GradleException("There were failing tests. Creating test report at $reportUrl")
-            }
-        } else {
-            logger.info("No tests found, nothing to do.")
+                project.gradle.sharedServices
+            )
         }
     }
 
-    private fun compareImages(composeScreenshot: ComposeScreenshot): PreviewResult {
-        // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
-        val imageDiffer = ImageDiffer.MSSIMMatcher()
-        val screenshotName = composeScreenshot.imageName
-        val screenshotNamePng = "$screenshotName.png"
-        var referencePath = referenceImageDir.asFile.get().toPath().resolve(screenshotNamePng)
-        var referenceMessage: String? = null
-        val actualPath = renderTaskOutputDir.asFile.get().toPath().resolve(screenshotName + "_0.png")
-        var diffPath = diffImageDir.asFile.get().toPath().resolve(screenshotNamePng)
-        var diffMessage: String? = null
-        var code = 0
-        val verifier = Verify(imageDiffer, diffPath)
-
-        //If the CLI tool could not render the preview, return the preview result with the
-        //code and message along with reference path if it exists
-        if (!actualPath.toFile().exists()) {
-            if (!referencePath.toFile().exists()) {
-                referencePath = null
-                referenceMessage = "Reference image missing"
-            }
-
-            return PreviewResult(1,
-                composeScreenshot.methodFQN,
-                "Image render failed",
-                referenceImage = ImageDetails(referencePath, referenceMessage),
-                actualImage = ImageDetails(null, "Image render failed")
-            )
-
-        }
-
-        val result =
-            verifier.assertMatchReference(
-                referencePath,
-                ImageIO.read(actualPath.toFile())
-            )
-        when (result) {
-            is Verify.AnalysisResult.Failed -> {
-                code = 1
-            }
-            is Verify.AnalysisResult.Passed -> {
-                if (result.imageDiff.highlights == null) {
-                    diffPath = null
-                    diffMessage = "Images match!"
-                }
-            }
-            is Verify.AnalysisResult.MissingReference -> {
-                referencePath = null
-                diffPath = null
-                referenceMessage = "Reference image missing"
-                diffMessage = "No diff available"
-                code = 1
-            }
-            is Verify.AnalysisResult.SizeMismatch -> {
-                diffMessage = result.message
-                diffPath = null
-                code = 1
-            }
-        }
-        return result.toPreviewResponse(code, composeScreenshot.methodFQN,
-            ImageDetails(referencePath, referenceMessage),
-            ImageDetails(actualPath, null),
-            ImageDetails(diffPath, diffMessage))
+    override fun createTestExecutionSpec(): JvmTestExecutionSpec {
+        setTestEngineParam("previews-discovered", previewFile.get().asFile.absolutePath)
+        setTestEngineParam("referenceImageDirPath", referenceImageDir.get().asFile.absolutePath)
+        setTestEngineParam("diffImageDirPath", diffImageDir.get().asFile.absolutePath)
+        setTestEngineParam("renderTaskOutputDirPath", renderTaskOutputDir.get().asFile.absolutePath)
+        setTestEngineParam("resultsFilePath", resultsFile.get().asFile.absolutePath)
+        setTestEngineParam("reportUrlPath", reportFilePath.get().asFile.absolutePath)
+        return super.createTestExecutionSpec()
     }
+}
+
+fun PreviewScreenshotValidationTask.setTestEngineParam(key: String, value: String) {
+    jvmArgs("-Dcom.android.tools.preview.screenshot.junit.engine.${key}=${value}")
 }

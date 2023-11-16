@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.preview.screenshot
+package com.android.tools.preview.screenshot.junit.engine
 
 import java.nio.file.Path
 
@@ -30,6 +30,12 @@ data class PreviewResult(
     val diffImage: ImageDetails? = null
 
 ) {
+}
+
+fun Verify.AnalysisResult.toPreviewResponse(code: Int, name: String, reference: ImageDetails,
+    actual: ImageDetails? = null,
+    diff: ImageDetails? = null): PreviewResult{
+    return PreviewResult(code, name, message, reference, actual, diff)
 }
 
 /**

@@ -137,6 +137,7 @@ AGP_TEST_ARTIFACTS = [
     "//tools/base/lint:tools.lint-api",  # TODO(b/143864616): Only used for tests
     "//tools/base/lint:tools.lint-checks",  # TODO(b/143864616): Only used for tests
     "//tools/base/multipreview-asm:multipreview-asm",  # Used for preview screenshot testing
+    "//tools/base/preview/screenshot/junit-engine:junit-engine",  # Used for preview screenshot testing
     "//tools/base/standalone-render/compose-cli:standalone-render.compose-cli",  # Used for preview screenshot testing
     "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",  # Used for preview screenshot testing
     "//tools/base/utp/android-test-plugin-host-device-info-proto",  # Used for UTP

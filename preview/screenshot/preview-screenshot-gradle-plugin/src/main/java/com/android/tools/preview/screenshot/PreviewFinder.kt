@@ -33,6 +33,8 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import org.objectweb.asm.Type
 
+const val PERIOD = "."
+
 fun configureInput (
     classPath: List<String>,
     sdkPath: String,
