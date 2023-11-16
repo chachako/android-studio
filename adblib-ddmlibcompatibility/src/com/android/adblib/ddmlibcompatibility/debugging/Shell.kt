@@ -66,11 +66,13 @@ internal fun executeShellCommand(
     maxTimeout: Long,
     maxTimeToOutputResponse: Long,
     maxTimeUnits: TimeUnit,
-    inputStream: InputStream?
+    inputStream: InputStream?,
+    shutdownOutput: Boolean
 ) {
     val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
     val shellCommand = connectedDevice.session.deviceServices.shellCommand(deviceSelector, command)
     setShellProtocol(shellCommand, adbService)
+    shellCommand.shutdownOutputForLegacyShell(shutdownOutput)
     if (maxTimeToOutputResponse > 0) {
         shellCommand.withCommandOutputTimeout(
             Duration.ofMillis(

@@ -846,6 +846,14 @@ internal class AdblibIDeviceWrapper(
     ) {
         logUsage(IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_4) {
             if (adbService != AdbHelper.AdbService.ABB_EXEC) {
+                // TODO(b/298475728): Revisit this when we are closer to having a working implementation of `IDevice`
+                // If `shutdownOutput` is true then we get a "java.lang.SecurityException: Files still open" exception
+                // when executing a "package install-commit" command after the "package install-write" command
+                // since the package manager doesn't handle shutdown correctly. This applies to legacy EXEC protocol.
+                val shutdownOutput = when(adbService) {
+                    AdbHelper.AdbService.EXEC -> false
+                    else -> true
+                }
                 executeShellCommand(
                     adbService,
                     connectedDevice,
@@ -854,7 +862,8 @@ internal class AdblibIDeviceWrapper(
                     maxTimeout,
                     maxTimeToOutputResponse,
                     maxTimeUnits,
-                    inputStream
+                    inputStream,
+                    shutdownOutput
                 )
             } else {
                 val maxTimeoutDuration =

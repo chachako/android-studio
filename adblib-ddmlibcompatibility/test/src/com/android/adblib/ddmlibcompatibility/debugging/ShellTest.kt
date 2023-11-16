@@ -66,7 +66,8 @@ class ShellTest {
             0,
             0,
             TimeUnit.MILLISECONDS,
-            null
+            null,
+            true
         )
 
         // Assert
@@ -100,7 +101,8 @@ class ShellTest {
             0,
             0,
             TimeUnit.MILLISECONDS,
-            null
+            null,
+            true
         )
 
         // Assert
