@@ -142,6 +142,7 @@ internal class FusedLibraryManifestMergerTaskTest {
         val mergedManifestFile = fusedLib1Project.getIntermediateFile(
                 FusedLibraryInternalArtifactType.MERGED_MANIFEST.getFolderName(),
                 "single",
+                "mergeManifest",
                 "AndroidManifest.xml"
         )
         val parsedManifestFile =
@@ -159,12 +160,12 @@ internal class FusedLibraryManifestMergerTaskTest {
         val mergedManifestContents = mergedManifestFile.readText()
         assertThat(mergedManifestContents)
                 .contains("<uses-permission android:name=\"android.permission.SEND_SMS\" />")
+        checkManifestBlameLogIsCreated(fusedLib1Project)
         assertThat(mergedManifestContents)
                 .contains("    <permission\n" +
                         "        android:name=\"com.externaldep.permission.REMOTE_PERMISSION\"\n" +
                         "        android:description=\"@string/external_permission_label\"\n" +
                         "        android:label=\"@string/external_permission_label\" />")
-        checkManifestBlameLogIsCreated(fusedLib1Project)
     }
 
     @Test

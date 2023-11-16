@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.privacysandbox
 
+import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
@@ -251,9 +252,12 @@ class PrivacySandboxSdkTest {
     @Test
     fun testAsb() {
         executor().run(":privacy-sandbox-sdk:assemble")
-        val asbManifest =
-                project.getSubproject(":privacy-sandbox-sdk")
-                        .getIntermediateFile("merged_manifest", "single", "mergeManifest", "AndroidManifest.xml")
+        val sdkProject = project.getSubproject(":privacy-sandbox-sdk")
+        val asbFile = sdkProject.getOutputFile("asb", "single", "privacy-sandbox-sdk.asb")
+        val asbManifest = sdkProject.getIntermediateFile(
+                                "merged_manifest", "single", "mergeManifest", "AndroidManifest.xml")
+        val asbManifestBlameReport = sdkProject.getOutputFile(
+                "${SdkConstants.FD_LOGS}/manifest-merger-mergeManifest-report.txt")
         assertThat(asbManifest).hasContents(
                 """
             <?xml version="1.0" encoding="utf-8"?>
@@ -270,9 +274,7 @@ class PrivacySandboxSdkTest {
 
             </manifest>
         """.trimIndent())
-        val asbFile =
-                project.getSubproject(":privacy-sandbox-sdk")
-                        .getOutputFile("asb", "single", "privacy-sandbox-sdk.asb")
+        assertThat(asbManifestBlameReport.exists()).isTrue()
         assertThat(asbFile.exists()).isTrue()
 
         Zip(asbFile).use {
