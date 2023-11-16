@@ -16,38 +16,29 @@
 
 package com.android.build.gradle.integration.connected.application;
 
-import static com.android.tools.build.apkzlib.sign.SignatureAlgorithm.DSA;
-import static com.android.tools.build.apkzlib.sign.SignatureAlgorithm.ECDSA;
-import static com.android.tools.build.apkzlib.sign.SignatureAlgorithm.RSA;
-import static java.lang.Math.max;
-
 import com.android.annotations.NonNull;
 import com.android.build.gradle.integration.common.fixture.Adb;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
 import com.android.build.gradle.integration.common.runner.FilterableParameterized;
-import com.android.build.gradle.integration.common.utils.AbiMatcher;
-import com.android.build.gradle.integration.common.utils.AndroidVersionMatcher;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
-import com.android.build.gradle.options.StringOption;
-import com.android.ddmlib.IDevice;
-import com.android.tools.build.apkzlib.sign.DigestAlgorithm;
 import com.google.common.io.Resources;
-import com.google.common.truth.Truth;
-import java.io.File;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collection;
-import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Collection;
+
+import static com.android.tools.build.apkzlib.sign.SignatureAlgorithm.*;
+import static java.lang.Math.max;
 
 @RunWith(FilterableParameterized.class)
 public class SigningConnectedTest {
@@ -161,82 +152,8 @@ public class SigningConnectedTest {
         Files.write(keystore.toPath(), keystoreBytes);
     }
 
-    /**
-     * Runs the connected tests to make sure the APK can be successfully installed.
-     *
-     * <p>To cover different scenarios, for every signature algorithm we need to build APKs with
-     * three different minimum SDK versions and run each one against three different system images.
-     *
-     * <p>This method covers 24 and 19 devices. The test for a 17 device is a separate test method
-     * that will report as skipped if the device is not available.
-     */
-    @Test
-    @Ignore("b/303077401")
-    public void shaAlgorithmChange_OnDevice() throws Exception {
-
-        // Check APK with minimum SDK 21.
-        TestFileUtils.searchRegexAndReplace(
-                project.getBuildFile(),
-                "minSdkVersion \\d+",
-                "minSdkVersion " + DigestAlgorithm.API_SHA_256_ALL_ALGORITHMS);
-
-        IDevice device24Plus =
-                adb.getDevice(AndroidVersionMatcher.atLeast(24), AbiMatcher.anyAbi());
-        checkOnDevice(device24Plus);
-
-        // Check APK with minimum SDK 18.
-        // Don't run on the oldest device, it's not compatible with the APK.
-        TestFileUtils.searchRegexAndReplace(
-                project.getBuildFile(),
-                "minSdkVersion \\d+",
-                "minSdkVersion " + DigestAlgorithm.API_SHA_256_RSA_AND_ECDSA);
-        checkOnDevice(device24Plus);
-        IDevice device19 = adb.getDevice(19);
-        checkOnDevice(device19);
-
-        // Check APK with minimum SDK 1. Skip this for ECDSA.
-        if (minSdkVersion < DigestAlgorithm.API_SHA_256_RSA_AND_ECDSA) {
-            TestFileUtils.searchRegexAndReplace(
-                    project.getBuildFile(), "minSdkVersion \\d+", "minSdkVersion " + minSdkVersion);
-
-            checkOnDevice(device19);
-            checkOnDevice(device24Plus);
-        }
-    }
-
-    /**
-     * Run the connected tests against an api 17 device.
-     *
-     * <p>This will be ignored, rather than fail, if no api 17 device is connected.
-     */
-    @Test
-    @Ignore("b/303077401")
-    public void deployOnApi17() throws Exception {
-        if (minSdkVersion >= DigestAlgorithm.API_SHA_256_RSA_AND_ECDSA) {
-            // if min SDK is higher than the device, we cannot deploy.
-            return;
-        }
-        IDevice device17 =
-                adb.getDevice(
-                        AndroidVersionMatcher.exactly(17),
-                        AbiMatcher.anyAbi(),
-                        error -> {
-                            throw new AssumptionViolatedException(error);
-                        });
-        Truth.assertThat(device17).isNotNull();
-        checkOnDevice(device17);
-    }
-
     @Test
     public void connectedCheck() throws Exception {
         project.executor().run("connectedCheck");
-    }
-
-    private void checkOnDevice(@NonNull IDevice device) throws Exception {
-        device.uninstallPackage("com.example.helloworld");
-        device.uninstallPackage("com.example.helloworld.test");
-        project.executor()
-                .with(StringOption.DEVICE_POOL_SERIAL, device.getSerialNumber())
-                .run(GradleTestProject.DEVICE_TEST_TASK);
     }
 }
