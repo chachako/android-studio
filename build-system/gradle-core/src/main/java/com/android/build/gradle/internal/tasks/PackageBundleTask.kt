@@ -585,9 +585,13 @@ abstract class PackageBundleTask : NonIncrementalTask() {
                 task.integrityConfigFile
             )
 
-            task.nativeDebugMetadataFiles.fromDisallowChanges(
-                MergeNativeDebugMetadataTask.getNativeDebugMetadataFiles(creationConfig)
-            )
+            if (creationConfig.services.projectOptions[BooleanOption.PACKAGE_NATIVE_DEBUG_METADATA_IN_APP_BUNDLE]) {
+                task.nativeDebugMetadataFiles.fromDisallowChanges(
+                        MergeNativeDebugMetadataTask.getNativeDebugMetadataFiles(creationConfig)
+                )
+            } else {
+                task.nativeDebugMetadataFiles.disallowChanges()
+            }
 
             task.abiFilters.setDisallowChanges(
                 creationConfig.nativeBuildCreationConfig?.supportedAbis ?: emptyList()

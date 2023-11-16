@@ -121,6 +121,12 @@ enum class BooleanOption(
 
     PRINT_LINT_STACK_TRACE("android.lint.printStackTrace", false, ApiStage.Stable),
 
+    PACKAGE_NATIVE_DEBUG_METADATA_IN_APP_BUNDLE(
+            "android.bundle.includeNativeDebugMetadata",
+            true,
+            ApiStage.Stable
+    ),
+
     /* ------------------
      * SUPPORTED FEATURES
      */

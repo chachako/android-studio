@@ -30,6 +30,7 @@ import com.android.build.gradle.internal.dsl.NdkOptions.DebugSymbolLevel.NONE
 import com.android.build.gradle.internal.dsl.NdkOptions.DebugSymbolLevel.SYMBOL_TABLE
 import com.android.build.gradle.internal.tasks.ExtractNativeDebugMetadataTask
 import com.android.build.gradle.internal.tasks.PackageBundleTask
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.apk.Zip
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
@@ -129,11 +130,6 @@ class ExtractNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymb
         }
 
         val bundleTaskName = project.getBundleTaskName("release", ":app")
-        project.executor().run("app:$bundleTaskName")
-
-        val bundleFile = project.locateBundleFileViaModel("release", ":app")
-        assertThat(bundleFile).exists()
-
         val bundleEntryPrefix = "BUNDLE-METADATA/com.android.tools.build.debugsymbols"
         val expectedFullEntries = listOf(
             "$bundleEntryPrefix/$ABI_ARMEABI_V7A/app.so.dbg",
@@ -177,6 +173,20 @@ class ExtractNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymb
             "base/lib/$ABI_INTEL_ATOM64/appLib.so",
             "feature/lib/$ABI_INTEL_ATOM64/featureLib.so",
         )
+
+        // Check explicit disable results in no packaging
+        project.executor()
+                .with(BooleanOption.PACKAGE_NATIVE_DEBUG_METADATA_IN_APP_BUNDLE, false)
+                .run("app:$bundleTaskName")
+
+        val bundleFile = project.locateBundleFileViaModel("release", ":app")
+        assertThat(bundleFile).exists()
+        assertThat(ZipArchive.listEntries(bundleFile.toPath()).keys)
+                .named("bundle zip entries with packaging native debug metadata disabled")
+                .containsNoneIn(expectedFullEntries + expectedSymbolTableEntries)
+
+        project.executor().run("app:$bundleTaskName")
+
         val entryMap = ZipArchive.listEntries(bundleFile.toPath())
         assertThat(entryMap.keys).containsAtLeastElementsIn(expectedNativeLibEntries)
         when (debugSymbolLevel) {
