@@ -22,6 +22,8 @@ import com.google.test.inspectors.grpc.proto.protoRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -51,7 +53,14 @@ constructor(
 ) : ViewModel(), MainScreenActions {
   private val snackFlow: MutableStateFlow<String?> = MutableStateFlow(null)
   val snackState: StateFlow<String?> = snackFlow.stateIn(viewModelScope, WhileUiSubscribed, null)
-  private val grpcClient = GrpcClient("100.98.158.16", 54321)
+  private val grpcClient = GrpcClient("100.98.159.171", 54321)
+
+  private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+    snackFlow.value = "Error: ${throwable.message}"
+    Logger.error("Error", throwable)
+  }
+
+  private val scope = CoroutineScope(viewModelScope.coroutineContext + exceptionHandler)
 
   override fun startJob() {
     val id = jobId.getAndIncrement()
@@ -67,7 +76,7 @@ constructor(
     val workManager = WorkManager.getInstance(application)
     val work: LiveData<WorkInfo> = workManager.getWorkInfoByIdLiveData(request.id)
 
-    viewModelScope.launch {
+    scope.launch {
       work.asFlow().collect {
         Logger.info("State of ${request.id}: ${it.state}")
         if (it.state == WorkInfo.State.SUCCEEDED) {
@@ -79,28 +88,28 @@ constructor(
   }
 
   override fun doGet(client: HttpClient, url: String) {
-    viewModelScope.launch {
+    scope.launch {
       val result = client.doGet(url)
       snackFlow.value = "${client.name} Result: ${result.rc}"
     }
   }
 
   override fun doPost(client: HttpClient, url: String, data: ByteArray, type: String) {
-    viewModelScope.launch {
+    scope.launch {
       val result = client.doPost(url, data, type)
       snackFlow.value = "${client.name} Result: ${result.rc}"
     }
   }
 
   override fun doProtoGrpc(name: String) {
-    viewModelScope.launch {
+    scope.launch {
       val response = grpcClient.doProtoGrpc(protoRequest { this.name = name })
       snackFlow.value = response.message
     }
   }
 
   override fun doJsonGrpc(name: String) {
-    viewModelScope.launch {
+    scope.launch {
       val response = grpcClient.doJsonGrpc(JsonRequest(name))
       snackFlow.value = response.message
     }

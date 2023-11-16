@@ -23,7 +23,7 @@ val fatJar = task("fatJar", type = Jar::class) {
   configurations.runtimeClasspath.get().forEach {
     println(it)
   }
-  manifest.attributes["Main-Class"] = "com.example.server.HelloWorldServerKt"
+  manifest.attributes["Main-Class"] = "com.google.test.inspectors.grpc.GrpcServerKt"
   val dependencies = configurations
     .runtimeClasspath
     .get()
