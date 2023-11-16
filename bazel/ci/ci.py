@@ -48,6 +48,7 @@ def studio_build_checks(ci: CI):
   """Runs checks against the build graph."""
   ci.run(query_checks.no_local_genrules)
   ci.run(query_checks.require_cpu_tags)
+  ci.run(query_checks.gradle_requires_cpu4_or_more)
 
 
 def main():
