@@ -24,7 +24,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class AppWithPackageLocalJarTest : ModelComparator() {
+class AppWithLocalDependencyTest : ModelComparator() {
 
     @get:Rule
     val project = GradleTestProject.builder()
@@ -43,6 +43,7 @@ class AppWithPackageLocalJarTest : ModelComparator() {
                     buildToolsVersion "${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}"
 
                     dependencies {
+                        implementation files("libs/baseLib-1.0.aar")
                         runtimeOnly files("libs/util-1.0.jar")
                     }
                 }

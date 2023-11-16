@@ -1,28 +1,43 @@
 > VariantDependencies:
    - name                 = "debug"
-   - mainArtifact:
-      - compileDependencies    = []
+   > mainArtifact:
+      - compileDependencies:
+         - __local_aars__|{PROJECT}/libs/baseLib-1.0.aar{F}|unspecified||:
+            - requestedCoordinates = (null)
+            - dependencies         = []
       - runtimeDependencies:
+         - __local_aars__|{PROJECT}/libs/baseLib-1.0.aar{F}|unspecified||:
+            - dependencies = "*visited*"
          - __local_aars__|{PROJECT}/libs/util-1.0.jar{F}|unspecified||:
             - requestedCoordinates = (null)
             - dependencies         = []
       - unresolvedDependencies = []
-   - androidTestArtifact:
+   < mainArtifact
+   > androidTestArtifact:
       - compileDependencies:
          - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:projectWithLocalDeps:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
+         - __local_aars__|{PROJECT}/libs/baseLib-1.0.aar{F}|unspecified||:
+            - requestedCoordinates = (null)
+            - dependencies         = []
       - runtimeDependencies    = []
       - unresolvedDependencies = []
+   < androidTestArtifact
    > unitTestArtifact:
       - compileDependencies:
          - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:projectWithLocalDeps:unspecified:
+            - requestedCoordinates = (null)
+            - dependencies         = []
+         - __local_aars__|{PROJECT}/libs/baseLib-1.0.aar{F}|unspecified||:
             - requestedCoordinates = (null)
             - dependencies         = []
       - runtimeDependencies:
          - :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:projectWithLocalDeps:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
+         - __local_aars__|{PROJECT}/libs/baseLib-1.0.aar{F}|unspecified||:
+            - dependencies = "*visited*"
          - __local_aars__|{PROJECT}/libs/util-1.0.jar{F}|unspecified||:
             - requestedCoordinates = (null)
             - dependencies         = []
@@ -71,6 +86,36 @@
          - lintJar            = (null)
          - androidLibraryData = (null)
       < :|:|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|:projectWithLocalDeps:unspecified
+      > __local_aars__|{PROJECT}/libs/baseLib-1.0.aar{F}|unspecified||:
+         - type        = ANDROID_LIBRARY
+         - artifact    = {PROJECT}/libs/baseLib-1.0.aar{F}
+         - projectInfo = (null)
+         - libraryInfo:
+            - group          = "__local_aars__"
+            - name           = {PROJECT}/libs/baseLib-1.0.aar{F}
+            - version        = "unspecified"
+            - isTestFixtures = false
+            - buildType      = (null)
+            - productFlavors = []
+            - attributes     = []
+            - capabilities   = []
+         - lintJar     = (null)
+         > androidLibraryData:
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/res{!}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/baseLib-1.0/R.txt{!}
+         < androidLibraryData
+      < __local_aars__|{PROJECT}/libs/baseLib-1.0.aar{F}|unspecified||
       > __local_aars__|{PROJECT}/libs/util-1.0.jar{F}|unspecified||:
          - type               = JAVA_LIBRARY
          - artifact           = {PROJECT}/libs/util-1.0.jar{F}
