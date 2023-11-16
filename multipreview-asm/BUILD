@@ -1,4 +1,6 @@
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
+load("//tools/base/bazel:maven.bzl", "maven_library")
+load("//tools/base/common:version.bzl", "BASE_VERSION")
 
 # Build target to verify that multipreview builds for tools/base
 kotlin_library(
@@ -27,6 +29,25 @@ kotlin_test(
         ":tools.multipreview-asm",
         "//tools/base/testutils:tools.testutils",
         "@maven//:junit.junit",
+        "@maven//:org.ow2.asm.asm",
+    ],
+)
+
+maven_library(
+    name = "multipreview-asm",
+    srcs = glob([
+        "src/**/*.java",
+        "src/**/*.kt",
+    ]),
+    coordinates = "com.android.tools:multipreview-asm",
+    description = "Library to extract multipreview from the Java binary code.",
+    module_name = "multipreview-asm",
+    notice = "NOTICE",
+    resource_strip_prefix = "tools/base/multipreview-asm",
+    version = BASE_VERSION,
+    visibility = ["//visibility:public"],
+    deps = [
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.ow2.asm.asm",
     ],
 )
