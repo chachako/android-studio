@@ -30,6 +30,7 @@ import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.configureVariantProperties
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.build.gradle.options.SigningOptions
 import com.android.builder.signing.DefaultSigningConfig
 import com.android.ide.common.signing.KeystoreHelper
 import com.android.tools.build.bundletool.commands.BuildSdkAsarCommand
@@ -144,13 +145,11 @@ abstract class GeneratePrivacySandboxAsar : NonIncrementalTask() {
             val experimentalProps = creationConfig.experimentalProperties
             experimentalProps.finalizeValue()
             val signingConfigProvider = if (
-                    OptionalString.ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_NAME.getValue(
-                            experimentalProps.get()) != null &&
                     OptionalString.ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_STORE_FILE.getValue(
                             experimentalProps.get()) != null) {
                 val localDeploymentSigningConfig = SigningConfigData(
                         OptionalString.ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_NAME.getValue(
-                                experimentalProps.get())!!,
+                                experimentalProps.get()) ?: SigningOptions.SIGNING_CONFIG_NAME,
                         OptionalString.ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_STORE_TYPE.getValue(
                                 experimentalProps.get()),
                         File(OptionalString.ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_STORE_FILE.getValue(
@@ -158,9 +157,9 @@ abstract class GeneratePrivacySandboxAsar : NonIncrementalTask() {
                         OptionalString.ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_STORE_PASSWORD.getValue(
                                 experimentalProps.get()) ?: DefaultSigningConfig.DEFAULT_PASSWORD,
                         OptionalString.ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_KEY_ALIAS.getValue(
-                                experimentalProps.get()),
+                                experimentalProps.get()) ?: DefaultSigningConfig.DEFAULT_ALIAS,
                         OptionalString.ANDROID_PRIVACY_SANDBOX_LOCAL_DEPLOYMENT_SIGNING_KEY_PASSOWRD.getValue(
-                                experimentalProps.get()) ?: DefaultSigningConfig.DEFAULT_ALIAS
+                                experimentalProps.get()) ?: DefaultSigningConfig.DEFAULT_PASSWORD
                 )
                 creationConfig.services.provider { localDeploymentSigningConfig }
             } else {
