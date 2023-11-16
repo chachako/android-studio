@@ -16,6 +16,7 @@
 package com.android.utils.text
 
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -33,5 +34,17 @@ class TextUtilsTest {
     assertThat(numSet.toCommaSeparatedList("and")).isEqualTo("1, 2 and 3")
     assertThat(numSet.toCommaSeparatedList("or")).isEqualTo("1, 2 or 3")
     assertThat(numSet.toCommaSeparatedList("fnord", oxfordComma = true)).isEqualTo("1, 2, fnord 3")
+  }
+
+  @Test
+  fun ellipsize() {
+    assertFailsWith<IllegalArgumentException> { "foobar".ellipsize(0) }
+    assertThat("foobar".ellipsize(1)).isEqualTo("…")
+    assertThat("foobar".ellipsize(2)).isEqualTo("f…")
+    assertThat("foobar".ellipsize(3)).isEqualTo("f…r")
+    assertThat("foobar".ellipsize(4)).isEqualTo("fo…r")
+    assertThat("foobar".ellipsize(5)).isEqualTo("fo…ar")
+    assertThat("foobar".ellipsize(6)).isEqualTo("foobar")
+    assertThat("foobar".ellipsize(7)).isEqualTo("foobar")
   }
 }

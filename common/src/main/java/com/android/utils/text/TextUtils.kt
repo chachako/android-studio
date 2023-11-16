@@ -15,6 +15,8 @@
  */
 package com.android.utils.text
 
+import kotlin.text.Typography
+
 /**
  * Generates a comma-separated list consisting of passed collection of [items]. Function is
  * parameterized by [lastSeparator] so enumerations like "A, B or C" and "A, B and C" can be
@@ -36,3 +38,13 @@ fun Collection<Any>.toCommaSeparatedList(
         "${it[0].joinToString(", ")}$postfix $lastSeparator ${it[1].single()}"
       }
   }
+
+/**
+ * Returns a shortened version of this [String] by replacing characters in the middle with an
+ * ellipsis if it is longer than [maxSize]. Otherwise, returns `this`.
+ */
+fun String.ellipsize(maxSize: Int): String {
+  require(maxSize >= 1) { "maxSize must be at least 1!" }
+  return if (length <= maxSize) this
+  else "${take(maxSize / 2)}${Typography.ellipsis}${takeLast((maxSize - 1) / 2)}"
+}
