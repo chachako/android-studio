@@ -226,6 +226,8 @@ fun buildArtProfileWithDexMetadata(
  */
 internal data class SerializerInfo(val serializer: ArtProfileSerializer, val apiLevels: IntRange)
 
+const val HIGHEST_DM_API_RANGE_START = 31
+
 /**
  * Builds DM payloads for all known profile versions.
  *
@@ -236,8 +238,14 @@ internal fun buildDexMetadata(
         profile: ArtProfile,
         outputDir: File,
         infoList: List<SerializerInfo> = listOf(
-                SerializerInfo(ArtProfileSerializer.V0_1_5_S, 31..Int.MAX_VALUE),
-                SerializerInfo(ArtProfileSerializer.V0_1_0_P, 28..30),
+                SerializerInfo(
+                    ArtProfileSerializer.V0_1_5_S,
+                    HIGHEST_DM_API_RANGE_START..Int.MAX_VALUE
+                ),
+                SerializerInfo(
+                    ArtProfileSerializer.V0_1_0_P,
+                    28..30
+                ),
         )
 ): Map<AndroidSdkLevel, File> {
     val fileMap = mutableMapOf<Int, File>()

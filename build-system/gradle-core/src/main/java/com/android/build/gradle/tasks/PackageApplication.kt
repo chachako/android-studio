@@ -207,8 +207,7 @@ abstract class PackageApplication : PackageAndroidArtifact() {
             }
             val baselineProfileData = mutableListOf<BaselineProfileDetails>()
             baselineProfilesMapping.forEach { entry ->
-                val minApi = entry.value.minByOrNull { it }!!.toInt()
-                val maxApi = entry.value.maxByOrNull { it }!!.toInt()
+                val supportedApis = entry.value.map { it.toInt() }
                 val baselineProfiles = mutableSetOf<File>()
                 val dmFile = dexMetadataPropertiesFile.parentFile.resolve(entry.key)
                 val fileIndex = dmFile.parentFile.name
@@ -219,8 +218,8 @@ abstract class PackageApplication : PackageAndroidArtifact() {
                     FileUtils.copyFile(dmFile, renamedDmFile)
                     baselineProfiles.add(renamedDmFile)
                 }
-                baselineProfileData.add(
-                    BaselineProfileDetails(minApi, maxApi, baselineProfiles)
+                baselineProfileData.add(BaselineProfileDetails(
+                        supportedApis.min(), supportedApis.max(), baselineProfiles)
                 )
             }
             baselineProfileData.sortBy { it.minApi }

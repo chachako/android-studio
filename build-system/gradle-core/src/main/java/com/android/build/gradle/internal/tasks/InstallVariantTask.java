@@ -44,6 +44,7 @@ import com.android.builder.testing.api.DeviceConnector;
 import com.android.builder.testing.api.DeviceException;
 import com.android.builder.testing.api.DeviceProvider;
 import com.android.sdklib.AndroidVersion;
+import com.android.tools.profgen.ArtProfileKt;
 import com.android.utils.FileUtils;
 import com.android.utils.ILogger;
 import com.google.common.base.Joiner;
@@ -272,7 +273,12 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
             InputStream inputStream = new FileInputStream(dexMetadataProperties);
             Properties properties = new Properties();
             properties.load(inputStream);
-            String dmPath = properties.getProperty(String.valueOf(device.getApiLevel()));
+            String dmPath;
+            if (device.getApiLevel() > ArtProfileKt.HIGHEST_DM_API_RANGE_START) {
+                dmPath = properties.getProperty(String.valueOf(Integer.MAX_VALUE));
+            } else {
+                dmPath = properties.getProperty(String.valueOf(device.getApiLevel()));
+            }
             if (dmPath == null) {
                 logger.log(
                         LogLevel.INFO,
