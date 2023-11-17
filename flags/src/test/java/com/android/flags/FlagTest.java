@@ -18,6 +18,8 @@ package com.android.flags;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -232,6 +234,64 @@ public class FlagTest {
         assertThat(longFlag.get()).isEqualTo(30L);
         assertThat(stringFlag.get()).isEqualTo("hello");
         assertThat(enumFlag.get()).isEqualTo(Colors.ORANGE);
+    }
+
+    @Test
+    public void constructorsWithSuppliers() {
+        AtomicInteger boolSupplierCalled = new AtomicInteger();
+        AtomicInteger intSupplierCalled = new AtomicInteger();
+        AtomicInteger longSupplierCalled = new AtomicInteger();
+        AtomicInteger stringSupplierCalled = new AtomicInteger();
+        AtomicInteger enumSupplierCalled = new AtomicInteger();
+
+        Supplier<Boolean> boolSupplier =
+                () -> {
+                    boolSupplierCalled.incrementAndGet();
+                    return true;
+                };
+        Supplier<Integer> intSupplier =
+                () -> {
+                    intSupplierCalled.incrementAndGet();
+                    return 753;
+                };
+        Supplier<Long> longSupplier =
+                () -> {
+                    longSupplierCalled.incrementAndGet();
+                    return 555L;
+                };
+        Supplier<String> stringSupplier =
+                () -> {
+                    stringSupplierCalled.incrementAndGet();
+                    return "some string";
+                };
+        Supplier<Colors> enumSupplier =
+                () -> {
+                    enumSupplierCalled.incrementAndGet();
+                    return Colors.BLUE;
+                };
+
+        Flags flags = new Flags();
+        FlagGroup group = new FlagGroup(flags, "mango", "Mango");
+        Flag<Boolean> boolFlag = new BooleanFlag(group, "bool", "Mango", "Mango", boolSupplier);
+        Flag<Integer> intFlag = new IntFlag(group, "int", "Mango", "Mango", intSupplier);
+        Flag<Long> longFlag = new LongFlag(group, "long", "Mango", "Mango", longSupplier);
+        Flag<String> stringFlag = new StringFlag(group, "string", "Mango", "Mango", stringSupplier);
+        Flag<Colors> enumFlag = new EnumFlag<>(group, "enum", "Mango", "Mango", enumSupplier);
+
+        // Access each flag twice, to confirm the supplier is only run once.
+        for (int i = 0; i < 2; i++) {
+            assertThat(boolFlag.get()).isTrue();
+            assertThat(intFlag.get()).isEqualTo(753);
+            assertThat(longFlag.get()).isEqualTo(555L);
+            assertThat(stringFlag.get()).isEqualTo("some string");
+            assertThat(enumFlag.get()).isEqualTo(Colors.BLUE);
+        }
+
+        assertThat(boolSupplierCalled.get()).isEqualTo(1);
+        assertThat(intSupplierCalled.get()).isEqualTo(1);
+        assertThat(longSupplierCalled.get()).isEqualTo(1);
+        assertThat(stringSupplierCalled.get()).isEqualTo(1);
+        assertThat(enumSupplierCalled.get()).isEqualTo(1);
     }
 
     private static final class GameFeatures {
