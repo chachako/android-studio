@@ -624,7 +624,8 @@ abstract class BasePlugin<
 
         variantManager.variantApiOperationsRegistrar.executeDslFinalizationBlocks()
 
-        (globalConfig.compileOptions as CompileOptions).finalizeSourceAndTargetCompatibility(project)
+        (globalConfig.compileOptions as CompileOptions)
+            .finalizeSourceAndTargetCompatibility(project, globalConfig)
 
         if (extension.compileSdkVersion == null) {
             if (SyncOptions.getModelQueryMode(projectServices.projectOptions)

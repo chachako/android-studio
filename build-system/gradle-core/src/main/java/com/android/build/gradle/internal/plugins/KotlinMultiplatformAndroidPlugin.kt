@@ -367,7 +367,8 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
             it.syncAndroidAndKmpClasspathAndSources()
         }
 
-        (global.compileOptions as CompileOptions).finalizeSourceAndTargetCompatibility(project)
+        (global.compileOptions as CompileOptions)
+            .finalizeSourceAndTargetCompatibility(project, global)
 
         dependencyConfigurator.configureVariantTransforms(
             variants = listOf(mainVariant),
