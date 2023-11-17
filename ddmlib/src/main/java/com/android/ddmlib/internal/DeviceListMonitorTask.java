@@ -49,6 +49,7 @@ public class DeviceListMonitorTask implements Runnable {
 
     private final AndroidDebugBridge mBridge;
     private final UpdateListener mListener;
+    private final boolean mEmitDeviceListUpdates;
 
     private SocketChannel mAdbConnection = null;
     private boolean mMonitoring = false;
@@ -67,9 +68,13 @@ public class DeviceListMonitorTask implements Runnable {
         void deviceListUpdate(@NonNull Map<String, IDevice.DeviceState> devices);
     }
 
-    DeviceListMonitorTask(@NonNull AndroidDebugBridge bridge, @NonNull UpdateListener listener) {
+    DeviceListMonitorTask(
+            @NonNull AndroidDebugBridge bridge,
+            @NonNull UpdateListener listener,
+            boolean emitDeviceListUpdates) {
         mBridge = bridge;
         mListener = listener;
+        mEmitDeviceListUpdates = emitDeviceListUpdates;
     }
 
     @Override
@@ -201,8 +206,9 @@ public class DeviceListMonitorTask implements Runnable {
             String response = AdbSocketUtils.read(mAdbConnection, new byte[length]);
             result = parseDeviceListResponse(response);
         }
-
-        mListener.deviceListUpdate(result);
+        if (mEmitDeviceListUpdates) {
+            mListener.deviceListUpdate(result);
+        }
     }
 
     @VisibleForTesting

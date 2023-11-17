@@ -131,7 +131,7 @@ public class AndroidDebugBridge {
 
     private DeviceMonitor mDeviceMonitor;
 
-    private IDeviceManager mIDeviceManager;
+    private final IDeviceManager mIDeviceManager;
 
     // lock object for synchronization
     private static final Object sLock = new Object();
@@ -844,13 +844,14 @@ public class AndroidDebugBridge {
      * IDeviceChangeListener} object.
      */
     public boolean hasInitialDeviceList() {
+        if (mIDeviceManager != null) {
+            return mIDeviceManager.hasInitialDeviceList();
+        }
+
         if (mDeviceMonitor != null) {
             return mDeviceMonitor.hasInitialDeviceList();
         }
 
-        if (mIDeviceManager != null) {
-            return mIDeviceManager.hasInitialDeviceList();
-        }
         return false;
     }
 
@@ -861,10 +862,6 @@ public class AndroidDebugBridge {
         MonitorThread monitorThread = MonitorThread.getInstance();
         if (mDeviceMonitor != null && monitorThread != null) {
             return mDeviceMonitor.isMonitoring() && monitorThread.getState() != State.TERMINATED;
-        }
-        // TODO(b/296277142): implement the correct behavior for non-null `mIDeviceManager`
-        if (mIDeviceManager != null) {
-            return true;
         }
         return false;
     }
@@ -1182,17 +1179,17 @@ public class AndroidDebugBridge {
         mStarted = true;
 
         // Start the underlying services.
-        maybeStartDeviceMonitor();
+        startDeviceMonitor();
 
         return true;
     }
 
-    /** Start DeviceMonitor if external device tracking implementation isn't available */
-    private void maybeStartDeviceMonitor() {
-        if (mIDeviceManager == null) {
-            mDeviceMonitor = new DeviceMonitor(this, new MonitorErrorHandler());
-            mDeviceMonitor.start();
-        }
+    private void startDeviceMonitor() {
+        // If `IDeviceManager` is available then it is used to process the device updates and
+        // `DeviceMonitor` is used only to establish and track adb server connection, etc.
+        boolean emitDeviceListUpdates = mIDeviceManager == null;
+        mDeviceMonitor = new DeviceMonitor(this, new MonitorErrorHandler(), emitDeviceListUpdates);
+        mDeviceMonitor.start();
     }
 
     /**
@@ -1288,7 +1285,7 @@ public class AndroidDebugBridge {
             }
 
             if (isSuccessful && mDeviceMonitor == null) {
-                maybeStartDeviceMonitor();
+                startDeviceMonitor();
             }
         }
 
