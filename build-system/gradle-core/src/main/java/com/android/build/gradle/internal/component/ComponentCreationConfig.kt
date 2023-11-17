@@ -22,8 +22,8 @@ import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.InternalSources
 import com.android.build.api.variant.JavaCompilation
+import com.android.build.api.variant.impl.AndroidResourcesImpl
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
-import com.android.build.gradle.internal.component.features.AssetsCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
 import com.android.build.gradle.internal.component.features.InstrumentationCreationConfig
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
@@ -77,12 +77,21 @@ interface ComponentCreationConfig : ComponentIdentity {
     // OPTIONAL FEATURES
     // ---------------------------------------------------------------------------------------------
 
-    val assetsCreationConfig: AssetsCreationConfig?
+    /**
+     * Will be null when corresponding feature processing is turned off for this component.
+     */
     val androidResourcesCreationConfig: AndroidResourcesCreationConfig?
     val resValuesCreationConfig: ResValuesCreationConfig?
     val buildConfigCreationConfig: BuildConfigCreationConfig?
     val instrumentationCreationConfig: InstrumentationCreationConfig?
     val manifestPlaceholdersCreationConfig: ManifestPlaceholdersCreationConfig?
+
+    /**
+     * android resources can be null for components like KMP that do not support android resources.
+     * Having a non null instance does not mean that android resources processing is turned on for
+     * this component.
+     */
+    val androidResources: AndroidResourcesImpl?
 
     // ---------------------------------------------------------------------------------------------
     // INTERNAL DELEGATES

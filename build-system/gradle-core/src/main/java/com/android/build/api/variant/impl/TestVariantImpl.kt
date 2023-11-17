@@ -19,8 +19,6 @@ package com.android.build.api.variant.impl
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.analytics.AnalyticsEnabledTestVariant
 import com.android.build.api.component.impl.features.DexingImpl
-import com.android.build.api.component.impl.getAndroidResources
-import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.Component
@@ -82,8 +80,8 @@ open class TestVariantImpl @Inject constructor(
     override val applicationId: Property<String> =
         internalServices.propertyOf(String::class.java, dslInfo.applicationId)
 
-    override val androidResources: AndroidResources by lazy {
-        getAndroidResources()
+    override val androidResources: AndroidResourcesImpl by lazy {
+        getAndroidResources(dslInfo.androidResourcesDsl.androidResources)
     }
 
     // TODO: We should keep this (for the manifest) but just fix the test runner to get the

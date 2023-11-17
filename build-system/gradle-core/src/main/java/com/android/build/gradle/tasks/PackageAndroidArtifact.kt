@@ -623,7 +623,6 @@ abstract class PackageAndroidArtifact : NewIncrementalTask() {
                 packageAndroidArtifact.aaptOptionsNoCompress
                         .set(
                                 creationConfig
-                                        .androidResourcesCreationConfig!!
                                         .androidResources
                                         .noCompress)
             } else {

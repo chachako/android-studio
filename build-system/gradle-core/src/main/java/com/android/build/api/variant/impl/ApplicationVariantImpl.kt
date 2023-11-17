@@ -20,9 +20,7 @@ import com.android.build.api.component.analytics.AnalyticsEnabledApplicationVari
 import com.android.build.api.component.impl.AndroidTestImpl
 import com.android.build.api.component.impl.TestFixturesImpl
 import com.android.build.api.component.impl.features.DexingImpl
-import com.android.build.api.component.impl.getAndroidResources
 import com.android.build.api.component.impl.isTestApk
-import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.ApplicationVariant
@@ -96,8 +94,8 @@ open class ApplicationVariantImpl @Inject constructor(
         )
     }
 
-    override val androidResources: AndroidResources by lazy {
-        getAndroidResources()
+    override val androidResources: AndroidResourcesImpl by lazy {
+        getAndroidResources(dslInfo.androidResourcesDsl.androidResources)
     }
 
     override val signingConfig: SigningConfigImpl by lazy {

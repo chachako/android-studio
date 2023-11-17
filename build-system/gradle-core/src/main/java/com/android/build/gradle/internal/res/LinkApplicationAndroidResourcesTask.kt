@@ -581,9 +581,9 @@ abstract class LinkApplicationAndroidResourcesTask: ProcessAndroidResources() {
 
             task.setType(creationConfig.componentType)
             if (creationConfig is ApkCreationConfig) {
-                task.noCompress.set(androidResourcesCreationConfig.androidResources.noCompress)
+                task.noCompress.set(creationConfig.androidResources.noCompress)
                 task.aaptAdditionalParameters.set(
-                    androidResourcesCreationConfig.androidResources.aaptAdditionalParameters
+                    creationConfig.androidResources.aaptAdditionalParameters
                 )
             }
             task.noCompress.disallowChanges()

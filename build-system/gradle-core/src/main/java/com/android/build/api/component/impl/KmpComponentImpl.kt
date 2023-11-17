@@ -21,6 +21,7 @@ import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
+import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.ComponentIdentity
@@ -30,6 +31,7 @@ import com.android.build.api.variant.JavaCompilation
 import com.android.build.api.variant.ManifestFiles
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.SourceDirectories
+import com.android.build.api.variant.impl.AndroidResourcesImpl
 import com.android.build.api.variant.impl.FileBasedDirectoryEntryImpl
 import com.android.build.api.variant.impl.FlatSourceDirectoriesImpl
 import com.android.build.api.variant.impl.KotlinMultiplatformFlatSourceDirectoriesImpl
@@ -40,7 +42,6 @@ import com.android.build.api.variant.impl.SourcesImpl
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
-import com.android.build.gradle.internal.component.features.AssetsCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
 import com.android.build.gradle.internal.component.features.ResValuesCreationConfig
@@ -200,7 +201,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
 
     // Unsupported features
 
-    override val assetsCreationConfig: AssetsCreationConfig? = null
+    override val androidResources: AndroidResourcesImpl? = null
     override val androidResourcesCreationConfig: AndroidResourcesCreationConfig? = null
     override val resValuesCreationConfig: ResValuesCreationConfig? = null
     override val buildConfigCreationConfig: BuildConfigCreationConfig? = null

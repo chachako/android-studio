@@ -18,7 +18,6 @@ package com.android.build.api.component.impl
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
-import com.android.build.api.component.impl.features.AssetsCreationConfigImpl
 import com.android.build.api.component.impl.features.DexingImpl
 import com.android.build.api.component.impl.features.ManifestPlaceholdersCreationConfigImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
@@ -27,7 +26,6 @@ import com.android.build.api.instrumentation.AsmClassVisitorFactory
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationParameters
 import com.android.build.api.instrumentation.InstrumentationScope
-import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
@@ -35,14 +33,15 @@ import com.android.build.api.variant.BuildConfigField
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.SigningConfig
+import com.android.build.api.variant.impl.AndroidResourcesImpl
 import com.android.build.api.variant.impl.ApkPackagingImpl
 import com.android.build.api.variant.impl.KmpVariantImpl
 import com.android.build.api.variant.impl.ResValueKeyImpl
 import com.android.build.api.variant.impl.SigningConfigImpl
+import com.android.build.api.variant.impl.initializeAaptOptionsFromDsl
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
-import com.android.build.gradle.internal.component.features.AssetsCreationConfig
 import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.component.features.FeatureNames
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
@@ -152,14 +151,6 @@ open class KmpAndroidTestImpl @Inject constructor(
         )
     }
 
-    override val assetsCreationConfig: AssetsCreationConfig
-        get() = AssetsCreationConfigImpl(
-            dslInfo.androidResourcesDsl,
-            internalServices,
-        ) {
-            androidResourcesCreationConfig
-        }
-
     override val dexing: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
         DexingImpl(
             this,
@@ -229,8 +220,8 @@ open class KmpAndroidTestImpl @Inject constructor(
     override val proguardFiles: ListProperty<RegularFile>
         get() = optimizationCreationConfig.proguardFiles
 
-    override val androidResources: AndroidResources
-        get() = androidResourcesCreationConfig.androidResources
+    override val androidResources: AndroidResourcesImpl =
+        initializeAaptOptionsFromDsl(dslInfo.androidResourcesDsl.androidResources, internalServices)
 
     override fun makeResValueKey(type: String, name: String): ResValue.Key =
         ResValueKeyImpl(type, name)

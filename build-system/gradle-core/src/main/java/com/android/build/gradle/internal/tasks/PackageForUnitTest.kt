@@ -42,6 +42,7 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -70,6 +71,7 @@ abstract class PackageForUnitTest : NonIncrementalTask() {
     abstract val mergedAssetsDirectory: DirectoryProperty
 
     @get:Input
+    @get:Optional
     abstract val noCompress: ListProperty<String>
 
     @get:OutputFile
@@ -178,7 +180,9 @@ abstract class PackageForUnitTest : NonIncrementalTask() {
             val artifacts = creationConfig.artifacts
             artifacts.setTaskInputToFinalProduct(PROCESSED_RES, task.resApk)
             task.mergedAssetsDirectory.setDisallowChanges(artifacts.get(SingleArtifact.ASSETS))
-            task.noCompress.setDisallowChanges(androidResourcesCreationConfig.androidResources.noCompress)
+            creationConfig.androidResources?.let {
+                task.noCompress.setDisallowChanges(it.noCompress)
+            }
         }
     }
 }

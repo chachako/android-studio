@@ -213,22 +213,11 @@
     <issue
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    override val androidResources: AndroidResources by lazy {"
-        errorLine2="                                                       ~~~~">
-        <location
-            file="src/main/java/com/android/build/api/component/impl/features/AndroidResourcesCreationConfigImpl.kt"
-            line="50"
-            column="56"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
         errorLine1="    override val pseudoLocalesEnabled: Property&lt;Boolean> by lazy {"
         errorLine2="                                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/features/AndroidResourcesCreationConfigImpl.kt"
-            line="53"
+            line="48"
             column="61"/>
     </issue>
 
@@ -268,12 +257,12 @@
     <issue
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    override val androidResources: AndroidResources by lazy {"
-        errorLine2="                                                       ~~~~">
+        errorLine1="    override val androidResources: AndroidResourcesImpl by lazy {"
+        errorLine2="                                                           ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/AndroidTestImpl.kt"
             line="129"
-            column="56"/>
+            column="60"/>
     </issue>
 
     <issue
@@ -338,19 +327,19 @@
         errorLine2="                                                       ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="92"
+            line="90"
             column="56"/>
     </issue>
 
     <issue
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    override val androidResources: AndroidResources by lazy {"
-        errorLine2="                                                       ~~~~">
+        errorLine1="    override val androidResources: AndroidResourcesImpl by lazy {"
+        errorLine2="                                                           ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="99"
-            column="56"/>
+            line="97"
+            column="60"/>
     </issue>
 
     <issue
@@ -360,7 +349,7 @@
         errorLine2="                                                     ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="103"
+            line="101"
             column="54"/>
     </issue>
 
@@ -371,7 +360,7 @@
         errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/ApplicationVariantImpl.kt"
-            line="112"
+            line="110"
             column="45"/>
     </issue>
 
@@ -580,7 +569,7 @@
         errorLine2="                                                     ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="142"
+            line="143"
             column="54"/>
     </issue>
 
@@ -591,7 +580,7 @@
         errorLine2="                                                          ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="199"
+            line="200"
             column="59"/>
     </issue>
 
@@ -602,19 +591,8 @@
         errorLine2="                                                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="224"
+            line="225"
             column="77"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    override val assetsCreationConfig: AssetsCreationConfig by lazy {"
-        errorLine2="                                                               ~~~~">
-        <location
-            file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="234"
-            column="64"/>
     </issue>
 
     <issue
@@ -624,7 +602,7 @@
         errorLine2="                                                                                 ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/ComponentImpl.kt"
-            line="265"
+            line="259"
             column="82"/>
     </issue>
 
@@ -664,12 +642,12 @@
     <issue
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    override val androidResources: AndroidResources by lazy {"
-        errorLine2="                                                       ~~~~">
+        errorLine1="    override val androidResources: AndroidResourcesImpl by lazy {"
+        errorLine2="                                                           ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/DynamicFeatureVariantImpl.kt"
-            line="111"
-            column="56"/>
+            line="109"
+            column="60"/>
     </issue>
 
     <issue
@@ -679,7 +657,7 @@
         errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/DynamicFeatureVariantImpl.kt"
-            line="115"
+            line="113"
             column="45"/>
     </issue>
 
@@ -855,7 +833,7 @@
         errorLine2="                                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="115"
+            line="114"
             column="61"/>
     </issue>
 
@@ -866,7 +844,7 @@
         errorLine2="                                                      ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="177"
+            line="168"
             column="55"/>
     </issue>
 
@@ -877,7 +855,7 @@
         errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="208"
+            line="199"
             column="45"/>
     </issue>
 
@@ -888,7 +866,7 @@
         errorLine2="                                                                                                   ~~~~">
         <location
             file="src/main/java/com/android/build/api/component/impl/KmpAndroidTestImpl.kt"
-            line="216"
+            line="207"
             column="100"/>
     </issue>
 
@@ -899,7 +877,7 @@
         errorLine2="                                                    ~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/core/dsl/impl/KmpComponentDslInfoImpl.kt"
-            line="37"
+            line="36"
             column="53"/>
     </issue>
 
@@ -1247,12 +1225,12 @@
     <issue
         id="AvoidByLazy"
         message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    override val androidResources: AndroidResources by lazy {"
-        errorLine2="                                                       ~~~~">
+        errorLine1="    override val androidResources: AndroidResourcesImpl by lazy {"
+        errorLine2="                                                           ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="85"
-            column="56"/>
+            line="83"
+            column="60"/>
     </issue>
 
     <issue
@@ -1262,7 +1240,7 @@
         errorLine2="                                                          ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="91"
+            line="89"
             column="59"/>
     </issue>
 
@@ -1273,7 +1251,7 @@
         errorLine2="                                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="101"
+            line="99"
             column="61"/>
     </issue>
 
@@ -1284,7 +1262,7 @@
         errorLine2="                                            ~~~~">
         <location
             file="src/main/java/com/android/build/api/variant/impl/TestVariantImpl.kt"
-            line="117"
+            line="115"
             column="45"/>
     </issue>
 

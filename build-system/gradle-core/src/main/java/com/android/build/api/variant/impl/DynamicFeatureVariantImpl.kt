@@ -22,9 +22,7 @@ import com.android.build.api.component.impl.AndroidTestImpl
 import com.android.build.api.component.impl.TestFixturesImpl
 import com.android.build.api.component.impl.features.DexingImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
-import com.android.build.api.component.impl.getAndroidResources
 import com.android.build.api.component.impl.isTestApk
-import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.Component
@@ -108,8 +106,8 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     override val applicationId: Provider<String> =
         internalServices.providerOf(String::class.java, baseModuleMetadata.map { it.applicationId })
 
-    override val androidResources: AndroidResources by lazy {
-        getAndroidResources()
+    override val androidResources: AndroidResourcesImpl by lazy {
+        getAndroidResources(dslInfo.androidResourcesDsl.androidResources)
     }
 
     override val packaging: ApkPackaging by lazy {

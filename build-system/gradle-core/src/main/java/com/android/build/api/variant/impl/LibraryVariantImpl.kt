@@ -114,6 +114,9 @@ open class LibraryVariantImpl @Inject constructor(
     override val isMinifyEnabled: Boolean
         get() = variantBuilder.isMinifyEnabled
 
+    override val androidResources: AndroidResourcesImpl =
+        getAndroidResources(dslInfo.androidResourcesDsl.androidResources)
+
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API
     // ---------------------------------------------------------------------------------------------

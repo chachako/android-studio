@@ -23,7 +23,6 @@ import com.android.build.api.component.impl.features.DexingImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
 import com.android.build.api.component.impl.features.RenderscriptCreationConfigImpl
 import com.android.build.api.component.impl.features.ShadersCreationConfigImpl
-import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
@@ -32,6 +31,7 @@ import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.SigningConfig
+import com.android.build.api.variant.impl.AndroidResourcesImpl
 import com.android.build.api.variant.impl.AndroidTestBuilderImpl
 import com.android.build.api.variant.impl.ApkPackagingImpl
 import com.android.build.api.variant.impl.ResValueKeyImpl
@@ -126,8 +126,8 @@ open class AndroidTestImpl @Inject constructor(
         dslInfo.applicationId
     )
 
-    override val androidResources: AndroidResources by lazy {
-        getAndroidResources()
+    override val androidResources: AndroidResourcesImpl by lazy {
+        getAndroidResources(dslInfo.androidResourcesDsl.androidResources)
     }
 
     override val pseudoLocalesEnabled: Property<Boolean> by lazy {

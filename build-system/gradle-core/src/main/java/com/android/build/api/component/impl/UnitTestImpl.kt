@@ -19,9 +19,9 @@ package com.android.build.api.component.impl
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.UnitTest
 import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
-import com.android.build.api.component.impl.features.ManifestPlaceholdersCreationConfigImpl
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ComponentIdentity
+import com.android.build.api.variant.impl.AndroidResourcesImpl
 import com.android.build.gradle.internal.component.UnitTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
@@ -29,7 +29,6 @@ import com.android.build.gradle.internal.component.features.BuildConfigCreationC
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.UnitTestComponentDslInfo
-import com.android.build.gradle.internal.core.dsl.features.ManifestPlaceholdersDslInfo
 import com.android.build.gradle.internal.core.dsl.impl.DEFAULT_TEST_RUNNER
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.scope.BuildFeatureValues
@@ -135,6 +134,9 @@ open class UnitTestImpl @Inject constructor(
         createManifestPlaceholdersCreationConfig(
                 dslInfo.mainVariantDslInfo.manifestPlaceholdersDslInfo?.placeholders)
     }
+
+    override val androidResources: AndroidResourcesImpl =
+        getAndroidResources(dslInfo.androidResourcesDsl!!.androidResources)
 
     /**
      * There is no build config fields for unit tests.

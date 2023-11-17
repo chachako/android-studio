@@ -598,8 +598,7 @@ abstract class PackageBundleTask : NonIncrementalTask() {
             )
 
             task.aaptOptionsNoCompress.setDisallowChanges(
-                creationConfig.androidResourcesCreationConfig?.androidResources?.noCompress,
-                handleNullable = { empty() }
+                creationConfig.androidResources.noCompress
             )
 
             task.bundleOptions = creationConfig.global.bundleOptions.convert()

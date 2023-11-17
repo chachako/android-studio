@@ -16,8 +16,6 @@
 
 package com.android.build.api.component.impl.features
 
-import com.android.build.api.variant.AndroidResources
-import com.android.build.api.variant.impl.initializeAaptOptionsFromDsl
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
@@ -47,9 +45,6 @@ class AndroidResourcesCreationConfigImpl(
     private val internalServices: VariantServices,
 ): AndroidResourcesCreationConfig {
 
-    override val androidResources: AndroidResources by lazy {
-        initializeAaptOptionsFromDsl(androidResourcesDsl.androidResources, internalServices)
-    }
     override val pseudoLocalesEnabled: Property<Boolean> by lazy {
         internalServices.newPropertyBackingDeprecatedApi(
             Boolean::class.java,
