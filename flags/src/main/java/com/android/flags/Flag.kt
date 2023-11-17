@@ -13,296 +13,243 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.android.flags;
-
-import com.android.annotations.NonNull;
-import java.util.Locale;
+package com.android.flags
 
 /**
  * A flag is a setting with an unique ID and some value. Flags are often used to gate features (e.g.
  * start with the feature disabled or enabled) or initialize a feature with some default value (e.g.
  * how much memory to initialize a system with, what mode a system should use by default).
  */
-public final class Flag<T> {
-    private static final ValueConverter<Boolean> BOOL_CONVERTER =
-            new ValueConverter<>() {
-                @NonNull
-                @Override
-                public String serialize(@NonNull Boolean value) {
-                    return value.toString();
-                }
+class Flag<T> private constructor(
+  /** Returns the [FlagGroup] that this flag is part of.  */
+  val group: FlagGroup,
+  name: String,
+  displayName: String,
+  description: String,
+  defaultValue: T,
+  valueConverter: ValueConverter<T>
+) {
 
-                @NonNull
-                @Override
-                public Boolean deserialize(@NonNull String strValue) {
-                    return Boolean.parseBoolean(strValue);
-                }
-            };
-    private static final ValueConverter<Integer> INT_CONVERTER =
-            new ValueConverter<>() {
-                @NonNull
-                @Override
-                public String serialize(@NonNull Integer value) {
-                    return Integer.toString(value);
-                }
+  /**
+   * Returns a unique ID for this flag. It will be composed of the group's name prefixed to this
+   * flag's name.
+   */
+  val id: String
+  /** Returns a user-friendly display name for this flag.  */
+  val displayName: String
+  /** Returns a user-friendly description for what feature this flag gates.  */
+  val description: String
+  private val valueConverter: ValueConverter<T>
+  private val defaultValue: String
+  private val originalDefaultValue: T
 
-                @NonNull
-                @Override
-                public Integer deserialize(@NonNull String strValue) {
-                    return Integer.valueOf(strValue);
-                }
-            };
-    private static final ValueConverter<Long> LONG_CONVERTER =
-            new ValueConverter<>() {
-                @NonNull
-                @Override
-                public String serialize(@NonNull Long value) {
-                    return Long.toString(value);
-                }
+  /** Use one of the `Flag#create` convenience methods to construct this class.  */
+  init {
+    id = group.name + "." + name
+    this.displayName = displayName
+    this.description = description
+    this.valueConverter = valueConverter
+    this.defaultValue = valueConverter.serialize(defaultValue)
+    originalDefaultValue = defaultValue
+    group.flags.register(this)
+  }
 
-                @NonNull
-                @Override
-                public Long deserialize(@NonNull String strValue) {
-                    return Long.valueOf(strValue);
-                }
-            };
-    private static final ValueConverter<String> PASSTHRU_CONVERTER =
-            new ValueConverter<>() {
-                @NonNull
-                @Override
-                public String serialize(@NonNull String value) {
-                    return value;
-                }
+  /** Verifies that this flag has valid information  */
+  fun validate() {
+    group.validate()
+    verifyDefaultValue(originalDefaultValue, defaultValue, valueConverter)
+    verifyFlagIdFormat(id)
+    verifyDisplayTextFormat(displayName)
+    verifyDisplayTextFormat(description)
+  }
 
-                @NonNull
-                @Override
-                public String deserialize(@NonNull String strValue) {
-                    return strValue;
-                }
-            };
-
-    /**
-     * Creates a {@link ValueConverter} for the given enum class. Values are stored using their
-     * names, to make it easier to override them using JVM properties (lower-case names are also
-     * recognized).
-     *
-     * @see Enum#name()
-     */
-    private static <T extends Enum<T>> ValueConverter<T> enumConverter(Class<T> enumClass) {
-        return new ValueConverter<T>() {
-
-            @NonNull
-            @Override
-            public String serialize(@NonNull T value) {
-                return value.name();
-            }
-
-            @NonNull
-            @Override
-            public T deserialize(@NonNull String strValue) {
-                return Enum.valueOf(enumClass, strValue.toUpperCase(Locale.US));
-            }
-        };
+  /** Returns the value of this flag.  */
+  fun get(): T {
+    val flags = group.flags
+    var strValue = flags.getOverriddenValue(this)
+    if (strValue == null) {
+      strValue = defaultValue
     }
-
-    private final FlagGroup group;
-    private final String id;
-    private final String displayName;
-    private final String description;
-    private final ValueConverter<T> valueConverter;
-
-    @NonNull private final String defaultValue;
-    @NonNull private final T originalDefaultValue;
-
-    /** Use one of the {@code Flag#create} convenience methods to construct this class. */
-    private Flag(
-            @NonNull FlagGroup group,
-            @NonNull String name,
-            @NonNull String displayName,
-            @NonNull String description,
-            @NonNull T defaultValue,
-            @NonNull ValueConverter<T> valueConverter) {
-        this.group = group;
-        this.id = group.getName() + "." + name;
-        this.displayName = displayName;
-        this.description = description;
-        this.valueConverter = valueConverter;
-        this.defaultValue = valueConverter.serialize(defaultValue);
-        this.originalDefaultValue = defaultValue;
-        group.getFlags().register(this);
+    return try {
+      valueConverter.deserialize(strValue)
+    } catch (e: Exception) {
+      valueConverter.deserialize(defaultValue)
     }
+  }
 
-    /** Verifies that this flag has valid information */
-    public void validate() {
-        group.validate();
-        verifyDefaultValue(originalDefaultValue, this.defaultValue, valueConverter);
-        verifyFlagIdFormat(getId());
-        verifyDisplayTextFormat(displayName);
-        verifyDisplayTextFormat(description);
+  /**
+   * Override the value of this flag at runtime.
+   *
+   *
+   * This method does not modify this flag definition directly, but instead adds an entry into
+   * its parent [Flags.getOverrides] collection.
+   */
+  fun override(overrideValue: T) {
+    group.flags.overrides.put(this, valueConverter.serialize(overrideValue))
+  }
+
+  /** Clear any override previously set by [.override].  */
+  fun clearOverride() {
+    group.flags.overrides.remove(this)
+  }
+
+  val isOverridden: Boolean
+    get() = group.flags.overrides[this] != null
+
+  /**
+   * Simple interface for converting a value to and from a String. This is useful as all flags are
+   * really strings underneath, although it's convenient to expose, say, boolean flags to users
+   * instead.
+   */
+  private interface ValueConverter<T> {
+    fun serialize(value: T): String
+    fun deserialize(strValue: String): T
+  }
+
+  companion object {
+    private val BOOL_CONVERTER: ValueConverter<Boolean> = object : ValueConverter<Boolean> {
+      override fun serialize(value: Boolean): String {
+        return value.toString()
+      }
+
+      override fun deserialize(strValue: String): Boolean {
+        return strValue.toBoolean()
+      }
     }
+    private val INT_CONVERTER: ValueConverter<Int> = object : ValueConverter<Int> {
+      override fun serialize(value: Int): String {
+        return value.toString()
+      }
+
+      override fun deserialize(strValue: String): Int {
+        return strValue.toInt()
+      }
+    }
+    private val LONG_CONVERTER: ValueConverter<Long> = object : ValueConverter<Long> {
+      override fun serialize(value: Long): String {
+        return value.toString()
+      }
+
+      override fun deserialize(strValue: String): Long {
+        return strValue.toLong()
+      }
+    }
+    private val PASSTHRU_CONVERTER: ValueConverter<String> = object : ValueConverter<String> {
+      override fun serialize(value: String): String {
+        return value
+      }
+
+      override fun deserialize(strValue: String): String {
+        return strValue
+      }
+    }
+      ///**
+      // * Creates a {@link ValueConverter} for the given enum class. Values are stored using their
+      // * names, to make it easier to override them using JVM properties (lower-case names are also
+      // * recognized).
+      // *
+      // * @see Enum#name()
+      // */
+      //private static <T extends Enum<T>> ValueConverter<T> enumConverter(Class<T> enumClass) {
+      //    return new ValueConverter<T>() {
+      //
+      //        @NonNull
+      //        @Override
+      //        public String serialize(@NonNull T value) {
+      //            return value.name();
+      //        }
+      //
+      //        @NonNull
+      //        @Override
+      //        public T deserialize(@NonNull String strValue) {
+      //            return Enum.valueOf(enumClass, strValue.toUpperCase(Locale.US));
+      //        }
+      //    };
+      //}
 
     /**
      * Verify that a flag's ID is correctly formatted, i.e. consisting of only lower-case letters,
      * numbers, and periods. Furthermore, the first character of an ID must be a letter and cannot
      * end with one.
      */
-    public static void verifyFlagIdFormat(@NonNull String id) {
-        if (!id.matches("[a-z][a-z0-9]*(\\.[a-z0-9]+)*")) {
-            throw new IllegalArgumentException("Invalid id: " + id);
-        }
+    fun verifyFlagIdFormat(id: String) {
+      require(id.matches("[a-z][a-z0-9]*(\\.[a-z0-9]+)*".toRegex())) { "Invalid id: $id" }
     }
 
-    /** Verify that display text is correctly formatted. */
-    public static void verifyDisplayTextFormat(@NonNull String name) {
-        if (name.isEmpty() || name.charAt(0) == ' ' || name.charAt(name.length() - 1) == ' ') {
-            throw new IllegalArgumentException("Invalid name: " + name);
-        }
+    /** Verify that display text is correctly formatted.  */
+    fun verifyDisplayTextFormat(name: String) {
+      require(!(name.isEmpty() || name[0] == ' ' || name[name.length - 1] == ' ')) { "Invalid name: $name" }
     }
 
-    private static <T> void verifyDefaultValue(
-            @NonNull T defaultValue,
-            @NonNull String stringDefaultValue,
-            @NonNull ValueConverter<T> converter) {
-        T deserialized;
-        try {
-            deserialized = converter.deserialize(stringDefaultValue);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Default value cannot be deserialized.");
-        }
-        if (!deserialized.equals(defaultValue)) {
-            throw new IllegalArgumentException("Default value cannot be deserialized.");
-        }
+    private fun <T> verifyDefaultValue(
+      defaultValue: T,
+      stringDefaultValue: String,
+      converter: ValueConverter<T>
+    ) {
+      val deserialized: T
+      deserialized = try {
+        converter.deserialize(stringDefaultValue)
+      } catch (e: Exception) {
+        throw IllegalArgumentException("Default value cannot be deserialized.")
+      }
+      require(deserialized == defaultValue) { "Default value cannot be deserialized." }
     }
 
-    /**
-     * Returns a unique ID for this flag. It will be composed of the group's name prefixed to this
-     * flag's name.
-     */
-    @NonNull
-    public String getId() {
-        return id;
+    fun create(
+      group: FlagGroup,
+      name: String,
+      displayName: String,
+      description: String,
+      defaultValue: Boolean
+    ): Flag<Boolean> {
+      return Flag(group, name, displayName, description, defaultValue, BOOL_CONVERTER)
     }
 
-    @NonNull
-    public static Flag<Boolean> create(
-            @NonNull FlagGroup group,
-            @NonNull String name,
-            @NonNull String displayName,
-            @NonNull String description,
-            boolean defaultValue) {
-        return new Flag<>(group, name, displayName, description, defaultValue, BOOL_CONVERTER);
+    fun create(
+      group: FlagGroup,
+      name: String,
+      displayName: String,
+      description: String,
+      defaultValue: Int
+    ): Flag<Int> {
+      return Flag(group, name, displayName, description, defaultValue, INT_CONVERTER)
     }
 
-    @NonNull
-    public static Flag<Integer> create(
-            @NonNull FlagGroup group,
-            @NonNull String name,
-            @NonNull String displayName,
-            @NonNull String description,
-            int defaultValue) {
-        return new Flag<>(group, name, displayName, description, defaultValue, INT_CONVERTER);
+    fun create(
+      group: FlagGroup,
+      name: String,
+      displayName: String,
+      description: String,
+      defaultValue: Long
+    ): Flag<Long> {
+      return Flag(group, name, displayName, description, defaultValue, LONG_CONVERTER)
     }
 
-    @NonNull
-    public static Flag<Long> create(
-            @NonNull FlagGroup group,
-            @NonNull String name,
-            @NonNull String displayName,
-            @NonNull String description,
-            long defaultValue) {
-        return new Flag<>(group, name, displayName, description, defaultValue, LONG_CONVERTER);
+    fun create(
+      group: FlagGroup,
+      name: String,
+      displayName: String,
+      description: String,
+      defaultValue: String
+    ): Flag<String> {
+      return Flag(group, name, displayName, description, defaultValue, PASSTHRU_CONVERTER)
     }
 
-    @NonNull
-    public static Flag<String> create(
-            @NonNull FlagGroup group,
-            @NonNull String name,
-            @NonNull String displayName,
-            @NonNull String description,
-            String defaultValue) {
-        return new Flag<>(group, name, displayName, description, defaultValue, PASSTHRU_CONVERTER);
+    fun <T : Enum<T>?> create(
+      group: FlagGroup,
+      name: String,
+      displayName: String,
+      description: String,
+      defaultValue: T
+    ): Flag<T> {
+      return Flag<T>(
+        group,
+        name,
+        displayName,
+        description,
+        defaultValue,
+        enumConverter(defaultValue.javaClass as Class<T>?)
+      )
     }
-
-    @NonNull
-    public static <T extends Enum<T>> Flag<T> create(
-            @NonNull FlagGroup group,
-            @NonNull String name,
-            @NonNull String displayName,
-            @NonNull String description,
-            T defaultValue) {
-        //noinspection unchecked: getClass() will return the type of T, which is an enum.
-        return new Flag<>(
-                group,
-                name,
-                displayName,
-                description,
-                defaultValue,
-                enumConverter((Class<T>) defaultValue.getClass()));
-    }
-
-    /** Returns the {@link FlagGroup} that this flag is part of. */
-    public FlagGroup getGroup() {
-        return group;
-    }
-
-    /** Returns a user-friendly display name for this flag. */
-    @NonNull
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    /** Returns a user-friendly description for what feature this flag gates. */
-    @NonNull
-    public String getDescription() {
-        return description;
-    }
-
-    /** Returns the value of this flag. */
-    @NonNull
-    public T get() {
-        Flags flags = getGroup().getFlags();
-        String strValue = flags.getOverriddenValue(this);
-        if (strValue == null) {
-            strValue = defaultValue;
-        }
-
-        try {
-            return valueConverter.deserialize(strValue);
-        } catch (Exception e) {
-            return valueConverter.deserialize(defaultValue);
-        }
-    }
-
-    /**
-     * Override the value of this flag at runtime.
-     *
-     * <p>This method does not modify this flag definition directly, but instead adds an entry into
-     * its parent {@link Flags#getOverrides()} collection.
-     */
-    public void override(@NonNull T overrideValue) {
-        getGroup().getFlags().getOverrides().put(this, valueConverter.serialize(overrideValue));
-    }
-
-    /** Clear any override previously set by {@link #override(Object)}. */
-    public void clearOverride() {
-        getGroup().getFlags().getOverrides().remove(this);
-    }
-
-    public boolean isOverridden() {
-        return getGroup().getFlags().getOverrides().get(this) != null;
-    }
-
-    /**
-     * Simple interface for converting a value to and from a String. This is useful as all flags are
-     * really strings underneath, although it's convenient to expose, say, boolean flags to users
-     * instead.
-     */
-    private interface ValueConverter<T> {
-        @NonNull
-        String serialize(@NonNull T value);
-
-        @NonNull
-        T deserialize(@NonNull String strValue);
-    }
+  }
 }
