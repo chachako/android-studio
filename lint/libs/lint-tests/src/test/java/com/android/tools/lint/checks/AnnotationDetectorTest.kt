@@ -1963,6 +1963,50 @@ class AnnotationDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun test311231701() {
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import androidx.annotation.IntDef;
+            import java.lang.annotation.Retention;
+            import java.lang.annotation.RetentionPolicy;
+
+            public abstract class UserSettingDeviceConfigMediator {
+                public static final int OVERRIDE_MODE_SETTINGS_OVERRIDES_ALL = 1;
+                public static final int OVERRIDE_MODE_SETTINGS_OVERRIDES_INDIVIDUAL = 2;
+
+                @IntDef(value = {
+                        OVERRIDE_MODE_SETTINGS_OVERRIDES_ALL,
+                        OVERRIDE_MODE_SETTINGS_OVERRIDES_INDIVIDUAL,
+                })
+                @Retention(RetentionPolicy.SOURCE)
+                public @interface OverrideMode {
+                }
+
+                public static void getMediator(@OverrideMode final int overrideMode) {
+                    switch (overrideMode) {
+                        case OVERRIDE_MODE_SETTINGS_OVERRIDES_ALL:
+                            return;
+                        default:
+                           System.out.println("test");
+                            // Intentional fallthrough
+                        case OVERRIDE_MODE_SETTINGS_OVERRIDES_INDIVIDUAL:
+                            return;
+                    }
+                }
+            }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
+
   override fun getDetector(): Detector {
     return AnnotationDetector()
   }

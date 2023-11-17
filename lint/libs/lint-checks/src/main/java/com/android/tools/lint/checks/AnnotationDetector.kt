@@ -120,6 +120,7 @@ import org.jetbrains.uast.namePsiElement
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.skipParenthesizedExprUp
 import org.jetbrains.uast.toUElement
+import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.util.isArrayInitializer
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
@@ -1180,6 +1181,13 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
                   seenValues.add(cv)
                 }
               } else {
+                // Sanity check in case the default statement does not appear last
+                if (
+                  resolved != null && allowedValues.any { resolved.isEquivalentTo(it.tryResolve()) }
+                ) {
+                  return true
+                }
+
                 val list = computeFieldNames(switchExpression, allowedValues)
                 val message = "Unexpected constant; expected one of: ${displayConstants(list)}"
                 val fix = fix().data(KEY_CASES, list)
