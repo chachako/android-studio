@@ -24,12 +24,13 @@ import java.nio.file.Files.readAllLines
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import org.gradle.api.file.Directory
 import org.gradle.api.provider.Provider
 
 private const val EMULATOR_EXECUTABLE = "emulator"
 private const val DEFAULT_DEVICE_BOOT_AND_SNAPSHOT_CHECK_TIMEOUT_SEC = 600L
-private const val ADB_TIMEOUT_SEC = 60L
 
 // This is an extra wait time after the AVD boot completed before taking system snapshot image
 // for stability.
@@ -48,6 +49,8 @@ class AvdSnapshotHandler(
     private val showEmulatorKernelLogging: Boolean,
     private val deviceBootAndSnapshotCheckTimeoutSec: Long?,
     private val adbHelper: AdbHelper,
+    private val extraWaitAfterBootCompleteMs: Long = WAIT_AFTER_BOOT_MS,
+    private val executor: Executor = Executors.newSingleThreadExecutor(),
     private val processFactory: (List<String>) -> ProcessBuilder = { ProcessBuilder(it) }) {
     /**
      * Checks whether the emulator directory contains a valid emulator executable, and returns it.
@@ -183,10 +186,14 @@ class AvdSnapshotHandler(
             )
         )
         processBuilder.environment()["ANDROID_AVD_HOME"] = avdLocation.absolutePath
+        processBuilder.environment()["ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL"] = (
+                deviceBootAndSnapshotCheckTimeoutSec ?:
+                DEFAULT_DEVICE_BOOT_AND_SNAPSHOT_CHECK_TIMEOUT_SEC
+                ).toString()
         val process = processBuilder.start()
         val bootCompleted = AtomicBoolean(false)
         try {
-            Thread {
+            executor.execute {
                 var emulatorSerial: String? = null
                 while(process.isAlive) {
                     try {
@@ -198,9 +205,9 @@ class AvdSnapshotHandler(
                     Thread.sleep(5000)
                 }
                 if (emulatorSerial == null) {
-                    // It is possible for the emulator process to return unexpectly
+                    // It is possible for the emulator process to return unexpectedly
                     // and the emulatorSerial to not be set.
-                    return@Thread
+                    return@execute
                 }
                 logger.verbose("$avdName is attached to adb ($emulatorSerial).")
 
@@ -224,10 +231,12 @@ class AvdSnapshotHandler(
 
                 if (process.isAlive) {
                     bootCompleted.set(true)
-                    Thread.sleep(WAIT_AFTER_BOOT_MS)
+                    if (extraWaitAfterBootCompleteMs > 0) {
+                        Thread.sleep(extraWaitAfterBootCompleteMs)
+                    }
                     adbHelper.killDevice(emulatorSerial)
                 }
-            }.start()
+            }
 
             GrabProcessOutput.grabProcessOutput(
                 process,
@@ -326,4 +335,3 @@ class AvdSnapshotHandler(
         )
     }
 }
-
