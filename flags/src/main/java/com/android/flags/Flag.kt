@@ -22,9 +22,7 @@ import java.util.Locale
  * start with the feature disabled or enabled) or initialize a feature with some default value (e.g.
  * how much memory to initialize a system with, what mode a system should use by default).
  */
-class Flag<T>
-/** Use one of the `Flag#create` convenience methods to construct this class. */
-private constructor(
+sealed class Flag<T>(
   /** Returns the [FlagGroup] that this flag is part of. */
   val group: FlagGroup,
   name: String,
@@ -91,56 +89,13 @@ private constructor(
    * really strings underneath, although it's convenient to expose, say, boolean flags to users
    * instead.
    */
-  private interface ValueConverter<T> {
+  protected interface ValueConverter<T> {
     fun serialize(value: T): String
 
     fun deserialize(strValue: String): T
   }
 
   companion object {
-    private val BOOL_CONVERTER: ValueConverter<Boolean> =
-      object : ValueConverter<Boolean> {
-        override fun serialize(value: Boolean) = value.toString()
-
-        override fun deserialize(strValue: String) = strValue.toBoolean()
-      }
-
-    private val INT_CONVERTER: ValueConverter<Int> =
-      object : ValueConverter<Int> {
-        override fun serialize(value: Int) = value.toString()
-
-        override fun deserialize(strValue: String) = strValue.toInt()
-      }
-
-    private val LONG_CONVERTER: ValueConverter<Long> =
-      object : ValueConverter<Long> {
-        override fun serialize(value: Long) = value.toString()
-
-        override fun deserialize(strValue: String) = strValue.toLong()
-      }
-
-    private val PASSTHRU_CONVERTER: ValueConverter<String> =
-      object : ValueConverter<String> {
-        override fun serialize(value: String) = value
-
-        override fun deserialize(strValue: String) = strValue
-      }
-
-    /**
-     * Creates a [ValueConverter] for the given enum class. Values are stored using their names, to
-     * make it easier to override them using JVM properties (lower-case names are also recognized).
-     *
-     * @see Enum#name()
-     */
-    private fun <T : Enum<T>> enumConverter(enumClass: Class<T>): ValueConverter<T> {
-      return object : ValueConverter<T> {
-        override fun serialize(value: T) = value.name
-
-        override fun deserialize(strValue: String): T =
-          java.lang.Enum.valueOf(enumClass, strValue.uppercase(Locale.US))
-      }
-    }
-
     /**
      * Verify that a flag's ID is correctly formatted, i.e. consisting of only lower-case letters,
      * numbers, and periods. Furthermore, the first character of an ID must be a letter and cannot
@@ -175,65 +130,173 @@ private constructor(
     }
 
     @JvmStatic
+    @Deprecated(
+      "Replaced by BooleanFlag constructor",
+      ReplaceWith(
+        "BooleanFlag(group, name, displayName, description, defaultValue)",
+        "com.android.flags.BooleanFlag"
+      )
+    )
     fun create(
       group: FlagGroup,
       name: String,
       displayName: String,
       description: String,
       defaultValue: Boolean
-    ): Flag<Boolean> {
-      return Flag(group, name, displayName, description, defaultValue, BOOL_CONVERTER)
-    }
+    ) = BooleanFlag(group, name, displayName, description, defaultValue)
 
     @JvmStatic
+    @Deprecated(
+      "Replaced by IntFlag constructor",
+      ReplaceWith(
+        "IntFlag(group, name, displayName, description, defaultValue)",
+        "com.android.flags.IntFlag"
+      )
+    )
     fun create(
       group: FlagGroup,
       name: String,
       displayName: String,
       description: String,
       defaultValue: Int
-    ): Flag<Int> {
-      return Flag(group, name, displayName, description, defaultValue, INT_CONVERTER)
-    }
+    ) = IntFlag(group, name, displayName, description, defaultValue)
 
     @JvmStatic
+    @Deprecated(
+      "Replaced by LongFlag constructor",
+      ReplaceWith(
+        "LongFlag(group, name, displayName, description, defaultValue)",
+        "com.android.flags.LongFlag"
+      )
+    )
     fun create(
       group: FlagGroup,
       name: String,
       displayName: String,
       description: String,
       defaultValue: Long
-    ): Flag<Long> {
-      return Flag(group, name, displayName, description, defaultValue, LONG_CONVERTER)
-    }
+    ) = LongFlag(group, name, displayName, description, defaultValue)
 
     @JvmStatic
+    @Deprecated(
+      "Replaced by StringFlag constructor",
+      ReplaceWith(
+        "StringFlag(group, name, displayName, description, defaultValue)",
+        "com.android.flags.StringFlag"
+      )
+    )
     fun create(
       group: FlagGroup,
       name: String,
       displayName: String,
       description: String,
       defaultValue: String
-    ): Flag<String> {
-      return Flag(group, name, displayName, description, defaultValue, PASSTHRU_CONVERTER)
-    }
+    ) = StringFlag(group, name, displayName, description, defaultValue)
 
     @JvmStatic
+    @Deprecated(
+      "Replaced by EnumFlag constructor",
+      ReplaceWith(
+        "EnumFlag(group, name, displayName, description, defaultValue)",
+        "com.android.flags.EnumFlag"
+      )
+    )
     fun <T : Enum<T>> create(
       group: FlagGroup,
       name: String,
       displayName: String,
       description: String,
       defaultValue: T
-    ): Flag<T> {
-      return Flag(
-        group,
-        name,
-        displayName,
-        description,
-        defaultValue,
-        enumConverter(defaultValue.javaClass)
-      )
-    }
+    ) = EnumFlag(group, name, displayName, description, defaultValue)
+  }
+}
+
+class BooleanFlag(
+  group: FlagGroup,
+  name: String,
+  displayName: String,
+  description: String,
+  defaultValue: Boolean
+) : Flag<Boolean>(group, name, displayName, description, defaultValue, Converter) {
+
+  object Converter : ValueConverter<Boolean> {
+    override fun serialize(value: Boolean) = value.toString()
+
+    override fun deserialize(strValue: String) = strValue.toBoolean()
+  }
+}
+
+class IntFlag(
+  group: FlagGroup,
+  name: String,
+  displayName: String,
+  description: String,
+  defaultValue: Int
+) : Flag<Int>(group, name, displayName, description, defaultValue, Converter) {
+
+  object Converter : ValueConverter<Int> {
+    override fun serialize(value: Int) = value.toString()
+
+    override fun deserialize(strValue: String) = strValue.toInt()
+  }
+}
+
+class LongFlag(
+  group: FlagGroup,
+  name: String,
+  displayName: String,
+  description: String,
+  defaultValue: Long
+) : Flag<Long>(group, name, displayName, description, defaultValue, Converter) {
+
+  object Converter : ValueConverter<Long> {
+    override fun serialize(value: Long) = value.toString()
+
+    override fun deserialize(strValue: String) = strValue.toLong()
+  }
+}
+
+class StringFlag(
+  group: FlagGroup,
+  name: String,
+  displayName: String,
+  description: String,
+  defaultValue: String
+) : Flag<String>(group, name, displayName, description, defaultValue, Converter) {
+
+  object Converter : ValueConverter<String> {
+    override fun serialize(value: String) = value
+
+    override fun deserialize(strValue: String) = strValue
+  }
+}
+
+class EnumFlag<T : Enum<T>>(
+  group: FlagGroup,
+  name: String,
+  displayName: String,
+  description: String,
+  defaultValue: T
+) :
+  Flag<T>(
+    group,
+    name,
+    displayName,
+    description,
+    defaultValue,
+    EnumConverter(defaultValue.javaClass)
+  ) {
+
+  /**
+   * Creates a [ValueConverter] for the given enum class. Values are stored using their names, to
+   * make it easier to override them using JVM properties (lower-case names are also recognized).
+   *
+   * @see Enum#name()
+   */
+  private class EnumConverter<T : Enum<T>>(private val enumClass: Class<T>) : ValueConverter<T> {
+    override fun serialize(value: T) = value.name
+
+    override fun deserialize(strValue: String): T =
+      java.lang.Enum.valueOf(enumClass, strValue.uppercase(Locale.US))
   }
 }

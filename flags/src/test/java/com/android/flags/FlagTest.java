@@ -58,35 +58,42 @@ public class FlagTest {
         assertThat(GameFeatures.MAX_HEAP_SIZE.getDisplayName()).isEqualTo("Max Heap Size in bytes");
         assertThat(GameFeatures.MAX_HEAP_SIZE.getDescription())
                 .isEqualTo("<memory.max.heap.size description>");
+
+        assertThat(GameFeatures.PAINT_COLOR.get()).isEqualTo(Colors.RED);
+        assertThat(GameFeatures.PAINT_COLOR.getGroup()).isEqualTo(GameFeatures.COLORS);
+        assertThat(GameFeatures.PAINT_COLOR.getId()).isEqualTo("colors.paint.color");
+        assertThat(GameFeatures.PAINT_COLOR.getDisplayName()).isEqualTo("Paint color");
+        assertThat(GameFeatures.PAINT_COLOR.getDescription())
+                .isEqualTo("<colors.paint.color description>");
     }
 
     @Test
     public void testFailureInputsThrowException() {
         Flags flags = new Flags();
         try {
-            FlagGroup group = new FlagGroup(flags, "dummy", "");
+            FlagGroup group = new FlagGroup(flags, "mango", "");
             group.validate();
             Assert.fail();
         } catch (IllegalArgumentException ignored) {
         }
 
-        FlagGroup group = new FlagGroup(flags, "dummy", "Dummy");
+        FlagGroup group = new FlagGroup(flags, "mango", "Mango");
         try {
-            Flag<Boolean> flag = Flag.create(group, "", "Dummy", "Dummy Description", false);
+            Flag<Boolean> flag = new BooleanFlag(group, "", "Mango", "Mango Description", false);
             flag.validate();
             Assert.fail();
         } catch (IllegalArgumentException ignored) {
         }
 
         try {
-            Flag<Boolean> flag = Flag.create(group, "dummy", "", "Dummy Description", false);
+            Flag<Boolean> flag = new BooleanFlag(group, "mango", "", "Mango Description", false);
             flag.validate();
             Assert.fail();
         } catch (IllegalArgumentException ignored) {
         }
 
         try {
-            Flag<Boolean> flag = Flag.create(group, "dummy", "Dummy", "", false);
+            Flag<Boolean> flag = new BooleanFlag(group, "mango", "Mango", "", false);
             flag.validate();
             Assert.fail();
         } catch (IllegalArgumentException ignored) {
@@ -173,52 +180,73 @@ public class FlagTest {
     @Test
     public void flagCanOverrideValue() {
         Flags flags = new Flags();
-        FlagGroup group = new FlagGroup(flags, "dummy", "Dummy");
-        Flag<Boolean> boolFlag = Flag.create(group, "bool", "Dummy", "Dummy", true);
-        Flag<Integer> intFlag = Flag.create(group, "int", "Dummy", "Dummy", 123);
-        Flag<Long> longFlag = Flag.create(group, "long", "Dummy", "Dummy", 30L);
+        FlagGroup group = new FlagGroup(flags, "mango", "Mango");
+        Flag<Boolean> boolFlag = new BooleanFlag(group, "bool", "Mango", "Mango", true);
+        Flag<Integer> intFlag = new IntFlag(group, "int", "Mango", "Mango", 123);
+        Flag<Long> longFlag = new LongFlag(group, "long", "Mango", "Mango", 30L);
+        Flag<String> stringFlag = new StringFlag(group, "string", "Mango", "Mango", "hello");
+        Flag<Colors> enumFlag = new EnumFlag<>(group, "enum", "Mango", "Mango", Colors.ORANGE);
 
         assertThat(boolFlag.isOverridden()).isFalse();
         assertThat(intFlag.isOverridden()).isFalse();
         assertThat(longFlag.isOverridden()).isFalse();
+        assertThat(stringFlag.isOverridden()).isFalse();
+        assertThat(enumFlag.isOverridden()).isFalse();
 
         boolFlag.override(false);
         intFlag.override(456);
         longFlag.override(60L);
+        stringFlag.override("goodbye");
+        enumFlag.override(Colors.INDIGO);
 
         assertThat(flags.getOverrides().get(boolFlag)).isEqualTo("false");
         assertThat(flags.getOverrides().get(intFlag)).isEqualTo("456");
         assertThat(flags.getOverrides().get(longFlag)).isEqualTo("60");
+        assertThat(flags.getOverrides().get(stringFlag)).isEqualTo("goodbye");
+        assertThat(flags.getOverrides().get(enumFlag)).isEqualTo("INDIGO");
         assertThat(boolFlag.get()).isFalse();
         assertThat(intFlag.get()).isEqualTo(456);
         assertThat(longFlag.get()).isEqualTo(60L);
+        assertThat(stringFlag.get()).isEqualTo("goodbye");
+        assertThat(enumFlag.get()).isEqualTo(Colors.INDIGO);
 
         assertThat(boolFlag.isOverridden()).isTrue();
         assertThat(intFlag.isOverridden()).isTrue();
         assertThat(longFlag.isOverridden()).isTrue();
+        assertThat(stringFlag.isOverridden()).isTrue();
+        assertThat(enumFlag.isOverridden()).isTrue();
 
         boolFlag.clearOverride();
         intFlag.clearOverride();
         longFlag.clearOverride();
+        stringFlag.clearOverride();
+        enumFlag.clearOverride();
 
         assertThat(boolFlag.isOverridden()).isFalse();
         assertThat(intFlag.isOverridden()).isFalse();
         assertThat(longFlag.isOverridden()).isFalse();
+        assertThat(stringFlag.isOverridden()).isFalse();
+        assertThat(enumFlag.isOverridden()).isFalse();
         assertThat(boolFlag.get()).isTrue();
         assertThat(intFlag.get()).isEqualTo(123);
         assertThat(longFlag.get()).isEqualTo(30L);
+        assertThat(stringFlag.get()).isEqualTo("hello");
+        assertThat(enumFlag.get()).isEqualTo(Colors.ORANGE);
     }
 
     private static final class GameFeatures {
+
         private static final Flags FLAGS = new Flags();
 
         private static final FlagGroup AUDIO = new FlagGroup(FLAGS, "audio", "Audio");
+
         public static final Flag<Boolean> USE_3D_AUDIO =
-                Flag.create(AUDIO, "3d", "Enable 3D audio", "<audio.3d description>", true);
+                new BooleanFlag(AUDIO, "3d", "Enable 3D audio", "<audio.3d description>", true);
 
         private static final FlagGroup GRAPHICS = new FlagGroup(FLAGS, "graphics", "Graphics");
+
         public static final Flag<String> RESOLUTION =
-                Flag.create(
+                new StringFlag(
                         GRAPHICS,
                         "resolution",
                         "Initial resolution",
@@ -226,15 +254,36 @@ public class FlagTest {
                         "1280x720");
 
         public static final Flag<Integer> FPS_CAP =
-                Flag.create(GRAPHICS, "fps.cap", "FPS cap", "<graphics.fps.cap description>", 30);
+                new IntFlag(GRAPHICS, "fps.cap", "FPS cap", "<graphics.fps.cap description>", 30);
 
         private static final FlagGroup MEMORY = new FlagGroup(FLAGS, "memory", "Memory");
+
         public static final Flag<Long> MAX_HEAP_SIZE =
-                Flag.create(
+                new LongFlag(
                         MEMORY,
                         "max.heap.size",
                         "Max Heap Size in bytes",
                         "<memory.max.heap.size description>",
                         4_000_000_000L);
+
+        private static final FlagGroup COLORS = new FlagGroup(FLAGS, "colors", "Colors");
+
+        public static final Flag<Colors> PAINT_COLOR =
+                new EnumFlag<>(
+                        COLORS,
+                        "paint.color",
+                        "Paint color",
+                        "<colors.paint.color description>",
+                        Colors.RED);
+    }
+
+    private enum Colors {
+        RED,
+        ORANGE,
+        YELLOW,
+        GREEN,
+        BLUE,
+        INDIGO,
+        VIOLET
     }
 }
