@@ -51,7 +51,14 @@ open class FlatSourceDirectoriesImpl(
         type = Directory::class.java,
     )
 
+    // this will contain only non generated directories - having list to preserve order
+    private val staticDirectories = variantServices.newListPropertyForInternalUse(
+        type = Directory::class.java,
+    )
+
     override val all: Provider<out Collection<Directory>> = directories
+
+    override val static: Provider<out Collection<Directory>> = staticDirectories
 
     //
     // Internal APIs.
@@ -63,7 +70,7 @@ open class FlatSourceDirectoriesImpl(
      * https://youtrack.jetbrains.com/issue/KT-59503
      */
     @Deprecated("This is only to support kotlin multiplatform")
-    internal fun addSources(sources: Provider<out Collection<DirectoryEntry>>) {
+    internal fun addStaticSources(sources: Provider<out Collection<DirectoryEntry>>) {
         variantSources.addAll(sources)
         directories.addAll(sources.map { directoryEntries ->
             directoryEntries.flatMap { directoryEntry ->
@@ -76,13 +83,24 @@ open class FlatSourceDirectoriesImpl(
         })
     }
 
-    override fun addSource(directoryEntry: DirectoryEntry) {
+    override fun addSource(directoryEntry: DirectoryEntry){
         variantSources.add(directoryEntry)
         directories.addAll(
             directoryEntry.asFiles(
-              variantServices.provider {
-                  variantServices.projectInfo.projectDirectory
-              }
+                variantServices.provider {
+                    variantServices.projectInfo.projectDirectory
+                }
+            )
+        )
+    }
+
+    override fun addStaticSource(directoryEntry: DirectoryEntry){
+        addSource(directoryEntry)
+        staticDirectories.addAll(
+            directoryEntry.asFiles(
+                variantServices.provider {
+                    variantServices.projectInfo.projectDirectory
+                }
             )
         )
     }
@@ -114,10 +132,9 @@ open class FlatSourceDirectoriesImpl(
 
     internal fun getVariantSources(): List<DirectoryEntry> = variantSources.get()
 
-    internal fun addSources(sourceDirectories: Iterable<DirectoryEntry>) {
-        sourceDirectories.forEach(::addSource)
+    internal fun addStaticSources(sourceDirectories: Iterable<DirectoryEntry>) {
+        sourceDirectories.forEach(::addStaticSource)
     }
-
     /*
      * Internal API that can only be used by the model.
      */

@@ -2962,12 +2962,16 @@ package com.android.build.api.variant {
 
   public static interface SourceDirectories.Flat extends com.android.build.api.variant.SourceDirectories {
     method public org.gradle.api.provider.Provider<? extends java.util.Collection<org.gradle.api.file.Directory>> getAll();
+    method public org.gradle.api.provider.Provider<? extends java.util.Collection<org.gradle.api.file.Directory>> getStatic();
     property public abstract org.gradle.api.provider.Provider<? extends java.util.Collection<org.gradle.api.file.Directory>> all;
+    property public abstract org.gradle.api.provider.Provider<? extends java.util.Collection<org.gradle.api.file.Directory>> static;
   }
 
   public static interface SourceDirectories.Layered extends com.android.build.api.variant.SourceDirectories {
     method public org.gradle.api.provider.Provider<java.util.List<java.util.Collection<org.gradle.api.file.Directory>>> getAll();
+    method public org.gradle.api.provider.Provider<java.util.List<java.util.Collection<org.gradle.api.file.Directory>>> getStatic();
     property public abstract org.gradle.api.provider.Provider<java.util.List<java.util.Collection<org.gradle.api.file.Directory>>> all;
+    property public abstract org.gradle.api.provider.Provider<java.util.List<java.util.Collection<org.gradle.api.file.Directory>>> static;
   }
 
   public interface Sources {

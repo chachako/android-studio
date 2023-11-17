@@ -38,6 +38,7 @@ internal class AbstractSourceDirectoriesImplTest {
     val temporaryFolder = TemporaryFolder()
 
     val listOfSources = mutableListOf<DirectoryEntry>()
+    val listOfStaticSources = mutableListOf<DirectoryEntry>()
 
     private lateinit var project: Project
 
@@ -65,6 +66,13 @@ internal class AbstractSourceDirectoriesImplTest {
        val directoryProperty = listOfSources.single().asFiles(
          project.provider { project.layout.projectDirectory })
        Truth.assertThat(directoryProperty.get().single().asFile.absolutePath).isEqualTo(
+           addedSource.absolutePath
+       )
+
+       Truth.assertThat(listOfStaticSources.size).isEqualTo(1)
+       val staticDirectoryProperty = listOfStaticSources.single().asFiles(
+           project.provider { project.layout.projectDirectory })
+       Truth.assertThat(staticDirectoryProperty.get().single().asFile.absolutePath).isEqualTo(
            addedSource.absolutePath
        )
    }
@@ -104,6 +112,8 @@ internal class AbstractSourceDirectoriesImplTest {
          project.provider { project.layout.projectDirectory }
        )
        Truth.assertThat(directoryProperty).isNotNull()
+
+       Truth.assertThat(listOfStaticSources.size).isEqualTo(0)
    }
 
     @Test
@@ -139,6 +149,11 @@ internal class AbstractSourceDirectoriesImplTest {
         ) {
             override fun addSource(directoryEntry: DirectoryEntry) {
                 listOfSources.add(directoryEntry)
+            }
+
+            override fun addStaticSource(directoryEntry: DirectoryEntry) {
+                listOfSources.add(directoryEntry)
+                listOfStaticSources.add(directoryEntry)
             }
 
             override fun variantSourcesForModel(filter: (DirectoryEntry) -> Boolean): List<File> =

@@ -46,6 +46,13 @@ class SourcesTest {
     }
 
     @Test
+    fun testJavaStatic() {
+        val javaSources = Mockito.mock(SourceDirectories.Flat::class.java)
+        Mockito.`when`(sources.java).thenReturn(javaSources)
+        sources.java?.static
+    }
+
+    @Test
     fun testJavaAddSource() {
         abstract class AddingTask: DefaultTask() {
             @get:OutputFiles

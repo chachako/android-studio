@@ -61,9 +61,9 @@ internal class AssetSourceDirectoriesImplTest {
             .build()
 
         Mockito.`when`(variantServices.newListPropertyForInternalUse(DirectoryEntries::class.java))
-            .thenReturn(project.objects.listProperty(DirectoryEntries::class.java))
+            .thenAnswer { project.objects.listProperty(DirectoryEntries::class.java) }
         Mockito.`when`(variantServices.newListPropertyForInternalUse(Collection::class.java))
-            .thenReturn(project.objects.listProperty(Collection::class.java))
+            .thenAnswer { project.objects.listProperty(Collection::class.java) }
 
     }
 
@@ -102,21 +102,21 @@ internal class AssetSourceDirectoriesImplTest {
         )
 
         // directories are added in reverse order, lower priority first, then higher prioriry
-        testTarget.addSources(DirectoryEntries("lowest", mutableListOf(
+        testTarget.addStaticSources(DirectoryEntries("lowest", mutableListOf(
             FileBasedDirectoryEntryImpl("lowest1", temporaryFolder.newFolder("lowest1")),
             FileBasedDirectoryEntryImpl("lowest2", temporaryFolder.newFolder("lowest2")),
             FileBasedDirectoryEntryImpl("lowest3", temporaryFolder.newFolder("lowest3")),
         )
         ))
 
-        testTarget.addSources(DirectoryEntries("lower", mutableListOf(
+        testTarget.addStaticSources(DirectoryEntries("lower", mutableListOf(
             FileBasedDirectoryEntryImpl("lower1", temporaryFolder.newFolder("lower1")),
             FileBasedDirectoryEntryImpl("lower2", temporaryFolder.newFolder("lower2")),
             FileBasedDirectoryEntryImpl("lower3", temporaryFolder.newFolder("lower3")),
         )
         ))
 
-        testTarget.addSources(DirectoryEntries("higher", mutableListOf(
+        testTarget.addStaticSources(DirectoryEntries("higher", mutableListOf(
             FileBasedDirectoryEntryImpl("higher1", temporaryFolder.newFolder("higher1")),
             FileBasedDirectoryEntryImpl("higher2", temporaryFolder.newFolder("higher2")),
             FileBasedDirectoryEntryImpl("higher3", temporaryFolder.newFolder("higher3")),

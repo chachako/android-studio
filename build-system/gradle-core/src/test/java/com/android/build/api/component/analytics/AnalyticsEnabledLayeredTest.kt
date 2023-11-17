@@ -58,4 +58,19 @@ class AnalyticsEnabledLayeredTest {
         ).isEqualTo(VariantPropertiesMethodType.SOURCES_AND_OVERLAY_DIRECTORIES_GET_ALL_VALUE)
         Mockito.verify(delegate, Mockito.times(1)).all
     }
+
+    @Test
+    fun getStatic() {
+        val provider = Mockito.mock(Provider::class.java)
+        @Suppress("UNCHECKED_CAST")
+        Mockito.`when`(delegate.static).thenReturn(provider as Provider<List<Collection<Directory>>>?)
+
+        val providerProxy = proxy.static
+        Truth.assertThat(providerProxy).isEqualTo(provider)
+
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.SOURCES_AND_OVERLAY_DIRECTORIES_GET_STATIC_VALUE)
+        Mockito.verify(delegate, Mockito.times(1)).static
+    }
 }

@@ -127,7 +127,7 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
             variantSources.customSourceList.forEach{ (_, srcEntries) ->
                 srcEntries.forEach { customSourceDirectory ->
                     sourcesImpl.extras.maybeCreate(customSourceDirectory.sourceTypeName).also {
-                        (it as FlatSourceDirectoriesImpl).addSource(
+                        (it as FlatSourceDirectoriesImpl).addStaticSource(
                                 FileBasedDirectoryEntryImpl(
                                     customSourceDirectory.sourceTypeName,
                                     customSourceDirectory.directory,

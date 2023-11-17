@@ -345,7 +345,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         // Include all kotlin sourceSets (the ones added directly to the compilation and the ones
         // that added transitively through a dependsOn dependency).
 
-        sources.kotlin.addSources(
+        sources.kotlin.addStaticSources(
             services.provider {
                 androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
                     sourceSet.kotlin.srcDirs.map { srcDir ->
@@ -360,7 +360,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
 
         // Include all kotlin sourceSets (the ones added directly to the compilation and the ones
         // that added transitively through a dependsOn dependency).
-        sources.java?.addSources(
+        sources.java?.addStaticSources(
             services.provider {
                 androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
                     sourceSet.kotlin.srcDirs.map { srcDir ->
@@ -375,7 +375,7 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
             }
         )
 
-        sources.resources.addSources(
+        sources.resources.addStaticSources(
             services.provider {
                 androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
                     sourceSet.resources.srcDirs.map { srcDir ->
