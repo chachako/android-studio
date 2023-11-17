@@ -80,6 +80,7 @@ class VersionCatalogNamingUtilTest {
     @Test
     fun testPickPluginName() {
         pluginName("androidApplication", "org.android.application")
+        pluginName("baselineprofile", "androidx.baselineprofile")
         pluginName("pluginId", "plugin-id", "foo")
         pluginName("pluginId", "plugin_id", "foo")
         pluginName("pluginId", "pluginId", "foo")
@@ -215,7 +216,6 @@ class VersionCatalogNamingUtilTest {
             "com-google-foo-bar2"
         )
     }
-
 
     @Test
     fun testToSafeKey() {

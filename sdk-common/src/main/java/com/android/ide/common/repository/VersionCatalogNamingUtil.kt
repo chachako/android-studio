@@ -169,9 +169,9 @@ private fun getGroupPrefix(dependency: Dependency): String {
 
 private fun String.isCommonDomain() = this == "com" || this == "org" || this == "io"
 
-private fun cutDomainPrefix(group:String):String{
+private fun cutDomainPrefix(group: String): String {
     val groupPrefix = group.substringBefore('.').toSafeKey()
-    if (groupPrefix.isCommonDomain()) {
+    if (groupPrefix.isCommonDomain() || groupPrefix == "androidx") {
         return group.substringAfter('.').toSafeKey()
     }
     return groupPrefix.toSafeKey()
