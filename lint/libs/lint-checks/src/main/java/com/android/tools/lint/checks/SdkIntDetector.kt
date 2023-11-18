@@ -202,7 +202,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
             ?: return
         val receiver =
           when (then) {
-            is UQualifiedReferenceExpression -> then.receiver.skipParenthesizedExprDown() ?: return
+            is UQualifiedReferenceExpression -> then.receiver.skipParenthesizedExprDown()
             is UCallExpression -> then.receiver?.skipParenthesizedExprDown() ?: return
             else -> return
           }
@@ -210,7 +210,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
         val parentParent = skipParenthesizedExprUp(parent.uastParent) ?: return
         checkMethod(parentParent, context, receiver, comparison, isGreaterOrEquals, sdkId)
       } else if (parent is USwitchClauseExpressionWithBody && parent.body.expressions.size == 1) {
-        var then = parent.body.expressions[0].skipParenthesizedExprDown() ?: return
+        var then = parent.body.expressions[0].skipParenthesizedExprDown()
         @Suppress("UnstableApiUsage")
         if (then is UYieldExpression) {
           // used by UAST to handle some when statements:
@@ -218,7 +218,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
         }
         val receiver =
           when (then) {
-            is UQualifiedReferenceExpression -> then.receiver.skipParenthesizedExprDown() ?: return
+            is UQualifiedReferenceExpression -> then.receiver.skipParenthesizedExprDown()
             is UCallExpression -> then.receiver?.skipParenthesizedExprDown() ?: return
             else -> return
           }
@@ -292,7 +292,10 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       sdkId: Int,
       lambda: Int = -1
     ) {
-      val apiOperand = comparison.rightOperand.skipParenthesizedExprDown() ?: return
+      if (!context.evaluator.isPublic(method)) {
+        return
+      }
+      val apiOperand = comparison.rightOperand.skipParenthesizedExprDown()
       val apiValue = apiOperand.evaluate() ?: ConstantEvaluator.evaluate(context, apiOperand)
       val api = apiValue as? Int
       if (api != null) {
@@ -384,7 +387,10 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       field: UField,
       sdkId: Int
     ) {
-      val apiOperand = comparison.rightOperand.skipParenthesizedExprDown() ?: return
+      if (!context.evaluator.isPublic(field)) {
+        return
+      }
+      val apiOperand = comparison.rightOperand.skipParenthesizedExprDown()
       val value = apiOperand.evaluate() ?: ConstantEvaluator.evaluate(context, apiOperand)
       val api = value as? Int ?: return
       val atLeast = if (isGreaterOrEquals) api else api + 1
@@ -410,7 +416,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
     }
 
     private fun checkFieldAlias(context: JavaContext, field: UField, sdkId: Int) {
-      if (!annotated(context, field, -1)) {
+      if (context.evaluator.isPublic(field) && !annotated(context, field, -1)) {
         val args = "extension=${getSdkConstant(context, sdkId)}"
         val message = "This field should be annotated with `ChecksSdkIntAtLeast($args)`"
         val location = context.getNameLocation(field).withOriginalSource(field)

@@ -172,7 +172,12 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 }
 
                 fun isAtLeastN2(): Boolean = BuildCompat.isAtLeastN() // 16: Could annotate in the future
-                """
+
+                private fun isAtLeastN2Private(): Boolean =
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH // Should not annotate
+                internal fun isAtLeastN2Internal(): Boolean =
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH // Should not annotate
+"""
           )
           .indented(),
         java(
@@ -208,10 +213,10 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                         return SDK_INT >= 36;
                     }
                     public static final boolean SUPPORTS_LETTER_SPACING = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP; // 7: Should annotate
-                    private boolean isLollipop() { // 8: Should annotate
+                    public boolean isLollipop() { // 8: Should annotate
                         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
                     }
-                    private static final int STASHED_VERSION = Build.VERSION.SDK_INT; // Should annotate
+                    public static final int STASHED_VERSION = Build.VERSION.SDK_INT; // Should annotate
                     public static boolean isIcs() { // 9: Should annotate
                         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH;
                     }
@@ -246,6 +251,17 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                     public static boolean isAtLeastN() { // 13: Could annotate in the future
                         return BuildCompat.isAtLeastN();
                     }
+
+                    // b/239874984
+                    private static boolean isNougat1Private() { // Should NOT annotate
+                        return getBuildSdkInt() >= N;
+                    }
+                    private static final boolean SUPPORTS_LETTER_SPACING_PRIVATE =
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP; // Should NOT annotate (private field)
+                    private static final boolean SUPPORTS_LETTER_SPACING_PACKAGE =
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP; // Should NOT annotate (private field)
+                    private static final boolean SUPPORTS_LETTER_SPACING_PUBLIC =
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP; // Should NOT annotate (private field)
                 }
                 """
           )
@@ -293,11 +309,11 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                     public static final boolean SUPPORTS_LETTER_SPACING = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP; // 7: Should annotate
                                                 ~~~~~~~~~~~~~~~~~~~~~~~
                 src/test/pkg/JavaVersionChecks.java:32: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.LOLLIPOP) [AnnotateVersionCheck]
-                    private boolean isLollipop() { // 8: Should annotate
-                                    ~~~~~~~~~~
+                    public boolean isLollipop() { // 8: Should annotate
+                                   ~~~~~~~~~~
                 src/test/pkg/JavaVersionChecks.java:35: Warning: This field should be annotated with ChecksSdkIntAtLeast(extension=0) [AnnotateVersionCheck]
-                    private static final int STASHED_VERSION = Build.VERSION.SDK_INT; // Should annotate
-                                             ~~~~~~~~~~~~~~~
+                    public static final int STASHED_VERSION = Build.VERSION.SDK_INT; // Should annotate
+                                            ~~~~~~~~~~~~~~~
                 src/test/pkg/JavaVersionChecks.java:36: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.ICE_CREAM_SANDWICH) [AnnotateVersionCheck]
                     public static boolean isIcs() { // 9: Should annotate
                                           ~~~~~
@@ -518,12 +534,12 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 import java.util.function.Function;
 
                 public class FunctionTest {
-                    void test(Function<String, Integer> function, String arg) {
+                    public void test(Function<String, Integer> function, String arg) {
                         if (Build.VERSION.SDK_INT > 26) {
                             function.apply(arg);
                         }
                     }
-                    void test2(MyJavaFunction function, String arg) {
+                    public void test2(MyJavaFunction function, String arg) {
                         if (Build.VERSION.SDK_INT > 26) {
                             function.apply(arg);
                         }
@@ -538,11 +554,11 @@ class SdkIntDetectorTest : AbstractCheckTest() {
       .expect(
         """
             src/test/pkg/FunctionTest.java:7: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=android.os.Build.VERSION_CODES.O_MR1, lambda=0) [AnnotateVersionCheck]
-                void test(Function<String, Integer> function, String arg) {
-                     ~~~~
+                public void test(Function<String, Integer> function, String arg) {
+                            ~~~~
             src/test/pkg/FunctionTest.java:12: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=android.os.Build.VERSION_CODES.O_MR1, lambda=0) [AnnotateVersionCheck]
-                void test2(MyJavaFunction function, String arg) {
-                     ~~~~~
+                public void test2(MyJavaFunction function, String arg) {
+                            ~~~~~
             src/test/pkg/MyJavaFunction.kt:20: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=android.os.Build.VERSION_CODES.O_MR1, lambda=0) [AnnotateVersionCheck]
             fun test1(function: MyKotlinFunction, arg: String) {
                 ~~~~~
@@ -567,7 +583,7 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 import android.os.Build.VERSION_CODES
                 import androidx.annotation.ChecksSdkIntAtLeast
 
-                private fun isNougat(): Boolean = VERSION.SDK_INT >= VERSION_CODES.N
+                fun isNougat(): Boolean = VERSION.SDK_INT >= VERSION_CODES.N
                 """
           )
           .indented(),
@@ -577,8 +593,8 @@ class SdkIntDetectorTest : AbstractCheckTest() {
       .expect(
         """
             src/test/pkg/test.kt:9: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=VERSION_CODES.N) [AnnotateVersionCheck]
-            private fun isNougat(): Boolean = VERSION.SDK_INT >= VERSION_CODES.N
-                        ~~~~~~~~
+            fun isNougat(): Boolean = VERSION.SDK_INT >= VERSION_CODES.N
+                ~~~~~~~~
             0 errors, 1 warnings
             """
       )
@@ -753,7 +769,7 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                 */
                 fun isNougat1(): Boolean = VERSION.SDK_INT >= VERSION_CODES.N
 
-                private fun isNougat2(): Boolean {
+                fun isNougat2(): Boolean {
                     return VERSION.SDK_INT >= VERSION_CODES.N
                 }
             """
@@ -776,7 +792,7 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                         return SDK_INT >= N;
                     }
 
-                    boolean isNougat2() {
+                    public boolean isNougat2() {
                         return SDK_INT >= N;
                     }
                 }
@@ -793,14 +809,14 @@ class SdkIntDetectorTest : AbstractCheckTest() {
                         public static boolean isNougat1() {
                                               ~~~~~~~~~
                     src/test/pkg/JavaVersionChecks.java:16: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=N) [AnnotateVersionCheck]
-                        boolean isNougat2() {
-                                ~~~~~~~~~
+                        public boolean isNougat2() {
+                                       ~~~~~~~~~
                     src/test/pkg/test.kt:15: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=VERSION_CODES.N) [AnnotateVersionCheck]
                     fun isNougat1(): Boolean = VERSION.SDK_INT >= VERSION_CODES.N
                         ~~~~~~~~~
                     src/test/pkg/test.kt:17: Warning: This method should be annotated with @ChecksSdkIntAtLeast(api=VERSION_CODES.N) [AnnotateVersionCheck]
-                    private fun isNougat2(): Boolean {
-                                ~~~~~~~~~
+                    fun isNougat2(): Boolean {
+                        ~~~~~~~~~
                     0 errors, 4 warnings
                 """
       )

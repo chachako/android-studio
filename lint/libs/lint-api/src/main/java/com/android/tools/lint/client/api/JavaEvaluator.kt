@@ -51,6 +51,7 @@ import com.intellij.psi.PsiTypeVisitor
 import com.intellij.psi.PsiWildcardType
 import com.intellij.psi.search.GlobalSearchScope
 import java.io.File
+import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -61,6 +62,7 @@ import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UDeclaration
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UMethod
@@ -212,10 +214,18 @@ class JavaEvaluator {
     return null
   }
 
+  open fun isPublic(declaration: UDeclaration?): Boolean {
+    val owner = declaration?.javaPsi as? PsiModifierListOwner ?: return false
+    return isPublic(owner)
+  }
+
   open fun isPublic(owner: PsiModifierListOwner?): Boolean {
     if (owner != null) {
-      val modifierList = owner.modifierList
-      return modifierList != null && modifierList.hasModifierProperty(PsiModifier.PUBLIC)
+      val modifierList = owner.modifierList ?: return false
+      if (modifierList.hasModifierProperty(PsiModifier.PUBLIC)) {
+        return !(modifierList is KtLightElement<*, *> &&
+          hasModifier(owner, KtTokens.INTERNAL_KEYWORD))
+      }
     }
     return false
   }
