@@ -35,6 +35,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.ClosedChannelException;
+import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.Callable;
@@ -196,11 +197,18 @@ public class DebuggerTest extends TestCase {
                         () -> {
                             InetSocketAddress addr =
                                     new InetSocketAddress(
-                                            InetAddress.getByName("localhost"), //$NON-NLS-1$
+                                            InetAddress.getByName("localhost"), // $NON-NLS-1$
                                             debugger.getListenPort());
 
                             debuggerClientChannel.connect(addr);
                             debuggerClientChannel.configureBlocking(false);
+
+                            // Wait for the connection request to actually arrive.
+                            try (Selector selector = Selector.open()) {
+                                debugger.registerListener(selector);
+                                selector.select();
+                            }
+
                             return null;
                         });
         waitFuture(futureConnect);
