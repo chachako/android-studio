@@ -202,3 +202,8 @@ new_local_repository(
     build_file = "tools/base/bazel/jarjar/jarjar.BUILD",
     path = "external/jarjar",
 )
+
+local_repository(
+   name = "absl-py",
+   path = "external/python/absl-py",
+)
