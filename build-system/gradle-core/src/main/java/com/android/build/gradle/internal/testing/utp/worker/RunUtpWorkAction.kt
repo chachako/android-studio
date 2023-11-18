@@ -16,18 +16,13 @@
 
 package com.android.build.gradle.internal.testing.utp.worker
 
-import com.android.build.gradle.internal.process.GradleJavaProcessExecutor
 import com.android.build.gradle.internal.testing.utp.UtpDependency
-import com.android.ide.common.process.BaseProcessOutputHandler
-import com.android.ide.common.process.ProcessInfoBuilder
-import com.android.ide.common.process.ProcessOutput
 import com.android.utils.GrabProcessOutput
 import com.google.common.annotations.VisibleForTesting
-import javax.inject.Inject
 import org.gradle.api.logging.Logging
-import org.gradle.process.ExecOperations
 import org.gradle.workers.WorkAction
-import java.lang.ProcessBuilder
+import java.io.File
+import javax.inject.Inject
 
 /**
  * A work action that runs UTP in an external java process.
@@ -41,7 +36,6 @@ abstract class RunUtpWorkAction @Inject constructor(
     fun processFactory(): (List<String>) -> ProcessBuilder = { ProcessBuilder(it) }
 
     override fun execute() {
-
         val processBuilder = processFactory().invoke(
             listOfNotNull(
                 "${parameters.jvm.asFile.get().absolutePath}",
@@ -50,9 +44,9 @@ abstract class RunUtpWorkAction @Inject constructor(
                     parameters.loggingProperties.asFile.get().absolutePath}",
                 "-Dfile.encoding=UTF-8",
                 "-cp",
-                parameters.launcherJar.asFile.get().absolutePath,
+                parameters.launcherJar.joinToString(File.pathSeparator) { it.absolutePath },
                 UtpDependency.LAUNCHER.mainClass,
-                parameters.coreJar.asFile.get().absolutePath,
+                *parameters.coreJar.map { it.absolutePath }.toTypedArray(),
                 "--proto_config=${parameters.runnerConfig.asFile.get().absolutePath}",
                 "--proto_server_config=${parameters.serverConfig.asFile.get().absolutePath}"
             )

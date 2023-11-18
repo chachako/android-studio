@@ -16,19 +16,14 @@
 
 package com.android.build.gradle.internal.testing.utp
 
-import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.internal.testing.utp.worker.RunUtpWorkAction
 import com.android.build.gradle.internal.testing.utp.worker.RunUtpWorkParameters
-import com.android.build.gradle.options.ProjectOptions
-import com.android.builder.core.ComponentType
 import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.argThat
 import com.android.testutils.MockitoKt.eq
-import com.android.testutils.MockitoKt.mock
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.utp.plugins.result.listener.gradle.proto.GradleAndroidTestResultListenerProto.TestResultEvent
 import com.android.utils.ILogger
-import com.google.common.collect.ImmutableMap
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.Any
 import com.google.protobuf.TextFormat
@@ -247,8 +242,8 @@ class UtpTestUtilsTest {
         setRunUtpWorkParametersAction.execute(mockRunUtpWorkParameters)
 
         mockRunUtpWorkParameters.run {
-            verify(launcherJar).set(mockUtpDependencies.launcher.singleFile)
-            verify(coreJar).set(mockUtpDependencies.core.singleFile)
+            verify(launcherJar).setFrom(mockUtpDependencies.launcher.files)
+            verify(coreJar).setFrom(mockUtpDependencies.core.files)
             verify(runnerConfig).set(argThat<File> {
                 it.exists()
             })

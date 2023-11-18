@@ -232,8 +232,8 @@ private fun runUtpTestSuite(
     }
     workQueue.submit(RunUtpWorkAction::class.java) { params ->
         params.jvm.set(config.jvm)
-        params.launcherJar.set(utpDependencies.launcher.singleFile)
-        params.coreJar.set(utpDependencies.core.singleFile)
+        params.launcherJar.setFrom(utpDependencies.launcher.files)
+        params.coreJar.setFrom(utpDependencies.core.files)
         params.runnerConfig.set(runnerConfigProtoFile)
         params.serverConfig.set(serverConfigProtoFile)
         params.loggingProperties.set(loggingPropertiesFile)

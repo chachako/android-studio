@@ -17,14 +17,8 @@
 package com.android.build.gradle.internal.testing.utp.worker
 
 import com.android.build.gradle.internal.testing.utp.UtpDependency
-import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.mock
 import com.google.common.truth.Truth.assertThat
-import java.io.File
-import org.gradle.api.Action
-import org.gradle.process.ExecOperations
-import org.gradle.process.ExecResult
-import org.gradle.process.JavaExecSpec
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -32,10 +26,10 @@ import org.mockito.Answers
 import org.mockito.Mock
 import org.mockito.Mockito.CALLS_REAL_METHODS
 import org.mockito.Mockito.`when`
-import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.withSettings
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import java.io.File
 
 /**
  * Unit tests for [RunUtpWorkAction].
@@ -56,10 +50,20 @@ class RunUtpWorkActionTest {
     fun setupMocks() {
         `when`(mockRunUtpWorkParameters.jvm.asFile.get().absolutePath)
             .thenReturn("java")
-        `when`(mockRunUtpWorkParameters.launcherJar.asFile.get().absolutePath)
-            .thenReturn("launcherJar")
-        `when`(mockRunUtpWorkParameters.coreJar.asFile.get().absolutePath)
-            .thenReturn("coreJar")
+        `when`(mockRunUtpWorkParameters.launcherJar.iterator())
+            .then {
+                mutableListOf(
+                    mock<File>().apply { `when`(absolutePath).thenReturn("launcherJar1") },
+                    mock<File>().apply { `when`(absolutePath).thenReturn("launcherJar2") },
+                ).iterator()
+            }
+        `when`(mockRunUtpWorkParameters.coreJar.iterator())
+            .then {
+                mutableListOf(
+                    mock<File>().apply { `when`(absolutePath).thenReturn("coreJar1") },
+                    mock<File>().apply { `when`(absolutePath).thenReturn("coreJar2") },
+                ).iterator()
+            }
         `when`(mockRunUtpWorkParameters.runnerConfig.asFile.get().absolutePath)
             .thenReturn("runnerConfig")
         `when`(mockRunUtpWorkParameters.serverConfig.asFile.get().absolutePath)
@@ -88,9 +92,10 @@ class RunUtpWorkActionTest {
                 "-Djava.util.logging.config.file=loggingProperties",
                 "-Dfile.encoding=UTF-8",
                 "-cp",
-                "launcherJar",
+                "launcherJar1${File.pathSeparator}launcherJar2",
                 UtpDependency.LAUNCHER.mainClass,
-                "coreJar",
+                "coreJar1",
+                "coreJar2",
                 "--proto_config=runnerConfig",
                 "--proto_server_config=serverConfig"
             )

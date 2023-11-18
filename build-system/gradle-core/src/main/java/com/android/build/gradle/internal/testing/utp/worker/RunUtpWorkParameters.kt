@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.testing.utp.worker
 
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.workers.WorkParameters
 
@@ -27,10 +28,10 @@ interface RunUtpWorkParameters : WorkParameters {
     val jvm: RegularFileProperty
 
     // A UTP launcher jar file to run.
-    val launcherJar: RegularFileProperty
+    val launcherJar: ConfigurableFileCollection
 
     // A UTP core jar file.
-    val coreJar: RegularFileProperty
+    val coreJar: ConfigurableFileCollection
 
     // A UTP runner config binary proto file to be passed into the launcher.
     val runnerConfig: RegularFileProperty
