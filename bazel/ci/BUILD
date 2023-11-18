@@ -33,5 +33,11 @@ py_binary(
     ],
 )
 
-# TODO(b/307355082) add external/python/absl-py/ project and write tests.
-
+py_test(
+    name = "ci_test",
+    srcs = ["ci_test.py"],
+    deps = [
+        ":ci_lib",
+        "@absl-py//absl/testing:absltest",
+    ],
+)
