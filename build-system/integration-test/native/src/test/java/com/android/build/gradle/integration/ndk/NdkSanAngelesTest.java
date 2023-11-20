@@ -16,27 +16,26 @@
 
 package com.android.build.gradle.integration.ndk;
 
+import static com.android.build.gradle.integration.common.fixture.GradleTestProject.DEFAULT_NDK_SIDE_BY_SIDE_VERSION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.android.build.api.variant.BuiltArtifact;
 import com.android.build.api.variant.FilterConfiguration;
 import com.android.build.api.variant.impl.BuiltArtifactsImpl;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
-import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtils;
+import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtilsV2;
 import com.android.builder.model.v2.models.AndroidProject;
 import com.google.common.collect.Maps;
 import com.google.common.truth.Truth;
+import java.io.File;
+import java.util.Map;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import java.io.File;
-import java.util.Map;
-
-import static com.android.build.gradle.integration.common.fixture.GradleTestProject.DEFAULT_NDK_SIDE_BY_SIDE_VERSION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Assemble tests for ndkSanAngeles.
@@ -80,7 +79,8 @@ public class NdkSanAngelesTest {
                         .getAssembleTaskOutputListingFile();
 
         // get the outputs.
-        BuiltArtifactsImpl builtArtifacts = ProjectBuildOutputUtils.getBuiltArtifacts(debugOutput);
+        BuiltArtifactsImpl builtArtifacts =
+                ProjectBuildOutputUtilsV2.getBuiltArtifacts(debugOutput);
         assertEquals(3, builtArtifacts.getElements().size());
 
         // build a map of expected outputs and their versionCode

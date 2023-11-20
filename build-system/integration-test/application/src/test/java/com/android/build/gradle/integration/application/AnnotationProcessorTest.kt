@@ -26,9 +26,7 @@ import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestPr
 import com.android.build.gradle.integration.common.fixture.app.TestSourceFile
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.integration.common.utils.getAndroidTestArtifact
 import com.android.build.gradle.integration.common.utils.getDebugVariant
-import com.android.build.gradle.integration.common.utils.getUnitTestArtifact
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.base.Charsets
 import com.google.common.io.Files

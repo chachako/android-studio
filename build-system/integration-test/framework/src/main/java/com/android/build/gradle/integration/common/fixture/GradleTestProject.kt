@@ -18,8 +18,6 @@ package com.android.build.gradle.integration.common.fixture
 import com.android.SdkConstants
 import com.android.SdkConstants.NDK_DEFAULT_VERSION
 import com.android.Version
-import com.android.build.api.variant.BuiltArtifacts
-import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl.Companion.loadFromFile
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder.MemoryRequirement
 import com.android.build.gradle.integration.common.fixture.gradle_project.BuildSystem
 import com.android.build.gradle.integration.common.fixture.gradle_project.ProjectLocation
@@ -35,7 +33,6 @@ import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.plugins.VersionCheckPlugin
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.ToolsRevisionUtils
-import com.android.builder.model.AndroidProject
 import com.android.sdklib.internal.project.ProjectProperties
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.OsType

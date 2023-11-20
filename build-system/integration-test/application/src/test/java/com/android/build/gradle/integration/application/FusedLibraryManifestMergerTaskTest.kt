@@ -21,7 +21,6 @@ import com.android.build.gradle.integration.common.fixture.TemporaryProjectModif
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
-import com.android.build.gradle.integration.common.utils.IgnoredTests
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.manifest.parseManifest
 import com.android.build.gradle.options.BooleanOption

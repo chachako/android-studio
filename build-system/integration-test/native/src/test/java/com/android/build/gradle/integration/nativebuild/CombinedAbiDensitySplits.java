@@ -16,33 +16,31 @@
 
 package com.android.build.gradle.integration.nativebuild;
 
-import com.android.build.api.variant.BuiltArtifact;
-import com.android.build.api.variant.FilterConfiguration;
-import com.android.build.api.variant.VariantOutputConfiguration;
-import com.android.build.api.variant.impl.BuiltArtifactsImpl;
-import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
-import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtils;
-import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtilsV2;
-import com.android.build.gradle.integration.common.utils.VariantOutputUtils;
-import com.android.builder.model.v2.ide.Variant;
-import com.android.builder.model.v2.models.AndroidProject;
-import com.android.testutils.truth.ZipFileSubject;
-import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.Set;
-
 import static com.android.build.gradle.integration.common.fixture.GradleTestProject.DEFAULT_NDK_SIDE_BY_SIDE_VERSION;
 import static com.android.testutils.truth.ZipFileSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import com.android.build.api.variant.BuiltArtifact;
+import com.android.build.api.variant.FilterConfiguration;
+import com.android.build.api.variant.VariantOutputConfiguration;
+import com.android.build.api.variant.impl.BuiltArtifactsImpl;
+import com.android.build.gradle.integration.common.fixture.GradleTestProject;
+import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
+import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtilsV2;
+import com.android.build.gradle.integration.common.utils.VariantOutputUtils;
+import com.android.builder.model.v2.ide.Variant;
+import com.android.builder.model.v2.models.AndroidProject;
+import com.android.testutils.truth.ZipFileSubject;
+import com.google.common.collect.Sets;
+import java.io.File;
+import java.util.Collection;
+import java.util.Set;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 /** Test drive for the CombinedAbiDensityPureSplits samples test. */
 public class CombinedAbiDensitySplits {
@@ -78,10 +76,9 @@ public class CombinedAbiDensitySplits {
         expectedDensities.add("xhdpi");
         expectedDensities.add("xxhdpi");
 
-        BuiltArtifactsImpl
-                builtArtifacts
-                = ProjectBuildOutputUtils.getBuiltArtifacts(debugVariant.getMainArtifact()
-                .getAssembleTaskOutputListingFile());
+        BuiltArtifactsImpl builtArtifacts =
+                ProjectBuildOutputUtilsV2.getBuiltArtifacts(
+                        debugVariant.getMainArtifact().getAssembleTaskOutputListingFile());
         assertEquals(10, builtArtifacts.getElements().size());
         for (BuiltArtifact builtArtifact : builtArtifacts.getElements()) {
             String densityFilter =

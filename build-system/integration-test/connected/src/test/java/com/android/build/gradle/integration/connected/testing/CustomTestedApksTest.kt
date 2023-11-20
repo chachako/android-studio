@@ -22,11 +22,8 @@ import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.fixture.app.TestSourceFile
 import com.android.build.gradle.integration.common.truth.TruthHelper
-import com.android.build.gradle.integration.common.utils.getAndroidTestArtifact
-import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.build.gradle.integration.connected.utils.getEmulator
 import com.android.build.gradle.internal.scope.InternalArtifactType
-import com.android.builder.model.v2.models.AndroidProject
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.generateAarWithContent

@@ -75,10 +75,3 @@ private fun findFlags(
     val setting = settings.toList().first { s -> s.name == settingName }
     return setting.compilerFlags
 }
-
-/**
- * Get all build output files.
- */
-fun NativeAndroidProject.buildOutputFiles() : List<File> {
-    return artifacts.toList().map { artifact -> artifact.outputFile }
-}

@@ -26,7 +26,6 @@ import static org.junit.Assert.assertNotNull;
 import com.android.build.api.variant.BuiltArtifact;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
-import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtils;
 import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtilsV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.v2.ide.SyncIssue;
@@ -126,7 +125,8 @@ public class OutputRenamingTest {
         File assembleTaskOutputListingFile =
                 buildOutput.getMainArtifact().getAssembleTaskOutputListingFile();
         for (BuiltArtifact builtArtifact :
-                ProjectBuildOutputUtils.getBuiltArtifacts(assembleTaskOutputListingFile).getElements()) {
+                ProjectBuildOutputUtilsV2.getBuiltArtifacts(assembleTaskOutputListingFile)
+                        .getElements()) {
             File outputFile = new File(builtArtifact.getOutputFile());
             actualFileNames.add(outputFile.getName());
             assertThat(outputFile).exists();
