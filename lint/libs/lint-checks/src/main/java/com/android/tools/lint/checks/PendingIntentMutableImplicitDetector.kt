@@ -41,6 +41,10 @@ import com.android.tools.lint.detector.api.isScopingThis
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiVariable
 import com.intellij.util.containers.headTail
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolKind
+import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBlockExpression
@@ -63,6 +67,7 @@ import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.getQualifiedChain
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.util.isArrayInitializer
+import org.jetbrains.uast.util.isMethodCall
 import org.jetbrains.uast.util.isNewArrayWithDimensions
 import org.jetbrains.uast.util.isNewArrayWithInitializer
 import org.jetbrains.uast.visitor.UastVisitor
@@ -151,10 +156,16 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       )
 
     private const val CLASS_URI = "android.net.Uri"
+    private const val CLASS_KOTLIN_COLLECTIONS = "kotlin.collections.CollectionsKt__CollectionsKt"
+    private const val METHOD_ARRAY_OF = "arrayOf"
+    private const val METHOD_ARRAY_OF_NULLS = "arrayOfNulls"
     private const val METHOD_INTENT_SET_COMPONENT = "setComponent"
     private const val METHOD_INTENT_SET_PACKAGE = "setPackage"
     private const val METHOD_INTENT_SET_CLASS = "setClass"
     private const val METHOD_INTENT_SET_CLASS_NAME = "setClassName"
+    private const val METHOD_LIST_OF = "listOf"
+    private const val TYPE_ARRAY_OF_PARAM = "T"
+    private const val TYPE_LIST_OF_ARG = "T..."
 
     // Used for the vararg argumentTypes in JavaEvaluator#methodMatches
     private val INTENT_EXPLICIT_CONSTRUCTOR_ARGS =
@@ -245,10 +256,16 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
               intent.valueArguments.any { getIntentTypeForExpression(it, intentInfo).isImplicit() }
           )
         }
-        // TODO(b/272014836): Handle listOf(), arrayOf() for PendingIntent.getActivities()
         METHOD_CALL -> {
           if (isWithScopeCall(intent)) {
             getIntentTypeForWithScopeCall(intent, intentInfo)
+          } else if (isKotlinCollection(intent, intentInfo)) {
+            IntentType(
+              isImplicit =
+                intent.valueArguments.any {
+                  getIntentTypeForExpression(it, intentInfo).isImplicit()
+                }
+            )
           } else {
             IntentType(isImplicit = false)
           }
@@ -363,7 +380,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       }
       var intentArraySize = 0
       var assignIntentType = IntentType(isImplicit = false)
-      if (assign is UCallExpression && assign.isNewArrayWithDimensions()) {
+      if (assign is UCallExpression && isNewJavaKotlinArrayWithDimensions(assign)) {
         if (assign.valueArguments.size > 1) {
           return IntentType(isImplicit = false) // only consider 1d arrays
         }
@@ -380,6 +397,9 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       intentParentUMethod.accept(analyzer)
       return analyzer.getIntentTypeAfterGivenAssignment()
     }
+
+    private fun isNewJavaKotlinArrayWithDimensions(exp: UCallExpression): Boolean =
+      exp.isNewArrayWithDimensions() || exp.isMethodCall() && isArrayOfNulls(exp)
 
     private fun findLastAssignmentAndItsParentUMethod(
       intent: USimpleNameReferenceExpression,
@@ -424,6 +444,49 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
 
     private fun isEscapeCall(call: UCallExpression, intentInfo: IntentExpressionInfo): Boolean =
       !isIntentMethodCall(call, intentInfo) && !isSelectorScopeCall(call) && !isWithScopeCall(call)
+
+    private fun isKotlinCollection(
+      call: UCallExpression,
+      intentInfo: IntentExpressionInfo
+    ): Boolean {
+      val psiMethod = call.resolve()
+      if (psiMethod != null) {
+        return intentInfo.javaEvaluator.methodMatches(
+          psiMethod,
+          CLASS_KOTLIN_COLLECTIONS,
+          allowInherit = false,
+          TYPE_LIST_OF_ARG
+        ) && psiMethod.name == METHOD_LIST_OF
+      }
+      return isArrayOf(call)
+    }
+
+    private fun isArrayOf(call: UCallExpression): Boolean =
+      isArrayOfOrArrayOfNulls(call, METHOD_ARRAY_OF)
+
+    private fun isArrayOfNulls(call: UCallExpression): Boolean =
+      isArrayOfOrArrayOfNulls(call, METHOD_ARRAY_OF_NULLS)
+
+    private fun isArrayOfOrArrayOfNulls(call: UCallExpression, arrayOfMethodName: String): Boolean {
+      val sourcePsi = call.sourcePsi as? KtElement ?: return false
+      analyze(sourcePsi) {
+        val symbol = getFunctionLikeSymbol(sourcePsi) ?: return false
+        val typeParameters = symbol.typeParameters
+        if (typeParameters.size != 1) return false
+        val typeParam = typeParameters[0]
+        val callableId = symbol.callableIdIfNonLocal ?: return false
+        val packageName = callableId.packageName
+        val className = callableId.className?.asString()
+        val methodName = callableId.callableName.asString()
+        val returnType = symbol.returnType
+        return packageName == StandardClassIds.BASE_KOTLIN_PACKAGE &&
+          symbol.symbolKind == KtSymbolKind.TOP_LEVEL &&
+          methodName == arrayOfMethodName &&
+          typeParam.name.asString() == TYPE_ARRAY_OF_PARAM &&
+          typeParam.isReified &&
+          returnType.isArrayOrPrimitiveArray()
+      }
+    }
 
     private fun isWithScopeCall(call: UCallExpression): Boolean =
       call.methodName == "with" && isScopingFunction(call)
@@ -483,7 +546,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
         IntentDataFlowAnalyzer(
           startExp = intentObject,
           endExp = lambdaExp,
-          initialIntentType = intentObjectType,
+          intentType = intentObjectType,
           intentInfo = intentInfo,
         )
       intent.getParentOfType(UMethod::class.java)?.accept(analyzer)
@@ -558,7 +621,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       IntentDataFlowAnalyzer(
         startExp = lastAssignment,
         endExp = initialIntentInfo.intentArgument,
-        initialIntentType = assignIntentType,
+        intentType = assignIntentType,
         intentInfo = initialIntentInfo,
       ) {
       private val intentArrayValuesIsImplicit: BooleanArray = BooleanArray(intentArraySize)
@@ -583,7 +646,9 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
 
       override fun getIntentTypeAfterGivenAssignment(): IntentType {
         if (intentArraySize == 0) return intentType
-        return IntentType(isImplicit = intentArrayValuesIsImplicit.any { it })
+        val finalIntentType = IntentType(isImplicit = intentArrayValuesIsImplicit.any { it })
+        finalIntentType.isEscaped = intentType.isEscaped
+        return finalIntentType
       }
 
       private fun isMemberOfIntentArray(node: UArrayAccessExpression): Boolean =
@@ -613,10 +678,9 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     private open class IntentDataFlowAnalyzer(
       val startExp: UExpression,
       val endExp: UExpression,
-      val initialIntentType: IntentType,
+      var intentType: IntentType,
       val intentInfo: IntentExpressionInfo
     ) : DataFlowAnalyzer(setOf(startExp)) {
-      var intentType: IntentType = initialIntentType
       var isEndReached: Boolean = false
 
       override fun afterVisitExpression(node: UExpression) {
@@ -636,6 +700,10 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
         if (!isIgnoredArgument(call, reference)) intentType.isEscaped = true
       }
 
+      /**
+       * Returns the final intent type of the intent. This should be called only after tha analyzer
+       * has finished its analysis.
+       */
       open fun getIntentTypeAfterGivenAssignment(): IntentType = intentType
 
       private fun isPendingIntentGetMethod(call: UCallExpression): Boolean =
@@ -648,7 +716,8 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
           call.isNewArrayWithInitializer() ||
           call.isArrayInitializer() ||
           isPendingIntentGetMethod(call) ||
-          isWithScopeCall(call)
+          isWithScopeCall(call) ||
+          isKotlinCollection(call, intentInfo)
     }
 
     /** Lint fixes related code */
