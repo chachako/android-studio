@@ -4955,6 +4955,166 @@ class GradleDetectorTest : AbstractCheckTest() {
   }
 
   /**
+   * Test that version upgrade quickfix is shown if the suggested version does not have errors or
+   * warnings from SDK Index
+   */
+  fun testSdkIndexLibraryUpgradeToVersionWithoutWarningOrError() {
+    val expectedFixes =
+      """
+        Fix for build.gradle line 2: Change to 8.0.0:
+        @@ -2 +2
+        -     compile 'com.example.ads.third.party:example:7.2.0' // Suggest 8.0.0 since it does not have issues
+        +     compile 'com.example.ads.third.party:example:8.0.0' // Suggest 8.0.0 since it does not have issues
+        Fix for build.gradle line 3: Change to 8.0.0:
+        @@ -3 +3
+        -     compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
+        +     compile 'com.example.ads.third.party:example:8.0.0' // suggest 8.0.0 since it does not have issues
+        Fix for build.gradle line 4: Change to 1.2.11:
+        @@ -4 +4
+        -     compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
+        +     compile 'log4j:log4j:1.2.11' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
+        Show URL for build.gradle line 2: View details in Google Play SDK Index:
+        http://another.example.url/
+      """
+    lint()
+      .files(
+        gradle(
+            """
+                dependencies {
+                    compile 'com.example.ads.third.party:example:7.2.0' // Suggest 8.0.0 since it does not have issues
+                    compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
+                    compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
+                }
+                """
+          )
+          .indented()
+      )
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22com.example.ads.third.party%22+AND+a:%22example%22&core=gav&wt=json",
+        "" +
+          "{\"responseHeader\":" +
+          "{\"status\":0,\"QTime\":0,\"params\":" +
+          "{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"com.example.ads.third.party\\\" AND a:\\\"example\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"version\":\"2.2\"}}," +
+          "\"response\":" +
+          "{\"numFound\":4,\"start\":0,\"docs\":[" +
+          "{\"id\":\"com.example.ads.third.party:example:8.0.0\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"8.0.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.ads.third.party:example:7.2.2\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.2.2\",\"p\":\"jar\",\"timestamp\":1462851968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.ads.third.party:example:7.2.1\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.2.1\",\"p\":\"jar\",\"timestamp\":1462850968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.ads.third.party:example:7.2.0\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.2.0\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}"
+      )
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22log4j%22+AND+a:%22log4j%22&core=gav&wt=json",
+        "" +
+          "{\"responseHeader\":" +
+          "{\"status\":0,\"QTime\":0,\"params\":" +
+          "{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"log4j\\\" AND a:\\\"log4j\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"version\":\"2.2\"}}," +
+          "\"response\":" +
+          "{\"numFound\":4,\"start\":0,\"docs\":[" +
+          "{\"id\":\"log4j:log4j:1.2.12\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.12\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"log4j:log4j:1.2.11\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.11\",\"p\":\"jar\",\"timestamp\":1462851968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"log4j:log4j:1.2.10\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.10\",\"p\":\"jar\",\"timestamp\":1462850968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"log4j:log4j:1.2.9\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.9\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}"
+      )
+      .issues(
+        REMOTE_VERSION,
+        RISKY_LIBRARY,
+        DEPRECATED_LIBRARY,
+        DEPENDENCY,
+        PLAY_SDK_INDEX_NON_COMPLIANT,
+        PLAY_SDK_INDEX_GENERIC_ISSUES
+      )
+      .sdkHome(mockSupportLibraryInstallation)
+      .run()
+      .expect(
+        """
+          build.gradle:2: Warning: A newer version of com.example.ads.third.party:example than 7.2.0 is available: 8.0.0 [NewerVersionAvailable]
+              compile 'com.example.ads.third.party:example:7.2.0' // Suggest 8.0.0 since it does not have issues
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:3: Warning: A newer version of com.example.ads.third.party:example than 7.2.1 is available: 8.0.0 [NewerVersionAvailable]
+              compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:4: Warning: A newer version of log4j:log4j than 1.2.10 is available: 1.2.11 [NewerVersionAvailable]
+              compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
+                      ~~~~~~~~~~~~~~~~~~~~
+          build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has one or more issues that could block publishing of your app to Play Console in the future [PlaySdkIndexGenericIssues]
+              compile 'com.example.ads.third.party:example:7.2.0' // Suggest 8.0.0 since it does not have issues
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          0 errors, 4 warnings
+        """
+      )
+      .expectFixDiffs(expectedFixes)
+  }
+
+  /**
+   * Test that version upgrade quickfix is not shown if the suggested version has errors or warnings
+   * from SDK Index
+   */
+  fun testSdkIndexLibraryNoUpgradeToVersionWithWarningOrError() {
+    val expectedFixes =
+      """
+        Show URL for build.gradle line 3: View details in Google Play SDK Index:
+        http://another.example.url/
+      """
+    lint()
+      .files(
+        gradle(
+            """
+                dependencies {
+                    compile 'log4j:log4j:1.2.11' // No Issue but no suggestion since 1.2.15 has outdated non blocking issues (warning)
+                    compile 'com.example.ads.third.party:example:7.1.0' //Issue but no suggestion since 7.1.4 has issues (error)
+                }
+                """
+          )
+          .indented()
+      )
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22log4j%22+AND+a:%22log4j%22&core=gav&wt=json",
+        "" +
+          "{\"responseHeader\":" +
+          "{\"status\":0,\"QTime\":0,\"params\":" +
+          "{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"log4j\\\" AND a:\\\"log4j\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"version\":\"2.2\"}}," +
+          "\"response\":" +
+          "{\"numFound\":4,\"start\":0,\"docs\":[" +
+          "{\"id\":\"log4j:log4j:1.2.15\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.15\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"log4j:log4j:1.2.11\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.11\",\"p\":\"jar\",\"timestamp\":1462851968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"log4j:log4j:1.2.10\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.10\",\"p\":\"jar\",\"timestamp\":1462850968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"log4j:log4j:1.2.9\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.9\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}"
+      )
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22com.example.ads.third.party%22+AND+a:%22example%22&core=gav&wt=json",
+        "" +
+          "{\"responseHeader\":" +
+          "{\"status\":0,\"QTime\":0,\"params\":" +
+          "{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"com.example.ads.third.party\\\" AND a:\\\"example\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"version\":\"2.2\"}}," +
+          "\"response\":" +
+          "{\"numFound\":4,\"start\":0,\"docs\":[" +
+          "{\"id\":\"com.example.ads.third.party:example:7.1.4\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.4\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.ads.third.party:example:7.1.2\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.2\",\"p\":\"jar\",\"timestamp\":1462851968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.ads.third.party:example:7.1.1\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.1\",\"p\":\"jar\",\"timestamp\":1462850968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
+          "{\"id\":\"com.example.ads.third.party:example:7.1.0\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.0\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}"
+      )
+      .issues(
+        REMOTE_VERSION,
+        RISKY_LIBRARY,
+        DEPRECATED_LIBRARY,
+        DEPENDENCY,
+        PLAY_SDK_INDEX_NON_COMPLIANT,
+        PLAY_SDK_INDEX_GENERIC_ISSUES
+      )
+      .sdkHome(mockSupportLibraryInstallation)
+      .run()
+      .expect(
+        """
+          build.gradle:3: Warning: com.example.ads.third.party:example version 7.1.0 has Ads policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
+              compile 'com.example.ads.third.party:example:7.1.0' //Issue but no suggestion since 7.1.4 has issues (error)
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          0 errors, 1 warnings
+        """
+      )
+      .expectFixDiffs(expectedFixes)
+  }
+
+  /**
    * Tests that the navigation libraries are not considered as part of androidx even when their name
    * does start with "androidx."
    */

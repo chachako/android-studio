@@ -241,6 +241,27 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   }
 
   /**
+   * Does this library have any issues that would result in an error or warning?
+   *
+   * @param groupId: group id for library coordinates
+   * @param artifactId: artifact id for library coordinates
+   * @param versionString: version to check
+   * @return true if the index has information about this particular version, and it has issues that
+   *   will cause an error or warning. (Any blocking issue is an error, non blocking outdated or
+   *   policy issues are warnings)
+   */
+  fun hasLibraryErrorOrWarning(
+    groupId: String,
+    artifactId: String,
+    versionString: String
+  ): Boolean {
+    val labels = getLabels(groupId, artifactId, versionString) ?: return false
+    return labels.severity == LibraryVersionLabels.Severity.BLOCKING_SEVERITY ||
+      labels.hasOutdatedIssueInfo() ||
+      labels.hasPolicyIssuesInfo()
+  }
+
+  /**
    * Get URL for the SDK associated to this library
    *
    * @param groupId: group id for library coordinates

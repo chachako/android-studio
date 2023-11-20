@@ -969,7 +969,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     var safeReplacement: Version? = null
     var newerVersion: Version? = null
 
-    val filter = getUpgradeVersionFilter(context, groupId, artifactId, version)
+    val sdkIndex = getGooglePlaySdkIndex(context.client)
+    val filter = getUpgradeVersionFilter(context, groupId, artifactId, version, sdkIndex)
 
     when (groupId) {
       GMS_GROUP_ID,
@@ -1151,7 +1152,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       }
     }
 
-    val sdkIndex = getGooglePlaySdkIndex(context.client)
     if (sdkIndex.isReady()) {
       val versionString = version.toString()
       val buildFile = context.file
@@ -1184,9 +1184,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       }
       if (issueTypes.isNotEmpty()) {
         val fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
-        var reportCreated = false
         var typeIndex = 0
-        while ((!reportCreated) && typeIndex < issueTypes.size) {
+        var sdkIndexReportCreated = false
+        while ((!sdkIndexReportCreated) && typeIndex < issueTypes.size) {
           if (isBlocking) {
             val message =
               when (issueTypes[typeIndex]) {
@@ -1199,7 +1199,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                 else ->
                   sdkIndex.generateBlockingGenericIssueMessage(groupId, artifactId, versionString)
               }
-            reportCreated =
+            sdkIndexReportCreated =
               report(
                 context,
                 cookie,
@@ -1219,7 +1219,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                   sdkIndex.generateOutdatedMessage(groupId, artifactId, versionString)
                 else -> sdkIndex.generateGenericIssueMessage(groupId, artifactId, versionString)
               }
-            reportCreated =
+            sdkIndexReportCreated =
               report(
                 context,
                 cookie,
@@ -1325,7 +1325,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: Context,
     groupId: String,
     artifactId: String,
-    version: Version
+    version: Version,
+    sdkIndex: GooglePlaySdkIndex?
   ): Predicate<Version>? {
     if (
       (groupId == "com.android.tools.build" || ALL_PLUGIN_IDS.contains(groupId)) &&
@@ -1338,9 +1339,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       return Predicate { v ->
         // Any higher IDE version that matches major and minor
         // (e.g. from 3.3.0 offer 3.3.2 but not 3.4.0)
-        (v.major == ideVersion.major && v.minor == ideVersion.minor) ||
+        ((v.major == ideVersion.major && v.minor == ideVersion.minor) ||
           // Also allow matching latest current existing major/minor version
-          (v.major == version.major && v.minor == version.minor)
+          (v.major == version.major && v.minor == version.minor))
+        // And there should not be issues in SDK Index (b/301295995)
+        &&
+          (sdkIndex == null ||
+            (sdkIndex.isReady() &&
+              !sdkIndex.hasLibraryErrorOrWarning(groupId, artifactId, v.toString())))
       }
     }
 
@@ -1353,10 +1359,23 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       val infimum = version.previewInfimum
       val supremum = version.previewSupremum
       if (infimum != null && supremum != null) {
-        return Predicate { v -> if (v.isPreview) (infimum < v && v < supremum) else true }
+        return Predicate { v ->
+          (if (v.isPreview) (infimum < v && v < supremum) else true)
+          // And there should not be issues in SDK Index (b/301295995)
+          &&
+            (sdkIndex == null ||
+              (sdkIndex.isReady() &&
+                !sdkIndex.hasLibraryErrorOrWarning(groupId, artifactId, v.toString())))
+        }
       }
     }
 
+    if (sdkIndex != null) {
+      // Filter out versions with SDK Index errors or warnings (b/301295995)
+      return Predicate { v ->
+        sdkIndex.isReady() && !sdkIndex.hasLibraryErrorOrWarning(groupId, artifactId, v.toString())
+      }
+    }
     return null
   }
 

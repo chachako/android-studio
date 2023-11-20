@@ -345,6 +345,11 @@ class GooglePlaySdkIndexTest {
   }
 
   @Test
+  fun `errors and warnings shown correctly`() {
+    assertThat(countHasErrorOrWarning()).isEqualTo(13)
+  }
+
+  @Test
   fun `all links are present when showLinks is enabled`() {
     for (sdk in proto.sdksList) {
       val expectedUrl = sdk.indexUrl
@@ -474,6 +479,22 @@ class GooglePlaySdkIndexTest {
         val artifact = library.libraryId.mavenId.artifactId
         for (version in library.versionsList) {
           if (index.hasLibraryCriticalIssues(group, artifact, version.versionString, null)) {
+            result++
+          }
+        }
+      }
+    }
+    return result
+  }
+
+  private fun countHasErrorOrWarning(): Int {
+    var result = 0
+    for (sdk in proto.sdksList) {
+      for (library in sdk.librariesList) {
+        val group = library.libraryId.mavenId.groupId
+        val artifact = library.libraryId.mavenId.artifactId
+        for (version in library.versionsList) {
+          if (index.hasLibraryErrorOrWarning(group, artifact, version.versionString)) {
             result++
           }
         }
