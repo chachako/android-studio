@@ -23,14 +23,26 @@ import java.util.function.Supplier
  * awkwardness of explicitly using a [Supplier] that returns [Unit].
  *
  * This is a `value` class, so it is represented internally identically to using the Supplier
- * directly, but provides some type-sense as well as hiding any potential static analysis
- * issues that arise from using a [Supplier] but ignoring the return value of [Supplier.get].
+ * directly, but provides some type-sense as well as hiding any potential static analysis issues
+ * that arise from using a [Supplier] but ignoring the return value of [Supplier.get].
+ *
+ * Kotlin `value` classes are tricky to use from Java - they are actually the underlying class type
+ * ([Supplier], in this case) and as such, will not actually implement [Runnable]. As such, we
+ * provide the [RunOnce.of] factory method, which returns a [Runnable].
  */
 @JvmInline
-value class RunOnce private constructor(val supplier: Supplier<Unit>) : () -> Unit {
+value class RunOnce private constructor(val supplier: Supplier<Unit>) : () -> Unit, Runnable {
   constructor(block: () -> Unit) : this(Suppliers.memoize(block::invoke))
 
   override fun invoke() {
     supplier.get()
+  }
+
+  override fun run() {
+    invoke()
+  }
+
+  companion object {
+    @JvmStatic fun of(block: Runnable): Runnable = RunOnce(block::run)
   }
 }

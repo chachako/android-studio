@@ -23,13 +23,25 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class RunOnceTest {
   @Test
-  fun runsOnce() {
+  fun runsOnce_kotlinFunctionalUsage() {
     var invocations = 0
-    val runOnce = RunOnce { ++invocations }
+    val runOnce: () -> Unit = RunOnce { ++invocations }
     assertThat(invocations).isEqualTo(0)
     runOnce()
     assertThat(invocations).isEqualTo(1)
     runOnce()
+    assertThat(invocations).isEqualTo(1)
+  }
+
+  @Test
+  fun runsOnce_runnableUsage() {
+    var invocations = 0
+    val runnable = Runnable { ++invocations }
+    val runOnce: Runnable = RunOnce.of(runnable)
+    assertThat(invocations).isEqualTo(0)
+    runOnce.run()
+    assertThat(invocations).isEqualTo(1)
+    runOnce.run()
     assertThat(invocations).isEqualTo(1)
   }
 }
