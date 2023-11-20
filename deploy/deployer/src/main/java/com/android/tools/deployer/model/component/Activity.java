@@ -43,9 +43,11 @@ public class Activity extends AppComponent {
             @NonNull IDevice device)
             throws DeployerException {
         extraFlags = extraFlags.trim();
-        logger.info("Activating Activity '%s' %s",
-                    info.getQualifiedName(),
-                    activationMode.equals(Mode.DEBUG) ? "for debug" : "");
+        logger.info(
+                "Activating Activity '%s' %s on device %s",
+                info.getQualifiedName(),
+                activationMode.equals(Mode.DEBUG) ? "for debug" : "",
+                device.getSerialNumber());
         if (activationMode.equals(Mode.DEBUG)
                 && !extraFlags.contains(Flag.ENABLE_DEBUGGING.string)) {
             extraFlags = "-D" + (extraFlags.isEmpty() ? "" : (" " + extraFlags));
