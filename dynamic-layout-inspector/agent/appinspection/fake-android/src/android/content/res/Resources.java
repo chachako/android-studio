@@ -88,9 +88,11 @@ public final class Resources {
         // A test should fail if our production code is asking for resources with an invalid
         // resourceId. This check is similar to the function is_valid_resid in ResourceUtils.h
         // of the framework.
-        if (resourceId < 0 || ((resourceId & 0x00ff0000) != 0 && (resourceId & 0xff000000) != 0)) {
+        if ((resourceId & 0x00ff0000) != 0
+                && (resourceId & 0xff000000) != 0
+                && (resourceId & 0xff000000) != 0xff000000) { // 0xff is an invalid package name
             return;
         }
-        throw new RuntimeException("Invalid resource ID " + Integer.toHexString(resourceId));
+        throw new RuntimeException("Invalid resource ID: " + Integer.toHexString(resourceId));
     }
 }

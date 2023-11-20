@@ -151,9 +151,12 @@ private fun isValidResourceId(resourceId: Int): Boolean {
     if (resourceId == Resources.ID_NULL) {
         return false
     }
-    // The platform and type should be non zero.
+    // The package and type should be non zero, and the package should not be 0xff.
     // See the function: is_valid_resid in the frameworks ResourceUtils.h
-    return (resourceId and Resources.ID_PACKAGE_MASK) != 0 && (resourceId and Resources.ID_TYPE_MASK) != 0
+    // and the function: AssetManager2::FindEntry (disallows 0xff for package id)
+    return (resourceId and Resources.ID_PACKAGE_MASK) != 0 &&
+            (resourceId and Resources.ID_PACKAGE_MASK) != Resources.ID_PACKAGE_MASK &&
+            (resourceId and Resources.ID_TYPE_MASK) != 0
 }
 
 fun View.getNamespace(attributeId: Int): String =

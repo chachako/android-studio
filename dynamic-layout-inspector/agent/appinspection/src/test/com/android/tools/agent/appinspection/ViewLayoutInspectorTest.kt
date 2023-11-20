@@ -36,6 +36,7 @@ import androidx.appcompat.widget.AppCompatButton
 import checkNextEventMatching
 import com.android.testutils.PropertySetterRule
 import com.android.tools.agent.appinspection.proto.StringTable
+import com.android.tools.agent.appinspection.proto.createResource
 import com.android.tools.agent.appinspection.testutils.FrameworkStateRule
 import com.android.tools.agent.appinspection.testutils.MainLooperRule
 import com.android.tools.agent.appinspection.testutils.inspection.InspectorRule
@@ -63,9 +64,11 @@ import com.android.tools.layoutinspector.BitmapType
 import com.android.tools.layoutinspector.toBytes
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.function.ThrowingRunnable
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CountDownLatch
@@ -2441,6 +2444,36 @@ abstract class ViewLayoutInspectorTestBase {
         checkNonProgressEvents(eventQueue,
             Event.SpecializedCase.LAYOUT_EVENT,
         )
+    }
+
+    @Test
+    fun testInvalidResourceIds() {
+        val packageName = "com.example"
+        val resources = createResources(packageName)
+        val context = Context(packageName, resources)
+        val view = View(context)
+        val table = StringTable()
+        val type = RuntimeException::class.java
+
+        // Using invalid resource id in Resources.getResourceName will give a warning.
+        // Avoid that warning by throwing an exception in tests:
+        assertThrows("Invalid resource ID: 2") { resources.getResourceName(2) }
+        assertThrows("Invalid resource ID: 1") { resources.getResourceName(1) }
+        assertThrows("Invalid resource ID: 0") { resources.getResourceName(0) }
+        assertThrows("Invalid resource ID: ffffffff") { resources.getResourceName(-1) }
+        assertThrows("Invalid resource ID: fffffffe") { resources.getResourceName(-2) }
+
+        // These values should be checked before calling resources methods in view.createResource:
+        assertThat(view.createResource(table, 2)).isNull()
+        assertThat(view.createResource(table, 1)).isNull()
+        assertThat(view.createResource(table, 0)).isNull()
+        assertThat(view.createResource(table, -1)).isNull()
+        assertThat(view.createResource(table, -2)).isNull()
+    }
+
+    private fun assertThrows(expectedMessage: String, runnable: ThrowingRunnable) {
+        val ex = Assert.assertThrows(RuntimeException::class.java, runnable)
+        assertThat(ex.message).isEqualTo(expectedMessage)
     }
 
     private fun checkNonProgressEvent(
