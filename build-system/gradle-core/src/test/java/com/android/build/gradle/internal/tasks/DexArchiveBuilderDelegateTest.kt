@@ -362,6 +362,45 @@ class DexArchiveBuilderDelegateTest {
         )
     }
 
+    /** Regression test for b/308401803. */
+    @Test
+    fun testBuildDoesNotFailWhenJarIsMovedAcrossScopes() {
+        val inputJar = tmpDir.root.resolve("input.jar")
+        jarWithEmptyClasses(inputJar.toPath(), listOf("$PACKAGE/A", "$PACKAGE/B", "$PACKAGE/C"))
+
+        val projectOutput = out.toFile().resolve("projectOutput")
+        val externalLibsOutput = out.toFile().resolve("externalLibsOutput")
+
+        val inputJarHashesFile = tmpDir.newFile()
+
+        getDelegate(
+            projectClasses = setOf(inputJar),
+            externalLibClasses = emptySet(),
+            projectOutput = projectOutput,
+            externalLibsOutput = externalLibsOutput,
+            inputJarHashesFile = inputJarHashesFile,
+        ).doProcess()
+
+        val projectOutputJar = projectOutput.listFiles()!!.single()
+        val outputJarContentsInFirstBuild = projectOutputJar.readBytes()
+
+        getDelegate(
+            projectClasses = emptySet(),
+            externalLibClasses = setOf(inputJar),
+            projectOutput = projectOutput,
+            externalLibsOutput = externalLibsOutput,
+            inputJarHashesFile = inputJarHashesFile,
+            isIncremental = true,
+            projectChanges = setOf(FakeFileChange(inputJar, ChangeType.REMOVED, FileType.FILE, "")),
+            externalLibChanges = setOf(FakeFileChange(inputJar, ChangeType.ADDED, FileType.FILE, "")),
+        ).doProcess()
+
+        val externalLibsOutputJar = externalLibsOutput.listFiles()!!.single()
+        val outputJarContentsInSecondBuild = externalLibsOutputJar.readBytes()
+
+        assertThat(outputJarContentsInSecondBuild).isEqualTo(outputJarContentsInFirstBuild)
+    }
+
     private fun findOutputBucketForDirInput(numberOfBuckets: Int): String =
         (0 until numberOfBuckets).find {
             FileUtils.find(out.resolve(it.toString()).toFile(),
