@@ -65,6 +65,7 @@ import com.intellij.lang.java.JavaLanguage
 import com.intellij.psi.JavaRecursiveElementVisitor
 import com.intellij.psi.PsiAnonymousClass
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiCompiledElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiField
@@ -619,6 +620,10 @@ internal class AnnotationHandler(
     reference: UTypeReferenceExpression
   ) {
     val psi = reference.sourcePsi ?: return
+    if (psi is PsiCompiledElement) {
+      // Make sure we don't visit binary elements -- b/312177842
+      return
+    }
     // In the code
     //    val x = List<T>
     // there is no UElement corresponding to "T" in the UAST tree, but there is
