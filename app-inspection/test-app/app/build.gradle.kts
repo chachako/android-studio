@@ -4,6 +4,7 @@ plugins {
   alias(libs.plugins.hilt)
   alias(libs.plugins.kotlin.kapt)
   alias(libs.plugins.kotlinAndroid)
+  alias(libs.plugins.ksp)
 }
 
 android {
@@ -43,6 +44,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   implementation(libs.androidx.navigation.compose)
+  implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.work)
   implementation(libs.core.ktx)
   implementation(libs.grpc.core)
@@ -61,5 +63,6 @@ dependencies {
   implementation(platform(libs.compose.bom))
 
   kapt(libs.hilt.compiler)
+  ksp(libs.androidx.room.compiler)
   debugImplementation(libs.androidx.ui.tooling)
 }

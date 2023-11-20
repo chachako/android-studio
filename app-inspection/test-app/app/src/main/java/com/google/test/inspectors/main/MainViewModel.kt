@@ -16,6 +16,7 @@ import com.google.test.inspectors.AppJobService
 import com.google.test.inspectors.AppWorker
 import com.google.test.inspectors.HttpClient
 import com.google.test.inspectors.Logger
+import com.google.test.inspectors.db.SettingsDao
 import com.google.test.inspectors.grpc.GrpcClient
 import com.google.test.inspectors.grpc.json.JsonRequest
 import com.google.test.inspectors.grpc.proto.protoRequest
@@ -50,10 +51,11 @@ internal class MainViewModel
 @Inject
 constructor(
   private val application: Application,
+  private val settingsDao: SettingsDao,
 ) : ViewModel(), MainScreenActions {
+
   private val snackFlow: MutableStateFlow<String?> = MutableStateFlow(null)
   val snackState: StateFlow<String?> = snackFlow.stateIn(viewModelScope, WhileUiSubscribed, null)
-  private val grpcClient = GrpcClient("100.98.159.171", 54321)
 
   private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
     snackFlow.value = "Error: ${throwable.message}"
@@ -103,6 +105,7 @@ constructor(
 
   override fun doProtoGrpc(name: String) {
     scope.launch {
+      val grpcClient = newGrpcClient()
       val response = grpcClient.doProtoGrpc(protoRequest { this.name = name })
       snackFlow.value = response.message
     }
@@ -110,8 +113,12 @@ constructor(
 
   override fun doJsonGrpc(name: String) {
     scope.launch {
+      val grpcClient = newGrpcClient()
       val response = grpcClient.doJsonGrpc(JsonRequest(name))
       snackFlow.value = response.message
     }
   }
+
+  private suspend fun newGrpcClient() =
+    GrpcClient(settingsDao.getValue("host", ""), settingsDao.getValue("port", 0))
 }
