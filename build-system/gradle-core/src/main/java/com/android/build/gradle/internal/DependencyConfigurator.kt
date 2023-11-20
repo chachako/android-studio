@@ -74,6 +74,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.AndroidLocationsBuildService
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.getBuildService
+import com.android.build.gradle.internal.signing.SigningConfigData
 import com.android.build.gradle.internal.tasks.AsarToApksTransform
 import com.android.build.gradle.internal.tasks.AsarTransform
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
@@ -103,7 +104,6 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIB
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
-import org.gradle.api.provider.MapProperty
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import java.lang.Boolean.FALSE
 import java.lang.Boolean.TRUE
@@ -461,23 +461,6 @@ class DependencyConfigurator(
     }
 
     fun configurePrivacySandboxSdkConsumerTransforms(): DependencyConfigurator {
-        val defaultDebugSigning = getBuildService(
-                projectServices.buildServiceRegistry,
-                AndroidLocationsBuildService::class.java
-        ).map { it.getDefaultDebugKeystoreSigningConfig() }
-        registerTransform(
-                AsarToApksTransform::class.java,
-                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
-                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS
-        ) { params ->
-            projectServices.initializeAapt2Input(params.aapt2)
-
-            params.signingConfigData.set(defaultDebugSigning)
-            params.signingConfigValidationResultDir.set(
-                    ArtifactsImpl(project,
-                            "global").get(InternalArtifactType.VALIDATE_SIGNING_CONFIG)
-            )
-        }
         for (from in AsarTransform.supportedAsarTransformTypes) {
             registerTransform(
                     AsarTransform::class.java,
@@ -605,6 +588,39 @@ class DependencyConfigurator(
             else -> error("It is not possible to override Privacy Sandbox experimental properties per variant.\n" +
                     "Properties with different values defined across multiple variants: ${properties.joinToString()} ")
         }
+
+        fun registerAsarToApksTransform(variants: List<VariantCreationConfig>) {
+            val variantSigningConfigs = variants.mapNotNull { variant ->
+                val experimentalProps = variant.experimentalProperties
+                experimentalProps.finalizeValue()
+                SigningConfigData.fromExperimentalPropertiesSigningConfig(variant.experimentalProperties)
+            }
+
+            val signingConfigProvider = when (variantSigningConfigs.count()) {
+                0 -> getBuildService(
+                        variants.first().services.buildServiceRegistry,
+                        AndroidLocationsBuildService::class.java
+                ).map(AndroidLocationsBuildService::getDefaultDebugKeystoreSigningConfig)
+                1 -> variants.first().services.provider { variantSigningConfigs.single() }
+                else -> error("It is not possible to override Privacy Sandbox experimental properties per variant.\n" +
+                        "Properties with different signing config experimental property values defined across multiple variants.")
+            }
+
+            registerTransform(
+                    AsarToApksTransform::class.java,
+                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
+                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS
+            ) { params ->
+                projectServices.initializeAapt2Input(params.aapt2)
+
+                params.signingConfigData.set(signingConfigProvider)
+                params.signingConfigValidationResultDir.set(
+                        ArtifactsImpl(project,
+                                "global").get(InternalArtifactType.VALIDATE_SIGNING_CONFIG)
+                )
+            }
+        }
+        registerAsarToApksTransform(variants)
 
         return this
     }
