@@ -104,6 +104,16 @@ internal class PMDriver(private val service : AdbDeviceServices, private val dev
             logger.info{ "  apk: '$it' " }
         }
 
+        // Check that all files to push are ok
+        apks.forEach{
+            if (!Files.exists(it)) {
+                throw InstallException(InstallResult("Cannot install '$it' (does not exist)"))
+            }
+
+            if (Files.isDirectory(it)) {
+                throw InstallException(InstallResult("Cannot install '$it' (directory)"))
+            }
+        }
         // Finally, installing!
 
         // 1/ Create session

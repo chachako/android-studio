@@ -28,6 +28,7 @@ import org.junit.Assert
 import org.junit.Test
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 
 class TestInstall : TestInstallBase() {
 
@@ -208,6 +209,38 @@ class TestInstall : TestInstallBase() {
                 Assert.fail("PM did not detect duplicate names")
             }
         } catch (e: InstallException) {
+        }
+    }
+
+    @Test
+    fun testInstallNonExistentFile() {
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+
+        val apks = listOf(Paths.get("/bad/non-existent/file.apk"))
+
+        try {
+            runBlocking {
+                deviceServices.install(deviceSelector, apks, emptyList())
+                Assert.fail("PM did not detect missing file")
+            }
+        } catch (_: InstallException) {
+        }
+    }
+
+    @Test
+    fun testInstallDirectory() {
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+
+        val apks = listOf(Files.createTempDirectory("foo").toAbsolutePath())
+
+        try {
+            runBlocking {
+                deviceServices.install(deviceSelector, apks, emptyList())
+                Assert.fail("PM did not detect missing file")
+            }
+        } catch (_: InstallException) {
         }
     }
 }
