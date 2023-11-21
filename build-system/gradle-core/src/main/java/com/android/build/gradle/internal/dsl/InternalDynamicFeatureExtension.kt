@@ -23,6 +23,8 @@ import com.android.build.api.dsl.DynamicFeatureDefaultConfig
 import com.android.build.api.dsl.DynamicFeatureExtension
 import com.android.build.api.dsl.DynamicFeatureInstallation
 import com.android.build.api.dsl.DynamicFeatureProductFlavor
+import com.android.build.api.dsl.PrivacySandbox
+import org.gradle.api.Action
 
 /** See [InternalCommonExtension] */
 interface InternalDynamicFeatureExtension :
@@ -33,4 +35,7 @@ interface InternalDynamicFeatureExtension :
             DynamicFeatureDefaultConfig,
             DynamicFeatureProductFlavor,
             DynamicFeatureAndroidResources,
-            DynamicFeatureInstallation>
+            DynamicFeatureInstallation> {
+
+    fun privacySandbox(action: Action<PrivacySandbox>)
+}

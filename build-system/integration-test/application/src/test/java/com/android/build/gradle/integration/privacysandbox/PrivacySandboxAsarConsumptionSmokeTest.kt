@@ -61,7 +61,12 @@ class PrivacySandboxAsarConsumptionSmokeTest {
 
     @Test
     fun testDependencyWithoutSupportEnabled() {
-        val result = project.executor().with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false).expectFailure().run(":example-app:assembleDebug")
+        project.getSubproject(":example-app").buildFile.appendText("""
+            android.privacySandbox {
+                enable = false
+            }
+        """.trimIndent())
+        val result = project.executor().expectFailure().run(":example-app:assembleDebug")
         assertThat(result.stderr).contains("Dependency com.example:externalasar:1 is an Android Privacy Sandbox SDK library")
     }
 

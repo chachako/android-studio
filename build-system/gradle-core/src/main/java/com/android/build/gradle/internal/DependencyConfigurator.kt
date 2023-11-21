@@ -461,34 +461,33 @@ class DependencyConfigurator(
     }
 
     fun configurePrivacySandboxSdkConsumerTransforms(): DependencyConfigurator {
-        if (projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
-            val defaultDebugSigning = getBuildService(
-                    projectServices.buildServiceRegistry,
-                    AndroidLocationsBuildService::class.java
-            ).map { it.getDefaultDebugKeystoreSigningConfig() }
-            registerTransform(
-                    AsarToApksTransform::class.java,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS
-            ) { params ->
-                projectServices.initializeAapt2Input(params.aapt2)
+        val defaultDebugSigning = getBuildService(
+                projectServices.buildServiceRegistry,
+                AndroidLocationsBuildService::class.java
+        ).map { it.getDefaultDebugKeystoreSigningConfig() }
+        registerTransform(
+                AsarToApksTransform::class.java,
+                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
+                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS
+        ) { params ->
+            projectServices.initializeAapt2Input(params.aapt2)
 
-                params.signingConfigData.set(defaultDebugSigning)
-                params.signingConfigValidationResultDir.set(
-                        ArtifactsImpl(project,
-                                "global").get(InternalArtifactType.VALIDATE_SIGNING_CONFIG)
-                )
-            }
-            for (from in AsarTransform.supportedAsarTransformTypes) {
-                registerTransform(
-                        AsarTransform::class.java,
-                        AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
-                        from
-                ) {
-                    it.targetType.set(from)
-                }
+            params.signingConfigData.set(defaultDebugSigning)
+            params.signingConfigValidationResultDir.set(
+                    ArtifactsImpl(project,
+                            "global").get(InternalArtifactType.VALIDATE_SIGNING_CONFIG)
+            )
+        }
+        for (from in AsarTransform.supportedAsarTransformTypes) {
+            registerTransform(
+                    AsarTransform::class.java,
+                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
+                    from
+            ) {
+                it.targetType.set(from)
             }
         }
+
         return this
     }
 
@@ -498,10 +497,6 @@ class DependencyConfigurator(
         buildToolsRevision: Revision,
         bootstrapCreationConfig: BootClasspathConfig
     ): DependencyConfigurator {
-        if (!projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
-            return this
-        }
-
         fun configureExtractSdkShimTransforms(experimentalProperties: Map<String, Any>) {
             val extractSdkShimTransformParamConfig =
                     { reg: TransformSpec<ExtractSdkShimTransform.Parameters> ->

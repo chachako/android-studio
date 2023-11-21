@@ -91,9 +91,6 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
     abstract val runtimeEnabledSdkTableFile: RegularFileProperty
 
     @get:Input
-    abstract val privacySandboxEnabled: Property<Boolean>
-
-    @get:Input
     abstract val applicationId: Property<String>
 
     @get:Input
@@ -122,15 +119,6 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
     abstract val apksFromBundleIdeModel: RegularFileProperty
 
     override fun doTaskAction() {
-        if (!privacySandboxEnabled.get()) {
-            throw IllegalStateException(
-                    "Unable to execute task as Privacy Sandbox support is not enabled. \n" +
-                            "To enable support, add\n" +
-                            "    ${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true\n" +
-                            "to your project's gradle.properties file."
-            )
-        }
-
         val elements = mutableListOf<BuiltArtifactImpl>()
 
         privacySandboxSplitCompatApks.files.forEach { zippedApks ->
@@ -240,8 +228,6 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
             task.projectBaseName.setDisallowChanges(creationConfig.services.projectInfo.getProjectBaseName())
             task.componentBaseName.setDisallowChanges(creationConfig.baseName)
             task.versionCode.setDisallowChanges(creationConfig.outputs.getMainSplit().versionCode)
-            task.privacySandboxEnabled.setDisallowChanges(
-                    creationConfig.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT])
             task.androidJarInput.initialize(creationConfig)
             creationConfig.services.initializeAapt2Input(task.aapt2)
             task.signingConfig.setDisallowChanges(SigningConfigDataProvider.create(creationConfig))

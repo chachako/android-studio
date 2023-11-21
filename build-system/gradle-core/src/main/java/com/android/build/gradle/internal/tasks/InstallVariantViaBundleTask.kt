@@ -264,7 +264,7 @@ abstract class InstallVariantViaBundleTask : NonIncrementalTask() {
 
             task.timeOutInMs = creationConfig.global.installationOptions.timeOutInMs
             task.buildTools.initialize(creationConfig)
-            if (creationConfig.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
+            if (creationConfig.privacySandboxCreationConfig != null) {
                 task.privacySandboxSdkApksFiles.setFrom(
                     creationConfig.variantDependencies
                         .getArtifactFileCollection(

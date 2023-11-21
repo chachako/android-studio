@@ -38,7 +38,6 @@ import com.android.build.gradle.internal.tasks.factory.TaskFactoryUtils;
 import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig;
 import com.android.build.gradle.internal.test.TestApplicationTestData;
 import com.android.build.gradle.internal.variant.ComponentInfo;
-import com.android.build.gradle.options.BooleanOption;
 import com.android.build.gradle.tasks.CheckTestedAppObfuscation;
 import com.android.build.gradle.tasks.ManifestProcessorTask;
 import com.android.build.gradle.tasks.ProcessTestManifest;
@@ -92,11 +91,11 @@ public class TestApplicationTaskManager
         Provider<Directory> testingApk =
                 testVariantProperties.getArtifacts().get(SingleArtifact.APK.INSTANCE);
 
+        boolean privacySandboxEnabled =
+                testVariantProperties.getPrivacySandboxCreationConfig() != null;
+
         FileCollection privacySandboxSdkApks =
-                testVariantProperties
-                                .getServices()
-                                .getProjectOptions()
-                                .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)
+                privacySandboxEnabled
                         ? testVariantProperties
                                 .getVariantDependencies()
                                 .getArtifactFileCollection(
@@ -107,10 +106,7 @@ public class TestApplicationTaskManager
                         : null;
 
         Provider<Directory> privacySandboxCompatSdkApks =
-                testVariantProperties
-                                .getServices()
-                                .getProjectOptions()
-                                .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)
+                privacySandboxEnabled
                         ? testVariantProperties
                                 .getArtifacts()
                                 .get(InternalArtifactType.SDK_SPLITS_APKS.INSTANCE)

@@ -69,4 +69,8 @@ interface ApplicationExtension :
     override val androidResources: ApplicationAndroidResources
 
     override val installation: ApplicationInstallation
+
+    /** Options related to the consumption of privacy sandbox libraries */
+    val privacySandbox: PrivacySandbox
+    fun privacySandbox(action: PrivacySandbox.() -> Unit)
 }

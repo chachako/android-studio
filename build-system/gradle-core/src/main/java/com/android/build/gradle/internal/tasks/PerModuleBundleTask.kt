@@ -409,7 +409,7 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
                 )
             }
 
-            if (creationConfig.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT] && creationConfig.componentType.isBaseModule) {
+            if (creationConfig.privacySandboxCreationConfig != null && creationConfig.componentType.isBaseModule) {
                 artifacts.setTaskInputToFinalProduct(
                         InternalArtifactType.PRIVACY_SANDBOX_SDK_RUNTIME_CONFIG_FILE,
                         task.privacySandboxSdkRuntimeConfigFile

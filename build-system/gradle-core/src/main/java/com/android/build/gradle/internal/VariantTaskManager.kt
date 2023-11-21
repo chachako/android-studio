@@ -221,7 +221,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
         )
 
         // Global tasks required for privacy sandbox sdk consumption
-        if (globalConfig.services.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
+        if (variants.any { it.variant.privacySandboxCreationConfig != null }) {
             taskFactory.register(ValidateSigningTask.PrivacySandboxSdkCreationAction(globalConfig))
         }
     }

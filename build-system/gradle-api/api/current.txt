@@ -476,7 +476,9 @@ package com.android.build.api.dsl {
     method public com.android.build.api.dsl.DependenciesInfo getDependenciesInfo();
     method public java.util.Set<java.lang.String> getDynamicFeatures();
     method public com.android.build.api.dsl.ApplicationInstallation getInstallation();
+    method public com.android.build.api.dsl.PrivacySandbox getPrivacySandbox();
     method public com.android.build.api.dsl.ApplicationPublishing getPublishing();
+    method public void privacySandbox(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PrivacySandbox,kotlin.Unit> action);
     method public void publishing(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ApplicationPublishing,kotlin.Unit> action);
     property public abstract com.android.build.api.dsl.ApplicationAndroidResources androidResources;
     property public abstract java.util.Set<java.lang.String> assetPacks;
@@ -484,6 +486,7 @@ package com.android.build.api.dsl {
     property public abstract com.android.build.api.dsl.DependenciesInfo dependenciesInfo;
     property public abstract java.util.Set<java.lang.String> dynamicFeatures;
     property public abstract com.android.build.api.dsl.ApplicationInstallation installation;
+    property public abstract com.android.build.api.dsl.PrivacySandbox privacySandbox;
     property public abstract com.android.build.api.dsl.ApplicationPublishing publishing;
   }
 
@@ -1072,6 +1075,9 @@ package com.android.build.api.dsl {
   }
 
   public interface DynamicFeatureExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.DynamicFeatureBuildFeatures,com.android.build.api.dsl.DynamicFeatureBuildType,com.android.build.api.dsl.DynamicFeatureDefaultConfig,com.android.build.api.dsl.DynamicFeatureProductFlavor,com.android.build.api.dsl.DynamicFeatureAndroidResources,com.android.build.api.dsl.DynamicFeatureInstallation> com.android.build.api.dsl.ApkExtension com.android.build.api.dsl.TestedExtension {
+    method public com.android.build.api.dsl.PrivacySandbox getPrivacySandbox();
+    method public void privacySandbox(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PrivacySandbox,kotlin.Unit> action);
+    property public abstract com.android.build.api.dsl.PrivacySandbox privacySandbox;
   }
 
   public interface DynamicFeatureInstallation extends com.android.build.api.dsl.Installation {
@@ -1402,10 +1408,13 @@ package com.android.build.api.dsl {
   public interface LibraryExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.LibraryBuildFeatures,com.android.build.api.dsl.LibraryBuildType,com.android.build.api.dsl.LibraryDefaultConfig,com.android.build.api.dsl.LibraryProductFlavor,com.android.build.api.dsl.LibraryAndroidResources,com.android.build.api.dsl.LibraryInstallation> com.android.build.api.dsl.TestedExtension {
     method @org.gradle.api.Incubating public java.util.Collection<java.lang.String>? getAidlPackagedList();
     method @org.gradle.api.Incubating public org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.Prefab> getPrefab();
+    method public com.android.build.api.dsl.PrivacySandbox getPrivacySandbox();
     method public com.android.build.api.dsl.LibraryPublishing getPublishing();
+    method public void privacySandbox(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PrivacySandbox,kotlin.Unit> action);
     method public void publishing(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.LibraryPublishing,kotlin.Unit> action);
     property @org.gradle.api.Incubating public abstract java.util.Collection<java.lang.String>? aidlPackagedList;
     property @org.gradle.api.Incubating public abstract org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.Prefab> prefab;
+    property public abstract com.android.build.api.dsl.PrivacySandbox privacySandbox;
     property public abstract com.android.build.api.dsl.LibraryPublishing publishing;
   }
 
@@ -1817,6 +1826,12 @@ package com.android.build.api.dsl {
     property public abstract String? headers;
     property public abstract String? libraryName;
     property public abstract String name;
+  }
+
+  public interface PrivacySandbox {
+    method public boolean getEnable();
+    method public void setEnable(boolean);
+    property public abstract boolean enable;
   }
 
   @org.gradle.api.Incubating public interface PrivacySandboxSdkBundle {

@@ -543,11 +543,7 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
             }
             task.rClasses.disallowChanges()
 
-            if(creationConfig
-                            .services
-                            .projectOptions
-                            .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)
-                    && testedConfig != null) {
+            if(creationConfig.privacySandboxCreationConfig != null && testedConfig != null) {
                 task.getPrivacySandboxSdkApksFiles()
                     .setFrom(
                         testedConfig

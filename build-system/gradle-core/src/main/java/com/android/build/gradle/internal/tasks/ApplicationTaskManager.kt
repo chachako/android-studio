@@ -312,7 +312,7 @@ class ApplicationTaskManager(
                 }
             }
             taskFactory.register(FinalizeBundleTask.CreationAction(variant))
-            if (variant.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
+            if (variant.privacySandboxCreationConfig != null) {
                 taskFactory.register(
                         GeneratePrivacySandboxSdkRuntimeConfigFile.CreationAction(variant))
                 taskFactory.register(
@@ -376,7 +376,7 @@ class ApplicationTaskManager(
     }
 
     override fun createInstallTask(creationConfig: ApkCreationConfig) {
-        if ( globalConfig.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT] && !creationConfig.componentType.isForTesting) {
+        if (creationConfig.privacySandboxCreationConfig != null && !creationConfig.componentType.isForTesting) {
             taskFactory.register(BuildPrivacySandboxSdkApks.CreationAction(creationConfig as ApplicationCreationConfig))
         }
         if (!globalConfig.hasDynamicFeatures ||

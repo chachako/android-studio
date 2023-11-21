@@ -235,7 +235,7 @@ abstract class CheckAarMetadataTask : NonIncrementalTask() {
             task.disableCompileSdkChecks.setDisallowChanges(
                 creationConfig.services.projectOptions[BooleanOption.DISABLE_COMPILE_SDK_CHECKS]
             )
-            if (!creationConfig.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
+            if (creationConfig.privacySandboxCreationConfig == null) {
                 task.disallowedAsarArtifacts =
                         creationConfig.variantDependencies.getArtifactCollection(
                                 AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,

@@ -20,6 +20,7 @@ import com.android.SdkConstants
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl
+import com.android.build.api.component.impl.features.PrivacySandboxCreationConfigImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidVersion
@@ -44,6 +45,7 @@ import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
+import com.android.build.gradle.internal.component.features.PrivacySandboxCreationConfig
 import com.android.build.gradle.internal.component.features.ResValuesCreationConfig
 import com.android.build.gradle.internal.component.legacy.ModelV1LegacySupport
 import com.android.build.gradle.internal.component.legacy.OldVariantApiLegacySupport
@@ -387,4 +389,11 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
             }
         )
     }
+
+    override val privacySandboxCreationConfig: PrivacySandboxCreationConfig?
+        get() = if(dslInfo.privacySandboxDsl.enable) {
+            PrivacySandboxCreationConfigImpl()
+        } else {
+            null
+        }
 }

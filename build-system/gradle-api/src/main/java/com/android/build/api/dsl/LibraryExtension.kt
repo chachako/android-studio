@@ -60,4 +60,7 @@ interface LibraryExtension :
      * For more information about the properties you can configure in this block, see [LibraryPublishing]
      */
     fun publishing(action: LibraryPublishing.() -> Unit)
+
+    val privacySandbox: PrivacySandbox
+    fun privacySandbox(action: PrivacySandbox.() -> Unit)
 }

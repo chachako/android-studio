@@ -25,6 +25,7 @@ import com.android.build.api.dsl.ApplicationInstallation
 import com.android.build.api.dsl.ApplicationProductFlavor
 import com.android.build.api.dsl.ApplicationPublishing
 import com.android.build.api.dsl.DependenciesInfo
+import com.android.build.api.dsl.PrivacySandbox
 import org.gradle.api.Action
 
 /** See [InternalCommonExtension] */
@@ -46,4 +47,5 @@ interface InternalApplicationExtension :
     fun bundle(action: Action<BundleOptions>)
     fun dependenciesInfo(action: Action<DependenciesInfo>)
     fun publishing(action: Action<ApplicationPublishing>)
+    fun privacySandbox(action: Action<PrivacySandbox>)
 }

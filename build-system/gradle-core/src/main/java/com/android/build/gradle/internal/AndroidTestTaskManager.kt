@@ -37,7 +37,6 @@ import com.android.build.gradle.internal.tasks.AppClasspathCheckTask
 import com.android.build.gradle.internal.tasks.CompressAssetsTask
 import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
 import com.android.build.gradle.internal.tasks.DeviceSerialTestTask
-import com.android.build.gradle.internal.tasks.GenerateAdditionalApkSplitForDeploymentViaApk
 import com.android.build.gradle.internal.tasks.JacocoTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceCleanTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestSetupTask
@@ -257,20 +256,18 @@ class AndroidTestTaskManager(
         val testedVariant = androidTestProperties.mainVariant
         val isLibrary = testedVariant.componentType.isAar
 
-        val privacySandboxSdkApks = if (androidTestProperties.services.projectOptions
-                        .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT))
-                testedVariant
-                .variantDependencies
-                .getArtifactFileCollection(
-                    AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
-                    AndroidArtifacts.ArtifactScope.ALL,
-                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS)
-        else null
+        val privacySandboxSdkApks = androidTestProperties.privacySandboxCreationConfig?.let {
+            testedVariant
+                    .variantDependencies
+                    .getArtifactFileCollection(
+                            AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                            AndroidArtifacts.ArtifactScope.ALL,
+                            AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS)
+        }
 
-        val privacySandboxCompatSdkApks = if (androidTestProperties.services.projectOptions
-                        .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
+        val privacySandboxCompatSdkApks = androidTestProperties.privacySandboxCreationConfig?.let {
             testedVariant.artifacts.get(InternalArtifactType.EXTRACTED_SDK_APKS)
-        } else null
+        }
 
         val testData: AbstractTestDataImpl = if (testedVariant.componentType.isDynamicFeature) {
             BundleTestDataImpl(

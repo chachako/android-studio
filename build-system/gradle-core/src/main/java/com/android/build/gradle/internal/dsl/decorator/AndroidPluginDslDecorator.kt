@@ -55,6 +55,7 @@ import com.android.build.api.dsl.MultiDexConfig
 import com.android.build.api.dsl.NdkBuild
 import com.android.build.api.dsl.Optimization
 import com.android.build.api.dsl.Packaging
+import com.android.build.api.dsl.PrivacySandbox
 import com.android.build.api.dsl.PrivacySandboxSdkBundle
 import com.android.build.api.dsl.PrivacySandboxSdkExtension
 import com.android.build.api.dsl.ResourcesPackaging
@@ -93,6 +94,7 @@ import com.android.build.gradle.internal.dsl.LibraryPublishingImpl
 import com.android.build.gradle.internal.dsl.LintImpl
 import com.android.build.gradle.internal.dsl.MultiDexConfigImpl
 import com.android.build.gradle.internal.dsl.NdkBuildOptions
+import com.android.build.gradle.internal.dsl.PrivacySandboxImpl
 import com.android.build.gradle.internal.dsl.PrivacySandboxSdkBundleImpl
 import com.android.build.gradle.internal.dsl.PrivacySandboxSdkExtensionImpl
 import com.android.build.gradle.internal.dsl.ResourcesPackagingImpl
@@ -148,6 +150,7 @@ val AGP_SUPPORTED_PROPERTY_TYPES: List<SupportedPropertyType> = listOf(
     SupportedPropertyType.Block(LibraryPublishing::class.java, LibraryPublishingImpl::class.java),
     SupportedPropertyType.Block(NdkBuild::class.java, NdkBuildOptions::class.java),
     SupportedPropertyType.Block(Packaging::class.java, com.android.build.gradle.internal.dsl.PackagingOptions::class.java),
+    SupportedPropertyType.Block(PrivacySandbox::class.java, PrivacySandboxImpl::class.java),
     SupportedPropertyType.Block(Optimization::class.java, com.android.build.gradle.internal.dsl.OptimizationImpl::class.java),
     SupportedPropertyType.Block(ResourcesPackaging::class.java, ResourcesPackagingImpl::class.java),
     SupportedPropertyType.Block(SigningConfig::class.java, com.android.build.gradle.internal.dsl.SigningConfigImpl::class.java),

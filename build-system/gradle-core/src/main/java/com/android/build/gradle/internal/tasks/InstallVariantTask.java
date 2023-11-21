@@ -36,7 +36,6 @@ import com.android.build.gradle.internal.scope.InternalArtifactType;
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction;
 import com.android.build.gradle.internal.test.BuiltArtifactsSplitOutputMatcher;
 import com.android.build.gradle.internal.testing.ConnectedDeviceProvider;
-import com.android.build.gradle.options.BooleanOption;
 import com.android.buildanalyzer.common.TaskCategory;
 import com.android.builder.internal.InstallUtils;
 import com.android.builder.testing.api.DeviceConfigProviderImpl;
@@ -400,10 +399,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                     .getArtifacts()
                     .setTaskInputToFinalProduct(
                             SingleArtifact.APK.INSTANCE, task.getApkDirectory());
-            if (creationConfig
-                    .getServices()
-                    .getProjectOptions()
-                    .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
+            if (creationConfig.getPrivacySandboxCreationConfig() != null) {
                 task.getPrivacySandboxSdksApksFiles()
                         .setFrom(
                                 creationConfig

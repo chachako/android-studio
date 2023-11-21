@@ -663,7 +663,7 @@ class ModelBuilder<
     }
 
     private fun createPrivacySandboxSdkInfo(component: ComponentCreationConfig): PrivacySandboxSdkInfo? {
-        if (!component.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
+        if (component.privacySandboxCreationConfig == null) {
             return null
         }
         if (component !is ApplicationCreationConfig) {

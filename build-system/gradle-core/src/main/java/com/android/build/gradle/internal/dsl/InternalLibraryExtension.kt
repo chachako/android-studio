@@ -24,6 +24,7 @@ import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.LibraryInstallation
 import com.android.build.api.dsl.LibraryProductFlavor
 import com.android.build.api.dsl.LibraryPublishing
+import com.android.build.api.dsl.PrivacySandbox
 import org.gradle.api.Action
 
 /** See [InternalCommonExtension] */
@@ -39,4 +40,6 @@ interface InternalLibraryExtension :
 
     override var aidlPackagedList: MutableCollection<String>
     fun publishing(action: Action<LibraryPublishing>)
+
+    fun privacySandbox(action: Action<PrivacySandbox>)
 }

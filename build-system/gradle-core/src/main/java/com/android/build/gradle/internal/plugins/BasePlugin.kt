@@ -734,7 +734,6 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
             )
             .configureAttributeMatchingStrategies(variantInputModel)
             .configureCalculateStackFramesTransforms(globalConfig)
-            .configurePrivacySandboxSdkConsumerTransforms()
                 .apply {
                     // Registering Jacoco transforms causes the jacoco configuration to be created.
                     // Ensure there are is at least one variant with enableAndroidTestCoverage
@@ -743,12 +742,21 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
                         configureJacocoTransforms()
                     }
                 }
-                .configurePrivacySandboxSdkVariantTransforms(
-                        variants.map { it.variant },
-                        globalConfig.compileSdkHashString,
-                        globalConfig.buildToolsRevision,
-                        globalConfig
-                )
+                .apply {
+                    // Registering privacy sandbox transforms creates various detatched
+                    // configurations for tools it uses. Only register them if privacy sandbox
+                    // consumption is enabled.
+                    if (variants.any { it.variant.privacySandboxCreationConfig != null }) {
+                        configurePrivacySandboxSdkConsumerTransforms()
+                        configurePrivacySandboxSdkVariantTransforms(
+                                variants.map { it.variant },
+                                globalConfig.compileSdkHashString,
+                                globalConfig.buildToolsRevision,
+                                globalConfig
+                        )
+                    }
+                }
+
 
         // Run the old Variant API, after the variants and tasks have been created.
         @Suppress("DEPRECATION")

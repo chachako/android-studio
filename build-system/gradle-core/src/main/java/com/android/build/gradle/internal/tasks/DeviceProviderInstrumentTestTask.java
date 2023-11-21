@@ -993,11 +993,7 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                                                         .RUNTIME_CLASSPATH));
             }
             task.getRClasses().disallowChanges();
-            if (creationConfig
-                            .getServices()
-                            .getProjectOptions()
-                            .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)
-                    && testedConfig != null) {
+            if (creationConfig.getPrivacySandboxCreationConfig() != null && testedConfig != null) {
                 task.getPrivacySandboxSdkApksFiles()
                         .setFrom(
                                 testedConfig
