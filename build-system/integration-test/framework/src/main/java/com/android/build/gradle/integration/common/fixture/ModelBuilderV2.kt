@@ -108,7 +108,7 @@ class ModelBuilderV2 internal constructor(
     }
 
     /**
-     * Fetches the model for each project and return them as a [ModelContainer]
+     * Fetches the model for each project and return them as a [ModelContainerV2]
      * @param variantName the name of the variant for which to return [VariantDependencies]
      * @param nativeParams the [NativeModuleParams] to configure the native model query
      */
@@ -145,7 +145,7 @@ class ModelBuilderV2 internal constructor(
 
     /**
      * Fetches the [AndroidProject], [VariantDependencies] and [ProjectSyncIssues] for each project
-     * and return them as a [ModelContainer]
+     * and return them as a [ModelContainerV2]
      *
      * @param variantName the name of the variant for which to return [VariantDependencies]
      */
@@ -154,7 +154,7 @@ class ModelBuilderV2 internal constructor(
 
     /**
      * Fetches the [AndroidProject], [NativeModule] and [ProjectSyncIssues] for each project and
-     * return them as a [ModelContainer]
+     * return them as a [ModelContainerV2]
 
      * @param nativeParams the [NativeModuleParams] to configure the native model query
      * @return modules whose build information are generated

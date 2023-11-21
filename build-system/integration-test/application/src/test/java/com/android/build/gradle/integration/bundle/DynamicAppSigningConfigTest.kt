@@ -18,7 +18,6 @@ package com.android.build.gradle.integration.bundle
 
 import com.android.build.gradle.integration.application.SigningTest
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.truth.ModelContainerSubject.assertThat
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.SigningHelper
 import com.android.build.gradle.options.OptionalBooleanOption

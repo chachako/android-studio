@@ -38,7 +38,7 @@ import java.io.File
  * a Build Action that returns all the [AndroidProject]s and all [ProjectSyncIssues] for all the
  * sub-projects, via the tooling API.
  *
- * This is returned as a [ModelContainer]
+ * This is returned as a [ModelContainerV2]
  */
 class GetAndroidModelV2Action(
     private val variantName: String? = null,

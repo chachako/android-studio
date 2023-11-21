@@ -17,7 +17,6 @@
 package com.android.build.gradle.integration.bundle
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.truth.ModelContainerSubject.assertThat
 import com.android.builder.errors.IssueReporter
 import com.android.builder.model.SyncIssue
 import com.google.common.truth.Truth

@@ -22,13 +22,6 @@ import static com.google.common.truth.Truth.assert_;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.build.gradle.integration.common.fixture.Logcat;
-import com.android.builder.model.AndroidArtifact;
-import com.android.builder.model.AndroidProject;
-import com.android.builder.model.Dependencies;
-import com.android.builder.model.MavenCoordinates;
-import com.android.builder.model.NativeAndroidProject;
-import com.android.builder.model.NativeSettings;
-import com.android.builder.model.SyncIssue;
 import com.android.builder.model.Variant;
 import com.android.testutils.apk.Aar;
 import com.android.testutils.apk.Apk;
@@ -123,52 +116,12 @@ public class TruthHelper {
     }
 
     @NonNull
-    public static ModelSubject assertThat(@Nullable AndroidProject androidProject) {
-        return assertAbout(ModelSubject.models()).that(androidProject);
-    }
-
-    @NonNull
-    public static IssueSubject assertThat(@Nullable SyncIssue issue) {
-        return assertAbout(IssueSubject.issues()).that(issue);
-    }
-
-    @NonNull
-    public static VariantSubject assertThat(@Nullable Variant variant) {
-        return assertAbout(VariantSubject.variants()).that(variant);
-    }
-
-    @NonNull
-    public static ArtifactSubject assertThat(@Nullable AndroidArtifact artifact) {
-        return assertAbout(ArtifactSubject.artifacts()).that(artifact);
-    }
-
-    @NonNull
-    public static DependenciesSubject assertThat(@Nullable Dependencies dependencies) {
-        return assertAbout(DependenciesSubject.dependencies()).that(dependencies);
-    }
-
-    @NonNull
     public static GradleTaskSubject assertThat(@NonNull TaskStateList.TaskInfo taskInfo) {
         return GradleTaskSubject.assertThat(taskInfo);
     }
 
     public static LogCatMessagesSubject assertThat(Logcat logcat) {
         return assertAbout(LogCatMessagesSubject.logCatMessages()).that(logcat);
-    }
-
-    @NonNull
-    public static MavenCoordinatesSubject assertThat(@Nullable MavenCoordinates coordinates) {
-        return assertAbout(MavenCoordinatesSubject.mavenCoordinates()).that(coordinates);
-    }
-
-    @NonNull
-    public static NativeSettingsSubject assertThat(@Nullable NativeSettings settings) {
-        return NativeSettingsSubject.assertThat(settings);
-    }
-
-    @NonNull
-    public static NativeAndroidProjectSubject assertThat(@Nullable NativeAndroidProject project) {
-        return NativeAndroidProjectSubject.assertThat(project);
     }
 
     // ---- helper method from com.google.common.truth.Truth

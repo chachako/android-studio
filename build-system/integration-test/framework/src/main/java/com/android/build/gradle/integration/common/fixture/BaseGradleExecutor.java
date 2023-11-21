@@ -68,7 +68,7 @@ import org.gradle.tooling.events.ProgressEvent;
 import org.gradle.tooling.events.ProgressListener;
 
 /**
- * Common flags shared by {@link ModelBuilder} and {@link GradleTaskExecutor}.
+ * Common flags shared by {@link ModelBuilderV2} and {@link GradleTaskExecutor}.
  *
  * @param <T> The concrete implementing class.
  */
