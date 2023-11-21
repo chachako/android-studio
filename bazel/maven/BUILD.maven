@@ -44817,10 +44817,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-foundation_0.9.0",
-    pom = "repository/org/jetbrains/jewel/jewel-foundation/0.9.0/jewel-foundation-0.9.0.pom",
+    name = "org.jetbrains.jewel.jewel-foundation_0.10.0",
+    pom = "repository/org/jetbrains/jewel/jewel-foundation/0.10.0/jewel-foundation-0.10.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-foundation/0.9.0",
+    repo_path = "org/jetbrains/jewel/jewel-foundation/0.10.0",
     deps = [
         "org.jetbrains.compose.foundation.foundation-desktop_1.5.10",
     ],
@@ -44828,46 +44828,46 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-ide-laf-bridge-platform-specific_0.9.0-ij-232",
-    pom = "repository/org/jetbrains/jewel/jewel-ide-laf-bridge-platform-specific/0.9.0-ij-232/jewel-ide-laf-bridge-platform-specific-0.9.0-ij-232.pom",
+    name = "org.jetbrains.jewel.jewel-ide-laf-bridge-platform-specific_0.10.0-ij-232",
+    pom = "repository/org/jetbrains/jewel/jewel-ide-laf-bridge-platform-specific/0.10.0-ij-232/jewel-ide-laf-bridge-platform-specific-0.10.0-ij-232.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-ide-laf-bridge-platform-specific/0.9.0-ij-232",
+    repo_path = "org/jetbrains/jewel/jewel-ide-laf-bridge-platform-specific/0.10.0-ij-232",
     deps = [
-        "org.jetbrains.jewel.jewel-ui_0.9.0",
+        "org.jetbrains.jewel.jewel-ui_0.10.0",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-ide-laf-bridge_0.9.0-ij-232",
-    pom = "repository/org/jetbrains/jewel/jewel-ide-laf-bridge/0.9.0-ij-232/jewel-ide-laf-bridge-0.9.0-ij-232.pom",
+    name = "org.jetbrains.jewel.jewel-ide-laf-bridge_0.10.0-ij-232",
+    pom = "repository/org/jetbrains/jewel/jewel-ide-laf-bridge/0.10.0-ij-232/jewel-ide-laf-bridge-0.10.0-ij-232.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-ide-laf-bridge/0.9.0-ij-232",
+    repo_path = "org/jetbrains/jewel/jewel-ide-laf-bridge/0.10.0-ij-232",
     deps = [
-        "org.jetbrains.jewel.jewel-ui_0.9.0",
-        "org.jetbrains.jewel.jewel-ide-laf-bridge-platform-specific_0.9.0-ij-232",
+        "org.jetbrains.jewel.jewel-ui_0.10.0",
+        "org.jetbrains.jewel.jewel-ide-laf-bridge-platform-specific_0.10.0-ij-232",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-int-ui-standalone_0.9.0",
-    pom = "repository/org/jetbrains/jewel/jewel-int-ui-standalone/0.9.0/jewel-int-ui-standalone-0.9.0.pom",
+    name = "org.jetbrains.jewel.jewel-int-ui-standalone_0.10.0",
+    pom = "repository/org/jetbrains/jewel/jewel-int-ui-standalone/0.10.0/jewel-int-ui-standalone-0.10.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-int-ui-standalone/0.9.0",
+    repo_path = "org/jetbrains/jewel/jewel-int-ui-standalone/0.10.0",
     deps = [
-        "org.jetbrains.jewel.jewel-ui_0.9.0",
+        "org.jetbrains.jewel.jewel-ui_0.10.0",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-ui_0.9.0",
-    pom = "repository/org/jetbrains/jewel/jewel-ui/0.9.0/jewel-ui-0.9.0.pom",
+    name = "org.jetbrains.jewel.jewel-ui_0.10.0",
+    pom = "repository/org/jetbrains/jewel/jewel-ui/0.10.0/jewel-ui-0.10.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-ui/0.9.0",
+    repo_path = "org/jetbrains/jewel/jewel-ui/0.10.0",
     deps = [
-        "org.jetbrains.jewel.jewel-foundation_0.9.0",
+        "org.jetbrains.jewel.jewel-foundation_0.10.0",
     ],
     visibility = ["//visibility:public"],
 )
