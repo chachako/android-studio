@@ -386,7 +386,8 @@ public class ConnectedDevice extends DeviceConnector {
 
     @Override
     public boolean getSupportsPrivacySandbox() {
-        return iDevice.services().containsKey("sdk_sandbox");
+        return iDevice.getVersion().isGreaterOrEqualThan(34)
+                && iDevice.services().containsKey("sdk_sandbox");
     }
 
     /**

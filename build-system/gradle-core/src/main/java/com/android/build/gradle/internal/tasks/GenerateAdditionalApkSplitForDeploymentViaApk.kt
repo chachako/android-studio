@@ -16,6 +16,9 @@
 
 package com.android.build.gradle.internal.tasks
 
+import com.android.apksig.apk.ApkUtils
+import com.android.build.api.variant.impl.BuiltArtifactImpl
+import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.internal.AndroidJarInput
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
@@ -44,6 +47,7 @@ import com.android.tools.build.apkzlib.zfile.NativeLibrariesPackagingMode
 import com.android.tools.build.bundletool.model.RuntimeEnabledSdkVersionEncoder
 import com.android.tools.build.bundletool.transparency.CodeTransparencyCryptoUtils
 import com.android.utils.FileUtils
+import com.android.zipflinger.ZipArchive
 import com.google.common.base.Charsets
 import com.google.common.collect.ImmutableList
 import com.google.common.io.Files
@@ -56,7 +60,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
@@ -80,8 +84,8 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
     /**
      * The split APK to be installed with the main app to bring in the privacy sandbox SDK dependency
      */
-    @get:OutputFile
-    abstract val usesSdkLibrarySplit: RegularFileProperty
+    @get:OutputDirectory
+    abstract val usesSdkLibrarySplit: DirectoryProperty
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
@@ -89,6 +93,9 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
 
     @get:Input
     abstract val applicationId: Property<String>
+
+    @get:Input
+    abstract val apkName: Property<String>
 
     @get:Input
     @get:Optional
@@ -106,7 +113,7 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
     override fun doTaskAction() {
         workerExecutor.noIsolation().submit(WorkAction::class.java) {
             it.initializeFromAndroidVariantTask(this)
-            it.usesSdkLibrarySplit.set(usesSdkLibrarySplit)
+            it.usesSdkLibrarySplitDir.set(usesSdkLibrarySplit)
             it.runtimeConfigFile.set(runtimeConfigFile)
             it.applicationId.set(applicationId)
             it.versionCode.set(versionCode)
@@ -114,12 +121,13 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
             it.aapt2.set(aapt2)
             it.signingConfig.set(signingConfig.get().signingConfigData)
             it.tempDir.set(temporaryDir)
+            it.apkName.set(apkName)
         }
     }
 
     abstract class Params : ProfileAwareWorkAction.Parameters() {
 
-        abstract val usesSdkLibrarySplit: RegularFileProperty
+        abstract val usesSdkLibrarySplitDir: DirectoryProperty
         abstract val runtimeConfigFile: RegularFileProperty
         abstract val applicationId: Property<String>
         abstract val versionCode: Property<Int?>
@@ -127,6 +135,7 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
         abstract val aapt2: Property<Aapt2Input>
         abstract val signingConfig: Property<SigningConfigData>
         abstract val tempDir: DirectoryProperty
+        abstract val apkName: Property<String>
     }
 
     abstract class WorkAction : ProfileAwareWorkAction<Params>() {
@@ -158,10 +167,11 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
             android:versionMajor="${it.encodedVersion}" />"""
                     }
 
+            val outputApk = File(parameters.usesSdkLibrarySplitDir.get().asFile, parameters.apkName.get())
             generateAdditionalSplitApk(
-                    outputApkPath = parameters.usesSdkLibrarySplit.get().asFile.toPath(),
+                    outputApkPath = outputApk.toPath(),
                     applicationId = parameters.applicationId.get(),
-                    versionCode = parameters.versionCode.get(),
+                    versionCode = parameters.versionCode.orNull,
                     files = mapOf(),
                     manifestContent = manifestContent,
                     signingConfigData = parameters.signingConfig.get(),
@@ -169,6 +179,17 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
                     aapt2 = parameters.aapt2.get(),
                     androidJar = parameters.androidJar.get().asFile,
             )
+
+            BuiltArtifactsImpl(
+                    artifactType = InternalArtifactType.USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT,
+                    applicationId = parameters.applicationId.get(),
+                    variantName = "",
+                    elements = listOf(
+                            BuiltArtifactImpl.make(
+                                    outputFile = outputApk.absolutePath.toString()
+                            )
+                    )
+            ).saveToDirectory(parameters.usesSdkLibrarySplitDir.get().asFile)
         }
 
         private val RuntimeEnabledSdkConfigProto.RuntimeEnabledSdk.encodedVersion: Int
@@ -191,10 +212,7 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
             creationConfig.artifacts.setInitialProvider(
                     taskProvider,
                     GenerateAdditionalApkSplitForDeploymentViaApk::usesSdkLibrarySplit
-            ).withName(
-                    creationConfig.services.projectInfo.getProjectBaseName().map {
-                        "$it-${creationConfig.baseName}-injected-privacy-sandbox.apk"
-                    }).on(InternalArtifactType.USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT)
+            ).on(InternalArtifactType.USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT)
         }
 
         override fun configure(task: GenerateAdditionalApkSplitForDeploymentViaApk) {
@@ -208,6 +226,11 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
             task.androidJarInput.initialize(creationConfig)
             creationConfig.services.initializeAapt2Input(task.aapt2)
             task.signingConfig.setDisallowChanges(SigningConfigDataProvider.create(creationConfig))
+            task.apkName.set(
+                    creationConfig.services.projectInfo.getProjectBaseName().map {
+                        "$it-${creationConfig.baseName}-injected-privacy-sandbox.apk"
+                    }
+            )
         }
 
         companion object {
@@ -242,7 +265,9 @@ internal fun generateAdditionalSplitApk(
     val signingOptions = SigningOptions.builder()
             .setKey(certificateInfo.key)
             .setCertificates(certificateInfo.certificate)
-            .setMinSdkVersion(1)
+            // ECDH encryption key signing requires minSdk 18, privacy sandbox will
+            // never be supported below API 19.
+            .setMinSdkVersion(19)
             .setV1SigningEnabled(true)
             .setV2SigningEnabled(true)
             .build()

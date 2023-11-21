@@ -87,7 +87,7 @@ class UtpTestRunner @JvmOverloads constructor(
                 configFactory.createRunnerConfigProtoForLocalDevice(
                     deviceConnector,
                     testData,
-                    TargetApkConfigBundle(apks, targetIsSplitApk),
+                    TargetApkConfigBundle(apks, targetIsSplitApk || apks.size > 1),
                     installOptions,
                     helperApks,
                     uninstallIncompatibleApks,

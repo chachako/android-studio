@@ -20,7 +20,6 @@ import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.test.BuiltArtifactsSplitOutputMatcher.computeBestOutput
 import com.android.builder.testing.api.DeviceConfigProvider
-import com.google.common.collect.ImmutableList
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
@@ -30,20 +29,22 @@ import java.io.File
 /**
  * Implementation of [TestData] on top of a [AndroidTestCreationConfig]
  */
-class TestDataImpl (
+class TestDataImpl(
     namespace: Provider<String>,
     testConfig: AndroidTestCreationConfig,
     testApkDir: Provider<Directory>,
     testedApksDir: Provider<Directory>?,
     privacySandboxSdkApks: FileCollection?,
-    privacySandboxCompatSdkApksDir: Provider<Directory>?
+    privacySandboxCompatSdkApksDir: Provider<Directory>?,
+    additionalSdkSupportedApkSplits: Provider<Directory>?
 ) : AbstractTestDataImpl(
     namespace,
     testConfig,
     testApkDir,
     testedApksDir,
     privacySandboxSdkApks,
-    privacySandboxCompatSdkApksDir
+    privacySandboxCompatSdkApksDir,
+    additionalSdkSupportedApkSplits
 ) {
     @get: Input
     val supportedAbis: Set<String> =
@@ -56,15 +57,23 @@ class TestDataImpl (
     override val testedApksFinder: ApksFinder
         get() = _testedApksFinder ?: TestedApksFinder(
                 testedApksDir
-                        ?.let { BuiltArtifactsLoaderImpl().load(testedApksDir) },
+                        ?.let { BuiltArtifactsLoaderImpl().load(it) },
                 privacySandboxCompatSdkApks?.let {
-                    if (privacySandboxCompatSdkApks.isPresent) {
-                        BuiltArtifactsLoaderImpl().load(privacySandboxCompatSdkApks.get())
+                    if (it.isPresent) {
+                        BuiltArtifactsLoaderImpl().load(it)
                     } else {
                         null
                     }
                 },
-                supportedAbis)
+                additionalSdkSupportedSplitApks?.let {
+                    if (it.isPresent) {
+                        BuiltArtifactsLoaderImpl().load(it)
+                    } else {
+                        null
+                    }
+                },
+                supportedAbis
+        )
                 .also {
                     _testedApksFinder = it
                 }
@@ -74,6 +83,7 @@ class TestDataImpl (
     internal class TestedApksFinder(
         private val testedApkBuiltArtifacts: BuiltArtifactsImpl?,
         private val privacySandboxCompatSdkApksBuiltArtifacts: BuiltArtifactsImpl?,
+        private val additionalSdkSupportApkSplitsBuiltArtifacts: BuiltArtifactsImpl?,
         private val supportedAbis: Set<String>
     ): ApksFinder {
 
@@ -81,11 +91,15 @@ class TestDataImpl (
             testedApkBuiltArtifacts ?: return emptyList()
             val apks = mutableListOf<File>()
             apks += computeBestOutput(deviceConfigProvider, testedApkBuiltArtifacts, supportedAbis)
-            if (!deviceConfigProvider.supportsPrivacySandbox &&
-                    privacySandboxCompatSdkApksBuiltArtifacts != null) {
-                apks += computeBestOutput(deviceConfigProvider,
-                        privacySandboxCompatSdkApksBuiltArtifacts,
-                        supportedAbis)
+            // Add additional splits
+            if (deviceConfigProvider.supportsPrivacySandbox) {
+                additionalSdkSupportApkSplitsBuiltArtifacts?.let {
+                    apks += it.elements.map { File(it.outputFile) }
+                }
+            } else {
+                privacySandboxCompatSdkApksBuiltArtifacts?.let {
+                    apks += it.elements.map { File(it.outputFile) }
+                }
             }
             return apks
         }

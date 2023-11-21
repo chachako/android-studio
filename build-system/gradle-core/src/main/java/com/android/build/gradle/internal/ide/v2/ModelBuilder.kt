@@ -29,6 +29,7 @@ import com.android.build.api.dsl.ProductFlavor
 import com.android.build.api.dsl.TestExtension
 import com.android.build.api.variant.ScopedArtifacts.Scope.ALL
 import com.android.build.api.variant.ScopedArtifacts.Scope.PROJECT
+import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.api.variant.impl.HasDeviceTests
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.HasHostTests
@@ -670,8 +671,9 @@ class ModelBuilder<
                 component.artifacts.get(InternalArtifactType.APK_FROM_SDKS_IDE_MODEL).orNull?.asFile
                         ?: return null
         val additionalApkSplitFile =
-                component.artifacts.get(InternalArtifactType.USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT).orNull?.asFile
-                        ?:return null
+                component.artifacts.get(InternalArtifactType.USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT).orNull?.file(
+                        BuiltArtifactsImpl.METADATA_FILE_NAME)?.asFile
+                        ?: return null
 
         return PrivacySandboxSdkInfoImpl(
                 task = BuildPrivacySandboxSdkApks.CreationAction.getTaskName(component),

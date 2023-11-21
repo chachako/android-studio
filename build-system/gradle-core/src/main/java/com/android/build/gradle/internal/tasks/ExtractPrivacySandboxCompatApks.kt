@@ -198,7 +198,10 @@ abstract class ExtractPrivacySandboxCompatApks: NonIncrementalTask() {
                 variantName = "",
                 elements = elementList
 
-        ).saveToFile(apksFromBundleIdeModel.get().asFile)
+        ).also {
+            it.saveToDirectory(outputDir.get().asFile)
+            it.saveToFile(apksFromBundleIdeModel.get().asFile)
+        }
     }
 
     class CreationAction(creationAction: ApplicationCreationConfig) :

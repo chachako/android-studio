@@ -29,7 +29,6 @@ import com.google.common.io.Files
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
-import org.gradle.api.file.FileTree
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
@@ -62,7 +61,11 @@ abstract class AbstractTestDataImpl(
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     @get:Optional
-    val privacySandboxCompatSdkApks: Provider<Directory>?
+    val privacySandboxCompatSdkApks: Provider<Directory>?,
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    @get:Optional
+    val additionalSdkSupportedSplitApks: Provider<Directory>?
 ) : TestData {
 
     private var extraInstrumentationTestRunnerArgs: Map<String, String> = mutableMapOf()

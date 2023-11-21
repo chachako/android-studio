@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.createGr
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.StringOption
@@ -467,7 +468,11 @@ class PrivacySandboxSdkTest {
             assertThat(manifestContent).doesNotContain(FOREGROUND_SERVICE)
             assertThat(manifestContent).doesNotContain(USES_SDK_LIBRARY_MANIFEST_ELEMENT)
         }
-        Apk(privacySandboxSdkInfo.additionalApkSplitFile).use {
+        val usesSdkLibrarySplitPath =
+                GenericBuiltArtifactsLoader.loadListFromFile(privacySandboxSdkInfo.additionalApkSplitFile,
+                        LoggerWrapper.getLogger(PrivacySandboxSdkTest::class.java))
+                        .elementAt(0).elements.first().outputFile
+        Apk(File(usesSdkLibrarySplitPath)).use {
             assertThat(it).exists()
             val manifestContent = ApkSubject.getManifestContent(it.file).joinToString("\n", postfix = "\n")
             val certDigest = certDigestPattern.find(manifestContent)?.value ?: error("")

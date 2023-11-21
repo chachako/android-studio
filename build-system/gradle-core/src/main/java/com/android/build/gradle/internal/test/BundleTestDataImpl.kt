@@ -60,7 +60,8 @@ internal class BundleTestDataImpl constructor(
     testApkDir,
     null,
     privacySandboxSdkApks,
-    privacySandboxCompatSdkApks
+    privacySandboxCompatSdkApks,
+    null
 ) {
 
     override val libraryType = creationConfig.services.provider { false }

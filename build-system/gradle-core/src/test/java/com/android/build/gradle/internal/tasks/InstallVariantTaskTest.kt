@@ -16,6 +16,7 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
+import com.android.build.gradle.internal.fixtures.FakeFileCollection
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectory
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectoryProperty
 import com.android.builder.testing.api.DeviceConnector
@@ -114,12 +115,13 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
             AndroidVersion.DEFAULT,
             FakeGradleDirectory(temporaryFolder.root),
             ImmutableSet.of(listingFile),
+            FakeGradleDirectoryProperty(null),
             FakeGradleDirectoryProperty(FakeGradleDirectory(privacySandboxLegacyApkSplitsDirectory)),
             ImmutableSet.of(),
             ImmutableList.of(),
             4000,
             logger,
-            FakeGradleDirectoryProperty(null)
+            FakeGradleDirectoryProperty(null),
         )
         Mockito.verify(logger, times(3)).quiet("Installed on {} {}.", 1, "device")
         Mockito.verify(deviceConnector, Mockito.atLeastOnce()).name
@@ -159,11 +161,12 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
                 FakeGradleDirectory(temporaryFolder.root),
                 ImmutableSet.of(),
                 FakeGradleDirectoryProperty(null),
+                FakeGradleDirectoryProperty(null),
                 ImmutableSet.of(),
                 ImmutableList.of(),
                 4000,
                 logger,
-                FakeGradleDirectoryProperty(null)
+                FakeGradleDirectoryProperty(null),
         )
         assert(deviceState.pmLogs.any {
             it.startsWith("install -r -t") && it.contains("main.apk")

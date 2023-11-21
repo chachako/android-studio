@@ -69,9 +69,11 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
@@ -123,7 +125,8 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                             minSdkVersion,
                             getApkDirectory().get(),
                             getPrivacySandboxSdksApksFiles().getFiles(),
-                            getPrivacySandboxSdkApksFromSplits(),
+                            getPrivacySandboxSupportedSdkAdditionalSplitApks(),
+                            getPrivacySandboxCompatApks(),
                             supportedAbis,
                             getInstallOptions(),
                             getTimeOutInMs(),
@@ -140,6 +143,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
             @NonNull AndroidVersion minSdkVersion,
             @NonNull Directory apkDirectory,
             @NonNull Set<File> privacySandboxSdksApksFiles,
+            @NonNull DirectoryProperty additionalSupportedSdkApkSplits,
             @NonNull DirectoryProperty privacySandboxSdkSplitApksForLegacy,
             @NonNull Set<String> supportedAbis,
             @NonNull Collection<String> installOptions,
@@ -152,6 +156,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
         List<? extends DeviceConnector> devices = deviceProvider.getDevices();
 
         BuiltArtifactsImpl builtArtifacts = new BuiltArtifactsLoaderImpl().load(apkDirectory);
+        List<File> apkFiles;
 
         for (final DeviceConnector device : devices) {
             // When InstallUtils.checkDeviceApiLevel returns false, it logs the reason.
@@ -161,16 +166,22 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                         MoreObjects.firstNonNull(installOptions, ImmutableList.of());
                 DeviceConfigProviderImpl deviceConfigProvider =
                         new DeviceConfigProviderImpl(device);
+                apkFiles = Lists.newLinkedList();
+                if (builtArtifacts != null) {
+                    apkFiles.addAll(
+                            BuiltArtifactsSplitOutputMatcher.INSTANCE.computeBestOutput(
+                                    deviceConfigProvider, builtArtifacts, supportedAbis));
+                }
                 if (device.getSupportsPrivacySandbox()) {
                     privacySandboxSdksApksFiles.forEach(
                             file -> {
-                                List<File> apkFiles =
+                                List<File> sdkApkFiles =
                                         extractApkFilesBypassingBundleTool(file.toPath()).stream()
                                                 .map(Path::toFile)
                                                 .collect(Collectors.toUnmodifiableList());
                                 try {
                                     device.installPackages(
-                                            apkFiles, extraArgs, timeOutInMs, iLogger);
+                                            sdkApkFiles, extraArgs, timeOutInMs, iLogger);
                                 } catch (DeviceException e) {
                                     logger.error(
                                             String.format(
@@ -179,41 +190,30 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                                             e);
                                 }
                             });
-                }
-
-                BuiltArtifactsImpl privacySandboxLegacySplitbuiltArtifacts = null;
-                boolean legacyPrivacySandboxSplitsAvailable =
-                        privacySandboxSdkSplitApksForLegacy.getOrNull() != null;
-                if (legacyPrivacySandboxSplitsAvailable) {
-                    privacySandboxLegacySplitbuiltArtifacts =
+                    BuiltArtifactsImpl privacySandboxSupportedApkSplitsBuiltArtifacts =
                             new BuiltArtifactsLoaderImpl()
-                                    .load(privacySandboxSdkSplitApksForLegacy);
-                }
-                if (!device.getSupportsPrivacySandbox()
-                        && legacyPrivacySandboxSplitsAvailable
-                        && privacySandboxLegacySplitbuiltArtifacts != null) {
-                    for (BuiltArtifactImpl sdkBuiltArtifact :
-                            privacySandboxLegacySplitbuiltArtifacts.getElements()) {
-                        if (builtArtifacts != null) {
-                            builtArtifacts.addElement(sdkBuiltArtifact);
+                                    .load(additionalSupportedSdkApkSplits);
+                    if (privacySandboxSupportedApkSplitsBuiltArtifacts != null) {
+                        for (BuiltArtifactImpl split
+                                : privacySandboxSupportedApkSplitsBuiltArtifacts.getElements()) {
+                            apkFiles.add(new File(split.getOutputFile()));
                         }
                     }
                 }
 
-                List<File> apkFiles = Lists.newLinkedList();
-                if (!device.getSupportsPrivacySandbox()
-                        && privacySandboxLegacySplitbuiltArtifacts != null) {
-                    apkFiles.addAll(
-                            BuiltArtifactsSplitOutputMatcher.INSTANCE.computeBestOutput(
-                                    deviceConfigProvider,
-                                    privacySandboxLegacySplitbuiltArtifacts,
-                                    supportedAbis));
+                BuiltArtifactsImpl privacySandboxLegacySplitbuiltArtifacts = null;
+                if (privacySandboxSdkSplitApksForLegacy.getOrNull() != null) {
+                    privacySandboxLegacySplitbuiltArtifacts =
+                            new BuiltArtifactsLoaderImpl()
+                                    .load(privacySandboxSdkSplitApksForLegacy);
                 }
 
-                if (builtArtifacts != null) {
-                    apkFiles.addAll(
-                            BuiltArtifactsSplitOutputMatcher.INSTANCE.computeBestOutput(
-                                    deviceConfigProvider, builtArtifacts, supportedAbis));
+                if (!device.getSupportsPrivacySandbox()
+                        && privacySandboxLegacySplitbuiltArtifacts != null) {
+                    for (BuiltArtifactImpl sdkBuiltArtifact :
+                            privacySandboxLegacySplitbuiltArtifacts.getElements()) {
+                        apkFiles.add(new File(sdkBuiltArtifact.getOutputFile()));
+                    }
                 }
 
                 addDexMetadataFiles(dexMetadataDirectory, apkDirectory, device, apkFiles, logger);
@@ -342,10 +342,15 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
     @Optional
     public abstract ConfigurableFileCollection getPrivacySandboxSdksApksFiles();
 
+    @InputDirectory
+    @PathSensitive(PathSensitivity.RELATIVE)
+    @Optional
+    public abstract DirectoryProperty getPrivacySandboxSupportedSdkAdditionalSplitApks();
+
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
     @Optional
-    public abstract DirectoryProperty getPrivacySandboxSdkApksFromSplits();
+    public abstract DirectoryProperty getPrivacySandboxCompatApks();
 
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
@@ -409,14 +414,20 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                                                         .RUNTIME_CLASSPATH,
                                                 AndroidArtifacts.ArtifactScope.ALL,
                                                 ANDROID_PRIVACY_SANDBOX_SDK_APKS));
-                task.getPrivacySandboxSdkApksFromSplits()
+                task.getPrivacySandboxSupportedSdkAdditionalSplitApks().set(
+                                creationConfig.getArtifacts().get(
+                                        InternalArtifactType.USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT.INSTANCE
+                                )
+                );
+                task.getPrivacySandboxCompatApks()
                         .set(
                                 creationConfig
                                         .getArtifacts()
                                         .get(InternalArtifactType.EXTRACTED_SDK_APKS.INSTANCE));
             }
             task.getPrivacySandboxSdksApksFiles().disallowChanges();
-            task.getPrivacySandboxSdkApksFromSplits().disallowChanges();
+            task.getPrivacySandboxSupportedSdkAdditionalSplitApks().disallowChanges();
+            task.getPrivacySandboxCompatApks().disallowChanges();
 
             Installation installationOptions = creationConfig.getGlobal().getInstallationOptions();
             task.setTimeOutInMs(installationOptions.getTimeOutInMs());

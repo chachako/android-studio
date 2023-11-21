@@ -28,7 +28,7 @@ import java.io.File
 import java.util.stream.Collectors
 
 /** Implementation of [TestData] for separate test modules.  */
-class TestApplicationTestData constructor(
+class TestApplicationTestData(
     namespace: Provider<String>,
     creationConfig: TestVariantCreationConfig,
     testApkDir: Provider<Directory>,
@@ -41,7 +41,8 @@ class TestApplicationTestData constructor(
     testApkDir,
     testedApksDir,
     privacySandboxSdkApks,
-    privacySandboxCompatSdkApksDir
+    privacySandboxCompatSdkApksDir,
+    null
 ) {
 
     override val libraryType = creationConfig.services.provider { false }

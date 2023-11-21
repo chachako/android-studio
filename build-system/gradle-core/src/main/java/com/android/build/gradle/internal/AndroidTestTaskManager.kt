@@ -37,6 +37,7 @@ import com.android.build.gradle.internal.tasks.AppClasspathCheckTask
 import com.android.build.gradle.internal.tasks.CompressAssetsTask
 import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
 import com.android.build.gradle.internal.tasks.DeviceSerialTestTask
+import com.android.build.gradle.internal.tasks.GenerateAdditionalApkSplitForDeploymentViaApk
 import com.android.build.gradle.internal.tasks.JacocoTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceCleanTask
 import com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestSetupTask
@@ -268,7 +269,7 @@ class AndroidTestTaskManager(
 
         val privacySandboxCompatSdkApks = if (androidTestProperties.services.projectOptions
                         .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)) {
-            androidTestProperties.artifacts.get(InternalArtifactType.SDK_SPLITS_APKS)
+            testedVariant.artifacts.get(InternalArtifactType.EXTRACTED_SDK_APKS)
         } else null
 
         val testData: AbstractTestDataImpl = if (testedVariant.componentType.isDynamicFeature) {
@@ -292,7 +293,9 @@ class AndroidTestTaskManager(
                 androidTestProperties.artifacts.get(SingleArtifact.APK),
                 if (isLibrary) null else testedVariant.artifacts.get(SingleArtifact.APK),
                 privacySandboxSdkApks,
-                privacySandboxCompatSdkApks)
+                privacySandboxCompatSdkApks,
+                testedVariant.artifacts.get(InternalArtifactType.USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT)
+            )
         }
         configureTestData(androidTestProperties, testData)
         val connectedCheckSerials: Provider<List<String>> =

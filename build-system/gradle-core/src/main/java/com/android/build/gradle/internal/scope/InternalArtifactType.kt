@@ -618,7 +618,7 @@ InternalArtifactType<T : FileSystemLocation>(
             FILE,
             fileName = GenerateRuntimeEnabledSdkTableTask.RUNTIME_ENABLED_SDK_TABLE_FILE_NAME)
 
-    object USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT : InternalArtifactType<RegularFile>(FILE)
+    object USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT : InternalArtifactType<Directory>(DIRECTORY), Replaceable
 
     object SCREENSHOTS_RENDERED: InternalArtifactType<Directory>(DIRECTORY), Replaceable
 

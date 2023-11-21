@@ -43,7 +43,7 @@
                - task                    = "buildPrivacySandboxSdkApksForProPlayDebug"
                - outputListingFile       = {PROJECT}/build/intermediates/extracted_apks_from_privacy_sandbox_sdks_ide_model/proPlayDebug/buildPrivacySandboxSdkApksForProPlayDebug/ide_model.json{!}
                - additionalApkSplitTask  = "generateProPlayDebugAdditionalSplitForPrivacySandboxDeployment"
-               - additionalApkSplitFile  = {PROJECT}/build/intermediates/uses_sdk_library_split_for_local_deployment/proPlayDebug/generateProPlayDebugAdditionalSplitForPrivacySandboxDeployment/project-pro-play-debug-injected-privacy-sandbox.apk{!}
+               - additionalApkSplitFile  = {PROJECT}/build/intermediates/uses_sdk_library_split_for_local_deployment/proPlayDebug/generateProPlayDebugAdditionalSplitForPrivacySandboxDeployment/output-metadata.json{!}
                - taskLegacy              = "extractApksFromSdkSplitsForProPlayDebug"
                - outputListingLegacyFile = {PROJECT}/build/intermediates/apk_from_sdks_ide_model/proPlayDebug/extractApksFromSdkSplitsForProPlayDebug/output-metadata.json{!}
          < mainArtifact
