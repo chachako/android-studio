@@ -36,6 +36,12 @@ interface RecipeExecutor {
   fun save(source: String, to: File)
 
   /**
+   * Appends text to the given output file. If the existing text does not end with a newline, one is
+   * added before the appended text.
+   */
+  fun append(source: String, to: File)
+
+  /**
    * Merges the given XML source into the given destination file (or just writes it if the
    * destination file does not exist).
    */
@@ -56,6 +62,7 @@ interface RecipeExecutor {
    * version '`revision`'}" statement to the project top level build.gradle[.kts] file.
    */
   fun applyPlugin(plugin: String, revision: String?, minRev: String? = null)
+
   fun applyPlugin(plugin: String, revision: AgpVersion)
 
   /**
