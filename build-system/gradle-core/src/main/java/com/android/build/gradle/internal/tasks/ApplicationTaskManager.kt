@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.variant.ApplicationAndroidResources
 import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.BaseExtension
@@ -109,7 +110,7 @@ class ApplicationTaskManager(
         }
         taskFactory.register(CompileArtProfileTask.CreationAction(variant))
 
-        if (variant.generateLocaleConfig) {
+        if ((variant.androidResources as? ApplicationAndroidResources)?.generateLocaleConfig == true) {
             val resourceConfigs = variant.androidResourcesCreationConfig?.resourceConfigurations
             if (!resourceConfigs.isNullOrEmpty() &&
                 AaptUtils.getNonDensityResConfigs(resourceConfigs).toList().isNotEmpty()) {

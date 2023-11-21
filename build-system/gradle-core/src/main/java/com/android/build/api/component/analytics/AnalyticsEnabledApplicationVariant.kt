@@ -21,6 +21,7 @@ import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.GeneratesApk
 import com.android.build.api.variant.ApkPackaging
+import com.android.build.api.variant.ApplicationAndroidResources
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.BundleConfig
 import com.android.build.api.variant.DependenciesInfo
@@ -120,8 +121,12 @@ open class AnalyticsEnabledApplicationVariant @Inject constructor(
         )
     }
 
-    override val androidResources: AndroidResources
-        get() = generatesApk.androidResources
+    override val androidResources: ApplicationAndroidResources
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.AAPT_OPTIONS_VALUE
+            return delegate.androidResources
+        }
 
     override val renderscript: Renderscript?
         get() = generatesApk.renderscript

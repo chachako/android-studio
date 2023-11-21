@@ -20,7 +20,7 @@ import com.android.build.api.variant.AndroidResources
 import com.android.build.gradle.internal.services.VariantServices
 import org.gradle.api.provider.ListProperty
 
-class AndroidResourcesImpl(
+open class AndroidResourcesImpl(
     override val ignoreAssetsPatterns: ListProperty<String>,
     override val aaptAdditionalParameters: ListProperty<String>,
     override val noCompress: ListProperty<String>

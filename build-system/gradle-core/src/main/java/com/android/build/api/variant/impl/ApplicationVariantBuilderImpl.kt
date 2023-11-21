@@ -17,6 +17,7 @@ package com.android.build.api.variant.impl
 
 import com.android.build.api.component.analytics.AnalyticsEnabledApplicationVariantBuilder
 import com.android.build.api.variant.AndroidTestBuilder
+import com.android.build.api.variant.ApplicationAndroidResourcesBuilder
 import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.DependenciesInfoBuilder
@@ -118,4 +119,7 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
 
     override val androidTest: AndroidTestBuilder =
         AndroidTestBuilderImpl(variantBuilderServices, _enableMultiDex)
+
+    override val androidResources: ApplicationAndroidResourcesBuilder =
+        ApplicationAndroidResourcesBuilderImpl(dslInfo.generateLocaleConfig)
 }

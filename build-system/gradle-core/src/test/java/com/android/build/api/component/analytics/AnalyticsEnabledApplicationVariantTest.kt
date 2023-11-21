@@ -16,11 +16,11 @@
 
 package com.android.build.api.component.analytics
 
-import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.DependenciesInfo
 import com.android.build.api.variant.ApkPackaging
+import com.android.build.api.variant.ApplicationAndroidResources
 import com.android.build.api.variant.BundleConfig
 import com.android.build.api.variant.JniLibsApkPackaging
 import com.android.build.api.variant.Renderscript
@@ -96,7 +96,7 @@ class AnalyticsEnabledApplicationVariantTest {
 
     @Test
     fun getAndroidResources() {
-        val androidResources = Mockito.mock(AndroidResources::class.java)
+        val androidResources = Mockito.mock(ApplicationAndroidResources::class.java)
         Mockito.`when`(delegate.androidResources).thenReturn(androidResources)
         Truth.assertThat(proxy.androidResources).isEqualTo(androidResources)
 

@@ -62,4 +62,9 @@ interface ApplicationVariantBuilder : VariantBuilder,
     )
     @set:Incubating
     var profileable: Boolean
+
+    /**
+     * Access all configuration-time android resources processing properties.
+     */
+    val androidResources: ApplicationAndroidResourcesBuilder
 }

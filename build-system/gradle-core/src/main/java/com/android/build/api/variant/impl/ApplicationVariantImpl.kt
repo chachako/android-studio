@@ -94,8 +94,11 @@ open class ApplicationVariantImpl @Inject constructor(
         )
     }
 
-    override val androidResources: AndroidResourcesImpl by lazy {
-        getAndroidResources(dslInfo.androidResourcesDsl.androidResources)
+    override val androidResources: ApplicationAndroidResourcesImpl by lazy {
+        ApplicationAndroidResourcesImpl(
+            getAndroidResources(dslInfo.androidResourcesDsl.androidResources),
+            variantBuilder.androidResources.generateLocaleConfig,
+        )
     }
 
     override val signingConfig: SigningConfigImpl by lazy {
@@ -117,7 +120,6 @@ open class ApplicationVariantImpl @Inject constructor(
 
     override val publishInfo: VariantPublishingInfo?
         get() = dslInfo.publishInfo
-
     override var androidTest: AndroidTestImpl? = null
 
     override var testFixtures: TestFixturesImpl? = null
@@ -274,9 +276,6 @@ open class ApplicationVariantImpl @Inject constructor(
 
     override val isWearAppUnbundled: Boolean?
         get() = dslInfo.isWearAppUnbundled
-
-    override val generateLocaleConfig: Boolean
-        get() = dslInfo.generateLocaleConfig
 
     override val enableApiModeling: Boolean
         get() = isApiModelingEnabled()

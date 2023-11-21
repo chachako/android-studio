@@ -64,7 +64,12 @@ class AnalyticsEnabledTestVariantTest {
     fun getAndroidResources() {
         val androidResources = Mockito.mock(AndroidResources::class.java)
         Mockito.`when`(delegate.androidResources).thenReturn(androidResources)
-        Truth.assertThat(proxy.androidResources).isEqualTo(androidResources)
+        val proxiedAndroidResources = proxy.androidResources
+        Truth.assertThat(proxiedAndroidResources).isInstanceOf(
+            AnalyticsEnabledAndroidResources::class.java
+        )
+        Truth.assertThat((proxiedAndroidResources as AnalyticsEnabledAndroidResources).delegate)
+            .isEqualTo(androidResources)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(

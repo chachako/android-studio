@@ -474,7 +474,7 @@ abstract class ProcessApplicationManifest : ManifestProcessorTask() {
             task.projectBuildFile.disallowChanges()
             task.addLocaleConfigAttribute.setDisallowChanges(
                 (creationConfig is ApplicationCreationConfig) &&
-                (creationConfig.generateLocaleConfig)
+                (creationConfig.androidResources.generateLocaleConfig == true)
             )
             // TODO: here in the "else" block should be the code path for the namespaced pipeline
         }

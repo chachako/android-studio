@@ -38,7 +38,7 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 
-class AndroidResourcesCreationConfigImpl(
+open class AndroidResourcesCreationConfigImpl(
     private val component: ComponentCreationConfig,
     private val dslInfo: ComponentDslInfo,
     private val androidResourcesDsl: AndroidResourcesDslInfo,

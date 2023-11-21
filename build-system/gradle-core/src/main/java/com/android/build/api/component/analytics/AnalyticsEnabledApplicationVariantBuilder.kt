@@ -17,6 +17,7 @@
 package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.AndroidTestBuilder
+import com.android.build.api.variant.ApplicationAndroidResourcesBuilder
 import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.DependenciesInfoBuilder
 import com.android.build.api.variant.PropertyAccessNotAllowedException
@@ -102,5 +103,19 @@ open class AnalyticsEnabledApplicationVariantBuilder @Inject constructor(
             stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
                 VariantMethodType.ANDROID_TEST_BUILDER_VALUE
             return _androidTest
+        }
+
+    private val _androidResources by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        AnalyticsEnabledApplicationAndroidResourcesBuilder(
+            delegate.androidResources,
+            stats
+        )
+    }
+
+    override val androidResources: ApplicationAndroidResourcesBuilder
+        get() {
+            stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
+                VariantMethodType.ANDROID_RESOURCES_BUILDER_VALUE
+            return _androidResources
         }
 }

@@ -62,4 +62,11 @@ interface ApplicationVariant : GeneratesApk,
      */
     @get:Incubating
     val bundleConfig: BundleConfig
+
+    /**
+     * Variant's android resources processing configuration, initialized by the corresponding
+     * global DSL element.
+     */
+    @get:Incubating
+    override val androidResources: ApplicationAndroidResources
 }

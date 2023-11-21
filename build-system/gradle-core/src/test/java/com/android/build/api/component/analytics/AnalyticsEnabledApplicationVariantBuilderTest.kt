@@ -17,6 +17,7 @@
 package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.AndroidTestBuilder
+import com.android.build.api.variant.ApplicationAndroidResourcesBuilder
 import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.PropertyAccessNotAllowedException
 import com.android.tools.build.gradle.internal.profile.VariantMethodType
@@ -86,5 +87,23 @@ internal class AnalyticsEnabledApplicationVariantBuilderTest {
                 You cannot access 'profileable' on ApplicationVariantBuilder in the [AndroidComponentsExtension.beforeVariants]
                 callbacks. Other plugins applied later can still change this value, it is not safe
                 to read at this stage.""".trimIndent())
+    }
+
+    @Test
+    fun testAndroidResources() {
+        val androidResources = Mockito.mock(ApplicationAndroidResourcesBuilder::class.java)
+        Mockito.`when`(delegate.androidResources).thenReturn(androidResources)
+        val proxiedAndroidResources = proxy.androidResources
+        Truth.assertThat(proxiedAndroidResources).isInstanceOf(
+            AnalyticsEnabledApplicationAndroidResourcesBuilder::class.java
+        )
+        Truth.assertThat(
+            (proxiedAndroidResources as AnalyticsEnabledApplicationAndroidResourcesBuilder).delegate
+        ).isEqualTo(androidResources)
+
+        Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantAccessList.first().type
+        ).isEqualTo(VariantMethodType.ANDROID_RESOURCES_BUILDER_VALUE)
     }
 }
