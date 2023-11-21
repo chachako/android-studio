@@ -1152,6 +1152,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       }
     }
 
+    var hasSdkIndexIssues = false
     if (sdkIndex.isReady()) {
       val versionString = version.toString()
       val buildFile = context.file
@@ -1185,8 +1186,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       if (issueTypes.isNotEmpty()) {
         val fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
         var typeIndex = 0
-        var sdkIndexReportCreated = false
-        while ((!sdkIndexReportCreated) && typeIndex < issueTypes.size) {
+        while ((!hasSdkIndexIssues) && typeIndex < issueTypes.size) {
           if (isBlocking) {
             val message =
               when (issueTypes[typeIndex]) {
@@ -1199,7 +1199,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                 else ->
                   sdkIndex.generateBlockingGenericIssueMessage(groupId, artifactId, versionString)
               }
-            sdkIndexReportCreated =
+            hasSdkIndexIssues =
               report(
                 context,
                 cookie,
@@ -1219,7 +1219,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                   sdkIndex.generateOutdatedMessage(groupId, artifactId, versionString)
                 else -> sdkIndex.generateGenericIssueMessage(groupId, artifactId, versionString)
               }
-            sdkIndexReportCreated =
+            hasSdkIndexIssues =
               report(
                 context,
                 cookie,
@@ -1286,6 +1286,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         newerVersion.isNewerThan(dependency)
     ) {
       val versionString = newerVersion.toString()
+      var isCustomMessage = true
       var message =
         if (
           dependency.group == "androidx.slidingpanelayout" && dependency.name == "slidingpanelayout"
@@ -1296,7 +1297,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         ) {
           "Upgrade `androidx.compose.foundation` for keyboard and mouse support"
         } else {
-          getNewerVersionAvailableMessage(dependency, versionString, null)
+          getNewerVersionAvailableMessage(dependency, versionString, null).also {
+            isCustomMessage = false
+          }
         }
 
       // Add details for play-services-maps.
@@ -1309,11 +1312,16 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           ". Upgrading to at least 18.2.0 is highly recommended to take advantage of the new renderer, " +
             "which supports customization options like map styling, 3D tiles, " +
             "and is more reliable, with better support going forward."
+        isCustomMessage = true
       }
 
-      val fix =
-        if (!isResolved) getUpdateDependencyFix(richVersionIdentifier, versionString) else null
-      report(context, cookie, issue, message, fix)
+      // Only show update message if there is a custom message or SDK Index issues not present
+      // (b/301316600)
+      if (isCustomMessage || !hasSdkIndexIssues) {
+        val fix =
+          if (!isResolved) getUpdateDependencyFix(richVersionIdentifier, versionString) else null
+        report(context, cookie, issue, message, fix)
+      }
     }
   }
 

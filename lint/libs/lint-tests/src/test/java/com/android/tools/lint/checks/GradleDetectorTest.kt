@@ -4961,10 +4961,6 @@ class GradleDetectorTest : AbstractCheckTest() {
   fun testSdkIndexLibraryUpgradeToVersionWithoutWarningOrError() {
     val expectedFixes =
       """
-        Fix for build.gradle line 2: Change to 8.0.0:
-        @@ -2 +2
-        -     compile 'com.example.ads.third.party:example:7.2.0' // Suggest 8.0.0 since it does not have issues
-        +     compile 'com.example.ads.third.party:example:8.0.0' // Suggest 8.0.0 since it does not have issues
         Fix for build.gradle line 3: Change to 8.0.0:
         @@ -3 +3
         -     compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
@@ -4981,7 +4977,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         gradle(
             """
                 dependencies {
-                    compile 'com.example.ads.third.party:example:7.2.0' // Suggest 8.0.0 since it does not have issues
+                    compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown
                     compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
                     compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
                 }
@@ -5027,9 +5023,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-          build.gradle:2: Warning: A newer version of com.example.ads.third.party:example than 7.2.0 is available: 8.0.0 [NewerVersionAvailable]
-              compile 'com.example.ads.third.party:example:7.2.0' // Suggest 8.0.0 since it does not have issues
-                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           build.gradle:3: Warning: A newer version of com.example.ads.third.party:example than 7.2.1 is available: 8.0.0 [NewerVersionAvailable]
               compile 'com.example.ads.third.party:example:7.2.1' // suggest 8.0.0 since it does not have issues
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5037,9 +5030,9 @@ class GradleDetectorTest : AbstractCheckTest() {
               compile 'log4j:log4j:1.2.10' // Suggest 1.2.11 even if 1.2.12 is available (but it has SDK issues)
                       ~~~~~~~~~~~~~~~~~~~~
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has one or more issues that could block publishing of your app to Play Console in the future [PlaySdkIndexGenericIssues]
-              compile 'com.example.ads.third.party:example:7.2.0' // Suggest 8.0.0 since it does not have issues
+              compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          0 errors, 4 warnings
+          0 errors, 3 warnings
         """
       )
       .expectFixDiffs(expectedFixes)
@@ -5109,6 +5102,76 @@ class GradleDetectorTest : AbstractCheckTest() {
               compile 'com.example.ads.third.party:example:7.1.0' //Issue but no suggestion since 7.1.4 has issues (error)
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           0 errors, 1 warnings
+        """
+      )
+      .expectFixDiffs(expectedFixes)
+  }
+
+  /**
+   * Test that version upgrade quickfix is shown if there is a custom message (even if the current
+   * version has errors or warnings)
+   */
+  fun testSdkIndexLibraryUpgradeToVersionWithCustomMessage() {
+    val expectedFixes =
+      """
+        Fix for build.gradle line 2: Change to 1.2.0:
+        @@ -2 +2
+        -     compile 'androidx.slidingpanelayout:slidingpanelayout:1.1.0' // Current has issues but there is a custom message
+        +     compile 'androidx.slidingpanelayout:slidingpanelayout:1.2.0' // Current has issues but there is a custom message
+        Fix for build.gradle line 3: Change to 18.3.0:
+        @@ -3 +3
+        -     compile 'com.google.android.gms:play-services-maps:18.1.0' // Current has issues but there is a custom message
+        +     compile 'com.google.android.gms:play-services-maps:18.3.0' // Current has issues but there is a custom message
+        Fix for build.gradle line 4: Change to 18.3.0:
+        @@ -4 +4
+        -     compile 'com.google.android.gms:play-services-maps:18.2.0' // There is a custom message but no issues
+        +     compile 'com.google.android.gms:play-services-maps:18.3.0' // There is a custom message but no issues
+        Show URL for build.gradle line 2: View details in Google Play SDK Index:
+        http://sdk.google.com/
+        Show URL for build.gradle line 3: View details in Google Play SDK Index:
+        http://sdk.google.com/
+      """
+    lint()
+      .files(
+        gradle(
+            """
+                dependencies {
+                    compile 'androidx.slidingpanelayout:slidingpanelayout:1.1.0' // Current has issues but there is a custom message
+                    compile 'com.google.android.gms:play-services-maps:18.1.0' // Current has issues but there is a custom message
+                    compile 'com.google.android.gms:play-services-maps:18.2.0' // There is a custom message but no issues
+                }
+                """
+          )
+          .indented()
+      )
+      .issues(
+        REMOTE_VERSION,
+        RISKY_LIBRARY,
+        DEPRECATED_LIBRARY,
+        DEPENDENCY,
+        PLAY_SDK_INDEX_NON_COMPLIANT,
+        PLAY_SDK_INDEX_GENERIC_ISSUES
+      )
+      .sdkHome(mockSupportLibraryInstallation)
+      .run()
+      .expect(
+        """
+          build.gradle:2: Warning: Upgrade androidx.slidingpanelayout for keyboard and mouse support [GradleDependency]
+              compile 'androidx.slidingpanelayout:slidingpanelayout:1.1.0' // Current has issues but there is a custom message
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:3: Warning: A newer version of com.google.android.gms:play-services-maps than 18.1.0 is available: 18.3.0. Upgrading to at least 18.2.0 is highly recommended to take advantage of the new renderer, which supports customization options like map styling, 3D tiles, and is more reliable, with better support going forward. [GradleDependency]
+              compile 'com.google.android.gms:play-services-maps:18.1.0' // Current has issues but there is a custom message
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:4: Warning: A newer version of com.google.android.gms:play-services-maps than 18.2.0 is available: 18.3.0 [GradleDependency]
+              compile 'com.google.android.gms:play-services-maps:18.2.0' // There is a custom message but no issues
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:2: Error: androidx.slidingpanelayout:slidingpanelayout version 1.1.0 has Permissions policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+              compile 'androidx.slidingpanelayout:slidingpanelayout:1.1.0' // Current has issues but there is a custom message
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:3: Warning: com.google.android.gms:play-services-maps version 18.1.0 has been marked as outdated by its author [OutdatedLibrary]
+              compile 'com.google.android.gms:play-services-maps:18.1.0' // Current has issues but there is a custom message
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          1 errors, 4 warnings
         """
       )
       .expectFixDiffs(expectedFixes)
@@ -7259,6 +7322,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 <com.google.android.gms>
                   <play-services-wearable versions="6.1.71"/>
                   <play-services versions="11.1.71"/>
+                  <play-services-maps versions="18.1.0,18.2.0,18.3.0"/>
                 </com.google.android.gms>
                 """
           .trimIndent()
@@ -7622,6 +7686,74 @@ class GradleDetectorTest : AbstractCheckTest() {
                                 LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE
                               )
                           )
+                      )
+                  )
+              )
+          )
+          .addSdks(
+            Sdk.newBuilder()
+              .setIndexUrl("http://sdk.google.com/")
+              .addLibraries(
+                Library.newBuilder()
+                  .setLibraryId(
+                    LibraryIdentifier.newBuilder()
+                      .setMavenId(
+                        LibraryIdentifier.MavenIdentifier.newBuilder()
+                          .setGroupId("com.google.android.gms")
+                          .setArtifactId("play-services-maps")
+                          .build()
+                      )
+                  )
+                  // Ok, latest, no issues
+                  .addVersions(
+                    LibraryVersion.newBuilder().setVersionString("18.3.0").setIsLatestVersion(true)
+                  )
+                  // Ok, latest, no issues
+                  .addVersions(
+                    LibraryVersion.newBuilder().setVersionString("18.2.0").setIsLatestVersion(false)
+                  )
+                  // Outdated version (Warning)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("18.1.0")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setOutdatedIssueInfo(LibraryVersionLabels.OutdatedIssueInfo.newBuilder())
+                          .setSeverity(LibraryVersionLabels.Severity.NON_BLOCKING_SEVERITY)
+                      )
+                  )
+              )
+              .addLibraries(
+                Library.newBuilder()
+                  .setLibraryId(
+                    LibraryIdentifier.newBuilder()
+                      .setMavenId(
+                        LibraryIdentifier.MavenIdentifier.newBuilder()
+                          .setGroupId("androidx.slidingpanelayout")
+                          .setArtifactId("slidingpanelayout")
+                          .build()
+                      )
+                  )
+                  // Ok, latest, no issues
+                  .addVersions(
+                    LibraryVersion.newBuilder().setVersionString("1.2.0").setIsLatestVersion(true)
+                  )
+                  // Policy issue (error)
+                  .addVersions(
+                    LibraryVersion.newBuilder()
+                      .setVersionString("1.1.0")
+                      .setIsLatestVersion(false)
+                      .setVersionLabels(
+                        LibraryVersionLabels.newBuilder()
+                          .setPolicyIssuesInfo(
+                            LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                              .addViolatedSdkPolicies(
+                                LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy
+                                  .SDK_POLICY_PERMISSIONS
+                              )
+                          )
+                          .setSeverity(LibraryVersionLabels.Severity.BLOCKING_SEVERITY)
                       )
                   )
               )
