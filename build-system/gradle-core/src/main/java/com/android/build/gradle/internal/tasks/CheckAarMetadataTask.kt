@@ -48,6 +48,7 @@ import org.gradle.api.artifacts.component.LibraryBinaryIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentSelector
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedArtifactResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
@@ -95,6 +96,16 @@ abstract class CheckAarMetadataTask : NonIncrementalTask() {
     val aarMetadataFiles: FileCollection
         get() = aarMetadataArtifacts.artifactFiles
 
+    @VisibleForTesting
+    @get:Internal
+    internal var disallowedAsarArtifacts: ArtifactCollection? = null
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    @get:Optional
+    val disallowedAsarFiles: FileCollection?
+        get() = disallowedAsarArtifacts?.artifactFiles
+
     @get:Input
     abstract val aarFormatVersion: Property<String>
 
@@ -136,18 +147,10 @@ abstract class CheckAarMetadataTask : NonIncrementalTask() {
     override fun doTaskAction() {
         workerExecutor.noIsolation().submit(
             CheckAarMetadataWorkAction::class.java
-        ) {
+        ) { it ->
             it.aarMetadataArtifacts.addAll(
                 aarMetadataArtifacts.artifacts.map { artifact ->
-                    AarMetadataArtifact(
-                        artifact.file,
-                        when (val id = artifact.id.componentIdentifier) {
-                            is LibraryBinaryIdentifier -> id.projectPath
-                            is ModuleComponentIdentifier -> "${id.group}:${id.module}:${id.version}"
-                            is ProjectComponentIdentifier -> id.getIdString()
-                            else -> id.displayName
-                        }
-                    )
+                    AarMetadataArtifact(artifact.file, artifact.userFacingName)
                 }
             )
             it.aarFormatVersion.set(aarFormatVersion)
@@ -168,6 +171,7 @@ abstract class CheckAarMetadataTask : NonIncrementalTask() {
                     it.desugarJdkVersion.set(id.version)
                 }
             }
+            it.disallowedAsarArtifacts.addAll(disallowedAsarArtifacts?.map { artifact -> artifact.userFacingName } ?: listOf())
         }
     }
 
@@ -231,9 +235,25 @@ abstract class CheckAarMetadataTask : NonIncrementalTask() {
             task.disableCompileSdkChecks.setDisallowChanges(
                 creationConfig.services.projectOptions[BooleanOption.DISABLE_COMPILE_SDK_CHECKS]
             )
+            if (!creationConfig.services.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
+                task.disallowedAsarArtifacts =
+                        creationConfig.variantDependencies.getArtifactCollection(
+                                AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
+                                AndroidArtifacts.ArtifactScope.ALL,
+                                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE
+                        )
+            }
         }
     }
 }
+
+private val ResolvedArtifactResult.userFacingName: String get() =
+        when (val id = id.componentIdentifier) {
+            is LibraryBinaryIdentifier -> id.projectPath
+            is ModuleComponentIdentifier -> "${id.group}:${id.module}:${id.version}"
+            is ProjectComponentIdentifier -> id.getIdString()
+            else -> id.displayName
+        }
 
 /** [WorkAction] to check AAR metadata files */
 abstract class CheckAarMetadataWorkAction: WorkAction<CheckAarMetadataWorkParameters> {
@@ -242,6 +262,16 @@ abstract class CheckAarMetadataWorkAction: WorkAction<CheckAarMetadataWorkParame
         val errorMessages: MutableList<String> = mutableListOf()
         parameters.aarMetadataArtifacts.get().forEach {
             checkAarMetadataArtifact(it, errorMessages)
+        }
+        parameters.disallowedAsarArtifacts.get().forEach {
+            errorMessages.add("""
+                Dependency $it is an Android Privacy Sandbox SDK library, and needs
+                Privacy Sandbox support to be enabled in projects that depend on it.
+
+                Recommended action: Enable privacy sandbox consumption in this project by setting
+                    ${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true
+                in this project's gradle.properties
+                """.trimIndent())
         }
         if (errorMessages.size > 0) {
             throw RuntimeException(StringBuilder().apply {
@@ -605,6 +635,7 @@ abstract class CheckAarMetadataWorkParameters: WorkParameters {
     abstract val maxRecommendedStableCompileSdkVersionForThisAgp: Property<Int>
     abstract val projectPath: Property<String>
     abstract val disableCompileSdkChecks: Property<Boolean>
+    abstract val disallowedAsarArtifacts: ListProperty<String>
 }
 
 data class AarMetadataReader(val inputStream: InputStream) {
