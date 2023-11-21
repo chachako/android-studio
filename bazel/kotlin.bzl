@@ -102,6 +102,7 @@ def kotlin_test(
         visibility = None,
         lint_baseline = None,
         lint_classpath = [],
+        lint_enabled = True,
         **kwargs):
     kotlin_library(
         name = name + ".testlib",
@@ -110,6 +111,7 @@ def kotlin_test(
         testonly = True,
         runtime_deps = runtime_deps,
         jar = name + ".jar",
+        lint_enabled = lint_enabled,
         lint_baseline = lint_baseline,
         lint_classpath = lint_classpath,
         lint_is_test_sources = True,
@@ -174,6 +176,7 @@ def kotlin_library(
         deps = None,
         javacopts = [],
         kotlinc_opts = [],
+        lint_enabled = True,
         lint_baseline = None,
         lint_classpath = [],
         lint_is_test_sources = False,
@@ -191,6 +194,7 @@ def kotlin_library(
         deps: The dependencies of this library.
         javacopts: Additional javac options.
         kotlinc_opts: Additional kotlinc options.
+        lint_enabled: enable or disable Lint checks
         lint_baseline: See impl.
         lint_classpath: See impl.
         lint_is_test_sources: See impl.
@@ -229,14 +233,15 @@ def kotlin_library(
     )
 
     # TODO move lint tests out of here
-    if lint_baseline:
-        if not srcs:
-            fail("lint_baseline set for rule that has no sources")
+    if lint_baseline and not srcs:
+        fail("lint_baseline set for rule that has no sources")
+
+    if lint_enabled and srcs:
         lint_test(
             name = name + "_lint_test",
             srcs = srcs,
             baseline = lint_baseline,
-            deps = deps + lint_classpath,
+            deps = (deps or []) + (lint_classpath or []),
             custom_rules = ["//tools/base/lint:studio-checks.lint-rules.jar"],
             tags = ["no_windows"],
             is_test_sources = lint_is_test_sources,

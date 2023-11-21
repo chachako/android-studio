@@ -112,6 +112,7 @@ def app_inspection_jar(
         **kwargs):
     kotlin_library(
         name = name + "-sources_undexed",
+        lint_enabled = False,
         **kwargs
     )
 

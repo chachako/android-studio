@@ -604,6 +604,7 @@ def maven_library(
         friends = friends,
         notice = notice,
         module_name = module_name,
+        lint_enabled = False,
         resources = resources,
         resource_strip_prefix = resource_strip_prefix,
         runtime_deps = runtime_deps,

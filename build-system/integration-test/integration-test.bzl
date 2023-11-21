@@ -28,6 +28,7 @@ def gradle_integration_test(
         jvm_flags = [],
         timeout = "long",
         lint_baseline = None,
+        lint_enabled = True,
         **kwargs):
     lib_name = name + ".testlib"
     kotlin_library(
@@ -36,6 +37,7 @@ def gradle_integration_test(
         deps = deps,
         testonly = True,
         lint_baseline = lint_baseline,
+        lint_enabled = lint_enabled,
         lint_is_test_sources = True,
     )
 
@@ -143,6 +145,7 @@ def single_gradle_integration_test_per_source(
             shard_count = None,
             maven_repos = maven_repos,
             runtime_deps = runtime_deps,
+            lint_enabled = False,
             tags = tags + (["very_flaky"] if test_name in very_flaky_targets else []),
             timeout = timeout,
             **kwargs
