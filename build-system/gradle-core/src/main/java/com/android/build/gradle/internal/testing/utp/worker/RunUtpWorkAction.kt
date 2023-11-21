@@ -46,7 +46,7 @@ abstract class RunUtpWorkAction @Inject constructor(
                 "-cp",
                 parameters.launcherJar.joinToString(File.pathSeparator) { it.absolutePath },
                 UtpDependency.LAUNCHER.mainClass,
-                *parameters.coreJar.map { it.absolutePath }.toTypedArray(),
+                parameters.coreJar.joinToString(File.pathSeparator) { it.absolutePath },
                 "--proto_config=${parameters.runnerConfig.asFile.get().absolutePath}",
                 "--proto_server_config=${parameters.serverConfig.asFile.get().absolutePath}"
             )

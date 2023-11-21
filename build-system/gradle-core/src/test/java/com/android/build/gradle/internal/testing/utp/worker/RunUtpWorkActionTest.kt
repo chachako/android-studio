@@ -94,8 +94,7 @@ class RunUtpWorkActionTest {
                 "-cp",
                 "launcherJar1${File.pathSeparator}launcherJar2",
                 UtpDependency.LAUNCHER.mainClass,
-                "coreJar1",
-                "coreJar2",
+                "coreJar1${File.pathSeparator}coreJar2",
                 "--proto_config=runnerConfig",
                 "--proto_server_config=serverConfig"
             )
