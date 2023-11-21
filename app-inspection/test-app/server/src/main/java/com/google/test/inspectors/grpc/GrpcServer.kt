@@ -26,13 +26,14 @@ fun main(args: Array<String>) {
       .addService(ProtoReflectionService.newInstance())
       .addService(ProtoService())
       .addService(JsonService())
+      .intercept(ServerMetadataInterceptor())
       .build()
   server.start()
   val addresses =
     NetworkInterface.getNetworkInterfaces().toList().flatMap {
       it.inetAddresses.toList().filterIsInstance<Inet4Address>().map { "${it.hostAddress}:$port" }
     }
-  println("Server started, listening on:\n  ${addresses.joinToString("\n  ") { it}}")
+  println("Server started, listening on:\n  ${addresses.joinToString("\n  ") { it }}")
   Runtime.getRuntime()
     .addShutdownHook(
       object : Thread() {

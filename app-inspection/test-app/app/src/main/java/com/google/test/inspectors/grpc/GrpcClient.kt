@@ -7,10 +7,16 @@ import com.google.test.inspectors.grpc.proto.ProtoServiceGrpcKt
 import io.grpc.ManagedChannelBuilder
 
 internal class GrpcClient(host: String, port: Int) {
+
   // TODO(aalbert): Add secure channel support
-  private val channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build()
+  private val channel =
+    ManagedChannelBuilder.forAddress(host, port)
+      .usePlaintext()
+      .intercept(ClientMetadataInterceptor(), LoggingGrpcInterceptor())
+      .build()
 
   private val protoStub = ProtoServiceGrpcKt.ProtoServiceCoroutineStub(channel)
+
   private val jsonStub = JsonServiceCoroutineStub(channel)
 
   suspend fun doProtoGrpc(request: ProtoRequest) = protoStub.doProtoRpc(request)
