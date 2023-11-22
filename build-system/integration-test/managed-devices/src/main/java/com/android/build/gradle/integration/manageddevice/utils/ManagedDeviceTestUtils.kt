@@ -241,22 +241,23 @@ private fun setupTopLevelRepository(repositoryDir: File) {
                     </archives>
                 </remotePackage>
                 <remotePackage path="emulator">
+                    <!-- Generated from:ab bid:11078245 branch:aosp-emu-33-release -->
                     <type-details xsi:type="generic:genericDetailsType"/>
                     <revision>
-                        <major>31</major>
+                        <major>33</major>
                         <minor>1</minor>
-                        <micro>4</micro>
+                        <micro>22</micro>
                     </revision>
                     <display-name>Android Emulator</display-name>
                     <uses-license ref="android-sdk-license"/>
                     <channelRef ref="channel-0"/>
                     <archives>
                         <archive>
-                            <!--Built on: Tue Nov 23 16:04:50 2021.-->
+                            <!-- Built on: Sat Nov 11 23:06:51 2023. -->
                             <complete>
-                                <size>276082791</size>
-                                <checksum type="sha1">fa3cc18914be8d89ee65e0428bc08efd9a8d9cce</checksum>
-                                <url>emulator-linux_x64-7920983.zip</url>
+                                <size>252615367</size>
+                                <checksum type="sha1">2b8d488442abcddd3864400436e16feb5fd8567f</checksum>
+                                <url>emulator-linux_x64-11078245.zip</url>
                             </complete>
                             <host-os>linux</host-os>
                             <host-arch>x64</host-arch>

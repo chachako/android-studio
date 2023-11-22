@@ -187,9 +187,9 @@ http_file(
 # Not for use in Presubmit
 http_file(
     name = "emulator_zip",
-    downloaded_file_path = "emulator-linux_x64-7920983.zip",
-    sha256 = "5690099ab213a6265bc025d1d2218055e6b9d69414972c13cf2ef1c98a9c4565",
-    urls = ["https://dl.google.com/android/repository/emulator-linux_x64-7920983.zip"],
+    downloaded_file_path = "emulator-linux_x64-11078245.zip",
+    sha256 = "7ebfd686b4f6e0d3f8bb02bbf1e61e587a9fcd5b776b310d8d3feae8569a078f",
+    urls = ["https://dl.google.com/android/repository/emulator-linux_x64-11078245.zip"],
 )
 
 # Not for use in Presubmit
