@@ -74,7 +74,7 @@ open class AnalyticsEnabledKotlinMultiplatformAndroidVariant @Inject constructor
             return delegate.lifecycleTasks
         }
 
-    private val userVisibleUnitTest: AnalyticsEnabledUnitTest? by lazy {
+    private val userVisibleUnitTest: AnalyticsEnabledUnitTest? by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
         delegate.unitTest?.let {
             objectFactory.newInstance(
                 AnalyticsEnabledUnitTest::class.java,
@@ -87,7 +87,7 @@ open class AnalyticsEnabledKotlinMultiplatformAndroidVariant @Inject constructor
     override val unitTest: com.android.build.api.component.UnitTest?
         get() = userVisibleUnitTest
 
-    private val userVisibleAndroidTest: AnalyticsEnabledAndroidTest? by lazy {
+    private val userVisibleAndroidTest: AnalyticsEnabledAndroidTest? by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
         delegate.androidTest?.let {
             objectFactory.newInstance(
                 AnalyticsEnabledAndroidTest::class.java,

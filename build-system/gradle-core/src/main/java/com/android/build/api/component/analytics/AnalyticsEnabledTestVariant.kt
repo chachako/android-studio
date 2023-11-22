@@ -97,7 +97,7 @@ open class AnalyticsEnabledTestVariant @Inject constructor(
 
     override val unitTest: UnitTest? = null
 
-    private val generatesApk: GeneratesApk by lazy {
+    private val generatesApk: GeneratesApk by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
         AnalyticsEnabledGeneratesApk(
                 delegate,
                 stats,

@@ -135,7 +135,7 @@ open class AnalyticsEnabledAndroidTest @Inject constructor(
     override val dexing: Dexing
         get() = generatesApk.dexing
 
-    private val generatesApk: GeneratesApk by lazy {
+    private val generatesApk: GeneratesApk by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
         AnalyticsEnabledGeneratesApk(
                 delegate,
                 stats,

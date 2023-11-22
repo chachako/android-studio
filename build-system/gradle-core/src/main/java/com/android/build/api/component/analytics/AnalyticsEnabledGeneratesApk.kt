@@ -40,7 +40,7 @@ open class AnalyticsEnabledGeneratesApk(
             return delegate.applicationId
         }
 
-    private val userVisibleRenderscript: Renderscript? by lazy {
+    private val userVisibleRenderscript: Renderscript? by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
         delegate.renderscript?.let {
             objectFactory.newInstance(
                     AnalyticsEnabledRenderscript::class.java,
@@ -66,7 +66,7 @@ open class AnalyticsEnabledGeneratesApk(
             return delegate.androidResources
         }
 
-    private val userVisibleApkPackaging: ApkPackaging by lazy {
+    private val userVisibleApkPackaging: ApkPackaging by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
         objectFactory.newInstance(
                 AnalyticsEnabledApkPackaging::class.java,
                 delegate.packaging,
