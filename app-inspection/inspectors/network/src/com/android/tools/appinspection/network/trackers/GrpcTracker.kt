@@ -33,6 +33,7 @@ import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.GrpcMessageR
 import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.GrpcMessageSent
 import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.GrpcMetadata
 import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.GrpcPayload
+import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.GrpcResponseHeaders
 import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.GrpcStreamCreated
 import studio.network.inspection.NetworkInspectorProtocol.ThreadData
 
@@ -45,7 +46,12 @@ internal class GrpcTracker(
 
   private var lastThread: AtomicReference<Thread?> = AtomicReference()
 
-  fun trackGrpcCallStarted(service: String, method: String, headers: Metadata, trace: String) {
+  fun trackGrpcCallStarted(
+    service: String,
+    method: String,
+    requestHeaders: Metadata,
+    trace: String
+  ) {
     try {
       connection.reportGrpcEvent(
         GrpcEvent.newBuilder()
@@ -53,7 +59,7 @@ internal class GrpcTracker(
             GrpcCallStarted.newBuilder()
               .setService(service)
               .setMethod(method)
-              .addAllHeaders(headers.toGrpcMetadata())
+              .addAllRequestHeaders(requestHeaders.toGrpcMetadata())
               .setTrace(trace)
           )
       )
@@ -75,14 +81,27 @@ internal class GrpcTracker(
     }
   }
 
-  fun trackGrpcStreamCreated(address: String, headers: Metadata) {
+  fun trackGrpcStreamCreated(address: String, requestHeaders: Metadata) {
     try {
       connection.reportGrpcEvent(
         GrpcEvent.newBuilder()
           .setGrpcStreamCreated(
             GrpcStreamCreated.newBuilder()
               .setAddress(address)
-              .addAllHeaders(headers.toGrpcMetadata())
+              .addAllRequestHeaders(requestHeaders.toGrpcMetadata())
+          )
+      )
+    } catch (t: Throwable) {
+      logger.error("Failed to report a GrpcEvent", t)
+    }
+  }
+
+  fun trackGrpcResponseHeaders(responseHeaders: Metadata) {
+    try {
+      connection.reportGrpcEvent(
+        GrpcEvent.newBuilder()
+          .setGrpcResponseHeaders(
+            GrpcResponseHeaders.newBuilder().addAllResponseHeaders(responseHeaders.toGrpcMetadata())
           )
       )
     } catch (t: Throwable) {

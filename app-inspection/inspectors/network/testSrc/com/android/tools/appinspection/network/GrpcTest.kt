@@ -36,6 +36,7 @@ import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.UnionCase.GR
 import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.UnionCase.GRPC_CALL_STARTED
 import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.UnionCase.GRPC_MESSAGE_RECEIVED
 import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.UnionCase.GRPC_MESSAGE_SENT
+import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.UnionCase.GRPC_RESPONSE_HEADERS
 import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.UnionCase.GRPC_STREAM_CREATED
 import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.UnionCase.GRPC_THREAD
 
@@ -45,6 +46,7 @@ private val EXPECTED_EVENT_TYPES =
     GRPC_THREAD,
     GRPC_CALL_STARTED,
     GRPC_MESSAGE_SENT,
+    GRPC_RESPONSE_HEADERS,
     GRPC_MESSAGE_RECEIVED,
     GRPC_CALL_ENDED
   )
@@ -95,11 +97,11 @@ class GrpcTest {
           grpc_call_started {
             service: "greeter.Greeter"
             method: "SayHello"
-            headers {
+            request_headers {
               key: "grpc-accept-encoding"
               values: "gzip"
             }
-            headers {
+            request_headers {
               key: "user-agent"
               values: "grpc-java-inprocess/1.57.0"
             }
@@ -117,7 +119,7 @@ class GrpcTest {
         """
           grpc_stream_created {
             address: "$serverName"
-            headers {
+            request_headers {
               key: "grpc-accept-encoding"
               values: "gzip"
             }
@@ -130,6 +132,19 @@ class GrpcTest {
               bytes: "\n\003Foo"
               type: "com.google.grpc.test.HelloRequest"
               text: "name: \"Foo\"\n"
+            }
+          }
+        """
+          .trimIndent(),
+        """
+          grpc_response_headers {
+            response_headers {
+              key: "grpc-encoding"
+              values: "identity"
+            }
+            response_headers {
+              key: "grpc-accept-encoding"
+              values: "gzip"
             }
           }
         """

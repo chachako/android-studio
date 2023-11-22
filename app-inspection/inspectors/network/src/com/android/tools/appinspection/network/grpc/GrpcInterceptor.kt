@@ -91,6 +91,12 @@ internal class GrpcInterceptor(
     private val marshaller: Marshaller<Res>,
     responseListener: ClientCall.Listener<Res>,
   ) : SimpleForwardingClientCallListener<Res>(responseListener) {
+
+    override fun onHeaders(headers: Metadata) {
+      super.onHeaders(headers)
+      tracker.trackGrpcResponseHeaders(headers)
+    }
+
     override fun onMessage(message: Res) {
       super.onMessage(message)
       tracker.trackGrpcMessageReceived(message, marshaller)
