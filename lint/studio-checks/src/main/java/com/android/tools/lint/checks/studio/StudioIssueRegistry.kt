@@ -56,11 +56,15 @@ class StudioIssueRegistry : IssueRegistry() {
     NoOpDetector.ISSUE.setEnabledByDefault(true)
     if (isStudio) { // not enforced in PSQ but give guidance in the IDE
       AssertDetector.EXPENSIVE.setEnabledByDefault(true)
+      ByLazyDetector.ISSUE.setEnabledByDefault(true)
       InteroperabilityDetector.NO_HARD_KOTLIN_KEYWORDS.setEnabledByDefault(true)
       InteroperabilityDetector.LAMBDA_LAST.setEnabledByDefault(true)
       InteroperabilityDetector.KOTLIN_PROPERTY.setEnabledByDefault(true)
       DefaultEncodingDetector.ISSUE.setEnabledByDefault(true)
+      ForbiddenStudioCallDetector.MOCKITO_WHEN.setEnabledByDefault(true)
       KotlincFE10Detector.ISSUE.setEnabledByDefault(true)
+    } else {
+      LintDetectorDetector.DOLLAR_STRINGS.setEnabledByDefault(false)
     }
   }
 

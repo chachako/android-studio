@@ -100,6 +100,7 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
                 the `whenever` extension method.
                 """,
         category = CORRECTNESS,
+        enabledByDefault = false,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
         implementation = IMPLEMENTATION
