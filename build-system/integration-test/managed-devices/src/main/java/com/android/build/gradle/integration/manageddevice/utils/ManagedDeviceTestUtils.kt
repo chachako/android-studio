@@ -4,15 +4,16 @@ import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.options.StringOption
 import com.android.repository.api.RepoManager
 import com.android.sdklib.repository.AndroidSdkHandler
-import com.android.testutils.TestUtils
 import com.android.utils.FileUtils
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.Path
 
 private val systemImageZip = File(System.getProperty("sdk.repo.sysimage.android29.zip"))
 
@@ -33,8 +34,12 @@ private val placeholderLicense = "A TOTALLY VALID LICENSE"
  * be ready for download.
  */
 fun setupSdkDir(project: GradleTestProject, sdkDir: File) {
-    FileUtils.mkdirs(sdkDir)
-    setupLicenses(sdkDir)
+    if (!sdkDir.exists()) {
+        FileUtils.mkdirs(sdkDir)
+        project.androidSdkDir?.copyRecursively(sdkDir)
+        Path.of(sdkDir.absolutePath, "platform-tools", "adb").toFile().setExecutable(true)
+        setupLicenses(sdkDir)
+    }
 
     TestFileUtils.appendToFile(
         project.localProp,
@@ -74,16 +79,18 @@ fun setupLicenses(sdkDirectory: File) {
  * @param repositoryDir the directory where the repository should be set up in.
  */
 fun setupSdkRepo(repositoryDir: File) {
-    FileUtils.mkdirs(repositoryDir)
+    if (!repositoryDir.exists()) {
+        FileUtils.mkdirs(repositoryDir)
 
-    // Setup toplevel components first
-    setupTopLevelRepository(repositoryDir)
+        // Setup toplevel components first
+        setupTopLevelRepository(repositoryDir)
 
-    // Setup manifest for all other necessary components
-    setupManifestXml(repositoryDir)
+        // Setup manifest for all other necessary components
+        setupManifestXml(repositoryDir)
 
-    // Setup the system image repository
-    setupAOSPImageRepository(repositoryDir)
+        // Setup the system image repository
+        setupAOSPImageRepository(repositoryDir)
+    }
 }
 
 /**
@@ -113,6 +120,7 @@ fun getStandardExecutor(
         .withSdkAutoDownload()
         .with(IntegerOption.ANDROID_SDK_CHANNEL, 3)
         .with(StringOption.GRADLE_MANAGED_DEVICE_EMULATOR_GPU_MODE, "swiftshader_indirect")
+        .with(BooleanOption.GRADLE_MANAGED_DEVICE_EMULATOR_SHOW_KERNEL_LOGGING, true)
         .withArgument(
             "-D${AndroidSdkHandler.SDK_TEST_BASE_URL_PROPERTY}="
                     + "file:///${repositoryDir.absolutePath}/")

@@ -117,6 +117,19 @@ gradle_connected_test(
 )
 
 gradle_connected_test(
+    name = "UtpManagedDeviceSetupTest",
+    srcs = "src/test/java/com/android/build/gradle/integration/manageddevice/application/",
+    avd = None,
+    data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/utp"],
+    jvm_flags = sdk_jvm_flags,
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = TEST_MAVEN_REPOS,
+    deps = TEST_DEPS + [
+        "//tools/base/build-system/integration-test/utp",
+    ],
+)
+
+gradle_connected_test(
     name = "SimpleManagedDeviceTest",
     srcs = "src/test/java/com/android/build/gradle/integration/manageddevice/application/",
     avd = None,
