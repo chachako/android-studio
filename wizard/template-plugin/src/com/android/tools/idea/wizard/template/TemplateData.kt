@@ -147,6 +147,7 @@ data class ModuleTemplateData(
   val apis: ApiTemplateData,
   val viewBindingSupport: ViewBindingSupport,
   val category: Category,
+  val isCompose: Boolean,
   val isMaterial3: Boolean,
   val useGenericLocalTests: Boolean,
   val useGenericInstrumentedTests: Boolean
