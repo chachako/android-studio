@@ -393,6 +393,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           SdCardDetector.ISSUE,
           SdkIntDetector.ISSUE,
           SdkSuppressDetector.ISSUE,
+          SecretDetector.ISSUE,
           SecureRandomDetector.ISSUE,
           SecureRandomGeneratorDetector.ISSUE,
           SecurityDetector.EXPORTED_PROVIDER,
