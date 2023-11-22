@@ -10,22 +10,26 @@ import com.android.build.gradle.options.StringOption
 import com.android.repository.api.RepoManager
 import com.android.sdklib.repository.AndroidSdkHandler
 import com.android.utils.FileUtils
+import com.google.common.base.Splitter
+import com.google.common.hash.Funnels
+import com.google.common.hash.Hashing
+import com.google.common.io.ByteStreams
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import kotlin.io.path.fileSize
 
-private val systemImageZip = File(System.getProperty("sdk.repo.sysimage.android29.zip"))
+private val systemImageFiles = Splitter.on(' ')
+    .split(System.getProperty("sdk.repo.sysimage.android29.files"))
+    .map { File(it) }
+    .toList()
 
 private val emulatorZip = File(System.getProperty("sdk.repo.emulator.zip"))
-
-private val buildToolsZip = File(System.getProperty("sdk.repo.buildtools.zip"))
-
-private val platform33Zip = File(System.getProperty("sdk.repo.platform.zip"))
-
-private val platformToolsZip = File(System.getProperty("sdk.repo.platformtools.zip"))
-
-private val sdkToolsZip = File(System.getProperty("sdk.repo.sdktools.zip"))
 
 private val placeholderLicense = "A TOTALLY VALID LICENSE"
 
@@ -148,106 +152,6 @@ private fun setupTopLevelRepository(repositoryDir: File) {
             <sdk:sdk-repository xmlns:common="http://schemas.android.com/repository/android/common/02" xmlns:generic="http://schemas.android.com/repository/android/generic/02" xmlns:sdk="http://schemas.android.com/sdk/android/repo/repository2/02" xmlns:sdk-common="http://schemas.android.com/sdk/android/repo/common/02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                 <license id="android-sdk-license" type="text">$placeholderLicense</license>
                 <channel id="channel-0">stable</channel>
-                <remotePackage path="platforms;android-33">
-                    <type-details xsi:type="sdk:platformDetailsType">
-                        <api-level>33</api-level>
-                        <codename></codename>
-                        <layoutlib api="15"/>
-                    </type-details>
-                    <revision>
-                        <major>1</major>
-                    </revision>
-                    <display-name>Android SDK Platform 33</display-name>
-                    <uses-license ref="android-sdk-license"/>
-                    <channelRef ref="channel-0"/>
-                    <archives>
-                        <archive>
-                            <!--Built on: Fri Nov 19 00:59:43 2021.-->
-                            <complete>
-                                <size>66108299</size>
-                                <checksum type="sha1">afae86ed55d29733d50996ffed832f2d1bd75b9a</checksum>
-                                <url>platform-33_r01.zip</url>
-                            </complete>
-                        </archive>
-                    </archives>
-                </remotePackage>
-                <remotePackage path="build-tools;30.0.3">
-                    <type-details xsi:type="generic:genericDetailsType"/>
-                    <revision>
-                        <major>30</major>
-                        <minor>0</minor>
-                        <micro>3</micro>
-                    </revision>
-                    <display-name>Android SDK Build-Tools 30.0.3</display-name>
-                    <uses-license ref="android-sdk-license"/>
-                    <dependencies>
-                        <dependency path="tools"/>
-                    </dependencies>
-                    <channelRef ref="channel-0"/>
-                    <archives>
-                        <archive>
-                            <!--Built on: Wed Nov 11 21:35:18 2020.-->
-                            <complete>
-                                <size>53134793</size>
-                                <checksum type="sha1">2076ea81b5a2fc298ef7bf85d666f496b928c7f1</checksum>
-                                <url>build-tools_r30.0.3-linux.zip</url>
-                            </complete>
-                            <host-os>linux</host-os>
-                        </archive>
-                    </archives>
-                </remotePackage>
-                <remotePackage obsolete="true" path="tools">
-                    <type-details xsi:type="generic:genericDetailsType"/>
-                    <revision>
-                        <major>26</major>
-                        <minor>1</minor>
-                        <micro>1</micro>
-                    </revision>
-                    <display-name>Android SDK Tools</display-name>
-                    <uses-license ref="android-sdk-license"/>
-                    <dependencies>
-                        <dependency path="emulator"/>
-                        <dependency path="platform-tools">
-                            <min-revision>
-                                <major>20</major>
-                            </min-revision>
-                        </dependency>
-                    </dependencies>
-                    <channelRef ref="channel-0"/>
-                    <archives>
-                        <archive>
-                            <!--Built on: Tue Jan 26 12:44:23 2021.-->
-                            <complete>
-                                <size>154582459</size>
-                                <checksum type="sha1">8c7c28554a32318461802c1291d76fccfafde054</checksum>
-                                <url>sdk-tools-linux-4333796.zip</url>
-                            </complete>
-                            <host-os>linux</host-os>
-                        </archive>
-                    </archives>
-                </remotePackage>
-                <remotePackage path="platform-tools">
-                    <type-details xsi:type="generic:genericDetailsType"/>
-                    <revision>
-                        <major>31</major>
-                        <minor>0</minor>
-                        <micro>3</micro>
-                    </revision>
-                    <display-name>Android SDK Platform-Tools</display-name>
-                    <uses-license ref="android-sdk-license"/>
-                    <channelRef ref="channel-0"/>
-                    <archives>
-                        <archive>
-                            <!--Built on: Mon Jul 19 14:26:34 2021.-->
-                            <complete>
-                                <size>13302579</size>
-                                <checksum type="sha1">f09581347ed39978abb3a99c6bb286de6adc98ef</checksum>
-                                <url>platform-tools_r31.0.3-linux.zip</url>
-                            </complete>
-                            <host-os>linux</host-os>
-                        </archive>
-                    </archives>
-                </remotePackage>
                 <remotePackage path="emulator">
                     <!-- Generated from:ab bid:11078245 branch:aosp-emu-33-release -->
                     <type-details xsi:type="generic:genericDetailsType"/>
@@ -286,10 +190,6 @@ private fun setupTopLevelRepository(repositoryDir: File) {
         repositoryV2Xml.toPath(), repositoryV2XmlContents.toByteArray(StandardCharsets.UTF_8))
 
     FileUtils.copyFileToDirectory(emulatorZip, repositoryDir)
-    FileUtils.copyFileToDirectory(buildToolsZip, repositoryDir)
-    FileUtils.copyFileToDirectory(platform33Zip, repositoryDir)
-    FileUtils.copyFileToDirectory(platformToolsZip, repositoryDir)
-    FileUtils.copyFileToDirectory(sdkToolsZip, repositoryDir)
 }
 
 /**
@@ -328,26 +228,48 @@ private fun setupManifestXml(repsitoryDir: File) {
 private fun setupAOSPImageRepository(repositoryDir: File) {
     val sysImgRepoFolder = FileUtils.join(repositoryDir, "sys-img", "android")
     FileUtils.mkdirs(sysImgRepoFolder)
+
+    val sysImgCommonPathLength = systemImageFiles
+        .map(File::getAbsolutePath)
+        .reduce(String::commonPrefixWith)
+        .length
+
+    val sysImgZipFile = File(sysImgRepoFolder, "x86_64-29_r06.zip")
+    ZipOutputStream(BufferedOutputStream(sysImgZipFile.outputStream())).use { output ->
+        systemImageFiles.forEach { file ->
+            output.putNextEntry(ZipEntry(file.absolutePath.drop(sysImgCommonPathLength)))
+            BufferedInputStream(file.inputStream()).use { content ->
+                content.copyTo(output, bufferSize = 1024)
+            }
+        }
+    }
+
+    val sysImgZipSha256 = Hashing.sha256().newHasher().let {
+        BufferedInputStream(sysImgZipFile.inputStream()).use { content ->
+            ByteStreams.copy(content, Funnels.asOutputStream(it))
+        }
+        it.hash().toString()
+    }
+
     val sysImgXml = File(sysImgRepoFolder, "sys-img2-3.xml")
     val sysImgXmlContents = """
             <?xml version="1.0" ?>
             <sys-img:sdk-sys-img xmlns:sys-img="http://schemas.android.com/sdk/android/repo/sys-img2/03" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                 <license id="android-sdk-license" type="text">$placeholderLicense</license>
                 <channel id="channel-0">stable</channel>
-                <remotePackage path="system-images;android-29;default;x86">
+                <remotePackage path="system-images;android-29;default;x86_64">
                     <type-details xsi:type="sys-img:sysImgDetailsType">
                         <api-level>29</api-level>
-                        <base-extension>true</base-extension>
                         <tag>
                             <id>default</id>
                             <display>Default Android System Image</display>
                         </tag>
-                        <abi>x86</abi>
+                        <abi>x86_64</abi>
                     </type-details>
                     <revision>
-                        <major>8</major>
+                        <major>6</major>
                     </revision>
-                    <display-name>Intel x86 Atom System Image</display-name>
+                    <display-name>Intel x86_64 Atom System Image</display-name>
                     <uses-license ref="android-sdk-license"/>
                     <dependencies>
                         <dependency path="emulator">
@@ -361,20 +283,10 @@ private fun setupAOSPImageRepository(repositoryDir: File) {
                     <channelRef ref="channel-0"/>
                     <archives>
                         <archive>
-                            <!--Built on: Sat Aug 21 09:29:46 2021.-->
                             <complete>
-                                <size>516543600</size>
-                                <checksum type="sha1">cc4fa13e49cb2e93770d4f2e90ea1dd2a81e315b</checksum>
-                                <url>x86-29_r08-darwin.zip</url>
-                            </complete>
-                            <host-os>macosx</host-os>
-                        </archive>
-                        <archive>
-                            <!--Built on: Sat Aug 21 09:29:43 2021.-->
-                            <complete>
-                                <size>516543600</size>
-                                <checksum type="sha1">cc4fa13e49cb2e93770d4f2e90ea1dd2a81e315b</checksum>
-                                <url>x86-29_r08-linux.zip</url>
+                                <size>${sysImgZipFile.toPath().fileSize()}</size>
+                                <checksum>${sysImgZipSha256}</checksum>
+                                <url>${sysImgZipFile.name}</url>
                             </complete>
                             <host-os>linux</host-os>
                         </archive>
@@ -383,5 +295,4 @@ private fun setupAOSPImageRepository(repositoryDir: File) {
             </sys-img:sdk-sys-img>
         """.trimIndent()
     Files.write(sysImgXml.toPath(), sysImgXmlContents.toByteArray(StandardCharsets.UTF_8))
-    FileUtils.copyFileToDirectory(systemImageZip, sysImgRepoFolder)
 }

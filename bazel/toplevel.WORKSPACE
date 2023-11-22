@@ -174,17 +174,7 @@ http_archive(
     url = "https://dl.google.com/android/repository/sys-img/google_apis_playstore/x86_64-TiramisuPrivacySandbox_r06.zip",
 )
 
-# Sdk components when needed by gradle managed devices
-# TODO(b/219103375) use a single 29 system image
-# Not for use in Presubmit
-http_file(
-    name = "system_image_android-29_default_x86_zip",
-    downloaded_file_path = "x86-29_r08-linux.zip",
-    sha256 = "3fa56afb1d1eb0d27f0a33f72bfa15146c0328e849181e80d21cc1bff3907621",
-    urls = ["https://dl.google.com/android/repository/sys-img/android/x86-29_r08-linux.zip"],
-)
-
-# Not for use in Presubmit
+# Sdk components when needed by Gradle Managed Devices
 http_file(
     name = "emulator_zip",
     downloaded_file_path = "emulator-linux_x64-11078245.zip",
@@ -192,37 +182,6 @@ http_file(
     urls = ["https://dl.google.com/android/repository/emulator-linux_x64-11078245.zip"],
 )
 
-# Not for use in Presubmit
-http_file(
-    name = "build_tools_zip",
-    downloaded_file_path = "build-tools_r30.0.3-linux.zip",
-    sha256 = "24593500aa95d2f99fb4f10658aae7e65cb519be6cd33fa164f15f27f3c4a2d6",
-    urls = ["https://dl.google.com/android/repository/build-tools_r30.0.3-linux.zip"],
-)
-
-# Not for use in Presubmit
-http_file(
-    name = "platform_33_zip",
-    downloaded_file_path = "platform-33_r01.zip",
-    sha256 = "4a1deecb5d9521bca90b8a50d7c9d83e9cf117a581a9418dc941d30c552c04b7",
-    urls = ["https://dl.google.com/android/repository/platform-33_r01.zip"],
-)
-
-# Not for use in Presubmit
-http_file(
-    name = "platform_tools_zip",
-    downloaded_file_path = "platform-tools_r31.0.3-linux.zip",
-    sha256 = "e6cb61b92b5669ed6fd9645fad836d8f888321cd3098b75588a54679c204b7dc",
-    urls = ["https://dl.google.com/android/repository/platform-tools_r31.0.3-linux.zip"],
-)
-
-# Not for use in Presubmit
-http_file(
-    name = "sdk_tools_zip",
-    downloaded_file_path = "sdk-tools-linux-4333796.zip",
-    sha256 = "92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9",
-    urls = ["https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip"],
-)
 
 # An empty local repository which must be overridden according to the instructions at
 # go/agp-profiled-benchmarks if running the "_profiled" AGP build benchmarks.

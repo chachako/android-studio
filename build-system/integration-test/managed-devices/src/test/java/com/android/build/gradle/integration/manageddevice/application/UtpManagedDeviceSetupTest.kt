@@ -73,6 +73,7 @@ class UtpManagedDeviceSetupTest {
                                 device = "Pixel 2"
                                 apiLevel = 29
                                 systemImageSource = "aosp"
+                                require64Bit = true
                             }
                         }
                     }
