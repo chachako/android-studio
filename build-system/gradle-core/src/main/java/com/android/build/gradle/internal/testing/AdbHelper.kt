@@ -23,7 +23,6 @@ import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import java.util.concurrent.TimeoutException
 
@@ -109,8 +108,10 @@ class AdbHelper(
                 return serial
             }
         }
-        error("Failed to find serial for device id: $idValue")
+        throw DeviceNotFoundException("Failed to find serial for device id: $idValue")
     }
+
+    class DeviceNotFoundException(errorMessage: String) : RuntimeException(errorMessage)
 
     /**
      * Returns the list of all emulator serials whose id value starts with [idPrefix]

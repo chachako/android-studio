@@ -200,7 +200,8 @@ class AvdSnapshotHandler(
                         emulatorSerial = adbHelper.findDeviceSerialWithId(deviceId, logger)
                         break
                     } catch (e: Exception) {
-                        logger.verbose("Waiting for $avdName to be attached to adb.")
+                        logger.verbose(
+                            "Waiting for $avdName to be attached to adb. Last attempt: $e")
                     }
                     Thread.sleep(5000)
                 }
