@@ -179,10 +179,19 @@ private fun Metadata.toGrpcMetadata(): List<GrpcMetadata> {
 private fun <T> Marshaller<T>.createGrpcPayload(message: T): GrpcPayload.Builder {
   val msg: Any = message ?: return GrpcPayload.newBuilder()
   val className = msg::class.java.name
-  val protoPrefix = "# $className@${Integer.toHexString(message.hashCode())}\n"
-  val text = message.toString().removePrefix(protoPrefix)
+  val text =
+    when {
+      message.isProto() -> message.toProtoText()
+      else -> message.toString()
+    }
   return GrpcPayload.newBuilder()
     .setBytes(ByteString.copyFrom(stream(message).readAllBytes()))
     .setType(className)
     .setText(text)
+}
+
+private fun Any.toProtoText() = "# proto-message: ${this::class.java.simpleName}\n\n$this"
+
+private fun Any.isProto(): Boolean {
+  return this::class.java.superclass.packageName.startsWith("com.google.protobuf")
 }

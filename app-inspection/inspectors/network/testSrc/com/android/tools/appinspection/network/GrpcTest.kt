@@ -131,7 +131,7 @@ class GrpcTest {
             payload {
               bytes: "\n\003Foo"
               type: "com.google.grpc.test.HelloRequest"
-              text: "name: \"Foo\"\n"
+              text: "# proto-message: HelloRequest\n\nname: \"Foo\"\n"
             }
           }
         """
@@ -154,7 +154,7 @@ class GrpcTest {
             payload {
               bytes: "\n\tHello Foo"
               type: "com.google.grpc.test.HelloResponse"
-              text: "message: \"Hello Foo\"\n"
+              text: "# proto-message: HelloResponse\n\nmessage: \"Hello Foo\"\n"
             }
           }
         """
