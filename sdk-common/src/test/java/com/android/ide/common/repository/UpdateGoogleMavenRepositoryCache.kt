@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,35 +18,55 @@
 package com.android.ide.common.repository
 
 import com.android.ide.common.gradle.Version
+import com.android.testutils.TestUtils
 import com.android.utils.XmlUtils
 import com.google.common.io.Files
 import com.google.common.io.Resources
 import java.io.File
 import java.net.URL
-import java.util.*
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files.exists
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.Collections
+import java.util.TreeMap
+import kotlin.io.path.isDirectory
+import kotlin.io.path.readText
 
 /**
  * Updates the checked in index files of the Google Maven repository.
  *
  * This class can be run using IJ run configurations or from bazel:
- * `bazel run //tools/base/sdk-common:update_google_maven_repository_cache`. In both cases, path
- * to the repo root directory (the one with `.repo` in it) needs to be passed as the only argument.
+ * `bazel run //tools/base/sdk-common:update_google_maven_repository_cache`
+ *
+ * In both cases, the path to the repo root directory (the one with `.repo` in it) can optionally be
+ * passed as the only argument.
  *
  * Running this may cause new files to be added to the sdk-common jar, which means `JarContentsTest`
  * gradle integration test will need to be updated. See that class for instructions on how to
  * update it.
  */
 fun main(args: Array<String>) {
-    val root = args.singleOrNull() ?: error("You have to specify the repo root as only argument.")
 
-    if (!File(root, ".repo").isDirectory) {
-        error("Invalid directory: should be pointing to the root of a tools checkout directory.")
+    val workspace: Path = args.singleOrNull()?.let { Paths.get(it) } ?: try {
+        findWorkspaceInBazelRun() ?: TestUtils.getWorkspaceRoot()
+    } catch (e: Exception) {
+        throw IllegalStateException(
+            "Unexpectedly failed to locate repo. \n" +
+                    "You can optionally specify the repo root as an argument, but this shouldn't\n" +
+                    "be necessary in the usual cases of running from bazel or the tools/adt/idea " +
+                    "Intellij project.", e)
     }
 
-    val dir = File(root, "tools/base/sdk-common/src/main/resources/versions-offline/")
+    if (!workspace.resolve(".repo").isDirectory()) {
+        error("Invalid directory: should be pointing to the root of a tools checkout directory.")
+    }
+    val dir: File = workspace.resolve("tools/base/sdk-common/src/main/resources/versions-offline/").toFile()
+
     if (!dir.exists()) {
         error("${dir.absolutePath} does not exist.")
     }
+    println("Updating versions-offline in $dir")
 
     // Delete older copies to ensure we clean up obsolete packages
     dir.deleteRecursively()
@@ -129,3 +149,20 @@ fun main(args: Array<String>) {
 private fun readUrlDataAsString(url: String): String =
         Resources.asCharSource(URL(url), Charsets.UTF_8).read()
 
+
+private const val DO_NOT_BUILD_HERE = "DO_NOT_BUILD_HERE"
+
+// This logic is the same as that in WorkspaceUtils.findWorkspace() in tools/base/bazel/
+// This can't easily be reused here as it's not part of the idea project.
+private fun findWorkspaceInBazelRun(): Path? {
+    var currDir: Path? = Paths.get("").toAbsolutePath()
+    while (currDir != null) {
+        val doNotBuildHere: Path =
+            currDir.resolve(DO_NOT_BUILD_HERE)
+        if (exists(doNotBuildHere)) {
+            return Paths.get(doNotBuildHere.readText(StandardCharsets.ISO_8859_1))
+        }
+        currDir = currDir.parent
+    }
+    return null
+}

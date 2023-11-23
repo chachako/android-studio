@@ -96,8 +96,9 @@ maven_library(
 
 java_binary(
     name = "update_google_maven_repository_cache",
+    testonly = 1,
     main_class = "com.android.ide.common.repository.UpdateGoogleMavenRepositoryCache",
-    runtime_deps = [":tools.sdk-common"],
+    runtime_deps = [":tools.tests.testlib"],
 )
 
 kotlin_test(
