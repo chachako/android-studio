@@ -1,3 +1,4 @@
 tools/out/
 tools/adt/idea/out
 tools/idea/out
+tools/vendor/intellij/cidr/cidr-common/tests/testData
