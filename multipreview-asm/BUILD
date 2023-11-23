@@ -33,6 +33,25 @@ kotlin_test(
     ],
 )
 
+# Performance tests for multipreview-asm
+kotlin_test(
+    name = "perfgate-multipreview-tests",
+    srcs = glob(["perf/testSrc/**/*.kt"]),
+    tags = [
+        "no_mac",
+        "no_test_windows",
+        "perfgate",
+    ],
+    test_class = "com.android.tools.preview.multipreview.PerfArtificialDataMultipreviewTest",
+    deps = [
+        ":tools.multipreview-asm",
+        "//tools/base/perf-logger:studio.perf-logger_testlib",
+        "//tools/base/testutils:tools.testutils",
+        "@maven//:junit.junit",
+        "@maven//:org.ow2.asm.asm",
+    ],
+)
+
 maven_library(
     name = "multipreview-asm",
     srcs = glob([

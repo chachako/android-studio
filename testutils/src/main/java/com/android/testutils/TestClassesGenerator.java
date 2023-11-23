@@ -16,6 +16,8 @@
 
 package com.android.testutils;
 
+import static org.objectweb.asm.Opcodes.ACC_ABSTRACT;
+import static org.objectweb.asm.Opcodes.ACC_ANNOTATION;
 import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_STATIC;
@@ -32,7 +34,13 @@ import com.google.common.io.ByteStreams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -45,20 +53,127 @@ public final class TestClassesGenerator {
         return emptyClass(pkg, name, "java/lang/Object");
     }
 
+    private static void addDefaultConstructor(@NonNull ClassWriter cw) {
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+        mv.visitInsn(RETURN);
+        mv.visitMaxs(1, 1);
+        mv.visitEnd();
+    }
+
     public static byte[] emptyClass(
             @NonNull String pkg, @NonNull String name, @NonNull String superName) {
         ClassWriter cw = new ClassWriter(0);
-        MethodVisitor mv;
 
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, pkg + "/" + name, null, superName, null);
 
-        {
-            mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+        addDefaultConstructor(cw);
+
+        cw.visitEnd();
+
+        return cw.toByteArray();
+    }
+
+    private static void addAnnotations(
+            BiFunction<String, Boolean, AnnotationVisitor> cw, List<Annotation> annotations) {
+        Map<String, List<List<String>>> annotationsByClass = new HashMap<>();
+        for (Annotation annotation : annotations) {
+            if (!annotationsByClass.containsKey(annotation.name)) {
+                annotationsByClass.put(annotation.name, new ArrayList<>());
+            }
+            annotationsByClass.get(annotation.name).add(annotation.params);
+        }
+        for (Map.Entry<String, List<List<String>>> annotation : annotationsByClass.entrySet()) {
+            AnnotationVisitor av;
+            if (annotation.getValue().size() == 1) {
+                av = cw.apply("L" + annotation.getKey() + ";", true);
+                for (String paramName : annotation.getValue().get(0)) {
+                    av.visit(paramName, "");
+                }
+            } else {
+                av = cw.apply("L" + annotation.getKey() + "$Container;", true);
+                AnnotationVisitor arrayVisitor = av.visitArray("value");
+                for (List<String> subAnnotation : annotation.getValue()) {
+                    AnnotationVisitor av2 =
+                            arrayVisitor.visitAnnotation(null, "L" + annotation.getKey() + ";");
+                    int i = 1;
+                    for (String paramVal : subAnnotation) {
+                        av2.visit("param" + i, paramVal);
+                        ++i;
+                    }
+                    av2.visitEnd();
+                }
+                arrayVisitor.visitEnd();
+            }
+            av.visitEnd();
+        }
+    }
+
+    public static byte[] annotationClass(
+            @NonNull String packagedName,
+            @NonNull List<String> paramNames,
+            @NonNull List<Annotation> annotations) {
+        ClassWriter cw = new ClassWriter(0);
+
+        cw.visit(V1_6, ACC_PUBLIC + ACC_ANNOTATION, packagedName, null, "java/lang/Object", null);
+
+        addDefaultConstructor(cw);
+
+        for (String paramName : paramNames) {
+            MethodVisitor mv =
+                    cw.visitMethod(
+                            ACC_PUBLIC + ACC_ABSTRACT,
+                            paramName,
+                            "()Ljava/lang/String;",
+                            null,
+                            null);
+            mv.visitEnd();
+        }
+
+        addAnnotations(cw::visitAnnotation, annotations);
+
+        cw.visitEnd();
+
+        return cw.toByteArray();
+    }
+
+    public static byte[] annotationClass(
+            @NonNull String packagedName, @NonNull List<String> paramNames) {
+        return annotationClass(packagedName, paramNames, Collections.emptyList());
+    }
+
+    public static byte[] annotationClass(@NonNull String packagedName) {
+        return annotationClass(packagedName, Collections.emptyList());
+    }
+
+    /** Class that emulates Composable functions. */
+    public static byte[] classWithAnnotatedMethods(
+            String className, List<String> methods, List<Annotation> annotations, int fields) {
+        ClassWriter cw = new ClassWriter(0);
+
+        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, className, null, "java/lang/Object", null);
+
+        addDefaultConstructor(cw);
+
+        for (int i = 0; i < fields; ++i) {
+            FieldVisitor fv =
+                    cw.visitField(ACC_PRIVATE, "field" + i, "Ljava/lang/String;", null, null);
+            fv.visitEnd();
+        }
+        for (String method : methods) {
+            int colon = method.indexOf(':');
+            String methodName = method.substring(0, colon);
+            String descriptor = method.substring(colon + 1);
+            MethodVisitor mv =
+                    cw.visitMethod(ACC_PUBLIC + ACC_STATIC, methodName, descriptor, null, null);
+            addAnnotations(mv::visitAnnotation, annotations);
             mv.visitCode();
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+            // This bytecode is only valid for some signatures (void methods). This class is used
+            // for testing the parser, we don't ever load these classes to a running VM anyway.
             mv.visitInsn(RETURN);
-            mv.visitMaxs(1, 1);
+            mv.visitMaxs(0, 1);
             mv.visitEnd();
         }
         cw.visitEnd();
@@ -67,23 +182,14 @@ public final class TestClassesGenerator {
     }
 
     /** Generates a class containing specified methods that contain empty bodies. */
-    public static byte[] classWithEmptyMethods(String className, String... namesAndDescriptors)
-            throws Exception {
-
+    public static byte[] classWithEmptyMethods(String className, String... namesAndDescriptors) {
         ClassWriter cw = new ClassWriter(0);
         MethodVisitor mv;
 
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, "test/" + className, null, "java/lang/Object", null);
 
-        {
-            mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-            mv.visitCode();
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(1, 1);
-            mv.visitEnd();
-        }
+        addDefaultConstructor(cw);
+
         for (String namesAndDescriptor : namesAndDescriptors) {
             int colon = namesAndDescriptor.indexOf(':');
             String methodName = namesAndDescriptor.substring(0, colon);
@@ -115,15 +221,8 @@ public final class TestClassesGenerator {
 
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, className, null, "java/lang/Object", null);
 
-        {
-            mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-            mv.visitCode();
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(1, 1);
-            mv.visitEnd();
-        }
+        addDefaultConstructor(cw);
+
         for (String fieldName : fields) {
             fv = cw.visitField(ACC_PRIVATE, fieldName, "Ljava/lang/String;", null, null);
             fv.visitEnd();
@@ -157,15 +256,8 @@ public final class TestClassesGenerator {
 
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, className, null, "java/lang/Object", null);
 
-        {
-            mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-            mv.visitCode();
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(1, 1);
-            mv.visitEnd();
-        }
+        addDefaultConstructor(cw);
+
         {
             mv = cw.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
             mv.visitCode();
@@ -196,5 +288,19 @@ public final class TestClassesGenerator {
         // magic-minor-major:  0x CA FE BA BE 00 00 <new_version>
         ByteBuffer.wrap(bytes).putShort(6, (short) newVersion);
         return bytes;
+    }
+
+    public static class Annotation {
+        public final String name;
+        public final List<String> params;
+
+        public Annotation(String name, List<String> params) {
+            this.name = name;
+            this.params = params;
+        }
+
+        public Annotation(String name) {
+            this(name, Collections.emptyList());
+        }
     }
 }
