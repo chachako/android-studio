@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
+import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSampleProject
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
 import com.android.build.gradle.integration.common.truth.ScannerSubject
@@ -56,152 +57,8 @@ import kotlin.io.path.readText
 /** Smoke integration tests for the privacy sandbox SDK production and consumption */
 class PrivacySandboxSdkTest {
 
-    private val mavenRepo = MavenRepoGenerator(
-            listOf(
-                    MavenRepoGenerator.Library("com.externaldep:externaljar:1",
-                            "jar",
-                            TestInputsGenerator.jarWithEmptyClasses(
-                                    ImmutableList.of("com/externaldep/externaljar/ExternalClass")
-                            )),
-                    MavenRepoGenerator.Library("com.externaldep:externalaar:1",
-                            "aar",
-                            generateAarWithContent("com.externaldep.externalaar",
-                                    // language=xml
-                                    manifest = """
-                                         <manifest package="com.externaldex.externalaar" xmlns:android="http://schemas.android.com/apk/res/android">
-                                             <uses-sdk android:targetSdkVersion="23" android:minSdkVersion="14" />
-                                             <!-- Permission that needs to be removed before ASB packaging -->
-                                             <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-                                         </manifest>
-                                    """.trimIndent()
-                            ))
-            )
-    )
-
     @get:Rule
-    val project = createGradleProjectBuilder {
-        privacySandboxSdkProject(":privacy-sandbox-sdk") {
-                android {
-                    minSdk = 14
-                }
-                appendToBuildFile {
-                    """
-                        android {
-                            bundle {
-                                applicationId = "com.example.privacysandboxsdk"
-                                sdkProviderClassName = "Test"
-                                compatSdkProviderClassName = "Test"
-                                setVersion(1, 2, 3)
-                            }
-                        }
-                    """.trimIndent()
-                }
-                dependencies {
-                    include(project(":android-lib1"))
-                    include(project(":android-lib2"))
-                    include("com.externaldep:externaljar:1")
-                    include("com.externaldep:externalaar:1")
-                }
-        }
-        privacySandboxSdkLibraryProject(":android-lib2") {
-            android {
-                namespace = "com.example.androidlib2"
-                minSdk = 14
-            }
-            addFile(
-                    "src/main/java/com/example/androidlib2/Example.java",
-                    // language=java
-                    """
-                package com.example.androidlib2;
-
-                class Example {
-
-                    public Example() {}
-
-                    public void f2() {}
-                }
-            """.trimIndent()
-            )
-            // Have an empty manifest as a regression test of b/237279793
-            addFile("src/main/AndroidManifest.xml", """
-                <?xml version="1.0" encoding="utf-8"?>
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-                </manifest>
-                """.trimIndent()
-            )
-        }
-
-        privacySandboxSdkLibraryProject(":android-lib1") {
-            android {
-                namespace = "com.example.androidlib1"
-                minSdk = 14
-            }
-            dependencies {
-                implementation("androidx.privacysandbox.tools:tools-apipackager:$androidxPrivacySandboxVersion")
-            }
-            addFile("src/main/AndroidManifest.xml", """
-                <?xml version="1.0" encoding="utf-8"?>
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android"  xmlns:tools="http://schemas.android.com/tools">
-                    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove" />
-                    <uses-permission android:name="android.permission.INTERNET" />
-                </manifest>
-                """.trimIndent()
-            )
-            addFile(
-                    "src/main/res/values/strings.xml",
-                    """<resources>
-                <string name="string_from_android_lib_1">androidLib</string>
-              </resources>"""
-            )
-            addFile(
-                    "src/main/java/com/example/androidlib1/Example.java",
-                    // language=java
-                    """
-                package com.example.androidlib1;
-
-                class Example {
-
-                    public Example() {}
-                    public void f1() {}
-                    public void f2() {
-                    }
-                }
-            """.trimIndent()
-            )
-            addFile("src/main/resources/my_java_resource.txt", "some java resource")
-            addFile("src/main/assets/asset_from_androidlib1.txt", "some asset")
-        }
-        subProject(":example-app") {
-            plugins.add(PluginType.ANDROID_APP)
-            android {
-                defaultCompileSdk()
-                minSdk = 14
-                namespace = "com.example.privacysandboxsdk.consumer"
-                compileSdkPreview = "TiramisuPrivacySandbox"
-
-            }
-            dependencies {
-                implementation(project(":privacy-sandbox-sdk"))
-            }
-            appendToBuildFile { //language=groovy
-                """
-                    android {
-                        defaultConfig {
-                            versionCode = 4
-                        }
-                    }
-                """.trimIndent()
-            }
-        }
-        rootProject {
-            useNewPluginsDsl = true
-            plugins.add(PluginType.KSP)
-        }
-    }
-            .withAdditionalMavenRepo(mavenRepo)
-            .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
-            .enableProfileOutput()
-            .create()
+    val project = privacySandboxSampleProject()
 
     private fun executor() = project.executor()
             .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, true)
