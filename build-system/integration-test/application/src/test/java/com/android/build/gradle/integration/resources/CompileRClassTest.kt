@@ -17,6 +17,8 @@
 package com.android.build.gradle.integration.resources
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
+import com.android.build.gradle.integration.common.truth.ScannerSubject
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import org.junit.Rule
 import org.junit.Test
 
@@ -24,11 +26,41 @@ class CompileRClassTest {
     @get:Rule
     val project = GradleTestProjectBuilder()
         .fromTestProject("compileRClasses")
+        .addGradleProperties("android.enableAppCompileTimeRClass=true")
+        .addGradleProperties("android.nonTransitiveRClass=true")
         .create()
 
     @Test
-    fun testInstrumentationTestCompiles() {
-        project.executor()
+    fun cannotAccessTransitiveResource() {
+        val result = project.executor()
+            .expectFailure()
             .run(":lib:compileDebugAndroidTestKotlin")
+
+        ScannerSubject.assertThat(result.stderr).contains(
+            "Unresolved reference 'transitiveDependencyLib'."
+        )
+    }
+
+    @Test
+    fun transitiveResourceAccessWhenFlagDisabled() {
+        TestFileUtils.searchAndReplace(
+            project.gradlePropertiesFile,
+            "android.enableAppCompileTimeRClass=true",
+            "android.enableAppCompileTimeRClass=false"
+        )
+
+        project.executor().run(":lib:compileDebugAndroidTestKotlin")
+    }
+
+    @Test
+    fun transitiveResourceAccessWhenApiDependency() {
+        // lib -> (impl) dependencyLib -> (api) transitiveDependencyLib
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("dependencyLib").ktsBuildFile,
+            """implementation(project(":transitiveDependencyLib"))""",
+            """api(project(":transitiveDependencyLib"))""",
+        )
+
+        project.executor().run(":lib:compileDebugAndroidTestKotlin")
     }
 }

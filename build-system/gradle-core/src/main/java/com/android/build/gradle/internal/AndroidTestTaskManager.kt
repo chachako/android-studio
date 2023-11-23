@@ -54,8 +54,8 @@ import com.android.build.gradle.internal.test.BundleTestDataImpl
 import com.android.build.gradle.internal.test.TestDataImpl
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
-import com.android.builder.core.BuilderConstants
 import com.android.builder.core.BuilderConstants.FD_MANAGED_DEVICE_SETUP_RESULTS
+import com.android.builder.core.ComponentType
 import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableSet
 import org.gradle.api.Project
@@ -64,8 +64,6 @@ import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
-import java.io.File
-import java.util.Locale
 import java.util.concurrent.Callable
 
 class AndroidTestTaskManager(
@@ -171,6 +169,9 @@ class AndroidTestTaskManager(
         // Add a task to merge the resource folders
         createMergeResourcesTask(androidTestProperties, true, ImmutableSet.of())
 
+        // Add a task to package the resource folders
+        createPackageResourcesTask(androidTestProperties)
+
         // Add tasks to compile shader
         createShaderTask(androidTestProperties)
 
@@ -248,6 +249,33 @@ class AndroidTestTaskManager(
 
         createConnectedTestForVariant(androidTestProperties)
     }
+
+    private fun createPackageResourcesTask(creationConfig: AndroidTestCreationConfig) {
+        val projectOptions = creationConfig.services.projectOptions
+        val appCompileRClass = projectOptions[BooleanOption.ENABLE_APP_COMPILE_TIME_R_CLASS]
+
+        if (isTestApkCompileRClassEnabled(appCompileRClass, creationConfig.componentType)) {
+            // The "small merge" of only the android tests resources
+            basicCreateMergeResourcesTask(
+                creationConfig,
+                MergeType.PACKAGE,
+                false,
+                false,
+                false,
+                ImmutableSet.of(),
+                null
+            )
+        }
+    }
+    private fun isTestApkCompileRClassEnabled(
+        compileRClassFlag: Boolean,
+        componentType: ComponentType
+    ): Boolean {
+        return compileRClassFlag
+            && componentType.isForTesting
+            && componentType.isApk
+    }
+
 
     private fun createConnectedTestForVariant(androidTestProperties: AndroidTestCreationConfig) {
         val testedVariant = androidTestProperties.mainVariant
