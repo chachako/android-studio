@@ -136,6 +136,10 @@ abstract class AnalyticsService :
         return resourceManager.getVariantBuilder(projectPath, variantName)
     }
 
+    @Synchronized fun mergeToVariantBuilder(projectPath: String, variantName: String, variant: GradleBuildVariant) {
+        getVariantBuilder(projectPath, variantName)?.mergeFrom(variant)
+    }
+
     @Synchronized
     override fun getTaskRecord(taskPath: String): TaskProfilingRecord? {
         return resourceManager.getTaskRecord(taskPath)

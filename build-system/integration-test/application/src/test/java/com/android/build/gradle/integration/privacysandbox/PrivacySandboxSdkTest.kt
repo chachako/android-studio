@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.privacysandbox
 
 import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.truth.ApkSubject
@@ -42,6 +43,8 @@ import com.android.utils.FileUtils
 import com.android.utils.StdLogger
 import com.google.common.collect.ImmutableList
 import com.google.common.truth.Truth.assertThat
+import com.google.protobuf.TextFormat
+import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -197,6 +200,7 @@ class PrivacySandboxSdkTest {
             .withAdditionalMavenRepo(mavenRepo)
             .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
             .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+            .enableProfileOutput()
             .create()
 
     private fun executor() = project.executor()
@@ -451,10 +455,26 @@ class PrivacySandboxSdkTest {
     fun testConsumptionViaApk() {
         val model = modelV2().fetchModels().container.getProject(":example-app")
         val exampleAppDebug = model.androidProject!!.variants.single { it.name == "debug" }
-        val privacySandboxSdkInfo = exampleAppDebug.mainArtifact.privacySandboxSdkInfo !!
+        val privacySandboxSdkInfo = exampleAppDebug.mainArtifact.privacySandboxSdkInfo!!
 
-        executor().with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
-                .run(exampleAppDebug.mainArtifact.assembleTaskName, privacySandboxSdkInfo.task, privacySandboxSdkInfo.taskLegacy, privacySandboxSdkInfo.additionalApkSplitTask)
+        val profiles = ProfileCapturer(project).capture {
+            executor().with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
+                    .run(exampleAppDebug.mainArtifact.assembleTaskName,
+                            privacySandboxSdkInfo.task,
+                            privacySandboxSdkInfo.taskLegacy,
+                            privacySandboxSdkInfo.additionalApkSplitTask)
+        }
+
+        val actualMetricsMetadata = profiles.single().projectList.single { it.androidPlugin == GradleBuildProject.PluginType.APPLICATION }.variantList.single { it.isDebug }.privacySandboxDependenciesInfo
+        assertThat(TextFormat.printer().printToString(actualMetricsMetadata).trim()).isEqualTo("""
+            sdk {
+              package_name: "com.example.privacysandboxsdk"
+              version_major: 1
+              version_minor: 2
+              build_time_version_patch: 0
+            }
+            """.trimIndent())
+
         Apk(project.getSubproject(":example-app")
                 .getApk(GradleTestProject.ApkType.DEBUG).file).use {
             assertThat(it).exists()

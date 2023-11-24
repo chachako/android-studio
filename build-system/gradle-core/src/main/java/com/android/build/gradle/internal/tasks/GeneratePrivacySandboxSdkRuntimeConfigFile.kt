@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.tasks
 
-import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -25,10 +24,13 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.featuresplit.FeatureSetMetadata
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.builder.symbols.writeRPackages
+import com.android.bundle.RuntimeEnabledSdkConfigProto
 import com.android.bundle.RuntimeEnabledSdkConfigProto.RuntimeEnabledSdkConfig
 import com.android.bundle.SdkMetadataOuterClass.SdkMetadata
+import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.InputFile
@@ -60,6 +62,7 @@ abstract class GeneratePrivacySandboxSdkRuntimeConfigFile : NonIncrementalTask()
             it.generatedRPackage.set(generatedRPackage)
             it.sdkArchiveMetadata.from(sdkArchiveMetadata)
             it.featureSetMetadata.set(featureSetMetadata)
+            it.variantName.set(variantName)
         }
     }
 
@@ -70,6 +73,7 @@ abstract class GeneratePrivacySandboxSdkRuntimeConfigFile : NonIncrementalTask()
             abstract val generatedRPackage: RegularFileProperty
             abstract val sdkArchiveMetadata: ConfigurableFileCollection
             abstract val featureSetMetadata: RegularFileProperty
+            abstract val variantName: Property<String>
         }
 
         override fun run() {
@@ -103,7 +107,22 @@ abstract class GeneratePrivacySandboxSdkRuntimeConfigFile : NonIncrementalTask()
                     packageNameToId = configProto.runtimeEnabledSdkList.associateBy({it.packageName}) { it.resourcesPackageId.shl(24) },
                     outJar = parameters.generatedRPackage.get().asFile.toPath(),
             )
+            val analyticsData: GradleBuildVariant = GradleBuildVariant.newBuilder().also { variant ->
+                variant.setPrivacySandboxDependenciesInfo(GradleBuildVariant.PrivacySandboxDependenciesInfo.newBuilder().also { privacySandboxDependenciesInfo ->
+                    for (sdk in configProto.runtimeEnabledSdkList) {
+                        privacySandboxDependenciesInfo.addSdk(sdk.toAnalytics())
+                    }
+                })
+            }.build()
+            parameters.analyticsService.get().mergeToVariantBuilder(parameters.projectPath.get(), parameters.variantName.get(), analyticsData)
         }
+
+        private fun RuntimeEnabledSdkConfigProto.RuntimeEnabledSdk.toAnalytics() = GradleBuildVariant.PrivacySandboxDependenciesInfo.RuntimeEnabledSdk.newBuilder().also { analytics ->
+            analytics.packageName = packageName
+            analytics.versionMajor = versionMajor
+            analytics.versionMinor = versionMinor
+            analytics.buildTimeVersionPatch = buildTimeVersionPatch
+        }.build()
 
         companion object {
             private const val PRIVACY_SANDBOX_PREFIX = "PrivacySandboxSdk_"
