@@ -21,9 +21,10 @@ import com.android.build.gradle.integration.common.fixture.ModelContainerV2
 import com.android.build.gradle.integration.common.fixture.model.SnapshotItemWriter.Companion.NULL_STRING
 import com.android.build.gradle.internal.ide.dependencies.LOCAL_AAR_GROUPID
 import com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
+import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.GRADLE_TEST_VERSION
 import com.android.build.gradle.internal.ide.dependencies.LOCAL_ASAR_GROUPID
+import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_TESTS
 import java.io.File
-
 
 /**
  * Main entry point of the snapshot feature.
@@ -199,7 +200,7 @@ class ModelSnapshotter<ModelT>(
             "$LOCAL_ASAR_PREFIX${path.toNormalizedStrings(normalizer)}${address.subSequence(IntRange(secondPipe, address.length - 1))}"
         } else {
             address
-        }.normalizeAgpVersion()
+        }.normalizeVersionsOfCommonDependencies()
     }
 
     fun <PropertyT> list(
@@ -355,14 +356,17 @@ fun Any?.toNormalizedStrings(normalizer: FileNormalizer): Any = when (this) {
     null -> NULL_STRING
     is File -> normalizer.normalize(this)
     is Collection<*> -> map { it.toNormalizedStrings(normalizer) }
-    is String -> "\"$this\"".normalizeAgpVersion()
+    is String -> "\"$this\"".normalizeVersionsOfCommonDependencies()
     is Enum<*> -> name
     else -> toString()
 }
 
-fun String.normalizeAgpVersion(): String {
+/** Replaces versions of common dependencies (e.g., APG, KGP, Gradle) with placeholders. */
+fun String.normalizeVersionsOfCommonDependencies(): String {
     return this
         .replace(ANDROID_GRADLE_PLUGIN_VERSION, "{AGP_Version}")
+        .replace(KOTLIN_VERSION_FOR_TESTS, "{KOTLIN_VERSION_FOR_TESTS}")
+        .replace(GRADLE_TEST_VERSION, "{GRADLE_VERSION}")
         .replace(
             "org.gradle.jvm.version>${Runtime.version().feature()}",
             "org.gradle.jvm.version>{Java_Version}"
@@ -372,4 +376,3 @@ fun String.normalizeAgpVersion(): String {
             "org.gradle.jvm.version -> {Java_Version}"
         )
 }
-

@@ -7,7 +7,7 @@
         "sourceSetName": "androidMain",
         "extras": {
           "com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker": {},
-          "org.gradle.api.artifacts.Configuration;resolvableMetadataConfiguration": "configuration \u0027:kmpSecondLib:androidMainResolvableDependenciesMetadata\u0027",
+          "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage": "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage@{HASH_CODE}",
           "com.android.kotlin.multiplatform.models.AndroidSourceSet;android-source-set-model": {
             "sourceProvider": {
               "manifestFile": {
@@ -26,6 +26,7 @@
         }
       ],
       "extras": {
+        "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage": "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage@{HASH_CODE}",
         "org.jetbrains.kotlin.gradle.plugin.hierarchy.KotlinSourceSetTreeClassifier": {},
         "com.android.kotlin.multiplatform.models.AndroidCompilation;android-compilation-model": {
           "type": "MAIN",

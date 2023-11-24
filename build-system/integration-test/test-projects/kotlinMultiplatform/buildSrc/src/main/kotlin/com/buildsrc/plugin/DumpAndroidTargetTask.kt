@@ -87,16 +87,15 @@ abstract class DumpAndroidTargetTask: DefaultTask() {
 
                     val value = (entry.value as? Function0<*>)?.let { it() } ?: entry.value
 
-                    val valueElement = when (value) {
-                        is AndroidTarget -> JsonParser.parseString(
-                            jsonFormat.print(value)
-                        )
-                        is AndroidCompilation -> JsonParser.parseString(
-                            jsonFormat.print(value)
-                        )
-                        is AndroidSourceSet -> JsonParser.parseString(
-                            jsonFormat.print(value)
-                        )
+                    val valueElement = when {
+                        value is AndroidTarget -> JsonParser.parseString(jsonFormat.print(value))
+                        value is AndroidCompilation -> JsonParser.parseString(jsonFormat.print(value))
+                        value is AndroidSourceSet -> JsonParser.parseString(jsonFormat.print(value))
+                        value.javaClass.name == "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage" -> {
+                            // This class uses the default toString() method which contains a hash
+                            // code, so we need to normalize it.
+                            JsonPrimitive("${value.javaClass.name}@{HASH_CODE}")
+                        }
                         else -> runCatching { context.serialize(value) }.getOrElse {
                             JsonPrimitive(value.toString())
                         }

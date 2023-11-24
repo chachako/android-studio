@@ -1,4 +1,5 @@
 load("//tools/base/bazel:maven.bzl", "maven_repository")
+load("//tools/base/build-system/integration-test:common-dependencies.bzl", "KGP_VERSION_FOR_TESTS")
 load("//tools/base/build-system/integration-test:integration-test.bzl", "gradle_integration_test", "single_gradle_integration_test_per_source")
 
 #keep sorted
@@ -721,7 +722,7 @@ maven_repository(
         "@maven//:org.jdeferred.jdeferred-android-aar_1.2.3",
         "@maven//:org.jetbrains.dokka.javadoc-plugin_1.4.32",
         "@maven//:org.jetbrains.kotlin.kotlin-compiler-embeddable_1.7.10",
-        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.20-RC",
+        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_" + KGP_VERSION_FOR_TESTS,
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-android_1.6.4",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core-common_1.3.6",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.3",

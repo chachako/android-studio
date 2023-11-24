@@ -2,7 +2,7 @@ load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:gradle.bzl", "gradle_build", "gradle_test")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library", "maven_repository")
-load("//tools/base/build-system/integration-test:common-dependencies.bzl", "KGP_LATEST")
+load("//tools/base/build-system/integration-test:common-dependencies.bzl", "KGP_FOR_TESTS", "KGP_VERSION_FOR_TESTS")
 load("//tools/base/common:version.bzl", "BASE_VERSION", "BUILD_VERSION")
 load("hybrid_build.bzl", "GRADLE_PROPERTIES")
 
@@ -108,6 +108,12 @@ filegroup(
 filegroup(
     name = "gradle-distrib-8.2",
     srcs = ["//tools/external/gradle:gradle-distrib-8.2"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "gradle-distrib-8.1",
+    srcs = ["//tools/external/gradle:gradle-distrib-8.1"],
     visibility = ["//visibility:public"],
 )
 
@@ -234,7 +240,7 @@ KGP_FOR_COMPOSE = [
 # m2 repository used by performance tests
 maven_repository(
     name = "performance_test_repo",
-    artifacts = KGP_LATEST + KGP_FOR_COMPOSE + [
+    artifacts = KGP_FOR_TESTS + KGP_FOR_COMPOSE + [
         # todo: why are these needed?
         "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.6.10",
         "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.6.10",
@@ -426,7 +432,7 @@ maven_repository(
     # keep sorted
     artifacts = [
         "//tools/base/testutils:tools.testutils",
-        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.20-RC",
+        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_" + KGP_VERSION_FOR_TESTS,
     ],
 )
 

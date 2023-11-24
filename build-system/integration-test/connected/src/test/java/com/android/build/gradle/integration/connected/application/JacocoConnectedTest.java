@@ -205,7 +205,7 @@ public class JacocoConnectedTest {
                         + "</class>"
                         + "<sourcefile name=\"HelloWorld.kt\">"
                         + "<line nr=\"6\" mi=\"0\" ci=\"3\" mb=\"0\" cb=\"0\"/>"
-                        + "<line nr=\"9\" mi=\"0\" ci=\"3\" mb=\"0\" cb=\"0\"/>"
+                        + "<line nr=\"9\" mi=\"0\" ci=\"2\" mb=\"0\" cb=\"0\"/>"
                         + "<line nr=\"10\" mi=\"0\" ci=\"3\" mb=\"0\" cb=\"0\"/>"
                         + "<line nr=\"12\" mi=\"0\" ci=\"1\" mb=\"0\" cb=\"0\"/>"
                         + "<counter type=\"INSTRUCTION\" missed=\"0\" covered=\"10\"/>"

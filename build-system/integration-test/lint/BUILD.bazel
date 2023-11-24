@@ -1,4 +1,5 @@
 load("//tools/base/bazel:maven.bzl", "maven_repository")
+load("//tools/base/build-system/integration-test:common-dependencies.bzl", "KGP_VERSION_FOR_TESTS")
 load("//tools/base/build-system/integration-test:integration-test.bzl", "gradle_integration_test")
 
 #keep sorted
@@ -137,6 +138,6 @@ maven_repository(
         "@maven//:com.google.protobuf.protobuf-java-util_3.22.3",
         "@maven//:com.google.truth.truth_0.44",
         "@maven//:org.jetbrains.kotlin.kotlin-compiler-embeddable_1.7.10",
-        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.20-RC",
+        "@maven//:org.jetbrains.kotlin.kotlin-test-junit_" + KGP_VERSION_FOR_TESTS,
     ],
 )

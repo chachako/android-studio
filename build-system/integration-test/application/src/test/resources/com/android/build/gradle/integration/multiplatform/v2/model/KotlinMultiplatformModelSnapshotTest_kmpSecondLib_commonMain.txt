@@ -17,12 +17,12 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{INCLUDED_BUILD(:kotlinMultiplatform)}/.gradle/kotlin/kotlinTransformedMetadataLibraries/org.jetbrains.kotlin-kotlin-stdlib-{KOTLIN_VERSION}-commonMain-SsyL5g.klib"
+      "{INCLUDED_BUILD(:kotlinMultiplatform)}/.gradle/kotlin/kotlinTransformedMetadataLibraries/org.jetbrains.kotlin-kotlin-stdlib-{KOTLIN_VERSION_FOR_TESTS}-commonMain-sFn6Dw.klib"
     ],
     "coordinates": {
       "group": "org.jetbrains.kotlin",
       "module": "kotlin-stdlib",
-      "version": "{KOTLIN_VERSION}",
+      "version": "{KOTLIN_VERSION_FOR_TESTS}",
       "sourceSetName": "commonMain",
       "capabilities": [],
       "attributes": {}

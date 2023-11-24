@@ -16,13 +16,11 @@
 
 package com.android.build.gradle.integration.publishing
 
-import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.model.normalizeAgpVersion
+import com.android.build.gradle.integration.common.fixture.model.normalizeVersionsOfCommonDependencies
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
-import com.android.testutils.TestUtils
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -88,9 +86,7 @@ class KotlinMultiplatformPublishingTest {
 
     private fun normalizeModuleFile(file: File): String {
         val original = file.readText().trim()
-        return original.normalizeAgpVersion()
-            .replace(TestUtils.KOTLIN_VERSION_FOR_TESTS, "{KOTLIN_VERSION}")
-            .replace(GradleTestProject.GRADLE_TEST_VERSION, "{GRADLE_VERSION}")
+        return original.normalizeVersionsOfCommonDependencies()
             .replace(Regex("\"sha512\": \".*\""), "\"sha512\": \"{DIGEST}\"")
             .replace(Regex("\"sha256\": \".*\""), "\"sha256\": \"{DIGEST}\"")
             .replace(Regex("\"sha1\": \".*\""), "\"sha1\": \"{DIGEST}\"")

@@ -22,10 +22,9 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
 import com.android.build.gradle.integration.common.fixture.model.BasicComparator
 import com.android.build.gradle.integration.common.fixture.model.normaliseCompileTarget
-import com.android.build.gradle.integration.common.fixture.model.normalizeAgpVersion
+import com.android.build.gradle.integration.common.fixture.model.normalizeVersionsOfCommonDependencies
 import com.android.build.gradle.integration.common.fixture.model.normalizeBuildToolsVersion
 import com.android.build.gradle.integration.multiplatform.v2.getBuildMap
-import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_TESTS
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import java.io.File
@@ -89,9 +88,7 @@ class KmpModelComparator(
                     JsonParser.parseReader(it)
                 }
             ).let {
-                gson.toJson(it).normalizeAgpVersion()
-                    .replace(KOTLIN_VERSION_FOR_TESTS, "{KOTLIN_VERSION}")
-                    .replace(GradleTestProject.GRADLE_TEST_VERSION, "{GRADLE_VERSION}")
+                gson.toJson(it).normalizeVersionsOfCommonDependencies()
                     .replace(Regex("\"sha512\": \".*\""), "\"sha512\": \"{DIGEST}\"")
                     .replace(Regex("\"sha256\": \".*\""), "\"sha256\": \"{DIGEST}\"")
                     .replace(Regex("\"sha1\": \".*\""), "\"sha1\": \"{DIGEST}\"")

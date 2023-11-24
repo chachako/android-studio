@@ -32,22 +32,22 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-test-junit/{KOTLIN_VERSION}/kotlin-test-junit-{KOTLIN_VERSION}.jar"
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-test-junit/{KOTLIN_VERSION_FOR_TESTS}/kotlin-test-junit-{KOTLIN_VERSION_FOR_TESTS}.jar"
     ],
     "coordinates": {
       "group": "org.jetbrains.kotlin",
       "module": "kotlin-test-junit",
-      "version": "{KOTLIN_VERSION}",
+      "version": "{KOTLIN_VERSION_FOR_TESTS}",
       "capabilities": [
         {
           "group": "org.jetbrains.kotlin",
           "name": "kotlin-test-junit",
-          "version": "{KOTLIN_VERSION}"
+          "version": "{KOTLIN_VERSION_FOR_TESTS}"
         },
         {
           "group": "org.jetbrains.kotlin",
           "name": "kotlin-test-framework-impl",
-          "version": "{KOTLIN_VERSION}"
+          "version": "{KOTLIN_VERSION_FOR_TESTS}"
         }
       ],
       "attributes": {
@@ -58,24 +58,24 @@
       }
     },
     "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-test-junit-{KOTLIN_VERSION}.jar (org.jetbrains.kotlin:kotlin-test-junit:{KOTLIN_VERSION})",
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-test-junit-{KOTLIN_VERSION_FOR_TESTS}.jar (org.jetbrains.kotlin:kotlin-test-junit:{KOTLIN_VERSION_FOR_TESTS})",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-test/{KOTLIN_VERSION}/kotlin-test-{KOTLIN_VERSION}.jar"
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-test/{KOTLIN_VERSION_FOR_TESTS}/kotlin-test-{KOTLIN_VERSION_FOR_TESTS}.jar"
     ],
     "coordinates": {
       "group": "org.jetbrains.kotlin",
       "module": "kotlin-test",
-      "version": "{KOTLIN_VERSION}",
+      "version": "{KOTLIN_VERSION_FOR_TESTS}",
       "capabilities": [
         {
           "group": "org.jetbrains.kotlin",
           "name": "kotlin-test",
-          "version": "{KOTLIN_VERSION}"
+          "version": "{KOTLIN_VERSION_FOR_TESTS}"
         }
       ],
       "attributes": {
@@ -87,7 +87,7 @@
       }
     },
     "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-test-{KOTLIN_VERSION}.jar (org.jetbrains.kotlin:kotlin-test:{KOTLIN_VERSION})",
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-test-{KOTLIN_VERSION_FOR_TESTS}.jar (org.jetbrains.kotlin:kotlin-test:{KOTLIN_VERSION_FOR_TESTS})",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
@@ -346,17 +346,17 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/{KOTLIN_VERSION}/kotlin-stdlib-{KOTLIN_VERSION}.jar"
+      "{LOCAL_REPO}/org/jetbrains/kotlin/kotlin-stdlib/{KOTLIN_VERSION_FOR_TESTS}/kotlin-stdlib-{KOTLIN_VERSION_FOR_TESTS}.jar"
     ],
     "coordinates": {
       "group": "org.jetbrains.kotlin",
       "module": "kotlin-stdlib",
-      "version": "{KOTLIN_VERSION}",
+      "version": "{KOTLIN_VERSION_FOR_TESTS}",
       "capabilities": [
         {
           "group": "org.jetbrains.kotlin",
           "name": "kotlin-stdlib",
-          "version": "{KOTLIN_VERSION}"
+          "version": "{KOTLIN_VERSION_FOR_TESTS}"
         }
       ],
       "attributes": {
@@ -370,7 +370,7 @@
       }
     },
     "extras": {
-      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-{KOTLIN_VERSION}.jar (org.jetbrains.kotlin:kotlin-stdlib:{KOTLIN_VERSION})",
+      "org.gradle.api.artifacts.result.ResolvedArtifactResult;gradleArtifact": "kotlin-stdlib-{KOTLIN_VERSION_FOR_TESTS}.jar (org.jetbrains.kotlin:kotlin-stdlib:{KOTLIN_VERSION_FOR_TESTS})",
       "org.jetbrains.kotlin.gradle.plugin.ide.IdeDependencyResolver;resolvedBy": "org.jetbrains.kotlin.gradle.plugin.ide.dependencyResolvers.IdeBinaryDependencyResolver"
     }
   },
