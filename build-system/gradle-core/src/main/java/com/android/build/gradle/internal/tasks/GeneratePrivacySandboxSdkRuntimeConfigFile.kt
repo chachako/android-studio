@@ -95,6 +95,7 @@ abstract class GeneratePrivacySandboxSdkRuntimeConfigFile : NonIncrementalTask()
                         packageName = sdkMetadata.packageName
                         versionMajor = sdkMetadata.sdkVersion.major
                         versionMinor = sdkMetadata.sdkVersion.minor
+                        buildTimeVersionPatch = sdkMetadata.sdkVersion.patch
                         certificateDigest = sdkMetadata.certificateDigest
                         resourcesPackageId = resPackageId
                     }

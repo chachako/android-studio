@@ -471,7 +471,7 @@ class PrivacySandboxSdkTest {
               package_name: "com.example.privacysandboxsdk"
               version_major: 1
               version_minor: 2
-              build_time_version_patch: 0
+              build_time_version_patch: 3
             }
             """.trimIndent())
 
