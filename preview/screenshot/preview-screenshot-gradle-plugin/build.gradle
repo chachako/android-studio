@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.android.tools.java-library'
-apply plugin: 'com.android.tools.kotlin'
-apply plugin: 'com.android.tools.publish'
-apply plugin: 'java-gradle-plugin'
+plugins {
+    id 'base'
+    id 'com.android.tools.java-library'
+    id 'com.android.tools.kotlin'
+    id 'com.android.tools.publish'
+    id 'java-gradle-plugin'
+}
+
+base {
+    archivesName = 'preview-screenshot-gradle-plugin'
+}
 
 group = 'com.android.tools.preview.screenshot'
-archivesBaseName = 'preview-screenshot-gradle-plugin'
 version = '0.0.1-dev'
 
 gradlePlugin {
