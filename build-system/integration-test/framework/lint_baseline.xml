@@ -1,37 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    private val taskStateList: TaskStateList by lazy {"
-        errorLine2="                                                ~~~~">
-        <location
-            file="src/main/java/com/android/build/gradle/integration/common/fixture/GradleBuildResult.kt"
-            line="62"
-            column="49"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    private val referenceResult: ModelBuilderV2.FetchResult&lt;ModelContainerV2> by lazy {"
-        errorLine2="                                                                                 ~~~~">
-        <location
-            file="src/main/java/com/android/build/gradle/integration/common/fixture/model/ReferenceModelComparator.kt"
-            line="68"
-            column="82"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    private val result: ModelBuilderV2.FetchResult&lt;ModelContainerV2> by lazy {"
-        errorLine2="                                                                        ~~~~">
-        <location
-            file="src/main/java/com/android/build/gradle/integration/common/fixture/model/ReferenceModelComparator.kt"
-            line="72"
-            column="73"/>
-    </issue>
-
 </issues>

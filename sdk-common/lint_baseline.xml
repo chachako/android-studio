@@ -101,17 +101,6 @@
     </issue>
 
     <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="        private val dependencyInfo by lazy { HashMap&lt;Version, List&lt;Dependency>>() }"
-        errorLine2="                                      ~~~~">
-        <location
-            file="src/main/java/com/android/ide/common/repository/GoogleMavenRepository.kt"
-            line="181"
-            column="39"/>
-    </issue>
-
-    <issue
         id="VisibleForTests"
         message="This class should only be accessed from tests or within private scope"
         errorLine1="public class Aapt2ErrorNoPathParser extends AbstractAaptOutputParser {"

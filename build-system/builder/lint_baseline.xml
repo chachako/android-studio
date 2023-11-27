@@ -2,50 +2,6 @@
 <issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
 
     <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    private val fileStatusMap by lazy {"
-        errorLine2="                                 ~~~~">
-        <location
-            file="src/main/java/com/android/builder/files/IncrementalChanges.kt"
-            line="50"
-            column="34"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    val entries: Map&lt;String, DirectoryEntry> by lazy { readZipEntries() }"
-        errorLine2="                                                ~~~~">
-        <location
-            file="src/main/java/com/android/builder/files/ZipCentralDirectory.kt"
-            line="45"
-            column="49"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    private val directoryBuffer: ByteBuffer by lazy { initBuffer() }"
-        errorLine2="                                               ~~~~">
-        <location
-            file="src/main/java/com/android/builder/files/ZipCentralDirectory.kt"
-            line="47"
-            column="48"/>
-    </issue>
-
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="        lazy { ZipOutputStream(BufferedOutputStream(outputJar.toFile().outputStream())) }"
-        errorLine2="        ~~~~">
-        <location
-            file="src/main/java/com/android/builder/dexing/r8Tool.kt"
-            line="535"
-            column="9"/>
-    </issue>
-
-    <issue
         id="FileComparisons"
         message="Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
         errorLine1="                &amp;&amp; Objects.equals(jarsRootFolder, that.jarsRootFolder);"
@@ -129,7 +85,7 @@
         errorLine2="                                            ~~~~~~~~~~">
         <location
             file="src/main/java/com/android/builder/internal/packaging/ApkFlinger.kt"
-            line="80"
+            line="82"
             column="45"/>
     </issue>
 

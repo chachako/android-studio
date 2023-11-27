@@ -78,15 +78,4 @@
             column="25"/>
     </issue>
 
-    <issue
-        id="AvoidByLazy"
-        message="Avoid `by lazy` for simple lazy initialization"
-        errorLine1="    val successors: List&lt;Node&lt;T>> by lazy { next(content).map(wrap).toList() }"
-        errorLine2="                                     ~~~~">
-        <location
-            file="src/main/java/com/android/tools/perflib/heap/analysis/LinkEvalDominators.kt"
-            line="163"
-            column="38"/>
-    </issue>
-
 </issues>
