@@ -42,8 +42,8 @@ class PerfArtificialDataMultipreviewTest {
     fun testFullProject() {
         val paths = prepareClassPath()
         computeAndRecordMetric(
-            "artificial_data_no_filter",
-            "artificial_data_no_filter"
+            "multipreview_time_artificial_data_no_filter",
+            "multipreview_memory_artificial_data_no_filter"
         ) {
             val metric = MultipreviewMetric()
             metric.beforeTest()
@@ -59,8 +59,8 @@ class PerfArtificialDataMultipreviewTest {
     fun testFullProject_withMainFilter() {
         val paths = prepareClassPath()
         computeAndRecordMetric(
-            "artificial_data_package_filter",
-            "artificial_data_package_filter"
+            "multipreview_time_artificial_data_package_filter",
+            "multipreview_memory_artificial_data_package_filter"
         ) {
             val metric = MultipreviewMetric()
             metric.beforeTest()
