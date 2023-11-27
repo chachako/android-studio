@@ -13,7 +13,7 @@ internal class JsonService : BindableService {
       .addMethod(
         JsonGrpc.doJsonGrpcMethod,
         ServerCalls.asyncUnaryCall { request, observer ->
-          val response = JsonResponse("Hello ${request.name} (Json)")
+          val response = JsonResponse("Hello ${request.name}")
           println("doJson:\n  Request: $request\n  Response: $response")
           observer.onNext(response)
           observer.onCompleted()

@@ -8,7 +8,7 @@ import io.grpc.stub.StreamObserver
 
 internal class ProtoService : ProtoServiceGrpc.ProtoServiceImplBase() {
   override fun doProtoRpc(request: ProtoRequest, responseObserver: StreamObserver<ProtoResponse>) {
-    val response = protoResponse { message = "Hello ${request.name} (proto)" }
+    val response = protoResponse { message = "Hello ${request.name}" }
     println("doJson:\n  Request: $request\n  Response: $response")
     responseObserver.onNext(response)
     responseObserver.onCompleted()

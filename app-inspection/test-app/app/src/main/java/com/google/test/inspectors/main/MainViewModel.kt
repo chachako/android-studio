@@ -20,6 +20,7 @@ import com.google.test.inspectors.db.SettingsDao
 import com.google.test.inspectors.grpc.GrpcClient
 import com.google.test.inspectors.grpc.json.JsonRequest
 import com.google.test.inspectors.grpc.proto.protoRequest
+import com.google.test.inspectors.grpc.xml.XmlRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -105,16 +106,21 @@ constructor(
 
   override fun doProtoGrpc(name: String) {
     scope.launch {
-      val grpcClient = newGrpcClient()
-      val response = grpcClient.doProtoGrpc(protoRequest { this.name = name })
+      val response = newGrpcClient().use { it.doProtoGrpc(protoRequest { this.name = name }) }
       snackFlow.value = response.message
     }
   }
 
   override fun doJsonGrpc(name: String) {
     scope.launch {
-      val grpcClient = newGrpcClient()
-      val response = grpcClient.doJsonGrpc(JsonRequest(name))
+      val response = newGrpcClient().use { it.doJsonGrpc(JsonRequest(name)) }
+      snackFlow.value = response.message
+    }
+  }
+
+  override fun doXmlGrpc(name: String) {
+    scope.launch {
+      val response = newGrpcClient().use { it.doXmlGrpc(XmlRequest(name)) }
       snackFlow.value = response.message
     }
   }
