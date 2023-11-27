@@ -26,6 +26,7 @@ import com.android.tools.lint.MainTest
 import com.android.tools.lint.checks.AccessibilityDetector
 import com.android.tools.lint.checks.ApiDetector
 import com.android.tools.lint.checks.BuiltinIssueRegistry
+import com.android.tools.lint.checks.DuplicateIdDetector
 import com.android.tools.lint.checks.FontDetector
 import com.android.tools.lint.checks.HardcodedValuesDetector
 import com.android.tools.lint.checks.IconDetector
@@ -2408,6 +2409,32 @@ class LintBaselineTest {
       assertTrue(target.tokenPrecededBy(prev, 7))
       assertThrows(IndexOutOfBoundsException::class.java) { target.tokenPrecededBy(prev, 8) }
     }
+  }
+
+  @Test
+  fun toleratePathSeparatorChanges() {
+    // Regression test for b/312895376
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
+    assertTrue(
+      baseline.sameMessage(
+        DuplicateIdDetector.CROSS_LAYOUT,
+        "Duplicate id @+id/foo, defined or included multiple times in layout/bar.xml...",
+        "Duplicate id @+id/foo, defined or included multiple times in layout\\bar.xml..."
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        DuplicateIdDetector.CROSS_LAYOUT,
+        "Duplicate id @+id/button2, defined or included multiple times in layout/layout1.xml: [layout/layout1.xml defines @+id/button2, layout/layout1.xml => layout/layout2.xml => layout/layout4.xml defines @+id/button2]",
+        "Duplicate id @+id/button2, defined or included multiple times in layout\\layout1.xml: [layout\\layout1.xml defines @+id/button2, layout\\layout1.xml => layout\\layout2.xml => layout\\layout4.xml defines @+id/button2]"
+      )
+    )
+
+    // make sure we only match for file separators
+    assertFalse(baseline.sameMessage(DuplicateIdDetector.CROSS_LAYOUT, "abc/def", "abcXdef"))
+
+    assertFalse(baseline.sameMessage(DuplicateIdDetector.CROSS_LAYOUT, "abcXdef", "abc\\def"))
   }
 
   @Test

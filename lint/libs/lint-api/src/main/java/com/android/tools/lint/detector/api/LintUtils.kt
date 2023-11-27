@@ -471,12 +471,25 @@ fun idReferencesMatch(id1: String?, id2: String?): Boolean {
  * Computes a canonical "display path" for a resource (which typically is the parent name plus a
  * file separator, plus the file name)
  *
- * @param client lint client used for formatting
+ * @param client lint client used for formatting (no longer used; can be null)
  * @param file resource file
  * @return the display path
  */
-fun getFileNameWithParent(client: LintClient, file: File): String {
-  return client.getDisplayPath(File(file.parentFile.name, file.name))
+fun getFileNameWithParent(@Suppress("UNUSED_PARAMETER") client: LintClient?, file: File): String {
+  // Here we used to call
+  //    client.getDisplayPath(File(file.parentFile.name, file.name))
+  // which would use platform native file separators. But getDisplayPath
+  // is intended primarily to turn absolute paths into project relative
+  // paths, possibly including path variables etc. None of that is
+  // necessary for a relative path only including the parent. And the
+  // downside is that this method, `getFileNameWithParent`, is primarily
+  // used in error messages to disambiguate resource files. Here, having
+  // a platform-specific path separator has the unfortunate side effect
+  // of making baselines vary by platform. We don't really care to have
+  // backslashes on Windows for these scenarios; we already use the forward
+  // slash convention for resource paths (e.g. @layout/foo, not @layout\\foo)
+  // so do the same with these paths.
+  return file.parentFile.name + '/' + file.name
 }
 
 /**

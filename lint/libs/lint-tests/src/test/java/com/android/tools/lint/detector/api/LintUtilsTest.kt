@@ -583,7 +583,7 @@ class LintUtilsTest : TestCase() {
           File("tmp" + separator + "foo" + separator + "bar.baz")
         )
       )
-      .isEqualTo(if (File.separatorChar == '/') "foo/bar.baz" else "foo\\bar.baz")
+      .isEqualTo("foo/bar.baz")
   }
 
   fun testResolvePlaceholders() {

@@ -988,7 +988,11 @@ class LintBaseline(
                 continue
               }
             }
-            return false
+            if ((s1[i1] == '/' || s1[i1] == '\\') && (s2[i2] == '/' || s2[i2] == '\\')) {
+              // Allow differing path separators
+            } else {
+              return false
+            }
           }
         }
         i1++

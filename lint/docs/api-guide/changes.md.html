@@ -14,6 +14,12 @@ Guide.
   message change doesn't suddenly invalidate all existing baseline
   files for your issue.
 
+* The `getFileNameWithParent` utility method now always uses / as
+  a file separator instead of the platform-specific one (e.g. \ on
+  Windows). This ensures that baselines don't vary their error
+  messages (where this utility method is typically used) based on
+  which OS they were generated on.
+
 **8.2**
 
 * For unit tests, you can now specify the language level to be used
