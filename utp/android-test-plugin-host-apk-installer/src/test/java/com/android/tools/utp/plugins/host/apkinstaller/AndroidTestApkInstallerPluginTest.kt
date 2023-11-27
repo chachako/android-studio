@@ -137,6 +137,7 @@ class AndroidTestApkInstallerPluginTest {
             override val errorType: Enum<*> = ErrorType.TEST
             override val namespace: String = "AndroidTestApkInstallerPlugin"
         }
+        private const val INSTALL_MULTIPLE_CMD = "install-multiple"
     }
 
     private fun createPlugin(
@@ -200,10 +201,10 @@ class AndroidTestApkInstallerPluginTest {
         inOrder.verify(mockDeviceController, times(4)).getDevice()
         testArtifactsPath.forEach {
             inOrder.verify(mockLogger).info("Installing installable artifact: $it on device $mockDeviceSerial.")
-            inOrder.verify(mockDeviceController).execute(listOf("install", "-t", it))
+            inOrder.verify(mockDeviceController).execute(listOf(INSTALL_MULTIPLE_CMD, "-t", it))
         }
         inOrder.verify(mockDeviceController).execute(
-                eq(listOf("install-multiple", "-t") +
+                eq(listOf(INSTALL_MULTIPLE_CMD, "-t") +
                         additionalInstallOptions +
                         testApkPaths), eq(null))
         verify(mockLogger).info("Installing $testApkPaths on device $mockDeviceSerial.")
@@ -230,7 +231,7 @@ class AndroidTestApkInstallerPluginTest {
         val inOrder = inOrder(mockDeviceController, mockLogger)
         inOrder.verify(mockDeviceController, times(4)).getDevice()
         inOrder.verify(mockDeviceController).execute(
-                eq(listOf("install-multiple", "-t") +
+                eq(listOf(INSTALL_MULTIPLE_CMD, "-t") +
                         additionalInstallOptions +
                         testApkPaths), eq(null))
         assertEquals(UtpException(installErrorSummary,
@@ -262,7 +263,7 @@ class AndroidTestApkInstallerPluginTest {
         verify(mockDeviceController, times(5)).getDevice()
         testApkPaths.forEach {
             verify(mockDeviceController).execute(
-                    listOf("install", "-t", "-g") +
+                    listOf(INSTALL_MULTIPLE_CMD, "-t", "-g") +
                             additionalInstallOptions +
                             it, null)
         }
@@ -293,7 +294,7 @@ class AndroidTestApkInstallerPluginTest {
         verify(mockDeviceController, times(5)).getDevice()
         testApkPaths.forEach {
             verify(mockDeviceController).execute(
-                    listOf("install", "-t", "-g", "--user", mockUserId) +
+                    listOf(INSTALL_MULTIPLE_CMD, "-t", "-g", "--user", mockUserId) +
                             additionalInstallOptions +
                             it, null)
         }
@@ -324,7 +325,7 @@ class AndroidTestApkInstallerPluginTest {
         verify(mockDeviceController, times(5)).getDevice()
         testApkPaths.forEach {
             verify(mockDeviceController).execute(
-                    listOf("install", "-t", "-g", "--force-queryable", "--user", mockUserId) +
+                    listOf(INSTALL_MULTIPLE_CMD, "-t", "-g", "--force-queryable", "--user", mockUserId) +
                             additionalInstallOptions +
                             it, null)
         }
@@ -347,7 +348,7 @@ class AndroidTestApkInstallerPluginTest {
                 "expected a user id found the following output: $invalidUserId")
         testArtifactsPath.forEach {
             verify(mockDeviceController).execute(
-                    listOf("install", "-t") + it, null)
+                    listOf(INSTALL_MULTIPLE_CMD, "-t") + it, null)
         }
     }
 
@@ -382,7 +383,7 @@ class AndroidTestApkInstallerPluginTest {
         val testArtifactPath1 = testArtifactsPath[0]
         verify(mockDeviceController, times(4)).getDevice()
         verify(mockLogger).info("Installing installable artifact: $testArtifactPath1 on device $mockDeviceSerial.")
-        verify(mockDeviceController).execute(listOf("install", "-t", testArtifactPath1))
+        verify(mockDeviceController).execute(listOf(INSTALL_MULTIPLE_CMD, "-t", testArtifactPath1))
         assertEquals(UtpException(installErrorSummary,
                 "Failed to install APK: $testArtifactPath1 on device " +
                         "$mockDeviceSerial.").message, exception.message)
@@ -407,7 +408,7 @@ class AndroidTestApkInstallerPluginTest {
         verify(mockDeviceController, times(4)).getDevice()
         testApkPaths.forEach {
             verify(mockDeviceController).execute(
-                    listOf("install", "-t") +
+                    listOf(INSTALL_MULTIPLE_CMD, "-t") +
                             additionalInstallOptions +
                             it, null)
         }
@@ -433,7 +434,7 @@ class AndroidTestApkInstallerPluginTest {
         verify(mockDeviceController, times(4)).getDevice()
         testApkPaths.forEach {
             verify(mockDeviceController).execute(
-                listOf("install", "-t", "-r", "-d") +
+                listOf(INSTALL_MULTIPLE_CMD, "-t", "-r", "-d") +
                         additionalInstallOptions +
                         it, null)
         }
@@ -460,7 +461,7 @@ class AndroidTestApkInstallerPluginTest {
         verify(mockLogger).info("Installing $testApkPaths on device $mockDeviceSerial.")
         verify(mockDeviceController, times(4)).getDevice()
         verify(mockDeviceController).execute(
-                listOf("install", "-t") +
+                listOf(INSTALL_MULTIPLE_CMD, "-t") +
                         additionalInstallOptions +
                         testApkPaths.first(), null)
         assertEquals(UtpException(installErrorSummary,
@@ -480,7 +481,7 @@ class AndroidTestApkInstallerPluginTest {
         verify(mockDeviceController, times(4)).getDevice()
         verify(mockLogger).info("Installing installable artifact: $apkPath on device $mockDeviceSerial.")
         verify(mockDeviceController).execute(
-                listOf("install", "-t") + apkPath, null)
+                listOf(INSTALL_MULTIPLE_CMD, "-t") + apkPath, null)
         verify(mockLogger).warning("Installable APK has empty path.")
         verifyNoMoreInteractions(mockDeviceController)
     }
@@ -516,7 +517,7 @@ class AndroidTestApkInstallerPluginTest {
         verify(mockLogger).info("Installing $testApkPaths on device $mockDeviceSerial.")
         testApkPaths.forEach {
             verify(mockDeviceController).execute(
-                    listOf("install", "-t") +
+                    listOf(INSTALL_MULTIPLE_CMD, "-t") +
                             additionalInstallOptions +
                             it, Duration.ofSeconds(installTimeout.toLong()))
         }

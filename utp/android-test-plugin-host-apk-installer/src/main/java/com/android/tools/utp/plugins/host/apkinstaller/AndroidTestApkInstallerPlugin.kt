@@ -34,11 +34,9 @@ import com.google.testing.platform.proto.api.core.TestArtifactProto.Artifact
 import com.google.testing.platform.proto.api.core.TestCaseProto
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
-import com.google.testing.platform.proto.api.core.testResult
 import com.google.testing.platform.runtime.android.controller.ext.uninstall
 import com.google.testing.platform.runtime.android.device.AndroidDeviceProperties
 import java.time.Duration
-import java.time.temporal.ChronoUnit
 import java.util.logging.Logger
 
 /**
@@ -59,8 +57,7 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
             SPLIT_APK(21)
         }
 
-        private val BASE_INSTALL_CMD = listOf("install")
-        private val SPLIT_APK_INSTALL_CMD = listOf("install-multiple")
+        private val INSTALL_MULTIPLE_CMD = listOf("install-multiple")
         private val installErrorSummary = object : ErrorSummary {
             override val errorCode: Int = 2002
             override val errorName: String = "Test APK installation Error"
@@ -113,10 +110,7 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
         installableApk: InstallableApk?,
         deviceApiLevel: Int,
         forceReinstall: Boolean = false): List<String> {
-        var installCmd: MutableList<String> = BASE_INSTALL_CMD.toMutableList()
-        if (installableApk != null && installableApk.installOptions.installAsSplitApk) {
-            installCmd = SPLIT_APK_INSTALL_CMD.toMutableList()
-        }
+        val installCmd: MutableList<String> = INSTALL_MULTIPLE_CMD.toMutableList()
         if (deviceApiLevel >= 34) installCmd.add("--bypass-low-target-sdk-block")
         // Append -t to install apk marked as testOnly.
         installCmd.add("-t")
