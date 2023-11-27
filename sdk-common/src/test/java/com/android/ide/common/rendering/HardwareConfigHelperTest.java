@@ -22,6 +22,7 @@ import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.utils.StdLogger;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.Collections;
@@ -201,18 +202,24 @@ public final class HardwareConfigHelperTest {
 
     @Test
     public void automotiveGeneric() {
+        List<String> device = ImmutableList.of("automotive_1024p_landscape", "automotive_portrait");
+        List<String> label =
+                ImmutableList.of(
+                        "Automotive (1024p landscape) (1024 × 768, mdpi)",
+                        "Automotive Portrait (800 × 1280, ldpi)");
+
         DeviceManager deviceManager = getDeviceManager();
-        Device automotive1024p = deviceManager.getDevice("automotive_1024p_landscape", "Google");
-        assertNotNull(automotive1024p);
-        assertFalse(isWear(automotive1024p));
-        assertFalse(isTv(automotive1024p));
-        assertFalse(isMobile(automotive1024p));
-        assertTrue(isAutomotive(automotive1024p));
-        assertFalse(automotive1024p.isScreenRound());
-        assertFalse(isGeneric(automotive1024p));
-        assertEquals(
-                "Automotive (1024p landscape) (1024 × 768, mdpi)",
-                getGenericLabel(automotive1024p));
+        for (int i = 0; i < device.size(); i++) {
+            Device automotive = deviceManager.getDevice(device.get(i), "Google");
+            assertNotNull(automotive);
+            assertFalse(isWear(automotive));
+            assertFalse(isTv(automotive));
+            assertFalse(isMobile(automotive));
+            assertTrue(isAutomotive(automotive));
+            assertFalse(automotive.isScreenRound());
+            assertFalse(isGeneric(automotive));
+            assertEquals(label.get(i), getGenericLabel(automotive));
+        }
     }
 
     @Test
