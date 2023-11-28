@@ -55,7 +55,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -524,11 +523,9 @@ class LocalEmulatorProvisionerPlugin(
 
     private fun DeviceAction.Presentation.enabledIfStopped() = enabledIf { it.isStopped() }
 
-    private fun DeviceAction.Presentation.enabledIfActivatable() =
-      combine(stateFlow, avdInfoFlow) { state, avdInfo ->
-          this.copy(enabled = state.isStopped() && avdInfo.status == AvdStatus.OK)
-        }
-        .stateIn(scope, SharingStarted.Eagerly, this)
+    private fun DeviceAction.Presentation.enabledIfActivatable() = enabledIf {
+      it.isStopped() && it.error?.severity != DeviceError.Severity.ERROR
+    }
   }
 }
 
@@ -606,7 +603,12 @@ private val AvdInfo.deviceError
   get() = errorMessage?.let { AvdDeviceError(status, it) }
 
 private class AvdDeviceError(val status: AvdStatus, override val message: String) : DeviceError {
-  override val severity = DeviceError.Severity.WARNING
+  override val severity
+    get() =
+      when (status) {
+        AvdStatus.ERROR_DEVICE_MISSING -> DeviceError.Severity.INFO
+        else -> DeviceError.Severity.ERROR
+      }
 }
 
 internal object AvdChangedError : DeviceError {
