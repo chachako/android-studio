@@ -93,38 +93,46 @@ constructor(
   override fun doGet(client: HttpClient, url: String) {
     scope.launch {
       val result = client.doGet(url)
-      snackFlow.value = "${client.name} Result: ${result.rc}"
+      setSnack("${client.name} Result: ${result.rc}")
     }
   }
 
   override fun doPost(client: HttpClient, url: String, data: ByteArray, type: String) {
     scope.launch {
       val result = client.doPost(url, data, type)
-      snackFlow.value = "${client.name} Result: ${result.rc}"
+      setSnack("${client.name} Result: ${result.rc}")
     }
   }
 
   override fun doProtoGrpc(name: String) {
     scope.launch {
       val response = newGrpcClient().use { it.doProtoGrpc(protoRequest { this.name = name }) }
-      snackFlow.value = response.message
+      setSnack(response.message)
     }
   }
 
   override fun doJsonGrpc(name: String) {
     scope.launch {
       val response = newGrpcClient().use { it.doJsonGrpc(JsonRequest(name)) }
-      snackFlow.value = response.message
+      setSnack(response.message)
     }
   }
 
   override fun doXmlGrpc(name: String) {
     scope.launch {
       val response = newGrpcClient().use { it.doXmlGrpc(XmlRequest(name)) }
-      snackFlow.value = response.message
+      setSnack(response.message)
     }
   }
 
   private suspend fun newGrpcClient() =
     GrpcClient(settingsDao.getValue("host", ""), settingsDao.getValue("port", 0))
+
+  private fun setSnack(text: String) {
+    snackFlow.value =
+      when (text) {
+        snackState.value -> "$text (repeated)"
+        else -> text
+      }
+  }
 }
