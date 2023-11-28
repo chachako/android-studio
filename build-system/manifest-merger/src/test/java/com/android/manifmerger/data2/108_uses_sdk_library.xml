@@ -28,7 +28,7 @@
 
         <uses-sdk-library
             android:name="com.example.SomeLibrary1"
-            android:majorVersion="1"/>
+            android:versionMajor="1"/>
     </application>
 
 </manifest>
@@ -45,7 +45,7 @@
 
         <uses-sdk-library
             android:name="com.example.SomeLibrary2"
-            android:majorVersion="1"
+            android:versionMajor="1"
             android:certDigest="certDigest2"/>
     </application>
 
@@ -62,7 +62,7 @@
 
         <uses-sdk-library
             android:name="com.example.SomeLibrary2"
-            android:majorVersion="1"/>
+            android:versionMajor="1"/>
     </application>
 
 </manifest>
@@ -81,11 +81,11 @@
         <uses-sdk-library android:name="com.example.SomeLibrary0" />
         <uses-sdk-library
             android:name="com.example.SomeLibrary1"
-            android:majorVersion="1" />
+            android:versionMajor="1" />
         <uses-sdk-library
             android:name="com.example.SomeLibrary2"
             android:certDigest="certDigest2"
-            android:majorVersion="1" />
+            android:versionMajor="1" />
     </application>
 
 </manifest>

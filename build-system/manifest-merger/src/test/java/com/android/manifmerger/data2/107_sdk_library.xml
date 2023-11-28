@@ -14,7 +14,7 @@
 
         <sdk-library
             android:name="com.example.SomeLibrary0"
-            android:majorVersion="1"/>
+            android:versionMajor="1"/>
     </application>
 
 </manifest>
@@ -30,7 +30,7 @@
 
         <sdk-library
             android:name="com.example.SomeLibrary1"
-            android:majorVersion="1"/>
+            android:versionMajor="1"/>
     </application>
 
 </manifest>
@@ -47,7 +47,7 @@
 
         <sdk-library
             android:name="com.example.SomeLibrary2"
-            android:majorVersion="1"/>
+            android:versionMajor="1"/>
     </application>
 
 </manifest>
@@ -65,13 +65,13 @@
         android:label="@string/lib_name1" >
         <sdk-library
             android:name="com.example.SomeLibrary0"
-            android:majorVersion="1" />
+            android:versionMajor="1" />
         <sdk-library
             android:name="com.example.SomeLibrary1"
-            android:majorVersion="1" />
+            android:versionMajor="1" />
         <sdk-library
             android:name="com.example.SomeLibrary2"
-            android:majorVersion="1" />
+            android:versionMajor="1" />
     </application>
 
 </manifest>

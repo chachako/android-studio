@@ -367,22 +367,6 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
         DATA(MergeType.MERGE, DEFAULT_NO_KEY_NODE_RESOLVER),
 
         /**
-         * Download-settings <br>
-         * <b>See also : </b> {@link <a
-         * href=http://developer.android.com/guide/topics/manifest/download-settings.html>
-         * Download-settings Xml documentation</a>}
-         */
-        DOWNLOAD_SETTINGS(MergeType.MERGE, DEFAULT_NO_KEY_NODE_RESOLVER),
-
-        /**
-         * Federated-computed-settings <br>
-         * <b>See also : </b> {@link <a
-         * href=http://developer.android.com/guide/topics/manifest/federated-computed-settings.html>
-         * Federated-computed-settings Xml documentation</a>}
-         */
-        FEDERATED_COMPUTED_SETTINGS(MergeType.MERGE, DEFAULT_NO_KEY_NODE_RESOLVER),
-
-        /**
          * Grant-uri-permission (contained in intent-filter)
          * <br>
          * <b>See also : </b>
@@ -616,8 +600,7 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
                 new TwoAttributesBasedKeyResolver(
                         new AttributeBasedNodeKeyResolver(ANDROID_URI, SdkConstants.ATTR_NAME),
                         new AttributeBasedNodeKeyResolver(ANDROID_URI, "versionMajor")),
-                AttributeModel.newModel(SdkConstants.ATTR_NAME).setIsPackageDependent(),
-                AttributeModel.newModel("versionMajor").setIsPackageDependent()),
+                AttributeModel.newModel(SdkConstants.ATTR_NAME).setIsPackageDependent()),
 
         /**
          * Service (contained in application)
