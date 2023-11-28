@@ -15,7 +15,7 @@ internal class XmlService : BindableService {
         XmlGrpc.doXmlGrpcMethod,
         ServerCalls.asyncUnaryCall { request, observer ->
           val response =
-            XmlResponse("Hello ${request.name}", mutableListOf(Item("Item 1"), Item("Item 2")))
+            XmlResponse("Hello ${request.name}", listOf(Item("Item 1"), Item("Item 2")))
           println("doXml:\n  Request: $request\n  Response: $response")
           observer.onNext(response)
           observer.onCompleted()

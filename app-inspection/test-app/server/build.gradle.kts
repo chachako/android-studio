@@ -16,6 +16,8 @@ dependencies {
   implementation(libs.grpc.stub)
   implementation(libs.grpc.services)
   implementation(libs.kotlinx.cli)
+  implementation(libs.protobuf.kotlin)
+
 }
 
 val fatJar = task("fatJar", type = Jar::class) {

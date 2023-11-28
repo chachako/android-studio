@@ -16,4 +16,5 @@ message ProtoRequest {
 
 message ProtoResponse {
   string message = 1;
+  repeated string item = 2;
 }
