@@ -112,6 +112,7 @@ private fun MainScreen(actions: MainScreenActions) {
     button("gRPC Proto") { actions.doProtoGrpc("Proto") }
     button("gRPC Json") { actions.doJsonGrpc("Json") }
     button("gRPC XML") { actions.doXmlGrpc("XML") }
+    button("gRPC Custom") { actions.doCustomGrpc("Custom") }
   }
 }
 

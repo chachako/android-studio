@@ -27,6 +27,7 @@ fun main(args: Array<String>) {
       .addService(ProtoService())
       .addService(JsonService())
       .addService(XmlService())
+      .addService(CustomService())
       .intercept(ServerMetadataInterceptor())
       .build()
   server.start()

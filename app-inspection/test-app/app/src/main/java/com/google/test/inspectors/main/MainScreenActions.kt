@@ -16,4 +16,6 @@ internal interface MainScreenActions {
   fun doJsonGrpc(name: String) {}
 
   fun doXmlGrpc(name: String) {}
+
+  fun doCustomGrpc(name: String) {}
 }

@@ -18,6 +18,7 @@ import com.google.test.inspectors.HttpClient
 import com.google.test.inspectors.Logger
 import com.google.test.inspectors.db.SettingsDao
 import com.google.test.inspectors.grpc.GrpcClient
+import com.google.test.inspectors.grpc.custom.CustomRequest
 import com.google.test.inspectors.grpc.json.JsonRequest
 import com.google.test.inspectors.grpc.proto.protoRequest
 import com.google.test.inspectors.grpc.xml.XmlRequest
@@ -122,6 +123,13 @@ constructor(
     scope.launch {
       val response = newGrpcClient().use { it.doXmlGrpc(XmlRequest(name)) }
       setSnack(response.message)
+    }
+  }
+
+  override fun doCustomGrpc(name: String) {
+    scope.launch {
+      val response = newGrpcClient().use { it.doCustomGrpc(CustomRequest(name)) }
+      snackFlow.value = response.message
     }
   }
 
