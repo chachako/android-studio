@@ -59,7 +59,6 @@ import com.android.build.gradle.internal.errors.DeprecationReporterImpl
 import com.android.build.gradle.internal.errors.IncompatibleProjectOptionsReporter
 import com.android.build.gradle.internal.getManagedDeviceAvdFolder
 import com.android.build.gradle.internal.getSdkDir
-import com.android.build.gradle.internal.ide.ModelBuilder
 import com.android.build.gradle.internal.ide.dependencies.LibraryDependencyCacheBuildService
 import com.android.build.gradle.internal.ide.dependencies.MavenCoordinatesCacheBuildService
 import com.android.build.gradle.internal.ide.v2.GlobalSyncService
@@ -536,7 +535,6 @@ abstract class BasePlugin<
     ) {
         // Register a builder for the custom tooling model
         val variantModel: VariantModel = createVariantModel(globalConfig)
-        registerModelBuilder(project, registry, variantModel, extensionData.oldExtension, extraModelInfo)
         registry.register(
             com.android.build.gradle.internal.ide.v2.ModelBuilder(
                 project, variantModel, extensionData.newExtension
@@ -566,21 +564,6 @@ abstract class BasePlugin<
             getProjectType(),
             getProjectTypeV2(),
             globalConfig)
-    }
-
-    /** Registers a builder for the custom tooling model.  */
-    protected open fun registerModelBuilder(
-        project: Project,
-        registry: ToolingModelBuilderRegistry,
-        variantModel: VariantModel,
-        extension: BaseExtension,
-        extraModelInfo: ExtraModelInfo
-    ) {
-        registry.register(
-            ModelBuilder(
-                project, variantModel, extension, extraModelInfo
-            )
-        )
     }
 
     override fun createTasks(project: Project) {

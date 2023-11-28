@@ -31,22 +31,24 @@ import com.android.build.api.variant.ScopedArtifacts.Scope.ALL
 import com.android.build.api.variant.ScopedArtifacts.Scope.PROJECT
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.api.variant.impl.HasDeviceTests
-import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.HasHostTests
+import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.TestVariantCreationConfig
-import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.dsl.CommonExtensionImpl
 import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.errors.SyncIssueReporterImpl.GlobalSyncIssueService
 import com.android.build.gradle.internal.ide.DependencyFailureHandler
-import com.android.build.gradle.internal.ide.ModelBuilder
+import com.android.build.gradle.internal.ide.Utils.getGeneratedResourceFolders
+import com.android.build.gradle.internal.ide.Utils.getGeneratedSourceFolders
+import com.android.build.gradle.internal.ide.Utils.getGeneratedSourceFoldersForUnitTests
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputs
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputsImpl
 import com.android.build.gradle.internal.ide.dependencies.FullDependencyGraphBuilder
@@ -775,8 +777,8 @@ class ModelBuilder<
             resGenTaskName = if (component.buildFeatures.androidResources) taskContainer.resourceGenTask.name else null,
             ideSetupTaskNames = setOf(taskContainer.sourceGenTask.name),
 
-            generatedSourceFolders = ModelBuilder.getGeneratedSourceFolders(component),
-            generatedResourceFolders = ModelBuilder.getGeneratedResourceFolders(component),
+            generatedSourceFolders = getGeneratedSourceFolders(component),
+            generatedResourceFolders = getGeneratedResourceFolders(component),
             classesFolders = classesFolders,
             assembleTaskOutputListingFile = if (component.componentType.isApk)
                 component.artifacts.get(InternalArtifactType.APK_IDE_REDIRECT_FILE).get().asFile
@@ -864,7 +866,7 @@ class ModelBuilder<
             ideSetupTaskNames = setOf(component.global.taskNames.createMockableJar),
 
             classesFolders = classesFolders,
-            generatedSourceFolders = ModelBuilder.getGeneratedSourceFoldersForUnitTests(component),
+            generatedSourceFolders = getGeneratedSourceFoldersForUnitTests(component),
             runtimeResourceFolder =
                 component.oldVariantApiLegacySupport!!.variantData.javaResourcesForUnitTesting,
 

@@ -38,7 +38,8 @@ import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.LintImpl
-import com.android.build.gradle.internal.ide.ModelBuilder
+import com.android.build.gradle.internal.ide.Utils.getGeneratedResourceFoldersFileCollection
+import com.android.build.gradle.internal.ide.Utils.getGeneratedSourceFoldersFileCollection
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputs
 import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputsImpl
 import com.android.build.gradle.internal.ide.dependencies.ArtifactHandler
@@ -1740,12 +1741,12 @@ abstract class AndroidArtifactInput : ArtifactInput() {
         applicationId.setDisallowChanges(creationConfig.applicationId)
         if (includeGeneratedSourceFolders) {
             generatedSourceFolders.from(
-                ModelBuilder.getGeneratedSourceFoldersFileCollection(creationConfig)
+                getGeneratedSourceFoldersFileCollection(creationConfig)
             )
         }
         generatedSourceFolders.disallowChanges()
         generatedResourceFolders.fromDisallowChanges(
-            ModelBuilder.getGeneratedResourceFoldersFileCollection(creationConfig)
+            getGeneratedResourceFoldersFileCollection(creationConfig)
         )
         if (includeClassesOutputDirectories) {
             if (creationConfig is KmpComponentCreationConfig) {

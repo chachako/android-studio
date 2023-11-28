@@ -32,7 +32,6 @@ import com.android.build.api.variant.ApplicationVariant;
 import com.android.build.api.variant.ApplicationVariantBuilder;
 import com.android.build.gradle.BaseExtension;
 import com.android.build.gradle.api.BaseVariantOutput;
-import com.android.build.gradle.internal.AppModelBuilder;
 import com.android.build.gradle.internal.ExtraModelInfo;
 import com.android.build.gradle.internal.component.ApplicationCreationConfig;
 import com.android.build.gradle.internal.component.TestComponentCreationConfig;
@@ -91,18 +90,6 @@ public class AppPlugin
 
     @Override
     protected void pluginSpecificApply(@NonNull Project project) {
-    }
-
-    @Override
-    protected void registerModelBuilder(
-            @NonNull Project project,
-            @NonNull ToolingModelBuilderRegistry registry,
-            @NonNull VariantModel variantModel,
-            @NonNull BaseExtension extension,
-            @NonNull ExtraModelInfo extraModelInfo) {
-        registry.register(
-                new AppModelBuilder(
-                        project, variantModel, (BaseAppModuleExtension) extension, extraModelInfo));
     }
 
     @NonNull
