@@ -39,13 +39,13 @@ import com.android.resources.base.ResourceSerializationUtil;
 import com.android.resources.base.ResourceSourceFile;
 import com.android.resources.base.ResourceSourceFileImpl;
 import com.android.tools.environment.Logger;
+import com.android.tools.environment.cancellation.ExecutionCancellationException;
 import com.android.utils.Base128InputStream;
 import com.android.utils.Base128OutputStream;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -280,7 +280,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
     catch (NoSuchFileException e) {
       return false; // Cache file does not exist.
     }
-    catch (ProcessCanceledException e) {
+    catch (ExecutionCancellationException e) {
       cleanupAfterFailedLoadingFromCache();
       throw e;
     }
@@ -348,7 +348,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
             myRTxtIds = computeIds(symbolTable);
             return true;
           }
-          catch (ProcessCanceledException e) {
+          catch (ExecutionCancellationException e) {
             throw e;
           }
           catch (Exception e) {
@@ -364,7 +364,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
             myRTxtIds = computeIds(symbolTable);
             return true;
           }
-          catch (ProcessCanceledException e) {
+          catch (ExecutionCancellationException e) {
             throw e;
           }
           catch (Exception e) {
