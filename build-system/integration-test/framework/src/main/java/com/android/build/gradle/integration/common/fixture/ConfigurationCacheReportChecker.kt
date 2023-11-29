@@ -87,6 +87,10 @@ class ConfigurationCacheReportChecker {
                 location = "SdkAutoDownloadTest",
                 name = "android-sdk-license"
             ),
+            Error.file(
+                location = "SimpleManagedDeviceTest",
+                name = "source.properties"
+            ),
         ),
         ErrorType.FileSystemEntry to listOf(
             Error.fileSystemEntry(
@@ -337,7 +341,15 @@ class ConfigurationCacheReportChecker {
             Error.fileSystemEntry(
                 location = "SdkAutoDownloadTest",
                 name = "android-sdk-license"
-            )
+            ),
+            Error.fileSystemEntry(
+                location = "SimpleManagedDeviceTest",
+                name = "cache"
+            ),
+            Error.fileSystemEntry(
+                location = "SimpleManagedDeviceTest",
+                name = "CustomAndroidSdk"
+            ),
         ),
     )
 

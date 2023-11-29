@@ -36,6 +36,7 @@ class SimpleManagedDeviceTest {
             "reports",
             "androidTests",
             "managedDevice",
+            "debug",
             "device1")
         assertThat(File(reportDir, "index.html")).exists()
         assertThat(File(reportDir, "com.example.android.kotlin.html")).exists()
@@ -47,6 +48,7 @@ class SimpleManagedDeviceTest {
             "reports",
             "androidTests",
             "managedDevice",
+            "debug",
             "allDevices")
         assertThat(File(mergedTestReportDir, "index.html")).exists()
         assertThat(File(mergedTestReportDir, "com.example.android.kotlin.html")).exists()
