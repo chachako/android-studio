@@ -21,7 +21,6 @@ import com.android.build.gradle.integration.manageddevice.utils.CustomAndroidSdk
 import com.android.build.gradle.integration.manageddevice.utils.addManagedDevice
 import com.android.build.gradle.integration.utp.UtpTestBase
 import org.junit.Rule
-import java.io.File
 
 /**
  * An integration test for Gradle Managed Device.
@@ -32,26 +31,28 @@ class UtpManagedDeviceTest : UtpTestBase() {
     val customAndroidSdkRule = CustomAndroidSdkRule()
 
     companion object {
-        private const val TEST_RESULT_XML = "build/outputs/androidTest-results/managedDevice/device1/TEST-device1-_"
-        private const val LOGCAT = "build/outputs/androidTest-results/managedDevice/device1/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
-        private const val TEST_REPORT = "build/reports/androidTests/managedDevice/device1/com.example.android.kotlin.html"
-        private const val TEST_RESULT_PB = "build/outputs/androidTest-results/managedDevice/device1/test-result.pb"
-        private const val AGGREGATED_TEST_RESULT_PB = "build/outputs/androidTest-results/managedDevice/test-result.pb"
-        private const val TEST_COV_XML = "build/reports/coverage/androidTest/debug/managedDevice/report.xml"
-        private const val TEST_ADDITIONAL_OUTPUT = "build/outputs/managed_device_android_test_additional_output/device1"
+        private const val DSL_DEVICE_NAME = "device1"
+
+        private const val OUTPUTS = "build/outputs"
+        private const val TEST_ADDITIONAL_OUTPUT = "$OUTPUTS/managed_device_android_test_additional_output/debug/$DSL_DEVICE_NAME"
+        private const val TEST_RESULTS = "$OUTPUTS/androidTest-results/managedDevice/debug"
+        private const val TEST_RESULT_XML = "$TEST_RESULTS/$DSL_DEVICE_NAME/TEST-$DSL_DEVICE_NAME-_"
+        private const val LOGCAT = "$TEST_RESULTS/$DSL_DEVICE_NAME/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
+        private const val TEST_RESULT_PB = "$TEST_RESULTS/$DSL_DEVICE_NAME/test-result.pb"
+        private const val AGGREGATED_TEST_RESULT_PB = "$TEST_RESULTS/test-result.pb"
+
+        private const val REPORTS = "build/reports"
+        private const val TEST_REPORT = "$REPORTS/androidTests/managedDevice/debug/$DSL_DEVICE_NAME/com.example.android.kotlin.html"
+        private const val TEST_COV_XML = "$REPORTS/coverage/androidTest/debug/managedDevice/report.xml"
     }
 
-    private lateinit var sdkImageSource: File
-    private lateinit var userHomeDirectory: File
-    private lateinit var localPrefDirectory: File
-
-    override val deviceName: String = "dev29_default_x86_Pixel_2"
+    override val deviceName: String = "dev29_default_x86_64_Pixel_2"
 
     override val executor: GradleTaskExecutor
         get() = customAndroidSdkRule.run { project.executorWithCustomAndroidSdk() }
 
     override fun selectModule(moduleName: String) {
-        project.getSubproject(moduleName).addManagedDevice("device1")
+        project.getSubproject(moduleName).addManagedDevice(DSL_DEVICE_NAME)
         testTaskName = ":${moduleName}:allDevicesCheck"
         testResultXmlPath = "${moduleName}/$TEST_RESULT_XML$moduleName-.xml"
         testReportPath = "${moduleName}/$TEST_REPORT"
