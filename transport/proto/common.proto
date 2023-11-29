@@ -399,6 +399,7 @@ enum ProfilerTaskType {
   HEAP_DUMP = 5;
   NATIVE_ALLOCATIONS = 6;
   JAVA_KOTLIN_ALLOCATIONS = 7;
+  LIVE_VIEW = 8;
 }
 
 message SessionData {
