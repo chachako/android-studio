@@ -40,9 +40,8 @@ ARTIFACTS = [
     "com.fasterxml.jackson.core:jackson-core:2.11.1",
     "com.fasterxml.jackson.core:jackson-databind:2.11.1",
     "com.google.flatbuffers:flatbuffers-java:1.12.0",
-    "com.google.guava:guava:30.1.1-android",
-    "com.google.guava:guava:31.1-jre",
-    "com.google.guava:guava-testlib:25.1-jre",
+    "com.google.guava:guava:32.0.1-jre",
+    "com.google.guava:guava-testlib:32.0.1-jre",
     "com.google.jimfs:jimfs:1.1",
     "com.google.protobuf:protobuf-gradle-plugin:0.9.3",
     "com.google.protobuf:protobuf-bom:3.17.2",  # Necessary for old agp tests
