@@ -53,11 +53,10 @@ val NAMESPACE = null
 
 fun saveResults(
     previewResults: List<PreviewResult>,
-    outputLocation: Path,
+    filePath: String,
     xmlProperties: List<String>? = null,
-): Path {
-    val path = outputLocation.resolve("TEST-response.xml")
-    val stream = createOutputResultStream(path.toAbsolutePath().toString())
+) {
+    val stream = createOutputResultStream(filePath)
     val serializer = KXmlSerializer()
     serializer.setOutput(stream, SdkConstants.UTF_8)
     serializer.startDocument(SdkConstants.UTF_8, null)
@@ -66,8 +65,6 @@ fun saveResults(
     )
     printTestResults(serializer, previewResults, xmlProperties)
     serializer.endDocument()
-    return path
-
 }
 
 @Throws(IOException::class)

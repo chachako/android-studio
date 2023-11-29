@@ -17,11 +17,12 @@
 package com.android.tools.preview.screenshot
 
 import com.google.common.truth.Truth.assertThat
+import java.io.File
+import java.nio.file.Path
+import kotlin.test.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.nio.file.Path
-import kotlin.test.assertTrue
 
 class SaveResultsUtilTest {
     @get:Rule
@@ -51,7 +52,9 @@ class SaveResultsUtilTest {
     fun testSaveResults() {
         previewResults = listOf(createPreviewResultSuccess(), createPreviewResultSuccess(),
             createPreviewResultError(), createPreviewResultFailed())
-        val file = saveResults(previewResults, tempDirRule.root.toPath()).toFile()
+        val outputFilePath = tempDirRule.newFile().absolutePath
+        saveResults(previewResults, outputFilePath)
+        val file = File(outputFilePath)
         assertTrue(file.exists())
         val fileContent =
             javaClass.getResourceAsStream("results.xml")?.readBytes()?.toString(Charsets.UTF_8)
