@@ -58,10 +58,6 @@ private val INTERCEPT_COMMAND_RESPONSE =
     .build()
     .toByteArray()
 
-private const val GRPC_FOR_ADDRESS_METHOD =
-  "forAddress(Ljava/lang/String;I)Lio/grpc/ManagedChannelBuilder;"
-private const val GRPC_FOR_TARGET_METHOD =
-  "forTarget(Ljava/lang/String;)Lio/grpc/ManagedChannelBuilder;"
 private const val GRPC_CHANNEL_CLASS_NAME = "io.grpc.internal.ManagedChannelImpl"
 private const val GRPC_CHANNEL_FIELD_NAME = "interceptorChannel"
 
@@ -72,6 +68,29 @@ internal class NetworkInspector(
   private val speedDataIntervalMs: Long = POLL_INTERVAL_MS,
   private val logger: Logger = LoggerImpl(),
 ) : Inspector(connection) {
+
+  /**
+   * A list of gRPC specific hooks.
+   *
+   * TODO(b/313873107): Find a safe way to register gRPC hooks. Note that we only hook
+   *   `AndroidChannelBuilder.forTarget()` because the implementation of `forAddress` calls
+   *   `forTarget` and would result in double registration.
+   */
+  private val grpcHooks =
+    listOf(
+      GrpcHook(
+        "io.grpc.ManagedChannelBuilder",
+        "forAddress(Ljava/lang/String;I)Lio/grpc/ManagedChannelBuilder;"
+      ),
+      GrpcHook(
+        "io.grpc.ManagedChannelBuilder",
+        "forTarget(Ljava/lang/String;)Lio/grpc/ManagedChannelBuilder;"
+      ),
+      GrpcHook(
+        "io.grpc.android.AndroidChannelBuilder",
+        "forTarget(Ljava/lang/String;)Lio/grpc/android/AndroidChannelBuilder;"
+      ),
+    )
 
   private val scope =
     CoroutineScope(SupervisorJob() + environment.executors().primary().asCoroutineDispatcher())
@@ -307,12 +326,19 @@ internal class NetworkInspector(
   }
 
   private fun instrumentGrpcChannelBuilder(grpcInterceptor: GrpcInterceptor) {
-    listOf(GRPC_FOR_ADDRESS_METHOD, GRPC_FOR_TARGET_METHOD).forEach { method ->
+    grpcHooks.forEach { hook ->
+      val clazz =
+        try {
+          javaClass.classLoader.loadClass(hook.className)
+        } catch (e: ClassNotFoundException) {
+          logger.debugHidden("Could not load class ${hook.className}")
+          return@forEach
+        }
       environment
         .artTooling()
         .registerExitHook(
-          ManagedChannelBuilder::class.java,
-          method,
+          clazz,
+          hook.method,
           ArtTooling.ExitHook<ManagedChannelBuilder<*>> { channelBuilder ->
             channelBuilder.intercept(grpcInterceptor)
             channelBuilder
@@ -340,4 +366,6 @@ internal class NetworkInspector(
 
     override fun authority(): String = delegate.authority()
   }
+
+  private class GrpcHook(val className: String, val method: String)
 }

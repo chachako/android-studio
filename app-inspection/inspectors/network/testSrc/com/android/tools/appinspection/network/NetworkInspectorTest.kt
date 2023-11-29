@@ -104,12 +104,15 @@ internal class NetworkInspectorTest {
 
     networkInspector.registerHooks()
 
+    // Note that `AndroidChannelBuilder` is not hooked. This is because we didn't add a build
+    // dependency on `grpc-android`. The test still verifies that we attempt to hook it.
     assertThat(logger.messages)
       .containsExactly(
         "DEBUG: studio.inspectors: Instrumented java.net.URL",
         "DEBUG: studio.inspectors: Instrumented com.squareup.okhttp.OkHttpClient",
         "DEBUG: studio.inspectors: Instrumented okhttp3.OkHttpClient",
         "DEBUG: studio.inspectors: Instrumented io.grpc.ManagedChannelBuilder",
+        "DEBUG: studio.inspectors: Could not load class io.grpc.android.AndroidChannelBuilder",
       )
   }
 
