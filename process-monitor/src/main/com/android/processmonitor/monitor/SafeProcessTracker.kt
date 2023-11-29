@@ -20,6 +20,7 @@ import com.android.processmonitor.common.ProcessEvent
 import com.android.processmonitor.common.ProcessTracker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import java.io.EOFException
 
 /** A [ProcessTracker] that doesn't fail on exception */
 internal class SafeProcessTracker(
@@ -30,7 +31,11 @@ internal class SafeProcessTracker(
 
     override fun trackProcesses(): Flow<ProcessEvent> {
         return delegate.trackProcesses().catch {
-            logger.warn(it, errorMessage)
+            if (it is EOFException) {
+                logger.info { "Stopping process monitoring" }
+            } else {
+                logger.warn(it, errorMessage)
+            }
         }
     }
 
