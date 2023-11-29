@@ -36,6 +36,7 @@ class TestApplicationManagedDeviceTest {
             "reports",
             "androidTests",
             "managedDevice",
+            "debug",
             "device1")
         assertThat(File(reportDir, "index.html")).exists()
         assertThat(File(reportDir, "com.example.android.kotlin.html")).exists()
