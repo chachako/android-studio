@@ -9,13 +9,38 @@ import com.google.test.inspectors.grpc.proto.ProtoServiceGrpcKt
 import com.google.test.inspectors.grpc.xml.XmlRequest
 import com.google.test.inspectors.grpc.xml.XmlServiceCoroutineStub
 import io.grpc.ManagedChannelBuilder
+import io.grpc.android.AndroidChannelBuilder
+import io.grpc.internal.GrpcUtil
 import java.util.concurrent.TimeUnit.SECONDS
 
-internal class GrpcClient(host: String, port: Int) : AutoCloseable {
+internal class GrpcClient(host: String, port: Int, channelBuilderType: ChannelBuilderType) :
+  AutoCloseable {
+  enum class ChannelBuilderType(val displayName: String) {
+    MANAGED_FOR_ADDRESS("For Address") {
+      override fun newBuilder(host: String, port: Int): ManagedChannelBuilder<*> =
+        ManagedChannelBuilder.forAddress(host, port)
+    },
+    MANAGED_FOR_TARGET("For Target") {
+      override fun newBuilder(host: String, port: Int): ManagedChannelBuilder<*> =
+        ManagedChannelBuilder.forTarget(GrpcUtil.authorityFromHostAndPort(host, port))
+    },
+    ANDROID_FOR_ADDRESS("For Address (Android)") {
+      override fun newBuilder(host: String, port: Int): ManagedChannelBuilder<*> =
+        AndroidChannelBuilder.forAddress(host, port)
+    },
+    ANDROID_FOR_TARGET("For Target (Android)") {
+      override fun newBuilder(host: String, port: Int): ManagedChannelBuilder<*> =
+        AndroidChannelBuilder.forTarget(GrpcUtil.authorityFromHostAndPort(host, port))
+    },
+    ;
+
+    abstract fun newBuilder(host: String, port: Int): ManagedChannelBuilder<*>
+  }
 
   // TODO(aalbert): Add secure channel support
   private val channel =
-    ManagedChannelBuilder.forAddress(host, port)
+    channelBuilderType
+      .newBuilder(host, port)
       .usePlaintext()
       .intercept(ClientMetadataInterceptor(), LoggingGrpcInterceptor())
       .build()

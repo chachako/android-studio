@@ -17,8 +17,8 @@
 package com.google.test.inspectors.settings
 
 import androidx.lifecycle.ViewModel
-import com.google.test.inspectors.db.Settings
 import com.google.test.inspectors.db.SettingsDao
+import com.google.test.inspectors.grpc.GrpcClient.ChannelBuilderType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -29,20 +29,21 @@ constructor(
   private val settingsDao: SettingsDao,
 ) : ViewModel() {
 
-  suspend fun getHost(): String = settingsDao.getValue("host", "")
+  suspend fun getHost(): String = settingsDao.getHost()
 
-  suspend fun getPort(): Int = settingsDao.getValue("port", DEFAULT_PORT)
+  suspend fun getPort(): Int = settingsDao.getPort()
+
+  suspend fun getChannelBuilderType(): ChannelBuilderType = settingsDao.getChannelBuilderType()
 
   suspend fun setHost(host: String) {
-    settingsDao.upsert(Settings("host", host))
+    settingsDao.setHost(host)
   }
 
   suspend fun setPort(port: Int) {
-    settingsDao.upsert(Settings("port", port.toString()))
+    settingsDao.setPort(port)
   }
 
-  companion object {
-
-    const val DEFAULT_PORT = 54321
+  suspend fun setChannelBuilderType(channelBuilderType: ChannelBuilderType) {
+    settingsDao.setChannelBuilderType(channelBuilderType)
   }
 }

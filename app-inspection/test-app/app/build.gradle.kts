@@ -47,6 +47,7 @@ dependencies {
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.work)
   implementation(libs.core.ktx)
+  implementation(libs.grpc.android)
   implementation(libs.grpc.core)
   implementation(libs.grpc.kotlin.stub)
   implementation(libs.grpc.okhttp)

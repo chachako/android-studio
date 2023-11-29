@@ -43,6 +43,7 @@ androidx-work = { module = "androidx.work:work-runtime-ktx", version.ref = "andr
 checker-qual = { module = "org.checkerframework:checker-qual", version.ref = "checker" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+grpc-android = { module = "io.grpc:grpc-android", version.ref = "grpc" }
 grpc-core = { module = "io.grpc:grpc-core", version.ref = "grpc" }
 grpc-kotlin-stub = { module = "io.grpc:grpc-kotlin-stub", version.ref = "grpc-kotlin-stub" }
 grpc-protobuf-lite = { module = "io.grpc:grpc-protobuf-lite", version.ref = "grpc" }

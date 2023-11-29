@@ -60,8 +60,8 @@ constructor(
   val snackState: StateFlow<String?> = snackFlow.stateIn(viewModelScope, WhileUiSubscribed, null)
 
   private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
-    snackFlow.value = "Error: ${throwable.message}"
-    Logger.error("Error", throwable)
+    setSnack("Error: ${throwable.message}")
+    Logger.error("Error: ${throwable.message}", throwable)
   }
 
   private val scope = CoroutineScope(viewModelScope.coroutineContext + exceptionHandler)
@@ -72,7 +72,7 @@ constructor(
     val jobScheduler = application.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
     jobScheduler.schedule(job)
 
-    snackFlow.value = "Started job $jobId"
+    setSnack("Started job $jobId")
   }
 
   override fun startWork() {
@@ -84,7 +84,7 @@ constructor(
       work.asFlow().collect {
         Logger.info("State of ${request.id}: ${it.state}")
         if (it.state == WorkInfo.State.SUCCEEDED) {
-          snackFlow.value = it.outputData.getString(AppWorker.MESSAGE_KEY)
+          setSnack(it.outputData.getString(AppWorker.MESSAGE_KEY) ?: "no-message")
         }
       }
     }
@@ -129,12 +129,12 @@ constructor(
   override fun doCustomGrpc(name: String) {
     scope.launch {
       val response = newGrpcClient().use { it.doCustomGrpc(CustomRequest(name)) }
-      snackFlow.value = response.message
+      setSnack(response.message)
     }
   }
 
   private suspend fun newGrpcClient() =
-    GrpcClient(settingsDao.getValue("host", ""), settingsDao.getValue("port", 0))
+    GrpcClient(settingsDao.getHost(), settingsDao.getPort(), settingsDao.getChannelBuilderType())
 
   private fun setSnack(text: String) {
     snackFlow.value =
