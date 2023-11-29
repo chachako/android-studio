@@ -14,7 +14,12 @@ iml_module(
 # Build target to verify that render-resources builds for tools/base
 kotlin_library(
     name = "tools.environment-services",
-    srcs = glob(["src/**/*.kt"]),
+    srcs = [
+        "src/com/android/tools/environment/CancellationManager.kt",
+        "src/com/android/tools/environment/Logger.kt",
+        "src/com/android/tools/environment/log/NoopLogger.kt",
+        "src/com/android/tools/environment/log/StubLoggerProvider.kt",
+    ],
     resource_strip_prefix = "tools/base/environment-services/resources",
     resources = glob(["resources/**"]),
     visibility = ["//visibility:public"],

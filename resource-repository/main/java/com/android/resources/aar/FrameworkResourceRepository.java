@@ -33,7 +33,6 @@ import com.android.resources.base.RepositoryConfiguration;
 import com.android.resources.base.RepositoryLoader;
 import com.android.resources.base.ResourceSerializationUtil;
 import com.android.tools.environment.Logger;
-import com.android.tools.environment.cancellation.ExecutionCancellationException;
 import com.android.utils.Base128InputStream;
 import com.android.utils.Base128OutputStream;
 import com.google.common.base.Strings;
@@ -45,6 +44,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.intellij.openapi.application.PathManager;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -291,7 +291,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
             break;  // Don't try to load language-specific resources if language-neutral ones could not be loaded.
           }
         }
-        catch (ExecutionCancellationException e) {
+        catch (ProcessCanceledException e) {
           cleanupAfterFailedLoadingFromCache();
           loadedLanguages.clear();
           throw e;
@@ -464,7 +464,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
         repository.populatePublicResourcesMap();
         repository.freezeResources();
       }
-      catch (ExecutionCancellationException e) {
+      catch (ProcessCanceledException e) {
         throw e;
       }
       catch (Exception e) {

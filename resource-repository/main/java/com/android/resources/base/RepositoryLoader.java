@@ -78,7 +78,6 @@ import com.android.resources.ResourceType;
 import com.android.resources.ResourceVisibility;
 import com.android.tools.environment.CancellationManager;
 import com.android.tools.environment.Logger;
-import com.android.tools.environment.cancellation.ExecutionCancellationException;
 import com.android.utils.SdkUtils;
 import com.android.utils.XmlUtils;
 import com.google.common.base.Preconditions;
@@ -91,6 +90,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -209,7 +209,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
         }
       });
     }
-    catch (ExecutionCancellationException e) {
+    catch (ProcessCanceledException e) {
       throw e;
     }
     catch (Exception e) {
@@ -242,7 +242,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
         loadResourceFile(file, repository, shouldParseResourceIds);
       }
     }
-    catch (ExecutionCancellationException e) {
+    catch (ProcessCanceledException e) {
       throw e;
     }
     catch (Exception e) {
@@ -396,7 +396,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
           }
         }
       }
-      catch (ExecutionCancellationException e) {
+      catch (ProcessCanceledException e) {
         throw e;
       }
       catch (NoSuchFileException e) {
@@ -539,7 +539,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
         }
       } while (event != XmlPullParser.END_DOCUMENT);
     }
-    catch (ExecutionCancellationException e) {
+    catch (ProcessCanceledException e) {
       throw e;
     }
     // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
@@ -602,7 +602,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
         }
       } while (event != XmlPullParser.END_DOCUMENT);
     }
-    catch (ExecutionCancellationException e) {
+    catch (ProcessCanceledException e) {
       throw e;
     }
     // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
