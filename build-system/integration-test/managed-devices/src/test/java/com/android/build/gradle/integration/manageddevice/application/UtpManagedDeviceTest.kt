@@ -17,17 +17,19 @@
 package com.android.build.gradle.integration.manageddevice.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
-import com.android.build.gradle.integration.manageddevice.utils.getStandardExecutor
-import com.android.build.gradle.integration.manageddevice.utils.setupSdkDir
-import com.android.build.gradle.integration.manageddevice.utils.setupSdkRepo
+import com.android.build.gradle.integration.manageddevice.utils.CustomAndroidSdkRule
+import com.android.build.gradle.integration.manageddevice.utils.addManagedDevice
 import com.android.build.gradle.integration.utp.UtpTestBase
-import com.android.utils.FileUtils
+import org.junit.Rule
 import java.io.File
 
 /**
  * An integration test for Gradle Managed Device.
  */
 class UtpManagedDeviceTest : UtpTestBase() {
+
+    @get:Rule
+    val customAndroidSdkRule = CustomAndroidSdkRule()
 
     companion object {
         private const val TEST_RESULT_XML = "build/outputs/androidTest-results/managedDevice/device1/TEST-device1-_"
@@ -46,41 +48,10 @@ class UtpManagedDeviceTest : UtpTestBase() {
     override val deviceName: String = "dev29_default_x86_Pixel_2"
 
     override val executor: GradleTaskExecutor
-        get() = getStandardExecutor(
-            project,
-            userHomeDirectory,
-            localPrefDirectory,
-            sdkImageSource
-        )
+        get() = customAndroidSdkRule.run { project.executorWithCustomAndroidSdk() }
 
     override fun selectModule(moduleName: String) {
-        val appProject = project.getSubproject(moduleName)
-        val sdkLocation = project.file("projectSDK")
-
-        setupSdkDir(project, sdkLocation)
-
-        // Set up prefs folder
-        userHomeDirectory = project.file("local")
-        localPrefDirectory = project.file("local/.android")
-        FileUtils.mkdirs(localPrefDirectory)
-
-        sdkImageSource = project.file("sysImgSource/dl.google.com/android/repository")
-        setupSdkRepo(sdkImageSource)
-
-        appProject.buildFile.appendText("""
-            android {
-                testOptions {
-                    devices {
-                        device1 (com.android.build.api.dsl.ManagedVirtualDevice) {
-                            device = "Pixel 2"
-                            apiLevel = 29
-                            systemImageSource = "aosp"
-                        }
-                    }
-                }
-            }
-        """)
-
+        project.getSubproject(moduleName).addManagedDevice("device1")
         testTaskName = ":${moduleName}:allDevicesCheck"
         testResultXmlPath = "${moduleName}/$TEST_RESULT_XML$moduleName-.xml"
         testReportPath = "${moduleName}/$TEST_REPORT"

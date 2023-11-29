@@ -19,15 +19,15 @@ package com.android.build.gradle.integration.manageddevice.application
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
-import com.android.build.gradle.integration.manageddevice.utils.getStandardExecutor
-import com.android.build.gradle.integration.manageddevice.utils.setupSdkDir
-import com.android.build.gradle.integration.manageddevice.utils.setupSdkRepo
-import com.android.utils.FileUtils
+import com.android.build.gradle.integration.manageddevice.utils.CustomAndroidSdkRule
+import com.android.build.gradle.integration.manageddevice.utils.addManagedDevice
 import org.junit.Rule
 import org.junit.Test
-import java.io.File
 
 class UtpManagedDeviceSetupTest {
+
+    @get:Rule
+    val customAndroidSdkRule = CustomAndroidSdkRule()
 
     @get:Rule
     val project1 = GradleTestProjectBuilder()
@@ -46,47 +46,9 @@ class UtpManagedDeviceSetupTest {
     }
 
     private fun setupProject(project: GradleTestProject): GradleTaskExecutor {
-        val testDir = project.rootProject.projectDir.parentFile
+        project.getSubproject("app").addManagedDevice("device1")
 
-        val sdkImageSource = File(
-            testDir,
-            FileUtils.toSystemDependentPath("sysImgSource/dl.google.com/android/repository"))
-        setupSdkRepo(sdkImageSource)
-
-        val userHomeDirectory = File(testDir, "local")
-        val localPrefDirectory =
-                File(testDir, FileUtils.toSystemDependentPath("local/.android"))
-        if (!localPrefDirectory.exists()) {
-            FileUtils.mkdirs(localPrefDirectory)
-        }
-
-        val sdkLocation = File(testDir, "projectSDK")
-        setupSdkDir(project, sdkLocation)
-
-        val appProject = project.getSubproject("app")
-        appProject.buildFile.appendText("""
-            android {
-                testOptions {
-                    managedDevices {
-                        localDevices {
-                            device1 {
-                                device = "Pixel 2"
-                                apiLevel = 29
-                                systemImageSource = "aosp"
-                                require64Bit = true
-                            }
-                        }
-                    }
-                }
-            }
-        """.trimIndent())
-
-        return getStandardExecutor(
-            project,
-            userHomeDirectory,
-            localPrefDirectory,
-            sdkImageSource,
-        )
+        return customAndroidSdkRule.run { project.executorWithCustomAndroidSdk() }
     }
 
     @Test
