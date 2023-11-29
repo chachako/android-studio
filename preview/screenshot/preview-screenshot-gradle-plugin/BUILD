@@ -40,8 +40,20 @@ maven_repository(
     name = "maven_test_dependencies",
     # keep sorted
     artifacts = [
+        "//tools/base/multipreview-asm",
         "//tools/base/testutils:tools.testutils",
         "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.7.10",
+    ],
+)
+
+maven_repository(
+    name = "maven_dependencies",
+    # keep sorted
+    artifacts = [
+        "//tools/base/multipreview-asm",
+    ],
+    visibility = [
+        "//tools/base/build-system/integration-test:__subpackages__",
     ],
 )
 
@@ -53,6 +65,7 @@ gradle_build(
     output_file = "preview_screenshot-gradle-plugin.zip",
     output_file_source = "dist/repo.zip",
     repos = [
+        ":maven_dependencies",
         "//tools/base:agp_artifacts",
         "//tools/base:agp_dependencies",
     ],
@@ -90,6 +103,7 @@ kotlin_library(
         "//tools/base/build-system:gradle-api",
         "//tools/base/build-system/gradle-core",
         "//tools/base/common:tools.common",
+        "//tools/base/multipreview-asm:tools.multipreview-asm",
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/sdklib:tools.sdklib",
         "//tools/base/testutils:tools.testutils",
