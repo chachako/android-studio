@@ -1,8 +1,4 @@
-//tools/adt/idea/android/src/com/android/tools/idea/diagnostics/heap/native:update_libjni_object_tagger
-//tools/adt/idea/memory-usage/src/main/native:update_liblightweight_heap_traverse
-//tools/adt/idea/streaming/native:update_libimage_converter
 //tools/base/bazel:iml_to_build_consistency_test
-//tools/base/repository:find_workspace
 //tools/base/repository:generic-2
 //tools/base/repository:repo-common-1
 //tools/base/repository:repo-common-2

@@ -165,14 +165,3 @@ java_binary(
         "//tools/base/jaxb-inheritance-plugin",
     ],
 )
-
-genrule(
-    name = "find_workspace",
-    srcs = ["BUILD"],
-    outs = ["root"],
-    # iml_to_build doesn't support triple-quote strings, so we have to put everything together here
-    cmd = "path=$$(pwd -P); while [[ $$path != / ]]; do if [[ -a $$path/DO_NOT_BUILD_HERE ]]; then break;fi;path=$$(dirname $$(cd $$path && pwd -P)); done; cp $$path/DO_NOT_BUILD_HERE $(location root)",
-    local = 1,
-    tags = ["manual"],
-    visibility = ["//visibility:public"],
-)
