@@ -304,7 +304,6 @@ class CoreLibraryDesugarTest {
         DexClassSubject.assertThat(dex.classes[programClass])
             .hasMethodThatInvokes("a", "Lj$/util/stream/Stream;->findFirst()Lj$/util/Optional;")
         desugarLibDex = getDexWithSpecificClass(usedDesugarClass, apk.allDexes)!!
-        DexSubject.assertThat(desugarLibDex).containsClass(unObfuscatedClass)
     }
 
     @Test

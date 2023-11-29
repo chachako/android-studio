@@ -166,8 +166,11 @@ abstract class L8DexDesugarLibTask : NonIncrementalTask() {
 
             if (dexingCreationConfig.needsShrinkDesugarLibrary) {
                 task.desugaredDesugarLibJar.from(getDesugaredDesugarLib(creationConfig))
-                // desugar library is shrunk to reduce apk but not obfuscated or optimized
-                task.keepRulesConfigurations.set(listOf("-dontobfuscate", "-dontoptimize"))
+                // when app is using D8, desugar library is shrunk to reduce apk but not obfuscated
+                // or optimized
+                if (!creationConfig.optimizationCreationConfig.minifiedEnabled) {
+                    task.keepRulesConfigurations.set(listOf("-dontobfuscate", "-dontoptimize"))
+                }
 
                 if (creationConfig is ApplicationCreationConfig && creationConfig.consumesFeatureJars) {
                     task.dexFiles.from(creationConfig.artifacts.get(InternalArtifactType.BASE_DEX))
