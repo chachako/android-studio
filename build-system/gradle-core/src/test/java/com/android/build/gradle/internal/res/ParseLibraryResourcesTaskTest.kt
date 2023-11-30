@@ -232,7 +232,8 @@ class ParseLibraryResourcesTaskTest(
         }
 
         if (usePartialR){
-            doIncrementalPartialRTaskAction(params)
+            val updated = doIncrementalPartialRTaskAction(params)
+            assertThat(updated).isTrue()
         } else {
             doIncrementalRDefTaskAction(params)
         }
@@ -274,18 +275,9 @@ class ParseLibraryResourcesTaskTest(
                         "string farewell")
         FileUtils.createFile(modifiedLayoutPartialR,
                 "undefined int layout second_activity\n" +
-                        "undefined int id chipOne"
+                        "undefined int id chipOne\n"
         )
-        FileUtils.createFile(modifiedLayout,
-                """<root>
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipOne"/>
-                     </root>""")
-        FileUtils.writeToFile(modifiedLayout,
-                """<root>
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipTwo"/>
-                     </root>""")
+
         val changedResources = listOf(
                 SerializableChange(modifiedLayout, FileStatus.CHANGED, modifiedLayout.absolutePath)
         )
@@ -307,7 +299,18 @@ class ParseLibraryResourcesTaskTest(
         }
 
         if (usePartialR) {
-            doIncrementalPartialRTaskAction(params)
+            FileUtils.createFile(modifiedLayout,
+                """<root>
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipOne"/>
+                     </root>""")
+            FileUtils.writeToFile(modifiedLayout,
+                """<root>
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipTwo"/>
+                     </root>""")
+            val updated = doIncrementalPartialRTaskAction(params)
+            assertThat(updated).isTrue()
             assertThat(librarySymbolsFile.readLines()).containsExactly(
                     "R_DEF: Internal format may change without notice",
                     "local",
@@ -320,7 +323,18 @@ class ParseLibraryResourcesTaskTest(
                     "string greeting"
             )
             assertThat(librarySymbolsFile.readLines()).doesNotContain("id chipOne")
+
+            // add some attribute which does not change the resulting symbol table
+            FileUtils.writeToFile(modifiedLayout,
+                """<root>
+                        <element1 attribute1="value1" />
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipTwo"/>
+                     </root>""")
+            val updatedAgain = doIncrementalPartialRTaskAction(params)
+            assertThat(updatedAgain).isFalse()
         }
+
         parentFolder.delete()
     }
 
@@ -375,7 +389,8 @@ class ParseLibraryResourcesTaskTest(
         }
 
         if (usePartialR) {
-            doIncrementalPartialRTaskAction(params)
+            val updated = doIncrementalPartialRTaskAction(params)
+            assertThat(updated).isTrue()
             assertThat(librarySymbolsFile.readLines()).containsExactly(
                     "R_DEF: Internal format may change without notice",
                     "local",
