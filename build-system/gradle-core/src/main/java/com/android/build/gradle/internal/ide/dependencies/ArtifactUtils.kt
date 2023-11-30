@@ -247,23 +247,15 @@ class ArtifactCollections(
     // This is why we query for Scope.ALL
     // But we also simply need the exploded AARs for external Android dependencies so that
     // Studio can access the content.
+    // Contents of ASARs to be used by IDE, (i.e. the interface descriptor jars) for privacy sandbox
+    // is also grouped into this query for efficiency
     @get:Internal
-    val explodedAars: ArtifactCollection = variantDependencies.getArtifactCollectionForToolingModel(
-        consumedConfigType,
-        AndroidArtifacts.ArtifactScope.ALL,
-        AndroidArtifacts.ArtifactType.EXPLODED_AAR
+    val aarOrAsar: ArtifactCollection = variantDependencies.getArtifactCollectionForToolingModel(
+            consumedConfigType,
+            AndroidArtifacts.ArtifactScope.ALL,
+            AndroidArtifacts.ArtifactType.EXPLODED_AAR_OR_ASAR_INTERFACE_DESCRIPTOR
     )
 
-    @get:Internal
-    var asarJarsCollection: ArtifactCollection = variantDependencies.getArtifactCollectionForToolingModel(
-        consumedConfigType,
-        AndroidArtifacts.ArtifactScope.ALL,
-        AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR
-    )
-
-    @get:Classpath
-    val explodedAarFileCollection: FileCollection
-        get() = explodedAars.artifactFiles
 
     /**
      * For project jars, query for JAR instead of PROCESSED_JAR for two reasons:
@@ -320,16 +312,20 @@ private fun getAllArtifacts(
     // All artifacts: see comment on collections.all
     val incomingArtifacts = collections.all
 
-    val explodedAars = collections.explodedAars.asMap { it.file }
+    val explodedAars = collections.aarOrAsar.filter {
+        it.hasType(AndroidArtifacts.ArtifactType.EXPLODED_AAR)
+    }.asMap()
+
+    val asarJars = collections.aarOrAsar.filter {
+        it.hasType(AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR)
+    }.asMap()
 
     val lintJars = collections.lintJar.asMap { it.file }
-
-    val asarJars = collections.asarJarsCollection.asMap { it.file }
 
     /** See [ArtifactCollections.projectJars]. */
     val projectJarsMap: ImmutableMultimap<VariantKey, ResolvedArtifactResult> by lazy(LazyThreadSafetyMode.NONE) {
         collections.all.artifacts.filter {
-            it.variant.owner is ProjectComponentIdentifier && it.isJar()
+            it.variant.owner is ProjectComponentIdentifier && it.hasType(AndroidArtifacts.ArtifactType.JAR)
         }.asMultiMap()
     }
 
@@ -444,9 +440,6 @@ private fun getAllArtifacts(
     return artifacts
 }
 
-private fun ResolvedArtifactResult.isJar() =
-        variant.attributes.getAttribute(AndroidArtifacts.ARTIFACT_TYPE) == AndroidArtifacts.ArtifactType.JAR.type
-
 /**
  * Checks whether a local project library is and Android one.
  *
@@ -472,6 +465,12 @@ private fun Iterable<ResolvedArtifactResult>.asMultiMap(): ImmutableMultimap<Var
 
 private fun <T> ArtifactCollection.asMap(action: (ResolvedArtifactResult) -> T): Map<VariantKey, T> =
     artifacts.associate { it.variant.toKey() to action(it) }
+
+private fun List<ResolvedArtifactResult>.asMap(): Map<VariantKey, File> =
+    associate { it.variant.toKey() to it.file }
+
+private fun ResolvedArtifactResult.hasType(type: AndroidArtifacts.ArtifactType) =
+        variant.attributes.getAttribute(AndroidArtifacts.ARTIFACT_TYPE) == type.type
 
 /**
  * A custom key for [ResolvedVariantResult].

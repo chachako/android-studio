@@ -775,7 +775,7 @@ class DependencyConfigurator(
     }
 
     private fun setupModelStrategy(attributesSchema: AttributesSchema) {
-        setUp(attributesSchema)
+        setUp(attributesSchema, projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT))
     }
 
     /** This is to enforce AGP version across a single or composite build. */

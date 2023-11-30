@@ -123,6 +123,8 @@ public class AndroidArtifacts {
             "android-databinding-class-log";
     private static final String TYPE_EXPLODED_AAR = "android-exploded-aar";
     private static final String TYPE_AAR_OR_JAR = "android-aar-or-jar";
+    private static final String TYPE_EXPLODED_AAR_OR_ASAR_INTERFACE_DESCRIPTOR =
+            "android-exploded-aar-or-asar-interface-descriptor";
     private static final String TYPE_AAR_ClASS_LIST_AND_RES_SYMBOLS =
             "aar-class-list-and-res-symbols";
     private static final String TYPE_JAR_ClASS_LIST = "jar-class-list";
@@ -573,6 +575,8 @@ public class AndroidArtifacts {
          * <p>See {@link #JAR} for context on processed/unprocessed artifacts.
          */
         AAR_OR_JAR(TYPE_AAR_OR_JAR), // See ArtifactUtils for how this is used.
+        /** See ArtifactUtils for how this is used. */
+        EXPLODED_AAR_OR_ASAR_INTERFACE_DESCRIPTOR(TYPE_EXPLODED_AAR_OR_ASAR_INTERFACE_DESCRIPTOR),
 
         // A file containing unique resource symbols from ANDROID_RES.
         ANDROID_RES_SYMBOLS(TYPE_AAR_ClASS_LIST_AND_RES_SYMBOLS),

@@ -617,7 +617,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
                 .compatibilityRules
                 .add(AgpVersionCompatibilityRule::class.java)
 
-            setUp(schema)
+            setUp(schema, projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT))
         }
     }
 
