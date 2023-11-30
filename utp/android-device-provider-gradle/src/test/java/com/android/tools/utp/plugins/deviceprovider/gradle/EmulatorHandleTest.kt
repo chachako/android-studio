@@ -18,11 +18,9 @@ package com.android.tools.utp.plugins.deviceprovider.gradle
 
 import com.android.testutils.MockitoKt.any
 import com.google.common.truth.Truth.assertThat
-import com.google.testing.platform.core.device.DeviceProviderException
 import com.google.testing.platform.lib.process.Handle
 import com.google.testing.platform.lib.process.Subprocess
 import com.google.testing.platform.lib.process.inject.SubprocessComponent
-import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -79,12 +77,12 @@ class EmulatorHandleTest {
                 avdName,
                 avdFolder,
                 avdId,
-                enableDisplay = false
+                enableDisplay = false,
         )
         assertThat(emulatorHandle.isAlive()).isTrue()
         verifyCommand(
                 "/path/to/emulator @dev29_aosp_x86_Pixel_2 -no-window -no-audio -gpu auto-no-window -read-only "
-                        + "-no-boot-anim -id someUniqueIdHere"
+                        + "-no-boot-anim -delay-adb -id someUniqueIdHere"
         )
 
         emulatorHandle.closeInstance()
@@ -98,28 +96,15 @@ class EmulatorHandleTest {
                 avdName,
                 avdFolder,
                 avdId,
-                enableDisplay = true
+                enableDisplay = true,
         )
         assertThat(emulatorHandle.isAlive()).isTrue()
         verifyCommand(
-                "/path/to/emulator @dev29_aosp_x86_Pixel_2 -gpu auto-no-window -read-only -no-boot-anim -id someUniqueIdHere"
+                "/path/to/emulator @dev29_aosp_x86_Pixel_2 -gpu auto-no-window -read-only -no-boot-anim -delay-adb -id someUniqueIdHere"
         )
 
         emulatorHandle.closeInstance()
         assertThat(emulatorHandle.isAlive()).isFalse()
-    }
-
-    @Test
-    fun launchInstance_emulatorFailureThrows() {
-        setEmulatorOutput(fails = true)
-        assertThrows(DeviceProviderException::class.java) {
-            emulatorHandle.launchInstance(
-                    avdName,
-                    avdFolder,
-                    avdId,
-                    false
-            )
-        }
     }
 
     @Test
@@ -131,7 +116,7 @@ class EmulatorHandleTest {
             avdName,
             avdFolder,
             avdId,
-            enableDisplay = false
+            enableDisplay = false,
         )
 
         verifyCommand(
@@ -144,6 +129,7 @@ class EmulatorHandleTest {
                 "auto-no-window",
                 "-read-only",
                 "-no-boot-anim",
+                "-delay-adb",
                 "-verbose",
                 "-show-kernel",
                 "-id",

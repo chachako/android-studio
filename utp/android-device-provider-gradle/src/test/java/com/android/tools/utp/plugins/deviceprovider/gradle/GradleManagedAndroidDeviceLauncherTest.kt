@@ -300,7 +300,6 @@ class GradleManagedAndroidDeviceLauncherTest {
         assertThrows(GradleManagedAndroidDeviceLauncher.EmulatorTimeoutException::class.java) {
             managedDeviceLauncher.provideDevice()
         }
-        verify(emulatorHandle).closeInstance()
     }
 
     @Test
@@ -413,7 +412,7 @@ class GradleManagedAndroidDeviceLauncherTest {
                 deviceName,
                 "path/to/gradle/avd",
                 deviceId,
-                enableDisplay
+                enableDisplay,
         )
     }
 }

@@ -124,7 +124,7 @@ class AdbHelperTest {
     fun isPackageManagerStarted_pmReady() {
         createAdbHelper("package: com.something...")
 
-        assertThat(adbHelper.isPackageManagerStarted("deviceSerial")).isTrue()
+        assertThat(adbHelper.isPackageManagerStarted("deviceSerial", mock())).isTrue()
         assertThat(processCalls).hasSize(1)
         assertThat(processCalls[0]).isEqualTo(
             listOf(adbFilePath, "-s", "deviceSerial", "shell", "/system/bin/pm", "path", "android")
@@ -135,7 +135,7 @@ class AdbHelperTest {
     fun isPackageManagerStarted_pmNotReady() {
         createAdbHelper()
 
-        assertThat(adbHelper.isPackageManagerStarted("deviceSerial")).isFalse()
+        assertThat(adbHelper.isPackageManagerStarted("deviceSerial", mock())).isFalse()
         assertThat(processCalls).hasSize(1)
         assertThat(processCalls[0]).isEqualTo(
             listOf(adbFilePath, "-s", "deviceSerial", "shell", "/system/bin/pm", "path", "android")

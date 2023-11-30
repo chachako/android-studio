@@ -99,6 +99,7 @@ class AvdSnapshotHandler(
                 "-no-window",
                 "-no-boot-anim",
                 "-no-audio",
+                "-delay-adb",
                 "-verbose".takeIf { showEmulatorKernelLogging },
                 "-show-kernel".takeIf { showEmulatorKernelLogging },
                 "-gpu",
@@ -177,6 +178,7 @@ class AvdSnapshotHandler(
                 "-no-window",
                 "-no-boot-anim",
                 "-no-audio",
+                "-delay-adb",
                 "-verbose".takeIf { showEmulatorKernelLogging },
                 "-show-kernel".takeIf { showEmulatorKernelLogging },
                 "-id",
@@ -222,7 +224,7 @@ class AvdSnapshotHandler(
                 logger.verbose("Booting $avdName is completed.")
 
                 while(process.isAlive) {
-                    if (adbHelper.isPackageManagerStarted(emulatorSerial)) {
+                    if (adbHelper.isPackageManagerStarted(emulatorSerial, logger)) {
                         break
                     }
                     logger.verbose("Waiting for PackageManager to be ready on $avdName.")

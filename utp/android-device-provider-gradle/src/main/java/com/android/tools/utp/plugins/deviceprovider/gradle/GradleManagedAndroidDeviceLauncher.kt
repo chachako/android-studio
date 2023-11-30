@@ -121,36 +121,60 @@ class GradleManagedAndroidDeviceLauncher(
     }
 
     private fun makeDevice(): AndroidDevice {
-        emulatorHandle.launchInstance(
-                avdName,
-                avdFolder,
-                avdId,
-                enableDisplay,
-        )
-
-        val targetSerial = findSerial()
+        // Launch emulator with retry. Emulator process might be crashed
+        // by SIGSEGV when it tried to attach to adb (b/314022353). When
+        // this happens, the emulator process dies before it becomes
+        // visible from adb devices command.
+        val targetSerial = retryWithExponentialBackOff(
+                maxAttempts = 3,
+                conditionFunc = {
+                    if (!emulatorHandle.isAlive()) {
+                        logger.warning(
+                            "Emulator process exited unexpectedly with the exit code " +
+                            "${emulatorHandle.exitCode()}.")
+                        true
+                    } else {
+                        // If the emulator process is still alive, the emulator may be hanged up.
+                        // We give up if this happens.
+                        false
+                    }
+                }) { attempt ->
+            logger.info("Launching Emulator (Attempt $attempt)")
+            emulatorHandle.launchInstance(
+                    avdName,
+                    avdFolder,
+                    avdId,
+                    enableDisplay,
+            )
+            findSerial()
+        }
 
         if (targetSerial == null) {
+            if (!emulatorHandle.isAlive()) {
+                throw EmulatorTimeoutException("""
+                    Emulator process exited unexpectedly with the exit code ${emulatorHandle.exitCode()}.
+
+                    Please ensure that you have sufficient resources to run the requested
+                    number of devices or request fewer devices.
+                    """.trimIndent())
+            }
             // Need to close the emulator if we can't connect.
             releaseDevice()
-            throw EmulatorTimeoutException(
-                    """
-                        Gradle was unable to attach one or more devices to the adb server.
-                        Please ensure that you have sufficient resources to run the requested
-                        number of devices or request fewer devices.
-                    """.trimIndent()
-            )
+            throw EmulatorTimeoutException("""
+                    Gradle was unable to attach one or more devices to the adb server.
+
+                    Please ensure that you have sufficient resources to run the requested
+                    number of devices or request fewer devices.
+                    """.trimIndent())
         }
 
         if (!establishBootCheck(targetSerial)) {
             releaseDevice()
-            throw EmulatorTimeoutException(
-                    """
-                        Gradle was unable to boot one or more devices. If this issue persists,
-                        delete existing devices using the "cleanManagedDevices" task and rerun
-                        the test.
-                    """.trimIndent()
-            )
+            throw EmulatorTimeoutException("""
+                    Gradle was unable to boot one or more devices. If this issue persists,
+                    delete existing devices using the "cleanManagedDevices" task and rerun
+                    the test.
+                    """.trimIndent())
         }
 
         val emulatorPort = targetSerial.substring("emulator-".length).toInt()
@@ -184,7 +208,8 @@ class GradleManagedAndroidDeviceLauncher(
     private fun findSerial(maxAttempts: Int = 20): String? {
         // We may need to retry as the emulator may not have attached to the
         // adb server even though the emulator has booted.
-        return retryWithExponentialBackOff(maxAttempts) { attempt ->
+        return retryWithExponentialBackOff(
+                maxAttempts, conditionFunc = emulatorHandle::isAlive) { attempt ->
             val serials = adbManager.getAllSerials()
             logger.info {
                 "Finding a test device $avdId (attempt $attempt of $maxAttempts).\n" +
@@ -210,6 +235,7 @@ class GradleManagedAndroidDeviceLauncher(
         maxAttempts: Int = 20,
         initialRetryDelayMillis: Long = 2000,
         retryBackOffBase: Double = 2.0,
+        conditionFunc: () -> Boolean = { true },
         runnableFunc: (attempt: Int) -> T
     ): T? {
         var backOffMillis = min(initialRetryDelayMillis, maxDelayMillis)
@@ -217,6 +243,9 @@ class GradleManagedAndroidDeviceLauncher(
             val result = runnableFunc(attempt)
             if (result != null) {
                 return result
+            }
+            if (!conditionFunc()) {
+                return null
             }
             Thread.sleep(backOffMillis)
             backOffMillis = min((retryBackOffBase * backOffMillis).toLong(), maxDelayMillis)
@@ -263,7 +292,7 @@ class GradleManagedAndroidDeviceLauncher(
             )
         }
 
-        // As a temporary work around. We need to add the dslName to the
+        // As a temporary workaround. We need to add the dslName to the
         // properties here. b/183651101
         // This will be overwritten if setDevice() is called again.
         val device = makeDevice()
@@ -281,8 +310,8 @@ class GradleManagedAndroidDeviceLauncher(
         // on adb and run a kill command from the adb. We don't want to
         // retry to find the serial because the device either is or is not
         // connected at this point and, ideally, would be disconnected.
-        findSerial(1)?.run {
-            adbManager.closeDevice(this)
+        findSerial(1)?.let {
+            adbManager.closeDevice(it)
         }
     }
 

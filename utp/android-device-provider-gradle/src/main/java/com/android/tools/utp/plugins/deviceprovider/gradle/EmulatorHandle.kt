@@ -31,19 +31,22 @@ interface EmulatorHandle {
     /** Returns true if and only if handling an active instance of the emulator. */
     fun isAlive(): Boolean
 
+    /** Returns emulator process's exit code if the process finished, otherwise null. */
+    fun exitCode(): Int?
+
     /**
      * Launches an instance of the emulator.
      *
      * @param avdName name of the android virtual device to be launched.
      * @param avdFolder the folder containing the given avd.
      * @param avdId unique identifier to identify the avd.
-     * @param enableDisplay whether or not to display the emulator.
+     * @param enableDisplay whether to display the emulator.
      */
     fun launchInstance(
             avdName: String,
             avdFolder: String,
             avdId: String,
-            enableDisplay: Boolean
+            enableDisplay: Boolean,
     )
 
     /** Closes the instance of the emulator associated with this handle */

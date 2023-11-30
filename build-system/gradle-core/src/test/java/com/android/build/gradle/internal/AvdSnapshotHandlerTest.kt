@@ -67,7 +67,7 @@ class AvdSnapshotHandlerTest {
         `when`(mockProcess.isAlive).thenReturn(true)
         `when`(mockAdbHelper.findDeviceSerialWithId(any(), any())).thenReturn("myTestDeviceSerial")
         `when`(mockAdbHelper.isBootCompleted(any(), any())).thenReturn(true)
-        `when`(mockAdbHelper.isPackageManagerStarted(any())).thenReturn(true)
+        `when`(mockAdbHelper.isPackageManagerStarted(any(), any())).thenReturn(true)
     }
 
     @Test

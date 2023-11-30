@@ -16,7 +16,6 @@
 
 package com.android.tools.utp.plugins.deviceprovider.gradle
 
-import com.google.testing.platform.core.device.DeviceProviderException
 import com.google.testing.platform.lib.logging.jvm.getLogger
 import com.google.testing.platform.lib.process.Handle
 import com.google.testing.platform.lib.process.inject.SubprocessComponent
@@ -34,6 +33,7 @@ class EmulatorHandleImpl(private val subprocessComponent: SubprocessComponent) :
         private const val EMULATOR_READ_ONLY = "-read-only"
         private const val EMULATOR_VERBOSE = "-verbose"
         private const val EMULATOR_SHOW_KERNEL = "-show-kernel"
+        private const val EMULATOR_DELAY_ADB = "-delay-adb"
     }
 
     private val logger: Logger = getLogger()
@@ -44,7 +44,7 @@ class EmulatorHandleImpl(private val subprocessComponent: SubprocessComponent) :
 
     private var showEmulatorKernelLogging: Boolean = false
 
-    private lateinit var processHandle: Handle
+    private var processHandle: Handle? = null
 
     override fun configure(
         emulatorPath: String, emulatorGpuFlag: String, showEmulatorKernelLogging: Boolean) {
@@ -53,20 +53,17 @@ class EmulatorHandleImpl(private val subprocessComponent: SubprocessComponent) :
         this.showEmulatorKernelLogging = showEmulatorKernelLogging
     }
 
-    override fun isAlive() =
-            if (this::processHandle.isInitialized) {
-                processHandle.isAlive()
-            } else {
-                false
-            }
+    override fun isAlive() = processHandle?.isAlive() ?: false
+
+    override fun exitCode(): Int? = processHandle?.exitCode()
 
     override fun launchInstance(
             avdName: String,
             avdFolder: String,
             avdId: String,
-            enableDisplay: Boolean
+            enableDisplay: Boolean,
     ) {
-        val args = mutableListOf<String>(emulatorPath)
+        val args = mutableListOf(emulatorPath)
         args.add("@$avdName")
         if (!enableDisplay) {
             args.add(EMULATOR_NO_WINDOW)
@@ -76,6 +73,7 @@ class EmulatorHandleImpl(private val subprocessComponent: SubprocessComponent) :
         args.add(emulatorGpuFlag)
         args.add(EMULATOR_READ_ONLY)
         args.add(EMULATOR_NO_BOOT_ANIM)
+        args.add(EMULATOR_DELAY_ADB)
         if (showEmulatorKernelLogging) {
             args.add(EMULATOR_VERBOSE)
             args.add(EMULATOR_SHOW_KERNEL)
@@ -85,20 +83,16 @@ class EmulatorHandleImpl(private val subprocessComponent: SubprocessComponent) :
 
         val emulatorEnvironment = System.getenv().toMutableMap()
         emulatorEnvironment["ANDROID_AVD_HOME"] = avdFolder
+
+        // Stop the previously running command if exists. If the process was already
+        // terminated, this will be a no-op.
+        processHandle?.destroy()
+
         processHandle = subprocessComponent.subprocess()
             .executeAsync(args, emulatorEnvironment, logger::info, logger::info)
-
-        // In case the processHandle errored out.
-        if (!processHandle.isAlive()) {
-            throw DeviceProviderException(
-                    "Booting the emulator failed. Command was: ${args.joinToString(" ")}"
-            )
-        }
     }
 
     override fun closeInstance() {
-        if (this::processHandle.isInitialized) {
-            processHandle.destroy()
-        }
+        processHandle?.destroy()
     }
 }
