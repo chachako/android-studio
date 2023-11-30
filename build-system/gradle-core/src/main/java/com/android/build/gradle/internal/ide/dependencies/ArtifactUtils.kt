@@ -326,11 +326,11 @@ private fun getAllArtifacts(
 
     val asarJars = collections.asarJarsCollection.asMap { it.file }
 
-    val projectList = collections.projectJars
-
     /** See [ArtifactCollections.projectJars]. */
     val projectJarsMap: ImmutableMultimap<VariantKey, ResolvedArtifactResult> by lazy(LazyThreadSafetyMode.NONE) {
-        projectList.asMultiMap()
+        collections.all.artifacts.filter {
+            it.variant.owner is ProjectComponentIdentifier && it.isJar()
+        }.asMultiMap()
     }
 
     // collect dependency resolution failures
@@ -444,6 +444,9 @@ private fun getAllArtifacts(
     return artifacts
 }
 
+private fun ResolvedArtifactResult.isJar() =
+        variant.attributes.getAttribute(AndroidArtifacts.ARTIFACT_TYPE) == AndroidArtifacts.ArtifactType.JAR.type
+
 /**
  * Checks whether a local project library is and Android one.
  *
@@ -458,10 +461,10 @@ private fun ResolvedArtifactResult.isAndroidProjectLibrary() =
  *
  * e.g. see `AppWithClassifierDepTest`
  */
-private fun ArtifactCollection.asMultiMap(): ImmutableMultimap<VariantKey, ResolvedArtifactResult> {
+private fun Iterable<ResolvedArtifactResult>.asMultiMap(): ImmutableMultimap<VariantKey, ResolvedArtifactResult> {
     return ImmutableMultimap.builder<VariantKey, ResolvedArtifactResult>()
         .also { builder ->
-            for (artifact in artifacts) {
+            for (artifact in this) {
                 builder.put(artifact.variant.toKey(), artifact)
             }
         }.build()
