@@ -70,6 +70,76 @@ class JsonSerializationTest {
     }
 
     @Test
+    fun testJsonToScreenshots() {
+        // language=json
+        val jsonString = """
+            {
+              "screenshots": [
+                {
+                  "methodFQN": "com.my.package.ClKt.Method1",
+                  "methodParams": [
+                    {
+                      "provider": "com.my.package2.SomeParameterProvider"
+                    }
+                  ],
+                  "previewParams": {
+                    "name": "Dark theme",
+                    "uiMode": "32"
+                  },
+                  "imageName": "/path/to/image/pattern/name"
+                },
+                {
+                  "methodFQN": "com.my.package.Cl2Kt.Method3",
+                  "methodParams": [],
+                  "previewParams": {
+                    "name": "Light theme"
+                  },
+                  "imageName": "/path/to/image/pattern/name"
+                },
+                {
+                  "methodFQN": "com.my.package.Cl3Kt.Method5",
+                  "methodParams": [
+                    {
+                      "provider": "com.my.package2.SomeOtherParameterProvider"
+                    }
+                  ],
+                  "previewParams": {},
+                  "imageName": "/path/to/image/pattern/name"
+                }
+              ]
+            }
+        """.trimIndent()
+
+
+        val screenshots = readComposeScreenshotsJson(jsonString.reader())
+
+        assertEquals(
+            listOf(
+                ComposeScreenshot(
+                    "com.my.package.ClKt.Method1",
+                    listOf(mapOf("provider" to "com.my.package2.SomeParameterProvider")),
+                    mapOf("name" to "Dark theme", "uiMode" to "32"),
+                    "/path/to/image/pattern/name",
+                ),
+                ComposeScreenshot(
+                    "com.my.package.Cl2Kt.Method3",
+                    emptyList(),
+                    mapOf("name" to "Light theme"),
+                    "/path/to/image/pattern/name",
+                ),
+                ComposeScreenshot(
+                    "com.my.package.Cl3Kt.Method5",
+                    listOf(mapOf("provider" to "com.my.package2.SomeOtherParameterProvider")),
+                    emptyMap(),
+                    "/path/to/image/pattern/name",
+                )
+            ),
+            screenshots
+        )
+
+    }
+
+    @Test
     fun testComposeRenderingToJsonAndBack() {
         val screenshot = ComposeScreenshot(
             "com.my.package.ClKt.Method1",
@@ -89,10 +159,41 @@ class JsonSerializationTest {
 
         val stringWriter = StringWriter()
 
-        writeComposeRenderingToJson(composeRendering, stringWriter)
+        writeComposeRenderingToJson(stringWriter, composeRendering)
 
         val restoredComposeRendering = readComposeRenderingJson(stringWriter.toString().reader())
 
         assertEquals(composeRendering, restoredComposeRendering)
+    }
+
+    @Test
+    fun testScreenshotsToJsonAndBack() {
+        val screenshots = listOf(
+            ComposeScreenshot(
+                "com.my.package.ClKt.Method1",
+                listOf(mapOf("provider" to "com.my.package2.SomeParameterProvider")),
+                mapOf("name" to "Dark theme", "uiMode" to "32"),
+                "/path/to/image/pattern/name",
+            ),
+            ComposeScreenshot(
+                "com.my.package.Cl2Kt.Method3",
+                emptyList(),
+                mapOf("name" to "Light theme"),
+                "/path/to/image/pattern/name",
+            ),
+            ComposeScreenshot(
+                "com.my.package.Cl3Kt.Method5",
+                listOf(mapOf("provider" to "com.my.package2.SomeOtherParameterProvider")),
+                emptyMap(),
+                "/path/to/image/pattern/name",
+            )
+        )
+
+        val stringWriter = StringWriter()
+        writeComposeScreenshotsToJson(stringWriter, screenshots)
+
+        val restoredScreenshots = readComposeScreenshotsJson(stringWriter.toString().reader())
+
+        assertEquals(screenshots, restoredScreenshots)
     }
 }

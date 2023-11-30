@@ -41,7 +41,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
     val classPath = mutableListOf<String>()
     var packageName: String? = null
     var resourceApkPath: String? = null
-    val screenshots = mutableListOf<ComposeScreenshot>()
+    var screenshots: List<ComposeScreenshot>? = null
     JsonReader(jsonReader).use {  reader ->
         reader.beginObject()
         while (reader.hasNext()) {
@@ -59,11 +59,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
                 PACKAGE_NAME -> { packageName = reader.nextString() }
                 RESOURCE_APK_PATH -> { resourceApkPath = reader.nextString() }
                 SCREENSHOTS -> {
-                    reader.beginArray()
-                    while (reader.hasNext()) {
-                        screenshots.add(readComposeScreenshot(reader))
-                    }
-                    reader.endArray()
+                    screenshots = readComposeScreenshots(reader)
                 }
                 else -> {
                     val fieldValue = reader.nextString()
@@ -82,7 +78,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
         classPath,
         packageName ?: throw IllegalArgumentException("Package name"),
         resourceApkPath ?: throw IllegalArgumentException("Resource APK path is missing"),
-        screenshots
+        screenshots ?: emptyList()
     )
 }
 
@@ -127,10 +123,34 @@ private fun readComposeScreenshot(reader: JsonReader): ComposeScreenshot {
     )
 }
 
+private fun readComposeScreenshots(reader: JsonReader): List<ComposeScreenshot> {
+    val screenshots = mutableListOf<ComposeScreenshot>()
+    reader.beginArray()
+    while (reader.hasNext()) {
+        screenshots.add(readComposeScreenshot(reader))
+    }
+    reader.endArray()
+    return screenshots
+}
+
+/** Reads a list of [ComposeScreenshot] from a [JsonReader]. */
+fun readComposeScreenshotsJson(jsonReader: Reader): List<ComposeScreenshot> {
+    return JsonReader(jsonReader).use { reader ->
+        reader.beginObject()
+        val screenshotsEntryName = reader.nextName()
+        if (screenshotsEntryName != SCREENSHOTS) {
+            throw IllegalArgumentException("$SCREENSHOTS entry is missing")
+        }
+        val results = readComposeScreenshots(reader)
+        reader.endObject()
+        results
+    }
+}
+
 /** Serializes [composeRendering] to [jsonWriter] in JSON format. */
 fun writeComposeRenderingToJson(
-    composeRendering: ComposeRendering,
     jsonWriter: Writer,
+    composeRendering: ComposeRendering,
 ) {
     JsonWriter(jsonWriter).use { writer ->
         writer.setIndent("  ")
@@ -145,16 +165,12 @@ fun writeComposeRenderingToJson(
         writer.name(PACKAGE_NAME).value(composeRendering.packageName)
         writer.name(RESOURCE_APK_PATH).value(composeRendering.resourceApkPath)
         writer.name(SCREENSHOTS)
-        writer.beginArray()
-        composeRendering.screenshots.forEach {
-            writeComposeScreenshotToJson(it, writer)
-        }
-        writer.endArray()
+        writeComposeScreenshots(writer, composeRendering.screenshots)
         writer.endObject()
     }
 }
 
-private fun writeComposeScreenshotToJson(screenshot: ComposeScreenshot, writer: JsonWriter) {
+private fun writeComposeScreenshot(writer: JsonWriter, screenshot: ComposeScreenshot) {
     writer.beginObject()
     writer.name(METHOD_FQN).value(screenshot.methodFQN)
     writer.name(METHOD_PARAMS)
@@ -175,4 +191,26 @@ private fun writeComposeScreenshotToJson(screenshot: ComposeScreenshot, writer: 
     writer.endObject()
     writer.name(IMAGE_NAME).value(screenshot.imageName)
     writer.endObject()
+}
+
+private fun writeComposeScreenshots(writer: JsonWriter, screenshots: List<ComposeScreenshot>) {
+    writer.beginArray()
+    screenshots.forEach {
+        writeComposeScreenshot(writer, it)
+    }
+    writer.endArray()
+}
+
+/** Writes a list of [ComposeScreenshot] to a [Writer] as a json array. */
+fun writeComposeScreenshotsToJson(
+    jsonWriter: Writer,
+    screenshots: List<ComposeScreenshot>
+) {
+    JsonWriter(jsonWriter).use { writer ->
+        writer.setIndent("  ")
+        writer.beginObject()
+        writer.name(SCREENSHOTS)
+        writeComposeScreenshots(writer, screenshots)
+        writer.endObject()
+    }
 }
