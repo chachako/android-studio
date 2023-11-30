@@ -570,7 +570,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         XmlDocument resultDocument = result.get();
 
@@ -620,7 +621,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         XmlDocument resultDocument = result.get();
 
@@ -671,7 +673,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         // run the instruction cleaner to get rid of all unwanted attributes, nodes.
         ToolsInstructionsCleaner.cleanToolsReferences(
@@ -722,7 +725,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         XmlDocument resultDocument = result.get();
 
@@ -777,7 +781,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         XmlDocument resultDocument = result.get();
 
@@ -832,7 +837,7 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        refDocument.merge(otherDocument, mergingReportBuilder);
+        refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertEquals(MergingReport.Result.ERROR, mergingReportBuilder.build().getResult());
         ImmutableList<MergingReport.Record> loggingRecords = mergingReportBuilder.build()
                 .getLoggingRecords();
@@ -880,7 +885,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         Optional<XmlElement> activityOptional = result.get().getRootNode()
                 .getNodeByTypeAndKey(ManifestModel.NodeTypes.ACTIVITY,
@@ -934,7 +940,7 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        refDocument.merge(otherDocument, mergingReportBuilder);
+        refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertEquals(MergingReport.Result.ERROR, mergingReportBuilder.build().getResult());
         ImmutableList<MergingReport.Record> loggingRecords = mergingReportBuilder.build()
                 .getLoggingRecords();
@@ -981,7 +987,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         Optional<XmlElement> activityOptional = result.get().getRootNode()
                 .getNodeByTypeAndKey(ManifestModel.NodeTypes.ACTIVITY,
@@ -1034,7 +1041,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertFalse(result.isPresent());
         ImmutableList<MergingReport.Record> loggingRecords = mergingReportBuilder.build()
                 .getLoggingRecords();
@@ -1082,7 +1090,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         XmlElement applicationElement = result.get().getRootNode().getMergeableElements().get(0);
         assertEquals(3, applicationElement.getAttributes().size());
@@ -1134,7 +1143,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         XmlElement applicationElement = result.get().getRootNode().getMergeableElements().get(0);
         assertEquals(3, applicationElement.getAttributes().size());
@@ -1187,7 +1197,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         Optional<XmlElement> activityOptional = result.get().getRootNode()
                 .getNodeByTypeAndKey(ManifestModel.NodeTypes.ACTIVITY,
@@ -1237,7 +1248,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         Optional<XmlElement> activityOptional = result.get().getRootNode()
@@ -1281,7 +1293,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         Optional<XmlElement> activityOptional = result.get().getRootNode()
@@ -1325,7 +1338,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         Optional<XmlElement> activityOptional = result.get().getRootNode()
@@ -1375,7 +1389,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()
@@ -1418,7 +1433,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()
@@ -1457,7 +1473,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()
@@ -1504,7 +1521,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         Optional<XmlElement> activityOne = result.get().getRootNode().getNodeByTypeAndKey(
@@ -1603,9 +1621,10 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(firstLibrary, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(firstLibrary, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
-        result = result.get().merge(secondLibrary, mergingReportBuilder);
+        result = result.get().merge(secondLibrary, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()
@@ -1670,9 +1689,10 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(firstLibrary, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(firstLibrary, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
-        result = result.get().merge(secondLibrary, mergingReportBuilder);
+        result = result.get().merge(secondLibrary, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()
@@ -1722,7 +1742,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(firstLibrary, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(firstLibrary, mergingReportBuilder, () -> {});
         assertFalse(result.isPresent());
 
         ImmutableList<MergingReport.Record> loggingRecords = mergingReportBuilder.build()
@@ -1798,9 +1819,10 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(firstLibrary, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(firstLibrary, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
-        result = result.get().merge(secondLibrary, mergingReportBuilder);
+        result = result.get().merge(secondLibrary, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()
@@ -1878,7 +1900,8 @@ public class XmlElementTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(firstLibrary, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(firstLibrary, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()

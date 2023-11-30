@@ -119,7 +119,8 @@ public class XmlAttributeTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         XmlDocument resultDocument = result.get();
 
@@ -180,7 +181,8 @@ public class XmlAttributeTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         XmlDocument resultDocument = result.get();
 
@@ -229,7 +231,8 @@ public class XmlAttributeTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         XmlDocument resultDocument = result.get();
 
@@ -292,10 +295,11 @@ public class XmlAttributeTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = highPriority.merge(lowPriority, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                highPriority.merge(lowPriority, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         XmlDocument resultDocument = result.get();
-        result = resultDocument.merge(lowestPriority, mergingReportBuilder);
+        result = resultDocument.merge(lowestPriority, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
         resultDocument = result.get();
 
@@ -370,7 +374,8 @@ public class XmlAttributeTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
     }
@@ -407,7 +412,8 @@ public class XmlAttributeTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         Optional<XmlElement> activityOne = result.get().getRootNode()
@@ -459,7 +465,8 @@ public class XmlAttributeTest extends TestCase {
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
                 new StdLogger(StdLogger.Level.VERBOSE));
-        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        Optional<XmlDocument> result =
+                refDocument.merge(otherDocument, mergingReportBuilder, () -> {});
         assertTrue(result.isPresent());
 
         Optional<XmlElement> activityOne = result.get().getRootNode()

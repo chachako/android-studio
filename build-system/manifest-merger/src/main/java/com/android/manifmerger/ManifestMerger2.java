@@ -1181,7 +1181,8 @@ public class ManifestMerger2 {
                             !mOptionalFeatures.contains(
                                     Invoker.Feature.NO_IMPLICIT_PERMISSION_ADDITION),
                             mOptionalFeatures.contains(Invoker.Feature.DISABLE_MINSDKLIBRARY_CHECK),
-                            mOptionalFeatures.contains(Invoker.Feature.KEEP_GOING_AFTER_ERRORS));
+                            mOptionalFeatures.contains(Invoker.Feature.KEEP_GOING_AFTER_ERRORS),
+                            mProcessCancellationChecker);
         } else {
             // exhaustiveSearch is true in recordAddedNodeAction() below because some of this
             // manifest's nodes might have already been recorded from the loading of

@@ -160,19 +160,22 @@ public class XmlDocument {
      *
      * @param lowerPriorityDocument the lower priority document to merge in.
      * @param mergingReportBuilder the merging report to record errors and actions.
+     * @param processCancellationChecker checks if the request to merge is cancelled.
      * @return a new merged {@link XmlDocument} or {@link Optional#empty()} if there were errors
      *     during the merging activities.
      */
     @NonNull
     public Optional<XmlDocument> merge(
             @NonNull XmlDocument lowerPriorityDocument,
-            @NonNull MergingReport.Builder mergingReportBuilder) {
+            @NonNull MergingReport.Builder mergingReportBuilder,
+            ManifestMerger2.ProcessCancellationChecker processCancellationChecker) {
         return merge(
                 lowerPriorityDocument,
                 mergingReportBuilder,
                 true /* addImplicitPermissions */,
                 false /* disableMinSdkVersionCheck */,
-                false /* keepGoingOnErrors */);
+                false /* keepGoingOnErrors */,
+                processCancellationChecker);
     }
 
     /**
@@ -181,6 +184,7 @@ public class XmlDocument {
      * @param lowerPriorityDocument the lower priority document to merge in.
      * @param mergingReportBuilder the merging report to record errors and actions.
      * @param addImplicitPermissions whether to perform implicit permission addition.
+     * @param processCancellationChecker checks if the request to merge is cancelled.
      * @return a new merged {@link XmlDocument} or {@link Optional#empty()} if there were errors
      *     during the merging activities.
      */
@@ -190,8 +194,8 @@ public class XmlDocument {
             @NonNull MergingReport.Builder mergingReportBuilder,
             boolean addImplicitPermissions,
             boolean disableMinSdkVersionCheck,
-            boolean keepGoingOnErrors) {
-
+            boolean keepGoingOnErrors,
+            ManifestMerger2.ProcessCancellationChecker processCancellationChecker) {
         if (getFileType() == Type.MAIN) {
             mergingReportBuilder.getActionRecorder().recordAddedNodeAction(getRootNode(), false);
         }
@@ -204,7 +208,9 @@ public class XmlDocument {
 
         getRootNode()
                 .mergeWithLowerPriorityNode(
-                        lowerPriorityDocument.getRootNode(), mergingReportBuilder);
+                        lowerPriorityDocument.getRootNode(),
+                        mergingReportBuilder,
+                        processCancellationChecker);
         addImplicitElements(mergingReportBuilder.getActionRecorder(), implicitElements);
 
         return mergingReportBuilder.hasErrors() && !keepGoingOnErrors

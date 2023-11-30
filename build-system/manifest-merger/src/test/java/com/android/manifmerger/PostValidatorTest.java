@@ -85,7 +85,7 @@ public class PostValidatorTest extends TestCase {
                 loadXmlDoc(TestUtils.sourceFile(getClass(), "testIncorrectRemoveLib"), library);
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(mILogger);
-        mainDocument.merge(libraryDocument, mergingReportBuilder);
+        mainDocument.merge(libraryDocument, mergingReportBuilder, () -> {});
 
         PostValidator.validate(mainDocument, mergingReportBuilder);
         for (MergingReport.Record record : mergingReportBuilder.build().getLoggingRecords()) {
@@ -134,7 +134,7 @@ public class PostValidatorTest extends TestCase {
                 loadXmlDoc(TestUtils.sourceFile(getClass(), "testIncorrectReplaceLib"), library);
 
         MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(mILogger);
-        mainDocument.merge(libraryDocument, mergingReportBuilder);
+        mainDocument.merge(libraryDocument, mergingReportBuilder, () -> {});
 
         PostValidator.validate(mainDocument, mergingReportBuilder);
         for (MergingReport.Record record : mergingReportBuilder.build().getLoggingRecords()) {

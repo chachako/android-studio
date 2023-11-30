@@ -506,20 +506,21 @@ public class XmlElement extends OrphanXmlElement {
         return mDocument.getSourceFile();
     }
 
-
     /**
      * Merge this xml element with a lower priority node.
      *
-     * For now, attributes will be merged. If present on both xml elements, a warning will be
+     * <p>For now, attributes will be merged. If present on both xml elements, a warning will be
      * issued and the attribute merge will be rejected.
      *
      * @param lowerPriorityNode lower priority Xml element to merge with.
      * @param mergingReport the merging report to log errors and actions.
+     * @param processCancellationChecker checks if the request to merge is cancelled.
      */
     public void mergeWithLowerPriorityNode(
             @NonNull XmlElement lowerPriorityNode,
-            @NonNull MergingReport.Builder mergingReport) {
-
+            @NonNull MergingReport.Builder mergingReport,
+            ManifestMerger2.ProcessCancellationChecker processCancellationChecker) {
+        processCancellationChecker.check();
         if (mSelectorsAndMergeRuleMarkers.getSelector() != null
                 && !mSelectorsAndMergeRuleMarkers
                         .getSelector()
@@ -565,6 +566,7 @@ public class XmlElement extends OrphanXmlElement {
 
             // merge explicit attributes from lower priority node.
             for (XmlAttribute lowerPriorityAttribute : lowerPriorityNode.getAttributes()) {
+                processCancellationChecker.check();
                 lowerPriorityAttribute.mergeInHigherPriorityElement(this, mergingReport);
                 if (lowerPriorityAttribute.getModel() != null) {
                     attributeModels.remove(lowerPriorityAttribute.getModel());
@@ -573,6 +575,7 @@ public class XmlElement extends OrphanXmlElement {
             // merge implicit default values from lower priority node when we have an explicit
             // attribute declared on this node.
             for (AttributeModel attributeModel : attributeModels) {
+                processCancellationChecker.check();
                 if (attributeModel.getDefaultValue() != null) {
                     Optional<XmlAttribute> myAttribute = getAttribute(attributeModel.getName());
                     myAttribute.ifPresent(
@@ -585,7 +588,7 @@ public class XmlElement extends OrphanXmlElement {
         // are we supposed to merge children ?
         if (mSelectorsAndMergeRuleMarkers.getNodeOperationType()
                 != NodeOperationType.MERGE_ONLY_ATTRIBUTES) {
-            mergeChildren(lowerPriorityNode, mergingReport);
+            mergeChildren(lowerPriorityNode, mergingReport, processCancellationChecker);
         } else {
             // record rejection of the lower priority node's children .
             for (XmlElement lowerPriorityChild : lowerPriorityNode.getMergeableElements()) {
@@ -639,8 +642,10 @@ public class XmlElement extends OrphanXmlElement {
     }
 
     // merge this higher priority node with a lower priority node.
-    public void mergeChildren(@NonNull XmlElement lowerPriorityNode,
-            @NonNull MergingReport.Builder mergingReport) {
+    public void mergeChildren(
+            @NonNull XmlElement lowerPriorityNode,
+            @NonNull MergingReport.Builder mergingReport,
+            @NonNull ManifestMerger2.ProcessCancellationChecker processCancellationChecker) {
 
         // find all the child nodes that matches with the lower priority node's children
         Map<XmlElement, Optional<XmlElement>> matchingChildNodes =
@@ -655,12 +660,15 @@ public class XmlElement extends OrphanXmlElement {
         // if the same node is not defined in this document merge it in.
         // if the same is defined, so far, give an error message.
         for (XmlElement lowerPriorityChild : lowerPriorityNode.getMergeableElements()) {
-
+            processCancellationChecker.check();
             if (shouldIgnore(lowerPriorityChild, mergingReport)) {
                 continue;
             }
             mergeChild(
-                    lowerPriorityChild, mergingReport, matchingChildNodes.get(lowerPriorityChild));
+                    lowerPriorityChild,
+                    mergingReport,
+                    matchingChildNodes.get(lowerPriorityChild),
+                    processCancellationChecker);
         }
     }
 
@@ -690,11 +698,13 @@ public class XmlElement extends OrphanXmlElement {
      * @param mergingReport Merge report to record changes
      * @param thisChildOptional Child of this xml element into which the {@code lowPriorityChild} is
      *     merged.
+     * @param processCancellationChecker checks if the request to merge is cancelled.
      */
     private void mergeChild(
             @NonNull XmlElement lowerPriorityChild,
             @NonNull MergingReport.Builder mergingReport,
-            Optional<XmlElement> thisChildOptional) {
+            Optional<XmlElement> thisChildOptional,
+            ManifestMerger2.ProcessCancellationChecker processCancellationChecker) {
 
         ILogger logger = mergingReport.getLogger();
 
@@ -753,7 +763,8 @@ public class XmlElement extends OrphanXmlElement {
                 break;
             default:
                 // 2 nodes exist, some merging need to happen
-                handleTwoElementsExistence(thisChild, lowerPriorityChild, mergingReport);
+                handleTwoElementsExistence(
+                        thisChild, lowerPriorityChild, mergingReport, processCancellationChecker);
                 break;
         }
     }
@@ -872,19 +883,21 @@ public class XmlElement extends OrphanXmlElement {
     }
 
     /**
-     * Handle 2 elements (of same identity) merging.
-     * higher priority one has a tools:node="remove", remove the low priority one
-     * higher priority one has a tools:node="replace", replace the low priority one
-     * higher priority one has a tools:node="strict", flag the error if not equals.
+     * Handle 2 elements (of same identity) merging. higher priority one has a tools:node="remove",
+     * remove the low priority one higher priority one has a tools:node="replace", replace the low
+     * priority one higher priority one has a tools:node="strict", flag the error if not equals.
      * default or tools:node="merge", merge the two elements.
+     *
      * @param higherPriority the higher priority node.
      * @param lowerPriority the lower priority element.
      * @param mergingReport the merging report to log errors and actions.
+     * @param processCancellationChecker checks if the request to merge is cancelled.
      */
     private void handleTwoElementsExistence(
             @NonNull XmlElement higherPriority,
             @NonNull XmlElement lowerPriority,
-            @NonNull MergingReport.Builder mergingReport) {
+            @NonNull MergingReport.Builder mergingReport,
+            @NonNull ManifestMerger2.ProcessCancellationChecker processCancellationChecker) {
 
         @NonNull NodeOperationType operationType = calculateNodeOperationType(higherPriority, lowerPriority);
         // 2 nodes exist, 3 possibilities :
@@ -898,7 +911,8 @@ public class XmlElement extends OrphanXmlElement {
                 mergingReport.getActionRecorder().recordNodeAction(higherPriority,
                         Actions.ActionType.MERGED, lowerPriority);
                 // and perform the merge
-                higherPriority.mergeWithLowerPriorityNode(lowerPriority, mergingReport);
+                higherPriority.mergeWithLowerPriorityNode(
+                        lowerPriority, mergingReport, processCancellationChecker);
                 break;
             case REMOVE:
             case REPLACE:
