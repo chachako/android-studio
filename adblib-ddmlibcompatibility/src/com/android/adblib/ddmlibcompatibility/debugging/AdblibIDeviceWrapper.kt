@@ -461,24 +461,28 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun createReverse(remotePort: Int, localPort: Int) {
-        runBlockingLegacy {
-            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-            connectedDevice.session.deviceServices.reverseForward(
-                deviceSelector,
-                remote = SocketSpec.Tcp(remotePort),
-                local = SocketSpec.Tcp(localPort),
-                rebind = true
-            )
+        logUsage(IDeviceUsageTracker.Method.CREATE_REVERSE) {
+            runBlockingLegacy {
+                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                connectedDevice.session.deviceServices.reverseForward(
+                    deviceSelector,
+                    remote = SocketSpec.Tcp(remotePort),
+                    local = SocketSpec.Tcp(localPort),
+                    rebind = true
+                )
+            }
         }
     }
 
     override fun removeReverse(remotePort: Int) {
-        runBlockingLegacy {
-            val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-            connectedDevice.session.deviceServices.reverseKillForward(
-                deviceSelector,
-                remote = SocketSpec.Tcp(remotePort)
-            )
+        logUsage(IDeviceUsageTracker.Method.REMOVE_REVERSE) {
+            runBlockingLegacy {
+                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                connectedDevice.session.deviceServices.reverseKillForward(
+                    deviceSelector,
+                    remote = SocketSpec.Tcp(remotePort)
+                )
+            }
         }
     }
 

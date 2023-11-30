@@ -1021,20 +1021,28 @@ public final class DeviceImpl implements IDevice {
     @Override
     public void createReverse(int remotePort, int localPort)
             throws TimeoutException, AdbCommandRejectedException, IOException {
-        AdbHelper.createReverse(
-                AndroidDebugBridge.getSocketAddress(),
-                this,
-                String.format(Locale.US, "tcp:%d", localPort), //$NON-NLS-1$
-                String.format(Locale.US, "tcp:%d", remotePort)); //$NON-NLS-1$
+        logRun2(
+                IDeviceUsageTracker.Method.CREATE_REVERSE,
+                () ->
+                        AdbHelper.createReverse(
+                                AndroidDebugBridge.getSocketAddress(),
+                                this,
+                                String.format(Locale.US, "tcp:%d", localPort), // $NON-NLS-1$
+                                String.format(Locale.US, "tcp:%d", remotePort)) // $NON-NLS-1$
+                );
     }
 
     @Override
     public void removeReverse(int remotePort)
             throws TimeoutException, AdbCommandRejectedException, IOException {
-        AdbHelper.removeReverse(
-                AndroidDebugBridge.getSocketAddress(),
-                this,
-                String.format(Locale.US, "tcp:%d", remotePort)); //$NON-NLS-1$
+        logRun2(
+                IDeviceUsageTracker.Method.REMOVE_REVERSE,
+                () ->
+                        AdbHelper.removeReverse(
+                                AndroidDebugBridge.getSocketAddress(),
+                                this,
+                                String.format(Locale.US, "tcp:%d", remotePort)) // $NON-NLS-1$
+                );
     }
 
     // @VisibleForTesting

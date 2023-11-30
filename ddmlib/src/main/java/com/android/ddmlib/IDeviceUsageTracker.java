@@ -81,6 +81,8 @@ public interface IDeviceUsageTracker {
         RAW_EXEC2,
         STAT_FILE,
         UNSUPPORTED_METHOD,
+        CREATE_REVERSE,
+        REMOVE_REVERSE
     }
 
     void logUsage(Method method, boolean isException);
