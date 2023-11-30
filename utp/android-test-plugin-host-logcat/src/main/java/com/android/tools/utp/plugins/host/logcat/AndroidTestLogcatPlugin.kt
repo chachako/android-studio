@@ -27,35 +27,45 @@ import com.google.testing.platform.api.plugin.sendIssue
 import com.google.testing.platform.api.plugin.sendTestResultUpdate
 import com.google.testing.platform.lib.logging.jvm.getLogger
 import com.google.testing.platform.proto.api.core.IssueProto
-import com.google.testing.platform.proto.api.core.TestArtifactProto
 import com.google.testing.platform.proto.api.core.TestCaseProto.TestCase
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import com.google.testing.platform.runtime.android.controller.ext.deviceShell
 import java.io.BufferedWriter
 import java.io.File
-import java.util.Collections
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Logger
 
 /**
  * This plugin updates [TestSuiteResult] proto with logcat artifacts
  */
 class AndroidTestLogcatPlugin(
-    private val logger: Logger = getLogger()) : HostPluginAdapter() {
+    private val logger: Logger = getLogger(),
+    private val logcatTimeoutSeconds: Long = LOGCAT_TIMEOUT_SECONDS,
+        ) : HostPluginAdapter() {
 
     // Empty companion object is needed to call getLogger() method
     // from the constructor's default parameter. If you remove it,
     // the Kotlin compiler fails with an error.
     companion object {
         private const val TEST_CRASH_INDICATOR = "E AndroidRuntime: "
+        private const val LOGCAT_TIMEOUT_SECONDS = 10L
     }
 
     private lateinit var outputDir: String
-    private lateinit var tempLogcatFile: File
-    private lateinit var tempLogcatWriter: BufferedWriter
+
+    private val logcatTextProcessFinished: CountDownLatch = CountDownLatch(1)
+    private val processedLogcatNum: AtomicInteger = AtomicInteger(0)
+    private val allTestFinished: AtomicBoolean = AtomicBoolean(false)
+    private val expectedTestCaseNum: AtomicInteger = AtomicInteger(0)
+
+    private val currentLogcatLock: Any = Object()
+    private var currentLogcatFile: File? = null
+    private var currentLogcatWriter: BufferedWriter? = null
+
     private lateinit var logcatCommandHandle: CommandHandle
     private lateinit var crashLogcatFile: File
     private lateinit var crashLogcatWriter: BufferedWriter
@@ -67,7 +77,6 @@ class AndroidTestLogcatPlugin(
     private val crashLogFinished = CountDownLatch(1)
     // Heuristic value for reading 5 lines of logcat message before deciding if there's a crash
     private val logcatCounter = CountDownLatch(5)
-    private var logcatFilePaths: MutableList<String> = Collections.synchronizedList(mutableListOf())
     private var logcatOptions: List<String> = mutableListOf()
     private var crashHappened: AtomicBoolean = AtomicBoolean(false)
 
@@ -89,7 +98,7 @@ class AndroidTestLogcatPlugin(
     }
 
     override fun beforeAll(deviceController: DeviceController) {
-        logger.fine("Start logcat streaming.")
+        logger.info("Start logcat streaming.")
         logcatCommandHandle = startLogcatAsync(deviceController)
     }
 
@@ -103,23 +112,16 @@ class AndroidTestLogcatPlugin(
         deviceController: DeviceController,
         cancelled: Boolean
     ): TestResult {
+        expectedTestCaseNum.incrementAndGet()
         val testCase = testResult.testCase
         val packageName = testCase.testPackage
         val className = testCase.testClass
         val methodName = testCase.testMethod
         return testResult.toBuilder().apply {
-            synchronized (logcatFilePaths) {
-                logcatFilePaths.forEach {
-                    if (it == generateLogcatFileName("$packageName.$className", methodName)) {
-                        addOutputArtifact(
-                                TestArtifactProto.Artifact.newBuilder().apply {
-                                    labelBuilder.label = "logcat"
-                                    labelBuilder.namespace = "android"
-                                    sourcePathBuilder.path = it
-                                }.build()
-                        )
-                    }
-                }
+            addOutputArtifactBuilder().apply {
+                labelBuilder.label = "logcat"
+                labelBuilder.namespace = "android"
+                sourcePathBuilder.path = generateLogcatFileName("$packageName.$className", methodName)
             }
         }.build().also { context.events.sendTestResultUpdate(it) }
     }
@@ -129,13 +131,25 @@ class AndroidTestLogcatPlugin(
         deviceController: DeviceController,
         cancelled: Boolean
     ): TestSuiteResult {
-        var updatedTestSuiteResult = testSuiteResult
+        // If we expect more logcat text to process, we wait until timeout.
+        if (expectedTestCaseNum.get() > processedLogcatNum.get()) {
+            allTestFinished.set(true)
+            if(!logcatTextProcessFinished.await(logcatTimeoutSeconds, TimeUnit.SECONDS)) {
+                logger.warning(
+                        "Failed to retrieve logcat for some test cases. " +
+                        "We retrieved logcat for ${processedLogcatNum.get()} test cases " +
+                        "out of ${expectedTestCaseNum.get()} tests.")
+            }
+        }
+
         // CountDownLatch await with timeout means that the latch will release after timeout.
         // It continues immediately if thread is interrupted or latch reaches 0 before timeout
         // We wait here in case there's a delay in reading logcat message
-        logcatCounter.await(2, TimeUnit.SECONDS)
+        logcatCounter.await(logcatTimeoutSeconds, TimeUnit.SECONDS)
+
+        var updatedTestSuiteResult = testSuiteResult
         if(crashHappened.get()) {
-            crashLogFinished.await(2, TimeUnit.SECONDS)
+            crashLogFinished.await(logcatTimeoutSeconds, TimeUnit.SECONDS)
             val issue = IssueProto.Issue.newBuilder().apply {
                 severity = IssueProto.Issue.Severity.SEVERE
                 message = "Logcat of last crash: \n" +
@@ -144,7 +158,9 @@ class AndroidTestLogcatPlugin(
             updatedTestSuiteResult = testSuiteResult.toBuilder().apply { addIssue(issue) }.build()
             context.events.sendIssue(issue)
         }
+
         stopLogcat()
+
         return updatedTestSuiteResult
     }
 
@@ -194,6 +210,7 @@ class AndroidTestLogcatPlugin(
         var testRunInProgress = false
         return controller.executeAsync(setUpLogcatCommandLine()) { line ->
             logcatCounter.countDown()
+
             // Use regular expression to find start of the logcat for the crash
             // Should be similar to this line:
             // 10-27 15:26:52.863 22058 22058 E AndroidRuntime: Process: com.example.myapplication4, PID: 22058
@@ -203,34 +220,40 @@ class AndroidTestLogcatPlugin(
                 crashHappened.set(true)
                 testPid = line.split(" ").last()
             }
-            if (crashHappened.get() && line.matches(crashLogcatProgressMatcher)){
+            if (crashHappened.get() && line.matches(crashLogcatProgressMatcher)) {
                 crashLogcatWriter.write(line.split(TEST_CRASH_INDICATOR).last())
                 crashLogcatWriter.newLine()
                 crashLogcatWriter.flush()
             }
+
             // Use regular expression to find end of the logcat for the crash
             // Should be similar to this line:
             // 10-27 15:26:52.864 22058 22058 I Process : Sending signal. PID: 22058 SIG: 9
-            if (crashHappened.get() && line.matches(crashLogcatFinishMatcher))
+            if (crashHappened.get() && line.matches(crashLogcatFinishMatcher)) {
                 crashLogFinished.countDown()
+            }
 
             if (line.contains("TestRunner: started: ")) {
                 testRunInProgress = true
                 parseLine(line)
             }
             if (testRunInProgress) {
-                tempLogcatWriter.write(line)
-                tempLogcatWriter.newLine()
-                tempLogcatWriter.flush()
+                synchronized(currentLogcatLock) {
+                    currentLogcatWriter?.write(line)
+                    currentLogcatWriter?.newLine()
+                    currentLogcatWriter?.flush()
+                }
             }
             if (line.contains("TestRunner: finished:")) {
                 testRunInProgress = false
+                closeCurrentLogcatWriter()
             }
         }
     }
 
     /** Stop logcat stream. */
     private fun stopLogcat() {
+        logger.info("Stop logcat streaming.")
         try {
             if (this::logcatCommandHandle.isInitialized) {
                 logcatCommandHandle.stop()
@@ -239,12 +262,7 @@ class AndroidTestLogcatPlugin(
         } catch (t: Throwable) {
             logger.warning("Stopping logcat failed with the following error: $t")
         } finally {
-            if (this::tempLogcatWriter.isInitialized) {
-                tempLogcatWriter.close()
-            }
-            if (this::crashLogcatWriter.isInitialized) {
-                crashLogcatWriter.close()
-            }
+            closeCurrentLogcatWriter()
         }
     }
 
@@ -257,8 +275,27 @@ class AndroidTestLogcatPlugin(
         val testMethod = testPackageClassAndMethodNames[0].trim()
         val testPackageAndClass = testPackageClassAndMethodNames[1].removeSuffix(")")
         val tempFileName = generateLogcatFileName(testPackageAndClass, testMethod)
-        tempLogcatFile = File(tempFileName)
-        logcatFilePaths.add(tempFileName)
-        tempLogcatWriter = tempLogcatFile.outputStream().bufferedWriter()
+
+        synchronized(currentLogcatLock) {
+            closeCurrentLogcatWriter()
+
+            val logcatFile = File(tempFileName)
+            currentLogcatFile = logcatFile
+            currentLogcatWriter = logcatFile.outputStream().bufferedWriter()
+        }
+    }
+
+    private fun closeCurrentLogcatWriter() {
+        synchronized(currentLogcatLock) {
+            if (currentLogcatFile != null) {
+                currentLogcatWriter?.close()
+                currentLogcatWriter = null
+                currentLogcatFile = null
+                processedLogcatNum.incrementAndGet()
+                if (allTestFinished.get() && processedLogcatNum.get() >= expectedTestCaseNum.get()) {
+                    logcatTextProcessFinished.countDown()
+                }
+            }
+        }
     }
 }

@@ -45,7 +45,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mock
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.quality.Strictness
@@ -89,7 +88,6 @@ class AndroidTestLogcatPluginTest {
         10-27 15:30:28.456 22746 22746 E AndroidRuntime: 	... 10 more
         10-27 15:30:28.457 22746 22746 I Process : Sending signal. PID: 22746 SIG: 9
     """.trimIndent()
-    private val testCrashIndicator = "E AndroidRuntime: "
 
     @Before
     fun setUp() {
@@ -98,7 +96,7 @@ class AndroidTestLogcatPluginTest {
         passedTestSuiteResult = TestSuiteResult.newBuilder().apply {
             testStatus = TestStatusProto.TestStatus.PASSED
         }.build()
-        androidTestLogcatPlugin = AndroidTestLogcatPlugin(mockLogger)
+        androidTestLogcatPlugin = AndroidTestLogcatPlugin(mockLogger, logcatTimeoutSeconds = 0L)
 
         `when`(mockContext[eq(Context.CONFIG_KEY)]).thenReturn(mockConfig)
         `when`(mockContext[eq(Context.EVENTS_KEY)]).thenReturn(mockEvents)
@@ -167,16 +165,6 @@ class AndroidTestLogcatPluginTest {
     @Test
     fun canRun_isTrue() {
         assertThat(androidTestLogcatPlugin.canRun()).isTrue()
-    }
-
-    @Test
-    fun doNotDisplayWarningIfAfterAllIsCalledWithoutBeforeAll() {
-        androidTestLogcatPlugin.configure(mockContext)
-        // afterAll() may be invoked without beforeAll() when there is a runtime error
-        // in other UTP plugins.
-        androidTestLogcatPlugin.afterAll(passedTestSuiteResult, mockDeviceController)
-
-        verifyNoInteractions(mockLogger)
     }
 
     @Test
