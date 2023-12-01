@@ -48,9 +48,9 @@ internal class JacocoInstrumentationServiceTest {
         val jacocoVersion = JacocoOptions.DEFAULT_VERSION
         val jacocoJars = listOf(
             "org/jacoco/org.jacoco.core/$jacocoVersion/org.jacoco.core-$jacocoVersion.jar",
-            "org/ow2/asm/asm/9.3/asm-9.3.jar",
-            "org/ow2/asm/asm-commons/9.3/asm-commons-9.3.jar",
-            "org/ow2/asm/asm-tree/9.3/asm-tree-9.3.jar"
+            "org/ow2/asm/asm/9.6/asm-9.6.jar",
+            "org/ow2/asm/asm-commons/9.6/asm-commons-9.6.jar",
+            "org/ow2/asm/asm-tree/9.6/asm-tree-9.6.jar"
         ).map(this::getTestJar)
 
         val instrumented = mockJacocoInstrumentationService.instrument(
