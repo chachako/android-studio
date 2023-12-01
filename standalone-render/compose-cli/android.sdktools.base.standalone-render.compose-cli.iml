@@ -15,5 +15,6 @@
     <orderEntry type="module" module-name="android.sdktools.base.render-resources" />
     <orderEntry type="library" name="intellij-core" level="project" />
     <orderEntry type="module" module-name="android.sdktools.base.standalone-render.compose-cli-serialize" />
+    <orderEntry type="module" module-name="android.sdktools.base.layoutlib-api-base" />
   </component>
 </module>

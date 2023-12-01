@@ -17,15 +17,14 @@
 package com.android.tools.render.compose
 
 /**
- * Information required to run standalone rendering for compose previews defined in [screenshots].
+ * Result of a screenshot creation. It could be either a path to the successful screenshot image or
+ * error or both. The last case happens when we managed to render an image, but we found a number of
+ * problems during its rendering that might have affected the fidelity of the result.
+ * [resultId] is a string that is designed to uniquely identify the screenshot, currently an image
+ * name without extension is used.
  */
-data class ComposeRendering(
-    val sdkPath: String,
-    val layoutlibPath: String,
-    val outputFolder: String,
-    val classPath: List<String>,
-    val packageName: String,
-    val resourceApkPath: String,
-    val screenshots: List<ComposeScreenshot>,
-    val resultsFileName: String = "results.json"
+data class ComposeScreenshotResult(
+    val resultId: String,
+    val imagePath: String?,
+    val error: ScreenshotError?,
 )

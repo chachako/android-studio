@@ -32,6 +32,21 @@ private const val METHOD_FQN = "methodFQN"
 private const val METHOD_PARAMS = "methodParams"
 private const val IMAGE_NAME = "imageName"
 private const val PREVIEW_PARAMS = "previewParams"
+private const val RESULTS_FILE_NAME = "resultsFileName"
+
+private const val RESULT_ID = "resultId"
+private const val GLOBAL_ERROR = "globalError"
+private const val SCREENSHOT_RESULTS = "screenshotResults"
+private const val IMAGE_PATH = "imagePath"
+private const val SCREENSHOT_ERROR = "error"
+private const val STATUS = "status"
+private const val MESSAGE = "message"
+private const val STACKTRACE = "stackTrace"
+private const val PROBLEMS = "problems"
+private const val HTML = "html"
+private const val CLASS_NAME = "className"
+private const val BROKEN_CLASSES = "brokenClasses"
+private const val MISSING_CLASSES = "missingClasses"
 
 /** Reads JSON text from [jsonReader] containing serialized [ComposeRendering]. */
 fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
@@ -42,6 +57,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
     var packageName: String? = null
     var resourceApkPath: String? = null
     var screenshots: List<ComposeScreenshot>? = null
+    var resultsFileName: String? = null
     JsonReader(jsonReader).use {  reader ->
         reader.beginObject()
         while (reader.hasNext()) {
@@ -61,6 +77,9 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
                 SCREENSHOTS -> {
                     screenshots = readComposeScreenshots(reader)
                 }
+                RESULTS_FILE_NAME -> {
+                    resultsFileName = reader.nextString()
+                }
                 else -> {
                     val fieldValue = reader.nextString()
                     println("$fieldName $fieldValue")
@@ -78,7 +97,8 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
         classPath,
         packageName ?: throw IllegalArgumentException("Package name"),
         resourceApkPath ?: throw IllegalArgumentException("Resource APK path is missing"),
-        screenshots ?: emptyList()
+        screenshots ?: emptyList(),
+        resultsFileName ?: "results.json"
     )
 }
 
@@ -211,6 +231,199 @@ fun writeComposeScreenshotsToJson(
         writer.beginObject()
         writer.name(SCREENSHOTS)
         writeComposeScreenshots(writer, screenshots)
+        writer.endObject()
+    }
+}
+
+private fun readScreenshotError(reader: JsonReader): ScreenshotError {
+    var status: String? = null
+    var message: String? = null
+    var stackTrace: String? = null
+    val problems = mutableListOf<RenderProblem>()
+    val brokenClasses = mutableListOf<BrokenClass>()
+    val missingClasses = mutableListOf<String>()
+    reader.beginObject()
+    while (reader.hasNext()) {
+        when (reader.nextName()) {
+            STATUS -> { status = reader.nextString() }
+            MESSAGE -> { message = reader.nextString() }
+            STACKTRACE -> { stackTrace = reader.nextString() }
+            PROBLEMS -> {
+                reader.beginArray()
+                while (reader.hasNext()) {
+                    reader.beginObject()
+                    var html: String? = null
+                    var problemStackTrace: String? = null
+                    while (reader.hasNext()) {
+                        when (reader.nextName()) {
+                            HTML -> { html = reader.nextString() }
+                            STACKTRACE -> { problemStackTrace = reader.nextString() }
+                        }
+                    }
+                    reader.endObject()
+                    problems.add(
+                        RenderProblem(
+                            html ?: throw IllegalArgumentException("HTML is missing"),
+                            problemStackTrace
+                        )
+                    )
+                }
+                reader.endArray()
+            }
+            BROKEN_CLASSES -> {
+                reader.beginArray()
+                while (reader.hasNext()) {
+                    reader.beginObject()
+                    var className: String? = null
+                    var classStackTrace: String? = null
+                    while (reader.hasNext()) {
+                        when (reader.nextName()) {
+                            CLASS_NAME -> { className = reader.nextString() }
+                            STACKTRACE -> { classStackTrace = reader.nextString() }
+                        }
+                    }
+                    brokenClasses.add(
+                        BrokenClass(
+                            className ?: throw IllegalArgumentException("Class name is missing"),
+                            classStackTrace
+                                ?: throw IllegalArgumentException("Stack trace is missing")
+                        )
+                    )
+                    reader.endObject()
+                }
+                reader.endArray()
+            }
+            MISSING_CLASSES -> {
+                reader.beginArray()
+                while (reader.hasNext()) {
+                    missingClasses.add(reader.nextString())
+                }
+                reader.endArray()
+            }
+        }
+    }
+    reader.endObject()
+    return ScreenshotError(
+        status ?: throw IllegalArgumentException("Status is missing"),
+        message ?: throw IllegalArgumentException("Message is missing"),
+        stackTrace ?: throw IllegalArgumentException("Stack trace is missing"),
+        problems,
+        brokenClasses,
+        missingClasses
+    )
+}
+
+private fun readComposeScreenshotResult(reader: JsonReader): ComposeScreenshotResult {
+    var imagePath: String? = null
+    var screenshotError: ScreenshotError? = null
+    var resultId: String? = null
+    reader.beginObject()
+    while (reader.hasNext()) {
+        when (reader.nextName()) {
+            RESULT_ID -> { resultId = reader.nextString() }
+            IMAGE_PATH -> { imagePath = reader.nextString() }
+            SCREENSHOT_ERROR -> {
+                screenshotError = readScreenshotError(reader)
+            }
+        }
+    }
+    reader.endObject()
+    return ComposeScreenshotResult(
+        resultId ?: throw IllegalArgumentException("Result ID is missing"),
+        imagePath,
+        screenshotError
+    )
+}
+
+/** Reads JSON text from [jsonReader] containing serialized [ComposeRenderingResult]. */
+fun readComposeRenderingResultJson(jsonReader: Reader): ComposeRenderingResult {
+    var globalError: String? = null
+    val screenshotResults = mutableListOf<ComposeScreenshotResult>()
+    JsonReader(jsonReader).use { reader ->
+        reader.beginObject()
+        while (reader.hasNext()) {
+            when (reader.nextName()) {
+                GLOBAL_ERROR -> {
+                    globalError = reader.nextString()
+                }
+
+                SCREENSHOT_RESULTS -> {
+                    reader.beginArray()
+                    while (reader.hasNext()) {
+                        screenshotResults.add(
+                            readComposeScreenshotResult(reader)
+                        )
+                    }
+                    reader.endArray()
+                }
+            }
+        }
+        reader.endObject()
+    }
+    return ComposeRenderingResult(globalError, screenshotResults)
+}
+
+private fun writeComposeScreenshotResultToJson(
+    writer: JsonWriter,
+    screenshotResult: ComposeScreenshotResult,
+) {
+    writer.beginObject()
+    writer.name(RESULT_ID).value(screenshotResult.resultId)
+    screenshotResult.imagePath?.let {
+        writer.name(IMAGE_PATH).value(it)
+    }
+    screenshotResult.error?.let { screenshotError ->
+        writer.name(SCREENSHOT_ERROR)
+        writer.beginObject()
+        writer.name(STATUS).value(screenshotError.status)
+        writer.name(MESSAGE).value(screenshotError.message)
+        writer.name(STACKTRACE).value(screenshotError.stackTrace)
+        writer.name(PROBLEMS)
+        writer.beginArray()
+        screenshotError.problems.forEach { problem ->
+            writer.beginObject()
+            writer.name(HTML).value(problem.html)
+            problem.stackTrace?.let {
+                writer.name(STACKTRACE).value(it)
+            }
+            writer.endObject()
+        }
+        writer.endArray()
+        writer.name(BROKEN_CLASSES)
+        writer.beginArray()
+        screenshotError.brokenClasses.forEach {
+            writer.beginObject()
+            writer.name(CLASS_NAME).value(it.className)
+            writer.name(STACKTRACE).value(it.stackTrace)
+            writer.endObject()
+        }
+        writer.endArray()
+        writer.name(MISSING_CLASSES)
+        writer.beginArray()
+        screenshotError.missingClasses.forEach { writer.value(it) }
+        writer.endArray()
+        writer.endObject()
+    }
+    writer.endObject()
+}
+
+/** Serializes [ComposeRenderingResult] to a [jsonWriter] in JSON format. */
+fun writeComposeRenderingResult(
+    jsonWriter: Writer,
+    composeRenderingResult: ComposeRenderingResult,
+) {
+    JsonWriter(jsonWriter).use { writer ->
+        writer.setIndent("  ")
+        writer.beginObject()
+        composeRenderingResult.globalError?.let {
+            writer.name(GLOBAL_ERROR).value(it)
+        }
+        writer.name(SCREENSHOT_RESULTS)
+        writer.beginArray()
+        composeRenderingResult.screenshotResults.forEach { screenshotResult ->
+            writeComposeScreenshotResultToJson(writer, screenshotResult)
+        }
+        writer.endArray()
         writer.endObject()
     }
 }

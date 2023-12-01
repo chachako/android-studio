@@ -196,4 +196,194 @@ class JsonSerializationTest {
 
         assertEquals(screenshots, restoredScreenshots)
     }
+
+    @Test
+    fun testJsonToComposeRenderingResult_GlobalError() {
+        // language=json
+        val jsonString = """
+            {
+              "globalError": "Error message\nStack trace line 1\nStackTrace line 2"
+            }
+        """.trimIndent()
+
+        val composeRenderingResult = readComposeRenderingResultJson(jsonString.reader())
+
+        val expectedComposeRenderingResult = ComposeRenderingResult(
+            """
+                Error message
+                Stack trace line 1
+                StackTrace line 2
+            """.trimIndent(),
+            emptyList()
+        )
+
+        assertEquals(expectedComposeRenderingResult, composeRenderingResult)
+    }
+
+    @Test
+    fun testJsonToComposeRenderingResult_ScreenshotResults() {
+        // language=json
+        val jsonString = """
+            {
+              "screenshotResults": [
+                {
+                  "resultId": "resultId1",
+                  "imagePath": "/path/to/image.png"
+                },
+                {
+                  "resultId": "resultId2",
+                  "error": {
+                      "status": "ERROR_RENDER_TASK",
+                      "message": "Error message",
+                      "stackTrace": "Error message\nStack trace line 1\nStackTrace line 2",
+                      "problems": [],
+                      "brokenClasses": [],
+                      "missingClasses": []
+                  }
+                },
+                {
+                  "resultId": "resultId3",
+                  "error": {
+                      "status": "SUCCESS",
+                      "message": "",
+                      "stackTrace": "",
+                      "problems": [
+                        {
+                          "html": "<html>Some error description</html>"
+                        },
+                        {
+                          "html": "<html>Some other error description</html>",
+                          "stackTrace": "Other error message\nStack trace line 1\nStackTrace line 2"
+                        }
+                      ],
+                      "brokenClasses": [
+                        {
+                          "className": "com.baz.Qwe",
+                          "stackTrace": "Error message\nStack trace line 1\nStackTrace line 2"
+                        }
+                      ],
+                      "missingClasses": ["com.foo.Bar"]
+                  },
+                  "imagePath": "/path/to/image3.png"
+                }
+              ]
+            }
+        """.trimIndent()
+
+        val composeRenderingResult = readComposeRenderingResultJson(jsonString.reader())
+
+        val expectedComposeRenderingResult = ComposeRenderingResult(
+            null,
+            listOf(
+                ComposeScreenshotResult("resultId1", "/path/to/image.png", null),
+                ComposeScreenshotResult("resultId2", null, ScreenshotError(
+                    "ERROR_RENDER_TASK",
+                    "Error message",
+                    """
+                        Error message
+                        Stack trace line 1
+                        StackTrace line 2
+                    """.trimIndent(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                )),
+                ComposeScreenshotResult("resultId3", "/path/to/image3.png", ScreenshotError(
+                    "SUCCESS", "", "",
+                    listOf(
+                        RenderProblem("<html>Some error description</html>", null),
+                        RenderProblem(
+                            "<html>Some other error description</html>",
+                            """
+                                Other error message
+                                Stack trace line 1
+                                StackTrace line 2
+                            """.trimIndent())
+                    ),
+                    listOf(BrokenClass(
+                        "com.baz.Qwe",
+                        """
+                            Error message
+                            Stack trace line 1
+                            StackTrace line 2
+                        """.trimIndent(),
+                    )),
+                    listOf("com.foo.Bar"),
+                )),
+            )
+        )
+
+        assertEquals(expectedComposeRenderingResult, composeRenderingResult)
+    }
+
+    @Test
+    fun testComposeRenderingResultToJsonAndBack_GlobalError() {
+        val composeRenderingResult = ComposeRenderingResult(
+            """
+                Error message
+                Stack trace line 1
+                StackTrace line 2
+            """.trimIndent(),
+            emptyList()
+        )
+
+        val stringWriter = StringWriter()
+        writeComposeRenderingResult(stringWriter, composeRenderingResult)
+
+        val restoredComposeRenderingResult = readComposeRenderingResultJson(stringWriter.toString().reader())
+
+        assertEquals(composeRenderingResult, restoredComposeRenderingResult)
+    }
+
+    @Test
+    fun testComposeRenderingResultToJsonAndBack_ScreenshotResults() {
+        val composeRenderingResult = ComposeRenderingResult(
+            null,
+            listOf(
+                ComposeScreenshotResult("resultId1", "/path/to/image.png", null),
+                ComposeScreenshotResult("resultId2", null, ScreenshotError(
+                    "ERROR_RENDER_TASK",
+                    "Error message",
+                    """
+                        Error message
+                        Stack trace line 1
+                        StackTrace line 2
+                    """.trimIndent(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                )),
+                ComposeScreenshotResult("resultId3", "/path/to/image3.png", ScreenshotError(
+                    "SUCCESS", "", "",
+                    listOf(
+                        RenderProblem("<html>Some error description</html>", null),
+                        RenderProblem(
+                            "<html>Some other error description</html>",
+                            """
+                                Other error message
+                                Stack trace line 1
+                                StackTrace line 2
+                            """.trimIndent())
+                    ),
+                    listOf(BrokenClass(
+                        "com.baz.Qwe",
+                        """
+                            Error message
+                            Stack trace line 1
+                            StackTrace line 2
+                        """.trimIndent(),
+                    )),
+                    listOf("com.foo.Bar"),
+                )),
+            )
+        )
+
+        val stringWriter = StringWriter()
+        writeComposeRenderingResult(stringWriter, composeRenderingResult)
+
+        val restoredComposeRenderingResult = readComposeRenderingResultJson(stringWriter.toString().reader())
+
+
+        assertEquals(composeRenderingResult, restoredComposeRenderingResult)
+    }
 }

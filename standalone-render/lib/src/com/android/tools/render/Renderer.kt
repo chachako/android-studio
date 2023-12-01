@@ -178,11 +178,10 @@ internal fun renderImpl(
             resourceIdManager,
         )
 
-        val logger = RenderLogger()
-
         renderRequests.forEach { request ->
             request.configurationModifier(configuration)
             request.xmlLayoutsProvider().forEachIndexed { i, layout ->
+                val logger = RenderLogger()
                 val result = try {
                     val renderTask = RenderService { }.taskBuilder(module, configuration, logger)
                         .disableDecorations()

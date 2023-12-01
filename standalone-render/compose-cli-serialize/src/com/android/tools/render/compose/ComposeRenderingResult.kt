@@ -16,16 +16,8 @@
 
 package com.android.tools.render.compose
 
-/**
- * Information required to run standalone rendering for compose previews defined in [screenshots].
- */
-data class ComposeRendering(
-    val sdkPath: String,
-    val layoutlibPath: String,
-    val outputFolder: String,
-    val classPath: List<String>,
-    val packageName: String,
-    val resourceApkPath: String,
-    val screenshots: List<ComposeScreenshot>,
-    val resultsFileName: String = "results.json"
+data class ComposeRenderingResult(
+    // Exception that is not bound to a particular screenshot
+    val globalError: String?,
+    val screenshotResults: List<ComposeScreenshotResult>
 )
