@@ -62,6 +62,7 @@ kotlin_test(
     jvm_flags = [
         "-Dtest.suite.jar=agent_tests.jar",
     ],
+    lint_baseline = "lint_baseline.xml",
     test_class = "com.android.testutils.JarTestSuite",
     runtime_deps = [
         "//prebuilts/studio/sdk:platforms/latest_runtime_jar",

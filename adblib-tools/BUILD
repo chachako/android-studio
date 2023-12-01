@@ -29,6 +29,7 @@ kotlin_library(
     friends = [
         "//tools/base/adblib:adblib",
     ],
+    lint_baseline = "lint_baseline_tools.xml",
     resource_strip_prefix = "tools/base/adblib.tools",
     visibility = ["//visibility:public"],
     deps = [

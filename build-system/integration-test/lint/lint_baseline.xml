@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
+
+    <issue
+        id="StopShip"
+        message="`STOPSHIP` comment found; points to code which must be fixed prior to release"
+        errorLine1="        // First run with checkDependencies false and check that lib&apos;s STOPSHIP issue is not"
+        errorLine2="                                                                       ~~~~~~~~">
+        <location
+            file="src/test/java/com/android/build/gradle/integration/lint/LintCheckDependenciesTest.kt"
+            line="140"
+            column="72"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`STOPSHIP` comment found; points to code which must be fixed prior to release"
+        errorLine1="        // Then run with checkDependencies true and check that lib&apos;s STOPSHIP issue *is* included"
+        errorLine2="                                                                     ~~~~~~~~">
+        <location
+            file="src/test/java/com/android/build/gradle/integration/lint/LintCheckDependenciesTest.kt"
+            line="149"
+            column="70"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`STOPSHIP` comment found; points to code which must be fixed prior to release"
+        errorLine1="        // Then run with checkDependencies true and check that lib&apos;s STOPSHIP issue *is* included"
+        errorLine2="                                                                     ~~~~~~~~">
+        <location
+            file="src/test/java/com/android/build/gradle/integration/lint/LintCheckDependenciesTest.kt"
+            line="181"
+            column="70"/>
+    </issue>
+
+</issues>

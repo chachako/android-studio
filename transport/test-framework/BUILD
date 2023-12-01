@@ -9,6 +9,7 @@ kotlin_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
+    lint_baseline = "lint_baseline.xml",
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/bazel:studio-grpc",

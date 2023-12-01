@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
+
+    <issue
+        id="WrongTerminology"
+        message="Avoid using &quot;slave&quot;; consider something like &quot;secondary&quot;; see https://developers.google.com/style/word-list"
+        errorLine1=" * &lt;p>// TODO : provide facilities to create a new ThreadRecorder using a parent so the slave"
+        errorLine2="                                                                                        ~~~~~">
+        <location
+            file="src/main/java/com/android/builder/profile/ThreadRecorder.java"
+            line="35"
+            column="89"/>
+    </issue>
+
+</issues>

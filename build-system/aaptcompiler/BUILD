@@ -31,6 +31,7 @@ kotlin_test(
     ]),
     friends = [":aaptcompiler"],
     jvm_flags = ["-Dtest.suite.jar=tests.jar"],
+    lint_baseline = "lint_baseline_tests.xml",
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":aaptcompiler",
@@ -47,8 +48,8 @@ filegroup(
         "src/main/**/*.kt",
         "src/main/resources/**",
     ]) + [
-        "build.gradle",
         "NOTICE",
+        "build.gradle",
     ],
     visibility = ["//tools/base/build-system:__pkg__"],
 )

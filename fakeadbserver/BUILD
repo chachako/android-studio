@@ -52,6 +52,7 @@ kotlin_test(
     name = "tools.tests",
     srcs = glob(["src/test/java/**"]),
     jvm_flags = ["-Dtest.suite.jar=tools.tests.jar"],
+    lint_baseline = "lint_baseline.xml",
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":tools.fakeadbserver",

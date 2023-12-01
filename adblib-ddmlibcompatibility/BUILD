@@ -63,6 +63,7 @@ kotlin_test(
         "//tools/base/adblib:adblib.tests.testlib",
     ],
     jvm_flags = ["-Dtest.suite.jar=adblib.ddmlibcompatibility.tests.jar"],
+    lint_baseline = "lint_baseline.xml",
     test_class = "com.android.testutils.JarTestSuite",
     visibility = ["//visibility:public"],
     deps = [

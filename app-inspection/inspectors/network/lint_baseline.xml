@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
+
+    <issue
+        id="StopShip"
+        message="`TODO` call found; points to code which must be fixed prior to release"
+        errorLine1="    TODO(&quot;Not yet implemented&quot;)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="testSrc/com/android/tools/appinspection/network/okhttp3/FakeCall.kt"
+            line="32"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`TODO` call found; points to code which must be fixed prior to release"
+        errorLine1="    TODO(&quot;Not yet implemented&quot;)"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="testSrc/com/android/tools/appinspection/network/okhttp3/FakeCall.kt"
+            line="58"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`TODO` call found; points to code which must be fixed prior to release"
+        errorLine1="            TODO(&quot;Not yet implemented&quot;)"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="testSrc/com/android/tools/appinspection/network/okhttp3/FakeOkHttp3Client.kt"
+            line="57"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`TODO` call found; points to code which must be fixed prior to release"
+        errorLine1="            TODO(&quot;Not yet implemented&quot;)"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="testSrc/com/android/tools/appinspection/network/okhttp3/FakeOkHttp3Client.kt"
+            line="61"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`TODO` call found; points to code which must be fixed prior to release"
+        errorLine1="            TODO(&quot;Not yet implemented&quot;)"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="testSrc/com/android/tools/appinspection/network/okhttp3/FakeOkHttp3Client.kt"
+            line="65"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`TODO` call found; points to code which must be fixed prior to release"
+        errorLine1="            TODO(&quot;Not yet implemented&quot;)"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="testSrc/com/android/tools/appinspection/network/okhttp3/FakeOkHttp3Client.kt"
+            line="69"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`TODO` call found; points to code which must be fixed prior to release"
+        errorLine1="            TODO(&quot;Not yet implemented&quot;)"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="testSrc/com/android/tools/appinspection/network/okhttp3/FakeOkHttp3Client.kt"
+            line="73"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`TODO` call found; points to code which must be fixed prior to release"
+        errorLine1="            TODO(&quot;Not yet implemented&quot;)"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="testSrc/com/android/tools/appinspection/network/okhttp3/FakeOkHttp3Client.kt"
+            line="77"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`TODO` call found; points to code which must be fixed prior to release"
+        errorLine1="            TODO(&quot;Not yet implemented&quot;)"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="testSrc/com/android/tools/appinspection/network/okhttp3/FakeOkHttp3Client.kt"
+            line="81"
+            column="13"/>
+    </issue>
+
+</issues>

@@ -111,6 +111,7 @@ gradle_integration_test(
         "//tools/base/build-system/integration-test:test-projects/lintSuppress",
         "//tools/base/build-system/integration-test:test-projects/testFixturesApp",
     ],
+    lint_baseline = "lint_baseline.xml",
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = MAVEN_REPOS,
     resources = glob(["src/test/resources/**"]),
@@ -135,7 +136,7 @@ maven_repository(
         "@maven//:com.google.guava.guava_19.0",
         "@maven//:com.google.protobuf.protobuf-java-util_3.22.3",
         "@maven//:com.google.truth.truth_0.44",
+        "@maven//:org.jetbrains.kotlin.kotlin-compiler-embeddable_1.7.10",
         "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.9.20-RC",
-        "@maven//:org.jetbrains.kotlin.kotlin-compiler-embeddable_1.7.10"
     ],
 )

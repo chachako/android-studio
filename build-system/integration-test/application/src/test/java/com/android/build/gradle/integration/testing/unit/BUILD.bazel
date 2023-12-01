@@ -61,6 +61,7 @@ gradle_integration_test(
         ],
     ),
     data = TEST_DATA,
+    lint_baseline = "lint_baseline.xml",
     maven_repo_zips = [
         "//tools/base/build-system:android_gradle_plugin",
     ],

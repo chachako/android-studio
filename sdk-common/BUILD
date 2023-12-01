@@ -110,6 +110,7 @@ kotlin_test(
     data = ["//prebuilts/studio/sdk:platform-tools"],
     friends = [":tools.sdk-common"],
     jvm_flags = ["-Dtest.suite.jar=tools.tests.jar"],
+    lint_baseline = "lint_baseline_tests.xml",
     resources = glob(["src/test/resources/**"]),
     test_class = "com.android.testutils.JarTestSuite",
     visibility = ["//visibility:public"],

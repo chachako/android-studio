@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
+
+    <issue
+        id="PathAsIterable"
+        message="Using `Path` in an `Iterable` context: make sure this is doing what you expect and suppress this warning if so"
+        errorLine1="            assertThat(aar.getEntry(&quot;R.txt&quot;)).isNotNull()"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/test/java/com/android/build/gradle/integration/multiplatform/v2/KotlinMultiplatformAndroidPluginTest.kt"
+            line="282"
+            column="24"/>
+    </issue>
+
+</issues>

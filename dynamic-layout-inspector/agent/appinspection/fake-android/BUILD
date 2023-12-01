@@ -13,6 +13,7 @@ kotlin_library(
         ],
         exclude = ["src/libraries/**"],
     ),
+    lint_baseline = "lint_baseline.xml",
     deps = [
         "//prebuilts/studio/sdk:platforms/latest_jar",
         "@maven//:androidx.annotation.annotation",

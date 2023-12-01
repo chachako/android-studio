@@ -157,9 +157,9 @@ maven_repository(
     name = "runtime_test_dependencies",
     # keep sorted
     artifacts = [
-        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-android",
-        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-bom"
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-bom",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
     ],
     visibility = ["//visibility:private"],
 )
@@ -173,8 +173,8 @@ kotlin_test(
         "src/test/java/**/*.java",
     ]),
     data = [
-        ":runtime_test_dependencies",
         ":TestData",
+        ":runtime_test_dependencies",
         "//prebuilts/studio/jdk:jdk11",
         "//prebuilts/studio/sdk:add-ons/addon-google_apis-google-latest",
         "//prebuilts/studio/sdk:build-tools/latest",
@@ -190,6 +190,7 @@ kotlin_test(
         # TODO: Make it easier to configure AndroidLocation per project.
         "-DANDROID_PREFS_ROOT=/tmp/android_prefs_root",
     ],
+    lint_baseline = "lint_baseline_tests.xml",
     resources = glob(["src/test/resources/**"]),
     tags = [
         "slow",

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        super(&quot;myPackage&quot;, new Resources(new HashMap&lt;Integer, String>()));"
+        errorLine2="        ~~~~~">
+        <location
+            file="src/android/app/Activity.java"
+            line="28"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        super(&quot;myPackage&quot;, new Resources(new HashMap&lt;Integer, String>()));"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/android/app/Activity.java"
+            line="28"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="    private final LocaleList mLocales = new LocaleList(Locale.getDefault());"
+        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/android/content/res/Configuration.java"
+            line="23"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        System.arraycopy(source.bitmapBytes, 0, dest.bytes, 0, source.bitmapBytes.length);"
+        errorLine2="                                ~~~~~~~~~~~">
+        <location
+            file="src/android/view/PixelCopy.java"
+            line="37"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        System.arraycopy(source.bitmapBytes, 0, dest.bytes, 0, source.bitmapBytes.length);"
+        errorLine2="                                                     ~~~~~">
+        <location
+            file="src/android/view/PixelCopy.java"
+            line="37"
+            column="54"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        System.arraycopy(source.bitmapBytes, 0, dest.bytes, 0, source.bitmapBytes.length);"
+        errorLine2="                                                                      ~~~~~~~~~~~">
+        <location
+            file="src/android/view/PixelCopy.java"
+            line="37"
+            column="71"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        sensor.addListener(sensorEventListener);"
+        errorLine2="               ~~~~~~~~~~~">
+        <location
+            file="src/android/hardware/SensorManager.java"
+            line="39"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        mId = mContext.generateViewId();"
+        errorLine2="                       ~~~~~~~~~~~~~~">
+        <location
+            file="src/android/view/View.java"
+            line="99"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        matrix.transformedPoints = mTransformedPoints;"
+        errorLine2="               ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/android/view/View.java"
+            line="262"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="            mViewTreeObserver.fireFrameCommit();"
+        errorLine2="                              ~~~~~~~~~~~~~~~">
+        <location
+            file="src/android/view/View.java"
+            line="287"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="                .getRenderer()"
+        errorLine2="                 ~~~~~~~~~~~">
+        <location
+            file="src/android/view/ViewDebug.java"
+            line="32"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="                                                output.call().write(picture.getBytes());"
+        errorLine2="                                                                            ~~~~~~~~">
+        <location
+            file="src/android/view/ViewDebug.java"
+            line="38"
+            column="77"/>
+    </issue>
+
+    <issue
+        id="VisibleForTests"
+        message="This method should only be accessed from tests or within private scope"
+        errorLine1="        return () -> attachInfo.getRenderer().setPictureCaptureCallback(null);"
+        errorLine2="                                ~~~~~~~~~~~">
+        <location
+            file="src/android/view/ViewDebug.java"
+            line="43"
+            column="33"/>
+    </issue>
+
+</issues>

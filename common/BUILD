@@ -112,6 +112,7 @@ kotlin_test(
         ":TestData",
     ],
     jvm_flags = ["-Dtest.suite.jar=tools.tests.jar"],
+    lint_baseline = "lint_baseline_tests.xml",
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":tools.common",
@@ -154,6 +155,8 @@ kotlin_library(
         "src/testFixtures/java/**/*.kt",
         "src/testFixtures/java/com/android/prefs/*.java",
     ]),
+    lint_baseline = "lint_baseline_fixtures.xml",
+    lint_is_test_sources = True,
     resources = glob(["src/testFixtures/resources/**"]),
     visibility = ["//visibility:public"],  # contains com.android.repository.testframework
     deps = [

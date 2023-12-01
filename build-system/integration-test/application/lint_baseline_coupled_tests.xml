@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
+
+    <issue
+        id="CheckResult"
+        message="The result of `assertThat` is not used"
+        errorLine1="        assertThat(dependencyAnalysisReport.exists())"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/test/java/com/android/build/gradle/integration/application/AnalyzeDependenciesTest.kt"
+            line="216"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="SuspiciousIndentation"
+        message="The indentation string here is different from on the previous line (`&quot; &quot;` vs `\t`)"
+        errorLine1=" DexClassSubject.assertThat(dex.classes[programClass])"
+        errorLine2="~">
+        <location
+            file="src/test/java/com/android/build/gradle/integration/application/CoreLibraryDesugarConversionTest.kt"
+            line="175"
+            column="1"/>
+        <location
+            file="src/test/java/com/android/build/gradle/integration/application/CoreLibraryDesugarConversionTest.kt"
+            line="166"
+            column="1"
+            message="Previous line indentation here"/>
+    </issue>
+
+</issues>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        return String.format(&quot;mock-addon-%1$d&quot;, getVersion().getApiLevel());"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/test/java/com/android/sdklib/internal/androidTarget/MockAddonTarget.java"
+            line="153"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        return String.format(&quot;android-%1$d&quot;, mApiLevel);"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/test/java/com/android/sdklib/internal/androidTarget/MockPlatformTarget.java"
+            line="154"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        formatter.addColumn(&quot;double&quot;, c -> String.format(&quot;%.2f&quot;, c.myDouble), 99, 99);"
+        errorLine2="                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/test/java/com/android/sdklib/tool/sdkmanager/TableFormatterTest.java"
+            line="33"
+            column="44"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        formatter.addColumn(&quot;double&quot;, c -> String.format(&quot;%.2f&quot;, c.myDouble), 1, 1);"
+        errorLine2="                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/test/java/com/android/sdklib/tool/sdkmanager/TableFormatterTest.java"
+            line="54"
+            column="44"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        formatter.addColumn(&quot;c&quot;, c -> String.format(&quot;%.2f&quot;, c.myDouble), 99, 99);"
+        errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/test/java/com/android/sdklib/tool/sdkmanager/TableFormatterTest.java"
+            line="75"
+            column="39"/>
+    </issue>
+
+</issues>

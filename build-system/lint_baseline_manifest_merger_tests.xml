@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                                            String.format("
+        errorLine2="                                            ^">
+        <location
+            file="manifest-merger/src/test/java/com/android/manifmerger/ManifestMergerTestUtil.java"
+            line="268"
+            column="45"/>
+    </issue>
+
+</issues>

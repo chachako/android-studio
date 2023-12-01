@@ -57,6 +57,7 @@ kotlin_test(
     ]),
     # TODO: Why are the xml files not under resources?
     jvm_flags = ["-Dtest.suite.jar=tools.manifest-merger_tests.jar"],
+    lint_baseline = "lint_baseline_manifest_merger_tests.xml",
     resources = glob(
         include = ["manifest-merger/src/test/java/**"],
         exclude = [

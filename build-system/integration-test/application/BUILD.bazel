@@ -416,6 +416,7 @@ gradle_integration_test(
         exclude = CONNECTED_TESTS,
     ),
     data = TEST_DATA,
+    lint_baseline = "lint_baseline_library_tests.xml",
     maven_repo_zips = [
         "//tools/base/build-system:android_gradle_plugin",
     ],
@@ -563,6 +564,7 @@ gradle_integration_test(
         SOURCES_TO_COMPILE_TOGETHER,
     ),
     data = TEST_DATA,
+    lint_baseline = "lint_baseline_coupled_tests.xml",
     #keep sorted
     maven_repo_zips = [
         "//tools/base/build-system:android_gradle_plugin",
@@ -618,6 +620,7 @@ gradle_integration_test(
         ],
     ),
     data = TEST_DATA,
+    lint_baseline = "lint_baseline_kotlin_multiplatform_android_tests.xml",
     #keep sorted
     maven_repo_zips = [
         "//tools/base/build-system:android_gradle_plugin",

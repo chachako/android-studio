@@ -487,6 +487,7 @@ single_gradle_integration_test(
     data = DATA + CMAKE + NDK + [
         "//tools/base/build-system/integration-test:test-projects/kotlinMultiplatform",
     ],
+    lint_baseline = "lint_baseline.xml",
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = MAVEN_REPOS,
     tags = ["no_test_windows"],

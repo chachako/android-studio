@@ -195,6 +195,7 @@ gradle_connected_test(
         "//tools/base/build-system/integration-test:test-projects/ndkJniLib",
     ],
     flaky = True,  # b/148626301 flaky emulator connectivity
+    lint_baseline = "lint_baseline.xml",
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,

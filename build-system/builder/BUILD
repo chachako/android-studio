@@ -77,6 +77,7 @@ kotlin_test(
     ],
     friends = [":builder"],
     jvm_flags = ["-Dtest.suite.jar=tests.jar"],
+    lint_baseline = "lint_baseline_tests.xml",
     resources = glob(["src/test/resources/**"]),
     tags = [
         "slow",
@@ -231,8 +232,8 @@ filegroup(
         "src/main/**/*.kt",
         "src/main/resources/**",
     ]) + [
-        "build.gradle",
         "NOTICE",
+        "build.gradle",
         "//prebuilts/r8",
     ],
     visibility = ["//tools/base/build-system:__pkg__"],

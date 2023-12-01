@@ -62,6 +62,7 @@ kotlin_test(
     jvm_flags = [
         "-Dtest.suite.jar=framework_tests.jar",
     ],
+    lint_baseline = "lint_baseline_framework_tests.xml",
     resources = glob(["src/test/resources/**"]),
     test_class = "com.android.testutils.JarTestSuite",
     visibility = ["//tools/base/build-system/integration-test:__subpackages__"],

@@ -6,6 +6,7 @@ kotlin_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
+    lint_baseline = "lint_baseline.xml",
     visibility = ["//tools/base/build-system/builder:__pkg__"],
     deps = [
         "//tools/analytics-library/protos/src/main/proto",

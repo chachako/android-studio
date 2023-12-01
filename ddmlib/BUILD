@@ -43,6 +43,7 @@ kotlin_library(
         "src/main/java/com/android/ddmlib/**/*.java",
         "src/main/java/com/android/ddmlib/**/*.kt",
     ]),
+    lint_baseline = "lint_baseline_ddmlib_base.xml",
     resource_strip_prefix = "tools/base/ddmlib",
     visibility = ["//visibility:public"],
     deps = [
@@ -66,6 +67,8 @@ kotlin_library(
         "src/test/java/**/*.java",
     ]),
     data = ["//prebuilts/studio/sdk:platform-tools"],
+    lint_baseline = "lint_baseline_test_utils.xml",
+    lint_is_test_sources = True,
     resources = glob(["src/test/resources/**"]),
     visibility = ["//visibility:public"],
     deps = [
@@ -178,6 +181,7 @@ kotlin_test(
     ),
     data = ["//prebuilts/studio/sdk:platform-tools"],
     jvm_flags = ["-Dtest.suite.jar=tools.tests.jar"],
+    lint_baseline = "lint_baseline_tests.xml",
     resources = glob(["src/test/resources/**"]),
     test_class = "com.android.testutils.JarTestSuite",
     deps = [

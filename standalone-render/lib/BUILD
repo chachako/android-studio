@@ -7,6 +7,7 @@ kotlin_library(
         "src/**/*.java",
         "src/**/*.kt",
     ]),
+    lint_baseline = "lint_baseline.xml",
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/tools/common/lint-psi/intellij-core",
