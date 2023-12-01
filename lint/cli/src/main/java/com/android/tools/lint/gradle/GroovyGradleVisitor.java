@@ -50,6 +50,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
  * Implementation of the {@link GradleDetector} using a real Groovy AST, which the Gradle plugin has
  * access to.
  */
+@SuppressWarnings("PatternVariableCanBeUsed")
 public class GroovyGradleVisitor extends GradleVisitor {
     @Override
     public void visitBuildScript(
@@ -106,10 +107,10 @@ public class GroovyGradleVisitor extends GradleVisitor {
                         if (expression.getOperation().getText().equals("=")) {
                             Expression leftExpression = expression.getLeftExpression();
                             List<String> hierarchy = getPropertyHierarchy(leftExpression);
-                            String property = null;
+                            String property;
                             String parent = null;
                             String parentParent = null;
-                            if (hierarchy != null && hierarchy.size() > 0) {
+                            if (hierarchy != null && !hierarchy.isEmpty()) {
                                 property = hierarchy.get(0);
                                 if (hierarchy.size() == 2) {
                                     parent = hierarchy.get(1);
@@ -165,13 +166,15 @@ public class GroovyGradleVisitor extends GradleVisitor {
                                                 unnamedArguments,
                                                 namedArguments,
                                                 call);
-                                        maybeCheckDslProperty(
-                                                parent,
-                                                parentParent,
-                                                parent3,
-                                                unnamedArguments,
-                                                namedArguments,
-                                                call);
+                                        if (isMethodCallInClosure()) {
+                                            maybeCheckDslProperty(
+                                                    parent,
+                                                    parentParent,
+                                                    parent3,
+                                                    unnamedArguments,
+                                                    namedArguments,
+                                                    call);
+                                        }
                                     }
                                 } else {
                                     maybeCheckMethodCall(
@@ -193,6 +196,38 @@ public class GroovyGradleVisitor extends GradleVisitor {
                         }
 
                         super.visitTupleExpression(tupleExpression);
+                    }
+
+                    /**
+                     * Returns true if the current visitor is currently a method call corresponding
+                     * to a property. If we for example have {@code android { defaultConfig {
+                     * minSdkVersion 30 } } } and we're looking at the {@code minSdkVersion} call,
+                     * this method would return true, but if we were looking at {@code
+                     * android(defaultConfig(minSdkVersion 30))} it would return false.
+                     *
+                     * <p>We do this by looking at the call stack. The last frame is the current
+                     * call, so we look at the one before it (second to last) and check whether it
+                     * is a closure.
+                     */
+                    private boolean isMethodCallInClosure() {
+                        boolean isProperty = mMethodCallStack.size() < 2;
+                        if (!isProperty) {
+                            MethodCallExpression expression =
+                                    mMethodCallStack.get(mMethodCallStack.size() - 2);
+                            Expression arguments = expression.getArguments();
+                            if (arguments instanceof ArgumentListExpression) {
+                                ArgumentListExpression listExpression =
+                                        (ArgumentListExpression) arguments;
+                                List<Expression> nested = listExpression.getExpressions();
+                                if (!nested.isEmpty()) {
+                                    Expression last = nested.get(nested.size() - 1);
+                                    if (last instanceof ClosureExpression) {
+                                        isProperty = true;
+                                    }
+                                }
+                            }
+                        }
+                        return isProperty;
                     }
 
                     private void extractMethodCallArguments(
@@ -339,9 +374,9 @@ public class GroovyGradleVisitor extends GradleVisitor {
                             MethodCallExpression c) {
                         if (property != null && parent != null) {
                             String value = null;
-                            if (unnamedArguments.size() == 1 && namedArguments.size() == 0) {
+                            if (unnamedArguments.size() == 1 && namedArguments.isEmpty()) {
                                 value = unnamedArguments.get(0);
-                            } else if (unnamedArguments.size() == 0 && namedArguments.size() > 0) {
+                            } else if (unnamedArguments.isEmpty() && !namedArguments.isEmpty()) {
                                 value = getText(c.getArguments());
                             }
                             if (value != null) {
