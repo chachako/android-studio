@@ -14,8 +14,8 @@
          - humanReadable = (null)
       - minimum_model_consumer:
          - major         = 66
-         - minor         = 0
-         - humanReadable = "Android Studio I"
+         - minor         = 1
+         - humanReadable = "Android Studio Iguana"
       - native_module:
          - major         = 0
          - minor         = 1
