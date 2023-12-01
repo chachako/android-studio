@@ -17,10 +17,8 @@ package com.android.adblib.tools.debugging
 
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.isThreadSafeAndImmutable
-import com.android.adblib.tools.debugging.utils.SynchronizedChannelResult
 import com.android.adblib.tools.debugging.utils.SynchronizedReceiveChannel
 import com.android.adblib.tools.debugging.utils.SynchronizedSendChannel
-import com.android.adblib.tools.debugging.utils.receiveAllCatching
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -62,10 +60,4 @@ suspend inline fun SynchronizedSendChannel<JdwpPacketView>.sendPacket(packet: Jd
     } else {
         send(packet)
     }
-}
-
-suspend inline fun JdwpSessionPipeline.receiveAllPacketsCatching(
-    crossinline block: suspend (JdwpPacketView) -> Unit
-): SynchronizedChannelResult {
-    return receiveChannel.receiveAllCatching { block(it) }
 }

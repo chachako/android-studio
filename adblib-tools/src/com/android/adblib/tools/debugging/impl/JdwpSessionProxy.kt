@@ -29,14 +29,20 @@ import com.android.adblib.tools.debugging.JdwpSessionPipeline
 import com.android.adblib.tools.debugging.JdwpSessionProxyStatus
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.jdwpSessionPipelineFactoryList
-import com.android.adblib.tools.debugging.receiveAllPacketsCatching
-import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.sendPacket
 import com.android.adblib.tools.debugging.utils.NoDdmsPacketFilterFactory
-import com.android.adblib.utils.launchCancellable
+import com.android.adblib.tools.debugging.utils.logIOCompletionErrors
+import com.android.adblib.tools.debugging.utils.receiveAll
 import com.android.adblib.withPrefix
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
+import java.io.EOFException
 
 /**
  * Implementation of a JDWP proxy for the process [pid] on a given device. The proxy creates a
@@ -60,30 +66,36 @@ internal class JdwpSessionProxy(
         .withPrefix("${device.session} - $device - pid=$pid - ")
 
     suspend fun execute(processStateFlow: AtomicStateFlow<JdwpProcessProperties>) {
-        try {
-            // Create server socket and start accepting JDWP connections
-            session.channelFactory.createServerSocket().use { serverSocket ->
-                val socketAddress = serverSocket.bind()
-                processStateFlow.updateProxyStatus { it.copy(socketAddress = socketAddress) }
-                try {
-                    // Retry proxy as long as process is active
-                    while (true) {
-                        logger.debug { "Waiting for debugger connection on port ${socketAddress.port}" }
-                        acceptOneJdwpConnection(
-                            serverSocket,
-                            processStateFlow
-                        )
+        // Create server socket and start accepting JDWP connections
+        session.channelFactory.createServerSocket().use { serverSocket ->
+            val socketAddress = serverSocket.bind()
+            processStateFlow.updateProxyStatus { it.copy(socketAddress = socketAddress) }
+            try {
+                // Retry proxy as long as process is active (i.e. as long as we have not been
+                // cancelled)
+                while (true) {
+                    currentCoroutineContext().ensureActive()
+                    logger.debug { "Waiting for debugger connection on port ${socketAddress.port}" }
+
+                    // Use "supervisorScope" so that cancellation from within the
+                    // "acceptOneJdwpConnection" coroutine does not propagate "up", since we
+                    // need the proxy to keep running as long as the JDWP process is active.
+                    // Note that cancellation coming from the proxy does propagate "down"
+                    // and cancels "acceptOneJdwpConnection" as needed
+                    supervisorScope {
+                        try {
+                            acceptOneJdwpConnection(serverSocket, processStateFlow)
+                        } catch (t: Throwable) {
+                            // We can only log errors, as there is no component to propagate
+                            // the exception to. Also, we need to keep the proxy running
+                            // as long as the parent process (i.e. scope) is active.
+                            logger.logIOCompletionErrors(t)
+                        }
                     }
-                } finally {
-                    processStateFlow.updateProxyStatus { it.copy(socketAddress = null) }
                 }
+            } finally {
+                processStateFlow.updateProxyStatus { it.copy(socketAddress = null) }
             }
-        } catch (e: Throwable) {
-            e.rethrowCancellation()
-            logger.warn(
-                e,
-                "JDWP proxy server error, closing debugger proxy server socket for pid=$pid"
-            )
         }
     }
 
@@ -96,9 +108,6 @@ internal class JdwpSessionProxy(
             processStateFlow.updateProxyStatus { it.copy(isExternalDebuggerAttached = true) }
             try {
                 proxyJdwpSession(debuggerSocket)
-            } catch (t: Throwable) {
-                t.rethrowCancellation()
-                logger.info(t) { "Debugger proxy had an error: $t" }
             } finally {
                 logger.debug { "Debugger proxy has ended proxy connection" }
                 processStateFlow.updateProxyStatus { it.copy(isExternalDebuggerAttached = false) }
@@ -128,7 +137,7 @@ internal class JdwpSessionProxy(
                     val deferredStart = CompletableDeferred<Unit>()
 
                     // Forward packets from external debugger to jdwp process on device
-                    launchCancellable(session.host.ioDispatcher) {
+                    val job1 = launch(session.host.ioDispatcher) {
                         forwardDebuggerJdwpSession(
                             debuggerPipeline,
                             deviceSession,
@@ -137,16 +146,34 @@ internal class JdwpSessionProxy(
                     }
 
                     // Forward packets from jdwp process on device to external debugger
-                    launchCancellable(session.host.ioDispatcher) {
+                    val job2 = launch(session.host.ioDispatcher) {
                         forwardDeviceJdwpSession(
                             deviceSession,
                             debuggerPipeline,
                             deferredStart
                         )
                     }
+
+                    // Ensure both jobs complete as soon as one completes, so that we don't keep
+                    // a forwarding coroutine active when the other "side" has been closed.
+                    job1.invokeOnCompletion { throwable ->
+                        cancelJobs(throwable, job1, job2)
+                    }
+                    job2.invokeOnCompletion { throwable ->
+                        cancelJobs(throwable, job1, job2)
+                    }
                 }
             }
         }
+    }
+
+    private fun cancelJobs(throwable: Throwable?, job1: Job, job2: Job) {
+        val cancellationException = (throwable as? CancellationException)
+            ?: CancellationException("JDWP session proxy has completed", throwable)
+
+        // Ensure both coroutines are cancelled
+        job1.cancel(cancellationException)
+        job2.cancel(cancellationException)
     }
 
     private fun createDebuggerPipeline(debuggerSession: JdwpSession): JdwpSessionPipeline {
@@ -172,16 +199,13 @@ internal class JdwpSessionProxy(
         deviceSession: SharedJdwpSession,
         deferredStart: CompletableDeferred<Unit>
     ) {
-        debuggerPipeline.receiveAllPacketsCatching { packet ->
+        // Note: Throws an EOFException exception when channel is closed
+        debuggerPipeline.receiveChannel.receiveAll { packet ->
             // Wait until receiver has started to avoid skipping packets
             deferredStart.await()
 
             logger.verbose { "debugger->device: Forwarding packet to shared jdwp session: $packet" }
             deviceSession.sendPacket(packet)
-        }.onClosed {
-            logger.debug(it) { "Channel has been closed" }
-        }.onFailure {
-            logger.warn(it, "Channel has failed")
         }
     }
 
@@ -204,6 +228,7 @@ internal class JdwpSessionProxy(
                 logger.verbose { "device->debugger: Forwarding packet to session: $packet" }
                 debuggerPipeline.sendPacket(packet)
             }
+        throw EOFException("JDWP session with process ${deviceSession.pid} device ${deviceSession.device} reached EOF")
     }
 
     /**

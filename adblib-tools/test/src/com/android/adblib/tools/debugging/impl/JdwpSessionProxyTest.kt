@@ -18,23 +18,25 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
+import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpSession
-import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
-import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
-import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
-import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.packets.ddms.EphemeralDdmsChunk
 import com.android.adblib.tools.debugging.packets.ddms.writeToChannel
+import com.android.adblib.tools.debugging.packets.impl.JdwpCommands
+import com.android.adblib.tools.debugging.packets.impl.MutableJdwpPacket
+import com.android.adblib.tools.debugging.packets.impl.PayloadProvider
 import com.android.adblib.tools.debugging.properties
+import com.android.adblib.tools.debugging.utils.AdbRewindableInputChannel
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
 import com.android.adblib.tools.testutils.waitForOnlineConnectedDevice
 import com.android.adblib.utils.ResizableBuffer
 import com.android.fakeadbserver.DeviceState
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transformWhile
@@ -43,6 +45,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.EOFException
+import java.io.IOException
 
 class JdwpSessionProxyTest : AdbLibToolsTestBase() {
 
@@ -76,7 +79,7 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
     @Test
     fun socketAddressSupportsJdwpSession() = runBlockingWithTimeout {
         // Prepare
-        val jdwpSession = createJdwpProxySession()
+        val jdwpSession = createJdwpProxySession(pid = 10).debuggerJdwpSession
 
         // Act
         val packet = createVmVersionPacket(jdwpSession)
@@ -101,9 +104,55 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
     }
 
     @Test
+    fun externalDebuggerCanDetachAndReAttach() = runBlockingWithTimeout {
+        // Prepare
+        val jdwpSessionInfo = createJdwpProxySession(pid = 11)
+        val jdwpProcess = jdwpSessionInfo.process
+        val debuggerSocketAddress = jdwpProcess.properties.jdwpSessionProxyStatus.socketAddress
+
+        // Act
+        val jdwpSession1 = jdwpSessionInfo.debuggerJdwpSession
+        val reply1 = sendVmVersionPacket(jdwpSession1)
+
+        // Close JDWP session and wait for process to reflect new status
+        jdwpSession1.close()
+        yieldUntil {
+            !jdwpProcess.properties.jdwpSessionProxyStatus.isExternalDebuggerAttached
+        }
+        val debuggerSocketAddress2 = jdwpProcess.properties.jdwpSessionProxyStatus.socketAddress
+
+        // Open 2nd session
+        val jdwpSession2 = attachDebuggerSession(jdwpProcess)
+        val reply2 = sendVmVersionPacket(jdwpSession2)
+
+        // Assert
+        assertTrue(jdwpProcess.properties.jdwpSessionProxyStatus.isExternalDebuggerAttached)
+        assertEquals(debuggerSocketAddress, debuggerSocketAddress2)
+        assertTrue(reply1.isReply)
+        assertTrue(reply2.isReply)
+    }
+
+    @Test
+    fun debuggerSessionEndsWhenDeviceDisconnects(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val jdwpSessionInfo = createJdwpProxySession(pid = 12)
+        val jdwpSession = jdwpSessionInfo.debuggerJdwpSession
+        sendVmVersionPacket(jdwpSession)
+
+        // Act
+        fakeAdb.disconnectDevice(jdwpSessionInfo.fakeDevice.deviceId)
+
+        // Assert
+        // Note: On Windows, we get "java.io.IOException: The specified network name is no longer available"
+        //       On Linux/Mac, we get "java.io.EOFException: Unexpected end of channel"
+        exceptionRule.expect(IOException::class.java)
+        jdwpSession.receivePacket()
+    }
+
+    @Test
     fun proxyFiltersDdmsCommandPackets() = runBlockingWithTimeout {
         // Prepare
-        val jdwpSession = createJdwpProxySession()
+        val jdwpSession = createJdwpProxySession(pid = 13).debuggerJdwpSession
 
         // Act
         val ddmsPacket = createDdmsHeloPacket(jdwpSession)
@@ -127,7 +176,13 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
         assertEquals(vmVersionPacket.id, replies[0].id)
     }
 
-    private suspend fun createJdwpProxySession(): JdwpSession {
+    private class JdwpProxySessionInfo(
+        val fakeDevice: DeviceState,
+        val process: JdwpProcess,
+        val debuggerJdwpSession: JdwpSession
+    )
+
+    private suspend fun createJdwpProxySession(pid: Int): JdwpProxySessionInfo {
         val deviceID = "1234"
         val fakeDevice =
             fakeAdb.connectDevice(
@@ -140,14 +195,23 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
-        fakeDevice.startClient(10, 0, "a.b.c", false)
+        fakeDevice.startClient(pid, 0, "a.b.c", false)
 
-        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, 10))
+        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, pid))
         process.startMonitoring()
         yieldUntil {
             process.properties.jdwpSessionProxyStatus.socketAddress != null &&
                     process.properties.processName != null
         }
+        val jdwpSession = attachDebuggerSession(process)
+        return JdwpProxySessionInfo(
+            fakeDevice = fakeDevice,
+            process = process,
+            debuggerJdwpSession = jdwpSession
+        )
+    }
+
+    private suspend fun attachDebuggerSession(process: JdwpProcess): JdwpSession {
         val clientSocket = registerCloseable(
             session.channelFactory.connectSocket(
                 process.properties.jdwpSessionProxyStatus.socketAddress!!
@@ -155,9 +219,9 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
         )
         return registerCloseable(
             JdwpSession.wrapSocketChannel(
-                connectedDevice,
+                process.device,
                 clientSocket,
-                10,
+                process.pid,
                 2_000
             )
         )
@@ -171,6 +235,27 @@ class JdwpSessionProxyTest : AdbLibToolsTestBase() {
         packet.cmdSet = JdwpCommands.CmdSet.SET_VM.value
         packet.cmd = JdwpCommands.VmCmd.CMD_VM_VERSION.value
         return packet
+    }
+
+    private suspend fun sendVmVersionPacket(jdwpSession: JdwpSession): JdwpPacketView {
+        return coroutineScope {
+            val packet = createVmVersionPacket(jdwpSession)
+
+            val reply = async {
+                val replyPacket: JdwpPacketView
+                while (true) {
+                    val r = jdwpSession.receivePacket()
+                    if (r.id == packet.id) {
+                        replyPacket = r
+                        break
+                    }
+                }
+                replyPacket
+            }
+
+            jdwpSession.sendPacket(packet)
+            reply.await()
+        }
     }
 
     private suspend fun createDdmsHeloPacket(jdwpSession: JdwpSession): MutableJdwpPacket {

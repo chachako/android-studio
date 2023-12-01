@@ -22,7 +22,7 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import java.util.concurrent.CancellationException
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * A [SynchronizedChannel] is similar to a [Channel] with the additional ability
@@ -203,6 +203,22 @@ suspend inline fun <T> SynchronizedReceiveChannel<T>.receiveAllCatching(
         if (result.isFailure) {
             return result
         }
+    }
+}
+
+/**
+ * Calls [block] on all elements received from this [SynchronizedReceiveChannel].
+ *
+ * The operation is _terminal_, i.e. completes only when an exception occurs in the
+ * [SynchronizedReceiveChannel] or in [block].
+ */
+suspend inline fun <T> SynchronizedReceiveChannel<T>.receiveAll(
+    crossinline block: suspend (T) -> Unit
+) {
+    while (true) {
+        currentCoroutineContext().ensureActive()
+
+        receive { block(it) }
     }
 }
 

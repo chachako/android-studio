@@ -15,6 +15,7 @@
  */
 package com.android.adblib.tools.debugging.impl
 
+import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.adbLogger
@@ -24,7 +25,9 @@ import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.appProcessTracker
 import com.android.adblib.tools.debugging.jdwpProcessTracker
+import com.android.adblib.tools.debugging.utils.logIOCompletionErrors
 import com.android.adblib.withPrefix
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -44,6 +47,9 @@ internal class JdwpProcessImpl(
 
     private val logger = adbLogger(device.session)
         .withPrefix("${device.session} - $device - pid=$pid - ")
+
+    private val session: AdbSession
+        get() = device.session
 
     private val stateFlow = AtomicStateFlow(MutableStateFlow(JdwpProcessProperties(pid)))
 
@@ -78,10 +84,17 @@ internal class JdwpProcessImpl(
 
     private val lazyStartMonitoring by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         logger.debug { "Start monitoring" }
-        scope.launch {
+
+        val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+            logger.logIOCompletionErrors(throwable)
+        }
+
+        // Note: We use a custom exception handler because we handle exceptions, and we don't
+        // want them to go to the parent scope handler as "unhandled" exceptions in a `launch` job.
+        scope.launch(session.ioDispatcher + exceptionHandler) {
             jdwpSessionProxy.execute(stateFlow)
         }
-        scope.launch {
+        scope.launch(session.ioDispatcher + exceptionHandler) {
             propertyCollector.execute(stateFlow)
         }
     }

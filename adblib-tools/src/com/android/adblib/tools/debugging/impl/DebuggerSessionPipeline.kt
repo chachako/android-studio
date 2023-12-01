@@ -25,13 +25,13 @@ import com.android.adblib.tools.debugging.sendPacket
 import com.android.adblib.tools.debugging.utils.SynchronizedChannel
 import com.android.adblib.tools.debugging.utils.SynchronizedReceiveChannel
 import com.android.adblib.tools.debugging.utils.SynchronizedSendChannel
-import com.android.adblib.tools.debugging.utils.receiveAllCatching
+import com.android.adblib.tools.debugging.utils.logIOCompletionErrors
+import com.android.adblib.tools.debugging.utils.receiveAll
 import com.android.adblib.utils.createChildScope
 import com.android.adblib.withPrefix
-import kotlinx.coroutines.job
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import java.io.EOFException
-import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -50,7 +50,7 @@ internal class DebuggerSessionPipeline(
         get() = debuggerSession.device
 
     private val logger = adbLogger(device.session)
-        .withPrefix("${device.session} - $device - pid=$pid -")
+        .withPrefix("${device.session} - $device - pid=$pid - ")
 
     private val sendChannelImpl = SynchronizedChannel<JdwpPacketView>()
 
@@ -65,17 +65,24 @@ internal class DebuggerSessionPipeline(
         get() = receiveChannelImpl
 
     init {
-        scope.launch(session.ioDispatcher) {
-            forwardSendChannelToDebuggerSession()
-        }
-        scope.launch(session.ioDispatcher) {
-            forwardDebuggerSessionToReceiveChannel()
+        val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+            logger.logIOCompletionErrors(throwable)
         }
 
-        scope.coroutineContext.job.invokeOnCompletion { throwable ->
-            logger.debug { "Closing channels on scope completion (throwable=$throwable)" }
-            sendChannelImpl.cancel(throwable as? CancellationException)
-            receiveChannelImpl.cancel(throwable as? CancellationException)
+        // Note: We use a custom exception handler because we handle exceptions, and we don't
+        // want them to go to the parent scope handler as "unhandled" exceptions in a `launch` job.
+        // Note: We cancel both channels on completion so that we never leave one of the two
+        // coroutine running if the other completed.
+        scope.launch(session.ioDispatcher + exceptionHandler) {
+            forwardSendChannelToDebuggerSession()
+        }.invokeOnCompletion {
+            cancelChannels(it)
+        }
+
+        scope.launch(session.ioDispatcher + exceptionHandler) {
+            forwardDebuggerSessionToReceiveChannel()
+        }.invokeOnCompletion {
+            cancelChannels(it)
         }
     }
 
@@ -84,32 +91,37 @@ internal class DebuggerSessionPipeline(
     }
 
     private suspend fun forwardSendChannelToDebuggerSession() {
-        sendChannelImpl.receiveAllCatching { packet ->
+        // Note: 'receiveAll' is a terminal operator, throws exception when completed or cancelled
+        sendChannelImpl.receiveAll { packet ->
             logger.verbose { "Sending packet to debugger: $packet" }
             debuggerSession.sendPacket(packet)
-        }.onClosed { throwable ->
-            logger.debug(throwable) { "Channel is closed, exiting loop" }
-        }.onFailure { throwable ->
-            logger.warn(throwable, "Receiving elements from a channel should never fail")
         }
     }
 
     private suspend fun forwardDebuggerSessionToReceiveChannel() {
+        // Note: Throws exception when completed or cancelled
         while (true) {
             logger.verbose { "Waiting for next JDWP packet from session" }
             val packet = try {
                 debuggerSession.receivePacket()
             } catch (e: EOFException) {
-                // Reached EOF, flow terminates
-                logger.debug { "JDWP session has ended with EOF" }
-                break
-            } catch (e: IOException) {
-                // I/O exception (e.g. socket closed), flow terminates
-                logger.info(e) { "JDWP session has ended with I/O exception" }
-                break
+                // Reached EOF, close the "receive" channel "normally"
+                receiveChannelImpl.close(e)
+                throw e
             }
             logger.verbose { "Emitting packet from debugger to receive flow: $packet" }
             receiveChannelImpl.sendPacket(packet)
         }
+    }
+
+    private fun cancelChannels(throwable: Throwable?) {
+        // Ensure exception is propagated to channels so that
+        // 1) callers (i.e. consumer of 'send' and 'receive' channels) get notified of errors
+        // 2) both forwarding coroutines always complete together
+        val cancellationException = (throwable as? CancellationException)
+            ?: CancellationException("Debugger pipeline for JDWP session has completed", throwable)
+        sendChannelImpl.cancel(cancellationException)
+        receiveChannelImpl.cancel(cancellationException)
+        debuggerSession.close()
     }
 }
