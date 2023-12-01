@@ -20,11 +20,8 @@ import com.android.SdkConstants.GRADLE_PLUGIN_RECOMMENDED_VERSION
 import com.android.ide.common.gradle.Dependency
 import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.GoogleMavenRepository.Companion.MAVEN_GOOGLE_CACHE_DIR_KEY
-import com.android.sdklib.AndroidVersion
-import com.android.sdklib.IAndroidTarget
 import com.android.sdklib.SdkVersionInfo.HIGHEST_KNOWN_STABLE_API
 import com.android.sdklib.SdkVersionInfo.LOWEST_ACTIVE_API
-import com.android.testutils.MockitoKt.whenever
 import com.android.testutils.TestUtils
 import com.android.tools.lint.checks.GradleDetector.Companion.ACCIDENTAL_OCTAL
 import com.android.tools.lint.checks.GradleDetector.Companion.AGP_DEPENDENCY
@@ -74,7 +71,6 @@ import com.android.tools.lint.checks.infrastructure.platformPath
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
-import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.utils.FileUtils
 import java.io.ByteArrayOutputStream
@@ -85,7 +81,6 @@ import java.util.function.Predicate
 import java.util.zip.GZIPOutputStream
 import junit.framework.TestCase
 import org.junit.rules.TemporaryFolder
-import org.mockito.Mockito.mock
 
 /**
  * NOTE: Many of these tests are duplicated in the Android Studio plugin to test the custom
@@ -7234,26 +7229,28 @@ class GradleDetectorTest : AbstractCheckTest() {
       // version suggestions in the tests
       task.networkData(
         "https://maven.google.com/master-index.xml",
+        // language=xml
         """
-                <?xml version='1.0' encoding='UTF-8'?>
-                <metadata>
-                  <com.google.firebase.crashlytics/>
-                  <com.android.application/>
-                  <com.android.support/>
-                  <com.android.support.test/>
-                  <com.android.tools/>
-                  <com.android.tools.build/>
-                  <com.google.android.gms/>
-                  <com.google.android.support/>
-                  <androidx.core/>
-                  <androidx.slidingpanelayout/>
-                  <androidx.compose/>
-                </metadata>
-                """
+        <?xml version='1.0' encoding='UTF-8'?>
+        <metadata>
+          <com.google.firebase.crashlytics/>
+          <com.android.application/>
+          <com.android.support/>
+          <com.android.support.test/>
+          <com.android.tools/>
+          <com.android.tools.build/>
+          <com.google.android.gms/>
+          <com.google.android.support/>
+          <androidx.core/>
+          <androidx.slidingpanelayout/>
+          <androidx.compose/>
+        </metadata>
+        """
           .trimIndent()
       )
       task.networkData(
         "https://maven.google.com/com/android/application/group-index.xml",
+        // language=xml
         "" +
           "<?xml version='1.0' encoding='UTF-8'?>\n" +
           "<com.android.application>\n" +
@@ -7270,15 +7267,16 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
       task.networkData(
         "https://maven.google.com/com/google/firebase/crashlytics/group-index.xml",
+        // language=xml
         "" +
           "<?xml version='1.0' encoding='UTF-8'?>\n" +
           "<com.google.firebase.crashlytics>\n" +
           "  <com.google.firebase.crashlytics.gradle.plugin versions=\"2.8.1,2.9.0,2.9.1,2.9.2,2.9.3,2.9.4,2.9.5,2.9.6,2.9.7\"/>\n" +
-          "</com.google.firebase.crashlytics>" +
-          "</com.android.application>"
+          "</com.google.firebase.crashlytics>"
       )
       task.networkData(
         "https://maven.google.com/com/android/tools/build/group-index.xml",
+        // language=xml
         "" +
           "<?xml version='1.0' encoding='UTF-8'?>\n" +
           "<com.android.tools.build>\n" +
@@ -7294,97 +7292,107 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
       task.networkData(
         "https://maven.google.com/com/android/support/group-index.xml",
+        // language=xml
         """
-                <?xml version='1.0' encoding='UTF-8'?>
-                <com.android.support>
-                  <support-compat versions="19.1.0,25.3.1,26.0.0-beta1"/>
-                  <appcompat-v7 versions="19.1.0,19.1.0,25.3.1,26.0.0-beta1"/>
-                  <multidex versions="1.0.1,1.0.1"/>
-                  <support-v4 versions="19.1.0,21.0.2,25.3.1,26.0.0-beta1"/>
-                </com.android.support>
-                """
+        <?xml version='1.0' encoding='UTF-8'?>
+        <com.android.support>
+          <support-compat versions="19.1.0,25.3.1,26.0.0-beta1"/>
+          <appcompat-v7 versions="19.1.0,19.1.0,25.3.1,26.0.0-beta1"/>
+          <multidex versions="1.0.1,1.0.1"/>
+          <support-v4 versions="19.1.0,21.0.2,25.3.1,26.0.0-beta1"/>
+        </com.android.support>
+        """
           .trimIndent()
       )
       task.networkData(
         "https://maven.google.com/com/google/android/support/group-index.xml",
+        // language=xml
         """
-                <?xml version='1.0' encoding='UTF-8'?>
-                <com.google.android.support>
-                  <wearable versions="1.3.0,26.0.0-alpha1"/>
-                </com.google.android.support>
-                """
+        <?xml version='1.0' encoding='UTF-8'?>
+        <com.google.android.support>
+          <wearable versions="1.3.0,26.0.0-alpha1"/>
+        </com.google.android.support>
+        """
           .trimIndent()
       )
       task.networkData(
         "https://maven.google.com/com/google/android/gms/group-index.xml",
+        // language=xml
         """
-                <?xml version='1.0' encoding='UTF-8'?>
-                <com.google.android.gms>
-                  <play-services-wearable versions="6.1.71"/>
-                  <play-services versions="11.1.71"/>
-                  <play-services-maps versions="18.1.0,18.2.0,18.3.0"/>
-                </com.google.android.gms>
-                """
+        <?xml version='1.0' encoding='UTF-8'?>
+        <com.google.android.gms>
+          <play-services-wearable versions="6.1.71"/>
+          <play-services versions="11.1.71"/>
+          <play-services-maps versions="18.1.0,18.2.0,18.3.0"/>
+        </com.google.android.gms>
+        """
           .trimIndent()
       )
       task.networkData(
         "https://maven.google.com/com/android/support/constraint/group-index.xml",
+        // language=xml
         """
-                <?xml version='1.0' encoding='UTF-8'?>
-                <com.android.support.constraint>
-                  <constraint-layout versions="1.0.0,1.0.2"/>
-                </com.android.support.constraint>
-                """
+        <?xml version='1.0' encoding='UTF-8'?>
+        <com.android.support.constraint>
+          <constraint-layout versions="1.0.0,1.0.2"/>
+        </com.android.support.constraint>
+        """
           .trimIndent()
       )
       task.networkData(
         "https://maven.google.com/com/android/support/test/group-index.xml",
+        // language=xml
         """
-                <?xml version='1.0' encoding='UTF-8'?>
-                <com.android.support.test>
-                  <runner versions="0.3,0.5"/>
-                </com.android.support.test>
-                """
+        <?xml version='1.0' encoding='UTF-8'?>
+        <com.android.support.test>
+          <runner versions="0.3,0.5"/>
+        </com.android.support.test>
+        """
           .trimIndent()
       )
       task.networkData(
         "https://maven.google.com/androidx/core/group-index.xml",
+        // language=xml
         """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <androidx.core>
-                  <core-ktx versions="1.2.0"/>
-                  <core versions="1.2.0"/>
-                </androidx.core>
-                """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <androidx.core>
+          <core-ktx versions="1.2.0"/>
+          <core versions="1.2.0"/>
+        </androidx.core>
+        """
           .trimIndent()
       )
       task.networkData(
         "https://maven.google.com/androidx/slidingpanelayout/group-index.xml",
+        // language=xml
         """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <androidx.slidingpanelayout>
-                  <slidingpanelayout versions="1.1.0", "1.2.0"/>
-                </androidx.slidingpanelayout>
-                """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <androidx.slidingpanelayout>
+          <slidingpanelayout versions="1.1.0,1.2.0"/>
+        </androidx.slidingpanelayout>
+        """
           .trimIndent()
       )
       task.networkData(
         "https://maven.google.com/androidx/compose/group-index.xml",
+        // language=xml
         """
         <?xml version="1.0" encoding="UTF-8"?>
         <androidx.compose>
           <compose-bom versions="2022.10.00,2022.11.00,2022.12.00,2023.01.00"/>
         </androidx.compose>
         """
+          .trimIndent()
       )
       task.networkData(
         "https://maven.google.com/androidx/compose/foundation/group-index.xml",
+        // language=xml
         """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <androidx.compose.foundation>
-                  <foundation versions="1.1.0", "1.2.0"/>
-                </androidx.compose.foundation>
-                """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <androidx.compose.foundation>
+          <foundation versions="1.1.0,1.2.0"/>
+        </androidx.compose.foundation>
+        """
           .trimIndent()
       )
 
@@ -7823,23 +7831,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       }
 
       return task
-    }
-
-    // Utility for testOR2RequiresAppCompat26Beta1
-    private fun getClientWithMockPlatformTarget(
-      version: AndroidVersion,
-      revision: Int
-    ): () -> com.android.tools.lint.checks.infrastructure.TestLintClient {
-      return {
-        object : com.android.tools.lint.checks.infrastructure.TestLintClient() {
-          override fun getCompileTarget(project: Project): IAndroidTarget {
-            val target = mock(IAndroidTarget::class.java)
-            whenever(target.revision).thenReturn(revision)
-            whenever(target.version).thenReturn(version)
-            return target
-          }
-        }
-      }
     }
 
     private val IMPLEMENTATION =

@@ -364,7 +364,7 @@ public class NetworkSecurityConfigDetectorTest extends AbstractCheckTest {
                         // A valid cert/PEM is not necessary for the test since the lint detector
                         // only checks for the presence of the resource.
                         source(
-                                "res/raw/debug_cas.xml",
+                                "res/raw/debug_cas",
                                 ""
                                         + "-----BEGIN CERTIFICATE-----\n"
                                         + "7vQMfXdGsRrXNGRGnX+vWDZ3/zWI0joDtCkNnqEpVn..HoX\n"
@@ -501,7 +501,7 @@ public class NetworkSecurityConfigDetectorTest extends AbstractCheckTest {
                                         + "    </debug-overrides>\n"
                                         + "</network-security-config>"),
                         source(
-                                "res/raw/debug_cas.xml",
+                                "res/raw/debug_cas",
                                 ""
                                         + "-----BEGIN CERTIFICATE-----\n"
                                         + "7vQMfXdGsRrXNGRGnX+vWDZ3/zWI0joDtCkNnqEpVn..HoX\n"

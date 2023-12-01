@@ -18,7 +18,9 @@ package com.android.tools.lint.checks.infrastructure
 
 import com.android.SdkConstants.DOT_CLASS
 import com.android.SdkConstants.DOT_JAR
+import com.android.SdkConstants.DOT_JSON
 import com.android.SdkConstants.DOT_KOTLIN_MODULE
+import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.PLATFORM_WINDOWS
 import com.android.SdkConstants.currentPlatform
 import com.android.tools.lint.checks.infrastructure.ProjectDescription.Companion.populateProjectDirectory
@@ -36,18 +38,23 @@ import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.Platform
 import com.android.tools.lint.detector.api.Project
 import com.android.utils.SdkUtils.isBitmapFile
+import com.android.utils.XmlUtils
 import com.google.common.collect.Lists
 import com.google.common.collect.ObjectArrays
 import com.google.common.io.Files
 import com.google.errorprone.annotations.CheckReturnValue
+import com.google.gson.JsonParseException
+import com.google.gson.JsonParser
 import java.io.File
 import java.io.IOException
 import java.util.EnumSet
+import java.util.zip.GZIPInputStream
 import kotlin.math.ceil
 import kotlin.math.log10
 import kotlin.math.max
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.xml.sax.SAXException
 
 /**
  * The actual machinery for running lint tests for a given [task]. This class is tied closely to the
@@ -85,6 +92,7 @@ class TestLintRunner(private val task: TestLintTask) {
     alreadyRun = true
     with(task) {
       ensureConfigured()
+      validateInputs()
       val rootDir: File =
         when {
           rootDirectory != null -> rootDirectory
@@ -652,11 +660,78 @@ class TestLintRunner(private val task: TestLintTask) {
             overrideConfigFile = overrideConfig.createFile(projectDir)
           }
         } catch (e: Exception) {
+          if (e is RuntimeException) {
+            throw e
+          }
           throw java.lang.RuntimeException(e.message, e)
         }
       }
     }
     return projectDirs
+  }
+
+  private fun TestLintTask.validateInputs() {
+    if (allowCompilationErrors) {
+      return
+    }
+    projects.forEach { project ->
+      project.files.forEach { fp ->
+        // By parsing here we're doing it for each test mode. Maybe move it up?
+        if (fp is TestFile.XmlTestFile) {
+          validateXml(fp.contents)
+        }
+      }
+    }
+    if (mockNetworkData != null) {
+      for ((url, data) in mockNetworkData) {
+        if (url.endsWith(DOT_XML)) {
+          // Validate XML files given that there have been problem here
+          // (for example forgetting to remove indentation; XML files
+          // with prologues that are indented aren't valid XML.)
+          val xml = String(data, Charsets.UTF_8)
+          validateXml(xml)
+        } else if (url.endsWith(DOT_JSON)) {
+          val json = String(data, Charsets.UTF_8)
+          validateJson(json)
+        } else if (url.endsWith(".gz")) {
+          GZIPInputStream(data.inputStream().buffered()).use { stream -> stream.readBytes() }
+        }
+      }
+    }
+  }
+
+  private fun validateJson(json: String) {
+    try {
+      JsonParser.parseString(json)
+    } catch (e: JsonParseException) {
+      throw RuntimeException(
+        "Couldn't parse JSON test data: ${e.localizedMessage}\n" +
+          "If intentional, set `.allowCompilationErrors()` on the lint() test task.\n" +
+          "Exact file content=\n\"\"\"$json\"\"\"",
+        e
+      )
+    }
+  }
+
+  private fun validateXml(xml: String) {
+    try {
+      if (xml.isNotEmpty()) {
+        if (xml[0] != '<' && xml.trim().startsWith("<?xml")) {
+          throw java.lang.RuntimeException(
+            "XML prologues (<?xml ...>) cannot be indented; that is not valid XML. " +
+              "Did you forget to call `indented()` on the xml test file?"
+          )
+        }
+        XmlUtils.parseDocument(xml, true)
+      }
+    } catch (e: SAXException) {
+      throw RuntimeException(
+        "Couldn't parse XML test file: ${e.localizedMessage}\n" +
+          "If intentional, set `.allowCompilationErrors()` on the lint() test task.\n" +
+          "Exact file content=\n\"\"\"$xml\"\"\"",
+        e
+      )
+    }
   }
 }
 

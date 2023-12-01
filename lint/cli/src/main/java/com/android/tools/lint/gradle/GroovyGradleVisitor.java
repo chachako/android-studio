@@ -68,9 +68,9 @@ public class GroovyGradleVisitor extends GradleVisitor {
             // This is a lint limitation rather than a user error, so don't complain
             // about these. Consider reporting a Issue#LINT_ERROR.
 
-            // From tests we want to see this!
+            // From tests we do want to see these!
             if (LintClient.isUnitTest()) {
-                t.printStackTrace();
+                throw t;
             }
         }
     }

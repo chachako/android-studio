@@ -1005,6 +1005,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         gradle("")
       )
       .skipTestModes(TestMode.PARTIAL)
+      .allowCompilationErrors()
       .run()
       .expect(
         """
