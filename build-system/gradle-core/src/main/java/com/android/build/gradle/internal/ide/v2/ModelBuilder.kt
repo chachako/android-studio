@@ -203,11 +203,8 @@ class ModelBuilder<
                 Versions.ANDROID_DSL to v2Version,
                 Versions.VARIANT_DEPENDENCIES to v2Version,
                 Versions.NATIVE_MODULE to v2Version,
-            ).also {
-                if (variantModel.projectOptions[BooleanOption.SUPPORT_PAST_STUDIO_VERSIONS]) {
-                    it.put(Versions.MINIMUM_MODEL_CONSUMER, minimumModelConsumerVersion)
-                }
-            }
+                Versions.MINIMUM_MODEL_CONSUMER to minimumModelConsumerVersion
+            )
         )
     }
 
