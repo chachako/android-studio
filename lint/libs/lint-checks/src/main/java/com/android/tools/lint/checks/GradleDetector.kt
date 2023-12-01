@@ -93,6 +93,7 @@ import java.util.Collections
 import java.util.EnumSet
 import java.util.function.Predicate
 import kotlin.text.Charsets.UTF_8
+import org.jetbrains.uast.UCallExpression
 import org.w3c.dom.Attr
 import org.w3c.dom.Element
 
@@ -497,6 +498,19 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         }
       } else {
         var dependencyString = getStringLiteralValue(value, valueCookie)
+        if (
+          dependencyString == null &&
+            (value.startsWith("platform(") || value.startsWith("testFixtures(")) &&
+            value.endsWith(")")
+        ) {
+          val argumentString = value.substring(value.indexOf('(') + 1, value.length - 1)
+          dependencyString =
+            if (valueCookie is UCallExpression && valueCookie.valueArguments.size == 1) {
+              getStringLiteralValue(argumentString, valueCookie.valueArguments.first())
+            } else {
+              getStringLiteralValue(argumentString, valueCookie)
+            }
+        }
         if (dependencyString == null) {
           dependencyString = getNamedDependency(value)
         }
@@ -1990,6 +2004,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: GradleContext,
     valueCookie: Any
   ) {
+    if (value.startsWith("platform(")) {
+      return
+    }
     if (
       dependency.substringBeforeLast(':') in commonBoms &&
         (CompileConfiguration.IMPLEMENTATION.matches(property) ||
