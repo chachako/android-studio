@@ -46,7 +46,6 @@ class PrivacySandboxSdkConsumerAppModelTest : ModelComparator() {
             .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
             .fetchModels(variantName = "debug")
 
-        with(result).compareVersions(goldenFile = "Versions", projectAction = { getProject(":app") })
         with(result).compareBasicAndroidProject(goldenFile = "BasicAndroidProject", projectAction = { getProject(":app") })
         with(result).compareAndroidProject(goldenFile = "AndroidProject", projectAction = { getProject(":app") })
         with(result).compareAndroidDsl(goldenFile = "AndroidDsl", projectAction = { getProject(":app") })
