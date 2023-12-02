@@ -7072,12 +7072,14 @@ class GradleDetectorTest : AbstractCheckTest() {
         Fix for build.gradle line 3: Change to 1.0:
         @@ -3 +3
         -   implementation 'com.example.cached:library:1.0-beta01'
+        @@ -5 +4
         +   implementation 'com.example.cached:library:1.0'
         Fix for build.gradle line 5: Change to 1.1-beta01:
         @@ -5 +5
         -   implementation 'com.example.cached:library:1.1-alpha01'
+        @@ -7 +6
         +   implementation 'com.example.cached:library:1.1-beta01'
-      """
+        """
       )
   }
 

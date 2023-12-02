@@ -164,11 +164,13 @@ class LocaleDetectorTest : AbstractCheckTest() {
             Fix for src/test/pkg/LocaleTest.kt line 2: Replace with `capitalize(Locale.ROOT)`:
             @@ -1 +1
             + import java.util.Locale
+            @@ -2 +3
             -     "wrong".capitalize()
             +     "wrong".capitalize(Locale.ROOT)
             Fix for src/test/pkg/LocaleTest.kt line 2: Replace with `capitalize(Locale.getDefault())`:
             @@ -1 +1
             + import java.util.Locale
+            @@ -2 +3
             -     "wrong".capitalize()
             +     "wrong".capitalize(Locale.getDefault())
             Fix for src/test/pkg/LocaleTest.kt line 4: Replace with `decapitalize(Locale.ROOT)`:

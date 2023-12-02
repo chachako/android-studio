@@ -962,33 +962,53 @@ internal constructor(
     private val MATCH_OLD_ERROR_MESSAGE = Regex("$OLD_ERROR_MESSAGE[^>]")
 
     /** Returns a test-suitable diff of the two strings. */
-    fun getDiff(before: String, after: String, diffCompatMode: Boolean = false): String {
-      return getDiff(before, after, 0, diffCompatMode)
+    fun getDiff(
+      before: String,
+      after: String,
+      diffCompatMode: Boolean = false,
+      diffCompatMode2: Boolean = false
+    ): String {
+      return getDiff(before, after, 0, diffCompatMode, diffCompatMode2)
     }
 
-    /** Returns a test-suitable diff of the two strings, including [windowSize] lines around. */
+    /**
+     * Returns a test-suitable diff of the two strings, including [windowSize] lines around.
+     *
+     * The algorithm has been tweaked a couple of times, first to be smarter about combining nearby
+     * regions into a single diff, and more recently to not incorrectly combine two nearby regions
+     * where there is a shared line between them. You can get the old behaviors by setting the
+     * [diffCompatMode] and [diffCompatMode2] properties to true.
+     */
     fun getDiff(
       before: String,
       after: String,
       windowSize: Int,
-      diffCompatMode: Boolean = false
+      diffCompatMode: Boolean = false,
+      diffCompatMode2: Boolean = false
     ): String {
       return getDiff(
         if (before.isEmpty()) emptyArray() else before.split("\n").toTypedArray(),
         if (after.isEmpty()) emptyArray() else after.split("\n").toTypedArray(),
         windowSize,
-        diffCompatMode
+        diffCompatMode,
+        diffCompatMode2
       )
     }
 
     /**
      * Returns a test-suitable diff of the two string arrays, including [windowSize] lines of delta.
+     *
+     * The algorithm has been tweaked a couple of times, first to be smarter about combining nearby
+     * regions into a single diff, and more recently to not incorrectly combine two nearby regions
+     * where there is a shared line between them. You can get the old behaviors by setting the
+     * [diffCompatMode] and [diffCompatMode2] properties to true.
      */
     fun getDiff(
       before: Array<String>,
       after: Array<String>,
       windowSize: Int = 0,
-      diffCompatMode: Boolean = false
+      diffCompatMode: Boolean = false,
+      diffCompatMode2: Boolean = false
     ): String {
       // Based on the LCS section in http://introcs.cs.princeton.edu/java/96optimization/
       val sb = StringBuilder()
@@ -1026,7 +1046,7 @@ internal constructor(
           i++
           j++
         } else {
-          if (lastLine < i - 1) {
+          if (lastLine < i - 1 || !diffCompatMode2 && lastLine == i - 1 && windowSize == 0) {
             sb.append("@@ -")
             sb.append((i + 1).toString())
             sb.append(" +")

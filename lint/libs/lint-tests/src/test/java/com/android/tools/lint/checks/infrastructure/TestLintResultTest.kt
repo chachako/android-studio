@@ -372,28 +372,40 @@ class TestLintResultTest {
 
   @Test
   fun testOverlaps() {
-    val a = "" + "[versions]\n" + "version=1\n" + "[libraries]\n" + "different1\n" + "[bundles]"
+    val a =
+      """
+      [versions]
+      version=1
+      [libraries]
+      different1
+      [bundles]
+      """
+        .trimIndent()
     val b =
-      "" +
-        "[versions]\n" +
-        "appcompat = \"1.5.1\"\n" +
-        "version=1\n" +
-        "[libraries]\n" +
-        "different2\n" +
-        "[bundles]\n" +
-        "androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+      """
+      [versions]
+      appcompat = "1.5.1"
+      version=1
+      [libraries]
+      different2
+      [bundles]
+      androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+      """
+        .trimIndent()
     assertThat(getDiff(a, b, 1))
       .isEqualTo(
-        "" +
-          "@@ -2 +2\n" +
-          "  [versions]\n" +
-          "+ appcompat = \"1.5.1\"\n" +
-          "  version=1\n" +
-          "  [libraries]\n" +
-          "- different1\n" +
-          "+ different2\n" +
-          "  [bundles]\n" +
-          "+ androidx-appcompat = { module = \"androidx.appcompat:appcompat\", version.ref = \"appcompat\" }"
+        """
+        @@ -2 +2
+          [versions]
+        + appcompat = "1.5.1"
+          version=1
+          [libraries]
+        - different1
+        + different2
+          [bundles]
+        + androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+        """
+          .trimIndent()
       )
     assertThat(getDiff(a, b, 2))
       .isEqualTo(
@@ -468,6 +480,120 @@ class TestLintResultTest {
             +     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
                   fun getVectorDrawable(): VectorDrawable {
             """
+          .trimIndent()
+      )
+  }
+
+  @Test
+  fun testDoNotMergeNearby1() {
+    // Based on GridLayoutDetectorTest#testGridLayout2 where I incorrectly
+    // treat a fix diff as if the deleted and inserted lines are adjacent;
+    // there is a line in the middle the diff was omitting.
+    val before =
+      """
+        1
+        2
+        3
+        4
+        """
+        .trimIndent()
+    val after =
+      """
+        1
+        new
+        2
+        4
+        """
+        .trimIndent()
+
+    assertEquals(
+      """
+      @@ -2 +2
+      + new
+      @@ -3 +4
+      - 3
+      """
+        .trimIndent(),
+      getDiff(before, after, 0)
+    )
+    assertEquals(
+      """
+      @@ -2 +2
+      + new
+      - 3
+      """
+        .trimIndent(),
+      getDiff(before, after, 0, diffCompatMode2 = true)
+    )
+  }
+
+  @Test
+  fun testDoNotMergeNearby2() {
+    val before =
+      """
+        1
+        2
+        3
+        4
+        5
+        """
+        .trimIndent()
+    val after =
+      """
+        1
+        new
+        2
+        4
+        5
+        """
+        .trimIndent()
+    assertEquals(
+      """
+      @@ -2 +2
+      + new
+      @@ -3 +4
+      - 3
+      """
+        .trimIndent(),
+      getDiff(before, after, 0)
+    )
+  }
+
+  @Test
+  fun testDoNotMergeNearby3() {
+    val before =
+      """
+      1
+      2
+      3
+      4a
+      5
+      """
+        .trimIndent()
+    val after =
+      """
+      1
+      new1
+      2
+      3
+      4b
+      5
+      new2
+      """
+        .trimIndent()
+    assertThat(getDiff(before, after, 1))
+      .isEqualTo(
+        """
+        @@ -2 +2
+          1
+        + new1
+          2
+          3
+        - 4a
+        + 4b
+          5
+        + new2
+        """
           .trimIndent()
       )
   }

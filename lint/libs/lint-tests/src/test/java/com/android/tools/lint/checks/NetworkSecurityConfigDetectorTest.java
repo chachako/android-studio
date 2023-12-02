@@ -487,6 +487,7 @@ public class NetworkSecurityConfigDetectorTest extends AbstractCheckTest {
                                 + "@@ -8 +8\n"
                                 + "-         <trustAnchor>\n"
                                 + "+         <trust-anchors>\n"
+                                + "@@ -10 +10\n"
                                 + "-         </trustAnchor>\n"
                                 + "+         </trust-anchors>\n"
                                 + "Fix for res/xml/network_config.xml line 15: Replace with `<certificates>`:\n"
