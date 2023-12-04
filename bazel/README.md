@@ -204,6 +204,10 @@ tools/base/bazel/maven/maven_fetch.sh
 
 5. Check-in generated changes to the `tools/base/bazel/maven/BUILD.maven` file.
 
+If you are making changes to the list of artifacts, it is also useful to run
+`tools/base/bazel/maven/maven_clean.sh` as well to ensure that unused dependencies
+are removed and the prebuilts are cleaned up before uploading.
+
 See the `toplevel.WORKSPACE` file for examples on how to express non-jar dependency
 types and classifiers (e.g., `linux-x86_64`).
 
