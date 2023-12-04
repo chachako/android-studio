@@ -196,6 +196,8 @@ public class SdkUtils {
                             while (next < explanationLength) {
                                 char c = text.charAt(next);
                                 if (Character.isWhitespace(c)) {
+                                    // Consume current white space so it is not used in next line
+                                    next++;
                                     break;
                                 } else {
                                     lineEnd++;

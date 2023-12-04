@@ -127,6 +127,12 @@ public class SdkUtilsTest extends TestCase {
           wrapped);
     }
 
+    public void testWrapLongContinuousLineNoBreak() {
+        String s = "Space after very_long_word not present";
+        String wrapped = SdkUtils.wrap(s, 10, 10, null, false);
+        assertEquals("Space\nafter\nvery_long_word\nnot\npresent\n", wrapped);
+    }
+
     public void testWrapPrefix() {
         String s =
             "Hardcoding text attributes directly in layout files is bad for several reasons:\n" +
