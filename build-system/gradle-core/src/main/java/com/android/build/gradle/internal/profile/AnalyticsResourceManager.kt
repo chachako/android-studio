@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.profile
 
-import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.projectIsolationRequested
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.VariantAwareTask
@@ -61,7 +60,6 @@ import org.gradle.tooling.events.task.TaskOperationResult
 import org.gradle.tooling.events.task.TaskSkippedResult
 import org.gradle.tooling.events.task.TaskSuccessResult
 import java.io.File
-import java.io.IOException
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable

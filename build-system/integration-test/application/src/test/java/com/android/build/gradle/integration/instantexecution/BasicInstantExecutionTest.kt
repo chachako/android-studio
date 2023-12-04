@@ -49,7 +49,6 @@ class BasicInstantExecutionTest {
                 )
                 .build()
         )
-        .enableProfileOutput()
         .create()
 
     @Before
@@ -112,8 +111,7 @@ class BasicInstantExecutionTest {
     fun testWithProjectIsolation() {
         executor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.PROJECT_ISOLATION)
-            // https://buganizer.corp.google.com/issues/190037100
-            .withArgument("-Dorg.gradle.unsafe.configuration-cache.max-problems=6")
+            .withArgument("-Dorg.gradle.unsafe.configuration-cache.max-problems=0")
             .run("assemble")
     }
 
