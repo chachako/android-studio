@@ -37,7 +37,7 @@ def no_local_genrules(build_env: bazel.BuildEnv):
   if new_targets:
     raise BuildGraphException(
         title='Disallow local strategy',
-        go_link='go/foo',
+        go_link='go/studio-ci#no-local-genrules',
         body='ERROR: The following targets are using local=1\n'+''.join(new_targets),
     )
 
@@ -51,9 +51,9 @@ def require_cpu_tags(build_env: bazel.BuildEnv):
     return
 
   raise BuildGraphException(
-    title='MacOS test must have cpu:[0-9] tag',
+    title='MacOS tests must have a cpu:[0-9] tag',
     go_link='go/studio-ci#macos',
-    body='ERROR: The following targets are missing a cpu:N tag.\n'+result.stdout
+    body='ERROR: The following targets are missing a cpu:N tag.\n'+result.stdout.decode('utf8')
   )
 
 
