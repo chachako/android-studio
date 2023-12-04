@@ -56,8 +56,6 @@ class NoOpIncrementalBuildTaskStatesTest {
                 ":app:desugarDebugFileDependencies",
                 ":app:dexBuilderDebug",
                 ":app:extractDeepLinksDebug",
-                ":app:generateDebugFeatureMetadata",
-                ":app:generateDebugPrivacySandboxSdkRuntimeConfigFile",
                 ":app:generateDebugResources",
                 ":app:generateDebugResValues",
                 ":app:javaPreCompileDebug",

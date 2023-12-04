@@ -236,6 +236,9 @@ enum class BooleanOption(
             false,
             FeatureStage.Experimental
     ),
+    PRIVACY_SANDBOX_SDK_SUPPORT("android.experimental.privacysandboxsdk.enable",
+            false,
+            FeatureStage.Experimental),
 
     PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES(
             "android.experimental.privacysandboxsdk.requireServices", true, FeatureStage.Experimental),
@@ -307,9 +310,6 @@ enum class BooleanOption(
         true,
         FeatureStage.SoftlyEnforced(VERSION_9_0)
     ),
-    PRIVACY_SANDBOX_SDK_SUPPORT("android.privacysandboxsdk.enable",
-            true,
-            FeatureStage.SoftlyEnforced(VERSION_9_0)),
 
     /**
      * When enabled, Gradle Managed Device allows a custom managed device type that can be provided

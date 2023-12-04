@@ -40,13 +40,7 @@
                - apkFromBundleTaskName              = "extractApksForDebug"
                - apkFromBundleTaskOutputListingFile = {PROJECT}/build/intermediates/apk_from_bundle_ide_redirect_file/debug/createDebugApksFromBundleListingFileRedirect/redirect.txt{!}
             - codeShrinker                  = (null)
-            - privacySandboxSdkInfo:
-               - task                    = "buildPrivacySandboxSdkApksForDebug"
-               - outputListingFile       = {PROJECT}/build/intermediates/extracted_apks_from_privacy_sandbox_sdks_ide_model/debug/buildPrivacySandboxSdkApksForDebug/ide_model.json{!}
-               - additionalApkSplitTask  = "generateDebugAdditionalSplitForPrivacySandboxDeployment"
-               - additionalApkSplitFile  = {PROJECT}/build/intermediates/uses_sdk_library_split_for_local_deployment/debug/generateDebugAdditionalSplitForPrivacySandboxDeployment/output-metadata.json{!}
-               - taskLegacy              = "extractApksFromSdkSplitsForDebug"
-               - outputListingLegacyFile = {PROJECT}/build/intermediates/apk_from_sdks_ide_model/debug/extractApksFromSdkSplitsForDebug/output-metadata.json{!}
+            - privacySandboxSdkInfo         = (null)
          < mainArtifact
          > androidTestArtifact:
             - compileTaskName               = "compileDebugAndroidTestSources"

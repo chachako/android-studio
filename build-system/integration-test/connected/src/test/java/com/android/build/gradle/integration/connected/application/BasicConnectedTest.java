@@ -19,10 +19,8 @@ package com.android.build.gradle.integration.connected.application;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
-import java.io.IOException;
-
 import com.android.build.gradle.options.BooleanOption;
-import com.google.common.truth.Truth;
+import java.io.IOException;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -48,8 +46,19 @@ public class BasicConnectedTest {
 
     @Test
     public void install() throws Exception {
+        TestFileUtils.appendToFile(
+                project.getGradlePropertiesFile(),
+                BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false");
         project.execute("installDebug", "uninstallAll");
         // b/37498215 - Try again.  Behavior may be different when tasks are up-to-date.
+        project.execute("installDebug", "uninstallAll");
+    }
+
+    @Test // Regression test for b/304312888
+    public void installWithPrivacySandboxEnabled() throws IOException {
+        TestFileUtils.appendToFile(
+                project.getGradlePropertiesFile(),
+                BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=true");
         project.execute("installDebug", "uninstallAll");
     }
 

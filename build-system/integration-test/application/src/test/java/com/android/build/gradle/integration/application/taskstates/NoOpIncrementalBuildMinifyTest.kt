@@ -73,8 +73,6 @@ class NoOpIncrementalBuildMinifyTest {
                 ":generateDebugResources",
                 ":generateDebugUnitTestLintModel",
                 ":generateReleaseAssets",
-                ":generateReleaseFeatureMetadata",
-                ":generateReleasePrivacySandboxSdkRuntimeConfigFile",
                 ":generateReleaseResValues",
                 ":generateReleaseResources",
                 ":javaPreCompileDebug",
