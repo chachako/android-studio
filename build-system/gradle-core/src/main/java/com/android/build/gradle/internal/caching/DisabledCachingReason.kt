@@ -28,7 +28,7 @@ object DisabledCachingReason {
      *     packing the task's outputs or downloading + unpacking the cached outputs (which are
      *     usually large).
      *
-     * Examples: Bug 269175904
+     * Examples: Bug 269175904, 194804421
      *
      * Note: This applies to *simple* merging tasks only. For tasks that also perform significant
      * processing in addition to merging, caching may still be beneficial.

@@ -58,10 +58,7 @@ class MinifyCacheabilityTest {
             ":generateMinifiedResValues",
             ":jacocoMinified",
             ":javaPreCompileMinified",
-            ":mergeMinifiedAssets",
-            ":mergeMinifiedJniLibFolders",
             ":mergeMinifiedResources",
-            ":mergeMinifiedShaders",
             ":minifyMinifiedWithR8",
             ":packageMinifiedResources",
             ":parseMinifiedLocalResources",
@@ -84,7 +81,10 @@ class MinifyCacheabilityTest {
             ":extractProguardFiles",
             ":generateMinifiedJacocoPropertiesFile", /** Intentionally not cacheable. See [com.android.build.gradle.internal.coverage.JacocoPropertiesTask] */
             ":mapMinifiedSourceSetPaths", /* Intentionally not cacheable */
+            ":mergeMinifiedAssets",
             ":mergeMinifiedJavaResource", /* Bug 181142260 */
+            ":mergeMinifiedJniLibFolders",
+            ":mergeMinifiedShaders",
             ":processMinifiedJavaRes",
             ":mergeMinifiedArtProfile", /** Intentionally not cacheable see [com.android.build.gradle.internal.tasks.MergeArtProfileTask] */
             ":mergeMinifiedGeneratedProguardFiles", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.MergeGeneratedProguardFilesCreationAction] */
