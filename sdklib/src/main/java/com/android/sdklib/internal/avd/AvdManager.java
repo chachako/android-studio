@@ -16,6 +16,7 @@
 package com.android.sdklib.internal.avd;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static java.util.stream.Collectors.joining;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
@@ -77,6 +78,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.OptionalLong;
@@ -133,9 +135,21 @@ public class AvdManager {
     public static final String AVD_INI_TAG_ID = "tag.id"; //$NON-NLS-1$
 
     /**
+     * AVD/config.ini key name for the tag ids of the AVD's system image, represented as a
+     * comma-separated list
+     */
+    public static final String AVD_INI_TAG_IDS = "tag.ids"; // $NON-NLS-1$
+
+    /**
      * AVD/config.ini key name representing the tag display of the specific avd
      */
     public static final String AVD_INI_TAG_DISPLAY = "tag.display"; //$NON-NLS-1$
+
+    /**
+     * AVD/config.ini key name for the display names of the tags of the AVD's system image,
+     * represented as a comma-separated list
+     */
+    public static final String AVD_INI_TAG_DISPLAYNAMES = "tag.displaynames"; // $NON-NLS-1$
 
     /**
      * AVD/config.ini key name representing the abi type of the specific avd
@@ -917,6 +931,12 @@ public class AvdManager {
             IdDisplay tag = systemImage.getTag();
             configValues.put(AVD_INI_TAG_ID, tag.getId());
             configValues.put(AVD_INI_TAG_DISPLAY, tag.getDisplay());
+            List<IdDisplay> tags = systemImage.getTags();
+            configValues.put(
+                    AVD_INI_TAG_IDS, tags.stream().map(IdDisplay::getId).collect(joining(",")));
+            configValues.put(
+                    AVD_INI_TAG_DISPLAYNAMES,
+                    tags.stream().map(IdDisplay::getDisplay).collect(joining(",")));
             configValues.put(AVD_INI_ABI_TYPE, systemImage.getAbiType());
             configValues.put(AVD_INI_PLAYSTORE_ENABLED, Boolean.toString(deviceHasPlayStore && systemImage.hasPlayStore()));
             configValues.put(

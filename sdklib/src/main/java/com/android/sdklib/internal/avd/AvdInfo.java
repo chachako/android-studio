@@ -16,6 +16,8 @@
 
 package com.android.sdklib.internal.avd;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
+
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
@@ -26,12 +28,16 @@ import com.android.sdklib.SystemImageTags;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.repository.IdDisplay;
 import com.android.sdklib.repository.targets.SystemImage;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Streams;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /** An immutable structure describing an Android Virtual Device. */
 public final class AvdInfo {
@@ -151,6 +157,22 @@ public final class AvdInfo {
         }
         String display = getProperties().get(AvdManager.AVD_INI_TAG_DISPLAY);
         return IdDisplay.create(id, display == null ? id : display);
+    }
+
+    public ImmutableList<IdDisplay> getTags() {
+        String ids = getProperties().get(AvdManager.AVD_INI_TAG_IDS);
+        if (ids == null) {
+            return ImmutableList.of(getTag());
+        }
+        String displays =
+                Strings.nullToEmpty(getProperties().get(AvdManager.AVD_INI_TAG_DISPLAYNAMES));
+        return Streams.zip(
+                        Splitter.on(",").splitToStream(ids),
+                        Stream.concat(
+                                Splitter.on(",").splitToStream(displays),
+                                Stream.generate(() -> "")),
+                        (id, display) -> IdDisplay.create(id, display.isEmpty() ? id : display))
+                .collect(toImmutableList());
     }
 
     /** Returns the processor type of the AVD. */

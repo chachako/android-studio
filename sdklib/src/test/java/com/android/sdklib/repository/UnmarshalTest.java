@@ -327,6 +327,9 @@ public class UnmarshalTest extends TestCase {
                                 false,
                                 progress,
                                 "Xml");
+        // Note: if the following assertion fails, it could be because another test has already
+        // parsed a future XML version, which sets a static flag suppressing future warnings.
+        // The other test will need to either stop parsing future XML versions or be made hermetic.
         assertFalse(progress.getWarnings().isEmpty());
         LocalPackage local = repo.getLocalPackage();
         assertEquals("sample;foo", local.getPath());

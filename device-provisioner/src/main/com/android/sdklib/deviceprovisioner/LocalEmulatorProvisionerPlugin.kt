@@ -29,18 +29,13 @@ import com.android.adblib.utils.createChildScope
 import com.android.annotations.concurrency.GuardedBy
 import com.android.prefs.AndroidLocationsSingleton
 import com.android.sdklib.SdkVersionInfo
-import com.android.sdklib.SystemImageTags.ANDROID_TV_TAG
-import com.android.sdklib.SystemImageTags.AUTOMOTIVE_PLAY_STORE_TAG
-import com.android.sdklib.SystemImageTags.AUTOMOTIVE_TAG
-import com.android.sdklib.SystemImageTags.GOOGLE_TV_TAG
-import com.android.sdklib.SystemImageTags.WEAR_TAG
+import com.android.sdklib.SystemImageTags
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
 import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
 import com.android.sdklib.internal.avd.HardwareProperties
-import com.android.sdklib.repository.IdDisplay
 import com.intellij.icons.AllIcons
 import java.io.IOException
 import java.nio.file.Path
@@ -262,7 +257,7 @@ class LocalEmulatorProvisionerPlugin(
             randomConnectionId()
           )
           // Device type is not always reliably read from properties
-          deviceType = handle.avdInfo.tag.toDeviceType()
+          deviceType = handle.avdInfo.toDeviceType()
           density = deviceProperties[DevicePropertyNames.QEMU_SF_LCD_DENSITY]?.toIntOrNull()
           // Keep the resolution value we got from AvdInfo, since while the emulator is booting,
           // Resolution.readFromDevice() will not work.
@@ -561,7 +556,7 @@ class LocalEmulatorProperties(
         abiList = listOfNotNull(Abi.getEnum(avdInfo.abiType))
         avdName = avdInfo.name
         displayName = avdInfo.displayName
-        deviceType = avdInfo.tag.toDeviceType()
+        deviceType = avdInfo.toDeviceType()
         hasPlayStore = avdInfo.hasPlayStore()
         wearPairingId = avdInfo.id.takeIf { isPairable() }
         density = avdInfo.density
@@ -616,15 +611,15 @@ internal object AvdChangedError : DeviceError {
   override val message = "Changes will apply on restart"
 }
 
-private fun IdDisplay.toDeviceType(): DeviceType =
-  when (this) {
-    ANDROID_TV_TAG,
-    GOOGLE_TV_TAG -> DeviceType.TV
-    AUTOMOTIVE_TAG,
-    AUTOMOTIVE_PLAY_STORE_TAG -> DeviceType.AUTOMOTIVE
-    WEAR_TAG -> DeviceType.WEAR
+private fun AvdInfo.toDeviceType(): DeviceType {
+  val tags = tags
+  return when {
+    SystemImageTags.isTvImage(tags) -> DeviceType.TV
+    SystemImageTags.isAutomotiveImage(tags) -> DeviceType.AUTOMOTIVE
+    SystemImageTags.isWearImage(tags) -> DeviceType.WEAR
     else -> DeviceType.HANDHELD
   }
+}
 
 private val LOCAL_EMULATOR_REGEX = "emulator-(\\d+)".toRegex()
 

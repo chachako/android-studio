@@ -34,6 +34,7 @@ import com.android.sdklib.PathFileWrapper;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
 import com.android.sdklib.repository.AndroidSdkHandler;
+import com.android.sdklib.repository.IdDisplay;
 import com.android.sdklib.repository.targets.SystemImage;
 import com.android.testutils.MockLog;
 import com.android.testutils.file.InMemoryFileSystems;
@@ -51,6 +52,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
 import java.util.TreeMap;
@@ -81,6 +83,7 @@ public final class AvdManagerTest {
     private SystemImage mSystemImageWearChina;
     private SystemImage mSystemImageChromeOs;
     private SystemImage mSystemImage33ext4;
+    private SystemImage mSystemImageTablet;
     private final FileSystem mMockFs = InMemoryFileSystems.createInMemoryFileSystem();
 
     @Before
@@ -98,6 +101,7 @@ public final class AvdManagerTest {
         recordChromeOsSysImg(root);
         recordPlayStoreSysImg33ext4(root);
         record33ext4(root);
+        recordPlayStoreTabletImage(root);
         Path prefsRoot = root.resolve(ANDROID_PREFS_ROOT);
         mAndroidSdkHandler = new AndroidSdkHandler(root.resolve("sdk"), prefsRoot);
         mAvdManager =
@@ -120,17 +124,22 @@ public final class AvdManagerTest {
                         mGradleManagedDeviceAvdManager, name.getMethodName(), false);
 
         for (SystemImage si : mAndroidSdkHandler.getSystemImageManager(new FakeProgressIndicator()).getImages()) {
-            final String tagId = si.getTag().getId();
-            if ("default".equals(tagId)) {
+            final List<IdDisplay> tags = si.getTags();
+            if (tags.isEmpty()) {
                 if (si.getAndroidVersion().getApiLevel() == 21) {
                     mSystemImageApi21 = si;
                 } else {
                     mSystemImageAosp = si;
                 }
-            } else if ("google_apis".equals(tagId)) {
+                continue;
+            }
+            final String tagId = tags.get(0).getId();
+            if ("google_apis".equals(tagId)) {
                 mSystemImageGoogle = si;
             } else if ("google_apis_playstore".equals(tagId)) {
-                if (si.getAndroidVersion().getApiLevel() == 33) {
+                if (tags.size() == 2 && tags.get(1).getId().equals("tablet")) {
+                    mSystemImageTablet = si;
+                } else if (si.getAndroidVersion().getApiLevel() == 33) {
                     mSystemImage33ext4 = si;
                 } else {
                     mSystemImagePlay = si;
@@ -480,6 +489,31 @@ public final class AvdManagerTest {
         // confuse the standard AVD manager (.android/avd).
         mAvdManager.reloadAvds();
         assertThat(mAvdManager.getAllAvds()).isEmpty();
+    }
+
+    @Test
+    public void createTabletAvd() {
+        mAvdManager.createAvd(
+                mAvdFolder,
+                name.getMethodName(),
+                mSystemImageTablet,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                false,
+                false);
+
+        Path avdConfigFile = mAvdFolder.resolve("config.ini");
+        assertTrue("Expected config.ini in " + mAvdFolder, Files.exists(avdConfigFile));
+        Map<String, String> properties =
+                AvdManager.parseIniFile(new PathFileWrapper(avdConfigFile), null);
+        assertEquals("google_apis_playstore", properties.get("tag.id"));
+        assertEquals("Google Play", properties.get("tag.display"));
+        assertEquals("google_apis_playstore,tablet", properties.get("tag.ids"));
+        assertEquals("Google Play,Tablet", properties.get("tag.displaynames"));
     }
 
     @Test
@@ -1236,5 +1270,38 @@ public final class AvdManagerTest {
                         + "<display-name>Google APIs with Playstore Intel x86 Atom System Image</display-name>"
                         + "<uses-license ref=\"license-9A5C00D5\"/></localPackage>"
                         + "</sys-img:sdk-sys-img>\n");
+    }
+
+    private static void recordPlayStoreTabletImage(Path root) throws IOException {
+        InMemoryFileSystems.recordExistingFile(
+                root.resolve(
+                        "sdk/system-images/android-34/google_apis_playstore_tablet/x86_64/system.img"));
+        Files.createDirectories(
+                root.resolve(
+                        "sdk/system-images/android-34/google_apis_playstore_tablet/x86_64/data"));
+
+        // Note that we must use the current schema version here ("/03") for multi-tag to work.
+        InMemoryFileSystems.recordExistingFile(
+                root.resolve(
+                        "sdk/system-images/android-34/google_apis_playstore_tablet/x86_64/package.xml"),
+                "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                        + "<ns3:sdk-sys-img "
+                        + "xmlns:ns2=\"http://schemas.android.com/sdk/android/repo/repository2/03\" "
+                        + "xmlns:ns3=\"http://schemas.android.com/sdk/android/repo/sys-img2/03\" "
+                        + "xmlns:ns4=\"http://schemas.android.com/repository/android/common/02\" "
+                        + "xmlns:ns5=\"http://schemas.android.com/sdk/android/repo/addon2/03\">"
+                        + "<license id=\"license-9A5C00D5\" type=\"text\">Terms and Conditions\n"
+                        + "</license><localPackage "
+                        + "path=\"system-images;android-34;google_apis_playstore_tablet;x86_64\" "
+                        + "obsolete=\"false\"><type-details "
+                        + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                        + "xsi:type=\"ns3:sysImgDetailsType\"><api-level>34</api-level>"
+                        + "<tag><id>google_apis_playstore</id><display>Google Play</display></tag>"
+                        + "<tag><id>tablet</id><display>Tablet</display></tag>"
+                        + "<vendor><id>google</id><display>Google Inc.</display></vendor>"
+                        + "<abi>x86_64</abi></type-details><revision><major>9</major></revision>"
+                        + "<display-name>Tablet Google APIs with Playstore Intel x86 Atom System Image</display-name>"
+                        + "<uses-license ref=\"license-9A5C00D5\"/></localPackage>"
+                        + "</ns3:sdk-sys-img>\n");
     }
 }
