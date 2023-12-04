@@ -119,7 +119,8 @@ data class CxxConfigurationParameters(
     val buildFile: File,
     val isDebuggable: Boolean,
     val minSdkVersion: AndroidVersion,
-    val ignoreMinSdkVersion: List<Int>,
+    val ignoreMinSdkVersionFromDsl: Any?,
+    val ignoreMinSdkVersionFromProperty: String?,
     val compileSdkVersion: String,
     val ndkVersion: String?,
     val ndkPathFromDsl: String?,
@@ -288,11 +289,8 @@ fun tryCreateConfigurationParameters(
         buildFile = projectInfo.buildFile,
         isDebuggable = variant.debuggable,
         minSdkVersion = variant.minSdk.toSharedAndroidVersion(),
-        ignoreMinSdkVersion = option(StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR)
-            ?.split(",")
-            ?.filter { it.isNotBlank() }
-            ?.map { it.toInt() }
-            ?: listOf(),
+        ignoreMinSdkVersionFromDsl = variant.experimentalProperties.get()[StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR.propertyName],
+        ignoreMinSdkVersionFromProperty = option(StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR),
         compileSdkVersion = globalConfig.compileSdkHashString,
         ndkVersion = globalConfig.ndkVersion,
         ndkPathFromDsl = globalConfig.ndkPath,

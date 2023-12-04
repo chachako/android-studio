@@ -254,7 +254,9 @@ class PlatformConfiguratorTest {
         minSdkVersion: Int?,
         codeName: String?,
         ndkMetaPlatforms: NdkMetaPlatforms? = null,
-        vararg ignoreMinSdkVersion: Int = intArrayOf()) : Int {
+        ignoreMinSdkVersionFromDsl: Any? = null,
+        ignoreMinSdkVersionFromProperty: String? = null,
+        ) : Int {
         val androidVersion = if (minSdkVersion == null && codeName == null) {
             null
         } else {
@@ -265,7 +267,8 @@ class PlatformConfiguratorTest {
                 ABIS_FROM_META,
                 androidVersion,
                 ndkMetaPlatforms,
-                ignoreMinSdkVersion.toList())
+                ignoreMinSdkVersionFromDsl,
+                ignoreMinSdkVersionFromProperty)
     }
 
     @Test
@@ -456,11 +459,12 @@ class PlatformConfiguratorTest {
         assertThat(logger.messageCount).isEqualTo(1)
         assertThat(logger.errors.single()).isEqualTo(
             "[CXX1110] Platform version 19 is unsupported by this NDK. Please change minSdk to at least 21 to avoid undefined behavior. " +
-                    "To suppress this error, add android.ndk.suppressMinSdkVersionError=19 to the project's gradle.properties.")
+                    "To suppress this error, add android.ndk.suppressMinSdkVersionError=21 to the project's gradle.properties or " +
+                    "set android.experimentalProperties[\"android.ndk.suppressMinSdkVersionError\"]=21 in the Gradle build file.")
     }
 
     @Test
-    fun `Bug 310718265 platform too low error ignored if user passes flag`() {
+    fun `Bug 310718265 platform too low error ignored if user passes DSL flag`() {
         val configurator = platformConfiguratorNdk26()
         val platform = findSuitablePlatformVersion(
             configurator,
@@ -468,13 +472,13 @@ class PlatformConfiguratorTest {
             minSdkVersion = 19,
             codeName = null,
             expectedNdkR26MetaPlatforms(),
-            19)
+            ignoreMinSdkVersionFromDsl = 21)
         assertThat(platform).isEqualTo(19)
         assertThat(logger.messageCount).isEqualTo(0)
     }
 
     @Test
-    fun `Bug 310718265 platform too low error ignored if user passed wrong flag`() {
+    fun `Bug 310718265 platform too low error ignored if user sets property`() {
         val configurator = platformConfiguratorNdk26()
         val platform = findSuitablePlatformVersion(
             configurator,
@@ -482,12 +486,98 @@ class PlatformConfiguratorTest {
             minSdkVersion = 19,
             codeName = null,
             expectedNdkR26MetaPlatforms(),
-            20)
+            ignoreMinSdkVersionFromProperty = "21")
+        assertThat(platform).isEqualTo(19)
+        assertThat(logger.messageCount).isEqualTo(0)
+    }
+
+    @Test
+    fun `Bug 310718265 ignoreMinSdkVersionFromDsl supersedes ignoreMinSdkVersionFromProperty`() {
+        val configurator = platformConfiguratorNdk26()
+        val platform = findSuitablePlatformVersion(
+            configurator,
+            abiName = "x86",
+            minSdkVersion = 19,
+            codeName = null,
+            expectedNdkR26MetaPlatforms(),
+            ignoreMinSdkVersionFromDsl = 21,
+            ignoreMinSdkVersionFromProperty = "100")
+        assertThat(platform).isEqualTo(19)
+        assertThat(logger.messageCount).isEqualTo(1)
+        assertThat(logger.infos.single()).isEqualTo(
+            "C/C++: Both android.ndk.suppressMinSdkVersionError Gradle property and " +
+                    "android.experimentalProperties[\"android.ndk.suppressMinSdkVersionError\"] are set. The " +
+                    "former will be ignored.")
+    }
+
+    @Test
+    fun `Bug 310718265 experimental property not convertible to int`() {
+        val configurator = platformConfiguratorNdk26()
+        val platform = findSuitablePlatformVersion(
+            configurator,
+            abiName = "x86",
+            minSdkVersion = 21,
+            codeName = null,
+            expectedNdkR26MetaPlatforms(),
+            ignoreMinSdkVersionFromDsl = "Not an Int")
+        assertThat(platform).isEqualTo(21)
+        assertThat(logger.messageCount).isEqualTo(1)
+        assertThat(logger.errors.single()).isEqualTo(
+            "[CXX1111] Value \"Not an Int\" of android.ndk.suppressMinSdkVersionError was " +
+                    "not convertible to integer and will be ignored.")
+    }
+
+    @Test
+    fun `Bug 310718265 property not convertible to int`() {
+        val configurator = platformConfiguratorNdk26()
+        val platform = findSuitablePlatformVersion(
+            configurator,
+            abiName = "x86",
+            minSdkVersion = 21,
+            codeName = null,
+            expectedNdkR26MetaPlatforms(),
+            ignoreMinSdkVersionFromProperty = "Not an Int")
+        assertThat(platform).isEqualTo(21)
+        assertThat(logger.messageCount).isEqualTo(1)
+        assertThat(logger.errors.single()).isEqualTo(
+            "[CXX1111] Value \"Not an Int\" of android.ndk.suppressMinSdkVersionError was " +
+                    "not convertible to integer and will be ignored.")
+    }
+
+    @Test
+    fun `Bug 310718265 platform too low error ignored if user sets wrong DSL flag`() {
+        val configurator = platformConfiguratorNdk26()
+        val platform = findSuitablePlatformVersion(
+            configurator,
+            abiName = "x86",
+            minSdkVersion = 19,
+            codeName = null,
+            expectedNdkR26MetaPlatforms(),
+            ignoreMinSdkVersionFromDsl = 20)
         assertThat(platform).isEqualTo(19)
         assertThat(logger.messageCount).isEqualTo(1)
         assertThat(logger.errors.single()).isEqualTo(
             "[CXX1110] Platform version 19 is unsupported by this NDK. Please change minSdk to at least 21 to avoid undefined behavior. " +
-                    "To suppress this error, add android.ndk.suppressMinSdkVersionError=19 to the project's gradle.properties.")
+                    "To suppress this error, add android.ndk.suppressMinSdkVersionError=21 to the project's gradle.properties or " +
+                    "set android.experimentalProperties[\"android.ndk.suppressMinSdkVersionError\"]=21 in the Gradle build file.")
+    }
+
+    @Test
+    fun `Bug 310718265 platform too low error ignored if user sets wrong property`() {
+        val configurator = platformConfiguratorNdk26()
+        val platform = findSuitablePlatformVersion(
+            configurator,
+            abiName = "x86",
+            minSdkVersion = 19,
+            codeName = null,
+            expectedNdkR26MetaPlatforms(),
+            ignoreMinSdkVersionFromProperty = "20")
+        assertThat(platform).isEqualTo(19)
+        assertThat(logger.messageCount).isEqualTo(1)
+        assertThat(logger.errors.single()).isEqualTo(
+            "[CXX1110] Platform version 19 is unsupported by this NDK. Please change minSdk to at least 21 to avoid undefined behavior. " +
+                    "To suppress this error, add android.ndk.suppressMinSdkVersionError=21 to the project's gradle.properties or " +
+                    "set android.experimentalProperties[\"android.ndk.suppressMinSdkVersionError\"]=21 in the Gradle build file.")
     }
 
     @Test

@@ -85,7 +85,8 @@ fun createCxxAbiModel(
                             .ndkInfo
                             .findSuitablePlatformVersion(info.name,
                                 configurationParameters.minSdkVersion,
-                                configurationParameters.ignoreMinSdkVersion),
+                                configurationParameters.ignoreMinSdkVersionFromDsl,
+                                configurationParameters.ignoreMinSdkVersionFromProperty),
                 cmake = when(module.buildSystem) {
                     NativeBuildSystem.CMAKE ->  CxxCmakeAbiModel(
                         buildCommandArgs = null,

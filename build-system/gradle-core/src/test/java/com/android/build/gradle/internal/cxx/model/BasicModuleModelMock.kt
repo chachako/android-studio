@@ -63,6 +63,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileContents
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.SetProperty
 import org.mockito.Mockito
 import org.mockito.Mockito.doReturn
@@ -162,6 +163,11 @@ open class BasicModuleModelMock {
     )
     val projectInfo: ProjectInfo = mock(
         ProjectInfo::class.java,
+        throwUnmocked
+    )
+
+    val variantExperimentalPropertiesMapProperty: MapProperty<*, *> = mock(
+        MapProperty::class.java,
         throwUnmocked
     )
 
@@ -334,6 +340,8 @@ open class BasicModuleModelMock {
         doReturn(splits).`when`(globalConfig).splits
 
         doReturn(globalConfig).`when`(this.variantImpl).global
+        doReturn(variantExperimentalPropertiesMapProperty).`when`(this.variantImpl).experimentalProperties
+        doReturn(variantExperimentalProperties).`when`(this.variantExperimentalPropertiesMapProperty).get()
         doReturn(taskCreationServices).`when`(this.variantImpl).services
         doReturn(issueReporter).`when`(this.taskCreationServices).issueReporter
         doReturn(projectInfo).`when`(this.taskCreationServices).projectInfo

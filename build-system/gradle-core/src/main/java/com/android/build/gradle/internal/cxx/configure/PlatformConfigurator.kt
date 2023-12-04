@@ -23,10 +23,12 @@ import com.android.build.gradle.internal.ndk.AbiInfo
 import com.android.build.gradle.options.StringOption
 import com.android.sdklib.AndroidVersion
 import com.android.utils.FileUtils
+import com.android.utils.cxx.CxxDiagnosticCode
 import com.android.utils.cxx.CxxDiagnosticCode.NDK_CORRUPTED
 import com.android.utils.cxx.CxxDiagnosticCode.ABI_IS_INVALID
 import com.android.utils.cxx.CxxDiagnosticCode.NDK_DOES_NOT_SUPPORT_API_LEVEL
 import com.android.utils.cxx.CxxDiagnosticCode.NDK_MIN_SDK_VERSION_TOO_LOW
+import com.android.utils.cxx.CxxDiagnosticCode.NDK_SUPPRESS_MIN_SDK_ERROR_NOT_INT
 import org.jetbrains.annotations.VisibleForTesting
 import java.io.File
 import java.io.FileFilter
@@ -99,7 +101,9 @@ class PlatformConfigurator(private val ndkRoot: File) {
         abiName: String,
         abiInfos: List<AbiInfo>,
         androidVersion: AndroidVersion?,
-        ignoreMinSdkVersion: List<Int>): Int {
+        ignoreMinSdkVersionFromDsl: Any?,
+        ignoreMinSdkVersionFromProperty: String?
+    ): Int {
         val ndkMetaPlatformsFile = NdkMetaPlatforms.jsonFile(ndkRoot)
         val ndkMetaPlatforms = if (ndkMetaPlatformsFile.isFile) {
             ndkMetaPlatformsFile.reader().use { reader ->
@@ -114,7 +118,8 @@ class PlatformConfigurator(private val ndkRoot: File) {
             abiInfos,
             androidVersion,
             ndkMetaPlatforms,
-            ignoreMinSdkVersion
+            ignoreMinSdkVersionFromDsl,
+            ignoreMinSdkVersionFromProperty
         )
     }
 
@@ -124,7 +129,8 @@ class PlatformConfigurator(private val ndkRoot: File) {
         allAbis: List<AbiInfo>,
         androidVersionOrNull: AndroidVersion?,
         ndkMetaPlatforms: NdkMetaPlatforms?,
-        ignoreMinSdkVersion: List<Int>
+        ignoreMinSdkVersionFromDsl: Any?,
+        ignoreMinSdkVersionFromProperty: String?
     ): Int {
 
         val abi = allAbis.singleOrNull { it.name == abiName } ?: run {
@@ -132,7 +138,27 @@ class PlatformConfigurator(private val ndkRoot: File) {
             // Fall back so that processing can continue after the error
             return sensibleDefaultPlatformApiVersionForErrorCase
         }
-
+        // Figure out ignoreMinSdkVersion from the values in DSL and Gradle properties.
+        if (ignoreMinSdkVersionFromDsl != null && ignoreMinSdkVersionFromProperty != null) {
+            infoln("Both ${StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR.propertyName} Gradle property and " +
+                    "android.experimentalProperties[\"${StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR.propertyName}\"] " +
+                    "are set. The former will be ignored.")
+        }
+        val supersededIgnoreMinSdkVersion = ignoreMinSdkVersionFromDsl ?: ignoreMinSdkVersionFromProperty
+        val ignoreMinSdkVersion = when(supersededIgnoreMinSdkVersion) {
+            null -> null
+            is Int -> supersededIgnoreMinSdkVersion
+            else -> {
+                val result = supersededIgnoreMinSdkVersion.toString().toIntOrNull()
+                if (result == null) {
+                    errorln(
+                        NDK_SUPPRESS_MIN_SDK_ERROR_NOT_INT,
+                        "Value \"$supersededIgnoreMinSdkVersion\" of ${StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR.propertyName} " +
+                            "was not convertible to integer and will be ignored.")
+                }
+                result
+            }
+        }
 
         // This is a fallback/legacy case for supporting pre-r17 NDKs which don't have
         // platforms.json. As of the time this code is written there is no policy for deprecating
@@ -277,7 +303,7 @@ class PlatformConfigurator(private val ndkRoot: File) {
         minSdkVersion: Int,
         displayVersion: AndroidVersion?,
         platformDir: File,
-        ignoreMinSdkVersion: List<Int>
+        ignoreMinSdkVersion: Int?
     ): Int {
 
         val linkerSysrootPath = getLinkerSysrootPath(
@@ -327,7 +353,7 @@ class PlatformConfigurator(private val ndkRoot: File) {
         displayVersion: AndroidVersion?,
         min: Int,
         max: Int,
-        ignoreMinSdkVersion: List<Int>
+        ignoreMinSdkVersion: Int?
     ): Int {
         if (minSdkVersion > max) {
             warnln("Platform version ${displayVersionString(minSdkVersion, displayVersion)} is beyond $max, the maximum API level supported by this NDK. Using $max instead.")
@@ -346,13 +372,17 @@ class PlatformConfigurator(private val ndkRoot: File) {
             return min
         }
 
-        // NDK r26 and newer.
-        if (ignoreMinSdkVersion.contains(minSdkVersion)) return minSdkVersion
+        // NDK r26 and newer below here.
 
+        // If the user set android.ndk.suppressMinSdkVersionError to the current NDK's minimum SDK version,
+        // then we accept that they know what they're doing and allow the user's android.minSdk value to be used directly.
+        if (ignoreMinSdkVersion == min) return minSdkVersion
+
+        // ...otherwise, we give them an error that indicates how to set android.ndk.suppressMinSdkVersionError if needed.
         errorln(
             NDK_MIN_SDK_VERSION_TOO_LOW,
             "Platform version ${displayVersionString(minSdkVersion, displayVersion)} is unsupported by this NDK. Please change minSdk to at least $min to avoid undefined behavior. " +
-                    "To suppress this error, add ${StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR.propertyName}=$minSdkVersion to the project's gradle.properties."
+                    "To suppress this error, add ${StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR.propertyName}=$min to the project's gradle.properties or set android.experimentalProperties[\"${StringOption.NDK_SUPPRESS_MIN_SDK_VERSION_ERROR.propertyName}\"]=$min in the Gradle build file."
         )
         return minSdkVersion
     }
