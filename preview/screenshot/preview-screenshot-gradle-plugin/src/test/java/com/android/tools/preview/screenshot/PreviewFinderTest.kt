@@ -20,6 +20,7 @@ import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import kotlin.test.assertEquals
 
 class PreviewFinderTest {
     @get:Rule
@@ -38,4 +39,56 @@ class PreviewFinderTest {
     }
 
     // TODO(b/315048068): Add a unit test that finds previews on the classpath
+
+    @Test
+    fun testConfigureInput() {
+        val classpath = listOf("path/to/classes.jar","path/to/R.jar")
+        val previewsFile = tempDirRule.newFile("previews_discovered.json")
+        val cliToolInputFile = tempDirRule.newFile("cli_tools_input.json")
+        previewsFile.writeText("""
+            {
+              "screenshots": [
+                {
+                  "methodFQN": "com.example.agptest.ExampleInstrumentedTest.previewThere",
+                  "methodParams": [],
+                  "previewParams": {
+                    "showBackground": "true"
+                  },
+                  "imageName": "com.example.agptest.ExampleInstrumentedTest.previewThere_3d8b4969_da39a3ee"
+                }
+              ]
+            }
+        """.trimIndent())
+        configureInput(classpath,
+            "sdkpath",
+            "layoutlibpath",
+            "outputFolder",
+            "packageName",
+            "resourceApkPath",
+            cliToolInputFile,
+            previewsFile)
+        assertEquals(cliToolInputFile.readText(), """
+            {
+              "sdkPath": "sdkpath",
+              "layoutlibPath": "layoutlibpath",
+              "outputFolder": "outputFolder",
+              "classPath": [
+                "path/to/classes.jar",
+                "path/to/R.jar"
+              ],
+              "packageName": "packageName",
+              "resourceApkPath": "resourceApkPath",
+              "screenshots": [
+                {
+                  "methodFQN": "com.example.agptest.ExampleInstrumentedTest.previewThere",
+                  "methodParams": [],
+                  "previewParams": {
+                    "showBackground": "true"
+                  },
+                  "imageName": "com.example.agptest.ExampleInstrumentedTest.previewThere_3d8b4969_da39a3ee"
+                }
+              ]
+            }
+        """.trimIndent())
+    }
 }
