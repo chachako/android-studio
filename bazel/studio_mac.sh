@@ -40,6 +40,8 @@ export GOOGLE_APPLICATION_CREDENTIALS=$BAZEL_GOOGLE_APPLICATION_CREDENTIALS
         --test_tag_filters="ci:studio-mac" \
         --tool_tag=${script_name} \
         --remote_upload_local_results \
+        --bes_upload_mode="wait_for_upload_complete" \
+        --bes_timeout="600s" \
         --worker_quit_after_build \
         --define=meta_android_build_number=${build_number} \
         --profile=${dist_dir}/profile-${build_number}.json.gz \
