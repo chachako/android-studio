@@ -24,6 +24,9 @@ internal class StandaloneHost(val factory : AdbLoggerFactory) : AdbSessionHost()
     override val loggerFactory: AdbLoggerFactory
         get() = factory
 
+    override val isEventDispatchThread: Boolean
+        get() = false
+
     override fun close() {
     }
 
