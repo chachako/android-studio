@@ -104,6 +104,7 @@ public class ManifestMerger2Test {
                 "33_uses_sdk_minsdk_conflict",
                 "33b_uses_sdk_minsdk_override.xml",
                 "33c_uses_sdk_minsdk_override_and_conflict.xml",
+                "33e_uses_sdk_minsdk_wildcard.xml",
                 "34_inject_uses_sdk_no_dup.xml",
                 "36_uses_sdk_targetsdk_warning",
                 "40_uses_feat_merge",

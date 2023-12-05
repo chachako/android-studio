@@ -16,7 +16,7 @@
 
 package com.android.manifmerger
 
-import com.android.testutils.MockitoKt
+import com.android.testutils.MockitoKt.whenever
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -31,21 +31,33 @@ class OverrideLibrarySelectorTest {
 
     @Before
     fun setUpMocks() {
-        MockitoKt.whenever(xmlElement.document).thenReturn(xmlDocument)
-        MockitoKt.whenever(xmlDocument.`package`).thenReturn(Optional.of(xmlAttribute))
+        whenever(xmlElement.document).thenReturn(xmlDocument)
+        whenever(xmlDocument.`package`).thenReturn(Optional.of(xmlAttribute))
     }
 
     @Test
     fun missingXmlAttribute_appliesTo() {
         val selector = OverrideLibrarySelector("com.example.foo")
-        MockitoKt.whenever(xmlDocument.`package`).thenReturn(Optional.empty())
+        whenever(xmlDocument.`package`).thenReturn(Optional.empty())
         assertFalse(selector.appliesTo(xmlElement))
     }
 
     @Test
     fun overrideSelector_appliesTo() {
         val selector = OverrideLibrarySelector("com.example.lib1")
-        MockitoKt.whenever(xmlAttribute.value).thenReturn("com.example.lib1")
+        whenever(xmlAttribute.value).thenReturn("com.example.lib1")
         assertTrue(selector.appliesTo(xmlElement))
+    }
+
+    @Test
+    fun wildcardPackageName_appliesTo() {
+        val selector = OverrideLibrarySelector("com.example.*")
+        whenever(xmlAttribute.value).thenReturn("com.example.lib1")
+        assertTrue(selector.appliesTo(xmlElement))
+        whenever(xmlAttribute.value).thenReturn("com.example.lib2")
+        assertTrue(selector.appliesTo(xmlElement))
+
+        whenever(xmlAttribute.value).thenReturn("com.foo.lib1")
+        assertFalse(selector.appliesTo(xmlElement))
     }
 }
