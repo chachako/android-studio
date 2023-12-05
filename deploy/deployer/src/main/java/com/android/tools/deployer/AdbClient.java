@@ -204,7 +204,7 @@ public class AdbClient {
     }
 
     private boolean baselineInstallationStatusSupported() {
-        return device.getVersion().getApiLevel() >= 33;
+        return device.getVersion().getApiLevel() > 33;
     }
 
     private InstallResult makeInstallResult(String code, String message, Throwable t) {
