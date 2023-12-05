@@ -138,11 +138,12 @@ class PrivacySandboxSdkPlugin @Inject constructor(
 
     override fun apply(project: Project) {
         super.basePluginApply(project)
-        if (!projectServices.projectOptions[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT]) {
+        if (projectServices.projectOptions.let {
+                    !it[BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT] && !it[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT] }) {
             throw GradleException(
-                    "Privacy Sandbox SDK support is experimental, and must be explicitly enabled.\n" +
+                    "Privacy Sandbox SDK Plugin support must be explicitly enabled.\n" +
                             "To enable support, add\n" +
-                            "    ${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true\n" +
+                            "    ${BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT.propertyName}=true\n" +
                             "to your project's gradle.properties file."
             )
         }

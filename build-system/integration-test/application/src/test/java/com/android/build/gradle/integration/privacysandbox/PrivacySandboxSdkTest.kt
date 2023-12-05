@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.scope.InternalArtifactType
@@ -198,12 +199,12 @@ class PrivacySandboxSdkTest {
         }
     }
             .withAdditionalMavenRepo(mavenRepo)
-            .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
             .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
             .enableProfileOutput()
             .create()
 
     private fun executor() = project.executor()
+            .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, true)
             .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
             .withPerTestPrefsRoot(true)
             .with(BooleanOption.ENABLE_PROFILE_JSON, true) // Regression test for b/237278679
@@ -453,7 +454,9 @@ class PrivacySandboxSdkTest {
 
     @Test
     fun testConsumptionViaApk() {
-        val model = modelV2().fetchModels().container.getProject(":example-app")
+        val model =
+                modelV2().with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, true)
+                        .fetchModels().container.getProject(":example-app")
         val exampleAppDebug = model.androidProject!!.variants.single { it.name == "debug" }
         val privacySandboxSdkInfo = exampleAppDebug.mainArtifact.privacySandboxSdkInfo!!
 
@@ -531,7 +534,6 @@ class PrivacySandboxSdkTest {
 
     @Test
     fun checkKsp() {
-        val executor = project.executor()
         val androidLib1 = project.getSubproject("android-lib1")
         val pkg =
                 FileUtils.join(androidLib1.mainSrcDir, "com", "example", "androidlib1")
@@ -548,7 +550,7 @@ class PrivacySandboxSdkTest {
                         "   }\n"
         )
 
-        executor.expectFailure().run("android-lib1:build")
+        executor().expectFailure().run("android-lib1:build")
 
         mySdkFile.writeText(
                 "package com.example.androidlib1\n" +
@@ -558,7 +560,7 @@ class PrivacySandboxSdkTest {
                         "       suspend fun doStuff(x: Int, y: Int): String\n" +
                         "   }\n"
         )
-        project.execute("android-lib1:build")
+        executor().run("android-lib1:build")
 
         val kspDir = FileUtils.join(androidLib1.generatedDir, "ksp")
         assertThat(kspDir.exists()).isTrue()
@@ -566,7 +568,7 @@ class PrivacySandboxSdkTest {
 
     @Test
     fun testNoServiceDefinedInModuleUsedBySdk() {
-        project.executor()
+        executor()
                 .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
                 .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, true)
                 .expectFailure()
@@ -576,7 +578,7 @@ class PrivacySandboxSdkTest {
                             "Unable to proceed generating shim with no provided sdk descriptor entries in:")
                 }
 
-        project.executor()
+        executor()
                 .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
                 .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
                 .run(":example-app:assembleDebug")
@@ -589,7 +591,7 @@ class PrivacySandboxSdkTest {
         apkSelectConfig.writeText(
                 """{"sdk_version":28,"codename":"Pie","screen_density":420,"supported_abis":["x86_64","arm64-v8a"],"supported_locales":["en"]}""")
 
-        project.executor()
+        executor()
                 .withFailOnWarning(false)
                 .with(StringOption.IDE_APK_SELECT_CONFIG, apkSelectConfig.absolutePath)
                 .run(":example-app:extractApksFromSdkSplitsForDebug")
@@ -675,6 +677,54 @@ class PrivacySandboxSdkTest {
                     "/resources.arsc"
             )
         }
+    }
+
+    @Test
+    fun testPublicationAndConsumptionCanBeToggledSeparately() {
+        val buildFailsPublicationNotEnabled = executor()
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, false)
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
+                .expectFailure()
+                .run(":privacy-sandbox-sdk:assemble")
+        buildFailsPublicationNotEnabled.stderr.use {
+            val expectedContents = listOf(
+                    "> Failed to apply plugin 'com.android.internal.privacy-sandbox-sdk'.",
+                    "> Privacy Sandbox SDK Plugin support must be explicitly enabled."
+            )
+            expectedContents.forEach { line ->
+                ScannerSubject.assertThat(it).contains(line)
+            }
+        }
+
+        executor()
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, true)
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
+                .run(":privacy-sandbox-sdk:assemble")
+        val sdkProject = project.getSubproject(":privacy-sandbox-sdk")
+        assertThat(
+                sdkProject.getOutputFile("asb", "single", "privacy-sandbox-sdk.asb").exists()
+        ).isTrue()
+
+        val buildFailsConsumptionNotEnabled = executor()
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT, true)
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, false)
+                .expectFailure()
+                .run(":example-app:assemble")
+        assertThat(buildFailsConsumptionNotEnabled.failureMessage).isEqualTo(
+                """An issue was found when checking AAR metadata:
+
+  1.  Dependency :privacy-sandbox-sdk is an Android Privacy Sandbox SDK library, and needs
+      Privacy Sandbox support to be enabled in projects that depend on it.
+
+      Recommended action: Enable privacy sandbox consumption in this project by setting
+          android {
+              privacySandbox {
+                  enable = true
+              }
+          }
+      in this project's build.gradle"""
+        )
+        // Other tests verify behaviour with publication and consumption enabled.
     }
 
     companion object {

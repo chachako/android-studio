@@ -700,14 +700,15 @@ class DependencyConfigurator(
     }
 
     fun configureAttributeMatchingStrategies(
-            variantInputModel: VariantInputModel<DefaultConfig, BuildType, ProductFlavor, SigningConfig>
+            variantInputModel: VariantInputModel<DefaultConfig, BuildType, ProductFlavor, SigningConfig>,
+            supportPrivacySandbox: Boolean
     ): DependencyConfigurator {
         val schema = project.dependencies.attributesSchema
 
         // custom strategy for build-type and product-flavor.
         setBuildTypeStrategy(schema, variantInputModel)
         setupFlavorStrategy(schema, variantInputModel)
-        setupModelStrategy(schema)
+        setupModelStrategy(schema, supportPrivacySandbox)
         setUpAgpVersionStrategy(schema)
 
         return this
@@ -790,8 +791,8 @@ class DependencyConfigurator(
         }
     }
 
-    private fun setupModelStrategy(attributesSchema: AttributesSchema) {
-        setUp(attributesSchema, projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT))
+    private fun setupModelStrategy(attributesSchema: AttributesSchema, supportPrivacySandbox: Boolean) {
+        setUp(attributesSchema, supportPrivacySandbox)
     }
 
     /** This is to enforce AGP version across a single or composite build. */

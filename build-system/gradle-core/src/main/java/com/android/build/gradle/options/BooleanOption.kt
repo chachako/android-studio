@@ -235,6 +235,11 @@ enum class BooleanOption(
             false,
             FeatureStage.Experimental
     ),
+
+    PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT("android.experimental.privacysandboxsdk.plugin.enable",
+            false,
+            FeatureStage.Experimental),
+
     PRIVACY_SANDBOX_SDK_SUPPORT("android.experimental.privacysandboxsdk.enable",
             false,
             FeatureStage.Experimental),

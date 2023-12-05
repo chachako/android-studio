@@ -301,7 +301,6 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
         kmpVariantApiOperationsRegistrar.executeDslFinalizationBlocks()
         androidExtension.lock()
 
-        configureDisambiguationRules(project)
 
         val dependencyConfigurator = DependencyConfigurator(
             project = project,
@@ -326,6 +325,9 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
             taskServices,
             kotlinMultiplatformHandler.getAndroidTarget()
         )
+
+        val sandboxConsumptionEnabled = mainVariant.privacySandboxCreationConfig != null
+        configureDisambiguationRules(project, sandboxConsumptionEnabled)
 
         val unitTest = createUnitTestComponent(
             project,
@@ -596,7 +598,8 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
         )
     }
 
-    private fun configureDisambiguationRules(project: Project) {
+    private fun configureDisambiguationRules(
+            project: Project, supportPrivacySandboxSdkConsumption: Boolean) {
         project.dependencies.attributesSchema { schema ->
             val buildTypesToMatch = androidExtension.dependencyVariantSelection.buildTypes.get()
             schema.attribute(BuildTypeAttr.ATTRIBUTE)
@@ -616,8 +619,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
             schema.attribute(AgpVersionAttr.ATTRIBUTE)
                 .compatibilityRules
                 .add(AgpVersionCompatibilityRule::class.java)
-
-            setUp(schema, projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT))
+            setUp(schema, supportPrivacySandboxSdkConsumption)
         }
     }
 

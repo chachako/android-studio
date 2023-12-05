@@ -63,7 +63,6 @@ import com.android.build.gradle.internal.tasks.LintModelMetadataTask
 import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.TaskCreationServicesImpl
 import com.android.build.gradle.internal.tasks.factory.dependsOn
-import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
 import com.android.build.gradle.options.Option
 import com.android.build.gradle.options.ProjectOptionService
@@ -129,8 +128,7 @@ abstract class LintPlugin : Plugin<Project> {
             customLintChecks,
             dslOperationsRegistrar,
         )
-        ModelArtifactCompatibilityRule.setUp(project.dependencies.attributesSchema,
-                projectServices.projectOptions.get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT))
+        ModelArtifactCompatibilityRule.setUp(project.dependencies.attributesSchema, false)
     }
 
     private fun registerTasks(

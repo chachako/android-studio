@@ -720,6 +720,8 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
             extension
         )
         taskManager.createTasks(variantFactory.componentType, createVariantModel(globalConfig))
+        val anyVariantSupportsSdkConsumption =
+                variants.any { it.variant.privacySandboxCreationConfig != null }
         DependencyConfigurator(
             project,
             projectServices
@@ -732,7 +734,7 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
                 variantManager.nestedComponents,
                 globalConfig
             )
-            .configureAttributeMatchingStrategies(variantInputModel)
+            .configureAttributeMatchingStrategies(variantInputModel, anyVariantSupportsSdkConsumption)
             .configureCalculateStackFramesTransforms(globalConfig)
                 .apply {
                     // Registering Jacoco transforms causes the jacoco configuration to be created.
@@ -746,7 +748,7 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
                     // Registering privacy sandbox transforms creates various detatched
                     // configurations for tools it uses. Only register them if privacy sandbox
                     // consumption is enabled.
-                    if (variants.any { it.variant.privacySandboxCreationConfig != null }) {
+                    if (anyVariantSupportsSdkConsumption) {
                         configurePrivacySandboxSdkConsumerTransforms()
                         configurePrivacySandboxSdkVariantTransforms(
                                 variants.map { it.variant },
