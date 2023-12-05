@@ -31,6 +31,7 @@ class EmulatorHandleImpl(private val subprocessComponent: SubprocessComponent) :
         private const val EMULATOR_NO_AUDIO = "-no-audio"
         private const val EMULATOR_NO_BOOT_ANIM = "-no-boot-anim"
         private const val EMULATOR_READ_ONLY = "-read-only"
+        private const val EMULATOR_NO_SNAPSHOT_SAVE = "-no-snapshot-save"
         private const val EMULATOR_VERBOSE = "-verbose"
         private const val EMULATOR_SHOW_KERNEL = "-show-kernel"
         private const val EMULATOR_DELAY_ADB = "-delay-adb"
@@ -72,6 +73,7 @@ class EmulatorHandleImpl(private val subprocessComponent: SubprocessComponent) :
         args.add(EMULATOR_GPU)
         args.add(emulatorGpuFlag)
         args.add(EMULATOR_READ_ONLY)
+        args.add(EMULATOR_NO_SNAPSHOT_SAVE)
         args.add(EMULATOR_NO_BOOT_ANIM)
         args.add(EMULATOR_DELAY_ADB)
         if (showEmulatorKernelLogging) {

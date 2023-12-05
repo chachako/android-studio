@@ -67,6 +67,26 @@ class AvdSnapshotHandler(
         return emulatorDir.resolve(EMULATOR_EXECUTABLE)
     }
 
+    private fun getEmulatorCommand(
+        avdName: String,
+        emulatorExecutable: File,
+        emulatorGpuFlag: String,
+        additionalParams: List<String>,
+    ): List<String> {
+        return listOfNotNull(
+            emulatorExecutable.absolutePath,
+            "@$avdName",
+            "-no-window",
+            "-no-boot-anim",
+            "-no-audio",
+            "-delay-adb",
+            "-verbose".takeIf { showEmulatorKernelLogging },
+            "-show-kernel".takeIf { showEmulatorKernelLogging },
+            "-gpu", emulatorGpuFlag,
+            *additionalParams.toTypedArray(),
+        )
+    }
+
     /**
      * Checks whether the given snapshot on a device is loadable with the emulator.
      *
@@ -93,19 +113,15 @@ class AvdSnapshotHandler(
     ): Boolean {
         logger.info("Checking $snapshotName on device $avdName is loadable.")
         val processBuilder = processFactory(
-            listOfNotNull(
-                emulatorExecutable.absolutePath,
-                "@$avdName",
-                "-no-window",
-                "-no-boot-anim",
-                "-no-audio",
-                "-delay-adb",
-                "-verbose".takeIf { showEmulatorKernelLogging },
-                "-show-kernel".takeIf { showEmulatorKernelLogging },
-                "-gpu",
+            getEmulatorCommand(
+                avdName,
+                emulatorExecutable,
                 emulatorGpuFlag,
-                "-check-snapshot-loadable",
-                snapshotName
+                listOf(
+                    "-read-only",
+                    "-no-snapshot-save",
+                    "-check-snapshot-loadable", snapshotName
+                )
             )
         )
         processBuilder.environment()["ANDROID_AVD_HOME"] = avdLocation.absolutePath
@@ -168,23 +184,73 @@ class AvdSnapshotHandler(
         emulatorGpuFlag: String,
         logger: ILogger
     ) {
-        logger.verbose("Creating snapshot for $avdName")
+        val maxRetryAttempt = 5
+        lateinit var lastException: EmulatorSnapshotCannotCreatedException
+        repeat(maxRetryAttempt) { attempt ->
+            try {
+                // Create a new snapshot image by starting emulator then stop immediately after
+                // the boot is completed and system server is ready. Emulator takes snapshot when
+                // it's closing.
+                logger.verbose(
+                        "Starting Emulator to create a snapshot for $avdName " +
+                        "(Attempt ${attempt + 1}/$maxRetryAttempt)")
+                startEmulatorThenStop(
+                        createSnapshot = true,
+                        avdName,
+                        emulatorExecutable,
+                        avdLocation,
+                        emulatorGpuFlag,
+                        logger)
+
+                // Validate the newly created snapshot if that's really loadable and usable.
+                // Emulator occasionally (about 1% of the time) generates a corrupted snapshot
+                // image. If this happens, the emulator process crashed immediately after it
+                // loads such snapshot image. See b/314022353.
+                logger.verbose(
+                        "Starting Emulator to validate a snapshot for $avdName " +
+                        "(Attempt ${attempt + 1}/$maxRetryAttempt)")
+                startEmulatorThenStop(
+                        createSnapshot = false,
+                        avdName,
+                        emulatorExecutable,
+                        avdLocation,
+                        emulatorGpuFlag,
+                        logger)
+
+                logger.info("Successfully created snapshot for: $avdName")
+                return
+            } catch (e: EmulatorSnapshotCannotCreatedException) {
+                logger.warning(
+                    "Failed to create Emulator snapshot image (${attempt + 1}/$maxRetryAttempt). "
+                    + "Error: $e")
+                lastException = e
+            }
+        }
+        throw lastException
+    }
+
+    class EmulatorSnapshotCannotCreatedException(message: String) : RuntimeException(message)
+
+    private fun startEmulatorThenStop(
+        createSnapshot: Boolean,
+        avdName: String,
+        emulatorExecutable: File,
+        avdLocation: File,
+        emulatorGpuFlag: String,
+        logger: ILogger
+    ) {
         val deviceId = "${avdName}_snapshot"
 
         val processBuilder = processFactory(
-            listOfNotNull(
-                emulatorExecutable.absolutePath,
-                "@${avdName}",
-                "-no-window",
-                "-no-boot-anim",
-                "-no-audio",
-                "-delay-adb",
-                "-verbose".takeIf { showEmulatorKernelLogging },
-                "-show-kernel".takeIf { showEmulatorKernelLogging },
-                "-id",
-                deviceId,
-                "-gpu",
+            getEmulatorCommand(
+                avdName,
+                emulatorExecutable,
                 emulatorGpuFlag,
+                listOfNotNull(
+                    "-no-snapshot-load".takeIf { createSnapshot },
+                    "-read-only".takeIf { !createSnapshot },
+                    "-no-snapshot-save".takeIf { !createSnapshot },
+                    "-id", deviceId)
             )
         )
         processBuilder.environment()["ANDROID_AVD_HOME"] = avdLocation.absolutePath
@@ -192,12 +258,12 @@ class AvdSnapshotHandler(
                 deviceBootAndSnapshotCheckTimeoutSec ?:
                 DEFAULT_DEVICE_BOOT_AND_SNAPSHOT_CHECK_TIMEOUT_SEC
                 ).toString()
-        val process = processBuilder.start()
+        val emulatorProcess = processBuilder.start()
         val bootCompleted = AtomicBoolean(false)
         try {
             executor.execute {
                 var emulatorSerial: String? = null
-                while(process.isAlive) {
+                while(emulatorProcess.isAlive) {
                     try {
                         emulatorSerial = adbHelper.findDeviceSerialWithId(deviceId, logger)
                         break
@@ -214,7 +280,7 @@ class AvdSnapshotHandler(
                 }
                 logger.verbose("$avdName is attached to adb ($emulatorSerial).")
 
-                while(process.isAlive) {
+                while(emulatorProcess.isAlive) {
                     if (adbHelper.isBootCompleted(emulatorSerial, logger)) {
                         break
                     }
@@ -223,7 +289,7 @@ class AvdSnapshotHandler(
                 }
                 logger.verbose("Booting $avdName is completed.")
 
-                while(process.isAlive) {
+                while(emulatorProcess.isAlive) {
                     if (adbHelper.isPackageManagerStarted(emulatorSerial, logger)) {
                         break
                     }
@@ -232,17 +298,25 @@ class AvdSnapshotHandler(
                 }
                 logger.verbose("PackageManager is ready on $avdName.")
 
-                if (process.isAlive) {
+                // Emulator process may crash soon after the boot is completed.
+                // Wait a few extra seconds to make sure Emulator is really ready.
+                if (extraWaitAfterBootCompleteMs > 0) {
+                    Thread.sleep(extraWaitAfterBootCompleteMs)
+                }
+
+                if (emulatorProcess.isAlive) {
+                    logger.verbose("$avdName is ready to take a snapshot.")
                     bootCompleted.set(true)
-                    if (extraWaitAfterBootCompleteMs > 0) {
-                        Thread.sleep(extraWaitAfterBootCompleteMs)
-                    }
                     adbHelper.killDevice(emulatorSerial)
+                } else {
+                    logger.warning(
+                        "Emulator process exited unexpectedly with the return code " +
+                        "${emulatorProcess.exitValue()}.")
                 }
             }
 
             GrabProcessOutput.grabProcessOutput(
-                process,
+                emulatorProcess,
                 GrabProcessOutput.Wait.ASYNC,
                 object : GrabProcessOutput.IProcessOutput {
                     override fun out(line: String?) {
@@ -256,11 +330,9 @@ class AvdSnapshotHandler(
                     }
                 }
             )
-            process.waitUntilTimeout(logger) {
-                logger.verbose("Snapshot creation timed out. Closing emulator.")
-                closeEmulatorWithId(process, deviceId, logger)
-                process.waitFor()
-                error("""
+            emulatorProcess.waitUntilTimeout(logger) {
+                logger.warning("Snapshot creation timed out. Closing emulator.")
+                throw EmulatorSnapshotCannotCreatedException("""
                     Gradle was not able to complete device setup for: $avdName
                     This could be due to having insufficient resources to provision the number of
                     devices requested. Try running the test again and request fewer devices or
@@ -268,33 +340,14 @@ class AvdSnapshotHandler(
                 """.trimIndent())
             }
             if (!bootCompleted.get()) {
-                error("""
+                throw EmulatorSnapshotCannotCreatedException("""
                     Gradle was not able to complete device setup for: $avdName
                     The emulator failed to open the managed device to generate the snapshot.
-                    This is because the emulator closed unexpectedly, try updating the emulator and
-                    ensure a device can be run from Android Studio.
+                    This is because the emulator closed unexpectedly (${emulatorProcess.exitValue()}),
+                    try updating the emulator and ensure a device can be run from Android Studio.
                 """.trimIndent())
             }
-            logger.info("Successfully created snapshot for: $avdName")
         } finally {
-            closeEmulatorWithId(process, deviceId, logger)
-            process.waitFor()
-        }
-    }
-
-    /**
-     * Attempts to close the emulator with the given id.
-     **/
-    private fun closeEmulatorWithId(
-        emulatorProcess: Process,
-        idValue: String,
-        logger: ILogger
-    ) {
-        try {
-            val emulatorSerial = adbHelper.findDeviceSerialWithId(idValue, logger)
-            adbHelper.killDevice(emulatorSerial)
-        } catch (e: Exception) {
-            logger.info("Failed to close emulator properly from adb. Reason: $e")
             emulatorProcess.destroy()
         }
     }

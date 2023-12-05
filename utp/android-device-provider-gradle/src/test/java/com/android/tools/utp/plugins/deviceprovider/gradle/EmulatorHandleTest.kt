@@ -81,8 +81,8 @@ class EmulatorHandleTest {
         )
         assertThat(emulatorHandle.isAlive()).isTrue()
         verifyCommand(
-                "/path/to/emulator @dev29_aosp_x86_Pixel_2 -no-window -no-audio -gpu auto-no-window -read-only "
-                        + "-no-boot-anim -delay-adb -id someUniqueIdHere"
+            "/path/to/emulator @dev29_aosp_x86_Pixel_2 -no-window -no-audio -gpu auto-no-window " +
+            "-read-only -no-snapshot-save -no-boot-anim -delay-adb -id someUniqueIdHere"
         )
 
         emulatorHandle.closeInstance()
@@ -100,7 +100,8 @@ class EmulatorHandleTest {
         )
         assertThat(emulatorHandle.isAlive()).isTrue()
         verifyCommand(
-                "/path/to/emulator @dev29_aosp_x86_Pixel_2 -gpu auto-no-window -read-only -no-boot-anim -delay-adb -id someUniqueIdHere"
+            "/path/to/emulator @dev29_aosp_x86_Pixel_2 -gpu auto-no-window -read-only " +
+            "-no-snapshot-save -no-boot-anim -delay-adb -id someUniqueIdHere"
         )
 
         emulatorHandle.closeInstance()
@@ -128,6 +129,7 @@ class EmulatorHandleTest {
                 "-gpu",
                 "auto-no-window",
                 "-read-only",
+                "-no-snapshot-save",
                 "-no-boot-anim",
                 "-delay-adb",
                 "-verbose",
