@@ -225,9 +225,10 @@ private fun runUtpTestSuite(
     }
     val loggingPropertiesFile = createUtpTempFile("logging", "properties").also { file ->
         Files.asCharSink(file, Charsets.UTF_8).write("""
-                .level=${config.utpLoggingLevel.getName()}
+                .level=${config.utpLoggingLevel.name}
                 .handlers=java.util.logging.ConsoleHandler
-                java.util.logging.ConsoleHandler.level=${config.utpLoggingLevel.getName()}
+                java.util.logging.ConsoleHandler.level=${config.utpLoggingLevel.name}
+                java.util.logging.SimpleFormatter.format=%4${'$'}s: %5${'$'}s%n
             """.trimIndent())
     }
     workQueue.submit(RunUtpWorkAction::class.java) { params ->
