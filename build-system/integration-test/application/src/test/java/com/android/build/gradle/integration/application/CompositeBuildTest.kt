@@ -93,31 +93,6 @@ class CompositeBuildTest {
         app.executor().withArgument("--configure-on-demand").run(":assembleDebug")
         ZipFileSubject.assertThat(
             app.getApkAsFile(GradleTestProject.ApkType.DEBUG)
-        ) {  it.exists() }
-    }
-
-    @Ignore("b/303081523")
-    @Test
-    fun checkDifferentPluginVersionsCauseFailure() {
-        // This is not quite correct but for now this will do
-        val androidLib = app.getSubproject("androidLib")
-
-        TestFileUtils.appendToFile(
-            androidLib.buildFile,
-            """
-buildscript {
-  dependencies {
-    classpath('com.android.tools.build:gradle:3.5.0') { force=true }
-  }
-}
-"""
-        )
-        val result = app.executor().withFailOnWarning(false).expectFailure().run("help")
-        result.stderr.use { scanner ->
-            assertThat(scanner)
-                .contains(
-                    "   > Using multiple versions of the Android Gradle plugin in the same build is not allowed."
-                )
-        }
+        ) { it.exists() }
     }
 }
