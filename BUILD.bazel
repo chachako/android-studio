@@ -136,6 +136,7 @@ AGP_TEST_ARTIFACTS = [
     "//tools/base/lint/cli",  # TODO(b/143864616): Only used for tests
     "//tools/base/lint:tools.lint-api",  # TODO(b/143864616): Only used for tests
     "//tools/base/lint:tools.lint-checks",  # TODO(b/143864616): Only used for tests
+    "//tools/base/multipreview-asm:multipreview-asm",  # Used for preview screenshot testing
     "//tools/base/utp/android-test-plugin-host-device-info-proto",  # Used for UTP
     "//prebuilts/tools/common/lint-psi/intellij-core",  # TODO(b/143864616): Only used for tests
     "//prebuilts/tools/common/lint-psi/kotlin-compiler",  # TODO(b/143864616): Only used for tests
