@@ -304,6 +304,9 @@ class CoreLibraryDesugarTest {
         DexClassSubject.assertThat(dex.classes[programClass])
             .hasMethodThatInvokes("a", "Lj$/util/stream/Stream;->findFirst()Lj$/util/Optional;")
         desugarLibDex = getDexWithSpecificClass(usedDesugarClass, apk.allDexes)!!
+        // Unobfuscated class should not be present when minifiedEnabled is true
+        // (regression test for http://b/300373199)
+        DexSubject.assertThat(desugarLibDex).doesNotContainClasses(unObfuscatedClass)
     }
 
     @Test
