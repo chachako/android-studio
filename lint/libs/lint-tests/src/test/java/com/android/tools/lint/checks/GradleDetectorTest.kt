@@ -6112,9 +6112,10 @@ class GradleDetectorTest : AbstractCheckTest() {
         gradle(
             """
             dependencies {
-                implementation(platform(libs.compose.bom)) // OK 1: newer version reported in version catalog instead
-                implementation platform("androidx.compose:compose-bom:2022.12.00") // ERROR 1
-                implementation testFixtures("androidx.compose:compose-bom:2022.12.00") // ERROR 2
+                implementation(platform(libs.compose.bom)) // OK 1g: newer version reported in version catalog instead
+                implementation platform("androidx.compose:compose-bom:2022.12.00") // ERROR 1g
+                implementation testFixtures("androidx.compose:compose-bom:2022.12.00") // ERROR 2g
+                implementation(enforcedPlatform("androidx.compose:compose-bom:2022.12.00")) // ERROR 3g
             }
             """
           )
@@ -6122,16 +6123,17 @@ class GradleDetectorTest : AbstractCheckTest() {
         kts(
           """
           dependencies {
-            implementation(platform(libs.compose.bom)) // OK 2: newer version reported in version catalog instead
-            implementation(platform("androidx.compose:compose-bom:2022.12.00")) // ERROR 3
-            implementation(testFixtures("androidx.compose:compose-bom:2022.12.00")) // ERROR 4
+            implementation(platform(libs.compose.bom)) // OK 1k: newer version reported in version catalog instead
+            implementation(platform("androidx.compose:compose-bom:2022.12.00")) // ERROR 1k
+            implementation(testFixtures("androidx.compose:compose-bom:2022.12.00")) // ERROR 2k
+            implementation(enforcedPlatform("androidx.compose:compose-bom:2022.12.00")) // ERROR 3k
           }
           """
         ),
         gradleToml(
             """
             [versions]
-            composeBom = "2022.12.00" # ERROR 5
+            composeBom = "2022.12.00" # ERROR 1t
             [libraries]
             compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
             """
@@ -6143,45 +6145,59 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expect(
         """
         build.gradle:3: Warning: A newer version of androidx.compose:compose-bom than 2022.12.00 is available: 2023.01.00 [GradleDependency]
-            implementation platform("androidx.compose:compose-bom:2022.12.00") // ERROR 1
+            implementation platform("androidx.compose:compose-bom:2022.12.00") // ERROR 1g
                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         build.gradle:4: Warning: A newer version of androidx.compose:compose-bom than 2022.12.00 is available: 2023.01.00 [GradleDependency]
-            implementation testFixtures("androidx.compose:compose-bom:2022.12.00") // ERROR 2
+            implementation testFixtures("androidx.compose:compose-bom:2022.12.00") // ERROR 2g
                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle:5: Warning: A newer version of androidx.compose:compose-bom than 2022.12.00 is available: 2023.01.00 [GradleDependency]
+            implementation(enforcedPlatform("androidx.compose:compose-bom:2022.12.00")) // ERROR 3g
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         build.gradle.kts:4: Warning: A newer version of androidx.compose:compose-bom than 2022.12.00 is available: 2023.01.00 [GradleDependency]
-                    implementation(platform("androidx.compose:compose-bom:2022.12.00")) // ERROR 3
+                    implementation(platform("androidx.compose:compose-bom:2022.12.00")) // ERROR 1k
                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         build.gradle.kts:5: Warning: A newer version of androidx.compose:compose-bom than 2022.12.00 is available: 2023.01.00 [GradleDependency]
-                    implementation(testFixtures("androidx.compose:compose-bom:2022.12.00")) // ERROR 4
+                    implementation(testFixtures("androidx.compose:compose-bom:2022.12.00")) // ERROR 2k
                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        build.gradle.kts:6: Warning: A newer version of androidx.compose:compose-bom than 2022.12.00 is available: 2023.01.00 [GradleDependency]
+                    implementation(enforcedPlatform("androidx.compose:compose-bom:2022.12.00")) // ERROR 3k
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         ../gradle/libs.versions.toml:2: Warning: A newer version of androidx.compose:compose-bom than 2022.12.00 is available: 2023.01.00 [GradleDependency]
-        composeBom = "2022.12.00" # ERROR 5
+        composeBom = "2022.12.00" # ERROR 1t
                      ~~~~~~~~~~~~
-        0 errors, 5 warnings
+        0 errors, 7 warnings
         """
       )
       .expectFixDiffs(
         """
         Fix for build.gradle line 3: Change to 2023.01.00:
         @@ -3 +3
-        -     implementation platform("androidx.compose:compose-bom:2022.12.00") // ERROR 1
-        +     implementation platform("androidx.compose:compose-bom:2023.01.00") // ERROR 1
+        -     implementation platform("androidx.compose:compose-bom:2022.12.00") // ERROR 1g
+        +     implementation platform("androidx.compose:compose-bom:2023.01.00") // ERROR 1g
         Fix for build.gradle line 4: Change to 2023.01.00:
         @@ -4 +4
-        -     implementation testFixtures("androidx.compose:compose-bom:2022.12.00") // ERROR 2
-        +     implementation testFixtures("androidx.compose:compose-bom:2023.01.00") // ERROR 2
+        -     implementation testFixtures("androidx.compose:compose-bom:2022.12.00") // ERROR 2g
+        +     implementation testFixtures("androidx.compose:compose-bom:2023.01.00") // ERROR 2g
+        Fix for build.gradle line 5: Change to 2023.01.00:
+        @@ -5 +5
+        -     implementation(enforcedPlatform("androidx.compose:compose-bom:2022.12.00")) // ERROR 3g
+        +     implementation(enforcedPlatform("androidx.compose:compose-bom:2023.01.00")) // ERROR 3g
         Fix for build.gradle.kts line 4: Change to 2023.01.00:
         @@ -4 +4
-        -             implementation(platform("androidx.compose:compose-bom:2022.12.00")) // ERROR 3
-        +             implementation(platform("androidx.compose:compose-bom:2023.01.00")) // ERROR 3
+        -             implementation(platform("androidx.compose:compose-bom:2022.12.00")) // ERROR 1k
+        +             implementation(platform("androidx.compose:compose-bom:2023.01.00")) // ERROR 1k
         Fix for build.gradle.kts line 5: Change to 2023.01.00:
         @@ -5 +5
-        -             implementation(testFixtures("androidx.compose:compose-bom:2022.12.00")) // ERROR 4
-        +             implementation(testFixtures("androidx.compose:compose-bom:2023.01.00")) // ERROR 4
+        -             implementation(testFixtures("androidx.compose:compose-bom:2022.12.00")) // ERROR 2k
+        +             implementation(testFixtures("androidx.compose:compose-bom:2023.01.00")) // ERROR 2k
+        Fix for build.gradle.kts line 6: Change to 2023.01.00:
+        @@ -6 +6
+        -             implementation(enforcedPlatform("androidx.compose:compose-bom:2022.12.00")) // ERROR 3k
+        +             implementation(enforcedPlatform("androidx.compose:compose-bom:2023.01.00")) // ERROR 3k
         Fix for gradle/libs.versions.toml line 2: Change to 2023.01.00:
         @@ -2 +2
-        - composeBom = "2022.12.00" # ERROR 5
-        + composeBom = "2023.01.00" # ERROR 5
+        - composeBom = "2022.12.00" # ERROR 1t
+        + composeBom = "2023.01.00" # ERROR 1t
         """
       )
   }

@@ -500,8 +500,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         var dependencyString = getStringLiteralValue(value, valueCookie)
         if (
           dependencyString == null &&
-            (value.startsWith("platform(") || value.startsWith("testFixtures(")) &&
-            value.endsWith(")")
+            (listOf("platform", "testFixtures", "enforcedPlatform").any {
+              value.startsWith("$it(")
+            } && value.endsWith(")"))
         ) {
           val argumentString = value.substring(value.indexOf('(') + 1, value.length - 1)
           dependencyString =
@@ -2004,7 +2005,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: GradleContext,
     valueCookie: Any
   ) {
-    if (value.startsWith("platform(")) {
+    if (listOf("platform", "enforcedPlatform").any { value.startsWith("$it(") }) {
       return
     }
     if (
