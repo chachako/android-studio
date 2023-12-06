@@ -4324,8 +4324,11 @@ class GradleDetectorTest : AbstractCheckTest() {
             "plugins {\n" +
             "    id(\"com.android.application\") version \"2.3.3\"\n" +
             // Deprecated version of the above (shouldn't be used in real KTS file,
-            // but here to check that visitors also touch method calls
+            // but here to check that visitors also touch method calls)
             "    id(\"android\") version \"2.3.3\"\n" +
+            // Another version of the above (shouldn't be used in real KTS file, but
+            // here to check that visitors can cope with nested binary expressions)
+            "    id(\"android\") version \"2.3.3\" apply true\n" +
             "    kotlin(\"android\") version \"1.1.51\"\n" +
             "}\n" +
             "\n" +
@@ -4367,13 +4370,16 @@ class GradleDetectorTest : AbstractCheckTest() {
                 build.gradle.kts:3: Warning: 'android' is deprecated; use 'com.android.application' instead [GradleDeprecated]
                     id("android") version "2.3.3"
                         ~~~~~~~
-                build.gradle.kts:29: Warning: A newer version of com.android.support.constraint:constraint-layout than 1.0.0-alpha8 is available: 1.0.3-alpha8 [GradleDependency]
+                build.gradle.kts:4: Warning: 'android' is deprecated; use 'com.android.application' instead [GradleDeprecated]
+                    id("android") version "2.3.3" apply true
+                        ~~~~~~~
+                build.gradle.kts:30: Warning: A newer version of com.android.support.constraint:constraint-layout than 1.0.0-alpha8 is available: 1.0.3-alpha8 [GradleDependency]
                     compile("com.android.support.constraint:constraint-layout:1.0.0-alpha8")
                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                build.gradle.kts:11: Warning: The value of minSdkVersion is too low. It can be incremented without noticeably reducing the number of supported devices. [MinSdkTooLow]
+                build.gradle.kts:12: Warning: The value of minSdkVersion is too low. It can be incremented without noticeably reducing the number of supported devices. [MinSdkTooLow]
                         minSdkVersion(7)
                         ~~~~~~~~~~~~~~~~
-                0 errors, 3 warnings
+                0 errors, 4 warnings
                 """
       )
       .expectFixDiffs(
@@ -4382,12 +4388,16 @@ class GradleDetectorTest : AbstractCheckTest() {
                 @@ -3 +3
                 -     id("android") version "2.3.3"
                 +     id("com.android.application") version "2.3.3"
-                Fix for build.gradle.kts line 29: Change to 1.0.3-alpha8:
-                @@ -29 +29
+                Autofix for build.gradle.kts line 4: Replace with com.android.application:
+                @@ -4 +4
+                -     id("android") version "2.3.3" apply true
+                +     id("com.android.application") version "2.3.3" apply true
+                Fix for build.gradle.kts line 30: Change to 1.0.3-alpha8:
+                @@ -30 +30
                 -     compile("com.android.support.constraint:constraint-layout:1.0.0-alpha8")
                 +     compile("com.android.support.constraint:constraint-layout:1.0.3-alpha8")
-                Fix for build.gradle.kts line 11: Update minSdkVersion to $LOWEST_ACTIVE_API:
-                @@ -11 +11
+                Fix for build.gradle.kts line 12: Update minSdkVersion to $LOWEST_ACTIVE_API:
+                @@ -12 +12
                 -         minSdkVersion(7)
                 +         minSdkVersion($LOWEST_ACTIVE_API)
                 """

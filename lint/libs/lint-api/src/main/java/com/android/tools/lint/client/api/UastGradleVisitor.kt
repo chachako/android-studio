@@ -78,63 +78,6 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
           node
         )
       }
-    } else {
-      val left = node.leftOperand
-      if (left is UCallExpression) {
-        // Constructs like
-        //    plugins {
-        //        id("com.android.application") version "2.3.3"
-        // (corresponds to Gradle: apply plugin: 'com.android.application'
-        // and classpath 'com.android.tools.build:gradle:2.3.3')
-        //
-        // with UAST
-        //
-        //    UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1))
-        //        UIdentifier (Identifier (plugins))
-        //        USimpleNameReferenceExpression (identifier = <anonymous class>)
-        //        ULambdaExpression
-        //            UBlockExpression
-        //   ===>         UBinaryExpression (operator = <other>)
-        //                    UCallExpression (kind = UastCallKind(name='method_call'), argCount =
-        // 1))
-        //                        UIdentifier (Identifier (id))
-        //                        USimpleNameReferenceExpression (identifier = <anonymous class>)
-        //                        ULiteralExpression (value = "com.android.application")
-        //                    ULiteralExpression (value = "2.3.3")
-
-        val valueArguments = left.valueArguments
-        if (valueArguments.size == 1) {
-          val target = getMethodName(left) ?: ""
-          val arg = valueArguments[0]
-          if (arg !is ULambdaExpression) {
-            // Some sort of DSL property?
-            // Parent should be block, its parent lambda, its parent a call -
-            // the name is the parent
-            val parentName = getParent(node) ?: ""
-            val parentParentName = getParentN(node, 2)
-            val value = arg.getSource()
-            for (scanner in detectors) {
-              // How do I represent this: we're passing
-              // in *two* values:
-              //  the plugin id
-              // and then the version to use
-              // For now just passing the first one, e.g.
-              // in the above, plugins.id = "com.android.application"
-
-              scanner.checkDslPropertyAssignment(
-                context,
-                target,
-                value,
-                parentName,
-                parentParentName,
-                left,
-                arg,
-                node
-              )
-            }
-          }
-        }
-      }
     }
   }
 
@@ -230,6 +173,9 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
 
   private fun getSurroundingNamedBlock(node: UElement): UCallExpression? {
     var parent = node.uastParent
+    while (parent is UBinaryExpression) {
+      parent = parent.uastParent
+    }
     if (parent is UReturnExpression) {
       // parent may be a UReturnExpression child of UBlockExpression
       parent = parent.uastParent
