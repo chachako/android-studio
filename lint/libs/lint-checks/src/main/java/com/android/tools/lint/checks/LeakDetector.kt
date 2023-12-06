@@ -31,8 +31,10 @@ import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.android.tools.lint.detector.api.UastLintUtils.Companion.getDefaultUseSiteAnnotations
 import com.android.tools.lint.detector.api.getMethodName
 import com.intellij.openapi.util.Ref
+import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
@@ -42,6 +44,8 @@ import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierList
 import java.util.Locale
 import org.jetbrains.kotlin.asJava.elements.KtLightFieldForSourceDeclarationSupport
+import org.jetbrains.uast.UAnnotated
+import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UAnonymousClass
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UCallExpression
@@ -299,7 +303,7 @@ private const val CLASS_LIFECYCLE_OLD = "android.arch.lifecycle.Lifecycle"
 
 private fun isAppContext(cls: PsiClass, field: PsiField): Boolean {
   //noinspection ExternalAnnotations
-  if (field.annotations.any { it.qualifiedName?.endsWith("ApplicationContext") == true }) {
+  if (field.annotations.any { it.isApplicationContext() }) {
     // dagger.hilt.android.qualifiers.ApplicationContext
     // and various other ones like
     // com.google.android.apps.common.inject.annotation.ApplicationContext;
@@ -324,7 +328,21 @@ private fun isAppContext(cls: PsiClass, field: PsiField): Boolean {
     }
   }
 
+  val annotated = field as? UAnnotated
+  if (annotated != null) {
+    val defaultUseSite = getDefaultUseSiteAnnotations(annotated) ?: return false
+    return defaultUseSite.any { it.isApplicationContext() }
+  }
+
   return false
+}
+
+private fun PsiAnnotation.isApplicationContext(): Boolean {
+  return qualifiedName?.endsWith("ApplicationContext") == true
+}
+
+private fun UAnnotation.isApplicationContext(): Boolean {
+  return qualifiedName?.endsWith("ApplicationContext") == true
 }
 
 private fun isInitializedToAppContext(

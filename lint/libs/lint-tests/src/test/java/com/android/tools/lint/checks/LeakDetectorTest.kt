@@ -683,6 +683,21 @@ class LeakDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
+        // Regression test for b/312949131
+        kotlin(
+            """
+                package test.pkg
+
+                import android.content.Context
+                import androidx.lifecycle.ViewModel
+                import dagger.hilt.android.qualifiers.ApplicationContext
+
+                class Model2(
+                    @ApplicationContext private val context: Context
+                ) : ViewModel()
+                """
+          )
+          .indented(),
         java(
             // Stub
             """
