@@ -22,6 +22,7 @@ import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.layoutlib.LayoutlibProvider
 import com.android.resources.ResourceFolderType
 import com.android.sdklib.AndroidVersion
+import com.android.sdklib.devices.DefaultDevices
 import com.android.tools.configurations.Configuration
 import com.android.tools.fonts.DownloadableFontCacheService
 import com.android.tools.idea.layoutlib.LayoutLibraryLoader
@@ -42,6 +43,7 @@ import com.android.tools.res.apk.ApkResourceRepository
 import com.android.tools.res.ids.apk.ApkResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
 import com.android.tools.sdk.AndroidSdkData
+import com.android.utils.NullLogger
 import com.google.common.annotations.VisibleForTesting
 import java.nio.file.Path
 import java.util.TimeZone
@@ -151,8 +153,9 @@ internal fun renderImpl(
             layoutlibPath,
         )
 
-        val defaultDevice =
-            androidSdkData.deviceManager.getDevice("medium_phone", "Generic")
+        val defaultDevices = DefaultDevices(NullLogger.getLogger())
+        defaultDevices.init()
+        val defaultDevice = defaultDevices.getDevice("medium_phone", "Generic")
         val configurationSettings =
             StandaloneConfigurationSettings(
                 configModule,
