@@ -52,9 +52,12 @@ class CustomAndroidSdkRule : ExternalResource() {
     private val customAndroidPrefDir = File(customUserHomeDir, ".android")
 
     private val systemImageFiles = Splitter.on(' ')
-            .split(System.getProperty("sdk.repo.sysimage.android29.files"))
+            .split(System.getProperty("sdk.repo.sysimage.files"))
             .map { File(it) }
             .toList()
+    private val systemImageRemotePackage = System.getProperty("sdk.repo.sysimage.remotePackage")
+    private val systemImageDisplayName = System.getProperty("sdk.repo.sysimage.displayName")
+    private val systemImageApiLevel = System.getProperty("sdk.repo.sysimage.apiLevel")
 
     private val emulatorZip = File(System.getProperty("sdk.repo.emulator.zip"))
 
@@ -280,19 +283,18 @@ class CustomAndroidSdkRule : ExternalResource() {
             <sys-img:sdk-sys-img xmlns:sys-img="http://schemas.android.com/sdk/android/repo/sys-img2/03" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                 <license id="android-sdk-license" type="text">A TOTALLY VALID LICENSE</license>
                 <channel id="channel-0">stable</channel>
-                <remotePackage path="system-images;android-29;default;x86_64">
+                <remotePackage path="$systemImageRemotePackage">
                     <type-details xsi:type="sys-img:sysImgDetailsType">
-                        <api-level>29</api-level>
+                        <api-level>$systemImageApiLevel</api-level>
                         <tag>
-                            <id>default</id>
-                            <display>Default Android System Image</display>
+                            <id>${systemImageRemotePackage.split(';')[2]}</id>
                         </tag>
-                        <abi>x86_64</abi>
+                        <abi>${systemImageRemotePackage.split(';')[3]}</abi>
                     </type-details>
                     <revision>
                         <major>6</major>
                     </revision>
-                    <display-name>Intel x86_64 Atom System Image</display-name>
+                    <display-name>$systemImageDisplayName</display-name>
                     <uses-license ref="android-sdk-license"/>
                     <dependencies>
                         <dependency path="emulator">

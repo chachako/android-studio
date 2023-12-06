@@ -115,8 +115,8 @@ public class JacocoConnectedTest {
                         + "  androidTestImplementation 'androidx.test:monitor:1.4.0-alpha06'\n"
                         + "  androidTestImplementation 'androidx.test:rules:1.4.0-alpha06'\n"
                         + "  androidTestImplementation 'androidx.test:runner:1.4.0-alpha06'\n"
-                        + "  androidTestUtil 'androidx.test.services:test-services:1.4.0-alpha06'\n"
-                        + "  androidTestUtil 'androidx.test:orchestrator:1.4.0-alpha06'\n"
+                        + "  androidTestUtil 'androidx.test.services:test-services:1.5.0-alpha02'\n"
+                        + "  androidTestUtil 'androidx.test:orchestrator:1.5.0-alpha02'\n"
                         + "}");
         TestFileUtils.appendToFile(
                 project.getGradlePropertiesFile(),

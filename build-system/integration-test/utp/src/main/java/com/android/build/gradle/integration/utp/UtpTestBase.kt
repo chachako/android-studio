@@ -53,9 +53,11 @@ abstract class UtpTestBase {
     open val executor: GradleTaskExecutor
         get() = project.executor()
 
-    abstract val deviceName: String
-
     abstract fun selectModule(moduleName: String)
+
+    companion object {
+        const val ANDROIDX_TEST_VERSION = "1.5.0-alpha02"
+    }
 
     private fun enableAndroidTestOrchestrator(subProjectName: String) {
         val subProject = project.getSubproject(subProjectName)
@@ -72,8 +74,8 @@ abstract class UtpTestBase {
             android.defaultConfig.testInstrumentationRunnerArguments clearPackageData: 'true'
 
             dependencies {
-              androidTestUtil 'androidx.test:orchestrator:1.4.0-alpha06'
-              androidTestUtil 'androidx.test.services:test-services:1.4.0-alpha06'
+              androidTestUtil 'androidx.test:orchestrator:$ANDROIDX_TEST_VERSION'
+              androidTestUtil 'androidx.test.services:test-services:$ANDROIDX_TEST_VERSION'
             }
             """.trimIndent())
     }
@@ -87,7 +89,7 @@ abstract class UtpTestBase {
             android.defaultConfig.testInstrumentationRunnerArguments useTestStorageService: 'true'
 
             dependencies {
-              androidTestUtil 'androidx.test.services:test-services:1.4.0-alpha06'
+              androidTestUtil 'androidx.test.services:test-services:$ANDROIDX_TEST_VERSION'
             }
             """.trimIndent())
     }
@@ -98,7 +100,7 @@ abstract class UtpTestBase {
             subProject.buildFile,
             """
             dependencies {
-              androidTestUtil 'androidx.test.services:test-services:1.4.0-alpha06'
+              androidTestUtil 'androidx.test.services:test-services:$ANDROIDX_TEST_VERSION'
             }
             """.trimIndent())
     }
@@ -286,7 +288,7 @@ abstract class UtpTestBase {
 
         val deviceInfo = getDeviceInfo(project.file(aggTestResultPbPath))
         assertThat(deviceInfo).isNotNull()
-        assertThat(deviceInfo?.name).isEqualTo(deviceName)
+        assertThat(deviceInfo?.name).isNotEmpty()
 
         // Run the task again after clean. This time the task configuration is
         // restored from the configuration cache. We expect no crashes.

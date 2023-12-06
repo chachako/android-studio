@@ -415,7 +415,7 @@ abstract class TestLabBuildService : BuildService<TestLabBuildService.Parameters
                 }
                 project.dependencies.add(
                         STUB_APP_CONFIG_NAME,
-                        "androidx.test.services:test-services:1.4.2")
+                        "androidx.test.services:test-services:1.5.0-alpha02")
             }
         }
 

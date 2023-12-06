@@ -23,26 +23,6 @@ maven_import(
 )
 
 maven_artifact(
-    name = "androidx.test.services.test-services_1.4.2",
-    pom = "repository/androidx/test/services/test-services/1.4.2/test-services-1.4.2.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/test/services/test-services/1.4.2",
-    visibility = ["//visibility:public"],
-)
-
-maven_import(
-    name = "androidx.test.services.test-services",
-    classifiers = [],
-    jars = [
-    ],
-    original_deps = [],
-    pom = "repository/androidx/test/services/test-services/1.4.2/test-services-1.4.2.pom",
-    repo_root_path = "repository",
-    repo_path = "androidx/test/services/test-services/1.4.2",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "com.android.tools.build.jetifier.jetifier-core_1.0.0-beta10",
     pom = "repository/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta10/jetifier-core-1.0.0-beta10.pom",
     repo_root_path = "repository",
@@ -22018,10 +21998,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.test.services.test-services_1.4.0-alpha06",
-    pom = "repository/androidx/test/services/test-services/1.4.0-alpha06/test-services-1.4.0-alpha06.pom",
+    name = "androidx.test.services.test-services_1.5.0-alpha02",
+    pom = "repository/androidx/test/services/test-services/1.5.0-alpha02/test-services-1.5.0-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "androidx/test/services/test-services/1.4.0-alpha06",
+    repo_path = "androidx/test/services/test-services/1.5.0-alpha02",
     visibility = ["//visibility:public"],
 )
 
@@ -22266,12 +22246,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.test.orchestrator_1.4.0-alpha06",
-    pom = "repository/androidx/test/orchestrator/1.4.0-alpha06/orchestrator-1.4.0-alpha06.pom",
+    name = "androidx.test.orchestrator_1.5.0-alpha02",
+    pom = "repository/androidx/test/orchestrator/1.5.0-alpha02/orchestrator-1.5.0-alpha02.pom",
     repo_root_path = "repository",
-    repo_path = "androidx/test/orchestrator/1.4.0-alpha06",
+    repo_path = "androidx/test/orchestrator/1.5.0-alpha02",
     deps = [
-        "androidx.test.services.test-services_1.4.0-alpha06",
+        "androidx.test.services.test-services_1.5.0-alpha02",
     ],
     visibility = ["//visibility:public"],
 )

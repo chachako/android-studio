@@ -46,8 +46,6 @@ class UtpManagedDeviceTest : UtpTestBase() {
         private const val TEST_COV_XML = "$REPORTS/coverage/androidTest/debug/managedDevice/report.xml"
     }
 
-    override val deviceName: String = "dev29_default_x86_64_Pixel_2"
-
     override val executor: GradleTaskExecutor
         get() = customAndroidSdkRule.run { project.executorWithCustomAndroidSdk() }
 

@@ -57,8 +57,6 @@ class UtpConnectedTest : UtpTestBase() {
         project.execute("uninstallAll")
     }
 
-    override val deviceName: String = "emulator-5554"
-
     override fun selectModule(moduleName: String) {
         testTaskName = ":${moduleName}:connectedAndroidTest"
         testResultXmlPath = "${moduleName}/$TEST_RESULT_XML${moduleName}-.xml"
