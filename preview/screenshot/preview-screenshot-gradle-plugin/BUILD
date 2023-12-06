@@ -41,6 +41,7 @@ maven_repository(
     # keep sorted
     artifacts = [
         "//tools/base/multipreview-asm",
+        "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",
         "//tools/base/testutils:tools.testutils",
         "@maven//:org.jetbrains.kotlin.kotlin-test-junit_1.7.10",
     ],
@@ -51,6 +52,7 @@ maven_repository(
     # keep sorted
     artifacts = [
         "//tools/base/multipreview-asm",
+        "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",
     ],
     visibility = [
         "//tools/base/build-system/integration-test:__subpackages__",
@@ -106,6 +108,7 @@ kotlin_library(
         "//tools/base/multipreview-asm:tools.multipreview-asm",
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/sdklib:tools.sdklib",
+        "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",
         "//tools/base/testutils:tools.testutils",
         "@maven//:net.sf.kxml.kxml2",
     ],
