@@ -95,11 +95,19 @@ public class GroovyGradleVisitor extends GradleVisitor {
 
                     @Override
                     public void visitMethodCallExpression(MethodCallExpression expression) {
-                        mMethodCallStack.add(expression);
+                        ASTNode receiver = expression.getReceiver();
+                        boolean addToStack =
+                                receiver instanceof VariableExpression
+                                        || receiver instanceof PropertyExpression;
+                        if (addToStack) {
+                            mMethodCallStack.add(expression);
+                        }
                         super.visitMethodCallExpression(expression);
-                        assert !mMethodCallStack.isEmpty();
-                        assert mMethodCallStack.get(mMethodCallStack.size() - 1) == expression;
-                        mMethodCallStack.remove(mMethodCallStack.size() - 1);
+                        if (addToStack) {
+                            assert !mMethodCallStack.isEmpty();
+                            assert mMethodCallStack.get(mMethodCallStack.size() - 1) == expression;
+                            mMethodCallStack.remove(mMethodCallStack.size() - 1);
+                        }
                     }
 
                     @Override

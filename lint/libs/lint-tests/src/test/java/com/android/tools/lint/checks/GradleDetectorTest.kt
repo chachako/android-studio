@@ -4404,6 +4404,50 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testGroovyPluginsDsl() {
+    // tests for the equivalent Kotlin script Plugins Dsl are in testKtsSupport()
+    lint()
+      .files(
+        gradle(
+          "" +
+            "plugins {\n" +
+            "    id 'com.android.application' version '2.3.3'\n" +
+            // Deprecated version of the above (shouldn't be used in real plugins Dsl,
+            // but here to check that visitors also touch method calls)
+            "    id 'android' version '2.3.3'\n" +
+            // Another version of the above (shouldn't be used in real KTS file, but
+            // here to check that visitors can cope with nested binary expressions)
+            "    id 'android' version '2.3.3' apply true\n" +
+            "}"
+        )
+      )
+      .issues(DEPENDENCY, DEPRECATED)
+      .run()
+      .expect(
+        """
+                build.gradle:3: Warning: 'android' is deprecated; use 'com.android.application' instead [GradleDeprecated]
+                    id 'android' version '2.3.3'
+                       ~~~~~~~~~
+                build.gradle:4: Warning: 'android' is deprecated; use 'com.android.application' instead [GradleDeprecated]
+                    id 'android' version '2.3.3' apply true
+                       ~~~~~~~~~
+                0 errors, 2 warnings
+                """
+      )
+      .expectFixDiffs(
+        """
+                Autofix for build.gradle line 3: Replace with com.android.application:
+                @@ -3 +3
+                -     id 'android' version '2.3.3'
+                +     id 'com.android.application' version '2.3.3'
+                Autofix for build.gradle line 4: Replace with com.android.application:
+                @@ -4 +4
+                -     id 'android' version '2.3.3' apply true
+                +     id 'com.android.application' version '2.3.3' apply true
+                """
+      )
+  }
+
   fun testTargetEdited() {
     val temporaryFolder = TemporaryFolder()
     temporaryFolder.create()
