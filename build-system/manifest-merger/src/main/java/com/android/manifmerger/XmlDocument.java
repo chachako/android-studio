@@ -757,7 +757,8 @@ public class XmlDocument {
 
             // if we find a selector that applies to this library. the users wants to explicitly
             // allow this higher version library to be allowed.
-            for (Selector selector : xmlElement.getOverrideUsesSdkLibrarySelectors()) {
+            for (OverrideLibrarySelector selector :
+                    xmlElement.getOverrideUsesSdkLibrarySelectors()) {
                 if (selector.appliesTo(lowerPriorityDocument.getRootNode())) {
                     return true;
                 }

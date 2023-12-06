@@ -167,7 +167,7 @@ public class XmlElement extends OrphanXmlElement {
     private ElementOperationsAndMergeRuleMarkers extractOperationAndSelectors(
             NamedNodeMap namedNodeMap) {
         Selector selector = null;
-        List<Selector> overrideUsesSdkLibrarySelectors = ImmutableList.of();
+        List<OverrideLibrarySelector> overrideUsesSdkLibrarySelectors = ImmutableList.of();
 
         ImmutableMap.Builder<NodeName, AttributeOperationType> attributeOperationTypeBuilder =
                 ImmutableMap.builder();
@@ -188,9 +188,10 @@ public class XmlElement extends OrphanXmlElement {
                     selector = new Selector(attribute.getNodeValue());
                 } else if (instruction.equals(NodeOperationType.OVERRIDE_USES_SDK)) {
                     String nodeValue = attribute.getNodeValue();
-                    ImmutableList.Builder<Selector> builder = ImmutableList.builder();
+                    ImmutableList.Builder<OverrideLibrarySelector> builder =
+                            ImmutableList.builder();
                     for (String selectorValue : Splitter.on(',').split(nodeValue)) {
-                        builder.add(new Selector(selectorValue.trim()));
+                        builder.add(new OverrideLibrarySelector(selectorValue.trim()));
                     }
                     overrideUsesSdkLibrarySelectors = builder.build();
                 } else {
@@ -489,7 +490,7 @@ public class XmlElement extends OrphanXmlElement {
     }
 
     @NonNull
-    public List<Selector> getOverrideUsesSdkLibrarySelectors() {
+    public List<OverrideLibrarySelector> getOverrideUsesSdkLibrarySelectors() {
         return mSelectorsAndMergeRuleMarkers.getOverrideUsesSdkLibrarySelectors();
     }
 
@@ -1302,7 +1303,7 @@ public class XmlElement extends OrphanXmlElement {
         }
 
         @NonNull
-        public List<Selector> getOverrideUsesSdkLibrarySelectors() {
+        public List<OverrideLibrarySelector> getOverrideUsesSdkLibrarySelectors() {
             return mOverrideUsesSdkLibrarySelectors;
         }
 
@@ -1315,13 +1316,13 @@ public class XmlElement extends OrphanXmlElement {
         @Nullable private final Selector mSelector;
 
         // optional list of libraries that we should ignore the minSdk version
-        @NonNull private final List<Selector> mOverrideUsesSdkLibrarySelectors;
+        @NonNull private final List<OverrideLibrarySelector> mOverrideUsesSdkLibrarySelectors;
 
         public ElementOperationsAndMergeRuleMarkers(
                 @Nullable NodeOperationType mNodeOperationType,
                 @NonNull Map<NodeName, AttributeOperationType> mAttributesOperationTypes,
                 @Nullable Selector mSelector,
-                @NonNull List<Selector> mOverrideUsesSdkLibrarySelectors) {
+                @NonNull List<OverrideLibrarySelector> mOverrideUsesSdkLibrarySelectors) {
             this.mNodeOperationType = mNodeOperationType;
             this.mAttributesOperationTypes = mAttributesOperationTypes;
             this.mSelector = mSelector;
