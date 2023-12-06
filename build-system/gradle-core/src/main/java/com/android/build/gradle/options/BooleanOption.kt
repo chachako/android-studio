@@ -167,7 +167,6 @@ enum class BooleanOption(
     ENABLE_LOCAL_TESTING("android.bundletool.enableLocalTesting", false, FeatureStage.Experimental),
     DISABLE_MINSDKLIBRARY_CHECK("android.unsafe.disable.minSdkLibraryCheck", false, FeatureStage.Experimental),
     ENABLE_INSTRUMENTATION_TEST_DESUGARING("android.experimental.library.desugarAndroidTest", false, FeatureStage.Experimental),
-    ENABLE_EMULATOR_CONTROL("android.experimental.androidTest.enableEmulatorControl", false, FeatureStage.Experimental),
     /**
      * When enabled, incompatible APKs installed on a testing device will be uninstalled automatically
      * during an instrumentation test run (e.g. When INSTALL_FAILED_UPDATE_INCOMPATIBLE error happens
@@ -292,6 +291,12 @@ enum class BooleanOption(
         true,
         FeatureStage.SoftlyEnforced(VERSION_9_0)
     ),
+
+
+    ENABLE_EMULATOR_CONTROL(
+        "android.experimental.androidTest.enableEmulatorControl",
+        true,
+        FeatureStage.SoftlyEnforced(VERSION_9_0)),
 
     ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM(
         "android.experimental.androidTest.useUnifiedTestPlatform",

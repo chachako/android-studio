@@ -55,8 +55,8 @@ class EmulatorControlConfigTest {
     }
 
     @Test
-    fun defaultExperimentalEnableEmulatorControlBooleanIsFalse() {
-        assertThat(emptyProjectOptions.get(BooleanOption.ENABLE_EMULATOR_CONTROL)).isFalse()
+    fun defaultExperimentalEnableEmulatorControlBooleanIsTrue() {
+        assertThat(emptyProjectOptions.get(BooleanOption.ENABLE_EMULATOR_CONTROL)).isTrue()
     }
 
     @Test
@@ -64,17 +64,6 @@ class EmulatorControlConfigTest {
         val emulatorControlConfig = createEmulatorControlConfig(emptyProjectOptions, emulatorControl)
         assertThat(emulatorControlConfig.enabled).isFalse()
     }
-    @Test
-    fun emulatorEnableEmulatorControlRequiresGradleProperty() {
-        emulatorControl.enable = true
-        assertFailsWith<IllegalStateException>(
-            message = "EmulatorControl is an experimental feature and it is disabled by default. Please add android.experimental.androidTest.enableEmulatorControl=true in your gradle.properties to opt-in to this feature.",
-            block = {
-                createEmulatorControlConfig(emptyProjectOptions, emulatorControl)
-            }
-        )
-    }
-
 
     @Test
     fun emulatorEnableEmulatorControlWithGradleProperty() {
