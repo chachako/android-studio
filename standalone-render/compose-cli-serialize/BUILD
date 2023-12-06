@@ -38,7 +38,7 @@ maven_library(
         "src/**/*.kt",
     ]),
     coordinates = "com.android.tools:standalone-render.compose-cli-serialize",
-    description = "Library to serialize and deserealize data to and from Compose rendering CLI",
+    description = "Library to serialize and deserialize data to and from Compose rendering CLI",
     module_name = "standalone-render.compose-cli-serialize",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/standalone-render/compose-cli-serialize",

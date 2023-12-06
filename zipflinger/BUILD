@@ -18,6 +18,7 @@ maven_library(
         "//tools/base/deploy/deployer:__subpackages__",
         "//tools/base/lint:__subpackages__",
         "//tools/base/signflinger:__subpackages__",
+        "//tools/base/standalone-render/compose-cli:__subpackages__",
         "//tools/base/zipflinger/tools:__subpackages__",
     ],
     deps = [
