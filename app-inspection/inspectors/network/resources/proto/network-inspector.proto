@@ -221,6 +221,13 @@ message InterceptCriteria {
         METHOD_UNSPECIFIED = 0;
         METHOD_GET = 1;
         METHOD_POST = 2;
+        METHOD_HEAD = 3;
+        METHOD_PUT = 4;
+        METHOD_DELETE = 5;
+        METHOD_TRACE = 6;
+        METHOD_CONNECT = 7;
+        METHOD_PATCH = 8;
+        METHOD_OPTIONS = 9;
     }
     Protocol protocol = 1;
     string host = 2;

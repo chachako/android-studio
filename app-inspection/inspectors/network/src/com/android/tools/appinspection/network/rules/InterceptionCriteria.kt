@@ -18,6 +18,7 @@ package com.android.tools.appinspection.network.rules
 
 import java.net.URL
 import studio.network.inspection.NetworkInspectorProtocol.InterceptCriteria
+import studio.network.inspection.NetworkInspectorProtocol.InterceptCriteria.Method
 
 /** A criteria class that checks if a connection should be intercepted. */
 class InterceptionCriteria(private val interceptCriteria: InterceptCriteria) {
@@ -37,13 +38,20 @@ class InterceptionCriteria(private val interceptCriteria: InterceptCriteria) {
   }
 }
 
-private fun InterceptCriteria.Method.appliesTo(connectionMethod: String): Boolean {
+private fun Method.appliesTo(connectionMethod: String): Boolean {
   val method =
     when (this) {
-      InterceptCriteria.Method.METHOD_UNSPECIFIED -> return true
-      InterceptCriteria.Method.METHOD_GET -> "GET"
-      InterceptCriteria.Method.METHOD_POST -> "POST"
-      else -> return false
+      Method.METHOD_UNSPECIFIED -> return true
+      Method.METHOD_GET -> "GET"
+      Method.METHOD_POST -> "POST"
+      Method.METHOD_HEAD -> "HEAD"
+      Method.METHOD_PUT -> "PUT"
+      Method.METHOD_DELETE -> "DELETE"
+      Method.METHOD_TRACE -> "TRACE"
+      Method.METHOD_CONNECT -> "CONNECT"
+      Method.METHOD_PATCH -> "PATCH"
+      Method.METHOD_OPTIONS -> "OPTIONS"
+      Method.UNRECOGNIZED -> return false
     }
 
   return method == connectionMethod

@@ -32,13 +32,27 @@ import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import org.junit.Test
-import studio.network.inspection.NetworkInspectorProtocol
+import studio.network.inspection.NetworkInspectorProtocol.InterceptCriteria
+import studio.network.inspection.NetworkInspectorProtocol.InterceptCriteria.Method
 import studio.network.inspection.NetworkInspectorProtocol.MatchingText
 import studio.network.inspection.NetworkInspectorProtocol.Transformation.BodyModified
 import studio.network.inspection.NetworkInspectorProtocol.Transformation.BodyReplaced
 import studio.network.inspection.NetworkInspectorProtocol.Transformation.HeaderAdded
 import studio.network.inspection.NetworkInspectorProtocol.Transformation.HeaderReplaced
 import studio.network.inspection.NetworkInspectorProtocol.Transformation.StatusCodeReplaced
+
+private val METHODS =
+  listOf(
+    "GET",
+    "POST",
+    "HEAD",
+    "PUT",
+    "DELETE",
+    "TRACE",
+    "CONNECT",
+    "PATCH",
+    "OPTIONS",
+  )
 
 class InterceptionRuleTest {
 
@@ -99,21 +113,20 @@ class InterceptionRuleTest {
 
   @Test
   fun interceptionCriteriaMatchesConnections() {
-    val emptyCriteria =
-      InterceptionCriteria(NetworkInspectorProtocol.InterceptCriteria.getDefaultInstance())
+    val emptyCriteria = InterceptionCriteria(InterceptCriteria.getDefaultInstance())
     val connection = NetworkConnection("https://www.google.com", "GET")
     assertThat(emptyCriteria.appliesTo(connection)).isTrue()
 
     val criteria =
       InterceptionCriteria(
-        NetworkInspectorProtocol.InterceptCriteria.newBuilder()
+        InterceptCriteria.newBuilder()
           .apply {
-            protocol = NetworkInspectorProtocol.InterceptCriteria.Protocol.PROTOCOL_HTTPS
+            protocol = InterceptCriteria.Protocol.PROTOCOL_HTTPS
             host = "www.google.com"
             port = ""
             query = ""
             path = ""
-            method = NetworkInspectorProtocol.InterceptCriteria.Method.METHOD_GET
+            method = InterceptCriteria.Method.METHOD_GET
           }
           .build()
       )
@@ -125,14 +138,14 @@ class InterceptionRuleTest {
 
     val detailedCriteria =
       InterceptionCriteria(
-        NetworkInspectorProtocol.InterceptCriteria.newBuilder()
+        InterceptCriteria.newBuilder()
           .apply {
-            protocol = NetworkInspectorProtocol.InterceptCriteria.Protocol.PROTOCOL_HTTPS
+            protocol = InterceptCriteria.Protocol.PROTOCOL_HTTPS
             host = "www.google.com"
             port = "8080"
             query = "query"
             path = "/path"
-            method = NetworkInspectorProtocol.InterceptCriteria.Method.METHOD_GET
+            method = InterceptCriteria.Method.METHOD_GET
           }
           .build()
       )
@@ -469,5 +482,114 @@ class InterceptionRuleTest {
     val transformedResponse2 = transformation.transform(response2)
     assertThat(transformedResponse1.body.reader().use { it.readText() }).isEqualTo("Test")
     assertThat(transformedResponse2.body.reader().use { it.readText() }).isEqualTo("Test")
+  }
+
+  @Test
+  fun interceptCriteriaMethod_containsAllMethods() {
+    assertThat(Method.values().map { it.name.substringAfter("_") })
+      .containsExactlyElementsIn(METHODS + "UNSPECIFIED" + "UNRECOGNIZED")
+  }
+
+  @Test
+  fun interceptionCriteriaMatchesConnections_methodGet() {
+    val matched =
+      METHODS.filter {
+        InterceptionCriteria(InterceptCriteria.newBuilder().setMethod(Method.METHOD_GET).build())
+          .appliesTo(NetworkConnection("https://www.google.com", it))
+      }
+
+    assertThat(matched).containsExactly("GET")
+  }
+
+  @Test
+  fun interceptionCriteriaMatchesConnections_methodPost() {
+    val matched =
+      METHODS.filter {
+        InterceptionCriteria(InterceptCriteria.newBuilder().setMethod(Method.METHOD_POST).build())
+          .appliesTo(NetworkConnection("https://www.google.com", it))
+      }
+
+    assertThat(matched).containsExactly("POST")
+  }
+
+  @Test
+  fun interceptionCriteriaMatchesConnections_methodHead() {
+    val matched =
+      METHODS.filter {
+        InterceptionCriteria(InterceptCriteria.newBuilder().setMethod(Method.METHOD_HEAD).build())
+          .appliesTo(NetworkConnection("https://www.google.com", it))
+      }
+
+    assertThat(matched).containsExactly("HEAD")
+  }
+
+  @Test
+  fun interceptionCriteriaMatchesConnections_methodPut() {
+    val matched =
+      METHODS.filter {
+        InterceptionCriteria(InterceptCriteria.newBuilder().setMethod(Method.METHOD_PUT).build())
+          .appliesTo(NetworkConnection("https://www.google.com", it))
+      }
+
+    assertThat(matched).containsExactly("PUT")
+  }
+
+  @Test
+  fun interceptionCriteriaMatchesConnections_methodDelete() {
+    val matched =
+      METHODS.filter {
+        InterceptionCriteria(InterceptCriteria.newBuilder().setMethod(Method.METHOD_DELETE).build())
+          .appliesTo(NetworkConnection("https://www.google.com", it))
+      }
+
+    assertThat(matched).containsExactly("DELETE")
+  }
+
+  @Test
+  fun interceptionCriteriaMatchesConnections_methodTrace() {
+    val matched =
+      METHODS.filter {
+        InterceptionCriteria(InterceptCriteria.newBuilder().setMethod(Method.METHOD_TRACE).build())
+          .appliesTo(NetworkConnection("https://www.google.com", it))
+      }
+
+    assertThat(matched).containsExactly("TRACE")
+  }
+
+  @Test
+  fun interceptionCriteriaMatchesConnections_methodConnect() {
+    val matched =
+      METHODS.filter {
+        InterceptionCriteria(
+            InterceptCriteria.newBuilder().setMethod(Method.METHOD_CONNECT).build()
+          )
+          .appliesTo(NetworkConnection("https://www.google.com", it))
+      }
+
+    assertThat(matched).containsExactly("CONNECT")
+  }
+
+  @Test
+  fun interceptionCriteriaMatchesConnections_methodPatch() {
+    val matched =
+      METHODS.filter {
+        InterceptionCriteria(InterceptCriteria.newBuilder().setMethod(Method.METHOD_PATCH).build())
+          .appliesTo(NetworkConnection("https://www.google.com", it))
+      }
+
+    assertThat(matched).containsExactly("PATCH")
+  }
+
+  @Test
+  fun interceptionCriteriaMatchesConnections_methodOptions() {
+    val matched =
+      METHODS.filter {
+        InterceptionCriteria(
+            InterceptCriteria.newBuilder().setMethod(Method.METHOD_OPTIONS).build()
+          )
+          .appliesTo(NetworkConnection("https://www.google.com", it))
+      }
+
+    assertThat(matched).containsExactly("OPTIONS")
   }
 }
