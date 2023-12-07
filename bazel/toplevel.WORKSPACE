@@ -111,14 +111,6 @@ custom_exec_properties(
 
 # Download system images when needed by avd.
 http_archive(
-    name = "system_image_android-28_default_x86",
-    build_file = "//tools/base/bazel/avd:system_images.BUILD",
-    sha256 = "7c3615c55b64713fe56842a12fe6827d6792cb27a9f95f9fa3aee1ff1be47f16",
-    strip_prefix = "x86",
-    url = "https://dl.google.com/android/repository/sys-img/android/x86-28_r04.zip",
-)
-
-http_archive(
     name = "system_image_android-29_default_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
     sha256 = "5d866d9925ad7b142c89bbffc9ce9941961e08747d6f64e28b5158cc44ad95cd",
@@ -140,14 +132,6 @@ http_archive(
     sha256 = "7e7081f5784e98dd391ddae52573a75bc1db17a2fd286cb20be46d3eec251f94",
     strip_prefix = "x86_64",
     url = "https://dl.google.com/android/repository/sys-img/google_apis/x86_64-31_r14.zip",
-)
-
-http_archive(
-    name = "system_image_android-32_default_x86_64",
-    build_file = "//tools/base/bazel/avd:system_images.BUILD",
-    sha256 = "26be076dcece9ba909f7de6e76099b9d8934f8f4fd21a38c09ade4bd3706dab7",
-    strip_prefix = "x86_64",
-    url = "https://dl.google.com/android/repository/sys-img/google_apis/x86_64-32_r07.zip",
 )
 
 http_archive(
