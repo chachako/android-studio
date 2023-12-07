@@ -16,26 +16,11 @@
 
 package com.android.tools.preview.screenshot
 
-import com.google.common.truth.Truth
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
-
-class PreviewFinderTest {
-    @get:Rule
-    val tempDirRule = TemporaryFolder()
-
-    @Test
-    fun testFindPreviewsAndSerializeWithEmptyClassPath() {
-        val outputFile = tempDirRule.newFile("outputFile")
-        findPreviewsAndSerialize(listOf(), outputFile.toPath())
-
-        Truth.assertThat(outputFile.readText()).isEqualTo("""
-            {
-              "screenshots": []
-            }
-        """.trimIndent())
-    }
-
-    // TODO(b/315048068): Add a unit test that finds previews on the classpath
-}
+/** Information required to render a screenshot of a compose preview.  */
+// TODO: Remove this when AGP serialization library is available
+data class ComposeScreenshot(
+    val methodFQN: String,
+    val methodParams: List<Map<String, String>>,
+    val previewParams: Map<String, String>,
+    val imageName: String
+)
