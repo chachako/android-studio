@@ -140,6 +140,7 @@ class DeviceProvisionerTest {
         .isEqualTo(SerialNumbers.PHYSICAL1_USB)
       usbHandle.state.properties.apply {
         assertThat(wearPairingId).isEqualTo(SerialNumbers.PHYSICAL1_USB)
+        assertThat(disambiguator).isEqualTo(SerialNumbers.PHYSICAL1_USB)
         assertThat(deviceInfoProto.mdnsConnectionType).isEqualTo(MdnsConnectionType.MDNS_NONE)
         checkPhysicalDeviceProperties()
       }
@@ -154,6 +155,7 @@ class DeviceProvisionerTest {
         .isEqualTo(SerialNumbers.PHYSICAL2_WIFI)
       wifiHandle.state.properties.apply {
         assertThat(wearPairingId).isEqualTo(SerialNumbers.PHYSICAL2_USB)
+        assertThat(disambiguator).isEqualTo(SerialNumbers.PHYSICAL2_USB)
         assertThat(deviceInfoProto.mdnsConnectionType)
           .isEqualTo(MdnsConnectionType.MDNS_AUTO_CONNECT_TLS)
         checkPhysicalDeviceProperties()
@@ -356,6 +358,10 @@ class DeviceProvisionerTest {
 
           handle
         }
+      originalHandle.state.properties.apply {
+        assertThat(wearPairingId).isEqualTo(SerialNumbers.EMULATOR)
+        assertThat(disambiguator).isEqualTo(SerialNumbers.EMULATOR)
+      }
 
       // Now we also want to update whenever the state changes
       fakeSession.scope.launch {

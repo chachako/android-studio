@@ -62,6 +62,7 @@ class PhysicalDeviceProvisionerPlugin(
     val deviceProperties =
       DeviceProperties.build {
         readAdbSerialNumber(device.serialNumber)
+        disambiguator = wearPairingId
         readCommonProperties(properties)
         populateDeviceInfoProto(PLUGIN_ID, device.serialNumber, properties, randomConnectionId())
         if (connectionType != ConnectionType.WIFI) {
