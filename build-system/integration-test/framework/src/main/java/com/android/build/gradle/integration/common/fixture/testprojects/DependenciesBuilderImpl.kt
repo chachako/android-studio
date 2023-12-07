@@ -45,6 +45,10 @@ class DependenciesBuilderImpl() : DependenciesBuilder {
         dependencies.add("compileOnly" to dependency)
     }
 
+    override fun compileOnlyApi(dependency: Any) {
+        dependencies.add("compileOnlyApi" to dependency)
+    }
+
     override fun runtimeOnly(dependency: Any) {
         dependencies.add("runtimeOnly" to dependency)
     }

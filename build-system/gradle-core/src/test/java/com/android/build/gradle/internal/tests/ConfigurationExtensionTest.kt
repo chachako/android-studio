@@ -67,6 +67,7 @@ class ConfigurationExtensionTest(private val pluginType: TestProjects.Plugin) {
     private val compileToRaw = multimapWithSingleKeyOf(
             "lollipopDemoDebugCompileClasspath",
             "api",
+            "compileOnlyApi",
             "implementation",
             "compileOnly",
             "lollipopImplementation",
@@ -225,7 +226,7 @@ class ConfigurationExtensionTest(private val pluginType: TestProjects.Plugin) {
             actual: Multimap<String, String>) {
 
         for ((key, value) in expected.entries()) {
-            Truth.assertThat(actual).containsEntry(key, value)
+            assertThat(actual).containsEntry(key, value)
         }
     }
 

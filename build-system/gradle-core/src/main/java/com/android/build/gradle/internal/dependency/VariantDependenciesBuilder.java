@@ -199,6 +199,13 @@ public class VariantDependenciesBuilder {
                 apiClasspaths.add(apiConfig);
             }
 
+            Configuration compileOnlyApiConfig =
+                    configs.findByName(sourceSet.getCompileOnlyApiConfigurationName());
+            if (compileOnlyApiConfig != null) {
+                compileClasspaths.add(compileOnlyApiConfig);
+                apiClasspaths.add(compileOnlyApiConfig);
+            }
+
             annotationConfigs.add(
                     configs.getByName(sourceSet.getAnnotationProcessorConfigurationName()));
             wearAppConfigs.add(configs.getByName(sourceSet.getWearAppConfigurationName()));

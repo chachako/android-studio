@@ -315,6 +315,7 @@ package com.android.build.api.dsl {
     method public String getApiConfigurationName();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getAssets();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.AndroidSourceDirectorySet getBaselineProfiles();
+    method public String getCompileOnlyApiConfigurationName();
     method public String getCompileOnlyConfigurationName();
     method public String getImplementationConfigurationName();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getJava();
@@ -345,6 +346,7 @@ package com.android.build.api.dsl {
     property public abstract String apiConfigurationName;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet assets;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.AndroidSourceDirectorySet baselineProfiles;
+    property public abstract String compileOnlyApiConfigurationName;
     property public abstract String compileOnlyConfigurationName;
     property public abstract String implementationConfigurationName;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet java;
