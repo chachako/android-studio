@@ -111,14 +111,6 @@ custom_exec_properties(
 
 # Download system images when needed by avd.
 http_archive(
-    name = "system_image_android-29_default_x86_64",
-    build_file = "//tools/base/bazel/avd:system_images.BUILD",
-    sha256 = "5d866d9925ad7b142c89bbffc9ce9941961e08747d6f64e28b5158cc44ad95cd",
-    strip_prefix = "x86_64",
-    url = "https://dl.google.com/android/repository/sys-img/android/x86_64-29_r06.zip",
-)
-
-http_archive(
     name = "system_image_android-30_default_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
     sha256 = "8d591034a4244a920d7a3ec274bb1734dd6474a3d8c11d0fce902010db3a13aa",
@@ -135,6 +127,14 @@ http_archive(
 )
 
 http_archive(
+    name = "system-image_android-32_aosp_atd_x86_64",
+    build_file = "//tools/base/bazel/avd:system_images.BUILD",
+    sha256 = "192ff0f288b182200cb63046897a531d88def2d14bfc84e5bcb5ff3dc7a8f780",
+    strip_prefix = "x86_64",
+    url = "https://dl.google.com/android/repository/sys-img/aosp_atd/x86_64-32_r01.zip",
+)
+
+http_archive(
     name = "system_image_android-33_default_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
     sha256 = "71cd5ab0990ae34a98f48d1b282414219ba22160e253f7bf8d91d84a08d4da57",
@@ -148,14 +148,6 @@ http_archive(
     sha256 = "74b0a57c2cfee755dcf7645e5da9d5468a2982af0bf012dfb46f661bc8b9f84a",
     strip_prefix = "x86_64",
     url = "https://dl.google.com/android/repository/sys-img/google_apis_playstore/x86_64-33_r07.zip",
-)
-
-http_archive(
-    name = "system-images_android-33_aosp_atd_x86_64",
-    build_file = "//tools/base/bazel/avd:system_images.BUILD",
-    sha256 = "d17967001f453c4b82d09dd3d6931b938c16c9f2bf0e054b521293ca24e3b95e",
-    strip_prefix = "x86_64",
-    url = "https://dl.google.com/android/repository/sys-img/aosp_atd/x86_64-33_r02.zip",
 )
 
 http_archive(

@@ -75,7 +75,7 @@ public class NoSplitNdkVariantsConnectedTest {
                         + "    productFlavors {\n"
                         + "        x86 {\n"
                         + "            ndk {\n"
-                        + "                abiFilter 'x86'\n"
+                        + "                abiFilter 'x86_64'\n"
                         + "            }\n"
                         + "        }\n"
                         + "        arm {\n"
