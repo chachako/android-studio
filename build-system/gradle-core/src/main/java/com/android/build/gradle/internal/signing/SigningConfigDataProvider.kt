@@ -47,7 +47,7 @@ class SigningConfigDataProvider(
     /** When not `null`, the signing config information can be obtained directly in memory. */
     @get:Nested
     @get:Optional
-    val signingConfigData: Provider<SigningConfigData?>,
+    val signingConfigData: Provider<out SigningConfigData?>,
 
     /** When not `null`, the signing config information can be obtained from a file. */
     @get:InputFiles

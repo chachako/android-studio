@@ -104,6 +104,7 @@ import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIB
 import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
+import org.gradle.api.provider.Provider
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import java.lang.Boolean.FALSE
 import java.lang.Boolean.TRUE
@@ -590,22 +591,37 @@ class DependencyConfigurator(
         }
 
         fun registerAsarToApksTransform(variants: List<VariantCreationConfig>) {
-            val variantSigningConfigs = variants.mapNotNull { variant ->
+            // For signing privacy sandbox artifacts we allow per project signing configuration
+            // by the use of experimental properties. To reduce the expense of registering per
+            // variant we set a limit of one signing config in all variants, then register the
+            // AsarToApksTransform once. To maintain the semantic, the build file must explicitly
+            // declare the same signing config for all variants.
+            val variantSigningConfigs = variants.map { variant ->
                 val experimentalProps = variant.experimentalProperties
                 experimentalProps.finalizeValue()
                 SigningConfigData.fromExperimentalPropertiesSigningConfig(variant.experimentalProperties)
-            }
+            }.distinct()
 
-            val signingConfigProvider = when (variantSigningConfigs.count()) {
-                0 -> getBuildService(
-                        variants.first().services.buildServiceRegistry,
-                        AndroidLocationsBuildService::class.java
-                ).map(AndroidLocationsBuildService::getDefaultDebugKeystoreSigningConfig)
-                1 -> variants.first().services.provider { variantSigningConfigs.single() }
-                else -> error("It is not possible to override Privacy Sandbox experimental properties per variant.\n" +
-                        "Properties with different signing config experimental property values defined across multiple variants.")
-            }
+            val signingConfigProvider: Provider<SigningConfigData> =
+                    when (variantSigningConfigs.count()) {
+                        0 -> return // No variants
+                        1 -> if (variantSigningConfigs.singleOrNull() != null) {
+                            // An identical signing config is set in all variants by experimental properties.
+                            variants.first().services.provider {
+                                variantSigningConfigs.singleOrNull()
+                            }
+                        } else {
+                            // No experimental properties are set, use the default.
+                            getBuildService(
+                                    variants.first().services.buildServiceRegistry,
+                                    AndroidLocationsBuildService::class.java
+                            ).map(AndroidLocationsBuildService::getDefaultDebugKeystoreSigningConfig)
+                        }
 
+                        else -> throw UnsupportedOperationException(
+                                "It is not possible to override Privacy Sandbox experimental properties per variant.\n" +
+                                        "Set the same signing config using experimental properties in each variant explicitly.")
+                    }
             registerTransform(
                     AsarToApksTransform::class.java,
                     AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,

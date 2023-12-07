@@ -16,17 +16,19 @@
 
 package com.android.build.gradle.internal.tasks
 
-import com.android.apksig.apk.ApkUtils
 import com.android.build.api.variant.impl.BuiltArtifactImpl
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.internal.AndroidJarInput
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.initialize
+import com.android.build.gradle.internal.packaging.getDefaultDebugKeystoreSigningConfig
 import com.android.build.gradle.internal.profile.ProfileAwareWorkAction
 import com.android.build.gradle.internal.res.namespaced.Aapt2LinkRunnable
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.Aapt2Input
+import com.android.build.gradle.internal.services.AndroidLocationsBuildService
+import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getLeasingAapt2
 import com.android.build.gradle.internal.signing.SigningConfigData
 import com.android.build.gradle.internal.signing.SigningConfigDataProvider
@@ -47,7 +49,6 @@ import com.android.tools.build.apkzlib.zfile.NativeLibrariesPackagingMode
 import com.android.tools.build.bundletool.model.RuntimeEnabledSdkVersionEncoder
 import com.android.tools.build.bundletool.transparency.CodeTransparencyCryptoUtils
 import com.android.utils.FileUtils
-import com.android.zipflinger.ZipArchive
 import com.google.common.base.Charsets
 import com.google.common.collect.ImmutableList
 import com.google.common.io.Files
@@ -55,6 +56,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
@@ -108,7 +110,10 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
     abstract val aapt2: Aapt2Input
 
     @get:Nested
-    abstract val signingConfig: Property<SigningConfigDataProvider>
+    abstract val apkSigningConfig: Property<SigningConfigDataProvider>
+
+    @get:Nested
+    abstract val sdkSigningConfig: Property<SigningConfigDataProvider>
 
     override fun doTaskAction() {
         workerExecutor.noIsolation().submit(WorkAction::class.java) {
@@ -119,7 +124,8 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
             it.versionCode.set(versionCode)
             it.androidJar.set(androidJarInput.getAndroidJar().get())
             it.aapt2.set(aapt2)
-            it.signingConfig.set(signingConfig.get().signingConfigData)
+            it.apkSigningConfig.set(apkSigningConfig.get().signingConfigData)
+            it.sdkSigningConfig.set(sdkSigningConfig.get().signingConfigData)
             it.tempDir.set(temporaryDir)
             it.apkName.set(apkName)
         }
@@ -133,7 +139,8 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
         abstract val versionCode: Property<Int?>
         abstract val androidJar: RegularFileProperty
         abstract val aapt2: Property<Aapt2Input>
-        abstract val signingConfig: Property<SigningConfigData>
+        abstract val apkSigningConfig: Property<SigningConfigData>
+        abstract val sdkSigningConfig: Property<SigningConfigData>
         abstract val tempDir: DirectoryProperty
         abstract val apkName: Property<String>
     }
@@ -146,17 +153,17 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
                     parameters.runtimeConfigFile.get().asFile.inputStream().buffered()
                             .use { input -> RuntimeEnabledSdkConfig.parseFrom(input) }
 
-            val signingConfigData =
-                    parameters.signingConfig.get() ?: throw IllegalStateException()
-            val certInfo = KeystoreHelper.getCertificateInfo(
-                    signingConfigData.storeType,
-                    signingConfigData.storeFile,
-                    signingConfigData.storePassword,
-                    signingConfigData.keyPassword,
-                    signingConfigData.keyAlias
+            val sdkSigningConfigData =
+                    parameters.sdkSigningConfig.get() ?: throw IllegalStateException()
+            val sdkCertInfo = KeystoreHelper.getCertificateInfo(
+                    sdkSigningConfigData.storeType,
+                    sdkSigningConfigData.storeFile,
+                    sdkSigningConfigData.storePassword,
+                    sdkSigningConfigData.keyPassword,
+                    sdkSigningConfigData.keyAlias
             )
             val certificateDigest =
-                    CodeTransparencyCryptoUtils.getCertificateFingerprint(certInfo.certificate)
+                    CodeTransparencyCryptoUtils.getCertificateFingerprint(sdkCertInfo.certificate)
                             .replace(' ', ':')
 
             val manifestContent =
@@ -174,7 +181,7 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
                     versionCode = parameters.versionCode.orNull,
                     files = mapOf(),
                     manifestContent = manifestContent,
-                    signingConfigData = parameters.signingConfig.get(),
+                    signingConfigData = parameters.apkSigningConfig.get(),
                     tempDir = parameters.tempDir.get().asFile,
                     aapt2 = parameters.aapt2.get(),
                     androidJar = parameters.androidJar.get().asFile,
@@ -225,7 +232,24 @@ abstract class GenerateAdditionalApkSplitForDeploymentViaApk : NonIncrementalTas
             task.versionCode.setDisallowChanges(creationConfig.outputs.getMainSplit().versionCode)
             task.androidJarInput.initialize(creationConfig)
             creationConfig.services.initializeAapt2Input(task.aapt2)
-            task.signingConfig.setDisallowChanges(SigningConfigDataProvider.create(creationConfig))
+            task.apkSigningConfig.setDisallowChanges(SigningConfigDataProvider.create(creationConfig))
+            val defaultDebugConfig: Provider<SigningConfigData> = getBuildService(
+                    creationConfig.services.buildServiceRegistry,
+                    AndroidLocationsBuildService::class.java
+            ).map(AndroidLocationsBuildService::getDefaultDebugKeystoreSigningConfig)
+            val experimentalPropSigningConfig: Provider<SigningConfigData>? =
+                    SigningConfigData.fromExperimentalPropertiesSigningConfig(creationConfig.experimentalProperties)
+                            ?.let {
+                                creationConfig.services.provider { it }
+                            }
+            task.sdkSigningConfig.setDisallowChanges(
+                    SigningConfigDataProvider(
+                            signingConfigData = experimentalPropSigningConfig
+                                    ?: defaultDebugConfig as Provider<SigningConfigData?>,
+                            signingConfigFileCollection = null,
+                            signingConfigValidationResultDir = null
+                    )
+            )
             task.apkName.set(
                     creationConfig.services.projectInfo.getProjectBaseName().map {
                         "$it-${creationConfig.baseName}-injected-privacy-sandbox.apk"
