@@ -60,7 +60,7 @@ kotlin_test(
     ],
     lint_baseline = "lint_baseline.xml",
     resources = glob(["src/test/resources/**"]),
-    shard_count = 3,
+    shard_count = 6,
     tags = [
         "slow",
     ],
