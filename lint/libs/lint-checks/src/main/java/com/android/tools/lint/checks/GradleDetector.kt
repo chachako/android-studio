@@ -985,7 +985,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     var newerVersion: Version? = null
 
     val sdkIndex = getGooglePlaySdkIndex(context.client)
-    val filter = getUpgradeVersionFilter(context, groupId, artifactId, version, sdkIndex)
+    val versionFilter = getUpgradeVersionFilter(context, groupId, artifactId, version)
+    val sdkIndexFilter = getGooglePlaySdkIndexFilter(context, groupId, artifactId, sdkIndex)
+    val filter =
+      when {
+        versionFilter != null && sdkIndexFilter != null -> versionFilter.and(sdkIndexFilter)
+        else -> versionFilter ?: sdkIndexFilter
+      }
 
     when (groupId) {
       GMS_GROUP_ID,
@@ -1340,6 +1346,20 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     }
   }
 
+  private fun getGooglePlaySdkIndexFilter(
+    context: Context,
+    groupId: String,
+    artifactId: String,
+    sdkIndex: GooglePlaySdkIndex?
+  ): Predicate<Version>? {
+    return sdkIndex?.let {
+      // Filter out versions with SDK Index errors or warnings (b/301295995)
+      Predicate { v ->
+        it.isReady() && !it.hasLibraryErrorOrWarning(groupId, artifactId, v.toString())
+      }
+    }
+  }
+
   /**
    * Returns a predicate that encapsulates version constraints for the given library, or null if
    * there are no constraints.
@@ -1348,8 +1368,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: Context,
     groupId: String,
     artifactId: String,
-    version: Version,
-    sdkIndex: GooglePlaySdkIndex?
+    version: Version
   ): Predicate<Version>? {
     if (
       (groupId == "com.android.tools.build" || ALL_PLUGIN_IDS.contains(groupId)) &&
@@ -1365,11 +1384,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         ((v.major == ideVersion.major && v.minor == ideVersion.minor) ||
           // Also allow matching latest current existing major/minor version
           (v.major == version.major && v.minor == version.minor))
-        // And there should not be issues in SDK Index (b/301295995)
-        &&
-          (sdkIndex == null ||
-            (sdkIndex.isReady() &&
-              !sdkIndex.hasLibraryErrorOrWarning(groupId, artifactId, v.toString())))
       }
     }
 
@@ -1382,23 +1396,10 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       val infimum = version.previewInfimum
       val supremum = version.previewSupremum
       if (infimum != null && supremum != null) {
-        return Predicate { v ->
-          (if (v.isPreview) (infimum < v && v < supremum) else true)
-          // And there should not be issues in SDK Index (b/301295995)
-          &&
-            (sdkIndex == null ||
-              (sdkIndex.isReady() &&
-                !sdkIndex.hasLibraryErrorOrWarning(groupId, artifactId, v.toString())))
-        }
+        return Predicate { v -> (if (v.isPreview) (infimum < v && v < supremum) else true) }
       }
     }
 
-    if (sdkIndex != null) {
-      // Filter out versions with SDK Index errors or warnings (b/301295995)
-      return Predicate { v ->
-        sdkIndex.isReady() && !sdkIndex.hasLibraryErrorOrWarning(groupId, artifactId, v.toString())
-      }
-    }
     return null
   }
 
