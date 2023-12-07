@@ -23,7 +23,7 @@ class ScrollViewChildDetectorTest : AbstractCheckTest() {
     return ScrollViewChildDetector()
   }
 
-  fun testScrollView() {
+  fun testDocumentationExample() {
     lint()
       .files(
         xml(
@@ -53,5 +53,55 @@ class ScrollViewChildDetectorTest : AbstractCheckTest() {
             0 errors, 1 warnings
             """
       )
+  }
+
+  fun testWebViewChild() {
+    // Regression test for https://issuetracker.google.com/37090639
+    lint()
+      .files(
+        xml(
+            "res/layout/layout.xml",
+            """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="visible"
+                android:id='@+id/statisticsActivity'>
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!-- If you replace the layout_height to wrap_content, like lint
+                    wants you to, then you get a warning in Android Studio 2.1 Preview 4.
+                    -->
+                    <LinearLayout android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:textAppearance="?android:attr/textAppearanceMedium"
+                            android:text="@string/statsCalculationInProgress"
+                            android:id="@+id/statsCalculationInProgress"/>
+
+                        <WebView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/statisticsWebView"
+                            android:visibility="gone"/>
+                    </LinearLayout>
+
+                </ScrollView>
+            </LinearLayout>
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
   }
 }

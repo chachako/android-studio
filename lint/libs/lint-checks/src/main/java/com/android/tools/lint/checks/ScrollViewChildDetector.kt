@@ -22,6 +22,7 @@ import com.android.SdkConstants.HORIZONTAL_SCROLL_VIEW
 import com.android.SdkConstants.SCROLL_VIEW
 import com.android.SdkConstants.VALUE_FILL_PARENT
 import com.android.SdkConstants.VALUE_MATCH_PARENT
+import com.android.SdkConstants.WEB_VIEW
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Issue
@@ -29,6 +30,7 @@ import com.android.tools.lint.detector.api.LayoutDetector
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.XmlContext
+import com.android.utils.childrenIterator
 import com.android.utils.iterator
 import org.w3c.dom.Element
 
@@ -47,7 +49,12 @@ class ScrollViewChildDetector : LayoutDetector() {
     for (child in element) {
       val sizeNode = child.getAttributeNodeNS(ANDROID_URI, attributeName) ?: return
       val value = sizeNode.value
-      if (VALUE_FILL_PARENT == value || VALUE_MATCH_PARENT == value) {
+      if (
+        (VALUE_FILL_PARENT == value || VALUE_MATCH_PARENT == value) &&
+          // If there is a child WebView, don't report, since that would immediately
+          // trigger [WebViewDetector.ISSUE] !
+          child.childrenIterator().asSequence().none { it.nodeName == WEB_VIEW }
+      ) {
         val msg = "This ${child.tagName} should use `android:$attributeName=\"wrap_content\"`"
         context.report(ISSUE, sizeNode, context.getLocation(sizeNode), msg)
       }
@@ -66,7 +73,7 @@ class ScrollViewChildDetector : LayoutDetector() {
           """
           ScrollView children must set their `layout_width` or `layout_height` attributes \
           to `wrap_content` rather than `fill_parent` or `match_parent` in the scrolling \
-          dimension
+          dimension.
           """,
         category = Category.CORRECTNESS,
         priority = 7,
