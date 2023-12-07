@@ -20,9 +20,13 @@ import com.android.SdkConstants
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.ResourceValue
 import com.android.ide.common.resources.ResourceItem
+import com.android.ide.common.resources.ResourceRepository
 import com.android.resources.ResourceFolderType
 import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
+import com.android.tools.lint.checks.StringFormatDetector.StringFormatType.FORMATTED
+import com.android.tools.lint.checks.StringFormatDetector.StringFormatType.IGNORE
+import com.android.tools.lint.checks.StringFormatDetector.StringFormatType.NOT_FORMATTED
 import com.android.tools.lint.client.api.ResourceRepositoryScope
 import com.android.tools.lint.client.api.TYPE_BOOLEAN_WRAPPER
 import com.android.tools.lint.client.api.TYPE_BYTE_WRAPPER
@@ -55,7 +59,6 @@ import com.android.tools.lint.detector.api.isEnglishResource
 import com.android.tools.lint.detector.api.isKotlin
 import com.android.utils.CharSequences
 import com.google.common.annotations.VisibleForTesting
-import com.google.common.collect.ImmutableList
 import com.google.common.collect.Sets
 import com.intellij.psi.CommonClassNames
 import com.intellij.psi.JavaPsiFacade
@@ -97,16 +100,12 @@ import org.w3c.dom.Node
  *   (It's also unlikely to happen; these strings tend not to be used from String#format).
  * * Add support for Kotlin strings
  */
-class StringFormatDetector
-/** Constructs a new [StringFormatDetector] check */
-: ResourceXmlDetector(), SourceCodeScanner {
+class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
   /**
-   * Map from a format string name to a list of declaration file and actual formatting string
-   * content. We're using a list since a format string can be defined multiple times, usually for
-   * different translations.
+   * Map from a format string name to a declaration file and actual formatting string of default
+   * resource variant.
    */
-  private var mFormatStrings: MutableMap<String, MutableList<Pair<Location.Handle, String>>> =
-    LinkedHashMap()
+  private val mFormatStrings: MutableMap<String, Pair<Location.Handle, String>> = LinkedHashMap()
 
   /** Map of strings that do not contain any formatting. */
   private val mNotFormatStrings: MutableMap<String, Location.Handle> = LinkedHashMap()
@@ -115,7 +114,13 @@ class StringFormatDetector
    * Set of strings that have an unknown format such as date formatting; we should not flag these as
    * invalid when used from a String#format call
    */
-  private var mIgnoreStrings: MutableSet<String> = HashSet()
+  private val mIgnoreStrings: MutableSet<String> = HashSet()
+
+  /**
+   * Map from a format string name to list of objects with actual formatting info. We're using a
+   * list since a format string can be defined multiple times, usually for different translations.
+   */
+  private val mStringsFromPsiCache: MutableMap<String, List<FormatString>> = LinkedHashMap()
 
   override fun appliesTo(folderType: ResourceFolderType): Boolean {
     return folderType == ResourceFolderType.VALUES
@@ -127,8 +132,36 @@ class StringFormatDetector
 
   override fun visitElement(context: XmlContext, element: Element) {
     val text = element.textContent
-    if (text.isNotEmpty()){
+    if (text.isEmpty()) {
+      return
+    }
+
+    if (!context.project.reportIssues) {
+      // If this is a library project not being analyzed, ignore it
+      return
+    }
+
+    if (!crossCheckResources(context)) {
       checkTextNode(context, element, stripQuotes(text))
+    } else if (context.phase == 1 && context.getFolderConfiguration()?.isDefault == true) {
+      val formatType = checkTextNode(context, element, stripQuotes(text))
+      checkArityAndTypes(context, element, formatType)
+
+      val name = element.getAttribute(SdkConstants.ATTR_NAME)
+      when (formatType) {
+        IGNORE -> {
+          mIgnoreStrings.add(name)
+        }
+        FORMATTED -> {
+          mFormatStrings[name] = (createLocationHandleForXmlDomElement(context, element) to text)
+        }
+        NOT_FORMATTED -> {
+          mNotFormatStrings[name] = createLocationHandleForXmlDomElement(context, element)
+        }
+      }
+    } else if (context.phase == 2 && context.getFolderConfiguration()?.isDefault == false) {
+      val formatType = checkTextNode(context, element, stripQuotes(text))
+      checkArityAndTypes(context, element, formatType)
     }
   }
 
@@ -141,114 +174,9 @@ class StringFormatDetector
     return handle
   }
 
-  private fun checkTextNode(context: XmlContext, element: Element, text: String) {
-    val name = element.getAttribute(SdkConstants.ATTR_NAME)
-    var found = false
-    var foundPlural = false
-
-    // Look at the String and see if it's a format string (contains
-    // positional %'s)
-    var j = 0
-    val m = text.length
-    while (j < m) {
-      val c = text[j]
-      if (c == '\\') {
-        j++
-      }
-      if (c == '%') {
-        // Also make sure this String isn't an unformatted String
-        val formatted = element.getAttribute("formatted")
-        if (!formatted.isEmpty() && !java.lang.Boolean.parseBoolean(formatted)) {
-          mNotFormatStrings.computeIfAbsent(name) {
-            createLocationHandleForXmlDomElement(context, element)
-          }
-          return
-        }
-
-        // See if it's not a format string, e.g. "Battery charge is 100%!".
-        // If so we want to record this name in a special list such that we can
-        // make sure you don't attempt to reference this string from a String.format
-        // call.
-        val matcher = FORMAT.matcher(text)
-        if (!matcher.find(j)) {
-          mNotFormatStrings.computeIfAbsent(name) {
-            createLocationHandleForXmlDomElement(context, element)
-          }
-          return
-        }
-        val conversion = matcher.group(6)
-        val conversionClass = getConversionClass(conversion[0])
-        if (conversionClass == CONVERSION_CLASS_UNKNOWN || matcher.group(5) != null) {
-          mIgnoreStrings.add(name)
-
-          // Don't process any other strings here; some of them could
-          // accidentally look like a string, e.g. "%H" is a hash code conversion
-          // in String.format (and hour in Time formatting).
-          return
-        }
-        if (conversionClass == CONVERSION_CLASS_INTEGER && !foundPlural) {
-          // See if there appears to be further text content here.
-          // Look for whitespace followed by a letter, with no punctuation in between
-          for (k in matcher.end() until m) {
-            val nc = text[k]
-            if (!Character.isWhitespace(nc)) {
-              if (Character.isLetter(nc)) {
-                foundPlural = checkPotentialPlural(context, element, text, k)
-              }
-              break
-            }
-          }
-        }
-        found = true
-        j++ // Ensure that when we process a "%%" we don't separately check the second %
-      }
-      j++
-    }
-    if (!context.project.reportIssues) {
-      // If this is a library project not being analyzed, ignore it
-      return
-    }
-    if (found) {
-      // Record it for analysis when seen in Java code
-      mFormatStrings
-        .computeIfAbsent(name) { ArrayList() }
-        .add(createLocationHandleForXmlDomElement(context, element) to text)
-    } else {
-      if (!isReference(text)) {
-        mNotFormatStrings[name] = createLocationHandleForXmlDomElement(context, element)
-      }
-    }
-  }
-
   override fun afterCheckRootProject(context: Context) {
-    val checkCount = context.isEnabled(ARG_COUNT)
-    val checkValid = context.isEnabled(INVALID)
-    val checkTypes = context.isEnabled(ARG_TYPES)
-
-    // Ensure that all the format strings are consistent with respect to each other;
-    // e.g. they all have the same number of arguments, they all use all the
-    // arguments, and they all use the same types for all the numbered arguments
-    for (entry in mFormatStrings.entries) {
-      val name = entry.key
-      var list = entry.value
-
-      // Check argument counts
-      if (checkCount) {
-        val notFormatted = mNotFormatStrings[name]
-        if (notFormatted != null) {
-          list =
-            ImmutableList.builder<Pair<Location.Handle, String>>()
-              .add(notFormatted to name)
-              .addAll(list)
-              .build()
-        }
-        checkArity(context, name, list)
-      }
-
-      // Check argument types (and also make sure that the formatting strings are valid)
-      if (checkValid || checkTypes) {
-        checkTypes(context, checkValid, checkTypes, name, list)
-      }
+    if (context.phase == 1 && crossCheckResources(context)) {
+      context.requestRepeat(this, Scope.ALL_RESOURCES_SCOPE)
     }
   }
 
@@ -257,6 +185,9 @@ class StringFormatDetector
   }
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    if (context.phase != 1) {
+      return
+    }
     val evaluator = context.evaluator
     val methodName = method.name
     if (methodName == SdkConstants.FORMAT_METHOD) {
@@ -309,6 +240,12 @@ class StringFormatDetector
       // though this will require being smarter about cross referencing formatting
       // strings since we'll need to go via the quantity string definitions
     }
+  }
+
+  private fun crossCheckResources(context: Context): Boolean {
+    return context.isEnabled(ARG_COUNT) ||
+      context.isEnabled(INVALID) ||
+      context.isEnabled(ARG_TYPES)
   }
 
   /**
@@ -400,109 +337,78 @@ class StringFormatDetector
         }
       }
     }
-    if (callCount > 0 && mNotFormatStrings.containsKey(name)) {
-      checkNotFormattedHandle(context, call, name, mNotFormatStrings[name])
-      return
-    }
-    if (mFormatStrings[name] == null) {
-      val client = context.client
+
+    //
+    // Backward Compatibility
+    //
+    // Originally (for same error) detector was implemented to highlight whole XML line during
+    // global analysis, while for incremental check only highlight resource value
+    // see @testAdditionalGetStringMethods and @testAdditionalGetStringMethodsIncrementally test
+    //
+    // Here we use bits of previous logic, to preserve highlighting behaviour
+    val alreadyVisited = mFormatStrings.contains(name) || mNotFormatStrings.containsKey(name)
+    val valueOnlyHandle = !alreadyVisited
+
+    val client = context.client
+    if (mStringsFromPsiCache[name] == null) {
       val full = context.isGlobalAnalysis()
       val project = if (full) context.mainProject else context.project
       val resources = client.getResources(project, ResourceRepositoryScope.LOCAL_DEPENDENCIES)
-      val items: List<ResourceItem>
-      items = resources.getResources(ResourceNamespace.TODO(), ResourceType.STRING, name)
-      for (item in items) {
-        var v: ResourceValue? = item.resourceValue ?: continue
-        var value: String? = v?.rawXmlValue ?: continue
-        // Attempt to resolve indirection
-        if (isReference(value!!)) {
-          // Only resolve a few indirections
-          for (i in 0..2) {
-            val url = ResourceUrl.parse(value!!)
-            if (url == null || url.isFramework) {
-              break
-            }
-            val l = resources.getResources(ResourceNamespace.TODO(), url.type, url.name)
-            if (!l.isEmpty()) {
-              v = l[0].resourceValue
-              if (v != null) {
-                value = v.value
-                if (value == null || !isReference(value)) {
-                  break
-                }
-              } else {
-                break
-              }
-            } else {
-              break
-            }
-          }
-        }
-        if (value != null && !isReference(value)) {
-          // Make sure it's really a formatting string,
-          // not for example "Battery remaining: 90%"
-          var isFormattingString = value.indexOf('%') != -1
-          var j = 0
-          val m = value.length
-          while (j < m && isFormattingString) {
-            val c = value[j]
-            if (c == '\\') {
-              j++
-            } else if (c == '%') {
-              val matcher = FORMAT.matcher(value)
-              if (!matcher.find(j)) {
-                isFormattingString = false
-              } else {
-                val conversion = matcher.group(6)
-                val conversionClass = getConversionClass(conversion[0])
-                if (conversionClass == CONVERSION_CLASS_UNKNOWN || matcher.group(5) != null) {
-                  // Some date format etc - don't process
-                  return
-                }
-              }
-              j++ // Don't process second % in a %%
-            }
-            j++
-          }
-          if (isFormattingString) {
-            val handle: Location.Handle = client.createResourceItemHandle(item, false, true)
-            mFormatStrings.computeIfAbsent(name) { ArrayList() }.add(handle to value)
-          } else if (callCount > 0) {
-            checkNotFormattedHandle(context, call, name, client.createResourceItemHandle(item, false, true))
-          }
-        }
-      }
-    }
-    val list = mFormatStrings[name]
-    if (!list.isNullOrEmpty()) {
-      list.sortWith(
-        java.util.Comparator<Pair<Location.Handle, String>> {
-          o1: Pair<Location.Handle, String>,
-          o2: Pair<Location.Handle, String> ->
-          val h1 = o1.first
-          val h2 = o2.first
-          if (h1 is ResourceItemHandle && h2 is ResourceItemHandle) {
-            val item1 = h1.item
-            val item2 = h2.item
+      val items = resources.getResources(ResourceNamespace.TODO(), ResourceType.STRING, name)
+      val formatStrings =
+        items
+          .map { resourceFormatString(name, it, resources) }
+          .filter { it.type != IGNORE }
+          .sortedWith { h1: FormatString, h2: FormatString ->
+            val item1 = h1.resourceItem!!
+            val item2 = h2.resourceItem!!
             val f1 = item1.configuration
             val f2 = item2.configuration
             val delta = f1.compareTo(f2)
             if (delta != 0) {
               delta
             } else item1.toString().compareTo(item2.toString())
-          } else o1.toString().compareTo(o2.toString())
+          }
+      mStringsFromPsiCache[name] = formatStrings
+
+      // Check string consistency for incremental analysis.
+      // (for global analysis this is done while visiting XML resources)
+      if (!alreadyVisited) {
+        visitResourceItems(context, name, formatStrings, valueOnlyHandle)
+      }
+    }
+
+    val list = mStringsFromPsiCache[name]
+    if (!list.isNullOrEmpty()) {
+
+      // check Not Formatted strings
+      if (callCount > 0) {
+        for (item in list) {
+          var found = false
+          if (item.type == NOT_FORMATTED) {
+            checkNotFormattedHandle(
+              context,
+              call,
+              name,
+              item.createResourceItemHandle(context, valueOnlyHandle)
+            )
+            found = true
+          }
+          if (found) return
         }
-      )
+      }
+
       var reported: MutableSet<String>? = null
-      for (pair in list) {
-        val s = pair.second
+      for (formatString in list) {
+        if (formatString.type != FORMATTED) continue
+        val s = formatString.value!!
         if (reported != null && reported.contains(s)) {
           continue
         }
         val count = getFormatArgumentCount(s, null)
-        val handle = pair.first
         if (count != callCount) {
           val location = context.getLocation(call)
+          val handle = formatString.createResourceItemHandle(context, valueOnlyHandle)!!
           val secondary = handle.resolve()
           secondary.message =
             String.format(
@@ -585,6 +491,7 @@ class StringFormatDetector
               }
               if (!valid) {
                 val location = context.getLocation(args[argumentIndex])
+                val handle = formatString.createResourceItemHandle(context, valueOnlyHandle)!!
                 val secondary = handle.resolve()
                 secondary.message = "Conflicting argument declaration here"
                 location.secondary = secondary
@@ -649,6 +556,102 @@ class StringFormatDetector
           }
         }
       }
+    }
+  }
+
+  private fun resourceFormatString(
+    name: String,
+    item: ResourceItem,
+    resources: ResourceRepository
+  ): FormatString {
+    var v: ResourceValue? = item.resourceValue ?: return FormatString(name, IGNORE)
+    var value: String? = v?.rawXmlValue ?: return FormatString(name, IGNORE)
+    // Attempt to resolve indirection
+    if (isReference(value!!)) {
+      // Only resolve a few indirections
+      for (i in 0..2) {
+        val url = ResourceUrl.parse(value!!)
+        if (url == null || url.isFramework) {
+          break
+        }
+        val l = resources.getResources(ResourceNamespace.TODO(), url.type, url.name)
+        if (!l.isEmpty()) {
+          v = l[0].resourceValue
+          if (v != null) {
+            value = v.value
+            if (value == null || !isReference(value)) {
+              break
+            }
+          } else {
+            break
+          }
+        } else {
+          break
+        }
+      }
+    }
+    if (value != null && !isReference(value)) {
+      // Make sure it's really a formatting string,
+      // not for example "Battery remaining: 90%"
+      var isFormattingString = value.indexOf('%') != -1
+      var j = 0
+      val m = value.length
+      while (j < m && isFormattingString) {
+        val c = value[j]
+        if (c == '\\') {
+          j++
+        } else if (c == '%') {
+          val matcher = FORMAT.matcher(value)
+          if (!matcher.find(j)) {
+            isFormattingString = false
+          } else {
+            val conversion = matcher.group(6)
+            val conversionClass = getConversionClass(conversion[0])
+            if (conversionClass == CONVERSION_CLASS_UNKNOWN || matcher.group(5) != null) {
+              // Some date format etc - don't process
+              return FormatString(name, IGNORE)
+            }
+          }
+          j++ // Don't process second % in a %%
+        }
+        j++
+      }
+      return if (isFormattingString) {
+        FormatString(name, FORMATTED, item, value)
+      } else {
+        FormatString(name, NOT_FORMATTED, item)
+      }
+    }
+    return FormatString(name, IGNORE)
+  }
+
+  private fun visitResourceItems(
+    context: Context,
+    name: String,
+    strings: List<FormatString>,
+    valueOnlyHandle: Boolean
+  ) {
+    val list = ArrayList<Pair<Location.Handle, String>>()
+    for (formatString in strings) {
+      if (formatString.type == FORMATTED) {
+        val handle: Location.Handle =
+          formatString.createResourceItemHandle(context, valueOnlyHandle)!!
+        list.add(handle to formatString.value!!)
+      } else if (formatString.type == NOT_FORMATTED) {
+        val handle: Location.Handle =
+          formatString.createResourceItemHandle(context, valueOnlyHandle)!!
+        list.add(handle to name)
+      }
+    }
+
+    // Check argument counts
+    if (context.isEnabled(ARG_COUNT)) {
+      checkArity(context, name, list)
+    }
+
+    // Check argument types (and also make sure that the formatting strings are valid)
+    if (context.isEnabled(INVALID) || context.isEnabled(ARG_TYPES)) {
+      checkTypes(context, context.isEnabled(INVALID), context.isEnabled(ARG_TYPES), name, list)
     }
   }
 
@@ -752,6 +755,72 @@ class StringFormatDetector
       message += "If uppercase formatting is necessary, use `String.toUpperCase()`."
     }
     context.report(TRIVIAL, call, context.getLocation(args[stringIndex]), message)
+  }
+
+  private fun checkArityAndTypes(
+    context: XmlContext,
+    element: Element,
+    formatType: StringFormatType
+  ) {
+    if (formatType == FORMATTED || formatType == NOT_FORMATTED) {
+      val name = element.getAttribute(SdkConstants.ATTR_NAME)
+      val list = ArrayList<Pair<Location.Handle, String>>()
+
+      val defaultFormat = mFormatStrings[name]
+      if (defaultFormat != null) {
+        list.add(defaultFormat)
+      }
+
+      val defaultNotFormat = mNotFormatStrings[name]
+      if (defaultNotFormat != null) {
+        list.add(defaultNotFormat to name)
+      }
+
+      if (formatType == FORMATTED) {
+        list.add(createLocationHandleForXmlDomElement(context, element) to element.textContent)
+      }
+      if (formatType == NOT_FORMATTED) {
+        list.add(createLocationHandleForXmlDomElement(context, element) to name)
+      }
+
+      // Ensure that all the format strings are consistent with respect to each other;
+      // e.g. they all have the same number of arguments, they all use all the
+      // arguments, and they all use the same types for all the numbered arguments
+      if (context.isEnabled(ARG_COUNT)) {
+        checkArity(context, name, list)
+      }
+
+      // Check argument types (and also make sure that the formatting strings are valid)
+      if (context.isEnabled(INVALID) || context.isEnabled(ARG_TYPES)) {
+        checkTypes(context, context.isEnabled(INVALID), context.isEnabled(ARG_TYPES), name, list)
+      }
+    }
+  }
+
+  enum class StringFormatType {
+    FORMATTED,
+    NOT_FORMATTED,
+    IGNORE
+  }
+
+  data class FormatString(
+    val name: String,
+    val type: StringFormatType,
+    val resourceItem: ResourceItem? = null,
+    val value: String? = null
+  ) {
+
+    fun createResourceItemHandle(context: Context, valueOnly: Boolean): ResourceItemHandle? {
+      return if (resourceItem != null) {
+        context.client.createResourceItemHandle(
+          resourceItem,
+          nameOnly = false,
+          valueOnly = valueOnly
+        )
+      } else {
+        null
+      }
+    }
   }
 
   companion object {
@@ -896,6 +965,82 @@ This will ensure that in other languages the right set of translations are provi
 
     private fun isReference(text: String): Boolean =
       text.find { !it.isWhitespace() }?.let { it == '@' || it == '?' } ?: false
+
+    /**
+     * Detect StringFormatType and checks PotentialPlural when necessary.
+     *
+     * TODO extract checkPotentialPlural call to make this method side-effect free, only detecting
+     * formatting type
+     */
+    private fun checkTextNode(
+      context: XmlContext,
+      element: Element,
+      text: String
+    ): StringFormatType {
+      var found = false
+      var foundPlural = false
+
+      // Look at the String and see if it's a format string (contains
+      // positional %'s)
+      var j = 0
+      val m = text.length
+      while (j < m) {
+        val c = text[j]
+        if (c == '\\') {
+          j++
+        }
+        if (c == '%') {
+          // Also make sure this String isn't an unformatted String
+          val formatted = element.getAttribute("formatted")
+          if (!formatted.isEmpty() && !java.lang.Boolean.parseBoolean(formatted)) {
+            return NOT_FORMATTED
+          }
+
+          // See if it's not a format string, e.g. "Battery charge is 100%!".
+          // If so we want to record this name in a special list such that we can
+          // make sure you don't attempt to reference this string from a String.format
+          // call.
+          val matcher = FORMAT.matcher(text)
+          if (!matcher.find(j)) {
+            return NOT_FORMATTED
+          }
+          val conversion = matcher.group(6)
+          val conversionClass = getConversionClass(conversion[0])
+          if (conversionClass == CONVERSION_CLASS_UNKNOWN || matcher.group(5) != null) {
+            // Don't process any other strings here; some of them could
+            // accidentally look like a string, e.g. "%H" is a hash code conversion
+            // in String.format (and hour in Time formatting).
+            return IGNORE
+          }
+          if (conversionClass == CONVERSION_CLASS_INTEGER && !foundPlural) {
+            // See if there appears to be further text content here.
+            // Look for whitespace followed by a letter, with no punctuation in between
+            for (k in matcher.end() until m) {
+              val nc = text[k]
+              if (!Character.isWhitespace(nc)) {
+                if (Character.isLetter(nc)) {
+                  foundPlural = checkPotentialPlural(context, element, text, k)
+                }
+                break
+              }
+            }
+          }
+          found = true
+          j++ // Ensure that when we process a "%%" we don't separately check the second %
+        }
+        j++
+      }
+      return if (found) {
+        // Record it for analysis when seen in Java code
+        FORMATTED
+      } else {
+        if (!isReference(text)) {
+          NOT_FORMATTED
+        } else {
+          IGNORE
+        }
+      }
+    }
 
     /**
      * Checks whether the text begins with a non-unit word, pointing to a string that should
