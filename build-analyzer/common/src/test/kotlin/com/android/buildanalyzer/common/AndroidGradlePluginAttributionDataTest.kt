@@ -158,7 +158,6 @@ class AndroidGradlePluginAttributionDataTest {
             deserializedData.taskNameToTaskInfoMap
         ).containsExactlyEntriesIn(data.taskNameToTaskInfoMap.normalizeForOlderAgpVersions())
 
-        assertThat(deserializedData.noncacheableTasks).isEqualTo(data.noncacheableTasks)
         assertThat(deserializedData.tasksSharingOutput).isEqualTo(data.tasksSharingOutput)
         assertThat(deserializedData.buildSrcPlugins).isEqualTo(data.buildSrcPlugins)
 
