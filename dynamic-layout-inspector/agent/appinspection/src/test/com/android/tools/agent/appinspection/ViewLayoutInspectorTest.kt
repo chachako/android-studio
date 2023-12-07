@@ -1111,8 +1111,8 @@ abstract class ViewLayoutInspectorTestBase {
         ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
 
         mainScreen.viewRootImpl = ViewRootImpl()
-        mainScreen.viewRootImpl.mSurface = Surface()
-        mainScreen.viewRootImpl.mSurface.bitmapBytes = fakeBitmapHeader
+        mainScreen.viewRootImpl!!.mSurface = Surface()
+        mainScreen.viewRootImpl!!.mSurface.bitmapBytes = fakeBitmapHeader
         mainScreen.forcePictureCapture(Picture(byteArrayOf(1)))
 
         checkNonProgressEvent(eventQueue) { event ->
@@ -1150,8 +1150,8 @@ abstract class ViewLayoutInspectorTestBase {
         checkNonProgressEvent(eventQueue, check)
 
         floatingDialog.viewRootImpl = ViewRootImpl()
-        floatingDialog.viewRootImpl.mSurface = Surface()
-        floatingDialog.viewRootImpl.mSurface.bitmapBytes = floatingFakeBitmapHeader
+        floatingDialog.viewRootImpl!!.mSurface = Surface()
+        floatingDialog.viewRootImpl!!.mSurface.bitmapBytes = floatingFakeBitmapHeader
         floatingDialog.forcePictureCapture(Picture(byteArrayOf(2)))
 
         checkNonProgressEvent(eventQueue) { event ->
@@ -1230,8 +1230,8 @@ abstract class ViewLayoutInspectorTestBase {
         ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
 
         mainScreen.viewRootImpl = ViewRootImpl()
-        mainScreen.viewRootImpl.mSurface = Surface()
-        mainScreen.viewRootImpl.mSurface.bitmapBytes = fakeBitmapHeader
+        mainScreen.viewRootImpl!!.mSurface = Surface()
+        mainScreen.viewRootImpl!!.mSurface.bitmapBytes = fakeBitmapHeader
         mainScreen.forcePictureCapture(Picture(byteArrayOf(1)))
 
         checkNonProgressEvent(eventQueue) { event ->
@@ -1258,8 +1258,8 @@ abstract class ViewLayoutInspectorTestBase {
         )
 
         floatingDialog.viewRootImpl = ViewRootImpl()
-        floatingDialog.viewRootImpl.mSurface = Surface()
-        floatingDialog.viewRootImpl.mSurface.bitmapBytes = floatingFakeBitmapHeader
+        floatingDialog.viewRootImpl!!.mSurface = Surface()
+        floatingDialog.viewRootImpl!!.mSurface.bitmapBytes = floatingFakeBitmapHeader
         floatingDialog.forcePictureCapture(Picture(byteArrayOf(2)))
 
         checkNonProgressEvent(eventQueue) { event ->
@@ -1562,8 +1562,8 @@ abstract class ViewLayoutInspectorTestBase {
 
             // We connected in live mode, so the screenshot type should be bitmap
             root.viewRootImpl = ViewRootImpl()
-            root.viewRootImpl.mSurface = Surface()
-            root.viewRootImpl.mSurface.bitmapBytes = fakeBitmapHeader
+            root.viewRootImpl!!.mSurface = Surface()
+            root.viewRootImpl!!.mSurface.bitmapBytes = fakeBitmapHeader
             root.forcePictureCapture(fakePicture1)
             checkNonProgressEvent(eventQueue) { event ->
                 assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.ROOTS_EVENT)
@@ -1676,8 +1676,8 @@ abstract class ViewLayoutInspectorTestBase {
             }
             ThreadUtils.runOnMainThread { }.get() // Wait for notifications to be reset
             root.viewRootImpl = ViewRootImpl()
-            root.viewRootImpl.mSurface = Surface()
-            root.viewRootImpl.mSurface.bitmapBytes = fakeBitmapHeader
+            root.viewRootImpl!!.mSurface = Surface()
+            root.viewRootImpl!!.mSurface.bitmapBytes = fakeBitmapHeader
             root.forcePictureCapture(fakePicture1)
             checkNonProgressEvent(eventQueue) { event ->
                 assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.ROOTS_EVENT)
@@ -1880,8 +1880,8 @@ abstract class ViewLayoutInspectorTestBase {
         )
 
         mainScreen.viewRootImpl = ViewRootImpl()
-        mainScreen.viewRootImpl.mSurface = Surface()
-        mainScreen.viewRootImpl.mSurface.bitmapBytes = fakeBitmapHeader
+        mainScreen.viewRootImpl!!.mSurface = Surface()
+        mainScreen.viewRootImpl!!.mSurface.bitmapBytes = fakeBitmapHeader
         mainScreen.forcePictureCapture(Picture(byteArrayOf(1)))
 
         checkNonProgressEvent(eventQueue) { event ->
@@ -1937,8 +1937,8 @@ abstract class ViewLayoutInspectorTestBase {
         ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
 
         mainScreen.viewRootImpl = ViewRootImpl()
-        mainScreen.viewRootImpl.mSurface = Surface().apply { isValid = false }
-        mainScreen.viewRootImpl.mSurface.bitmapBytes = fakeBitmapHeader
+        mainScreen.viewRootImpl!!.mSurface = Surface().apply { isValid = false }
+        mainScreen.viewRootImpl!!.mSurface.bitmapBytes = fakeBitmapHeader
         mainScreen.forcePictureCapture(Picture(byteArrayOf(1)))
 
         checkNonProgressEvent(eventQueue) { event ->
@@ -2230,8 +2230,8 @@ abstract class ViewLayoutInspectorTestBase {
         WindowManagerGlobal.getInstance().rootViews.clear()
 
         mainScreen.viewRootImpl = ViewRootImpl()
-        mainScreen.viewRootImpl.mSurface = Surface()
-        mainScreen.viewRootImpl.mSurface.bitmapBytes = byteArrayOf(1, 2, 3)
+        mainScreen.viewRootImpl!!.mSurface = Surface()
+        mainScreen.viewRootImpl!!.mSurface.bitmapBytes = byteArrayOf(1, 2, 3)
         mainScreen.forcePictureCapture(Picture(byteArrayOf(1)))
 
         checkNonProgressEvent(eventQueue) { event ->
@@ -2334,8 +2334,8 @@ abstract class ViewLayoutInspectorTestBase {
 
         ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
         mainScreen.viewRootImpl = ViewRootImpl()
-        mainScreen.viewRootImpl.mSurface = Surface()
-        mainScreen.viewRootImpl.mSurface.bitmapBytes = byteArrayOf(1, 2, 3)
+        mainScreen.viewRootImpl!!.mSurface = Surface()
+        mainScreen.viewRootImpl!!.mSurface.bitmapBytes = byteArrayOf(1, 2, 3)
 
         t1.start()
         t2.start()

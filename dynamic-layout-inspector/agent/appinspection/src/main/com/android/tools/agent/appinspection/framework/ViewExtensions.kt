@@ -69,7 +69,8 @@ fun View.flatten(): Sequence<View> {
 fun View.takeScreenshot(scale: Float, bitmapType: BitmapType): Bitmap? {
     val scaledWidth = (width * scale).roundToInt()
     val scaledHeight = (height * scale).roundToInt()
-    if (scaledWidth <= 0 || scaledHeight <= 0 || !viewRootImpl.mSurface.isValid) {
+    val surface = viewRootImpl?.mSurface ?: return null
+    if (scaledWidth <= 0 || scaledHeight <= 0 || !surface.isValid) {
         return null
     }
     val bitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, bitmapType.toBitmapConfig())
@@ -77,7 +78,7 @@ fun View.takeScreenshot(scale: Float, bitmapType: BitmapType): Bitmap? {
             val location = IntArray(2)
             getLocationInSurface(location)
             val bounds = Rect(location[0], location[1], width + location[0], height + location[1])
-            val resultCode = SynchronousPixelCopy().request(viewRootImpl.mSurface, bounds, bitmap)
+            val resultCode = SynchronousPixelCopy().request(surface, bounds, bitmap)
             if (resultCode == PixelCopy.SUCCESS) {
                 bitmap
             } else {

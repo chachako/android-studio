@@ -274,6 +274,12 @@ public class View {
         mViewRootImpl = viewRootImpl;
     }
 
+    /**
+     * Gets the view root associated with the View.
+     *
+     * @return The view root, or null if none.
+     */
+    @Nullable
     public ViewRootImpl getViewRootImpl() {
         return mViewRootImpl;
     }
