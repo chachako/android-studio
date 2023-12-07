@@ -29,6 +29,7 @@ import com.android.tools.idea.wizard.template.impl.activities.cppEmptyActivity.c
 import com.android.tools.idea.wizard.template.impl.activities.cppGameActivity.cppGameActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.emptyActivity.emptyActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.fullscreenActivity.fullscreenActivityTemplate
+import com.android.tools.idea.wizard.template.impl.activities.genAiActivity.genAiActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.googleAdMobAdsActivity.googleAdMobAdsActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.googleMapsActivity.googleMapsActivityTemplate
 import com.android.tools.idea.wizard.template.impl.activities.googlePayActivity.googlePayActivityTemplate
@@ -74,6 +75,7 @@ import com.android.tools.idea.wizard.template.impl.other.sliceProvider.sliceProv
 class WizardTemplateProviderImpl : WizardTemplateProvider() {
   override fun getTemplates(): List<Template> = listOf(
       composeActivityMaterial3Template,
+      genAiActivityTemplate,
     androidTVActivityTemplate,
     basicActivityTemplate,
     composeWearActivityWithTileAndComplicationTemplate,
