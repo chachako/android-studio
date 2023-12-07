@@ -987,11 +987,12 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     val sdkIndex = getGooglePlaySdkIndex(context.client)
     val versionFilter = getUpgradeVersionFilter(context, groupId, artifactId, version)
     val sdkIndexFilter = getGooglePlaySdkIndexFilter(context, groupId, artifactId, sdkIndex)
-    val filter =
+    fun Predicate<Version>?.and(other: Predicate<Version>?): Predicate<Version>? =
       when {
-        versionFilter != null && sdkIndexFilter != null -> versionFilter.and(sdkIndexFilter)
-        else -> versionFilter ?: sdkIndexFilter
+        this != null && other != null -> this.and(other)
+        else -> this ?: other
       }
+    val filter = versionFilter.and(sdkIndexFilter)
 
     when (groupId) {
       GMS_GROUP_ID,
@@ -1387,6 +1388,37 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       }
     }
 
+    // Some special cases for specific artifacts that were versioned
+    // incorrectly (using a string suffix to delineate separate branches
+    // whereas Gradle will just use an alphabetical sort on these). See
+    // 171369798 for an example.
+
+    // These cases must be considered before the generic logic related to not
+    // upgrading to other versions outside a preview series, because these
+    // pseudo-version strings look like preview versions even though they're not.
+    if (groupId == "com.google.guava") {
+      val suffix = version.toString()
+      val jre = Predicate<Version> { v -> v.toString().endsWith("-jre") }
+      val android = Predicate<Version> { v -> v.toString().endsWith("-android") }
+      val neither = Predicate<Version> { v -> !v.toString().endsWith("-jre") }
+      return when {
+        suffix.endsWith("-jre") -> jre
+        suffix.endsWith("-android") -> android
+        else -> neither
+      }
+    } else if (artifactId == "kotlinx-coroutines-core") {
+      val suffix = version.toString()
+      return when {
+        suffix.contains("-native-mt-2") ->
+          Predicate<Version> { v -> v.toString().contains("-native-mt-2") }
+        suffix.contains("-native-mt") ->
+          Predicate<Version> { v ->
+            v.toString().run { contains("native-mt") && !contains("native-mt-2") }
+          }
+        else -> Predicate<Version> { v -> !v.toString().contains("-native-mt") }
+      }
+    }
+
     if (version.major != null) {
       // version.major not being null is something of a pun, but sensible anyway:
       // if the whole version is non-numeric, the concept of "the current preview
@@ -1442,13 +1474,15 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       !candidate.isSnapshot && (f == null || f.test(candidate))
     }
     return if (CancellableFileIo.exists(versionDir)) {
-      val isPreview =
-        when (val richVersion = dependency.version) {
-          null -> true
-          else ->
-            MavenRepositories.isPreview(Component(group, dependency.name, richVersion.lowerBound))
+      val name = dependency.name
+      val richVersion = dependency.version
+      val allowPreview =
+        when {
+          richVersion == null -> true
+          group == "com.google.guava" || name == "kotlinx-coroutines-core" -> true
+          else -> MavenRepositories.isPreview(Component(group, name, richVersion.lowerBound))
         }
-      MavenRepositories.getHighestVersion(versionDir, noSnapshotFilter, isPreview)
+      MavenRepositories.getHighestVersion(versionDir, noSnapshotFilter, allowPreview)
     } else null
   }
 
@@ -3434,6 +3468,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       val richVersion = dependency.version ?: return null
       val query = StringBuilder()
       val encoding = UTF_8.name()
+      var allowPreview = allowPreview
       try {
         query.append("https://search.maven.org/solrsearch/select?q=g:%22")
         query.append(URLEncoder.encode(group, encoding))
@@ -3447,7 +3482,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       if (group == "com.google.guava" || name == "kotlinx-coroutines-core") {
         // These libraries aren't releasing previews in their version strings;
         // instead, the suffix is used to indicate different variants (JRE vs Android,
-        // JVM vs Kotlin Native)
+        // JVM vs Kotlin Native).  Turn on allowPreview for the search.
+        allowPreview = true
       } else if (filter == null && allowPreview) {
         query.append("&rows=1")
       }
@@ -3518,40 +3554,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             }
           }
         }
-      }
-
-      // Some special cases for specific artifacts that were versioned
-      // incorrectly (using a string suffix to delineate separate branches
-      // whereas Gradle will just use an alphabetical sort on these). See
-      // 171369798 for an example.
-
-      if (group == "com.google.guava") {
-        val version = richVersion.lowerBound
-        val suffix = version.toString()
-        val jre: (Version) -> Boolean = { v -> v.toString().endsWith("-jre") }
-        val android: (Version) -> Boolean = { v -> !v.toString().endsWith("-jre") }
-        return versions.filter(if (suffix.endsWith("-jre")) jre else android).maxOrNull()
-      } else if (name == "kotlinx-coroutines-core") {
-        val version = richVersion.lowerBound
-        val suffix = version.toString()
-        return versions
-          .filter(
-            when {
-              suffix.indexOf('-') == -1 -> {
-                { (allowPreview || !it.isPreview) && !it.toString().contains("-native-mt") }
-              }
-              suffix.contains("-native-mt-2") -> {
-                { it.toString().contains("-native-mt-2") }
-              }
-              suffix.contains("-native-mt") -> {
-                { it.toString().contains("-native-mt") && !it.toString().contains("-native-mt-2") }
-              }
-              else -> {
-                { (allowPreview || !it.isPreview) && !it.toString().contains("-native-mt") }
-              }
-            }
-          )
-          .maxOrNull()
       }
 
       return versions

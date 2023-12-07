@@ -7098,6 +7098,63 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun testCachedFilterGuava() {
+    // regression test for b/315310898
+    lint()
+      .files(
+        gradle(
+            """
+            dependencies {
+              implementation 'com.google.guava:spurious:16.0'
+              implementation 'com.google.guava:spurious:16.0-rc01'
+              implementation 'com.google.guava:spurious:16.0-jre'
+              implementation 'com.google.guava:spurious:16.0-android'
+            }
+          """
+          )
+          .indented()
+      )
+      .issues(DEPENDENCY)
+      .run()
+      .expect(
+        """
+          build.gradle:2: Warning: A newer version of com.google.guava:spurious than 16.0 is available: 18.0-android [GradleDependency]
+            implementation 'com.google.guava:spurious:16.0'
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:3: Warning: A newer version of com.google.guava:spurious than 16.0-rc01 is available: 18.0-android [GradleDependency]
+            implementation 'com.google.guava:spurious:16.0-rc01'
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:4: Warning: A newer version of com.google.guava:spurious than 16.0-jre is available: 18.0-jre [GradleDependency]
+            implementation 'com.google.guava:spurious:16.0-jre'
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          build.gradle:5: Warning: A newer version of com.google.guava:spurious than 16.0-android is available: 18.0-android [GradleDependency]
+            implementation 'com.google.guava:spurious:16.0-android'
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          0 errors, 4 warnings
+        """
+      )
+      .expectFixDiffs(
+        """
+          Fix for build.gradle line 2: Change to 18.0-android:
+          @@ -2 +2
+          -   implementation 'com.google.guava:spurious:16.0'
+          +   implementation 'com.google.guava:spurious:18.0-android'
+          Fix for build.gradle line 3: Change to 18.0-android:
+          @@ -3 +3
+          -   implementation 'com.google.guava:spurious:16.0-rc01'
+          +   implementation 'com.google.guava:spurious:18.0-android'
+          Fix for build.gradle line 4: Change to 18.0-jre:
+          @@ -4 +4
+          -   implementation 'com.google.guava:spurious:16.0-jre'
+          +   implementation 'com.google.guava:spurious:18.0-jre'
+          Fix for build.gradle line 5: Change to 18.0-android:
+          @@ -5 +5
+          -   implementation 'com.google.guava:spurious:16.0-android'
+          +   implementation 'com.google.guava:spurious:18.0-android'
+        """
+      )
+  }
+
   fun testExpiredTargetSdkInManifest() {
     val calendar = Calendar.getInstance()
     ManifestDetector.calendar = calendar
@@ -7361,6 +7418,8 @@ class GradleDetectorTest : AbstractCheckTest() {
             "caches/modules-2/files-2.1/com.example.cached/library/1.1-beta01/sample",
             "caches/modules-2/files-2.1/com.example.cached/library/1.1-SNAPSHOT/sample",
             "caches/modules-2/files-2.1/com.google.guava/guava/17.0/sample",
+            "caches/modules-2/files-2.1/com.google.guava/spurious/18.0-android/sample",
+            "caches/modules-2/files-2.1/com.google.guava/spurious/18.0-jre/sample",
             "caches/modules-2/files-2.1/commons-io/commons-io/20030203.000550/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.1/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.2.1/sample",
