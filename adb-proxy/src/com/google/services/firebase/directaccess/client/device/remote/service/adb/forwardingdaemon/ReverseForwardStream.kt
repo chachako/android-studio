@@ -190,7 +190,9 @@ internal class ReverseForwardStream(
     suspend fun kill() {
       try {
         outputLock.withLock {
-          output.write(ByteBuffer.wrap(StreamDataHeader(MessageType.KILL, -1, 0).toByteArray()))
+          output.writeExactly(
+            ByteBuffer.wrap(StreamDataHeader(MessageType.KILL, -1, 0).toByteArray())
+          )
           logger.info("Sent kill message")
         }
       } catch (e: IOException) {

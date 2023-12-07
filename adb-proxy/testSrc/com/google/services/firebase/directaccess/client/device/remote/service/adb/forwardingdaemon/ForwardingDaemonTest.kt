@@ -15,6 +15,7 @@
  */
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
+import com.android.adblib.AdbChannel
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbServerSocket
 import com.android.adblib.DeviceAddress
@@ -27,7 +28,9 @@ import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
 import java.io.IOException
 import java.net.InetSocketAddress
+import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -106,6 +109,26 @@ class ForwardingDaemonTest {
             )
           }
           return address
+        }
+
+        /**
+         * Returns an [AdbChannel] that never writes the whole buffer with its writeBuffer method to
+         * expose issues of not writing the whole buffer from the caller.
+         */
+        override suspend fun accept(): AdbChannel {
+          val adbChannel = socket.accept()
+          return object : AdbChannel by adbChannel {
+            override suspend fun writeBuffer(buffer: ByteBuffer, timeout: Long, unit: TimeUnit) {
+              // Do not write the last byte from the buffer unless the buffer only has 1 byte.
+              if (buffer.remaining() == 1) {
+                adbChannel.writeBuffer(buffer, timeout, unit)
+              } else {
+                buffer.limit(buffer.limit() - 1)
+                adbChannel.writeBuffer(buffer, timeout, unit)
+                buffer.limit(buffer.limit() + 1)
+              }
+            }
+          }
         }
       }
   }

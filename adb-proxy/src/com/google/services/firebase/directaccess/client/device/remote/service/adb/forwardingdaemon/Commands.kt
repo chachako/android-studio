@@ -18,7 +18,6 @@ package com.google.services.firebase.directaccess.client.device.remote.service.a
 
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.AdbOutputChannel
-import com.android.adblib.write
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.zip.CRC32
@@ -76,7 +75,7 @@ sealed class Command(
         .putInt(type xor 0xFFFFFFFF.toInt()) // "magic"
         .put(payload)
         .flip()
-    adbOutputChannel.write(buf)
+    adbOutputChannel.writeExactly(buf)
   }
 
   companion object {
