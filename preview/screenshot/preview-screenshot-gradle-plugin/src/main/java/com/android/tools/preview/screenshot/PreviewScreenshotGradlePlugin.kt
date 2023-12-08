@@ -81,6 +81,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     val cliInput = buildDir.file("$testOutputDir/intermediates/cli_tool_input.json")
                     val testResultsDir = buildDir.dir("$testOutputDir/results")
                     val testResultsFile = buildDir.file("$testOutputDir/results/TEST-results.xml")
+                    val reportsDir = buildDir.dir("reports/androidTests/preview/$buildTarget/$flavorDir")
 
                     val discoveryTaskProvider =
                         project.tasks.register(
@@ -208,7 +209,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         "${variantName}ScreenshotReport",
                         ScreenshotTestReportTask::class.java
                     ) { task ->
-                        task.outputDir.set(testResultsDir)
+                        task.outputDir.set(reportsDir)
                         task.resultsDir.set(testResultsDir)
                     }
                     previewScreenshotValidationTask.finalizedBy(screenshotHtmlTask)
