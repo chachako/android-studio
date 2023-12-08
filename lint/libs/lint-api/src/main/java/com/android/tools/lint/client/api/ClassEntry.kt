@@ -19,9 +19,11 @@ import com.android.SdkConstants.DOT_CLASS
 import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_SRCJAR
 import com.google.common.collect.Maps
+import java.io.EOFException
 import java.io.File
 import java.io.IOException
 import java.util.Collections.emptyIterator
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlin.math.min
 import org.objectweb.asm.ClassReader
@@ -172,11 +174,9 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
                 val entry = enumeration.nextElement()
                 if (entry.name.endsWith(DOT_CLASS)) {
                   try {
-                    jar.getInputStream(entry).use { stream ->
-                      val bytes = stream.readBytes()
-                      val file = File(entry.name)
-                      entries.add(ClassEntry(file, classPathEntry, classPathEntry, bytes))
-                    }
+                    val bytes = readBytes(jar, entry)
+                    val file = File(entry.name)
+                    entries.add(ClassEntry(file, classPathEntry, classPathEntry, bytes))
                   } catch (e: Throwable) {
                     client.log(e, null)
                   }
@@ -199,6 +199,32 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
           }
         } else if (!name.endsWith(DOT_SRCJAR)) {
           client.log(null, "Ignoring class path entry %1\$s", classPathEntry)
+        }
+      }
+    }
+
+    /**
+     * Reads all the bytes for ZipEntry
+     *
+     * Method avoid allocating temporary buffer, and byte array cloning when uncompressed size is
+     * know and reasonably small
+     *
+     * Inspired by java.util.jar.JarFile#getBytes
+     */
+    private fun readBytes(jar: ZipFile, entry: ZipEntry): ByteArray {
+      val uncompressedSize = entry.size
+      jar.getInputStream(entry).use { stream ->
+        if (uncompressedSize != -1L && uncompressedSize <= 65535) {
+          val len = uncompressedSize.toInt()
+          val bytes = ByteArray(len)
+          val bytesRead = stream.readNBytes(bytes, 0, len)
+          if (len != bytesRead) {
+            throw EOFException("Expected:$len, read:$bytesRead")
+          }
+
+          return bytes
+        } else {
+          return stream.readBytes()
         }
       }
     }
