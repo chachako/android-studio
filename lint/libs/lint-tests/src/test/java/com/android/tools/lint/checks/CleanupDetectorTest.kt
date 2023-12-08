@@ -4527,4 +4527,41 @@ class CleanupDetectorTest : AbstractCheckTest() {
       .run()
       .expectClean()
   }
+
+  fun test315494223() {
+    // Regression test for 315494223
+    lint()
+      .files(
+        java(
+            """
+            package com.example.myapplication;
+
+            import android.animation.Animator;
+            import android.animation.ArgbEvaluator;
+            import android.animation.ValueAnimator;
+            import android.view.View;
+
+            public class HighlightablePreferenceGroupAdapter  {
+                private static final long HIGHLIGHT_FADE_IN_DURATION = 200L;
+                private void addHighlightBackground(View v, int colorFrom, int colorTo) {
+                    final ValueAnimator fadeInLoop =
+                            ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+                    fadeInLoop.setDuration(HIGHLIGHT_FADE_IN_DURATION);
+                    fadeInLoop.addUpdateListener(
+                            animator -> v.setBackgroundColor((int) animator.getAnimatedValue()));
+                    fadeInLoop.setRepeatMode(ValueAnimator.REVERSE);
+                    fadeInLoop.setRepeatCount(4);
+
+                    @SuppressWarnings("UnnecessaryLocalVariable")
+                    Animator animator = fadeInLoop;
+                    animator.start();
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }

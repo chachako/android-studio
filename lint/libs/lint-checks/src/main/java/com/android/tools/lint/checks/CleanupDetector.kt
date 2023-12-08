@@ -252,7 +252,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
           when (val type = returnType.canonicalText) {
             ANIMATOR_SET_CLS -> checkRecycled(context, node, type, START)
             VALUE_ANIMATOR_CLS,
-            OBJECT_ANIMATOR_CLS -> checkRecycled(context, node, VALUE_ANIMATOR_CLS, START)
+            OBJECT_ANIMATOR_CLS -> checkRecycled(context, node, ANIMATOR_CLS, START)
           }
         }
       }
@@ -808,6 +808,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
     private const val FRAGMENT_TRANSACTION_V4_CLS = "android.support.v4.app.FragmentTransaction"
     private const val FRAGMENT_TRANSACTION_ANDROIDX_CLS =
       "androidx.fragment.app.FragmentTransaction"
+    private const val ANIMATOR_CLS = "android.animation.Animator"
     private const val VALUE_ANIMATOR_CLS = "android.animation.ValueAnimator"
     private const val OBJECT_ANIMATOR_CLS = "android.animation.ObjectAnimator"
     private const val ANIMATOR_SET_CLS = "android.animation.AnimatorSet"
