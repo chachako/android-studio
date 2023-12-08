@@ -22,12 +22,17 @@ plugins {
     id 'java-gradle-plugin'
 }
 
+group = 'com.android.tools.preview.screenshot'
+
 base {
     archivesName = 'preview-screenshot-gradle-plugin'
 }
 
-group = 'com.android.tools.preview.screenshot'
-version = '0.0.1-dev'
+if (findProperty("release")?.toBoolean()) {
+    version = '0.0.1-alpha01'
+} else {
+    version = '0.0.1-dev'
+}
 
 gradlePlugin {
     plugins {
