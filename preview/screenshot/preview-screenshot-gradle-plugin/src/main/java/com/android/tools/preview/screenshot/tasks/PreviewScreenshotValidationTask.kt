@@ -67,20 +67,24 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
     @TaskAction
     fun run() {
         val screenshots = readComposeScreenshotsJson(previewFile.get().asFile.reader())
-        val resultsToSave = mutableListOf<PreviewResult>()
-        var allTestsPass = true
-        for (screenshot in screenshots) {
-            val imageComparison = compareImages(screenshot)
-            resultsToSave.add(imageComparison)
-            if (imageComparison.responseCode != 0) {
-                allTestsPass = false
+        if (screenshots.isNotEmpty()) {
+            val resultsToSave = mutableListOf<PreviewResult>()
+            var allTestsPass = true
+            for (screenshot in screenshots) {
+                val imageComparison = compareImages(screenshot)
+                resultsToSave.add(imageComparison)
+                if (imageComparison.responseCode != 0) {
+                    allTestsPass = false
+                }
             }
-        }
 
-        saveResults(resultsToSave, resultsFile.get().asFile.absolutePath)
+            saveResults(resultsToSave, resultsFile.get().asFile.absolutePath)
 
-        if (!allTestsPass) {
-            throw GradleException("There were failing tests")
+            if (!allTestsPass) {
+                throw GradleException("There were failing tests")
+            }
+        } else {
+            logger.info("No tests found, nothing to do.")
         }
     }
 

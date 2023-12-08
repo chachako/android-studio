@@ -146,4 +146,29 @@ class PreviewScreenshotValidationTaskTest {
             </testsuite>
         """.trimIndent())
     }
+
+    @Test
+    fun testImageValidationNoPreviewsToTest() {
+        val imageOutputDir = tempDirRule.newFolder("outputs")
+        val resultsFile = tempDirRule.newFile("results")
+        val referenceImageDir = tempDirRule.newFolder("references")
+        val renderOutputDir = tempDirRule.newFolder("rendered")
+        val previewsFile = tempDirRule.newFile("previews_discovered.json")
+        previewsFile.writeText("""
+            {
+              "screenshots": [
+              ]
+            }
+        """.trimIndent())
+
+        task.previewFile.set(previewsFile)
+        task.referenceImageDir.set(referenceImageDir)
+        task.imageOutputDir.set(imageOutputDir)
+        task.renderTaskOutputDir.set(renderOutputDir)
+        task.resultsFile.set(resultsFile)
+
+        task.run()
+
+        assert(resultsFile.readText().isEmpty())
+    }
 }
