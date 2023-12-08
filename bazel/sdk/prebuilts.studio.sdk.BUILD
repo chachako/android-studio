@@ -67,6 +67,7 @@ filegroup(
         "//tools/adt/idea/project-system-gradle:__pkg__",
         "//tools/adt/idea/project-system-gradle-upgrade:__pkg__",
         "//tools/adt/idea/sync-perf-tests:__pkg__",
+        "//tools/gradle-recipes:__pkg__",
     ],
 )
 
