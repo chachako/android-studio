@@ -120,6 +120,7 @@ package com.android.build.api.artifact {
 
   public interface InAndOutFileOperationRequest {
     method public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Single<org.gradle.api.file.RegularFile> & com.android.build.api.artifact.Artifact.Transformable> void toTransform(ArtifactTypeT type);
+    method @org.gradle.api.Incubating public com.android.build.api.artifact.InAndOutFileOperationRequest withName(String name);
   }
 
   public abstract sealed class MultipleArtifact<FileTypeT extends org.gradle.api.file.FileSystemLocation> extends com.android.build.api.artifact.Artifact.Multiple<FileTypeT> {
@@ -145,6 +146,7 @@ package com.android.build.api.artifact {
     method public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Multiple<FileTypeT> & com.android.build.api.artifact.Artifact.Appendable> void toAppendTo(ArtifactTypeT type);
     method public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Single<FileTypeT> & com.android.build.api.artifact.Artifact.Replaceable> void toCreate(ArtifactTypeT type);
     method @org.gradle.api.Incubating public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Single<FileTypeT>> void toListenTo(ArtifactTypeT type);
+    method @org.gradle.api.Incubating public com.android.build.api.artifact.OutOperationRequest<FileTypeT> withName(String name);
   }
 
   public abstract sealed class ScopedArtifact extends com.android.build.api.artifact.Artifact.Single<org.gradle.api.file.RegularFile> {

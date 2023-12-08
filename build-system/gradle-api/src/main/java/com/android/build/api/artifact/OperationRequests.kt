@@ -29,7 +29,23 @@ import org.gradle.api.provider.ListProperty
  * [Task] is not consuming existing version of the target [SingleArtifact].
  */
 interface OutOperationRequest<FileTypeT: FileSystemLocation> {
-
+    /**
+     * Sets the output file or directory name for the new artifact.
+     *
+     * This name will only be used when [toAppendTo] or [toCreate] is invoked.
+     * Although you can use this method on [Directory], it will most likely not influence how
+     * the files contained in the resulting [Directory] are packaged in the APK or Bundle.
+     * This method is usually only useful for [RegularFile]
+     *
+     * Some [Artifact] have a [Artifact.name] which cannot be changed. When invoking [toAppendTo] or
+     * [toCreate] after this method will throw an exception if trying to set such a file or
+     * directory name when the target's [Artifact] [Artifact.name] is not null.
+     *
+     * @param name file or directory name
+     * @return itself
+\     */
+    @Incubating
+    fun withName(name: String): OutOperationRequest<FileTypeT>
     /**
      * Initiates an append request to a [Artifact.Multiple] artifact type.
      *
@@ -220,6 +236,16 @@ interface MultipleArtifactTypeOutOperationRequest<FileTypeT: FileSystemLocation>
  * [Task] is consuming existing version of the target [SingleArtifact] and producing a new version.
  */
 interface InAndOutFileOperationRequest {
+
+    /**
+     * Sets the output file name for the transformed artifact.
+     *
+     * @param name file name in the output folder.
+     * @return itself
+     */
+    @Incubating
+    fun withName(name: String): InAndOutFileOperationRequest
+
     /**
      * Initiates a transform request to a single [Artifact.Transformable] artifact type.
      *
@@ -357,8 +383,8 @@ interface InAndOutDirectoryOperationRequest<TaskT : Task> {
      *     val taskProvider= projects.tasks.register(MyTask::class.java, "transformTask")
      *     artifacts.use(taskProvider)
      *      .wiredWithDirectories(
-     *          MyTask::inputFile,
-     *          MyTask::outputFile)
+     *          MyTask::inputDir,
+     *          MyTask::outputDir)
      *      .toTransform(ArtifactType.SINGLE_DIR_ARTIFACT)
      * ```
      */
