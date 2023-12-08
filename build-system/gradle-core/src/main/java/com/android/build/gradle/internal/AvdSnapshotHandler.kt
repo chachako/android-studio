@@ -184,6 +184,8 @@ class AvdSnapshotHandler(
         emulatorGpuFlag: String,
         logger: ILogger
     ) {
+        logger.verbose("Creating snapshot for $avdName")
+
         val maxRetryAttempt = 5
         lateinit var lastException: EmulatorSnapshotCannotCreatedException
         repeat(maxRetryAttempt) { attempt ->
@@ -201,6 +203,20 @@ class AvdSnapshotHandler(
                         avdLocation,
                         emulatorGpuFlag,
                         logger)
+
+                if (!checkSnapshotLoadable(
+                        avdName,
+                        emulatorExecutable,
+                        avdLocation,
+                        emulatorGpuFlag,
+                        logger)) {
+
+                    throw EmulatorSnapshotCannotCreatedException(
+                        "Snapshot setup for $avdName ran successfully, but the snapshot failed " +
+                        "to be created. This is likely to a lack of disk space for the snapshot. " +
+                        "Try the cleanManagedDevices task with the --unused-only flag to remove " +
+                        "any unused devices for this project.")
+                }
 
                 // Validate the newly created snapshot if that's really loadable and usable.
                 // Emulator occasionally (about 1% of the time) generates a corrupted snapshot

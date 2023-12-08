@@ -18,6 +18,7 @@ package com.android.build.gradle.internal
 
 import com.android.build.gradle.internal.testing.AdbHelper
 import com.android.testutils.MockitoKt.any
+import com.android.testutils.MockitoKt.mock
 import com.android.utils.ILogger
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
@@ -43,12 +44,6 @@ class AvdSnapshotHandlerTest {
     val tmpFolder = TemporaryFolder()
 
     @Mock
-    lateinit var mockProcessBuilder: ProcessBuilder
-
-    @Mock
-    lateinit var mockProcess: Process
-
-    @Mock
     lateinit var mockAdbHelper: AdbHelper
 
     @Mock
@@ -59,27 +54,40 @@ class AvdSnapshotHandlerTest {
 
     @Before
     fun setupMocks() {
-        `when`(mockProcessBuilder.start()).thenReturn(mockProcess)
-        `when`(mockProcessBuilder.environment()).thenReturn(mutableMapOf())
-        `when`(mockProcess.inputStream).thenReturn(InputStream.nullInputStream())
-        `when`(mockProcess.errorStream).thenReturn(InputStream.nullInputStream())
-        `when`(mockProcess.waitFor(any(), any())).thenReturn(true)
-        `when`(mockProcess.isAlive).thenReturn(true)
         `when`(mockAdbHelper.findDeviceSerialWithId(any(), any())).thenReturn("myTestDeviceSerial")
         `when`(mockAdbHelper.isBootCompleted(any(), any())).thenReturn(true)
         `when`(mockAdbHelper.isPackageManagerStarted(any(), any())).thenReturn(true)
     }
 
+    private fun createMockProcessBuilder(
+            stdout: String = "",
+            env: MutableMap<String, String> = mutableMapOf()): ProcessBuilder {
+        val mockProcessBuilder = mock<ProcessBuilder>()
+        val mockProcess = mock<Process>()
+        `when`(mockProcessBuilder.start()).thenReturn(mockProcess)
+        `when`(mockProcessBuilder.environment()).thenReturn(env)
+        `when`(mockProcess.inputStream).thenReturn(stdout.byteInputStream())
+        `when`(mockProcess.errorStream).thenReturn(InputStream.nullInputStream())
+        `when`(mockProcess.waitFor(any(), any())).thenReturn(true)
+        `when`(mockProcess.isAlive).thenReturn(true)
+        return mockProcessBuilder
+    }
+
     @Test
     fun generateSnapshot() {
+        val env = mutableMapOf<String, String>()
         val handler = AvdSnapshotHandler(
                 showEmulatorKernelLogging = true,
                 deviceBootAndSnapshotCheckTimeoutSec = 1234,
                 mockAdbHelper,
                 extraWaitAfterBootCompleteMs = 0L,
                 MoreExecutors.directExecutor(),
-        ) {
-            mockProcessBuilder
+        ) { commands ->
+            if (commands.contains("-check-snapshot-loadable")) {
+                createMockProcessBuilder(stdout = "Loadable")
+            } else {
+                createMockProcessBuilder(env = env)
+            }
         }
 
         handler.generateSnapshot(
@@ -89,7 +97,6 @@ class AvdSnapshotHandlerTest {
                 emulatorGpuFlag = "",
                 mockLogger)
 
-        assertThat(mockProcessBuilder.environment())
-                .containsEntry("ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL", "1234")
+        assertThat(env).containsEntry("ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL", "1234")
     }
 }
