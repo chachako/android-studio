@@ -288,6 +288,7 @@ class CustomAndroidSdkRule : ExternalResource() {
                         <api-level>$systemImageApiLevel</api-level>
                         <tag>
                             <id>${systemImageRemotePackage.split(';')[2]}</id>
+                            <display>${systemImageRemotePackage.split(';')[2]}</display>
                         </tag>
                         <abi>${systemImageRemotePackage.split(';')[3]}</abi>
                     </type-details>
