@@ -24,6 +24,7 @@ merge_deps(
         ":tools.standalone-render.compose-cli",
         "//prebuilts/studio/layoutlib/data:layoutlib",  # Should be runtime
         "//prebuilts/tools/common/lint-psi/intellij-core",
+        "//tools/adt/idea/compose-designer:ui-animation-tooling-internal",
         "//tools/adt/idea/layoutlib:tools.layoutlib",
         "//tools/adt/idea/layoutlib-loader:tools.layoutlib-loader",
         "//tools/adt/idea/preview-elements:tools.preview-elements",
