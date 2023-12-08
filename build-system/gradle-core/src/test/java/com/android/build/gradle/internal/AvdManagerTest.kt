@@ -221,6 +221,7 @@ class AvdManagerTest {
                 any(File::class.java),
                 any(File::class.java),
                 anyString(),
+                any(com.android.sdklib.internal.avd.AvdManager::class.java),
                 any(ILogger::class.java))
     }
 
@@ -252,6 +253,7 @@ class AvdManagerTest {
                 any(File::class.java),
                 any(File::class.java),
                 anyString(),
+                any(com.android.sdklib.internal.avd.AvdManager::class.java),
                 any(ILogger::class.java))
     }
 

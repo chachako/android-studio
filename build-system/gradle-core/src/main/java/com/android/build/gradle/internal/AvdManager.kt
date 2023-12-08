@@ -33,7 +33,6 @@ import com.android.sdklib.repository.LoggerProgressIndicatorWrapper
 import com.android.testing.utils.isTvOrAutoDevice
 import com.android.utils.FileUtils
 import com.android.utils.ILogger
-import com.android.utils.StdLogger
 import com.sun.xml.bind.v2.util.EditDistance
 import java.io.File
 import java.nio.file.Path
@@ -213,6 +212,7 @@ class AvdManager(
                     emulatorExecutable,
                     avdFolder,
                     emulatorGpuFlag,
+                    avdManager,
                     logger
                 )
             }

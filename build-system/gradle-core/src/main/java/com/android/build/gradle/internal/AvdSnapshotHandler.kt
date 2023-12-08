@@ -17,6 +17,8 @@
 package com.android.build.gradle.internal
 
 import com.android.build.gradle.internal.testing.AdbHelper
+import com.android.sdklib.internal.avd.AvdManager
+import com.android.utils.FileUtils
 import com.android.utils.GrabProcessOutput
 import com.android.utils.ILogger
 import java.io.File
@@ -28,9 +30,12 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import org.gradle.api.file.Directory
 import org.gradle.api.provider.Provider
+import java.io.IOException
 
 private const val EMULATOR_EXECUTABLE = "emulator"
 private const val DEFAULT_DEVICE_BOOT_AND_SNAPSHOT_CHECK_TIMEOUT_SEC = 600L
+private const val SNAPSHOTS_DIR = AvdManager.SNAPSHOTS_DIRECTORY
+private const val TARGET_SNAPSHOT_NAME = "default_boot"
 
 // This is an extra wait time after the AVD boot completed before taking system snapshot image
 // for stability.
@@ -182,6 +187,7 @@ class AvdSnapshotHandler(
         emulatorExecutable: File,
         avdLocation: File,
         emulatorGpuFlag: String,
+        avdManager: AvdManager,
         logger: ILogger
     ) {
         logger.verbose("Creating snapshot for $avdName")
@@ -242,10 +248,34 @@ class AvdSnapshotHandler(
                 lastException = e
             }
         }
+
+        deleteSnapshotForDevice(avdName, avdManager, logger)
+
         throw lastException
     }
 
     class EmulatorSnapshotCannotCreatedException(message: String) : RuntimeException(message)
+
+    private fun deleteSnapshotForDevice(
+        deviceName: String,
+        avdManager: AvdManager,
+        logger: ILogger,
+    ) {
+        val avdDir = avdManager.getAvd(deviceName, /* validAvdOnly = */false)
+            ?.dataFolderPath?.toFile() ?: return
+        val gmdSnapshot = FileUtils.join(avdDir, SNAPSHOTS_DIR, TARGET_SNAPSHOT_NAME)
+        if (gmdSnapshot.exists() && gmdSnapshot.isDirectory) {
+            try {
+                logger.warning("Deleting unbootable snapshot for device: $deviceName")
+                FileUtils.deleteRecursivelyIfExists(gmdSnapshot)
+            } catch (ioException: IOException) {
+                logger.error(
+                    ioException,
+                    "Could not delete snapshot at location: ${gmdSnapshot.absolutePath}."
+                )
+            }
+        }
+    }
 
     private fun startEmulatorThenStop(
         createSnapshot: Boolean,
