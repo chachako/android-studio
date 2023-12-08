@@ -608,6 +608,7 @@ def maven_library(
         resources = resources,
         resource_strip_prefix = resource_strip_prefix,
         runtime_deps = runtime_deps,
+        coverage_baseline_enabled = False,
         stdlib = None,  # Maven libraries use the stdlib in different scopes and versions.
         plugins = plugins,
         **kwargs
