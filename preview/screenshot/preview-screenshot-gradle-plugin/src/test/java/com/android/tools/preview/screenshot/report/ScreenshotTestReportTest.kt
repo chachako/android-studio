@@ -17,6 +17,7 @@
 package com.android.tools.preview.screenshot.report
 
 import com.google.common.io.Files
+import com.google.common.truth.Truth.assertThat
 import com.android.testutils.truth.PathSubject.assertThat
 import java.io.File
 import org.junit.Before
@@ -49,6 +50,88 @@ class ScreenshotTestReportTest {
         reference = createTempImageFile(imagesOutDir, "reference")
         diff = createTempImageFile(imagesOutDir, "diff")
         actual = createTempImageFile(imagesOutDir, "actual")
+    }
+
+    @Test
+    fun generateScreenshotReport() {
+        createTestReportXmlFile()
+
+        TestReport(resultsOutDir, reportOutDir).generateScreenshotTestReport()
+
+        val expectedIndexFileContentExcludingFooter = javaClass.getResourceAsStream("index.txt")!!
+            .readBytes().toString(Charsets.UTF_8)
+        val indexHtml = File(reportOutDir, "index.html")
+        assertThat(indexHtml).exists()
+        run checkIndexHtml@ {
+            indexHtml.readLines().forEachIndexed { index, line ->
+                if (line.contains("footer")) return@checkIndexHtml  // Ignore the footer from the generated report
+                assertThat(line.trim()).isEqualTo(expectedIndexFileContentExcludingFooter.lines()[index]) }
+        }
+
+        val expectedModuleFileContentExcludingFooter = javaClass.getResourceAsStream("module.txt")!!.readBytes().toString(Charsets.UTF_8)
+        val moduleHtml = File(reportOutDir, "com.example.myapplication.html")
+        assertThat(moduleHtml).exists()
+        run checkModuleHtml@{
+            moduleHtml.readLines().forEachIndexed { index, line ->
+                if (line.contains("footer")) return@checkModuleHtml  // Ignore the footer from the generated report
+                assertThat(line.trim()).isEqualTo(expectedModuleFileContentExcludingFooter.lines()[index])
+            }
+        }
+
+        val expectedClassFileContentExcludingFooter = javaClass.getResourceAsStream("class.txt")!!
+            .readBytes().toString(Charsets.UTF_8)
+            .replace("referencePath", reference.absolutePath)
+            .replace("actualPath", actual.absolutePath)
+            .replace("diffPath", diff.absolutePath)
+        val classHtml = File(reportOutDir, "com.example.myapplication.ExampleInstrumentedTest.html")
+        assertThat(classHtml).exists()
+        run checkClassHtml@{
+            classHtml.readLines().forEachIndexed { index, line ->
+                if (line.contains("footer")) return@checkClassHtml  // Ignore the footer from the generated report
+                assertThat(line.trim()).isEqualTo(expectedClassFileContentExcludingFooter.lines()[index])
+            }
+        }
+    }
+
+    @Test
+    fun generateScreenshotReportError() {
+        createFailedToRenderXmlFile()
+        TestReport(resultsOutDir, reportOutDir).generateScreenshotTestReport()
+
+        val expectedIndexFileContentExcludingFooter = javaClass.getResourceAsStream("indexError.txt")!!.readBytes().toString(Charsets.UTF_8)
+        val indexHtml = File(reportOutDir, "index.html")
+        assertThat(indexHtml).exists()
+        run checkIndexHtml@ {
+            indexHtml.readLines().forEachIndexed { index, line ->
+                if (line.contains("footer")) return@checkIndexHtml  // Ignore the footer from the generated report
+                assertThat(line.trim()).isEqualTo(expectedIndexFileContentExcludingFooter.lines()[index]) }
+        }
+
+        val expectedClassFileContentExcludingFooter = javaClass.getResourceAsStream("classError.txt")!!
+            .readBytes().toString(Charsets.UTF_8)
+            .replace("referencePath", reference.absolutePath)
+            .replace("actualPath", actual.absolutePath)
+            .replace("diffPath", diff.absolutePath)
+        val classHtml = File(reportOutDir, "com.example.myapplication.ExampleInstrumentedTest.html")
+        run checkClassHtml@{
+            classHtml.readLines().forEachIndexed { index, line ->
+                if (line.contains("footer")) return@checkClassHtml  // Ignore the footer from the generated report
+                assertThat(line.trim()).isEqualTo(expectedClassFileContentExcludingFooter.lines()[index])
+            }
+        }
+    }
+
+    @Test
+    fun shouldNotGenerateEmptyPackageReportForUnnamedTestSuite() {
+        createEmptyTestReportXmlFile()
+
+        TestReport(resultsOutDir, reportOutDir).generateScreenshotTestReport()
+
+        val indexHtml = File(reportOutDir, "index.html")
+        assertThat(indexHtml).exists()
+
+        val packageHtml = File(reportOutDir, ".html")
+        assertThat(packageHtml).doesNotExist()
     }
 
     private fun createTempImageFile(dir: File, name: String): File {
@@ -147,64 +230,5 @@ class ScreenshotTestReportTest {
               </testcase>
             </testsuite>
         """.trimIndent())
-    }
-
-    @Test
-    fun generateScreenshotReport() {
-        createTestReportXmlFile()
-
-        TestReport(resultsOutDir, reportOutDir).generateScreenshotTestReport()
-
-        val indexHtml = File(reportOutDir, "index.html")
-        assertThat(indexHtml).exists()
-        assertThat(indexHtml).contains("<title>Test results - Test Summary</title>")
-        assertThat(indexHtml).contains("<h1>Test Summary</h1>")
-        assertThat(indexHtml).contains("""<div class="percent">25%</div>""")
-        assertThat(indexHtml).contains("""<p>successful</p>""")
-
-        val moduleHtml = File(reportOutDir, "com.example.myapplication.html")
-        assertThat(moduleHtml).exists()
-
-        val classHtml = File(reportOutDir, "com.example.myapplication.ExampleInstrumentedTest.html")
-        assertThat(classHtml).exists()
-        assertThat(classHtml).contains("<title>Test results - Class com.example.myapplication.ExampleInstrumentedTest</title>")
-        assertThat(classHtml).contains("<h1>Class com.example.myapplication.ExampleInstrumentedTest</h1>")
-        assertThat(classHtml).contains(reference.absolutePath)
-        assertThat(classHtml).contains(actual.absolutePath)
-        assertThat(classHtml).contains(diff.absolutePath)
-        assertThat(classHtml).contains("Images match")
-        assertThat(classHtml).contains("Reference image does not exist")
-        assertThat(classHtml).contains("Size Mismatch")
-        assertThat(classHtml).doesNotContain("Images don't match")
-    }
-
-    @Test
-    fun generateScreenshotReportError() {
-        createFailedToRenderXmlFile()
-        TestReport(resultsOutDir, reportOutDir).generateScreenshotTestReport()
-
-        val indexHtml = File(reportOutDir, "index.html")
-        assertThat(indexHtml).exists()
-        assertThat(indexHtml).contains("""<div class="percent">0%</div>""")
-        assertThat(indexHtml).contains("""<p>successful</p>""")
-
-        val classHtml = File(reportOutDir, "com.example.myapplication.ExampleInstrumentedTest.html")
-        assertThat(classHtml).exists()
-        assertThat(classHtml).contains(reference.absolutePath)
-        assertThat(classHtml).contains("Reference image missing")
-        assertThat(classHtml).contains("Render failure: ClassNotFoundException: com.xxx.example.Class")
-    }
-
-    @Test
-    fun shouldNotGenerateEmptyPackageReportForUnnamedTestSuite() {
-        createEmptyTestReportXmlFile()
-
-        TestReport(resultsOutDir, reportOutDir).generateScreenshotTestReport()
-
-        val indexHtml = File(reportOutDir, "index.html")
-        assertThat(indexHtml).exists()
-
-        val packageHtml = File(reportOutDir, ".html")
-        assertThat(packageHtml).doesNotExist()
     }
 }

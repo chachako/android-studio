@@ -18,7 +18,6 @@ package com.android.tools.preview.screenshot.report
 
 import java.io.IOException
 
-
 /**
  * Custom OverviewPageRenderer based on Gradle's OverviewPageRenderer
  */
