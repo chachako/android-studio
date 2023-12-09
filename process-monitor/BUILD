@@ -4,6 +4,9 @@ load("//tools/base/bazel:bazel.bzl", "iml_module")
 iml_module(
     name = "studio.android.sdktools.process-monitor",
     srcs = ["src/main"],
+    data = [
+        "//tools/base/process-monitor/process-tracker-agent:bundle",
+    ],
     iml_files = ["android.sdktools.process-monitor.iml"],
     test_resources = ["testResources"],
     test_srcs = ["src/test"],
