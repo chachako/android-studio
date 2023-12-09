@@ -107,6 +107,14 @@ public abstract class PermissionRequirement {
         this.lastApi = lastApi;
     }
 
+    /**
+     * Creates a permission requirement on a single specific, unconditional permission which applies
+     * to all API levels
+     */
+    public static PermissionRequirement create(@NonNull String permission) {
+        return new Single(permission, false, 1, Integer.MAX_VALUE);
+    }
+
     @NonNull
     public static PermissionRequirement create(@NonNull UAnnotation annotation) {
         boolean conditional = getAnnotationBooleanValue(annotation, ATTR_CONDITIONAL, false);

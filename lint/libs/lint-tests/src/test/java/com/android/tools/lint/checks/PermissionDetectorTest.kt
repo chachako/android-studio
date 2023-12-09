@@ -21,6 +21,7 @@ import com.android.SdkConstants.TAG_USES_PERMISSION_SDK_23
 import com.android.SdkConstants.TAG_USES_PERMISSION_SDK_M
 import com.android.tools.lint.checks.infrastructure.ProjectDescription
 import com.android.tools.lint.checks.infrastructure.TestFile
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class PermissionDetectorTest : AbstractCheckTest() {
@@ -559,7 +560,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
         "                 ~~~~~~~~~~~~~~~~~~~~\n" +
         "src/test/pkg/ActionTest.java:86: Error: Missing permissions required by intent ActionTest.ACTION_CALL: android.permission.CALL_PHONE [MissingPermission]\n" +
         "        myStartActivity(\"\", null, new Intent(ACTION_CALL));\n" +
-        "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+        "                                  ~~~~~~~~~~~~~~~~~~~~~~~\n" +
         "src/test/pkg/ActionTest.java:87: Error: Missing permissions required to read ActionTest.BOOKMARKS_URI: com.android.browser.permission.READ_HISTORY_BOOKMARKS [MissingPermission]\n" +
         "        myReadResolverMethod(\"\", BOOKMARKS_URI);\n" +
         "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
@@ -1641,26 +1642,6 @@ class PermissionDetectorTest : AbstractCheckTest() {
       )
   }
 
-  /**
-   * Stub file for android.Manifest; we use this here to get access to the new permissions in
-   * Android T which aren't part of the prebuilts yet. Once those are in the prebuilts, this stub
-   * can be deleted.
-   */
-  private val androidPermissionsStub: TestFile =
-    java(
-        """
-        package android;
-        public class Manifest {
-            public static class permission {
-                    public static final String NEARBY_WIFI_DEVICES = "android.permission.NEARBY_WIFI_DEVICES";
-                    public static final String ACCESS_FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION";
-                    public static final String BODY_SENSORS_BACKGROUND = "android.permission.BODY_SENSORS_BACKGROUND";
-            }
-        }
-        """
-      )
-      .indented()
-
   private val nearbyPermissionExample: TestFile =
     java(
         """
@@ -1690,7 +1671,6 @@ class PermissionDetectorTest : AbstractCheckTest() {
       .files(
         getManifestWithPermissions(33, "android.permission.ACCESS_FINE_LOCATION"),
         nearbyPermissionExample,
-        androidPermissionsStub,
         SUPPORT_ANNOTATIONS_JAR
       )
       .run()
@@ -1714,7 +1694,6 @@ class PermissionDetectorTest : AbstractCheckTest() {
           "android.permission.NEARBY_WIFI_DEVICES"
         ),
         nearbyPermissionExample,
-        androidPermissionsStub,
         SUPPORT_ANNOTATIONS_JAR
       )
       .run()
@@ -1731,7 +1710,6 @@ class PermissionDetectorTest : AbstractCheckTest() {
       .files(
         getManifestWithPermissions(33, "android.permission.NEARBY_WIFI_DEVICES"),
         nearbyPermissionExample,
-        androidPermissionsStub,
         SUPPORT_ANNOTATIONS_JAR
       )
       .run()
@@ -1745,7 +1723,6 @@ class PermissionDetectorTest : AbstractCheckTest() {
       .files(
         getManifestWithPermissions(32, "android.permission.ACCESS_FINE_LOCATION"),
         nearbyPermissionExample,
-        androidPermissionsStub,
         SUPPORT_ANNOTATIONS_JAR
       )
       .run()
@@ -1757,15 +1734,128 @@ class PermissionDetectorTest : AbstractCheckTest() {
     // flag anything because we have less confidence that the conditional permission is only
     // conditional on the special nearby permission.
     lint()
-      .files(
-        manifest().minSdk(33),
-        nearbyPermissionExample,
-        androidPermissionsStub,
-        SUPPORT_ANNOTATIONS_JAR
-      )
+      .files(manifest().minSdk(33), nearbyPermissionExample, SUPPORT_ANNOTATIONS_JAR)
       .run()
       .expectClean()
   }
+
+  fun testErrorRange() {
+    // Make sure we pick the right location range; in the following example
+    // (before the associated bug fix) the location range would span the entire
+    // "with" expression instead of just the notify call.
+    lint()
+      .files(
+        manifest().minSdk(33),
+        kotlin(
+            """
+            package test.pkg
+
+            import android.app.Activity
+            import android.app.Notification
+            import androidx.core.app.NotificationManagerCompat
+
+            class MyActivity : Activity() {
+                fun test(notificationId: Int, notification: Notification) {
+                    with(NotificationManagerCompat.from(this)) {
+                        notify(notificationId, notification)
+                    }
+                }
+            }
+            """
+          )
+          .indented(),
+        notificationManagerCompatStub,
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/MyActivity.kt:10: Error: Missing permissions required by NotificationManagerCompat.notify: android.permission.POST_NOTIFICATIONS [MissingPermission]
+                    notify(notificationId, notification)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+        """
+      )
+  }
+
+  fun testNotifyPermissionCheck() {
+    lint()
+      .files(
+        manifest().minSdk(33),
+        kotlin(
+            """
+            package test.pkg
+
+            import android.app.Activity
+            import android.app.Notification
+            import android.app.NotificationManager
+            import androidx.core.app.NotificationManagerCompat
+
+            class MyActivity : Activity() {
+                fun test(notificationId: Int, notification: Notification) {
+                    with(NotificationManagerCompat.from(this)) {
+                        if (areNotificationsEnabled()) {
+                            notify(notificationId, notification) // OK 1
+                        }
+                    }
+                }
+
+                fun testEarlyReturn(
+                    manager: NotificationManager,
+                    notificationId: Int,
+                    notification: Notification
+                ) {
+                    if (!manager.areNotificationsEnabled()) {
+                        return
+                    }
+                    manager.notify(notificationId, notification) // OK 2
+                }
+
+                fun testEarlyReturnCompat(
+                    manager: NotificationManagerCompat,
+                    notificationId: Int,
+                    notification: Notification
+                ) {
+                    if (!manager.areNotificationsEnabled()) {
+                        return
+                    }
+                    manager.notify(notificationId, notification) // OK 3
+                }
+            }
+            """
+          )
+          .indented(),
+        notificationManagerCompatStub,
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .skipTestModes(TestMode.IF_TO_WHEN)
+      .run()
+      .expectClean()
+  }
+
+  private val notificationManagerCompatStub: TestFile =
+    java(
+        """
+        package androidx.core.app;
+        import android.Manifest;
+        import android.app.Notification;
+        import android.content.Context;
+        import androidx.annotation.RequiresPermission;
+
+        public final class NotificationManagerCompat {
+            public static NotificationManagerCompat from(Context context) {
+              return null;
+            }
+            public boolean areNotificationsEnabled() {
+              return false;
+            }
+            @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+            public void notify(int id, Notification notification) {
+            }
+        }
+        """
+      )
+      .indented()
 
   // TODO: Add revocable tests
 }

@@ -261,6 +261,17 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
                 isFlagExpression(op.operand, flagClass, flagMethodName)
             ) {
               return true
+            } else if (
+              op is UPolyadicExpression &&
+                op.operator == UastBinaryOperator.LOGICAL_OR &&
+                (op.operands.any {
+                  val nested = it.skipParenthesizedExprDown()
+                  nested is UUnaryExpression &&
+                    nested.operator == UastPrefixOperator.LOGICAL_NOT &&
+                    isFlagExpression(nested.operand, flagClass, flagMethodName)
+                })
+            ) {
+              return true
             }
           }
         }

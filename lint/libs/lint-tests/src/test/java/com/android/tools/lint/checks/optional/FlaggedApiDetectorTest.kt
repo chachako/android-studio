@@ -538,6 +538,14 @@ class FlaggedApiDetectorTest : LintDetectorTest() {
                         f.someMethod();    // OK 2
                     }
                 }
+
+                public void testValid2(boolean something) {
+                    if (something || !Flags.myFlag()) {
+                    } else {
+                        Foo f = new Foo(); // OK 3
+                        f.someMethod();    // OK 4
+                    }
+                }
             }
             """
           )

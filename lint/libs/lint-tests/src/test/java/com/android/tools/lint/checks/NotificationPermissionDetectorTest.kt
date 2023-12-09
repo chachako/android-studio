@@ -290,6 +290,141 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
       )
       .indented()
 
+  fun testExoplayerWithoutDownloadingService() {
+    // Regression test for 271249297: Lint check wants POST_NOTIFICATIONS permission for unused
+    // class in dependency
+    lint()
+      .files(
+        manifest().minSdk(33).targetSdk(33),
+        kotlin(
+            """
+            fun test() {
+              // No notification manager here!
+            }
+            """
+          )
+          .indented(),
+        exoPlayerStub
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testExoplayerWithDownloadingService() {
+    // Regression test for 271249297: Lint check wants POST_NOTIFICATIONS permission for unused
+    // class in dependency
+    lint()
+      .files(
+        manifest(
+            """
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                package="test.pkg">
+                <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="34" />
+                <application
+                    android:icon="@mipmap/ic_launcher"
+                    android:label="@string/app_name">
+                    <service android:name="com.myapp.MyDownloadService"
+                        android:exported="false">
+                        <intent-filter>
+                            <action android:name="com.google.android.exoplayer.downloadService.action.RESTART"/>
+                            <category android:name="android.intent.category.DEFAULT"/>
+                        </intent-filter>
+                    </service>
+                </application>
+            </manifest>
+            """
+          )
+          .indented(),
+        kotlin(
+            """
+            fun test() {
+                // no notifications here
+            }
+            """
+          )
+          .indented(),
+        exoPlayerStub
+      )
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml: Error: When targeting Android 13 or higher, posting a permission requires holding the POST_NOTIFICATIONS permission (usage from com.google.android.exoplayer2.util.NotificationUtil) [NotificationPermission]
+        1 errors, 0 warnings
+        """
+      )
+  }
+
+  fun testNotifyPermissionCheck() {
+    lint()
+      .files(
+        manifest().minSdk(33).targetSdk(33),
+        kotlin(
+            """
+            package test.pkg
+
+            import android.app.Activity
+            import android.app.Notification
+            import android.app.NotificationManager
+
+            class MyActivity : Activity() {
+                fun testSurrounding(
+                    manager: NotificationManager,
+                    notificationId: Int,
+                    notification: Notification
+                ) {
+                    if (manager.areNotificationsEnabled()) {
+                        if (true) {
+                            manager.notify(notificationId, notification) // OK 1
+                        }
+                    }
+                }
+
+                fun testOrAnd(
+                    manager: NotificationManager,
+                    notificationId: Int,
+                    notification: Notification
+                ) {
+                    if (true && notificationId > 100 && manager.areNotificationsEnabled() && notificationId > 10) {
+                        manager.notify(notificationId, notification) // OK 2
+                    }
+                    if (notificationId == 100 || !manager.areNotificationsEnabled()) {
+                    } else {
+                        manager.notify(notificationId, notification) // OK 3
+                    }
+                }
+
+                fun testEarlyReturn(
+                    manager: NotificationManager,
+                    notificationId: Int,
+                    notification: Notification
+                ) {
+                    if (!manager.areNotificationsEnabled()) {
+                        return
+                    }
+                    manager.notify(notificationId, notification) // OK 4
+                }
+
+                fun testNegated(
+                    manager: NotificationManager,
+                    notificationId: Int,
+                    notification: Notification
+                ) {
+                   if (!manager.areNotificationsEnabled()) {
+                   } else {
+                       manager.notify(notificationId, notification) // OK 5
+                   }
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      // We don't support checking permissions with previous cases in a switch statement
+      .skipTestModes(TestMode.IF_TO_WHEN)
+      .run()
+      .expectClean()
+  }
+
   private val manifestTarget33LocationPermission: TestFile =
     manifest(
         """
@@ -321,6 +456,36 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
         """
       )
       .indented()
+
+  private val exoPlayerStub: TestFile =
+    bytecode(
+      "libs/exoplayer.jar",
+      java(
+        """
+        package com.google.android.exoplayer2.util;
+
+        import android.app.Notification;
+        import android.app.NotificationManager;
+
+        public final class NotificationUtil {
+            public static void setNotification(NotificationManager notificationManager, int id, Notification notification) {
+                notificationManager.notify(id, notification);
+            }
+        }
+        """
+      ),
+      0x2e9cdf77,
+      """
+      com/google/android/exoplayer2/util/NotificationUtil.class:
+      H4sIAAAAAAAA/4VQTUsDMRB90213da22fvQk6sHLWsSgHjxU9CAIQq0HP+7p
+      blxStklZt2J/lhcFD/4Af5Q4WRSLoCYwk7x5eW8yb+8vrwAO0ApRxXyIBTQC
+      NAMsEvxDbXRxRPCirRtC9cQmitDoaqN642Ff5VeynznkThU9W+hbHctCW0M4
+      jrrSJLnViZCjkZgunksjU5V3zn5ldJxZeGnHeaxOtTNoTZevC53tDOS9rKMG
+      P8BSHctYIezHdihSa9NMiS9p9WBHmZyofE+M+Zn4qUNoOiWRSZOKi/5AxQVh
+      45/WeTDGoRPCevTnN7ALj6fqVgXk2uUY8G2NM3GutZ9Bj3wgzHD0SzDALO/w
+      k7rJEp5D26vbT6h8k0PWBBP9kjpXetQ/ADNNAgLPAQAA
+      """
+    )
 
   private val bytecodeUsage: TestFile =
     bytecode(

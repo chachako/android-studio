@@ -28,6 +28,7 @@ import com.android.SdkConstants.TAG_USES_PERMISSION_SDK_23
 import com.android.SdkConstants.TAG_USES_PERMISSION_SDK_M
 import com.android.SdkConstants.VALUE_FALSE
 import com.android.sdklib.AndroidVersion
+import com.android.tools.lint.checks.NotificationPermissionDetector.Issues.POST_NOTIFICATIONS_PERMISSION
 import com.android.tools.lint.checks.PermissionFinder.Operation.ACTION
 import com.android.tools.lint.checks.PermissionFinder.Operation.READ
 import com.android.tools.lint.checks.PermissionFinder.Operation.WRITE
@@ -169,6 +170,9 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       context.evaluator.isMemberInClass(method, "android.app.AlarmManager")
   }
 
+  private fun PermissionRequirement.needsNotifyPermission(): Boolean =
+    contains(POST_NOTIFICATIONS_PERMISSION)
+
   private fun checkPermission(
     context: JavaContext,
     node: UElement,
@@ -181,9 +185,11 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     }
     var permissions = getPermissions(context)
     if (!requirement.isSatisfied(permissions)) {
+
       // See if it looks like we're holding the permission implicitly by @RequirePermission
       // annotations in the surrounding context
-      val localPermissionRequirements = getLocalPermissions(node)
+      val localPermissionRequirements =
+        getLocalPermissions(node, requirement.needsNotifyPermission())
       permissions = mergePermissions(permissions, localPermissionRequirements)
       if (!requirement.isSatisfied(permissions)) {
         val operation: PermissionFinder.Operation
@@ -216,8 +222,10 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         }
         // Report locations on the call, not just the flown parameter
         var location = context.getLocation(node)
-        val expressionNode = node.getParentOfType(UCallExpression::class.java, true)
-        if (expressionNode != null) {
+        val expressionNode =
+          if (node is UCallExpression) node
+          else node.getParentOfType(UCallExpression::class.java, true)
+        if (expressionNode != null && node !== expressionNode) {
           val callIdentifier = expressionNode.methodIdentifier
           if (callIdentifier != null && callIdentifier != node) {
             location = context.getRangeLocation(callIdentifier, 0, node, 0)
@@ -324,7 +332,8 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       if (!handlesMissingPermission) {
 
         // See if the requirement is passed on via surrounding requires permissions
-        val localPermissionRequirements = getLocalPermissions(node)
+        val localPermissionRequirements =
+          getLocalPermissions(node, requirement.needsNotifyPermission())
         val localRequirements =
           mergePermissions(
             PermissionHolder.SetPermissionLookup(
@@ -419,7 +428,10 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     return true
   }
 
-  private fun getLocalPermissions(node: UElement): List<PermissionRequirement> {
+  private fun getLocalPermissions(
+    node: UElement,
+    isNotifyPermission: Boolean
+  ): List<PermissionRequirement> {
     // Accumulate @RequirePermissions available in the local context
     val method = node.getParentOfType(UMethod::class.java, true) ?: return emptyList()
     val methodAnnotation =
@@ -433,7 +445,20 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         ?: containingClass?.findAnnotation(PERMISSION_ANNOTATION.newName())
         ?: containingClass?.findAnnotation(AOSP_PERMISSION_ANNOTATION)
 
-    return listOfNotNull(methodAnnotation, classAnnotation).map { PermissionRequirement.create(it) }
+    val requirements =
+      if (methodAnnotation == null && classAnnotation == null) emptyList()
+      else listOfNotNull(methodAnnotation, classAnnotation).map { PermissionRequirement.create(it) }
+
+    if (isNotifyPermission) {
+      // Hardcoded knowledge about the NotificationManager/NotificationManagerCompat specialized
+      // permission
+      // lookup methods
+      if (NotificationPermissionDetector.isNotificationPermissionChecked(node)) {
+        return requirements + PermissionRequirement.create(POST_NOTIFICATIONS_PERMISSION)
+      }
+    }
+
+    return requirements
   }
 
   private fun mergePermissions(

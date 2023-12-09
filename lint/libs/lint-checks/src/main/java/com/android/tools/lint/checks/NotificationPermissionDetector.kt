@@ -18,6 +18,10 @@ package com.android.tools.lint.checks
 
 import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.ATTR_NAME
+import com.android.SdkConstants.TAG_ACTION
+import com.android.SdkConstants.TAG_APPLICATION
+import com.android.SdkConstants.TAG_INTENT_FILTER
+import com.android.SdkConstants.TAG_SERVICE
 import com.android.SdkConstants.TAG_USES_PERMISSION
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ClassContext
@@ -36,13 +40,29 @@ import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.android.tools.lint.detector.api.isUnconditionalReturn
 import com.android.utils.findGradleBuildFile
+import com.android.utils.subtag
+import com.android.utils.subtags
+import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
 import java.util.EnumSet
 import org.jetbrains.uast.UAnnotated
+import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UFile
+import org.jetbrains.uast.UIfExpression
+import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.UParenthesizedExpression
+import org.jetbrains.uast.UPolyadicExpression
+import org.jetbrains.uast.UReferenceExpression
+import org.jetbrains.uast.UUnaryExpression
+import org.jetbrains.uast.UastBinaryOperator
+import org.jetbrains.uast.UastFacade
+import org.jetbrains.uast.UastPrefixOperator
+import org.jetbrains.uast.skipParenthesizedExprDown
+import org.jetbrains.uast.tryResolve
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodInsnNode
@@ -89,24 +109,145 @@ class NotificationPermissionDetector : Detector(), SourceCodeScanner, ClassScann
     /** The name of the class referencing the notification manager */
     private const val KEY_CLASS_NAME = "className"
 
-    private const val POST_NOTIFICATIONS_PERMISSION = "android.permission.POST_NOTIFICATIONS"
+    const val POST_NOTIFICATIONS_PERMISSION = "android.permission.POST_NOTIFICATIONS"
+    private const val NOTIFICATION_MANAGER = "android.app.NotificationManager"
+    private const val NOTIFICATION_MANAGER_COMPAT = "androidx.core.app.NotificationManagerCompat"
+    private const val ENABLED_CHECK_METHOD = "areNotificationsEnabled"
+    // Relevant classes:
+    //  * com/google/android/exoplayer2/offline/DownloadService$ForegroundNotificationUpdater
+    //  * com/google/android/exoplayer2/util/NotificationUtil
+    private const val EXO_PLAYER_CLASS_NAME_PREFIX = "com/google/android/exoplayer2/"
 
     private const val MIN_TARGET = 33
+
+    /**
+     * Is the given [element] inside an `areNotificationsEnabled` check, or after an early return of
+     * the negated check?
+     */
+    fun isNotificationPermissionChecked(element: UElement): Boolean {
+      var curr = element.uastParent ?: return false
+
+      var prev = element
+      while (curr !is UFile) {
+        if (curr is UIfExpression) {
+          val condition = curr.condition
+          if (prev !== condition) {
+            val fromThen = prev == curr.thenExpression
+            if (fromThen) {
+              if (isNotificationPermissionCheck(condition)) {
+                return true
+              }
+            } else {
+              // Handle "if (!areNotificationsEnabled) else <CALL>"
+              val op = condition.skipParenthesizedExprDown()
+              if (
+                op is UUnaryExpression &&
+                  op.operator == UastPrefixOperator.LOGICAL_NOT &&
+                  isNotificationPermissionCheck(op.operand)
+              ) {
+                return true
+              } else if (
+                op is UPolyadicExpression &&
+                  op.operator == UastBinaryOperator.LOGICAL_OR &&
+                  (op.operands.any {
+                    val nested = it.skipParenthesizedExprDown()
+                    nested is UUnaryExpression &&
+                      nested.operator == UastPrefixOperator.LOGICAL_NOT &&
+                      isNotificationPermissionCheck(nested.operand)
+                  })
+              ) {
+                return true
+              }
+            }
+          }
+        } else if (curr is UMethod) {
+          // See if there's an early return. We *only* handle a very simple canonical format here;
+          // must be first statement in method.
+          val body = curr.uastBody
+          if (body is UBlockExpression && body.expressions.size > 1) {
+            val first = body.expressions[0]
+            if (first is UIfExpression) {
+              val condition = first.condition.skipParenthesizedExprDown()
+              if (
+                condition is UUnaryExpression &&
+                  condition.operator == UastPrefixOperator.LOGICAL_NOT &&
+                  isNotificationPermissionCheck(condition.operand)
+              ) {
+                // It's a notifications enabled check; make sure we only return
+                val then = first.thenExpression?.skipParenthesizedExprDown()
+                if (then != null && then.isUnconditionalReturn()) {
+                  return true
+                }
+              }
+            }
+          }
+        }
+
+        prev = curr
+        curr = curr.uastParent ?: break
+      }
+
+      return false
+    }
+
+    /**
+     * Is the given [element] a notify-allowed check, e.g.
+     * `NotificationManager.areNotificationsEnabled()` or
+     * `NotificationManagerCompat.areNotificationsEnabled()` ?
+     */
+    private fun isNotificationPermissionCheck(element: UElement): Boolean {
+      if (element is UUnaryExpression && element.operator == UastPrefixOperator.LOGICAL_NOT) {
+        return !isNotificationPermissionCheck(element.operand)
+      } else if (element is UReferenceExpression || element is UCallExpression) {
+        val resolved = element.tryResolve()
+        if (resolved is PsiMethod) {
+          if (resolved.name == ENABLED_CHECK_METHOD) {
+            val cls = resolved.containingClass?.qualifiedName
+            if (cls == NOTIFICATION_MANAGER || cls == NOTIFICATION_MANAGER_COMPAT) {
+              return true
+            }
+          }
+        } else if (resolved is PsiField) {
+          // Arguably we should look for final fields here, but on the other hand
+          // there may be cases where it's initialized later, so it's a bit like
+          // Kotlin's "lateinit". Treat them all as constant.
+          val initializer = UastFacade.getInitializerBody(resolved)
+          if (initializer != null) {
+            return isNotificationPermissionCheck(initializer)
+          }
+        }
+      } else if (element is UParenthesizedExpression) {
+        return isNotificationPermissionCheck(element.expression)
+      } else if (element is UPolyadicExpression) {
+        if (element.operator == UastBinaryOperator.LOGICAL_AND) {
+          for (operand in element.operands) {
+            if (isNotificationPermissionCheck(operand)) {
+              return true
+            }
+          }
+        }
+      }
+      return false
+    }
   }
 
   override fun getApplicableMethodNames(): List<String> = listOf("notify")
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
     val evaluator = context.evaluator
-    if (!evaluator.isMemberInClass(method, "android.app.NotificationManager")) {
-      if (!evaluator.isMemberInClass(method, "androidx.core.app.NotificationCompat")) {
-        return
-      }
+    if (
+      !evaluator.isMemberInClass(method, NOTIFICATION_MANAGER) &&
+        !evaluator.isMemberInClass(method, NOTIFICATION_MANAGER_COMPAT)
+    ) {
+      return
     }
 
-    // In the IDE we can immediately check manifest and target sdk version and bail out if
-    // permission
-    // is held or not yet targeting T
+    if (isNotificationPermissionChecked(node)) {
+      return
+    }
+
+    // In the IDE we can immediately check manifest and target sdk version and
+    // bail out if permission is held or not yet targeting T
     if (context.isGlobalAnalysis()) {
       if (
         context.mainProject.targetSdk < MIN_TARGET ||
@@ -156,16 +297,20 @@ class NotificationPermissionDetector : Detector(), SourceCodeScanner, ClassScann
         owner.startsWith("com/google/android/gms/") // such as play-services-base
     ) {
       // Call from within AndroidX libraries; just depending on AndroidX doesn't mean you're using
-      // its
-      // notification utility methods.
+      // its notification utility methods.
       return
     }
     if (
       call.owner == "android/app/NotificationManager" ||
-        call.owner == "androidx/core/app/NotificationCompat"
+        call.owner == "androidx/core/app/NotificationManagerCompat"
     ) {
       val map = context.getPartialResults(ISSUE).map()
-      if (!map.containsKey(KEY_CLASS)) {
+      if (
+        !map.containsKey(KEY_CLASS) ||
+          // We special case the exo player reference later, so if there are any *other*
+          // notification manager usages, make sure we record those
+          map[KEY_CLASS_NAME]?.startsWith(EXO_PLAYER_CLASS_NAME_PREFIX) == true
+      ) {
         if (isHoldingPostNotificationsViaAnnotations(classNode, method)) {
           return
         }
@@ -213,6 +358,17 @@ class NotificationPermissionDetector : Detector(), SourceCodeScanner, ClassScann
       return
     }
 
+    val owner = map[KEY_CLASS_NAME] ?: return
+    if (
+      owner.startsWith(EXO_PLAYER_CLASS_NAME_PREFIX) &&
+        (mergedManifest == null || !mergedManifest.hasExoPlayerDownloader())
+    ) {
+      // The only reference was from exoplayer, which uses notifications only for
+      // the optional download service; here we've seen that you're not using it
+      // so there's no reason to warn.
+      return
+    }
+
     // Avoid pointing to the .jar file which referenced the notification directly; these
     // paths often contain paths that vary from machine to machine so cannot be properly
     // baselined:
@@ -228,9 +384,24 @@ class NotificationPermissionDetector : Detector(), SourceCodeScanner, ClassScann
       if (manifest != null) Location.create(manifest)
       else if (gradleFile.isFile) Location.create(gradleFile)
       else map.getLocation(KEY_CLASS) ?: return
-    val owner = map.get(KEY_CLASS_NAME) ?: return
     val message = getWarningMessage() + " (usage from ${ClassContext.getFqcn(owner)})"
     context.report(ISSUE, location, message, createFix())
+  }
+
+  private fun Element.hasExoPlayerDownloader(): Boolean {
+    val application = subtag(TAG_APPLICATION) ?: return false
+    for (service in application.subtags(TAG_SERVICE)) {
+      for (intentFilter in service.subtags(TAG_INTENT_FILTER)) {
+        for (action in intentFilter.subtags(TAG_ACTION)) {
+          val name = action.getAttributeNS(ANDROID_URI, ATTR_NAME)
+          if (name == "com.google.android.exoplayer.downloadService.action.RESTART") {
+            return true
+          }
+        }
+      }
+    }
+
+    return false
   }
 
   /**
