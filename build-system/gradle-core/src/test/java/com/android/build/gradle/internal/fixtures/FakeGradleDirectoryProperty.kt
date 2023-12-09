@@ -23,9 +23,9 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
+import org.gradle.api.specs.Spec
 import java.io.File
 import java.util.function.BiFunction
-import java.util.function.Predicate
 
 class FakeGradleDirectoryProperty(private val directory: Directory?) : DirectoryProperty {
 
@@ -39,7 +39,7 @@ class FakeGradleDirectoryProperty(private val directory: Directory?) : Directory
         TODO("Not yet implemented")
     }
 
-    override fun filter(predicate: Predicate<in Directory>): Provider<Directory> {
+    override fun filter(spec: Spec<in Directory>): Provider<Directory> {
         TODO("Not yet implemented")
     }
 
@@ -148,6 +148,10 @@ class FakeGradleDirectoryProperty(private val directory: Directory?) : Directory
     }
 
     override fun files(vararg paths: Any?): FileCollection {
+        TODO("Not yet implemented")
+    }
+
+    override fun update(transform: Transformer<out Provider<out Directory>?, in Provider<Directory>>) {
         TODO("Not yet implemented")
     }
 }

@@ -75,7 +75,7 @@ fun initializeTestLocation() : TestLocation {
         outDir,
         File(buildDir, "ANDROID_SDK_HOME"),
         gradleUserHome,
-        FileUtils.join(gradleUserHome.toFile(), "caches", "transforms-3")
+        FileUtils.join(gradleUserHome.toFile(), "caches", "transforms-4")
     )
 }
 

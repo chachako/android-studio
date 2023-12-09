@@ -18,8 +18,8 @@ package com.android.build.gradle.internal.fixtures
 
 import org.gradle.api.Transformer
 import org.gradle.api.provider.Provider
+import org.gradle.api.specs.Spec
 import java.util.function.BiFunction
-import java.util.function.Predicate
 
 class FakeGradleProvider<T>(private val v: (()-> T)?): Provider<T> {
 
@@ -41,8 +41,8 @@ class FakeGradleProvider<T>(private val v: (()-> T)?): Provider<T> {
     override fun get() = orNull!!
 
     override fun getOrNull() = v?.invoke()
-    
-    override fun filter(predicate: Predicate<in T>): Provider<T> {
+
+    override fun filter(spec: Spec<in T>): Provider<T> {
         TODO("Not yet implemented")
     }
 

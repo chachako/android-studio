@@ -56,7 +56,7 @@ class JacocoVersionTest {
         // AGP default Jacoco plugin version
         val result = project.executor().run("jacocoTestReport")
         ScannerSubject.assertThat(result.stdout).contains("The Jacoco plugin extension version " +
-            "'0.8.9' is not currently available in the Android Gradle Plugin. " +
+            "'0.8.11' is not currently available in the Android Gradle Plugin. " +
             "Setting the version to ${JacocoOptions.DEFAULT_VERSION}"
         )
         val generatedJacocoReport = FileUtils.join(

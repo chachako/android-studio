@@ -102,19 +102,19 @@
          < libraryInfo
          - lintJar     = (null)
          > androidLibraryData:
-            - compileJarFiles     = [{BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/jars/classes.jar{F}]
-            - runtimeJarFiles     = [{BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/jars/classes.jar{F}]
-            - manifest            = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/AndroidManifest.xml{F}
-            - resFolder           = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/res{D}
-            - resStaticLibrary    = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/res.apk{!}
-            - assetsFolder        = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/assets{!}
-            - jniFolder           = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/jni{!}
-            - aidlFolder          = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/aidl{!}
-            - renderscriptFolder  = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/rs{!}
-            - proguardRules       = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/proguard.txt{!}
-            - externalAnnotations = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/annotations.zip{!}
-            - publicResources     = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/public.txt{!}
-            - symbolFile          = {BUILD_FOLDER(:|:lib1)}/{CHECKSUM}/transformed/lib1/R.txt{F}
+            - compileJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/jars/classes.jar{F}]
+            - runtimeJarFiles     = [{GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/jars/classes.jar{F}]
+            - manifest            = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/AndroidManifest.xml{F}
+            - resFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/res{D}
+            - resStaticLibrary    = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/res.apk{!}
+            - assetsFolder        = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/assets{!}
+            - jniFolder           = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/jni{!}
+            - aidlFolder          = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/aidl{!}
+            - renderscriptFolder  = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/rs{!}
+            - proguardRules       = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/proguard.txt{!}
+            - externalAnnotations = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/annotations.zip{!}
+            - publicResources     = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/public.txt{!}
+            - symbolFile          = {GRADLE_CACHE}/{CHECKSUM}/transformed/lib1/R.txt{F}
          < androidLibraryData
       < __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified
    < libraries

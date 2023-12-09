@@ -256,12 +256,12 @@ class UnitTestTaskManager(
         val pluginExtension = project.extensions.findByType(JacocoPluginExtension::class.java)
         if (pluginExtension != null) {
             // When the plugin is applied, but the toolVersion is not set, Gradle automatically
-            // sets the version to 0.8.9, which is not supported in AGP currently (b/316929520).
+            // sets the version to 0.8.11, which is not supported in AGP currently (b/316929520).
             // So we set the value to the AGP default version.
-            if (pluginExtension.toolVersion == "0.8.9") {
+            if (pluginExtension.toolVersion == "0.8.11") {
                 LoggerWrapper.getLogger(this.javaClass)
                     .warning(
-                        "The Jacoco plugin extension version '0.8.9' is not currently "
+                        "The Jacoco plugin extension version '0.8.11' is not currently "
                                 + "available in the Android Gradle Plugin. Setting the version "
                                 + "to "
                                 + JacocoOptions.DEFAULT_VERSION

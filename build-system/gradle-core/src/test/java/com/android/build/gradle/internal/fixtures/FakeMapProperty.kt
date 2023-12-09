@@ -19,8 +19,8 @@ package com.android.build.gradle.internal.fixtures
 import org.gradle.api.Transformer
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
+import org.gradle.api.specs.Spec
 import java.util.function.BiFunction
-import java.util.function.Predicate
 
 class FakeMapProperty<K, V>(
     private val values: MutableMap<K, V>? = null
@@ -29,7 +29,7 @@ class FakeMapProperty<K, V>(
     override fun get(): Map<K, V> = values ?: mapOf()
 
     override fun getOrNull(): Map<K, V>? = values
-    override fun filter(predicate: Predicate<in MutableMap<K, V>>): Provider<MutableMap<K, V>> {
+    override fun filter(spec: Spec<in MutableMap<K, V>>): Provider<MutableMap<K, V>> {
         TODO("Not yet implemented")
     }
 
@@ -134,6 +134,10 @@ class FakeMapProperty<K, V>(
     }
 
     override fun convention(p0: Provider<out MutableMap<out K, out V>>): MapProperty<K, V> {
+        TODO("Not yet implemented")
+    }
+
+    override fun update(transform: Transformer<out Provider<out MutableMap<out K, out V>>?, in Provider<MutableMap<K, V>>>) {
         TODO("Not yet implemented")
     }
 }

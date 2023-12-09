@@ -16,7 +16,9 @@
 
 package com.android.build.gradle.internal.fixtures
 
+import org.gradle.api.Transformer
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.provider.Provider
 import java.io.File
@@ -73,6 +75,10 @@ class FakeConfigurableFileCollection(vararg files : Any?)
     }
 
     override fun disallowUnsafeRead() {
+        TODO("Not yet implemented")
+    }
+
+    override fun update(transform: Transformer<out FileCollection?, in FileCollection>) {
         TODO("Not yet implemented")
     }
 }

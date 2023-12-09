@@ -90,6 +90,17 @@
     </issue>
 
     <issue
+            id="StopShip"
+            message="`TODO` call found; points to code which must be fixed prior to release"
+            errorLine1="        TODO(&quot;Not yet implemented&quot;)"
+            errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+                file="src/test/java/com/android/build/gradle/internal/fixtures/FakeConfigurableFileCollection.kt"
+                line="82"
+                column="9"/>
+    </issue>
+
+    <issue
         id="StopShip"
         message="`TODO` call found; points to code which must be fixed prior to release"
         errorLine1="        TODO(&quot;not implemented&quot;)"
@@ -618,6 +629,17 @@
     </issue>
 
     <issue
+            id="StopShip"
+            message="`TODO` call found; points to code which must be fixed prior to release"
+            errorLine1="        TODO(&quot;Not yet implemented&quot;)"
+            errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+                file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
+                line="155"
+                column="9"/>
+    </issue>
+
+    <issue
         id="StopShip"
         message="`TODO` call found; points to code which must be fixed prior to release"
         errorLine1="        TODO(&quot;Not yet implemented&quot;)"
@@ -879,6 +901,17 @@
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleProperty.kt"
             line="109"
             column="9"/>
+    </issue>
+
+    <issue
+            id="StopShip"
+            message="`TODO` call found; points to code which must be fixed prior to release"
+            errorLine1="        TODO(&quot;Not yet implemented&quot;)"
+            errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+                file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleProperty.kt"
+                line="113"
+                column="9"/>
     </issue>
 
     <issue
@@ -1168,6 +1201,17 @@
     </issue>
 
     <issue
+            id="StopShip"
+            message="`TODO` call found; points to code which must be fixed prior to release"
+            errorLine1="        TODO(&quot;Not yet implemented&quot;)"
+            errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+                file="src/test/java/com/android/build/gradle/internal/fixtures/FakeListProperty.kt"
+                line="136"
+                column="9"/>
+    </issue>
+
+    <issue
         id="StopShip"
         message="`TODO` call found; points to code which must be fixed prior to release"
         errorLine1="        TODO(&quot;not implemented&quot;)"
@@ -1440,6 +1484,17 @@
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeMapProperty.kt"
             line="137"
             column="9"/>
+    </issue>
+
+    <issue
+            id="StopShip"
+            message="`TODO` call found; points to code which must be fixed prior to release"
+            errorLine1="        TODO(&quot;Not yet implemented&quot;)"
+            errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+                file="src/test/java/com/android/build/gradle/internal/fixtures/FakeMapProperty.kt"
+                line="141"
+                column="9"/>
     </issue>
 
     <issue
@@ -1967,6 +2022,17 @@
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeNamedDomainObjectContainer.kt"
             line="273"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="StopShip"
+        message="`TODO` call found; points to code which must be fixed prior to release"
+        errorLine1="        TODO(&quot;not implemented&quot;) //To change body of created functions use File | Settings | File Templates."
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/test/java/com/android/build/gradle/internal/fixtures/FakeNamedDomainObjectContainer.kt"
+            line="277"
             column="9"/>
     </issue>
 

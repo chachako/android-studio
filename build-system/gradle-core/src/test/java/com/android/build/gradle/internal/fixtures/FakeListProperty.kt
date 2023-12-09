@@ -19,8 +19,8 @@ package com.android.build.gradle.internal.fixtures
 import org.gradle.api.Transformer
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
+import org.gradle.api.specs.Spec
 import java.util.function.BiFunction
-import java.util.function.Predicate
 
 class FakeListProperty<T>(
     private val values: MutableList<T>? = null
@@ -30,7 +30,7 @@ class FakeListProperty<T>(
 
 
     override fun getOrNull(): List<T>? = values
-    override fun filter(predicate: Predicate<in MutableList<T>>): Provider<MutableList<T>> {
+    override fun filter(spec: Spec<in MutableList<T>>): Provider<MutableList<T>> {
         TODO("Not yet implemented")
     }
 
@@ -129,6 +129,10 @@ class FakeListProperty<T>(
     }
 
     override fun convention(p0: Provider<out MutableIterable<T>>): ListProperty<T> {
+        TODO("Not yet implemented")
+    }
+
+    override fun update(transform: Transformer<out Provider<out MutableIterable<T>>?, in Provider<MutableList<T>>>) {
         TODO("Not yet implemented")
     }
 }

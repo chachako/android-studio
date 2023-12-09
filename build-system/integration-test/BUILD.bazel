@@ -105,6 +105,7 @@ maven_repository(
         "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.8.20",
         "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.0",
         "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.10",
+        "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.20",
         "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.6.21",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.6.21",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0",

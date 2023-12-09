@@ -1,9 +1,9 @@
 <libraries>
   <library
       name=":@@:app::debug::testFixtures"
-      jars="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures/jars/classes.jar"
+      jars="${gradleCacheDir}/<digest>/transformed/out-test-fixtures/jars/classes.jar"
       resolved="artifacts:app:unspecified"
-      folder="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures"
+      folder="${gradleCacheDir}/<digest>/transformed/out-test-fixtures"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"
@@ -17,10 +17,10 @@
       project=":app"/>
   <library
       name=":@@:library::debug"
-      jars="${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/classes.jar:${projectDir}/library/build/.transforms/<digest>/transformed/out/jars/libs/R.jar"
+      jars="${gradleCacheDir}/<digest>/transformed/out/jars/classes.jar:${gradleCacheDir}/<digest>/transformed/out/jars/libs/R.jar"
       resolved="lintKotlin:library:unspecified"
       provided="true"
-      folder="${projectDir}/library/build/.transforms/<digest>/transformed/out"
+      folder="${gradleCacheDir}/<digest>/transformed/out"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"

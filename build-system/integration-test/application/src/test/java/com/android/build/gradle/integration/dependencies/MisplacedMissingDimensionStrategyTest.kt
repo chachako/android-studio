@@ -18,9 +18,7 @@ package com.android.build.gradle.integration.dependencies
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile
-import com.google.common.base.Charsets
-import com.google.common.io.Files
-import org.gradle.internal.component.AmbiguousConfigurationSelectionException
+import org.gradle.internal.component.AmbiguousGraphVariantsException
 import org.gradle.tooling.BuildException
 import org.junit.Before
 import org.junit.Rule
@@ -78,7 +76,7 @@ class MisplacedMissingDimensionStrategyTest {
             project.executor().run(":app:assembleDebug")
         }
 
-        exception.checkCause(AmbiguousConfigurationSelectionException::class.java)
+        exception.checkCause(AmbiguousGraphVariantsException::class.java)
     }
 }
 

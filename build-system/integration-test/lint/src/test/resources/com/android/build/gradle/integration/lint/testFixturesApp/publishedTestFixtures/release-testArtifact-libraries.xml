@@ -20,9 +20,9 @@
       proguardRules="proguard.txt"/>
   <library
       name=":@@:app::release::testFixtures"
-      jars="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures/jars/classes.jar"
+      jars="${gradleCacheDir}/<digest>/transformed/out-test-fixtures/jars/classes.jar"
       resolved="artifacts:app:unspecified"
-      folder="${projectDir}/app/build/.transforms/<digest>/transformed/out-test-fixtures"
+      folder="${gradleCacheDir}/<digest>/transformed/out-test-fixtures"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"

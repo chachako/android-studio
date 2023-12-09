@@ -181,6 +181,10 @@ open class FakeNamedDomainObjectContainer<T>(
         TODO("not implemented")
     }
 
+    override fun named(nameFilter: Spec<String>): NamedDomainObjectSet<T> {
+        TODO("Not yet implemented")
+    }
+
     override fun contains(element: T): Boolean {
         TODO("not implemented")
     }
