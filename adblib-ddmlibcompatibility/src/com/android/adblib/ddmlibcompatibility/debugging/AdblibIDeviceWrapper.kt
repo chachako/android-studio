@@ -30,6 +30,7 @@ import com.android.adblib.deviceInfo
 import com.android.adblib.isOffline
 import com.android.adblib.isOnline
 import com.android.adblib.rootAndWait
+import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.syncRecv
 import com.android.adblib.syncSend
@@ -111,7 +112,7 @@ internal class AdblibIDeviceWrapper(
             .createDeviceClientManager(bridge, this)
 
     /** Name and path of the AVD  */
-    private val mAvdData = connectedDevice.session.scope.async { createAvdData() }
+    private val mAvdData = connectedDevice.scope.async { createAvdData() }
 
     private val mUserDataMap = UserDataMapImpl()
 
@@ -251,6 +252,9 @@ internal class AdblibIDeviceWrapper(
                 AvdData(avdName, path)
             }
         } catch (e: EmulatorCommandException) {
+            logger.warn(e, "Couldn't open emulator console")
+            null
+        } catch (e: IOException) {
             logger.warn(e, "Couldn't open emulator console")
             null
         }

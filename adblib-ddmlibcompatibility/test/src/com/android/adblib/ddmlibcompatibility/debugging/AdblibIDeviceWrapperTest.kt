@@ -100,6 +100,25 @@ class AdblibIDeviceWrapperTest {
     }
 
     @Test
+    fun getAvdDataDoesNotThrowOnConnectionErrors() = runBlockingWithTimeout {
+        // Prepare
+        val serialNumber = "emulator-5554"
+        val (connectedDevice, _) = createConnectedDevice(
+            serialNumber, DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        yieldUntil { adblibIDeviceWrapper.avdData.isDone }
+
+        // Act / Assert
+        // Note that `serialNumber` above matches an emulator pattern and as a result a call to
+        // `createAvdData` triggers `connectedDevice.session.openEmulatorConsole` which throws
+        // a `java.io.IOException: Error connecting channel to address 'localhost/127.0.0.1:5554'`.
+        assertNull(adblibIDeviceWrapper.avdData.get())
+        assertNull(adblibIDeviceWrapper.avdName)
+        assertNull(adblibIDeviceWrapper.avdPath)
+    }
+
+    @Test
     fun isOnline() = runBlockingWithTimeout {
         // Prepare
         val (connectedDevice, _) = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
