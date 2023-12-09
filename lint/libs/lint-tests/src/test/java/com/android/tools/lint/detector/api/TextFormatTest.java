@@ -77,6 +77,9 @@ public class TextFormatTest extends TestCase {
         assertEquals(
                 "This is <b><i>bold-italics</i></b>",
                 convertMarkup("This is ***bold-italics***", HTML));
+        assertEquals(
+                "This is <s>strike-through</s> text",
+                convertMarkup("This is ~~strike-through~~ text", HTML));
         assertEquals("This is italics", convertMarkup("This is *italics*", TEXT));
         assertEquals("This is bold", convertMarkup("This is **bold**", TEXT));
         assertEquals("This is bold-italics", convertMarkup("This is ***bold-italics***", TEXT));
@@ -108,10 +111,12 @@ public class TextFormatTest extends TestCase {
         assertEquals("<b>bold</b>", convertMarkup("**bold**", HTML));
         assertEquals("<b><i>bold-italics</i></b>", convertMarkup("***bold-italics***", HTML));
         assertEquals("<code>monospace</code>!", convertMarkup("`monospace`!", HTML));
+        assertEquals("<s>strikethrough</s>", convertMarkup("~~strikethrough~~", HTML));
 
         // Not formatting
         assertEquals("a*b", convertMarkup("a*b", HTML));
         assertEquals("a* b*", convertMarkup("a* b*", HTML));
+        assertEquals("a~~~~ b~~", convertMarkup("a~~~~ b~~", HTML));
         assertEquals("*a *b", convertMarkup("*a *b", HTML));
         assertEquals("Prefix is http:// ", convertMarkup("Prefix is http:// ", HTML));
         assertEquals("", convertMarkup("", HTML));

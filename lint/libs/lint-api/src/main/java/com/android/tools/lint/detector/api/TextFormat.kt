@@ -34,7 +34,8 @@ enum class TextFormat {
    * * Sentences immediately surrounded by * will be shown as italics.
    * * Sentences immediately surrounded by ** will be shown as bold.
    * * Sentences immediately surrounded by *** will be shown as bold italics.
-   * * Sentences immediately surrounded by ` will be shown using monospace fonts
+   * * Sentences immediately surrounded by ` will be shown using monospace fonts.
+   * * Sentences immediately surrounded by ~~ will be shown as strikethrough.
    * * You can escape the previous characters with a backslash, \. Backslash characters must
    *   themselves be escaped with a backslash, e.g. use \\.
    * * If you want to use bold or italics within a word, you can use the trick of putting a
@@ -397,6 +398,32 @@ enum class TextFormat {
         }
       } else if (c == '\n' && escaped) {
         flushIndex++
+      } else if (
+        c == '~' &&
+          !escaped &&
+          i < n - 4 &&
+          text[i + 1] == '~' &&
+          text[i + 2] != '~' &&
+          !Character.isWhitespace(text[i + 2]) &&
+          !Character.isLetterOrDigit(prev)
+      ) {
+        // Strikethrough span. Found ~~ immediately before a letter, and not in the middle of a
+        // word.
+        val end = text.indexOf("~~", i + 2)
+        if (end != -1 && (end == n - 2 || !Character.isLetter(text[end + 2]))) {
+          if (i > flushIndex) {
+            appendEscapedText(sb, text, html, flushIndex, i, escapeUnicode)
+          }
+          if (html) {
+            sb.append("<s>")
+            appendEscapedText(sb, text, true, i + 2, end, escapeUnicode)
+            sb.append("</s>")
+          } else {
+            appendEscapedText(sb, text, false, i + 2, end, escapeUnicode)
+          }
+          flushIndex = end + 2
+          i = flushIndex - 1 // -1: account for the i++ in the loop
+        }
       }
       prev = c
       escaped = false
