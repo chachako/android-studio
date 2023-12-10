@@ -110,6 +110,32 @@ filegroup(
 )
 
 filegroup(
+    name = "x86_64-android-33AospAtd-images",
+    srcs = [
+        "NOTICE.txt",
+        "VerifiedBootParams.textproto",
+        "advancedFeatures.ini",
+        "build.prop",
+        "encryptionkey.img",
+        "kernel-ranchu",
+        "ramdisk.img",
+        "source.properties",
+        "system.img",
+        "userdata.img",
+        "vendor.img",
+        "data/local.prop",
+        "data/misc/apns/apns-conf.xml",
+        "data/misc/emulator/version.txt",
+        "data/misc/emulator/config/radioconfig.xml",
+        "data/misc/gceconfigs/gpu.config",
+        "data/misc/modem_simulator/iccprofile_for_carrierapitests.xml",
+        "data/misc/modem_simulator/iccprofile_for_sim0.xml",
+        "data/misc/modem_simulator/etc/modem_simulator/files/numeric_operator.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "x86_64-android-33PlayStore-images",
     srcs = [
         "NOTICE.txt",

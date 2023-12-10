@@ -127,7 +127,7 @@ http_archive(
 )
 
 http_archive(
-    name = "system-image_android-32_aosp_atd_x86_64",
+    name = "system_image_android-32_aosp_atd_x86_64",
     build_file = "//tools/base/bazel/avd:system_images.BUILD",
     sha256 = "192ff0f288b182200cb63046897a531d88def2d14bfc84e5bcb5ff3dc7a8f780",
     strip_prefix = "x86_64",
@@ -140,6 +140,14 @@ http_archive(
     sha256 = "71cd5ab0990ae34a98f48d1b282414219ba22160e253f7bf8d91d84a08d4da57",
     strip_prefix = "x86_64",
     url = "https://dl.google.com/android/repository/sys-img/google_apis/x86_64-33_r10.zip",
+)
+
+http_archive(
+    name = "system_image_android-33_aosp_atd_x86_64",
+    build_file = "//tools/base/bazel/avd:system_images.BUILD",
+    sha256 = "d17967001f453c4b82d09dd3d6931b938c16c9f2bf0e054b521293ca24e3b95e",
+    strip_prefix = "x86_64",
+    url = "https://dl.google.com/android/repository/sys-img/aosp_atd/x86_64-33_r02.zip",
 )
 
 http_archive(

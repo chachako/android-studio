@@ -33,6 +33,7 @@ class BazelTargetTest {
             ignoredBazelTargets = listOf(
                 "all_test_files",
                 "avd",
+                "avd_32",
                 "avd_TiramisuPrivacySandbox",
                 "avd_old_emulator_binary",
                 "connected",

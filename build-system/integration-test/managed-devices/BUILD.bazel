@@ -18,15 +18,15 @@ kotlin_library(
 
 downloaded_sdk = [
     "@emulator_zip//file",
-    "@system-image_android-32_aosp_atd_x86_64//:x86_64-android-32AospAtd-images",
+    "@system_image_android-33_aosp_atd_x86_64//:x86_64-android-33AospAtd-images",
 ]
 
 sdk_jvm_flags = [
     "-Dsdk.repo.emulator.zip=$(location @emulator_zip//file)",
-    "-Dsdk.repo.sysimage.files=\"$(locations @system-image_android-32_aosp_atd_x86_64//:x86_64-android-32AospAtd-images)\"",
-    "-Dsdk.repo.sysimage.remotePackage=\"system-images;android-32;aosp_atd;x86_64\"",
+    "-Dsdk.repo.sysimage.files=\"$(locations @system_image_android-33_aosp_atd_x86_64//:x86_64-android-33AospAtd-images)\"",
+    "-Dsdk.repo.sysimage.remotePackage=\"system-images;android-33;aosp_atd;x86_64\"",
     "-Dsdk.repo.sysimage.displayName=\"AOSP ATD Intel x86_64 Atom System Image \"",
-    "-Dsdk.repo.sysimage.apiLevel=32",
+    "-Dsdk.repo.sysimage.apiLevel=33",
     "-Dsdk.repo.sysimage.source=\"aosp-atd\"",
 ]
 
