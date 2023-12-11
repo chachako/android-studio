@@ -45,7 +45,7 @@ gradlePlugin {
 
 dependencies {
     compileOnly project(':base:gradle-api')
-    implementation libs.com.android.tools.common
+    compileOnly libs.com.android.tools.common
     implementation libs.com.android.tools.multipreviewAsm
     implementation libs.com.android.tools.composecli.serialize
     implementation libs.gson
