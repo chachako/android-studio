@@ -72,7 +72,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     val buildTarget: String = variant.buildType ?: variantName
                     val flavorDir = if (flavor.isNullOrEmpty()) "" else "flavors/$flavor"
                     val buildDir = project.layout.buildDirectory
-                    val testOutputDir = "outputs/androidTest-results/connected/$buildTarget/$flavorDir"
+                    val testOutputDir = "outputs/androidTest-results/preview/$buildTarget/$flavorDir"
                     val resultsDir = buildDir.file(testOutputDir)
                     val referenceImageDir =
                         File("${project.projectDir.absolutePath}/src/androidTest/screenshot/$buildTarget/$flavorDir")
