@@ -31,7 +31,7 @@ import java.io.File
 abstract class ScreenshotTestReportTask: DefaultTask() {
 
     @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.NONE)
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val resultsDir: DirectoryProperty
 
     @get:OutputDirectory
