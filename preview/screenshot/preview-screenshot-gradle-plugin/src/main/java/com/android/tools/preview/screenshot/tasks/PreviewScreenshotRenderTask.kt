@@ -33,6 +33,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.DefaultTask
+import org.gradle.api.JavaVersion
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.ListProperty
@@ -118,10 +119,16 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             previewsDiscovered.get().asFile
         )
 
+        val javaRuntimeVersion =
+            JavaVersion.toVersion(javaLauncher.get().metadata.javaRuntimeVersion)
         // invoke CLI tool
         val process = ProcessBuilder(
-            listOf(
+            listOfNotNull(
                 javaLauncher.get().executablePath.asFile.absolutePath,
+                if (javaRuntimeVersion.isCompatibleWith(JavaVersion.VERSION_17))
+                    "-Djava.security.manager=allow"
+                else
+                    null,
                 "-cp",
                 screenshotCliJar.singleFile.absolutePath,
                 "com.android.tools.render.compose.MainKt",
