@@ -35,24 +35,24 @@ import java.util.concurrent.ExecutionException
 class TrackDevicesCommandHandler: HostCommandHandler() {
 
     override fun handles(command: String): Boolean {
-        return command == COMMAND || command == LONG_COMMAND
+        return command == COMMAND || command == LONG_COMMAND || command == PROTO_BINARY || command == PROTO_TEXT
     }
 
     private fun sendDeviceList(
         server: FakeAdbServer,
         responseSocket: Socket,
-        longFormat: Boolean
+        format: ListDevicesCommandHandler.DeviceListFormat
     ): Callable<StateChangeHandlerFactory.HandlerResult> {
         return Callable {
             try {
                 val stream = responseSocket.getOutputStream()
-                val deviceListString: String =
+                val deviceList =
                     ListDevicesCommandHandler.formatDeviceList(
                         server.deviceListCopy.get(),
-                        longFormat
+                        format
                     )
-                write4ByteHexIntString(stream, deviceListString.length)
-                stream.write(deviceListString.toByteArray(StandardCharsets.US_ASCII))
+                write4ByteHexIntString(stream, deviceList.remaining())
+                stream.write(deviceList.array())
                 stream.flush()
                 return@Callable StateChangeHandlerFactory.HandlerResult(true)
             } catch (e: InterruptedException) {
@@ -73,8 +73,6 @@ class TrackDevicesCommandHandler: HostCommandHandler() {
         command: String,
         args: String
     ): Boolean {
-        val longFormat = (command == LONG_COMMAND)
-
         val queue = fakeAdbServer
             .deviceChangeHub
             .subscribe(
@@ -82,14 +80,14 @@ class TrackDevicesCommandHandler: HostCommandHandler() {
                     override fun createDeviceListChangedHandler(
                         deviceList: Collection<DeviceState?>
                     ): Callable<StateChangeHandlerFactory.HandlerResult> {
-                        return sendDeviceList(fakeAdbServer, responseSocket, longFormat)
+                        return sendDeviceList(fakeAdbServer, responseSocket, commandToDeviceListFormat(command))
                     }
 
                     override fun createDeviceStateChangedHandler(
                         device: DeviceState,
                         status: DeviceState.DeviceStatus
                     ): Callable<StateChangeHandlerFactory.HandlerResult> {
-                        return sendDeviceList(fakeAdbServer, responseSocket, longFormat)
+                        return sendDeviceList(fakeAdbServer, responseSocket, commandToDeviceListFormat(command))
                     }
                 })
             ?: return false // Server has shutdown before we are able to start listening to the queue.
@@ -97,7 +95,7 @@ class TrackDevicesCommandHandler: HostCommandHandler() {
             writeOkay(responseSocket.getOutputStream()) // Send ok first.
 
             // Then send over the full list of devices before going into monitoring mode.
-            sendDeviceList(fakeAdbServer, responseSocket, longFormat).call()
+            sendDeviceList(fakeAdbServer, responseSocket, commandToDeviceListFormat(command)).call()
             while (true) {
                 try {
                     // Grab a command from the queue (take()), and execute the command (get(), as
@@ -119,9 +117,22 @@ class TrackDevicesCommandHandler: HostCommandHandler() {
         return false // The only we can get here is if the connection/server was terminated.
     }
 
+
     companion object {
 
         const val COMMAND = "track-devices"
         const val LONG_COMMAND = "track-devices-l"
+        const val PROTO_TEXT = "track-devices-proto-text"
+        const val PROTO_BINARY = "track-devices-proto-binary"
+
+        fun commandToDeviceListFormat(command: String) : ListDevicesCommandHandler.DeviceListFormat {
+            return when(command) {
+                COMMAND -> ListDevicesCommandHandler.DeviceListFormat.COMMAND
+                LONG_COMMAND -> ListDevicesCommandHandler.DeviceListFormat.LONG_COMMAND
+                PROTO_TEXT -> ListDevicesCommandHandler.DeviceListFormat.PROTO_TEXT
+                PROTO_BINARY -> ListDevicesCommandHandler.DeviceListFormat.PROTO_BINARY
+                else -> ListDevicesCommandHandler.DeviceListFormat.LONG_COMMAND
+            }
+        }
     }
 }

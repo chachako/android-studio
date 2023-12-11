@@ -23,13 +23,16 @@ import com.android.fakeadbserver.devicecommandhandlers.DeviceCommandHandler
 import com.android.fakeadbserver.devicecommandhandlers.FakeSyncCommandHandler
 import com.android.fakeadbserver.devicecommandhandlers.JdwpCommandHandler
 import com.android.fakeadbserver.devicecommandhandlers.ReverseForwardCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.RootCommandHandler
 import com.android.fakeadbserver.devicecommandhandlers.TrackAppCommandHandler
 import com.android.fakeadbserver.devicecommandhandlers.TrackJdwpCommandHandler
+import com.android.fakeadbserver.devicecommandhandlers.UnRootCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.FeaturesCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.ForwardCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.GetDevPathCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.GetSerialNoCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.GetStateCommandHandler
+import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.HostFeaturesCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.KillCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.KillForwardAllCommandHandler
@@ -40,9 +43,6 @@ import com.android.fakeadbserver.hostcommandhandlers.MdnsCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.NetworkConnectCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.NetworkDisconnectCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.PairCommandHandler
-import com.android.fakeadbserver.devicecommandhandlers.RootCommandHandler
-import com.android.fakeadbserver.devicecommandhandlers.UnRootCommandHandler
-import com.android.fakeadbserver.hostcommandhandlers.HostCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.TrackDevicesCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.VersionCommandHandler
 import com.android.fakeadbserver.hostcommandhandlers.WaitForCommandHandler
@@ -615,7 +615,7 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
                     "stat_v2",
                     "cmd",
                     "abb",
-                    "abb_exec"
+                    "abb_exec",
                 )
             )
         )

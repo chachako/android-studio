@@ -31,7 +31,7 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:truth[test]",
         "//tools/base/fakeadbserver:studio.android.sdktools.fakeadbserver[module, test]",
         "//tools/adt/idea/.idea/libraries:libam-instrumentation-data-proto",
-        "//tools/adt/idea/.idea/libraries:libapp-processes-proto",
+        "//tools/adt/idea/.idea/libraries:libadb-server-proto",
     ],
 )
 
@@ -47,8 +47,8 @@ kotlin_library(
     resource_strip_prefix = "tools/base/ddmlib",
     visibility = ["//visibility:public"],
     deps = [
+        ":adb-server-proto",
         ":am-instrumentation-data-proto",
-        ":app-processes-proto",
         "//tools/base/annotations",
         "//tools/base/common:tools.common",
         "@maven//:com.google.guava.guava",
@@ -120,7 +120,7 @@ maven_library(
     ]),
     bundled_deps = [
         ":am-instrumentation-data-proto",
-        ":app-processes-proto",
+        ":adb-server-proto",
         ":tools.ddmlib.resources",
     ],
     coordinates = "com.android.tools.ddms:ddmlib",
@@ -208,8 +208,11 @@ java_proto_library(
 )
 
 java_proto_library(
-    name = "app-processes-proto",
-    srcs = glob(["src/main/proto/app_processes.proto"]),
+    name = "adb-server-proto",
+    srcs = glob([
+        "src/main/proto/app_processes.proto",
+        "src/main/proto/devices.proto",
+    ]),
     visibility = ["//visibility:public"],
 )
 

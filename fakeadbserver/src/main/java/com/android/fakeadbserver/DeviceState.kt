@@ -366,6 +366,15 @@ class DeviceState internal constructor(
     enum class DeviceStatus( //$NON-NLS-1$
         val state: String
     ) {
+        ANY("any"),
+        CONNECTING("connecting"),
+        AUTHORIZING("authorizing"),
+        NOPERMISSION("nopermission"),
+        DETACHED("detached"),
+        DEVICE("device"),
+        HOST("host"),
+        RESCUE("rescue"),
+        UNRECOGNIZED("unrecognized"),
 
         BOOTLOADER("bootloader"),  //$NON-NLS-1$
 

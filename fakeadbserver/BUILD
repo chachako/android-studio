@@ -19,7 +19,7 @@ iml_module(
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/base/common:studio.android.sdktools.common[module, test]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
-        "//tools/adt/idea/.idea/libraries:libapp-processes-proto",
+        "//tools/adt/idea/.idea/libraries:libadb-server-proto",
     ],
 )
 
@@ -30,7 +30,7 @@ maven_library(
         "src/main/java/**/*.java",
     ]),
     bundled_deps = [
-        ":app-processes-proto",
+        ":adb-server-proto",
     ],
     coordinates = "com.android.tools.fakeadbserver:fakeadbserver",
     description = "Library implementing the ADB Server protocol",
@@ -64,7 +64,10 @@ kotlin_test(
 )
 
 java_proto_library(
-    name = "app-processes-proto",
-    srcs = glob(["src/main/proto/app_processes.proto"]),
+    name = "adb-server-proto",
+    srcs = glob([
+        "src/main/proto/app_processes.proto",
+        "src/main/proto/devices.proto",
+    ]),
     visibility = ["//visibility:public"],
 )
