@@ -31,7 +31,7 @@ internal class MethodsClassVisitor(
     private val className: String,
     private val graph: Graph,
     private val methodsFilter: MethodsFilter,
-) : ClassVisitor(Opcodes.ASM8) {
+) : ClassVisitor(Opcodes.ASM9) {
 
     override fun visitMethod(
         access: Int,

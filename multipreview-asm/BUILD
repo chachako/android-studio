@@ -23,6 +23,7 @@ kotlin_test(
         "testSrc/**/*.java",
     ]),
     friends = ["//tools/base/multipreview-asm:tools.multipreview-asm"],
+    javacopts = ["-source 17"],
     jvm_flags = ["-Dtest.suite.jar=tools.multipreview-asm.tests.jar"],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [

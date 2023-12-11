@@ -26,7 +26,7 @@ import org.objectweb.asm.Opcodes
  */
 internal class PreviewParameterAnnotationVisitor(
     private val parameters: MutableList<ParameterRepresentation>
-) : AnnotationVisitor(Opcodes.ASM8) {
+) : AnnotationVisitor(Opcodes.ASM9) {
     private val annotationParams = mutableMapOf<String, Any?>()
 
     override fun visit(name: String?, value: Any?) {

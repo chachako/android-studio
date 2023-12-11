@@ -23,7 +23,7 @@ import org.objectweb.asm.Opcodes
 /** Records instances of multiple entries of @Repeatable annotation. */
 internal class RepeatedPreviewAnnotationVisitor(
     private val annotationRecorder: AnnotationRecorder
-) : AnnotationVisitor(Opcodes.ASM8) {
+) : AnnotationVisitor(Opcodes.ASM9) {
     override fun visitAnnotation(name: String?, descriptor: String?): AnnotationVisitor {
         return SinglePreviewAnnotationVisitor(annotationRecorder)
     }

@@ -24,7 +24,7 @@ import org.objectweb.asm.Opcodes
 /** Records a single entry of base preview annotation. */
 internal class SinglePreviewAnnotationVisitor(
     private val annotationRecorder: AnnotationRecorder,
-) : AnnotationVisitor(Opcodes.ASM8) {
+) : AnnotationVisitor(Opcodes.ASM9) {
     private val parameters = mutableMapOf<String, Any?>()
 
     override fun visit(name: String?, value: Any?) {

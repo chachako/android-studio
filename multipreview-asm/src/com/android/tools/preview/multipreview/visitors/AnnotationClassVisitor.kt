@@ -28,7 +28,7 @@ import org.objectweb.asm.Opcodes
 internal class AnnotationClassVisitor(
     private val baseAnnotation: String,
     private val annotationRecorder: AnnotationRecorder
-) : ClassVisitor(Opcodes.ASM8) {
+) : ClassVisitor(Opcodes.ASM9) {
     override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor? {
         return annotationRecorder.createAnnotationVisitor(descriptor, baseAnnotation) ?: super.visitAnnotation(descriptor, visible)
     }

@@ -25,6 +25,7 @@ import com.android.tools.preview.multipreview.testclasses.DerivedAnnotation2Lvl1
 import com.android.tools.preview.multipreview.testclasses.NotPreviewAnnotation
 import com.android.tools.preview.multipreview.testclasses.RecursiveAnnotation1
 import com.android.tools.preview.multipreview.testclasses.RecursiveAnnotation2
+import com.android.tools.preview.multipreview.testclasses.WithPermittedClasses
 import org.junit.Test
 import org.objectweb.asm.Type
 import org.junit.Assert.assertArrayEquals
@@ -220,6 +221,17 @@ class MultipreviewTest {
         )
       )
     )
+  }
+
+  @Test
+  fun testPermittedClassesAllowed() {
+    val classStreams = listOf(
+      WithPermittedClasses::class.java,
+    ).map { loadClassBytecode(it) }
+
+    buildMultipreview(settings) { processor ->
+      classStreams.forEach { processor.onClassBytecode(it) }
+    }
   }
 
   private fun commonTestCase(

@@ -34,7 +34,7 @@ internal class AnnotatedMethodVisitor(
     private val settings: MultipreviewSettings,
     private val graph: Graph,
     private val methodFqn: String,
-) : MethodVisitor(Opcodes.ASM8) {
+) : MethodVisitor(Opcodes.ASM9) {
     private val parameters = mutableListOf<ParameterRepresentation>()
     private val annotationRecorder = AnnotationReferencesRecorder()
 
