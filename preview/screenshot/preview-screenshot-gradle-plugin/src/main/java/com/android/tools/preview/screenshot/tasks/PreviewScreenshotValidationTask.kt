@@ -34,6 +34,7 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.VerificationTask
 import javax.imageio.ImageIO
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
@@ -67,12 +68,20 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
     fun run() {
         val screenshots = readComposeScreenshotsJson(previewFile.get().asFile.reader())
         val resultsToSave = mutableListOf<PreviewResult>()
+        var allTestsPass = true
         for (screenshot in screenshots) {
             val imageComparison = compareImages(screenshot)
             resultsToSave.add(imageComparison)
+            if (imageComparison.responseCode != 0) {
+                allTestsPass = false
+            }
         }
 
         saveResults(resultsToSave, resultsFile.get().asFile.absolutePath)
+
+        if (!allTestsPass) {
+            throw GradleException("There were failing tests")
+        }
     }
 
     private fun compareImages(composeScreenshot: ComposeScreenshot): PreviewResult {

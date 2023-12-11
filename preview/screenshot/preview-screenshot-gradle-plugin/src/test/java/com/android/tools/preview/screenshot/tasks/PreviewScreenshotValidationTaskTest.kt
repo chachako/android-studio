@@ -17,12 +17,14 @@
 package com.android.tools.preview.screenshot.tasks
 
 import com.google.common.truth.Truth.assertThat
+import java.io.File
+import org.gradle.api.GradleException
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.File
 
 class PreviewScreenshotValidationTaskTest {
     @get:Rule
@@ -124,7 +126,10 @@ class PreviewScreenshotValidationTaskTest {
         task.renderTaskOutputDir.set(renderOutputDir)
         task.resultsFile.set(resultsFile)
 
-        task.run()
+        val e = assertThrows(GradleException::class.java) {
+            task.run()
+        }
+        assertThat(e.message).isEqualTo("There were failing tests")
 
         assertThat(resultsFile.readText().trimIndent()).isEqualTo("""
             <?xml version='1.0' encoding='UTF-8' ?>
