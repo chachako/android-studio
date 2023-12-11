@@ -103,6 +103,7 @@ def kotlin_test(
         lint_baseline = None,
         lint_classpath = [],
         lint_enabled = True,
+        javacopts = [],
         **kwargs):
     kotlin_library(
         name = name + ".testlib",
@@ -118,6 +119,7 @@ def kotlin_test(
         visibility = visibility,
         friends = friends,
         kotlinc_opts = kotlinc_opts,
+        javacopts = javacopts,
     )
 
     coverage_java_test(
