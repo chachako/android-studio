@@ -28,7 +28,7 @@ class PreviewScreenshotUpdateTaskTest {
     @get:Rule
     val tempDirRule = TemporaryFolder()
 
-    lateinit var task: PreviewScreenshotUpdateTask
+    private lateinit var task: PreviewScreenshotUpdateTask
 
     @Before
     fun setUp() {

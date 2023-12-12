@@ -26,7 +26,7 @@ class PreviewDiscoveryTaskTest {
     @get:Rule
     val tempDirRule = TemporaryFolder()
 
-    lateinit var task: PreviewDiscoveryTask
+    private lateinit var task: PreviewDiscoveryTask
 
     @Before
     fun setUp() {
