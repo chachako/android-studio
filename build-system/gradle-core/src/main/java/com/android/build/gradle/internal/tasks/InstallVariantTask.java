@@ -188,13 +188,15 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                                             e);
                                 }
                             });
-                    BuiltArtifactsImpl privacySandboxSupportedApkSplitsBuiltArtifacts =
-                            new BuiltArtifactsLoaderImpl()
-                                    .load(additionalSupportedSdkApkSplits);
-                    if (privacySandboxSupportedApkSplitsBuiltArtifacts != null) {
-                        for (BuiltArtifactImpl split
-                                : privacySandboxSupportedApkSplitsBuiltArtifacts.getElements()) {
-                            apkFiles.add(new File(split.getOutputFile()));
+                    if (additionalSupportedSdkApkSplits.isPresent()) {
+                        BuiltArtifactsImpl privacySandboxSupportedApkSplitsBuiltArtifacts =
+                                new BuiltArtifactsLoaderImpl()
+                                        .load(additionalSupportedSdkApkSplits);
+                        if (privacySandboxSupportedApkSplitsBuiltArtifacts != null) {
+                            for (BuiltArtifactImpl split
+                                    : privacySandboxSupportedApkSplitsBuiltArtifacts.getElements()) {
+                                apkFiles.add(new File(split.getOutputFile()));
+                            }
                         }
                     }
                 }
