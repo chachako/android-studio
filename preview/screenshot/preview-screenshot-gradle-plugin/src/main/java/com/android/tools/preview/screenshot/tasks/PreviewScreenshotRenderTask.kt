@@ -19,6 +19,7 @@ package com.android.tools.preview.screenshot.tasks
 import com.android.SdkConstants
 import com.android.tools.preview.screenshot.configureInput
 import com.android.tools.render.compose.readComposeRenderingResultJson
+import com.android.tools.render.compose.readComposeScreenshotsJson
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -104,6 +105,10 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
 
     @TaskAction
     fun run() {
+        if (readComposeScreenshotsJson(previewsDiscovered.get().asFile.reader()).isEmpty()) {
+            return // No previews discovered to render
+        }
+
         val resourcesApk = getResourcesApk()
         val classpathJars = mutableListOf<String>()
         classpathJars.addAll(mainClassesDir.get().map{it.asFile }.toList().map { it.absolutePath })
