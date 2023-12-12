@@ -42,12 +42,12 @@ interface JdwpSessionPipelineFactory {
      * Creates a [JdwpSessionPipeline] connected to the given [previousPipeline],
      * or return `null` if the factory is not active for some reason.
      *
-     * @param session The [AdbSession] corresponding to the underlying JDWP session
+     * @param device The [ConnectedDevice] corresponding to the underlying JDWP session
+     * @param pid The process id corresponding to the underlying JDWP session
      * @param previousPipeline The [JdwpSessionPipeline] the new end point should forward packets to
      * and from
      */
     fun create(
-        session: AdbSession,
         device: ConnectedDevice,
         pid: Int,
         previousPipeline: JdwpSessionPipeline

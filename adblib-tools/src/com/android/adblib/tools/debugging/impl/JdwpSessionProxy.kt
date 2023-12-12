@@ -186,7 +186,7 @@ internal class JdwpSessionProxy(
                 it.priority
             }
             .fold(debuggerPipeline) { pipeline, factory ->
-                return factory.create(session, device, pid, pipeline) ?: pipeline
+                return factory.create(device, pid, pipeline) ?: pipeline
             }
     }
 

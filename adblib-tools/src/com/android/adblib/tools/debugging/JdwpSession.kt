@@ -36,7 +36,7 @@ import java.io.IOException
  *
  * @see [AdbDeviceServices.jdwp]
  */
-internal interface JdwpSession : AutoShutdown {
+interface JdwpSession : AutoShutdown {
     /**
      * The [ConnectedDevice] this [JdwpSession] is connected to.
      */
