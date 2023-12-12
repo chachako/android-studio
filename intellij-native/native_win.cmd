@@ -43,13 +43,6 @@ if errorlevel 1 (
 )
 @echo native_win.cmd time: %time%
 
-@echo "Building WinRestarter"
-call %SCRIPT_DIR%build-win-restarter.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
-if errorlevel 1 (
-  set /A EXITCODE=EXITCODE+1
-)
-@echo native_win.cmd time: %time%
-
 @echo "Building WinShellIntegration"
 call %SCRIPT_DIR%build-win-shell-integration.cmd %OUTDIR% %DISTDIR% %BUILDNUMBER%
 if errorlevel 1 (
