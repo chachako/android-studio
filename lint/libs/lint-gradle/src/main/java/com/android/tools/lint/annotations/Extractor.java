@@ -39,6 +39,7 @@ import static com.android.SdkConstants.TYPE_DEF_VALUE_ATTRIBUTE;
 import static com.android.SdkConstants.VALUE_TRUE;
 import static com.android.tools.lint.checks.AnnotationDetectorKt.INT_RANGE_ANNOTATION;
 import static com.android.tools.lint.detector.api.Lint.assertionsEnabled;
+import static com.android.tools.lint.helpers.ZipStreamsKt.readAllBytes;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
@@ -51,7 +52,6 @@ import com.android.utils.XmlUtils;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.google.common.xml.XmlEscapers;
@@ -1023,7 +1023,7 @@ public class Extractor {
             ZipEntry entry = zis.getNextEntry();
             while (entry != null) {
                 if (entry.getName().endsWith(".xml")) {
-                    byte[] bytes = ByteStreams.toByteArray(zis);
+                    byte[] bytes = readAllBytes(zis, entry);
                     String xml = new String(bytes, Charsets.UTF_8);
                     mergeAnnotationsXml(jar.getPath() + ": " + entry, xml);
                 }

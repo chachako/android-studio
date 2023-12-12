@@ -58,6 +58,7 @@ import com.android.tools.lint.detector.api.formatList
 import com.android.tools.lint.detector.api.readUrlData
 import com.android.tools.lint.detector.api.readUrlDataAsString
 import com.android.tools.lint.detector.api.splitPath
+import com.android.tools.lint.helpers.readAllBytes
 import com.android.utils.SdkUtils.wrap
 import com.android.utils.XmlUtils
 import com.android.utils.iterator
@@ -3501,23 +3502,19 @@ class LintIssueDocGenerator(
               }
               val name = zipEntry.name
               if (name.endsWith(DOT_JAR) && name.contains("lint")) {
-                zipFile.getInputStream(zipEntry).use { stream ->
-                  val bytes = ByteStreams.toByteArray(stream)
-                  addLintIssueRegistry(into, file, name.path2maven(), bytes)
-                }
+                val bytes = zipFile.readAllBytes(zipEntry)
+                addLintIssueRegistry(into, file, name.path2maven(), bytes)
               } else if (name.endsWith(DOT_AAR)) {
-                zipFile.getInputStream(zipEntry).use { stream ->
-                  val aarBytes = ByteStreams.toByteArray(stream)
-                  JarInputStream(ByteArrayInputStream(aarBytes)).use { zis ->
-                    var entry = zis.nextEntry
-                    while (entry != null) {
-                      val entryName = entry.name
-                      if (entryName == FN_LINT_JAR) {
-                        val bytes = ByteStreams.toByteArray(zis)
-                        addLintIssueRegistry(into, file, name.path2maven(), bytes)
-                      }
-                      entry = zis.nextEntry
+                val aarBytes = zipFile.readAllBytes(zipEntry)
+                JarInputStream(ByteArrayInputStream(aarBytes)).use { zis ->
+                  var entry = zis.nextEntry
+                  while (entry != null) {
+                    val entryName = entry.name
+                    if (entryName == FN_LINT_JAR) {
+                      val bytes = zipFile.readAllBytes(entry)
+                      addLintIssueRegistry(into, file, name.path2maven(), bytes)
                     }
+                    entry = zis.nextEntry
                   }
                 }
               }

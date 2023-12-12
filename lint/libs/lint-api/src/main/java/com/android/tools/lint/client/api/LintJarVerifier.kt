@@ -20,7 +20,7 @@ package com.android.tools.lint.client.api
 
 import com.android.SdkConstants.CONSTRUCTOR_NAME
 import com.android.SdkConstants.DOT_CLASS
-import com.google.common.io.ByteStreams
+import com.android.tools.lint.helpers.readAllBytes
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.lang.Byte
@@ -105,8 +105,7 @@ class LintJarVerifier(
         val directory = entry.isDirectory
         val name = entry.name
         if (!directory && name.endsWith(DOT_CLASS)) {
-          val bytes = ByteStreams.toByteArray(jar)
-          classes[name] = bytes
+          classes[name] = jar.readAllBytes(entry)
         }
 
         entry = jar.nextEntry
