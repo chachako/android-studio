@@ -127,7 +127,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         }
                         val instance = processedResClass.getField("INSTANCE").get(null)
                         // ArtifactsImpl::get(InternalArtifactType.PROCESSED_RES)
-                        artifactsImplGet.invoke(artifactImplObject, instance) as Provider<Directory>
+                        @Suppress("UNCHECKED_CAST")
+                        artifactsImplGet.invoke(artifactImplObject, instance) as? Provider<Directory>
                     } else null
                     val resourceFileProvider = if (variant is LibraryVariant) {
                         val artifacts = (variant as HasUnitTest).unitTest!!.artifacts
@@ -138,7 +139,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         }
                         val instance = apkForLocalTestClass.getField("INSTANCE").get(null)
                         // ArtifactsImpl::get(InternalArtifactType.APK_FOR_LOCAL_TEST)
-                        artifactsImplGet.invoke(artifactImplObject, instance) as Provider<RegularFile>
+                        @Suppress("UNCHECKED_CAST")
+                        artifactsImplGet.invoke(artifactImplObject, instance) as? Provider<RegularFile>
                     } else null
 
                     val renderTaskProvider = project.tasks.register(
