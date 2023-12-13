@@ -21,6 +21,7 @@ import com.android.tools.lint.client.api.AndroidPlatformAnnotations
 import com.android.tools.lint.client.api.AndroidPlatformAnnotations.Companion.fromPlatformAnnotation
 import com.android.tools.lint.client.api.ResourceReference
 import com.android.tools.lint.detector.api.ConstantEvaluatorImpl.LastAssignmentFinder.LastAssignmentValueUnknown
+import com.intellij.psi.LambdaUtil
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
@@ -33,7 +34,9 @@ import com.intellij.psi.PsiMethodCallExpression
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiParameter
+import com.intellij.psi.PsiType
 import com.intellij.psi.PsiVariable
+import com.intellij.psi.PsiWildcardType
 import com.intellij.psi.util.InheritanceUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.getNonStrictParentOfType
@@ -65,6 +68,7 @@ import org.jetbrains.uast.UExpressionList
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.UIfExpression
 import org.jetbrains.uast.ULabeledExpression
+import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UPrefixExpression
@@ -83,6 +87,7 @@ import org.jetbrains.uast.UYieldExpression
 import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.getContainingUMethod
+import org.jetbrains.uast.getParameterForArgument
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.getQualifiedName
 import org.jetbrains.uast.getUCallExpression
@@ -679,6 +684,52 @@ fun UElement.nextStatement(): UExpression? {
 
   return null
 }
+
+/**
+ * UAST adds an implicit lambda return no matter what, so we may need to unwrap that.
+ *
+ * Before KTIJ-26541, lambda's last expression was wrapped with an implicit return only if it is
+ * used as lambda's return while lambda's return type is Unit or Nothing. To avoid an expensive
+ * type/resolution involved in parent retrieval, such implicit lambda return expression is added
+ * unconditionally.
+ *
+ * That is, you will see something like: ULambdaExpression [{...}] : PsiType:Function0<? extends
+ * Unit> UBlockExpression [{...}] UReturnExpression [return ...] // may not be correct _real last
+ * expression_
+ */
+fun UElement.isIncorrectImplicitReturnInLambda(): Boolean {
+  if (this !is UReturnExpression || this.sourcePsi != null) return false
+  if (uastParent !is UBlockExpression) return false
+  val block = uastParent as UBlockExpression
+  if (block.expressions.lastOrNull() != this) return false
+  if (block.uastParent !is ULambdaExpression) return false
+  val lambda = block.uastParent as ULambdaExpression
+  val lambdaReturnType =
+    lambda
+      .getReturnType()
+      .let { returnType -> if (returnType is PsiWildcardType) returnType.bound else returnType }
+      ?.canonicalText ?: return false
+  // Only non-Unit returning lambda should have an implicit return at the end.
+  return lambdaReturnType.endsWith("Unit") || lambdaReturnType.endsWith("Nothing")
+}
+
+// Copied from `...codeInspection.analysisUastUtil`
+private fun ULambdaExpression.getReturnType(): PsiType? {
+  val lambdaType = getLambdaType()
+  return LambdaUtil.getFunctionalInterfaceReturnType(lambdaType)
+}
+
+// Copied from `...codeInspection.analysisUastUtil`
+private fun ULambdaExpression.getLambdaType(): PsiType? =
+  functionalInterfaceType
+    ?: getExpressionType()
+    ?: uastParent?.let {
+      when (it) {
+        is UVariable -> it.type // in Kotlin local functions looks like lambda stored in variable
+        is UCallExpression -> it.getParameterForArgument(this)?.type
+        else -> null
+      }
+    }
 
 /**
  * Returns the current statement. If you for example have `foo.bar.baz();` and you invoke this on

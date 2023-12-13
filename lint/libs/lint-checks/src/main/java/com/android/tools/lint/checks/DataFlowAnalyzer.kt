@@ -20,6 +20,7 @@ import com.android.tools.lint.detector.api.getMethodName
 import com.android.tools.lint.detector.api.getReceiverOrContainingClass
 import com.android.tools.lint.detector.api.isBelow
 import com.android.tools.lint.detector.api.isElvisIf
+import com.android.tools.lint.detector.api.isIncorrectImplicitReturnInLambda
 import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isReturningContext
 import com.android.tools.lint.detector.api.isReturningLambdaResult
@@ -875,6 +876,13 @@ abstract class DataFlowAnalyzer(
   }
 
   override fun afterVisitReturnExpression(node: UReturnExpression) {
+    // UAST adds an implicit lambda return no matter what.
+    if (node.isIncorrectImplicitReturnInLambda()) {
+      super.afterVisitReturnExpression(node)
+      // Skip to avoid affecting an escape analysis
+      return
+    }
+
     val returnValue = node.returnExpression?.skipParenthesizedExprDown() ?: return
     if (isTracked(returnValue)) {
       // Before calling returns(node), check whether the return is for a handled lambda expression

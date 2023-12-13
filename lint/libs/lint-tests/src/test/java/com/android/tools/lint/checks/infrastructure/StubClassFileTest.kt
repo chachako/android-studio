@@ -370,19 +370,19 @@ class StubClassFileTest {
                 public final int MY_FORTY_FOUR = 44;
                 public static final int[] MY_ARRAY;
                 public Test();
-                public class com.example.myapplication.Test.InnerClass extends java.lang.Object {
+                public class com.example.myapplication.Test${"$"}InnerClass extends java.lang.Object {
                     public InnerClass();
                     public void test(int first, float second, java.lang.String third, boolean[] fourth) throws IOException;
                 }
-                public class com.example.myapplication.Test.Other extends com.example.myapplication.Test.InnerClass,java.lang.Runnable implements java.lang.Runnable {
+                public class com.example.myapplication.Test${"$"}Other extends com.example.myapplication.Test.InnerClass,java.lang.Runnable implements java.lang.Runnable {
                     Other(float test);
                     public void run();
                     private void privateMethod();
                 }
-                interface com.example.myapplication.Test.MyInterface {
+                interface com.example.myapplication.Test${"$"}MyInterface {
                     public abstract void required();
                 }
-                enum com.example.myapplication.Test.MyEnum {
+                enum com.example.myapplication.Test${"$"}MyEnum {
                     FOO, BAR;
                     private final int myField = 0;
                     public static final java.lang.String OTHER = other;
@@ -442,7 +442,7 @@ class StubClassFileTest {
       """
             public class test.pkg.DiffUtil extends java.lang.Object {
                 public DiffUtil();
-                public static abstract class test.pkg.DiffUtil.ItemCallback<S, T extends java.util.List & java.util.List & java.util.RandomAccess, FOO> extends test.pkg.DiffUtil.Foo<FOO,T> {
+                public static abstract class test.pkg.DiffUtil${"$"}ItemCallback<S, T extends java.util.List & java.util.List & java.util.RandomAccess, FOO> extends test.pkg.DiffUtil.Foo<FOO,T> {
                     private java.util.List<? extends java.lang.Number> field1;
                     private S field2;
                     public ItemCallback();
@@ -452,14 +452,14 @@ class StubClassFileTest {
                     public static int <F extends java.lang.Number, G extends java.lang.Long> print(F num, G num);
                     public static float <F extends java.lang.Double> print(F num);
                 }
-                class test.pkg.DiffUtil.ExceptionThrower<T extends java.io.IOException> extends java.lang.Object {
+                class test.pkg.DiffUtil${"$"}ExceptionThrower<T extends java.io.IOException> extends java.lang.Object {
                     public ExceptionThrower();
                     void test() throws T;
                 }
-                public static class test.pkg.DiffUtil.Foo<A, B> extends java.lang.Object {
+                public static class test.pkg.DiffUtil${"$"}Foo<A, B> extends java.lang.Object {
                     public Foo();
                 }
-                public static class test.pkg.DiffUtil.Bar<FOO extends java.lang.Number & java.util.RandomAccess> extends test.pkg.DiffUtil.Foo<java.lang.String,java.lang.String> {
+                public static class test.pkg.DiffUtil${"$"}Bar<FOO extends java.lang.Number & java.util.RandomAccess> extends test.pkg.DiffUtil.Foo<java.lang.String,java.lang.String> {
                     public Bar();
                 }
             }
@@ -552,33 +552,33 @@ class StubClassFileTest {
                 @test.pkg.TestAnnotations.LongAnnotation(l=2, longs={1, 10}) public void testLongs();
                 @test.pkg.TestAnnotations.ClassAnnotation(cls=java.lang.Float.class) public void testClass();
                 @test.pkg.TestAnnotations.ClassAnnotation(classes={java.lang.Float.class, java.lang.Integer.class}) public void testClasses();
-                @interface test.pkg.TestAnnotations.BooleanAnnotation {
+                @interface test.pkg.TestAnnotations${"$"}BooleanAnnotation {
                     public abstract boolean bool();
                     public abstract boolean[] booleans();
                 }
-                @interface test.pkg.TestAnnotations.DoubleAnnotation {
+                @interface test.pkg.TestAnnotations${"$"}DoubleAnnotation {
                     public abstract double dbl();
                     public abstract double[] doubles();
                 }
-                @interface test.pkg.TestAnnotations.LongAnnotation {
+                @interface test.pkg.TestAnnotations${"$"}LongAnnotation {
                     public abstract long l();
                     public abstract long[] longs();
                 }
-                @interface test.pkg.TestAnnotations.ClassAnnotation {
+                @interface test.pkg.TestAnnotations${"$"}ClassAnnotation {
                     public abstract java.lang.Class<? extends java.lang.Number> cls();
                     public abstract java.lang.Class<? extends java.lang.Number>[] classes();
                 }
-                @interface test.pkg.TestAnnotations.MyAnno {
+                @interface test.pkg.TestAnnotations${"$"}MyAnno {
                     public abstract int[] values();
                     public abstract java.lang.String foo();
                     public abstract float max();
                     public abstract int value();
                     public abstract int foobar();
                 }
-                @test.pkg.TestAnnotations.MyAnno(value=3, foobar=5, max=0.5, foo="Test", values={1, 2, 3}) public static class test.pkg.TestAnnotations.TestAnnotationsOnClass extends java.lang.Object {
+                @test.pkg.TestAnnotations.MyAnno(value=3, foobar=5, max=0.5, foo="Test", values={1, 2, 3}) public static class test.pkg.TestAnnotations${"$"}TestAnnotationsOnClass extends java.lang.Object {
                     public TestAnnotationsOnClass();
                 }
-                public class test.pkg.TestAnnotations.TestAnnotationsOnParameter extends java.lang.Object {
+                public class test.pkg.TestAnnotations${"$"}TestAnnotationsOnParameter extends java.lang.Object {
                     TestAnnotationsOnParameter(@test.pkg.TestAnnotations.MyAnno(value=4) float f);
                 }
             }
@@ -736,7 +736,7 @@ class StubClassFileTest {
                 public MyClass(@org.jetbrains.annotations.NotNull java.lang.String myProperty);
                 public MyClass(boolean b);
                 @kotlin.jvm.JvmStatic public static final void myCompanionMethod();
-                public static final class test.pkg.MyClass.Companion extends java.lang.Object {
+                public static final class test.pkg.MyClass${"$"}Companion extends java.lang.Object {
                     @kotlin.jvm.JvmStatic public final void myCompanionMethod();
                     private Companion();
                 }

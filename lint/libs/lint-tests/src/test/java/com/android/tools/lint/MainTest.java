@@ -88,7 +88,7 @@ public class MainTest extends AbstractCheckTest {
             @NonNull String[] args,
             @Nullable Cleanup cleanup,
             @Nullable LintListener listener) {
-        checkDriver(expectedOutput, expectedError, expectedExitCode, args, cleanup, listener, null);
+        checkDriver(expectedOutput, expectedError, expectedExitCode, args, cleanup, listener, null, true);
     }
 
     public static void checkDriver(
@@ -98,7 +98,8 @@ public class MainTest extends AbstractCheckTest {
             @NonNull String[] args,
             @Nullable Cleanup cleanup,
             @Nullable LintListener listener,
-            @Nullable Check check) {
+            @Nullable Check check,
+            boolean expectedExactMatch) {
 
         PrintStream previousOut = System.out;
         PrintStream previousErr = System.err;
@@ -151,7 +152,7 @@ public class MainTest extends AbstractCheckTest {
             if (expectedError != null && !expectedError.trim().equals(stderr.trim())) {
                 // TODO: https://youtrack.jetbrains.com/issue/KT-57715
                 //  Until then, we can't assert explicit "equals" yet.
-                if (Arrays.stream(args).anyMatch((arg) -> arg == "--XuseK2Uast")) {
+                if (!expectedExactMatch || Arrays.stream(args).anyMatch((arg) -> arg == "--XuseK2Uast")) {
                     assertThat(stderr).contains(expectedError);
                 } else {
                     // instead of fail: get difference in output

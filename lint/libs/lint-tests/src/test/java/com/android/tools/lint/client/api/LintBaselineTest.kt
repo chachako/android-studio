@@ -1983,7 +1983,8 @@ class LintBaselineTest {
               it.contains("1 errors, 2 warnings (1 warning filtered by baseline baseline.xml)")
             )
             .isTrue()
-        }
+        },
+        true
       )
 
       @Language("XML")

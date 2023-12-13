@@ -216,7 +216,10 @@ private class IdeaLoggerForLint(category: String) : DefaultLogger(category) {
     if (IdeaLoggerForLint::class.java.desiredAssertionStatus()) {
       throw AssertionError(message, t)
     } else {
-      dumpExceptionsToStderr(message + attachmentsToString(t), t, *details)
+      if (shouldDumpExceptionToStderr()) {
+        System.err.println("ERROR: " + message + detailsToString(*details) + attachmentsToString(t))
+        t?.printStackTrace(System.err)
+      }
     }
   }
 }

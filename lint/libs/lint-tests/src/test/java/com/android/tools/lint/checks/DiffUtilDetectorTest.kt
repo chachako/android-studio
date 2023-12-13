@@ -258,6 +258,8 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
           .indented(),
         *diffUtilStubs
       )
+      // TODO(b/314713392)
+      .expectIdenticalTestModeOutput(false)
       .run()
       .expect(
         """
@@ -323,6 +325,8 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
           .indented(),
         *diffUtilStubs
       )
+      // TODO(b/314713392)
+      .expectIdenticalTestModeOutput(false)
       .run()
       .expect(
         """

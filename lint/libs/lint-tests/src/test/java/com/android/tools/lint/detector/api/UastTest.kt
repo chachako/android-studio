@@ -1732,10 +1732,11 @@ class UastTest : TestCase() {
                               USimpleNameReferenceExpression (identifier = <init>, resolvesTo = PsiClass: Thread) [<init>] : PsiType:Thread
                               ULambdaExpression [{ ...}] : PsiType:Function0<? extends Unit>
                                 UBlockExpression [{...}]
-                                  UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("hello")] : PsiType:Unit
-                                    UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
-                                    USimpleNameReferenceExpression (identifier = println, resolvesTo = null) [println] : PsiType:Unit
-                                    ULiteralExpression (value = "hello") ["hello"] : PsiType:String
+                                  UReturnExpression [return println("hello")]
+                                    UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("hello")] : PsiType:Unit
+                                      UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
+                                      USimpleNameReferenceExpression (identifier = println, resolvesTo = null) [println] : PsiType:Unit
+                                      ULiteralExpression (value = "hello") ["hello"] : PsiType:String
                     UMethod (name = test2) [public static final fun test2() : void {...}] : PsiType:void
                       UBlockExpression [{...}] : PsiType:void
                         UDeclarationsExpression [var thread2: java.lang.Thread = <init>(Runnable({ ...}))]
@@ -1748,10 +1749,11 @@ class UastTest : TestCase() {
                                 USimpleNameReferenceExpression (identifier = Runnable, resolvesTo = PsiClass: Runnable) [Runnable] : PsiType:Runnable
                                 ULambdaExpression [{ ...}] : PsiType:Function0<? extends Unit>
                                   UBlockExpression [{...}]
-                                    UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("hello")] : PsiType:Unit
-                                      UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
-                                      USimpleNameReferenceExpression (identifier = println, resolvesTo = null) [println] : PsiType:Unit
-                                      ULiteralExpression (value = "hello") ["hello"] : PsiType:String
+                                    UReturnExpression [return println("hello")]
+                                      UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("hello")] : PsiType:Unit
+                                        UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
+                                        USimpleNameReferenceExpression (identifier = println, resolvesTo = null) [println] : PsiType:Unit
+                                        ULiteralExpression (value = "hello") ["hello"] : PsiType:String
                 """
           .trimIndent(),
         file.asLogTypes(indent = "  ").trim()
@@ -1772,7 +1774,7 @@ class UastTest : TestCase() {
         fail("Expected unresolved error: see KT-28272")
       } catch (failure: IllegalStateException) {
         assertEquals(
-          "Could not resolve this call: Runnable({ \n    println(\"hello\")\n})",
+          "Could not resolve this call: Runnable({ \n    return println(\"hello\")\n})",
           failure.message
         )
       }

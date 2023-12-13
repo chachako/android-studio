@@ -25,13 +25,18 @@ import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.VirtualFileSetFactory
 import com.intellij.pom.java.InternalPersistentJavaLanguageLevelReaderService
 import com.intellij.pom.java.LanguageLevel
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.ProjectScope
-import com.intellij.util.io.URLUtil
+import java.io.File
+import java.io.IOException
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
+import kotlin.concurrent.withLock
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.resolve.extensions.KtResolveExtensionProvider
 import org.jetbrains.kotlin.analysis.api.standalone.StandaloneAnalysisAPISession
@@ -43,7 +48,6 @@ import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtLibraryMod
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSdkModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSourceModule
 import org.jetbrains.kotlin.analysis.project.structure.impl.getPsiFilesFromPaths
-import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
@@ -62,15 +66,6 @@ import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.FirKotlinUastLanguagePlugin
 import org.jetbrains.uast.kotlin.FirKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.internal.FirCliKotlinUastResolveProviderService
-import java.io.File
-import java.io.IOException
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
-import kotlin.concurrent.withLock
 
 /**
  * This class is FIR (or K2) version of [UastEnvironment]
@@ -171,7 +166,6 @@ private fun createAnalysisSession(
         ClsJavaStubByVirtualFileCache()
       )
 
-      val theProject = project
       appLock.withLock {
         // TODO: Avoid creating AA session per test mode, while app env. is not disposed,
         //  which led to duplicate app-level service registration.
@@ -200,7 +194,6 @@ private fun createAnalysisSession(
       buildKtModuleProvider {
         // TODO(b/283271025): what is the platform of module provider for KMP?
         platform = JvmPlatforms.defaultJvmPlatform
-        project = theProject
 
         val uastEnvModuleByName = config.modules.associateBy(UastEnvironment.Module::name)
         val uastEnvModuleOrder = // We need to start from the leaves of the dependency
@@ -225,9 +218,7 @@ private fun createAnalysisSession(
           fun KtModuleBuilder.addModuleDependencies(moduleName: String) {
             addRegularDependency(
               buildKtLibraryModule {
-                contentScope = ProjectScope.getLibrariesScope(theProject)
                 platform = mPlatform
-                project = theProject
                 val classPaths =
                   if (mPlatform.isJvm()) {
                     // Include boot classpath in [config.classPaths]
@@ -235,64 +226,58 @@ private fun createAnalysisSession(
                   } else {
                     m.classpathRoots
                   }
-                binaryRoots = classPaths.map(File::toPath)
+                addBinaryRoots(classPaths.map(File::toPath))
                 libraryName = "Library for $moduleName"
               }
             )
 
             m.jdkHome?.let { jdkHome ->
-              val vfm = VirtualFileManager.getInstance()
               val jdkHomePath = jdkHome.toPath()
-              val jdkHomeVirtualFile = vfm.findFileByNioPath(jdkHomePath)
-
               addRegularDependency(
                 buildKtSdkModule {
-                  contentScope = GlobalSearchScope.fileScope(theProject, jdkHomeVirtualFile)
                   platform = mPlatform
-                  project = theProject
-                  binaryRoots =
-                    LibraryUtils.findClassesFromJdkHome(jdkHomePath).map {
-                      Paths.get(URLUtil.extractPath(it))
-                    }
+                  addBinaryRoots(LibraryUtils.findClassesFromJdkHome(jdkHomePath, isJre = true))
                   sdkName = "JDK for $moduleName"
                 }
               )
             }
 
+            val (moduleKlibPathsRegular, moduleKlibPathsDependsOn) =
+              m.klibs.keys.partition { m.klibs[it] == Project.DependencyKind.Regular }
 
-            val (moduleKlibPathsRegular, moduleKlibPathsDependsOn) = m.klibs.keys
-              .partition { m.klibs[it] == Project.DependencyKind.Regular }
-
-            fun buildKlibModule(klibs : Collection<Path>, name : String) = buildKtLibraryModule {
+            fun buildKlibModule(klibs: Collection<Path>, name: String) = buildKtLibraryModule {
               platform = mPlatform
-              project = theProject
-              contentScope = ProjectScope.getLibrariesScope(theProject)
-              binaryRoots = klibs
+              addBinaryRoots(klibs)
               libraryName = name
             }
 
-            val klibRegularDeps = (moduleKlibPathsRegular.map(File::toPath) + configKlibPaths).distinct()
+            val klibRegularDeps =
+              (moduleKlibPathsRegular.map(File::toPath) + configKlibPaths).distinct()
             if (klibRegularDeps.isNotEmpty()) {
-              addRegularDependency(buildKlibModule(klibRegularDeps, "Regular klibs for $moduleName"))
+              addRegularDependency(
+                buildKlibModule(klibRegularDeps, "Regular klibs for $moduleName")
+              )
             }
 
             if (moduleKlibPathsDependsOn.isNotEmpty()) {
-              addDependsOnDependency(buildKlibModule(
-                moduleKlibPathsDependsOn.map(File::toPath),
-                "dependsOn klibs for $moduleName")
+              addDependsOnDependency(
+                buildKlibModule(
+                  moduleKlibPathsDependsOn.map(File::toPath),
+                  "dependsOn klibs for $moduleName"
+                )
               )
             }
           }
 
           val ktFiles =
             getPsiFilesFromPaths<KtFile>(
-              theProject,
+              kotlinCoreProjectEnvironment,
               Helper.getSourceFilePaths(
                 (m.sourceRoots + m.gradleBuildScripts).map(File::getPath),
                 includeDirectoryRoot = true
               )
             )
-          val (scriptFiles, ordinaryKtFiles) = ktFiles.partition { it.isScript() }
+          val (scriptFiles, _) = ktFiles.partition { it.isScript() }
           // TODO: https://youtrack.jetbrains.com/issue/KT-62161
           //   This must be [KtScriptModule], but until the above YT resolved
           //   add this fake [KtSourceModule] to suppress errors from module lookup.
@@ -300,11 +285,14 @@ private fun createAnalysisSession(
             addModule(
               buildKtSourceModule {
                 addModuleDependencies("Temporary module for scripts in " + m.name)
-                contentScope =
-                  GlobalSearchScope.filesScope(theProject, scriptFiles.map { it.virtualFile })
                 platform = mPlatform
-                project = theProject
                 moduleName = m.name
+                addSourceRoots(
+                  Helper.getSourceFilePaths(
+                    scriptFiles.map { it.virtualFilePath },
+                    includeDirectoryRoot = false
+                  )
+                )
               }
             )
           }
@@ -313,7 +301,6 @@ private fun createAnalysisSession(
             addModule(
               buildKtScriptModule {
                 platform = mPlatform
-                project = theProject
                 file = scriptFile
                 addModuleDependencies("Script " + scriptFile.name)
               }
@@ -324,10 +311,7 @@ private fun createAnalysisSession(
           val ktModule = buildKtSourceModule {
             languageVersionSettings = m.kotlinLanguageLevel
             addModuleDependencies(m.name)
-            contentScope =
-              TopDownAnalyzerFacadeForJVM.newModuleSearchScope(theProject, ordinaryKtFiles)
             platform = mPlatform
-            project = theProject
             moduleName = m.name
 
             m.directDependencies.forEach { (depName, depKind) ->
@@ -345,12 +329,9 @@ private fun createAnalysisSession(
             // NB: This should include both .kt and .java sources if any,
             //  and thus we don't need to specify the reified type for the return file type.
             addSourceRoots(
-              getPsiFilesFromPaths(
-                project,
-                Helper.getSourceFilePaths(
-                  m.sourceRoots.map(File::getPath),
-                  includeDirectoryRoot = true
-                )
+              Helper.getSourceFilePaths(
+                m.sourceRoots.map(File::getPath),
+                includeDirectoryRoot = true
               )
             )
           }
@@ -374,11 +355,6 @@ private fun configureFirProjectEnvironment(
 ) {
   val project = analysisAPISession.mockProject
 
-  project.registerService(
-    FirKotlinUastResolveProviderService::class.java,
-    FirCliKotlinUastResolveProviderService::class.java
-  )
-
   configureProjectEnvironment(project, config)
 }
 
@@ -390,6 +366,10 @@ private fun configureFirApplicationEnvironment(appEnv: CoreApplicationEnvironmen
       BaseKotlinUastResolveProviderService::class.java,
       FirCliKotlinUastResolveProviderService::class.java
     )
+    it.application.registerService(
+      FirKotlinUastResolveProviderService::class.java,
+      FirCliKotlinUastResolveProviderService::class.java
+    )
   }
 }
 
@@ -398,7 +378,7 @@ private object Helper {
   fun getSourceFilePaths(
     javaSourceRoots: Collection<String>,
     includeDirectoryRoot: Boolean = false,
-  ): Set<String> {
+  ): Collection<Path> {
     return buildSet {
       javaSourceRoots.forEach { srcRoot ->
         val path = Paths.get(srcRoot)
@@ -406,11 +386,11 @@ private object Helper {
           // E.g., project/app/src
           collectSourceFilePaths(path, this)
           if (includeDirectoryRoot) {
-            add(srcRoot)
+            add(path)
           }
         } else {
           // E.g., project/app/src/some/pkg/main.kt
-          add(srcRoot)
+          add(path)
         }
       }
     }
@@ -424,7 +404,7 @@ private object Helper {
    *
    * Note that this util gracefully skips [IOException] during file tree traversal.
    */
-  private fun collectSourceFilePaths(root: Path, result: MutableSet<String>) {
+  private fun collectSourceFilePaths(root: Path, result: MutableSet<Path>) {
     // NB: [Files#walk] throws an exception if there is an issue during IO.
     // With [Files#walkFileTree] with a custom visitor, we can take control of exception handling.
     Files.walkFileTree(
@@ -443,7 +423,7 @@ private object Helper {
               ext == KotlinParserDefinition.STD_SCRIPT_SUFFIX ||
               ext == JavaFileType.DEFAULT_EXTENSION
           ) {
-            result.add(file.toString())
+            result.add(file)
           }
           return FileVisitResult.CONTINUE
         }

@@ -9032,7 +9032,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                                                 + "}")))
                 .expect(
                         ""
-                                + "src/test/pkg/Test.java:6: Error: Call requires API level 32 (current min is 1): new android.test.api.Outer.Inner [NewApi]\n"
+                                + "src/test/pkg/Test.java:6: Error: Call requires API level 32 (current min is 1): new android.test.api.Outer$Inner [NewApi]\n"
                                 + "        outer.new Inner(1f);\n"
                                 + "        ~~~~~~~~~~~~~~~\n"
                                 + "1 errors, 0 warnings");

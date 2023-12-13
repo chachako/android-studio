@@ -31,6 +31,7 @@ import com.android.tools.lint.detector.api.UImplicitCallExpression
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotationStringValue
 import com.android.tools.lint.detector.api.findSelector
 import com.android.tools.lint.detector.api.isBelow
+import com.android.tools.lint.detector.api.isIncorrectImplicitReturnInLambda
 import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isKotlin
 import com.android.tools.lint.detector.api.nextStatement
@@ -344,7 +345,8 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       var curr: UElement = prev.uastParent ?: return true
       while (
         curr is UQualifiedReferenceExpression && curr.selector === prev ||
-          curr is UParenthesizedExpression
+          curr is UParenthesizedExpression ||
+          curr.isIncorrectImplicitReturnInLambda()
       ) {
         prev = curr
         curr = curr.uastParent ?: return true

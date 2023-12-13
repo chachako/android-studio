@@ -400,7 +400,9 @@ class ProjectInitializerTest {
           .replace(baseline.parentFile.path, "TESTROOT")
           .dos2unix()
       },
-      listener
+      listener,
+      null,
+      false
     )
 
     // Make sure we hit all our checks with the listener
@@ -2850,15 +2852,15 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
   fun testKMPProjectK2_common_klib() {
     val shared =
       project(
-        // TODO
-        //   Here we leave `androidMain/.../Platform.kt` out of the klib because `kotlinc-native`
-        //   gives an error on conflicting overloads of `actual fun getPlatform()`, and it's
-        //   strange for the Android-specific file to be passed to `kotlinc-native`.
-        //   If we have neither, `kotlinc-native` will complain that there's no corresponding
-        //   `actual` to the `expect`.
-        klib(
-          "build/common.klib",
-          "" +
+          // TODO
+          //   Here we leave `androidMain/.../Platform.kt` out of the klib because `kotlinc-native`
+          //   gives an error on conflicting overloads of `actual fun getPlatform()`, and it's
+          //   strange for the Android-specific file to be passed to `kotlinc-native`.
+          //   If we have neither, `kotlinc-native` will complain that there's no corresponding
+          //   `actual` to the `expect`.
+          klib(
+            "build/common.klib",
+            "" +
               "H4sIAAAAAAAA/6WXDzzT+R/Hv/N3bJj8G04ZQ8LMn1ZCNyvKQqjLuC4282dh" +
               "Y7ZQd0TKn/zthIQjNS6XSu6a4nR+kjJ/kkJdvy6kf64/SgrxG/e7u+/3bIvf" +
               "77vHY4/H/ryfe79f3/dn79fbc4u0jCLwx4UBwBccUAXoQcFUbjjH8ovtSoA8" +
@@ -2919,60 +2921,60 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
               "E2QmxMDB0wwKf/ApOF4kXJwayyFwHaQI+D/Go5iMwRMMC4GGfBL655hcRL7Q" +
               "Hu8Hof8eiIvA6EAwWkoLMeDBuAigIQQYIBEIGpCLIGMg5FqJ5L8G5ZK5UsqS" +
               "uH8NzL+4snLzwgkfpsJ3vOfuPPAfJ0MmAZEVAAA=",
-          0x411ab151,
-          kt(
-            "src/commonMain/kotlin/pkg/Platform.kt",
-            """
+            0x411ab151,
+            kt(
+              "src/commonMain/kotlin/pkg/Platform.kt",
+              """
             package pkg
             interface Platform {
                 val name: String
             }
             expect fun getPlatform(): Platform
           """
-              .trimIndent()
-          ),
-          kt(
-            "src/commonMain/kotlin/pkg/Greeting.kt",
-            """
+                .trimIndent()
+            ),
+            kt(
+              "src/commonMain/kotlin/pkg/Greeting.kt",
+              """
             package pkg
             class Greeting {
                 private val platform: Platform = getPlatform()
             }
           """
-              .trimIndent()
-          ),
-          kt(
-            "src/iosMain/kotlin/pkg/Platform.kt",
-            """
+                .trimIndent()
+            ),
+            kt(
+              "src/iosMain/kotlin/pkg/Platform.kt",
+              """
             package pkg
             class IOSPlatform: Platform {
                 override val name: String = "iOS platform name"
             }
             actual fun getPlatform(): Platform = IOSPlatform()
           """
-              .trimIndent()
+                .trimIndent()
+            ),
           ),
-        ),
-        kt(
-          "src/androidMain/kotlin/pkg/Platform.kt",
-          """
+          kt(
+            "src/androidMain/kotlin/pkg/Platform.kt",
+            """
             package pkg
             class AndroidPlatform : Platform {
                 override val name: String = "Android 34"
             }
             actual fun getPlatform(): Platform = AndroidPlatform()
           """
-            .trimIndent()
-        ),
-      )
+              .trimIndent()
+          ),
+        )
         .type(LIBRARY)
         .name("shared")
 
     val androidApp =
       project(
-        source(
-          "src/main/$ANDROID_MANIFEST_XML",
-          """
+          source(
+              "src/main/$ANDROID_MANIFEST_XML",
+              """
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
               <uses-permission android:name="android.permission.INTERNET"/>
@@ -2992,20 +2994,20 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
               </application>
           </manifest>
         """
-        )
-          .indented(),
-        xml(
-          "src/main/res/values/styles.xml",
-          """
+            )
+            .indented(),
+          xml(
+              "src/main/res/values/styles.xml",
+              """
             <resources>
                 <style name="AppTheme" parent="android:Theme.Material.NoActionBar"/>
             </resources>
           """
-        )
-          .indented(),
-        kt(
-          "src/main/java/pkg/android/MainActivity.kt",
-          """
+            )
+            .indented(),
+          kt(
+              "src/main/java/pkg/android/MainActivity.kt",
+              """
             package pkg.android
 
             import android.os.Bundle
@@ -3056,11 +3058,11 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
                 }
             }
           """
-        )
-          .indented(),
-        kt(
-          "src/main/java/pkg/android/MyApplicationTheme.kt",
-          """
+            )
+            .indented(),
+          kt(
+              "src/main/java/pkg/android/MyApplicationTheme.kt",
+              """
             package pkg.android
 
             import androidx.compose.foundation.isSystemInDarkTheme
@@ -3117,33 +3119,33 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
                 )
             }
           """
-        )
-          .indented(),
-        kt(
-          "src/main/java/pkg/android/expect.kt",
-          """
+            )
+            .indented(),
+          kt(
+            "src/main/java/pkg/android/expect.kt",
+            """
             package pkg
             expect fun getPlatform() : Platform
           """
-            .trimIndent()
-        ),
-        kt(
-          "src/main/java/pkg/android/actual.kt",
-          """
+              .trimIndent()
+          ),
+          kt(
+            "src/main/java/pkg/android/actual.kt",
+            """
             package pkg
             actual fun getPlatform() = TODO()
           """
-            .trimIndent()
-        ),
-      )
+              .trimIndent()
+          ),
+        )
         .name("androidApp")
         .dependsOn(shared)
 
     val iosApp =
       project(
-        source(
-          "iosApp/ContentView.swift",
-          """
+          source(
+            "iosApp/ContentView.swift",
+            """
             import SwiftUI
             import shared
 
@@ -3172,11 +3174,11 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
                 }
             }
           """
-            .trimIndent()
-        ),
-        source(
-          "iosApp/iOSApp.swift",
-          """
+              .trimIndent()
+          ),
+          source(
+            "iosApp/iOSApp.swift",
+            """
             import SwiftUI
 
             @main
@@ -3188,9 +3190,9 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
               }
             }
           """
-            .trimIndent()
+              .trimIndent()
+          )
         )
-      )
         .name("iosApp")
 
     val root = temp.newFolder().canonicalFile.absoluteFile

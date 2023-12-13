@@ -27,6 +27,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFileSetFactory
+import com.intellij.openapi.vfs.impl.jar.CoreJarFileSystem
 import com.intellij.pom.java.InternalPersistentJavaLanguageLevelReaderService
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiManager
@@ -35,7 +36,6 @@ import com.intellij.psi.impl.PsiNameHelperImpl
 import com.intellij.util.io.URLUtil.JAR_SEPARATOR
 import java.io.File
 import kotlin.concurrent.withLock
-import org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals
 import org.jetbrains.kotlin.analysis.api.descriptors.CliFe10AnalysisFacade
 import org.jetbrains.kotlin.analysis.api.descriptors.Fe10AnalysisFacade
 import org.jetbrains.kotlin.analysis.api.descriptors.KtFe10AnalysisHandlerExtension
@@ -43,11 +43,11 @@ import org.jetbrains.kotlin.analysis.api.descriptors.KtFe10AnalysisSessionProvid
 import org.jetbrains.kotlin.analysis.api.descriptors.references.ReadWriteAccessCheckerDescriptorsImpl
 import org.jetbrains.kotlin.analysis.api.impl.base.references.HLApiReferenceProviderService
 import org.jetbrains.kotlin.analysis.api.session.KtAnalysisSessionProvider
+import org.jetbrains.kotlin.analysis.decompiler.psi.BuiltInsVirtualFileProvider
+import org.jetbrains.kotlin.analysis.decompiler.psi.BuiltInsVirtualFileProviderCliImpl
 import org.jetbrains.kotlin.analysis.decompiler.stub.file.ClsKotlinBinaryClassCache
 import org.jetbrains.kotlin.analysis.decompiler.stub.file.DummyFileAttributeService
 import org.jetbrains.kotlin.analysis.decompiler.stub.file.FileAttributeService
-import org.jetbrains.kotlin.analysis.project.structure.KtModuleScopeProvider
-import org.jetbrains.kotlin.analysis.project.structure.KtModuleScopeProviderImpl
 import org.jetbrains.kotlin.analysis.project.structure.ProjectStructureProvider
 import org.jetbrains.kotlin.analysis.project.structure.impl.buildKtModuleProviderByCompilerConfiguration
 import org.jetbrains.kotlin.analysis.project.structure.impl.getPsiFilesFromPaths
@@ -65,6 +65,7 @@ import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
 import org.jetbrains.kotlin.cli.jvm.compiler.CliModuleAnnotationsResolver
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles.JVM_CONFIG_FILES
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
+import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreProjectEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.cli.jvm.config.JavaSourceRoot
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
@@ -294,15 +295,16 @@ private fun createKotlinCompilerEnv(
       JVM_CONFIG_FILES
     )
   appLock.withLock { configureFe10ApplicationEnvironment(env.projectEnvironment.environment) }
-  configureFe10ProjectEnvironment(env.projectEnvironment.project, config)
+  configureFe10ProjectEnvironment(env.projectEnvironment, config)
 
   return env
 }
 
 private fun configureFe10ProjectEnvironment(
-  project: MockProject,
+  env: KotlinCoreProjectEnvironment,
   config: Fe10UastEnvironment.Configuration
 ) {
+  val project = env.project
   // UAST support.
   AnalysisHandlerExtension.registerExtension(project, UastAnalysisHandlerExtension())
   project.registerService(
@@ -315,14 +317,14 @@ private fun configureFe10ProjectEnvironment(
 
   configureProjectEnvironment(project, config)
 
-  configureAnalysisApiServices(project, config)
+  configureAnalysisApiServices(env, config)
 }
 
-@OptIn(KtAnalysisApiInternals::class)
 private fun configureAnalysisApiServices(
-  project: MockProject,
+  env: KotlinCoreProjectEnvironment,
   config: Fe10UastEnvironment.Configuration,
 ) {
+  val project = env.project
   // Analysis API Base, i.e., base services for FE1.0 and FIR
   // But, for FIR, AA session builder already register these
   project.registerService(
@@ -330,19 +332,17 @@ private fun configureAnalysisApiServices(
     KotlinStaticModificationTrackerFactory::class.java
   )
   project.registerKtLifetimeTokenProvider()
-  project.registerService(KtModuleScopeProvider::class.java, KtModuleScopeProviderImpl())
 
-  val ktFiles =
-    getPsiFilesFromPaths<KtFile>(project, getSourceFilePaths(config.kotlinCompilerConfig))
+  val ktFiles = getPsiFilesFromPaths<KtFile>(env, getSourceFilePaths(config.kotlinCompilerConfig))
 
   project.registerService(
     ProjectStructureProvider::class.java,
-    buildKtModuleProviderByCompilerConfiguration(config.kotlinCompilerConfig, project, ktFiles)
+    buildKtModuleProviderByCompilerConfiguration(env, config.kotlinCompilerConfig, ktFiles)
   )
 
   project.registerService(
     KotlinAnnotationsResolverFactory::class.java,
-    KotlinStaticAnnotationsResolverFactory(ktFiles)
+    KotlinStaticAnnotationsResolverFactory(project, ktFiles)
   )
   project.registerService(
     KotlinDeclarationProviderFactory::class.java,
@@ -393,6 +393,10 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
       DummyKtFe10ReferenceResolutionHelper
     )
 
+    it.application.registerService(
+      BuiltInsVirtualFileProvider::class.java,
+      BuiltInsVirtualFileProviderCliImpl(appEnv.jarFileSystem as CoreJarFileSystem)
+    )
     it.application.registerService(ClsKotlinBinaryClassCache::class.java)
     it.application.registerService(
       FileAttributeService::class.java,
