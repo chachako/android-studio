@@ -103,7 +103,7 @@ object ImageDiffUtil {
         maxPercentDifferent: Double = 0.0,
         maxSizeDifference: Int = 0
     ) {
-        // If we get exactly the same object, no need to check--and they might be mocks anyway.
+        // If we get exactly the same object, there is no need to check.
         if (goldenImage === image) {
             return
         }
@@ -112,7 +112,6 @@ object ImageDiffUtil {
         val imageHeight = min(goldenImage.height, bufferedImage.height)
 
         val width = 3 * imageWidth
-        @Suppress("UnnecessaryVariable")
         val height = imageHeight // makes code more readable
         val deltaImage = BufferedImage(width, height, TYPE_INT_ARGB)
         val g = deltaImage.graphics
