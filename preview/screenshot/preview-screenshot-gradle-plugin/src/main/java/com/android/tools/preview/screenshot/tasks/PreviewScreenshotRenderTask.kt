@@ -18,6 +18,7 @@ package com.android.tools.preview.screenshot.tasks
 
 import com.android.SdkConstants
 import com.android.tools.preview.screenshot.configureInput
+import com.android.tools.render.compose.readComposeRenderingResultJson
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -34,8 +35,10 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.DefaultTask
 import org.gradle.api.JavaVersion
+import org.gradle.api.GradleException
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Classpath
@@ -141,6 +144,24 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             redirectOutput(ProcessBuilder.Redirect.PIPE)
         }.start()
         process.waitFor()
+        val resultFile = outputDir.file("results.json").get().asFile
+        if (!resultFile.exists()) {
+            val output = process.inputStream.bufferedReader().readText()
+            throw GradleException("There was an error with the rendering process. Process output: $output")
+        }
+        val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
+        val renderingErrors =
+            composeRenderingResult.screenshotResults.count { it.imagePath == null && it.error != null && it.error!!.status != "SUCCESS" }
+        if (composeRenderingResult.globalError != null || renderingErrors > 0) {
+            throw GradleException("Rendering failed for one or more previews. For more details, check ${resultFile.absolutePath}")
+        }
+        val renderWarnings = composeRenderingResult.screenshotResults.count { it.error != null }
+        if (renderWarnings > 0) {
+            logger.log(
+                LogLevel.WARN,
+                "There were some issues with rendering one or more previews. For more details, check ${resultFile.absolutePath}"
+            )
+        }
     }
 
     private fun getResourcesApk(): String {
