@@ -186,6 +186,7 @@ fun writeComposeRenderingToJson(
         writer.name(RESOURCE_APK_PATH).value(composeRendering.resourceApkPath)
         writer.name(SCREENSHOTS)
         writeComposeScreenshots(writer, composeRendering.screenshots)
+        writer.name(RESULTS_FILE_NAME).value(composeRendering.resultsFileName)
         writer.endObject()
     }
 }

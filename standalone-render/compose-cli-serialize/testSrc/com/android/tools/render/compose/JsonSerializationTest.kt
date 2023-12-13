@@ -43,7 +43,8 @@ class JsonSerializationTest {
                   "previewParams": {},
                   "imageName": "/path/to/image/pattern/name"
                 }
-              ]
+              ],
+              "resultsFileName": "my_results.json"
             }
         """.trimIndent()
 
@@ -64,6 +65,7 @@ class JsonSerializationTest {
                     "/path/to/image/pattern/name",
                 )
             ),
+            "my_results.json"
         )
 
         assertEquals(expectedComposeRendering, composeRendering)
@@ -155,6 +157,7 @@ class JsonSerializationTest {
             "com.my.package",
             "/path/to/resource.apk",
             listOf(screenshot),
+            "my_results.json",
         )
 
         val stringWriter = StringWriter()
