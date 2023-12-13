@@ -124,20 +124,22 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
 
         val javaRuntimeVersion =
             JavaVersion.toVersion(javaLauncher.get().metadata.javaRuntimeVersion)
+        val params = listOfNotNull(
+            javaLauncher.get().executablePath.asFile.absolutePath,
+            if (javaRuntimeVersion.isCompatibleWith(JavaVersion.VERSION_17))
+                "-Djava.security.manager=allow"
+            else
+                null,
+            "-cp",
+            screenshotCliJar.singleFile.absolutePath,
+            "com.android.tools.render.compose.MainKt",
+            cliToolInput.get().asFile.absolutePath
+        )
+        if (logger.isEnabled(LogLevel.INFO)) {
+            logger.info("Render CLI command: ${params.joinToString(" ")}")
+        }
         // invoke CLI tool
-        val process = ProcessBuilder(
-            listOfNotNull(
-                javaLauncher.get().executablePath.asFile.absolutePath,
-                if (javaRuntimeVersion.isCompatibleWith(JavaVersion.VERSION_17))
-                    "-Djava.security.manager=allow"
-                else
-                    null,
-                "-cp",
-                screenshotCliJar.singleFile.absolutePath,
-                "com.android.tools.render.compose.MainKt",
-                cliToolInput.get().asFile.absolutePath
-            )
-        ).apply {
+        val process = ProcessBuilder(params).apply {
             redirectInput()
             environment().remove("TEST_WORKSPACE")
             redirectErrorStream(true)
