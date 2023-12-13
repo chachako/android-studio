@@ -150,6 +150,9 @@ enum class StringOption(
      */
     NDK_SUPPRESS_MIN_SDK_VERSION_ERROR("android.ndk.suppressMinSdkVersionError", ApiStage.Experimental),
 
+    // An override for the Jacoco version to be set per module
+    JACOCO_TOOL_VERSION("com.android.test.jacocoVersion", ApiStage.Experimental),
+
     /* ---------------
      * DEPRECATED APIs
      */

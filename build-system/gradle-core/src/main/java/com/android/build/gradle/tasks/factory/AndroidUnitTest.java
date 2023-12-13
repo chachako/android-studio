@@ -31,7 +31,6 @@ import com.android.build.gradle.internal.component.ComponentCreationConfig;
 import com.android.build.gradle.internal.component.HostTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo;
-import com.android.build.gradle.internal.coverage.JacocoOptions;
 import com.android.build.gradle.internal.publishing.AndroidArtifacts;
 import com.android.build.gradle.internal.scope.BootClasspathBuilder;
 import com.android.build.gradle.internal.scope.InternalArtifactType;
@@ -167,9 +166,14 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
 
         @NonNull private final HostTestCreationConfig unitTestCreationConfig;
 
-        public CreationAction(@NonNull HostTestCreationConfig unitTestCreationConfig) {
+        private final String jacocoVersion;
+
+        public CreationAction(
+                @NonNull HostTestCreationConfig unitTestCreationConfig,
+                @NonNull String jacocoVersion) {
             super(unitTestCreationConfig);
             this.unitTestCreationConfig = unitTestCreationConfig;
+            this.jacocoVersion = jacocoVersion;
         }
 
         @NonNull
@@ -204,7 +208,7 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
             JacocoPluginExtension pluginExtension =
                     task.getProject().getExtensions().findByType(JacocoPluginExtension.class);
             if (pluginExtension != null) {
-                pluginExtension.setToolVersion(JacocoOptions.DEFAULT_VERSION);
+                pluginExtension.setToolVersion(jacocoVersion);
             }
 
             unitTestCreationConfig.onTestedVariant(
