@@ -21,6 +21,7 @@ import com.android.tools.preview.screenshot.ImageDiffer
 import com.android.tools.preview.screenshot.PreviewResult
 import com.android.tools.preview.screenshot.Verify
 import com.android.tools.preview.screenshot.saveResults
+import com.android.tools.preview.screenshot.services.AnalyticsService
 import com.android.tools.preview.screenshot.toPreviewResponse
 import com.android.tools.render.compose.ComposeScreenshot
 import com.android.tools.render.compose.readComposeScreenshotsJson
@@ -36,7 +37,9 @@ import javax.imageio.ImageIO
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
@@ -64,6 +67,9 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
     @get:OutputFile
     abstract val resultsFile: RegularFileProperty
 
+    @get:Internal
+    abstract val analyticsService: Property<AnalyticsService>
+
     @TaskAction
     fun run() {
         val screenshots = readComposeScreenshotsJson(previewFile.get().asFile.reader())
@@ -79,6 +85,10 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
             }
 
             saveResults(resultsToSave, resultsFile.get().asFile.absolutePath)
+
+            analyticsService.get().recordPreviewScreenshotTestRun(
+                totalTestCount = screenshots.size,
+                project.gradle.sharedServices)
 
             if (!allTestsPass) {
                 throw GradleException("There were failing tests")

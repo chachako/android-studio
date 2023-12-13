@@ -16,6 +16,10 @@
 
 package com.android.tools.preview.screenshot.tasks
 
+import com.android.testutils.MockitoKt.any
+import com.android.testutils.MockitoKt.eq
+import com.android.testutils.MockitoKt.mock
+import com.android.tools.preview.screenshot.services.AnalyticsService
 import com.google.common.truth.Truth.assertThat
 import java.io.File
 import org.gradle.api.GradleException
@@ -25,6 +29,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.mockito.Mockito.verify
 
 class PreviewScreenshotValidationTaskTest {
     @get:Rule
@@ -72,6 +77,7 @@ class PreviewScreenshotValidationTaskTest {
         task.imageOutputDir.set(imageOutputDir)
         task.renderTaskOutputDir.set(renderOutputDir)
         task.resultsFile.set(resultsFile)
+        task.analyticsService.set(mock<AnalyticsService>())
 
         task.run()
 
@@ -125,6 +131,7 @@ class PreviewScreenshotValidationTaskTest {
         task.imageOutputDir.set(imageOutputDir)
         task.renderTaskOutputDir.set(renderOutputDir)
         task.resultsFile.set(resultsFile)
+        task.analyticsService.set(mock<AnalyticsService>())
 
         val e = assertThrows(GradleException::class.java) {
             task.run()
@@ -170,5 +177,48 @@ class PreviewScreenshotValidationTaskTest {
         task.run()
 
         assert(resultsFile.readText().isEmpty())
+    }
+
+    @Test
+    fun testReportAnalyticsData() {
+        val imageOutputDir = tempDirRule.newFolder("outputs")
+        val resultsFile = tempDirRule.newFile("results")
+        val referenceImageDir = tempDirRule.newFolder("references")
+        val renderOutputDir = tempDirRule.newFolder("rendered")
+        val previewsFile = tempDirRule.newFile("previews_discovered.json")
+
+        // Copy the same image to rendered output and reference images
+        val previewImageName = "com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee"
+        previewsFile.writeText("""
+            {
+              "screenshots": [
+                {
+                  "methodFQN": "com.example.project.ExampleInstrumentedTest.GreetingPreview",
+                  "methodParams": [],
+                  "previewParams": {
+                    "showBackground": "true"
+                  },
+                  "imageName": "$previewImageName"
+                }
+              ]
+            }
+        """.trimIndent())
+        javaClass.getResourceAsStream("circle.png")!!
+            .copyTo(referenceImageDir.resolve("$previewImageName.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
+        javaClass.getResourceAsStream("circle.png")!!
+            .copyTo(renderOutputDir.resolve("${previewImageName}_0.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
+
+        task.previewFile.set(previewsFile)
+        task.referenceImageDir.set(referenceImageDir)
+        task.imageOutputDir.set(imageOutputDir)
+        task.renderTaskOutputDir.set(renderOutputDir)
+        task.resultsFile.set(resultsFile)
+
+        val analyticsService = mock<AnalyticsService>()
+        task.analyticsService.set(analyticsService)
+
+        task.run()
+
+        verify(analyticsService).recordPreviewScreenshotTestRun(eq(1), any())
     }
 }

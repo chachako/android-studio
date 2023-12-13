@@ -28,6 +28,7 @@ import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.api.AndroidBasePlugin
 import com.android.tools.preview.screenshot.layoutlibExtractor.LayoutlibFromMaven
+import com.android.tools.preview.screenshot.services.AnalyticsService
 import com.android.tools.preview.screenshot.tasks.PreviewDiscoveryTask
 import com.android.tools.preview.screenshot.tasks.PreviewScreenshotRenderTask
 import com.android.tools.preview.screenshot.tasks.PreviewScreenshotUpdateTask
@@ -44,6 +45,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.jvm.toolchain.JavaToolchainService
 import java.io.File
+import java.lang.StringBuilder
 
 /**
  * An entry point for Screenshot plugin that adds support for screenshot testing on Compose Previews
@@ -61,6 +63,12 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 && agpVersion.previewType != "dev") {
                 error("Preview screenshot plugin is an experimental feature. It requires Android " +
                         "Gradle plugin version 8.3 / 8.4. Current version is $agpVersion.")
+            }
+
+            val analyticsServiceProvider = project.gradle.sharedServices.registerIfAbsent(
+                AnalyticsService::class.java.canonicalName,
+                AnalyticsService::class.java) { spec ->
+                spec.parameters.androidGradlePluginVersion.set(agpVersion.toVersionString())
             }
 
             val sdkDirectory = componentsExtension.sdkComponents.sdkDirectory
@@ -224,6 +232,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.resultsFile.set(testResultsFile)
                         task.imageOutputDir.set(renderedDir)
                         task.imageOutputDir.disallowChanges()
+                        task.analyticsService.set(analyticsServiceProvider)
+                        task.usesService(analyticsServiceProvider)
                         task.description = "Run screenshot tests for the " + variantName + " build."
                         task.group = JavaBasePlugin.VERIFICATION_GROUP
                     }.get()
@@ -261,6 +271,15 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 previewlibCliToolConfigurationName,
                 "com.android.tools:standalone-render.compose-cli:$version")
         }
+    }
+
+    private fun AndroidPluginVersion.toVersionString(): String {
+        val builder = StringBuilder("$major.$minor.$micro")
+        previewType?.let { builder.append("-$it")}
+        if (preview > 0) {
+            builder.append(preview.toString().padStart(2, '0'))
+        }
+        return builder.toString()
     }
 
     companion object {
