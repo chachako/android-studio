@@ -510,6 +510,14 @@ class LintBaselineTest {
     assertFalse(
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
+        "Call requires API level R (current min is 1): `setZOrderedOnTop`",
+        "Call requires API level 30 (current min is 29): `otherMethod`"
+      )
+    )
+
+    assertFalse(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
         "Field requires API level R (current min is 29): `setZOrderedOnTop`",
         "Call requires API level 30 (current min is 29): `setZOrderedOnTop`"
       )
@@ -526,8 +534,8 @@ class LintBaselineTest {
     assertTrue(
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
-        "Call requires API level 24 (current min is 18): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault)",
-        "Call requires API level 24 (current min is 13): java.util.Map#getOrDefault"
+        "Call requires API level 24 (current min is 18): `java.util.Map#getOrDefault` (called from kotlin.collections.Map#getOrDefault)",
+        "Call requires API level 24 (current min is 13): `java.util.Map#getOrDefault`"
       )
     )
 
@@ -536,6 +544,151 @@ class LintBaselineTest {
         ApiDetector.UNSUPPORTED,
         "Call requires API level 24 (current min is 18): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault)",
         "Call requires API level 24 (current min is 13): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault)"
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new = "Cast from Cursor to Closeable requires API level 16 (current min is 18)",
+        old = "Cast from Cursor to Closeable requires API level 16 (current min is 14)"
+      )
+    )
+
+    // Make sure that when a method is added to an extension we continue to handle this correctly
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new =
+          "Field requires version 4 of the AD_SERVICES-ext SDK (current min is 0): `android.app.GameManager#GAME_MODE_BATTERY`",
+        old =
+          "Field requires API level 34 (current min is 24): `android.app.GameManager#GAME_MODE_BATTERY`"
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new =
+          "Field requires version 5 of the AD_SERVICES-ext SDK (current min is 3): `android.app.GameManager#GAME_MODE_BATTERY`",
+        old =
+          "Field requires version 4 of the AD_SERVICES-ext SDK (current min is 0): `android.app.GameManager#GAME_MODE_BATTERY`",
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new =
+          "Cast from `Cursor` to `Closeable` requires version 4 of the AD_SERVICES-ext SDK (current min is 0)",
+        old = "Cast from `Cursor` to `Closeable` requires API level 16 (current min is 14)"
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new =
+          "Implicit cast from `TypedArray` to `AutoCloseable` requires API level 31 (current min is 29)",
+        old =
+          "Implicit cast from `TypedArray` to `AutoCloseable` requires API level 31 (current min is 24)"
+      )
+    )
+
+    // Repeatable annotation requires API level 24 (current min is 15)
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new = "Repeatable annotation requires API level 24 (current min is 33)",
+        old = "Repeatable annotation requires API level 24 (current min is 15)"
+      )
+    )
+
+    // Using theme references in XML drawables requires API level 21 (current min is 9)
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new = "Using theme references in XML drawables requires API level 21 (current min is 33)",
+        old = "Using theme references in XML drawables requires API level 21 (current min is 9)"
+      )
+    )
+
+    // Custom drawables requires API level 24 (current min is 15)
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new = "Custom drawables requires API level 24 (current min is 33)",
+        old = "Custom drawables requires API level 24 (current min is 15)"
+      )
+    )
+
+    // switchTextAppearance requires API level 14 (current min is 1), but note that attribute
+    // editTextColor is only used in API level 11 and higher
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new =
+          "`switchTextAppearance` requires API level 14 (current min is 33), but note that attribute `editTextColor` is only used in API level 11 and higher",
+        old =
+          "`switchTextAppearance` requires API level 14 (current min is 1), but note that attribute `editTextColor` is only used in API level 11 and higher"
+      )
+    )
+
+    // The type of the for loop iterated value is
+    // java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which
+    // requires API level 24 (current min is 1); to work around this, add an explicit cast to (Map)
+    // before the keySet call.
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new =
+          "The type of the for loop iterated value is java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which requires API level 24 (current min is 33); to work around this, add an explicit cast to (Map) before the keySet call.",
+        old =
+          "The type of the for loop iterated value is java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which requires API level 24 (current min is 1); to work around this, add an explicit cast to (Map) before the keySet call."
+      )
+    )
+
+    // Implicit TypedArray.close() call from try-with-resources requires API level 31 (current min
+    // is 24)
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new =
+          "Implicit `TypedArray.close()` call from try-with-resources requires API level 31 (current min is 33)",
+        old =
+          "Implicit `TypedArray.close()` call from try-with-resources requires API level 31 (current min is 24)"
+      )
+    )
+
+    // Error: Multi-catch with these reflection exceptions requires API level 19 (current min is 1)
+    // because they get compiled to the common but new super type ReflectiveOperationException. As a
+    // workaround either create individual catch statements, or catch Exception.
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new =
+          "Multi-catch with these reflection exceptions requires API level 19 (current min is 29) because they get compiled to the common but new super type `ReflectiveOperationException`. As a workaround either create individual catch statements, or catch `Exception`.",
+        old =
+          "Multi-catch with these reflection exceptions requires API level 19 (current min is 1) because they get compiled to the common but new super type `ReflectiveOperationException`. As a workaround either create individual catch statements, or catch `Exception`."
+      )
+    )
+
+    // <vector> requires API level 21 (current min is 1) or building with Android Gradle plugin
+    // 1.4.0 or higher
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new = "`<vector>` requires API level 21 (current min is 21)",
+        old = "`<vector>` requires API level 21 (current min is 1)"
+      )
+    )
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new =
+          "`<vector>` requires API level 21 (current min is 21) or building with Android Gradle plugin 1.4.0 or higher",
+        old =
+          "`<vector>` requires API level 21 (current min is 1) or building with Android Gradle plugin 1.4.0 or higher"
       )
     )
   }
@@ -2607,6 +2760,20 @@ class LintBaselineTest {
         old = "Value must be ≥ 0"
       )
     )
+  }
+
+  @Test
+  fun testSymbolsMatch() {
+    assertTrue(LintBaseline.symbolsMatch("`abc`", "`abc`"))
+    assertFalse(LintBaseline.symbolsMatch("`abc", "`abc"))
+    assertFalse(LintBaseline.symbolsMatch("`abc` `abc", "`abc` `abc"))
+    assertTrue(LintBaseline.symbolsMatch("abc `abc` def", "ghi `abc` jkl"))
+    assertFalse(LintBaseline.symbolsMatch("abc `abc` def", "ghi `abd` jkl"))
+    assertFalse(LintBaseline.symbolsMatch("abc `abc` def", "ghi `abcd` jkl"))
+    assertFalse(LintBaseline.symbolsMatch("abc `abcd` def", "ghi `abc` jkl"))
+    assertTrue(LintBaseline.symbolsMatch("`abc`", "abc `abc`"))
+    assertTrue(LintBaseline.symbolsMatch("`abc` and `def`", "abc `abc` `def`"))
+    assertFalse(LintBaseline.symbolsMatch("`abc` and `def`", "abc `abc`"))
   }
 
   @Test

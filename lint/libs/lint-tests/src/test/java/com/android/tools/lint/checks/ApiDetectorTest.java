@@ -30,6 +30,7 @@ import com.android.annotations.Nullable;
 import com.android.sdklib.SdkVersionInfo;
 import com.android.tools.lint.checks.infrastructure.ProjectDescription;
 import com.android.tools.lint.checks.infrastructure.TestFile;
+import com.android.tools.lint.checks.infrastructure.TestLintTask;
 import com.android.tools.lint.detector.api.ApiConstraint;
 import com.android.tools.lint.detector.api.Context;
 import com.android.tools.lint.detector.api.Detector;
@@ -46,6 +47,12 @@ public class ApiDetectorTest extends AbstractCheckTest {
     @Override
     protected Detector getDetector() {
         return new ApiDetector();
+    }
+
+    @NonNull
+    @Override
+    protected TestLintTask lint() {
+        return super.lint().checkMessage(this::checkReportedError);
     }
 
     public void testDocumentationExampleNewApi() {
@@ -134,10 +141,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "7 errors, 0 warnings";
         //noinspection all // Sample code
-        lint().files(manifest().minSdk(1), mLayout, mThemes, mThemes2)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(1), mLayout, mThemes, mThemes2).run().expect(expected);
     }
 
     public void testXmlApi2() {
@@ -165,7 +169,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        android:layout_height=\"wrap_content\" />\n"
                                         + "\n"
                                         + "</LinearLayout>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -208,6 +211,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 .indented(),
                         xml("res/animator-v18/blink2.xml", "<propertyValuesHolder />").indented(),
                         xml("res/anim-v21/blink3.xml", "<propertyValuesHolder />").indented())
+                .checkMessage(null)
                 .run()
                 .expect(
                         ""
@@ -327,7 +331,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    </TextView>\n"
                                         + "\n"
                                         + "</LinearLayout>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -354,7 +357,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    android:layout_alignParentLeft=\"true\"\n"
                                         + "    android:layout_alignParentStart=\"true\" />\n"
                                         + "\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -632,7 +634,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        android:layout_weight=\"3\" />\n"
                                         + "\n"
                                         + "</LinearLayout>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -648,10 +649,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "1 errors, 1 warnings\n";
         //noinspection all // Sample code
-        lint().files(manifest().minSdk(1), mAttribute2)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(1), mAttribute2).run().expect(expected);
     }
 
     public void testDocumentationExampleUnusedAttribute() {
@@ -687,7 +685,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        android:theme=\"@android:style/Theme.Holo\" />\n"
                                         + "\n"
                                         + "</LinearLayout>"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -781,7 +778,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    public FrameLayout(Context context) {\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -810,7 +806,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        android:drawable=\"@drawable/ic_android_black_24dp\"\n"
                                         + "        android:gravity=\"center\" />\n"
                                         + "</layer-list>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -829,7 +824,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 ""
                                         + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
                                         + "<my.custom.drawable/>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -837,7 +831,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
     public void testCustomDrawableViaClassAttribute() {
         String expected =
                 ""
-                        + "res/drawable/my_layer.xml:2: Error: <class> requires API level 24 (current min is 15) [NewApi]\n"
+                        + "res/drawable/my_layer.xml:2: Error: Custom drawables requires API level 24 (current min is 15) [NewApi]\n"
                         + "<drawable class=\"my.custom.drawable\"/>\n"
                         + "          ~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "1 errors, 0 warnings\n";
@@ -848,7 +842,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 ""
                                         + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
                                         + "<drawable class=\"my.custom.drawable\"/>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -881,7 +874,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    </application>\n"
                                         + "\n"
                                         + "</manifest>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -900,7 +892,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 // defer this computation until the reporting phase, but given that "all"
                 // minSdkVersions are >= 15 at this point it isn't worth the trouble.
                 .skipTestModes(PARTIAL)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -934,17 +925,13 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "            app:layout_column=\"1\" />\n"
                                         + "    </android.support.v7.widget.GridLayout>\n"
                                         + "</LinearLayout>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
 
     public void testXmlApi14() {
         //noinspection all // Sample code
-        lint().files(manifest().minSdk(14), mLayout, mThemes, mThemes2)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(14), mLayout, mThemes, mThemes2).run().expectClean();
     }
 
     public void testXmlApiIceCreamSandwich() {
@@ -979,7 +966,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         mLayout,
                         mThemes,
                         mThemes2)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -1026,7 +1012,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    </GridLayout>\n"
                                         + "\n"
                                         + "</LinearLayout>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -1051,18 +1036,12 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "5 errors, 0 warnings";
         //noinspection all // Sample code
-        lint().files(manifest().minSdk(1), mLayout2, mThemes3, mThemes4)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(1), mLayout2, mThemes3, mThemes4).run().expect(expected);
     }
 
     public void testXmlApiFolderVersion14() {
         //noinspection all // Sample code
-        lint().files(manifest().minSdk(1), mLayout3, mThemes5, mThemes6)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(1), mLayout3, mThemes5, mThemes6).run().expectClean();
     }
 
     public void testThemeVersion() {
@@ -1085,7 +1064,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    </style>\n"
                                         + "\n"
                                         + "</resources>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1116,10 +1094,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "  Mode mode = PorterDuff.Mode.OVERLAY; // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "7 errors, 0 warnings";
-        lint().files(manifest().minSdk(1), mApiCallTest)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(1), mApiCallTest).run().expect(expected);
     }
 
     public void testApi2() {
@@ -1148,10 +1123,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "  Mode mode = PorterDuff.Mode.OVERLAY; // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "7 errors, 0 warnings";
-        lint().files(manifest().minSdk(2), mApiCallTest)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(2), mApiCallTest).run().expect(expected);
     }
 
     public void testApi4() {
@@ -1177,10 +1149,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "  Mode mode = PorterDuff.Mode.OVERLAY; // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "6 errors, 0 warnings";
-        lint().files(manifest().minSdk(4), mApiCallTest)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(4), mApiCallTest).run().expect(expected);
     }
 
     public void testApi10() {
@@ -1203,18 +1172,12 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "  Mode mode = PorterDuff.Mode.OVERLAY; // API 11\n"
                         + "              ~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "5 errors, 0 warnings";
-        lint().files(manifest().minSdk(10), mApiCallTest)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(10), mApiCallTest).run().expect(expected);
     }
 
     public void testApi14() {
         //noinspection all // Sample code
-        lint().files(manifest().minSdk(14), mApiCallTest)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(14), mApiCallTest).run().expectClean();
     }
 
     public void testSuppressTargetApiOnFieldInitializers() {
@@ -1295,7 +1258,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        ApiCallTest5.combineMeasuredStates(0, 0);\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1327,7 +1289,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\t\tgetActionBar(); // API 11\n"
                                         + "\t}\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1381,7 +1342,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        android:textColor=\"?android:attr/textColorLinkInverse\" />\n"
                                         + "\n"
                                         + "</LinearLayout>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1410,7 +1370,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        IOException ioException = new IOException(throwable);\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1661,7 +1620,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\t\tBatteryInfo batteryInfo = report.batteryInfo;\n"
                                         + "\t}\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1722,7 +1680,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1748,7 +1705,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    int hash = PorterDuff.Mode.OVERLAY.hashCode();\n"
                                         + "  }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1816,7 +1772,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\t\t}\n"
                                         + "\t}\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1875,7 +1830,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        };\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1910,7 +1864,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        super.toString(); throw new IOException((Throwable) null); // API 9\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -1995,7 +1948,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -2031,7 +1983,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        statement.close();\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -2053,7 +2004,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        LeadingMarginSpan.LeadingMarginSpan2 span = null;        \n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -2094,7 +2044,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    </application>\n"
                                         + "\n"
                                         + "</manifest>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -2134,7 +2083,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    @SuppressLint(\"NewApi\")\n"
                                         + "    private static GridLayout field4 = new GridLayout(null);\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -2154,7 +2102,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "public class UnitTest {\n"
                                         + "    private GridLayout field1 = new GridLayout(null);\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -2179,7 +2126,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        checkTestSources true\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -2209,7 +2155,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        checkTestSources false\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .incremental("src/test/java/test/pkg/UnitTest.java")
                 .run()
                 .expectClean();
@@ -2276,7 +2221,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        throw new android.database.SQLException(\"error on upgrade: \", e); \n"
                                         + "    } \n"
                                         + "} \n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -2339,7 +2283,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        dispatchGenericFocusedEvent(null);\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -2358,17 +2301,11 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "  SimpleDateFormat format = new SimpleDateFormat(\"cc yyyy-MM-dd\");\n"
                         + "                                                 ~~\n"
                         + "3 errors, 0 warnings\n";
-        lint().files(manifest().minSdk(4), mApiCallTest12)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(4), mApiCallTest12).run().expect(expected);
     }
 
     public void testDateFormatOk() {
-        lint().files(manifest().minSdk(10), mApiCallTest12)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(10), mApiCallTest12).run().expectClean();
     }
 
     public void testDateFormatApi24() {
@@ -2397,7 +2334,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        \"?\";\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -2605,7 +2541,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        testBenignUsages(View.MEASURED_STATE_MASK); // Not OK\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -2617,10 +2552,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "        <item name=\"android:actionBarStyle\">...</item>\n"
                         + "              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "1 errors, 0 warnings\n";
-        lint().files(manifest().minSdk(10), mStyles2)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(10), mStyles2).run().expect(expected);
     }
 
     public void testStyleDeclarationInV9() {
@@ -2632,24 +2564,17 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "res/values-v9: Warning: This folder configuration (v9) is unnecessary; minSdkVersion is 10. Merge all the resources in this folder into values. [ObsoleteSdkInt]\n"
                         + "1 errors, 1 warnings\n";
         lint().files(manifest().minSdk(10), mStyles2_class)
-                .checkMessage(this::checkReportedError)
                 .skipTestModes(PARTIAL)
                 .run()
                 .expect(expected);
     }
 
     public void testStyleDeclarationInV11() {
-        lint().files(manifest().minSdk(10), mStyles2_class2)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(10), mStyles2_class2).run().expectClean();
     }
 
     public void testStyleDeclarationInV14() {
-        lint().files(manifest().minSdk(10), mStyles2_class3)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(10), mStyles2_class3).run().expectClean();
     }
 
     public void testMovedConstants() {
@@ -2685,7 +2610,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        int mode8 = ListView.CHOICE_MODE_SINGLE;\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -2754,7 +2678,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\n"
                                         + "public class FragmentActivity extends Activity {\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 // We need the ApiDetector to observe compileSdkVersion < 11 for the Override error
                 // (it doesn't actually need access to the older android.jar)
                 .requireCompileSdk(false)
@@ -2807,7 +2730,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\t\t\tint bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {\n"
                                         + "\t}\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -2854,7 +2776,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\t\t}\n"
                                         + "\t};\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -2895,7 +2816,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}"),
                         gradleVersion231)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -2954,7 +2874,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         gradleVersion231)
                 .allowCompilationErrors(true)
                 .allowSystemErrors(false)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -2988,7 +2907,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "         });\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -3033,7 +2951,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -3089,7 +3006,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -3173,7 +3089,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "  }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -3200,7 +3115,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        System.out.println(MediaStore.MediaColumns.DATE_TAKEN); // OK\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -3250,7 +3164,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        val numActivities = it.numActivities // OK\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -3282,7 +3195,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        putString(\"\",\"\")\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -3428,7 +3340,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    public abstract void onProgressChanged(WebView view, int newProgress);\n"
                                         + "  }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -3440,17 +3351,11 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "        } catch (ReflectiveOperationException e) {\n"
                         + "                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                         + "1 errors, 0 warnings";
-        lint().files(manifest().minSdk(1), mJava7API)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(1), mJava7API).run().expect(expected);
     }
 
     public void testReflectiveOperationExceptionOk() {
-        lint().files(manifest().minSdk(19), mJava7API)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(19), mJava7API).run().expectClean();
     }
 
     public void testRipple() {
@@ -3460,26 +3365,17 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "<ripple\n"
                         + " ~~~~~~\n"
                         + "1 errors, 0 warnings";
-        lint().files(manifest().minSdk(14), mRipple)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(14), mRipple).run().expect(expected);
     }
 
     public void testRippleOk1() {
         // minSdkVersion satisfied
-        lint().files(manifest().minSdk(21), mRipple)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(21), mRipple).run().expectClean();
     }
 
     public void testRippleOk2() {
         // -vNN location satisfied
-        lint().files(manifest().minSdk(4), mRipple2)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(4), mRipple2).run().expectClean();
     }
 
     public void testVector() {
@@ -3491,10 +3387,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + " ~~~~~~\n"
                         + "1 errors, 0 warnings";
         //noinspection all // Sample code
-        lint().files(manifest().minSdk(4), mVector)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expect(expected);
+        lint().files(manifest().minSdk(4), mVector).run().expect(expected);
     }
 
     public void testVector_withGradleSupport() {
@@ -3509,7 +3402,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        classpath 'com.android.tools.build:gradle:1.4.0-alpha1'\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -3575,7 +3467,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        </animation-list>\n"
                                         + "    </transition>\n"
                                         + "</animated-selector>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -3602,7 +3493,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        android:name=\"root\"\n"
                                         + "        android:animation=\"@anim/progress_indeterminate_rotation_material\" />\n"
                                         + "</animated-vector>\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -3644,23 +3534,16 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "dependencies {\n"
                                         + "    compile 'com.android.support:appcompat-v7:+'\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
 
     public void testPaddingStart() {
-        lint().files(manifest().minSdk(4), mPadding_start)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(4), mPadding_start).run().expectClean();
     }
 
     public void testPaddingStartNotApplicable() {
-        lint().files(manifest().minSdk(4), mPadding_start2)
-                .checkMessage(this::checkReportedError)
-                .run()
-                .expectClean();
+        lint().files(manifest().minSdk(4), mPadding_start2).run().expectClean();
     }
 
     public void testSwitch() {
@@ -3690,7 +3573,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        throw new IllegalArgumentException(\"Unexpected CompressFormat: \" + format);\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -3719,7 +3601,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        textView.setGravity(Gravity.END);\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -3769,7 +3650,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -3899,7 +3779,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .reportFrom(app)
                 .allowCompilationErrors(true)
                 .allowSystemErrors(false)
-                .checkMessage(this::checkReportedError)
                 // the AndroidX test mode does not rewrite bytecode, and here we have
                 // the support library fragment stubs as bytecode
                 .skipTestModes(ANDROIDX_TEST_MODE)
@@ -3939,7 +3818,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        runnable.run();\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -3974,7 +3852,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -4043,7 +3920,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}\n")
                                 .indented())
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -4075,7 +3951,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}"))
                 .allowSystemErrors(false)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -4108,7 +3983,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        map.forEach((t, u) -> Log.i(\"tag\", t + u));\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -4158,7 +4032,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -4226,7 +4099,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}"),
                         manifest().minSdk(14))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -4406,7 +4278,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\n"
                                         + "}\n"),
                         manifest().minSdk(14))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -4430,7 +4301,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        int id = android.R.interpolator.fast_out_linear_in;\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -4494,7 +4364,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        super.setBackgroundTintList(tint);\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -4528,7 +4397,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -4558,7 +4426,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "}\n"
                                         + "}"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -4591,7 +4458,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "}"),
                         SUPPORT_ANNOTATIONS_JAR,
                         sdkSuppressStub)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -4633,7 +4499,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         sdkSuppressStub,
                         roboElectricConfigStub,
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -4737,7 +4602,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}\n"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -4920,7 +4784,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}\n"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -4966,7 +4829,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}\n"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -5041,7 +4903,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    <item android:drawable=\"?android:windowBackground\"/>\n"
                                         + "    <item android:drawable=\"?android:selectableItemBackground\"/>\n"
                                         + "</layer-list>"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -5073,7 +4934,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 .type(ProjectDescription.Type.JAVA)
                                 .name("lib"),
                         project().type(ProjectDescription.Type.JAVA).dependsOn("lib"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -5106,7 +4966,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        LogHelper.log(\"TAG\", \"arg1\", \"arg2\", 1, \"arg4\", this /*non primitive*/);\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -5130,7 +4989,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        loadInBackground(mParam);\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -5157,7 +5015,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "dependencies {\n"
                                         + "    compile 'com.android.support:appcompat-v7:+'\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         "src/main/res/layout/foo.xml:8: Warning: Attribute fontFamily is only used in API level 16 and higher (current min is 1) Did you mean app:fontFamily ? [UnusedAttribute]\n"
@@ -5195,7 +5052,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -5231,7 +5087,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        UserManager userManager = (UserManager) getSystemService(Context.USER_SERVICE);\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -5297,7 +5152,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    public void method2() throws MediaDrm.MediaDrmStateException, UnsupportedSchemeException {\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -5321,7 +5175,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}"),
                         gradleVersion231)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -5344,7 +5197,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -5364,7 +5216,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -5394,7 +5245,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        AutoCloseable closeable2 = socket; // ERROR 2: requires max(API 28, API 19)\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -5449,7 +5299,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -5500,7 +5349,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    private fun createArray(): TypedArray = TODO()\n"
                                         + "    private fun createSocket(): LocalServerSocket = TODO()\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -5564,7 +5412,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                                     + "}")
                                 },
                                 true))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -5603,7 +5450,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                                     + "}\n")
                                 },
                                 false))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -5705,7 +5551,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}\n"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -5782,7 +5627,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    public static abstract class KeySetView<K,V> implements Set<K>, java.io.Serializable {\n"
                                         + "    }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -5893,7 +5737,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}\n"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 // We *don't* want to use provisional computation for this:
                 // limit suggestions around SDK_INT checks to those implied
                 // by the minSdkVersion of the library.
@@ -5929,7 +5772,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}\n"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 // We *don't* want to use provisional computation for this:
                 // limit suggestions around SDK_INT checks to those implied
                 // by the minSdkVersion of the library.
@@ -5979,7 +5821,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 // We *don't* want to use provisional computation for this:
                 // limit suggestions around SDK_INT checks to those implied
                 // by the minSdkVersion of the library.
@@ -6018,7 +5859,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        map.getOrDefault(\"foo\", \"bar\");\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected)
                 .expectFixDiffs(
@@ -6117,7 +5957,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         xml("res/values-land/strings.xml", stringsXml),
                         xml("res/layout/my_activity.xml", "<merge/>"),
                         xml("res/layout-v5/my_activity.xml", "<merge/>"))
-                .checkMessage(this::checkReportedError)
                 // We *don't* want to use provisional computation for this:
                 // limit suggestions around SDK_INT checks to those implied
                 // by the minSdkVersion of the library.
@@ -6160,7 +5999,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "}\n"))
                 .allowCompilationErrors(true)
                 .allowSystemErrors(false)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -6194,7 +6032,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -6235,7 +6072,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "public interface LifecycleAware {\n"
                                         + "    boolean isDestroyed();\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -6290,7 +6126,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "public interface LifecycleAware {\n"
                                         + "    boolean isDestroyed();\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -6676,7 +6511,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        activity2.enterPictureInPictureMode(); //OK\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -6712,7 +6546,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    setPivotY(1.0f); // api 11\n"
                                         + "  }\n"
                                         + "}"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -6746,7 +6579,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "        }\n"
                                         + "    }\n"
                                         + "}\n"))
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -7715,7 +7547,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "}\n"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(expected);
     }
@@ -7761,7 +7592,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + ""
                                         + "}"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expectClean();
     }
@@ -8019,7 +7849,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "     compileSdkVersion 'android-31'\n"
                                         + "}\n"),
                         SUPPORT_ANNOTATIONS_JAR)
-                .checkMessage(this::checkReportedError)
                 .run()
                 .expect(
                         ""
@@ -8976,7 +8805,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                                                 + "        manager.gameMode // OK 1\n"
                                                                 + "        state.label      // OK 2\n"
                                                                 + "    }\n"
-                                                                + "}")))
+                                                                + "}"))
+                                        // Remove message checker which normally looks for known API
+                                        // levels
+                                        .checkMessage(null))
                 .expect(
                         ""
                                 // Note that GameManager.gameMode doesn't actually require 10,000;
@@ -9289,15 +9121,24 @@ public class ApiDetectorTest extends AbstractCheckTest {
             @NonNull String message,
             @Nullable LintFix fixData) {
         if (issue == UNSUPPORTED || issue == INLINED) {
-            if (message.startsWith("The SDK platform-tools version (")) {
-                return;
+            // The lint baseline message matcher for API error tries to handle drift in both
+            // the current minSdkVersion of the app, as well as the API requirement itself
+            // (since APIs can drift from one API to another via SDK extensions). Make
+            // sure that our messages all use this format (pairs of backticks along with
+            // symbol characters only.)
+            int start = message.indexOf("): `");
+            if (start != -1) {
+                int end = message.indexOf('`', start + 1);
+                assertTrue(end != -1);
+                assertTrue(end > start + 1);
+                for (int i = start; i < end; i++) {
+                    char c = message.charAt(i);
+                    assertTrue(
+                            Character.toString(c),
+                            Character.isJavaIdentifierPart(c) || c == '.' || c == '#');
+                }
             }
-            if (message.startsWith("Type annotations")) {
-                return;
-            }
-            if (message.startsWith("Upgrade buildToolsVersion from ")) {
-                return;
-            }
+
             assertTrue(message, fixData instanceof LintFix.DataMap);
             LintFix.DataMap map = (LintFix.DataMap) fixData;
             ApiConstraint requiredVersions = map.getApiConstraint(KEY_REQUIRES_API);

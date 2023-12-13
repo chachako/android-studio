@@ -634,7 +634,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         if ("drawable" == realTag) {
           val attribute = element.getAttributeNode(ATTR_CLASS) ?: return
           location = context.getLocation(attribute)
-          realTag = ATTR_CLASS
+          realTag = attribute.value
         }
 
         var message: String

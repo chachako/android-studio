@@ -858,7 +858,7 @@ public class TestLintTask {
      * @param checker the checker to invoke
      * @return this, for constructor chaining
      */
-    public TestLintTask checkMessage(@NonNull ErrorMessageChecker checker) {
+    public TestLintTask checkMessage(@Nullable ErrorMessageChecker checker) {
         ensurePreRun();
         this.messageChecker = checker;
         return this;

@@ -355,15 +355,29 @@ class LintBaseline(
       "NewApi",
       "InlinedApi",
       "UnusedAttribute" -> {
-        // Compare character by character, and when they differ, skip the tokens if they are
-        // preceded by something from the ApiDetector error messages which indicate that they
-        // represent an API level, such as "current min is " or "API level "
-        val suffix = " (called from "
-        stringsEquivalent(old.substringBeforeLast(suffix), new.substringBeforeLast(suffix)) { s, i
-          ->
-          s.tokenPrecededBy("min is ", i) ||
-            s.tokenPrecededBy("API level ", i) ||
-            s.tokenPrecededBy("version ", i)
+        // For the API messages we only want to match them on the signature --
+        // the exact API requirement can change -- not just for API finalization
+        // (e.g. from "Android U" to "34") but also when added to SDK extensions.
+        // Most API errors will put the key symbol that is being referred to in
+        // backticks, so we'll just match those spans.
+        if (
+          new.contains('`') &&
+            symbolsMatch(old, new) &&
+            // Also make sure we match call/field/class etc. prefix, e.g.
+            //     Call requires 3: foo
+            //     Field requires 3: foo
+            // are referring to different things
+            old.regionMatches(0, new, 0, 4)
+        ) {
+          true
+        } else {
+          val suffix = " (called from "
+          stringsEquivalent(old.substringBeforeLast(suffix), new.substringBeforeLast(suffix)) { s, i
+            ->
+            s.tokenPrecededBy("min is ", i) ||
+              s.tokenPrecededBy("API level ", i) ||
+              s.tokenPrecededBy("version ", i)
+          }
         }
       }
       "WebpUnsupported",
@@ -1001,6 +1015,41 @@ class LintBaseline(
           return true
         }
       }
+    }
+
+    /**
+     * If a string contains symbols (such as a method name or a fully qualified name, possibly with
+     * dots or # as separators) then make sure that both strings contain the same symbols in the
+     * same order.
+     */
+    fun symbolsMatch(s1: String, s2: String): Boolean {
+      var symbolStart = s1.indexOf('`')
+      if (symbolStart == -1) {
+        return false
+      }
+      var symbolStart2 = 0
+      while (symbolStart != -1) {
+        val symbolEnd = s1.indexOf('`', symbolStart + 1)
+        if (symbolEnd == -1) {
+          return false
+        }
+        symbolStart2 = s2.indexOf('`', symbolStart2)
+        if (symbolStart2 == -1) {
+          return false
+        }
+        val symbolEnd2 = s2.indexOf('`', symbolStart2 + 1)
+        if (
+          symbolEnd2 == -1 ||
+            symbolEnd2 - symbolStart2 != symbolEnd - symbolStart ||
+            !s1.regionMatches(symbolStart, s2, symbolStart2, symbolEnd - symbolStart)
+        ) {
+          return false
+        }
+        symbolStart = s1.indexOf('`', symbolEnd + 1)
+        symbolStart2 = symbolEnd2 + 1
+      }
+
+      return true
     }
 
     fun String.tokenPrecededBy(prev: String, offset: Int, separator: Char = ' '): Boolean {
