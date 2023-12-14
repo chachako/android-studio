@@ -37,27 +37,27 @@ class FlightRecorderRule(
             override fun evaluate() {
                 FlightRecorder.initialize(sizeLimit)
                 FlightRecorder.log(
-                    "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName}"
+                    "${TraceUtils.currentTime} ${description.testClass.simpleName}.${description.methodName}"
                 )
                 before()
                 try {
                     base.evaluate()
                     if (printOnSuccess) {
                         FlightRecorder.log(
-                            "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} passed")
+                            "${TraceUtils.currentTime} ${description.testClass.simpleName}.${description.methodName} passed")
                         FlightRecorder.print()
                     }
                 } catch (e: AssumptionViolatedException) {
                     if (printOnSuccess) {
                         FlightRecorder.log(
-                            "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} skipped"
+                            "${TraceUtils.currentTime}${description.testClass.simpleName}.${description.methodName} skipped"
                         )
                         FlightRecorder.print()
                     }
                     throw e
                 } catch (e: Throwable) {
                     FlightRecorder.log(
-                        "${TraceUtils.currentTime()} ${description.testClass.simpleName}.${description.methodName} failed: " +
+                        "${TraceUtils.currentTime} ${description.testClass.simpleName}.${description.methodName} failed: " +
                                 TraceUtils.getStackTrace(e))
                     FlightRecorder.print()
                     throw e

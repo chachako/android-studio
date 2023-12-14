@@ -86,36 +86,37 @@ object TraceUtils {
   }
 
   /**
-   * Returns a string consisting of the object's class name without the package part, '@'
-   * separator, and the hexadecimal identity hash code, e.g. AndroidResGroupNode@5A1D1719.
+   * A string consisting of the object's class name without the package part, '@' separator,
+   * and the hexadecimal identity hash code, e.g. AndroidResGroupNode@5A1D1719.
    */
   @JvmStatic
-  fun getSimpleId(obj: Any?): String {
-    return obj?.let {
-      String.format("%s@%08X", obj.javaClass.name.substringAfterLast('.'), identityHashCode(obj))
-    } ?: "null"
-  }
+  val Any?.simpleId: String
+    get() {
+      return this?.let {
+        String.format("%s@%08X", javaClass.name.substringAfterLast('.'), identityHashCode(this))
+      } ?: "null"
+    }
 
   /**
-   * Returns a string containing comma-separated simple IDs of the elements of the given
-   * iterable. Each simple ID is the object's class name without the package part, '@'
-   * separator, and the hexadecimal identity hash code, e.g. AndroidResGroupNode@5A1D1719.
+   * A string containing comma-separated simple IDs of the elements of this iterable.
+   * Each simple ID is the object's class name without the package part, '@' separator,
+   * and the hexadecimal identity hash code, e.g. AndroidResGroupNode@5A1D1719.
    */
   @JvmStatic
-  fun getSimpleIds(iterable: Iterable<*>): String {
-    val result = StringBuilder()
-    for (element in iterable) {
-      if (result.isNotEmpty()) {
-        result.append(", ")
+  val Iterable<*>.simpleIds: String
+    get() {
+      val result = StringBuilder()
+      for (element in this) {
+        if (result.isNotEmpty()) {
+          result.append(", ")
+        }
+        result.append(element.simpleId)
       }
-      result.append(getSimpleId(element))
+      return result.toString()
     }
-    return result.toString()
-  }
 
-  /** Returns the current time as a yyyy-MM-dd HH:mm:ss.SSS string.  */
+  /** The current time as a yyyy-MM-dd HH:mm:ss.SSS string. */
   @JvmStatic
-  fun currentTime(): String {
-    return DATE_FORMAT.format(Date())
-  }
+  val currentTime: String
+    get() = DATE_FORMAT.format(Date())
 }
