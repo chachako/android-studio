@@ -98,6 +98,11 @@ public class FileListingServiceTest extends TestCase {
 
         // adb shell stat -c \"%A %U %G %z %s %n\" /
         m = FileListingService.STAT_PATTERN.matcher(
+                "drwxr-xr-x root root 2021-08-02 09:20:53.000000000 4096 /");
+        assertTrue(m.matches());
+
+        // adb shell stat -c \"%A %U %G %z %s %n\" /
+        m = FileListingService.STAT_PATTERN.matcher(
                 "drwxr-xr-x root root 2021-08-02 09:20:53 -0700 4096 /");
         assertFalse(m.matches());
 
