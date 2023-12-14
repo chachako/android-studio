@@ -539,6 +539,61 @@ class AnnotationDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testNoSwitchCheckForStringAndLong() {
+    // Make sure we don't pick up StringDef or LongDef annotations in switch check;
+    // only supports IntDef correctly now.
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import android.annotation.SuppressLint;
+            import androidx.annotation.StringDef;
+
+            import java.lang.annotation.Retention;
+            import java.lang.annotation.RetentionPolicy;
+
+            public class TestStringDef {
+                @IntDef({LENGTH_SHORT_STRING, LENGTH_LONG_STRING})
+                @Retention(RetentionPolicy.SOURCE)
+                public @interface DurationString {
+                }
+
+                @IntDef({LENGTH_SHORT, LENGTH_LONG})
+                @Retention(RetentionPolicy.SOURCE)
+                public @interface Duration {
+                }
+
+                public static final long LENGTH_SHORT = -1L;
+                public static final long LENGTH_LONG = 0L;
+                public static final String LENGTH_SHORT_STRING = "short";
+                public static final String LENGTH_LONG_STRING = "long";
+
+                public static void testMissingShortString(@DurationString String duration) {
+                    switch (duration) {
+                        case LENGTH_LONG_STRING:
+                            break;
+                    }
+                }
+
+                public static void testMissingShortLong(@Duration long duration) {
+                    switch (duration) {
+                        case LENGTH_SHORT:
+                            break;
+                    }
+                }
+            }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .javaLanguageLevel("17")
+      .run()
+      .expectClean()
+  }
+
   fun testMissingSwitchFailingIntDef() {
     lint()
       .files(

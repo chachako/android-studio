@@ -31,7 +31,7 @@ import com.android.tools.lint.checks.RestrictToDetector.Companion.getVisibility
 import com.android.tools.lint.checks.RestrictToDetector.Companion.getVisibilityNotForTesting
 import com.android.tools.lint.checks.ReturnThisDetector.Companion.RETURN_THIS_ANNOTATION
 import com.android.tools.lint.checks.TypedefDetector.Companion.ATTR_OPEN
-import com.android.tools.lint.checks.TypedefDetector.Companion.findIntDef
+import com.android.tools.lint.checks.TypedefDetector.Companion.findTypeDef
 import com.android.tools.lint.client.api.AndroidPlatformAnnotations.Companion.isPlatformAnnotation
 import com.android.tools.lint.client.api.AndroidPlatformAnnotations.Companion.toAndroidxAnnotation
 import com.android.tools.lint.client.api.TYPE_BYTE
@@ -911,7 +911,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
           expression,
           setOf(INT_DEF_ANNOTATION.oldName(), INT_DEF_ANNOTATION.newName())
         )
-      return findIntDef(uAnnotations)
+      return findTypeDef(uAnnotations)
     }
 
     private fun getConstantValue(intDefConstantRef: PsiField): Int? {

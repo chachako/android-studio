@@ -823,7 +823,9 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     fun isTypeDef(qualifiedName: String?): Boolean {
       qualifiedName ?: return false
       if (
-        INT_DEF_ANNOTATION.isEquals(qualifiedName) || LONG_DEF_ANNOTATION.isEquals(qualifiedName)
+        INT_DEF_ANNOTATION.isEquals(qualifiedName) ||
+          LONG_DEF_ANNOTATION.isEquals(qualifiedName) ||
+          STRING_DEF_ANNOTATION.isEquals(qualifiedName)
       ) {
         return true
       }
@@ -833,7 +835,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       return false
     }
 
-    fun findIntDef(annotations: List<UAnnotation>): UAnnotation? {
+    fun findTypeDef(annotations: List<UAnnotation>): UAnnotation? {
       for (annotation in annotations) {
         if (isTypeDef(annotation.qualifiedName)) {
           return annotation

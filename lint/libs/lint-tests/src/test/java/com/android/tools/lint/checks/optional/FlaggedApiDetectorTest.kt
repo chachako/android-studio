@@ -19,6 +19,7 @@ package com.android.tools.lint.checks.optional
 import com.android.testutils.TestUtils
 import com.android.tools.lint.LintCliFlags
 import com.android.tools.lint.MainTest
+import com.android.tools.lint.checks.AbstractCheckTest.SUPPORT_ANNOTATIONS_JAR
 import com.android.tools.lint.checks.infrastructure.LintDetectorTest
 import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
@@ -686,9 +687,85 @@ class FlaggedApiDetectorTest : LintDetectorTest() {
       )
   }
 
+  fun testTypedefs() {
+    // Test case for b/316198280 -- don't flag Typedef references
+    lint()
+      .files(
+        java(
+          """
+          package test.pkg;
+
+          public final class Flags {
+              public static final String FLAG_MY_FLAG = "myFlag";
+              public static boolean myFlag() { return true; }
+          }
+          """
+        ),
+        java(
+            """
+            package test.pkg;
+            import android.annotation.FlaggedApi;
+            @FlaggedApi(Flags.FLAG_MY_FLAG)
+            public final class Constants {
+              public static final int MY_INT_CONSTANT = 1;
+              public static final int MY_LONG_CONSTANT = 1L;
+              public static final int MY_STRING_CONSTANT = "1";
+            }
+            """
+          )
+          .indented(),
+        kotlin(
+          """
+          package test.pkg
+          import androidx.annotation.IntDef
+          import androidx.annotation.LongDef
+          import androidx.annotation.StringDef
+          import test.pkg.Constants.MY_INT_CONSTANT
+          import test.pkg.Constants.MY_LONG_CONSTANT
+          import test.pkg.Constants.MY_STRING_CONSTANT
+
+          @IntDef(MY_INT_CONSTANT)
+          @Retention(AnnotationRetention.SOURCE)
+          annotation class MyKotlinTypeDe1
+
+          @StringDef(Constants.MY_STRING_CONSTANT)
+          @Retention(AnnotationRetention.SOURCE)
+          annotation class MyKotlinTypeDef2
+
+          @LongDef(MY_LONG_CONSTANT)
+          @Retention(AnnotationRetention.SOURCE)
+          annotation class MyKotlinTypeDef3
+          """
+        ),
+        java(
+            """
+            package test.pkg;
+            import androidx.annotation.IntDef;
+            import test.pkg.Constants.MY_INT_CONSTANT;
+
+            public class JavaTest {
+                @IntDef({
+                    STATUS_AVAILABLE, MY_INT_CONSTANT, STATUS_UNAVAILABLE
+                })
+                @Retention(RetentionPolicy.SOURCE)
+                public @interface Status {
+                }
+                public static final int STATUS_AVAILABLE = 1;
+                public static final int STATUS_UNAVAILABLE = 3;
+            }
+            """
+          )
+          .indented(),
+        flaggedApiAnnotationStub,
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expectClean()
+  }
+
   fun testUsingCommandLineFlag() {
     // Ensure that the --include-aosp-issues flag pulls this check in
-    // (and that without it it's not included)
+    // (and that without it, it's not included)
     val project =
       getProjectDir(
         null,

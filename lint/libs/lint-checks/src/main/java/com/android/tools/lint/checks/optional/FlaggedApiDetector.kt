@@ -17,8 +17,10 @@
 package com.android.tools.lint.checks.optional
 
 import com.android.tools.lint.checks.BuiltinIssueRegistry
+import com.android.tools.lint.checks.TypedefDetector
 import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.detector.api.AnnotationInfo
+import com.android.tools.lint.detector.api.AnnotationOrigin
 import com.android.tools.lint.detector.api.AnnotationUsageInfo
 import com.android.tools.lint.detector.api.AnnotationUsageType
 import com.android.tools.lint.detector.api.Category
@@ -148,7 +150,11 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
       }
       return
     }
-    if (isAlreadyAnnotated(context.evaluator, element, flag)) {
+    if (annotationInfo.origin == AnnotationOrigin.SELF) {
+      if (annotationInfo.qualifiedName == FLAGGED_API_ANNOTATION) {
+        return
+      }
+    } else if (isAlreadyAnnotated(context.evaluator, element, flag)) {
       return
     }
 
@@ -209,7 +215,11 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
           }
         }
       }
-      if (current is UFile) {
+      if (current is UAnnotation) {
+        if (TypedefDetector.isTypeDef(current.qualifiedName)) {
+          return true
+        }
+      } else if (current is UFile) {
         // Also consult any package annotations
         val pkg = evaluator.getPackage(current.javaPsi ?: current.sourcePsi)
         if (pkg != null) {
