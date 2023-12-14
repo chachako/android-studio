@@ -13,133 +13,109 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.utils;
+package com.android.utils
 
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.lang.System.identityHashCode
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /** Static methods useful for tracing. */
-public class TraceUtils {
-    private static final SimpleDateFormat DATE_FORMAT =
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ROOT);
+object TraceUtils {
+  private val DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ROOT)
 
-    /**
-     * Returns the current stack of the caller.
-     *
-     * @return the stack as a string
-     */
-    @NonNull
-    public static String getCurrentStack() {
-        return getCurrentStack(1);
-    }
+  /** Current stack trace of the caller as a string. */
+  @JvmStatic
+  val currentStack: String
+    get() = getCurrentStack(1)
 
-    /**
-     * Returns the current stack of the caller. Optionally, removes few frames at the top of the
-     * stack.
-     *
-     * @param numberOfTopFramesToRemove the number of top stack frames to remove
-     * @return the stack as a string
-     */
-    @NonNull
-    public static String getCurrentStack(int numberOfTopFramesToRemove) {
-        String fullStack = getStackTrace(new Throwable() {
-            @Override
-            public String toString() {
-                return "";
-            }
-        });
-        // Remove our own frame and numberOfTopFramesToRemove frames requested by the caller.
-        int start = 0;
-        if (numberOfTopFramesToRemove < 0) {
-            numberOfTopFramesToRemove = 0;
+  /** Stack traces of all threads as a single string. */
+  @JvmStatic
+  val stacksOfAllThreads: String
+    get() {
+      val buf = StringBuilder()
+      for ((thread, stackTrace) in Thread.getAllStackTraces()) {
+        if (buf.isNotEmpty()) {
+          buf.append('\n')
         }
-        // The first character of the stack is always '\n'.
-        for (int i = 0; i < numberOfTopFramesToRemove + 2; i++) {
-            int pos = fullStack.indexOf('\n', start);
-            if (pos < 0) {
-                break;
-            }
-            start = pos + 1;
+        buf.append(thread.toString())
+        buf.append('\n')
+        for (frame in stackTrace) {
+          buf.append("  at ")
+          buf.append(frame.toString())
+          buf.append('\n')
         }
-        return fullStack.substring(start);
+      }
+      return buf.toString()
     }
 
-    /**
-     * Returns a stack trace of the given throwable as a string.
-     *
-     * @param t the throwable to get the stack trace from
-     * @return the string containing the stack trace
-     */
-    @NonNull
-    public static String getStackTrace(@NonNull Throwable t) {
-        StringWriter stringWriter = new StringWriter();
-        try (PrintWriter writer = new PrintWriter(stringWriter)) {
-            t.printStackTrace(writer);
-            return stringWriter.toString();
-        }
+  /**
+   * Returns the current stack of the caller. Optionally, removes [numberOfTopFramesToRemove] frames
+   * at the top of the stack.
+   */
+  @JvmStatic
+  fun getCurrentStack(numberOfTopFramesToRemove: Int = 1): String {
+    val fullStack = getStackTrace(object : Throwable() {
+      override fun toString(): String {
+        return ""
+      }
+    })
+    // Remove our own frame and numberOfTopFramesToRemove frames requested by the caller.
+    var start = 0
+    // The first character of the stack is always '\n'.
+    for (i in 0 until numberOfTopFramesToRemove.coerceAtLeast(0) + 2) {
+      val pos = fullStack.indexOf('\n', start)
+      if (pos < 0) {
+        break
+      }
+      start = pos + 1
     }
+    return fullStack.substring(start)
+  }
 
-    /** Returns stack traces of all threads as a single string. */
-    @NonNull
-    public static String getStacksOfAllThreads() {
-        StringBuilder buf = new StringBuilder();
-        for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
-            if (buf.length() != 0) {
-                buf.append('\n');
-            }
-            Thread thread = entry.getKey();
-            buf.append(thread.toString());
-            buf.append('\n');
-            StackTraceElement[] stackTrace = entry.getValue();
-            for (StackTraceElement frame : stackTrace) {
-                buf.append("  at ");
-                buf.append(frame.toString());
-                buf.append('\n');
-            }
-        }
-        return buf.toString();
+  /** Returns a stack trace of the given [throwable] as a string. */
+  @JvmStatic
+  fun getStackTrace(throwable: Throwable): String {
+    val stringWriter = StringWriter()
+    PrintWriter(stringWriter).use { writer ->
+      throwable.printStackTrace(writer)
+      return stringWriter.toString()
     }
+  }
 
-    /**
-     * Returns a string consisting of the object's class name without the package part, '@'
-     * separator, and the hexadecimal identity hash code, e.g. AndroidResGroupNode@5A1D1719.
-     */
-    @NonNull
-    public static String getSimpleId(@Nullable Object obj) {
-        return obj == null
-                ? "null"
-                : String.format(
-                        "%s@%08X", obj.getClass().getSimpleName(), System.identityHashCode(obj));
+  /**
+   * Returns a string consisting of the object's class name without the package part, '@'
+   * separator, and the hexadecimal identity hash code, e.g. AndroidResGroupNode@5A1D1719.
+   */
+  @JvmStatic
+  fun getSimpleId(obj: Any?): String {
+    return obj?.let {
+      String.format("%s@%08X", obj.javaClass.name.substringAfterLast('.'), identityHashCode(obj))
+    } ?: "null"
+  }
+
+  /**
+   * Returns a string containing comma-separated simple IDs of the elements of the given
+   * iterable. Each simple ID is the object's class name without the package part, '@'
+   * separator, and the hexadecimal identity hash code, e.g. AndroidResGroupNode@5A1D1719.
+   */
+  @JvmStatic
+  fun getSimpleIds(iterable: Iterable<*>): String {
+    val result = StringBuilder()
+    for (element in iterable) {
+      if (result.isNotEmpty()) {
+        result.append(", ")
+      }
+      result.append(getSimpleId(element))
     }
+    return result.toString()
+  }
 
-    /**
-     * Returns a string containing comma-separated simple IDs of the elements of the given
-     * iterable. Each simple ID is the object's class name without the package part, '@'
-     * separator, and the hexadecimal identity hash code, e.g. AndroidResGroupNode@5A1D1719.
-     */
-    @NonNull
-    public static String getSimpleIds(@NonNull Iterable<?> iterable) {
-        StringBuilder result = new StringBuilder();
-        for (Object element : iterable) {
-            if (result.length() > 0) {
-                result.append(", ");
-            }
-            result.append(getSimpleId(element));
-        }
-        return result.toString();
-    }
-
-    /** Returns the current time as a yyyy-MM-dd HH:mm:ss.SSS string. */
-    @NonNull
-    public static String currentTime() {
-        return DATE_FORMAT.format(new Date());
-    }
-
-    private TraceUtils() {}
+  /** Returns the current time as a yyyy-MM-dd HH:mm:ss.SSS string.  */
+  @JvmStatic
+  fun currentTime(): String {
+    return DATE_FORMAT.format(Date())
+  }
 }
