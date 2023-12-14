@@ -26,6 +26,7 @@ import java.nio.file.Files.readAllLines
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import org.gradle.api.file.Directory
@@ -132,19 +133,27 @@ class AvdSnapshotHandler(
         processBuilder.environment()["ANDROID_AVD_HOME"] = avdLocation.absolutePath
         val process = processBuilder.start()
 
-        var success = false
+        var success = AtomicBoolean(false)
+        var timeout = false
+        var outputProcessed = CountDownLatch(1)
         try {
             GrabProcessOutput.grabProcessOutput(
                 process,
-                GrabProcessOutput.Wait.WAIT_FOR_READERS,
+                GrabProcessOutput.Wait.ASYNC,
                 object : GrabProcessOutput.IProcessOutput {
                     override fun out(line: String?) {
-                        line ?: return
+                        if (line == null) {
+                            outputProcessed.countDown()
+                            return
+                        }
                         logger.verbose(line)
                         // If it fails, the line will contain "Not loadable"
                         // so checking for the capitalized text should be fine.
                         if (line.contains("Loadable")) {
-                            success = true
+                            success.set(true)
+                            outputProcessed.countDown()
+                        } else if (line.contains("Not loadable")) {
+                            outputProcessed.countDown()
                         }
                     }
 
@@ -155,7 +164,17 @@ class AvdSnapshotHandler(
             process.destroy()
             throw RuntimeException(e)
         }
-        return success
+        process.waitUntilTimeout(logger) {
+            timeout = true
+            logger.warning("Timed out trying to check $snapshotName for $avdName is loadable.")
+        }
+        if (!timeout) {
+            val timeoutSec =
+                deviceBootAndSnapshotCheckTimeoutSec ?:
+                DEFAULT_DEVICE_BOOT_AND_SNAPSHOT_CHECK_TIMEOUT_SEC
+            outputProcessed.await(timeoutSec, TimeUnit.SECONDS)
+        }
+        return success.get()
     }
 
     private fun Process.waitUntilTimeout(logger: ILogger, onTimeout: () -> Unit) {
