@@ -347,8 +347,13 @@ internal class ReverseForwardStream(
           // is invalid. Strip it off.
           val path =
             URI(resource.path).path.substringBefore("!").replaceFirst(Regex("^/(?=[a-zA-Z]:/)"), "")
-          val builtRoot = Paths.get(path).parent.parent
+          val proxyRoot = Paths.get(path).parent
+          val builtRoot = proxyRoot.parent
           result = builtRoot.resolve("resources/reverse_daemon.dex")
+          if (result == null || !Files.exists(result)) {
+            // bazel run CLI case
+            result = proxyRoot.resolve("reverse-daemon/reverse_daemon.dex")
+          }
         }
       }
       if (result == null || !Files.exists(result)) {
