@@ -16,15 +16,20 @@
 
 package com.android.testutils;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.management.ManagementFactory;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -64,6 +69,7 @@ public class JarTestSuiteRunner extends Suite {
             throws InitializationError, ClassNotFoundException, IOException {
         super(new DelegatingRunnerBuilder(builder), suiteClass, getTestClasses(suiteClass));
         finalizerTest = getFinalizerTest(suiteClass, builder);
+        scheduleThreadDumpOnWindows();
     }
 
     private static Class<?>[] getTestClasses(Class<?> suiteClass)
@@ -155,5 +161,55 @@ public class JarTestSuiteRunner extends Suite {
             }
         }
         return excludeClassNames;
+    }
+
+    // On Windows, Bazel test timeouts trigger "exited with error code 142" with no further info.
+    // To ease debugging, we trigger a thread dump just before the target is expected to time out.
+    private static void scheduleThreadDumpOnWindows() {
+        if (!OsType.getHostOs().equals(OsType.WINDOWS)) {
+            return;
+        }
+
+        long testTimeout; // In seconds.
+        try {
+            // Based on https://bazel.build/reference/test-encyclopedia.
+            testTimeout = Long.parseLong(System.getenv("TEST_TIMEOUT"));
+        }
+        catch (NumberFormatException e) {
+            return;
+        }
+        long jvmUptime = MILLISECONDS.toSeconds(ManagementFactory.getRuntimeMXBean().getUptime());
+        long threadDumpDelay = testTimeout - 10 - jvmUptime;
+        if (threadDumpDelay <= 0) {
+            return;
+        }
+
+        Runnable dumpThreads = () -> {
+            try {
+                var threadDump = new StringBuilder();
+                threadDump.append("Approaching Bazel test timeout; dumping all threads.\n======\n");
+                var allThreadInfo = ManagementFactory.getThreadMXBean()
+                        .dumpAllThreads(/*monitors*/ true, /*synchronizers*/ true, /*depth*/ 256);
+                for (var threadInfo : allThreadInfo) {
+                    threadDump.append(threadInfo);
+                }
+                threadDump.append("======");
+                System.out.println(threadDump);
+            }
+            catch (Throwable e) {
+                // Catch exceptions here, otherwise the ExecutorService will swallow them.
+                //noinspection CallToPrintStackTrace
+                e.printStackTrace();
+            }
+        };
+
+        var daemonExecutor = Executors.newSingleThreadScheduledExecutor(task -> {
+            Thread thread = new Thread(task);
+            thread.setDaemon(true);
+            thread.setName("JarTestSuiteRunner Thread Dumper");
+            return thread;
+        });
+
+        daemonExecutor.schedule(dumpThreads, threadDumpDelay, SECONDS);
     }
 }
