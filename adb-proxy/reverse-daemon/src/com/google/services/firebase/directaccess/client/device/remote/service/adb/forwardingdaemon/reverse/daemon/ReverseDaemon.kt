@@ -81,7 +81,7 @@ object ReverseDaemon {
 
       // Send REDY message back to the ReverseForwardStream indicating this ReverseDaemon has
       // started listening for connections on the given targetPort
-      output.write(StreamDataHeader(MessageType.REDY, 0, 0).toByteArray())
+      output.write(StreamDataHeader(MessageType.REDY, 0, 0).toByteBuffer().array())
 
       var socketId = 1
       while (true) {
@@ -150,7 +150,7 @@ object ReverseDaemon {
     fun init() {
       synchronized(writeLock) {
         Log.d(TAG, "write open socket $streamId")
-        output.write(StreamDataHeader(MessageType.OPEN, streamId, 0).toByteArray())
+        output.write(StreamDataHeader(MessageType.OPEN, streamId, 0).toByteBuffer().array())
       }
     }
 
@@ -160,13 +160,15 @@ object ReverseDaemon {
         if (bytesRead == -1) break
 
         synchronized(writeLock) {
-          output.write(StreamDataHeader(MessageType.DATA, streamId, bytesRead).toByteArray())
+          output.write(
+            StreamDataHeader(MessageType.DATA, streamId, bytesRead).toByteBuffer().array()
+          )
           output.write(buffer, 0, bytesRead)
         }
       }
 
       synchronized(writeLock) {
-        output.write(StreamDataHeader(MessageType.CLSE, streamId, 0).toByteArray())
+        output.write(StreamDataHeader(MessageType.CLSE, streamId, 0).toByteBuffer().array())
       }
     }
   }

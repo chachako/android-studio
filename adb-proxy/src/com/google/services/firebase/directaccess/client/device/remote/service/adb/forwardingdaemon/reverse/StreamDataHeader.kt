@@ -24,7 +24,7 @@ class StreamDataHeader(val type: MessageType, val streamId: Int, val len: Int) {
     buffer: ByteBuffer
   ) : this(MessageType.fromConstant(buffer.getInt(0)), buffer.getInt(4), buffer.getInt(8))
 
-  fun toByteArray(): ByteArray {
-    return ByteBuffer.allocate(12).putInt(type.const).putInt(streamId).putInt(len).array()
+  fun toByteBuffer(): ByteBuffer {
+    return ByteBuffer.allocate(12).putInt(type.const).putInt(streamId).putInt(len).flip()
   }
 }

@@ -16,6 +16,7 @@
 
 package com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon
 
+import com.android.adblib.AdbChannel
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.AdbOutputChannel
 import com.android.adblib.AdbSession
@@ -25,31 +26,30 @@ import com.android.adblib.read
 import com.android.adblib.shellCommand
 import com.android.adblib.syncSend
 import com.android.adblib.withInputChannelCollector
-import com.android.adblib.write
 import com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.MessageParseException
 import com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.MessageType
 import com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.StreamDataHeader
 import java.io.EOFException
 import java.io.IOException
-import java.io.InputStream
-import java.net.Socket
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.CancellationException
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * The ReverseForwardStream streams data to and from the ReverseDaemon on the device.
@@ -71,28 +71,27 @@ internal class ReverseForwardStream(
   private val responseWriter: ResponseWriter,
   private val scope: CoroutineScope,
   private val sendsDaemon: Boolean = true,
-  private val socketFactory: (String, Int) -> Socket = { host, port -> Socket(host, port) }
+  private val socketFactory: suspend (InetSocketAddress) -> AdbChannel = { address ->
+    adbSession.channelFactory.connectSocket(address)
+  }
 ) : Stream {
-  // TODO(b/247398366): use adblib sockets
-  private val openSockets = mutableMapOf<Int, Socket>()
+  private val openSockets = mutableMapOf<Int, AdbChannel>()
   var localPort: String = localPort
     private set
 
   private var streamReader: StreamReader? = null
   private val outputLock = Mutex()
-  private val reverseDaemonReadyLatch = CountDownLatch(1)
+  private val reverseDaemonReady = CompletableDeferred<Unit>()
 
   suspend fun run() {
     val device = DeviceSelector.fromSerialNumber(deviceId)
     if (sendsDaemon) {
-      withContext(Dispatchers.IO) {
-        adbSession.deviceServices.syncSend(
-          device,
-          daemonPath,
-          "/data/local/tmp/reverse_daemon.dex",
-          RemoteFileMode.DEFAULT
-        )
-      }
+      adbSession.deviceServices.syncSend(
+        device,
+        daemonPath,
+        "/data/local/tmp/reverse_daemon.dex",
+        RemoteFileMode.DEFAULT
+      )
     }
     scope.launch(Dispatchers.IO) {
       val stdinInputChannel = adbSession.channelFactory.createPipedChannel()
@@ -116,6 +115,7 @@ internal class ReverseForwardStream(
           }
       } catch (e: EOFException) {
         // Remote channel may end unexpectedly when closing the forwarding daemon.
+        // TODO (b/317130053): Expose IOException in a better way
         if (!scope.coroutineContext.job.isCancelled) {
           throw e
         }
@@ -137,18 +137,16 @@ internal class ReverseForwardStream(
    * launcher takes some time to actually execute the binary. We wait for a ready signal after which
    * we send OKAY back to Android Studio ensuring screen sharing agent starts after everything is
    * set up.
+   *
+   * We only wait for 1 second since this process is usually pretty fast. If we do not receive the
+   * ready signal because something went wrong on ReverseDaemon,the behavior remains the same as
+   * receiving the signal.
    */
-  private fun waitForReverseDaemonReady() {
-    // We only wait for 1 second since this process is usually pretty fast. If we do not receive the
-    // ready signal because something went wrong on ReverseDaemon,the behavior remains the same as
-    // earlier.
-    val timedOut = !reverseDaemonReadyLatch.await(1, TimeUnit.SECONDS)
-    if (timedOut) {
-      logger.warning("Timeout waiting for ReverseDaemon READY signal. Proceeding.")
-    } else {
+  private suspend fun waitForReverseDaemonReady() =
+    withTimeoutOrNull(1000) {
+      reverseDaemonReady.await()
       logger.info("Reverse daemon ready")
-    }
-  }
+    } ?: run { logger.warning("Timeout waiting for ReverseDaemon READY signal. Proceeding.") }
 
   /** Redirect new reverse forward connections to a different target port. */
   fun rebind(outbound: String) {
@@ -181,18 +179,18 @@ internal class ReverseForwardStream(
     logger.warning("Unexpected command: $command")
   }
 
+  /** A reader class that reads and processes data from [shellCommandInput]. */
   private inner class StreamReader(
-    private val input: AdbInputChannel,
-    val output: AdbOutputChannel
+    private val shellCommandInput: AdbInputChannel,
+    private val shellCommandOutput: AdbOutputChannel
   ) {
-    private val buffer = ByteArray(1024 * 1024)
+    private val buffer = ByteBuffer.allocate(1024 * 1024)
+    private val headerBuffer = ByteBuffer.allocate(12)
 
     suspend fun kill() {
       try {
         outputLock.withLock {
-          output.writeExactly(
-            ByteBuffer.wrap(StreamDataHeader(MessageType.KILL, -1, 0).toByteArray())
-          )
+          shellCommandOutput.writeExactly(StreamDataHeader(MessageType.KILL, -1, 0).toByteBuffer())
           logger.info("Sent kill message")
         }
       } catch (e: IOException) {
@@ -201,26 +199,23 @@ internal class ReverseForwardStream(
     }
 
     suspend fun run() {
-      val byteBuffer = ByteBuffer.wrap(buffer)
-
       while (true) {
-        byteBuffer.position(0)
-        byteBuffer.limit(12)
+        headerBuffer.clear()
         try {
-          input.readExactly(byteBuffer)
+          shellCommandInput.readExactly(headerBuffer)
         } catch (e: Throwable) {
           // CoroutineScope in which run() was called might have been cancelled.
           // Don't log in that case
           if (e !is CancellationException) {
             logger.log(Level.WARNING, "Reverse daemon exited. Closing stream.", e)
           }
-          output.close()
-          input.close()
+          shellCommandOutput.close()
+          shellCommandInput.close()
           return
         }
 
         try {
-          val header = StreamDataHeader(byteBuffer)
+          val header = StreamDataHeader(headerBuffer.flip())
           when (header.type) {
             MessageType.OPEN -> handleOpen(header)
             MessageType.DATA -> handleData(header)
@@ -229,16 +224,13 @@ internal class ReverseForwardStream(
             MessageType.KILL -> logger.warning("Unexpected KILL message from daemon")
           }
         } catch (e: MessageParseException) {
-          byteBuffer.position(0)
-          byteBuffer.limit(byteBuffer.capacity())
-          val output = String(buffer, 0, 12) + String(buffer, 0, input.read(byteBuffer))
-          logger.warning("Failed to parse message. Got: $output")
+          logger.warning("Failed to parse message. Got: ${String(headerBuffer.array())}")
         }
       }
     }
 
     private fun handleReady() {
-      reverseDaemonReadyLatch.countDown()
+      reverseDaemonReady.complete(Unit)
       logger.info("Reverse Forward stream is ready on the device")
     }
 
@@ -246,14 +238,14 @@ internal class ReverseForwardStream(
       if (openSockets.containsKey(header.streamId)) return
       logger.info("Opening new port (stream ${header.streamId}) at localhost:$localPort")
       val newSocket =
-        withContext(Dispatchers.IO) {
-          socketFactory(
-            "localhost",
+        socketFactory(
+          InetSocketAddress(
+            localhost,
             Integer.parseInt(localPort.substringAfter("tcp:").substringBefore('\u0000'))
           )
-        }
+        )
       openSockets[header.streamId] = newSocket
-      scope.launch { SocketReader(header.streamId, newSocket.getInputStream(), output).run() }
+      scope.launch { SocketReader(header.streamId, newSocket, shellCommandOutput).run() }
     }
 
     private suspend fun handleData(header: StreamDataHeader) {
@@ -262,11 +254,10 @@ internal class ReverseForwardStream(
         logger.info("Received data for unknown stream ${header.streamId}")
         return
       }
-      val byteBuffer = ByteBuffer.wrap(buffer)
-      byteBuffer.position(0)
-      byteBuffer.limit(header.len)
-      input.readExactly(byteBuffer)
-      withContext(Dispatchers.IO) { socket.getOutputStream().write(buffer, 0, header.len) }
+      buffer.position(0)
+      buffer.limit(header.len)
+      shellCommandInput.readExactly(buffer)
+      socket.writeExactly(buffer.flip())
     }
 
     private fun handleClose(header: StreamDataHeader) {
@@ -280,38 +271,40 @@ internal class ReverseForwardStream(
     }
   }
 
+  /**
+   * A reader class that reads data from [socketChannel], wraps the data to [StreamDataHeader] and
+   * forwards them to [shellCommandOutput].
+   */
   private inner class SocketReader(
     private val streamId: Int,
-    private val input: InputStream,
-    private val output: AdbOutputChannel,
+    private val socketChannel: AdbInputChannel,
+    private val shellCommandOutput: AdbOutputChannel,
   ) {
-    private val buffer = ByteArray(1024 * 1024)
+    private val buffer = ByteBuffer.allocate(1024 * 1024)
 
     suspend fun run() {
       while (true) {
+        buffer.clear()
         val bytesRead =
           try {
-            withContext(Dispatchers.IO) { input.read(buffer) }
+            socketChannel.read(buffer)
           } catch (e: IOException) {
             -1
           }
         if (bytesRead == -1) break
 
         outputLock.withLock {
-          val byteBuffer = ByteBuffer.wrap(buffer)
-          byteBuffer.position(0)
-          byteBuffer.limit(bytesRead)
-          output.writeExactly(
-            ByteBuffer.wrap(StreamDataHeader(MessageType.DATA, streamId, bytesRead).toByteArray())
+          shellCommandOutput.writeExactly(
+            StreamDataHeader(MessageType.DATA, streamId, bytesRead).toByteBuffer()
           )
-          output.writeExactly(byteBuffer)
+          shellCommandOutput.writeExactly(buffer.flip())
         }
       }
 
       try {
         outputLock.withLock {
-          output.writeExactly(
-            ByteBuffer.wrap(StreamDataHeader(MessageType.CLSE, streamId, 0).toByteArray())
+          shellCommandOutput.writeExactly(
+            StreamDataHeader(MessageType.CLSE, streamId, 0).toByteBuffer()
           )
         }
       } catch (e: IOException) {
@@ -325,6 +318,13 @@ internal class ReverseForwardStream(
 
   companion object {
     private val logger = Logger.getLogger(ReverseForwardStream::class.qualifiedName)
+    /** The localhost address, preferring IPv4 if it is present on the system. */
+    private val localhost: InetAddress by lazy {
+      val localhostAddresses = InetAddress.getAllByName("localhost")
+      localhostAddresses.filterIsInstance<Inet4Address>().firstOrNull()
+        ?: localhostAddresses.first()
+    }
+
     private val daemonPath: Path by lazy {
       // TODO: this all needs to be handled by studio, ideally using DeployableFile
       val devRoot = ClassLoader.getSystemResource(".")
