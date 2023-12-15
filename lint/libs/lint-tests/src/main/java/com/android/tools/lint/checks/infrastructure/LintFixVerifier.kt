@@ -244,7 +244,7 @@ class LintFixVerifier(
     expectedFile: TestFile?,
     diffs: StringBuilder?,
     compatMode1: Boolean,
-    compatMode2: Boolean,
+    compatMode2: Boolean
   ) {
     assertTrue(expectedFile != null || diffs != null)
     val names: MutableList<String?> = Lists.newArrayList()
@@ -286,7 +286,7 @@ class LintFixVerifier(
         val initial: MutableMap<String, String> = HashMap()
         val edited: MutableMap<String, String> = HashMap()
 
-        if (!applyFix(incident, lintFix, initial, edited)) {
+        if (!applyFix(incident, lintFix, initial, edited, compatMode2)) {
           continue
         }
 
@@ -361,17 +361,21 @@ class LintFixVerifier(
     incident: Incident,
     lintFix: LintFix,
     before: MutableMap<String, String>,
-    after: MutableMap<String, String>
+    after: MutableMap<String, String>,
+    compatMode: Boolean
   ): Boolean {
     if (isEditingFix(lintFix) || lintFix is LintFixGroup) {
       val edits = getLeafFixes(lintFix)
+      val includeMarkers = task.includeSelectionMarkers
       val performer =
         object :
           LintCliFixPerformer(
             client,
             printStatistics = false,
             requireAutoFixable = false,
-            includeMarkers = task.includeSelectionMarkers
+            includeMarkers = includeMarkers,
+            updateImports = includeMarkers,
+            shortenAll = includeMarkers && !compatMode
           ) {
           override fun writeFile(file: File, contents: ByteArray?) {
             val project = incident.project

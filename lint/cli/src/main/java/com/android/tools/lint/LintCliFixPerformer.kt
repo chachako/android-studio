@@ -18,12 +18,14 @@ package com.android.tools.lint
 
 import com.android.SdkConstants
 import com.android.tools.lint.client.api.LintFixPerformer
+import com.android.tools.lint.client.api.LintFixPerformer.Companion.skipCommentsAndWhitespace
 import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.Severity
 import java.io.File
 import java.io.PrintWriter
 import java.util.TreeMap
 import kotlin.math.min
+import org.jetbrains.annotations.VisibleForTesting
 
 /** Support for applying quickfixes directly. */
 open class LintCliFixPerformer(
@@ -38,6 +40,11 @@ open class LintCliFixPerformer(
   private val includeMarkers: Boolean = false,
   /** Should we also add import statements? */
   private val updateImports: Boolean = includeMarkers,
+  /**
+   * Whether to perform shortening of all symbols in the replacement string, not just imported
+   * symbpls.
+   */
+  private val shortenAll: Boolean = includeMarkers
 ) : LintFixPerformer(client, requireAutoFixable) {
   override fun getSourceText(file: File): CharSequence {
     return client.getSourceText(file)
@@ -168,7 +175,7 @@ open class LintCliFixPerformer(
 
     // Are we in a unit-testing scenario? If so, perform some cleanup of imports etc.
     // (which is normally handled by the IDE)
-    if (updateImports || includeMarkers && replaceFix.shortenNames) {
+    if (updateImports || shortenAll && replaceFix.shortenNames) {
       val addImports = replaceFix.imports.toMutableList()
 
       val isJava = file.file.path.endsWith(SdkConstants.DOT_JAVA)
@@ -202,9 +209,9 @@ open class LintCliFixPerformer(
         val names = importInfo.names()
         // Collect newly qualified names in the replacement code snippet and insert it
         // This is a bit inaccurate so only do under tests
-        if (includeMarkers) {
+        if (shortenAll) {
           importInfo.packageStatement?.first?.let { removePrefix.add("$it.") }
-          for (import in collectNames(replacement)) {
+          for (import in collectNames(replacement, allowCommentNesting = !isJava)) {
             if (qualifiedNames.contains(import)) {
               continue
             }
@@ -404,35 +411,6 @@ open class LintCliFixPerformer(
     return sb.toString()
   }
 
-  /** Collects fully qualified names in the given code sample. */
-  private fun collectNames(code: String): Set<String> {
-    val set = mutableSetOf<String>()
-    var offset = 0
-    val length = code.length
-    while (offset < length) {
-      while (offset < length && !code[offset].isJavaIdentifierStart()) {
-        offset++
-      }
-      val start = offset++
-      var isQualified = false
-      while (offset < length) {
-        val c = code[offset]
-        if (c == '.' && offset < length - 1) {
-          if (code[offset + 1].isUpperCase()) {
-            isQualified = true
-          }
-        } else if (!c.isJavaIdentifierPart()) {
-          break
-        }
-        offset++
-      }
-      if (isQualified && !code[start].isUpperCase()) {
-        set.add(code.substring(start, offset))
-      }
-    }
-    return set
-  }
-
   private fun getExistingImports(contents: CharSequence, allowCommentNesting: Boolean): ImportInfo {
     val info = ImportInfo()
     val imports = info.nonStaticImports
@@ -535,6 +513,80 @@ open class LintCliFixPerformer(
     }
     return info
   }
+}
+
+/**
+ * Collects fully qualified names in the given code sample (skipping references in comments and
+ * string literals)
+ */
+@VisibleForTesting
+fun collectNames(code: String, allowCommentNesting: Boolean): Set<String> {
+  val set = mutableSetOf<String>()
+  var offset = 0
+  val length = code.length
+  while (offset < length) {
+    val c = code[offset]
+    if (c.isWhitespace() || c == '/') {
+      offset = skipCommentsAndWhitespace(code, offset, allowCommentNesting)
+    } else if (c == '\'' || c == '"') {
+      offset = skipStringLiteral(code, offset)
+    } else if (!c.isJavaIdentifierStart()) {
+      offset++
+    } else {
+      // Found identifier start
+      val start = offset++
+      var isQualified = false
+      while (offset < length) {
+        val ch = code[offset]
+        if (ch == '.' && offset < length - 1) {
+          if (code[offset + 1].isUpperCase()) {
+            isQualified = true
+          }
+        } else if (!ch.isJavaIdentifierPart()) {
+          break
+        }
+        offset++
+      }
+      if (isQualified && !code[start].isUpperCase()) {
+        set.add(code.substring(start, offset))
+      }
+    }
+  }
+  return set
+}
+
+/**
+ * Given Java or Kotlin [source] code, and a starting offset which points at a string or character
+ * literal, return the offset of the character after the final closing character.
+ */
+@VisibleForTesting
+fun skipStringLiteral(source: CharSequence, start: Int): Int {
+  val first = source[start]
+  val length = source.length
+  if (first == '"' || first == '\'') {
+    if (source.startsWith("\"\"\"", start)) {
+      // TODO: Handle substitutions, ${} ?
+      // Raw string
+      val end = source.indexOf("\"\"\"", start + 3)
+      if (end != -1) {
+        return end + 3
+      } else {
+        return source.length
+      }
+    }
+    var offset = start + 1
+    while (offset < length) {
+      val c = source[offset++]
+      if (c == '\\') {
+        offset++
+      } else if (c == first) {
+        return offset
+      }
+    }
+  } else {
+    error("Only call on strings.")
+  }
+  return length
 }
 
 /** Returns the index of the first dot followed by an uppercase character. */

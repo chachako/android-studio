@@ -1178,6 +1178,12 @@ abstract class LintFixPerformer(
       return replaceFixBuilder.build() as ReplaceString
     }
 
+    /**
+     * Given Java or Kotlin [source] code, and a starting offset, skip any whitespace and comments
+     * and return the first offset which is not whitespace or part of a comment. If
+     * [allowCommentNesting] is true, block comments can be nested -- this should be true for Kotlin
+     * code and false for Java code.
+     */
     fun skipCommentsAndWhitespace(
       source: CharSequence,
       start: Int,
@@ -1197,7 +1203,7 @@ abstract class LintFixPerformer(
           if (source[index] == '/') { // line comment
             index = source.indexOf('\n', index) + 1
             if (index == 0) {
-              break
+              return length
             }
           } else if (source[index] == '*') {
             // block comment

@@ -775,7 +775,12 @@ protected constructor(
     fun build(): LintFix {
       assert(list.isNotEmpty())
       if (list.size == 1) {
-        return list[0]
+        val single = list[0]
+        displayName?.let {
+          single.displayName = it
+          single.familyName = familyName
+        }
+        return single
       }
       return LintFixGroup(displayName, familyName, type, list, robot, independent)
     }

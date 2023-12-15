@@ -58,6 +58,7 @@ class LintFixPerformerTest {
     expectedFailure: String? = null,
     includeMarkers: Boolean = false,
     updateImports: Boolean = true,
+    shortenAll: Boolean = includeMarkers,
     location: Location? = null,
     requireAutoFixable: Boolean = true,
   ) {
@@ -77,7 +78,8 @@ class LintFixPerformerTest {
           printStatistics,
           requireAutoFixable = requireAutoFixable,
           includeMarkers = includeMarkers,
-          updateImports = updateImports
+          updateImports = updateImports,
+          shortenAll = shortenAll
         ) {
         override fun writeFile(file: File, contents: String) {
           after = contents
@@ -571,6 +573,52 @@ class LintFixPerformerTest {
             public void test() { }
         }
         """,
+      includeMarkers = true,
+      updateImports = true
+    )
+  }
+
+  @Test
+  fun testDoNotShortenStrings() {
+    // Make sure we don't shorten references in strings.
+    val source =
+      """
+      package test.pkg;
+
+      class Test {
+      }
+      """
+        .trimIndent()
+
+    val (file, range) = getFileAndRange("Test.java", source, source.indexOf("class Test"))
+    val fix =
+      fix()
+        .annotate(
+          "@android.annotation.EnforcePermission(allOf={\n" +
+            "// android.permission.READ_CONTACTS is necessary because of X\n" +
+            "\"android.permission.READ_CONTACTS\", \"android.permission.WRITE_CONTACTS\"})"
+        )
+        .range(range)
+        .autoFix()
+        .build()
+
+    // Just apply the quickfix; no imports added, no references shortened
+    check(
+      file,
+      source,
+      fix,
+      expected =
+        """
+        package test.pkg;
+        import android.annotation.EnforcePermission;
+
+        @EnforcePermission(allOf={
+        // android.permission.READ_CONTACTS is necessary because of X
+        "android.permission.READ_CONTACTS", "android.permission.WRITE_CONTACTS"})
+        class Test {
+        }
+        """
+          .trimIndent(),
       includeMarkers = true,
       updateImports = true
     )
@@ -1627,5 +1675,28 @@ class LintFixPerformerTest {
     checkSkip("@annotation(5, \"\\\")\")| test", LintFixPerformer.Companion::skipAnnotation)
     checkSkip("@annotation(5, ')')| test", LintFixPerformer.Companion::skipAnnotation)
     checkSkip("@annotation(5, '\\')')| test", LintFixPerformer.Companion::skipAnnotation)
+  }
+
+  @Test
+  fun testSkipStrings() {
+    checkSkip("'c'|next", ::skipStringLiteral)
+    checkSkip("'\\u1234'|next", ::skipStringLiteral)
+    checkSkip("'\\''|next", ::skipStringLiteral)
+    checkSkip("\"string\"|next", ::skipStringLiteral)
+    checkSkip("\"string\\\"\"|next", ::skipStringLiteral)
+    checkSkip("\"\"\"test\"\"test\"\"\"|next", ::skipStringLiteral)
+  }
+
+  private fun checkShorten(expected: String, source: String, allowCommentNesting: Boolean = true) {
+    assertEquals(expected, collectNames(source, allowCommentNesting).toList().sorted().toString())
+  }
+
+  @Test
+  fun testCollectNames() {
+    checkShorten(
+      "[foo.Bar]",
+      "/* not.Code /* nested */ not.Code */ val x = \"not.Code\"; val y = foo.Bar"
+    )
+    checkShorten("[foo.Bar]", "val x = \"\\\"not.Code\\\"\"; val y = foo.Bar")
   }
 }

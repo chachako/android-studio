@@ -193,20 +193,17 @@ class SdkSuppressDetectorTest : AbstractCheckTest() {
       )
       // Test compatibility handling for diffs; before a bug was fixed in the test differ,
       // for window=0 diffs we'd sometimes miss a context separator (@@). We now handle
-      // it right but we allow tests to pass if they had the exact old diff format instead.
+      // it right, but we allow tests to pass if they had the exact old diff format instead.
       .expectFixDiffs(
         """
         Fix for src/test/java/test/pkg/UnitTestJava.java line 6: Replace with @androidx.test.filters.SdkSuppress(minSdkVersion=29):
-        @@ -5 +5
-        + import androidx.test.filters.SdkSuppress;
+        @@ -6 +6
         - @RequiresApi(29) // ERROR: don't use in tests, use @SdkSuppress instead
-        + @SdkSuppress(minSdkVersion=29) // ERROR: don't use in tests, use @SdkSuppress instead
+        + @androidx.test.filters.SdkSuppress(minSdkVersion=29) // ERROR: don't use in tests, use @SdkSuppress instead
         Fix for src/test/java/test/pkg/UnitTestJava.java line 9: Replace with @androidx.test.filters.SdkSuppress(minSdkVersion=31):
-        @@ -5 +5
-        + import androidx.test.filters.SdkSuppress;
-        @@ -9 +10
+        @@ -9 +9
         -     @androidx.annotation.RequiresApi(api=31) // ERROR: don't use in tests, use @SdkSuppress instead
-        +     @SdkSuppress(minSdkVersion=31) // ERROR: don't use in tests, use @SdkSuppress instead
+        +     @androidx.test.filters.SdkSuppress(minSdkVersion=31) // ERROR: don't use in tests, use @SdkSuppress instead
         Fix for src/test/java/test/pkg/UnitTestKotlin.kt line 5: Replace with @androidx.test.filters.SdkSuppress(minSdkVersion=29):
         @@ -5 +5
         - @RequiresApi(29) // ERROR: don't use in tests, use @SdkSuppress instead

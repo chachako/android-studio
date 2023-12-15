@@ -233,6 +233,43 @@ class LocaleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(expected)
       .expectFixDiffs(expectedFixDiffs)
+      // Also confirm that we support the previous style of imports and shortening
+      .expectFixDiffs(
+        """
+        Fix for src/test/pkg/LocaleTest.kt line 2: Replace with `capitalize(Locale.ROOT)`:
+        @@ -2 +2
+        -     "wrong".capitalize()
+        +     "wrong".capitalize(java.util.Locale.ROOT)
+        Fix for src/test/pkg/LocaleTest.kt line 2: Replace with `capitalize(Locale.getDefault())`:
+        @@ -2 +2
+        -     "wrong".capitalize()
+        +     "wrong".capitalize(java.util.Locale.getDefault())
+        Fix for src/test/pkg/LocaleTest.kt line 4: Replace with `decapitalize(Locale.ROOT)`:
+        @@ -4 +4
+        -     "Wrong".decapitalize()
+        +     "Wrong".decapitalize(java.util.Locale.ROOT)
+        Fix for src/test/pkg/LocaleTest.kt line 4: Replace with `decapitalize(Locale.getDefault())`:
+        @@ -4 +4
+        -     "Wrong".decapitalize()
+        +     "Wrong".decapitalize(java.util.Locale.getDefault())
+        Fix for src/test/pkg/LocaleTest.kt line 6: Replace with `toUpperCase(Locale.ROOT)`:
+        @@ -6 +6
+        -     "wrong".toUpperCase()
+        +     "wrong".toUpperCase(java.util.Locale.ROOT)
+        Fix for src/test/pkg/LocaleTest.kt line 6: Replace with `toUpperCase(Locale.getDefault())`:
+        @@ -6 +6
+        -     "wrong".toUpperCase()
+        +     "wrong".toUpperCase(java.util.Locale.getDefault())
+        Fix for src/test/pkg/LocaleTest.kt line 8: Replace with `toLowerCase(Locale.ROOT)`:
+        @@ -8 +8
+        -     "WRONG".toLowerCase()
+        +     "WRONG".toLowerCase(java.util.Locale.ROOT)
+        Fix for src/test/pkg/LocaleTest.kt line 8: Replace with `toLowerCase(Locale.getDefault())`:
+        @@ -8 +8
+        -     "WRONG".toLowerCase()
+        +     "WRONG".toLowerCase(java.util.Locale.getDefault())
+        """
+      )
   }
 
   fun testIgnoreLoggingWithoutLocale() {

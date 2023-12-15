@@ -128,6 +128,23 @@ class LintFixTest : TestCase() {
     // and their quickfixes
   }
 
+  fun testCompositeSingle() {
+    // Make sure that when we create a single composite we end up with just the leaf
+    // fix (and the correct display name)
+    // The actual adding of annotations is tested in (for example) SdkIntDetectorTest.
+    // This is just testing some other minor methods for code coverage purposes
+    val fix =
+      LintFix.create()
+        .name("Annotate")
+        .annotate("SuppressWarnings", null, null, true)
+        .autoFix()
+        .build()
+    val composite = LintFix.create().name("Composite", "Family").composite(fix)
+    assertSame(fix, composite)
+    assertEquals("Composite", fix.getDisplayName())
+    assertEquals("Family", fix.getFamilyName())
+  }
+
   /**
    * Detector which makes use of a couple of lint fix string replacement features: (1) ranges
    * (larger than error range, and (2) back references.
