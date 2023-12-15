@@ -752,4 +752,12 @@ public class FolderConfigurationTest {
                 .isEqualTo(new HighDynamicRangeQualifier(HighDynamicRange.LOWDR));
         assertThat(config.getVersionQualifier()).isEqualTo(VersionQualifier.getQualifier("v26"));
     }
+
+    @Test
+    public void digitalRegionalQualifier() {
+        FolderConfiguration config = FolderConfiguration.getConfigForQualifierString("es-r419");
+        assertThat(config).isNotNull();
+        assertThat(config.getLocaleQualifier().getLanguage()).isEqualTo("es");
+        assertThat(config.getLocaleQualifier().getRegion()).isEqualTo("419");
+    }
 }
