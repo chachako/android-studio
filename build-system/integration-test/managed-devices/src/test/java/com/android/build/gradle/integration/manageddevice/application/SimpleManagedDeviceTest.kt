@@ -55,11 +55,25 @@ class SimpleManagedDeviceTest {
             "com.example.android.kotlin.ExampleInstrumentedTest.html")).exists()
     }
 
+    private fun assertUtpLogExist() {
+        val outputDir = FileUtils.join(
+            project.getSubproject("app").buildDir,
+            "outputs",
+            "androidTest-results",
+            "managedDevice",
+            "debug",
+            "device1")
+        assertThat(File(outputDir, "utp.0.log")).exists()
+        assertThat(File(outputDir, "utp.0.log")).contains(
+            "INFO: Execute com.example.android.kotlin.ExampleInstrumentedTest.useAppContext: PASSED")
+    }
+
     @Test
     fun runBasicManagedDevice() {
         executor.run(":app:device1DebugAndroidTest")
 
         assertTestReportExists()
+        assertUtpLogExist()
     }
 
     @Test
