@@ -40,6 +40,7 @@ import com.google.common.collect.Maps
 import java.io.File
 import java.io.IOException
 import java.io.Writer
+import java.util.Locale
 import org.kxml2.io.KXmlParser
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
@@ -185,6 +186,7 @@ class LintBaseline(
       // Keep in sync with isFixedMessage() below
       var message =
         String.format(
+          Locale.getDefault(),
           "%1\$d errors/warnings were listed in the " +
             "baseline file (%2\$s) but not found in the project; perhaps they have " +
             "been fixed?",

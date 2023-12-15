@@ -77,7 +77,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
           ISSUE,
           element,
           context.getLocation(defaultValue),
-          String.format("Restriction type `%1\$s` should not have a default value", restrictionType)
+          "Restriction type `$restrictionType` should not have a default value"
         )
       }
       for (child in children) {
@@ -114,13 +114,9 @@ class RestrictionsDetector : ResourceXmlDetector() {
           ISSUE,
           element,
           context.getElementLocation(element),
-          String.format(
-            // TODO: Reference Google Play store restriction here in error message,
-            // e.g. that violating this will cause APK to be rejected?
-            "Invalid nested restriction: too many nested restrictions (was %1\$d, max %2\$d)",
-            children.size,
-            MAX_NUMBER_OF_NESTED_RESTRICTIONS
-          )
+          // TODO: Reference Google Play store restriction here in error message,
+          // e.g. that violating this will cause APK to be rejected?
+          "Invalid nested restriction: too many nested restrictions (was ${children.size}, max $MAX_NUMBER_OF_NESTED_RESTRICTIONS)",
         )
       } else if (depth > MAX_NESTING_DEPTH) {
         // Same comment as for MAX_NUMBER_OF_NESTED_RESTRICTIONS: include source?
@@ -128,14 +124,10 @@ class RestrictionsDetector : ResourceXmlDetector() {
           ISSUE,
           element,
           context.getElementLocation(element),
-          String.format(
-            "Invalid nested restriction: nesting depth %1\$d too large (max %2\$d",
-            depth,
-            MAX_NESTING_DEPTH
-          )
+          "Invalid nested restriction: nesting depth $depth too large (max $MAX_NESTING_DEPTH"
         )
       }
-    } else if (!children.isEmpty()) {
+    } else if (children.isNotEmpty()) {
       context.report(
         ISSUE,
         element,
@@ -188,7 +180,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
         val previousLocation = context.getValueLocation(prevAttribute)
         previousLocation.message = "Previous use of key here"
         location.secondary = previousLocation
-        context.report(ISSUE, element, location, String.format("Duplicate key `%1\$s`", key))
+        context.report(ISSUE, element, location, "Duplicate key `$key`")
       }
       else -> keys[key] = element
     }
@@ -228,7 +220,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
         ISSUE,
         element,
         context.getNameLocation(element),
-        String.format("Unexpected tag `<%1\$s>`, expected `<%2\$s>`", tagName, TAG_RESTRICTION)
+        "Unexpected tag `<$tagName>`, expected `<$TAG_RESTRICTION>`"
       )
       return false
     }
@@ -250,7 +242,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
         ISSUE,
         element,
         context.getElementLocation(element),
-        String.format("Missing required attribute `%1\$s`", fullAttribute)
+        "Missing required attribute `$fullAttribute`"
       )
       return null
     }

@@ -27,6 +27,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Locale
 
 class PossibleResourcesMarkerTest {
 
@@ -92,7 +93,7 @@ class PossibleResourcesMarkerTest {
         assertFalse("A_BBend".matches(convertFormatStringToRegexp("foo%s_%1\$send").toRegex()))
         // Comprehensive test
         val p = "prefix%s%%%n%c%x%d%o%b%h%f%e%a%g%C%X%5B%E%A%G"
-        var s = String.format(p, "", 'c', 1, 1, 1, true, 1, 1f, 1f, 1f, 1f, 'c', 1, 1, 1f, 1f, 1f)
+        var s = String.format(Locale.getDefault(), p, "", 'c', 1, 1, 1, true, 1, 1f, 1f, 1f, 1f, 'c', 1, 1, 1f, 1f, 1f)
         s = s.replace("\r\n".toRegex(), "\n")
         assertTrue(s.matches(convertFormatStringToRegexp(p).toRegex()))
     }

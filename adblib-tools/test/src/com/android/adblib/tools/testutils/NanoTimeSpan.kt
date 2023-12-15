@@ -17,12 +17,13 @@ package com.android.adblib.tools.testutils
 
 import org.junit.Assert
 import java.time.Duration
+import java.util.Locale
 
 internal data class NanoTimeSpan(val startNano: Long, val endNano: Long) {
 
     override fun toString(): String {
-        val s = String.format("%,d", startNano)
-        val e = String.format("%,d", endNano - startNano)
+        val s = String.format(Locale.ROOT, "%,d", startNano)
+        val e = String.format(Locale.ROOT, "%,d", endNano - startNano)
         return ("TimeSpan(start=$s, duration=$e)")
     }
 

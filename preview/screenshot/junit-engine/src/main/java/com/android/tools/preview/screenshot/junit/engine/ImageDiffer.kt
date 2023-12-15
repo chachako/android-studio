@@ -16,6 +16,7 @@
 package com.android.tools.preview.screenshot.junit.engine
 
 import java.awt.image.BufferedImage
+import java.util.Locale
 import kotlin.math.pow
 
 /**
@@ -101,7 +102,7 @@ fun interface ImageDiffer {
             val SSIMTotal = calculateSSIM(aIntArray, bIntArray, a.width, a.height)
             val SSIMThreshold = 1 - imageDiffThreshold
 
-            val stats = "[MSSIM] Required SSIM: ${String.format("%.3f", SSIMThreshold)}, Actual SSIM: ${String.format("%.3f", SSIMTotal)}"
+            val stats = "[MSSIM] Required SSIM: ${String.format(Locale.ROOT, "%.3f", SSIMThreshold)}, Actual SSIM: ${String.format(Locale.ROOT, "%.3f", SSIMTotal)}"
             val pixelDiff = generatePixelDiffImage(a, b)
             val highlights = pixelDiff.first
             val numPixelsDifferent = pixelDiff.second

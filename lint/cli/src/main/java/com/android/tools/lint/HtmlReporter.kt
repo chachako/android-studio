@@ -37,6 +37,7 @@ import java.io.File
 import java.io.IOException
 import java.io.Writer
 import java.util.Date
+import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
 
@@ -175,7 +176,13 @@ class HtmlReporter(client: LintCliClient, output: File, flags: LintCliFlags) :
           append("Link\" onclick=\"reveal('")
           append(id)
           append("');\" />")
-          append(String.format("+ %1\$d More Occurrences...", incidents.size - SHOWN_COUNT))
+          append(
+            String.format(
+              Locale.getDefault(),
+              "+ %1\$d More Occurrences...",
+              incidents.size - SHOWN_COUNT
+            )
+          )
           append("</button>\n")
           append("<div id=\"")
           append(id)
@@ -742,7 +749,7 @@ document.getElementById(id).style.display = 'none';
       append("<tr><td></td>")
       append("<td class=\"categoryColumn\">")
       append("<a href=\"#ExtraIssues\">")
-      append(String.format("Included Additional Checks (%1\$d)", extraCount))
+      append(String.format(Locale.getDefault(), "Included Additional Checks (%1\$d)", extraCount))
       append("</a>\n")
       append("</td></tr>\n")
     }
@@ -750,7 +757,7 @@ document.getElementById(id).style.display = 'none';
       append("<tr><td></td>")
       append("<td class=\"categoryColumn\">")
       append("<a href=\"#MissingIssues\">")
-      append(String.format("Disabled Checks (%1\$d)", missingCount))
+      append(String.format(Locale.getDefault(), "Disabled Checks (%1\$d)", missingCount))
       append("</a>\n")
       append("</td></tr>\n")
     }

@@ -232,7 +232,7 @@ fun formatList(
     sb.append(sortedStrings[i])
 
     if (maxItems > 0 && i == maxItems - 1 && n > maxItems) {
-      sb.append(String.format("... (%1\$d more)", n - i - 1))
+      sb.append("... (${n -i -1} more)")
       break
     }
     i++
@@ -337,18 +337,11 @@ fun describeCounts(
   val errors = pluralize(errorCount, "error")
   val warnings = pluralize(warningCount, "warning")
   return when {
-    errorCount == 0 -> String.format("%1\$d %2\$s", warningCount, warnings)
-    warningCount == 0 -> String.format("%1\$d %2\$s", errorCount, errors)
+    errorCount == 0 -> "$warningCount $warnings"
+    warningCount == 0 -> "$errorCount $errors"
     else -> {
       val conjunction = if (comma) "," else " and"
-      String.format(
-        "%1\$d %2\$s%3\$s %4\$d %5\$s",
-        errorCount,
-        errors,
-        conjunction,
-        warningCount,
-        warnings
-      )
+      "$errorCount $errors$conjunction $warningCount $warnings"
     }
   }
 }

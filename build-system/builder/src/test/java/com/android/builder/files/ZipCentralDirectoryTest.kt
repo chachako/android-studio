@@ -25,6 +25,7 @@ import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.Locale
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.math.min
@@ -121,7 +122,7 @@ class ZipCentralDirectoryTest {
         ZipOutputStream(FileOutputStream(path)).use { output ->
             output.setLevel(ZipOutputStream.STORED)
            for (i in 1..numFiles) {
-               val name = String.format("file%06d", i)
+               val name = String.format(Locale.ROOT, "file%06d", i)
                val entry = ZipEntry(name)
                output.putNextEntry(entry)
                val maxChunkSize = 20_000_000
