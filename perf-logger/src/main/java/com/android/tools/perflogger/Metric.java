@@ -99,10 +99,11 @@ public class Metric {
         }
         myMetricName = metricName;
         try {
-            myOutputDirectory = TestUtils.getTestOutputDir().toFile();
+            myOutputDirectory = TestUtils.getTestOutputDir().resolve(Benchmark.LOG_DIR).toFile();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+        myOutputDirectory.mkdir();
 
         // Preserve insertion order - mostly for test purposes.
         mySamples = new LinkedHashMap<>();

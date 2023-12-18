@@ -57,7 +57,8 @@ public class PerfData {
 
     /** Serializes all of the performance data to a default location in JSON format. */
     public void commit() throws IOException {
-        Path outputDirectory = TestUtils.getTestOutputDir();
+        Path outputDirectory = TestUtils.getTestOutputDir().resolve(Benchmark.LOG_DIR);
+        outputDirectory.toFile().mkdir();
         try (Writer jsonWriter = Files.newBufferedWriter(outputDirectory.resolve(FILE_NAME))) {
             commit(jsonWriter);
         }

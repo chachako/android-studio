@@ -29,6 +29,7 @@ import java.util.Objects;
 /** Wrapper for the configurations of the benchmark that the logger will add data to. */
 public class Benchmark {
     private static final String DEFAULT_PROJECT_NAME = "Perfgate for Android Studio";
+    static final String LOG_DIR = "perf-logs";
 
     @NonNull @Expose private final String name;
     @NonNull @Expose private final String projectName;
