@@ -112,7 +112,7 @@ class RootsDetector(
         if (lastRootIds.size != currRootIds.size || !lastRootIds.containsAll(currRootIds)) {
             val removed = lastRootIds.filter { !currRootIds.contains(it) }
             val added = currRootIds.filter { !lastRootIds.contains(it) }
-            lastRootIds = currRootIds
+            lastRootIds = currRootIds.toSet() // make a copy: b/316777257
             setCheckpoint(ProgressCheckpoint.ROOTS_EVENT_SENT)
             connection.sendEvent {
                 rootsEvent = WindowRootsEvent.newBuilder().apply {
