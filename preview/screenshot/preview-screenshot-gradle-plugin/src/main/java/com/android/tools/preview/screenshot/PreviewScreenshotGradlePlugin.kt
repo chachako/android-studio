@@ -56,7 +56,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 error("Android Gradle plugin version 8.3.0-alpha01 or higher is required." +
                         " Current version is $agpVersion.")
             }
-            if (agpVersion >= AndroidPluginVersion(8,4).alpha(1)) {
+            if (agpVersion >= AndroidPluginVersion(8,4).alpha(1)
+                && agpVersion.previewType != "dev") {
                 error("Preview screenshot plugin is an experimental feature. It requires Android " +
                         "Gradle plugin version 8.3.0. Current version is $agpVersion.")
             }
@@ -189,6 +190,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.previewFile.set(previewOut)
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
                         task.description = "Update screenshots for the $variantName build."
+                        task.group = JavaBasePlugin.VERIFICATION_GROUP
                     }
 
                     val previewScreenshotValidationTask = project.tasks.register(
