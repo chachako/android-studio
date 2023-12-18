@@ -182,7 +182,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         )
 
                     project.tasks.register(
-                        "previewScreenshotUpdate${variantName}AndroidTest",
+                        "previewScreenshotUpdate${variantName.capitalized()}AndroidTest",
                         PreviewScreenshotUpdateTask::class.java
                     ) { task ->
                         task.referenceImageDir.set(referenceImageDir)
