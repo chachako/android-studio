@@ -41,6 +41,7 @@ internal class StandaloneModuleClassLoaderManager(
         parent,
         loader
     ) {
+        private val loadedClasses = mutableSetOf<String>()
         override val stats: ModuleClassLoaderDiagnosticsRead =
             object : ModuleClassLoaderDiagnosticsRead {
                 override val classesFound: Long = 0
@@ -48,8 +49,14 @@ internal class StandaloneModuleClassLoaderManager(
                 override val accumulatedRewriteTimeMs: Long = 0
             }
         override val isUserCodeUpToDate: Boolean = true
-        override fun hasLoadedClass(fqcn: String): Boolean = true
+        override fun hasLoadedClass(fqcn: String): Boolean =
+            loadedClasses.contains(fqcn)
         override val isDisposed: Boolean = false
+        override fun onAfterLoadClass(fqcn: String, loaded: Boolean, durationMs: Long) {
+            if (loaded) {
+                loadedClasses.add(fqcn)
+            }
+        }
     }
 
     private fun createClassLoader(parent: ClassLoader?): DefaultModuleClassLoader =
