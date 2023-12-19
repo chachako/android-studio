@@ -580,8 +580,8 @@ abstract class R8Task @Inject constructor(
             it.proguardConfigurationFiles.from(
                 reconcileDefaultProguardFile(
                     getFilteredFiles(
-                        ignoredLibraryKeepRules.get(),
-                        ignoreAllLibraryKeepRules.get(),
+                        ignoreFromInKeepRules.get(),
+                        ignoreFromAllExternalDependenciesInKeepRules.get(),
                         libraryKeepRules,
                         finalListOfConfigurationFiles,
                         LoggerWrapper.getLogger(R8Task::class.java),

@@ -80,11 +80,11 @@ abstract class ExportConsumerProguardFilesTask : NonIncrementalTask() {
 
     @get:Input
     @get:Optional
-    abstract val ignoredKeepRules: SetProperty<String>
+    abstract val ignoreFromInKeepRules: SetProperty<String>
 
     @get:Input
     @get:Optional
-    abstract val ignoreAllKeepRules: Property<Boolean>
+    abstract val ignoreFromAllExternalDependenciesInKeepRules: Property<Boolean>
 
     @get:Internal
     lateinit var libraryKeepRules: ArtifactCollection
@@ -108,8 +108,8 @@ abstract class ExportConsumerProguardFilesTask : NonIncrementalTask() {
 
         val filteredProguardFiles = if (isDynamicFeature) {
             getFilteredFiles(
-                ignoredKeepRules.get(),
-                ignoreAllKeepRules.get(),
+                ignoreFromInKeepRules.get(),
+                ignoreFromAllExternalDependenciesInKeepRules.get(),
                 libraryKeepRules,
                 inputFiles,
                 LoggerWrapper.getLogger(ExportConsumerProguardFilesTask::class.java),
@@ -173,11 +173,11 @@ abstract class ExportConsumerProguardFilesTask : NonIncrementalTask() {
                 )
                 task.inputFiles.from(task.libraryKeepRules.artifactFiles)
 
-                task.ignoredKeepRules.setDisallowChanges(
-                    optimizationCreationConfig.ignoredLibraryKeepRules
+                task.ignoreFromInKeepRules.setDisallowChanges(
+                    optimizationCreationConfig.ignoreFromInKeepRules
                 )
-                task.ignoreAllKeepRules.setDisallowChanges(
-                    optimizationCreationConfig.ignoreAllLibraryKeepRules
+                task.ignoreFromAllExternalDependenciesInKeepRules.setDisallowChanges(
+                    optimizationCreationConfig.ignoreFromAllExternalDependenciesInKeepRules
                 )
             }
             task.buildDirectory.setDisallowChanges(task.project.layout.buildDirectory)

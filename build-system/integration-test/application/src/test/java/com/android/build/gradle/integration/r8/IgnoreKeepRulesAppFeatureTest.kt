@@ -129,7 +129,7 @@ class IgnoreKeepRulesAppFeatureTest {
                         productFlavors {
                             paid {
                                 optimization {
-                                    keepRules { ignoreAllExternalDependencies true }
+                                    keepRules { ignoreFromAllExternalDependencies true }
                                 }
                             }
                         }
@@ -157,7 +157,7 @@ class IgnoreKeepRulesAppFeatureTest {
                         $variantDimension {
                             optimization {
                                 keepRules {
-                                    ignoreExternalDependencies "$id"
+                                    ignoreFrom "$id"
                                 }
                             }
                         }

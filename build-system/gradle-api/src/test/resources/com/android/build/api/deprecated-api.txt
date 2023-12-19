@@ -289,6 +289,9 @@ Deprecated from AGP 8.1.0
   * com.android.build.api.variant.VariantBuilder.getUnitTestEnabled: boolean ()
   * com.android.build.api.variant.VariantBuilder.setEnableUnitTest: void (boolean)
   * com.android.build.api.variant.VariantBuilder.setUnitTestEnabled: void (boolean)
+Deprecated from AGP 8.4.0
+  * com.android.build.api.dsl.KeepRules.ignoreAllExternalDependencies: void (boolean)
+  * com.android.build.api.dsl.KeepRules.ignoreExternalDependencies: void (java.lang.String[])
 Deprecated from AGP 8.3.0
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.getKotlinOptions: org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions ()
   * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (kotlin.jvm.functions.Function1<? super org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions, kotlin.Unit>)

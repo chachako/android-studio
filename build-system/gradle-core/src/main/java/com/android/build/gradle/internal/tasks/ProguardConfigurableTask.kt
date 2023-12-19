@@ -39,11 +39,11 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedCon
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType.GENERATED_PROGUARD_FILE
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
-import com.android.builder.core.ComponentType
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationActionImpl
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
+import com.android.builder.core.ComponentType
 import com.google.common.base.Preconditions
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.transform.TransformParameters
@@ -134,10 +134,10 @@ abstract class ProguardConfigurableTask(
     abstract val libraryKeepRulesFileCollection: ConfigurableFileCollection
 
     @get:Input
-    abstract val ignoredLibraryKeepRules: SetProperty<String>
+    abstract val ignoreFromInKeepRules: SetProperty<String>
 
     @get:Input
-    abstract val ignoreAllLibraryKeepRules: Property<Boolean>
+    abstract val ignoreFromAllExternalDependenciesInKeepRules: Property<Boolean>
 
     @get:OutputFile
     abstract val mappingFile: RegularFileProperty
@@ -415,8 +415,9 @@ abstract class ProguardConfigurableTask(
                             FILTERED_PROGUARD_RULES
                     )
             task.libraryKeepRulesFileCollection.from(task.libraryKeepRules.artifactFiles)
-            task.ignoredLibraryKeepRules.set(optimizationCreationConfig.ignoredLibraryKeepRules)
-            task.ignoreAllLibraryKeepRules.set(optimizationCreationConfig.ignoreAllLibraryKeepRules)
+            task.ignoreFromInKeepRules.set(optimizationCreationConfig.ignoreFromInKeepRules)
+            task.ignoreFromAllExternalDependenciesInKeepRules.set(
+                optimizationCreationConfig.ignoreFromAllExternalDependenciesInKeepRules)
 
             when {
                 testedConfig != null -> {

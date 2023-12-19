@@ -595,6 +595,8 @@ com.android.build.gradle.internal.dsl.ExternalNativeNdkBuildOptions.targets: voi
 com.android.build.gradle.internal.dsl.HasConfigurableValueImpl.configure: void (kotlin.jvm.functions.Function1<? super T, kotlin.Unit>)
 com.android.build.gradle.internal.dsl.KeepRulesImpl.ignoreAllExternalDependencies: void (boolean)
 com.android.build.gradle.internal.dsl.KeepRulesImpl.ignoreExternalDependencies: void (java.lang.String[])
+com.android.build.gradle.internal.dsl.KeepRulesImpl.ignoreFrom: void (java.lang.String[])
+com.android.build.gradle.internal.dsl.KeepRulesImpl.ignoreFromAllExternalDependencies: void (boolean)
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidCompilationBuilderImpl.getCompilationName: java.lang.String ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidCompilationBuilderImpl.getDefaultSourceSetName: java.lang.String ()
 com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidCompilationBuilderImpl.getSourceSetTreeName: java.lang.String ()

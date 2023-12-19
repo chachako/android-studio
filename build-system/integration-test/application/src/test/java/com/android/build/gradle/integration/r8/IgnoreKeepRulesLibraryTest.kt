@@ -91,7 +91,7 @@ class IgnoreKeepRulesLibraryTest {
                         buildTypes {
                             debug {
                                 optimization {
-                                    keepRules { ignoreAllExternalDependencies true }
+                                    keepRules { ignoreFromAllExternalDependencies true }
                                 }
                             }
                         }
@@ -121,8 +121,8 @@ class IgnoreKeepRulesLibraryTest {
                             debug {
                                 optimization {
                                     keepRules {
-                                        ignoreExternalDependencies '$LIB_FOO_ID_NO_VERSION'
-                                        ignoreExternalDependencies '$LIB_BAR_ID_UNSUPPORTED_FORMAT'
+                                        ignoreFrom '$LIB_FOO_ID_NO_VERSION'
+                                        ignoreFrom '$LIB_BAR_ID_UNSUPPORTED_FORMAT'
                                     }
                                 }
                             }
@@ -155,7 +155,7 @@ class IgnoreKeepRulesLibraryTest {
                         $variantDimension {
                             optimization {
                                 keepRules {
-                                    ignoreExternalDependencies "$id"
+                                    ignoreFrom "$id"
                                 }
                             }
                         }

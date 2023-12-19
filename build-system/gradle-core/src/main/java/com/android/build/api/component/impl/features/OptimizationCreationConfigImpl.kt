@@ -91,14 +91,15 @@ class OptimizationCreationConfigImpl(
         }
     }
 
-    override val ignoredLibraryKeepRules: Provider<Set<String>> =
-        baseModuleMetadata?.map { it.ignoredLibraryKeepRules }
+    override val ignoreFromInKeepRules: Provider<Set<String>> =
+        baseModuleMetadata?.map { it.ignoreFromInKeepRules }
             ?: internalServices.setPropertyOf(
                 String::class.java,
-                dslInfo.ignoredLibraryKeepRules
+                dslInfo.ignoreFromInKeepRules
             )
 
-    override val ignoreAllLibraryKeepRules: Boolean = dslInfo.ignoreAllLibraryKeepRules
+    override val ignoreFromAllExternalDependenciesInKeepRules: Boolean =
+        dslInfo.ignoreFromAllExternalDependenciesInKeepRules
 
     override val ignoreFromInBaselineProfile: Provider<Set<String>> =
         internalServices.setPropertyOf(

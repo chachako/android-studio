@@ -48,12 +48,12 @@ interface OptimizationCreationConfig {
      * Returns the component ids of those library dependencies whose keep rules are ignored when
      * building the project.
      */
-    val ignoredLibraryKeepRules: Provider<Set<String>>
+    val ignoreFromInKeepRules: Provider<Set<String>>
 
     /**
      * Returns whether to ignore all keep rules from external library dependencies.
      */
-    val ignoreAllLibraryKeepRules: Boolean
+    val ignoreFromAllExternalDependenciesInKeepRules: Boolean
 
     /**
      * Returns the external dependencies to ignore in baseline profiles.

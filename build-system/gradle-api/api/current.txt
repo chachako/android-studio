@@ -1199,8 +1199,10 @@ package com.android.build.api.dsl {
   }
 
   @org.gradle.api.Incubating public interface KeepRules {
-    method @org.gradle.api.Incubating public void ignoreAllExternalDependencies(boolean ignore);
-    method @org.gradle.api.Incubating public void ignoreExternalDependencies(java.lang.String... ids);
+    method @Deprecated @org.gradle.api.Incubating public void ignoreAllExternalDependencies(boolean ignore);
+    method @Deprecated @org.gradle.api.Incubating public void ignoreExternalDependencies(java.lang.String... ids);
+    method @org.gradle.api.Incubating public void ignoreFrom(java.lang.String... ids);
+    method @org.gradle.api.Incubating public void ignoreFromAllExternalDependencies(boolean ignore);
   }
 
   @org.gradle.api.Incubating public interface KmpOptimization {
