@@ -1179,80 +1179,61 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       val versionString = version.toString()
       val buildFile = context.file
       val isBlocking = sdkIndex.hasLibraryBlockingIssues(groupId, artifactId, versionString)
-
-      // Get the full list of issue types present, so we can try to show a more appropriate message
-      // when two or more types are present.
-      // If the multiple message issue is disabled, then it will fall back to the following
-      // priority:
+      val severity =
+        if (isBlocking) {
+          Severity.ERROR
+        } else {
+          Severity.WARNING
+        }
+      // Report all SDK Index issues without grouping them following this order (b/316038712):
       //  - Policy
       //  - Critical (if blocking)
       //  - Outdated
-      val issueTypes = mutableListOf<Issue>()
+      var fix: LintFix? = null
       if (sdkIndex.isLibraryNonCompliant(groupId, artifactId, versionString, buildFile)) {
-        issueTypes.add(PLAY_SDK_INDEX_NON_COMPLIANT)
+        fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
+        val message =
+          if (isBlocking) {
+            sdkIndex.generateBlockingPolicyMessage(groupId, artifactId, versionString)
+          } else {
+            sdkIndex.generatePolicyMessage(groupId, artifactId, versionString)
+          }
+        hasSdkIndexIssues =
+          report(
+            context,
+            cookie,
+            PLAY_SDK_INDEX_NON_COMPLIANT,
+            message,
+            fix,
+            overrideSeverity = severity
+          )
       }
       if (
         isBlocking &&
           sdkIndex.hasLibraryCriticalIssues(groupId, artifactId, versionString, buildFile)
       ) {
         // Messages from developer that are not-blocking are not shown in lint
-        issueTypes.add(RISKY_LIBRARY)
+        if (fix == null) {
+          fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
+        }
+        val message = sdkIndex.generateBlockingCriticalMessage(groupId, artifactId, versionString)
+        hasSdkIndexIssues =
+          report(context, cookie, RISKY_LIBRARY, message, fix, overrideSeverity = severity) ||
+            hasSdkIndexIssues
       }
       if (sdkIndex.isLibraryOutdated(groupId, artifactId, versionString, buildFile)) {
-        issueTypes.add(DEPRECATED_LIBRARY)
-      }
-      if (issueTypes.size >= 2) {
-        // Try to generate generic message first when two or more types are present
-        issueTypes.add(0, PLAY_SDK_INDEX_GENERIC_ISSUES)
-      }
-      if (issueTypes.isNotEmpty()) {
-        val fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
-        var typeIndex = 0
-        while ((!hasSdkIndexIssues) && typeIndex < issueTypes.size) {
-          if (isBlocking) {
-            val message =
-              when (issueTypes[typeIndex]) {
-                PLAY_SDK_INDEX_NON_COMPLIANT ->
-                  sdkIndex.generateBlockingPolicyMessage(groupId, artifactId, versionString)
-                RISKY_LIBRARY ->
-                  sdkIndex.generateBlockingCriticalMessage(groupId, artifactId, versionString)
-                DEPRECATED_LIBRARY ->
-                  sdkIndex.generateBlockingOutdatedMessage(groupId, artifactId, versionString)
-                else ->
-                  sdkIndex.generateBlockingGenericIssueMessage(groupId, artifactId, versionString)
-              }
-            hasSdkIndexIssues =
-              report(
-                context,
-                cookie,
-                issueTypes[typeIndex],
-                message,
-                fix,
-                overrideSeverity = Severity.ERROR
-              )
-          } else {
-            val message =
-              when (issueTypes[typeIndex]) {
-                PLAY_SDK_INDEX_NON_COMPLIANT ->
-                  sdkIndex.generatePolicyMessage(groupId, artifactId, versionString)
-                RISKY_LIBRARY ->
-                  sdkIndex.generateCriticalMessage(groupId, artifactId, versionString)
-                DEPRECATED_LIBRARY ->
-                  sdkIndex.generateOutdatedMessage(groupId, artifactId, versionString)
-                else -> sdkIndex.generateGenericIssueMessage(groupId, artifactId, versionString)
-              }
-            hasSdkIndexIssues =
-              report(
-                context,
-                cookie,
-                issueTypes[typeIndex],
-                message,
-                fix,
-                overrideSeverity = Severity.WARNING
-              )
-          }
-          typeIndex++
+        if (fix == null) {
+          fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
         }
+        val message =
+          if (isBlocking) {
+            sdkIndex.generateBlockingOutdatedMessage(groupId, artifactId, versionString)
+          } else {
+            sdkIndex.generateOutdatedMessage(groupId, artifactId, versionString)
+          }
+        hasSdkIndexIssues =
+          report(context, cookie, DEPRECATED_LIBRARY, message, fix, overrideSeverity = severity) ||
+            hasSdkIndexIssues
       }
     }
 
