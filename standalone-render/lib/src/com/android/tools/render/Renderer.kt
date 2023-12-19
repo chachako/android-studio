@@ -19,13 +19,10 @@ package com.android.tools.render
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.configuration.FolderConfiguration
-import com.android.layoutlib.LayoutlibProvider
 import com.android.resources.ResourceFolderType
 import com.android.sdklib.AndroidVersion
-import com.android.sdklib.devices.DefaultDevices
 import com.android.tools.configurations.Configuration
 import com.android.tools.fonts.DownloadableFontCacheService
-import com.android.tools.idea.layoutlib.LayoutLibraryLoader
 import com.android.tools.module.ModuleKey
 import com.android.tools.render.configuration.StandaloneConfigurationModelModule
 import com.android.tools.render.configuration.StandaloneConfigurationSettings
@@ -43,7 +40,6 @@ import com.android.tools.res.apk.ApkResourceRepository
 import com.android.tools.res.ids.apk.ApkResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
 import com.android.tools.sdk.AndroidSdkData
-import com.android.utils.NullLogger
 import com.google.common.annotations.VisibleForTesting
 import java.nio.file.Path
 import java.util.TimeZone
@@ -153,14 +149,10 @@ internal fun renderImpl(
             layoutlibPath,
         )
 
-        val defaultDevices = DefaultDevices(NullLogger.getLogger())
-        defaultDevices.init()
-        val defaultDevice = defaultDevices.getDevice("medium_phone", "Generic")
         val configurationSettings =
             StandaloneConfigurationSettings(
                 configModule,
                 framework.project,
-                defaultDevice,
                 androidTarget
             )
 
