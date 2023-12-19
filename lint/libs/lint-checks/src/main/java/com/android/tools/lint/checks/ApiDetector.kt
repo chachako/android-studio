@@ -72,6 +72,7 @@ import com.android.tools.lint.detector.api.AnnotationInfo
 import com.android.tools.lint.detector.api.AnnotationUsageInfo
 import com.android.tools.lint.detector.api.AnnotationUsageType
 import com.android.tools.lint.detector.api.ApiConstraint
+import com.android.tools.lint.detector.api.ApiConstraint.Companion.UNKNOWN
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.max
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ClassContext.Companion.getFqcn
@@ -119,6 +120,7 @@ import com.android.tools.lint.detector.api.resolveOperator
 import com.android.utils.XmlUtils
 import com.android.utils.usLocaleCapitalize
 import com.intellij.psi.CommonClassNames.JAVA_LANG_AUTO_CLOSEABLE
+import com.intellij.psi.CommonClassNames.JAVA_LANG_OBJECT
 import com.intellij.psi.PsiAnonymousClass
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
@@ -131,6 +133,7 @@ import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiReferenceExpression
 import com.intellij.psi.PsiSuperExpression
 import com.intellij.psi.PsiType
+import com.intellij.psi.util.InheritanceUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.TypeConversionUtil
 import java.io.IOException
@@ -802,6 +805,48 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       // since that's a warning and this type is an error, make sure we don't have
       // false positives.
       return
+    }
+
+    // A @RequiresApi annotation on a class means that the class is present
+    // (unlike a class reference to an Android runtime class with an API
+    // requirement). It's normally safe to refer to these in instanceof checks,
+    // casts, etc -- it's usage of methods or fields within the class that is
+    // unsafe. The annotation is normally placed on the class itself such that
+    // it recursively applies to all methods and fields within.
+    //
+    // However, there are exceptions. If your class extends a runtime class
+    // with a higher API level than the minSdkVersion, then even an instanceof
+    // check will crash. Therefore, in order to avoid complaining about the
+    // usually-safe references to local classes, but still warn about unsafe
+    // usages, here we'll check all the super types of the annotated class and
+    // if any of them exceed the minimumSdkVersion requirement, then we'll
+    // complain about the class reference.
+    if (usageInfo.type == AnnotationUsageType.CLASS_REFERENCE) {
+      val parent = element.uastParent
+      val type =
+        if (parent is UBinaryExpressionWithType) {
+          parent.type
+        } else if (element is UClassLiteralExpression) {
+          element.type
+        } else null
+      if (type != null) {
+        val apiDatabase = apiDatabase ?: return
+        val cls = evaluator.getTypeClass(type) ?: return
+        var max: ApiConstraint = ApiConstraint.ALL
+        val superClasses = InheritanceUtil.getSuperClasses(cls)
+        for (superClass in superClasses) {
+          val superClassQualifiedName = superClass.qualifiedName ?: continue
+          if (superClassQualifiedName == JAVA_LANG_OBJECT) continue
+          val versions = apiDatabase.getClassVersions(superClassQualifiedName)
+          if (versions == UNKNOWN) {
+            continue
+          }
+          max = max and versions
+        }
+        if (minSdk.isAtLeast(max)) {
+          return
+        }
+      }
     }
 
     val location: Location
