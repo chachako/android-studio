@@ -19,6 +19,7 @@ import com.android.SdkConstants
 import com.android.SdkConstants.NDK_DEFAULT_VERSION
 import com.android.Version
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder.MemoryRequirement
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2.Companion.ROOT_BUILD_ID
 import com.android.build.gradle.integration.common.fixture.gradle_project.BuildSystem
 import com.android.build.gradle.integration.common.fixture.gradle_project.ProjectLocation
 import com.android.build.gradle.integration.common.fixture.gradle_project.initializeProjectLocation
@@ -33,6 +34,7 @@ import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.plugins.VersionCheckPlugin
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.ToolsRevisionUtils
+import com.android.builder.model.v2.ide.SyncIssue
 import com.android.sdklib.internal.project.ProjectProperties
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.OsType
@@ -1330,6 +1332,15 @@ allprojects { proj ->
     /** Fluent method to get the model.  */
     fun modelV2(): ModelBuilderV2 {
         return applyOptions(ModelBuilderV2(this, projectConnection)).withPerTestPrefsRoot(true)
+    }
+
+    /** Returns [SyncIssue]s after fetching the model. */
+    fun getSyncIssues(
+        projectPath: String? = null,
+        buildName: String = ROOT_BUILD_ID
+    ): Collection<SyncIssue> {
+        return modelV2().ignoreSyncIssues().fetchModels().container
+            .getProject(projectPath, buildName).issues?.syncIssues.orEmpty()
     }
 
     fun locateBundleFileViaModel(variantName: String, projectPath: String?): File {

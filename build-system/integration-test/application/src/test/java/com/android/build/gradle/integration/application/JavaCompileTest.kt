@@ -17,11 +17,9 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.app.EmptyActivityProjectBuilder
-import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType.JAVAC
 import com.android.build.gradle.internal.scope.getOutputDir
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -155,32 +153,12 @@ class JavaCompileTest {
         }
         project.executor().run(":app:debugDisplayArguments")
 
-        Truth.assertThat(outFile.exists()).isTrue()
+        assertThat(outFile.exists()).isTrue()
         val content = outFile.readText()
-        Truth.assertThat(content).containsMatch("room.schemaLocation=.*schemas")
-        Truth.assertThat(content).contains("room.incremental=true")
-        Truth.assertThat(content).contains("room.expandProjection=true")
+        assertThat(content).containsMatch("room.schemaLocation=.*schemas")
+        assertThat(content).contains("room.incremental=true")
+        assertThat(content).contains("room.expandProjection=true")
     }
-
-    @Test
-    fun `check error messages for setting release flag `() {
-        TestFileUtils.appendToFile(
-            project.getSubproject("app").buildFile,
-            """
-
-                tasks.withType(JavaCompile).configureEach {
-                    it.options.release.set(8)
-                }
-            """.trimIndent()
-        )
-        val result = project.executor().expectFailure().run(":app:compileDebugJavaWithJavac")
-        result.stderr.use {
-            ScannerSubject.assertThat(it).contains("Using '--release' option prevents Android " +
-                    "Gradle Plugin from setting correct bootclasspath when compiling source with" +
-                    " Java 8")
-        }
-    }
-
 
     private fun buildAndCheckPresenceOfMethodParamsInByteCode(presenceExpected: Boolean) {
         TestFileUtils.appendToFile(

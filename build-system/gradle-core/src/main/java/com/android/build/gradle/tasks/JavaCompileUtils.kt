@@ -107,7 +107,7 @@ fun JavaCompile.configureProperties(creationConfig: ComponentCreationConfig) {
     this.targetCompatibility = compileOptions.targetCompatibility.toString()
     this.options.encoding = compileOptions.encoding
 
-    checkReleaseFlag(creationConfig.global.compileOptions.sourceCompatibility.isJava9Compatible)
+    checkReleaseOption(creationConfig.services.issueReporter)
 }
 
 /**
@@ -364,29 +364,18 @@ private fun checkSdkCompatibility(compileSdkVersion: String, issueReporter: Issu
     }
 }
 
-private fun JavaCompile.checkReleaseFlag(isJava9Compatible: Boolean) {
-    this.doFirst {
-        val issueReporter = DefaultIssueReporter(LoggerWrapper(logger))
-        if (this.options.release.isPresent) {
-            if (isJava9Compatible) {
-                issueReporter.reportWarning(
-                    IssueReporter.Type.GENERIC, "WARNING: Using '--release' option could " +
-                            "cause issues when using Android Gradle Plugin to compile sources " +
-                            "with Java 9+. Instead, please set 'sourceCompatibility' and " +
-                            "'targetCompatibility' to the desired Java version, and set " +
-                            "'compileSdkVersion' to 30 or above. See " +
-                            "https://developer.android.com/studio/releases/gradle-plugin#java-11"
-                )
-            } else {
-                issueReporter.reportError(
-                    IssueReporter.Type.GENERIC, "Using '--release' option prevents Android " +
-                            "Gradle Plugin from setting correct bootclasspath when compiling " +
-                            "source with Java 8. Instead, please set 'sourceCompatibility' and " +
-                            "'targetCompatibility' to 8. See " +
-                            "https://developer.android.com/studio/write/java8-support#supported_features"
-                )
-            }
-        }
+private fun JavaCompile.checkReleaseOption(issueReporter: IssueReporter) {
+    if (options.release.isPresent) {
+        issueReporter.reportError(
+            IssueReporter.Type.GENERIC,
+            """
+            Using '--release' option for JavaCompile is not supported because it prevents the Android Gradle plugin
+            from setting up the bootclasspath for compiling Java source files against Android APIs
+            (see https://issuetracker.google.com/278800528).
+            Please use Java toolchain or set 'sourceCompatibility' and 'targetCompatibility' options instead.
+            (see https://developer.android.com/build/jdks#source-compat).
+            """.trimIndent()
+        )
     }
 }
 

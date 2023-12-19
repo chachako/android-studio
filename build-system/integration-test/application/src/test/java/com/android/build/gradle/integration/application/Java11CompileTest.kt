@@ -22,9 +22,11 @@ import com.android.build.gradle.integration.common.fixture.TemporaryProjectModif
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
+import com.android.builder.errors.IssueReporter
 import com.android.testutils.OsType
 import com.android.testutils.TestUtils
 import com.android.utils.FileUtils
+import com.google.common.truth.Truth
 import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
@@ -201,21 +203,27 @@ class Java11CompileTest {
     }
 
     @Test
-    fun testWarningForSettingReleaseFlag() {
+    fun `test error message for setting release option`() {
         TestFileUtils.appendToFile(
             project.buildFile,
             """
-
-                tasks.withType(JavaCompile).configureEach {
-                    it.options.release.set(11)
-                }
+            tasks.withType(JavaCompile).configureEach {
+                it.options.release = 11
+            }
             """.trimIndent()
         )
-        val result = project.executor().run("compileDebugJavaWithJavac")
-        result.stdout.use {
-            ScannerSubject.assertThat(it).contains("WARNING: Using '--release' option could cause " +
-                    "issues when using Android Gradle Plugin to compile sources with Java 9+")
-        }
+
+        val syncIssue = project.getSyncIssues().single()
+        Truth.assertThat(syncIssue.severity).isEqualTo(IssueReporter.Severity.ERROR.severity)
+        Truth.assertThat(syncIssue.message).isEqualTo(
+            """
+            Using '--release' option for JavaCompile is not supported because it prevents the Android Gradle plugin
+            from setting up the bootclasspath for compiling Java source files against Android APIs
+            (see https://issuetracker.google.com/278800528).
+            Please use Java toolchain or set 'sourceCompatibility' and 'targetCompatibility' options instead.
+            (see https://developer.android.com/build/jdks#source-compat).
+            """.trimIndent()
+        )
     }
 
     private fun customJdkLocation(jdkVersion: JdkVersion): String {
