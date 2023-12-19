@@ -15,62 +15,72 @@
  */
 package com.android.sdklib
 
-import junit.framework.Assert
-import junit.framework.TestCase
+import com.android.sdklib.AndroidVersionUtil.androidVersionFromDeviceProperties
+import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
+import org.junit.Test
 
 /** Tests for [AndroidVersionUtil] */
-class AndroidVersionUtilTest : TestCase() {
-
+class AndroidVersionUtilTest {
+  @Test
   fun testFromProperties() {
-    val androidVersion =
-      AndroidVersionUtil.androidVersionFromDeviceProperties(
+    assertStrictlyEqual(
+      androidVersionFromDeviceProperties(
         mapOf(
           "ro.build.version.sdk" to "24",
         )
-      )
-    Assert.assertEquals(androidVersion, AndroidVersion(24, null, null, true))
+      ),
+      AndroidVersion(24, null, null, true)
+    )
   }
 
+  @Test
   fun testFromProperties_r() {
-    val androidVersion =
-      AndroidVersionUtil.androidVersionFromDeviceProperties(
+    assertStrictlyEqual(
+      androidVersionFromDeviceProperties(
         mapOf(
           "ro.build.version.sdk" to "30",
           "build.version.extensions.r" to "0",
         )
-      )
-    Assert.assertEquals(androidVersion, AndroidVersion(30, null, null, true))
+      ),
+      AndroidVersion(30, null, null, true)
+    )
   }
 
+  @Test
   fun testFromProperties_tiramisuSidegrade() {
-    val androidVersion =
-      AndroidVersionUtil.androidVersionFromDeviceProperties(
+    assertStrictlyEqual(
+      androidVersionFromDeviceProperties(
         mapOf(
           "ro.build.version.sdk" to "33",
           "build.version.extensions.r" to "5",
           "build.version.extensions.s" to "5",
           "build.version.extensions.t" to "3",
         )
-      )
-    Assert.assertEquals(androidVersion, AndroidVersion(33, null, 3, true))
+      ),
+      AndroidVersion(33, null, 3, true)
+    )
   }
 
+  @Test
   fun testFromProperties_tiramisu_ext4() {
-    val androidVersion =
-      AndroidVersionUtil.androidVersionFromDeviceProperties(
+    assertStrictlyEqual(
+      androidVersionFromDeviceProperties(
         mapOf(
           "ro.build.version.sdk" to "33",
           "build.version.extensions.r" to "4",
           "build.version.extensions.s" to "4",
           "build.version.extensions.t" to "4",
         )
-      )
-    Assert.assertEquals(androidVersion, AndroidVersion(33, null, 4, true))
+      ),
+      AndroidVersion(33, null, 4, false)
+    )
   }
 
+  @Test
   fun testFromProperties_tiramisu_udc() {
-    val androidVersion =
-      AndroidVersionUtil.androidVersionFromDeviceProperties(
+    assertStrictlyEqual(
+      androidVersionFromDeviceProperties(
         mapOf(
           "ro.build.version.sdk" to "33",
           "ro.build.version.codename" to "UpsideDownCake",
@@ -78,33 +88,72 @@ class AndroidVersionUtilTest : TestCase() {
           "build.version.extensions.s" to "5",
           "build.version.extensions.t" to "5",
         )
-      )
-    Assert.assertEquals(androidVersion, AndroidVersion(33, "UpsideDownCake", 5, true))
+      ),
+      AndroidVersion(33, "UpsideDownCake", 5, true)
+    )
   }
 
-  fun testFromProperties_noSdk() {
-    val androidVersion = AndroidVersionUtil.androidVersionFromDeviceProperties(mapOf())
-    Assert.assertNull(androidVersion)
-  }
-
-  fun testFromProperties_badSdk() {
-    val androidVersion =
-      AndroidVersionUtil.androidVersionFromDeviceProperties(
+  @Test
+  fun testFromProperties_api34_ext10() {
+    assertStrictlyEqual(
+      androidVersionFromDeviceProperties(
         mapOf(
-          "ro.build.version.sdk" to "NaN",
+          "ro.build.version.sdk" to "34",
+          "ro.build.version.codename" to "REL",
+          "build.version.extensions.r" to "10",
+          "build.version.extensions.s" to "10",
+          "build.version.extensions.t" to "10",
+          "build.version.extensions.u" to "10",
+          "build.version.extensions.ad_services" to "10",
+        )
+      ),
+      AndroidVersion(34, null, 10, false)
+    )
+  }
+
+  @Test
+  fun testFromProperties_noSdk() {
+    assertThat(androidVersionFromDeviceProperties(mapOf())).isNull()
+  }
+
+  @Test
+  fun testFromProperties_badSdk() {
+    assertThat(
+        androidVersionFromDeviceProperties(
+          mapOf(
+            "ro.build.version.sdk" to "NaN",
+          )
         )
       )
-    Assert.assertNull(androidVersion)
+      .isNull()
   }
 
+  @Test
   fun testFromProperties_badExtension() {
-    val androidVersion =
-      AndroidVersionUtil.androidVersionFromDeviceProperties(
+    assertStrictlyEqual(
+      androidVersionFromDeviceProperties(
         mapOf(
           "ro.build.version.sdk" to "33",
           "build.version.extensions.r" to "NaN",
         )
-      )
-    Assert.assertEquals(androidVersion, AndroidVersion(33, null, null, true))
+      ),
+      AndroidVersion(33, null, null, true)
+    )
   }
+}
+
+/**
+ * AndroidVersion.equals() is a bit loose: it ignores isBaseExtension if the extensionLevels are
+ * equal. Here, we want to know that we read the AndroidVersion exactly as expected, not just
+ * equivalent.
+ */
+private fun assertStrictlyEqual(actual: AndroidVersion?, expected: AndroidVersion) {
+  checkNotNull(actual)
+  assertThat(actual).isEqualTo(expected)
+  assertWithMessage("AndroidVersion.isBaseExtension")
+    .that(actual.isBaseExtension)
+    .isEqualTo(expected.isBaseExtension)
+  assertWithMessage("AndroidVersion.extensionLevel")
+    .that(actual.extensionLevel)
+    .isEqualTo(expected.extensionLevel)
 }
