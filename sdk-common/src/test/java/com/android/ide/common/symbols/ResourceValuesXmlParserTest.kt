@@ -355,6 +355,30 @@ class ResourceValuesXmlParserTest {
     }
 
     @Test
+    fun parseStringWithSkipTag() {
+        val xml = """
+<resources>
+    <skip />
+    <string name="a">b</string>
+    <string name="b">c</string>
+</resources>""".trimIndent()
+
+        val table =
+            parseValuesResource(
+                XmlUtils.parseDocument(xml, true),
+                IdProvider.sequential(),
+                platformAttrSymbols)
+
+        val expected =
+            SymbolTable.builder()
+                .add(SymbolTestUtils.createSymbol("string", "a", "int", 0x7f_14_0001))
+                .add(SymbolTestUtils.createSymbol("string", "b", "int", 0x7f_14_0002))
+                .build()
+
+        assertThat(table).isEqualTo(expected)
+    }
+
+    @Test
     fun parseStringArray() {
         val xml = """
 <resources>
