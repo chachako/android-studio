@@ -56,6 +56,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
@@ -86,7 +87,10 @@ public class SimpleTestRunnableTest {
 
     @Before
     public void setUpMocks() throws Exception {
-        deviceConnector = Mockito.mock(DeviceConnector.class);
+        deviceConnector =
+                Mockito.mock(
+                        DeviceConnector.class,
+                        Mockito.withSettings().defaultAnswer(Answers.RETURNS_MOCKS));
         logger = new MockLog();
 
         applicationId = "com.example.app";
