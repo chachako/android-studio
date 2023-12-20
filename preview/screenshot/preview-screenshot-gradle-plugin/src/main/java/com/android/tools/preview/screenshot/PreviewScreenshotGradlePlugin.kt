@@ -73,12 +73,13 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     val flavorDir = if (flavor.isNullOrEmpty()) "" else "flavors/$flavor"
                     val buildDir = project.layout.buildDirectory
                     val testOutputDir = "outputs/androidTest-results/preview/$buildTarget/$flavorDir"
+                    val intermediatesDir = "intermediates/preview/$buildTarget/$flavorDir"
                     val resultsDir = buildDir.file(testOutputDir)
                     val referenceImageDir =
                         File("${project.projectDir.absolutePath}/src/androidTest/screenshot/$buildTarget/$flavorDir")
                     val renderedDir = buildDir.dir("$testOutputDir/rendered")
-                    val previewOut = buildDir.file("$testOutputDir/intermediates/previews_discovered.json")
-                    val cliInput = buildDir.file("$testOutputDir/intermediates/cli_tool_input.json")
+                    val previewOut = buildDir.file("$intermediatesDir/previews_discovered.json")
+                    val cliInput = buildDir.file("$intermediatesDir/cli_tool_input.json")
                     val testResultsDir = buildDir.dir("$testOutputDir/results")
                     val testResultsFile = buildDir.file("$testOutputDir/results/TEST-results.xml")
                     val reportsDir = buildDir.dir("reports/androidTests/preview/$buildTarget/$flavorDir")
