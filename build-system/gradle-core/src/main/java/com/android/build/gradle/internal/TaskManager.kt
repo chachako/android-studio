@@ -653,10 +653,7 @@ abstract class TaskManager(
         // even if legacy multidex is not explicitly enabled.
         val useAaptToGenerateLegacyMultidexMainDexProguardRules =
                 (creationConfig is ApkCreationConfig
-                        && creationConfig
-                        .dexing
-                        .dexingType
-                        .needsMainDexList)
+                        && creationConfig.dexing.dexingType.isLegacyMultiDex)
         if (globalConfig.namespacedAndroidResources) {
             // TODO: make sure we generate the proguard rules in the namespaced case.
             NamespacedResourcesTaskManager(

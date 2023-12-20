@@ -95,7 +95,6 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.AbstractProductFlavor.DimensionRequest
 import com.android.builder.core.ComponentType
 import com.android.builder.core.ComponentTypeImpl
-import com.android.builder.dexing.isLegacyMultiDexMode
 import com.android.builder.errors.IssueReporter
 import com.android.builder.model.TestOptions
 import com.google.common.collect.Lists
@@ -914,9 +913,9 @@ class VariantManager<
                     it.testExecution = AnalyticsUtil.toProto(dslExtension.testOptions.execution.toExecutionEnum() ?: TestOptions.Execution.HOST)
 
                     if (variant is ApkCreationConfig) {
-                        it.useLegacyMultidex = variant.dexing.dexingType.isLegacyMultiDexMode()
+                        it.useLegacyMultidex = variant.dexing.dexingType.isLegacyMultiDex
                         it.coreLibraryDesugaringEnabled = variant.dexing.isCoreLibraryDesugaringEnabled
-                        it.useMultidex = variant.dexing.isMultiDexEnabled
+                        it.useMultidex = variant.dexing.dexingType.isMultiDex
 
                         val supportType = variant.dexing.java8LangSupportType
                         if (supportType != Java8LangSupport.INVALID

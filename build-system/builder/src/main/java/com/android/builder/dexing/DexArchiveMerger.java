@@ -20,11 +20,13 @@ public interface DexArchiveMerger {
     @NonNull
     static DexArchiveMerger createD8DexMerger(
             @NonNull MessageReceiver messageReceiver,
+            @NonNull DexingType dexingType,
             int minSdkVersion,
             boolean isDebuggable,
             @Nullable ForkJoinPool forkJoinPool) {
         return new D8DexArchiveMerger(
                 messageReceiver,
+                dexingType,
                 minSdkVersion,
                 isDebuggable ? CompilationMode.DEBUG : CompilationMode.RELEASE,
                 forkJoinPool);

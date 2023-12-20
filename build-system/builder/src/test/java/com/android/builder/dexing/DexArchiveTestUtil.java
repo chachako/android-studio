@@ -220,7 +220,8 @@ public final class DexArchiveTestUtil {
         DexArchiveMerger merger =
                 DexArchiveMerger.createD8DexMerger(
                         new StandardOutErrMessageReceiver(),
-                        dexingType == DexingType.NATIVE_MULTIDEX ? 21 : 1,
+                        dexingType,
+                        1,
                         true,
                         ForkJoinPool.commonPool());
         Files.createDirectory(outputDir);

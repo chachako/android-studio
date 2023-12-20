@@ -49,17 +49,19 @@ final class D8DexArchiveMerger implements DexArchiveMerger {
     private static final String ERROR_MULTIDEX =
             "Cannot fit requested classes in a single dex file";
 
+    @NonNull private final DexingType dexingType;
     private final int minSdkVersion;
     @NonNull private final CompilationMode compilationMode;
     @NonNull private final MessageReceiver messageReceiver;
     @Nullable private final ForkJoinPool forkJoinPool;
-    private volatile boolean hintForMultidex = false;
 
     public D8DexArchiveMerger(
             @Nonnull MessageReceiver messageReceiver,
+            @NonNull DexingType dexingType,
             int minSdkVersion,
             @NonNull CompilationMode compilationMode,
             @Nullable ForkJoinPool forkJoinPool) {
+        this.dexingType = dexingType;
         this.minSdkVersion = minSdkVersion;
         this.compilationMode = compilationMode;
         this.messageReceiver = messageReceiver;
@@ -135,8 +137,23 @@ final class D8DexArchiveMerger implements DexArchiveMerger {
                 builder.setMainDexListOutputPath(mainDexListOutput);
             }
 
-            builder.setMinApiLevel(minSdkVersion)
-                    .setMode(compilationMode)
+            if (dexingType == DexingType.NATIVE_MULTIDEX && minSdkVersion < 21) {
+                // It's possible to run in native multidex mode and have minSdkVersion < 21
+                // (see `DexingImpl.canRunNativeMultiDex`). When this happens, we need to modify the
+                // minSdkVersion passed to D8. The reason is that if minSdkVersion < 21 and D8 can't
+                // fit all input dex files into 1 final dex file (because there are more than 64k
+                // methods), D8 will throw an exception (note that in native multidex mode, we're
+                // not passing main dex list to D8, so it's expected that D8 will fail).
+                //
+                // It is safe to override minSdkVersion because in native multidex mode, we don't
+                // have to fit all input dex files into 1 final dex file, and modifying
+                // minSdkVersion at this step doesn't affect the dex bytecode.
+                builder.setMinApiLevel(21);
+            } else {
+                builder.setMinApiLevel(minSdkVersion);
+            }
+
+            builder.setMode(compilationMode)
                     .setOutput(outputDir, OutputMode.DexIndexed)
                     .setDisableDesugaring(true)
                     .setIntermediate(false);

@@ -307,7 +307,7 @@ abstract class R8Task @Inject constructor(
                         ).withName("mainDexList.txt")
                             .on(InternalArtifactType.MAIN_DEX_LIST_FOR_BUNDLE)
                     }
-                    creationConfig.dexing.dexingType.needsMainDexList -> {
+                    creationConfig.dexing.dexingType.isLegacyMultiDex -> {
                         creationConfig.artifacts.setInitialProvider(
                             taskProvider,
                             R8Task::mainDexListOutput
@@ -366,13 +366,10 @@ abstract class R8Task @Inject constructor(
 
             setBootClasspathForCodeShrinker(task)
             if (creationConfig is ApkCreationConfig) {
-                task.minSdkVersion.set(
-                    creationConfig.dexing.minSdkVersionForDexing
-                )
+                task.minSdkVersion.setDisallowChanges(creationConfig.dexing.minSdkVersionForDexing)
             } else {
-                task.minSdkVersion.set(creationConfig.minSdk.apiLevel)
+                task.minSdkVersion.setDisallowChanges(creationConfig.minSdk.apiLevel)
             }
-            task.minSdkVersion.disallowChanges()
 
             task.debuggable
                 .setDisallowChanges(creationConfig.debuggable)
@@ -398,7 +395,7 @@ abstract class R8Task @Inject constructor(
                         artifacts.getAll(MultipleArtifact.MULTIDEX_KEEP_PROGUARD)
                 )
 
-                if (creationConfig.dexing.dexingType.needsMainDexList &&
+                if (creationConfig.dexing.dexingType.isLegacyMultiDex &&
                     !creationConfig.global.namespacedAndroidResources) {
                     task.mainDexRulesFiles.from(
                         artifacts.get(
