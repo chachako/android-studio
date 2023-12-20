@@ -85,6 +85,9 @@ internal class ForwardingDaemonImpl(
 
   private var reverseService: ReverseService? = null
   private var features: String = ""
+  override var needsCrc32 = true
+    private set
+
   override var devicePort: Int = -1
   private val serialNumber: String
     get() = "localhost:$devicePort"
@@ -182,8 +185,6 @@ internal class ForwardingDaemonImpl(
                   }
                 }
               }
-            reverseService =
-              ReverseService(serialNumber, scope, ResponseWriter(localAdbChannel), adbSession)
 
             while (true) {
               ensureActive()
@@ -192,7 +193,7 @@ internal class ForwardingDaemonImpl(
               logger.fine("Local Server -> Device: $command")
 
               when (command) {
-                is ConnectCommand -> handleConnect()
+                is ConnectCommand -> handleConnect(command)
                 is OpenCommand -> handleOpen(command)
                 is WriteCommand -> handleWrite(command)
                 is OkayCommand -> handleOkay()
@@ -292,11 +293,13 @@ internal class ForwardingDaemonImpl(
     if (this::localAdbChannel.isInitialized) localAdbChannel.close()
   }
 
-  private suspend fun handleConnect() {
-    // We ignore the information in the connect request coming from the local ADB server and
-    // respond with device information we gathered when waiting for the device to come online.
+  private suspend fun handleConnect(command: ConnectCommand) {
+    // As of aosp/568123 (which incremented ADB's version to 0x01000001), CRC32 is not required.
+    needsCrc32 = command.adbVersion < 0x01000001
+    reverseService =
+      ReverseService(serialNumber, scope, ResponseWriter(localAdbChannel, needsCrc32), adbSession)
     val response = ConnectCommand(banner = "${deviceState.value.adbState}::features=$features")
-    response.writeTo(localAdbChannel)
+    response.writeTo(localAdbChannel, needsCrc32)
   }
 
   private suspend fun handleOpen(header: OpenCommand) {
@@ -305,14 +308,14 @@ internal class ForwardingDaemonImpl(
     } else {
       streams[header.localId] = streamOpener.open(header.service, header.localId, localAdbChannel)
 
-      OkayCommand(header.localId, header.localId).writeTo(localAdbChannel)
+      OkayCommand(header.localId, header.localId).writeTo(localAdbChannel, needsCrc32)
     }
   }
 
   private suspend fun handleWrite(command: WriteCommand) {
     streams[command.remoteId]?.sendWrite(command)
 
-    OkayCommand(command.remoteId, command.remoteId).writeTo(localAdbChannel)
+    OkayCommand(command.remoteId, command.remoteId).writeTo(localAdbChannel, needsCrc32)
   }
 
   private fun handleOkay() {

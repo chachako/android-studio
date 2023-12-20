@@ -106,7 +106,7 @@ class ReverseForwardStreamTest {
 
     testSocket.bind()
     adbChannel = fakeAdbSession.channelFactory.connectSocket(testSocket.localAddress()!!)
-    responseWriter = ResponseWriter(adbChannel)
+    responseWriter = ResponseWriter(adbChannel, true)
 
     sockets = MutableStateFlow(listOf())
     countDownLatch = CountDownLatch(SOCKET_COUNT)

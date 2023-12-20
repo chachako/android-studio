@@ -37,7 +37,7 @@ class ResponseWriterTest {
         serverSocket.bind()
       }
     adbChannel = fakeAdbSession.channelFactory.connectSocket(testSocket.localAddress()!!)
-    responseWriter = ResponseWriter(adbChannel)
+    responseWriter = ResponseWriter(adbChannel, true)
   }
 
   @After
@@ -62,7 +62,14 @@ class ResponseWriterTest {
     responseWriter.writeOkayResponse(0, okayPayload)
     testSocket.accept().use { channel ->
       channel.assertCommand(OKAY)
-      channel.assertCommand(WRTE, payload = "OKAY${okayPayload.hexLength}$okayPayload")
+      channel.assertCommand(
+        WRTE,
+        0,
+        0,
+        20,
+        1215945526,
+        payload = "OKAY${okayPayload.hexLength}$okayPayload"
+      )
       channel.assertCommand(CLSE, 0)
     }
   }
@@ -74,6 +81,18 @@ class ResponseWriterTest {
     testSocket.accept().use { channel ->
       channel.assertCommand(OKAY)
       channel.assertCommand(WRTE, payload = "FAIL${failedPayload.hexLength}$failedPayload")
+      channel.assertCommand(CLSE, 0)
+    }
+  }
+
+  @Test
+  fun testWriteResponseWithoutCRC() = runBlockingWithTimeout {
+    responseWriter = ResponseWriter(adbChannel, false)
+    val okayPayload = "OKAY PAYLOAD"
+    responseWriter.writeOkayResponse(0, okayPayload)
+    testSocket.accept().use { channel ->
+      channel.assertCommand(OKAY)
+      channel.assertCommand(WRTE, 0, 0, 20, 0, payload = "OKAY${okayPayload.hexLength}$okayPayload")
       channel.assertCommand(CLSE, 0)
     }
   }

@@ -44,11 +44,14 @@ val LATENCY_COLLECTION_INTERVAL: Duration = Duration.ofSeconds(10)
 interface ForwardingDaemon : AutoCloseable {
   var devicePort: Int
 
-  interface Factory {
-    fun create(
-      streamOpener: StreamOpener,
-    ): ForwardingDaemon
-  }
+  /**
+   * Whether commands being written to the local ADB server need the CRC32 to be computed.
+   *
+   * Newer versions of ADB (since aosp/568123) ignore the CRC32 bit unless the device requires it.
+   * We ignore it when reading from the ADB server, so this is simply for compatibility with very
+   * old versions of ADB.
+   */
+  val needsCrc32: Boolean
 
   /**
    * Start the daemon and wait for the device's socket to be ready and listening.

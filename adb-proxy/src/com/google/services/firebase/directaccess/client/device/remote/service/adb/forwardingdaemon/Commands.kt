@@ -40,10 +40,7 @@ internal const val WRTE = 0x45545257
  *
  * The packets are laid out as follows:
  * 1. Command type (one of CNXN, OPEN, OKAY, CLSE, or WRTE). There are commands we don't support in
- *
- * ```
  *    this implementation, such as AUTH.
- * ```
  * 2. "first arg", which is commonly "local ID"
  * 3. "second arg", which is commonly "remote ID"
  * 4. payload length
@@ -60,9 +57,15 @@ sealed class Command(
   private val payload: ByteArray = ByteArray(0),
 ) {
   /** Write this command to the provided AdbOutputChannel. */
-  suspend fun writeTo(adbOutputChannel: AdbOutputChannel) {
-    val crc = CRC32()
-    crc.update(payload, 0, payload.size)
+  suspend fun writeTo(adbOutputChannel: AdbOutputChannel, needsCrc32: Boolean) {
+    val crcValue =
+      if (needsCrc32) {
+        val crc = CRC32()
+        crc.update(payload, 0, payload.size)
+        crc.value.toInt()
+      } else {
+        0
+      }
 
     val buf =
       ByteBuffer.allocate(24 + payload.size)
@@ -71,7 +74,7 @@ sealed class Command(
         .putInt(firstArg)
         .putInt(secondArg)
         .putInt(payload.size)
-        .putInt(crc.value.toInt()) // TODO: Determine if we still use CRC32.
+        .putInt(crcValue)
         .putInt(type xor 0xFFFFFFFF.toInt()) // "magic"
         .put(payload)
         .flip()
@@ -116,9 +119,8 @@ sealed class Command(
  *
  * The server sends a connect command to the device, containing information about itself, and the
  * device responds with a connect command describing itself. Unlike the other commands, connect
- * sends `adbVersion` and `maxData` as its first and second arguments. These are two constants that
- * are effectively hardcoded into ADB at this point. ADB version is defined to always be 0x01000000.
- * Max data is technically defined to be 256KiB, but the documentation is simply out of date.
+ * sends `adbVersion` and `maxData` as its first and second arguments. Max data is technically
+ * defined to be 256KiB, but the documentation is simply out of date.
  *
  * The banner format is perhaps the most interesting bit of this. The banner is formatted in three
  * sections separated by colons. The three sections are
@@ -127,9 +129,9 @@ sealed class Command(
  * 3. properties (e.g. "ro.device.model=hammerhead"), separated by semicolons
  */
 class ConnectCommand(
-  adbVersion: Int = 0x01000000,
+  val adbVersion: Int = 0x01000001,
   maxData: Int = 1024 * 1024,
-  banner: String, // TODO: Describe banner format.
+  banner: String,
 ) : Command(CNXN, adbVersion, maxData, banner.toByteArray())
 
 /**

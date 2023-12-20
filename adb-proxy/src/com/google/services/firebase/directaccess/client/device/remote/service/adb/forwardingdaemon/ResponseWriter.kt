@@ -21,7 +21,10 @@ import com.android.adblib.AdbOutputChannel
 /**
  * A helper that writes responses to the adbd socket, behaving as a service running on the device.
  */
-internal class ResponseWriter(private val adbOutputChannel: AdbOutputChannel) {
+internal class ResponseWriter(
+  private val adbOutputChannel: AdbOutputChannel,
+  private val needsCrc32: Boolean
+) {
   suspend fun writeOkayResponse(streamId: Int, output: String = "") {
     writeResponse(streamId, "OKAY", output)
   }
@@ -33,9 +36,10 @@ internal class ResponseWriter(private val adbOutputChannel: AdbOutputChannel) {
   private suspend fun writeResponse(streamId: Int, responseType: String, output: String) {
     val outputString =
       responseType + if (output.isEmpty()) "" else toHexString(output.length) + output
-    OkayCommand(streamId, streamId).writeTo(adbOutputChannel)
-    WriteCommand(streamId, streamId, outputString.toByteArray()).writeTo(adbOutputChannel)
-    CloseCommand(streamId, streamId).writeTo(adbOutputChannel)
+    OkayCommand(streamId, streamId).writeTo(adbOutputChannel, needsCrc32)
+    WriteCommand(streamId, streamId, outputString.toByteArray())
+      .writeTo(adbOutputChannel, needsCrc32)
+    CloseCommand(streamId, streamId).writeTo(adbOutputChannel, needsCrc32)
   }
 
   private fun toHexString(int: Int): String = String.format("%04X", int)
