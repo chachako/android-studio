@@ -27,7 +27,6 @@ import com.android.adblib.adbLogger
 import com.android.adblib.availableFeatures
 import com.android.adblib.ddmlibcompatibility.IDeviceUsageTrackerImpl
 import com.android.adblib.deviceInfo
-import com.android.adblib.isOffline
 import com.android.adblib.isOnline
 import com.android.adblib.rootAndWait
 import com.android.adblib.scope
@@ -352,7 +351,7 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun isOffline(): Boolean {
-        return connectedDevice.isOffline
+        return connectedDevice.deviceInfo.deviceState == com.android.adblib.DeviceState.OFFLINE
     }
 
     override fun isBootLoader(): Boolean {
