@@ -35,6 +35,7 @@ import com.android.tools.preview.screenshot.tasks.PreviewScreenshotValidationTas
 import com.android.tools.preview.screenshot.tasks.ScreenshotTestReportTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.JavaBasePlugin
@@ -65,6 +66,13 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             val sdkDirectory = componentsExtension.sdkComponents.sdkDirectory
             createPreviewlibCliToolConfiguration(project)
             val layoutlibFromMaven = LayoutlibFromMaven.create(project)
+            val updateAllTask = project.tasks.register(
+                "previewScreenshotUpdateAndroidTest",
+                Task::class.java
+            ) { task ->
+                task.description = "Update screenshots for all variants."
+                task.group = JavaBasePlugin.VERIFICATION_GROUP
+            }.get()
             componentsExtension.onVariants { variant ->
                 if (variant is HasAndroidTest) {
                     val variantName = variant.name
@@ -183,7 +191,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                             PreviewScreenshotRenderTask::testClassesDir,
                         )
 
-                    project.tasks.register(
+                    val updateTask = project.tasks.register(
                         "previewScreenshotUpdate${variantName.capitalized()}AndroidTest",
                         PreviewScreenshotUpdateTask::class.java
                     ) { task ->
@@ -192,7 +200,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
                         task.description = "Update screenshots for the $variantName build."
                         task.group = JavaBasePlugin.VERIFICATION_GROUP
-                    }
+                    }.get()
+                    updateAllTask.dependsOn(updateTask)
 
                     val previewScreenshotValidationTask = project.tasks.register(
                         "previewScreenshot${variantName.capitalized()}AndroidTest",
