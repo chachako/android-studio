@@ -1,0 +1,4 @@
+rootProject.name = "Compile R classes"
+include ':lib'
+include ':dependencyLib'
+include ':transitiveDependencyLib'
