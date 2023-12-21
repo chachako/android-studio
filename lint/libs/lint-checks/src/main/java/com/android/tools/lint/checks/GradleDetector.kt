@@ -1192,21 +1192,23 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       var fix: LintFix? = null
       if (sdkIndex.isLibraryNonCompliant(groupId, artifactId, versionString, buildFile)) {
         fix = sdkIndex.generateSdkLinkLintFix(groupId, artifactId, versionString, buildFile)
-        val message =
+        val messages =
           if (isBlocking) {
-            sdkIndex.generateBlockingPolicyMessage(groupId, artifactId, versionString)
+            sdkIndex.generateBlockingPolicyMessages(groupId, artifactId, versionString)
           } else {
-            sdkIndex.generatePolicyMessage(groupId, artifactId, versionString)
+            sdkIndex.generatePolicyMessages(groupId, artifactId, versionString)
           }
-        hasSdkIndexIssues =
-          report(
-            context,
-            cookie,
-            PLAY_SDK_INDEX_NON_COMPLIANT,
-            message,
-            fix,
-            overrideSeverity = severity
-          )
+        for (message in messages) {
+          hasSdkIndexIssues =
+            report(
+              context,
+              cookie,
+              PLAY_SDK_INDEX_NON_COMPLIANT,
+              message,
+              fix,
+              overrideSeverity = severity
+            ) || hasSdkIndexIssues
+        }
       }
       if (
         isBlocking &&

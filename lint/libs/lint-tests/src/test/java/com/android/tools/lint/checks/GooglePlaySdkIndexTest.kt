@@ -301,6 +301,25 @@ class GooglePlaySdkIndexTest {
                         )
                     )
                 )
+                // Non-compliant (Unknown violations, no severity)
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("7.1.10")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            // Use very large numbers that will probably never be used by real
+                            // violation types
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
+                            )
+                            .addViolatedSdkPoliciesValue(1234567)
+                            .addViolatedSdkPoliciesValue(2345678)
+                        )
+                    )
+                )
             )
         )
         .build()
@@ -335,7 +354,7 @@ class GooglePlaySdkIndexTest {
   @Test
   fun `policy issues shown if showPolicyIssues is enabled`() {
     index.showPolicyIssues = true
-    assertThat(countPolicyIssues()).isEqualTo(12)
+    assertThat(countPolicyIssues()).isEqualTo(13)
   }
 
   @Test
@@ -346,7 +365,7 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `errors and warnings shown correctly`() {
-    assertThat(countHasErrorOrWarning()).isEqualTo(13)
+    assertThat(countHasErrorOrWarning()).isEqualTo(14)
   }
 
   @Test
@@ -388,55 +407,65 @@ class GooglePlaySdkIndexTest {
   @Test
   fun `No violation type policy issue message`() {
     index.showPolicyIssues = true
-    assertThat(index.generatePolicyMessage("logj4", "logj4", "1.2.14"))
+    assertThat(index.generatePolicyMessages("logj4", "logj4", "1.2.14"))
       .isEqualTo(
-        "logj4:logj4 version 1.2.14 has policy issues that will block publishing of your app to Play Console in the future"
+        listOf(
+          "logj4:logj4 version 1.2.14 has policy issues that will block publishing of your app to Play Console in the future"
+        )
       )
   }
 
   @Test
   fun `policy with other issues message`() {
-    verifyPolicyMessage("7.2.0", "User Data policy")
+    verifyPolicyMessages("7.2.0", listOf("User Data policy"))
   }
 
   @Test
   fun `Ads policy issue message`() {
-    verifyPolicyMessage("7.1.0", "Ads policy")
+    verifyPolicyMessages("7.1.0", listOf("Ads policy"))
   }
 
   @Test
   fun `Device and Network Abuse policy issue message`() {
-    verifyPolicyMessage("7.1.1", "Device and Network Abuse policy")
+    verifyPolicyMessages("7.1.1", listOf("Device and Network Abuse policy"))
   }
 
   @Test
   fun `Deceptive Behavior policy issue message`() {
-    verifyPolicyMessage("7.1.2", "Deceptive Behavior policy")
+    verifyPolicyMessages("7.1.2", listOf("Deceptive Behavior policy"))
   }
 
   @Test
   fun `User Data policy issue message`() {
-    verifyPolicyMessage("7.1.3", "User Data policy")
+    verifyPolicyMessages("7.1.3", listOf("User Data policy"))
   }
 
   @Test
   fun `Permissions policy issue message`() {
-    verifyPolicyMessage("7.1.4", "Permissions policy")
+    verifyPolicyMessages("7.1.4", listOf("Permissions policy"))
   }
 
   @Test
   fun `Mobile Unwanted Software policy issue message`() {
-    verifyPolicyMessage("7.1.5", "Mobile Unwanted Software policy")
+    verifyPolicyMessages("7.1.5", listOf("Mobile Unwanted Software policy"))
   }
 
   @Test
   fun `Malware policy issue message`() {
-    verifyPolicyMessage("7.1.6", "Malware policy")
+    verifyPolicyMessages("7.1.6", listOf("Malware policy"))
   }
 
   @Test
   fun `multiple policy types issue message`() {
-    verifyPolicyMessage("7.1.7", "policy")
+    verifyPolicyMessages(
+      "7.1.7",
+      listOf("User Data policy", "Malware policy", "Permissions policy")
+    )
+  }
+
+  @Test
+  fun `unknown policy type issue message`() {
+    verifyPolicyMessages("7.1.10", listOf("Permissions policy", "policy"))
   }
 
   private fun countOutdatedIssues(): Int {
@@ -503,17 +532,21 @@ class GooglePlaySdkIndexTest {
     return result
   }
 
-  private fun verifyPolicyMessage(version: String, policyType: String) {
+  private fun verifyPolicyMessages(version: String, policyTypes: List<String>) {
     index.showPolicyIssues = true
-    val expectedBlockingMessage =
-      "com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console"
+    val expectedBlockingMessages =
+      policyTypes.map { policyType ->
+        "com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console"
+      }
     assertThat(
-        index.generateBlockingPolicyMessage("com.example.ads.third.party", "example", version)
+        index.generateBlockingPolicyMessages("com.example.ads.third.party", "example", version)
       )
-      .isEqualTo(expectedBlockingMessage)
-    val expectedNonBlockingMessage =
-      "com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console in the future"
-    assertThat(index.generatePolicyMessage("com.example.ads.third.party", "example", version))
-      .isEqualTo(expectedNonBlockingMessage)
+      .isEqualTo(expectedBlockingMessages)
+    val expectedNonBlockingMessages =
+      policyTypes.map { policyType ->
+        "com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console in the future"
+      }
+    assertThat(index.generatePolicyMessages("com.example.ads.third.party", "example", version))
+      .isEqualTo(expectedNonBlockingMessages)
   }
 }
