@@ -575,7 +575,9 @@ public class ImageEditorPanel extends JPanel {
                     public void mouseClicked(MouseEvent e) {
                         try {
                             Desktop.getDesktop().browse(new URI(helpUrl));
-                        } catch (IOException | URISyntaxException ex) {
+                        } catch (IOException
+                                | URISyntaxException
+                                | UnsupportedOperationException ex) {
                             JOptionPane.showMessageDialog(
                                     null,
                                     "Failed to open help link. Please visit "
