@@ -375,6 +375,13 @@ class LibraryCacheImpl(
                 additionalArtifacts.javadoc,
                 additionalArtifacts.sample,
             )
+        } else if (artifact.dependencyType == ResolvedArtifact.DependencyType.NO_ARTIFACT_FILE) {
+            // Handle projects that have no artifacts (e.g. java-platform)
+            val projectInfo = getProjectInfo(artifact.variant)
+            LibraryImpl.createNoArtifactProjectLibrary(
+                stringCache.cacheString(projectInfo.computeKey()),
+                projectInfo
+            )
         } else {
             // In general, we do not need to provide the artifact for project dependencies
             // because on the IDE side we're just going to do a project to project dependency link.

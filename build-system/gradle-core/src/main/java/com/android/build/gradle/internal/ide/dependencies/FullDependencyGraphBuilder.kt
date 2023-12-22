@@ -39,6 +39,9 @@ import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.result.ResolvedVariantResult
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
+import org.gradle.api.attributes.Attribute
+import org.gradle.api.attributes.AttributeContainer
+import org.gradle.api.attributes.Category
 import org.gradle.internal.component.local.model.OpaqueComponentArtifactIdentifier
 import java.io.File
 
@@ -278,13 +281,15 @@ fun getLibrary(
         //    is not included in the other artifact-based API.
         // 3. when an external dependency is without artifact file, but with transitive
         //    dependencies
-        // 4. when resolving a dynamic-feature dependency graph; e.g., the app module does not
+        // 4. when there is a platform dependency on a project, which has transitive
+        //    dependencies
+        // 5. when resolving a dynamic-feature dependency graph; e.g., the app module does not
         //    publish an ArtifactType.JAR artifact to runtimeElements
         //
-        // In cases 1, 2, and 3, there are still dependencies, so we need to create a library
+        // In cases 1, 2, 3, and 4,  there are still dependencies, so we need to create a library
         // object, and traverse the dependencies.
         //
-        // In case 4, we want to ignore the app dependency and any transitive dependencies.
+        // In case 5, we want to ignore the app dependency and any transitive dependencies.
         if (variant.externalVariant.isPresent) {
             // Scenario 1
             libraryService.getLibrary(
@@ -340,12 +345,47 @@ fun getLibrary(
                 ),
                 additionalArtifacts
             )
+        } else if (owner is ProjectComponentIdentifier && variantDependencies.isNotEmpty()
+            && getCategoryAttribute(variant.attributes) == Category.REGULAR_PLATFORM) {
+            // Scenario 4
+            libraryService.getLibrary(
+                ResolvedArtifact(
+                    owner,
+                    variant,
+                    variantName = "unknown",
+                    artifactFile = null,
+                    isTestFixturesArtifact = false,
+                    extractedFolder = null,
+                    publishedLintJar = null,
+                    dependencyType = ResolvedArtifact.DependencyType.NO_ARTIFACT_FILE,
+                    isWrappedModule = false,
+                ),
+                additionalArtifacts
+            )
         } else {
-            // Scenario 4 or other unknown scenario
+            // Scenario 5 or other unknown scenario
             null
         }
     } else {
         // get the matching library item
         libraryService.getLibrary(artifact, additionalArtifacts)
+    }
+}
+
+private fun getCategoryAttribute(attributes: AttributeContainer): String? {
+    if (Category.CATEGORY_ATTRIBUTE in attributes.keySet()) {
+        return attributes.getAttribute(Category.CATEGORY_ATTRIBUTE)!!.name
+    }
+
+    // Sometimes attributes are just strings, so we need to use name matching
+    val categoryAttr =
+        attributes.keySet().firstOrNull { it.name == Category.CATEGORY_ATTRIBUTE.name }
+            ?: return null
+    return if (categoryAttr.type == String::class.java) {
+        @Suppress("UNCHECKED_CAST")
+        categoryAttr as Attribute<String>
+        attributes.getAttribute(categoryAttr)
+    } else {
+        null
     }
 }
