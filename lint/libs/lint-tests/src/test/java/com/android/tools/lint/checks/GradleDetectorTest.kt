@@ -682,11 +682,11 @@ class GradleDetectorTest : AbstractCheckTest() {
       .window(1)
       .expectFixDiffs(
         """
-        Autofix for build.gradle.kts line 3: Replace with new library catalog declaration for lint-api:
+        Autofix for build.gradle.kts line 3: Replace with new library catalog declaration for lintApi:
         @@ -3 +3
           dependencies {
         -   implementation("com.android.tools.lint:lint-api:＄myVer")
-        +   implementation(libs.lint.api)
+        +   implementation(libs.lintApi)
             implementation("com.android.tools.lint:lint-checks:＄myVer")
         gradle/libs.versions.toml:
         @@ -3 +3
@@ -695,12 +695,12 @@ class GradleDetectorTest : AbstractCheckTest() {
 
         @@ -8 +9
           kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-        + lint-api = { module = "com.android.tools.lint:lint-api", version.ref = "myVer" }
-        Autofix for build.gradle.kts line 4: Replace with new library catalog declaration for lint-checks:
+        + lintApi = { module = "com.android.tools.lint:lint-api", version.ref = "myVer" }
+        Autofix for build.gradle.kts line 4: Replace with new library catalog declaration for lintChecks:
         @@ -4 +4
             implementation("com.android.tools.lint:lint-api:＄myVer")
         -   implementation("com.android.tools.lint:lint-checks:＄myVer")
-        +   implementation(libs.lint.checks)
+        +   implementation(libs.lintChecks)
             testImplementation("com.google.truth:truth:1.1.3")
         gradle/libs.versions.toml:
         @@ -3 +3
@@ -709,7 +709,7 @@ class GradleDetectorTest : AbstractCheckTest() {
 
         @@ -8 +9
           kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-        + lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "myVer" }
+        + lintChecks = { module = "com.android.tools.lint:lint-checks", version.ref = "myVer" }
         Autofix for build.gradle.kts line 5: Replace with new library catalog declaration for truth:
         @@ -5 +5
             implementation("com.android.tools.lint:lint-checks:＄myVer")
@@ -769,16 +769,16 @@ class GradleDetectorTest : AbstractCheckTest() {
       .window(1)
       .expectFixDiffs(
         """
-        Autofix for build.gradle.kts line 3: Replace with new library catalog declaration for lint-checks:
+        Autofix for build.gradle.kts line 3: Replace with new library catalog declaration for lintChecks:
         @@ -3 +3
           dependencies {
         -   implementation("com.android.tools.lint:lint-checks:＄{lintVersion}")
-        +   implementation(libs.lint.checks)
+        +   implementation(libs.lintChecks)
           }
         gradle/libs.versions.toml:
         @@ -7 +7
           kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
-        + lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintVersion" }
+        + lintChecks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintVersion" }
         """
       )
   }
@@ -828,26 +828,26 @@ class GradleDetectorTest : AbstractCheckTest() {
       .window(1)
       .expectFixDiffs(
         """
-        Autofix for build.gradle line 3: Replace with new library catalog declaration for lint-checks:
+        Autofix for build.gradle line 3: Replace with new library catalog declaration for lintChecks:
         @@ -3 +3
           dependencies {
         -   implementation("com.android.tools.lint:lint-checks:＄lintVersion")
-        +   implementation(libs.lint.checks)
+        +   implementation(libs.lintChecks)
             implementation("com.android.tools.lint:lint-api:＄{lintVersion}")
         gradle/libs.versions.toml:
         @@ -7 +7
           kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
-        + lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintVersion" }
-        Autofix for build.gradle line 4: Replace with new library catalog declaration for lint-api:
+        + lintChecks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintVersion" }
+        Autofix for build.gradle line 4: Replace with new library catalog declaration for lintApi:
         @@ -4 +4
             implementation("com.android.tools.lint:lint-checks:＄lintVersion")
         -   implementation("com.android.tools.lint:lint-api:＄{lintVersion}")
-        +   implementation(libs.lint.api)
+        +   implementation(libs.lintApi)
           }
         gradle/libs.versions.toml:
         @@ -7 +7
           kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
-        + lint-api = { module = "com.android.tools.lint:lint-api", version.ref = "lintVersion" }
+        + lintApi = { module = "com.android.tools.lint:lint-api", version.ref = "lintVersion" }
         """
       )
   }
@@ -898,23 +898,23 @@ class GradleDetectorTest : AbstractCheckTest() {
         @@ -3 +3
           dependencies {
         -   implementation("com.android.tools.lint:lint-checks:＄lintVersion")
-        +   implementation(libs.lint.checks)
+        +   implementation(libs.lintChecks)
           }
         gradle/libs.versions.toml:
         @@ -7 +7
           kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
-        + lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintVersion" }
+        + lintChecks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintVersion" }
         Fix for build.gradle.kts line 3: Change lintVersion to 31.1.0-alpha04:
         gradle/libs.versions.toml:
         @@ -3 +3
           kotlin = "1.7.20"
         - lintVersion = "30.0.0"
         + lintVersion = "31.1.0-alpha04"
-        Autofix for build.gradle.kts line 3: Replace with new library catalog declaration for android-lint-checks:
+        Autofix for build.gradle.kts line 3: Replace with new library catalog declaration for androidLintChecks:
         @@ -3 +3
           dependencies {
         -   implementation("com.android.tools.lint:lint-checks:＄lintVersion")
-        +   implementation(libs.android.lint.checks)
+        +   implementation(libs.androidLintChecks)
           }
         gradle/libs.versions.toml:
         @@ -3 +3
@@ -923,7 +923,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           lintVersion = "30.0.0"
         @@ -6 +7
           [libraries]
-        + android-lint-checks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintChecks" }
+        + androidLintChecks = { module = "com.android.tools.lint:lint-checks", version.ref = "lintChecks" }
           kotlinStdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin" }
         """
       )

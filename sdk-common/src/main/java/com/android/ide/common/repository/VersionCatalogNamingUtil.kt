@@ -46,13 +46,16 @@ fun pickLibraryVariableName(
 ): String {
     val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
     reserved.addAll(caseSensitiveReserved)
+
+    val transform = getMaybeTransformToCamelCase(reserved)
+
     val versionSuffix =
         if (includeVersionInKey) "-v" + (dependency.version?.toIdentifier()
             ?.replace("[^A-Za-z0-9]".toRegex(), "")
             ?.toSafeKey() ?: "") else ""
 
     if (dependency.isAndroidX() && (reserved.isEmpty() || reserved.any { it.startsWith("androidx-") })) {
-        val key = "androidx-${dependency.name.toSafeKey()}$versionSuffix"
+        val key = transform("androidx-${dependency.name.toSafeKey()}$versionSuffix")
         if (!reserved.contains(key)) {
             return key
         }
@@ -61,7 +64,7 @@ fun pickLibraryVariableName(
     // Try a few combinations: just the artifact name, just the group-suffix and the artifact name,
     // just the group-prefix and the artifact name, etc.
     val artifactId = dependency.name.toSafeKey()
-    val artifactKey = artifactId + versionSuffix
+    val artifactKey = transform(artifactId + versionSuffix)
     if (!reserved.contains(artifactKey)) {
         return artifactKey
     }
@@ -69,7 +72,7 @@ fun pickLibraryVariableName(
     // Normally the groupId suffix plus artifact is used if it's not similar to artifact, e.g.
     // "com.google.libraries:guava" => "libraries-guava"
     val groupSuffix = dependency.group?.substringAfterLast('.')?.toSafeKey() ?: "nogroup"
-    val withGroupSuffix = "$groupSuffix-$artifactId$versionSuffix"
+    val withGroupSuffix = transform("$groupSuffix-$artifactId$versionSuffix")
     if (!(artifactId.startsWith(groupSuffix))) {
         if (!reserved.contains(withGroupSuffix)) {
             return withGroupSuffix
@@ -77,21 +80,22 @@ fun pickLibraryVariableName(
     }
 
     val groupPrefix = getGroupPrefix(dependency)
-    val withGroupPrefix = "$groupPrefix-$artifactId$versionSuffix"
+    val withGroupPrefix = transform("$groupPrefix-$artifactId$versionSuffix")
     if (!reserved.contains(withGroupPrefix)) {
         return withGroupPrefix
     }
 
     val groupId = dependency.group?.toSafeKey() ?: "nogroup"
     val full = "$groupId-$artifactId$versionSuffix"
-    if (!reserved.contains(full)) {
-        return full
+    val fullSafe = transform(full)
+    if (!reserved.contains(fullSafe)) {
+        return fullSafe
     }
 
     // Final fallback; this is unlikely but JUST to be sure we get a unique version
     var id = 2
     while (true) {
-        val name = "${full}${if (versionSuffix.isNotEmpty()) "-x" else ""}${id++}"
+        val name = transform("${full}${if (versionSuffix.isNotEmpty()) "-x" else ""}${id++}")
         // Will eventually succeed
         if (!reserved.contains(name)) {
             return name
@@ -99,16 +103,28 @@ fun pickLibraryVariableName(
     }
 }
 
+private fun getMaybeTransformToCamelCase(reserved: Set<String>): (String) -> String {
+    val (haveCamelCase, haveHyphen) = getAliasStyle(reserved)
+    val camelCaseOutput = haveCamelCase && !haveHyphen
+
+    return { alias ->
+        val safeAlias = alias.toSafeHyphenKey()
+        if (camelCaseOutput && safeAlias.contains("-")) {
+            CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, alias.toSafeHyphenKey())
+        } else alias
+    }
+}
+
 /**
  * Pick name with next steps. Each step generates name and check whether it
  * exists in reserved set where comparison is done in case-insensitive way.
  * If same name already exists, it tries the next step. Steps defined as follows:
- * - pluginId will cut root domain and transform to low camel case
- *   "org.android.application" => androidApplication
- * - in other case it will transform whole pluginId into low camel case
- *   "org.android.application" => orgAndroidApplication
+ * - pluginId will cut root domain and transform "." to hyphens
+ *   "org.android.application" => android-application
+ * - in other case it will transform "." to hyphens for whole pluginId
+ *   "org.android.application" => org-android-application
  * - if already exists - add "X" + /number/ at the end until no such name in reserved
- *   "org.android.application" => orgAndroidApplicationX2
+ *   "org.android.application" => org-android-applicationX2
  */
 fun pickPluginVariableName(
     pluginId: String,
@@ -116,22 +132,23 @@ fun pickPluginVariableName(
 ): String {
     val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
     reserved.addAll(caseSensitiveReserved)
+
+    val transform = getMaybeTransformToCamelCase(reserved)
+
     val plugin = cutDomainPrefix(pluginId)
 
     // without com/org domain prefix
-    val shortSafeKey = plugin.toSafeHyphenKey()
-    val shortName = maybeLowCamelTransform(shortSafeKey)
+    val shortName = transform(plugin.toSafeHyphenKey())
     if (!reserved.contains(shortName)) {
         return shortName
     }
 
-    val fullSafeKey = pluginId.toSafeHyphenKey()
-    val fullName = maybeLowCamelTransform(fullSafeKey)
+    val fullName = transform(pluginId.toSafeHyphenKey())
     if (!reserved.contains(fullName)) {
         return fullName
     }
 
-    return generateWithSuffix(fullName + "X", reserved)
+    return generateWithSuffix(fullName + "X", reserved, transform)
 }
 
 private fun maybeLowCamelTransform(name: String):String =
@@ -211,7 +228,6 @@ private fun cutDomainPrefix(group: String): String {
     fun transform(version: String): String =
         if (camelCaseOutput) CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, version) else version
 
-
     if (reserved.isEmpty()) {
         return transform(artifact)
     }
@@ -258,7 +274,7 @@ private fun cutDomainPrefix(group: String): String {
     }
 
     // Final fallback; this is unlikely but JUST to be sure we get a unique version
-    return generateWithSuffix(withGroupId, reserved)
+    return generateWithSuffix(withGroupId, reserved, null)
 }
 
 data class AliasStyle(val haveCamelCase: Boolean, val haveHyphen: Boolean)
@@ -279,13 +295,14 @@ private fun getAliasStyle(reservedAliases: Set<String>): AliasStyle {
     return AliasStyle(haveCamelCase, haveHyphen)
 }
 
-private fun generateWithSuffix(prefix:String, reserved:Set<String>): String {
+private fun generateWithSuffix(prefix:String, reserved:Set<String>, transform: ((String) -> String)?): String {
     var id = 2
     while (true) {
         val name = "${prefix}${id++}"
+        var maybeUpdatedName = transform?.invoke(name) ?: name
         // Will eventually succeed
-        if (!reserved.contains(name)) {
-            return name
+        if (!reserved.contains(maybeUpdatedName)) {
+            return maybeUpdatedName
         }
     }
 }
@@ -348,7 +365,7 @@ fun pickPluginVersionVariableName(
         return fullName
     }
 
-    return generateWithSuffix(fullName, reserved)
+    return generateWithSuffix(fullName, reserved, null)
 }
 
 fun keysMatch(s1: String?, s2: String): Boolean {

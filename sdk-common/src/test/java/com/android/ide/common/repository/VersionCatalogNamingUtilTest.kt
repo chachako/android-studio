@@ -78,29 +78,115 @@ class VersionCatalogNamingUtilTest {
     }
 
     @Test
+    fun testPickLibraryWithCamelCaseFallback() {
+        libraryName("foo-bar", "com.google:foo-bar:1.0")
+        libraryName("fooBar", "com.google:foo-bar:1.0", "googleFoo")
+        libraryName("google-foo", "com.google:foo:1.0", "foo")
+        libraryName("googleFoo", "com.google:foo:1.0", "aFoo","Foo")
+        libraryName("comGoogleFoo", "com.google:foo:1.0", "Foo", "googleFoo")
+        libraryName("comGoogleFoo2", "com.google:foo:1.0", "Foo", "GoogleFoo", "comGoogleFoo")
+        libraryName(
+            "comGoogleFoo3",
+            "com.google:foo:1.0",
+            "Foo",
+            "GoogleFoo",
+            "comGoogleFoo",
+            "comGoogleFoo2"
+        )
+
+        libraryName("fooV10", "com.google:foo:1.0", "aFoo", includeVersions = true)
+        libraryName("googleFooV10", "com.google:foo:1.0", "fooV10", includeVersions = true)
+        libraryName(
+            "comGoogleFooV10",
+            "com.google:foo:1.0",
+            "fooV10",
+            "googleFooV10",
+            includeVersions = true
+        )
+        libraryName(
+            "comGoogleFooV10X2",
+            "com.google:foo:1.0",
+            "fooV10",
+            "googleFooV10",
+            "comGoogleFooV10",
+            includeVersions = true
+        )
+        libraryName(
+            "comGoogleFooV10X3",
+            "com.google:foo:1.0",
+            "fooV10",
+            "googleFooV10",
+            "comGoogleFooV10",
+            "comGoogleFooV10X2",
+            includeVersions = true
+        )
+
+        libraryName("kotlinReflect", "org.jetbrains.kotlin:kotlin-reflect:1.0", "aFoo")
+        libraryName(
+            "jetbrainsKotlinReflect",
+            "org.jetbrains.kotlin:kotlin-reflect:1.0",
+            "kotlinReflect"
+        )
+
+        // Special handling for androidx: if any libraries use androidx- as a prefix, use that too
+        libraryName("testFoo", "androidx.test:foo:1.0", "foo", "aFoo")
+        libraryName("androidxFoo", "androidx.test:foo:1.0", "foo", "testFoo")
+    }
+
+    @Test
     fun testPickPluginName() {
-        pluginName("androidApplication", "org.android.application")
+        pluginName("android-application", "org.android.application")
         pluginName("baselineprofile", "androidx.baselineprofile")
-        pluginName("pluginId", "plugin-id", "foo")
-        pluginName("pluginId", "plugin_id", "foo")
+        pluginName("plugin-id", "plugin-id", "foo")
+        pluginName("plugin-id", "plugin_id", "foo")
         pluginName("pluginId", "pluginId", "foo")
+        pluginName(
+            "org-android-application",
+            "org.android.application",
+            "Foo",
+            "android-application"
+        )
+        pluginName(
+            "org-android-applicationX2",
+            "org.android.application",
+            "Foo",
+            "android-application",
+            "org-android-application"
+        )
+        pluginName(
+            "org-android-applicationX3",
+            "org.android.application",
+            "Foo",
+            "android-application",
+            "org-android-application",
+            "org-android-applicationX2"
+        )
+    }
+
+
+    @Test
+    fun testPickPluginNameWithCamelCaseFallback() {
+        pluginName("androidApplication", "org.android.application", "aFoo")
+        pluginName("baselineprofile", "androidx.baselineprofile")
+        pluginName("pluginId", "plugin-id", "aFoo")
+        pluginName("pluginId", "pluginId", "aFoo")
         pluginName(
             "orgAndroidApplication",
             "org.android.application",
-            "Foo",
+            "aFoo",
             "androidApplication"
         )
         pluginName(
             "orgAndroidApplicationX2",
             "org.android.application",
-            "Foo",
+            "aFoo",
             "androidApplication",
             "orgAndroidApplication"
         )
         pluginName(
             "orgAndroidApplicationX3",
             "org.android.application",
-            "Foo",
+            "aFoo",
             "androidApplication",
             "orgAndroidApplication",
             "orgAndroidApplicationX2"
