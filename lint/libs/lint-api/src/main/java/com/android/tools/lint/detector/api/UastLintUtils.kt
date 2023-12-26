@@ -619,10 +619,42 @@ fun isReturningContext(node: UCallExpression): Boolean {
  * Returns true if the given node appears to be one of the scope functions. Only checks parent
  * class; caller should intend that it's actually one of let, with, apply, etc.
  */
+private fun isScopingFunctionName(name: String?): Boolean {
+  return when (name) {
+    "let",
+    "run",
+    "with",
+    "apply",
+    "also",
+    // Honorary scoping functions. See https://kotlinlang.org/docs/reference/scope-functions.html
+    "takeIf",
+    "takeUnless" -> true
+    else -> false
+  }
+}
+
+/** Returns true if the given node appears to be one of the scope functions. */
 fun isScopingFunction(node: UCallExpression): Boolean {
-  val called = node.resolve() ?: return true
-  // See libraries/stdlib/jvm/build/stdlib-declarations.json
-  return called.containingClass?.qualifiedName == "kotlin.StandardKt__StandardKt"
+  if (isScopingFunctionName(node.methodIdentifier?.name ?: node.methodName)) {
+    val called =
+      node.resolve()
+        // if not found, assume true because in the IDE these builtins often resolve to null
+        // and the name is clue enough
+        ?: return true
+    return isScopingFunction(called)
+  } else {
+    return false
+  }
+}
+
+/** Returns true if the given node appears to be one of the scope functions. */
+fun isScopingFunction(method: PsiMethod): Boolean {
+  return if (isScopingFunctionName(method.name)) {
+    // See libraries/stdlib/jvm/build/stdlib-declarations.json
+    method.containingClass?.qualifiedName == "kotlin.StandardKt__StandardKt"
+  } else {
+    false
+  }
 }
 
 /**
@@ -976,4 +1008,43 @@ fun UExpression.isUnconditionalReturn(): Boolean {
   }
 
   return false
+}
+
+/**
+ * Finds the common ancestor of [element1] and [element2]. (Based on the equivalent
+ * [PsiTreeUtil.findCommonParent] implementation.)
+ */
+fun findCommonParent(element1: UElement, element2: UElement): UElement? {
+  if (element1 === element2) return element1
+  var depth1 = getDepth(element1)
+  var depth2 = getDepth(element2)
+
+  var parent1: UElement? = element1
+  var parent2: UElement? = element2
+  while (depth1 > depth2) {
+    parent1 = parent1?.uastParent
+    depth1--
+  }
+  while (depth2 > depth1) {
+    parent2 = parent2?.uastParent
+    depth2--
+  }
+  while (parent1 != null && parent2 != null && parent1 != parent2) {
+    parent1 = parent1.uastParent
+    parent2 = parent2.uastParent
+  }
+  if (parent2 == null) {
+    return null
+  }
+  return parent1
+}
+
+private fun getDepth(element: UElement): Int {
+  var depth = 0
+  var parent: UElement? = element
+  while (parent != null) {
+    depth++
+    parent = parent.uastParent
+  }
+  return depth
 }
