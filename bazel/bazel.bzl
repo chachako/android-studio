@@ -20,6 +20,7 @@ ImlModuleInfo = provider(
         "external_deps",
         "jvm_target",
         "names",
+        "module_visibility",
     ],
 )
 
@@ -273,6 +274,9 @@ def _iml_module_impl(ctx):
     for this_dep in ctx.attr.deps:
         if ImlModuleInfo in this_dep:
             form_deps += this_dep[ImlModuleInfo].forms
+            dep_vis = this_dep[ImlModuleInfo].module_visibility
+            if dep_vis and ctx.label not in [Label(vis) for vis in dep_vis]:
+                fail("The module %s, declares specific module visibility not including %s" % (this_dep.label, ctx.label))
         if JavaInfo in this_dep:
             java_deps.append(this_dep[JavaInfo])
     module_deps = []
@@ -384,6 +388,7 @@ def _iml_module_impl(ctx):
         plugin_deps = depset(direct = plugin_deps),
         external_deps = depset(direct = external_deps),
         jvm_target = ctx.attr.jvm_target,
+        module_visibility = ctx.attr.module_visibility,
         names = names,
     )
 
@@ -418,6 +423,7 @@ _iml_module_ = rule(
         "package_prefixes": attr.string_dict(),
         "test_class": attr.string(),
         "exports": attr.label_list(providers = [[JavaInfo], [ImlModuleInfo]]),
+        "module_visibility": attr.string_list(),
         "roots": attr.string_list(),
         "test_roots": attr.string_list(),
         # TODO(b/218538628): Add proper support for native libs; right now they are effectively data deps.
@@ -522,6 +528,7 @@ def iml_module(
         runtime_deps = [],
         test_friends = [],
         visibility = [],
+        module_visibility = [],
         exports = [],
         jvm_target = None,
         javacopts = [],
@@ -572,6 +579,7 @@ def iml_module(
                 * test:   This dependency is included and available for test sources only.
         runtime_deps: Runtime dependencies.
         test_friends: Kotlin test friends.
+        module_visibility: A specific list of modules this module is visible to.
         visibility: Visibility for all generated targets.
         exports: See java_* rules.
         jvm_target: Determines the java toolchain selected.
@@ -651,6 +659,7 @@ def iml_module(
         jvm_target = jvm_target,
         java_toolchain = java_toolchain,
         javacopts = javacopts + javacopts_from_jps,
+        module_visibility = module_visibility,
         iml_files = iml_files,
         exports = exports,
         deps = prod_deps,
