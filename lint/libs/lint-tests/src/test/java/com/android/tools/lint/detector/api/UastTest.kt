@@ -34,6 +34,7 @@ import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiRecursiveElementVisitor
 import com.intellij.psi.PsiTypeParameter
 import junit.framework.TestCase
+import org.jetbrains.annotations.NotNull
 import org.jetbrains.kotlin.asJava.elements.KotlinLightTypeParameterBuilder
 import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.config.LanguageVersionSettings
@@ -1047,6 +1048,8 @@ class UastTest : TestCase() {
         )
         .indented()
     ) { file ->
+      // val ubyte: UByte = 255u
+      val uByteValue = if (useFirUast()) 255 else -1
       assertEquals(
         """
                 UFile (package = test.pkg) [package test.pkg...]
@@ -1057,9 +1060,9 @@ class UastTest : TestCase() {
                         UField (name = ulong) [@org.jetbrains.annotations.NotNull private static final var ulong: long = 42] : PsiType:long
                             UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
                             ULiteralExpression (value = 42) [42] : PsiType:long
-                        UField (name = ubyte) [@org.jetbrains.annotations.NotNull private static final var ubyte: byte = -1] : PsiType:byte
+                        UField (name = ubyte) [@org.jetbrains.annotations.NotNull private static final var ubyte: byte = $uByteValue] : PsiType:byte
                             UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
-                            ULiteralExpression (value = -1) [-1] : PsiType:byte
+                            ULiteralExpression (value = $uByteValue) [$uByteValue] : PsiType:byte
                         UMethod (name = test) [public static final fun test(@org.jetbrains.annotations.NotNull s: java.lang.String) : java.lang.Object {...}] : PsiType:Object
                             UParameter (name = s) [@org.jetbrains.annotations.NotNull var s: java.lang.String] : PsiType:String
                                 UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
@@ -1249,6 +1252,8 @@ class UastTest : TestCase() {
         )
         .indented()
 
+    // With the upper bound `T : Activity`, T is not null.
+    val nonNull = if (useFirUast()) "@${NotNull::class.java.name} " else ""
     check(source) { file ->
       assertEquals(
         """
@@ -1268,7 +1273,7 @@ class UastTest : TestCase() {
                     public static fun function5(t: T) : int {
                         return 42
                     }
-                    public static fun function6(${"$"}this${"$"}function6: T, t: T) : T {
+                    public static fun function6($nonNull${"$"}this${"$"}function6: T, ${nonNull}t: T) : T {
                         return t
                     }
                     public static fun function7(t: T) : T {
@@ -2301,9 +2306,15 @@ class UastTest : TestCase() {
           override fun visitMethod(node: UMethod): Boolean {
             if (!node.isConstructor) return super.visitMethod(node)
 
+            // Bar should have default arg constructor as per default value in parameter
+            // E.g., Bar() // == Bar(true)
+            // K2 creates that constructor properly, whereas K1 missed that.
+            val expectedTypes = if (useFirUast()) listOf("Boo", "Bar") else listOf("Boo")
             assertTrue(
               node.sourcePsi is KtConstructor<*> ||
-                (node.sourcePsi is KtClassOrObject && node.name == "Boo")
+                (node.sourcePsi is KtClassOrObject &&
+                  node.parameterList.isEmpty &&
+                  node.name in expectedTypes)
             )
             return super.visitMethod(node)
           }
@@ -2353,8 +2364,10 @@ class UastTest : TestCase() {
             if (node.methodName != "remember") return super.visitCallExpression(node)
 
             // Due to coercion-to-Unit (in FE1.0), a type error is hidden, and Unit is returned.
+            // In contrast, we can see that type error in K2.
             val callExpressionType = node.getExpressionType()
-            assertTrue(callExpressionType?.canonicalText in listOf("kotlin.Unit", "int"))
+            val coerced = if (useFirUast()) "<ErrorType>" else "kotlin.Unit"
+            assertTrue(callExpressionType?.canonicalText in listOf(coerced, "int"))
 
             // We can go deeper into the last expression of the lambda argument.
             val sourcePsi = node.sourcePsi
