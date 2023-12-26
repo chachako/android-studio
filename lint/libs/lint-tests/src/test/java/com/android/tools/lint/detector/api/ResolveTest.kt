@@ -19,6 +19,7 @@ package com.android.tools.lint.detector.api
 import com.android.tools.lint.checks.infrastructure.TestFiles.base64gzip
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
+import com.android.tools.lint.useFirUast
 import com.intellij.openapi.util.Disposer
 import junit.framework.TestCase
 import org.jetbrains.uast.UElement
@@ -243,6 +244,8 @@ class ResolveTest : TestCase() {
 
     val pair = LintUtilsTest.parse(source)
 
+    val lcAccessorName =
+      if (useFirUast()) "SymbolLightAccessorMethod" else "KtUltraLightMethodForSourceDeclaration"
     val uastFile = pair.first.uastFile
     assertEquals(
       """
@@ -257,7 +260,7 @@ class ResolveTest : TestCase() {
                     UMethod (name = mutate) [public final fun mutate() : void {...}]
                         UBlockExpression [{...}]
                             UBinaryExpression (operator = =) [myField = 42]
-                                USimpleNameReferenceExpression (identifier = myField) [myField] => KtUltraLightMethodForSourceDeclaration:setMyField
+                                USimpleNameReferenceExpression (identifier = myField) [myField] => $lcAccessorName:setMyField
                                 ULiteralExpression (value = 42) [42]
                     UMethod (name = A) [public fun A() = UastEmptyExpression]
             """
