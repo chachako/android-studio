@@ -66,6 +66,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             val sdkDirectory = componentsExtension.sdkComponents.sdkDirectory
             createPreviewlibCliToolConfiguration(project)
             val layoutlibFromMaven = LayoutlibFromMaven.create(project)
+
             val updateAllTask = project.tasks.register(
                 "previewScreenshotUpdateAndroidTest",
                 Task::class.java
@@ -73,6 +74,15 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 task.description = "Update screenshots for all variants."
                 task.group = JavaBasePlugin.VERIFICATION_GROUP
             }.get()
+
+            val validateAllTask = project.tasks.register(
+                "previewScreenshotAndroidTest",
+                Task::class.java
+            ) { task ->
+                task.description = "Run screenshot tests for all variants."
+                task.group = JavaBasePlugin.VERIFICATION_GROUP
+            }.get()
+
             componentsExtension.onVariants { variant ->
                 if (variant is HasAndroidTest) {
                     val variantName = variant.name
@@ -226,6 +236,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.resultsDir.set(testResultsDir)
                     }
                     previewScreenshotValidationTask.finalizedBy(screenshotHtmlTask)
+                    validateAllTask.dependsOn(previewScreenshotValidationTask)
                 }
             }
         }
