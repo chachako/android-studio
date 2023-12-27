@@ -168,11 +168,17 @@ def _iml_module_jar_impl(
         compiled_java = ctx.actions.declare_file(name + ".pjava.jar") if form_srcs else java_jar
         formc_input_jars = [compiled_java] + ([kotlin_jar] if kotlin_jar else [])
 
+        # Bazel normally places transitive deps on the classpath (subject to
+        # strict-deps enforcement and reduced-classpath optimizations). However,
+        # in order to match JPS, we compile against direct deps only.
+        compile_jars = java_common.merge(java_deps + kotlin_providers).compile_jars.to_list()
+        compile_deps = [JavaInfo(jar, compile_jar = jar) for jar in compile_jars]
+
         java_provider = java_common.compile(
             ctx,
             source_files = java_srcs,
             output = compiled_java,
-            deps = java_deps + kotlin_providers,
+            deps = compile_deps,
             javac_opts = javac_opts,
             java_toolchain = java_toolchain,
             sourcepath = sourcepath,
