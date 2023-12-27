@@ -574,9 +574,11 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               val versionVar = getVersionVariable(value)
               val result =
                 createMoveToTomlFix(context, tomlLibraries, dependency, valueCookie, versionVar)
-              val message = result?.first ?: "Use version catalog instead"
-              val fix = result?.second
-              report(context, valueCookie, SWITCH_TO_TOML, message, fix)
+              if (result != null) {
+                val message = result.first ?: "Use version catalog instead"
+                val fix = result.second
+                report(context, valueCookie, SWITCH_TO_TOML, message, fix)
+              }
             }
 
             // Check dependencies without the PSI read lock, because we

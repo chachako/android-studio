@@ -144,7 +144,13 @@ fun createMoveToTomlFix(
   var artifactVersion: Version? = null
 
   val version = dependency.version
-  val richVersionIdentifier = version?.toIdentifier() ?: return null
+  val richVersionIdentifier =
+    version?.let {
+      val identifier = it.toIdentifier()
+      if (identifier.isNullOrBlank()) {
+        return null // return null only if version is invalid
+      } else identifier
+    }
   for ((key, library) in librariesMap.getMappedValues()) {
     val (coordinate, versionNode) = getLibraryFromTomlEntry(versionsMap, library) ?: continue
     val c = Dependency.parse(coordinate)
@@ -335,15 +341,16 @@ private fun findExistingVariable(
 }
 
 /** Creates fix which changes the version variable in [versionNode] to [version] */
-private fun createChangeVersionFix(version: String, versionNode: LintTomlValue): LintFix {
-  return LintFix.create()
-    .name("Change ${versionNode.getKey()} to $version")
-    .replace()
-    .range(versionNode.getLocation())
-    .all()
-    .with("\"$version\"")
-    .build()
-}
+private fun createChangeVersionFix(version: String?, versionNode: LintTomlValue): LintFix? =
+  version?.let {
+    LintFix.create()
+      .name("Change ${versionNode.getKey()} to $version")
+      .replace()
+      .range(versionNode.getLocation())
+      .all()
+      .with("\"$version\"")
+      .build()
+  }
 
 /**
  * Creates fix which creates a new version catalog entry (library and version name) for the given
@@ -657,11 +664,20 @@ private fun createInsertLibraryFix(
   }
 
   val version =
-    if (versionVariable != null) "version.ref = \"$versionVariable\""
-    else dependency.version?.toIdentifier()?.let { "version = \"$it\"" } ?: return null
+    if (versionVariable != null) {
+      "version.ref = \"$versionVariable\""
+    } else {
+      val richVersion = dependency.version
+      richVersion?.let {
+        val identifier = it.toIdentifier()
+        if (identifier.isNullOrBlank()) return null // for invalid version
+        else "version = \"$it\""
+      }
+    }
   val group = dependency.group ?: return null
+  val versionWithSeparator = version?.let { ", $it" } ?: ""
   val moduleDeclaration =
-    "$prefix$libraryVariable = { module = \"$group:${dependency.name}\", $version }$suffix"
+    "$prefix$libraryVariable = { module = \"$group:${dependency.name}\"$versionWithSeparator }$suffix"
   return LintFix.create()
     .replace()
     .range(Location.create(document.getFile(), source, libraryInsertOffset, libraryInsertOffset))

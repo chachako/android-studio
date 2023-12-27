@@ -1432,6 +1432,83 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testSwitchToTomlNoVersion() {
+    lint()
+      .files(
+        gradleToml(
+            """
+                # Only libraries here
+                [libraries]
+                compose-bom = { module = 'androidx.compose:compose-bom', version = '2023.10.01' }
+                """
+          )
+          .indented(),
+        gradle(
+            """
+                dependencies {
+                    implementation libs.compose.bom
+                    implementation 'androidx.compose.material3:material3'
+                }
+                """
+          )
+          .indented()
+      )
+      .issues(SWITCH_TO_TOML)
+      .sdkHome(mockSupportLibraryInstallation)
+      .run()
+      .expect(
+        """
+                build.gradle:3: Warning: Use version catalog instead [UseTomlInstead]
+                    implementation 'androidx.compose.material3:material3'
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                0 errors, 1 warnings
+                """
+      )
+      .verifyFixes()
+      .window(1)
+      .expectFixDiffs(
+        """
+                Autofix for build.gradle line 3: Replace with new library catalog declaration for material3:
+                @@ -3 +3
+                      implementation libs.compose.bom
+                -     implementation 'androidx.compose.material3:material3'
+                +     implementation libs.material3
+                  }
+                gradle/libs.versions.toml:
+                @@ -4 +4
+                  compose-bom = { module = 'androidx.compose:compose-bom', version = '2023.10.01' }
+                + material3 = { module = "androidx.compose.material3:material3" }
+                """
+      )
+  }
+
+  fun testSwitchToTomlWrongVersion() {
+    lint()
+      .files(
+        gradleToml(
+            """
+                # Only libraries here
+                [libraries]
+                compose-bom = { module = 'androidx.compose:compose-bom', version = '2023.10.01' }
+                """
+          )
+          .indented(),
+        gradle(
+            """
+                dependencies {
+                    implementation libs.compose.bom
+                    implementation 'androidx.compose.material3:material3:'
+                }
+                """
+          )
+          .indented()
+      )
+      .issues(SWITCH_TO_TOML)
+      .sdkHome(mockSupportLibraryInstallation)
+      .run()
+      .expectClean()
+  }
+
   fun testSwitchToTomlEmptyVersions() {
     lint()
       .files(
