@@ -30,6 +30,7 @@ import com.android.tools.lint.checks.GradleDetector.Companion.BOM_WITHOUT_PLATFO
 import com.android.tools.lint.checks.GradleDetector.Companion.BUNDLED_GMS
 import com.android.tools.lint.checks.GradleDetector.Companion.CHROMEOS_ABI_SUPPORT
 import com.android.tools.lint.checks.GradleDetector.Companion.COMPATIBILITY
+import com.android.tools.lint.checks.GradleDetector.Companion.CREDENTIAL_DEP
 import com.android.tools.lint.checks.GradleDetector.Companion.DATA_BINDING_WITHOUT_KAPT
 import com.android.tools.lint.checks.GradleDetector.Companion.DEPENDENCY
 import com.android.tools.lint.checks.GradleDetector.Companion.DEPRECATED
@@ -7442,6 +7443,143 @@ class GradleDetectorTest : AbstractCheckTest() {
         @@ -4 +4
         -     compileSdkVersion 28
         +     compileSdkVersion $HIGHEST_KNOWN_STABLE_API
+        """
+      )
+  }
+
+  fun testDocumentationExampleCredentialDependency() {
+    lint()
+      .files(
+        manifest().minSdk(33),
+        gradle(
+            """
+            dependencies {
+                implementation 'androidx.credentials:credentials:+'
+            }
+            """
+          )
+          .indented(),
+      )
+      .issues(CREDENTIAL_DEP)
+      .run()
+      .expect(
+        """
+        build.gradle:2: Warning: In Android 13 or lower, credentials-play-services-auth is required when using androidx.credentials:credentials [CredentialDependency]
+            implementation 'androidx.credentials:credentials:+'
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
+  fun testCredentialDependencyToml() {
+    lint()
+      .files(
+        manifest().minSdk(33),
+        gradleToml(
+            """
+            [versions]
+            credentials = "1.0.0"
+
+            [libraries]
+            androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+            """
+          )
+          .indented(),
+        gradle(
+            """
+            dependencies {
+                implementation(libs.androidx.credentials)
+            }
+            """
+          )
+          .indented(),
+      )
+      .issues(CREDENTIAL_DEP)
+      .run()
+      .expect(
+        """
+        ../gradle/libs.versions.toml:5: Warning: In Android 13 or lower, credentials-play-services-auth is required when using androidx.credentials:credentials [CredentialDependency]
+        androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
+  fun testHasPlayServicesDependency() {
+    lint()
+      .files(
+        manifest().minSdk(33),
+        gradle(
+            """
+            dependencies {
+                implementation 'androidx.credentials:credentials:+'
+                implementation 'androidx.credentials:credentials-play-services-auth:+'
+            }
+            """
+          )
+          .indented(),
+      )
+      .issues(CREDENTIAL_DEP)
+      .run()
+      .expectClean()
+  }
+
+  fun testAndroid14ApiLevel() {
+    lint()
+      .files(
+        manifest().minSdk(34),
+        gradle(
+            """
+            dependencies {
+                implementation 'androidx.credentials:credentials:+'
+            }
+            """
+          )
+          .indented(),
+      )
+      .issues(CREDENTIAL_DEP)
+      .run()
+      .expectClean()
+  }
+
+  fun testCredentialAlternativeNotations() {
+    // Named dependencies, using group+name instead of module in toml dependency etc
+    lint()
+      .files(
+        manifest().minSdk(33),
+        gradleToml(
+            """
+            [versions]
+            credentials = "1.0.0"
+
+            [libraries]
+            androidx-credentials = { group = " androidx.credentials ", name =" credentials", version.ref = "credentials" }
+            """
+          )
+          .indented(),
+        gradle(
+            """
+            dependencies {
+                implementation group: 'androidx.credentials', name: 'credentials', version: '+'
+                implementation(libs.androidx.credentials)
+            }
+            """
+          )
+          .indented(),
+      )
+      .issues(CREDENTIAL_DEP)
+      .run()
+      .expect(
+        """
+        build.gradle:2: Warning: In Android 13 or lower, credentials-play-services-auth is required when using androidx.credentials:credentials [CredentialDependency]
+            implementation group: 'androidx.credentials', name: 'credentials', version: '+'
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        ../gradle/libs.versions.toml:5: Warning: In Android 13 or lower, credentials-play-services-auth is required when using androidx.credentials:credentials [CredentialDependency]
+        androidx-credentials = { group = " androidx.credentials ", name =" credentials", version.ref = "credentials" }
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 2 warnings
         """
       )
   }

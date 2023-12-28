@@ -161,6 +161,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           GradleDetector.BUNDLED_GMS,
           GradleDetector.CHROMEOS_ABI_SUPPORT,
           GradleDetector.COMPATIBILITY,
+          GradleDetector.CREDENTIAL_DEP,
           GradleDetector.DATA_BINDING_WITHOUT_KAPT,
           GradleDetector.DEPENDENCY,
           GradleDetector.DEPRECATED,
