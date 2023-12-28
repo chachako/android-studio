@@ -38,12 +38,6 @@ fun Verify.AnalysisResult.toPreviewResponse(code: Int, name: String, golden: Ima
     return PreviewResult(code, name, message, golden, actual, diff)
 }
 
-/*
-* Response from [PreviewScreenshotRenderTask] that indicates if previews were rendered successfully and provides a list of [PreviewResult]s
-*/
-data class Response(val status: Int, val message: String, val previewResults: List<PreviewResult>) {
-}
-
 /**
  * class to encapsulate comparison images to be consumed by report generator
  * In case of missing image, the message will contain the text to be displayed instead
