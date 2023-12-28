@@ -93,8 +93,8 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
         val imageDiffer = ImageDiffer.MSSIMMatcher()
         val screenshotName = composeScreenshot.imageName
         val screenshotNamePng = "$screenshotName.png"
-        var goldenPath = referenceImageDir.asFile.get().toPath().resolve(screenshotNamePng)
-        var goldenMessage: String? = null
+        var referencePath = referenceImageDir.asFile.get().toPath().resolve(screenshotNamePng)
+        var referenceMessage: String? = null
         val actualPath = imageOutputDir.asFile.get().toPath().resolve(screenshotName + "_actual.png")
         var diffPath = imageOutputDir.asFile.get().toPath().resolve(screenshotName + "_diff.png")
         var diffMessage: String? = null
@@ -102,18 +102,18 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
         val verifier = Verify(imageDiffer, diffPath)
 
         //If the CLI tool could not render the preview, return the preview result with the
-        //code and message along with golden path if it exists
+        //code and message along with reference path if it exists
         val renderedFile = renderTaskOutputDir.asFile.get().toPath().resolve(screenshotName + "_0.png").toFile()
         if (!renderedFile.exists()) {
-            if (!goldenPath.toFile().exists()) {
-                goldenPath = null
-                goldenMessage = "Reference image missing"
+            if (!referencePath.toFile().exists()) {
+                referencePath = null
+                referenceMessage = "Reference image missing"
             }
 
             return PreviewResult(1,
                 composeScreenshot.methodFQN,
                 "Image render failed",
-                goldenImage = ImageDetails(goldenPath, goldenMessage),
+                referenceImage = ImageDetails(referencePath, referenceMessage),
                 actualImage = ImageDetails(null, "Image render failed")
             )
 
@@ -123,8 +123,8 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
         FileUtils.copyFile(renderedFile, actualPath.toFile())
 
         val result =
-            verifier.assertMatchGolden(
-                goldenPath,
+            verifier.assertMatchReference(
+                referencePath,
                 ImageIO.read(actualPath.toFile())
             )
         when (result) {
@@ -137,10 +137,10 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
                     diffMessage = "Images match!"
                 }
             }
-            is Verify.AnalysisResult.MissingGolden -> {
-                goldenPath = null
+            is Verify.AnalysisResult.MissingReference -> {
+                referencePath = null
                 diffPath = null
-                goldenMessage = "Golden image missing"
+                referenceMessage = "Reference image missing"
                 diffMessage = "No diff available"
                 code = 1
             }
@@ -151,7 +151,7 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
             }
         }
         return result.toPreviewResponse(code, composeScreenshot.methodFQN,
-            ImageDetails(goldenPath, goldenMessage),
+            ImageDetails(referencePath, referenceMessage),
             ImageDetails(actualPath, null),
             ImageDetails(diffPath, diffMessage))
     }

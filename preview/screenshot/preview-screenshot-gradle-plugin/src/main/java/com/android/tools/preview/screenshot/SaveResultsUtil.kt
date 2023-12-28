@@ -23,7 +23,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
-import java.nio.file.Path
 
 const val ACTUAL = "actual"
 const val CLASSNAME = "classname"
@@ -128,8 +127,8 @@ private fun printImages(
     serializer.endTag(NAMESPACE, tag)
     serializer.startTag(NAMESPACE, IMAGES)
     serializer.startTag(NAMESPACE, REFERENCE)
-    result.goldenImage!!.path?.let { serializer.attribute(NAMESPACE, PATH, it.toString()) }
-    result.goldenImage.message?.let { serializer.attribute(NAMESPACE, MESSAGE, it) }
+    result.referenceImage!!.path?.let { serializer.attribute(NAMESPACE, PATH, it.toString()) }
+    result.referenceImage.message?.let { serializer.attribute(NAMESPACE, MESSAGE, it) }
     serializer.endTag(NAMESPACE, REFERENCE)
     if (result.actualImage != null) {
         serializer.startTag(NAMESPACE, ACTUAL)

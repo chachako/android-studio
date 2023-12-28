@@ -21,33 +21,33 @@ import java.nio.file.Path
 import javax.imageio.ImageIO
 
 class Verify(private val imageDiffer: ImageDiffer = ImageDiffer.PixelPerfect(), private val diffFilePath: Path) {
-    fun assertMatchGolden(goldenPath: Path, image: BufferedImage) : AnalysisResult {
+    fun assertMatchReference(referencePath: Path, image: BufferedImage) : AnalysisResult {
 
-        return analyze(goldenPath, image)
+        return analyze(referencePath, image)
     }
 
-    private fun analyze(goldenPath: Path, actual: BufferedImage): AnalysisResult {
-        var golden: BufferedImage? = null
-        if (goldenPath.toFile().exists()) {
-            golden = ImageIO.read(goldenPath.toFile())
+    private fun analyze(referencePath: Path, actual: BufferedImage): AnalysisResult {
+        var reference: BufferedImage? = null
+        if (referencePath.toFile().exists()) {
+            reference = ImageIO.read(referencePath.toFile())
 
         }
-        if (golden == null) return AnalysisResult.MissingGolden(actual, "MISSING GOLDEN")
-        if (actual.width != golden.width || actual.height != golden.height) {
-            return AnalysisResult.SizeMismatch(actual, "Size Mismatch. Reference image size: ${golden.width}X${golden.height}. Rendered image size: ${actual.width}X${actual.height}", golden)
+        if (reference == null) return AnalysisResult.MissingReference(actual, "MISSING REFERENCE IMAGE")
+        if (actual.width != reference.width || actual.height != reference.height) {
+            return AnalysisResult.SizeMismatch(actual, "Size Mismatch. Reference image size: ${reference.width}X${reference.height}. Rendered image size: ${actual.width}X${actual.height}", reference)
         }
-        val diff = imageDiffer.diff(actual, golden)
+        val diff = imageDiffer.diff(actual, reference)
         if (diff.highlights != null) {
             val diffFile = diffFilePath.toFile()
             ImageIO.write(diff.highlights, "png", diffFile)
         }
 
         if (diff is ImageDiffer.DiffResult.Different) {
-            return AnalysisResult.Failed(actual, "FAILED", golden, diff)
+            return AnalysisResult.Failed(actual, "FAILED", reference, diff)
         }
         return AnalysisResult.Passed(actual,
             "PASSED",
-            golden,
+            reference,
             diff as ImageDiffer.DiffResult.Similar)
     }
 
@@ -75,7 +75,7 @@ class Verify(private val imageDiffer: ImageDiffer = ImageDiffer.PixelPerfect(), 
             val expected: BufferedImage
         ) : AnalysisResult
 
-        data class MissingGolden(
+        data class MissingReference(
             override val actual: BufferedImage,
             override val message: String
         ) : AnalysisResult

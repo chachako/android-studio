@@ -30,28 +30,28 @@ class VerifyTest {
     val testName = TestName()
 
     @get:Rule
-    val goldenDirectory = TemporaryFolder()
+    val referenceDirectory = TemporaryFolder()
 
     @get:Rule
     val outputDirectory = TemporaryFolder()
 
     @Test
-    fun assertMatchGolden_missingGolden() {
-        val analysis = verifier().assertMatchGolden(goldenFilePath("circle"), loadTestImage("circle"))
+    fun assertMatchReference_missingReference() {
+        val analysis = verifier().assertMatchReference(referenceFilePath("circle"), loadTestImage("circle"))
 
-        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("goldenPath"), null))
+        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("referencePath"), null))
         assert(previewResult.message == analysis.message)
-        assertIs<Verify.AnalysisResult.MissingGolden>(analysis)
+        assertIs<Verify.AnalysisResult.MissingReference>(analysis)
         assertEquals(loadTestImage("circle"), analysis.actual)
     }
 
     @Test
-    fun assertMatchGolden_passed() {
-        createGolden("circle")
+    fun assertMatcReference_passed() {
+        createReference("circle")
 
-        val analysis = verifier().assertMatchGolden(goldenFilePath("circle"), loadTestImage("circle"))
+        val analysis = verifier().assertMatchReference(referenceFilePath("circle"), loadTestImage("circle"))
 
-        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("goldenPath"), null))
+        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("referencePath"), null))
         assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.Passed>(analysis)
         assertEquals(loadTestImage("circle"), analysis.actual)
@@ -59,15 +59,15 @@ class VerifyTest {
     }
 
     @Test
-    fun assertMatchGoldenWithThreshold_passed() {
-        createGolden("circle")
+    fun assertMatchReferenceWithThreshold_passed() {
+        createReference("circle")
         val differ = ImageDiffer.MSSIMMatcher(0.9f)
         val verifier = Verify(
             differ,
             outputDirectory.root.toPath()
         )
 
-        val analysis = verifier.assertMatchGolden(goldenFilePath("circle"), loadTestImage("star"))
+        val analysis = verifier.assertMatchReference(referenceFilePath("circle"), loadTestImage("star"))
 
         assertIs<Verify.AnalysisResult.Passed>(analysis)
         assertEquals(loadTestImage("star"), analysis.actual)
@@ -75,26 +75,26 @@ class VerifyTest {
     }
 
     @Test
-    fun assertMatchGolden_failed() {
-        createGolden("circle")
+    fun assertMatchReference_failed() {
+        createReference("circle")
 
-        val analysis = verifier().assertMatchGolden(goldenFilePath("circle"), loadTestImage("star"))
+        val analysis = verifier().assertMatchReference(referenceFilePath("circle"), loadTestImage("star"))
 
-        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("goldenPath"), null))
+        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("referencePath"), null))
         assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.Failed>(analysis)
         assertEquals(loadTestImage("star"), analysis.actual)
         assertEquals(loadTestImage("circle"), analysis.expected)
-        assertEquals(loadTestImage("PixelPerfect_diff"), analysis.imageDiff.highlights!!)
+        assertEquals(loadTestImage("PixelPerfect_diff"), analysis.imageDiff.highlights)
     }
 
     @Test
-    fun assertMatchGolden_sizeMismatch() {
-        createGolden("vertical_rectangle")
+    fun assertMatchReference_sizeMismatch() {
+        createReference("vertical_rectangle")
 
-        val analysis = verifier().assertMatchGolden(goldenFilePath("vertical_rectangle"), loadTestImage("horizontal_rectangle"))
+        val analysis = verifier().assertMatchReference(referenceFilePath("vertical_rectangle"), loadTestImage("horizontal_rectangle"))
 
-        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("goldenPath"), null))
+        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("referencePath"), null))
         assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.SizeMismatch>(analysis)
         assertEquals(loadTestImage("vertical_rectangle"), analysis.expected)
@@ -114,14 +114,14 @@ class VerifyTest {
         )
     }
 
-    /** Create a golden image for this test from the supplied test image [name]. */
-    private fun createGolden(name: String) =
+    /** Create a reference image for this test from the supplied test image [name]. */
+    private fun createReference(name: String) =
         javaClass.getResourceAsStream("$name.png")!!
-            .copyTo(goldenDirectory.root.resolve("$name.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
+            .copyTo(referenceDirectory.root.resolve("$name.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
 
-    /** Creates a file path for the golden from the supplied test image [name]. */
-    private fun goldenFilePath(name: String) =
-        goldenDirectory.root.resolve("$name.png").toPath()
+    /** Creates a file path for the reference image from the supplied test image [name]. */
+    private fun referenceFilePath(name: String) =
+        referenceDirectory.root.resolve("$name.png").toPath()
 
     /** Load a test image from resources. */
     private fun loadTestImage(name: String) =
