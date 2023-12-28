@@ -106,6 +106,12 @@ filegroup(
 )
 
 filegroup(
+    name = "gradle-distrib-8.4",
+    srcs = ["//tools/external/gradle:gradle-distrib-8.4"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "gradle-distrib-8.2",
     srcs = ["//tools/external/gradle:gradle-distrib-8.2"],
     visibility = ["//visibility:public"],
