@@ -92,6 +92,8 @@ public class NativeBuildOutputTest {
                         + "android.namespace \"com.example.hellojni\"\n"
                         + "android.compileSdkVersion "
                         + GradleTestProject.DEFAULT_COMPILE_SDK_VERSION
+                        + "\nandroid.defaultConfig.minSdk "
+                        + GradleTestProject.DEFAULT_MIN_SDK_VERSION
                         + "\n");
     }
 

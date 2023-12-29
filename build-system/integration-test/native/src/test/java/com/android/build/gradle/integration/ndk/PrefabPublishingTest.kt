@@ -23,7 +23,6 @@ import com.android.build.gradle.internal.cxx.configure.CMakeVersion
 import com.android.build.gradle.internal.cxx.model.CxxAbiModel
 import com.android.build.gradle.internal.cxx.model.minSdkVersion
 import com.android.build.gradle.internal.cxx.model.name
-import com.android.build.gradle.internal.cxx.model.ndkMinPlatform
 import com.android.build.gradle.tasks.NativeBuildSystem
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth
@@ -329,7 +328,7 @@ class PrefabPublishingTest(
                 buildToolsVersion = libs.versions.buildToolsVersion.get()
 
                 defaultConfig {
-                    minSdkVersion 16
+                    minSdkVersion 21
                     targetSdkVersion libs.versions.latestCompileSdk.get()
 
 
@@ -462,9 +461,8 @@ class PrefabPublishingTest(
                 buildToolsVersion = libs.versions.buildToolsVersion.get()
 
                 defaultConfig {
-                    minSdkVersion 16
+                    minSdkVersion 21
                     targetSdkVersion libs.versions.latestCompileSdk.get()
-
 
                     externalNativeBuild {
                         if (!project.hasProperty("ndkBuild")) {

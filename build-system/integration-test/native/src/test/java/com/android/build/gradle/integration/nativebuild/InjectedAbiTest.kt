@@ -57,6 +57,7 @@ class InjectedAbiTest {
 android {
     ndkPath "${project.ndkPath}"
     defaultConfig {
+        minSdk ${GradleTestProject.DEFAULT_MIN_SDK_VERSION}
         ndk {
             abiFilters "x86"
         }
@@ -79,7 +80,8 @@ android {
                 .containsFile("lib/x86/libhello-jni.so")
     }
 
-    @Test fun missingAbi() {
+    @Test
+    fun missingAbi() {
         project.executor()
                 .with(StringOption.IDE_BUILD_TARGET_ABI, "armeabi-v7a")
                 .run(":app:assembleDebug")

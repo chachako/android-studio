@@ -374,13 +374,13 @@ filegroup(
 filegroup(
     name = "ndk",
     srcs = sdk_glob(
-        include = ["ndk/25.1.8937393/**"],
+        include = ["ndk/26.1.10909125/**"],
         exclude = [
             # Bazel can't handle paths with spaces in them.
-            "ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/python3/lib/python3.9/site-packages/setuptools/command/launcher manifest.xml",
-            "ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/python3/lib/python3.9/site-packages/setuptools/script (dev).tmpl",
-            "ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/python3/lib/python3.9/site-packages/setuptools/command/launcher manifest.xml",
-            "ndk/25.1.8937393/toolchains/llvm/prebuilt/darwin-x86_64/python3/lib/python3.9/site-packages/setuptools/script (dev).tmpl",
+            "ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/python3/lib/python3.9/site-packages/setuptools/command/launcher manifest.xml",
+            "ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/python3/lib/python3.9/site-packages/setuptools/script (dev).tmpl",
+            "ndk/26.1.10909125/toolchains/llvm/prebuilt/darwin-x86_64/python3/lib/python3.9/site-packages/setuptools/command/launcher manifest.xml",
+            "ndk/26.1.10909125/toolchains/llvm/prebuilt/darwin-x86_64/python3/lib/python3.9/site-packages/setuptools/script (dev).tmpl",
         ],
     ),
     visibility = ["//visibility:public"],

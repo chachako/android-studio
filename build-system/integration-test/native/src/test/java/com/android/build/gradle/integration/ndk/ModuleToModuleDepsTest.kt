@@ -227,6 +227,7 @@ class ModuleToModuleDepsTest(
                 compileSdkVersion $DEFAULT_COMPILE_SDK_VERSION
                 ndkPath "${project.ndkPath}"
                 defaultConfig {
+                    minSdk ${GradleTestProject.DEFAULT_MIN_SDK_VERSION}
                     ndk {
                         abiFilters "arm64-v8a"
                     }
@@ -272,6 +273,9 @@ class ModuleToModuleDepsTest(
         project.getSubproject(":lib").buildFile.appendText(
             """
             android {
+                defaultConfig {
+                    minSdk ${GradleTestProject.DEFAULT_MIN_SDK_VERSION}
+                }
                 buildFeatures {
                     prefabPublishing $libUsesPrefabPublish
                 }
@@ -481,10 +485,7 @@ class ModuleToModuleDepsTest(
         // Check that the output is known but does not yet exist on disk.
         val libAbi = recoverExistingCxxAbiModels(libOutputRoot).single { it.name == Abi.X86.tag }
         val libConfig = AndroidBuildGradleJsons.getNativeBuildMiniConfig(libAbi, null)
-        if (expectNdkBuildProducesNoLibrary()) {
-            assertThat(libConfig.libraries.values).isEmpty()
-            return
-        }
+
         val libOutput = libConfig.libraries.values.single().output!!
         assertThat(libOutput.toString().endsWith(libExtension))
             .named("$libOutput")
@@ -529,11 +530,6 @@ class ModuleToModuleDepsTest(
         Assume.assumeFalse(expectGradleConfigureError())
 
         val executor = project.executor()
-
-        // Expect failure for cases when build failure is expected.
-        if (expectGradleBuildError()) {
-            executor.expectFailure()
-        }
 
         executor.run(":app:build${appBuildSystem.build}Debug[arm64-v8a]")
     }

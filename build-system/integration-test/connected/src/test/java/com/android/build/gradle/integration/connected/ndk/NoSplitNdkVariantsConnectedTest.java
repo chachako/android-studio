@@ -56,7 +56,9 @@ public class NoSplitNdkVariantsConnectedTest {
                         + GradleTestProject.DEFAULT_BUILD_TOOL_VERSION
                         + "'\n"
                         + "    defaultConfig {\n"
-                        + "      minSdkVersion libs.versions.supportLibMinSdk.get()\n"
+                        + "      minSdkVersion "
+                        + GradleTestProject.DEFAULT_MIN_SDK_VERSION
+                        + "\n"
                         + "      testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'\n"
                         + "    }\n"
                         + "\n"

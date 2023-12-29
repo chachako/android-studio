@@ -109,6 +109,9 @@ public class NdkBuildAndroidMkLibraryTest {
                         + GradleTestProject.DEFAULT_BUILD_TOOL_VERSION
                         + "\"\n"
                         + "            defaultConfig {\n"
+                        + "                minSdk "
+                        + GradleTestProject.DEFAULT_MIN_SDK_VERSION
+                        + "\n"
                         + "                externalNativeBuild {\n"
                         + "                    ndkBuild {\n"
                         + "                        abiFilters.addAll(\"armeabi-v7a\", \"x86\")\n"

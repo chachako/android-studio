@@ -84,6 +84,9 @@ public class CmakeGradleTargetsTest {
                                 + GradleTestProject.DEFAULT_BUILD_TOOL_VERSION
                                 + "\"\n"
                                 + "        defaultConfig {\n"
+                                + "          minSdk "
+                                + GradleTestProject.DEFAULT_MIN_SDK_VERSION
+                                + "\n"
                                 + "          externalNativeBuild {\n"
                                 + "              cmake {\n"
                                 + "                abiFilters.addAll(\"armeabi-v7a\", \"x86\");\n"

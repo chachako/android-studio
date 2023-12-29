@@ -55,7 +55,9 @@ public class HelloWorldLibraryApp extends MultiModuleTestProject implements Test
                                 + GradleTestProject.DEFAULT_COMPILE_SDK_VERSION
                                 + "\n"
                                 + "    defaultConfig {\n"
-                                + "        minSdkVersion 3\n"
+                                + "        minSdkVersion "
+                                + GradleTestProject.DEFAULT_MIN_SDK_VERSION
+                                + "\n"
                                 + "    }\n"
                                 + "}\n"));
 

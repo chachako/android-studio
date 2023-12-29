@@ -21,6 +21,9 @@ plugins {
 android {
     namespace = "com.example.nativelib"
     compileSdk = property("latestCompileSdk") as Int
+    defaultConfig {
+        minSdk = 21
+    }
 
     externalNativeBuild {
         cmake {

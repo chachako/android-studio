@@ -8,7 +8,7 @@ android {
     buildToolsVersion = libs.versions.buildToolsVersion.get()
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion libs.versions.latestCompileSdk.get()
     }
 

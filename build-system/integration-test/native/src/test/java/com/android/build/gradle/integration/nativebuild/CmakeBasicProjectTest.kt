@@ -776,13 +776,6 @@ class CmakeBasicProjectTest(
     @Test
     fun `configuration build command golden flags`() {
         val golden = project.goldenConfigurationFlags(Abi.X86_64)
-            // Special fix for NDKs <= r16
-            .replace(
-                "-DCMAKE_SYSTEM_VERSION=21",
-                "-DCMAKE_SYSTEM_VERSION=19")
-            .replace(
-                "-DANDROID_PLATFORM=android-21",
-                "-DANDROID_PLATFORM=android-19")
         val minPlatform = project.recoverExistingCxxAbiModels().first().variant.module.ndkMinPlatform
 
         if (mode == Mode.NinjaRedirect) {

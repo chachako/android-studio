@@ -78,6 +78,9 @@ class V2NativeModelTest(private val cmakeVersion: String) : ModelComparator() {
                     namespace "com.example.hellojni"
                     compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}
                     buildToolsVersion "${GradleTestProject.DEFAULT_BUILD_TOOL_VERSION}"
+                    defaultConfig {
+                      minSdk ${GradleTestProject.DEFAULT_MIN_SDK_VERSION}
+                    }
                     externalNativeBuild {
                       cmake {
                         path "CMakeLists.txt"
