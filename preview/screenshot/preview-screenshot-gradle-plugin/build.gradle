@@ -29,7 +29,7 @@ base {
 }
 
 if (findProperty("release")?.toBoolean()) {
-    version = '0.0.1-alpha01'
+    version = '0.0.1-eap01'
 } else {
     version = '0.0.1-dev'
 }
