@@ -658,8 +658,8 @@ DATA = [
     "org.jetbrains.dokka:javadoc-plugin:1.4.32",
     "org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:1.9.20",
     "org.jetbrains.kotlin.kapt:org.jetbrains.kotlin.kapt.gradle.plugin:2.0.0-Beta1",
-    "org.jetbrains.jewel:jewel-ide-laf-bridge:0.11.0-ij-232",
-    "org.jetbrains.jewel:jewel-int-ui-standalone:0.11.0",
+    "org.jetbrains.jewel:jewel-ide-laf-bridge:0.12.0-ij-233",
+    "org.jetbrains.jewel:jewel-int-ui-standalone:0.12.0",
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.7.0",  # Remove it later (b/243935746)
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.7.10",
     "org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.7.20",
@@ -848,11 +848,11 @@ DATA = [
     "org.jetbrains.compose.ui:ui-text-desktop:jar:sources:1.5.11",
     "org.jetbrains.compose.ui:ui-unit-desktop:jar:sources:1.5.11",
     "org.jetbrains.compose.ui:ui-util-desktop:jar:sources:1.5.11",
-    "org.jetbrains.jewel:jewel-foundation:jar:sources:0.11.0",
-    "org.jetbrains.jewel:jewel-ide-laf-bridge:jar:sources:0.11.0-ij-232",
-    "org.jetbrains.jewel:jewel-ide-laf-bridge-platform-specific:jar:sources:0.11.0-ij-232",
-    "org.jetbrains.jewel:jewel-int-ui-standalone:jar:sources:0.11.0",
-    "org.jetbrains.jewel:jewel-ui:jar:sources:0.11.0",
+    "org.jetbrains.jewel:jewel-foundation:jar:sources:0.12.0",
+    "org.jetbrains.jewel:jewel-ide-laf-bridge:jar:sources:0.12.0-ij-232",
+    "org.jetbrains.jewel:jewel-ide-laf-bridge-platform-specific:jar:sources:0.12.0-ij-233",
+    "org.jetbrains.jewel:jewel-int-ui-standalone:jar:sources:0.12.0",
+    "org.jetbrains.jewel:jewel-ui:jar:sources:0.12.0",
 ]
 
 REMOTE_REPOS = {
