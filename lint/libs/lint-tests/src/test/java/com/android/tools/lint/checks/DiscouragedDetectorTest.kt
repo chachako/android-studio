@@ -187,6 +187,64 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testScheduleAtFixedRate() {
+    lint()
+      .files(
+        kotlin(
+            """
+            package com.pkg
+
+            import java.time.Instant
+            import java.util.Date
+            import java.util.Timer
+            import java.util.TimerTask
+            import java.util.concurrent.ScheduledExecutorService
+            import java.util.concurrent.TimeUnit
+
+            class Main {
+              fun bar(): TimerTask {
+                TODO()
+              }
+
+              fun foo(executor: ScheduledExecutorService, timer: Timer) {
+                executor.scheduleAtFixedRate({}, 10, 30, TimeUnit.SECONDS)
+                timer.scheduleAtFixedRate(bar(), 10, 30)
+                timer.scheduleAtFixedRate(bar(), Date.from(Instant.EPOCH), 30)
+              }
+            }
+            """
+          )
+          .indented(),
+      )
+      .run()
+      .expect(
+        """
+src/com/pkg/Main.kt:16: Warning: Use of scheduleAtFixedRate is strongly discouraged because it can lead to unexpected behavior when Android processes become cached (tasks may unexpectedly execute hundreds or thousands of times in quick succession when a process changes from cached to uncached); prefer using scheduleWithFixedDelay [DiscouragedApi]
+    executor.scheduleAtFixedRate({}, 10, 30, TimeUnit.SECONDS)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/com/pkg/Main.kt:17: Warning: Use of scheduleAtFixedRate is strongly discouraged because it can lead to unexpected behavior when Android processes become cached (tasks may unexpectedly execute hundreds or thousands of times in quick succession when a process changes from cached to uncached); prefer using schedule [DiscouragedApi]
+    timer.scheduleAtFixedRate(bar(), 10, 30)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/com/pkg/Main.kt:18: Warning: Use of scheduleAtFixedRate is strongly discouraged because it can lead to unexpected behavior when Android processes become cached (tasks may unexpectedly execute hundreds or thousands of times in quick succession when a process changes from cached to uncached); prefer using schedule [DiscouragedApi]
+    timer.scheduleAtFixedRate(bar(), Date.from(Instant.EPOCH), 30)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+0 errors, 3 warnings
+"""
+      )
+      .expectFixDiffs(
+        """
+Fix for src/com/pkg/Main.kt line 16: Replace with scheduleWithFixedDelay:
+@@ -16 +16
+-     executor.scheduleAtFixedRate({}, 10, 30, TimeUnit.SECONDS)
++     executor.scheduleWithFixedDelay({}, 10, 30, TimeUnit.SECONDS)
+Fix for src/com/pkg/Main.kt line 17: Replace with schedule:
+@@ -17 +17
+-     timer.scheduleAtFixedRate(bar(), 10, 30)
++     timer.schedule(bar(), 10, 30)
+"""
+      )
+  }
+
   override fun getDetector(): Detector {
     return DiscouragedDetector()
   }

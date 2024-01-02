@@ -32,8 +32,10 @@ import com.android.tools.lint.detector.api.AnnotationUsageType.METHOD_OVERRIDE
 import com.android.tools.lint.detector.api.AnnotationUsageType.METHOD_REFERENCE
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Implementation
+import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue.Companion.create
 import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.Platform
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Scope.Companion.JAVA_FILE_SCOPE
@@ -44,7 +46,11 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotationStringValue
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.XmlScanner
+import com.android.tools.lint.detector.api.isAndroidProject
+import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiTypes
 import java.util.EnumSet
+import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
 import org.w3c.dom.Attr
 
@@ -79,6 +85,63 @@ class DiscouragedDetector : AbstractAnnotationDetector(), XmlScanner, SourceCode
     } else {
       val defaultMessage = "Use of this API is discouraged"
       report(context, ISSUE, element, location, defaultMessage)
+    }
+  }
+
+  override fun getApplicableMethodNames() = listOf(SCHEDULE_AT_FIXED_RATE)
+
+  override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    if (method.name == SCHEDULE_AT_FIXED_RATE) {
+      /* Methods:
+      - ScheduledFuture<?> ScheduledExecutorService.scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit)
+      - void Timer.scheduleAtFixedRate(TimerTask task, Date firstTime, long period)
+      - void Timer.scheduleAtFixedRate(TimerTask task, long delay, long period)
+      */
+
+      fun scheduleAtFixedRateFix(replacement: String): LintFix {
+        // The methods are non-Kotlin (standard Java methods) so we don't have to worry about named
+        // arguments. Do not set robot to true because the replacement has slightly different
+        // behavior.
+        return fix()
+          .replace()
+          .independent(true)
+          .text(SCHEDULE_AT_FIXED_RATE)
+          .with(replacement)
+          .build()
+      }
+
+      val (fix, replacementFuncName) =
+        when {
+          context.evaluator.isMemberInSubClassOf(method, CLASS_SCHEDULED_EXECUTOR_SERVICE) -> {
+            scheduleAtFixedRateFix(SCHEDULE_WITH_FIXED_DELAY) to SCHEDULE_WITH_FIXED_DELAY
+          }
+          context.evaluator.isMemberInSubClassOf(method, CLASS_TIMER) -> {
+            if (method.parameterList.getParameter(1)?.type == PsiTypes.longType()) {
+              scheduleAtFixedRateFix(SCHEDULE) to SCHEDULE
+            } else {
+              // No quick-fix because there is no Timer.schedule(..., Date firstTime, ...) function.
+              null to SCHEDULE
+            }
+          }
+          // No incident to report.
+          else -> return
+        }
+
+      context.report(
+        Incident()
+          .issue(ISSUE)
+          .scope(node)
+          .location(context.getLocation(node))
+          .message(
+            "Use of `scheduleAtFixedRate` is strongly discouraged because it can lead to " +
+              "unexpected behavior when Android processes become cached " +
+              "(tasks may unexpectedly execute hundreds or thousands of times " +
+              "in quick succession when a process changes from cached to uncached); " +
+              "prefer using `${replacementFuncName}`"
+          )
+          .fix(fix),
+        isAndroidProject(),
+      )
     }
   }
 
@@ -120,6 +183,11 @@ class DiscouragedDetector : AbstractAnnotationDetector(), XmlScanner, SourceCode
 
   companion object {
     const val DISCOURAGED_ANNOTATION = "androidx.annotation.Discouraged"
+    const val SCHEDULE_AT_FIXED_RATE = "scheduleAtFixedRate"
+    const val SCHEDULE_WITH_FIXED_DELAY = "scheduleWithFixedDelay"
+    const val SCHEDULE = "schedule"
+    const val CLASS_SCHEDULED_EXECUTOR_SERVICE = "java.util.concurrent.ScheduledExecutorService"
+    const val CLASS_TIMER = "java.util.Timer"
 
     private val IMPLEMENTATION =
       Implementation(
