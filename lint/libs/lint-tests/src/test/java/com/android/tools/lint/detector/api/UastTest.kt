@@ -2666,4 +2666,168 @@ class UastTest : TestCase() {
       )
     }
   }
+
+  fun testAbstractDelegateToInterface() {
+    val testFiles =
+      arrayOf(
+        kotlin(
+          "src/main/impl/DynamicFeatureExtension.kt",
+          """
+            package main.impl
+
+            abstract class DynamicFeatureExtension(
+                private val publicExtensionImpl: DynamicFeatureExtensionImpl
+            ) : InternalDynamicFeatureExtension by publicExtensionImpl {
+                // fun sandbox(action: Action<Sandbox>) // delegate
+            }
+          """
+        ),
+        bytecode(
+          "libs/lib1.jar",
+          kotlin(
+              """
+               package pkg.api
+
+               interface Action<T> {
+                 fun execute(t: T)
+               }
+            """
+            )
+            .indented(),
+          0x2326f350,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBihQYtBiAAD1Iry9GAAAAA==
+                """,
+          """
+                pkg/api/Action.class:
+                H4sIAAAAAAAA/2VQzU7CQBic3UJbqmJRUEDPBj1YJB6MGiMxMWIwJkK4cFpq
+                JUtLS+iWcOyz+BgeTOPRhzJuqxflMt/M5Pv//Hp7B3CKfYLizB1bbMatti14
+                4GsgBI3L/nl3whbM8pg/th5HE8cWF1erFoH539OQI9CcpWNHwiGoNFarDgcE
+                aqPfz0ip6wbC47714Aj2zASTTel0ocj9SAqFFEBAXOkveaqakj2fENwkcdmg
+                VWoksUFNCVmkBtWp/lJN4qOcnsQmadEmva+YSp02cy3VzNfpWRLfHXy8qtRU
+                01YteUb37xvkEqRPsrmCoPBjHrsp7/Gxz0Q0l8cZvSCa284t96SoPUW+4FNn
+                wEM+8py27weCpWVhOgR5ZHfI56iQT0ZNKgodyi9TUM9iFXsyXsuMgqwxhlA6
+                WOtgvYMNFCXFZgcmSkOQEFvYHkILUQ5RCbETQs1wN4T2DWW/IWXjAQAA
+                """
+        ),
+        bytecode(
+          "libs/lib2.jar",
+          kotlin(
+              "src/my/SandBox.kt",
+              """
+              package my
+
+              interface Sandbox
+            """
+            )
+            .indented(),
+          0x3dae47f7,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBihQYtBiAAD1Iry9GAAAAA==
+                """,
+          """
+                my/Sandbox.class:
+                H4sIAAAAAAAA/0WNQUvDQBCF32y0adeqqVqof8K0xZunehACFUHBS06bZpVt
+                kl0w2xJv/V0epGd/lDirB2fgzXsz8M3X98cngGuMCbJ5T5+ULQvXxSBCslZb
+                ldbKvqYPxVqvfIyIMFpWztfGpvfaq1J5dUMQzTZiCgUZBAGBKt53JqQpu3JG
+                GO93fSkmQoqE3ctkv5uLKYXjnDBc/r9nJBNkSLeuu6p8CG7zttJ3ptaEy8eN
+                9abRz6Y1Ra0X1jqvvHG27TENB/grgfNfPcMFzxkjD7l7OaIMcYZ+hgEkWxxl
+                GOI4B7U4wWkO0SJpMfoBSLYswx0BAAA=
+                """
+        ),
+        // To reproduce b/314320270, remove this dependency such that
+        // `DynamicFeatureExtension` as a super type of `InternalDynamicFeatureExtension`
+        // would be another one in the same package, resulting in circular super type.
+        bytecode(
+          "libs/api.jar",
+          kotlin(
+              "src/main/api/DynamicFeatureExtension.kt",
+              """
+              package main.api
+
+              import my.Sandbox
+
+              interface DynamicFeatureExtension {
+                val sandbox: Sandbox
+                fun sandbox(action: Sandbox.() -> Unit)
+              }
+            """
+            )
+            .indented(),
+          0x7e98aaf4,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBihQYtBiAAD1Iry9GAAAAA==
+                """,
+          """
+                main/api/DynamicFeatureExtension.class:
+                H4sIAAAAAAAA/4VRUW8SQRD+doG746z1StVSqi1tjWkf9CjxrUZjokQMVlO0
+                MeFpgS054PYadiHwxm/xwR/hgyF99EcZ567QWo1pspmd+fabb2Znfv76/gPA
+                M+wwFEMRKF+cBf7riRJh0KpIYYYD+WZspNJBpGwwBq8rRsLvC9XxPzS7smVs
+                pBjcjjR1odrNaMywvLdfCyf+PD5k2K1Fg47flaY5oBLaF0pFRhiS1P5RZI6G
+                /T6xbL0Q2N2r9SLTp266o9A/HarWBbcy9w4O908YXt7Eev7kzzYW5M8qMIcv
+                EoWVBfZeGtEWRlAXPBylaCIsNtnYgIH1CB8HcVQir33AEMymRZfnucu92dSl
+                k/hOHPPLMM+d0/xsWuYl9m7b4wVessprnl1YzaVzvJRKrFVyzr9a3Mm+fXyc
+                SzipL+ff0oRZhbST9jJxwTLDTu2m9VDz1OvS9dFbIpkFQ27x16shMmwuwEuR
+                xeunyZkkQuE/tZ72DMPG8VCZIJRVNQp00OzLV1d7ZcjWg45Kshge/c38KAYi
+                lEYOrqW49Wg4aMlK0Kec9XnOyT/aFo0E6Xg14GmGDCz690OK4tsGCHOQJc5m
+                zICLLbptdvFIQDGxD7BNd5XQWySx1ECqittVLFdxBx65WKkih9UGmMZd3GvA
+                1bivsabhaOQ1MhpWEq5rFDQ2fgNSA6T+SwMAAA==
+                """
+        ),
+        kotlin(
+          "src/main/test/InternalTestExtension.kt",
+          """
+            package main.test
+
+            interface InternalTestExtension
+          """
+        ),
+        kotlin(
+          "src/main/impl/InternalDynamicFeatureExtension.kt",
+          """
+            package main.impl
+
+            import pkg.api.Action
+            import my.Sandbox
+            import main.api.DynamicFeatureExtension
+            import main.test.InternalTestExtension
+
+            interface InternalDynamicFeatureExtension : DynamicFeatureExtension, InternalTestExtension {
+              fun sandbox(action: Action<Sandbox>)
+            }
+          """
+        ),
+        kotlin(
+          "src/main/impl/DynamicFeatureExtensionImpl.kt",
+          """
+            package main.impl
+
+            abstract class DynamicFeatureExtensionImpl : InternalDynamicFeatureExtension {
+              // fun sandbox(action: Action<Sandbox>) // abstract
+            }
+          """
+        ),
+      )
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitClass(node: UClass): Boolean {
+            val delegate = node.javaPsi.methods.find { it.name == "sandbox" }
+
+            // If `DynamicFeatureExtension` in api package is missing,
+            // circular super type will bother the compiler frontend.
+            // That is, this delegation won't exist: change to assertNull.
+            // However, K1 gracefully ignored internal errors, whereas
+            // K2 raised ISE that hid the true root cause.
+            assertNotNull(delegate)
+
+            return super.visitClass(node)
+          }
+        }
+      )
+    }
+  }
 }
