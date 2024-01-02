@@ -3404,7 +3404,18 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       val pluginPath = pluginId.replace(".", "/")
       val url =
         "https://plugins.gradle.org/m2/$pluginPath/$pluginId.gradle.plugin/maven-metadata.xml"
-      val updates = readUrlDataAsString(client, url, 20000)
+      val updates =
+        try {
+          readUrlDataAsString(client, url, 20000)
+        } catch (e: IOException) {
+          client.log(
+            null,
+            "Could not connect to %1\$s to get the latest available version for plugin %2\$s",
+            url,
+            pluginId
+          )
+          null
+        }
       if (
         // for missing dependencies it answers with a json document
         updates != null && !updates.startsWith("{")
