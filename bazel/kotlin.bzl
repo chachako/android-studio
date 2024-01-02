@@ -1,5 +1,6 @@
 """This module implements kotlin rules."""
 
+load("@bazel_skylib//lib:collections.bzl", "collections")
 load("@bazel_tools//tools/jdk:toolchain_utils.bzl", "find_java_toolchain")
 load(":coverage.bzl", "coverage_baseline", "coverage_java_test")
 load(":functions.bzl", "create_option_file")
@@ -176,6 +177,7 @@ def kotlin_library(
         name,
         srcs,
         deps = None,
+        exports = None,
         javacopts = [],
         kotlinc_opts = [],
         lint_enabled = True,
@@ -195,6 +197,7 @@ def kotlin_library(
         name: The sources of the library.
         srcs: The sources of the library.
         deps: The dependencies of this library.
+        exports: A list of exports. Optional.
         javacopts: Additional javac options.
         kotlinc_opts: Additional kotlinc options.
         lint_enabled: enable or disable Lint checks
@@ -227,6 +230,7 @@ def kotlin_library(
         srcs = srcs,
         jar = jar,
         deps = deps,
+        exports = exports,
         compress_resources = compress_resources,
         kotlin_use_compose = kotlin_use_compose,
         javacopts = javacopts,
@@ -245,7 +249,7 @@ def kotlin_library(
             name = name + "_lint_test",
             srcs = srcs,
             baseline = lint_baseline,
-            deps = (deps or []) + (lint_classpath or []),
+            deps = collections.uniq((deps or []) + (exports or []) + (lint_classpath or [])),
             custom_rules = ["//tools/base/lint:studio-checks.lint-rules.jar"],
             tags = ["no_windows"],
             is_test_sources = lint_is_test_sources,
