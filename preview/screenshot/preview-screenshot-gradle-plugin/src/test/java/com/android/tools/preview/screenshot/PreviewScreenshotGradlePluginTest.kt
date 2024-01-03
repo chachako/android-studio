@@ -71,8 +71,8 @@ class PreviewScreenshotGradlePluginTest {
                 AndroidPluginVersion(8, 3, 0).alpha(1),
         )
         val unsupportedVersionsTooNew = listOf(
-            AndroidPluginVersion(8, 4, 0).alpha(9),
-            AndroidPluginVersion(8, 4),
+            AndroidPluginVersion(8, 5, 0).alpha(9),
+            AndroidPluginVersion(8, 5),
         )
         unsupportedVersionsTooOld.forEach {
             val e = assertThrows(IllegalStateException::class.java) {
@@ -90,7 +90,7 @@ class PreviewScreenshotGradlePluginTest {
             }
             assertThat(e).hasMessageThat()
                 .contains("Preview screenshot plugin is an experimental feature. It requires Android " +
-                    "Gradle plugin version 8.3.0.")
+                    "Gradle plugin version 8.3 / 8.4")
         }
     }
 }
