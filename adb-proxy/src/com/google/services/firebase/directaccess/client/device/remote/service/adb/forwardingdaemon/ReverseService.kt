@@ -117,7 +117,7 @@ internal class ReverseService(
         stringBuilder.append("(reverse) ${value.devicePort} ${value.localPort}\n")
       }
     }
-    responseWriter.writeOkayResponse(streamId, stringBuilder.toString())
+    responseWriter.writeStringResponse(streamId, stringBuilder.toString())
   }
 
   /**

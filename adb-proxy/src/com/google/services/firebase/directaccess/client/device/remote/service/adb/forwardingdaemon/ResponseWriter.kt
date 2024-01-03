@@ -25,22 +25,20 @@ internal class ResponseWriter(
   private val adbOutputChannel: AdbOutputChannel,
   private val needsCrc32: Boolean
 ) {
-  suspend fun writeOkayResponse(streamId: Int, output: String = "") {
-    writeResponse(streamId, "OKAY", output)
-  }
+  suspend fun writeStringResponse(streamId: Int, output: String) =
+    writeResponse(streamId, output.withHexLengthPrefix())
 
-  suspend fun writeFailResponse(streamId: Int, failureReason: String) {
-    writeResponse(streamId, "FAIL", failureReason)
-  }
+  suspend fun writeOkayResponse(streamId: Int, output: String? = null) =
+    writeResponse(streamId, "OKAY${output?.withHexLengthPrefix() ?: ""}")
 
-  private suspend fun writeResponse(streamId: Int, responseType: String, output: String) {
-    val outputString =
-      responseType + if (output.isEmpty()) "" else toHexString(output.length) + output
+  suspend fun writeFailResponse(streamId: Int, failureReason: String) =
+    writeResponse(streamId, "FAIL${failureReason.withHexLengthPrefix()}")
+
+  private suspend fun writeResponse(streamId: Int, output: String) {
     OkayCommand(streamId, streamId).writeTo(adbOutputChannel, needsCrc32)
-    WriteCommand(streamId, streamId, outputString.toByteArray())
-      .writeTo(adbOutputChannel, needsCrc32)
+    WriteCommand(streamId, streamId, output.toByteArray()).writeTo(adbOutputChannel, needsCrc32)
     CloseCommand(streamId, streamId).writeTo(adbOutputChannel, needsCrc32)
   }
 
-  private fun toHexString(int: Int): String = String.format("%04X", int)
+  private fun String.withHexLengthPrefix(): String = String.format("%04X", length) + this
 }

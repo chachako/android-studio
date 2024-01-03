@@ -47,6 +47,17 @@ class ResponseWriterTest {
   }
 
   @Test
+  fun testWriteEmptyResponse() = runBlockingWithTimeout {
+    val data = "DATA PAYLOAD"
+    responseWriter.writeStringResponse(0, data)
+    testSocket.accept().use { channel ->
+      channel.assertCommand(OKAY)
+      channel.assertCommand(WRTE, payload = "${data.hexLength}$data")
+      channel.assertCommand(CLSE, 0)
+    }
+  }
+
+  @Test
   fun testWriteOkayResponseWithoutPayload() = runBlockingWithTimeout {
     responseWriter.writeOkayResponse(0)
     testSocket.accept().use { channel ->
