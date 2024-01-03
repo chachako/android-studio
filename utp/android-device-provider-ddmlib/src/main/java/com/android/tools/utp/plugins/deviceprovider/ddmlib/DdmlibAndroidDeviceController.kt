@@ -16,6 +16,7 @@
 
 package com.android.tools.utp.plugins.deviceprovider.ddmlib
 
+import com.android.ddmlib.DdmPreferences
 import com.android.ddmlib.InstallException
 import com.android.ddmlib.InstallReceiver
 import com.android.ddmlib.MultiLineReceiver
@@ -65,6 +66,10 @@ class DdmlibAndroidDeviceController(
             "INSTALL_FAILED_VERSION_DOWNGRADE",
             "INSTALL_FAILED_DEXOPT",
         )
+    }
+
+    init {
+        DdmPreferences.setTimeOut(Int.MAX_VALUE)
     }
 
     /**
