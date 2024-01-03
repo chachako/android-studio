@@ -19,12 +19,14 @@
 
 package com.android.adblib.ddmlibcompatibility.debugging
 
+import com.android.adblib.AbbCommand
 import com.android.adblib.AdbFailResponseException
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
 import com.android.adblib.ShellCollector
 import com.android.adblib.ShellCommand
+import com.android.adblib.abbCommand
 import com.android.adblib.serialNumber
 import com.android.adblib.shellCommand
 import com.android.annotations.concurrency.WorkerThread
@@ -107,6 +109,72 @@ private fun setShellProtocol(shellCommand: ShellCommand<*>, adbService: AdbHelpe
         AdbHelper.AdbService.SHELL -> shellCommand.forceLegacyShell()
         AdbHelper.AdbService.EXEC -> shellCommand.forceLegacyExec()
         AdbHelper.AdbService.ABB_EXEC -> throw IllegalArgumentException("ABB_EXEC is not supported by ShellCommand")
+    }
+}
+
+@WorkerThread
+@Throws(IOException::class,
+        AdbCommandRejectedException::class,
+        TimeoutException::class,
+        ShellCommandUnresponsiveException::class
+)
+internal fun executeAbbCommand(
+    adbService: AdbHelper.AdbService,
+    connectedDevice: ConnectedDevice,
+    command: String,
+    receiver: IShellOutputReceiver,
+    maxTimeout: Long,
+    maxTimeToOutputResponse: Long,
+    maxTimeUnits: TimeUnit,
+    inputStream: InputStream?,
+    shutdownOutput: Boolean
+) {
+    val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+    val abbCommand = connectedDevice.session.deviceServices.abbCommand(deviceSelector, command.split(" "))
+    setAbbProtocol(abbCommand, adbService)
+
+    // TODO(b/298475728): Revisit this when we are closer to having a working implementation of `IDevice`
+    // If `shutdownOutput` is true then we get a "java.lang.SecurityException: Files still open" exception
+    // when executing a "package install-commit" command after the "package install-write" command
+    // since the package manager doesn't handle shutdown correctly.
+    abbCommand.shutdownOutputForExecProtocol(shutdownOutput)
+    if (maxTimeout > 0) {
+        abbCommand.withCommandTimeout(Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)))
+    }
+    if (maxTimeToOutputResponse > 0) {
+        abbCommand.withCommandOutputTimeout(
+            Duration.ofMillis(
+                maxTimeUnits.toMillis(
+                    maxTimeToOutputResponse
+                )
+            )
+        )
+    }
+    if (maxTimeout > 0) {
+        abbCommand.withCommandTimeout(Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)))
+    }
+    if (inputStream != null) {
+        abbCommand.withStdin(connectedDevice.session.channelFactory.wrapInputStream(inputStream))
+    }
+
+    val stdoutCollector = ShellCollectorToIShellOutputReceiver(receiver)
+    abbCommand.withLegacyCollector(stdoutCollector)
+    runBlocking {
+        mapToDdmlibException {
+            // Note: We know there is only one item in the flow (Unit), because our
+            //       ShellCollector implementation forwards buffers directly to
+            //       the IShellOutputReceiver
+            abbCommand.execute().single()
+        }
+    }
+}
+
+private fun setAbbProtocol(abbCommand: AbbCommand<*>, adbService: AdbHelper.AdbService) {
+    when (adbService) {
+        // We are forcing a abb_exec protocol here to match the behavior of the `DeviceImpl`
+        AdbHelper.AdbService.SHELL -> throw IllegalArgumentException("SHELL is not supported by AbbCommand")
+        AdbHelper.AdbService.EXEC -> throw IllegalArgumentException("EXEC is not supported by AbbCommand")
+        AdbHelper.AdbService.ABB_EXEC -> abbCommand.forceExecProtocol()
     }
 }
 

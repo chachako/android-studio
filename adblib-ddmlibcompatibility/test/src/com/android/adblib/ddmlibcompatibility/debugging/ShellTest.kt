@@ -109,8 +109,60 @@ class ShellTest {
         Assert.fail() // should not be reached
     }
 
+    @Test
+    fun executeAbbCommandShouldWork() = runBlockingWithTimeout {
+        // Prepare
+        val device = createConnectedDevice("42", sdk = "30")
+        val receiver = ListReceiver()
+
+        // Act
+        executeAbbCommand(
+            AdbHelper.AdbService.ABB_EXEC,
+            device,
+            "package path com.foo.bar.appp",
+            receiver,
+            0,
+            0,
+            TimeUnit.MILLISECONDS,
+            null,
+            true
+        )
+
+        // Assert
+        val expected = "/data/app/com.foo.bar.appp/base.apk"
+        assertEquals(expected, receiver.lines.joinToString())
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun executeAbbCommandOnUnsupportedDeviceShouldThrow() = runBlockingWithTimeout {
+        // Prepare
+        // Create a device that doesn't support ABB
+        val device = createConnectedDevice("42", sdk = "20")
+        val receiver = ListReceiver()
+
+        // Act
+        exceptionRule.expect(IllegalArgumentException::class.java)
+        exceptionRule.expectMessage("No compatible abb protocol is supported or allowed")
+        executeAbbCommand(
+            AdbHelper.AdbService.ABB_EXEC,
+            device,
+            "package list packages",
+            receiver,
+            0,
+            0,
+            TimeUnit.MILLISECONDS,
+            null,
+            true
+        )
+
+        // Assert
+        Assert.fail() // should not be reached
+    }
+
     private suspend fun createConnectedDevice(
-        serialNumber: String
+        serialNumber: String,
+        sdk: String = "29"
     ): ConnectedDevice {
         val fakeDevice =
             fakeAdb.connectDevice(
@@ -118,7 +170,7 @@ class ShellTest {
                 "Google",
                 "Pix3l",
                 "versionX",
-                "29",
+                sdk,
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE

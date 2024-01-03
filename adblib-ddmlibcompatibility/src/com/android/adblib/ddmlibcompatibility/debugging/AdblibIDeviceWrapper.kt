@@ -20,7 +20,6 @@ import com.android.adblib.AdbFailResponseException
 import com.android.adblib.AdbProtocolErrorException
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
-import com.android.adblib.INFINITE_DURATION
 import com.android.adblib.RemoteFileMode
 import com.android.adblib.SocketSpec
 import com.android.adblib.adbLogger
@@ -71,7 +70,6 @@ import com.android.sdklib.AndroidVersion
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.asListenableFuture
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -852,50 +850,42 @@ internal class AdblibIDeviceWrapper(
         inputStream: InputStream?
     ) {
         logUsage(IDeviceUsageTracker.Method.EXECUTE_REMOTE_COMMAND_4) {
-            if (adbService != AdbHelper.AdbService.ABB_EXEC) {
-                // TODO(b/298475728): Revisit this when we are closer to having a working implementation of `IDevice`
-                // If `shutdownOutput` is true then we get a "java.lang.SecurityException: Files still open" exception
-                // when executing a "package install-commit" command after the "package install-write" command
-                // since the package manager doesn't handle shutdown correctly. This applies to legacy EXEC protocol.
-                val shutdownOutput = when(adbService) {
-                    AdbHelper.AdbService.EXEC -> false
-                    else -> true
-                }
-                executeShellCommand(
-                    adbService,
-                    connectedDevice,
-                    command,
-                    receiver,
-                    maxTimeout,
-                    maxTimeToOutputResponse,
-                    maxTimeUnits,
-                    inputStream,
-                    shutdownOutput
-                )
-            } else {
-                val maxTimeoutDuration =
-                    if (maxTimeout > 0) Duration.ofMillis(maxTimeUnits.toMillis(maxTimeout)) else INFINITE_DURATION
-                runBlockingLegacy(timeout = maxTimeoutDuration) {
-                    val adbInputChannel =
-                        inputStream?.let { connectedDevice.session.channelFactory.wrapInputStream(it) }
-                    val deviceSelector =
-                        DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-                    // TODO: Use `maxTimeToOutputResponse`
-                    // TODO(b/299483329): wrap abb_exec and abb with a AbbCommand (similar to ShellCommand)
-                    val abbExecFlow = connectedDevice.session.deviceServices.abb_exec(
-                        deviceSelector,
-                        command.split(" "),
-                        ShellCollectorToIShellOutputReceiver(
-                            receiver
-                        ),
-                        adbInputChannel,
-                        // TODO(b/298475728): Revisit this when we are closer to having a working implementation of `IDevice`
-                        // If `shutdownOutput` is true then we get a "java.lang.SecurityException: Files still open" exception
-                        // when executing a "package install-commit" command after the "package install-write" command
-                        // since the package manager doesn't handle shutdown correctly.
-                        shutdownOutput = false
+            when (adbService) {
+                AdbHelper.AdbService.SHELL,
+                AdbHelper.AdbService.EXEC -> {
+                    // TODO(b/298475728): Revisit this when we are closer to having a working implementation of `IDevice`
+                    // If `shutdownOutput` is true then we get a "java.lang.SecurityException: Files still open" exception
+                    // when executing a "package install-commit" command after the "package install-write" command
+                    // since the package manager doesn't handle shutdown correctly. This applies to legacy EXEC protocol.
+                    val shutdownOutput = when (adbService) {
+                        AdbHelper.AdbService.EXEC -> false
+                        else -> true
+                    }
+                    executeShellCommand(
+                        adbService,
+                        connectedDevice,
+                        command,
+                        receiver,
+                        maxTimeout,
+                        maxTimeToOutputResponse,
+                        maxTimeUnits,
+                        inputStream,
+                        shutdownOutput
                     )
-                    abbExecFlow.first()
+                }
+
+                AdbHelper.AdbService.ABB_EXEC -> {
+                    executeAbbCommand(
+                        adbService,
+                        connectedDevice,
+                        command,
+                        receiver,
+                        maxTimeout,
+                        maxTimeToOutputResponse,
+                        maxTimeUnits,
+                        inputStream,
+                        shutdownOutput = false // TODO(b/298475728): See the comment above
+                    )
                 }
             }
         }
