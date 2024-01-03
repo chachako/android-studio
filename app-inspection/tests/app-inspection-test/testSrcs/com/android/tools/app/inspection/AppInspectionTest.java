@@ -254,7 +254,6 @@ public final class AppInspectionTest {
                 .isEqualTo("Inspector with id test.inspector wasn't previously created");
     }
 
-    @Ignore("b/303234036")
     @Test
     public void handleCancellationCommand() throws Exception {
         String inspectorId = "test.cancellation.inspector";

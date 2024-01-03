@@ -19,10 +19,17 @@ package test.inspector;
 import androidx.annotation.NonNull;
 import androidx.inspection.Connection;
 import androidx.inspection.Inspector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 public class TestCancellationInspector extends Inspector {
     private int commandCounter = 0;
+
+    // Keep references to callbacks, so they don't get GC'ed and trigger the "finalize" method in
+    // "InspectorContext.CommandCallbackImpl" (b/303234036)
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    private final List<CommandCallback> callbacks = new ArrayList<>();
 
     public TestCancellationInspector(@NonNull Connection connection) {
         super(connection);
@@ -31,6 +38,7 @@ public class TestCancellationInspector extends Inspector {
     @Override
     public void onReceiveCommand(
             @NonNull byte[] bytes, @NonNull final CommandCallback commandCallback) {
+        callbacks.add(commandCallback);
         final int currentCommand = ++commandCounter;
         System.out.println("command #" + currentCommand + " arrived");
         commandCallback.addCancellationListener(
