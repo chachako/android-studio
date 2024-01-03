@@ -391,7 +391,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
-  fun test273250r732() {
+  fun test273250732() {
     lint()
       .files(
         kotlin(
