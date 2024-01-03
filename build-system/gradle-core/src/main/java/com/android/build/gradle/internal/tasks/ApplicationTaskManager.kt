@@ -166,7 +166,7 @@ class ApplicationTaskManager(
 
     private fun createBundleTask(component: ComponentCreationConfig) {
         taskFactory.register(
-            component.computeTaskName("bundle"),
+            component.computeTaskNameInternal("bundle"),
             null,
             object : TaskConfigAction<Task> {
                 override fun configure(task: Task) {

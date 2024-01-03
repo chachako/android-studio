@@ -536,7 +536,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
         // Find a matching variant and configure each Kapt task. Note: The task's name could be
         // kapt${variant}Kotlin, or kapt${variant}KotlinAndroid in KMP projects.
         val kaptTaskNameOrPrefixToVariant =
-            allPropertiesList.associateBy { it.computeTaskName("kapt", "Kotlin") }
+            allPropertiesList.associateBy { it.computeTaskNameInternal("kapt", "Kotlin") }
         project.tasks.withType(kaptTaskClass) { kaptTask: Task ->
             val variant = kaptTaskNameOrPrefixToVariant
                 .keys.firstOrNull { kaptTask.name.startsWith(it) }

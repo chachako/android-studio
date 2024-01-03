@@ -2569,6 +2569,7 @@ package com.android.build.api.variant {
   }
 
   public interface Component extends com.android.build.api.variant.ComponentIdentity {
+    method @org.gradle.api.Incubating public String computeTaskName(String action, String subject);
     method public org.gradle.api.artifacts.Configuration getAnnotationProcessorConfiguration();
     method public com.android.build.api.artifact.Artifacts getArtifacts();
     method @org.gradle.api.Incubating public org.gradle.api.file.FileCollection getCompileClasspath();

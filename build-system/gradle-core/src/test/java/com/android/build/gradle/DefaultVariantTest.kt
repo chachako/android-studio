@@ -35,7 +35,9 @@ import com.android.builder.model.SyncIssue
 import com.android.builder.model.v2.ide.ProjectType
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
+import kotlin.test.assertFailsWith
 
 /** Tests for the default variant DSL settings */
 class DefaultVariantTest: AbstractVariantInputModelTest<String>() {
@@ -459,6 +461,22 @@ class DefaultVariantTest: AbstractVariantInputModelTest<String>() {
         withTestBuildType { "a" }
 
         expect { "a" }
+    }
+
+    @Test
+    fun `check task name generation`(){
+        val component = Mockito.mock(VariantImpl::class.java)
+        Mockito.`when`(component.name).thenReturn("debug")
+        Mockito.`when`(component.computeTaskName(anyString(), anyString())).thenCallRealMethod()
+
+        assertThat(component.computeTaskName("produce", "ManifestReport")).isEqualTo("produceDebugManifestReport")
+        assertThat(component.computeTaskName("Produce", "manifestReport")).isEqualTo("produceDebugManifestReport")
+
+        assertThat(assertFailsWith<IllegalArgumentException> { component.computeTaskName("", "ManifestReport") })
+            .hasMessageThat().isEqualTo("Action parameter must not be empty or blank")
+
+        assertThat(assertFailsWith<IllegalArgumentException> { component.computeTaskName("produce", "") })
+            .hasMessageThat().isEqualTo("Subject parameter must not be empty or blank")
     }
 
     private var variantFilter: ((VariantFilter) -> Unit)? = null

@@ -920,7 +920,7 @@ abstract class TaskManager(
         }
 
         val allDevicesVariantTask = taskFactory.register(
-            creationConfig.computeTaskName("allDevices", testTaskSuffix)
+            creationConfig.computeTaskNameInternal("allDevices", testTaskSuffix)
         ) { allDevicesVariant: Task ->
             allDevicesVariant.description =
                 "Runs the tests for $variantName on all managed devices in the dsl."
@@ -1622,7 +1622,7 @@ abstract class TaskManager(
 
     protected fun createAssembleTask(component: ComponentCreationConfig) {
         taskFactory.register(
-                component.computeTaskName("assemble"),
+                component.computeTaskNameInternal("assemble"),
                 null /*preConfigAction*/,
                 object : TaskConfigAction<Task> {
                     override fun configure(task: Task) {
@@ -1773,7 +1773,7 @@ abstract class TaskManager(
         creationConfig
                 .taskContainer
                 .sourceGenTask = taskFactory.register(
-                creationConfig.computeTaskName("generate", "Sources")
+                creationConfig.computeTaskNameInternal("generate", "Sources")
         ) { task: Task ->
             task.dependsOn(creationConfig.global.taskNames.compileLintChecks)
             if (creationConfig.componentType.isAar) {
@@ -1789,13 +1789,13 @@ abstract class TaskManager(
         creationConfig
                 .taskContainer
                 .assetGenTask =
-                taskFactory.register(creationConfig.computeTaskName("generate", "Assets"))
+                taskFactory.register(creationConfig.computeTaskNameInternal("generate", "Assets"))
         // Create anchor task for creating instrumentation test coverage reports
         if (creationConfig is VariantCreationConfig && creationConfig.isAndroidTestCoverageEnabled) {
             creationConfig
                     .taskContainer
                     .coverageReportTask = taskFactory.register(
-                    creationConfig.computeTaskName("create", "CoverageReport")
+                    creationConfig.computeTaskNameInternal("create", "CoverageReport")
             ) { task: Task ->
                 task.group = JavaBasePlugin.VERIFICATION_GROUP
                 task.description = String.format(
@@ -1848,7 +1848,7 @@ abstract class TaskManager(
     private fun createCompileAnchorTask(creationConfig: ComponentCreationConfig) {
         val taskContainer = creationConfig.taskContainer
         taskContainer.compileTask = taskFactory.register(
-                creationConfig.computeTaskName("compile", "Sources")
+                creationConfig.computeTaskNameInternal("compile", "Sources")
         ) { task: Task -> task.group = BUILD_GROUP }
     }
 

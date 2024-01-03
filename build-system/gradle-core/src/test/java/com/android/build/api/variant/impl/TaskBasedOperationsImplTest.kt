@@ -130,7 +130,7 @@ class TaskBasedOperationsImplTest {
 
         class CreationAction(val component: VariantCreationConfig): VariantTaskCreationAction<SynchronousTask, VariantCreationConfig>(component) {
             override val name: String
-                get() = component.computeTaskName("foo", "bar")
+                get() = computeTaskName("foo", "bar")
             override val type: Class<SynchronousTask>
                 get() = SynchronousTask::class.java
 
@@ -238,7 +238,7 @@ class TaskBasedOperationsImplTest {
 
         class CreationAction(val component: VariantCreationConfig): VariantTaskCreationAction<InternalApiTask, VariantCreationConfig>(component) {
             override val name: String
-                get() = component.computeTaskName("foo", "bar")
+                get() = computeTaskName("foo", "bar")
             override val type: Class<InternalApiTask>
                 get() = InternalApiTask::class.java
 

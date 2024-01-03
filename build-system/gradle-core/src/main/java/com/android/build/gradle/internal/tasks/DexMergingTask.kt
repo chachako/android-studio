@@ -249,11 +249,11 @@ abstract class DexMergingTask : NewIncrementalTask() {
         ) {
 
         private val internalName: String = when (action) {
-            MERGE_LIBRARY_PROJECTS -> creationConfig.computeTaskName("mergeLibDex")
-            MERGE_EXTERNAL_LIBS -> creationConfig.computeTaskName("mergeExtDex")
-            MERGE_PROJECT -> creationConfig.computeTaskName("mergeProjectDex")
-            MERGE_ALL -> creationConfig.computeTaskName("mergeDex")
-            MERGE_TRANSFORMED_CLASSES -> creationConfig.computeTaskName("mergeDex")
+            MERGE_LIBRARY_PROJECTS -> creationConfig.computeTaskNameInternal("mergeLibDex")
+            MERGE_EXTERNAL_LIBS -> creationConfig.computeTaskNameInternal("mergeExtDex")
+            MERGE_PROJECT -> creationConfig.computeTaskNameInternal("mergeProjectDex")
+            MERGE_ALL -> creationConfig.computeTaskNameInternal("mergeDex")
+            MERGE_TRANSFORMED_CLASSES -> creationConfig.computeTaskNameInternal("mergeDex")
         }
 
         override val name = internalName

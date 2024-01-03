@@ -436,7 +436,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
 
     /** Creates the lintVariant Task. Linting a variant also includes looking at the tests for that variant. */
     class SingleVariantCreationAction(variant: VariantWithTests) : VariantCreationAction(variant) {
-        override val name: String = creationConfig.computeTaskName("lintReport")
+        override val name: String = creationConfig.computeTaskNameInternal("lintReport")
         override val fatalOnly: Boolean get() = false
         override val autoFix: Boolean get() = false
         override val lintMode: LintMode get() = LintMode.REPORTING
@@ -489,7 +489,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
 
     /** Creates the lintFix task. . */
     class FixSingleVariantCreationAction(variant: VariantWithTests) : VariantCreationAction(variant) {
-        override val name: String = creationConfig.computeTaskName("lintFix")
+        override val name: String = creationConfig.computeTaskNameInternal("lintFix")
         override val fatalOnly: Boolean get() = false
         override val autoFix: Boolean get() = true
         override val lintMode: LintMode get() = LintMode.REPORTING
@@ -508,7 +508,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 unitTest = null,
                 testFixtures = null
             )) {
-        override val name: String = creationConfig.computeTaskName("lintVitalReport")
+        override val name: String = creationConfig.computeTaskNameInternal("lintVitalReport")
         override val fatalOnly: Boolean get() = true
         override val autoFix: Boolean get() = false
         override val lintMode: LintMode get() = LintMode.REPORTING
@@ -530,7 +530,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
 
     /** Creates the updateLintBaseline task. */
     class UpdateBaselineCreationAction(variant: VariantWithTests) : VariantCreationAction(variant) {
-        override val name: String = creationConfig.computeTaskName("updateLintBaseline")
+        override val name: String = creationConfig.computeTaskNameInternal("updateLintBaseline")
         override val fatalOnly: Boolean get() = false
         override val autoFix: Boolean get() = false
         override val lintMode: LintMode get() = LintMode.UPDATE_BASELINE

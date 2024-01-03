@@ -172,7 +172,7 @@ abstract class BundleLibraryClassesDir: NewIncrementalTask(), BundleLibraryClass
     ) : VariantTaskCreationAction<BundleLibraryClassesDir, ComponentCreationConfig>(
         creationConfig
     ) {
-        override val name: String = creationConfig.computeTaskName("bundleLibRuntimeToDir")
+        override val name: String = creationConfig.computeTaskNameInternal("bundleLibRuntimeToDir")
 
         override val type: Class<BundleLibraryClassesDir> = BundleLibraryClassesDir::class.java
 
@@ -199,7 +199,7 @@ abstract class BundleLibraryClassesDir: NewIncrementalTask(), BundleLibraryClass
         creationConfig
     ) {
 
-        override val name: String = creationConfig.computeTaskName("bundleLibRuntimeToDir")
+        override val name: String = creationConfig.computeTaskNameInternal("bundleLibRuntimeToDir")
 
         override val type: Class<BundleLibraryClassesDir> = BundleLibraryClassesDir::class.java
 
@@ -246,7 +246,7 @@ abstract class BundleLibraryClassesJar : NonIncrementalTask(), BundleLibraryClas
     ) : VariantTaskCreationAction<BundleLibraryClassesJar, ComponentCreationConfig>(
         creationConfig
     ) {
-        override val name: String = creationConfig.computeTaskName(
+        override val name: String = creationConfig.computeTaskNameInternal(
             if (publishedType == PublishedConfigType.API_ELEMENTS) {
                 "bundleLibCompileToJar"
             } else {
@@ -301,7 +301,7 @@ abstract class BundleLibraryClassesJar : NonIncrementalTask(), BundleLibraryClas
             ) { "Kotlin multiplatform classes bundling is supported only for api and runtime." }
         }
 
-        override val name: String = creationConfig.computeTaskName(
+        override val name: String = computeTaskName(
             "bundle",
             if (publishedType == PublishedConfigType.API_ELEMENTS) {
                 "ClassesToCompileJar"

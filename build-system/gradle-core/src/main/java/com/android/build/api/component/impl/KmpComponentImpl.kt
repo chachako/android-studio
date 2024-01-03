@@ -99,10 +99,10 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
         get() =  dslInfo.componentType
     override val description: String = "Kotlin multiplatform android plugin"
 
-    override fun computeTaskName(prefix: String, suffix: String): String =
+    override fun computeTaskNameInternal(prefix: String, suffix: String): String =
         prefix.appendCapitalized(name, suffix)
 
-    override fun computeTaskName(prefix: String): String = prefix.appendCapitalized(name)
+    override fun computeTaskNameInternal(prefix: String): String = prefix.appendCapitalized(name)
 
     override fun getArtifactName(name: String): String = name
 
@@ -198,6 +198,9 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
             )
         )
     }
+
+    override fun computeTaskName(action: String, subject: String): String =
+        computeTaskName(name, action, subject)
 
     override val lifecycleTasks = LifecycleTasksImpl()
 

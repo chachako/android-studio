@@ -205,7 +205,7 @@ object KotlinModelBuildingConfigurator {
                 UnitTestInfo.Builder::setMockablePlatformJar
             )
             .setUnitTestTaskName(
-                computeTaskName(ComponentType.UNIT_TEST_PREFIX)
+                computeTaskNameInternal(ComponentType.UNIT_TEST_PREFIX)
             )
             .build()
 

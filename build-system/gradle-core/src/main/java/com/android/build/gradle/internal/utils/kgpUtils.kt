@@ -142,7 +142,7 @@ fun configureKotlinCompileTasks(
     // `debug`). Note that the keys are name prefixes because KMP projects have task names such as
     // `compileDebugKotlinAndroid` instead of `compileDebugKotlin`.
     val taskNamePrefixToVariant: Map<String, ComponentCreationConfig> =
-        creationConfigs.associateBy { it.computeTaskName("compile", "Kotlin") }
+        creationConfigs.associateBy { it.computeTaskNameInternal("compile", "Kotlin") }
 
     project.tasks.withType(KotlinCompile::class.java).configureEach { kotlinCompile ->
         // Note: We won't run `action` if we can't find a matching variant for the task (e.g.,

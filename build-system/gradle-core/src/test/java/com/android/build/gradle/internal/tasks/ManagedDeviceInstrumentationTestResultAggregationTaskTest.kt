@@ -61,7 +61,7 @@ class ManagedDeviceInstrumentationTestResultAggregationTaskTest {
 
     @Before
     fun setUpMocks() {
-        `when`(creationConfig.computeTaskName(any(), any())).then {
+        `when`(creationConfig.computeTaskNameInternal(any(), any())).then {
             val prefix = it.getArgument<String>(0)
             val suffix = it.getArgument<String>(1)
             "${prefix}AndroidDebugTest${suffix}"

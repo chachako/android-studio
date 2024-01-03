@@ -16,15 +16,12 @@
 
 package com.android.build.gradle.internal.pipeline;
 
-import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.build.api.transform.QualifiedContent;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.fixture.TestProjects;
 import com.android.build.gradle.internal.fixtures.FakeProviderFactory;
@@ -45,28 +42,18 @@ import com.android.builder.profile.NameAnonymizer;
 import com.android.builder.profile.NameAnonymizerSerializer;
 import com.android.utils.FileUtils;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.wireless.android.sdk.stats.GradleBuildProfile;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.CodeSource;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
-import org.gradle.api.file.FileCollection;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.Before;
 import org.junit.Rule;
@@ -165,7 +152,7 @@ public class TaskTestUtils {
         when(creationConfig.getBuildType()).thenReturn("debug");
         when(creationConfig.getComponentType()).thenReturn(ComponentTypeImpl.BASE_APK);
 
-        when(creationConfig.computeTaskName(Mockito.anyString(), Mockito.eq("")))
+        when(creationConfig.computeTaskNameInternal(Mockito.anyString(), Mockito.eq("")))
                 .thenReturn(TASK_NAME);
 
         VariantPathHelper paths = mock(VariantPathHelper.class);

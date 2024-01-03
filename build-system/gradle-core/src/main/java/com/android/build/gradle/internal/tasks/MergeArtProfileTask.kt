@@ -121,7 +121,7 @@ abstract class MergeArtProfileTask: MergeFileTask() {
     ) : VariantTaskCreationAction<MergeArtProfileTask, ApkCreationConfig>(creationConfig) {
 
         override val name: String
-            get() = creationConfig.computeTaskName("merge", "ArtProfile")
+            get() = creationConfig.computeTaskNameInternal("merge", "ArtProfile")
         override val type: Class<MergeArtProfileTask>
             get() = MergeArtProfileTask::class.java
 
