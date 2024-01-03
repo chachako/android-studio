@@ -20,6 +20,7 @@ import static com.android.SdkConstants.FN_PUBLIC_TXT;
 import static com.android.SdkConstants.FN_RESOURCE_TEXT;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.android.ProgressManagerAdapter;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.resources.AndroidManifestPackageNameUtils;
 import com.android.ide.common.resources.ResourceItem;
@@ -45,7 +46,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -280,12 +280,9 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
     catch (NoSuchFileException e) {
       return false; // Cache file does not exist.
     }
-    catch (ProcessCanceledException e) {
-      cleanupAfterFailedLoadingFromCache();
-      throw e;
-    }
     catch (Throwable e) {
       cleanupAfterFailedLoadingFromCache();
+      ProgressManagerAdapter.throwIfCancellation(e);
       LOG.warn("Failed to load resources from cache file " + cacheFile, e);
       return false;
     }
@@ -348,10 +345,8 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
             myRTxtIds = computeIds(symbolTable);
             return true;
           }
-          catch (ProcessCanceledException e) {
-            throw e;
-          }
           catch (Exception e) {
+            ProgressManagerAdapter.throwIfCancellation(e);
             LOG.warn("Failed to load id resources from " + rDotTxt, e);
           }
         }
@@ -364,10 +359,8 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
             myRTxtIds = computeIds(symbolTable);
             return true;
           }
-          catch (ProcessCanceledException e) {
-            throw e;
-          }
           catch (Exception e) {
+            ProgressManagerAdapter.throwIfCancellation(e);
             LOG.warn("Failed to load id resources from " + FN_RESOURCE_TEXT + " in " + myResourceDirectoryOrFile, e);
           }
         }

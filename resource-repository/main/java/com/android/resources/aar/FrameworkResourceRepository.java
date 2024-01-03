@@ -18,6 +18,7 @@ package com.android.resources.aar;
 import static com.android.SdkConstants.DOT_9PNG;
 import static com.android.SdkConstants.FD_RES_RAW;
 
+import com.android.ProgressManagerAdapter;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.resources.ResourceItem;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
@@ -44,7 +45,6 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.intellij.openapi.application.PathManager;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -291,14 +291,10 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
             break;  // Don't try to load language-specific resources if language-neutral ones could not be loaded.
           }
         }
-        catch (ProcessCanceledException e) {
-          cleanupAfterFailedLoadingFromCache();
-          loadedLanguages.clear();
-          throw e;
-        }
         catch (Throwable e) {
           cleanupAfterFailedLoadingFromCache();
           loadedLanguages.clear();
+          ProgressManagerAdapter.throwIfCancellation(e);
           LOG.warn("Failed to load from cache file " + cacheFile.toString(), e);
           break;
         }
@@ -464,10 +460,8 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
         repository.populatePublicResourcesMap();
         repository.freezeResources();
       }
-      catch (ProcessCanceledException e) {
-        throw e;
-      }
       catch (Exception e) {
+        ProgressManagerAdapter.throwIfCancellation(e);
         LOG.error("Failed to load resources from " + myResourceDirectoryOrFile.toString(), e);
       }
     }

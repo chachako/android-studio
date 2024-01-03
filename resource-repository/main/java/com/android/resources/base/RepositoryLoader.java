@@ -53,6 +53,7 @@ import static com.android.ide.common.resources.ResourceItem.XLIFF_G_TAG;
 import static com.android.ide.common.resources.ResourceItem.XLIFF_NAMESPACE_PREFIX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.android.ProgressManagerAdapter;
 import com.android.ide.common.rendering.api.AttrResourceValue;
 import com.android.ide.common.rendering.api.AttributeFormat;
 import com.android.ide.common.rendering.api.DensityBasedResourceValue;
@@ -90,7 +91,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -113,6 +113,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -209,10 +210,8 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
         }
       });
     }
-    catch (ProcessCanceledException e) {
-      throw e;
-    }
     catch (Exception e) {
+      ProgressManagerAdapter.throwIfCancellation(e);
       LOG.error("Failed to load resources from " + myResourceDirectoryOrFile.toString(), e);
     }
     finally {
@@ -242,10 +241,8 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
         loadResourceFile(file, repository, shouldParseResourceIds);
       }
     }
-    catch (ProcessCanceledException e) {
-      throw e;
-    }
     catch (Exception e) {
+      ProgressManagerAdapter.throwIfCancellation(e);
       LOG.error("Failed to load resources from " + myResourceDirectoryOrFile.toString(), e);
     }
 
@@ -396,13 +393,11 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
           }
         }
       }
-      catch (ProcessCanceledException e) {
-        throw e;
-      }
       catch (NoSuchFileException e) {
         // There is no public.xml. This not considered an error.
       }
       catch (Exception e) {
+        ProgressManagerAdapter.throwIfCancellation(e);
         LOG.error("Can't read and parse " + publicXmlFile, e);
       }
     }
@@ -539,7 +534,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
         }
       } while (event != XmlPullParser.END_DOCUMENT);
     }
-    catch (ProcessCanceledException e) {
+    catch (CancellationException e) {
       throw e;
     }
     // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
@@ -602,7 +597,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
         }
       } while (event != XmlPullParser.END_DOCUMENT);
     }
-    catch (ProcessCanceledException e) {
+    catch (CancellationException e) {
       throw e;
     }
     // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
