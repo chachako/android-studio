@@ -434,6 +434,8 @@ message SessionData {
     string process_abi = 10;
     // Session's task type indicating the type of task the session is underlying.
     ProfilerTaskType task_type = 11;
+    // Flag indicating whether the task is done on startup of the process or not.
+    bool is_startup_task = 12;
   }
 
   oneof union {

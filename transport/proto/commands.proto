@@ -136,6 +136,7 @@ message BeginSession {
   // See SdkConstans.CPU_ARCH_*
   string process_abi = 4;
   ProfilerTaskType task_type = 5;
+  bool is_startup_task = 6;
 }
 
 message EndSession {
