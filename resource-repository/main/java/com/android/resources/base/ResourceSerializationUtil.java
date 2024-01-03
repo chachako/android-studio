@@ -17,6 +17,7 @@ package com.android.resources.base;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.ProgressManagerAdapter;
 import com.android.ide.common.rendering.api.AttrResourceValue;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceValue;
@@ -24,7 +25,6 @@ import com.android.ide.common.rendering.api.StyleItemResourceValue;
 import com.android.ide.common.resources.ResourceItem;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
 import com.android.resources.ResourceType;
-import com.android.tools.environment.CancellationManager;
 import com.android.tools.environment.Logger;
 import com.android.utils.Base128InputStream;
 import com.android.utils.Base128OutputStream;
@@ -232,7 +232,7 @@ public class ResourceSerializationUtil {
     int cancellationCheckInterval = 500; // For framework repository without locale-specific resources cancellation check happens 32 times.
     for (int i = 0; i < n; i++) {
       if (i % cancellationCheckInterval == 0) {
-        CancellationManager.throwIfCancelled();
+        ProgressManagerAdapter.checkCanceled();
       }
       BasicResourceItemBase item = BasicResourceItemBase.deserialize(stream, configurations, newSourceFiles, newNamespaceResolvers);
       resourceConsumer.accept(item);

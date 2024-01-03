@@ -79,7 +79,6 @@ import com.android.resources.FolderTypeRelationship;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceType;
 import com.android.resources.ResourceVisibility;
-import com.android.tools.environment.CancellationManager;
 import com.android.tools.environment.Logger;
 import com.android.utils.SdkUtils;
 import com.android.utils.XmlUtils;
@@ -620,7 +619,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
       return new BufferedInputStream(CancellableFileIo.newInputStream(path));
     }
     else {
-      CancellationManager.throwIfCancelled();
+      ProgressManagerAdapter.checkCanceled();
       ZipEntry entry = myZipFile.getEntry(file.getPortablePath());
       if (entry == null) {
         throw new NoSuchFileException(file.getPortablePath());
