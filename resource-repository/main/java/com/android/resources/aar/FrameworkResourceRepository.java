@@ -44,7 +44,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.intellij.openapi.application.PathManager;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -68,9 +67,9 @@ import org.jetbrains.annotations.TestOnly;
  * the ResourceRepositoryManager.getFrameworkResources method to obtain framework resources.
  *
  * <p>The repository can be loaded either from a res directory containing XML files, or from
- * framework_res.jar file, or from a binary cache file located under the directory returned by
- * the {@link PathManager#getSystemPath()} method. This binary cache file can be created as
- * a side effect of loading the repository from a res directory.
+ * framework_res.jar file, or from a binary cache file returned by the
+ * {@link CachingData#getCacheFile()} method. This binary cache file can be created as a side effect
+ * of loading the repository from a res directory.
  *
  * <p>Loading from framework_res.jar or a binary cache file is 3-4 times faster than loading
  * from res directory.
