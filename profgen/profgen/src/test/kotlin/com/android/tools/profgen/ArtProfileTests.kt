@@ -400,6 +400,14 @@ class ArtProfileTests {
         }
     }
 
+    @Test
+    fun testProfileIntegrity_composeLife() {
+        // b/316047739
+        val file = testData("composelife/baseline.prof")
+        val profile = ArtProfile(file)!!
+        assertSerializationIntegrity(profile, ArtProfileSerializer.V0_1_5_S)
+    }
+
     private fun inputStreamOf(apkFile: File, name: String): InputStream {
         val zip = ZipFile(apkFile)
         val entry = zip.entries().asSequence().first { it.name == name }
