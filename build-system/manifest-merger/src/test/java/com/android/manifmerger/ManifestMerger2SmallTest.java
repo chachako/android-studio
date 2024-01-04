@@ -2502,6 +2502,53 @@ public class ManifestMerger2SmallTest {
     }
 
     @Test
+    public void testAndroidExportedAttributeWithIntentFilterInActivityAlias() throws Exception {
+        MockLog mockLog = new MockLog();
+        String appInput =
+                ""
+                        + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "    package=\"com.example.myapplication\">\n"
+                        + "    <uses-sdk\n"
+                        + "        android:minSdkVersion=\"31\"\n"
+                        + "        android:targetSdkVersion=\"31\" />"
+                        + "    <application\n"
+                        + "        android:label=\"@string/app_name\">\n"
+                        + "        <activity\n"
+                        + "            android:name=\".MyActivity\"\n"
+                        + "            android:label=\"@string/app_name\"\n"
+                        + "            android:theme=\"@style/Theme.MyApplication.NoActionBar\">\n"
+                        + "        </activity>\n"
+                        + "        <activity-alias\n"
+                        + "            android:name=\".MainActivity\"\n"
+                        + "            android:targetActivity=\".MyActivity\">\n"
+                        + "            <intent-filter>\n"
+                        + "                <action android:name=\"android.intent.action.MAIN\" />\n"
+                        + "\n"
+                        + "                <category android:name=\"android.intent.category.LAUNCHER\" />\n"
+                        + "            </intent-filter>\n"
+                        + "        </activity-alias>\n"
+                        + "    </application>\n"
+                        + "\n"
+                        + "</manifest>";
+        File appFile = TestUtils.inputAsFile("appFile", appInput);
+        try {
+            MergingReport mergingReport =
+                    ManifestMerger2.newMerger(
+                                    appFile, mockLog, ManifestMerger2.MergeType.APPLICATION)
+                            .merge();
+            assertThat(mergingReport.getResult()).isEqualTo(MergingReport.Result.ERROR);
+            assertNull(mergingReport.getMergedDocument(MergedManifestKind.MERGED));
+            String loggingRecordsString = mergingReport.getLoggingRecords().toString();
+            assertThat(loggingRecordsString)
+                    .contains(
+                            "android:exported needs to be explicitly specified for element <activity-alias#com.example.myapplication.MainActivity>.");
+            assertThat(loggingRecordsString).contains(".xml:12:9-20:26 Error");
+        } finally {
+            assertThat(appFile.delete()).named("appFile was deleted").isTrue();
+        }
+    }
+
+    @Test
     public void testCloneAndTransformUpdate() throws Exception {
         String appInput =
                 ""
@@ -2672,6 +2719,21 @@ public class ManifestMerger2SmallTest {
                         + "                <category android:name=\"android.intent.category.LAUNCHER\" />\n"
                         + "            </intent-filter>\n"
                         + "        </activity>\n"
+                        + "        <activity\n"
+                        + "            android:name=\".MyActivity\"\n"
+                        + "            android:label=\"@string/app_name\"\n"
+                        + "            android:theme=\"@style/Theme.MyApplication.NoActionBar\">\n"
+                        + "        </activity>\n"
+                        + "        <activity-alias\n"
+                        + "             android:exported=\"true\""
+                        + "            android:name=\".OtherMainActivity\"\n"
+                        + "            android:targetActivity=\".MyActivity\">\n"
+                        + "            <intent-filter>\n"
+                        + "                <action android:name=\"android.intent.action.MAIN\" />\n"
+                        + "\n"
+                        + "                <category android:name=\"android.intent.category.LAUNCHER\" />\n"
+                        + "            </intent-filter>\n"
+                        + "        </activity-alias>\n"
                         + "         <service android:description=\"string resource\"\n"
                         + "             android:exported=\"true\""
                         + "             android:name=\".MainActivity\">\n"
@@ -2699,7 +2761,7 @@ public class ManifestMerger2SmallTest {
                                     appFile, mockLog, ManifestMerger2.MergeType.APPLICATION)
                             .withFeatures(Feature.REMOVE_TOOLS_DECLARATIONS)
                             .merge();
-            System.out.println(mergingReport.getLoggingRecords().toString());
+            System.out.println(mergingReport.getLoggingRecords());
             assertThat(mergingReport.getResult()).isEqualTo(MergingReport.Result.WARNING);
         } finally {
             assertThat(appFile.delete()).named("appFile was deleted").isTrue();
