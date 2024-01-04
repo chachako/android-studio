@@ -21,6 +21,7 @@ import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.DeviceInfo
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import org.junit.Test
@@ -132,6 +133,46 @@ class DefaultProvisionerPluginTest : DeviceProvisionerTestFixture() {
         assertThat(handle).isNotSameAs(originalHandle)
         assertThat(handle.state).isInstanceOf(DeviceState.Connected::class.java)
       }
+    }
+  }
+
+  @Test
+  fun isReadyWhenOnlineAndBooted() {
+    val channel = Channel<List<DeviceHandle>>(1)
+    fakeSession.scope.launch { provisioner.devices.collect { channel.send(it) } }
+
+    runBlockingWithTimeout {
+      setDevices(SerialNumbers.EMULATOR)
+
+      val handle =
+        channel.receiveUntilPassing { handles ->
+          assertThat(handles).hasSize(1)
+
+          val handle = handles[0]
+          assertThat(handle.state).isInstanceOf(DeviceState.Connected::class.java)
+
+          handle
+        }
+
+      assertThat(handle.state.isReady).isFalse()
+
+      setBootComplete(SerialNumbers.EMULATOR)
+
+      // Should not time out
+      handle.awaitReady()
+
+      assertThat(handle.state.isReady).isTrue()
+
+      // Simulate going offline briefly
+      setDevices(SerialNumbers.EMULATOR, state = com.android.adblib.DeviceState.OFFLINE)
+
+      // Should not time out
+      handle.stateFlow.takeWhile { it.isReady }
+
+      setDevices(SerialNumbers.EMULATOR)
+
+      // Should not time out
+      handle.awaitReady()
     }
   }
 

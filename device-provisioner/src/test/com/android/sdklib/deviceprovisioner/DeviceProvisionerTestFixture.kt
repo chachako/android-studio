@@ -38,48 +38,45 @@ abstract class DeviceProvisionerTestFixture {
     val ALL = listOf(PHYSICAL1_USB, PHYSICAL2_USB, PHYSICAL2_WIFI, EMULATOR)
   }
 
+  val baseProperties =
+    mapOf(
+      DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
+      DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
+      DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6",
+      DevicePropertyNames.RO_SF_LCD_DENSITY to "320",
+    )
+
+  val devicePropertiesBySerial =
+    mapOf(
+      SerialNumbers.PHYSICAL1_USB to
+        baseProperties +
+          mapOf(
+            "ro.serialno" to SerialNumbers.PHYSICAL1_USB,
+          ),
+      SerialNumbers.PHYSICAL2_USB to
+        baseProperties +
+          mapOf(
+            "ro.serialno" to SerialNumbers.PHYSICAL2_USB,
+          ),
+      SerialNumbers.PHYSICAL2_WIFI to
+        baseProperties +
+          mapOf(
+            "ro.serialno" to SerialNumbers.PHYSICAL2_USB,
+          ),
+      SerialNumbers.EMULATOR to
+        baseProperties +
+          mapOf(
+            "ro.serialno" to "EMULATOR31X3X7X0",
+            DevicePropertyNames.RO_PRODUCT_MODEL to "sdk_goog3_x86_64",
+          )
+    )
+
   init {
-    fakeSession.deviceServices.configureDeviceProperties(
-      DeviceSelector.fromSerialNumber(SerialNumbers.PHYSICAL1_USB),
-      mapOf(
-        "ro.serialno" to SerialNumbers.PHYSICAL1_USB,
-        DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
-        DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
-        DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6",
-        DevicePropertyNames.RO_SF_LCD_DENSITY to "320",
-      )
-    )
-    fakeSession.deviceServices.configureDeviceProperties(
-      DeviceSelector.fromSerialNumber(SerialNumbers.PHYSICAL2_USB),
-      mapOf(
-        "ro.serialno" to SerialNumbers.PHYSICAL2_USB,
-        DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
-        DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
-        DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6",
-        DevicePropertyNames.RO_SF_LCD_DENSITY to "320",
-      )
-    )
-    fakeSession.deviceServices.configureDeviceProperties(
-      DeviceSelector.fromSerialNumber(SerialNumbers.PHYSICAL2_WIFI),
-      mapOf(
-        "ro.serialno" to SerialNumbers.PHYSICAL2_USB,
-        DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
-        DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
-        DevicePropertyNames.RO_PRODUCT_MODEL to "Pixel 6",
-        DevicePropertyNames.RO_SF_LCD_DENSITY to "320",
-      )
-    )
-    fakeSession.deviceServices.configureDeviceProperties(
-      DeviceSelector.fromSerialNumber(SerialNumbers.EMULATOR),
-      mapOf(
-        "ro.serialno" to "EMULATOR31X3X7X0",
-        DevicePropertyNames.RO_BUILD_VERSION_SDK to "31",
-        DevicePropertyNames.RO_PRODUCT_MANUFACTURER to "Google",
-        DevicePropertyNames.RO_PRODUCT_MODEL to "sdk_goog3_x86_64",
-        DevicePropertyNames.RO_SF_LCD_DENSITY to "320",
-      )
-    )
     for (serial in SerialNumbers.ALL) {
+      fakeSession.deviceServices.configureDeviceProperties(
+        DeviceSelector.fromSerialNumber(serial),
+        devicePropertiesBySerial[serial]!!
+      )
       fakeSession.deviceServices.configureShellCommand(
         DeviceSelector.fromSerialNumber(serial),
         command = "wm size",
@@ -88,9 +85,16 @@ abstract class DeviceProvisionerTestFixture {
     }
   }
 
-  protected fun setDevices(vararg serialNumber: String) {
+  protected fun setDevices(vararg serialNumber: String, state: DeviceState = DeviceState.ONLINE) {
     fakeSession.hostServices.devices =
-      DeviceList(serialNumber.map { DeviceInfo(it, DeviceState.ONLINE) }, emptyList())
+      DeviceList(serialNumber.map { DeviceInfo(it, state) }, emptyList())
+  }
+
+  protected fun setBootComplete(serial: String) {
+    fakeSession.deviceServices.configureDeviceProperties(
+      DeviceSelector.fromSerialNumber(serial),
+      devicePropertiesBySerial[serial]!! + mapOf("dev.bootcomplete" to "1")
+    )
   }
 
   protected fun DeviceProperties.checkPixel6lDeviceProperties() {
