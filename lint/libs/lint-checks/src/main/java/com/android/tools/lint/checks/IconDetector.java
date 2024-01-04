@@ -1069,8 +1069,13 @@ public class IconDetector extends Detector implements XmlScanner, SourceCodeScan
                                 if (d1.width != d2.width) {
                                     return d2.width - d1.width;
                                 }
+                                if (d1.height != d2.height) {
+                                    return d2.height - d1.height;
+                                }
 
-                                return d2.height - d1.height;
+                                String path1 = e1.getKey().getPath();
+                                String path2 = e2.getKey().getPath();
+                                return path1.compareTo(path2);
                             });
 
                     List<String> examples = Lists.newArrayList();
