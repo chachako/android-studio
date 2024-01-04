@@ -52,7 +52,14 @@ class DeviceStateTest {
         updateState = { Activating(properties) },
         advanceAction = {
           delay(Duration.ofMinutes(2))
-          state.value = Connected(properties, connectedDevice)
+          state.value =
+            Connected(
+              properties,
+              isReady = true,
+              isTransitioning = false,
+              status = "Connected",
+              connectedDevice = connectedDevice
+            )
         }
       )
     }
