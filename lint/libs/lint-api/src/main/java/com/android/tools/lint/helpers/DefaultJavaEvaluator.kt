@@ -333,7 +333,15 @@ open class DefaultJavaEvaluator(
 
   override fun getPackage(node: UElement): PsiPackage? {
     val uFile = node.getContainingUFile() ?: return null
-    val psi = uFile.javaPsi ?: uFile.sourcePsi
+    val psi =
+      if (isKotlin(uFile.lang)) {
+        // [KotlinUFile.javaPsi] is a delegation to (U|S)LC's [FakeFileForLightClass]
+        // while we already have sourcePsi of [KtFile]
+        // through which we can easily get package fq name.
+        uFile.sourcePsi
+      } else {
+        uFile.javaPsi ?: uFile.sourcePsi
+      }
     return getPackage(psi)
   }
 
