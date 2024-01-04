@@ -44,6 +44,7 @@ import com.android.tools.lint.client.api.LintTomlValue
 import com.android.tools.lint.client.api.TomlContext
 import com.android.tools.lint.client.api.TomlScanner
 import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Constraint
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.GradleContext
@@ -1064,7 +1065,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                 safeReplacement,
                 dependency,
                 isResolved,
-                statementCookie,
+                cookie,
               )
             maybeReportAgpVersionIssue(context)
           }
@@ -1804,7 +1805,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         // Check dependencies without the PSI read lock, because we
         // may need to make network requests to retrieve version info.
         context.driver.runLaterOutsideReadAction {
-          checkDependency(context, dependency, false, versionNode, versionNode)
+          checkDependency(context, dependency, false, versionNode, library)
         }
       }
     }
@@ -1820,7 +1821,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         // Check dependencies without the PSI read lock, because we
         // may need to make network requests to retrieve version info.
         context.driver.runLaterOutsideReadAction {
-          checkDependency(context, dependency, false, versionNode, versionNode)
+          checkDependency(context, dependency, false, versionNode, plugin)
         }
       }
     }
@@ -2083,6 +2084,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     fix: LintFix? = null,
     partial: Boolean = false,
     overrideSeverity: Severity? = null,
+    constraint: Constraint? = null,
   ): Boolean {
     // Some methods in GradleDetector are run without the PSI read lock in order
     // to accommodate network requests, so we grab the read lock here.
@@ -2094,7 +2096,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           val location = context.getLocation(cookie)
           val incident = Incident(issue, cookie, location, message, fix)
           overrideSeverity?.let { incident.overrideSeverity(it) }
-          if (partial) {
+          if (constraint != null) {
+            context.report(incident, constraint)
+          } else if (partial) {
             context.report(incident, map())
           } else {
             context.report(incident)
@@ -2109,7 +2113,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           }
           val incident = Incident(issue, location, message, fix)
           overrideSeverity?.let { incident.overrideSeverity(it) }
-          if (partial) {
+          if (constraint != null) {
+            context.report(incident, constraint)
+          } else if (partial) {
             context.report(incident, map())
           } else {
             context.report(incident)
