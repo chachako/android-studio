@@ -21,14 +21,9 @@ import com.android.adblib.deviceProperties
 import com.google.common.base.Stopwatch
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.withTimeout
 
 /** Identifies the ADB connection state of a provisionable device and its characteristics. */
 sealed interface DeviceState {
@@ -166,55 +161,6 @@ class TimeoutTracker(private val duration: Duration) {
   private val stopwatch = Stopwatch.createStarted()
 
   fun isTimedOut() = stopwatch.elapsed() >= duration
-}
-
-/**
- * Utility method intended for advancing DeviceState to an intermediate state (e.g. Activating,
- * Deactivating), and then reverting back to the original state if it stays in that state for too
- * long.
- *
- * First, we conditionally and atomically update to the intermediate state using [updateState]: this
- * should return the new state given the current state, or null if the current state cannot be
- * updated (which aborts the entire operation).
- *
- * Then, we invoke [advanceAction]: this is an arbitrary action that should cause the state to
- * advance out of the intermediate state before the [timeout].
- *
- * We then listen for updates to the state: if the state advances before [timeout], we are done. If
- * the state does not advance before [timeout] or an exception is thrown by [advanceAction], the
- * original state is restored.
- *
- * This uses atomic compareAndSet operations to ensure that we do not clobber concurrent state
- * updates from elsewhere.
- *
- * @return true if we advanced to the final state, false if we failed to update to the intermediate
- *   state
- * @throws TimeoutCancellationException if we timed out before advancing past the intermediate state
- */
-suspend fun <T> MutableStateFlow<T>.advanceStateWithTimeout(
-  updateState: (T) -> T?,
-  timeout: Duration,
-  advanceAction: suspend () -> Unit
-): Boolean {
-  while (true) {
-    val originalState = value
-    val intermediateState = updateState(originalState) ?: return false
-    if (compareAndSet(originalState, intermediateState)) {
-      try {
-        withTimeout(timeout.toMillis()) {
-          advanceAction()
-          takeWhile { it == intermediateState }.collect()
-        }
-        return true
-      } catch (e: Exception) {
-        if (!compareAndSet(intermediateState, originalState) && e is TimeoutCancellationException) {
-          // This is unlikely, but it means we advanced to the final state right after cancellation.
-          return true
-        }
-        throw e
-      }
-    }
-  }
 }
 
 suspend fun com.android.adblib.DeviceProperties.isBootComplete() =

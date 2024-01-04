@@ -132,6 +132,7 @@ class LocalEmulatorProvisionerPluginTest {
 
     assertThat(handle.state.connectedDevice).isNotNull()
 
+    handle.awaitReady()
     assertThat(provisioner.devices.value.map { it.state.properties.title })
       .containsExactly("Fake Device 1")
     val properties = provisioner.devices.value[0].state.properties as LocalEmulatorProperties
@@ -157,7 +158,14 @@ class LocalEmulatorProvisionerPluginTest {
     handle.coldBootAction?.activate()
 
     val connectedDevice = checkNotNull(handle.state.connectedDevice)
+    assertThat(handle.state.isReady).isFalse()
+
+    avdManager.finishBoot(connectedDevice)
+
+    handle.awaitReady()
+    assertThat(handle.state.isReady).isTrue()
     assertThat(connectedDevice.deviceProperties().allReadonly()["ro.test.coldboot"]).isEqualTo("1")
+    assertThat(handle.id.pluginId).isEqualTo(LocalEmulatorProvisionerPlugin.PLUGIN_ID)
   }
 
   @Test
@@ -174,6 +182,7 @@ class LocalEmulatorProvisionerPluginTest {
     handle.bootSnapshotAction?.activate(snapshot = snapshots[0])
 
     val connectedDevice = checkNotNull(handle.state.connectedDevice)
+    handle.awaitReady()
     assertThat(connectedDevice.deviceProperties().allReadonly()["ro.test.snapshot"])
       .isEqualTo(snapshotPath.toString())
   }
@@ -268,6 +277,7 @@ class LocalEmulatorProvisionerPluginTest {
     assertThat(handle.state.properties.deviceType).isEqualTo(DeviceType.TV)
 
     handle.activationAction?.activate()
+    handle.awaitReady()
 
     assertThat(handle.state.properties.deviceType).isEqualTo(DeviceType.TV)
   }

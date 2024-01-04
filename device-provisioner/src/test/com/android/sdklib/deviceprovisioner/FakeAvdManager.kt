@@ -15,11 +15,13 @@
  */
 package com.android.sdklib.deviceprovisioner
 
+import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceInfo
 import com.android.adblib.DeviceList
 import com.android.adblib.DevicePropertyNames
 import com.android.adblib.DeviceSelector
 import com.android.adblib.DeviceState
+import com.android.adblib.serialNumber
 import com.android.adblib.testing.FakeAdbSession
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.ISystemImage
@@ -98,23 +100,27 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
     val selector = DeviceSelector.fromSerialNumber("emulator-${device.port}")
     session.deviceServices.configureDeviceProperties(
       selector,
-      mapOf(
-        "ro.serialno" to "EMULATOR31X3X7X0",
-        DevicePropertyNames.RO_BUILD_VERSION_SDK to
-          LocalEmulatorProvisionerPluginTest.API_LEVEL.apiStringWithoutExtension,
-        DevicePropertyNames.RO_BUILD_VERSION_RELEASE to LocalEmulatorProvisionerPluginTest.RELEASE,
-        DevicePropertyNames.RO_PRODUCT_MANUFACTURER to
-          LocalEmulatorProvisionerPluginTest.MANUFACTURER,
-        DevicePropertyNames.RO_PRODUCT_MODEL to LocalEmulatorProvisionerPluginTest.MODEL,
-        DevicePropertyNames.RO_PRODUCT_CPU_ABI to LocalEmulatorProvisionerPluginTest.ABI.toString(),
-        "ro.kernel.qemu" to "1",
-        "ro.test.coldboot" to if (coldBoot) "1" else "0",
-        "ro.test.snapshot" to (snapshot?.path?.toString() ?: ""),
-      )
+      properties +
+        mapOf(
+          "ro.test.coldboot" to if (coldBoot) "1" else "0",
+          "ro.test.snapshot" to (snapshot?.path?.toString() ?: ""),
+          "dev.bootcomplete" to if (coldBoot) "" else "1",
+        )
     )
     device.start()
     runningDevices += device
     updateDevices()
+  }
+
+  fun finishBoot(device: ConnectedDevice) {
+    session.deviceServices.configureDeviceProperties(
+      DeviceSelector.fromSerialNumber(device.serialNumber),
+      properties +
+        mapOf(
+          "ro.test.coldboot" to "1",
+          "dev.bootcomplete" to "1",
+        )
+    )
   }
 
   override suspend fun stopAvd(avdInfo: AvdInfo) {
@@ -165,6 +171,19 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
         emptyList()
       )
   }
+
+  private val properties =
+    mapOf(
+      "ro.serialno" to "EMULATOR31X3X7X0",
+      DevicePropertyNames.RO_BUILD_VERSION_SDK to
+        LocalEmulatorProvisionerPluginTest.API_LEVEL.apiStringWithoutExtension,
+      DevicePropertyNames.RO_BUILD_VERSION_RELEASE to LocalEmulatorProvisionerPluginTest.RELEASE,
+      DevicePropertyNames.RO_PRODUCT_MANUFACTURER to
+        LocalEmulatorProvisionerPluginTest.MANUFACTURER,
+      DevicePropertyNames.RO_PRODUCT_MODEL to LocalEmulatorProvisionerPluginTest.MODEL,
+      DevicePropertyNames.RO_PRODUCT_CPU_ABI to LocalEmulatorProvisionerPluginTest.ABI.toString(),
+      "ro.kernel.qemu" to "1",
+    )
 }
 
 fun AvdInfo.copy(

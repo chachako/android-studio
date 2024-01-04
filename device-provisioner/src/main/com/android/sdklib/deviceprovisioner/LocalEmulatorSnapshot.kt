@@ -50,8 +50,8 @@ class LocalEmulatorSnapshotReader(private val logger: AdbLogger) {
    * within an AVD.
    */
   fun readSnapshots(snapshots: Path): List<LocalEmulatorSnapshot> {
-    if (!Files.isDirectory(snapshots)) {
-      logger.warn("Attempted to read snapshots from $snapshots")
+    if (!Files.exists(snapshots)) {
+      // AVDs that don't have any snapshots won't have a snapshots directory
       return emptyList()
     }
 
