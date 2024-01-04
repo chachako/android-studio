@@ -272,6 +272,12 @@ abstract class XmlParser {
       return Location.create(file)
     }
 
+    // Don't attempt to read a file starting with a path variable (an indication that it's a source
+    // file from a module dependency). See b/303215439.
+    if (file.path.startsWith("$")) {
+      return Location.create(file)
+    }
+
     // For elements and attributes we have to work harder
     val text = client.readFile(file)
     val name = item.name
