@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -220,6 +221,22 @@ public class AidlTest {
         project.execute("assembleDebug");
         checkAar("IRenamed");
         checkAar("ITest");
+    }
+
+    // Regression test for b/317262738
+    @Test
+    public void testDuplicateSourceDirectories() throws Exception {
+        Assume.assumeFalse(plugin.equals("com.android.library")); // only needs to run once
+        // This will add src/main/aidl to the source sets in AidlCompile task twice
+        TestFileUtils.appendToFile(
+                project.getBuildFile(),
+                "android.sourceSets {\n"
+                        + "    debug {\n"
+                        + "        aidl.srcDirs += \"src/main/aidl\"\n"
+                        + "    }\n"
+                        + "}\n");
+
+        project.execute("compileDebugAidl");
     }
 
     @Test
