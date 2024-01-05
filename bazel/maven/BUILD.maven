@@ -44537,6 +44537,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.apiguardian.apiguardian-api_1.1.2",
+    pom = "repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apiguardian/apiguardian-api/1.1.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.bouncycastle.bcpkix-jdk15on_1.48",
     pom = "repository/org/bouncycastle/bcpkix-jdk15on/1.48/bcpkix-jdk15on-1.48.pom",
     repo_root_path = "repository",
@@ -53568,12 +53576,38 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.junit.platform.junit-platform-commons_1.10.1",
+    pom = "repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/junit/platform/junit-platform-commons/1.10.1",
+    deps = [
+        "org.apiguardian.apiguardian-api_1.1.2",
+        "org.junit.junit-bom_5.10.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.junit.platform.junit-platform-commons_1.7.0",
     pom = "repository/org/junit/platform/junit-platform-commons/1.7.0/junit-platform-commons-1.7.0.pom",
     repo_root_path = "repository",
     repo_path = "org/junit/platform/junit-platform-commons/1.7.0",
     deps = [
         "org.junit.junit-bom_5.7.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.junit.platform.junit-platform-engine_1.10.1",
+    pom = "repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/junit/platform/junit-platform-engine/1.10.1",
+    deps = [
+        "org.opentest4j.opentest4j_1.3.0",
+        "org.junit.platform.junit-platform-commons_1.10.1",
+        "org.apiguardian.apiguardian-api_1.1.2",
+        "org.junit.junit-bom_5.10.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -53620,6 +53654,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.junit.junit-bom_5.10.1",
+    pom = "repository/org/junit/junit-bom/5.10.1/junit-bom-5.10.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/junit/junit-bom/5.10.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.junit.junit-bom_5.7.0",
     pom = "repository/org/junit/junit-bom/5.7.0/junit-bom-5.7.0.pom",
     repo_root_path = "repository",
@@ -53650,6 +53692,14 @@ maven_artifact(
     pom = "repository/org/khronos/opengl-api/gl1.1-android-2.1_r1/opengl-api-gl1.1-android-2.1_r1.pom",
     repo_root_path = "repository",
     repo_path = "org/khronos/opengl-api/gl1.1-android-2.1_r1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.opentest4j.opentest4j_1.3.0",
+    pom = "repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/opentest4j/opentest4j/1.3.0",
     visibility = ["//visibility:public"],
 )
 

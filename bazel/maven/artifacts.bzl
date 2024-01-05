@@ -639,6 +639,7 @@ DATA = [
     "junit:junit:4.13.2",
     "org.junit:junit-bom:5.9.2",
     "org.junit:junit-bom:5.9.3",
+    "org.junit.platform:junit-platform-engine:1.10.1",
     "org.bouncycastle:bcprov-jdk16:1.46",
     "org.bytedeco:ffmpeg-platform:6.0-1.5.9",
     "org.bytedeco:javacpp-platform:1.5.9",
