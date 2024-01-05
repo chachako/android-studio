@@ -42,6 +42,7 @@ import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationActionImpl
 import com.android.build.gradle.internal.utils.fromDisallowChanges
+import com.android.build.gradle.options.BooleanOption
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentType
 import com.google.common.base.Preconditions
@@ -227,17 +228,21 @@ abstract class ProguardConfigurableTask(
 
         private val classes: FileCollection
 
+        private val disableMinifyLocalDeps = creationConfig.services.projectOptions.get(
+            BooleanOption.DISABLE_MINIFY_LOCAL_DEPENDENCIES_FOR_LIBRARIES)
+
         private val externalInputScopes =
-            when {
-                componentType.isAar -> setOf(
-                    InternalScopedArtifacts.InternalScope.LOCAL_DEPS
-                )
-                else -> setOf(
+            if (componentType.isAar) {
+                if (disableMinifyLocalDeps) {
+                    setOf()
+                } else {
+                    setOf(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
+                }
+            } else {
+                setOf(
                     InternalScopedArtifacts.InternalScope.SUB_PROJECTS,
                     InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS,
-                    InternalScopedArtifacts.InternalScope.FEATURES.takeIf {
-                        includeFeaturesInScopes
-                    }
+                    InternalScopedArtifacts.InternalScope.FEATURES.takeIf { includeFeaturesInScopes }
                 ).filterNotNull().toSet()
             }
 
@@ -247,6 +252,9 @@ abstract class ProguardConfigurableTask(
                     if (componentType.isAar) {
                         add(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)
                         add(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                        if (disableMinifyLocalDeps) {
+                            add(InternalScopedArtifacts.InternalScope.LOCAL_DEPS)
+                        }
                     }
 
                 if (componentType.isTestComponent) {

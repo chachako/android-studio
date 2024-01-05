@@ -22,6 +22,7 @@ import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.caching.DisabledCachingReason.SIMPLE_MERGING_TASK
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
+import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.databinding.DataBindingExcludeDelegate
 import com.android.build.gradle.internal.databinding.configureFrom
 import com.android.build.gradle.internal.dependency.getClassesDirFormat
@@ -35,6 +36,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
+import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.toSerializable
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.dexing.isJarFile
@@ -43,7 +45,6 @@ import com.android.builder.packaging.JarFlinger
 import com.android.utils.FileUtils
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -85,11 +86,31 @@ interface BundleLibraryClassesInputs {
 
 private fun BundleLibraryClassesInputs.configure(
     creationConfig: ComponentCreationConfig,
-    inputs: FileCollection,
-    packageRClass: Boolean
+    packageRClass: Boolean,
+    publishRuntimeElement: Boolean,
 ) {
     namespace.setDisallowChanges(creationConfig.namespace)
-    classes.from(inputs)
+
+    // For inter-project publishing, we cannot minify the library program classes before publishing
+    // if the local file dependencies are minified which would cause local file deps to be included
+    // in AAR. However, there isn't a good way to avoid the consumer(e.g. application) getting
+    // ”duplicate” local file dependencies, one from the AAR, the other by getting EXTERNAL
+    // dependencies .
+    val disableMinifyLocalDeps = creationConfig.services.projectOptions.get(
+        BooleanOption.DISABLE_MINIFY_LOCAL_DEPENDENCIES_FOR_LIBRARIES)
+
+    if (creationConfig is ConsumableCreationConfig
+            && creationConfig.optimizationCreationConfig.minifiedEnabled
+            && publishRuntimeElement
+            && disableMinifyLocalDeps
+    ) {
+        classes.from(creationConfig.artifacts.get(InternalArtifactType.SHRUNK_CLASSES))
+    } else {
+        classes.from(creationConfig.artifacts
+                .forScope(ScopedArtifacts.Scope.PROJECT)
+                .getFinalArtifacts(ScopedArtifact.CLASSES))
+    }
+
     if (packageRClass) {
         classes.from(
                 creationConfig.artifacts.get(InternalArtifactType.COMPILE_R_CLASS_JAR)
@@ -164,11 +185,11 @@ abstract class BundleLibraryClassesDir: NewIncrementalTask(), BundleLibraryClass
 
         override fun configure(task: BundleLibraryClassesDir) {
             super.configure(task)
+
             task.configure(
                 creationConfig,
-                creationConfig.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
-                    .getFinalArtifacts(ScopedArtifact.CLASSES),
-                false)
+                packageRClass = false,
+                publishRuntimeElement = true)
         }
     }
 
@@ -193,11 +214,8 @@ abstract class BundleLibraryClassesDir: NewIncrementalTask(), BundleLibraryClass
             super.configure(task)
             task.configure(
                 creationConfig,
-                creationConfig
-                    .artifacts
-                    .forScope(ScopedArtifacts.Scope.PROJECT)
-                    .getFinalArtifacts(ScopedArtifact.CLASSES),
-                false
+                packageRClass = false,
+                publishRuntimeElement = false
             )
         }
     }
@@ -261,11 +279,11 @@ abstract class BundleLibraryClassesJar : NonIncrementalTask(), BundleLibraryClas
             val packageRClass =
                     publishedType == PublishedConfigType.API_ELEMENTS && creationConfig.buildFeatures.androidResources
 
-            val inputs = creationConfig.artifacts
-                    .forScope(ScopedArtifacts.Scope.PROJECT)
-                    .getFinalArtifacts(ScopedArtifact.CLASSES)
-
-            task.configure(creationConfig, inputs, packageRClass)
+            task.configure(
+                    creationConfig,
+                    packageRClass,
+                    publishedType != PublishedConfigType.API_ELEMENTS
+            )
         }
     }
 

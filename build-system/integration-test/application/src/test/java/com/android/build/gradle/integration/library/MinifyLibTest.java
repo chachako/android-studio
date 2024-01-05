@@ -18,9 +18,11 @@ package com.android.build.gradle.integration.library;
 
 import static com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.ANDROIDTEST_DEBUG;
 import static com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.DEBUG;
+import static com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.RELEASE;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk;
 import static com.android.testutils.truth.PathSubject.assertThat;
+
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
@@ -30,6 +32,7 @@ import com.android.utils.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.zip.ZipFile;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -84,30 +87,43 @@ public class MinifyLibTest {
     }
 
     @Test
-    public void shrinkingTheLibrary() throws Exception {
-        enableLibShrinking();
+    public void shrinkingTheLibraryClasses() throws Exception {
+        enableLibShrinking(RELEASE_BUILD);
 
+        // -applymapping should never be part of AAR rules because its interaction with other rules
+        // are undefined, we use it here just for having consistent obfuscation output
         File mappingFile = project.getSubproject(":lib").file("mapping.txt");
         TestFileUtils.appendToFile(
                 mappingFile, "com.android.tests.basic.StringProvider -> c.a.t.b.SP:\n");
         File libKeepRules = project.getSubproject(":lib").file("config.pro");
         TestFileUtils.appendToFile(libKeepRules, "-applymapping " + mappingFile.getAbsolutePath());
+        // Add the keep rule to lib, which will take effect in app to keep the obfuscated class
+        TestFileUtils.appendToFile(
+                project.getSubproject(":lib").file("config.pro"),
+                "-keep public class c.a.t.b.SP { *; }");
 
-        GradleBuildResult result = project.executor().run(":app:assembleDebug");
+        project.executor().run(":app:assembleRelease");
 
-        assertThat(result.getTask(":app:minifyDebugWithR8")).didWork();
+        // Check library classes are minified
+        File minifiedClassesJar =
+                FileUtils.join(
+                        project.getSubproject(":lib").getBuildDir(),
+                        "/intermediates/runtime_library_classes_jar/release/bundleLibRuntimeToJarRelease/classes.jar");
 
-        Apk apk = project.getSubproject(":app").getApk(DEBUG);
-        // This is currently a bug, see http://b/263197720.
-        assertThat(apk).doesNotContainClass("Lc/a/t/b/SP;");
-        assertThat(apk).containsClass("Lcom/android/tests/basic/StringProvider;");
-        assertThat(apk).doesNotContainClass("Lcom/android/tests/basic/UnusedClass;");
+        try (ZipFile jar = new ZipFile(minifiedClassesJar)) {
+            assertThat(jar.getEntry("c/a/t/b/SP.class") != null);
+        }
+        // Check library classes are packaged in apk
+        try (Apk apk = project.getSubproject(":app").getApk(RELEASE)) {
+            assertThat(apk).containsClass("Lc/a/t/b/SP;");
+            assertThat(apk).doesNotContainClass("Lcom/android/tests/basic/UnusedClass;");
+        }
     }
 
     /** Regression test for b/171364505. */
     @Test
     public void shrinkingLibWithMultidex() throws Exception {
-        enableLibShrinking();
+        enableLibShrinking(DEBUG_BUILD);
         TestFileUtils.appendToFile(
                 project.getSubproject(":lib").getBuildFile(),
                 ""
@@ -129,7 +145,7 @@ public class MinifyLibTest {
      */
     @Test
     public void androidTestWithShrinkedLibrary() throws Exception {
-        enableLibShrinking();
+        enableLibShrinking(DEBUG_BUILD);
 
         // Test with only androidTestImplementation.  Replacing the compile dependency is fine
         // because the
@@ -154,7 +170,7 @@ public class MinifyLibTest {
      */
     @Test
     public void shrinkingTheLibrary_noClasses() throws Exception {
-        enableLibShrinking();
+        enableLibShrinking(DEBUG_BUILD);
         // Remove the -keep rules.
         File config = project.getSubproject(":lib").file("config.pro");
         FileUtils.deleteIfExists(config);
@@ -162,12 +178,14 @@ public class MinifyLibTest {
         project.executor().run(":lib:assembleDebug");
     }
 
-    private void enableLibShrinking() throws IOException {
+    private void enableLibShrinking(String buildType) throws IOException {
         TestFileUtils.appendToFile(
                 project.getSubproject(":lib").getBuildFile(),
                 ""
                         + "android {\n"
-                        + "    buildTypes.debug {\n"
+                        + "    buildTypes."
+                        + buildType
+                        + " {\n"
                         + "        minifyEnabled true\n"
                         + "        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'config.pro'\n"
                         + "    }\n"
@@ -175,7 +193,9 @@ public class MinifyLibTest {
         TestFileUtils.appendToFile(
                 project.getSubproject(":app").getBuildFile(),
                 "android {\n"
-                        + "    buildTypes.debug {\n"
+                        + "    buildTypes."
+                        + buildType
+                        + " {\n"
                         + "        minifyEnabled true\n"
                         + "        proguardFiles getDefaultProguardFile('proguard-android.txt')\n"
                         + "    }\n"
@@ -185,7 +205,7 @@ public class MinifyLibTest {
     /** Regression test for b/254278181 */
     @Test
     public void checkManifestChangesTriggersLibraryProguardRules() throws Exception {
-        enableLibShrinking();
+        enableLibShrinking(DEBUG_BUILD);
         GradleBuildResult result = project.executor().run(":lib:assembleDebug");
         assertThat(result.getTask(":lib:generateDebugLibraryProguardRules")).didWork();
         TestFileUtils.searchAndReplace(
@@ -195,4 +215,7 @@ public class MinifyLibTest {
         result = project.executor().run(":lib:assembleDebug");
         assertThat(result.getTask(":lib:generateDebugLibraryProguardRules")).didWork();
     }
+
+    private static final String RELEASE_BUILD = "release";
+    private static final String DEBUG_BUILD = "debug";
 }

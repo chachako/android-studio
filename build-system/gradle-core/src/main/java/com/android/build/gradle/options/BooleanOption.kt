@@ -310,6 +310,12 @@ enum class BooleanOption(
         FeatureStage.SoftlyEnforced(VERSION_9_0)
     ),
 
+    DISABLE_MINIFY_LOCAL_DEPENDENCIES_FOR_LIBRARIES(
+        "android.disableMinifyLocalDependenciesForLibraries",
+        true,
+        FeatureStage.SoftlyEnforced(VERSION_9_0)
+    ),
+
     /**
      * Whether to do lint analysis per component (instead of analysing the main variant and the test
      * components in the same lint invocation).

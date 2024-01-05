@@ -7,6 +7,7 @@ import com.android.build.gradle.integration.common.fixture.app.EmptyGradleProjec
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
 import com.android.build.gradle.integration.common.fixture.app.TestSourceFile;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.utils.FileUtils;
 import com.google.common.base.Joiner;
 import java.io.File;
@@ -145,6 +146,22 @@ public class ProguardAarPackagingTest {
     @Test
     public void checkReleaseAarPackaging() throws Exception {
         androidProject.executor().run("assembleRelease");
+
+        androidProject.testAar(
+                "release",
+                it -> {
+                    // check that the classes from the local jars are not minified and is included
+                    // in the AAR
+                    it.containsSecondaryClass("Lcom/example/libinjar/LibInJar;");
+                });
+    }
+
+    @Test
+    public void testEnableMinifyLocalDepsForLibraries() throws Exception {
+        androidProject
+                .executor()
+                .with(BooleanOption.DISABLE_MINIFY_LOCAL_DEPENDENCIES_FOR_LIBRARIES, false)
+                .run("assembleRelease");
 
         androidProject.testAar(
                 "release",
