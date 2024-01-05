@@ -17,6 +17,8 @@
 package com.android.tools.appinspection.network.reporters
 
 import androidx.inspection.Connection
+import com.android.tools.appinspection.network.reporters.StreamReporter.InputStreamReporter
+import com.android.tools.appinspection.network.reporters.StreamReporter.OutputStreamReporter
 import com.android.tools.appinspection.network.rules.NetworkInterceptionMetrics
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
 import com.android.tools.appinspection.network.utils.sendHttpConnectionEvent
@@ -28,7 +30,7 @@ import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.Ht
  * A class that is used to report connection related activity to Studio such as making requests or
  * receiving responses.
  */
-interface ConnectionReporter : ThreadReporter {
+internal interface ConnectionReporter : ThreadReporter {
 
   fun onRequest(
     url: String,
@@ -66,11 +68,11 @@ private class ConnectionReporterImpl(private val connection: Connection) :
   }
 
   override fun createInputStreamReporter(): StreamReporter {
-    return InputStreamReporterImpl(connection, connectionId, threadReporter)
+    return InputStreamReporter(connection, connectionId, threadReporter)
   }
 
   override fun createOutputStreamReporter(): StreamReporter {
-    return OutputStreamReporterImpl(connection, connectionId, threadReporter)
+    return OutputStreamReporter(connection, connectionId, threadReporter)
   }
 
   override fun onRequest(

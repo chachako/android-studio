@@ -29,7 +29,7 @@ import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.Ht
  * Note that the HTTP stacks using [HttpConnectionTracker] should not care or know about the details
  * of the implementation of the interface.
  */
-class ConnectionTracker(
+internal class ConnectionTracker(
   private val myUrl: String,
   private val callstack: String,
   private val reporter: ConnectionReporter

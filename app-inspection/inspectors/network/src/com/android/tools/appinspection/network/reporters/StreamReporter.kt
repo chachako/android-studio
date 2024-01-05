@@ -16,38 +16,62 @@
 
 package com.android.tools.appinspection.network.reporters
 
+import androidx.annotation.VisibleForTesting
 import androidx.inspection.Connection
+import com.android.tools.appinspection.network.utils.Logger
+import com.android.tools.appinspection.network.utils.LoggerImpl
 import com.android.tools.appinspection.network.utils.sendHttpConnectionEvent
 import com.android.tools.idea.protobuf.ByteString
+import com.android.tools.idea.protobuf.ByteString.Output
+import java.nio.charset.Charset
 import studio.network.inspection.NetworkInspectorProtocol
 
 /**
  * The initial capacity of the buffer that stores payload data. It is automatically expanded when
  * capacity is reached.
  */
-const val DEFAULT_THRESHOLD = 1024
+private const val INITIAL_BUFFER_SIZE = 1024
+private const val MAX_BUFFER_SIZE = 10 * 1024 * 1024
 
 /**
- * A class that reports on [InputStream] and [OutputStream]. It records the payload that is
- * sent/received in a temporary buffer before reporting it to Studio.
+ * A class that reports on [java.io.InputStream] and [java.io.OutputStream]. It records the payload
+ * that is sent/received in a temporary buffer before reporting it to Studio.
  */
-sealed class StreamReporter(
+internal abstract class StreamReporter
+@VisibleForTesting
+constructor(
   private val connection: Connection,
   threadReporter: ThreadReporter,
-  private val connectionId: Long
+  private val connectionId: Long,
+  maxBufferSize: Int?,
+  bufferHelper: BufferHelper?,
+  private val logger: Logger,
 ) : ThreadReporter by threadReporter {
 
-  private val buffer = ByteString.newOutput(DEFAULT_THRESHOLD)
+  private val maxBufferSize = maxBufferSize ?: MAX_BUFFER_SIZE
+  private val bufferHelper = bufferHelper ?: BufferHelperImpl()
+
+  private val buffer = ByteString.newOutput(INITIAL_BUFFER_SIZE)
   private var isClosed = false
 
   protected abstract fun onClosed(data: ByteString)
 
   fun addOneByte(byte: Int) {
-    buffer.write(byte)
+    addBytes(ByteArray(1) { byte.toByte() }, 0, 1)
   }
 
   fun addBytes(bytes: ByteArray, offset: Int, len: Int) {
-    buffer.write(bytes, offset, len)
+    if (buffer.size() + len > maxBufferSize) {
+      logger.error("Payload size exceeded max size (${buffer.size() + len})")
+      return
+    }
+    try {
+      bufferHelper.write(buffer, bytes, offset, len)
+    } catch (e: OutOfMemoryError) {
+      logger.error("Payload too large (${buffer.size()})", e)
+      buffer.reset()
+      buffer.write("Payload omitted because it was too large".toByteArray())
+    }
   }
 
   fun onStreamClose() {
@@ -56,7 +80,14 @@ sealed class StreamReporter(
     // HttpUrlConnection, and calling close() on the stream.
     if (!isClosed) {
       isClosed = true
-      onClosed(buffer.toByteString())
+      val data =
+        try {
+          bufferHelper.toByteString(buffer)
+        } catch (e: OutOfMemoryError) {
+          logger.error("Payload too large (${buffer.size()})", e)
+          ByteString.copyFrom("Payload omitted because it was too large", Charset.defaultCharset())
+        }
+      onClosed(data)
     }
   }
 
@@ -65,54 +96,76 @@ sealed class StreamReporter(
   ) {
     connection.sendHttpConnectionEvent(builder.setConnectionId(connectionId))
   }
-}
 
-class InputStreamReporterImpl(
-  connection: Connection,
-  connectionId: Long,
-  threadReporter: ThreadReporter
-) : StreamReporter(connection, threadReporter, connectionId) {
+  interface BufferHelper {
+    fun write(buffer: Output, bytes: ByteArray, offset: Int, len: Int)
 
-  override fun onClosed(data: ByteString) {
-    sendHttpConnectionEvent(
-      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-        .setResponsePayload(
-          NetworkInspectorProtocol.HttpConnectionEvent.Payload.newBuilder().setPayload(data)
-        )
-    )
-    sendHttpConnectionEvent(
-      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-        .setHttpResponseCompleted(
-          NetworkInspectorProtocol.HttpConnectionEvent.ResponseCompleted.getDefaultInstance()
-        )
-    )
-    sendHttpConnectionEvent(
-      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-        .setHttpClosed(
-          NetworkInspectorProtocol.HttpConnectionEvent.Closed.newBuilder().setCompleted(true)
-        )
-    )
+    fun toByteString(buffer: Output): ByteString
   }
-}
 
-class OutputStreamReporterImpl(
-  connection: Connection,
-  connectionId: Long,
-  threadReporter: ThreadReporter
-) : StreamReporter(connection, threadReporter, connectionId) {
+  internal class InputStreamReporter(
+    connection: Connection,
+    connectionId: Long,
+    threadReporter: ThreadReporter,
+    maxBufferSize: Int? = null,
+    bufferHelper: BufferHelper? = null,
+    logger: Logger = LoggerImpl(),
+  ) :
+    StreamReporter(connection, threadReporter, connectionId, maxBufferSize, bufferHelper, logger) {
 
-  override fun onClosed(data: ByteString) {
-    sendHttpConnectionEvent(
-      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-        .setRequestPayload(
-          NetworkInspectorProtocol.HttpConnectionEvent.Payload.newBuilder().setPayload(data)
-        )
-    )
-    sendHttpConnectionEvent(
-      NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
-        .setHttpRequestCompleted(
-          NetworkInspectorProtocol.HttpConnectionEvent.RequestCompleted.getDefaultInstance()
-        )
-    )
+    override fun onClosed(data: ByteString) {
+      sendHttpConnectionEvent(
+        NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+          .setResponsePayload(
+            NetworkInspectorProtocol.HttpConnectionEvent.Payload.newBuilder().setPayload(data)
+          )
+      )
+      sendHttpConnectionEvent(
+        NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+          .setHttpResponseCompleted(
+            NetworkInspectorProtocol.HttpConnectionEvent.ResponseCompleted.getDefaultInstance()
+          )
+      )
+      sendHttpConnectionEvent(
+        NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+          .setHttpClosed(
+            NetworkInspectorProtocol.HttpConnectionEvent.Closed.newBuilder().setCompleted(true)
+          )
+      )
+    }
+  }
+
+  internal class OutputStreamReporter(
+    connection: Connection,
+    connectionId: Long,
+    threadReporter: ThreadReporter,
+    maxBufferSize: Int? = null,
+    bufferHelper: BufferHelper? = null,
+    logger: Logger = LoggerImpl(),
+  ) :
+    StreamReporter(connection, threadReporter, connectionId, maxBufferSize, bufferHelper, logger) {
+
+    override fun onClosed(data: ByteString) {
+      sendHttpConnectionEvent(
+        NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+          .setRequestPayload(
+            NetworkInspectorProtocol.HttpConnectionEvent.Payload.newBuilder().setPayload(data)
+          )
+      )
+      sendHttpConnectionEvent(
+        NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()
+          .setHttpRequestCompleted(
+            NetworkInspectorProtocol.HttpConnectionEvent.RequestCompleted.getDefaultInstance()
+          )
+      )
+    }
+  }
+
+  private class BufferHelperImpl : BufferHelper {
+
+    override fun write(buffer: Output, bytes: ByteArray, offset: Int, len: Int) =
+      buffer.write(bytes, offset, len)
+
+    override fun toByteString(buffer: Output): ByteString = buffer.toByteString()
   }
 }
