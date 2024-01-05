@@ -51,7 +51,7 @@ class TestInstall : TestInstallBase() {
             try {
                 val client = PMAbb(deviceServices)
                 val flow = client.commit(deviceSelector, "12345")
-                flow.first()
+                PMDriver.parseInstallResult(flow.first())
                 Assert.fail("Installation did not fail")
             } catch (e : Exception) {
                 e.printStackTrace()

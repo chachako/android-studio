@@ -18,8 +18,9 @@ package com.android.adblib.tools
 import com.android.adblib.AdbDeviceServices
 import com.android.adblib.AdbInputChannel
 import com.android.adblib.DeviceSelector
-import com.android.adblib.TextShellCollector
+import com.android.adblib.TextShellV2Collector
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 internal class PMAbb(deviceServices: AdbDeviceServices) : PM(deviceServices) {
 
@@ -28,22 +29,22 @@ internal class PMAbb(deviceServices: AdbDeviceServices) : PM(deviceServices) {
     override suspend fun createSession(device: DeviceSelector, options: List<String>) : Flow<String> {
         var cmd = listOf(CMD, "install-create")
         cmd += options
-        return deviceService.abb_exec(device, cmd, TextShellCollector())
+        return deviceService.abb(device, cmd, TextShellV2Collector()).map{ it.stdout + it.stderr }
     }
 
-    override suspend fun streamApk(device: DeviceSelector, sessionID: String, apk: AdbInputChannel, filename: String, size: Long) : Flow<String>{
+    override suspend fun streamApk(device: DeviceSelector, sessionID: String, apk: AdbInputChannel, filename: String, size: Long) : Flow<String> {
         val cmd = listOf(CMD, "install-write", "-S", size.toString(), sessionID, filename, "-")
-        return deviceService.abb_exec(device, cmd, TextShellCollector(), apk, shutdownOutput = false)
+        return deviceService.abb(device, cmd, TextShellV2Collector(), apk).map{ it.stdout + it.stderr}
     }
 
     override suspend fun commit(device: DeviceSelector, sessionID: String) : Flow<String> {
         val cmd = listOf(CMD, "install-commit", sessionID)
-        return deviceService.abb_exec(device, cmd, TextShellCollector())
+        return deviceService.abb(device, cmd, TextShellV2Collector()).map { it.stdout + it.stderr}
     }
 
     override suspend fun abandon(device: DeviceSelector, sessionID: String) : Flow<String>{
         val cmd = listOf(CMD, "install-abandon", sessionID)
-        return deviceService.abb_exec(device, cmd, TextShellCollector())
+        return deviceService.abb(device, cmd, TextShellV2Collector()).map { it.stdout + it.stderr}
     }
 
     override suspend fun getStrategy(): String {
