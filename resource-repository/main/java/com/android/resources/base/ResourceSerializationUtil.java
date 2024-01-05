@@ -15,6 +15,8 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.AttrResourceValue;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceValue;
@@ -43,8 +45,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Static methods for serialization and deserialization of resources implementing {@link BasicResourceItem} interface.
@@ -68,8 +68,8 @@ public class ResourceSerializationUtil {
    *   <li>Serialized resource items (see {@link BasicResourceItemBase#serialize})</li>
    * </ol>
    */
-  public static void createPersistentCache(@NotNull Path cacheFile, @NotNull byte[] fileHeader,
-                                           @NotNull Base128StreamWriter contentWriter) {
+  public static void createPersistentCache(@NonNull Path cacheFile, @NonNull byte[] fileHeader,
+                                           @NonNull Base128StreamWriter contentWriter) {
     // Try to delete the old cache file.
     try {
       Files.deleteIfExists(cacheFile);
@@ -116,9 +116,9 @@ public class ResourceSerializationUtil {
    * @param stream the stream to write to
    * @param configFilter only resources belonging to configurations satisfying this filter are written to the stream
    */
-  public static void writeResourcesToStream(@NotNull Map<ResourceType, ListMultimap<String, ResourceItem>> resources,
-                                            @NotNull Base128OutputStream stream,
-                                            @NotNull Predicate<FolderConfiguration> configFilter) throws IOException {
+  public static void writeResourcesToStream(@NonNull Map<ResourceType, ListMultimap<String, ResourceItem>> resources,
+                                            @NonNull Base128OutputStream stream,
+                                            @NonNull Predicate<FolderConfiguration> configFilter) throws IOException {
     Object2IntMap<String> qualifierStringIndexes = new Object2IntOpenHashMap<>();
     qualifierStringIndexes.defaultReturnValue(-1);
     Object2IntMap<ResourceSourceFile> sourceFileIndexes = new Object2IntOpenHashMap<>();
@@ -176,8 +176,8 @@ public class ResourceSerializationUtil {
     }
   }
 
-  private static void addToNamespaceResolverIndexes(@NotNull ResourceNamespace.Resolver resolver,
-                                                    @NotNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) {
+  private static void addToNamespaceResolverIndexes(@NonNull ResourceNamespace.Resolver resolver,
+                                                    @NonNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) {
     if (!namespaceResolverIndexes.containsKey(resolver)) {
       namespaceResolverIndexes.put(resolver, namespaceResolverIndexes.size());
     }
@@ -187,11 +187,11 @@ public class ResourceSerializationUtil {
    * Loads resources from the given input stream and passes then to the given consumer.
    * @see #writeResourcesToStream
    */
-  public static void readResourcesFromStream(@NotNull Base128InputStream stream,
-                                             @NotNull Map<String, String> stringCache,
+  public static void readResourcesFromStream(@NonNull Base128InputStream stream,
+                                             @NonNull Map<String, String> stringCache,
                                              @Nullable Map<NamespaceResolver, NamespaceResolver> namespaceResolverCache,
-                                             @NotNull LoadableResourceRepository repository,
-                                             @NotNull Consumer<BasicResourceItem> resourceConsumer) throws IOException {
+                                             @NonNull LoadableResourceRepository repository,
+                                             @NonNull Consumer<BasicResourceItem> resourceConsumer) throws IOException {
     stream.setStringCache(stringCache); // Enable string instance sharing to minimize memory consumption.
 
     int n = stream.readInt();
@@ -245,7 +245,7 @@ public class ResourceSerializationUtil {
    * @param headerWriter the writer object
    * @return the cache file header contents in a byte array
    */
-  public static @NotNull byte[] getCacheFileHeader(@NotNull Base128StreamWriter headerWriter) {
+  public static @NonNull byte[] getCacheFileHeader(@NonNull Base128StreamWriter headerWriter) {
     ByteArrayOutputStream header = new ByteArrayOutputStream();
     try (Base128OutputStream stream = new Base128OutputStream(header)) {
       headerWriter.write(stream);
@@ -255,14 +255,14 @@ public class ResourceSerializationUtil {
     }
     return header.toByteArray();
   }
-  private static void deleteIgnoringErrors(@NotNull Path file) {
+  private static void deleteIgnoringErrors(@NonNull Path file) {
     try {
       Files.deleteIfExists(file);
     } catch (IOException ignored) {
     }
   }
 
-  private static void writeStrings(@NotNull Object2IntMap<String> qualifierStringIndexes, @NotNull Base128OutputStream stream)
+  private static void writeStrings(@NonNull Object2IntMap<String> qualifierStringIndexes, @NonNull Base128OutputStream stream)
       throws IOException {
     String[] strings = new String[qualifierStringIndexes.size()];
     for (Object2IntMap.Entry<String> entry : Object2IntMaps.fastIterable(qualifierStringIndexes)) {
@@ -274,9 +274,9 @@ public class ResourceSerializationUtil {
     }
   }
 
-  private static void writeSourceFiles(@NotNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
-                                       @NotNull Base128OutputStream stream,
-                                       @NotNull Object2IntMap<String> qualifierStringIndexes) throws IOException {
+  private static void writeSourceFiles(@NonNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
+                                       @NonNull Base128OutputStream stream,
+                                       @NonNull Object2IntMap<String> qualifierStringIndexes) throws IOException {
     ResourceSourceFile[] sourceFiles = new ResourceSourceFile[sourceFileIndexes.size()];
     for (Object2IntMap.Entry<ResourceSourceFile> entry : Object2IntMaps.fastIterable(sourceFileIndexes)) {
       sourceFiles[entry.getIntValue()] = entry.getKey();
@@ -287,8 +287,8 @@ public class ResourceSerializationUtil {
     }
   }
 
-  private static void writeNamespaceResolvers(@NotNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes,
-                                              @NotNull Base128OutputStream stream) throws IOException {
+  private static void writeNamespaceResolvers(@NonNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes,
+                                              @NonNull Base128OutputStream stream) throws IOException {
     ResourceNamespace.Resolver[] resolvers = new ResourceNamespace.Resolver[namespaceResolverIndexes.size()];
     for (Object2IntMap.Entry<ResourceNamespace.Resolver> entry : Object2IntMaps.fastIterable(namespaceResolverIndexes)) {
       resolvers[entry.getIntValue()] = entry.getKey();
@@ -302,6 +302,6 @@ public class ResourceSerializationUtil {
   }
 
   public interface Base128StreamWriter {
-    void write(@NotNull Base128OutputStream stream) throws IOException;
+    void write(@NonNull Base128OutputStream stream) throws IOException;
   }
 }

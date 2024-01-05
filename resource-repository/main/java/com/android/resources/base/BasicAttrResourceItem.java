@@ -17,6 +17,8 @@ package com.android.resources.base;
 
 import static com.android.SdkConstants.URI_DOMAIN_PREFIX;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.AttrResourceValue;
 import com.android.ide.common.rendering.api.AttributeFormat;
 import com.android.ide.common.rendering.api.ResourceNamespace;
@@ -34,18 +36,16 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Resource item representing an attr resource.
  */
 public class BasicAttrResourceItem extends BasicValueResourceItemBase implements AttrResourceValue {
-  @NotNull private Set<AttributeFormat> myFormats;
+  @NonNull private Set<AttributeFormat> myFormats;
   /** The keys are enum or flag names, the values are corresponding numeric values. */
-  @NotNull private final Map<String, Integer> myValueMap;
+  @NonNull private final Map<String, Integer> myValueMap;
   /** The keys are enum or flag names, the values are the value descriptions. */
-  @NotNull private final Map<String, String> myValueDescriptionMap;
+  @NonNull private final Map<String, String> myValueDescriptionMap;
   @Nullable private final String myDescription;
   @Nullable private final String myGroupName;
 
@@ -63,14 +63,14 @@ public class BasicAttrResourceItem extends BasicValueResourceItemBase implements
    *     have corresponding numeric values.
    * @param valueDescriptionMap the enum or flag value descriptions keyed by the value names
    */
-  public BasicAttrResourceItem(@NotNull String name,
-                               @NotNull ResourceSourceFile sourceFile,
-                               @NotNull ResourceVisibility visibility,
+  public BasicAttrResourceItem(@NonNull String name,
+                               @NonNull ResourceSourceFile sourceFile,
+                               @NonNull ResourceVisibility visibility,
                                @Nullable String description,
                                @Nullable String groupName,
-                               @NotNull Set<AttributeFormat> formats,
-                               @NotNull Map<String, Integer> valueMap,
-                               @NotNull Map<String, String> valueDescriptionMap) {
+                               @NonNull Set<AttributeFormat> formats,
+                               @NonNull Map<String, Integer> valueMap,
+                               @NonNull Map<String, String> valueDescriptionMap) {
     super(ResourceType.ATTR, name, sourceFile, visibility);
     myDescription = description;
     myGroupName = groupName;
@@ -81,7 +81,7 @@ public class BasicAttrResourceItem extends BasicValueResourceItemBase implements
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final Set<AttributeFormat> getFormats() {
     return myFormats;
   }
@@ -91,19 +91,19 @@ public class BasicAttrResourceItem extends BasicValueResourceItemBase implements
    *
    * @param formats the new set of the allowed attribute formats
    */
-  public final void setFormats(@NotNull Set<AttributeFormat> formats) {
+  public final void setFormats(@NonNull Set<AttributeFormat> formats) {
     myFormats = ImmutableSet.copyOf(formats);
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final Map<String, Integer> getAttributeValues() {
     return myValueMap;
   }
 
   @Override
   @Nullable
-  public final String getValueDescription(@NotNull String valueName) {
+  public final String getValueDescription(@NonNull String valueName) {
     return myValueDescriptionMap.get(valueName);
   }
 
@@ -134,7 +134,7 @@ public class BasicAttrResourceItem extends BasicValueResourceItemBase implements
   /**
    * Creates and returns an {@link BasicAttrReference} pointing to this attribute.
    */
-  @NotNull
+  @NonNull
   public BasicAttrReference createReference() {
     BasicAttrReference attrReference =
         new BasicAttrReference(getNamespace(), getName(), getSourceFile(), getVisibility(), myDescription, myGroupName);
@@ -143,16 +143,16 @@ public class BasicAttrResourceItem extends BasicValueResourceItemBase implements
   }
 
   @Override
-  public void serialize(@NotNull Base128OutputStream stream,
-                        @NotNull Object2IntMap<String> configIndexes,
-                        @NotNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
-                        @NotNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
+  public void serialize(@NonNull Base128OutputStream stream,
+                        @NonNull Object2IntMap<String> configIndexes,
+                        @NonNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
+                        @NonNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
     super.serialize(stream, configIndexes, sourceFileIndexes, namespaceResolverIndexes);
     serializeAttrValue(this, getRepository().getNamespace(), stream);
   }
 
-  static void serializeAttrValue(@NotNull AttrResourceValue attr, @NotNull ResourceNamespace defaultNamespace,
-                                 @NotNull Base128OutputStream stream) throws IOException {
+  static void serializeAttrValue(@NonNull AttrResourceValue attr, @NonNull ResourceNamespace defaultNamespace,
+                                 @NonNull Base128OutputStream stream) throws IOException {
     ResourceNamespace namespace = attr.getNamespace();
     String namespaceSuffix = namespace.equals(defaultNamespace) ?
                              null : namespace.getXmlNamespaceUri().substring(URI_DOMAIN_PREFIX.length());
@@ -183,12 +183,12 @@ public class BasicAttrResourceItem extends BasicValueResourceItemBase implements
   /**
    * Creates a BasicAttrResourceItem by reading its contents from the given stream.
    */
-  @NotNull
-  static BasicValueResourceItemBase deserialize(@NotNull Base128InputStream stream,
-                                                @NotNull String name,
-                                                @NotNull ResourceVisibility visibility,
-                                                @NotNull ResourceSourceFile sourceFile,
-                                                @NotNull ResourceNamespace.Resolver resolver) throws IOException {
+  @NonNull
+  static BasicValueResourceItemBase deserialize(@NonNull Base128InputStream stream,
+                                                @NonNull String name,
+                                                @NonNull ResourceVisibility visibility,
+                                                @NonNull ResourceSourceFile sourceFile,
+                                                @NonNull ResourceNamespace.Resolver resolver) throws IOException {
     String namespaceSuffix = stream.readString();
     String description = stream.readString();
     String groupName = stream.readString();

@@ -15,6 +15,8 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
@@ -29,36 +31,34 @@ import com.google.common.base.MoreObjects;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.IOException;
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /** Base class for implementations of the {@link BasicResourceItem} interface. */
 public abstract class BasicResourceItemBase implements BasicResourceItem {
-  @NotNull private final String myName;
+  @NonNull private final String myName;
   // Store enums as their ordinals in byte form to minimize memory footprint.
   private final byte myTypeOrdinal;
   private final byte myVisibilityOrdinal;
 
-  BasicResourceItemBase(@NotNull ResourceType type, @NotNull String name, @NotNull ResourceVisibility visibility) {
+  BasicResourceItemBase(@NonNull ResourceType type, @NonNull String name, @NonNull ResourceVisibility visibility) {
     myName = name;
     myTypeOrdinal = (byte)type.ordinal();
     myVisibilityOrdinal = (byte)visibility.ordinal();
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final ResourceType getType() {
     return getResourceType();
   }
 
   @Override
-  @NotNull
+  @NonNull
   public ResourceNamespace getNamespace() {
     return getRepository().getNamespace();
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final String getName() {
     return myName;
   }
@@ -70,19 +70,19 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final ResourceType getResourceType() {
     return ResourceType.values()[myTypeOrdinal];
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final ResourceVisibility getVisibility() {
     return ResourceVisibility.values()[myVisibilityOrdinal];
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final ResourceValue getResourceValue() {
     return this;
   }
@@ -93,7 +93,7 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final ResourceReference asReference() {
     return getReferenceToSelf();
   }
@@ -105,18 +105,18 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
    * @see RepositoryConfiguration#transferOwnershipTo(LoadableResourceRepository)
    */
   @Override
-  @NotNull
+  @NonNull
   public final LoadableResourceRepository getRepository() {
     return getRepositoryConfiguration().getRepository();
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final FolderConfiguration getConfiguration() {
     return getRepositoryConfiguration().getFolderConfiguration();
   }
 
-  @NotNull
+  @NonNull
   public abstract RepositoryConfiguration getRepositoryConfiguration();
 
   @Override
@@ -141,7 +141,7 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
   }
 
   @Override
-  @NotNull
+  @NonNull
   public String toString() {
     return MoreObjects.toStringHelper(this)
                       .add("namespace", getNamespace())
@@ -154,10 +154,10 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
   /**
    * Serializes the resource item to the given stream.
    */
-  public void serialize(@NotNull Base128OutputStream stream,
-                        @NotNull Object2IntMap<String> configIndexes,
-                        @NotNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
-                        @NotNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
+  public void serialize(@NonNull Base128OutputStream stream,
+                        @NonNull Object2IntMap<String> configIndexes,
+                        @NonNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
+                        @NonNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
     stream.writeInt((myTypeOrdinal << 1) + (isFileBased() ? 1 : 0));
     stream.writeString(myName);
     stream.writeInt(myVisibilityOrdinal);
@@ -166,11 +166,11 @@ public abstract class BasicResourceItemBase implements BasicResourceItem {
   /**
    * Creates a resource item by reading its contents from the given stream.
    */
-  @NotNull
-  public static BasicResourceItemBase deserialize(@NotNull Base128InputStream stream,
-                                                  @NotNull List<RepositoryConfiguration> configurations,
-                                                  @NotNull List<ResourceSourceFile> sourceFiles,
-                                                  @NotNull List<ResourceNamespace.Resolver> namespaceResolvers) throws IOException {
+  @NonNull
+  public static BasicResourceItemBase deserialize(@NonNull Base128InputStream stream,
+                                                  @NonNull List<RepositoryConfiguration> configurations,
+                                                  @NonNull List<ResourceSourceFile> sourceFiles,
+                                                  @NonNull List<ResourceNamespace.Resolver> namespaceResolvers) throws IOException {
     assert !configurations.isEmpty();
     int encodedType = stream.readInt();
     boolean isFileBased = (encodedType & 0x1) != 0;

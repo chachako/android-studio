@@ -15,6 +15,8 @@
  */
 package com.android.resources.aar;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.AttrResourceValue;
 import com.android.ide.common.rendering.api.AttributeFormat;
 import com.android.ide.common.rendering.api.ResourceNamespace;
@@ -26,8 +28,6 @@ import com.android.resources.AarTestUtils;
 import com.android.ide.common.resources.ResourceItem;
 import com.android.resources.ResourceType;
 import com.android.utils.PathUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,12 +49,12 @@ public class AarSourceResourceRepositoryTest {
   private Path myTempDir;
   private Path myCacheDir;
 
-  @NotNull
-  private CachingData createCachingData(@NotNull String cacheFilename, @Nullable Executor cacheCreationExecutor) {
+  @NonNull
+  private CachingData createCachingData(@NonNull String cacheFilename, @Nullable Executor cacheCreationExecutor) {
     return new CachingData(myCacheDir.resolve(cacheFilename), "", "", cacheCreationExecutor);
   }
 
-  @NotNull
+  @NonNull
   private static List<String> getValues(List<ResourceItem> items) {
     List<String> values = new ArrayList<>(items.size());
     for (ResourceItem item : items) {
@@ -149,7 +149,7 @@ public class AarSourceResourceRepositoryTest {
     checkRepositoryContents(repository);
   }
 
-  private static void checkRepositoryContents(@NotNull AarSourceResourceRepository repository) {
+  private static void checkRepositoryContents(@NonNull AarSourceResourceRepository repository) {
     List<ResourceItem> items = repository.getResources(ResourceNamespace.RES_AUTO, ResourceType.STRING, "hello");
     List<String> helloVariants = getValues(items);
     assertThat(helloVariants).containsExactly("bonjour", "hello", "hola");

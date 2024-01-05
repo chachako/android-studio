@@ -15,6 +15,7 @@
  */
 package com.android.resources.aar;
 
+import com.android.annotations.NonNull;
 import com.android.utils.Base128OutputStream;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.ByteArrayOutputStream;
@@ -31,7 +32,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * A command-line program for packaging framework resources into framework_res.jar. The jar file
@@ -43,7 +43,7 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings({"UseOfSystemOutOrSystemErr", "CallToPrintStackTrace"})
 public class FrameworkResJarCreator {
-  public static void main(@NotNull String[] args) {
+  public static void main(@NonNull String[] args) {
     if (args.length != 2) {
       printUsage(FrameworkResJarCreator.class.getName());
       System.exit(1);
@@ -60,7 +60,7 @@ public class FrameworkResJarCreator {
   }
 
   @VisibleForTesting
-  static void createJar(@NotNull Path resDirectory, @NotNull Path jarFile) throws IOException {
+  static void createJar(@NonNull Path resDirectory, @NonNull Path jarFile) throws IOException {
     FrameworkResourceRepository repository = FrameworkResourceRepository.create(resDirectory, null, null, false);
     Set<String> languages = repository.getLanguageGroups();
 
@@ -84,13 +84,13 @@ public class FrameworkResJarCreator {
     }
   }
 
-  @NotNull
-  private static List<Path> getContainedFiles(@NotNull Path resDirectory) throws IOException {
+  @NonNull
+  private static List<Path> getContainedFiles(@NonNull Path resDirectory) throws IOException {
     List<Path> files = new ArrayList<>();
     Files.walkFileTree(resDirectory, new SimpleFileVisitor<Path>() {
       @Override
-      @NotNull
-      public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
+      @NonNull
+      public FileVisitResult visitFile(@NonNull Path file, @NonNull BasicFileAttributes attrs) {
         files.add(file);
         return FileVisitResult.CONTINUE;
       }
@@ -99,15 +99,15 @@ public class FrameworkResJarCreator {
     return files;
   }
 
-  private static void createZipEntry(@NotNull String name, @NotNull byte[] content, @NotNull ZipOutputStream zip) throws IOException {
+  private static void createZipEntry(@NonNull String name, @NonNull byte[] content, @NonNull ZipOutputStream zip) throws IOException {
     ZipEntry entry = new ZipEntry(name);
     zip.putNextEntry(entry);
     zip.write(content);
     zip.closeEntry();
   }
 
-  @NotNull
-  private static byte[] getEncodedResources(@NotNull FrameworkResourceRepository repository, @NotNull String language) throws IOException {
+  @NonNull
+  private static byte[] getEncodedResources(@NonNull FrameworkResourceRepository repository, @NonNull String language) throws IOException {
     ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     try (Base128OutputStream stream = new Base128OutputStream(byteStream)) {
       repository.writeToStream(stream, config -> language.equals(FrameworkResourceRepository.getLanguageGroup(config)));
@@ -115,7 +115,7 @@ public class FrameworkResJarCreator {
     return byteStream.toByteArray();
   }
 
-  private static void printUsage(@NotNull String programName) {
+  private static void printUsage(@NonNull String programName) {
     System.out.printf("Usage: %s <res_directory> <jar_file>%n", programName);
   }
 }

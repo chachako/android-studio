@@ -18,6 +18,8 @@ package com.android.resources.aar;
 import static com.android.SdkConstants.DOT_9PNG;
 import static com.android.SdkConstants.FD_RES_RAW;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ProgressManagerAdapter;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.resources.ResourceItem;
@@ -58,8 +60,6 @@ import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 /**
@@ -90,7 +90,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
   private int myNumberOfLanguageGroupsLoadedFromCache;
   private final boolean myUseCompiled9Patches;
 
-  private FrameworkResourceRepository(@NotNull RepositoryLoader<FrameworkResourceRepository> loader, boolean useCompiled9Patches) {
+  private FrameworkResourceRepository(@NonNull RepositoryLoader<FrameworkResourceRepository> loader, boolean useCompiled9Patches) {
     super(loader, null);
     myUseCompiled9Patches = useCompiled9Patches;
   }
@@ -104,8 +104,8 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
    * @param useCompiled9Patches whether to provide the compiled or non-compiled version of the framework 9-patches
    * @return the created resource repository
    */
-  @NotNull
-  public static FrameworkResourceRepository create(@NotNull Path resourceDirectoryOrFile, @Nullable Set<String> languagesToLoad,
+  @NonNull
+  public static FrameworkResourceRepository create(@NonNull Path resourceDirectoryOrFile, @Nullable Set<String> languagesToLoad,
                                                    @Nullable CachingData cachingData, boolean useCompiled9Patches) {
     long start = LOG.isDebugEnabled() ? System.currentTimeMillis() : 0;
     Set<String> languageGroups = languagesToLoad == null ? null : getLanguageGroups(languagesToLoad);
@@ -133,7 +133,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
    * @param languages the set of ISO 639 language codes to check
    * @return true if the repository contains resources for all requested languages
    */
-  public boolean containsLanguages(@NotNull Set<String> languages) {
+  public boolean containsLanguages(@NonNull Set<String> languages) {
     for (String language : languages) {
       if (!myLanguageGroups.contains(getLanguageGroup(language))) {
         return false;
@@ -150,7 +150,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
    * @return the new resource repository with additional resources, or this resource repository if it already contained
    *     all requested languages
    */
-  @NotNull
+  @NonNull
   public FrameworkResourceRepository loadMissingLanguages(@Nullable Set<String> languagesToLoad, @Nullable CachingData cachingData) {
     @Nullable Set<String> languageGroups = languagesToLoad == null ? null : getLanguageGroups(languagesToLoad);
     if (languageGroups != null && myLanguageGroups.containsAll(languageGroups)) {
@@ -177,9 +177,9 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
 
   private void load(@Nullable FrameworkResourceRepository sourceRepository,
                     @Nullable CachingData cachingData,
-                    @NotNull Loader loader,
+                    @NonNull Loader loader,
                     @Nullable Set<String> languageGroups,
-                    @NotNull Set<String> languageGroupsLoadedFromSourceRepositoryOrCache) {
+                    @NonNull Set<String> languageGroupsLoadedFromSourceRepositoryOrCache) {
     Map<String, String> stringCache = Maps.newHashMapWithExpectedSize(10000);
     Map<NamespaceResolver, NamespaceResolver> namespaceResolverCache = new HashMap<>();
     Set<RepositoryConfiguration> configurationsToTakeOver =
@@ -219,8 +219,8 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
   }
 
   @Override
-  @NotNull
-  public Set<ResourceType> getResourceTypes(@NotNull ResourceNamespace namespace) {
+  @NonNull
+  public Set<ResourceType> getResourceTypes(@NonNull ResourceNamespace namespace) {
     return namespace == ANDROID_NAMESPACE ? Sets.immutableEnumSet(myResources.keySet()) : ImmutableSet.of();
   }
 
@@ -232,10 +232,10 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
    * @param namespaceResolverCache the namespace resolver cache to populate with namespace resolvers referenced by the copied resources
    * @return the {@link RepositoryConfiguration} objects referenced by the copied resources
    */
-  @NotNull
-  private Set<RepositoryConfiguration> copyFromRepository(@NotNull FrameworkResourceRepository sourceRepository,
-                                                          @NotNull Map<String, String> stringCache,
-                                                          @NotNull Map<NamespaceResolver, NamespaceResolver> namespaceResolverCache) {
+  @NonNull
+  private Set<RepositoryConfiguration> copyFromRepository(@NonNull FrameworkResourceRepository sourceRepository,
+                                                          @NonNull Map<String, String> stringCache,
+                                                          @NonNull Map<NamespaceResolver, NamespaceResolver> namespaceResolverCache) {
     Collection<ListMultimap<String, ResourceItem>> resourceMaps = sourceRepository.myResources.values();
 
     // Copy resources from the source repository, get AarConfigurations that need to be taken over by this repository,
@@ -261,9 +261,9 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     return sourceConfigurations;
   }
 
-  private void loadFromPersistentCache(@NotNull CachingData cachingData, @Nullable Set<String> languagesToLoad,
-                                       @NotNull Set<String> loadedLanguages,
-                                       @NotNull Map<String, String> stringCache,
+  private void loadFromPersistentCache(@NonNull CachingData cachingData, @Nullable Set<String> languagesToLoad,
+                                       @NonNull Set<String> loadedLanguages,
+                                       @NonNull Map<String, String> stringCache,
                                        @Nullable Map<NamespaceResolver, NamespaceResolver> namespaceResolverCache) {
     CacheFileNameGenerator fileNameGenerator = new CacheFileNameGenerator((cachingData));
     Set<String> languages = languagesToLoad == null ? fileNameGenerator.getAllCacheFileLanguages() : languagesToLoad;
@@ -307,7 +307,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     myNumberOfLanguageGroupsLoadedFromCache = 0;
   }
 
-  private void createPersistentCache(@NotNull CachingData cachingData, @NotNull Set<String> languagesToSkip) {
+  private void createPersistentCache(@NonNull CachingData cachingData, @NonNull Set<String> languagesToSkip) {
     CacheFileNameGenerator fileNameGenerator = new CacheFileNameGenerator(cachingData);
     for (String language : myLanguageGroups) {
       if (!languagesToSkip.contains(language)) {
@@ -319,7 +319,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     }
   }
 
-  private void writeCacheHeaderContent(@NotNull CachingData cachingData, @NotNull String language, @NotNull Base128OutputStream stream)
+  private void writeCacheHeaderContent(@NonNull CachingData cachingData, @NonNull String language, @NonNull Base128OutputStream stream)
       throws IOException {
     writeCacheHeaderContent(cachingData, stream);
     stream.writeString(language);
@@ -331,12 +331,12 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
    * @param language the two-letter language abbreviation, or an empty string for language-neutral resources
    * @return the file name
    */
-  static String getResourceTableNameForLanguage(@NotNull String language) {
+  static String getResourceTableNameForLanguage(@NonNull String language) {
     return language.isEmpty() ? "resources.bin" : RESOURCES_TABLE_PREFIX + language + RESOURCE_TABLE_SUFFIX;
   }
 
-  @NotNull
-  static String getLanguageGroup(@NotNull FolderConfiguration config) {
+  @NonNull
+  static String getLanguageGroup(@NonNull FolderConfiguration config) {
     LocaleQualifier locale = config.getLocaleQualifier();
     return locale == null ? "" : getLanguageGroup(Strings.nullToEmpty(locale.getLanguage()));
   }
@@ -348,13 +348,13 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
    * @param language the original language
    * @return the language representing the corresponding group of languages
    */
-  @NotNull
-  private static String getLanguageGroup(@NotNull String language) {
+  @NonNull
+  private static String getLanguageGroup(@NonNull String language) {
     return LANGUAGE_TO_GROUP.getOrDefault(language, language);
   }
 
-  @NotNull
-  private static Set<String> getLanguageGroups(@NotNull Set<String> languages) {
+  @NonNull
+  private static Set<String> getLanguageGroups(@NonNull Set<String> languages) {
     Set<String> result = new TreeSet<>();
     result.add("");
     for (String language : languages) {
@@ -363,7 +363,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     return result;
   }
 
-  @NotNull
+  @NonNull
   Set<String> getLanguageGroups() {
     Set<String> languages = new TreeSet<>();
 
@@ -386,8 +386,8 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     return myNumberOfLanguageGroupsLoadedFromCache;
   }
 
-  @NotNull
-  private String updateResourcePath(@NotNull String relativeResourcePath) {
+  @NonNull
+  private String updateResourcePath(@NonNull String relativeResourcePath) {
     if (myUseCompiled9Patches && relativeResourcePath.endsWith(DOT_9PNG)) {
       return relativeResourcePath.substring(0, relativeResourcePath.length() - DOT_9PNG.length()) + COMPILED_9PNG_EXTENSION;
     }
@@ -395,29 +395,29 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
   }
 
   @Override
-  @NotNull
-  public String getResourceUrl(@NotNull String relativeResourcePath) {
+  @NonNull
+  public String getResourceUrl(@NonNull String relativeResourcePath) {
     return super.getResourceUrl(updateResourcePath(relativeResourcePath));
   }
 
   @Override
-  @NotNull
-  public PathString getSourceFile(@NotNull String relativeResourcePath, boolean forFileResource) {
+  @NonNull
+  public PathString getSourceFile(@NonNull String relativeResourcePath, boolean forFileResource) {
     return super.getSourceFile(updateResourcePath(relativeResourcePath), forFileResource);
   }
 
   private static class Loader extends RepositoryLoader<FrameworkResourceRepository> {
-    @NotNull private final List<String> myPublicFileNames = ImmutableList.of("public.xml", "public-final.xml", "public-staging.xml");
-    @NotNull private final Set<String> myLoadedLanguageGroups;
+    @NonNull private final List<String> myPublicFileNames = ImmutableList.of("public.xml", "public-final.xml", "public-staging.xml");
+    @NonNull private final Set<String> myLoadedLanguageGroups;
     @Nullable private Set<String> myLanguageGroups;
 
-    Loader(@NotNull Path resourceDirectoryOrFile, @Nullable Set<String> languageGroups) {
+    Loader(@NonNull Path resourceDirectoryOrFile, @Nullable Set<String> languageGroups) {
       super(resourceDirectoryOrFile, null, ANDROID_NAMESPACE);
       myLanguageGroups = languageGroups;
       myLoadedLanguageGroups = new TreeSet<>();
     }
 
-    Loader(@NotNull FrameworkResourceRepository sourceRepository, @Nullable Set<String> languageGroups) {
+    Loader(@NonNull FrameworkResourceRepository sourceRepository, @Nullable Set<String> languageGroups) {
       super(sourceRepository.myResourceDirectoryOrFile, null, ANDROID_NAMESPACE);
       myLanguageGroups = languageGroups;
       myLoadedLanguageGroups = new TreeSet<>(sourceRepository.myLanguageGroups);
@@ -428,7 +428,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     }
 
     @Override
-    protected void loadFromZip(@NotNull FrameworkResourceRepository repository) {
+    protected void loadFromZip(@NonNull FrameworkResourceRepository repository) {
       try (ZipFile zipFile = new ZipFile(myResourceDirectoryOrFile.toFile())) {
         if (myLanguageGroups == null) {
           myLanguageGroups = readLanguageGroups(zipFile);
@@ -465,8 +465,8 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
       }
     }
 
-    @NotNull
-    private static Set<String> readLanguageGroups(@NotNull ZipFile zipFile) {
+    @NonNull
+    private static Set<String> readLanguageGroups(@NonNull ZipFile zipFile) {
       ImmutableSortedSet.Builder<String> result = ImmutableSortedSet.naturalOrder();
       result.add("");
       zipFile.stream().forEach(entry -> {
@@ -482,7 +482,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     }
 
     @Override
-    public void loadRepositoryContents(@NotNull FrameworkResourceRepository repository) {
+    public void loadRepositoryContents(@NonNull FrameworkResourceRepository repository) {
       super.loadRepositoryContents(repository);
 
       Set<String> languageGroups = myLanguageGroups == null ? repository.getLanguageGroups() : myLanguageGroups;
@@ -490,7 +490,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     }
 
     @Override
-    public boolean isIgnored(@NotNull Path fileOrDirectory, @NotNull BasicFileAttributes attrs) {
+    public boolean isIgnored(@NonNull Path fileOrDirectory, @NonNull BasicFileAttributes attrs) {
       if (fileOrDirectory.equals(myResourceDirectoryOrFile)) {
         return false;
       }
@@ -531,13 +531,13 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     }
 
     @Override
-    protected final void addResourceItem(@NotNull BasicResourceItem item, @NotNull FrameworkResourceRepository repository) {
+    protected final void addResourceItem(@NonNull BasicResourceItem item, @NonNull FrameworkResourceRepository repository) {
       repository.addResourceItem(item);
     }
 
     @Override
-    @NotNull
-    protected String getKeyForVisibilityLookup(@NotNull String resourceName) {
+    @NonNull
+    protected String getKeyForVisibilityLookup(@NonNull String resourceName) {
       // This class obtains names of public resources from public.xml where all resource names are preserved
       // in their original form. This is different from the superclass that obtains the names from public.txt
       // where the names are transformed by replacing dots, colons and dashes with underscores.
@@ -551,7 +551,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
    *
    * @param sourceConfigurations the configurations to reparent
    */
-  private void takeOverConfigurations(@NotNull Set<RepositoryConfiguration> sourceConfigurations) {
+  private void takeOverConfigurations(@NonNull Set<RepositoryConfiguration> sourceConfigurations) {
     for (RepositoryConfiguration configuration : sourceConfigurations) {
       configuration.transferOwnershipTo(this);
     }
@@ -562,7 +562,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     private final String myPrefix;
     private final String mySuffix;
 
-    CacheFileNameGenerator(@NotNull CachingData cachingData) {
+    CacheFileNameGenerator(@NonNull CachingData cachingData) {
       myLanguageNeutralFile = cachingData.getCacheFile();
       String fileName = myLanguageNeutralFile.getFileName().toString();
       int dotPos = fileName.lastIndexOf('.');
@@ -570,8 +570,8 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
       mySuffix = dotPos >= 0 ? fileName.substring(dotPos) : "";
     }
 
-    @NotNull
-    Path getCacheFile(@NotNull String language) {
+    @NonNull
+    Path getCacheFile(@NonNull String language) {
       return language.isEmpty() ? myLanguageNeutralFile : myLanguageNeutralFile.resolveSibling(myPrefix + '_' + language + mySuffix);
     }
 
@@ -583,7 +583,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
      *     doesn't match the pattern of cache file names.
      */
     @Nullable
-    String getLanguage(@NotNull String cacheFileName) {
+    String getLanguage(@NonNull String cacheFileName) {
       if (!cacheFileName.startsWith(myPrefix) || !cacheFileName.endsWith(mySuffix)) {
         return null;
       }
@@ -601,7 +601,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
       return language;
     }
 
-    @NotNull
+    @NonNull
     public Set<String> getAllCacheFileLanguages() {
       Set<String> result = new TreeSet<>();
       try (Stream<Path> stream = CancellableFileIo.list(myLanguageNeutralFile.getParent())) {

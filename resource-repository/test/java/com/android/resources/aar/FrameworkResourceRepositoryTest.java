@@ -15,6 +15,8 @@
  */
 package com.android.resources.aar;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.AttrResourceValue;
 import com.android.ide.common.rendering.api.AttributeFormat;
 import com.android.ide.common.rendering.api.ResourceNamespace;
@@ -28,8 +30,6 @@ import com.android.utils.PathUtils;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,12 +62,12 @@ public class FrameworkResourceRepositoryTest {
   private Path myResourceFolder;
   private Path myTempDir;
 
-  @NotNull
+  @NonNull
   private Path getCacheFile() {
     return myTempDir.resolve("cache.bin");
   }
 
-  @NotNull
+  @NonNull
   private CachingData createCachingData(@Nullable Executor cacheCreationExecutor) {
     return new CachingData(getCacheFile(), "", "", cacheCreationExecutor);
   }
@@ -75,13 +75,13 @@ public class FrameworkResourceRepositoryTest {
   /**
    * Returns the resource folder of the Android framework resources used by LayoutLib.
    */
-  @NotNull
+  @NonNull
   private static Path getFrameworkResDir() {
     return TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib/data/res");
   }
 
   /** Returns the path of a freshly built framework_res.jar. */
-  @NotNull
+  @NonNull
   private Path getFrameworkResJar() throws IOException {
     Path path = myTempDir.resolve("framework_res.jar");
     FrameworkResJarCreator.createJar(getFrameworkResDir(), path);
@@ -89,13 +89,13 @@ public class FrameworkResourceRepositoryTest {
   }
 
   private static void assertVisibility(
-      @NotNull ResourceRepository repository, @NotNull ResourceType type, @NotNull String name, @NotNull ResourceVisibility visibility) {
+      @NonNull ResourceRepository repository, @NonNull ResourceType type, @NonNull String name, @NonNull ResourceVisibility visibility) {
     List<ResourceItem> resources = repository.getResources(ResourceNamespace.ANDROID, type, name);
     assertThat(resources).isNotEmpty();
     assertThat(((ResourceItemWithVisibility)resources.get(0)).getVisibility()).isEqualTo(visibility);
   }
 
-  private static void compareContents(@NotNull ResourceRepository expected, @NotNull ResourceRepository actual) {
+  private static void compareContents(@NonNull ResourceRepository expected, @NonNull ResourceRepository actual) {
     List<ResourceItem> expectedItems = new ArrayList<>(expected.getAllResources());
     List<ResourceItem> actualItems = new ArrayList<>(actual.getAllResources());
 
@@ -128,13 +128,13 @@ public class FrameworkResourceRepositoryTest {
     }
   }
 
-  private static void checkContents(@NotNull ResourceRepository repository) {
+  private static void checkContents(@NonNull ResourceRepository repository) {
     checkPublicResources(repository);
     checkAttributes(repository);
     checkIdResources(repository);
   }
 
-  private static void checkAttributes(@NotNull ResourceRepository repository) {
+  private static void checkAttributes(@NonNull ResourceRepository repository) {
     // `typeface` is declared first at top-level and later referenced from within `<declare-styleable>`.
     // Make sure the later reference doesn't shadow the original definition.
     AttrResourceValue attrValue = getAttrValue(repository, "typeface");
@@ -159,13 +159,13 @@ public class FrameworkResourceRepositoryTest {
     assertThat(attrValue.getValueDescription("maps")).contains("navigation");
   }
 
-  private static AttrResourceValue getAttrValue(@NotNull ResourceRepository repository,
-                                                @NotNull String attrName) {
+  private static AttrResourceValue getAttrValue(@NonNull ResourceRepository repository,
+                                                @NonNull String attrName) {
     ResourceItem attrItem = repository.getResources(ResourceNamespace.ANDROID, ResourceType.ATTR, attrName).get(0);
     return (AttrResourceValue)attrItem.getResourceValue();
   }
 
-  private static void checkIdResources(@NotNull ResourceRepository repository) {
+  private static void checkIdResources(@NonNull ResourceRepository repository) {
     List<ResourceItem> items = repository.getResources(ResourceNamespace.ANDROID, ResourceType.ID, "mode_normal");
     items = items.stream().filter(item -> item.getConfiguration().isDefault()).collect(Collectors.toList());
     assertThat(items).hasSize(1);
@@ -176,7 +176,7 @@ public class FrameworkResourceRepositoryTest {
     assertThat(items).hasSize(1);
   }
 
-  private static void checkPublicResources(@NotNull ResourceRepository repository) {
+  private static void checkPublicResources(@NonNull ResourceRepository repository) {
     List<ResourceItem> resourceItems = repository.getAllResources();
     assertWithMessage("Too few resources: " + resourceItems.size()).that(resourceItems.size()).isAtLeast(10000);
     for (ResourceItem item : resourceItems) {
@@ -207,7 +207,7 @@ public class FrameworkResourceRepositoryTest {
     assertVisibility(repository, ResourceType.ATTR, "__removed2", ResourceVisibility.PRIVATE); // Due to the naming convention
   }
 
-  private static void checkLanguages(@NotNull FrameworkResourceRepository fromSourceFiles, @Nullable Set<String> languages) {
+  private static void checkLanguages(@NonNull FrameworkResourceRepository fromSourceFiles, @Nullable Set<String> languages) {
     if (languages == null) {
       assertThat(fromSourceFiles.getLanguageGroups().size()).isAtLeast(75);
     }

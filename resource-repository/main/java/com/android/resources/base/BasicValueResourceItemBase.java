@@ -15,6 +15,8 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.util.PathString;
 import com.android.resources.ResourceType;
@@ -26,13 +28,11 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /** Base class for value resource items. */
 public abstract class BasicValueResourceItemBase extends BasicResourceItemBase {
-  @NotNull private final ResourceSourceFile mySourceFile;
-  @NotNull private ResourceNamespace.Resolver myNamespaceResolver = ResourceNamespace.Resolver.EMPTY_RESOLVER;
+  @NonNull private final ResourceSourceFile mySourceFile;
+  @NonNull private ResourceNamespace.Resolver myNamespaceResolver = ResourceNamespace.Resolver.EMPTY_RESOLVER;
 
   /**
    * Initializes the resource.
@@ -42,10 +42,10 @@ public abstract class BasicValueResourceItemBase extends BasicResourceItemBase {
    * @param sourceFile the source file containing definition of the resource
    * @param visibility the visibility of the resource
    */
-  public BasicValueResourceItemBase(@NotNull ResourceType type,
-                                    @NotNull String name,
-                                    @NotNull ResourceSourceFile sourceFile,
-                                    @NotNull ResourceVisibility visibility) {
+  public BasicValueResourceItemBase(@NonNull ResourceType type,
+                                    @NonNull String name,
+                                    @NonNull ResourceSourceFile sourceFile,
+                                    @NonNull ResourceVisibility visibility) {
     super(type, name, visibility);
     mySourceFile = sourceFile;
   }
@@ -62,18 +62,18 @@ public abstract class BasicValueResourceItemBase extends BasicResourceItemBase {
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final RepositoryConfiguration getRepositoryConfiguration() {
     return mySourceFile.getConfiguration();
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final ResourceNamespace.Resolver getNamespaceResolver() {
     return myNamespaceResolver;
   }
 
-  public final void setNamespaceResolver(@NotNull ResourceNamespace.Resolver resolver) {
+  public final void setNamespaceResolver(@NonNull ResourceNamespace.Resolver resolver) {
     myNamespaceResolver = resolver;
   }
 
@@ -90,7 +90,7 @@ public abstract class BasicValueResourceItemBase extends BasicResourceItemBase {
     return sourcePath == null ? null : getRepository().getOriginalSourceFile(sourcePath, false);
   }
 
-  @NotNull
+  @NonNull
   public final ResourceSourceFile getSourceFile() {
     return mySourceFile;
   }
@@ -109,10 +109,10 @@ public abstract class BasicValueResourceItemBase extends BasicResourceItemBase {
   }
 
   @Override
-  public void serialize(@NotNull Base128OutputStream stream,
-                        @NotNull Object2IntMap<String> configIndexes,
-                        @NotNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
-                        @NotNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
+  public void serialize(@NonNull Base128OutputStream stream,
+                        @NonNull Object2IntMap<String> configIndexes,
+                        @NonNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
+                        @NonNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
     super.serialize(stream, configIndexes, sourceFileIndexes, namespaceResolverIndexes);
     int index = sourceFileIndexes.getInt(mySourceFile);
     assert index >= 0;
@@ -125,14 +125,14 @@ public abstract class BasicValueResourceItemBase extends BasicResourceItemBase {
   /**
    * Creates a resource item by reading its contents from the given stream.
    */
-  @NotNull
-  static BasicValueResourceItemBase deserialize(@NotNull Base128InputStream stream,
-                                                @NotNull ResourceType resourceType,
-                                                @NotNull String name,
-                                                @NotNull ResourceVisibility visibility,
-                                                @NotNull List<RepositoryConfiguration> configurations,
-                                                @NotNull List<ResourceSourceFile> sourceFiles,
-                                                @NotNull List<ResourceNamespace.Resolver> namespaceResolvers) throws IOException {
+  @NonNull
+  static BasicValueResourceItemBase deserialize(@NonNull Base128InputStream stream,
+                                                @NonNull ResourceType resourceType,
+                                                @NonNull String name,
+                                                @NonNull ResourceVisibility visibility,
+                                                @NonNull List<RepositoryConfiguration> configurations,
+                                                @NonNull List<ResourceSourceFile> sourceFiles,
+                                                @NonNull List<ResourceNamespace.Resolver> namespaceResolvers) throws IOException {
     ResourceSourceFile sourceFile = sourceFiles.get(stream.readInt());
     ResourceNamespace.Resolver resolver = namespaceResolvers.get(stream.readInt());
 

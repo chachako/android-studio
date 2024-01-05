@@ -15,11 +15,11 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.AttributeFormat;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.resources.ResourceVisibility;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +29,7 @@ import java.util.Set;
  * of the owning AAR.
  */
 public class BasicForeignAttrResourceItem extends BasicAttrResourceItem {
-  @NotNull private final ResourceNamespace myNamespace;
+  @NonNull private final ResourceNamespace myNamespace;
 
   /**
    * Initializes the resource.
@@ -45,20 +45,20 @@ public class BasicForeignAttrResourceItem extends BasicAttrResourceItem {
 *        have corresponding numeric values.
    * @param valueDescriptionMap the enum or flag value descriptions keyed by the value names
    */
-  public BasicForeignAttrResourceItem(@NotNull ResourceNamespace namespace,
-                                      @NotNull String name,
-                                      @NotNull ResourceSourceFile sourceFile,
+  public BasicForeignAttrResourceItem(@NonNull ResourceNamespace namespace,
+                                      @NonNull String name,
+                                      @NonNull ResourceSourceFile sourceFile,
                                       @Nullable String description,
                                       @Nullable String groupName,
-                                      @NotNull Set<AttributeFormat> formats,
-                                      @NotNull Map<String, Integer> valueMap,
-                                      @NotNull Map<String, String> valueDescriptionMap) {
+                                      @NonNull Set<AttributeFormat> formats,
+                                      @NonNull Map<String, Integer> valueMap,
+                                      @NonNull Map<String, String> valueDescriptionMap) {
     super(name, sourceFile, ResourceVisibility.PUBLIC, description, groupName, formats, valueMap, valueDescriptionMap);
     myNamespace = namespace;
   }
 
   @Override
-  @NotNull
+  @NonNull
   public ResourceNamespace getNamespace() {
     return myNamespace;
   }

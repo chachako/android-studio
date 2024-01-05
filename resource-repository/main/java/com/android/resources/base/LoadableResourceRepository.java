@@ -15,6 +15,8 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.resources.SingleNamespaceResourceRepository;
 import com.android.ide.common.util.PathString;
 import com.android.resources.ResourceType;
@@ -23,8 +25,6 @@ import com.android.utils.Base128InputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Repository of resources loaded from a file or a directory on disk.
@@ -39,14 +39,14 @@ public interface LoadableResourceRepository extends SingleNamespaceResourceRepos
   /**
    * Returns the name of this resource repository to display in the UI.
    */
-  @NotNull
+  @NonNull
   String getDisplayName();
 
   /**
    * Returns the file or directory this resource repository was loaded from. Resource repositories loaded from
    * the same file or directory with different file filtering options have the same origin.
    */
-  @NotNull
+  @NonNull
   Path getOrigin();
 
   /**
@@ -60,8 +60,8 @@ public interface LoadableResourceRepository extends SingleNamespaceResourceRepos
    * @param relativeResourcePath the relative path of a file resource
    * @return the URL pointing to the file resource
    */
-  @NotNull
-  String getResourceUrl(@NotNull String relativeResourcePath);
+  @NonNull
+  String getResourceUrl(@NonNull String relativeResourcePath);
 
   /**
    * Produces a {@link PathString} to be returned by the {@link BasicResourceItem#getSource()} method.
@@ -70,8 +70,8 @@ public interface LoadableResourceRepository extends SingleNamespaceResourceRepos
    * @param forFileResource true is the resource is a file resource, false if it is a value resource
    * @return the PathString to be returned by the {@link BasicResourceItem#getSource()} method
    */
-  @NotNull
-  PathString getSourceFile(@NotNull String relativeResourcePath, boolean forFileResource);
+  @NonNull
+  PathString getSourceFile(@NonNull String relativeResourcePath, boolean forFileResource);
 
   /**
    * Produces a {@link PathString} to be returned by the {@link BasicResourceItem#getOriginalSource()} method.
@@ -81,7 +81,7 @@ public interface LoadableResourceRepository extends SingleNamespaceResourceRepos
    * @return the PathString to be returned by the {@link BasicResourceItem#getOriginalSource()} method
    */
   @Nullable
-  default PathString getOriginalSourceFile(@NotNull String relativeResourcePath, boolean forFileResource) {
+  default PathString getOriginalSourceFile(@NonNull String relativeResourcePath, boolean forFileResource) {
     return getSourceFile(relativeResourcePath, forFileResource);
   }
 
@@ -92,9 +92,9 @@ public interface LoadableResourceRepository extends SingleNamespaceResourceRepos
    * @param configurations the repository configurations to select from when creating the ResourceSourceFile
    * @return the created {@link ResourceSourceFile}
    */
-  @NotNull
+  @NonNull
   default ResourceSourceFile deserializeResourceSourceFile(
-      @NotNull Base128InputStream stream, @NotNull List<RepositoryConfiguration> configurations) throws IOException {
+      @NonNull Base128InputStream stream, @NonNull List<RepositoryConfiguration> configurations) throws IOException {
     return ResourceSourceFileImpl.deserialize(stream, configurations);
   }
 
@@ -108,13 +108,13 @@ public interface LoadableResourceRepository extends SingleNamespaceResourceRepos
    * @param configurations the repository configurations to select from when creating the ResourceSourceFile
    * @return the created {@link BasicFileResourceItem}
    */
-  @NotNull
+  @NonNull
   default BasicFileResourceItem deserializeFileResourceItem(
-      @NotNull Base128InputStream stream,
-      @NotNull ResourceType resourceType,
-      @NotNull String name,
-      @NotNull ResourceVisibility visibility,
-      @NotNull List<RepositoryConfiguration> configurations) throws IOException {
+      @NonNull Base128InputStream stream,
+      @NonNull ResourceType resourceType,
+      @NonNull String name,
+      @NonNull ResourceVisibility visibility,
+      @NonNull List<RepositoryConfiguration> configurations) throws IOException {
     return BasicFileResourceItem.deserialize(stream, resourceType, name, visibility, configurations);
   }
 

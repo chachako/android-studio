@@ -16,6 +16,8 @@
 package com.android.resources.aar;
 
 import com.android.aapt.ConfigurationOuterClass.Configuration;
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.resources.configuration.CountryCodeQualifier;
 import com.android.ide.common.resources.configuration.DensityQualifier;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
@@ -54,15 +56,13 @@ import com.android.resources.ScreenSize;
 import com.android.resources.TouchScreen;
 import com.android.resources.UiMode;
 import com.android.resources.WideGamutColor;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Converts {@code aapt.pb.Configuration} proto message into a {@link FolderConfiguration} object.
  */
 class ProtoConfigurationDecoder {
-  @NotNull
-  static FolderConfiguration getConfiguration(@NotNull Configuration configMsg) {
+  @NonNull
+  static FolderConfiguration getConfiguration(@NonNull Configuration configMsg) {
     FolderConfiguration configuration = new FolderConfiguration();
 
     int mcc = configMsg.getMcc();
@@ -183,7 +183,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static LayoutDirection getLayoutDirection(@NotNull Configuration.LayoutDirection protoValue) {
+  private static LayoutDirection getLayoutDirection(@NonNull Configuration.LayoutDirection protoValue) {
     switch (protoValue) {
       case LAYOUT_DIRECTION_LTR:
         return LayoutDirection.LTR;
@@ -195,7 +195,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static ScreenSize getScreenSize(@NotNull Configuration.ScreenLayoutSize protoValue) {
+  private static ScreenSize getScreenSize(@NonNull Configuration.ScreenLayoutSize protoValue) {
     switch (protoValue) {
       case SCREEN_LAYOUT_SIZE_SMALL:
         return ScreenSize.SMALL;
@@ -211,7 +211,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static ScreenRatio getScreenRatio(@NotNull Configuration.ScreenLayoutLong protoValue) {
+  private static ScreenRatio getScreenRatio(@NonNull Configuration.ScreenLayoutLong protoValue) {
     switch (protoValue) {
       case SCREEN_LAYOUT_LONG_NOTLONG:
         return ScreenRatio.NOTLONG;
@@ -223,7 +223,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static ScreenRound getScreenRound(@NotNull Configuration.ScreenRound protoValue) {
+  private static ScreenRound getScreenRound(@NonNull Configuration.ScreenRound protoValue) {
     switch (protoValue) {
       case SCREEN_ROUND_NOTROUND:
         return ScreenRound.NOTROUND;
@@ -235,7 +235,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static WideGamutColor getWideGamutColor(@NotNull Configuration.WideColorGamut protoValue) {
+  private static WideGamutColor getWideGamutColor(@NonNull Configuration.WideColorGamut protoValue) {
     switch (protoValue) {
       case WIDE_COLOR_GAMUT_WIDECG:
         return WideGamutColor.WIDECG;
@@ -247,7 +247,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static HighDynamicRange getHighDynamicRange(@NotNull Configuration.Hdr protoValue) {
+  private static HighDynamicRange getHighDynamicRange(@NonNull Configuration.Hdr protoValue) {
     switch (protoValue) {
       case HDR_HIGHDR:
         return HighDynamicRange.HIGHDR;
@@ -259,7 +259,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static ScreenOrientation getScreenOrientation(@NotNull Configuration.Orientation protoValue) {
+  private static ScreenOrientation getScreenOrientation(@NonNull Configuration.Orientation protoValue) {
     switch (protoValue) {
       case ORIENTATION_PORT:
         return ScreenOrientation.PORTRAIT;
@@ -273,7 +273,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static UiMode getUiMode(@NotNull Configuration.UiModeType protoValue) {
+  private static UiMode getUiMode(@NonNull Configuration.UiModeType protoValue) {
     switch (protoValue) {
       case UI_MODE_TYPE_NORMAL:
         return UiMode.NORMAL;
@@ -295,7 +295,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static NightMode getNightMode(@NotNull Configuration.UiModeNight protoValue) {
+  private static NightMode getNightMode(@NonNull Configuration.UiModeNight protoValue) {
     switch (protoValue) {
       case UI_MODE_NIGHT_NOTNIGHT:
         return NightMode.NOTNIGHT;
@@ -307,7 +307,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static TouchScreen getTouchScreen(@NotNull Configuration.Touchscreen protoValue) {
+  private static TouchScreen getTouchScreen(@NonNull Configuration.Touchscreen protoValue) {
     switch (protoValue) {
       case TOUCHSCREEN_NOTOUCH:
         return TouchScreen.NOTOUCH;
@@ -321,7 +321,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static KeyboardState getKeyboardState(@NotNull Configuration.KeysHidden protoValue) {
+  private static KeyboardState getKeyboardState(@NonNull Configuration.KeysHidden protoValue) {
     switch (protoValue) {
       case KEYS_HIDDEN_KEYSEXPOSED:
         return KeyboardState.EXPOSED;
@@ -335,7 +335,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static Keyboard getKeyboard(@NotNull Configuration.Keyboard protoValue) {
+  private static Keyboard getKeyboard(@NonNull Configuration.Keyboard protoValue) {
     switch (protoValue) {
       case KEYBOARD_NOKEYS:
         return Keyboard.NOKEY;
@@ -349,7 +349,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static NavigationState getNavigationState(@NotNull Configuration.NavHidden protoValue) {
+  private static NavigationState getNavigationState(@NonNull Configuration.NavHidden protoValue) {
     switch (protoValue) {
       case NAV_HIDDEN_NAVEXPOSED:
         return NavigationState.EXPOSED;
@@ -361,7 +361,7 @@ class ProtoConfigurationDecoder {
   }
 
   @Nullable
-  private static Navigation getNavigation(@NotNull Configuration.Navigation protoValue) {
+  private static Navigation getNavigation(@NonNull Configuration.Navigation protoValue) {
     switch (protoValue) {
       case NAVIGATION_NONAV:
         return Navigation.NONAV;

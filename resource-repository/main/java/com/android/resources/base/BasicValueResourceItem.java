@@ -15,6 +15,8 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.resources.ResourceType;
 import com.android.resources.ResourceVisibility;
@@ -24,8 +26,6 @@ import com.android.utils.HashCodes;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.IOException;
 import java.util.Objects;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Resource item representing a value resource, e.g. a string or a color.
@@ -42,10 +42,10 @@ public class BasicValueResourceItem extends BasicValueResourceItemBase {
    * @param visibility the visibility of the resource
    * @param value the value associated with the resource
    */
-  public BasicValueResourceItem(@NotNull ResourceType type,
-                                @NotNull String name,
-                                @NotNull ResourceSourceFile sourceFile,
-                                @NotNull ResourceVisibility visibility,
+  public BasicValueResourceItem(@NonNull ResourceType type,
+                                @NonNull String name,
+                                @NonNull ResourceSourceFile sourceFile,
+                                @NonNull ResourceVisibility visibility,
                                 @Nullable String value) {
     super(type, name, sourceFile, visibility);
     myValue = value;
@@ -71,10 +71,10 @@ public class BasicValueResourceItem extends BasicValueResourceItemBase {
   }
 
   @Override
-  public void serialize(@NotNull Base128OutputStream stream,
-                        @NotNull Object2IntMap<String> configIndexes,
-                        @NotNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
-                        @NotNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
+  public void serialize(@NonNull Base128OutputStream stream,
+                        @NonNull Object2IntMap<String> configIndexes,
+                        @NonNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
+                        @NonNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
     super.serialize(stream, configIndexes, sourceFileIndexes, namespaceResolverIndexes);
     stream.writeString(myValue);
     String rawXmlValue = getRawXmlValue();
@@ -84,13 +84,13 @@ public class BasicValueResourceItem extends BasicValueResourceItemBase {
   /**
    * Creates a BasicValueResourceItem by reading its contents from the given stream.
    */
-  @NotNull
-  static BasicValueResourceItem deserialize(@NotNull Base128InputStream stream,
-                                            @NotNull ResourceType resourceType,
-                                            @NotNull String name,
-                                            @NotNull ResourceVisibility visibility,
-                                            @NotNull ResourceSourceFile sourceFile,
-                                            @NotNull ResourceNamespace.Resolver resolver) throws IOException {
+  @NonNull
+  static BasicValueResourceItem deserialize(@NonNull Base128InputStream stream,
+                                            @NonNull ResourceType resourceType,
+                                            @NonNull String name,
+                                            @NonNull ResourceVisibility visibility,
+                                            @NonNull ResourceSourceFile sourceFile,
+                                            @NonNull ResourceNamespace.Resolver resolver) throws IOException {
     String value = stream.readString();
     String rawXmlValue = stream.readString();
     BasicValueResourceItem item = rawXmlValue == null ?

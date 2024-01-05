@@ -15,6 +15,8 @@
  */
 package com.android.resources;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ArrayResourceValue;
 import com.android.ide.common.rendering.api.AttrResourceValue;
 import com.android.ide.common.rendering.api.DensityBasedResourceValue;
@@ -30,8 +32,6 @@ import com.android.resources.base.BasicFileResourceItem;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 import com.google.common.truth.Truth;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
 import java.util.Collection;
@@ -49,28 +49,28 @@ import static com.google.common.truth.Truth.assertWithMessage;
  * Custom {@link Truth} subjects for Android resources.
  */
 public class ResourceAsserts {
-  @NotNull
+  @NonNull
   public static ResourceItemSubject assertThat(@Nullable ResourceItem item) {
     return assertAbout(resourceItems()).that(item);
   }
 
-  @NotNull
+  @NonNull
   private static Subject.Factory<ResourceItemSubject, ResourceItem> resourceItems() {
     return ResourceItemSubject::new;
   }
 
-  @NotNull
+  @NonNull
   public static ResourceValueSubject assertThat(@Nullable ResourceValue item) {
     return assertAbout(resourceValues()).that(item);
   }
 
-  @NotNull
+  @NonNull
   private static Subject.Factory<ResourceValueSubject, ResourceValue> resourceValues() {
     return ResourceValueSubject::new;
   }
 
   public static class ResourceItemSubject extends Subject<ResourceItemSubject, ResourceItem> {
-    protected ResourceItemSubject(@NotNull FailureMetadata metadata, @Nullable ResourceItem actual) {
+    protected ResourceItemSubject(@NonNull FailureMetadata metadata, @Nullable ResourceItem actual) {
       super(metadata, actual);
     }
 
@@ -128,7 +128,7 @@ public class ResourceAsserts {
   }
 
   public static class ResourceValueSubject extends Subject<ResourceValueSubject, ResourceValue> {
-    protected ResourceValueSubject(@NotNull FailureMetadata metadata, ResourceValue actual) {
+    protected ResourceValueSubject(@NonNull FailureMetadata metadata, ResourceValue actual) {
       super(metadata, actual);
     }
 
@@ -289,7 +289,7 @@ public class ResourceAsserts {
     return false;
   }
 
-  private static int indexOfEnd(@NotNull String stringToSearch, @SuppressWarnings("SameParameterValue") @NotNull String toSearchFor) {
+  private static int indexOfEnd(@NonNull String stringToSearch, @SuppressWarnings("SameParameterValue") @NonNull String toSearchFor) {
     int index = stringToSearch.indexOf(toSearchFor);
     return index < 0 ? index : index + toSearchFor.length();
   }

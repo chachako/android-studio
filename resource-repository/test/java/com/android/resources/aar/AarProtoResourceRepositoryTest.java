@@ -16,6 +16,8 @@
 package com.android.resources.aar;
 
 import com.android.SdkConstants;
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ArrayResourceValue;
 import com.android.ide.common.rendering.api.AttrResourceValue;
 import com.android.ide.common.rendering.api.DensityBasedResourceValue;
@@ -43,8 +45,6 @@ import com.android.resources.base.BasicResourceItem;
 import com.android.testutils.TestUtils;
 import com.google.common.base.Splitter;
 import junit.framework.TestCase;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.xmlpull.v1.XmlPullParser;
@@ -161,9 +161,9 @@ public class AarProtoResourceRepositoryTest {
    * @param enumMap the map used to establish equivalence between symbolic labels and numeric values of flags and enumerators.
    *     The map is keyed by attribute names. The values are maps from symbolic labels to the corresponding numerical values.
    */
-  private static void compareContents(@NotNull SingleNamespaceResourceRepository expected,
-                                      @NotNull SingleNamespaceResourceRepository actual,
-                                      @NotNull Map<String, Map<String, Integer>> enumMap) {
+  private static void compareContents(@NonNull SingleNamespaceResourceRepository expected,
+                                      @NonNull SingleNamespaceResourceRepository actual,
+                                      @NonNull Map<String, Map<String, Integer>> enumMap) {
     assertThat(actual.getNamespace()).isEqualTo(expected.getNamespace());
     String packagePrefix = getPackagePrefix(expected);
 
@@ -256,8 +256,8 @@ public class AarProtoResourceRepositoryTest {
    */
   @Nullable
   private static ResourceItem findEquivalentResourceInMatchingConfiguration(
-      @NotNull ResourceItem resource, @NotNull List<ResourceItem> resourcesToSearch, int startIndex,
-      @NotNull Map<String, Map<String, Integer>> enumMap) {
+      @NonNull ResourceItem resource, @NonNull List<ResourceItem> resourcesToSearch, int startIndex,
+      @NonNull Map<String, Map<String, Integer>> enumMap) {
     for (int i = startIndex; i >= 0; i--) {
       ResourceItem candidateMatch = resourcesToSearch.get(i);
       if (candidateMatch.getType() != resource.getType() ||
@@ -273,7 +273,7 @@ public class AarProtoResourceRepositoryTest {
     return null;
   }
 
-  private static boolean isEmptyAttr(@NotNull ResourceItem item) {
+  private static boolean isEmptyAttr(@NonNull ResourceItem item) {
     if (item.getType() != ResourceType.ATTR) {
       return false;
     }
@@ -281,12 +281,12 @@ public class AarProtoResourceRepositoryTest {
     return resourceValue.getFormats().isEmpty() && resourceValue.getAttributeValues().isEmpty();
   }
 
-  @NotNull
-  private static String getPackagePrefix(@NotNull SingleNamespaceResourceRepository repository) {
+  @NonNull
+  private static String getPackagePrefix(@NonNull SingleNamespaceResourceRepository repository) {
     return repository.getPackageName().replace('.', '/') + '/';
   }
 
-  private static boolean areEquivalent(@NotNull ResourceItem item1, @NotNull ResourceItem item2, @NotNull String packagePrefix) {
+  private static boolean areEquivalent(@NonNull ResourceItem item1, @NonNull ResourceItem item2, @NonNull String packagePrefix) {
     if (!item1.getType().equals(item2.getType())) {
       return false;
     }
@@ -348,7 +348,7 @@ public class AarProtoResourceRepositoryTest {
   }
 
   private static boolean areEquivalentResourceValues(@Nullable ResourceValue value1, @Nullable ResourceValue value2,
-                                                     boolean forStyleableAttrs, @NotNull Map<String, Map<String, Integer>> enumMap) {
+                                                     boolean forStyleableAttrs, @NonNull Map<String, Map<String, Integer>> enumMap) {
     if (value1 == value2) {
       return true;
     }
@@ -549,8 +549,8 @@ public class AarProtoResourceRepositoryTest {
     return groupName1 == null || groupName2 == null || groupName1.equals(groupName2);
   }
 
-  private static int getNumericValue(@NotNull String attributeName, @NotNull String value,
-                                     @NotNull Map<String, Map<String, Integer>> enumMap) {
+  private static int getNumericValue(@NonNull String attributeName, @NonNull String value,
+                                     @NonNull Map<String, Map<String, Integer>> enumMap) {
     Map<String, Integer> map = enumMap.get(attributeName);
     if (map == null) {
       throw new IllegalArgumentException(attributeName);
@@ -566,8 +566,8 @@ public class AarProtoResourceRepositoryTest {
     return result;
   }
 
-  @NotNull
-  private static String normalizeDimensionValue(@NotNull String value) {
+  @NonNull
+  private static String normalizeDimensionValue(@NonNull String value) {
     Matcher matcher = DIMEN_PATTERN.matcher(value);
     if (!matcher.matches()) {
       return value;
@@ -580,8 +580,8 @@ public class AarProtoResourceRepositoryTest {
     return number + suffix;
   }
 
-  @NotNull
-  private static String normalizeNumericValue(@NotNull String value) {
+  @NonNull
+  private static String normalizeNumericValue(@NonNull String value) {
     Matcher matcher = NUMBER_PATTERN.matcher(value);
     if (!matcher.matches()) {
       return value;
@@ -589,7 +589,7 @@ public class AarProtoResourceRepositoryTest {
     return trimInsignificantZeros(value);
   }
 
-  private static boolean areEquivalentValues(@NotNull String v1, @NotNull String v2) {
+  private static boolean areEquivalentValues(@NonNull String v1, @NonNull String v2) {
     if (v1.equals(v2)) {
       return true;
     }
@@ -602,7 +602,7 @@ public class AarProtoResourceRepositoryTest {
     return areEquivalentStrings(v1, v2);
   }
 
-  private static boolean areEquivalentStrings(@NotNull String v1, @NotNull String v2) {
+  private static boolean areEquivalentStrings(@NonNull String v1, @NonNull String v2) {
     if (!v2.contains("%")) {
       String temp = v1;
       v1 = v2;
@@ -626,8 +626,8 @@ public class AarProtoResourceRepositoryTest {
    * @param formatStr the format string to build a regular expression pattern for
    * @return a regular expression pattern
    */
-  @NotNull
-  private static Pattern buildPattern(@NotNull String formatStr) {
+  @NonNull
+  private static Pattern buildPattern(@NonNull String formatStr) {
     StringBuilder buf = new StringBuilder(formatStr.length() * 2);
     StringBuilder formatSpecifier = new StringBuilder();
     boolean afterBackslash = false;
@@ -660,7 +660,7 @@ public class AarProtoResourceRepositoryTest {
     return Pattern.compile(buf.toString());
   }
 
-  private static boolean appendWithEscaping(char c, @NotNull StringBuilder destination, boolean afterBackslash) {
+  private static boolean appendWithEscaping(char c, @NonNull StringBuilder destination, boolean afterBackslash) {
     switch (c) {
       case '\\':
       case '.':
@@ -693,7 +693,7 @@ public class AarProtoResourceRepositoryTest {
    * XML files, we convert symbolic representation of flag and enum values to numerical form. The returned map is
    * keyed by attribute names. The values are maps from symbolic labels to the corresponding numerical values.
    */
-  static Map<String, Map<String, Integer>> loadEnumMap(@NotNull Path sdkResFolder) throws Exception {
+  static Map<String, Map<String, Integer>> loadEnumMap(@NonNull Path sdkResFolder) throws Exception {
     Path file = sdkResFolder.resolve("values/attrs.xml");
     Map<String, Map<String, Integer>> map = new HashMap<>();
     XmlPullParser xmlPullParser = XmlPullParserFactory.newInstance().newPullParser();
@@ -727,7 +727,7 @@ public class AarProtoResourceRepositoryTest {
     return map;
   }
 
-  private static void updateEnumMap(@NotNull Map<String, Map<String, Integer>> enumMap, @NotNull AarSourceResourceRepository repository) {
+  private static void updateEnumMap(@NonNull Map<String, Map<String, Integer>> enumMap, @NonNull AarSourceResourceRepository repository) {
     ResourceNamespace namespace = repository.getNamespace();
     Collection<ResourceItem> items = repository.getResources(namespace, ResourceType.ATTR).values();
     for (ResourceItem item: items) {
@@ -742,14 +742,14 @@ public class AarProtoResourceRepositoryTest {
     }
   }
 
-  @NotNull
+  @NonNull
   private static Path getSdkResFolder() {
     String sdkPath = TestUtils.getSdk().toString();
     String platformDir = TestUtils.getLatestAndroidPlatform();
     return Paths.get(sdkPath, "platforms", platformDir, "/data/res");
   }
 
-  private static void checkVisibility(@NotNull AarProtoResourceRepository repository) {
+  private static void checkVisibility(@NonNull AarProtoResourceRepository repository) {
     Collection<ResourceItem> items = repository.getResources(repository.getNamespace(), ResourceType.STYLEABLE).values();
     TestCase.assertFalse(items.isEmpty());
     for (ResourceItem item : items) {
@@ -763,7 +763,7 @@ public class AarProtoResourceRepositoryTest {
     }
   }
 
-  private static void checkSourceAttachments(@NotNull AarProtoResourceRepository repository, @NotNull Path aarFolder) {
+  private static void checkSourceAttachments(@NonNull AarProtoResourceRepository repository, @NonNull Path aarFolder) {
     List<ResourceItem> resources = repository.getAllResources();
     String xmlFilePrefix = "jar://" + aarFolder.resolve("res-src.jar").toString() + "!/" + getPackagePrefix(repository) + "0/res/";
     String nonXmlFilePrefix = "apk://" + aarFolder.resolve("res.apk").toString() + "!/res/";

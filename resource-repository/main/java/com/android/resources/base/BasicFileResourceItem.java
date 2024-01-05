@@ -15,6 +15,8 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.util.PathString;
@@ -28,15 +30,13 @@ import com.android.utils.HashCodes;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.IOException;
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Resource item representing a file resource, e.g. a drawable or a layout.
  */
 public class BasicFileResourceItem extends BasicResourceItemBase {
-  @NotNull private final RepositoryConfiguration myConfiguration;
-  @NotNull private final String myRelativePath;
+  @NonNull private final RepositoryConfiguration myConfiguration;
+  @NonNull private final String myRelativePath;
 
   /**
    * Initializes the resource.
@@ -47,11 +47,11 @@ public class BasicFileResourceItem extends BasicResourceItemBase {
    * @param visibility the visibility of the resource
    * @param relativePath defines location of the resource. Exact semantics of the path may vary depending on the resource repository
    */
-  public BasicFileResourceItem(@NotNull ResourceType type,
-                               @NotNull String name,
-                               @NotNull RepositoryConfiguration configuration,
-                               @NotNull ResourceVisibility visibility,
-                               @NotNull String relativePath) {
+  public BasicFileResourceItem(@NonNull ResourceType type,
+                               @NonNull String name,
+                               @NonNull RepositoryConfiguration configuration,
+                               @NonNull ResourceVisibility visibility,
+                               @NonNull String relativePath) {
     super(type, name, visibility);
     myConfiguration = configuration;
     myRelativePath = relativePath;
@@ -69,19 +69,19 @@ public class BasicFileResourceItem extends BasicResourceItemBase {
   }
 
   @Override
-  @NotNull
+  @NonNull
   public RepositoryConfiguration getRepositoryConfiguration() {
     return myConfiguration;
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final ResourceNamespace.Resolver getNamespaceResolver() {
     return ResourceNamespace.Resolver.EMPTY_RESOLVER;
   }
 
   @Override
-  @NotNull
+  @NonNull
   public String getValue() {
     return getRepository().getResourceUrl(myRelativePath);
   }
@@ -94,7 +94,7 @@ public class BasicFileResourceItem extends BasicResourceItemBase {
    * The path part is the path of the ZIP entry containing the resource.
    */
   @Override
-  @NotNull
+  @NonNull
   public final PathString getSource() {
     return getRepository().getSourceFile(myRelativePath, true);
   }
@@ -120,10 +120,10 @@ public class BasicFileResourceItem extends BasicResourceItemBase {
   }
 
   @Override
-  public void serialize(@NotNull Base128OutputStream stream,
-                        @NotNull Object2IntMap<String> configIndexes,
-                        @NotNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
-                        @NotNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
+  public void serialize(@NonNull Base128OutputStream stream,
+                        @NonNull Object2IntMap<String> configIndexes,
+                        @NonNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
+                        @NonNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
     super.serialize(stream, configIndexes, sourceFileIndexes, namespaceResolverIndexes);
     stream.writeString(myRelativePath);
     String qualifierString = getConfiguration().getQualifierString();
@@ -136,12 +136,12 @@ public class BasicFileResourceItem extends BasicResourceItemBase {
   /**
    * Creates a BasicFileResourceItem by reading its contents from the given stream.
    */
-  @NotNull
-  static BasicFileResourceItem deserialize(@NotNull Base128InputStream stream,
-                                           @NotNull ResourceType resourceType,
-                                           @NotNull String name,
-                                           @NotNull ResourceVisibility visibility,
-                                           @NotNull List<RepositoryConfiguration> configurations) throws IOException {
+  @NonNull
+  static BasicFileResourceItem deserialize(@NonNull Base128InputStream stream,
+                                           @NonNull ResourceType resourceType,
+                                           @NonNull String name,
+                                           @NonNull ResourceVisibility visibility,
+                                           @NonNull List<RepositoryConfiguration> configurations) throws IOException {
     String relativePath = stream.readString();
     if (relativePath == null) {
       throw StreamFormatException.invalidFormat();

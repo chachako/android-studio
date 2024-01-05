@@ -15,8 +15,8 @@
  */
 package com.android.resources.base;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import org.kxml2.io.KXmlParser;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -45,7 +45,7 @@ public class CommentTrackingXmlPullParser extends KXmlParser {
 
   @Nullable String myLastComment;
   boolean tagEncounteredAfterComment;
-  @NotNull final ArrayList<String> myAttrGroupCommentStack = new ArrayList<>(4);
+  @NonNull final ArrayList<String> myAttrGroupCommentStack = new ArrayList<>(4);
 
   /**
    * Initializes the parser. XML namespaces are supported by default.
@@ -136,7 +136,7 @@ public class CommentTrackingXmlPullParser extends KXmlParser {
   }
 
   @Override
-  public void setInput(@NotNull Reader reader) throws XmlPullParserException {
+  public void setInput(@NonNull Reader reader) throws XmlPullParserException {
     super.setInput(reader);
     myLastComment = null;
     myAttrGroupCommentStack.clear();
@@ -144,14 +144,14 @@ public class CommentTrackingXmlPullParser extends KXmlParser {
   }
 
   @Override
-  public void setInput(@NotNull InputStream inputStream, @Nullable String encoding) throws XmlPullParserException {
+  public void setInput(@NonNull InputStream inputStream, @Nullable String encoding) throws XmlPullParserException {
     super.setInput(inputStream, encoding);
     myLastComment = null;
     myAttrGroupCommentStack.clear();
     myAttrGroupCommentStack.add(null);
   }
 
-  private static boolean isEmptyOrAsciiArt(@NotNull String commentText) {
+  private static boolean isEmptyOrAsciiArt(@NonNull String commentText) {
     return commentText.isEmpty() || commentText.charAt(0) == '*' || commentText.charAt(0) == '=';
   }
 }

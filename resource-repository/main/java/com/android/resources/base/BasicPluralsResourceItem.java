@@ -15,6 +15,8 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.PluralsResourceValue;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.resources.Arity;
@@ -28,16 +30,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Resource item representing a plurals resource.
  */
 public final class BasicPluralsResourceItem extends BasicValueResourceItemBase implements PluralsResourceValue {
   private final static String[] EMPTY_STRING_ARRAY = new String[0];
-  @NotNull private final Arity[] myArities;
-  @NotNull private final String[] myValues;
+  @NonNull private final Arity[] myArities;
+  @NonNull private final String[] myValues;
   private final int myDefaultIndex;
 
   /**
@@ -49,21 +49,21 @@ public final class BasicPluralsResourceItem extends BasicValueResourceItemBase i
    * @param quantityValues the values corresponding to quantities
    * @param defaultArity the default arity for the {@link #getValue()} method
    */
-  public BasicPluralsResourceItem(@NotNull String name,
-                                  @NotNull ResourceSourceFile sourceFile,
-                                  @NotNull ResourceVisibility visibility,
-                                  @NotNull Map<Arity, String> quantityValues,
+  public BasicPluralsResourceItem(@NonNull String name,
+                                  @NonNull ResourceSourceFile sourceFile,
+                                  @NonNull ResourceVisibility visibility,
+                                  @NonNull Map<Arity, String> quantityValues,
                                   @Nullable Arity defaultArity) {
     this(name, sourceFile, visibility,
          quantityValues.keySet().toArray(Arity.EMPTY_ARRAY), quantityValues.values().toArray(EMPTY_STRING_ARRAY),
          getIndex(defaultArity, quantityValues.keySet()));
   }
 
-  private BasicPluralsResourceItem(@NotNull String name,
-                                   @NotNull ResourceSourceFile sourceFile,
-                                   @NotNull ResourceVisibility visibility,
-                                   @NotNull Arity[] arities,
-                                   @NotNull String[] values,
+  private BasicPluralsResourceItem(@NonNull String name,
+                                   @NonNull ResourceSourceFile sourceFile,
+                                   @NonNull ResourceVisibility visibility,
+                                   @NonNull Arity[] arities,
+                                   @NonNull String[] values,
                                    int defaultIndex) {
     super(ResourceType.PLURALS, name, sourceFile, visibility);
     assert arities.length == values.length;
@@ -73,7 +73,7 @@ public final class BasicPluralsResourceItem extends BasicValueResourceItemBase i
     myDefaultIndex = defaultIndex;
   }
 
-  private static int getIndex(@Nullable Arity arity, @NotNull Collection<Arity> arities) {
+  private static int getIndex(@Nullable Arity arity, @NonNull Collection<Arity> arities) {
     if (arity == null || arities.isEmpty()) {
       return 0;
     }
@@ -93,20 +93,20 @@ public final class BasicPluralsResourceItem extends BasicValueResourceItemBase i
   }
 
   @Override
-  @NotNull
+  @NonNull
   public String getQuantity(int index) {
     return myArities[index].getName();
   }
 
   @Override
-  @NotNull
+  @NonNull
   public String getValue(int index) {
     return myValues[index];
   }
 
   @Override
   @Nullable
-  public String getValue(@NotNull String quantity) {
+  public String getValue(@NonNull String quantity) {
     for (int i = 0, n = myArities.length; i < n; i++) {
       if (quantity.equals(myArities[i].getName())) {
         return myValues[i];
@@ -131,10 +131,10 @@ public final class BasicPluralsResourceItem extends BasicValueResourceItemBase i
   }
 
   @Override
-  public void serialize(@NotNull Base128OutputStream stream,
-                        @NotNull Object2IntMap<String> configIndexes,
-                        @NotNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
-                        @NotNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
+  public void serialize(@NonNull Base128OutputStream stream,
+                        @NonNull Object2IntMap<String> configIndexes,
+                        @NonNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
+                        @NonNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
     super.serialize(stream, configIndexes, sourceFileIndexes, namespaceResolverIndexes);
     int n = myArities.length;
     stream.writeInt(n);
@@ -148,12 +148,12 @@ public final class BasicPluralsResourceItem extends BasicValueResourceItemBase i
   /**
    * Creates a BasicPluralsResourceItem by reading its contents from the given stream.
    */
-  @NotNull
-  static BasicPluralsResourceItem deserialize(@NotNull Base128InputStream stream,
-                                              @NotNull String name,
-                                              @NotNull ResourceVisibility visibility,
-                                              @NotNull ResourceSourceFile sourceFile,
-                                              @NotNull ResourceNamespace.Resolver resolver) throws IOException {
+  @NonNull
+  static BasicPluralsResourceItem deserialize(@NonNull Base128InputStream stream,
+                                              @NonNull String name,
+                                              @NonNull ResourceVisibility visibility,
+                                              @NonNull ResourceSourceFile sourceFile,
+                                              @NonNull ResourceNamespace.Resolver resolver) throws IOException {
     int n = stream.readInt();
     Arity[] arities = n == 0 ? Arity.EMPTY_ARRAY : new Arity[n];
     String[] values = n == 0 ? EMPTY_STRING_ARRAY : new String[n];

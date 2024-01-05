@@ -16,8 +16,8 @@
 package com.android.resources.aar;
 
 import com.android.aapt.Resources;
+import com.android.annotations.NonNull;
 import com.android.utils.XmlUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +32,8 @@ class ProtoStyledStringDecoder {
    * @param styledStringMsg the proto message to decode
    * @return the original XML string
    */
-  @NotNull
-  public static String getRawXmlValue(@NotNull Resources.StyledString styledStringMsg) {
+  @NonNull
+  public static String getRawXmlValue(@NonNull Resources.StyledString styledStringMsg) {
     String text = styledStringMsg.getValue();
     StringBuilder xmlValue = new StringBuilder(text.length() * 2);
     List<Resources.StyledString.Span> spanList = styledStringMsg.getSpanList();
@@ -95,7 +95,7 @@ class ProtoStyledStringDecoder {
     return xmlValue.toString();
   }
 
-  private static int indexOfOrEnd(@NotNull String str, char ch, int fromIndex) {
+  private static int indexOfOrEnd(@NonNull String str, char ch, int fromIndex) {
     int index = str.indexOf(ch, fromIndex);
     return index >= 0 ? index : str.length();
   }

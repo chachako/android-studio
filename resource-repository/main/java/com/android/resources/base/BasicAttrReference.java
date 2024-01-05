@@ -15,6 +15,8 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.AttrResourceValue;
 import com.android.ide.common.rendering.api.AttributeFormat;
 import com.android.ide.common.rendering.api.ResourceNamespace;
@@ -28,15 +30,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Resource value representing a reference to an attr resource, but potentially with its own description
  * and group name. Unlike {@link BasicAttrResourceItem}, does not contain formats and enum or flag information.
  */
 public final class BasicAttrReference extends BasicValueResourceItemBase implements AttrResourceValue {
-  @NotNull private final ResourceNamespace myNamespace;
+  @NonNull private final ResourceNamespace myNamespace;
   @Nullable private final String myDescription;
   @Nullable private final String myGroupName;
 
@@ -49,10 +49,10 @@ public final class BasicAttrReference extends BasicValueResourceItemBase impleme
    * @param description the description of the attr resource, if available
    * @param groupName the name of the attr group, if available
    */
-  public BasicAttrReference(@NotNull ResourceNamespace namespace,
-                            @NotNull String name,
-                            @NotNull ResourceSourceFile sourceFile,
-                            @NotNull ResourceVisibility visibility,
+  public BasicAttrReference(@NonNull ResourceNamespace namespace,
+                            @NonNull String name,
+                            @NonNull ResourceSourceFile sourceFile,
+                            @NonNull ResourceVisibility visibility,
                             @Nullable String description,
                             @Nullable String groupName) {
     super(ResourceType.ATTR, name, sourceFile, visibility);
@@ -62,26 +62,26 @@ public final class BasicAttrReference extends BasicValueResourceItemBase impleme
   }
 
   @Override
-  @NotNull
+  @NonNull
   public ResourceNamespace getNamespace() {
     return myNamespace;
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final Set<AttributeFormat> getFormats() {
     return Collections.emptySet();
   }
 
   @Override
-  @NotNull
+  @NonNull
   public final Map<String, Integer> getAttributeValues() {
     return Collections.emptyMap();
   }
 
   @Override
   @Nullable
-  public final String getValueDescription(@NotNull String valueName) {
+  public final String getValueDescription(@NonNull String valueName) {
     return null;
   }
 
@@ -114,10 +114,10 @@ public final class BasicAttrReference extends BasicValueResourceItemBase impleme
   }
 
   @Override
-  public void serialize(@NotNull Base128OutputStream stream,
-                        @NotNull Object2IntMap<String> configIndexes,
-                        @NotNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
-                        @NotNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
+  public void serialize(@NonNull Base128OutputStream stream,
+                        @NonNull Object2IntMap<String> configIndexes,
+                        @NonNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
+                        @NonNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
     super.serialize(stream, configIndexes, sourceFileIndexes, namespaceResolverIndexes);
     BasicAttrResourceItem.serializeAttrValue(this, getRepository().getNamespace(), stream);
   }

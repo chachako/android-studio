@@ -15,6 +15,8 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.StyleItemResourceValue;
@@ -37,8 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Resource item representing a style resource.
@@ -48,7 +48,7 @@ public final class BasicStyleResourceItem extends BasicValueResourceItemBase imp
 
   @Nullable private final String myParentStyle;
   /** Style items keyed by the namespace and the name of the attribute they define. */
-  @NotNull private final Table<ResourceNamespace, String, StyleItemResourceValue> myStyleItemTable;
+  @NonNull private final Table<ResourceNamespace, String, StyleItemResourceValue> myStyleItemTable;
 
   /**
    * Initializes the resource.
@@ -59,11 +59,11 @@ public final class BasicStyleResourceItem extends BasicValueResourceItemBase imp
    * @param parentStyle the parent style reference (package:type/entry)
    * @param styleItems the items of the style
    */
-  public BasicStyleResourceItem(@NotNull String name,
-                                @NotNull ResourceSourceFile sourceFile,
-                                @NotNull ResourceVisibility visibility,
+  public BasicStyleResourceItem(@NonNull String name,
+                                @NonNull ResourceSourceFile sourceFile,
+                                @NonNull ResourceVisibility visibility,
                                 @Nullable String parentStyle,
-                                @NotNull Collection<StyleItemResourceValue> styleItems) {
+                                @NonNull Collection<StyleItemResourceValue> styleItems) {
     super(ResourceType.STYLE, name, sourceFile, visibility);
     myParentStyle = parentStyle;
     ImmutableTable.Builder<ResourceNamespace, String, StyleItemResourceValue> tableBuilder = ImmutableTable.builder();
@@ -92,13 +92,13 @@ public final class BasicStyleResourceItem extends BasicValueResourceItemBase imp
 
   @Override
   @Nullable
-  public StyleItemResourceValue getItem(@NotNull ResourceNamespace namespace, @NotNull String name) {
+  public StyleItemResourceValue getItem(@NonNull ResourceNamespace namespace, @NonNull String name) {
     return myStyleItemTable.get(namespace, name);
   }
 
   @Override
   @Nullable
-  public StyleItemResourceValue getItem(@NotNull ResourceReference attr) {
+  public StyleItemResourceValue getItem(@NonNull ResourceReference attr) {
     if (attr.getResourceType() != ResourceType.ATTR) {
       return null;
     }
@@ -106,7 +106,7 @@ public final class BasicStyleResourceItem extends BasicValueResourceItemBase imp
   }
 
   @Override
-  @NotNull
+  @NonNull
   public Collection<StyleItemResourceValue> getDefinedItems() {
     return myStyleItemTable.values();
   }
@@ -120,10 +120,10 @@ public final class BasicStyleResourceItem extends BasicValueResourceItemBase imp
   }
 
   @Override
-  public void serialize(@NotNull Base128OutputStream stream,
-                        @NotNull Object2IntMap<String> configIndexes,
-                        @NotNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
-                        @NotNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
+  public void serialize(@NonNull Base128OutputStream stream,
+                        @NonNull Object2IntMap<String> configIndexes,
+                        @NonNull Object2IntMap<ResourceSourceFile> sourceFileIndexes,
+                        @NonNull Object2IntMap<ResourceNamespace.Resolver> namespaceResolverIndexes) throws IOException {
     super.serialize(stream, configIndexes, sourceFileIndexes, namespaceResolverIndexes);
     stream.writeString(myParentStyle);
     stream.writeInt(myStyleItemTable.size());
@@ -139,13 +139,13 @@ public final class BasicStyleResourceItem extends BasicValueResourceItemBase imp
   /**
    * Creates a BasicStyleResourceItem by reading its contents from the given stream.
    */
-  @NotNull
-  static BasicStyleResourceItem deserialize(@NotNull Base128InputStream stream,
-                                            @NotNull String name,
-                                            @NotNull ResourceVisibility visibility,
-                                            @NotNull ResourceSourceFile sourceFile,
-                                            @NotNull ResourceNamespace.Resolver resolver,
-                                            @NotNull List<ResourceNamespace.Resolver> namespaceResolvers) throws IOException {
+  @NonNull
+  static BasicStyleResourceItem deserialize(@NonNull Base128InputStream stream,
+                                            @NonNull String name,
+                                            @NonNull ResourceVisibility visibility,
+                                            @NonNull ResourceSourceFile sourceFile,
+                                            @NonNull ResourceNamespace.Resolver resolver,
+                                            @NonNull List<ResourceNamespace.Resolver> namespaceResolvers) throws IOException {
     LoadableResourceRepository repository = sourceFile.getRepository();
     ResourceNamespace namespace = repository.getNamespace();
     String libraryName = repository.getLibraryName();

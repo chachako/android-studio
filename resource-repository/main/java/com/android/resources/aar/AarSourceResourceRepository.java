@@ -21,6 +21,8 @@ import static com.android.SdkConstants.FN_RESOURCE_TEXT;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.android.ProgressManagerAdapter;
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.resources.AndroidManifestPackageNameUtils;
 import com.android.ide.common.resources.ResourceItem;
@@ -61,8 +63,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 
 /**
@@ -81,26 +81,26 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
   private static final byte[] CACHE_FILE_HEADER = "Resource cache".getBytes(UTF_8);
   private static final Logger LOG = Logger.getInstance(AarSourceResourceRepository.class);
 
-  @NotNull protected final Path myResourceDirectoryOrFile;
+  @NonNull protected final Path myResourceDirectoryOrFile;
   protected boolean myLoadedFromCache;
   /**
    * Protocol used for constructing {@link PathString}s returned by the {@link BasicFileResourceItem#getSource()} method.
    */
-  @NotNull private final String mySourceFileProtocol;
+  @NonNull private final String mySourceFileProtocol;
   /**
    * Common prefix of paths of all file resources.  Used to compose resource paths returned by
    * the {@link BasicFileResourceItem#getSource()} method.
    */
-  @NotNull private final String myResourcePathPrefix;
+  @NonNull private final String myResourcePathPrefix;
   /**
    * Common prefix of URLs of all file resources. Used to compose resource URLs returned by
    * the {@link BasicFileResourceItem#getValue()} method.
    */
-  @NotNull private final String myResourceUrlPrefix;
+  @NonNull private final String myResourceUrlPrefix;
   /** The package name read on-demand from the manifest. */
-  @NotNull private final Supplier<String> myManifestPackageName;
+  @NonNull private final Supplier<String> myManifestPackageName;
 
-  protected AarSourceResourceRepository(@NotNull RepositoryLoader<? extends AarSourceResourceRepository> loader,
+  protected AarSourceResourceRepository(@NonNull RepositoryLoader<? extends AarSourceResourceRepository> loader,
                                         @Nullable String libraryName) {
     super(loader.getNamespace(), libraryName);
     myResourceDirectoryOrFile = loader.getResourceDirectoryOrFile();
@@ -131,8 +131,8 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
    * @param libraryName the name of the library
    * @return the created resource repository
    */
-  @NotNull
-  public static AarSourceResourceRepository create(@NotNull Path resourceDirectoryOrFile, @NotNull String libraryName) {
+  @NonNull
+  public static AarSourceResourceRepository create(@NonNull Path resourceDirectoryOrFile, @NonNull String libraryName) {
     return create(resourceDirectoryOrFile, libraryName, null);
   }
 
@@ -145,8 +145,8 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
    * @param cachingData data used to validate and create a persistent cache file
    * @return the created resource repository
    */
-  @NotNull
-  public static AarSourceResourceRepository create(@NotNull Path resourceDirectoryOrFile, @NotNull String libraryName,
+  @NonNull
+  public static AarSourceResourceRepository create(@NonNull Path resourceDirectoryOrFile, @NonNull String libraryName,
                                                    @Nullable CachingData cachingData) {
     return create(resourceDirectoryOrFile, null, ResourceNamespace.RES_AUTO, libraryName, cachingData);
   }
@@ -163,21 +163,21 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
    * @param cachingData data used to validate and create a persistent cache file
    * @return the created resource repository
    */
-  @NotNull
-  public static AarSourceResourceRepository create(@NotNull PathString resourceFolderRoot,
+  @NonNull
+  public static AarSourceResourceRepository create(@NonNull PathString resourceFolderRoot,
                                                    @Nullable Collection<PathString> resourceFolderResources,
-                                                   @NotNull String libraryName,
+                                                   @NonNull String libraryName,
                                                    @Nullable CachingData cachingData) {
     Path resDir = resourceFolderRoot.toPath();
     Preconditions.checkArgument(resDir != null);
     return create(resDir, resourceFolderResources, ResourceNamespace.RES_AUTO, libraryName, cachingData);
   }
 
-  @NotNull
-  private static AarSourceResourceRepository create(@NotNull Path resourceDirectoryOrFile,
+  @NonNull
+  private static AarSourceResourceRepository create(@NonNull Path resourceDirectoryOrFile,
                                                     @Nullable Collection<PathString> resourceFilesAndFolders,
-                                                    @NotNull ResourceNamespace namespace,
-                                                    @NotNull String libraryName,
+                                                    @NonNull ResourceNamespace namespace,
+                                                    @NonNull String libraryName,
                                                     @Nullable CachingData cachingData) {
     Loader loader = new Loader(resourceDirectoryOrFile, resourceFilesAndFolders, namespace);
     AarSourceResourceRepository repository = new AarSourceResourceRepository(loader, libraryName);
@@ -202,15 +202,15 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
   }
 
   @Override
-  @NotNull
+  @NonNull
   public Path getOrigin() {
     return myResourceDirectoryOrFile;
   }
 
   @TestOnly
-  @NotNull
+  @NonNull
   public static AarSourceResourceRepository createForTest(
-      @NotNull Path resourceDirectoryOrFile, @NotNull ResourceNamespace namespace, @NotNull String libraryName) {
+      @NonNull Path resourceDirectoryOrFile, @NonNull ResourceNamespace namespace, @NonNull String libraryName) {
     return create(resourceDirectoryOrFile, null, namespace, libraryName, null);
   }
 
@@ -222,14 +222,14 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
   }
 
   @Override
-  @NotNull
-  public PathString getSourceFile(@NotNull String relativeResourcePath, boolean forFileResource) {
+  @NonNull
+  public PathString getSourceFile(@NonNull String relativeResourcePath, boolean forFileResource) {
     return new PathString(mySourceFileProtocol, myResourcePathPrefix + relativeResourcePath);
   }
 
   @Override
-  @NotNull
-  public String getResourceUrl(@NotNull String relativeResourcePath) {
+  @NonNull
+  public String getResourceUrl(@NonNull String relativeResourcePath) {
     return myResourceUrlPrefix + relativeResourcePath;
   }
 
@@ -240,7 +240,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
    *     exist or is out of date
    * @see #createPersistentCache(CachingData)
    */
-  private boolean loadFromPersistentCache(@NotNull CachingData cachingData) {
+  private boolean loadFromPersistentCache(@NonNull CachingData cachingData) {
     byte[] header = ResourceSerializationUtil.getCacheFileHeader(stream -> writeCacheHeaderContent(cachingData, stream));
     return loadFromPersistentCache(cachingData.getCacheFile(), header);
   }
@@ -248,12 +248,12 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
   /**
    * Creates persistent cache on disk for faster loading later.
    */
-  private void createPersistentCache(@NotNull CachingData cachingData) {
+  private void createPersistentCache(@NonNull CachingData cachingData) {
     byte[] header = ResourceSerializationUtil.getCacheFileHeader(stream -> writeCacheHeaderContent(cachingData, stream));
     ResourceSerializationUtil.createPersistentCache(cachingData.getCacheFile(), header, stream -> writeToStream(stream, config -> true));
   }
 
-  protected void writeCacheHeaderContent(@NotNull CachingData cachingData, @NotNull Base128OutputStream stream) throws IOException {
+  protected void writeCacheHeaderContent(@NonNull CachingData cachingData, @NonNull Base128OutputStream stream) throws IOException {
     stream.write(CACHE_FILE_HEADER);
     stream.writeString(CACHE_FILE_FORMAT_VERSION);
     stream.writeString(myResourceDirectoryOrFile.toString());
@@ -265,7 +265,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
    * Loads contents the repository from a cache file on disk.
    * @see ResourceSerializationUtil#createPersistentCache
    */
-  private boolean loadFromPersistentCache(@NotNull Path cacheFile, byte[] fileHeader) {
+  private boolean loadFromPersistentCache(@NonNull Path cacheFile, byte[] fileHeader) {
     try (Base128InputStream stream = new Base128InputStream(cacheFile)) {
       if (!stream.validateContents(fileHeader)) {
         return false; // Cache file header doesn't match.
@@ -301,7 +301,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
    * @param stream the stream to write to
    * @param configFilter only resources belonging to configurations satisfying this filter are written to the stream
    */
-  void writeToStream(@NotNull Base128OutputStream stream, @NotNull Predicate<FolderConfiguration> configFilter) throws IOException {
+  void writeToStream(@NonNull Base128OutputStream stream, @NonNull Predicate<FolderConfiguration> configFilter) throws IOException {
     ResourceSerializationUtil.writeResourcesToStream(myResources, stream, configFilter);
   }
 
@@ -309,8 +309,8 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
    * Loads contents the repository from the given input stream.
    * @see #writeToStream(Base128OutputStream, Predicate)
    */
-  protected void loadFromStream(@NotNull Base128InputStream stream,
-                                @NotNull Map<String, String> stringCache,
+  protected void loadFromStream(@NonNull Base128InputStream stream,
+                                @NonNull Map<String, String> stringCache,
                                 @Nullable Map<NamespaceResolver, NamespaceResolver> namespaceResolverCache) throws IOException {
     ResourceSerializationUtil.readResourcesFromStream(stream, stringCache, namespaceResolverCache, this, this::addResourceItem);
   }
@@ -322,16 +322,16 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
 
   // For debugging only.
   @Override
-  @NotNull
+  @NonNull
   public String toString() {
     return getClass().getSimpleName() + '@' + Integer.toHexString(System.identityHashCode(this)) + " for " + myResourceDirectoryOrFile;
   }
 
   private static class Loader extends RepositoryLoader<AarSourceResourceRepository> {
-    @NotNull private Set<String> myRTxtIds = ImmutableSet.of();
+    @NonNull private Set<String> myRTxtIds = ImmutableSet.of();
 
-    Loader(@NotNull Path resourceDirectoryOrFile, @Nullable Collection<PathString> resourceFilesAndFolders,
-           @NotNull ResourceNamespace namespace) {
+    Loader(@NonNull Path resourceDirectoryOrFile, @Nullable Collection<PathString> resourceFilesAndFolders,
+           @NonNull ResourceNamespace namespace) {
       super(resourceDirectoryOrFile, resourceFilesAndFolders, namespace);
     }
 
@@ -370,7 +370,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
     }
 
     @Override
-    protected void finishLoading(@NotNull AarSourceResourceRepository repository) {
+    protected void finishLoading(@NonNull AarSourceResourceRepository repository) {
       super.finishLoading(repository);
       createResourcesForRTxtIds(repository);
     }
@@ -378,7 +378,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
     /**
      * Creates ID resources for the ID names in the R.txt file.
      */
-    private void createResourcesForRTxtIds(@NotNull AarSourceResourceRepository repository) {
+    private void createResourcesForRTxtIds(@NonNull AarSourceResourceRepository repository) {
       if (!myRTxtIds.isEmpty()) {
         RepositoryConfiguration configuration = getConfiguration(repository, ResourceItem.DEFAULT_CONFIGURATION);
         ResourceSourceFile sourceFile = new ResourceSourceFileImpl(null, configuration);
@@ -389,7 +389,7 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
       }
     }
 
-    private static Set<String> computeIds(@NotNull SymbolTable symbolTable) {
+    private static Set<String> computeIds(@NonNull SymbolTable symbolTable) {
       return symbolTable.getSymbols()
         .row(ResourceType.ID)
         .values()
@@ -430,11 +430,11 @@ public class AarSourceResourceRepository extends AbstractAarResourceRepository {
     }
 
     @Override
-    protected void addResourceItem(@NotNull BasicResourceItem item, @NotNull AarSourceResourceRepository repository) {
+    protected void addResourceItem(@NonNull BasicResourceItem item, @NonNull AarSourceResourceRepository repository) {
       repository.addResourceItem(item);
     }
 
-    private void readPublicResourceNames(@NotNull BufferedReader reader) throws IOException {
+    private void readPublicResourceNames(@NonNull BufferedReader reader) throws IOException {
       String line;
       while ((line = reader.readLine()) != null) {
         // Lines in public.txt have the following format: <resource_type> <resource_name>

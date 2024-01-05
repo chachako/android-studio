@@ -15,10 +15,10 @@
  */
 package com.android.resources.base;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.google.common.base.Preconditions;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -35,14 +35,14 @@ import java.util.function.Function;
  * for the current tag.
  */
 class ValueResourceXmlParser extends CommentTrackingXmlPullParser {
-  @NotNull final Map<NamespaceResolver, NamespaceResolver> namespaceResolverCache = new HashMap<>();
-  @NotNull final Deque<NamespaceResolver> resolverStack = new ArrayDeque<>(4);
+  @NonNull final Map<NamespaceResolver, NamespaceResolver> namespaceResolverCache = new HashMap<>();
+  @NonNull final Deque<NamespaceResolver> resolverStack = new ArrayDeque<>(4);
 
   /**
    * Returns the namespace resolver for the current XML node. The parser has to be positioned on a start tag
    * when this method is called.
    */
-  @NotNull
+  @NonNull
   public ResourceNamespace.Resolver getNamespaceResolver() throws XmlPullParserException {
     Preconditions.checkState(getEventType() == START_TAG);
     if (resolverStack.isEmpty()) {
@@ -53,13 +53,13 @@ class ValueResourceXmlParser extends CommentTrackingXmlPullParser {
   }
 
   @Override
-  public void setInput(@NotNull Reader reader) throws XmlPullParserException {
+  public void setInput(@NonNull Reader reader) throws XmlPullParserException {
     super.setInput(reader);
     resolverStack.clear();
   }
 
   @Override
-  public void setInput(@NotNull InputStream inputStream, @Nullable String encoding) throws XmlPullParserException {
+  public void setInput(@NonNull InputStream inputStream, @Nullable String encoding) throws XmlPullParserException {
     super.setInput(inputStream, encoding);
     resolverStack.clear();
   }

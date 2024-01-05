@@ -15,9 +15,9 @@
  */
 package com.android.resources.aar;
 
+import com.android.annotations.NonNull;
 import com.android.testutils.TestUtils;
 import com.android.utils.PathUtils;
-import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,26 +42,26 @@ public class FrameworkResJarTest {
   private Path myTempDir;
 
   /** Returns the path of framework_res.jar in prebuilts. */
-  @NotNull
+  @NonNull
   private static Path getFrameworkResJar() {
     return TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib/data/framework_res.jar");
   }
 
   /** Returns the path of the framework res directory in prebuilts. */
-  @NotNull
+  @NonNull
   private static Path getFrameworkResDir() {
     return TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib/data/res");
   }
 
   /** Returns the path of a freshly built framework_res.jar. */
-  @NotNull
+  @NonNull
   private Path getExpectedFrameworkResJar() throws IOException {
     Path path = myTempDir.resolve("framework_res.jar");
     FrameworkResJarCreator.createJar(getFrameworkResDir(), path);
     return path;
   }
 
-  private static void frameworkResJarIsOutOfDate(@NotNull Path file) {
+  private static void frameworkResJarIsOutOfDate(@NonNull Path file) {
     fail("The " + file + " file is out of date." +
          " Please run tools/vendor/google/layoutlib-prebuilt/build_framework_res_jar.sh to update it.");
   }

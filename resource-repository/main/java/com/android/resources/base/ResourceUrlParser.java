@@ -16,15 +16,15 @@
 package com.android.resources.base;
 
 import com.android.SdkConstants;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 
 /**
  * Parser of resource URLs. Unlike {@link com.android.resources.ResourceUrl}, this class is resilient to URL syntax
  * errors doesn't create any GC overhead.
  */
 public final class ResourceUrlParser {
-  @NotNull private String resourceUrl = "";
+  @NonNull private String resourceUrl = "";
   private int colonPos;
   private int slashPos;
   private int typeStart;
@@ -36,7 +36,7 @@ public final class ResourceUrlParser {
    *
    * @param resourceUrl the resource URL to parse
    */
-  public void parseResourceUrl(@NotNull String resourceUrl) {
+  public void parseResourceUrl(@NonNull String resourceUrl) {
     this.resourceUrl = resourceUrl;
     colonPos = -1;
     slashPos = -1;
@@ -109,7 +109,7 @@ public final class ResourceUrlParser {
   /**
    * Returns the name part of the resource URL.
    */
-  @NotNull
+  @NonNull
   public String getName() {
     return resourceUrl.substring(nameStart);
   }
@@ -117,7 +117,7 @@ public final class ResourceUrlParser {
   /**
    * Returns the qualified name of the resource without any prefix or type.
    */
-  @NotNull
+  @NonNull
   public String getQualifiedName() {
     if (colonPos < 0) {
       return getName();
@@ -131,7 +131,7 @@ public final class ResourceUrlParser {
   /**
    * Checks if the resource URL has the given type.
    */
-  public boolean hasType(@NotNull String type) {
+  public boolean hasType(@NonNull String type) {
     if (slashPos < 0) {
       return false;
     }
@@ -141,7 +141,7 @@ public final class ResourceUrlParser {
   /**
    * Checks if the resource URL has the given namespace prefix.
    */
-  public boolean hasNamespacePrefix(@NotNull String namespacePrefix) {
+  public boolean hasNamespacePrefix(@NonNull String namespacePrefix) {
     if (colonPos < 0) {
       return false;
     }
