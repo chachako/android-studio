@@ -69,6 +69,66 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testVisibleForTestingOnSealedDataClass() {
+    lint()
+      .files(
+        kotlin(
+            """
+            package pkg1
+
+            import org.jetbrains.annotations.VisibleForTesting
+
+            @VisibleForTesting
+            sealed class Foo {
+              abstract val id: Long
+
+              data class Foo1(
+                override val id: Long,
+                val p1: Boolean
+              ) : Foo()
+
+              data class Foo2(
+                override val id: Long,
+                val p1: Int
+              ) : Foo()
+            }
+          """
+          )
+          .indented(),
+        kotlin(
+            """
+            package pkg2
+
+            import pkg1.Foo
+
+            internal sealed class Bar {
+              data class Bar1(val id: Long): Bar()
+              data class Bar2(val id: Long, val p2: Foo): Bar()
+            }
+          """
+          )
+          .indented(),
+        intellijVisibleForTestingAnnotation
+      )
+      // data class's constructor, copy, toString, and component2 will have
+      // type reference to @VisibleForTesting Foo in a different package.
+      .allowDuplicates()
+      .run()
+      // In particular, compiler-generated data class's copy will trigger
+      // implicit reference (as long as it is sorted out that way).
+      .expect(
+        """
+            src/pkg2/Bar.kt:7: Warning: This class should only be accessed from tests or within package private scope [VisibleForTests]
+              data class Bar2(val id: Long, val p2: Foo): Bar()
+                                                    ~~~
+            src/pkg2/Bar.kt:7: Warning: This declaration implicitly references Foo, which should only be accessed from tests or within package private scope [VisibleForTests]
+              data class Bar2(val id: Long, val p2: Foo): Bar()
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            0 errors, 2 warnings
+        """
+      )
+  }
+
   fun testVisibleForTestingOnEnum() {
     lint()
       .files(
