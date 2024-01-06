@@ -23,6 +23,8 @@ cc_library(
         "memory/memory_request_handler.cc",
         "process_metadata/process_metadata_request_handler.cc",
         "scheduling/scheduling_request_handler.cc",
+        "scheduling_state_decoding.cc",
+        "thread_state/thread_state_request_handler.cc",
         "trace_events/android_frame_events_request_handler.cc",
         "trace_events/android_frame_timeline_request_handler.cc",
         "trace_events/trace_events_request_handler.cc",
@@ -34,6 +36,8 @@ cc_library(
         "memory/memory_request_handler.h",
         "process_metadata/process_metadata_request_handler.h",
         "scheduling/scheduling_request_handler.h",
+        "scheduling_state_decoding.h",
+        "thread_state/thread_state_request_handler.h",
         "trace_events/android_frame_events_request_handler.h",
         "trace_events/android_frame_timeline_request_handler.h",
         "trace_events/trace_events_request_handler.h",
@@ -41,6 +45,7 @@ cc_library(
         "trace_processor_service.h",
     ],
     copts = [
+        "-Itools/base/profiler/native/trace_processor_daemon",
         "-I$(GENDIR)/tools/base/profiler/native/trace_processor_daemon",
     ],
     deps = [
@@ -80,6 +85,27 @@ cc_test(
     size = "medium",
     srcs = [
         "scheduling/scheduling_request_handler_test.cc",
+    ],
+    copts = [
+        "-I$(GENDIR)/tools/base/profiler/native/trace_processor_daemon",
+        "-Itools/base/profiler/native/trace_processor_daemon",
+    ],
+    data = [
+        "testdata/empty_sched_table.trace",
+        "testdata/tank.trace",
+    ],
+    linkstatic = 1,
+    deps = [
+        ":trace_processor_service_impl",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "thread_state_request_handler_test",
+    size = "medium",
+    srcs = [
+        "thread_state/thread_state_request_handler_test.cc",
     ],
     copts = [
         "-I$(GENDIR)/tools/base/profiler/native/trace_processor_daemon",

@@ -86,6 +86,7 @@ message QueryParameters {
     TraceMetadataParameters trace_metadata_request = 108;
     AndroidFrameTimelineParameters android_frame_timeline_request = 109;
     PowerCounterTracksParameters power_counter_tracks_request = 110;
+    ThreadStatesParameters thread_states_request = 111;
   }
 
   // Returns metadata information for a process of the provided id.
@@ -118,7 +119,7 @@ message QueryParameters {
   // Returns all CPU scheduling events for all threads part of the process
   // identified by process_id or for a single thread identified by thread_id.
   // If no criteria is set, return all the scheduling data contained in the
-  // trace. See SchedulingEventsResults for the data returned from this.
+  // trace. See SchedulingEventsResult for the data returned from this.
   message SchedulingEventsParameters {
     oneof criteria {
       int64 process_id = 1;
@@ -129,6 +130,16 @@ message QueryParameters {
   // Returns all process counters for the process identified by process_id.
   // See https://perfetto.dev/docs/analysis/sql-tables#process_counter_track.
   message ProcessCountersParameters {
+    int64 process_id = 1;
+  }
+
+  // Returns all thread state events for all threads part of the process
+  // identified by process_id. Note SchedulingEventsParameters doesn't capture
+  // all thread state changes, for example, when a thread changes the state
+  // from S (awaiting a wakeup) to R (runnable), this change doesn't show in
+  // SchedulingEventsResult because it doesn't involve CPU.
+  // See ThreadStatesResult for the data returned from this.
+  message ThreadStatesParameters {
     int64 process_id = 1;
   }
 
@@ -189,6 +200,7 @@ message QueryResult {
     TraceMetadataResult trace_metadata_result = 108;
     AndroidFrameTimelineResult android_frame_timeline_result = 109;
     PowerCounterTracksResult power_counter_tracks_result = 110;
+    ThreadStatesResult thread_states_result = 111;
   }
 
   enum QueryFailureReason {
@@ -308,6 +320,33 @@ message SchedulingEventsResult {
       DEAD = 5;
       WAKE_KILL = 6;
       WAKING = 7;
+    }
+  }
+}
+
+message ThreadStatesResult {
+  // The id of the process from which these counters belongs to.
+  int64 process_id = 1;
+
+  // List of thread state events, ordered by thread_id and increasing timestamp.
+  repeated ThreadStateEvent state_event = 2;
+
+  message ThreadStateEvent {
+    int64 thread_id = 3;
+    // The timestamp in nanoseconds of when the thread began running.
+    int64 timestamp_nanoseconds = 4;
+    // For how long the thread ran.
+    int64 duration_nanoseconds = 5;
+    ThreadState state = 6;
+
+    // A thread state can be "Running" or any of the states described in
+    // Perfetto table |sched_slice.end_state|, where the latter is the same as
+    // SchedulingEventsResult.SchedulingState.
+    message ThreadState {
+      oneof state {
+        bool running = 1;
+        SchedulingEventsResult.SchedulingEvent.SchedulingState non_running = 2;
+      }
     }
   }
 }

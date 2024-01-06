@@ -15,27 +15,13 @@
  */
 
 #include "scheduling_request_handler.h"
+#include "scheduling_state_decoding.h"
 
 using namespace profiler::perfetto;
 using profiler::perfetto::proto::QueryParameters;
 using profiler::perfetto::proto::SchedulingEventsResult;
 
 typedef QueryParameters::SchedulingEventsParameters SchedulingEventsParameters;
-
-// Note: the mapping here is different from ftrace. See
-// https://perfetto.dev/docs/data-sources/cpu-scheduling#decoding-code-end_state-code-
-const std::string STATE_RUNNABLE = std::string("R");
-const std::string STATE_RUNNABLE_PREEMPTED = std::string("R+");
-const std::string STATE_SLEEPING = std::string("S");
-const std::string STATE_UNINTERRUPTIBLE = std::string("D");
-const std::string STATE_UNINTERRUPTIBLE_WAKEKILL = std::string("DK");
-const std::string STATE_WAKEKILL = std::string("K");
-const std::string STATE_WAKING = std::string("W");
-// Both maps to Task DEAD states, depends on the kernel version.
-const std::string STATE_TASK_DEAD_1 = std::string("x");
-const std::string STATE_TASK_DEAD_2 = std::string("I");
-const std::string STATE_EXIT_DEAD = std::string("X");
-const std::string STATE_ZOMBIE = std::string("Z");
 
 // We remove the system swapper scheduling events, because they are a
 // placeholder thread to represent when a core is available to run some
@@ -118,37 +104,7 @@ void SchedulingRequestHandler::PopulateEvents(SchedulingEventsParameters params,
           SchedulingEventsResult::SchedulingEvent::UNKNOWN);
     } else {
       auto state = state_sql_value.string_value;
-      if (STATE_RUNNABLE.compare(state) == 0) {
-        sched_proto->set_end_state(
-            SchedulingEventsResult::SchedulingEvent::RUNNABLE);
-      } else if (STATE_RUNNABLE_PREEMPTED.compare(state) == 0) {
-        sched_proto->set_end_state(
-            SchedulingEventsResult::SchedulingEvent::RUNNABLE_PREEMPTED);
-      } else if (STATE_SLEEPING.compare(state) == 0) {
-        sched_proto->set_end_state(
-            SchedulingEventsResult::SchedulingEvent::SLEEPING);
-      } else if (STATE_UNINTERRUPTIBLE.compare(state) == 0 ||
-                 STATE_UNINTERRUPTIBLE_WAKEKILL.compare(state) == 0) {
-        sched_proto->set_end_state(
-            SchedulingEventsResult::SchedulingEvent::SLEEPING_UNINTERRUPTIBLE);
-      } else if (STATE_WAKEKILL.compare(state) == 0) {
-        sched_proto->set_end_state(
-            SchedulingEventsResult::SchedulingEvent::WAKE_KILL);
-      } else if (STATE_WAKING.compare(state) == 0) {
-        sched_proto->set_end_state(
-            SchedulingEventsResult::SchedulingEvent::WAKING);
-      } else if (STATE_TASK_DEAD_1.compare(state) == 0 ||
-                 STATE_TASK_DEAD_2.compare(state) == 0 ||
-                 STATE_EXIT_DEAD.compare(state) == 0 ||
-                 STATE_ZOMBIE.compare(state) == 0) {
-        sched_proto->set_end_state(
-            SchedulingEventsResult::SchedulingEvent::DEAD);
-      } else {
-        std::cerr << "Unknown scheduling state encountered: " << state
-                  << std::endl;
-        sched_proto->set_end_state(
-            SchedulingEventsResult::SchedulingEvent::UNKNOWN);
-      }
+      sched_proto->set_end_state(CpuSchedulingState::Decode(state));
     }
   }
 

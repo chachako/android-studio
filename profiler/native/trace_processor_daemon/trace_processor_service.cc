@@ -32,6 +32,7 @@
 #include "src/profiling/symbolizer/local_symbolizer.h"
 #include "src/profiling/symbolizer/symbolize_database.h"
 #include "src/profiling/symbolizer/symbolizer.h"
+#include "thread_state/thread_state_request_handler.h"
 #include "trace_events/android_frame_events_request_handler.h"
 #include "trace_events/android_frame_timeline_request_handler.h"
 #include "trace_events/trace_events_request_handler.h"
@@ -212,6 +213,11 @@ grpc::Status TraceProcessorServiceImpl::QueryBatch(
         handler.PopulatePowerCounterTracks(
             request.power_counter_tracks_request(),
             query_result->mutable_power_counter_tracks_result());
+      } break;
+      case QueryParameters::kThreadStatesRequest: {
+        ThreadStateRequestHandler handler(tp_.get());
+        handler.PopulateEvents(request.thread_states_request(),
+                               query_result->mutable_thread_states_result());
       } break;
       case QueryParameters::kAndroidFrameEventsRequest: {
         AndroidFrameEventsRequestHandler handler(tp_.get());
