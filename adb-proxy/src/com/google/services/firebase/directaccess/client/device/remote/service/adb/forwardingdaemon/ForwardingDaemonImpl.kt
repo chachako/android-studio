@@ -248,6 +248,8 @@ internal class ForwardingDaemonImpl(
     if (started.get() && !stopped.getAndSet(true)) {
       try {
         scope.cancel()
+        runAndLogExceptionsOnClosing { streamOpener.close() }
+
         // Wait until stream commands get cancelled.
         runBlocking {
           try {
@@ -259,8 +261,8 @@ internal class ForwardingDaemonImpl(
             )
           }
         }
-        streams.values.forEach { runAndLogExceptionsOnClosing { it.sendClose() } }
-        runAndLogExceptionsOnClosing { streamOpener.close() }
+        streams.clear()
+
         if (consecutiveConnectionLostCount >= 3) {
           onStateChanged(DeviceState.LATENCY_DISCONNECT)
         } else {

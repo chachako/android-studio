@@ -29,19 +29,27 @@ import com.google.common.util.concurrent.MoreExecutors
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
+import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+
+private val TEST_TIMEOUT = Duration.ofSeconds(30)
 
 class ForwardingDaemonTest {
   // A series of commands that come from the remote server that are handled by ForwardingDaemon
@@ -52,22 +60,40 @@ class ForwardingDaemonTest {
       createByteBuffer(CNXN),
       createByteBuffer(OPEN, 1),
       createByteBuffer(WRTE, 1, 1, 4, "test"),
-      createByteBuffer(CLSE)
+      createByteBuffer(CLSE, 1, 1)
     )
 
   private val fakeAdbSession = FakeAdbSession()
   private val throwErrorWhenClosing = MutableStateFlow(false)
+
+  private var shouldStreamNotRespondOnClosing = false
+  private var streamOnClosingWithoutResponse = false
+
   private val fakeStreamOpener =
     object : StreamOpener {
+      private val job = Job()
       private val myStream =
         object : Stream {
+
           override fun sendWrite(command: WriteCommand) {
             assertThat(String(command.payload)).isEqualTo("test")
           }
 
-          override fun sendClose() = Unit
+          override fun sendClose() = delayUntilStreamOpenerClose()
 
           override suspend fun receiveCommand(command: StreamCommand) = Unit
+
+          private fun delayUntilStreamOpenerClose() {
+            if (shouldStreamNotRespondOnClosing) {
+              runBlocking {
+                withContext(job) {
+                  streamOnClosingWithoutResponse = true
+                  delay(TEST_TIMEOUT.toMillis())
+                }
+                streamOnClosingWithoutResponse = false
+              }
+            }
+          }
         }
 
       override fun connect(forwardingDaemon: ForwardingDaemon) {
@@ -81,6 +107,7 @@ class ForwardingDaemonTest {
         myStream
 
       override fun close() {
+        job.cancel()
         if (throwErrorWhenClosing.value) throw RuntimeException("expected closing exception")
       }
     }
@@ -92,6 +119,8 @@ class ForwardingDaemonTest {
 
   @Before
   fun setUp(): Unit = runBlockingWithTimeout {
+    shouldStreamNotRespondOnClosing = false
+    streamOnClosingWithoutResponse = false
     throwErrorWhenClosing.value = false
     port = -1
     val socket = fakeAdbSession.channelFactory.createServerSocket()
@@ -172,6 +201,33 @@ class ForwardingDaemonTest {
     forwardingDaemon.close()
 
     yieldUntil { scope.children.isEmpty() }
+  }
+
+  @Test
+  fun testStreamWithoutResponseClosing() = runBlockingWithTimeout {
+    shouldStreamNotRespondOnClosing = true
+    val childScope = fakeAdbSession.scope.createChildScope(context = exceptionHandler)
+    forwardingDaemon =
+      ForwardingDaemonImpl(fakeStreamOpener, childScope, fakeAdbSession) { testSocket }
+    assertThat(forwardingDaemon.devicePort).isEqualTo(-1)
+    forwardingDaemon.start()
+    assertThat(forwardingDaemon.devicePort).isEqualTo(testSocket.localAddress()?.port)
+    yieldUntil { isAdbDeviceConnected() }
+    fakeAdbSession.channelFactory.connectSocket(testSocket.localAddress()!!).use { channel ->
+      inputList.forEach { channel.writeExactly(it) }
+      // CNXN response
+      channel.assertCommand(CNXN)
+      // OPEN response
+      channel.assertCommand(OKAY, 1, 1)
+      // WRTE response
+      channel.assertCommand(OKAY, 1, 1)
+    }
+    // The stream should not respond on sendClose().
+    yieldUntil { streamOnClosingWithoutResponse }
+    // The stream opener should close with forwardingDaemon.
+    forwardingDaemon.close()
+    // Wait until sendClose() ends.
+    childScope.coroutineContext.job.join()
   }
 
   @Test
