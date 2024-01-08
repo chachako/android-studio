@@ -24,6 +24,78 @@ class AssertDetectorTest : AbstractCheckTest() {
     return AssertDetector()
   }
 
+  fun testSetOf_KotlinStdlib() {
+    lint()
+      .files(
+        kotlin(
+            """
+            class MutableDependencyGraph<T> {
+              fun getNodes(): Set<T> = TODO()
+            }
+
+            fun test() {
+              val graph = MutableDependencyGraph<String>()
+              assert(graph.getNodes() == setOf("4", "2")) // OK
+            }
+          """
+          )
+          .indented()
+      )
+      .issues(AssertDetector.SIDE_EFFECT)
+      .platforms(Platform.JDK_SET)
+      .run()
+      .expectClean()
+  }
+
+  fun testSetOf_JavaSyntheticPropertySetter() {
+    lint()
+      .files(
+        kotlin(
+            """
+            import test.pkg.Foo
+
+            fun test() {
+              val f = Foo()
+              assert(42 != f.setOf(42)) // WARN 1
+              assert(2024 != (f.of = 2024)) // WARN 2
+            }
+          """
+          )
+          .indented(),
+        java(
+            """
+            package test.pkg;
+            public class Foo {
+                private int OF = 0;
+                public int getOf() {
+                    return OF;
+                }
+                public int setOf(int v) {
+                    int prev = OF;
+                    OF = v;
+                    return prev;
+                }
+            }
+            """
+          )
+          .indented(),
+      )
+      .issues(AssertDetector.SIDE_EFFECT)
+      .platforms(Platform.JDK_SET)
+      .run()
+      .expect(
+        """
+            src/test.kt:5: Warning: Assertion condition has a side effect: setOf(42) [AssertionSideEffect]
+              assert(42 != f.setOf(42)) // WARN 1
+                           ~~~~~~~~~~~
+            src/test.kt:6: Warning: Assertion condition has a side effect: f.of = 2024 [AssertionSideEffect]
+              assert(2024 != (f.of = 2024)) // WARN 2
+                              ~~~~~~~~~~~
+            0 errors, 2 warnings
+        """
+      )
+  }
+
   fun testNotExpensive() {
     lint()
       .files(

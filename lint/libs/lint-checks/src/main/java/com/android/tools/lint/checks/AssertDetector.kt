@@ -27,7 +27,6 @@ import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
-import com.android.tools.lint.detector.api.getUMethod
 import com.android.tools.lint.detector.api.isKotlin
 import com.intellij.psi.PsiAssertStatement
 import com.intellij.psi.PsiCompiledElement
@@ -35,6 +34,12 @@ import com.intellij.psi.PsiLocalVariable
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
 import kotlin.math.min
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KtPropertySetterSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KtSymbolOrigin
+import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtIsExpression
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
@@ -49,6 +54,7 @@ import org.jetbrains.uast.UInstanceExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.ULoopExpression
+import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UPolyadicExpression
 import org.jetbrains.uast.UQualifiedReferenceExpression
@@ -64,6 +70,7 @@ import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.skipParenthesizedExprUp
+import org.jetbrains.uast.toUElementOfType
 import org.jetbrains.uast.tryResolve
 
 /** Looks for assertion usages. */
@@ -287,28 +294,32 @@ class AssertDetector : Detector(), SourceCodeScanner {
         if (callDepth > MAX_CALL_DEPTH) {
           return null
         }
-        val called = node.resolve() ?: return null
-        if (called is PsiCompiledElement) {
-          // Look at some common methods that could have side effects
-          val name = called.name
-          if (
-            name == "add" ||
-              name == "remove" ||
-              name == "put" ||
-              name == "delete" ||
-              name == "mkdir" ||
-              name == "mkdirs" ||
-              // generic setter
-              name.startsWith("set") && name.length > 3 && name[3].isUpperCase()
-          ) {
-            return Pair(node, node.sourcePsi?.text ?: name)
-          }
-        } else {
-          val body = called.getUMethod()?.uastBody ?: return null
-          val sideEffect = getSideEffect(body, depth + 1, callDepth + 1)
-          if (sideEffect != null) {
-            // Point to assertion call location, not the side effect inside the called method
-            return Pair(node, sideEffect.second)
+        val sourcePsi = node.sourcePsi as? KtElement ?: return null
+        analyze(sourcePsi) {
+          val functionSymbol = getFunctionLikeSymbol(sourcePsi) ?: return null
+          if (functionSymbol.origin != KtSymbolOrigin.SOURCE) {
+            when (functionSymbol) {
+              is KtPropertySetterSymbol -> {
+                return Pair(node, sourcePsi.text)
+              }
+              is KtFunctionSymbol -> {
+                val callableId = functionSymbol.callableIdIfNonLocal ?: return null
+                if (
+                  !callableId.packageName.startsWith(FqName("kotlin")) &&
+                    mayHaveSideEffects(callableId.callableName.identifier)
+                ) {
+                  return Pair(node, sourcePsi.text)
+                }
+              }
+              else -> return null
+            }
+          } else {
+            val body = functionSymbol.psi.toUElementOfType<UMethod>()?.uastBody ?: return null
+            val sideEffect = getSideEffect(body, depth + 1, callDepth + 1)
+            if (sideEffect != null) {
+              // Point to assertion call location, not the side effect inside the called method
+              return Pair(node, sideEffect.second)
+            }
           }
         }
       }
@@ -351,6 +362,16 @@ class AssertDetector : Detector(), SourceCodeScanner {
 
     return null
   }
+
+  private fun mayHaveSideEffects(name: String): Boolean =
+    name == "add" ||
+      name == "remove" ||
+      name == "put" ||
+      name == "delete" ||
+      name == "mkdir" ||
+      name == "mkdirs" ||
+      // generic setter
+      name.startsWith("set") && name.length > 3 && name[3].isUpperCase()
 
   private fun isLocal(lhs: UExpression): Boolean {
     val resolved = lhs.tryResolve()
