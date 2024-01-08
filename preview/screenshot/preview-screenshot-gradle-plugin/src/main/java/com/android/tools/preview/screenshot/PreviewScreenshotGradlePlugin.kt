@@ -233,6 +233,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.resultsFile.set(testResultsFile)
                         task.diffImageDir.set(diffImageDir)
                         task.diffImageDir.disallowChanges()
+                        task.reportFilePath.set(reportsDir)
                         task.analyticsService.set(analyticsServiceProvider)
                         task.usesService(analyticsServiceProvider)
                         task.description = "Run screenshot tests for the " + variantName + " build."

@@ -104,6 +104,7 @@ class PreviewScreenshotValidationTaskTest {
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderOutputDir = tempDirRule.newFolder("rendered")
         val previewsFile = tempDirRule.newFile("previews_discovered.json")
+        val reportDir = tempDirRule.newFolder("report")
 
         // Copy different images to rendered output and reference images
         val previewImageName = "com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee"
@@ -131,12 +132,14 @@ class PreviewScreenshotValidationTaskTest {
         task.diffImageDir.set(diffDir)
         task.renderTaskOutputDir.set(renderOutputDir)
         task.resultsFile.set(resultsFile)
+        task.reportFilePath.set(reportDir)
         task.analyticsService.set(mock<AnalyticsService>())
 
         val e = assertThrows(GradleException::class.java) {
             task.run()
         }
-        assertThat(e.message).isEqualTo("There were failing tests")
+        val reportUrl = File(reportDir, "index.html").toURI().toASCIIString()
+        assertThat(e.message).isEqualTo("There were failing tests. Creating test report at $reportUrl")
 
         assertThat(resultsFile.readText().trimIndent()).isEqualTo("""
             <?xml version='1.0' encoding='UTF-8' ?>

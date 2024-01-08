@@ -42,6 +42,7 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 
 /**
  * Runs screenshot tests of a variant.
@@ -68,6 +69,9 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
     abstract val resultsFile: RegularFileProperty
 
     @get:Internal
+    abstract val reportFilePath: DirectoryProperty
+
+    @get:Internal
     abstract val analyticsService: Property<AnalyticsService>
 
     @TaskAction
@@ -91,7 +95,8 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
                 project.gradle.sharedServices)
 
             if (!allTestsPass) {
-                throw GradleException("There were failing tests")
+                val reportUrl = File(reportFilePath.get().asFile, "index.html").toURI().toASCIIString()
+                throw GradleException("There were failing tests. Creating test report at $reportUrl")
             }
         } else {
             logger.info("No tests found, nothing to do.")
