@@ -23,10 +23,13 @@ import com.android.build.gradle.integration.common.fixture.testprojects.createGr
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.options.StringOption
+import com.android.builder.model.v2.ide.ApiVersion
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 
 class SettingsPluginTest {
+
     @get:Rule
     var project = createGradleProject {
         settings {
@@ -41,23 +44,25 @@ class SettingsPluginTest {
     }
 
     data class Profile(
-        val name: String,
-        val r8JvmOptions: List<String>,
-        val r8RunInSeparateProcess: Boolean)
-
+            val name: String,
+            val r8JvmOptions: List<String>,
+            val r8RunInSeparateProcess: Boolean)
 
     private val defaultProfiles: List<Profile> =
-        listOf(
-            Profile("low", listOf("-Xms200m", "-Xmx200m"), false),
-            Profile("high", listOf("-Xms800m", "-Xmx800m"), true),
-            Profile("pizza", listOf("-Xms801m", "-Xmx801m", "-XX:+HeapDumpOnOutOfMemoryError"), false),
-        )
+            listOf(
+                    Profile("low", listOf("-Xms200m", "-Xmx200m"), false),
+                    Profile("high", listOf("-Xms800m", "-Xmx800m"), true),
+                    Profile("pizza",
+                            listOf("-Xms801m", "-Xmx801m", "-XX:+HeapDumpOnOutOfMemoryError"),
+                            false),
+            )
 
     private fun addSettingsBlock(
-        minSdk: Int = DEFAULT_MIN_SDK_VERSION,
-        compileSdk: Int = DEFAULT_COMPILE_SDK_VERSION,
-        execProfile: String?,
-        profiles: List<Profile> = defaultProfiles
+            minSdk: Int = DEFAULT_MIN_SDK_VERSION,
+            compileSdk: Int = DEFAULT_COMPILE_SDK_VERSION,
+            targetSdk: Int = compileSdk,
+            execProfile: String?,
+            profiles: List<Profile> = defaultProfiles
     ) {
         var profileBlocks = ""
         val expandList = { it: List<String> ->
@@ -65,7 +70,7 @@ class SettingsPluginTest {
         }
         profiles.forEach {
             profileBlocks +=
-                """|
+                    """|
                 |            ${it.name} {
                 |                r8 {
                 |                    jvmOptions = [${expandList(it.r8JvmOptions)}]
@@ -75,21 +80,23 @@ class SettingsPluginTest {
                 """.trimMargin("|")
         }
         project.settingsFile.appendText(
-            """|
+                """|
                 |
                 |android {
                 |    compileSdk $compileSdk
                 |    minSdk $minSdk
+                |    targetSdk $targetSdk
                 |    execution {
                 |        profiles {
                 |$profileBlocks
                 |        }
-                |        ${execProfile?.run {"""defaultProfile "$execProfile""""} ?: ""}
+                |        ${execProfile?.run { """defaultProfile "$execProfile"""" } ?: ""}
                 |    }
                 |}
             """.trimMargin("|")
         )
     }
+
     private fun withShrinker() {
         project.buildFile.appendText("android.buildTypes.debug.minifyEnabled true")
     }
@@ -117,10 +124,14 @@ class SettingsPluginTest {
         }
 
         // Make sure it builds when overriding the profile
-        result = project.executor().with(StringOption.EXECUTION_PROFILE_SELECTION, "low").run("clean", "assembleDebug")
+        result =
+                project.executor()
+                        .with(StringOption.EXECUTION_PROFILE_SELECTION, "low")
+                        .run("clean", "assembleDebug")
 
         result.stdout.use {
-            ScannerSubject.assertThat(it).contains("Using execution profile from android.settings.executionProfile 'low'")
+            ScannerSubject.assertThat(it)
+                    .contains("Using execution profile from android.settings.executionProfile 'low'")
         }
     }
 
@@ -133,7 +144,7 @@ class SettingsPluginTest {
 
         // Adding one profile should auto-select it, so it should also work
         project.settingsFile.appendText(
-            """|
+                """|
                 |android.execution.profiles {
                 |    profileOne {
                 |        r8.jvmOptions = []
@@ -150,7 +161,7 @@ class SettingsPluginTest {
 
         // Adding another profile with no selection should fail
         project.settingsFile.appendText(
-            """|
+                """|
                 |android.execution.profiles {
                 |    profileTwo {
                 |    }
@@ -160,15 +171,18 @@ class SettingsPluginTest {
         result = project.executor().expectFailure().run("clean", "assembleDebug")
 
         result.stderr.use {
-            ScannerSubject.assertThat(it).contains("Found 2 execution profiles [profileOne, profileTwo], but no profile was selected.\n")
+            ScannerSubject.assertThat(it)
+                    .contains("Found 2 execution profiles [profileOne, profileTwo], but no profile was selected.\n")
         }
 
         // Selecting a profile through override should work
-        project.executor().with(StringOption.EXECUTION_PROFILE_SELECTION, "profileOne").run("clean", "assembleDebug")
+        project.executor()
+                .with(StringOption.EXECUTION_PROFILE_SELECTION, "profileOne")
+                .run("clean", "assembleDebug")
 
         // So should adding the profile selection to the settings file
         project.settingsFile.appendText(
-            """android.execution.defaultProfile "profileTwo" """
+                """android.execution.defaultProfile "profileTwo" """
         )
         project.execute("clean", "assembleDebug")
     }
@@ -177,14 +191,14 @@ class SettingsPluginTest {
     @Test
     fun testJvmOptionsAreUsed() {
         addSettingsBlock(
-            execProfile = "mid",
-            profiles = listOf(
-                Profile("mid", listOf(":pizza/foo"), true)
-            )
+                execProfile = "mid",
+                profiles = listOf(
+                        Profile("mid", listOf(":pizza/foo"), true)
+                )
         )
 
         project.buildFile.appendText(
-            """|
+                """|
                 |android.buildTypes {
                 |    debug {
                 |        minifyEnabled true
@@ -199,6 +213,33 @@ class SettingsPluginTest {
         // with invalid arguments
         result.stderr.use {
             ScannerSubject.assertThat(it).contains("Error: Could not find or load main class :pizza.foo")
+        }
+    }
+
+    @Test
+    fun checkCompileMinAndTargetAreSet() {
+        val compileSdk = DEFAULT_COMPILE_SDK_VERSION
+        val targetSdk = DEFAULT_COMPILE_SDK_VERSION - 1
+        val minSdk = DEFAULT_COMPILE_SDK_VERSION - 2
+        addSettingsBlock(compileSdk = compileSdk,
+                targetSdk = targetSdk,
+                minSdk = minSdk,
+                execProfile = null,
+                profiles = listOf())
+        val modelInfo = project.modelV2().fetchModels().container.getProject(":")
+        val androidDsl = modelInfo.androidDsl ?: error("failed to fetch android DSL model")
+        assertThat(androidDsl.compileTarget)
+                .named("androidDsl.compileTarget")
+                .isEqualTo("android-$compileSdk")
+        assertThat(androidDsl.defaultConfig.targetSdkVersion?.apiLevel)
+                .named("androidDsl.defaultConfig.targetSdkVersion.apiLevel")
+                .isEqualTo(targetSdk)
+        val androidProject = modelInfo.androidProject ?: error("Failed to fetch android project")
+        assertThat(androidProject.variants).isNotEmpty()
+        for (variant in androidProject.variants) {
+            assertThat(variant.mainArtifact.minSdkVersion.apiLevel)
+                    .named("variant %s mainArtifact.minSdkVersion.apiLevel", variant.name)
+                    .isEqualTo(minSdk)
         }
     }
 }

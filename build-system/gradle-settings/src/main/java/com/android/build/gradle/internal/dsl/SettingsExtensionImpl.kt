@@ -95,6 +95,24 @@ internal open class SettingsExtensionImpl @Inject constructor(objectFactory: Obj
             _minSdk = null
         }
 
+    private var _targetSdk: Int? = null
+
+    override var targetSdk: Int?
+        get() = _targetSdk
+        set(value) {
+            _targetSdk = value
+            _targetSdkPreview = null
+        }
+
+    private var _targetSdkPreview: String? = null
+
+    override var targetSdkPreview: String?
+        get() = _targetSdkPreview
+        set(value) {
+            _targetSdkPreview = value
+            _targetSdk = null
+        }
+
     override val execution: Execution = objectFactory.newInstance(
         ExecutionImpl::class.java, objectFactory
     )

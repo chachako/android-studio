@@ -903,6 +903,17 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
             this.defaultConfig.minSdkPreview = minSdkPreview
         }
 
+        // Set target for all types, even where it is not directly exposed for now
+        // Eventually this will not be applicable for library, but separated for tests and lint
+        // which will likely also make sense to set to this default value
+        settings.targetSdk?.let {targetSdk ->
+            (this.defaultConfig as DefaultConfig).targetSdk = targetSdk
+        }
+
+        settings.targetSdkPreview?.let { targetSdkPreview ->
+            (this.defaultConfig as DefaultConfig).targetSdkPreview = targetSdkPreview
+        }
+
         settings.ndkVersion.let { ndkVersion ->
             this.ndkVersion = ndkVersion
         }
