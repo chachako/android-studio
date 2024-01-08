@@ -209,7 +209,7 @@ interface UastEnvironment {
   }
 
   class Module(
-    internal val project: Project,
+    private val project: Project,
     internal val jdkHome: File?,
     includeTests: Boolean,
     includeTestFixtureSources: Boolean,
