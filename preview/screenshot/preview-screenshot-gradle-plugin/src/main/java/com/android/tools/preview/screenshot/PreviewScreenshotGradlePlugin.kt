@@ -104,6 +104,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     val referenceImageDir =
                         File("${project.projectDir.absolutePath}/src/androidTest/screenshot/$buildTarget/$flavorDir")
                     val renderedDir = buildDir.dir("$testOutputDir/rendered")
+                    val diffImageDir = buildDir.dir("$testOutputDir/diffs")
                     val previewOut = buildDir.file("$intermediatesDir/previews_discovered.json")
                     val cliInput = buildDir.file("$intermediatesDir/cli_tool_input.json")
                     val testResultsDir = buildDir.dir("$testOutputDir/results")
@@ -230,8 +231,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.previewFile.set(previewOut)
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
                         task.resultsFile.set(testResultsFile)
-                        task.imageOutputDir.set(renderedDir)
-                        task.imageOutputDir.disallowChanges()
+                        task.diffImageDir.set(diffImageDir)
+                        task.diffImageDir.disallowChanges()
                         task.analyticsService.set(analyticsServiceProvider)
                         task.usesService(analyticsServiceProvider)
                         task.description = "Run screenshot tests for the " + variantName + " build."

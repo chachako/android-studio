@@ -45,7 +45,7 @@ class PreviewScreenshotValidationTaskTest {
 
     @Test
     fun testImageValidationMatchingImages() {
-        val imageOutputDir = tempDirRule.newFolder("outputs")
+        val diffDir = tempDirRule.newFolder("diffs")
         val resultsFile = tempDirRule.newFile("results")
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderOutputDir = tempDirRule.newFolder("rendered")
@@ -74,7 +74,7 @@ class PreviewScreenshotValidationTaskTest {
 
         task.previewFile.set(previewsFile)
         task.referenceImageDir.set(referenceImageDir)
-        task.imageOutputDir.set(imageOutputDir)
+        task.diffImageDir.set(diffDir)
         task.renderTaskOutputDir.set(renderOutputDir)
         task.resultsFile.set(resultsFile)
         task.analyticsService.set(mock<AnalyticsService>())
@@ -89,7 +89,7 @@ class PreviewScreenshotValidationTaskTest {
                 <success>PASSED</success>
                 <images>
                   <reference path="${referenceImageDir.absolutePath}${File.separator}com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee.png" />
-                  <actual path="${imageOutputDir.absolutePath}${File.separator}com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee_actual.png" />
+                  <actual path="${renderOutputDir.absolutePath}${File.separator}com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee_0.png" />
                   <diff message="Images match!" />
                 </images>
               </testcase>
@@ -99,7 +99,7 @@ class PreviewScreenshotValidationTaskTest {
 
     @Test
     fun testImageValidationDifferentImages() {
-        val imageOutputDir = tempDirRule.newFolder("outputs")
+        val diffDir = tempDirRule.newFolder("diffs")
         val resultsFile = tempDirRule.newFile("results")
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderOutputDir = tempDirRule.newFolder("rendered")
@@ -128,7 +128,7 @@ class PreviewScreenshotValidationTaskTest {
 
         task.previewFile.set(previewsFile)
         task.referenceImageDir.set(referenceImageDir)
-        task.imageOutputDir.set(imageOutputDir)
+        task.diffImageDir.set(diffDir)
         task.renderTaskOutputDir.set(renderOutputDir)
         task.resultsFile.set(resultsFile)
         task.analyticsService.set(mock<AnalyticsService>())
@@ -146,8 +146,8 @@ class PreviewScreenshotValidationTaskTest {
                 <failure>FAILED</failure>
                 <images>
                   <reference path="${referenceImageDir.absolutePath}${File.separator}com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee.png" />
-                  <actual path="${imageOutputDir.absolutePath}${File.separator}com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee_actual.png" />
-                  <diff path="${imageOutputDir.absolutePath}${File.separator}com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee_diff.png" />
+                  <actual path="${renderOutputDir.absolutePath}${File.separator}com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee_0.png" />
+                  <diff path="${diffDir.absolutePath}${File.separator}com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee.png" />
                 </images>
               </testcase>
             </testsuite>
@@ -156,7 +156,7 @@ class PreviewScreenshotValidationTaskTest {
 
     @Test
     fun testImageValidationNoPreviewsToTest() {
-        val imageOutputDir = tempDirRule.newFolder("outputs")
+        val diffDir = tempDirRule.newFolder("diffs")
         val resultsFile = tempDirRule.newFile("results")
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderOutputDir = tempDirRule.newFolder("rendered")
@@ -170,7 +170,7 @@ class PreviewScreenshotValidationTaskTest {
 
         task.previewFile.set(previewsFile)
         task.referenceImageDir.set(referenceImageDir)
-        task.imageOutputDir.set(imageOutputDir)
+        task.diffImageDir.set(diffDir)
         task.renderTaskOutputDir.set(renderOutputDir)
         task.resultsFile.set(resultsFile)
 
@@ -181,7 +181,7 @@ class PreviewScreenshotValidationTaskTest {
 
     @Test
     fun testReportAnalyticsData() {
-        val imageOutputDir = tempDirRule.newFolder("outputs")
+        val diffDir = tempDirRule.newFolder("diffs")
         val resultsFile = tempDirRule.newFile("results")
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderOutputDir = tempDirRule.newFolder("rendered")
@@ -210,7 +210,7 @@ class PreviewScreenshotValidationTaskTest {
 
         task.previewFile.set(previewsFile)
         task.referenceImageDir.set(referenceImageDir)
-        task.imageOutputDir.set(imageOutputDir)
+        task.diffImageDir.set(diffDir)
         task.renderTaskOutputDir.set(renderOutputDir)
         task.resultsFile.set(resultsFile)
 

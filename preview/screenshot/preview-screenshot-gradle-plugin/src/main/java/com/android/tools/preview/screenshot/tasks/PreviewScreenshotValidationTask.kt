@@ -58,7 +58,7 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
     abstract val renderTaskOutputDir: DirectoryProperty
 
     @get:OutputDirectory
-    abstract val imageOutputDir: DirectoryProperty
+    abstract val diffImageDir: DirectoryProperty
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
@@ -105,16 +105,15 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
         val screenshotNamePng = "$screenshotName.png"
         var referencePath = referenceImageDir.asFile.get().toPath().resolve(screenshotNamePng)
         var referenceMessage: String? = null
-        val actualPath = imageOutputDir.asFile.get().toPath().resolve(screenshotName + "_actual.png")
-        var diffPath = imageOutputDir.asFile.get().toPath().resolve(screenshotName + "_diff.png")
+        val actualPath = renderTaskOutputDir.asFile.get().toPath().resolve(screenshotName + "_0.png")
+        var diffPath = diffImageDir.asFile.get().toPath().resolve(screenshotNamePng)
         var diffMessage: String? = null
         var code = 0
         val verifier = Verify(imageDiffer, diffPath)
 
         //If the CLI tool could not render the preview, return the preview result with the
         //code and message along with reference path if it exists
-        val renderedFile = renderTaskOutputDir.asFile.get().toPath().resolve(screenshotName + "_0.png").toFile()
-        if (!renderedFile.exists()) {
+        if (!actualPath.toFile().exists()) {
             if (!referencePath.toFile().exists()) {
                 referencePath = null
                 referenceMessage = "Reference image missing"
@@ -128,9 +127,6 @@ abstract class PreviewScreenshotValidationTask : DefaultTask(), VerificationTask
             )
 
         }
-
-        // copy rendered image from intermediate dir to output dir
-        FileUtils.copyFile(renderedFile, actualPath.toFile())
 
         val result =
             verifier.assertMatchReference(
