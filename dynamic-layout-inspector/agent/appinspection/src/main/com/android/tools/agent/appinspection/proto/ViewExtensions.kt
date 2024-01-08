@@ -264,7 +264,7 @@ fun View.createPropertyGroup(stringTable: StringTable): PropertyGroup {
 private fun View.getDefaultDisplay(): Display {
     val windowManager = context.getSystemService(WindowManager::class.java)
     return if (Build.VERSION.SDK_INT >= 30) {
-        context.display
+        runCatching { context.display }.getOrNull()
     }
     else {
         null
