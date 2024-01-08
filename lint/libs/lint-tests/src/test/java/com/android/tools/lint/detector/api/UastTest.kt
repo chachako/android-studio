@@ -35,6 +35,9 @@ import com.intellij.psi.PsiRecursiveElementVisitor
 import com.intellij.psi.PsiTypeParameter
 import junit.framework.TestCase
 import org.jetbrains.annotations.NotNull
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
+import org.jetbrains.kotlin.analysis.api.calls.symbol
 import org.jetbrains.kotlin.asJava.elements.KotlinLightTypeParameterBuilder
 import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.config.LanguageVersionSettings
@@ -43,6 +46,7 @@ import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtConstructor
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtLambdaArgument
 import org.jetbrains.kotlin.psi.KtModifierListOwner
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
@@ -2825,6 +2829,48 @@ class UastTest : TestCase() {
             assertNotNull(delegate)
 
             return super.visitClass(node)
+          }
+        }
+      )
+    }
+  }
+
+  fun testRetrievingPsiOfLocalFun() {
+    val source =
+      kotlin(
+          """
+          fun target(i: Int) {
+            fun localFun() {
+              println("hello")
+            }
+            localFun()
+          }
+        """
+        )
+        .indented()
+
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve() ?: return super.visitCallExpression(node)
+            if (resolved.name == "println") {
+              // Ugh... not this one.
+              return super.visitCallExpression(node)
+            }
+            val sourcePsi = node.sourcePsi as? KtElement ?: return super.visitCallExpression(node)
+            analyze(sourcePsi) {
+              // from AnalysisApiLintUtils.kt
+              // val functionSymbol = getFunctionLikeSymbol(sourcePsi)
+              val callInfo = sourcePsi.resolveCall() ?: return super.visitCallExpression(node)
+              val functionSymbol =
+                callInfo.singleFunctionCallOrNull()?.symbol
+                  ?: return super.visitCallExpression(node)
+              val psi = functionSymbol.psi
+              assertEquals("fun localFun() {\n    println(\"hello\")\n  }", psi?.text)
+            }
+
+            return super.visitCallExpression(node)
           }
         }
       )
