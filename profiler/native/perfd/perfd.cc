@@ -87,8 +87,13 @@ int Perfd::Initialize(Daemon* daemon) {
       new GraphicsProfilerComponent(daemon->clock())));
 
   // Register Commands.
-  daemon->RegisterCommandHandler(proto::Command::BEGIN_SESSION,
-                                 &BeginSession::Create);
+  bool is_task_based_ux_enabled =
+      daemon_config.common().profiler_task_based_ux();
+  daemon->RegisterCommandHandler(
+      proto::Command::BEGIN_SESSION,
+      [is_task_based_ux_enabled](proto::Command command) {
+        return BeginSession::Create(command, is_task_based_ux_enabled);
+      });
   daemon->RegisterCommandHandler(proto::Command::END_SESSION,
                                  &EndSession::Create);
   daemon->RegisterCommandHandler(
@@ -103,8 +108,6 @@ int Perfd::Initialize(Daemon* daemon) {
                                   SessionsManager::Instance());
       });
 
-  bool is_task_based_ux_enabled =
-      daemon_config.common().profiler_task_based_ux();
   daemon->RegisterCommandHandler(
       proto::Command::STOP_TRACE,
       [is_task_based_ux_enabled](proto::Command command) {

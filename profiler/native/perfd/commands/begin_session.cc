@@ -17,6 +17,7 @@
 
 #include <unistd.h>
 
+#include <algorithm>
 #include <string>
 
 #include "perfd/sessions/sessions_manager.h"
@@ -28,7 +29,14 @@ using grpc::Status;
 using grpc::StatusCode;
 using profiler::proto::AgentData;
 using profiler::proto::Event;
+using profiler::proto::ProfilerTaskType;
 using std::string;
+
+namespace {
+// Tasks that utilize the session sampler data.
+constexpr std::array<ProfilerTaskType, 2> sampler_enabled_tasks = {
+    ProfilerTaskType::LIVE_VIEW, ProfilerTaskType::JAVA_KOTLIN_ALLOCATIONS};
+}  // namespace
 
 namespace profiler {
 
@@ -44,7 +52,16 @@ Status BeginSession::ExecuteOn(Daemon* daemon) {
                                             data_);
 
   auto session = SessionsManager::Instance()->GetLastSession();
-  session->StartSamplers();
+
+  // In the Task-Based UX, session samplers are only enabled for tasks that
+  // utilize the sampled session data.
+  auto task_type = command().begin_session().task_type();
+  auto it = std::find(sampler_enabled_tasks.begin(),
+                      sampler_enabled_tasks.end(), task_type);
+  if (!is_task_based_ux_enabled_ || it != sampler_enabled_tasks.end()) {
+    session->StartSamplers();
+  }
+
   if (data_.jvmti_config().attach_agent()) {
     string package_name = data_.jvmti_config().package_name();
     switch (daemon->GetAgentStatus(pid, package_name)) {
