@@ -71,7 +71,6 @@ kotlin_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "//prebuilts/tools/common/lint-psi/intellij-core",
         "//tools/base/build-system/aapt2-proto",
         "//tools/base/common:tools.common",
         "//tools/base/environment-services:tools.environment-services",
@@ -79,6 +78,7 @@ kotlin_library(
         "//tools/base/sdk-common:tools.sdk-common",
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.protobuf.protobuf-java",
+        "@maven//:it.unimi.dsi.fastutil",
         "@maven//:net.sf.kxml.kxml2",
     ],
 )
@@ -93,7 +93,6 @@ kotlin_library(
     ],
     deps = [
         ":tools.resource-repository",
-        "//prebuilts/tools/common/lint-psi/intellij-core",
         "//tools/base/common:tools.common",
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/testutils:tools.testutils",
