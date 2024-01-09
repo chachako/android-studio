@@ -276,16 +276,10 @@ public class Hardware {
         }
         hw.mKeyboard = mKeyboard;
         hw.mNav = mNav;
-        hw.mRam = mRam != null ? mRam.deepCopy() : null;
+        hw.mRam = mRam;
         hw.mButtons = mButtons;
-        hw.mInternalStorage = new ArrayList<Storage>();
-        for (Storage s : mInternalStorage) {
-            hw.mInternalStorage.add(s.deepCopy());
-        }
-        hw.mRemovableStorage = new ArrayList<Storage>();
-        for (Storage s : mRemovableStorage) {
-            hw.mRemovableStorage.add(s.deepCopy());
-        }
+        hw.mInternalStorage = new ArrayList<>(mInternalStorage);
+        hw.mRemovableStorage = new ArrayList<>(mRemovableStorage);
         hw.mCpu = mCpu;
         hw.mGpu = mGpu;
         hw.mAbis = mAbis.clone();
