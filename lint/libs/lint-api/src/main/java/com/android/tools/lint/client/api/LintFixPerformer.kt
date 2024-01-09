@@ -60,7 +60,6 @@ import com.android.utils.XmlUtils
 import com.intellij.openapi.util.TextRange
 import java.io.File
 import java.io.IOException
-import java.util.regex.Pattern
 import javax.xml.parsers.ParserConfigurationException
 import kotlin.math.max
 import kotlin.math.min
@@ -83,38 +82,86 @@ abstract class LintFixPerformer(
   private fun getFileData(fileMap: MutableMap<File, PendingEditFile>, file: File): PendingEditFile {
     return fileMap[file]
       ?: run {
-        val source = getSourceText(file)
-        val fileData = PendingEditFile(file, source.toString())
+        val fileData = PendingEditFile(file)
         fileMap[file] = fileData
         fileData
       }
   }
 
+  fun createFileProvider() = FileProvider()
+
+  inner class FileProvider {
+    private val files = mutableMapOf<PendingEditFile, String>()
+    private val documents = mutableMapOf<PendingEditFile, Document>()
+
+    fun getFileContents(file: PendingEditFile): String {
+      return files[file] ?: getSourceText(file.file).toString().also { files[file] = it }
+    }
+
+    fun getXmlDocument(file: PendingEditFile): Document? {
+      return documents[file]
+        ?: createXmlDocument(file).also {
+          if (it != null) {
+            documents[file] = it
+          }
+        }
+    }
+
+    /** If this file represents an XML file, returns the XML DOM of the initial content. */
+    private fun createXmlDocument(file: PendingEditFile): Document? {
+      try {
+        val contents = getFileContents(file)
+        client.getXmlDocument(file.file, contents)?.let {
+          return it
+        }
+        return PositionXmlParser.parse(contents)
+      } catch (e: ParserConfigurationException) {
+        handleXmlError(e, file)
+      } catch (e: SAXException) {
+        handleXmlError(e, file)
+      } catch (e: IOException) {
+        handleXmlError(e, file)
+      }
+      return null
+    }
+
+    // because Kotlin does not have multi-catch:
+    private fun handleXmlError(e: Throwable, file: PendingEditFile) {
+      log(Severity.WARNING, "Ignoring $file: Failed to parse XML: $e")
+    }
+  }
+
   private fun registerFix(
+    fileProvider: FileProvider,
     fileMap: MutableMap<File, PendingEditFile>,
     incident: Incident,
     lintFix: LintFix
   ) {
-    if (addEdits(fileMap, incident, lintFix)) {
+    if (addEdits(fileProvider, fileMap, incident, lintFix)) {
       incident.wasAutoFixed = true
     }
   }
 
   fun fix(incidents: List<Incident>): Boolean {
-    val files = findApplicableFixes(incidents)
-    return applyEdits(files)
+    val fileProvider = FileProvider()
+    val files = findApplicableFixes(fileProvider, incidents)
+    return applyEdits(fileProvider, files)
   }
 
-  fun registerFixes(incident: Incident, fixes: List<LintFix>): List<PendingEditFile> {
+  fun registerFixes(
+    incident: Incident,
+    fixes: List<LintFix>,
+    fileProvider: FileProvider = createFileProvider()
+  ): List<PendingEditFile> {
     val fileMap = mutableMapOf<File, PendingEditFile>()
     for (fix in fixes) {
       if (canAutoFix(fix, requireAutoFixable)) {
-        registerFix(fileMap, incident, fix)
+        registerFix(fileProvider, fileMap, incident, fix)
       }
     }
     val files = fileMap.values.filter { !it.isEmpty() }.toList()
     for (file in files) {
-      cleanup(file)
+      cleanup(fileProvider, file)
     }
     return files
   }
@@ -124,7 +171,7 @@ abstract class LintFixPerformer(
    * applied, we don't end up with blank lines (that were not formerly blank) and we don't have
    * trailing spaces.
    */
-  private fun cleanup(file: PendingEditFile) {
+  private fun cleanup(fileProvider: FileProvider, file: PendingEditFile) {
     val edits =
       file.edits.let {
         if (it.size > 1) {
@@ -140,7 +187,7 @@ abstract class LintFixPerformer(
           it
         }
       }
-    val source = file.initialText
+    val source = fileProvider.getFileContents(file)
     val length = source.length
     for (i in edits.indices) {
       val edit = edits[i]
@@ -212,8 +259,9 @@ abstract class LintFixPerformer(
   }
 
   fun fix(incident: Incident, fixes: List<LintFix>): Boolean {
-    val fileMap = registerFixes(incident, fixes)
-    return applyEdits(fileMap)
+    val fileProvider = FileProvider()
+    val fileMap = registerFixes(incident, fixes, fileProvider)
+    return applyEdits(fileProvider, fileMap)
   }
 
   protected abstract fun createBinaryFile(fileData: PendingEditFile, contents: ByteArray)
@@ -230,12 +278,17 @@ abstract class LintFixPerformer(
     }
   }
 
-  abstract fun applyEdits(fileData: PendingEditFile, edits: List<PendingEdit>)
+  abstract fun applyEdits(
+    fileProvider: FileProvider,
+    fileData: PendingEditFile,
+    edits: List<PendingEdit>
+  )
 
   fun applyEdits(
+    fileProvider: FileProvider,
     files: List<PendingEditFile>,
     performEdits: (PendingEditFile, List<PendingEdit>) -> Unit = { fileData, edits ->
-      applyEdits(fileData, edits)
+      applyEdits(fileProvider, fileData, edits)
     }
   ): Boolean {
     var appliedEditCount = 0
@@ -293,7 +346,10 @@ abstract class LintFixPerformer(
     editedFileCount: Int
   ) {}
 
-  private fun findApplicableFixes(incidents: List<Incident>): List<PendingEditFile> {
+  private fun findApplicableFixes(
+    fileProvider: FileProvider,
+    incidents: List<Incident>
+  ): List<PendingEditFile> {
     val fileMap = mutableMapOf<File, PendingEditFile>()
     for (incident in incidents) {
       val data = incident.fix ?: continue
@@ -309,14 +365,14 @@ abstract class LintFixPerformer(
           }
           if (all) {
             for (sub in data.fixes) {
-              registerFix(fileMap, incident, sub)
+              registerFix(fileProvider, fileMap, incident, sub)
             }
           }
         }
         // else: for GroupType.ALTERNATIVES, we don't auto fix: user must pick
         // which one to apply.
       } else if (canAutoFix(data, requireAutoFixable)) {
-        registerFix(fileMap, incident, data)
+        registerFix(fileProvider, fileMap, incident, data)
       }
     }
     return fileMap.values.toList()
@@ -360,13 +416,14 @@ abstract class LintFixPerformer(
     return edits.all { checker(file, it) }
   }
 
-  private fun isValid(file: PendingEditFile, edits: List<PendingEdit>): Boolean {
-    return isValid(file, edits) { f, edit ->
-      f.initialText.startsWith(edit.replacement, edit.startOffset)
+  private fun isValid(file: PendingEditFile, edits: List<PendingEdit>, contents: String): Boolean {
+    return isValid(file, edits) { _, edit ->
+      contents.startsWith(edit.replacement, edit.startOffset)
     }
   }
 
   private fun addEdits(
+    fileProvider: FileProvider,
     fileMap: MutableMap<File, PendingEditFile>,
     incident: Incident,
     lintFix: LintFix,
@@ -381,7 +438,7 @@ abstract class LintFixPerformer(
       }
 
       for (nested in fixes) {
-        if (!addEdits(fileMap, incident, nested, false)) {
+        if (!addEdits(fileProvider, fileMap, incident, nested, false)) {
           all = false
         }
       }
@@ -389,19 +446,17 @@ abstract class LintFixPerformer(
     }
     val location = getLocation(incident, lintFix)
     val file = getFileData(fileMap, location.file)
-    return if (lintFix is ReplaceString) {
-      addReplaceString(file, incident, lintFix, location)
-    } else if (lintFix is SetAttribute) {
-      addSetAttribute(file, lintFix, location)
-    } else if (lintFix is AnnotateFix) {
-      addAnnotation(file, incident, lintFix, location)
-    } else if (lintFix is CreateFileFix) {
-      if (isTopLevel || lintFix.selectPattern != null) {
-        file.open = true
+    return when (lintFix) {
+      is ReplaceString -> addReplaceString(fileProvider, file, incident, lintFix, location)
+      is SetAttribute -> addSetAttribute(fileProvider, file, lintFix, location)
+      is AnnotateFix -> addAnnotation(fileProvider, file, incident, lintFix, location)
+      is CreateFileFix -> {
+        if (isTopLevel || lintFix.selectPattern != null) {
+          file.open = true
+        }
+        addCreateFile(file, lintFix)
       }
-      addCreateFile(file, lintFix)
-    } else {
-      false
+      else -> false
     }
   }
 
@@ -417,14 +472,19 @@ abstract class LintFixPerformer(
   }
 
   private fun addAnnotation(
+    fileProvider: FileProvider,
     file: PendingEditFile,
     incident: Incident,
     annotateFix: AnnotateFix,
     fixLocation: Location?
   ): Boolean {
     val replaceFix =
-      createAnnotationFix(annotateFix, annotateFix.range ?: fixLocation, file.initialText)
-    return addReplaceString(file, incident, replaceFix, fixLocation)
+      createAnnotationFix(
+        annotateFix,
+        annotateFix.range ?: fixLocation,
+        fileProvider.getFileContents(file)
+      )
+    return addReplaceString(fileProvider, file, incident, replaceFix, fixLocation)
   }
 
   private fun addCreateFile(file: PendingEditFile, fix: CreateFileFix): Boolean {
@@ -445,16 +505,19 @@ abstract class LintFixPerformer(
   }
 
   private fun addSetAttribute(
+    fileProvider: FileProvider,
     file: PendingEditFile,
     setFix: SetAttribute,
     fixLocation: Location?
   ): Boolean {
-    val contents = file.initialText
     val location = setFix.range ?: fixLocation ?: return false
     val start = location.start ?: return false
 
+    val contents = fileProvider.getFileContents(file)
     val document =
-      client.getXmlDocument(file.file, contents) ?: file.getXmlDocument() ?: return false
+      client.getXmlDocument(file.file, contents)
+        ?: fileProvider.getXmlDocument(file)
+        ?: return false
 
     var node: Node? =
       client.xmlParser.findNodeAt(document, start.offset)
@@ -560,13 +623,7 @@ abstract class LintFixPerformer(
         // Insert prefix declaration
         val namespaceAttribute = XMLNS_PREFIX + prefix
         val rootInsertOffset =
-          findAttributeInsertionOffset(
-            file.file,
-            file.initialText,
-            document.documentElement,
-            XMLNS,
-            prefix
-          )
+          findAttributeInsertionOffset(file.file, contents, document.documentElement, XMLNS, prefix)
         val padLeft = if (!contents[rootInsertOffset - 1].isWhitespace()) " " else ""
         val padRight = if (contents[rootInsertOffset] != '>') " " else ""
         file.edits.add(
@@ -585,13 +642,7 @@ abstract class LintFixPerformer(
       }
 
       val insertOffset =
-        findAttributeInsertionOffset(
-          file.file,
-          file.initialText,
-          element,
-          prefix ?: "",
-          setFix.attribute
-        )
+        findAttributeInsertionOffset(file.file, contents, element, prefix ?: "", setFix.attribute)
 
       val padLeft = if (!contents[insertOffset - 1].isWhitespace()) " " else ""
       val padRight = if (contents[insertOffset] != '>') " " else ""
@@ -678,12 +729,13 @@ abstract class LintFixPerformer(
   }
 
   protected open fun addReplaceString(
+    fileProvider: FileProvider,
     file: PendingEditFile,
     incident: Incident,
     replaceFix: ReplaceString,
     fixLocation: Location?
   ): Boolean {
-    val contents: String = file.initialText
+    val contents = fileProvider.getFileContents(file)
     val oldPattern = replaceFix.oldPattern
     val oldString = replaceFix.oldString
     val location = replaceFix.range ?: fixLocation ?: return false
@@ -794,7 +846,7 @@ abstract class LintFixPerformer(
         found = true
       } else {
         assert(oldPattern != null)
-        val pattern = Pattern.compile(oldPattern!!)
+        val pattern = oldPattern!!.toPattern()
         val matcher = pattern.matcher(locationRange)
         if (!matcher.find()) {
           if (replaceFix.optional || replaceFix.globally && found) break@next
@@ -828,7 +880,7 @@ abstract class LintFixPerformer(
         }
       }
 
-      replacement = customizeReplaceString(file, replaceFix, replacement)
+      replacement = customizeReplaceString(fileProvider, file, replaceFix, replacement)
 
       val (selectStart, selectEnd) =
         getSelectionDeltas(replaceFix.selectPattern, replacement, replaceFix.optional)
@@ -874,7 +926,7 @@ abstract class LintFixPerformer(
     optional: Boolean
   ): Pair<Int, Int> {
     if (selectPattern != null) {
-      val pattern = Pattern.compile(selectPattern)
+      val pattern = selectPattern.toPattern()
       val matcher = pattern.matcher(source)
       if (matcher.find(0)) {
         if (matcher.groupCount() > 0) {
@@ -894,6 +946,7 @@ abstract class LintFixPerformer(
   }
 
   protected open fun customizeReplaceString(
+    fileProvider: FileProvider,
     file: PendingEditFile,
     replaceFix: ReplaceString,
     replacement: String
@@ -901,9 +954,13 @@ abstract class LintFixPerformer(
     return replacement
   }
 
-  fun computeEdits(incident: Incident, lintFix: LintFix): List<PendingEditFile> {
+  fun computeEdits(
+    incident: Incident,
+    lintFix: LintFix,
+    fileProvider: FileProvider = createFileProvider()
+  ): List<PendingEditFile> {
     val fileMap = mutableMapOf<File, PendingEditFile>()
-    registerFix(fileMap, incident, lintFix)
+    registerFix(fileProvider, fileMap, incident, lintFix)
     return fileMap.values.toList()
   }
 
@@ -1286,7 +1343,8 @@ abstract class LintFixPerformer(
     }
   }
 
-  inner class PendingEditFile(val file: File, val initialText: String) {
+  inner class PendingEditFile(val file: File) {
+
     /** List of edits to perform in this file */
     val edits: MutableList<PendingEdit> = mutableListOf()
 
@@ -1319,37 +1377,12 @@ abstract class LintFixPerformer(
      */
     var createBytes: ByteArray? = null
 
-    /** Cache for [getXmlDocument] */
-    private var document: Document? = null
-
-    /** If this file represents an XML file, returns the XML DOM of the initial content. */
-    fun getXmlDocument(): Document? {
-      if (document == null) {
-        try {
-          document = PositionXmlParser.parse(initialText)
-        } catch (e: ParserConfigurationException) {
-          handleXmlError(e)
-        } catch (e: SAXException) {
-          handleXmlError(e)
-        } catch (e: IOException) {
-          handleXmlError(e)
-        }
-      }
-
-      return document
-    }
-
     /**
      * Returns true if this file ends up having no effect (for example, we created a set attribute
      * where the attribute is already set to the same value so it ends up being a no-op.
      */
     fun isEmpty(): Boolean {
       return edits.isEmpty() && !createText && createBytes == null && !delete
-    }
-
-    // because Kotlin does not have multi-catch:
-    private fun handleXmlError(e: Throwable) {
-      log(Severity.WARNING, "Ignoring $file: Failed to parse XML: $e")
     }
 
     /** Returns the affected range -- the offsets in the original file where edits begin and end. */

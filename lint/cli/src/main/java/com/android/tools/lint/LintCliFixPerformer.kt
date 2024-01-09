@@ -75,8 +75,12 @@ open class LintCliFixPerformer(
     writeFile(fileData.file, null)
   }
 
-  override fun applyEdits(fileData: PendingEditFile, edits: List<PendingEdit>) {
-    var fileContents = fileData.initialText
+  override fun applyEdits(
+    fileProvider: FileProvider,
+    fileData: PendingEditFile,
+    edits: List<PendingEdit>
+  ) {
+    var fileContents = fileProvider.getFileContents(fileData)
 
     // First selection in the source (edits are sorted in reverse order so pick the last one)
     val firstSelection = edits.lastOrNull { it.selectStart != -1 }
@@ -166,12 +170,13 @@ open class LintCliFixPerformer(
   }
 
   override fun customizeReplaceString(
+    fileProvider: FileProvider,
     file: PendingEditFile,
     replaceFix: LintFix.ReplaceString,
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE") originalReplacement: String
   ): String {
     var replacement = originalReplacement
-    val contents: String = file.initialText
+    val contents: String = fileProvider.getFileContents(file)
 
     // Are we in a unit-testing scenario? If so, perform some cleanup of imports etc.
     // (which is normally handled by the IDE)
