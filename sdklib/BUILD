@@ -185,6 +185,18 @@ sdk_java_binary(
 )
 
 sdk_java_binary(
+    name = "d8",
+    main_class = "com.android.tools.r8.D8",
+    runtime_deps = ["//prebuilts/r8"],
+)
+
+sdk_java_binary(
+    name = "r8",
+    main_class = "com.android.tools.r8.R8",
+    runtime_deps = ["//prebuilts/r8"],
+)
+
+sdk_java_binary(
     name = "retrace",
     main_class = "com.android.tools.r8.retrace.Retrace",
     runtime_deps = ["//prebuilts/r8"],
@@ -209,6 +221,8 @@ sdk_package(
     binaries = [
         ":avdmanager",
         ":sdkmanager",
+        ":d8",
+        ":r8",
         ":retrace",
         ":resourceshrinker",
         "//tools/base/apkparser/cli:apkanalyzer",
