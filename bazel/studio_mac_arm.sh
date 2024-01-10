@@ -22,8 +22,8 @@ readonly script_name="$(basename "$0")"
 # Invocation ID must be lower case in Sponge URL
 readonly invocation_id=$(uuidgen | tr A-F a-f)
 
-# TODO(b/267533769) Add --config=rcache once RBE creds are available
-readonly config_options="--config=release --config=ants"
+readonly config_options="--config=release --config=ants --config=rcache"
+
 
 "${script_dir}/bazel" \
         --max_idle_secs=60 \
@@ -31,7 +31,7 @@ readonly config_options="--config=release --config=ants"
         test \
         ${config_options} \
         --invocation_id=${invocation_id} \
-        --build_metadata=ab_target=studio-mac \
+        --build_metadata=ab_target=studio-mac-arm \
         --build_metadata=ab_build_id=${build_number} \
         --build_tag_filters=-no_mac \
         --test_tag_filters=-no_mac,-no_test_mac,-ui_test,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate \
