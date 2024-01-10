@@ -580,6 +580,26 @@ class SuppressLintTest {
       .expectClean()
   }
 
+  @Test
+  fun testSuppressTopLevelFunctions() {
+    lint()
+      .allowCompilationErrors()
+      .files(
+        kotlin(
+            """
+            // Some comment
+            //noinspection _PropertyIssue
+            val forbidden1 = ""
+            """
+          )
+          .indented()
+      )
+      .issues(MyPropertyDetector.PROPERTY_ISSUE)
+      .sdkHome(TestUtils.getSdk().toFile())
+      .run()
+      .expectClean()
+  }
+
   // Sample detector which just flags calls to a method called "forbidden"
   @SuppressWarnings("ALL")
   class MySecurityDetector : Detector(), SourceCodeScanner, XmlScanner {

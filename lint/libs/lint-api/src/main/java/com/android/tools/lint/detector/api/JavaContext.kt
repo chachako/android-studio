@@ -24,18 +24,14 @@ import com.intellij.psi.PsiAnonymousClass
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiCompiledElement
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiField
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
-import com.intellij.psi.PsiLabeledStatement
-import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiMethodCallExpression
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiNewExpression
 import com.intellij.psi.PsiReferenceExpression
 import com.intellij.psi.PsiSwitchStatement
 import java.io.File
-import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UDeclaration
@@ -366,7 +362,20 @@ open class JavaContext(
     getContents() ?: return false
     val textRange = scope.textRange ?: return false
     val start = textRange.startOffset
-    return isSuppressedWithComment(start, issue)
+
+    val suppressed = isSuppressedWithComment(start, issue)
+
+    if (!suppressed && scope is PsiNameIdentifierOwner) {
+      // For something like a method or class, the start range will include
+      // comments and the modifier list, but what is probably intended here
+      // is the name identifier (which is also what we use to attach error
+      // locations.)
+      val nameStart = scope.nameIdentifier?.textRange?.startOffset
+      if (nameStart != null && nameStart != start) {
+        return isSuppressedWithComment(nameStart, issue)
+      }
+    }
+    return suppressed
   }
 
   fun isSuppressedWithComment(scope: UElement, issue: Issue): Boolean {
@@ -374,6 +383,7 @@ open class JavaContext(
     return psi != null && isSuppressedWithComment(psi, issue)
   }
 
+  @Suppress("UnstableApiUsage")
   @Deprecated(
     "Use UastFacade instead",
     ReplaceWith("org.jetbrains.uast.UastFacade"),
@@ -404,21 +414,17 @@ open class JavaContext(
     @JvmStatic
     fun findNameElement(element: PsiElement): PsiElement? {
       when (element) {
-        is PsiNameIdentifierOwner -> return element.nameIdentifier
         is PsiClass -> {
           if (element is PsiAnonymousClass) {
             return element.baseClassReference
           }
           return element.nameIdentifier
         }
-        is PsiMethod -> return element.nameIdentifier
+        is PsiNameIdentifierOwner -> return element.nameIdentifier
         is PsiMethodCallExpression -> return element.methodExpression.referenceNameElement
         is PsiNewExpression -> return element.classReference
-        is PsiField -> return element.nameIdentifier
         is PsiAnnotation -> return element.nameReferenceElement
         is PsiReferenceExpression -> return element.referenceNameElement
-        is PsiLabeledStatement -> return element.labelIdentifier
-        is KtProperty -> return element.nameIdentifier
         else -> return null
       }
     }

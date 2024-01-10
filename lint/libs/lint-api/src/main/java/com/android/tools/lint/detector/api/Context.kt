@@ -545,6 +545,19 @@ open class Context(
      * comment line suppress directive.
      */
     fun getSuppressionDirective(prefix: String, source: CharSequence, startOffset: Int): String? {
+      if (source.startsWith("//", startOffset) || source.startsWith("/*")) {
+        var index = startOffset + 2
+        while (index < source.length && source[index] == ' ') {
+          index++
+        }
+        if (CharSequences.regionMatches(source, index, prefix, 0, prefix.length)) {
+          val end = source.indexOf('\n', index)
+          if (end != -1) {
+            return source.subSequence(index + prefix.length, end).toString()
+          }
+        }
+      }
+
       if (startOffset <= 0) {
         return null
       }
