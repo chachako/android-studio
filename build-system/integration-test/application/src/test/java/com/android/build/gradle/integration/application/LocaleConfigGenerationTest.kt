@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.application
 
+import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
@@ -144,7 +145,8 @@ class LocaleConfigGenerationTest {
         generateLocaleConfig: Boolean,
         defaultLocale: String? = "en-US",
         addFlavor: Boolean = false,
-        addResourcesProperties: Boolean = true
+        addResourcesProperties: Boolean = true,
+        pseudoLocalesEnabled: Boolean = false
     ) {
         var dslString =
             // language=groovy
@@ -170,6 +172,11 @@ class LocaleConfigGenerationTest {
                         }
                 }
                 """.trimIndent()
+        }
+        if (pseudoLocalesEnabled) {
+            dslString += """
+                android.buildTypes.debug.pseudoLocalesEnabled true
+            """.trimIndent()
         }
 
         project.getSubproject("app").buildFile.appendText(dslString)
@@ -547,5 +554,55 @@ class LocaleConfigGenerationTest {
         ).execute("assembleDebug")
 
         assertLocaleConfig("debug").isEqualTo(listOf("en-US"))
+    }
+
+    @Test
+    fun `Test pseudolocales are present`() {
+        buildDsl(generateLocaleConfig = true, pseudoLocalesEnabled = true)
+
+        project
+            .withLocales(appLocales = listOf(), lib1Locales = listOf(), lib2Locales = listOf())
+            .execute("assembleDebug")
+
+        assertLocaleList("app", "debug")
+            .isEqualTo(listOf("en-US", SdkConstants.EN_XA, SdkConstants.AR_XB))
+        assertLocaleList("lib1", "debug").isEmpty()
+        assertLocaleList("lib2", "debug").isEmpty()
+        assertLocaleConfig("debug")
+            .isEqualTo(listOf("en-US", SdkConstants.EN_XA, SdkConstants.AR_XB))
+
+        TestFileUtils.appendToFile(
+            project.getSubproject("lib1").buildFile,
+            "android.buildTypes.debug.pseudoLocalesEnabled true"
+        )
+
+        project
+            .withLocales(appLocales = listOf(), lib1Locales = listOf(), lib2Locales = listOf())
+            .execute("assembleDebug")
+
+        assertLocaleList("app", "debug")
+            .isEqualTo(listOf("en-US", SdkConstants.EN_XA, SdkConstants.AR_XB))
+        assertLocaleList("lib1", "debug")
+            .isEqualTo(listOf(SdkConstants.EN_XA, SdkConstants.AR_XB))
+        assertLocaleList("lib2", "debug").isEmpty()
+        assertLocaleConfig("debug")
+            .isEqualTo(listOf("en-US", SdkConstants.EN_XA, SdkConstants.AR_XB))
+
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("app").buildFile,
+            "android.buildTypes.debug.pseudoLocalesEnabled true",
+            ""
+        )
+
+        project
+            .withLocales(appLocales = listOf(), lib1Locales = listOf(), lib2Locales = listOf())
+            .execute("assembleDebug")
+
+        assertLocaleList("app", "debug").isEqualTo(listOf("en-US"))
+        assertLocaleList("lib1", "debug")
+            .isEqualTo(listOf(SdkConstants.EN_XA, SdkConstants.AR_XB))
+        assertLocaleList("lib2", "debug").isEmpty()
+        assertLocaleConfig("debug")
+            .isEqualTo(listOf("en-US", SdkConstants.EN_XA, SdkConstants.AR_XB))
     }
 }

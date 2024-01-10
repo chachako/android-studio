@@ -63,10 +63,13 @@ abstract class ExtractSupportedLocalesTask : NonIncrementalTask() {
     @get:Input
     abstract val fromAppModule: Property<Boolean>
 
+    @get:Input
+    abstract val pseudoLocalesEnabled: Property<Boolean>
+
     public override fun doTaskAction() {
         val resources = listOf(nonMainResSet.files, mainResSet.files).flatten()
 
-        val localeList = generateLocaleList(resources)
+        val localeList = generateLocaleList(resources, pseudoLocalesEnabled.get())
 
         var validatedDefaultLocale: String? = null
 
@@ -135,6 +138,13 @@ abstract class ExtractSupportedLocalesTask : NonIncrementalTask() {
             task.mainResSet.disallowChanges()
 
             task.fromAppModule.setDisallowChanges(creationConfig.componentType.isBaseModule)
+            if (creationConfig.androidResourcesCreationConfig == null) {
+                task.pseudoLocalesEnabled.setDisallowChanges(false)
+            } else {
+                task.pseudoLocalesEnabled.setDisallowChanges(
+                    creationConfig.androidResourcesCreationConfig!!.pseudoLocalesEnabled
+                )
+            }
         }
     }
 }

@@ -17,8 +17,8 @@
 package com.android.build.gradle.integration.application;
 
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
-import static com.android.testutils.truth.PathSubject.assertThat;
 
+import com.android.SdkConstants;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.AssumeBuildToolsUtil;
 import java.io.IOException;
@@ -45,7 +45,9 @@ public class PseudoLocalizationTest {
     }
 
     @Test
-    public void testPseudolocalization() throws Exception {
-        assertThat(project.getApk("debug")).locales().containsAllOf("en-XA", "ar-XB");
+    public void testPseudolocalization() {
+        assertThat(project.getApk("debug"))
+                .locales()
+                .containsAllOf(SdkConstants.EN_XA, SdkConstants.AR_XB);
     }
 }
