@@ -26,14 +26,12 @@ import static com.android.zipflinger.Source.UNX_IXGRP;
 import static com.android.zipflinger.Source.UNX_IXOTH;
 import static com.android.zipflinger.Source.UNX_IXUSR;
 
-import com.android.zipflinger.Archive;
 import com.android.zipflinger.FullFileSource;
 import com.android.zipflinger.Source;
 import com.android.zipflinger.Sources;
 import com.android.zipflinger.ZipArchive;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -162,49 +160,22 @@ public class LnZipper {
                             : Sources::from;
             int compressionLevel = compress ? Deflater.BEST_COMPRESSION : Deflater.NO_COMPRESSION;
 
-            fileMap.entrySet()
-                    .parallelStream()
-                    .map(
-                            fileEntry ->
-                                    createSource(
-                                            bytesSourceFactory,
-                                            fileEntry,
-                                            compressionLevel,
-                                            preserveAttributes))
-                    .forEachOrdered(source -> addToArchive(archive, source));
-        }
-    }
-
-    private static Source createSource(
-            BytesSourceFactory bytesSourceFactory,
-            Map.Entry<String, Entry> fileEntry,
-            int compressionLevel,
-            boolean preserveAttributes) {
-        try {
-            Source source =
-                    bytesSourceFactory.create(
-                            fileEntry.getValue().path, fileEntry.getKey(), compressionLevel);
-            int attr = source.getExternalAttributes();
-            if (preserveAttributes) {
-                attr = readFileAttributes(attr, fileEntry.getValue().path);
+            for (Map.Entry<String, Entry> fileEntry : fileMap.entrySet()) {
+                Source source =
+                        bytesSourceFactory.create(
+                                fileEntry.getValue().path, fileEntry.getKey(), compressionLevel);
+                int attr = source.getExternalAttributes();
+                if (preserveAttributes) {
+                    attr = readFileAttributes(attr, fileEntry.getValue().path);
+                }
+                if (fileEntry.getValue().attr != 0) {
+                    // Override file attributes, but leave anything else the same
+                    attr = attr & ~(0x1FF0000);
+                    attr |= (fileEntry.getValue().attr & 0x1FF) << 16;
+                }
+                source.setExternalAttributes(attr);
+                archive.add(source);
             }
-            if (fileEntry.getValue().attr != 0) {
-                // Override file attributes, but leave anything else the same
-                attr = attr & ~(0x1FF0000);
-                attr |= (fileEntry.getValue().attr & 0x1FF) << 16;
-            }
-            source.setExternalAttributes(attr);
-            return source;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private static void addToArchive(Archive archive, Source source) {
-        try {
-            archive.add(source);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         }
     }
 
