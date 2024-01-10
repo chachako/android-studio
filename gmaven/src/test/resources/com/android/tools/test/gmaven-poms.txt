@@ -708,7 +708,6 @@ com.android.tools.lint:lint-tests
     junit:junit (runtime)
     net.sf.kxml:kxml2 (runtime)
     org.codehaus.groovy:groovy (runtime)
-    org.mockito:mockito-core (runtime)
     org.ow2.asm:asm (runtime)
     org.ow2.asm:asm-tree (runtime)
 

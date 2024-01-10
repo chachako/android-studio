@@ -33,7 +33,6 @@ maven_library(
         "@maven//:junit.junit",
         "@maven//:net.sf.kxml.kxml2",
         "@maven//:org.codehaus.groovy.groovy",
-        "@maven//:org.mockito.mockito-core",
         "@maven//:org.ow2.asm.asm",
         "@maven//:org.ow2.asm.asm-tree",
     ],
