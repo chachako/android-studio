@@ -41,7 +41,10 @@ import com.android.tools.lint.detector.api.isScopingThis
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiVariable
 import com.intellij.util.containers.headTail
+import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionLikeSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KtTypeParameterSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolKind
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.psi.KtElement
@@ -156,7 +159,6 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       )
 
     private const val CLASS_URI = "android.net.Uri"
-    private const val CLASS_KOTLIN_COLLECTIONS = "kotlin.collections.CollectionsKt__CollectionsKt"
     private const val METHOD_ARRAY_OF = "arrayOf"
     private const val METHOD_ARRAY_OF_NULLS = "arrayOfNulls"
     private const val METHOD_INTENT_SET_COMPONENT = "setComponent"
@@ -164,8 +166,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     private const val METHOD_INTENT_SET_CLASS = "setClass"
     private const val METHOD_INTENT_SET_CLASS_NAME = "setClassName"
     private const val METHOD_LIST_OF = "listOf"
-    private const val TYPE_ARRAY_OF_PARAM = "T"
-    private const val TYPE_LIST_OF_ARG = "T..."
+    private const val TYPE_PARAM = "T"
 
     // Used for the vararg argumentTypes in JavaEvaluator#methodMatches
     private val INTENT_EXPLICIT_CONSTRUCTOR_ARGS =
@@ -259,7 +260,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
         METHOD_CALL -> {
           if (isWithScopeCall(intent)) {
             getIntentTypeForWithScopeCall(intent, intentInfo)
-          } else if (isKotlinCollection(intent, intentInfo)) {
+          } else if (isKotlinCollection(intent)) {
             IntentType(
               isImplicit =
                 intent.valueArguments.any {
@@ -399,7 +400,8 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     }
 
     private fun isNewJavaKotlinArrayWithDimensions(exp: UCallExpression): Boolean =
-      exp.isNewArrayWithDimensions() || exp.isMethodCall() && isArrayOfNulls(exp)
+      exp.isNewArrayWithDimensions() ||
+        exp.isMethodCall() && isArrayOfOrArrayOfNulls(exp, METHOD_ARRAY_OF_NULLS)
 
     private fun findLastAssignmentAndItsParentUMethod(
       intent: USimpleNameReferenceExpression,
@@ -447,45 +449,68 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
 
     private fun isKotlinCollection(
       call: UCallExpression,
-      intentInfo: IntentExpressionInfo
     ): Boolean {
-      val psiMethod = call.resolve()
-      if (psiMethod != null) {
-        return intentInfo.javaEvaluator.methodMatches(
-          psiMethod,
-          CLASS_KOTLIN_COLLECTIONS,
-          allowInherit = false,
-          TYPE_LIST_OF_ARG
-        ) && psiMethod.name == METHOD_LIST_OF
+      val sourcePsi = call.sourcePsi as? KtElement ?: return false
+      analyze(sourcePsi) {
+        val symbol = getFunctionLikeSymbol(sourcePsi) ?: return false
+        return isListOf(symbol) || isArrayOfOrArrayOfNulls(symbol, METHOD_ARRAY_OF)
       }
-      return isArrayOf(call)
     }
-
-    private fun isArrayOf(call: UCallExpression): Boolean =
-      isArrayOfOrArrayOfNulls(call, METHOD_ARRAY_OF)
-
-    private fun isArrayOfNulls(call: UCallExpression): Boolean =
-      isArrayOfOrArrayOfNulls(call, METHOD_ARRAY_OF_NULLS)
 
     private fun isArrayOfOrArrayOfNulls(call: UCallExpression, arrayOfMethodName: String): Boolean {
       val sourcePsi = call.sourcePsi as? KtElement ?: return false
       analyze(sourcePsi) {
         val symbol = getFunctionLikeSymbol(sourcePsi) ?: return false
-        val typeParameters = symbol.typeParameters
-        if (typeParameters.size != 1) return false
-        val typeParam = typeParameters[0]
-        val callableId = symbol.callableIdIfNonLocal ?: return false
-        val packageName = callableId.packageName
-        val className = callableId.className?.asString()
-        val methodName = callableId.callableName.asString()
-        val returnType = symbol.returnType
-        return packageName == StandardClassIds.BASE_KOTLIN_PACKAGE &&
-          symbol.symbolKind == KtSymbolKind.TOP_LEVEL &&
-          methodName == arrayOfMethodName &&
-          typeParam.name.asString() == TYPE_ARRAY_OF_PARAM &&
-          typeParam.isReified &&
-          returnType.isArrayOrPrimitiveArray()
+        return isArrayOfOrArrayOfNulls(symbol, arrayOfMethodName)
       }
+    }
+
+    private fun KtAnalysisSession.isArrayOfOrArrayOfNulls(
+      symbol: KtFunctionLikeSymbol,
+      arrayOfMethodName: String
+    ): Boolean {
+      if (!hasSingleTypeParameter(symbol) { it.isReified }) return false
+      if (arrayOfMethodName == METHOD_ARRAY_OF && !hasVarargValueParameterOnly(symbol)) {
+        return false
+      }
+      val callableId = symbol.callableIdIfNonLocal ?: return false
+      val packageName = callableId.packageName
+      val methodName = callableId.callableName.asString()
+      val returnType = symbol.returnType
+      return packageName == StandardClassIds.BASE_KOTLIN_PACKAGE &&
+        symbol.symbolKind == KtSymbolKind.TOP_LEVEL &&
+        methodName == arrayOfMethodName &&
+        returnType.isArrayOrPrimitiveArray()
+    }
+
+    private fun KtAnalysisSession.isListOf(symbol: KtFunctionLikeSymbol): Boolean {
+      if (!hasSingleTypeParameter(symbol) || !hasVarargValueParameterOnly(symbol)) {
+        return false
+      }
+      val callableId = symbol.callableIdIfNonLocal ?: return false
+      val packageName = callableId.packageName
+      val methodName = callableId.callableName.asString()
+      val returnType = symbol.returnType
+      return packageName == StandardClassIds.BASE_COLLECTIONS_PACKAGE &&
+        symbol.symbolKind == KtSymbolKind.TOP_LEVEL &&
+        methodName == METHOD_LIST_OF &&
+        returnType.isClassTypeWithClassId(StandardClassIds.List)
+    }
+
+    private fun hasSingleTypeParameter(
+      symbol: KtFunctionLikeSymbol,
+      typeParameterCheck: (KtTypeParameterSymbol) -> Boolean = { true }
+    ): Boolean {
+      val typeParameters = symbol.typeParameters
+      if (typeParameters.size != 1) return false
+      val typeParam = typeParameters[0]
+      return typeParam.name.asString() == TYPE_PARAM && typeParameterCheck(typeParam)
+    }
+
+    private fun hasVarargValueParameterOnly(symbol: KtFunctionLikeSymbol): Boolean {
+      val valueParameters = symbol.valueParameters
+      if (valueParameters.size != 1) return false
+      return valueParameters[0].isVararg
     }
 
     private fun isWithScopeCall(call: UCallExpression): Boolean =
@@ -717,7 +742,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
           call.isArrayInitializer() ||
           isPendingIntentGetMethod(call) ||
           isWithScopeCall(call) ||
-          isKotlinCollection(call, intentInfo)
+          isKotlinCollection(call)
     }
 
     /** Lint fixes related code */
