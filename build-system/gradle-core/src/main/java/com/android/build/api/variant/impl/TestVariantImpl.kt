@@ -24,6 +24,7 @@ import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.TestVariant
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.TestVariantCreationConfig
 import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
@@ -163,7 +164,7 @@ open class TestVariantImpl @Inject constructor(
         )
     }
 
-    // ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
     // INTERNAL API
     // ---------------------------------------------------------------------------------------------
 
@@ -218,6 +219,8 @@ open class TestVariantImpl @Inject constructor(
         get() = false
     override val packageJacocoRuntime: Boolean
         get() = false
+
+    val hostTests = mapOf<String, HostTestCreationConfig>()
 
     // ---------------------------------------------------------------------------------------------
     // Private stuff

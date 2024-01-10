@@ -18,6 +18,9 @@ package com.android.build.api.variant
 
 import org.gradle.api.Incubating
 
+/**
+ * Interface to turn tests on devices, `AndroidTest` being an example of device tests.
+ */
 @Incubating
 interface DeviceTestBuilder {
 

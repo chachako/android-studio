@@ -17,6 +17,7 @@ package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.DynamicFeatureVariantBuilder
+import com.android.build.api.variant.HostTestBuilder
 import com.android.tools.build.gradle.internal.profile.VariantMethodType
 import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
@@ -40,6 +41,12 @@ class AnalyticsEnabledDynamicFeatureVariantBuilderTest {
     @Suppress("DEPRECATION")
     @Mock
     lateinit var androidTestBuilder: com.android.build.api.variant.AndroidTestBuilder
+
+    @Mock
+    lateinit var unitTest: HostTestBuilder
+
+    @Mock
+    lateinit var screenshotTest: HostTestBuilder
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledDynamicFeatureVariantBuilder by lazy {
@@ -99,4 +106,12 @@ class AnalyticsEnabledDynamicFeatureVariantBuilderTest {
             .androidTest
     }
 
+    @Test
+    fun testHostTests() {
+        Truth.assertThat(proxy.hostTests).isInstanceOf(Map::class.java)
+        Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantAccessList.first().type
+        ).isEqualTo(VariantMethodType.HOST_TESTS_BUILDER_VALUE)
+    }
 }

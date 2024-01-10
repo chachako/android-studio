@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,18 @@
 
 package com.android.build.api.variant.impl
 
-import com.android.build.api.component.impl.ScreenshotTestImpl
-import com.android.build.api.component.impl.UnitTestImpl
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 
-/**
- * Internal marker interface for [VariantImpl] that potentially has associated host tests
- * e.g. the unitTest component
- */
-interface HasHostTests {
-    var unitTest: UnitTestImpl?
-    var screenshotTest: ScreenshotTestImpl?
+interface HasHostTestsCreationConfig {
+
+    /**
+     * Internal version of the public API that hold an internal type.
+     */
+    val hostTests: Map<String, HostTestCreationConfig>
+
+    /**
+     * Add a new element to [hostTests], provided a test type name and the test
+     * component/variant.
+     */
+    fun addTestComponent(testTypeName: String, testComponent: HostTestCreationConfig)
 }

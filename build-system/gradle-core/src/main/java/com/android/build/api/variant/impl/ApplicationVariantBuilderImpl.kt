@@ -22,6 +22,8 @@ import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.DependenciesInfoBuilder
 import com.android.build.api.variant.DeviceTestBuilder
+import com.android.build.api.variant.HasHostTestsBuilder
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.PropertyAccessNotAllowedException
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo
@@ -43,7 +45,8 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
     variantBuilderServices
 ), ApplicationVariantBuilder {
 
-    override val debuggable: Boolean = (dslInfo as? ApplicationVariantDslInfo)?.isDebuggable ?: false
+    override val debuggable: Boolean =
+        (dslInfo as? ApplicationVariantDslInfo)?.isDebuggable ?: false
 
     override var androidTestEnabled: Boolean
         get() = androidTest.enable
@@ -68,7 +71,10 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
                             "Only one of these options can be used at a time.\n" +
                             "Recommended action: Only set one of profileable=true via variant API \n" +
                             "or debuggable=true via DSL"
-                variantBuilderServices.issueReporter.reportWarning(IssueReporter.Type.GENERIC, message)
+                variantBuilderServices.issueReporter.reportWarning(
+                    IssueReporter.Type.GENERIC,
+                    message
+                )
             } else {
                 _profileable = value
             }
@@ -102,11 +108,11 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
 
     override var isMinifyEnabled: Boolean =
         dslInfo.optimizationDslInfo.postProcessingOptions.codeShrinkerEnabled()
-        set(value) = setMinificationIfPossible("minifyEnabled", value){ field = it }
+        set(value) = setMinificationIfPossible("minifyEnabled", value) { field = it }
 
     override var shrinkResources: Boolean =
         dslInfo.optimizationDslInfo.postProcessingOptions.resourcesShrinkingEnabled()
-        set(value) = setMinificationIfPossible("shrinkResources", value){ field = it }
+        set(value) = setMinificationIfPossible("shrinkResources", value) { field = it }
 
     internal var _enableMultiDex = dslInfo.dexingDslInfo.isMultiDexEnabled
     override var enableMultiDex: Boolean?
@@ -128,4 +134,11 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
 
     override val androidResources: ApplicationAndroidResourcesBuilder =
         ApplicationAndroidResourcesBuilderImpl(dslInfo.generateLocaleConfig)
+
+    override val hostTests: Map<String, HostTestBuilder> = mapOf(
+            HostTestBuilder.UNIT_TEST_TYPE to
+                HostTestBuilderImpl.forUnitTest(variantBuilderServices),
+            HostTestBuilder.SCREENSHOT_TEST_TYPE to
+                HostTestBuilderImpl.forScreenshotTest(dslInfo.experimentalProperties)
+        )
 }

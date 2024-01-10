@@ -17,8 +17,8 @@
 package com.android.build.api.component.impl
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
-import com.android.build.api.component.UnitTest
 import com.android.build.api.variant.ComponentIdentity
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
@@ -31,6 +31,7 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import com.android.builder.core.ComponentTypeImpl
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.testing.Test
 import javax.inject.Inject
@@ -63,7 +64,7 @@ open class ScreenshotTestImpl @Inject constructor(
     internalServices,
     taskCreationServices,
     global
-), UnitTest, HostTestCreationConfig {
+), HostTestCreationConfig {
 
     private val testTaskConfigActions = mutableListOf<(Test) -> Unit>()
 
@@ -76,6 +77,10 @@ open class ScreenshotTestImpl @Inject constructor(
             testTask.configure { testTask -> it(testTask) }
         }
     }
+
+    override val hostTestName: String = HostTestBuilder.SCREENSHOT_TEST_TYPE
+
+    override val type = ComponentTypeImpl.SCREENSHOT_TEST
 
     override val isCoverageEnabled: Boolean
         get() = dslInfo.isCoverageEnabled

@@ -324,7 +324,6 @@ https://issuetracker.google.com/328748877
   * com.android.build.api.dsl.PrivacySandboxSdkOptimization
   * com.android.build.api.dsl.PrivacySandboxSdkOptimization.getKeepRules: com.android.build.api.dsl.PrivacySandboxKeepRules ()
 https://issuetracker.google.com/328748878
-  * com.android.build.api.variant.KotlinMultiplatformAndroidVariant implements com.android.build.api.variant.HasDeviceTests, com.android.build.api.variant.HasAndroidTest, com.android.build.api.variant.HasUnitTest
   * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getArtifacts: com.android.build.api.artifact.Artifacts ()
   * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getCompileClasspath: org.gradle.api.file.FileCollection ()
   * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getInstrumentation: com.android.build.api.variant.Instrumentation ()
@@ -686,5 +685,16 @@ https://issuetracker.google.com/330688483
   * com.android.build.api.instrumentation.manageddevice.TestRunData.getTestRunId: java.lang.String ()
   * com.android.build.api.instrumentation.manageddevice.TestRunData.getVariantName: java.lang.String ()
   * com.android.build.api.variant.AndroidComponents.getManagedDeviceRegistry: com.android.build.api.instrumentation.manageddevice.ManagedDeviceRegistry ()
+https://issuetracker.google.com/331936874
+  * com.android.build.api.variant.HasHostTests
+  * com.android.build.api.variant.HasHostTests.getHostTests: java.util.Map<java.lang.String, com.android.build.api.variant.HostTest> ()
+  * com.android.build.api.variant.HasHostTestsBuilder
+  * com.android.build.api.variant.HasHostTestsBuilder.getHostTests: java.util.Map<java.lang.String, com.android.build.api.variant.HostTestBuilder> ()
+  * com.android.build.api.variant.HostTestBuilder
+  * com.android.build.api.variant.HostTestBuilder.getEnable: boolean ()
+  * com.android.build.api.variant.HostTestBuilder.getType: java.lang.String ()
+  * com.android.build.api.variant.HostTestBuilder.setEnable: void (boolean)
+  * com.android.build.api.variant.HostTestBuilder.setType: void (java.lang.String)
+  * com.android.build.api.variant.KotlinMultiplatformAndroidVariant implements com.android.build.api.variant.HasDeviceTests, com.android.build.api.variant.HasAndroidTest, com.android.build.api.variant.HasUnitTest, com.android.build.api.variant.HasHostTests
 https://issuetracker.google.com/333537222
   * com.android.build.api.dsl.AndroidSourceDirectorySet.getDirectories: java.util.Set<java.lang.String> ()

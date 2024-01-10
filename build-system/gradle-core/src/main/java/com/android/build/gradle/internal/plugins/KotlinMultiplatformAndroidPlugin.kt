@@ -24,7 +24,7 @@ import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.analytics.AnalyticsEnabledKotlinMultiplatformAndroidVariant
 import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpComponentImpl
-import com.android.build.api.component.impl.KmpUnitTestImpl
+import com.android.build.api.component.impl.KmpHostTestImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 import com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
@@ -515,7 +515,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
         variantServices: VariantServices,
         taskCreationServices: TaskCreationServices,
         androidTarget: KotlinMultiplatformAndroidTarget
-    ): KmpUnitTestImpl? {
+    ): KmpHostTestImpl? {
         if (!mainVariant.dslInfo.enabledUnitTest) {
             return null
         }
@@ -540,7 +540,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
             androidExtension.androidTestOnJvmBuilder!!.compilationName
         ) as KotlinMultiplatformAndroidCompilationImpl
 
-        return KmpUnitTestImpl(
+        return KmpHostTestImpl(
             dslInfo = dslInfo,
             internalServices = variantServices,
             buildFeatures = KotlinMultiplatformBuildFeaturesValuesImpl(

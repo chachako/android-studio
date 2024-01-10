@@ -18,17 +18,17 @@ package com.android.build.gradle.internal
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.impl.DeviceTestImpl
-import com.android.build.api.component.impl.ScreenshotTestImpl
 import com.android.build.api.component.impl.TestFixturesImpl
-import com.android.build.api.component.impl.UnitTestImpl
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.TestedExtension
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
 import com.android.build.api.variant.HasDeviceTests
 import com.android.build.api.variant.HasDeviceTestsBuilder
+import com.android.build.api.variant.HasHostTests
 import com.android.build.api.variant.HasTestFixturesBuilder
-import com.android.build.api.variant.HasUnitTestBuilder
+import com.android.build.api.variant.HasHostTestsBuilder
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.Variant
 import com.android.build.api.variant.VariantBuilder
@@ -38,8 +38,9 @@ import com.android.build.api.variant.impl.DeviceTestBuilderImpl
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfig
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfigImpl
 import com.android.build.api.variant.impl.HasTestFixtures
-import com.android.build.api.variant.impl.HasHostTests
+import com.android.build.api.variant.impl.HostTestBuilderImpl
 import com.android.build.api.variant.impl.InternalHasDeviceTests
+import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.api.variant.impl.InternalVariantBuilder
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
@@ -47,6 +48,7 @@ import com.android.build.gradle.internal.api.ReadOnlyObjectProvider
 import com.android.build.gradle.internal.api.VariantFilter
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.component.NestedComponentCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
@@ -67,7 +69,6 @@ import com.android.build.gradle.internal.crash.ExternalApiUsageException
 import com.android.build.gradle.internal.dependency.VariantDependenciesBuilder
 import com.android.build.gradle.internal.dsl.BuildType
 import com.android.build.gradle.internal.dsl.DefaultConfig
-import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.dsl.ProductFlavor
 import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.manifest.LazyManifestParser
@@ -867,8 +868,9 @@ class VariantManager<
                 }
 
                 if (variantFactory.componentType.hasTestComponents) {
-                    (variantBuilder as? HasDeviceTestsBuilder)?.deviceTests?.forEach { deviceTestBuilder ->
-                        if (deviceTestBuilder.enable && buildTypeData == testBuildTypeData) {
+                    (variantBuilder as? HasDeviceTestsBuilder)?.deviceTests
+                        ?.filter { it.enable && buildTypeData == testBuildTypeData }
+                        ?.forEach { deviceTestBuilder ->
                             val androidTest = createTestComponents<AndroidTestComponentDslInfo>(
                                 dimensionCombination,
                                 buildTypeData,
@@ -879,38 +881,23 @@ class VariantManager<
                                 deviceTestBuilder as DeviceTestBuilderImpl,
                             )
                             addTestComponent(androidTest)
-
                             (variant as InternalHasDeviceTests).deviceTests.add(androidTest as DeviceTestImpl)
-                        }
-                    }
-                    val unitTestEnabled = (variantBuilder as? HasUnitTestBuilder)?.enableUnitTest ?: false
-                    if (unitTestEnabled) {
-                        val unitTest = createTestComponents<HostTestComponentDslInfo>(
-                            dimensionCombination,
-                            buildTypeData,
-                            productFlavorDataList,
-                            variantInfo,
-                            ComponentTypeImpl.UNIT_TEST,
-                            testFixturesEnabledForVariant,
-                        )
-                        addTestComponent(unitTest)
-                        (variant as HasHostTests).unitTest = unitTest as UnitTestImpl
                     }
 
-                    val screenshotTestEnabled =
-                        ModulePropertyKey.BooleanWithDefault.SCREENSHOT_TEST.getValue(dslExtension.experimentalProperties)
-
-                    if (screenshotTestEnabled) {
-                        val screenshotTest = createTestComponents<HostTestComponentDslInfo>(
-                            dimensionCombination,
-                            buildTypeData,
-                            productFlavorDataList,
-                            variantInfo,
-                            ComponentTypeImpl.SCREENSHOT_TEST,
-                            testFixturesEnabledForVariant,
-                        )
-                        addTestComponent(screenshotTest)
-                        (variant as HasHostTests).screenshotTest = screenshotTest as ScreenshotTestImpl
+                    (variantBuilder as? HasHostTestsBuilder)?.hostTests
+                        ?.filterValues { it.enable }
+                        ?.forEach { (_, hostTestBuilder) ->
+                            val testComponent = createTestComponents<HostTestComponentDslInfo>(
+                                dimensionCombination,
+                                buildTypeData,
+                                productFlavorDataList,
+                                variantInfo,
+                                (hostTestBuilder as HostTestBuilderImpl).componentType,
+                                testFixturesEnabledForVariant,
+                            )
+                            addTestComponent(testComponent)
+                            (variant as HasHostTestsCreationConfig)
+                                .addTestComponent(hostTestBuilder.type, testComponent as HostTestCreationConfig)
                     }
                 }
 
@@ -963,7 +950,8 @@ class VariantManager<
                         .setVariantType(variant.componentType.analyticsVariantType)
                         .setDexBuilder(GradleBuildVariant.DexBuilderTool.D8_DEXER)
                         .setDexMerger(GradleBuildVariant.DexMergerTool.D8_MERGER)
-                        .setHasUnitTest((variant as? HasHostTests)?.unitTest != null)
+                        .setHasUnitTest((variant as? HasHostTests)?.hostTests
+                            ?.containsKey(HostTestBuilder.UNIT_TEST_TYPE) ?: false)
                          // TODO(karimai): Add tracking for ScreenshotTests
                         .setHasAndroidTest((variant as? HasDeviceTests)?.deviceTests?.isNotEmpty() ?: false)
                         .setHasTestFixtures((variant as? HasTestFixtures)?.testFixtures != null)

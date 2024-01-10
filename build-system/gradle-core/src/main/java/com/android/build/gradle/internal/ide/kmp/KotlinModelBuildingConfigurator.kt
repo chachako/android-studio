@@ -19,7 +19,7 @@ package com.android.build.gradle.internal.ide.kmp
 import com.android.SdkConstants
 import com.android.Version
 import com.android.build.api.component.impl.KmpAndroidTestImpl
-import com.android.build.api.component.impl.KmpUnitTestImpl
+import com.android.build.api.component.impl.KmpHostTestImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
@@ -60,7 +60,7 @@ import org.gradle.api.Project
 object KotlinModelBuildingConfigurator {
     private fun KmpComponentCreationConfig.toType() = when (this) {
         is KmpCreationConfig -> AndroidCompilation.CompilationType.MAIN
-        is KmpUnitTestImpl -> AndroidCompilation.CompilationType.UNIT_TEST
+        is KmpHostTestImpl -> AndroidCompilation.CompilationType.UNIT_TEST
         is KmpAndroidTestImpl -> AndroidCompilation.CompilationType.INSTRUMENTED_TEST
         else -> throw IllegalArgumentException("Unknown type ${this::class.java}")
     }

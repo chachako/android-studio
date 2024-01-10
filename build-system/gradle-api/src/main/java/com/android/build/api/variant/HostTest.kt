@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,32 +20,30 @@ import org.gradle.api.Incubating
 import org.gradle.api.tasks.testing.Test
 
 /**
- * [Component] for unit tests
+ * Model for Host Test components that contains build-time properties. Host Tests run on a JVM
+ * on your build machine, as opposed to [DeviceTest] which run on an Android Device.
  *
- * Model for Unit Test components that contains build-time properties
+ * This object is accessible on subtypes of [Variant] that implement [HasHostTests], via
+ * [HasHostTests.hostTests]. It is also part of [Variant.nestedComponents].
  *
- * This object is accessible on subtypes of [Variant] that implement [HasUnitTest], via
- * [HasUnitTest.unitTest]. It is also part of [Variant.nestedComponents].
- *
- * Prefer using [HostTest] rather than this interface which will be deprecated once [HostTest] is
- * stable.
- *
- * The presence of this component in a variant is controlled by [HasUnitTestBuilder.enableUnitTest]
- * which is accessible on subtypes of [VariantBuilder] that implement [HasUnitTestBuilder]
-*/
-interface UnitTest: TestComponent {
+ * The presence of this component in a variant is controlled by [HostTestBuilder.enable]
+ * which is accessible on subtypes of [VariantBuilder] that implement [HasHostTestsBuilder]
+ */
+@Incubating
+interface HostTest: TestComponent {
 
     /**
      * Runs some action to configure the Variant's unit test [Test] task.
      *
      * The action will only run if the task is configured. In particular the
-     * [HasUnitTestBuilder.enableUnitTest]] must be set to true (it is true by default).
+     * [HasHostTestsBuilder.hostTests[HasHostTestsBuilder.UNIT_TEST_TYPE]?.enable] must be set to
+     * true (it is true by default).
      *
      * Example :
      * ```(kotlin)
      *  androidComponents {
      *      onVariants { variant ->
-     *          variant.unitTest?.configureTestTask { testTask ->
+     *          variant.hostTests[HostTestsBuilder.UNIT_TEST_TYPE]?.configureTestTask { testTask ->
      *              testTask.beforeTest { descriptor ->
      *                  println("Running test: " + descriptor)
      *              }

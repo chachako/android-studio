@@ -34,9 +34,9 @@ import com.android.build.api.dsl.TestExtension
 import com.android.build.api.variant.ScopedArtifacts.Scope.ALL
 import com.android.build.api.variant.ScopedArtifacts.Scope.PROJECT
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
-import com.android.build.api.variant.impl.HasHostTests
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.InternalHasDeviceTests
+import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
@@ -600,28 +600,16 @@ class ModelBuilder<
                     )
             }
             val hostTestArtifacts = mutableMapOf<String, ArtifactDependenciesAdjacencyList>()
-            (variant as? HasHostTests)?.unitTest?.let {
-                hostTestArtifacts.put(
-                    it.componentType.artifactName,
+            (variant as? HasHostTestsCreationConfig)?.hostTests?.values?.forEach { hostTest ->
+                hostTestArtifacts[hostTest.componentType.artifactName] =
                     createDependenciesWithAdjacencyList(
-                            it,
-                            libraryService,
-                            graphEdgeCache,
-                            parameter.dontBuildUnitTestRuntimeClasspath
-                    )
-                )
-            }
-            (variant as? HasHostTests)?.screenshotTest?.let {
-                hostTestArtifacts.put(
-                    it.componentType.artifactName,
-                    createDependenciesWithAdjacencyList(
-                        it,
+                        hostTest,
                         libraryService,
                         graphEdgeCache,
-                        parameter.dontBuildScreenshotTestRuntimeClasspath
+                        parameter.dontBuildUnitTestRuntimeClasspath
                     )
-                )
             }
+
             return VariantDependenciesAdjacencyListImpl(
                     name = variantName,
                     mainArtifact = createDependenciesWithAdjacencyList(
@@ -653,23 +641,11 @@ class ModelBuilder<
                     )
             }
             val hostTestArtifacts = mutableMapOf<String, ArtifactDependencies>()
-            (variant as? HasHostTests)?.unitTest?.let {
-                hostTestArtifacts.put(
-                        it.componentType.artifactName,
-                        createDependencies(
-                            it,
-                            libraryService,
-                            parameter.dontBuildUnitTestRuntimeClasspath
-                        ))
-            }
-            (variant as? HasHostTests)?.screenshotTest?.let {
-                hostTestArtifacts.put(
-                        it.componentType.artifactName,
-                        createDependencies(
-                                it,
-                                libraryService,
-                                parameter.dontBuildScreenshotTestRuntimeClasspath
-                        )
+            (variant as? HasHostTestsCreationConfig)?.hostTests?.values?.forEach {
+                hostTestArtifacts[it.componentType.artifactName] = createDependencies(
+                    it,
+                    libraryService,
+                    parameter.dontBuildHostTestRuntimeClasspath[it.componentType.suffix] ?: false,
                 )
             }
             return VariantDependenciesImpl(
@@ -702,11 +678,10 @@ class ModelBuilder<
             deviceTestArtifacts[it.artifactName] = createBasicArtifact(it, features)
         }
         val hostTestArtifacts = mutableMapOf<String, BasicArtifact>()
-        (variant as? HasHostTests)?.unitTest?.let {
-            hostTestArtifacts.put(it.componentType.artifactName, createBasicArtifact(it, features))
-        }
-        (variant as? HasHostTests)?.screenshotTest?.let {
-            hostTestArtifacts.put(it.componentType.artifactName, createBasicArtifact(it, features))
+        (variant as? HasHostTestsCreationConfig)?.hostTests?.values?.forEach { hostTest ->
+            hostTestArtifacts[hostTest.componentType.artifactName] =
+                createBasicArtifact(hostTest, features)
+
         }
         return BasicVariantImpl(
             name = variant.name,
@@ -744,11 +719,10 @@ class ModelBuilder<
             deviceTestArtifacts[it.artifactName] = createAndroidArtifact(it)
         }
         val hostTestArtifacts = mutableMapOf<String, JavaArtifact>()
-        (variant as? HasHostTests)?.unitTest?.let {
-            hostTestArtifacts.put(it.componentType.artifactName, createJavaArtifact(it))
-        }
-        (variant as? HasHostTests)?.screenshotTest?.let {
-            hostTestArtifacts.put(it.componentType.artifactName, createJavaArtifact(it))
+        (variant as? HasHostTestsCreationConfig)?.hostTests?.values?.forEach { hostTest ->
+            hostTestArtifacts[hostTest.componentType.artifactName] =
+                createJavaArtifact(hostTest)
+
         }
         return VariantImpl(
             name = variant.name,

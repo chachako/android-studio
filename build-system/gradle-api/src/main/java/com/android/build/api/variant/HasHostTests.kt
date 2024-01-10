@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.build.api.variant
 
-/**
- * Model for library components that only contains build-time properties.
- *
- * See [Component] and [Variant] for more information.
- */
-@Suppress("DEPRECATION")
-interface LibraryVariant : Variant,
-    GeneratesAar,
-    HasDeviceTests,
-    HasAndroidTest,
-    HasHostTests,
-    HasUnitTest,
-    HasTestFixtures,
-    CanMinifyCode {
+import org.gradle.api.Incubating
 
+/**
+ * [Variant] that optionally have [HostTest] components like [UnitTest].
+ */
+@Incubating
+interface HasHostTests {
     /**
-     * Variant specific settings for the renderscript compiler. This will return null when
-     * [com.android.build.api.dsl.BuildFeatures.renderScript] is false.
+     * [Map] of Variant's [HostTest], or empty if all host tests (like unit test) for this variant
+     * are disabled. Map keys are the [HostTest] name, like [HasHostTestsBuilder.UNIT_TEST_TYPE] or
+     * [HasHostTestsBuilder.SCREENSHOT_TEST_TYPE] for default host tests.
      */
-    val renderscript: Renderscript?
+    @get:Incubating
+    val hostTests: Map<String, HostTest>
 }

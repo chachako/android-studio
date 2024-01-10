@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-05f1e4772e13e1bca8676091baea0fc068fce376225cb9f10de1e4fe1ad46d32
+a7adb867e95a26606a4a6871b503c0025e529faadeee708320a471ccc5e4dfcd
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -843,12 +843,14 @@ com.android.builder.model.v2.models.ClasspathParameterConfig.valueOf: com.androi
 com.android.builder.model.v2.models.ClasspathParameterConfig.values: com.android.builder.model.v2.models.ClasspathParameterConfig[] ()
 com.android.builder.model.v2.models.ModelBuilderParameter
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildAndroidTestRuntimeClasspath: boolean ()
+com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildHostTestRuntimeClasspath: java.util.Map<java.lang.String, java.lang.Boolean> ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildScreenshotTestRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildTestFixtureRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildUnitTestRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getVariantName: java.lang.String ()
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildAndroidTestRuntimeClasspath: void (boolean)
+com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildHostTestRuntimeClasspath: void (java.util.Map<java.lang.String, java.lang.Boolean>)
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildScreenshotTestRuntimeClasspath: void (boolean)
 com.android.builder.model.v2.models.ModelBuilderParameter.setDontBuildTestFixtureRuntimeClasspath: void (boolean)

@@ -17,6 +17,7 @@
 package com.android.build.api.variant.impl
 
 import com.android.build.api.variant.ComponentIdentity
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.gradle.internal.core.PostProcessingOptions
 import com.android.build.gradle.internal.core.dsl.VariantDslInfo
@@ -64,14 +65,16 @@ internal class VariantBuilderImplTest {
             ): T {
                 throw RuntimeException("Unexpected method invocation")
             }
+
+            override val hostTests: Map<String, HostTestBuilder> = mapOf()
         }
     }
 
     @Before
     fun setup() {
-        Mockito.`when`(variantBuilderServices.projectOptions).thenReturn(
-            ProjectOptions(ImmutableMap.of(), FakeProviderFactory.factory)
-        )
+//        Mockito.`when`(variantBuilderServices.projectOptions).thenReturn(
+//            ProjectOptions(ImmutableMap.of(), FakeProviderFactory.factory)
+//        )
         val optimizationDslInfo = Mockito.mock(OptimizationDslInfo::class.java)
         val postProcessingOptions = Mockito.mock(PostProcessingOptions::class.java)
         Mockito.`when`(optimizationDslInfo.postProcessingOptions).thenReturn(postProcessingOptions)

@@ -21,7 +21,7 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.component.impl.KmpAndroidTestImpl
-import com.android.build.api.component.impl.KmpUnitTestImpl
+import com.android.build.api.component.impl.KmpHostTestImpl
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.AndroidTestTaskManager
 import com.android.build.gradle.internal.TaskManager
@@ -70,7 +70,7 @@ class KmpTaskManager(
     fun createTasks(
         project: Project,
         variant: KmpCreationConfig,
-        unitTest: KmpUnitTestImpl?,
+        unitTest: KmpHostTestImpl?,
         androidTest: KmpAndroidTestImpl?,
     ) {
         createMainVariantTasks(project, variant)
@@ -234,7 +234,7 @@ class KmpTaskManager(
 
     private fun createUnitTestTasks(
         project: Project,
-        component: KmpUnitTestImpl
+        component: KmpHostTestImpl
     ) {
         createAnchorTasks(project, component, false)
 

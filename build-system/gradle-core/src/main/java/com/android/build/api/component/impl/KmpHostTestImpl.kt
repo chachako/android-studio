@@ -25,6 +25,7 @@ import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.instrumentation.InstrumentationParameters
 import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.AndroidVersion
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.UnitTest
 import com.android.build.api.variant.impl.AndroidResourcesImpl
 import com.android.build.api.variant.impl.KmpVariantImpl
@@ -42,6 +43,7 @@ import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import com.android.builder.core.ComponentTypeImpl
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
@@ -49,7 +51,8 @@ import org.gradle.api.tasks.testing.Test
 import java.io.File
 import javax.inject.Inject
 
-open class KmpUnitTestImpl @Inject constructor(
+@Suppress("DEPRECATION")
+open class KmpHostTestImpl @Inject constructor(
     dslInfo: KmpUnitTestDslInfoImpl,
     internalServices: VariantServices,
     buildFeatures: BuildFeatureValues,
@@ -153,4 +156,9 @@ open class KmpUnitTestImpl @Inject constructor(
 
     override fun finalizeAndLock() {
     }
+
+    override val hostTestName: String
+        get() = HostTestBuilder.UNIT_TEST_TYPE
+    override val type
+        get() = ComponentTypeImpl.UNIT_TEST
 }

@@ -26,8 +26,11 @@ import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.DynamicFeatureVariant
+import com.android.build.api.variant.HasHostTests
+import com.android.build.api.variant.HasUnitTest
 import com.android.build.api.variant.Renderscript
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.DynamicFeatureVariantDslInfo
@@ -78,7 +81,13 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     internalServices,
     taskCreationServices,
     globalTaskCreationConfig
-), DynamicFeatureVariant, DynamicFeatureCreationConfig, InternalHasDeviceTests, HasTestFixtures {
+), DynamicFeatureVariant,
+    DynamicFeatureCreationConfig,
+    InternalHasDeviceTests,
+    HasTestFixtures,
+    HasHostTestsCreationConfig,
+    HasHostTests,
+    HasUnitTest {
 
     init {
         // TODO: Should be removed once we stop implementing all build type interfaces in one class
@@ -119,6 +128,9 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     }
 
     override val deviceTests = mutableListOf<DeviceTest>()
+
+    override val hostTests: Map<String, HostTestCreationConfig>
+        get() = internalHostTests
 
     override var testFixtures: TestFixturesImpl? = null
 
@@ -200,9 +212,15 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     override val packageJacocoRuntime: Boolean
         get() = false
 
+    override fun addTestComponent(testTypeName: String, testComponent: HostTestCreationConfig) {
+        internalHostTests[testTypeName] = testComponent
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Private stuff
+
     // ---------------------------------------------------------------------------------------------
+    private val internalHostTests = mutableMapOf<String, HostTestCreationConfig>()
 
     private fun instantiateBaseModuleMetadata(
         variantDependencies: VariantDependencies

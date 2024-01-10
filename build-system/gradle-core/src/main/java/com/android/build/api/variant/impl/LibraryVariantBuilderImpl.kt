@@ -20,6 +20,7 @@ import com.android.build.api.component.analytics.AnalyticsEnabledLibraryVariantB
 import com.android.build.api.variant.AndroidTestBuilder
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.DeviceTestBuilder
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.LibraryVariantBuilder
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.gradle.internal.core.dsl.LibraryVariantDslInfo
@@ -100,4 +101,11 @@ open class LibraryVariantBuilderImpl @Inject constructor(
     override val androidTest: AndroidTestBuilder = AndroidTestBuilderImpl(defaultDeviceTestBuilder)
     override val deviceTests: List<DeviceTestBuilder>
         get() = listOf(defaultDeviceTestBuilder)
+
+    override val hostTests: Map<String, HostTestBuilder> = mapOf(
+            HostTestBuilder.UNIT_TEST_TYPE to
+                    HostTestBuilderImpl.forUnitTest(variantBuilderServices),
+            HostTestBuilder.SCREENSHOT_TEST_TYPE to
+                    HostTestBuilderImpl.forScreenshotTest(dslInfo.experimentalProperties)
+        )
 }

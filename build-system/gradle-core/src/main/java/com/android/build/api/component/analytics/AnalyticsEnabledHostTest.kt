@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.android.build.api.component.analytics
 
 import com.android.build.api.component.UnitTest
+import com.android.build.api.variant.HostTest
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.model.ObjectFactory
@@ -24,12 +25,11 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.tasks.testing.Test
 import javax.inject.Inject
 
-@Suppress("DEPRECATION")
-open class AnalyticsEnabledUnitTest @Inject constructor(
-    override val delegate: UnitTest,
+open class AnalyticsEnabledHostTest @Inject constructor(
+    override val delegate: HostTest,
     stats: GradleBuildVariant.Builder,
     objectFactory: ObjectFactory
-) : AnalyticsEnabledTestComponent(delegate, stats, objectFactory), UnitTest {
+) : AnalyticsEnabledTestComponent(delegate, stats, objectFactory), UnitTest, HostTest {
     override val manifestPlaceholders: MapProperty<String, String>
         get() {
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =

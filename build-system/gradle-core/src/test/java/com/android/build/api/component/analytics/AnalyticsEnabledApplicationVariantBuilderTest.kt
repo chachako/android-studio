@@ -18,13 +18,11 @@ package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.AndroidTestBuilder
 import com.android.build.api.variant.ApplicationAndroidResourcesBuilder
-import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.ApplicationVariantBuilder
-import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.PropertyAccessNotAllowedException
+import com.android.build.api.variant.HostTestBuilder
 import com.android.tools.build.gradle.internal.profile.VariantMethodType
-import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Assert
@@ -33,7 +31,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
@@ -49,6 +46,12 @@ internal class AnalyticsEnabledApplicationVariantBuilderTest {
     @Suppress("DEPRECATION")
     @Mock
     lateinit var androidTest: com.android.build.api.variant.AndroidTestBuilder
+
+    @Mock
+    lateinit var unitTest: HostTestBuilder
+
+    @Mock
+    lateinit var screenshotTest: HostTestBuilder
 
     private val stats = GradleBuildVariant.newBuilder()
     private val proxy: AnalyticsEnabledApplicationVariantBuilder by lazy {
@@ -164,5 +167,24 @@ internal class AnalyticsEnabledApplicationVariantBuilderTest {
             .deviceTests
         Mockito.verify(delegate, Mockito.times(1))
             .androidTest
+    }
+
+    @Test
+    fun testAndroidTest() {
+        @Suppress("DEPRECATION")
+        Truth.assertThat(proxy.androidTest).isInstanceOf(AndroidTestBuilder::class.java)
+        Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantAccessList.first().type
+        ).isEqualTo(VariantMethodType.ANDROID_TEST_BUILDER_VALUE)
+    }
+
+    @Test
+    fun testHostTests() {
+        Truth.assertThat(proxy.hostTests).isInstanceOf(Map::class.java)
+        Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantAccessList.first().type
+        ).isEqualTo(VariantMethodType.HOST_TESTS_BUILDER_VALUE)
     }
 }
