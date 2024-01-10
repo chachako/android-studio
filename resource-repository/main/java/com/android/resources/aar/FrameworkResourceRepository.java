@@ -21,6 +21,7 @@ import static com.android.SdkConstants.FD_RES_RAW;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.ProgressManagerAdapter;
+import com.android.annotations.TestOnly;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.resources.ResourceItem;
 import com.android.ide.common.resources.configuration.FolderConfiguration;
@@ -60,7 +61,6 @@ import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.jetbrains.annotations.TestOnly;
 
 /**
  * Repository of resources of the Android framework. Most client code should use

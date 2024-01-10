@@ -23,6 +23,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.android.ProgressManagerAdapter;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.annotations.TestOnly;
 import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.resources.AndroidManifestPackageNameUtils;
 import com.android.ide.common.resources.ResourceItem;
@@ -63,7 +64,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
-import org.jetbrains.annotations.TestOnly;
 
 /**
  * A resource repository representing unpacked contents of a non-namespaced AAR.
