@@ -33,39 +33,40 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       .files(
         kotlin(
             """
-                import androidx.annotation.VisibleForTesting
+            import androidx.annotation.VisibleForTesting
 
-                class ProductionCode {
-                    fun compute() {
-                        initialize() // OK
-                    }
-
-                    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-                    fun initialize() {
-                    }
+            class ProductionCode {
+                fun compute() {
+                    initialize() // OK
                 }
-                """
+
+                @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+                fun initialize() {
+                }
+            }
+            """
           )
           .indented(),
         kotlin(
-          """
-                class Code {
-                    fun test() {
-                        ProductionCode().initialize() // Not allowed; this method is intended to be private
-                    }
+            """
+            class Code {
+                fun test() {
+                    ProductionCode().initialize() // Not allowed; this method is intended to be private
                 }
-                """
-        ),
+            }
+            """
+          )
+          .indented(),
         SUPPORT_ANNOTATIONS_JAR
       )
       .run()
       .expect(
         """
-            src/Code.kt:4: Warning: This method should only be accessed from tests or within private scope [VisibleForTests]
-                                    ProductionCode().initialize() // Not allowed; this method is intended to be private
-                                                     ~~~~~~~~~~
-            0 errors, 1 warnings
-            """
+        src/Code.kt:3: Warning: This method should only be accessed from tests or within private scope [VisibleForTests]
+                ProductionCode().initialize() // Not allowed; this method is intended to be private
+                                 ~~~~~~~~~~
+        0 errors, 1 warnings
+        """
       )
   }
 
@@ -176,7 +177,8 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       )
   }
 
-  fun testRestrictToSubClass() {
+  fun testDocumentationExampleRestrictedApi() {
+    // Tests restricted to a particular subclass
     val expected =
       """
             src/test/pkg/RestrictToSubclassTest.java:26: Error: Class1.onSomething can only be called from subclasses [RestrictedApi]
@@ -536,6 +538,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
   }
 
   // sample code with warnings
+  @Suppress("InfiniteRecursion")
   fun testRestrictToTests() {
     val expected =
       """
@@ -552,7 +555,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 import androidx.annotation.RestrictTo;
                 import androidx.annotation.VisibleForTesting;
 
-                @SuppressWarnings({"InfiniteRecursion", "ClassNameDiffersFromFileName"})
+                @SuppressWarnings({"ClassNameDiffersFromFileName"})
                 public class ProductionCode {
                     public void code() {
                         testHelper1(); // ERROR? (We currently don't flag @VisibleForTesting; it deals with *visibility*)
@@ -825,7 +828,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
             """
                 package test.pkg
 
-                fun test(testRoot: TestRoot, other: TestRoot) {
+                fun test(testRoot: TestRoot?, other: TestRoot) {
                     if (testRoot == null) {
                         println("null")
                     }
@@ -859,17 +862,17 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/test/pkg/test.kt:3: Warning: This class should only be accessed from tests or within private scope [VisibleForTests]
-            fun test(testRoot: TestRoot, other: TestRoot) {
-                               ~~~~~~~~
-            src/test/pkg/test.kt:3: Warning: This class should only be accessed from tests or within private scope [VisibleForTests]
-            fun test(testRoot: TestRoot, other: TestRoot) {
-                                                ~~~~~~~~
-            src/test/pkg/test.kt:10: Warning: This method should only be accessed from tests or within private scope [VisibleForTests]
-                if (testRoot == other) {
-                             ~~
-            0 errors, 3 warnings
-            """
+        src/test/pkg/test.kt:3: Warning: This class should only be accessed from tests or within private scope [VisibleForTests]
+        fun test(testRoot: TestRoot?, other: TestRoot) {
+                           ~~~~~~~~~
+        src/test/pkg/test.kt:3: Warning: This class should only be accessed from tests or within private scope [VisibleForTests]
+        fun test(testRoot: TestRoot?, other: TestRoot) {
+                                             ~~~~~~~~
+        src/test/pkg/test.kt:10: Warning: This method should only be accessed from tests or within private scope [VisibleForTests]
+            if (testRoot == other) {
+                         ~~
+        0 errors, 3 warnings
+        """
       )
   }
 
@@ -1419,6 +1422,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       )
   }
 
+  @Suppress("RedundantGetter", "RedundantSetter")
   fun test140642032() {
     // Regression test for
     // 140642032: Kotlin class property annotated with VisibleForTesting not generating
@@ -2268,6 +2272,104 @@ class RestrictToDetectorTest : AbstractCheckTest() {
       )
   }
 
+  @Suppress("TestFunctionName")
+  fun testVisibleForTestingInComposePreview() {
+    // Regression test for b/318968215.
+    // Compose Previews already imply that it's test code (this code will be compiled out of the
+    // APK.)
+    lint()
+      .files(
+        kotlin(
+            """
+            import androidx.compose.runtime.Composable
+            import androidx.compose.ui.tooling.preview.Preview
+
+            fun test() {
+              testApi() // ERROR 1
+            }
+
+            @Composable
+            fun StyledText() {
+              testApi() // ERROR 2
+            }
+
+            // Preview: OK. Implied to be test code.
+            @Preview
+            @Composable
+            fun StyledTextPreview() {
+              testApi() // OK 1
+              StyledText()
+            }
+
+            // Multi Preview
+            @Preview(name = "phone", device = "spec:shape=Normal,width=360,height=640,unit=dp,dpi=480")
+            @Preview(name = "landscape", device = "spec:shape=Normal,width=640,height=360,unit=dp,dpi=480")
+            annotation class DevicePreviews
+
+            @DevicePreviews
+            @Composable
+            fun StyledTextPreview() {
+              testApi() // OK 2
+              StyledText()
+            }
+
+            // Compose for Desktop preview
+            @androidx.compose.desktop.ui.tooling.preview.Preview
+            @Composable
+            fun StyledTextDesktopPreview() {
+              testApi() // OK 3
+              StyledText()
+            }
+            """
+          )
+          .indented(),
+        kotlin(
+            """
+            import androidx.annotation.VisibleForTesting
+
+            @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+            fun testApi()
+            """
+          )
+          .indented(),
+        // Stubs:
+        kotlin(
+            """
+            package androidx.compose.runtime // Stub: HIDE-FROM-DOCUMENTATION
+            annotation class Composable
+            """
+          )
+          .indented(),
+        kotlin(
+            """
+            package androidx.compose.ui.tooling.preview // Stub: HIDE-FROM-DOCUMENTATION
+            annotation class Preview
+            """
+          )
+          .indented(),
+        kotlin(
+            """
+            package androidx.compose.desktop.ui.tooling.preview // Stub: HIDE-FROM-DOCUMENTATION
+            annotation class Preview
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR
+      )
+      .run()
+      .expect(
+        """
+        src/DevicePreviews.kt:5: Warning: This method should only be accessed from tests or within private scope [VisibleForTests]
+          testApi() // ERROR 1
+          ~~~~~~~
+        src/DevicePreviews.kt:10: Warning: This method should only be accessed from tests or within private scope [VisibleForTests]
+          testApi() // ERROR 2
+          ~~~~~~~
+        0 errors, 2 warnings
+        """
+      )
+  }
+
   fun testSingleAnnotationHandling() {
     lint()
       .files(
@@ -2429,7 +2531,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
           .indented(),
         kotlin(
           """
-                import org.jetbrains.annotations.TestOnly;
+                import org.jetbrains.annotations.TestOnly
                 class Code {
                     @TestOnly
                     fun test() {

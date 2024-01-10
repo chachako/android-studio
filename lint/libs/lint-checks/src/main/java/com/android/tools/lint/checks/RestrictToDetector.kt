@@ -117,25 +117,62 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     }
 
     // (2) Is this AST node surrounded by a test-only annotation?
+    // (Compose Preview annotations also imply a test context)
     while (true) {
       val owner = current.getParentOfType<UAnnotated>(true) ?: break
 
-      //noinspection AndroidLintExternalAnnotations
-      for (annotation in owner.uAnnotations) {
-        val name = annotation.qualifiedName ?: continue
-        when {
-          RESTRICT_TO_ANNOTATION.isEquals(name) -> {
-            val restrictionScope = getRestrictionScope(annotation)
-            if (restrictionScope and RESTRICT_TO_TESTS != 0) {
-              return true
-            }
-          }
-          name.endsWith(VISIBLE_FOR_TESTING_SUFFIX) -> return true
-          name.endsWith(".TestOnly") -> return true
-        }
+      if (owner.isTestContext()) {
+        return true
       }
 
       current = owner
+    }
+
+    return false
+  }
+
+  private fun UAnnotated.isTestContext(): Boolean {
+    var isCompose = false
+
+    //noinspection AndroidLintExternalAnnotations
+    val annotations = this.uAnnotations
+
+    for (annotation in annotations) {
+      val name = annotation.qualifiedName ?: continue
+      when {
+        RESTRICT_TO_ANNOTATION.isEquals(name) -> {
+          val restrictionScope = getRestrictionScope(annotation)
+          if (restrictionScope and RESTRICT_TO_TESTS != 0) {
+            return true
+          }
+        }
+        name.endsWith(VISIBLE_FOR_TESTING_SUFFIX) -> return true
+        name.endsWith(".TestOnly") -> return true
+        name == COMPOSABLE_ANNOTATION -> isCompose = true
+      }
+    }
+
+    if (isCompose) {
+      // Look for preview annotations or multi-preview annotations
+      //noinspection AndroidLintExternalAnnotations
+      for (annotation in annotations) {
+        val name = annotation.qualifiedName ?: continue
+        when (name) {
+          COMPOSE_PREVIEW,
+          COMPOSE_DESKTOP_PREVIEW -> return true
+          else -> {
+            val cls = annotation.resolve()
+            if (cls != null) {
+              for (nested in cls.annotations) {
+                when (nested.qualifiedName ?: continue) {
+                  COMPOSE_PREVIEW,
+                  COMPOSE_DESKTOP_PREVIEW -> return true
+                }
+              }
+            }
+          }
+        }
+      }
     }
 
     return false
@@ -515,6 +552,10 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     private const val ATTR_OTHERWISE = "otherwise"
     private const val ATTR_PRODUCTION_VISIBILITY = "productionVisibility"
     private const val ATTR_VISIBILITY = "visibility"
+    private const val COMPOSABLE_ANNOTATION = "androidx.compose.runtime.Composable"
+    private const val COMPOSE_PREVIEW = "androidx.compose.ui.tooling.preview.Preview"
+    private const val COMPOSE_DESKTOP_PREVIEW =
+      "androidx.compose.desktop.ui.tooling.preview.Preview"
 
     // Must match constants in @VisibleForTesting:
     const val VISIBILITY_PRIVATE = 2
