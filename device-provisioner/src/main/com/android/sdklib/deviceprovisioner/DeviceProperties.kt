@@ -61,6 +61,11 @@ interface DeviceProperties {
   val primaryAbi: Abi?
     get() = abiList.firstOrNull()
 
+    /**
+     * The ABI that should be used to build and deploy, instead of supported ABIs in [abiList].
+     * Can be null if no preferred ABI is desired.
+     */
+  val preferredAbi: String?
   val abiList: List<Abi>
 
   /**
@@ -158,6 +163,7 @@ interface DeviceProperties {
     var manufacturer: String? = null
     var model: String? = null
     var abiList: List<Abi> = emptyList()
+    var preferredAbi: String? = null
     var androidVersion: AndroidVersion? = null
     var androidRelease: String? = null
     var disambiguator: String? = null
@@ -268,6 +274,7 @@ interface DeviceProperties {
         model = model,
         androidVersion = androidVersion,
         abiList = abiList,
+        preferredAbi = preferredAbi,
         androidRelease = androidRelease,
         disambiguator = disambiguator,
         deviceType = deviceType,
@@ -288,6 +295,7 @@ interface DeviceProperties {
     override val model: String?,
     override val androidVersion: AndroidVersion?,
     override val abiList: List<Abi>,
+    override val preferredAbi: String?,
     override val androidRelease: String?,
     override val disambiguator: String?,
     override val deviceType: DeviceType?,

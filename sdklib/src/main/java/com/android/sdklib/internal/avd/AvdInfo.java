@@ -24,10 +24,12 @@ import com.android.annotations.Nullable;
 import com.android.io.CancellableFileIo;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.ISystemImage;
+import com.android.sdklib.PathFileWrapper;
 import com.android.sdklib.SystemImageTags;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.repository.IdDisplay;
 import com.android.sdklib.repository.targets.SystemImage;
+import com.android.utils.ILogger;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -35,6 +37,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -324,6 +327,23 @@ public final class AvdInfo {
     @NonNull
     public static Path getConfigFile(@NonNull Path path) {
         return path.resolve(AvdManager.CONFIG_INI);
+    }
+
+    /** Helper method that returns the User Settings Path. */
+    @NonNull
+    public Path getUserSettingsPath() {
+        return mFolderPath.resolve(AvdManager.USER_SETTINGS_INI);
+    }
+
+    public Map<String, String> parseUserSettingsFile(@Nullable ILogger logger) {
+        PathFileWrapper settingsPath = new PathFileWrapper(getUserSettingsPath());
+        if (settingsPath.exists()) {
+            Map<String, String> parsedSettings = AvdManager.parseIniFile(settingsPath, logger);
+            if (parsedSettings != null) {
+                return parsedSettings;
+            }
+        }
+        return new HashMap<>();
     }
 
     /** Returns the Config file for this AVD. */

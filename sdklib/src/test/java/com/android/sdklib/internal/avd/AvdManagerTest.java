@@ -16,7 +16,6 @@
 
 package com.android.sdklib.internal.avd;
 
-import static com.android.testutils.truth.PathSubject.*;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -182,6 +181,7 @@ public final class AvdManagerTest {
                         null,
                         null,
                         null,
+                        null,
                         false,
                         false,
                         false);
@@ -207,6 +207,7 @@ public final class AvdManagerTest {
                         mAvdFolder,
                         name.getMethodName(),
                         mSystemImageAosp,
+                        null,
                         null,
                         null,
                         null,
@@ -242,6 +243,7 @@ public final class AvdManagerTest {
                         null,
                         null,
                         null,
+                        null,
                         false,
                         false,
                         false);
@@ -267,6 +269,7 @@ public final class AvdManagerTest {
                         mAvdFolder,
                         name.getMethodName(),
                         mSystemImageAosp,
+                        null,
                         null,
                         null,
                         null,
@@ -302,6 +305,7 @@ public final class AvdManagerTest {
                         null,
                         null,
                         null,
+                        null,
                         false,
                         false,
                         false);
@@ -322,6 +326,7 @@ public final class AvdManagerTest {
                 mAvdFolder,
                 name.getMethodName(),
                 mSystemImageAosp,
+                null,
                 null,
                 null,
                 null,
@@ -358,6 +363,7 @@ public final class AvdManagerTest {
                 mAvdFolder,
                 name.getMethodName(),
                 mSystemImageApi21,
+                null,
                 null,
                 null,
                 null,
@@ -404,6 +410,7 @@ public final class AvdManagerTest {
                 null,
                 null,
                 expected,
+                expected,
                 false,
                 false,
                 false);
@@ -425,6 +432,7 @@ public final class AvdManagerTest {
                 mAvdFolder,
                 name.getMethodName(),
                 mSystemImageChromeOs,
+                null,
                 null,
                 null,
                 null,
@@ -455,6 +463,7 @@ public final class AvdManagerTest {
                 null,
                 null,
                 null,
+                null,
                 false,
                 false,
                 false);
@@ -474,6 +483,7 @@ public final class AvdManagerTest {
                 mGradleManagedDeviceAvdFolder,
                 name.getMethodName(),
                 mSystemImageAosp,
+                null,
                 null,
                 null,
                 null,
@@ -502,6 +512,7 @@ public final class AvdManagerTest {
                 null,
                 null,
                 null,
+                null,
                 false,
                 false,
                 false);
@@ -525,6 +536,7 @@ public final class AvdManagerTest {
                         mAvdFolder,
                         name.getMethodName(),
                         mSystemImageAosp,
+                        null,
                         null,
                         null,
                         null,
@@ -561,6 +573,7 @@ public final class AvdManagerTest {
                         null,
                         null,
                         null,
+                        properties,
                         null,
                         false,
                         false,
@@ -608,6 +621,7 @@ public final class AvdManagerTest {
                         null,
                         "100M", // SD card size
                         origAvdConfig,
+                        origAvdConfig,
                         null,
                         false,
                         false,
@@ -638,6 +652,7 @@ public final class AvdManagerTest {
                         null,
                         "222M", // Different SD card size
                         newAvdConfig,
+                        null,
                         null,
                         false,
                         false,
@@ -710,6 +725,7 @@ public final class AvdManagerTest {
                         null,
                         null,
                         null,
+                        null,
                         false,
                         false,
                         false);
@@ -742,6 +758,7 @@ public final class AvdManagerTest {
                 null,
                 null,
                 expected,
+                expected,
                 true, // deviceHasPlayStore
                 false,
                 false);
@@ -756,6 +773,7 @@ public final class AvdManagerTest {
                 mAvdFolder,
                 name.getMethodName(),
                 mSystemImagePlay,
+                null,
                 null,
                 null,
                 null,
@@ -776,6 +794,7 @@ public final class AvdManagerTest {
                 null,
                 null,
                 null,
+                null,
                 expected,
                 true, // deviceHasPlayStore
                 true,
@@ -788,6 +807,7 @@ public final class AvdManagerTest {
                 mAvdFolder,
                 name.getMethodName(),
                 mSystemImageWear24,
+                null,
                 null,
                 null,
                 null,
@@ -809,6 +829,7 @@ public final class AvdManagerTest {
                 null,
                 null,
                 null,
+                null,
                 expected,
                 true, // deviceHasPlayStore
                 true,
@@ -821,6 +842,7 @@ public final class AvdManagerTest {
                 mAvdFolder,
                 name.getMethodName(),
                 mSystemImageWearChina,
+                null,
                 null,
                 null,
                 null,
@@ -859,6 +881,7 @@ public final class AvdManagerTest {
                         null,
                         null,
                         baseHardwareProperties,
+                        baseHardwareProperties,
                         null,
                         true,
                         true,
@@ -890,6 +913,7 @@ public final class AvdManagerTest {
                 mAvdFolder,
                 name.getMethodName(),
                 mSystemImageAosp,
+                null,
                 null,
                 null,
                 null,
@@ -944,6 +968,7 @@ public final class AvdManagerTest {
                 mAvdFolder,
                 name.getMethodName(),
                 mSystemImage33ext4,
+                null,
                 null,
                 null,
                 null,

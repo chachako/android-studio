@@ -36,6 +36,7 @@ import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
+import com.android.sdklib.internal.avd.AvdManager
 import com.android.sdklib.internal.avd.HardwareProperties
 import com.intellij.icons.AllIcons
 import java.io.IOException
@@ -748,6 +749,8 @@ class LocalEmulatorProperties(
         density = avdInfo.density
         resolution = avdInfo.resolution
         isDebuggable = !avdInfo.hasPlayStore()
+        preferredAbi = avdInfo.parseUserSettingsFile(null)
+          ?.get(AvdManager.USER_SETTINGS_INI_PREFERRED_ABI)
       }
   }
 
