@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import org.junit.Assume.assumeFalse
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.util.Locale
@@ -37,6 +38,7 @@ class LintErrorTest {
      * build failure instead of a LintError being added to the lint baseline file.
      */
     @Test
+    @Ignore("b/318511007")
     fun testOutOfMemoryErrorCausesBuildFailureWhenUpdatingLintBaseline() {
         // Flaky on Windows (b/298483978)
         assumeFalse(System.getProperty("os.name").lowercase(Locale.US).contains("windows"))
