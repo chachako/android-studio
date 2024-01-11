@@ -154,6 +154,14 @@ class ArtifactsImpl(
         )
     }
 
+    override fun <MultipleArtifactT> addStaticDirectory(
+        type: MultipleArtifactT,
+        inputLocation: Directory
+    ) where MultipleArtifactT: MultipleArtifact<Directory>,
+            MultipleArtifactT: Appendable {
+        addStaticProvider(getArtifactContainer(type), type, inputLocation)
+    }
+
     override fun <TaskT : Task> use(taskProvider: TaskProvider<TaskT>): TaskBasedOperationImpl<TaskT> {
         return TaskBasedOperationImpl(objects, this, taskProvider).also {
             outstandingRequests.add(it)

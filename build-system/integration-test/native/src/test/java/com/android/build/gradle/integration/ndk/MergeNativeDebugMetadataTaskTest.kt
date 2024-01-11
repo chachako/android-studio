@@ -160,6 +160,72 @@ class MergeNativeDebugMetadataTaskTest(private val debugSymbolLevel: DebugSymbol
         }
     }
 
+    private fun setupNativeDebugSymbolTestForDirectory(): TestSetup {
+        val app = project.getSubproject(":app")
+        app.buildFile.appendText(
+            """
+                import com.android.build.api.artifact.MultipleArtifact
+
+                androidComponents {
+                    onVariants(selector().all(), {
+                        artifacts.addStaticDirectory(
+                            MultipleArtifact.${if (debugSymbolLevel == FULL)
+                "NATIVE_DEBUG_METADATA"
+            else "NATIVE_SYMBOL_TABLES"}.INSTANCE,
+                                project.layout.projectDirectory.dir("symbols/app")
+                        )
+                    })
+                }
+
+                """.trimIndent()
+        )
+        createUnstrippedAbiFile(app, ABI_ARMEABI_V7A, "app.so")
+        createDebugMetadataFile(app, ABI_ARMEABI_V7A, debugSymbolLevel == FULL)
+
+        val expectedFullEntries = listOf(
+            "/$ABI_ARMEABI_V7A/app.so.dbg",
+        )
+
+        val expectedSymbolTableEntries = listOf(
+            "/$ABI_ARMEABI_V7A/app.so.sym",
+        )
+        return TestSetup(app, expectedFullEntries, expectedSymbolTableEntries)
+    }
+
+    @Test
+    fun testAddStaticDirectoryNativeDebugSymbolsOutput() {
+        val testSetup = setupNativeDebugSymbolTestForDirectory()
+        val output = getNativeDebugSymbolsOutput()
+        project.executor().run("app:bundleDebug")
+        if (debugSymbolLevel == null || debugSymbolLevel == NONE) {
+            assertThat(output).doesNotExist()
+            return
+        }
+        val bundleFile = testSetup.app.getBundle(GradleTestProject.ApkType.DEBUG).file.toFile()
+        assertThat(bundleFile).exists()
+        val bundleEntryPrefix = "/BUNDLE-METADATA/com.android.tools.build.debugsymbols"
+        val expectedFullEntries = testSetup.expectedFullEntries.map { "$bundleEntryPrefix$it" }
+        val expectedSymbolTableEntries = testSetup.expectedSymbolTableEntries
+            .map { "$bundleEntryPrefix$it" }
+        Zip(bundleFile).use { zip ->
+            when (debugSymbolLevel) {
+                SYMBOL_TABLE -> {
+                    assertThat(zip.entries.map { it.toString() })
+                        .containsNoneIn(expectedFullEntries)
+                    assertThat(zip.entries.map { it.toString() })
+                        .containsAtLeastElementsIn(expectedSymbolTableEntries)
+                }
+                FULL -> {
+                    assertThat(zip.entries.map { it.toString() })
+                        .containsAtLeastElementsIn(expectedFullEntries)
+                    assertThat(zip.entries.map { it.toString() })
+                        .containsNoneIn(expectedSymbolTableEntries)
+                }
+                else -> fail("Test should return early if not SYMBOL_TABLE or FULL")
+            }
+        }
+    }
+
         @Test
     fun testExternalNativeDebugSymbolsOutput() {
         val testSetup = setupExternalNativeDebugSymbolTest()
