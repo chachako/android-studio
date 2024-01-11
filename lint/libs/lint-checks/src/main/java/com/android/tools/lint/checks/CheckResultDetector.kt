@@ -83,7 +83,8 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       // as well as com.google.errorprone.annotations.CanIgnoreReturnValue
       "CheckResult",
       "CheckReturnValue",
-      "CanIgnoreReturnValue"
+      "CanIgnoreReturnValue",
+      "org.jetbrains.annotations.Contract"
     )
 
   override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
@@ -96,8 +97,16 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     annotationInfo: AnnotationInfo,
     usageInfo: AnnotationUsageInfo
   ) {
-    if (annotationInfo.qualifiedName.endsWith(".CanIgnoreReturnValue")) {
+    val qualifiedName = annotationInfo.qualifiedName
+    if (qualifiedName.endsWith(".CanIgnoreReturnValue")) {
       return
+    }
+
+    if (qualifiedName == "org.jetbrains.annotations.Contract") {
+      val pure = annotationInfo.annotation.findAttributeValue("pure") ?: return
+      if (pure.evaluate() != true) {
+        return
+      }
     }
 
     val method = usageInfo.referenced as? PsiMethod ?: return

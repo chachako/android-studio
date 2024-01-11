@@ -2259,6 +2259,49 @@ class CheckResultDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testPure() {
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import org.jetbrains.annotations.Contract
+            import java.math.BigDecimal
+
+            @Contract(pure = true)
+            fun BigDecimal.double() = this + this
+
+            fun test(score: BigDecimal): BigDecimal {
+                score.double()
+                return score
+            }
+            """
+          )
+          .indented(),
+        java(
+            """
+            package org.jetbrains.annotations;
+            import java.lang.annotation.*;
+            public @interface Contract {
+              String value() default "";
+              boolean pure() default false;
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/test.kt:10: Warning: The result of double is not used [CheckResult]
+            score.double()
+            ~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
   fun testExactNameMatch() {
     // While we match on "@x.CheckResult", don't match "@xCheckResult" or "@CheckResultX"
     lint()
