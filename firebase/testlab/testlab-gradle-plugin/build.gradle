@@ -26,7 +26,7 @@ base {
 }
 
 if (findProperty("release")?.toBoolean()) {
-    version = '0.0.1-alpha05'
+    version = '0.0.1-alpha06'
 } else {
     version = '0.0.1-dev'
 }

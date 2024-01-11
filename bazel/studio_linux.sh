@@ -74,6 +74,7 @@ function copy_bazel_artifacts() {(
   cp -a ${bin_dir}/tools/base/deploy/service/deploy.service_deploy.jar ${artifacts_dir}
   cp -a ${bin_dir}/tools/base/gmaven/gmaven.zip ${artifacts_dir}/gmaven_repo.zip
   cp -a ${bin_dir}/tools/base/build-system/documentation.zip ${artifacts_dir}/android_gradle_plugin_reference_docs.zip
+  cp -a ${bin_dir}/tools/base/firebase/testlab/testlab-gradle-plugin/testlab-gradle-plugin.zip ${artifacts_dir}
 )}
 
 ####################################

@@ -85,12 +85,17 @@ class TestLabGradlePluginTest {
         val unsupportedVersionsTooOld = listOf(
                 AndroidPluginVersion(8, 1, 0).alpha(9),
                 AndroidPluginVersion(8, 1),
+                AndroidPluginVersion(8, 2),
+                AndroidPluginVersion(8, 2, 0).alpha(9),
+                AndroidPluginVersion(8, 5),
         )
         val supportedVersions = listOf(
                 AndroidPluginVersion(8, 1).dev(),
-                AndroidPluginVersion(8, 2, 0).alpha(1),
-                AndroidPluginVersion(8, 2),
                 AndroidPluginVersion(8, 3, 0).dev(),
+                AndroidPluginVersion(8, 3, 0).alpha(1),
+                AndroidPluginVersion(8, 3),
+                AndroidPluginVersion(8, 4),
+                AndroidPluginVersion(8, 5, 0).dev(),
         )
 
         unsupportedVersionsTooOld.forEach {
@@ -98,7 +103,8 @@ class TestLabGradlePluginTest {
                 applyFtlPlugin(it)
             }
             assertThat(e).hasMessageThat()
-                    .contains("Android Gradle plugin version 8.2.0-alpha01 or higher is required.")
+                    .contains("Firebase TestLab plugin is an experimental feature. It requires Android " +
+                            "Gradle plugin version 8.3 or 8.4")
         }
 
         supportedVersions.forEach {

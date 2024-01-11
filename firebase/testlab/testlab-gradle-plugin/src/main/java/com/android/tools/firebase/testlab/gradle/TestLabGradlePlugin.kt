@@ -47,10 +47,11 @@ class TestLabGradlePlugin : Plugin<Project> {
         project.plugins.withType(AndroidBasePlugin::class.java) {
             val agpVersion =
                 project.extensions.getByType(AndroidComponentsExtension::class.java).pluginVersion
-            if (agpVersion < AndroidPluginVersion(8, 2, 0).alpha(1) &&
-                    agpVersion.previewType != "dev") {
-                error("Android Gradle plugin version 8.2.0-alpha01 or higher is required." +
-                              " Current version is $agpVersion.")
+            if (agpVersion.previewType != "dev" &&
+                    (agpVersion < AndroidPluginVersion(8, 3, 0).alpha(1) ||
+                    agpVersion >= AndroidPluginVersion(8, 5, 0).alpha(1))) {
+                error("Firebase TestLab plugin is an experimental feature. It requires Android " +
+                        "Gradle plugin version 8.3 or 8.4. Current version is $agpVersion.")
             }
 
             // Registering with the Device registry will take care of the test options binding.
