@@ -3020,4 +3020,7 @@ public final class SdkConstants {
 
     /** Url protocol of the jar files, e.g.: jar://my_jar.jar */
     public static final String JAR_PROTOCOL = "jar";
+
+    /** Url protocol of a file. */
+    public static final String FILE_PROTOCOL = "file";
 }
