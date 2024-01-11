@@ -8497,6 +8497,87 @@ public class ApiDetectorTest extends AbstractCheckTest {
     }
 
     public void testChecksSdkIntAtLeast() {
+        lint().files(
+                        java(
+                                ""
+                                        + "import androidx.annotation.ChecksSdkIntAtLeast;\n"
+                                        + "class MyClass {\n"
+                                        + "   @ChecksSdkIntAtLeast(api = 32)\n"
+                                        + "   private bool myChecker() {"
+                                        + "       return true;"
+                                        + "   }"
+                                        + "   public void myFunc() {\n"
+                                        + "       if (myChecker()) {\n"
+                                        + "           android.R.color.system_accent1_800;\n"
+                                        + "       }\n"
+                                        + "   }\n"
+                                        + "}\n"),
+                        SUPPORT_ANNOTATIONS_JAR)
+                .run()
+                .expectClean();
+        lint().files(
+                        java(
+                                ""
+                                        + "import androidx.annotation.ChecksSdkIntAtLeast;\n"
+                                        + "class MyClass {\n"
+                                        + "   private bool myChecker() {"
+                                        + "       return true;"
+                                        + "   }"
+                                        + "   public void myFunc() {\n"
+                                        + "       if (myChecker()) {\n"
+                                        + "           android.R.color.system_accent1_800;\n"
+                                        + "       }\n"
+                                        + "   }\n"
+                                        + "}\n"),
+                        SUPPORT_ANNOTATIONS_JAR)
+                .run()
+                .expect(
+                        ""
+                                + "src/MyClass.java:5: Warning: Field requires API level 31 (current min is 1): android.R.color#system_accent1_800 [InlinedApi]\n"
+                                + "           android.R.color.system_accent1_800;\n"
+                                + "           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                                + "0 errors, 1 warnings");
+    }
+
+    public void testAndroidPlatformChecksSdkIntAtLeast() {
+        lint().files(
+                        java(
+                                ""
+                                        + "package android.annotation;\n"
+                                        + "import static java.lang.annotation.ElementType.FIELD;"
+                                        + "import static java.lang.annotation.ElementType.METHOD;"
+                                        + "import static java.lang.annotation.RetentionPolicy.SOURCE;"
+                                        + "import java.lang.annotation.Documented;"
+                                        + "import java.lang.annotation.Retention;"
+                                        + "import java.lang.annotation.Target;"
+                                        + "@Retention(SOURCE)"
+                                        + "@Target({METHOD, FIELD})"
+                                        + "public @interface ChecksSdkIntAtLeast {"
+                                        + "    int api() default -1;"
+                                        + "    String codename() default \"\";"
+                                        + "    int parameter() default -1;"
+                                        + "    int lambda() default -1;"
+                                        + "}"),
+                        java(
+                                ""
+                                        + "import android.annotation.ChecksSdkIntAtLeast;\n"
+                                        + "class MyClass {\n"
+                                        + "   @ChecksSdkIntAtLeast(api = 32)\n"
+                                        + "   private bool myChecker() {"
+                                        + "       return true;"
+                                        + "   }"
+                                        + "   public void myFunc() {\n"
+                                        + "       if (myChecker()) {\n"
+                                        + "           android.R.color.system_accent1_800;\n"
+                                        + "       }\n"
+                                        + "   }\n"
+                                        + "}\n"),
+                        SUPPORT_ANNOTATIONS_JAR)
+                .run()
+                .expectClean();
+    }
+
+    public void testChecksSdkIntAtLeastOnConstructorProperty() {
         // Regression test for https://issuetracker.google.com/251722662
         lint().files(
                         kotlin(

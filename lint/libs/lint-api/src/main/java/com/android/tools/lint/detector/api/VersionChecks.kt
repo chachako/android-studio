@@ -158,7 +158,10 @@ class VersionChecks(
     }
 
     const val SDK_INT = "SDK_INT"
+    private const val CHECKS_SDK_INT_AT_LEAST_NAME = "ChecksSdkIntAtLeast"
     const val CHECKS_SDK_INT_AT_LEAST_ANNOTATION = "androidx.annotation.ChecksSdkIntAtLeast"
+    private const val PLATFORM_CHECKS_SDK_INT_AT_LEAST_ANNOTATION =
+      "android.annotation.ChecksSdkIntAtLeast"
     private const val SDK_SUPPRESS_ANNOTATION = "android.support.test.filters.SdkSuppress"
     private const val ANDROIDX_SDK_SUPPRESS_ANNOTATION = "androidx.test.filters.SdkSuppress"
     private const val ROBO_ELECTRIC_CONFIG_ANNOTATION = "org.robolectric.annotation.Config"
@@ -541,7 +544,7 @@ class VersionChecks(
           }
 
           if (resolved is PsiField) {
-            findChecksSdkAnnotation(resolved)?.let {
+            SdkIntAnnotation.get(resolved)?.let {
               return it.sdkId
             }
             findChecksSdkInferredAnnotation(resolved, client, evaluator, project)?.let {
@@ -564,13 +567,6 @@ class VersionChecks(
         return getSdkVersionLookup(element.expression, client, evaluator, project)
       }
       return -1
-    }
-
-    private fun findChecksSdkAnnotation(
-      owner: PsiModifierListOwner,
-    ): SdkIntAnnotation? {
-      val annotation = owner.getAnnotation(CHECKS_SDK_INT_AT_LEAST_ANNOTATION) ?: return null
-      return SdkIntAnnotation(annotation)
     }
 
     /**
@@ -1261,7 +1257,7 @@ class VersionChecks(
     owner: PsiModifierListOwner,
     call: UCallExpression? = null
   ): ApiConstraint? {
-    val sdkIntAnnotation = findChecksSdkAnnotation(owner) ?: return null
+    val sdkIntAnnotation = SdkIntAnnotation.get(owner) ?: return null
     val value = sdkIntAnnotation.getApiLevel(evaluator, owner, call) ?: return null
     return atLeast(value, sdkIntAnnotation.sdkId)
   }
@@ -1723,8 +1719,20 @@ class VersionChecks(
     companion object {
       /** Looks up the @ChecksSdkIntAtLeast annotation for the given method or field. */
       fun get(owner: PsiModifierListOwner): SdkIntAnnotation? {
-        val annotation = owner.getAnnotation(CHECKS_SDK_INT_AT_LEAST_ANNOTATION) ?: return null
-        return SdkIntAnnotation(annotation)
+        @Suppress("ExternalAnnotations")
+        for (annotation in owner.annotations) {
+          val referenceName = annotation.nameReferenceElement?.referenceName
+          if (referenceName == null || referenceName == CHECKS_SDK_INT_AT_LEAST_NAME) {
+            when (annotation.qualifiedName) {
+              CHECKS_SDK_INT_AT_LEAST_ANNOTATION,
+              PLATFORM_CHECKS_SDK_INT_AT_LEAST_ANNOTATION -> {
+                return SdkIntAnnotation(annotation)
+              }
+            }
+          }
+        }
+
+        return null
       }
 
       fun getMethodKey(evaluator: JavaEvaluator, method: UMethod): String {
