@@ -160,12 +160,19 @@ class UnusedResourceDetector :
     for (resource in findUnused(context, model)) {
       val field = resource.field
       val message = "The resource `$field` appears to be unused"
-      val location =
-        partialResults.firstNotNullOfOrNull { (_, lintMap) -> lintMap.getLocation(field) }
-          ?: resource.declarations?.first()?.toFile()?.let(Location::create)
-          ?: Location.create(context.project.dir)
+      val locations =
+        partialResults
+          .mapNotNull { (_, lintMap) -> lintMap.getLocation(field) }
+          .ifEmpty {
+            listOf(
+              resource.declarations?.first()?.toFile()?.let(Location::create)
+                ?: Location.create(context.project.dir)
+            )
+          }
       val fix = fix().data(KEY_RESOURCE_FIELD, field)
-      context.report(Incident(getIssue(resource), location, message, fix))
+      for (location in locations) {
+        context.report(Incident(getIssue(resource), location, message, fix))
+      }
     }
   }
 

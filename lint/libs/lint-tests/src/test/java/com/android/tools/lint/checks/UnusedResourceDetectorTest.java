@@ -398,6 +398,78 @@ public class UnusedResourceDetectorTest extends AbstractCheckTest {
                                 + "0 errors, 2 warnings");
     }
 
+    public void testMultiProject3() {
+        // TODO (b/200577800) fix when not running lint with partial analysis.
+        // Regression test for b/200577800.
+        // Similar to testMultiProject2, except there are 2 library modules with
+        // the same unused resource
+        ProjectDescription library1 =
+                project(
+                                mLibraryManifest,
+                                mLibraryCode,
+                                mLibraryStrings,
+                                xml(
+                                        "res/values/strings2.xml",
+                                        ""
+                                                + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                                + "<resources>\n"
+                                                + "    <string name=\"unused1\">Unused 1</string>\n"
+                                                + "    <string name=\"kept1\">Kept 1</string>\n"
+                                                + "</resources>\n"))
+                        .type(LIBRARY)
+                        .name("LibraryProject1");
+
+        ProjectDescription library2 =
+                project(
+                                mLibraryManifest,
+                                mLibraryCode,
+                                mLibraryStrings,
+                                xml(
+                                        "res/values/strings2.xml",
+                                        ""
+                                                + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                                + "<resources>\n"
+                                                + "    <string name=\"unused1\">Unused 1</string>\n"
+                                                + "    <string name=\"kept2\">Kept 2</string>\n"
+                                                + "</resources>\n"))
+                        .type(LIBRARY)
+                        .name("LibraryProject2");
+
+        ProjectDescription main =
+                project(
+                                mMainCode,
+                                manifest().minSdk(15),
+                                xml(
+                                        "res/values/strings2.xml",
+                                        ""
+                                                + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                                + "<resources\n"
+                                                + "    xmlns:tools=\"http://schemas.android.com/tools\" "
+                                                + "    tools:keep=\"@string/ke*\">\n"
+                                                + "    <string name=\"unused2\">Unused 2</string>\n"
+                                                + "</resources>\n"))
+                        .name("App")
+                        .dependsOn(library1)
+                        .dependsOn(library2);
+
+        lint().projects(main, library1, library2)
+                .reportFrom(main)
+                .testModes(TestMode.PARTIAL)
+                .run()
+                .expect(
+                        ""
+                                + "../LibraryProject1/res/values/strings2.xml:3: Warning: The resource R.string.unused1 appears to be unused [UnusedResources]\n"
+                                + "    <string name=\"unused1\">Unused 1</string>\n"
+                                + "            ~~~~~~~~~~~~~~\n"
+                                + "../LibraryProject2/res/values/strings2.xml:3: Warning: The resource R.string.unused1 appears to be unused [UnusedResources]\n"
+                                + "    <string name=\"unused1\">Unused 1</string>\n"
+                                + "            ~~~~~~~~~~~~~~\n"
+                                + "res/values/strings2.xml:4: Warning: The resource R.string.unused2 appears to be unused [UnusedResources]\n"
+                                + "    <string name=\"unused2\">Unused 2</string>\n"
+                                + "            ~~~~~~~~~~~~~~\n"
+                                + "0 errors, 3 warnings");
+    }
+
     public void testFqcnReference() {
         lint().files(
                         mLayout1,
