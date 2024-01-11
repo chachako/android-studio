@@ -18,7 +18,7 @@ package com.android.tools.render
 
 import com.android.ide.common.repository.GoogleMavenArtifactId
 import com.android.tools.module.ModuleDependencies
-import com.intellij.psi.PsiClass
+import com.android.tools.module.ViewClass
 
 /** Stub version of [ModuleDependencies] for standalone rendering. */
 internal class StandaloneModuleDependencies : ModuleDependencies {
@@ -40,5 +40,5 @@ internal class StandaloneModuleDependencies : ModuleDependencies {
      * Not used in compose rendering. This is only used for creating a view from a superclass.
      * TODO(): Fix it to support Custom View/XML layouts or remove from rendering.
      */
-    override fun findPsiClassInModuleAndDependencies(fqcn: String): PsiClass? = null
+    override fun findViewClass(fqcn: String): ViewClass? = null
 }
