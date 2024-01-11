@@ -78,6 +78,38 @@ class VersionCatalogNamingUtilTest {
     }
 
     @Test
+    fun testPickAndroidxLibraryNameKebabCase() {
+        libraryName("lifecycle-runtime-ktx", "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1", "foo")
+
+        libraryName("androidx-lifecycle-runtime-ktx", "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1", "lifecycle-runtime-ktx")
+
+        libraryName(
+            "androidx-lifecycle-lifecycle-runtime-ktx",
+            "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+            "lifecycle-runtime-ktx",
+            "lifecycle-lifecycle-runtime-ktx",
+            "androidx-lifecycle-runtime-ktx"
+        )
+        libraryName(
+            "androidx-lifecycle-lifecycle-runtime-ktx2",
+            "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+            "lifecycle-runtime-ktx",
+            "lifecycle-lifecycle-runtime-ktx",
+            "androidx-lifecycle-runtime-ktx",
+            "androidx-lifecycle-lifecycle-runtime-ktx",
+        )
+        libraryName(
+            "androidx-lifecycle-lifecycle-runtime-ktx3",
+            "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+            "lifecycle-runtime-ktx",
+            "lifecycle-lifecycle-runtime-ktx",
+            "androidx-lifecycle-runtime-ktx",
+            "androidx-lifecycle-lifecycle-runtime-ktx",
+            "androidx-lifecycle-lifecycle-runtime-ktx2"
+        )
+    }
+
+    @Test
     fun testPickLibraryWithCamelCaseFallback() {
         libraryName("foo-bar", "com.google:foo-bar:1.0")
         libraryName("fooBar", "com.google:foo-bar:1.0", "googleFoo")
@@ -199,7 +231,7 @@ class VersionCatalogNamingUtilTest {
         versionName("fooBar", "com.google:foo-bar:1.0", "appcompat")
         versionName("fooVersion", "com.google:foo:1.0", "barVersion")
         versionName("fooBar", "com.google:foo-bar:1.0")
-        versionName("google-foo-bar", "com.google:foo-bar:1.0", "FOO-BAR", "appcompat")
+        versionName("foo-bar-version", "com.google:foo-bar:1.0", "FOO-BAR", "appcompat")
         // If we have camel case in version variables, use that here too
         versionName("fooBar", "com.google:foo-bar:1.0", "appCompat")
         versionName("fooBarVersion", "com.google:foo-bar:1.0", "Foo-Bar", "fooBar")
@@ -256,28 +288,101 @@ class VersionCatalogNamingUtilTest {
             "comGoogleFooBar2"
         )
 
-        versionName("google-foo-bar", "com.google:foo-bar:1.0", "foo-bar")
-        versionName("com-google-foo-bar", "com.google:foo-bar:1.0", "foo-bar", "google-foo-bar")
+        versionName("foo-bar-version", "com.google:foo-bar:1.0", "foo-bar")
+        versionName("google-foo-bar", "com.google:foo-bar:1.0", "foo-bar", "foo-bar-version")
+        versionName(
+            "google-foo-bar-version",
+            "com.google:foo-bar:1.0",
+            "foo-bar",
+            "foo-bar-version",
+            "google-foo-bar"
+        )
+        versionName(
+            "com-google-foo-bar",
+            "com.google:foo-bar:1.0",
+            "foo-bar",
+            "foo-bar-version",
+            "google-foo-bar",
+            "google-foo-bar-version"
+        )
         versionName(
             "com-google-foo-bar2",
             "com.google:foo-bar:1.0",
             "foo-bar",
+            "foo-bar-version",
             "google-foo-bar",
+            "google-foo-bar-version",
             "com-google-foo-bar"
         )
         versionName(
             "com-google-foo-bar3",
             "com.google:foo-bar:1.0",
             "foo-bar",
+            "foo-bar-version",
             "google-foo-bar",
+            "google-foo-bar-version",
             "com-google-foo-bar",
             "com-google-foo-bar2"
         )
     }
+    @Test
+    fun testPickAndroidXKebabCaseVersionName() {
+        versionName(
+            "lifecycle-runtime-ktx",
+                    "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+                    "foo-bar"
+        )
+        versionName(
+            "lifecycle-runtime-ktx-version",
+            "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+            "lifecycle-runtime-ktx"
+        )
+        versionName(
+            "androidx-lifecycle-runtime-ktx",
+            "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+            "lifecycle-runtime-ktx",
+            "lifecycle-runtime-ktx-version"
+        )
+        versionName(
+            "androidx-lifecycle-runtime-ktx-version",
+            "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+            "lifecycle-runtime-ktx",
+            "lifecycle-runtime-ktx-version",
+            "androidx-lifecycle-runtime-ktx"
+        )
+        versionName(
+            "androidx-lifecycle-lifecycle-runtime-ktx",
+            "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+            "lifecycle-runtime-ktx",
+            "lifecycle-runtime-ktx-version",
+            "androidx-lifecycle-runtime-ktx",
+            "androidx-lifecycle-runtime-ktx-version"
+        )
+        versionName(
+            "androidx-lifecycle-lifecycle-runtime-ktx2",
+            "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+            "lifecycle-runtime-ktx",
+            "lifecycle-runtime-ktx-version",
+            "androidx-lifecycle-runtime-ktx",
+            "androidx-lifecycle-runtime-ktx-version",
+            "androidx-lifecycle-lifecycle-runtime-ktx"
+        )
+        versionName(
+            "androidx-lifecycle-lifecycle-runtime-ktx3",
+            "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1",
+            "lifecycle-runtime-ktx",
+            "lifecycle-runtime-ktx-version",
+            "androidx-lifecycle-runtime-ktx",
+            "androidx-lifecycle-runtime-ktx-version",
+            "androidx-lifecycle-lifecycle-runtime-ktx",
+            "androidx-lifecycle-lifecycle-runtime-ktx2"
+        )
+
+    }
 
     @Test
     fun testPickPluginVersionName() {
-        pluginVersionName("android-application", "org.android.application", "application")
+        pluginVersionName("androidApplication", "org.android.application", "application")
         pluginVersionName("fooVersion", "foo", "barVersion")
         pluginVersionName("foo-bar", "foo_bar")
         pluginVersionName("foo-bar", "foo-bar")
@@ -286,10 +391,18 @@ class VersionCatalogNamingUtilTest {
         pluginVersionName("googleFooBar", "com.google.foo-bar", "Foo-Bar", "fooBar")
 
         pluginVersionName(
+            "google-foo-bar-version",
+            "com.google.foo-bar",
+            "foo-bar",
+            "google-foo-bar",
+        )
+
+        pluginVersionName(
             "com-google-foo-bar2",
             "com.google.foo-bar",
             "foo-bar",
             "google-foo-bar",
+            "google-foo-bar-version",
             "com-google-foo-bar"
         )
 
@@ -298,6 +411,7 @@ class VersionCatalogNamingUtilTest {
             "com.google.foo-bar",
             "foo-bar",
             "google-foo-bar",
+            "google-foo-bar-version",
             "com-google-foo-bar",
             "com-google-foo-bar2"
         )

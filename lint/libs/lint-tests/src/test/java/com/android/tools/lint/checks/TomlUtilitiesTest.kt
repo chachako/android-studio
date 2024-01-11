@@ -84,11 +84,11 @@ class TomlUtilitiesTest {
     // the majority of basic tests located on another level at CatalogNamingUtilTest
     versionName("foo", "com.google:foo:1.0")
     versionName("fooBar", "com.google:foo-bar:1.0", "appcompat")
-    versionName("google-foo-bar", "com.google:foo-bar:1.0", "FOO-BAR", "appcompat")
-    versionName("google-foo-bar", "com.google:foo-bar:1.0", "foo-bar")
+    versionName("foo-bar-version", "com.google:foo-bar:1.0", "FOO-BAR", "appcompat")
+    versionName("foo-bar-version", "com.google:foo-bar:1.0", "foo-bar")
 
     GradleDetector.reservedQuickfixNames = mutableMapOf("versions" to mutableSetOf("foo-bar"))
-    versionName("google-foo-bar", "com.google:foo-bar:1.0", "appcompat")
+    versionName("foo-bar-version", "com.google:foo-bar:1.0", "appcompat")
 
     // If there is a preferred version variable, use it -- unless it exists, or we allow reuse
     versionName("myVariable", "com.google:foo:1.0", versionVariable = "myVariable")

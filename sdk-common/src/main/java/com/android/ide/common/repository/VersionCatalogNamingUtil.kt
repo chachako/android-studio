@@ -115,6 +115,18 @@ private fun getMaybeTransformToCamelCase(reserved: Set<String>): (String) -> Str
     }
 }
 
+private fun getMaybeTransformVersionToCamelCase(reserved: Set<String>): (String) -> String {
+    // Use a case-insensitive set when checking for clashes, such that
+    // we don't for example pick a new variable named "appcompat" if "appCompat"
+    // is already in the map.
+    val (haveCamelCase, haveHyphen) = getAliasStyle(reserved)
+    val camelCaseOutput = haveCamelCase || !haveHyphen
+
+    return { version ->
+        if (camelCaseOutput) CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, version) else version
+    }
+}
+
 /**
  * Pick name with next steps. Each step generates name and check whether it
  * exists in reserved set where comparison is done in case-insensitive way.
@@ -196,22 +208,22 @@ private fun cutDomainPrefix(group: String): String {
 
 /**
  * Variable name generator takes artifact id as a base. It analyses reserved
- * aliases and chose same notation. This can be a lower camel, lower hyphen,
- * lower camel with Version suffix. Alias will have hyphen, and to lower camel
+ * aliases and chose same notation. This can be a lower camel or hyphen case.
  * notation otherwise. Lower camel is preferable - if no reserved, algorithm
  * will pick lower camel.
  *
  * Picking variable name happens in steps. Each step generates
- * some name around  artifact id with hyphen and transform to camel case if it is the style.
+ * some name around artifact id with hyphen and transform to camel case if it is the style.
  * Then check whether it's reserved with case-insensitive set. If yes, jumping to the next step.
  * Steps defined as follows:
+ * - use artifactId if no reserved;
  * - use artifactId + "Version" suffix if this is the style;
  * - use artifactId as variable name;
  * - use artifactId + "Version" suffix if it's not a hyphen notation;
- * - use group prefix + "-" + artifactId;
- * - use group prefix + "-" + artifactId + "Version";
- * - use group name + "-" + artifactId;
- * - use group name + "-" + artifactId + /number/.
+ * - use group prefix + artifactId;
+ * - use group prefix + artifactId + "Version";
+ * - use group name + artifactId;
+ * - use group name + artifactId + /number/.
  */
  fun pickVersionVariableName(dependency: Dependency, caseSensitiveReserved: Set<String>): String {
     // If using the artifactVersion convention, follow that
@@ -219,21 +231,14 @@ private fun cutDomainPrefix(group: String): String {
     val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
     reserved.addAll(caseSensitiveReserved)
 
-    // Use a case-insensitive set when checking for clashes, such that
-    // we don't for example pick a new variable named "appcompat" if "appCompat"
-    // is already in the map.
-    val (haveCamelCase, haveHyphen) = getAliasStyle(reserved)
-    val camelCaseOutput = haveCamelCase || !haveHyphen
-
-    fun transform(version: String): String =
-        if (camelCaseOutput) CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, version) else version
+    val transform = getMaybeTransformVersionToCamelCase(reserved)
 
     if (reserved.isEmpty()) {
         return transform(artifact)
     }
 
-    if (reserved.isNotEmpty() && reserved.first().endsWith("Version")) {
-        val withVersion = "${transform(artifact)}Version"
+    if (reserved.isNotEmpty() && reserved.first().lowercase().endsWith("version")) {
+        val withVersion = transform("${artifact}-version")
         if (!reserved.contains(withVersion)) {
             return withVersion
         }
@@ -246,11 +251,9 @@ private fun cutDomainPrefix(group: String): String {
         return artifactName
     }
 
-    if (camelCaseOutput) {
-        val withVersion = "${artifactName}Version"
-        if (!reserved.contains(withVersion)) {
-            return withVersion
-        }
+    val withVersion = transform("${artifact}-version")
+    if (!reserved.contains(withVersion)) {
+        return withVersion
     }
 
     val groupPrefix = getGroupPrefix(dependency)
@@ -259,22 +262,23 @@ private fun cutDomainPrefix(group: String): String {
         return withGroupIdPrefix
     }
 
-    if (camelCaseOutput) {
-        val withGroupIdPrefixVersion = transform("$groupPrefix-${artifact}") + "Version"
-        if (!reserved.contains(withGroupIdPrefixVersion)) {
-            return withGroupIdPrefixVersion
-        }
+
+    val withGroupIdPrefixVersion = transform("$groupPrefix-${artifact}-version")
+    if (!reserved.contains(withGroupIdPrefixVersion)) {
+        return withGroupIdPrefixVersion
     }
+
 
     // With full group
     val groupId = dependency.group?.toSafeKey() ?: "nogroup"
-    val withGroupId = transform("$groupId-$artifact")
-    if (!reserved.contains(withGroupId)) {
-        return withGroupId
+    val withGroupId = "$groupId-$artifact"
+    val transformedWithGroupId = transform(withGroupId)
+    if (!reserved.contains(transformedWithGroupId)) {
+        return transformedWithGroupId
     }
 
     // Final fallback; this is unlikely but JUST to be sure we get a unique version
-    return generateWithSuffix(withGroupId, reserved, null)
+    return generateWithSuffix(withGroupId, reserved, transform)
 }
 
 data class AliasStyle(val haveCamelCase: Boolean, val haveHyphen: Boolean)
@@ -309,17 +313,17 @@ private fun generateWithSuffix(prefix:String, reserved:Set<String>, transform: (
 
 /**
  * Variable name generator takes plugin id as a base. It analyses reserved
- * aliases and chose same notation. This can be a lower camel, lower hyphen,
- * lower camel with Version suffix. Alias will have hyphen, or lower camel
- * notation otherwise. Picking variable happens in steps. Each step generates
+ * aliases and chose same notation. This can be a lower camel or hyphen case.
+ * Picking variable happens in steps. Each step generates
  * some name around updated plugin id and check whether it's reserved with
  * case-insensitive set. If yes, jumping to the next step.
  * Steps defined as follows:
- * - use pluginId prefix (without root domain com/org) + "Version" suffix if this is the style;
- * - use pluginId prefix as variable name;
- * - use pluginId prefix + "Version" suffix if it's not a hyphen notation;
- * - use full pluginId in hyphen notation.
- * - use pluginId in hyphen notation + /number/.
+ * - use pluginId if no reserved
+ * - use pluginId suffix (without root domain com/org) + "Version" suffix if this is the style;
+ * - use pluginId suffix as variable name;
+ * - use pluginId suffix + "Version" suffix if it's not a hyphen notation;
+ * - use full pluginId.
+ * - use pluginId + /number/.
  * Those steps are similar to picking library version
  */
 fun pickPluginVersionVariableName(
@@ -336,36 +340,32 @@ fun pickPluginVersionVariableName(
         return safeKey
     }
 
-    val (haveCamelCase, haveHyphen) = getAliasStyle(reserved)
+    val transform = getMaybeTransformVersionToCamelCase(reserved)
 
-    val pluginCamel = maybeLowCamelTransform(plugin)
-    val pluginName = if (haveCamelCase) pluginCamel else plugin
-
-    if (reserved.isNotEmpty() && reserved.first().endsWith("Version")) {
-        val withVersion = "${pluginCamel}Version"
+    if (reserved.isNotEmpty() && reserved.first().lowercase().endsWith("version")) {
+        val withVersion = transform("${plugin}-version")
         if (!reserved.contains(withVersion)) {
             return withVersion
         }
     }
 
-    if (!reserved.contains(pluginName)) {
-        return pluginName
+    val transformedName = transform(plugin)
+    if (!reserved.contains(transformedName)) {
+        return transformedName
     }
 
-    if (!haveHyphen) {
-        val withVersion = "${pluginCamel}Version"
-        if (!reserved.contains(withVersion)) {
-            return withVersion
-        }
+    val withVersion = transform("${plugin}-version")
+    if (!reserved.contains(withVersion)) {
+        return withVersion
     }
 
     // with full pluginId
-    val fullName = pluginId.toSafeKey()
+    val fullName = transform(pluginId.toSafeKey())
     if (!reserved.contains(fullName)) {
         return fullName
     }
 
-    return generateWithSuffix(fullName, reserved, null)
+    return generateWithSuffix(fullName, reserved, transform)
 }
 
 fun keysMatch(s1: String?, s2: String): Boolean {
