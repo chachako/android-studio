@@ -358,7 +358,8 @@ abstract class IssueRegistry protected constructor() {
     map[PARSER_ERROR.id] = PARSER_ERROR
     map[LINT_ERROR.id] = LINT_ERROR
     map[LINT_WARNING.id] = LINT_WARNING
-    map[BASELINE.id] = BASELINE
+    map[BASELINE_USED.id] = BASELINE_USED
+    map[BASELINE_FIXED.id] = BASELINE_FIXED
     map[UNKNOWN_ISSUE_ID.id] = UNKNOWN_ISSUE_ID
     map[CANNOT_ENABLE_HIDDEN.id] = CANNOT_ENABLE_HIDDEN
     map[OBSOLETE_LINT_CHECK.id] = OBSOLETE_LINT_CHECK
@@ -531,30 +532,53 @@ abstract class IssueRegistry protected constructor() {
      * Issue reported by lint for various other issues which prevents lint from running normally
      * when it's not necessarily an error in the user's code base.
      */
-    @JvmField // temporarily
-    val BASELINE =
+    @JvmField
+    val BASELINE_USED =
       Issue.create(
         id = "LintBaseline",
-        briefDescription = "Baseline Issues",
+        briefDescription = "Baseline Applied",
         explanation =
           """
-                Lint can be configured with a "baseline"; a set of current issues found \
-                in a codebase, which future runs of lint will silently ignore. Only new \
-                issues not found in the baseline are reported.
+          Lint can be configured with a "baseline"; a set of current issues found \
+          in a codebase, which future runs of lint will silently ignore. Only new \
+          issues not found in the baseline are reported.
 
-                Note that while opening files in the IDE, baseline issues are not \
-                filtered out; the purpose of baselines is to allow you to get started \
-                using lint and break the build on all newly introduced errors, without \
-                having to go back and fix the entire codebase up front. However, when \
-                you open up existing files you still want to be aware of and fix issues \
-                as you come across them.
+          Note that while opening files in the IDE, baseline issues are not \
+          filtered out; the purpose of baselines is to allow you to get started \
+          using lint and break the build on all newly introduced errors, without \
+          having to go back and fix the entire codebase up front. However, when \
+          you open up existing files you still want to be aware of and fix issues \
+          as you come across them.
 
-                This issue type is used to emit two types of informational messages in \
-                reports: first, whether any issues were filtered out so you don't have \
-                a false sense of security if you forgot that you've checked in a \
-                baseline file, and second, whether any issues in the baseline file \
-                appear to have been fixed such that you can stop filtering them out and \
-                get warned if the issues are re-introduced.""",
+          This issue type is used to emit an informational-only warning if any \
+          issues were filtered out due to baseline matching. That way, you don't \
+          have a false sense of security if you forgot that you've checked in a \
+          baseline file.
+          """,
+        category = Category.LINT,
+        priority = 10,
+        severity = Severity.INFORMATIONAL,
+        implementation = EMPTY_IMPLEMENTATION
+      )
+
+    /**
+     * Reported when there are entries in the baseline that no longer seem to be reported, and is
+     * likely fixed (or the issue has been disabled).
+     */
+    @JvmField
+    val BASELINE_FIXED =
+      Issue.create(
+        id = "LintBaselineFixed",
+        briefDescription = "Baselined Issues Fixed",
+        explanation =
+          """
+          If a lint baseline describes a problem which is no longer reported, \
+          then the problem has either been fixed, or perhaps the issue type has \
+          been disabled. In any case, the entry can be removed from the baseline \
+          (such that if the issue is reintroduced at some point, lint will \
+          complain rather than just silently starting to match the old baseline \
+          entry again.)
+          """,
         category = Category.LINT,
         priority = 10,
         severity = Severity.INFORMATIONAL,

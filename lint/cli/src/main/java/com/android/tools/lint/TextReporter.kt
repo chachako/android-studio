@@ -254,7 +254,7 @@ class TextReporter(
         !flags.isExplainIssues ||
         issue === IssueRegistry.LINT_ERROR ||
         issue === IssueRegistry.LINT_WARNING ||
-        issue === IssueRegistry.BASELINE
+        issue === IssueRegistry.BASELINE_USED
     ) {
       return
     }

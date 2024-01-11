@@ -1002,6 +1002,8 @@ class LintBaselineTest {
         "InlinedApi",
         "--ignore",
         "LintBaseline",
+        "--ignore",
+        "LintBaselineFixed",
         "--baseline",
         existingBaseline.path,
         "--write-reference-baseline",
@@ -1276,7 +1278,7 @@ class LintBaselineTest {
     MainTest.checkDriver(
       // Expected output
       """
-      ../baseline.xml: Information: 1 errors/warnings were listed in the baseline file (../baseline.xml) but not found in the project; perhaps they have been fixed? Unmatched issue types: NewApi [LintBaseline]
+      ../baseline.xml: Information: 1 errors/warnings were listed in the baseline file (../baseline.xml) but not found in the project; perhaps they have been fixed? Unmatched issue types: NewApi [LintBaselineFixed]
       0 errors, 0 warnings
         """
         .trimIndent(),
@@ -1630,7 +1632,7 @@ class LintBaselineTest {
       """
             ../baselines/baseline.xml: Information: 1 error was filtered out because it is listed in the baseline file, ../baselines/baseline.xml
              [LintBaseline]
-            ../baselines/baseline.xml: Information: 1 errors/warnings were listed in the baseline file (../baselines/baseline.xml) but not found in the project; perhaps they have been fixed? Unmatched issue types: HardcodedText [LintBaseline]
+            ../baselines/baseline.xml: Information: 1 errors/warnings were listed in the baseline file (../baselines/baseline.xml) but not found in the project; perhaps they have been fixed? Unmatched issue types: HardcodedText [LintBaselineFixed]
             res/layout/accessibility.xml:3: Error: Missing contentDescription attribute on image [ContentDescription]
                 <ImageButton android:importantForAccessibility="yes" android:id="@+id/android_logo2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/android_button" android:focusable="false" android:clickable="false" android:layout_weight="1.0" />
                  ~~~~~~~~~~~

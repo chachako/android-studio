@@ -139,7 +139,7 @@ class LintBaseline(
         )
       LintClient.report(
         client,
-        IssueRegistry.BASELINE,
+        IssueRegistry.BASELINE_USED,
         message,
         file = baselineFile,
         project = project,
@@ -206,7 +206,7 @@ class LintBaseline(
 
       LintClient.report(
         client,
-        IssueRegistry.BASELINE,
+        IssueRegistry.BASELINE_FIXED,
         message,
         file = baselineFile,
         project = project,
@@ -737,37 +737,14 @@ class LintBaseline(
     const val VARIANT_FATAL = "fatal"
 
     /**
-     * Given an error message produced by this lint detector for the given issue type, determines
-     * whether this corresponds to the warning (produced by [reportBaselineIssues] above) that one
-     * or more issues have been filtered out.
-     *
-     * Intended for IDE quickfix implementations.
-     */
-    @Suppress("unused") // Used from the IDE
-    fun isFilteredMessage(errorMessage: String, format: TextFormat): Boolean {
-      return format.toText(errorMessage).contains("filtered out because")
-    }
-
-    /**
-     * Given an error message produced by this lint detector for the given issue type, determines
-     * whether this corresponds to the warning (produced by [reportBaselineIssues] above) that one
-     * or more issues have been fixed (present in baseline but not in project.)
-     *
-     * Intended for IDE quickfix implementations.
-     */
-    @Suppress("unused") // Used from the IDE
-    fun isFixedMessage(errorMessage: String, format: TextFormat): Boolean {
-      return format.toText(errorMessage).contains("perhaps they have been fixed")
-    }
-
-    /**
      * Given an issue, determines whether it should be included in a baseline. Lint errors should
      * not be baselined - see b/297095583.
      */
     fun shouldBaseline(id: String): Boolean {
       return id != IssueRegistry.LINT_ERROR.id &&
         id != IssueRegistry.LINT_WARNING.id &&
-        id != IssueRegistry.BASELINE.id
+        id != IssueRegistry.BASELINE_USED.id &&
+        id != IssueRegistry.BASELINE_FIXED.id
     }
 
     fun describeBaselineFilter(errors: Int, warnings: Int, baselineDisplayPath: String): String {

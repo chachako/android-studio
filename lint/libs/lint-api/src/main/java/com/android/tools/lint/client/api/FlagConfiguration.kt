@@ -105,7 +105,7 @@ open class FlagConfiguration(configurations: ConfigurationHierarchy) :
           ?: configurations.getDefinedSeverityWithoutOverride(source, issue, visibleDefault)
           ?: getDefaultSeverity(issue, visibleDefault)
       if (isWarningsAsErrors() && impliedSeverity === Severity.WARNING) {
-        if (issue === IssueRegistry.BASELINE) {
+        if (issue === IssueRegistry.BASELINE_USED) {
           // Don't promote the baseline informational issue
           // (number of issues promoted) to error
           return severity
