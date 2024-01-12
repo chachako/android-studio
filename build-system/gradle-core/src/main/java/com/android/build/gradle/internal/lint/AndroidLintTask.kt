@@ -23,7 +23,7 @@ import com.android.Version
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.dsl.Lint
 import com.android.build.api.variant.HasUnitTest
-import com.android.build.api.variant.HasAndroidTest
+import com.android.build.api.variant.HasDeviceTests
 import com.android.build.api.variant.HasTestFixtures
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.component.ComponentCreationConfig
@@ -729,7 +729,7 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 )
 
                 // Add android test lint models and partial results
-                if ((creationConfig as? HasAndroidTest)?.androidTest != null
+                if ((creationConfig as? HasDeviceTests)?.deviceTests?.singleOrNull() != null
                     && ignoreTestSources.not()) {
                     task.nestedComponentLintModels.from(
                         creationConfig.artifacts.get(ANDROID_TEST_LINT_MODEL)

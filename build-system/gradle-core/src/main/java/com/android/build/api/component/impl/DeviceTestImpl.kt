@@ -30,10 +30,9 @@ import com.android.build.api.variant.BuildConfigField
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.ResValue
-import com.android.build.api.variant.SigningConfig
 import com.android.build.api.variant.impl.AndroidResourcesImpl
-import com.android.build.api.variant.impl.AndroidTestBuilderImpl
 import com.android.build.api.variant.impl.ApkPackagingImpl
+import com.android.build.api.variant.impl.DeviceTestBuilderImpl
 import com.android.build.api.variant.impl.ResValueKeyImpl
 import com.android.build.api.variant.impl.SigningConfigImpl
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
@@ -60,6 +59,7 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import com.android.builder.core.ComponentTypeImpl
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
@@ -68,7 +68,7 @@ import org.gradle.api.provider.Provider
 import java.io.Serializable
 import javax.inject.Inject
 
-open class AndroidTestImpl @Inject constructor(
+open class DeviceTestImpl @Inject constructor(
     componentIdentity: ComponentIdentity,
     buildFeatureValues: BuildFeatureValues,
     dslInfo: AndroidTestComponentDslInfo,
@@ -82,7 +82,7 @@ open class AndroidTestImpl @Inject constructor(
     variantServices: VariantServices,
     taskCreationServices: TaskCreationServices,
     global: GlobalTaskCreationConfig,
-    androidTestBuilder: AndroidTestBuilderImpl,
+    defaultDeviceTestBuilder: DeviceTestBuilderImpl,
 ) : TestComponentImpl<AndroidTestComponentDslInfo>(
     componentIdentity,
     buildFeatureValues,
@@ -212,7 +212,7 @@ open class AndroidTestImpl @Inject constructor(
     override val dexing: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
         DexingImpl(
             this,
-            androidTestBuilder._enableMultiDex,
+            defaultDeviceTestBuilder.enableMultiDex,
             dslInfo.dexingDslInfo.multiDexKeepProguard,
             dslInfo.dexingDslInfo.multiDexKeepFile,
             internalServices,
@@ -341,5 +341,14 @@ open class AndroidTestImpl @Inject constructor(
         get() = mainVariant.experimentalProperties.map {
             ModulePropertyKey.BooleanWithDefault.FORCE_AOT_COMPILATION.getValue(it)
         }.getOrElse(false)
+
+    /**
+     * Returns the name used in the builder model for artifacts that correspond to this variant
+     * type.
+     */
+    // So far this is hard coded to ANDROID_TEST's artifactName. Eventually, once more DeviceTest
+    // can be added to the variant, we will need to find a unique name so the model builder
+    // can sync all these device tests correctly.
+    val artifactName = ComponentTypeImpl.ANDROID_TEST.artifactName
 }
 

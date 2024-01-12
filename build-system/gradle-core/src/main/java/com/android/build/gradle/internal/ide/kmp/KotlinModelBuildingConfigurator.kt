@@ -150,17 +150,17 @@ object KotlinModelBuildingConfigurator {
                 .setTestInfo(
                     TestInfoImpl(
                         animationsDisabled = mainVariant.global.androidTestOptions.takeIf {
-                            mainVariant.androidTest != null
+                            mainVariant.androidDeviceTest != null
                         }?.animationsDisabled ?: false,
                         execution = mainVariant.global.androidTestOptions.takeIf {
-                            mainVariant.androidTest != null
+                            mainVariant.androidDeviceTest != null
                         }?.execution?.convertToExecution(),
                         additionalRuntimeApks = project
                             .configurations
                             .findByName(
                                 SdkConstants.GRADLE_ANDROID_TEST_UTIL_CONFIGURATION
                             )?.files ?: listOf(),
-                        instrumentedTestTaskName = mainVariant.androidTest?.taskContainer?.connectedTestTask?.name
+                        instrumentedTestTaskName = mainVariant.androidDeviceTest?.taskContainer?.connectedTestTask?.name
                             ?: ""
                     ).convert()
                 )

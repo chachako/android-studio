@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,25 @@
 
 package com.android.build.api.variant
 
+import org.gradle.api.Incubating
+
 /**
- * [Variant] that optionally have [AndroidTest] component.
+ * [Variant] that optionally have [DeviceTest] components like [AndroidTest].
  */
-interface HasAndroidTest {
+@Incubating
+interface HasDeviceTests {
 
     /**
-     * Variant's [AndroidTest] configuration, or null if android tests are disabled for this
-     * variant.
+     * Variant's [List] of [DeviceTest] configurations, or empty if all devices tests (like android
+     * tests) are disabled for this variant.
      */
-    @Suppress("DEPRECATION")
-    val androidTest: AndroidTest?
+    @get:Incubating
+    val deviceTests: List<DeviceTest>
+
+    /**
+     * Returns the default [DeviceTest] for this variant, which is generally referenced as
+     * `Android tests` in documentation.
+     */
+    @get:Incubating
+    val defaultDeviceTest: DeviceTest?
 }

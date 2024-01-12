@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,46 +16,51 @@
 
 package com.android.build.api.variant
 
+import org.gradle.api.Incubating
+import org.gradle.api.Named
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import java.io.Serializable
 
 /**
- * Model for Android Test components that contains build-time properties
+ * Model for Device Test components that contains build-time properties
  *
  * This object is accessible on subtypes of [Variant] that implement [HasDeviceTests], via
- * [HasDeviceTests.androidTest]. It is also part of [Variant.nestedComponents].
+ * [HasDeviceTests.deviceTests]. It is also part of [Variant.nestedComponents].
  *
  * The presence of this component in a variant is controlled by
- * [HasDeviceTestsBuilder.deviceTests.enable] which is accessible on subtypes of [VariantBuilder]
- * that implement [HasDeviceTestsBuilder]
+ * [HasDeviceTestsBuilder.deviceTests] and [DeviceTestBuilder.enable] which is accessible on
+ * subtypes of [VariantBuilder] that implement [HasDeviceTestsBuilder]
  */
-interface AndroidTest : GeneratesTestApk, HasAndroidResources, DeviceTest {
+@Incubating
+interface DeviceTest: GeneratesTestApk, HasAndroidResources, TestComponent {
 
     /**
      * Variant's application ID as present in the final manifest file of the APK.
      */
+    @get:Incubating
     override val applicationId: Property<String>
-
-    /**
-     * Variant's [BuildConfigField] which will be generated in the BuildConfig class.
-     */
-    override val buildConfigFields: MapProperty<String, out BuildConfigField<out Serializable>>
 
     /**
      * Variant's signingConfig, initialized by the corresponding DSL element.
      * @return Variant's config or null if the variant is not configured for signing.
      */
-    override val signingConfig: SigningConfig?
+    @get:Incubating
+    val signingConfig: SigningConfig?
+
+    /**
+     * Variant's [BuildConfigField] which will be generated in the BuildConfig class.
+     */
+    @get:Incubating
+    val buildConfigFields: MapProperty<String, out BuildConfigField<out Serializable>>
 
     /**
      * List of proguard configuration files for this variant. The list is initialized from the
      * corresponding DSL element, and cannot be queried at configuration time. At configuration time,
      * you can only add new elements to the list.
      */
-    override val proguardFiles: ListProperty<RegularFile>
-
+    @get:Incubating
+    val proguardFiles: ListProperty<RegularFile>
 }

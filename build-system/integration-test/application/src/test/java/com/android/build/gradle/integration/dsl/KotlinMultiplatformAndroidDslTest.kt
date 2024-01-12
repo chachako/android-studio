@@ -51,7 +51,10 @@ class KotlinMultiplatformAndroidDslTest {
         private val extraKmpMethods = setOf(
             // These exist on the plugin-specific variant level.
             "public abstract com.android.build.api.variant.AndroidTest com.android.build.api.variant.HasAndroidTest.getAndroidTest()",
-            "public abstract com.android.build.api.variant.UnitTest com.android.build.api.variant.HasUnitTest.getUnitTest()"
+            "public abstract com.android.build.api.variant.UnitTest com.android.build.api.variant.HasUnitTest.getUnitTest()",
+            "public abstract java.util.List com.android.build.api.variant.HasDeviceTests.getDeviceTests()",
+            "public abstract com.android.build.api.variant.DeviceTest com.android.build.api.variant.HasDeviceTests.getDefaultDeviceTest()",
+            "public abstract com.android.build.api.variant.DeviceTest com.android.build.api.variant.HasDeviceTests.getByName(java.lang.String)"
         )
 
         private val extraVariantMethods = setOf(

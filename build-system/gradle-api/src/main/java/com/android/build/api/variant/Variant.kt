@@ -148,7 +148,7 @@ interface Variant : Component, HasAndroidResources {
      * List of the components nested in this variant, the returned list will contain:
      *
      * * [UnitTest] component if the unit tests for this variant are enabled,
-     * * [AndroidTest] component if this variant [HasAndroidTest] and android tests for this variant
+     * * [AndroidTest] component if this variant [HasDeviceTests] and android tests for this variant
      * are enabled,
      * * [TestFixtures] component if this variant [HasTestFixtures] and test fixtures for this
      * variant are enabled.

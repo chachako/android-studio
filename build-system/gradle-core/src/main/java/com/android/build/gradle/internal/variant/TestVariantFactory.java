@@ -28,7 +28,7 @@ import com.android.build.api.dsl.TestBuildFeatures;
 import com.android.build.api.dsl.TestExtension;
 import com.android.build.api.variant.ComponentIdentity;
 import com.android.build.api.variant.TestVariantBuilder;
-import com.android.build.api.variant.impl.AndroidTestBuilderImpl;
+import com.android.build.api.variant.impl.DeviceTestBuilderImpl;
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfig;
 import com.android.build.api.variant.impl.TestVariantBuilderImpl;
 import com.android.build.api.variant.impl.TestVariantImpl;
@@ -249,7 +249,7 @@ public class TestVariantFactory
             @NonNull VariantServices variantServices,
             @NonNull TaskCreationServices taskCreationServices,
             @NonNull GlobalTaskCreationConfig globalConfig,
-            @NonNull AndroidTestBuilderImpl androidTestBuilder) {
+            @NonNull DeviceTestBuilderImpl defaultDeviceTestBuilder) {
         throw new RuntimeException("cannot instantiate android-test properties in test plugin");
     }
 

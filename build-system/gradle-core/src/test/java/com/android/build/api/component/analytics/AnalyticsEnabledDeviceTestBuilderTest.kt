@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("DEPRECATION")
 
 package com.android.build.api.component.analytics
 
-import com.android.build.api.variant.AndroidTestBuilder
+import com.android.build.api.variant.DeviceTestBuilder
 import com.android.tools.build.gradle.internal.profile.VariantMethodType
 import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
@@ -29,17 +28,17 @@ import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
 
-class AnalyticsEnabledAndroidTestBuilderTest {
+class AnalyticsEnabledDeviceTestBuilderTest {
 
     @get:Rule
     val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
 
     @Mock
-    lateinit var delegate: AndroidTestBuilder
+    lateinit var delegate: DeviceTestBuilder
 
     private val stats = GradleBuildVariant.newBuilder()
-    private val proxy: AnalyticsEnabledAndroidTestBuilder by lazy {
-        AnalyticsEnabledAndroidTestBuilder(delegate, stats)
+    private val proxy: AnalyticsEnabledDeviceTestBuilder by lazy {
+        AnalyticsEnabledDeviceTestBuilder(delegate, stats)
     }
 
     @Test
@@ -48,19 +47,19 @@ class AnalyticsEnabledAndroidTestBuilderTest {
 
         Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
         Truth.assertThat(
-                stats.variantApiAccess.variantAccessList.first().type
+            stats.variantApiAccess.variantAccessList.first().type
         ).isEqualTo(VariantMethodType.ANDROID_TEST_ENABLED_VALUE)
         Mockito.verify(delegate, Mockito.times(1)).enable = true
     }
 
     @Test
     fun testEnableMultiDex() {
-        proxy.enableMultiDex = true
+        proxy.setEnableMultiDex(true)
 
         Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
         Truth.assertThat(
-                stats.variantApiAccess.variantAccessList.first().type
+            stats.variantApiAccess.variantAccessList.first().type
         ).isEqualTo(VariantMethodType.ENABLE_MULTI_DEX_VALUE)
-        Mockito.verify(delegate, Mockito.times(1)).enableMultiDex = true
+        Mockito.verify(delegate, Mockito.times(1)).setEnableMultiDex(true)
     }
 }

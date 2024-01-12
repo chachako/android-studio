@@ -32,6 +32,7 @@ import com.android.build.api.variant.AarMetadata
 import com.android.build.api.variant.CanMinifyAndroidResourcesBuilder
 import com.android.build.api.variant.CanMinifyCodeBuilder
 import com.android.build.api.variant.Component
+import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
 import com.android.build.api.variant.Packaging
 import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
@@ -79,7 +80,7 @@ open class KmpVariantImpl @Inject constructor(
     global,
     androidKotlinCompilation,
     manifestFile,
-), KotlinMultiplatformAndroidVariant, KmpCreationConfig {
+), KotlinMultiplatformAndroidVariant, KmpCreationConfig, InternalHasDeviceTests {
 
     override val aarOutputFileName: Property<String> =
         internalServices.newPropertyBackingDeprecatedApi(
@@ -118,15 +119,17 @@ open class KmpVariantImpl @Inject constructor(
 
     override var unitTest: KmpUnitTestImpl? = null
 
-    override var androidTest: KmpAndroidTestImpl? = null
+    override val deviceTests = mutableListOf<DeviceTest>()
+    override val androidDeviceTest: KmpAndroidTestImpl?
+        get() = deviceTests.filterIsInstance<KmpAndroidTestImpl>().firstOrNull()
 
     override val isAndroidTestCoverageEnabled: Boolean
-        get() = androidTest?.isAndroidTestCoverageEnabled ?: false
+        get() = androidDeviceTest?.isAndroidTestCoverageEnabled ?: false
 
     override val nestedComponents: List<KmpComponentImpl<*>>
         get() = listOfNotNull(
             unitTest,
-            androidTest
+            androidDeviceTest
         )
 
     override val experimentalProperties: MapProperty<String, Any> =

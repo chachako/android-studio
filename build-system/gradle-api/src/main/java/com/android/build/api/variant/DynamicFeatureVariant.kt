@@ -20,8 +20,10 @@ package com.android.build.api.variant
  *
  * See [Component] and [Variant] for more information.
  */
+@Suppress("DEPRECATION")
 interface DynamicFeatureVariant : Variant,
     GeneratesApk,
+    HasDeviceTests,
     HasAndroidTest,
     HasUnitTest,
     HasTestFixtures {

@@ -17,8 +17,8 @@
 package com.android.build.api.component.analytics
 
 import com.android.build.api.artifact.Artifacts
-import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.Component
+import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.Instrumentation
 import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
 import com.android.build.api.variant.LifecycleTasks
@@ -97,7 +97,8 @@ open class AnalyticsEnabledKotlinMultiplatformAndroidVariant @Inject constructor
         }
     }
 
-    override val androidTest: AndroidTest?
+    @Suppress("DEPRECATION")
+    override val androidTest: com.android.build.api.variant.AndroidTest?
         get() {
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
                 VariantPropertiesMethodType.ANDROID_TEST_VALUE
@@ -109,5 +110,37 @@ open class AnalyticsEnabledKotlinMultiplatformAndroidVariant @Inject constructor
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
                 VariantPropertiesMethodType.NESTED_COMPONENTS_VALUE
             return delegate.nestedComponents
+        }
+
+    override val deviceTests: List<DeviceTest>
+        get()  {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.DEVICE_TESTS_VALUE
+            // return a new list everytime as items may eventually be added through future APIs.
+            // we may consider returning a live list instead.
+            return  delegate.deviceTests.map {
+                @Suppress("DEPRECATION")
+                if (it is com.android.build.api.variant.AndroidTest) {
+                    AnalyticsEnabledAndroidTest(it, stats, objectFactory)
+                } else {
+                    AnalyticsEnabledDeviceTest(it, stats, objectFactory)
+                }
+            }
+        }
+
+    private val userVisibleDefaultDeviceTest: AnalyticsEnabledDeviceTest? by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
+        delegate.defaultDeviceTest?.let {
+            objectFactory.newInstance(
+                AnalyticsEnabledDeviceTest::class.java,
+                it,
+                stats
+            )
+        }
+    }
+    override val defaultDeviceTest: DeviceTest?
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.DEFAULT_DEVICE_TEST_VALUE
+            return userVisibleDefaultDeviceTest
         }
 }

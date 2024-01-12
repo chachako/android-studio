@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.build.api.variant
 
+import org.gradle.api.Incubating
+
 /**
- * Model for dynamic feature components that only contains configuration-time properties that
- * impacts the build flow.
+ * Interface that marks the potential existence of [DeviceTest] component on a [Variant].
  *
- * See [ComponentBuilder] and [VariantBuilder] for more information.
+ * This is implemented by select subtypes of [VariantBuilder].
  */
-interface DynamicFeatureVariantBuilder : VariantBuilder,
-    HasDeviceTestsBuilder,
-    HasAndroidTestBuilder,
-    HasUnitTestBuilder,
-    HasTestFixturesBuilder,
-    GeneratesApkBuilder
+@Incubating
+interface HasDeviceTestsBuilder {
+
+    /**
+     * [List] of [DeviceTestBuilder] for this variant.
+     *
+     * The creation of [DeviceTestBuilder] elements is handled by the AGP Plugin
+     * and there is no way to add or remove from the list as of now.
+     */
+    @get:Incubating
+    val deviceTests: List<DeviceTestBuilder>
+}

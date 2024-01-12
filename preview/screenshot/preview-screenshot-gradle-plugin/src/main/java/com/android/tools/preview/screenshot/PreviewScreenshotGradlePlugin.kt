@@ -22,7 +22,7 @@ import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationVariant
-import com.android.build.api.variant.HasAndroidTest
+import com.android.build.api.variant.HasDeviceTests
 import com.android.build.api.variant.HasUnitTest
 import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.ScopedArtifacts
@@ -103,7 +103,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             }
 
             componentsExtension.onVariants { variant ->
-                if (variant is HasAndroidTest) {
+                if (variant is HasDeviceTests) {
                     val variantName = variant.name
 
                     val discoveryTaskProvider =
@@ -119,7 +119,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                             task.analyticsService.set(analyticsServiceProvider)
                             task.usesService(analyticsServiceProvider)
                         }
-                    variant.androidTest?.artifacts
+                    variant.deviceTests.singleOrNull()?.artifacts
                         ?.forScope(ScopedArtifacts.Scope.ALL)
                         ?.use(discoveryTaskProvider)
                         ?.toGet(
@@ -202,7 +202,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                             PreviewScreenshotRenderTask::mainClassesDir,
                         )
 
-                    variant.androidTest?.artifacts
+                    variant.deviceTests.singleOrNull()?.artifacts
                         ?.forScope(ScopedArtifacts.Scope.ALL)
                         ?.use(renderTaskProvider)
                         ?.toGet(

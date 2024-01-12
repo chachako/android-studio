@@ -7,6 +7,12 @@ Deprecated from AGP 8.4.0
   * com.android.build.api.artifact.Artifacts.add: void (com.android.build.api.artifact.MultipleArtifact<FileTypeT>, FileTypeT)
   * com.android.build.api.dsl.KeepRules.ignoreAllExternalDependencies: void (boolean)
   * com.android.build.api.dsl.KeepRules.ignoreExternalDependencies: void (java.lang.String[])
+  * com.android.build.api.variant.AndroidTestBuilder implements com.android.build.api.variant.DeviceTestBuilder
+  * com.android.build.api.variant.AndroidTestBuilder.getEnable: boolean ()
+  * com.android.build.api.variant.AndroidTestBuilder.setEnable: void (boolean)
+  * com.android.build.api.variant.AndroidTestBuilder.setEnableMultiDex: void (java.lang.Boolean)
+  * com.android.build.api.variant.HasAndroidTestBuilder
+  * com.android.build.api.variant.HasAndroidTestBuilder.getAndroidTest: com.android.build.api.variant.AndroidTestBuilder ()
 Deprecated from AGP UNKNOWN_VERSION
   * com.android.build.api.dsl.AaptOptions implements com.android.build.api.dsl.AndroidResources
   * com.android.build.api.dsl.AdbOptions implements com.android.build.api.dsl.Installation

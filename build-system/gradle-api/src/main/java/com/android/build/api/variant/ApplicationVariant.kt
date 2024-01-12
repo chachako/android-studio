@@ -24,8 +24,10 @@ import org.gradle.api.provider.Property
  *
  * See [Component] and [Variant] for more information.
  */
+@Suppress("DEPRECATION")
 interface ApplicationVariant : GeneratesApk,
     Variant,
+    HasDeviceTests,
     HasAndroidTest,
     HasUnitTest,
     HasTestFixtures,

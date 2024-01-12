@@ -16,12 +16,14 @@
 
 package com.android.build.api.component.analytics
 
+import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.DependenciesInfo
 import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.ApplicationAndroidResources
 import com.android.build.api.variant.BundleConfig
+import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.JniLibsApkPackaging
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.ResourcesPackaging
@@ -40,6 +42,7 @@ import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
+import kotlin.test.fail
 
 class AnalyticsEnabledApplicationVariantTest {
 
@@ -107,6 +110,64 @@ class AnalyticsEnabledApplicationVariantTest {
         Mockito.verify(delegate, Mockito.times(1))
             .androidResources
     }
+    @Test
+    fun getDeviceTests_for_default_device_test() {
+        val deviceTest = Mockito.mock(DeviceTest::class.java)
+        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        Mockito.`when`(delegate.defaultDeviceTest).thenReturn(deviceTest)
+        val deviceTestsProxy = proxy.deviceTests
+
+        Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
+        var deviceTestProxy = deviceTestsProxy.single()
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledDeviceTest).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledDeviceTest).delegate).isEqualTo(deviceTest)
+
+        deviceTestProxy = proxy.defaultDeviceTest ?: fail("deviceTest method returned null")
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledDeviceTest).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledDeviceTest).delegate).isEqualTo(deviceTest)
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(2)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.DEVICE_TESTS_VALUE)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.last().type
+        ).isEqualTo(VariantPropertiesMethodType.DEFAULT_DEVICE_TEST_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+            .deviceTests
+        Mockito.verify(delegate, Mockito.times(1))
+            .defaultDeviceTest
+    }
+
+    @Test
+    fun getDeviceTests_for_android_test() {
+        @Suppress("DEPRECATION")
+        val deviceTest = Mockito.mock(com.android.build.api.variant.AndroidTest::class.java)
+        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        Mockito.`when`(delegate.androidTest).thenReturn(deviceTest)
+        val deviceTestsProxy = proxy.deviceTests
+
+        Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
+        var deviceTestProxy = deviceTestsProxy.single()
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledAndroidTest).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledAndroidTest).delegate).isEqualTo(deviceTest)
+
+        deviceTestProxy = proxy.androidTest ?: fail("androidTest method returned false")
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledAndroidTest).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledAndroidTest).delegate).isEqualTo(deviceTest)
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(2)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.DEVICE_TESTS_VALUE)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.last().type
+        ).isEqualTo(VariantPropertiesMethodType.ANDROID_TEST_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+            .deviceTests
+        Mockito.verify(delegate, Mockito.times(1))
+            .androidTest
+    }
 
     @Test
     fun getSigningConfig() {
@@ -165,7 +226,8 @@ class AnalyticsEnabledApplicationVariantTest {
 
     @Test
     fun androidTest() {
-        val androidTest = Mockito.mock(AndroidTest::class.java)
+        @Suppress("DEPRECATION")
+        val androidTest = Mockito.mock(com.android.build.api.variant.AndroidTest::class.java)
         Mockito.`when`(androidTest.applicationId).thenReturn(FakeGradleProperty("appId"))
         Mockito.`when`(delegate.androidTest).thenReturn(androidTest)
 
@@ -183,6 +245,28 @@ class AnalyticsEnabledApplicationVariantTest {
             )
         )
         Mockito.verify(delegate, Mockito.times(1)).androidTest
+    }
+
+    @Test
+    fun deviceTest() {
+        val deviceTest = Mockito.mock(DeviceTest::class.java)
+        Mockito.`when`(deviceTest.applicationId).thenReturn(FakeGradleProperty("appId"))
+        Mockito.`when`(delegate.defaultDeviceTest).thenReturn(deviceTest)
+
+        proxy.defaultDeviceTest.let {
+            Truth.assertThat(it?.applicationId?.get()).isEqualTo("appId")
+        }
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(2)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.map { it.type }
+        ).containsExactlyElementsIn(
+            listOf(
+                VariantPropertiesMethodType.DEFAULT_DEVICE_TEST_VALUE,
+                VariantPropertiesMethodType.APPLICATION_ID_VALUE,
+            )
+        )
+        Mockito.verify(delegate, Mockito.times(1)).defaultDeviceTest
     }
 
     @Test

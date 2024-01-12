@@ -17,7 +17,7 @@ package com.android.build.gradle.internal
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.ProductFlavorAttr
-import com.android.build.api.component.impl.AndroidTestImpl
+import com.android.build.api.component.impl.DeviceTestImpl
 import com.android.build.api.component.impl.ScreenshotTestImpl
 import com.android.build.api.component.impl.TestFixturesImpl
 import com.android.build.api.component.impl.UnitTestImpl
@@ -25,19 +25,20 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.TestedExtension
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
-import com.android.build.api.variant.HasAndroidTestBuilder
+import com.android.build.api.variant.HasDeviceTests
+import com.android.build.api.variant.HasDeviceTestsBuilder
 import com.android.build.api.variant.HasTestFixturesBuilder
 import com.android.build.api.variant.HasUnitTestBuilder
 import com.android.build.api.variant.Variant
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.VariantExtensionConfig
-import com.android.build.api.variant.impl.AndroidTestBuilderImpl
 import com.android.build.api.variant.impl.ArtifactMetadataProcessor
+import com.android.build.api.variant.impl.DeviceTestBuilderImpl
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfig
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfigImpl
-import com.android.build.api.variant.impl.HasDeviceTests
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.HasHostTests
+import com.android.build.api.variant.impl.InternalHasDeviceTests
 import com.android.build.api.variant.impl.InternalVariantBuilder
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
@@ -573,7 +574,7 @@ class VariantManager<
         testedComponentInfo: VariantComponentInfo<VariantBuilderT, VariantDslInfoT, VariantT>,
         componentType: ComponentType,
         testFixturesEnabled: Boolean,
-        androidTestBuilder: AndroidTestBuilderImpl? = null,
+        defaultDeviceTestBuilder: DeviceTestBuilderImpl? = null,
     ): TestComponentCreationConfig {
 
         // handle test variant
@@ -689,7 +690,7 @@ class VariantManager<
 
         val testComponent = when(componentType) {
             // this is ANDROID_TEST
-            ComponentTypeImpl.ANDROID_TEST -> androidTestBuilder?.let {
+            ComponentTypeImpl.ANDROID_TEST -> defaultDeviceTestBuilder?.let {
                 variantFactory.createAndroidTest(
                     variantDslInfo.componentIdentity,
                     variantFactory.createAndroidTestBuildFeatureValues(
@@ -855,20 +856,21 @@ class VariantManager<
                 }
 
                 if (variantFactory.componentType.hasTestComponents) {
-                    val androidTestEnabled = (variantBuilder as? HasAndroidTestBuilder)?.androidTest?.enable ?: false
-                    if (androidTestEnabled && buildTypeData == testBuildTypeData) {
-                        val hasAndroidTestBuilder = variantBuilder as HasAndroidTestBuilder
-                        val androidTest = createTestComponents<AndroidTestComponentDslInfo>(
+                    (variantBuilder as? HasDeviceTestsBuilder)?.deviceTests?.forEach { deviceTestBuilder ->
+                        if (deviceTestBuilder.enable && buildTypeData == testBuildTypeData) {
+                            val androidTest = createTestComponents<AndroidTestComponentDslInfo>(
                                 dimensionCombination,
                                 buildTypeData,
                                 productFlavorDataList,
                                 variantInfo,
                                 ComponentTypeImpl.ANDROID_TEST,
                                 testFixturesEnabledForVariant,
-                            hasAndroidTestBuilder.androidTest as AndroidTestBuilderImpl,
-                        )
-                        addTestComponent(androidTest)
-                        (variant as HasDeviceTests).androidTest = androidTest as AndroidTestImpl
+                                deviceTestBuilder as DeviceTestBuilderImpl,
+                            )
+                            addTestComponent(androidTest)
+
+                            (variant as InternalHasDeviceTests).deviceTests.add(androidTest as DeviceTestImpl)
+                        }
                     }
                     val unitTestEnabled = (variantBuilder as? HasUnitTestBuilder)?.enableUnitTest ?: false
                     if (unitTestEnabled) {
@@ -955,7 +957,7 @@ class VariantManager<
                         .setDexMerger(GradleBuildVariant.DexMergerTool.D8_MERGER)
                         .setHasUnitTest((variant as? HasHostTests)?.unitTest != null)
                          // TODO(karimai): Add tracking for ScreenshotTests
-                        .setHasAndroidTest((variant as? HasDeviceTests)?.androidTest != null)
+                        .setHasAndroidTest((variant as? HasDeviceTests)?.deviceTests?.isNotEmpty() ?: false)
                         .setHasTestFixtures((variant as? HasTestFixtures)?.testFixtures != null)
 
                     it.testExecution = AnalyticsUtil.toProto(dslExtension.testOptions.execution.toExecutionEnum() ?: TestOptions.Execution.HOST)

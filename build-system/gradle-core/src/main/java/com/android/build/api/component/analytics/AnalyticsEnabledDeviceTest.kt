@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package com.android.build.api.component.analytics
 
-import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidVersion
-import com.android.build.api.variant.GeneratesApk
-import com.android.build.api.variant.BuildConfigField
 import com.android.build.api.variant.ApkPackaging
+import com.android.build.api.variant.BuildConfigField
+import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.Dexing
+import com.android.build.api.variant.GeneratesApk
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.SigningConfig
@@ -33,17 +33,36 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import java.io.Serializable
 import javax.inject.Inject
 
-open class AnalyticsEnabledAndroidTest @Inject constructor(
-    override val delegate: AndroidTest,
+open class AnalyticsEnabledDeviceTest @Inject constructor(
+    override val delegate: DeviceTest,
     stats: GradleBuildVariant.Builder,
     objectFactory: ObjectFactory
-) : AnalyticsEnabledDeviceTest(
+
+): AnalyticsEnabledTestComponent(
     delegate, stats, objectFactory
-), AndroidTest {
+), DeviceTest {
+
+    override val applicationId: Property<String>
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.APPLICATION_ID_VALUE
+            return delegate.applicationId
+        }
+    override val signingConfig: SigningConfig?
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.SIGNING_CONFIG_VALUE
+            return delegate.signingConfig
+        }
+    override val manifestPlaceholders: MapProperty<String, String>
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.MANIFEST_PLACEHOLDERS_VALUE
+            return delegate.manifestPlaceholders
+        }
 
     override val instrumentationRunner: Property<String>
         get() {
@@ -94,14 +113,14 @@ open class AnalyticsEnabledAndroidTest @Inject constructor(
 
     override fun makeResValueKey(type: String, name: String): ResValue.Key {
         stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
-                VariantPropertiesMethodType.MAKE_RES_VALUE_KEY_VALUE
+            VariantPropertiesMethodType.MAKE_RES_VALUE_KEY_VALUE
         return delegate.makeResValueKey(type, name)
     }
 
     override val pseudoLocalesEnabled: Property<Boolean>
         get() {
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
-                    VariantPropertiesMethodType.VARIANT_PSEUDOLOCALES_ENABLED_VALUE
+                VariantPropertiesMethodType.VARIANT_PSEUDOLOCALES_ENABLED_VALUE
             return delegate.pseudoLocalesEnabled
         }
 
@@ -117,9 +136,9 @@ open class AnalyticsEnabledAndroidTest @Inject constructor(
 
     private val generatesApk: GeneratesApk by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
         AnalyticsEnabledGeneratesApk(
-                delegate,
-                stats,
-                objectFactory
+            delegate,
+            stats,
+            objectFactory
         )
     }
 

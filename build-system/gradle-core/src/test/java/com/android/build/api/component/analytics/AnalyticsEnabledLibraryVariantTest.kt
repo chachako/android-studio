@@ -18,6 +18,7 @@ package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.AarMetadata
 import com.android.build.api.variant.AndroidTest
+import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.JniLibsPackaging
 import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.Packaging
@@ -35,6 +36,7 @@ import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.quality.Strictness
+import kotlin.test.fail
 
 class AnalyticsEnabledLibraryVariantTest {
 
@@ -136,5 +138,81 @@ class AnalyticsEnabledLibraryVariantTest {
             )
         )
         Mockito.verify(delegate, Mockito.times(1)).androidTest
+    }
+
+    @Test
+    fun getDeviceTests() {
+        val deviceTest = Mockito.mock(DeviceTest::class.java)
+        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        val deviceTestsProxy = proxy.deviceTests
+
+        Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
+        val deviceTestProxy = deviceTestsProxy.single()
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledDeviceTest).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledDeviceTest).delegate).isEqualTo(deviceTest)
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.DEVICE_TESTS_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+            .deviceTests
+    }
+
+    @Test
+    fun getDeviceTests_for_android_test() {
+        val deviceTest = Mockito.mock(AndroidTest::class.java)
+        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        Mockito.`when`(delegate.androidTest).thenReturn(deviceTest)
+        val deviceTestsProxy = proxy.deviceTests
+
+        Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
+        var deviceTestProxy = deviceTestsProxy.single()
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledAndroidTest).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledAndroidTest).delegate).isEqualTo(deviceTest)
+
+        deviceTestProxy = proxy.androidTest ?: fail("androidTest method returned false")
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledAndroidTest).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledAndroidTest).delegate).isEqualTo(deviceTest)
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(2)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.DEVICE_TESTS_VALUE)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.last().type
+        ).isEqualTo(VariantPropertiesMethodType.ANDROID_TEST_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+            .deviceTests
+        Mockito.verify(delegate, Mockito.times(1))
+            .androidTest
+    }
+
+    @Test
+    fun getDeviceTests_for_default_device_test() {
+        val deviceTest = Mockito.mock(DeviceTest::class.java)
+        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        Mockito.`when`(delegate.defaultDeviceTest).thenReturn(deviceTest)
+        val deviceTestsProxy = proxy.deviceTests
+
+        Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
+        var deviceTestProxy = deviceTestsProxy.single()
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledDeviceTest).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledDeviceTest).delegate).isEqualTo(deviceTest)
+
+        deviceTestProxy = proxy.defaultDeviceTest ?: fail("deviceTest method returned null")
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledDeviceTest).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledDeviceTest).delegate).isEqualTo(deviceTest)
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(2)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.DEVICE_TESTS_VALUE)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.last().type
+        ).isEqualTo(VariantPropertiesMethodType.DEFAULT_DEVICE_TEST_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+            .deviceTests
+        Mockito.verify(delegate, Mockito.times(1))
+            .defaultDeviceTest
     }
 }

@@ -25,6 +25,7 @@ import org.gradle.api.Incubating
  * See [ComponentBuilder] and [VariantBuilder] for more information.
  */
 interface ApplicationVariantBuilder : VariantBuilder,
+    HasDeviceTestsBuilder,
     HasAndroidTestBuilder,
     HasUnitTestBuilder,
     HasTestFixturesBuilder,

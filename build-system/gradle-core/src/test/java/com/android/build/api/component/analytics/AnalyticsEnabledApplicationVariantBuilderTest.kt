@@ -18,34 +18,47 @@ package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.AndroidTestBuilder
 import com.android.build.api.variant.ApplicationAndroidResourcesBuilder
+import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.ApplicationVariantBuilder
+import com.android.build.api.variant.DeviceTest
+import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.PropertyAccessNotAllowedException
 import com.android.tools.build.gradle.internal.profile.VariantMethodType
+import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnit
+import org.mockito.junit.MockitoRule
+import org.mockito.quality.Strictness
+import kotlin.test.fail
 
 internal class AnalyticsEnabledApplicationVariantBuilderTest {
+    @get:Rule
+    val rule: MockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS)
+
     @Mock
     lateinit var delegate: ApplicationVariantBuilder
 
+    @Suppress("DEPRECATION")
     @Mock
-    lateinit var androidTest: AndroidTestBuilder
-
+    lateinit var androidTest: com.android.build.api.variant.AndroidTestBuilder
 
     private val stats = GradleBuildVariant.newBuilder()
-    private lateinit var proxy: AnalyticsEnabledApplicationVariantBuilder
+    private val proxy: AnalyticsEnabledApplicationVariantBuilder by lazy {
+        AnalyticsEnabledApplicationVariantBuilder(delegate, stats)
+    }
 
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
+        @Suppress("DEPRECATION")
         Mockito.`when`(delegate.androidTest).thenReturn(androidTest)
-        proxy = AnalyticsEnabledApplicationVariantBuilder(delegate, stats)
     }
 
     @Test
@@ -105,5 +118,51 @@ internal class AnalyticsEnabledApplicationVariantBuilderTest {
         Truth.assertThat(
             stats.variantApiAccess.variantAccessList.first().type
         ).isEqualTo(VariantMethodType.ANDROID_RESOURCES_BUILDER_VALUE)
+    }
+
+    @Test
+    fun getDeviceTests() {
+        val deviceTest = Mockito.mock(DeviceTestBuilder::class.java)
+        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        val deviceTestsProxy = proxy.deviceTests
+
+        Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
+        val deviceTestProxy = deviceTestsProxy.single()
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledDeviceTestBuilder).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledDeviceTestBuilder).delegate).isEqualTo(deviceTest)
+        Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantAccessList.first().type
+        ).isEqualTo(VariantMethodType.DEVICE_TESTS_BUILDER_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+            .deviceTests
+    }
+
+    @Test
+    fun getDeviceTests_for_android_test() {
+        @Suppress("DEPRECATION") val deviceTest = Mockito.mock(com.android.build.api.variant.AndroidTestBuilder::class.java)
+        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
+        val deviceTestsProxy = proxy.deviceTests
+
+        Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
+        val deviceTestProxy = deviceTestsProxy.single()
+        Truth.assertThat(deviceTestProxy is AnalyticsEnabledAndroidTestBuilder).isTrue()
+        Truth.assertThat((deviceTestProxy as AnalyticsEnabledAndroidTestBuilder).delegate).isEqualTo(deviceTest)
+
+        val androidTestProxy = proxy.androidTest ?: fail("androidTest method returned false")
+        Truth.assertThat(androidTestProxy is AnalyticsEnabledAndroidTestBuilder).isTrue()
+        Truth.assertThat((androidTestProxy as AnalyticsEnabledAndroidTestBuilder).delegate).isEqualTo(androidTest)
+
+        Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(2)
+        Truth.assertThat(
+            stats.variantApiAccess.variantAccessList.first().type
+        ).isEqualTo(VariantMethodType.DEVICE_TESTS_BUILDER_VALUE)
+        Truth.assertThat(
+            stats.variantApiAccess.variantAccessList.last().type
+        ).isEqualTo(VariantMethodType.ANDROID_TEST_BUILDER_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+            .deviceTests
+        Mockito.verify(delegate, Mockito.times(1))
+            .androidTest
     }
 }

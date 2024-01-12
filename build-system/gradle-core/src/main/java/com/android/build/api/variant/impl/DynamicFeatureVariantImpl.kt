@@ -18,7 +18,6 @@ package com.android.build.api.variant.impl
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.analytics.AnalyticsEnabledDynamicFeatureVariant
-import com.android.build.api.component.impl.AndroidTestImpl
 import com.android.build.api.component.impl.TestFixturesImpl
 import com.android.build.api.component.impl.features.DexingImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
@@ -26,6 +25,7 @@ import com.android.build.api.component.impl.isTestApk
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.Component
+import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.DynamicFeatureVariant
 import com.android.build.api.variant.Renderscript
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
@@ -79,7 +79,7 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     internalServices,
     taskCreationServices,
     globalTaskCreationConfig
-), DynamicFeatureVariant, DynamicFeatureCreationConfig, HasDeviceTests, HasTestFixtures {
+), DynamicFeatureVariant, DynamicFeatureCreationConfig, InternalHasDeviceTests, HasTestFixtures {
 
     init {
         // TODO: Should be removed once we stop implementing all build type interfaces in one class
@@ -119,7 +119,7 @@ open class DynamicFeatureVariantImpl @Inject constructor(
         )
     }
 
-    override var androidTest: AndroidTestImpl? = null
+    override val deviceTests = mutableListOf<DeviceTest>()
 
     override var testFixtures: TestFixturesImpl? = null
 

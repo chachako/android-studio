@@ -25,6 +25,7 @@ import com.android.build.api.variant.ApplicationAndroidResources
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.BundleConfig
 import com.android.build.api.variant.DependenciesInfo
+import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.Dexing
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.SigningConfig
@@ -172,4 +173,35 @@ open class AnalyticsEnabledApplicationVariant @Inject constructor(
 
     override val dexing: Dexing
         get() = generatesApk.dexing
+
+    override val deviceTests: List<DeviceTest>
+        get()  {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.DEVICE_TESTS_VALUE
+            // return a new list everytime as items may eventually be added through future APIs.
+            // we may consider returning a live list instead.
+            return  delegate.deviceTests.map {
+                if (it is AndroidTest) {
+                    AnalyticsEnabledAndroidTest(it, stats, objectFactory)
+                } else {
+                    AnalyticsEnabledDeviceTest(it, stats, objectFactory)
+                }
+            }
+        }
+
+    private val userVisibleDeviceTest: AnalyticsEnabledDeviceTest? by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
+        delegate.defaultDeviceTest?.let {
+            objectFactory.newInstance(
+                AnalyticsEnabledDeviceTest::class.java,
+                it,
+                stats
+            )
+        }
+    }
+    override val defaultDeviceTest: DeviceTest?
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.DEFAULT_DEVICE_TEST_VALUE
+            return userVisibleDeviceTest
+        }
 }
