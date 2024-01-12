@@ -56,6 +56,7 @@ import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.ProjectLayout
+import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
@@ -73,6 +74,7 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
+import java.util.concurrent.Callable
 import javax.inject.Inject
 
 /**
@@ -487,31 +489,27 @@ abstract class ProguardConfigurableTask(
             val postprocessingFeatures = optimizationCreationConfig.postProcessingFeatures
             postprocessingFeatures?.let { setActions(postprocessingFeatures) }
 
-            val aaptProguardFile =
-                if (task.includeFeaturesInScopes.get()) {
-                    creationConfig.artifacts.get(
-                        InternalArtifactType.MERGED_AAPT_PROGUARD_FILE)
-                } else {
-                    creationConfig.artifacts.get(
-                        InternalArtifactType.AAPT_PROGUARD_FILE
-                    )
-                }
-
             task.generatedProguardFile.fromDisallowChanges(
                 creationConfig.artifacts.get(GENERATED_PROGUARD_FILE)
             )
 
-            val configurationFiles = task.project.files(
-                optimizationCreationConfig.proguardFiles,
-                aaptProguardFile,
-                task.libraryKeepRulesFileCollection
-            )
-
-            if (task.includeFeaturesInScopes.get()) {
-                addFeatureProguardRules(creationConfig, configurationFiles)
+            task.configurationFiles.apply {
+                from(optimizationCreationConfig.proguardFiles)
+                from(task.libraryKeepRulesFileCollection)
+                if (task.includeFeaturesInScopes.get()) {
+                    from(creationConfig.artifacts.get(InternalArtifactType.MERGED_AAPT_PROGUARD_FILE))
+                    from(getFeatureProguardRules(creationConfig))
+                } else {
+                    from(Callable {
+                        // Consume AAPT_PROGUARD_FILE only if it is produced (see b/319132114).
+                        // The `Provider.isPresent` check needs to happen lazily when all
+                        // producers/consumers have been finalized, so we do this inside a Callable.
+                        creationConfig.artifacts.get(InternalArtifactType.AAPT_PROGUARD_FILE)
+                            .takeIf { it.isPresent }
+                    })
+                }
+                disallowChanges()
             }
-
-            task.configurationFiles.from(configurationFiles)
 
             if (creationConfig.componentType.isAar) {
                 keep("class **.R")
@@ -527,17 +525,9 @@ abstract class ProguardConfigurableTask(
             }
         }
 
-        private fun addFeatureProguardRules(
-            creationConfig: ConsumableCreationConfig,
-            configurationFiles: ConfigurableFileCollection
-        ) {
-            configurationFiles.from(
-                creationConfig.variantDependencies.getArtifactFileCollection(
-                    REVERSE_METADATA_VALUES,
-                    PROJECT,
-                    FILTERED_PROGUARD_RULES
-                )
-            )
+        private fun getFeatureProguardRules(creationConfig: ConsumableCreationConfig): FileCollection {
+            return creationConfig.variantDependencies
+                .getArtifactFileCollection(REVERSE_METADATA_VALUES, PROJECT, FILTERED_PROGUARD_RULES)
         }
 
         protected abstract fun keep(keep: String)

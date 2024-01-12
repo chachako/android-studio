@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.TestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.options.BooleanOption
 import com.android.utils.FileUtils
 import org.junit.Before
 import org.junit.Rule
@@ -107,6 +108,19 @@ class ShrinkLibraryTest {
         )
 
         libraryA.executor().run("assembleDebug")
+    }
+
+    /** Regression test for b/319132114. */
+    @Test
+    fun `test task dependencies with Android resources disabled`() {
+        TestFileUtils.searchAndReplace(
+            libraryA.mainSrcDir.resolve("com/example/$LIBRARY_A/HelloWorld.java"),
+            "setContentView(R.layout.main);",
+            "// setContentView(R.layout.main);"
+        )
+        libraryA.executor()
+            .with(BooleanOption.BUILD_FEATURE_ANDROID_RESOURCES, false)
+            .run("minifyDebugWithR8")
     }
 
     private fun compileWithJava8Target(buildFile: File) {
