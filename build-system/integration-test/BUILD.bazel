@@ -46,7 +46,7 @@ maven_repository(
         "@maven//:android.arch.persistence.room.runtime_1.0.0",
         "@maven//:com.android.support.test.rules_1.0.2",
         "@maven//:com.android.support.test.runner_1.0.2",
-        "@maven//:org.jacoco.org.jacoco.ant_0.8.8",
+        "@maven//:org.jacoco.org.jacoco.ant_0.8.11",
     ],
     visibility = [":__subpackages__"],
 )

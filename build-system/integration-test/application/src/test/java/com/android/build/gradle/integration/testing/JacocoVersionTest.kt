@@ -17,9 +17,7 @@
 package com.android.build.gradle.integration.testing
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.internal.coverage.JacocoOptions
 import com.android.build.gradle.options.StringOption
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth
@@ -54,11 +52,7 @@ class JacocoVersionTest {
         )
 
         // AGP default Jacoco plugin version
-        val result = project.executor().run("jacocoTestReport")
-        ScannerSubject.assertThat(result.stdout).contains("The Jacoco plugin extension version " +
-            "'0.8.11' is not currently available in the Android Gradle Plugin. " +
-            "Setting the version to ${JacocoOptions.DEFAULT_VERSION}"
-        )
+        project.executor().run("jacocoTestReport")
         val generatedJacocoReport = FileUtils.join(
             project.buildDir, "reports", "jacoco", "jacocoTestReport", "html", "index.html"
         )
@@ -67,8 +61,8 @@ class JacocoVersionTest {
         )
         var generatedJacocoReportHtml = generatedJacocoReport.readLines().joinToString("\n")
         var generatedCoverageReportHtml = generatedCoverageReport.readLines().joinToString("\n")
-        Truth.assertThat(generatedJacocoReportHtml).contains("JaCoCo</a> 0.8.8")
-        Truth.assertThat(generatedCoverageReportHtml).contains("JaCoCo</a> 0.8.8")
+        Truth.assertThat(generatedJacocoReportHtml).contains("JaCoCo</a> 0.8.11")
+        Truth.assertThat(generatedCoverageReportHtml).contains("JaCoCo</a> 0.8.11")
 
         // Test Jacoco DSL
         TestFileUtils.appendToFile(
@@ -87,14 +81,14 @@ class JacocoVersionTest {
         TestFileUtils.appendToFile(
             project.buildFile,
             """
-                android.testCoverage.jacocoVersion = "0.8.8"
+                android.testCoverage.jacocoVersion = "0.8.11"
             """.trimIndent()
         )
         project.execute("jacocoTestReport")
         generatedJacocoReportHtml = generatedJacocoReport.readLines().joinToString("\n")
         generatedCoverageReportHtml = generatedCoverageReport.readLines().joinToString("\n")
-        Truth.assertThat(generatedJacocoReportHtml).contains("JaCoCo</a> 0.8.8")
-        Truth.assertThat(generatedCoverageReportHtml).contains("JaCoCo</a> 0.8.8")
+        Truth.assertThat(generatedJacocoReportHtml).contains("JaCoCo</a> 0.8.11")
+        Truth.assertThat(generatedCoverageReportHtml).contains("JaCoCo</a> 0.8.11")
 
         // Test StringOption
         project.executor()

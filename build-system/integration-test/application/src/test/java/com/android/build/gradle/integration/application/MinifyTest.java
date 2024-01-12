@@ -96,7 +96,7 @@ public class MinifyTest {
                                     c ->
                                             !c.startsWith("Lorg/jacoco")
                                                     && !c.startsWith("Lcom/android/tests/basic/R$")
-                                                    && !c.equals("Lcom/vladium/emma/rt/RT;"))
+                                                    && !c.startsWith("Lcom/vladium/emma/rt/"))
                             .collect(Collectors.toSet()));
         }
 
