@@ -1837,6 +1837,14 @@ package com.android.build.api.dsl {
     property public abstract boolean enable;
   }
 
+  @org.gradle.api.Incubating public interface PrivacySandboxKeepRules extends com.android.build.api.dsl.ConfigurableFiles {
+    method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getIgnoreFrom();
+    method @org.gradle.api.Incubating public boolean getIgnoreFromAllExternalDependencies();
+    method @org.gradle.api.Incubating public void setIgnoreFromAllExternalDependencies(boolean);
+    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> ignoreFrom;
+    property @org.gradle.api.Incubating public abstract boolean ignoreFromAllExternalDependencies;
+  }
+
   @org.gradle.api.Incubating public interface PrivacySandboxSdkBundle {
     method @org.gradle.api.Incubating public String? getApplicationId();
     method @org.gradle.api.Incubating public String? getCompatSdkProviderClassName();
@@ -1864,7 +1872,9 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public Integer? getMinSdk();
     method @org.gradle.api.Incubating public String? getMinSdkPreview();
     method @Deprecated @org.gradle.api.Incubating public String? getNamespace();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.PrivacySandboxSdkOptimization getOptimization();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.SigningConfig getSigningConfig();
+    method @org.gradle.api.Incubating public void optimization(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PrivacySandboxSdkOptimization,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void setBuildToolsVersion(String);
     method @org.gradle.api.Incubating public void setCompileSdk(Integer?);
     method @org.gradle.api.Incubating public void setCompileSdkExtension(Integer?);
@@ -1882,7 +1892,13 @@ package com.android.build.api.dsl {
     property @org.gradle.api.Incubating public abstract Integer? minSdk;
     property @org.gradle.api.Incubating public abstract String? minSdkPreview;
     property @Deprecated @org.gradle.api.Incubating public abstract String? namespace;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.PrivacySandboxSdkOptimization optimization;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.SigningConfig signingConfig;
+  }
+
+  @org.gradle.api.Incubating public interface PrivacySandboxSdkOptimization {
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.PrivacySandboxKeepRules getKeepRules();
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.PrivacySandboxKeepRules keepRules;
   }
 
   public interface ProductFlavor extends org.gradle.api.Named com.android.build.api.dsl.BaseFlavor org.gradle.api.plugins.ExtensionAware {

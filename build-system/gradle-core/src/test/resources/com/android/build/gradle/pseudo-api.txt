@@ -1550,6 +1550,7 @@ com.android.build.gradle.internal.dsl.InternalLibraryExtension.publishing: void 
 com.android.build.gradle.internal.dsl.InternalLibraryExtension.setAidlPackagedList: void (java.util.Collection<java.lang.String>)
 com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension implements com.android.build.api.dsl.PrivacySandboxSdkExtension
 com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension.bundle: void (org.gradle.api.Action<com.android.build.api.dsl.PrivacySandboxSdkBundle>)
+com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension.optimization: void (org.gradle.api.Action<com.android.build.api.dsl.PrivacySandboxSdkOptimization>)
 com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension.signingConfig: void (org.gradle.api.Action<com.android.build.api.dsl.SigningConfig>)
 com.android.build.gradle.internal.dsl.InternalSigningConfig implements com.android.build.api.dsl.SigningConfig, com.android.build.api.dsl.ApkSigningConfig, org.gradle.api.Named, com.android.builder.model.SigningConfig
 com.android.build.gradle.internal.dsl.InternalTestExtension implements com.android.build.api.dsl.TestExtension, com.android.build.gradle.internal.dsl.InternalCommonExtension

@@ -47,7 +47,7 @@ PrivacySandboxSdkInternalArtifactType<T : FileSystemLocation>(
     object APP_METADATA: PrivacySandboxSdkInternalArtifactType<RegularFile>(FILE), Replaceable
 
     // Directory containing merged resources from all libraries and their dependencies.
-    object MERGED_RES: PrivacySandboxSdkInternalArtifactType<Directory>(ArtifactKind.DIRECTORY), Replaceable
+    object MERGED_RES: PrivacySandboxSdkInternalArtifactType<Directory>(ArtifactKind.DIRECTORY), Replaceable, Transformable
 
     // Directory containing blame log of fused library manifest merging
     object MERGED_RES_BLAME_LOG: PrivacySandboxSdkInternalArtifactType<Directory>(ArtifactKind.DIRECTORY), Replaceable
@@ -61,4 +61,6 @@ PrivacySandboxSdkInternalArtifactType<T : FileSystemLocation>(
     object GLOBAL_SYNTHETICS_ARCHIVE: PrivacySandboxSdkInternalArtifactType<Directory>(ArtifactKind.DIRECTORY), Replaceable
 
     object DEX: PrivacySandboxSdkInternalArtifactType<Directory>(ArtifactKind.DIRECTORY), Replaceable
+
+    object GENERATED_PROGUARD_FILE: PrivacySandboxSdkInternalArtifactType<RegularFile>(FILE), Replaceable
 }

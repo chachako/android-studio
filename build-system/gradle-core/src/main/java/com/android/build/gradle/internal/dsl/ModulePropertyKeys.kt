@@ -66,6 +66,11 @@ sealed interface ModulePropertyKey<OutputT> {
          * [BooleanOption.LINT_USE_K2_UAST].
          */
         LINT_USE_K2_UAST(BooleanOption.LINT_USE_K2_UAST.propertyName),
+
+        /**
+         * Whether to enable various R8 optimization on the code
+         */
+        ANDROID_PRIVACY_SANDBOX_R8_OPTIMIZATION("android.experimental.privacysandboxsdk.optimize"),
         ;
 
         override fun getValue(properties: Map<String, Any>): Boolean? {

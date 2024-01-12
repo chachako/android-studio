@@ -16,12 +16,10 @@
 
 package com.android.build.gradle.integration.application
 
-import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
-import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
-import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkInternalArtifactType
+import com.android.build.gradle.internal.res.PrivacySandboxSdkLinkAndroidResourcesTask
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.core.ToolsRevisionUtils
 import com.google.common.truth.Truth.assertThat

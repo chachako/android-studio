@@ -26,6 +26,9 @@ import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.core.ToolExecutionOptions
 import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
+import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkInternalArtifactType
+import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType.DUPLICATE_CLASSES_CHECK
@@ -232,6 +235,103 @@ abstract class R8Task @Inject constructor(
 
     @get:Inject
     abstract val providerFactory: ProviderFactory
+
+    @get:Optional
+    @get:OutputFile
+    abstract val mergedStartupProfile: RegularFileProperty
+
+    class PrivacySandboxSdkCreationAction(
+        val creationConfig: PrivacySandboxSdkVariantScope,
+        addCompileRClass: Boolean,
+    ): ProguardConfigurableTask.PrivacySandboxSdkCreationAction<R8Task, PrivacySandboxSdkVariantScope>(
+        creationConfig, addCompileRClass
+    ) {
+
+        override val type = R8Task::class.java
+        override val name =  "minifyBundleWithR8"
+
+        private var disableTreeShaking: Boolean = false
+        private var disableMinification: Boolean = false
+
+        private val proguardConfigurations: MutableList<String> = mutableListOf()
+
+        override fun handleProvider(
+            taskProvider: TaskProvider<R8Task>
+        ) {
+            super.handleProvider(taskProvider)
+
+            creationConfig.artifacts.setInitialProvider(
+                taskProvider,
+                R8Task::outputDex
+            ).on(PrivacySandboxSdkInternalArtifactType.DEX)
+
+            creationConfig.artifacts.use(taskProvider)
+                .wiredWithFiles(R8Task::resourcesJar, R8Task::outputResources)
+                .toTransform(FusedLibraryInternalArtifactType.MERGED_JAVA_RES)
+        }
+
+        override fun configure(
+            task: R8Task
+        ) {
+            super.configure(task)
+
+            task.artProfileRewriting.set(false)
+
+            task.usesService(
+                getBuildService(
+                    creationConfig.services.buildServiceRegistry,
+                    R8ParallelBuildService::class.java
+                )
+            )
+
+            task.enableDesugaring.setDisallowChanges(true)
+            task.executionOptions.setDisallowChanges(
+                ToolExecutionOptions(emptyList(), false)
+            )
+
+            setBootClasspathForCodeShrinker(task)
+            task.minSdkVersion.setDisallowChanges(creationConfig.minSdkVersion.apiLevel)
+
+            task.debuggable.setDisallowChanges(false)
+            task.disableTreeShaking.set(disableTreeShaking)
+            task.disableMinification.set(disableMinification)
+            task.errorFormatMode.set(SyncOptions.getErrorFormatMode(creationConfig.services.projectOptions))
+            task.legacyMultiDexEnabled.setDisallowChanges(
+                false
+            )
+            task.useFullR8.setDisallowChanges(creationConfig.services.projectOptions[BooleanOption.FULL_R8])
+
+            task.proguardConfigurations = proguardConfigurations
+
+            task.baseJar.disallowChanges()
+            task.featureClassJars.disallowChanges()
+            task.featureJavaResourceJars.disallowChanges()
+        }
+
+        override fun keep(keep: String) {
+            proguardConfigurations.add("-keep $keep")
+        }
+
+        override fun keepAttributes() {
+            proguardConfigurations.add("-keepattributes *")
+        }
+
+        override fun dontWarn(dontWarn: String) {
+            proguardConfigurations.add("-dontwarn $dontWarn")
+        }
+
+        override fun setActions(actions: PostprocessingFeatures) {
+            disableTreeShaking = !actions.isRemoveUnusedCode
+            disableMinification = !actions.isObfuscate
+            if (!actions.isOptimize) {
+                proguardConfigurations.add("-dontoptimize")
+            }
+        }
+
+        private fun setBootClasspathForCodeShrinker(task: R8Task) {
+            task.bootClasspath.from(creationConfig.bootClasspath)
+        }
+    }
 
     class CreationAction(
             creationConfig: ConsumableCreationConfig,

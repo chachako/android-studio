@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,13 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.build.gradle.internal.dsl.decorator.annotation.WithLazyInitialization
+import com.android.build.api.dsl.PrivacySandboxKeepRules
+import com.android.build.api.dsl.PrivacySandboxSdkOptimization
 import com.android.build.gradle.internal.services.DslServices
-import com.android.builder.core.ToolsRevisionUtils
 import javax.inject.Inject
 
-abstract class PrivacySandboxSdkExtensionImpl
-@Inject @WithLazyInitialization("lazyInit") constructor(
-    private val dslServices: DslServices
-) : InternalPrivacySandboxSdkExtension {
+abstract class PrivacySandboxSdkOptimizationImpl: PrivacySandboxSdkOptimization
 
-    override var namespace: String?
-        get() = bundle.applicationId
-        set(value) {
-            bundle.applicationId = value
-        }
-
-    protected fun lazyInit() {
-        buildToolsVersion = ToolsRevisionUtils.DEFAULT_BUILD_TOOLS_REVISION.toString()
-    }
-
-}
+abstract class PrivacySandboxKeepRulesImpl @Inject constructor(
+    dslService: DslServices
+): PrivacySandboxKeepRules, ConfigurableFilesImpl(dslService)

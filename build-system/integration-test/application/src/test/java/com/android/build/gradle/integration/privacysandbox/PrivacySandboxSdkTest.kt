@@ -67,43 +67,93 @@ class PrivacySandboxSdkTest {
             .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
 
     @Test
-    fun testDexing() {
+    fun testDexingWithR8() {
+        val privacySandboxSdkProject = project.getSubproject(":privacy-sandbox-sdk")
+        privacySandboxSdkProject.buildFile.appendText(
+            """
+                    android.experimentalProperties["android.experimental.privacysandboxsdk.optimize"] = false
+            """
+        )
         val dexLocation = project.getSubproject(":privacy-sandbox-sdk")
-                .getIntermediateFile("dex", "single", "mergeDex", "classes.dex")
+            .getIntermediateFile("dex", "single", "minifyBundleWithR8", "classes.dex")
 
-        executor().run(":privacy-sandbox-sdk:mergeDex")
+        executor().run(":privacy-sandbox-sdk:minifyBundleWithR8")
 
         Dex(dexLocation).also { dex ->
             assertThat(dex.classes.keys).containsAtLeast(
-                    "Lcom/example/androidlib1/Example;",
-                    "Lcom/example/androidlib2/Example;",
-                    "Lcom/externaldep/externaljar/ExternalClass;"
+                "Lcom/example/androidlib1/Example;",
+                "Lcom/example/androidlib2/Example;",
+                "Lcom/externaldep/externaljar/ExternalClass;"
             )
             assertThat(dex.classes["Lcom/example/androidlib1/Example;"]!!.methods.map { it.name }).contains(
-                    "f1")
+                "f1")
             assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains(
-                    "f2")
+                "f2")
             assertThat(dex.classes["Lcom/example/androidlib1/R\$string;"]!!.fields.map { it.name }).containsExactly(
-                    "string_from_android_lib_1")
+                "string_from_android_lib_1")
         }
 
         // Check incremental changes are handled
         TestFileUtils.searchAndReplace(
-                project.getSubproject("android-lib1")
-                        .file("src/main/java/com/example/androidlib1/Example.java"),
-                "public void f1() {}",
-                "public void g() {}"
+            project.getSubproject("android-lib1")
+                .file("src/main/java/com/example/androidlib1/Example.java"),
+            "public void f1() {}",
+            "public void g() {}"
         )
 
-        executor().run(":privacy-sandbox-sdk:mergeDex")
+        executor().run(":privacy-sandbox-sdk:minifyBundleWithR8")
 
         Dex(dexLocation).also { dex ->
             assertThat(dex.classes["Lcom/example/androidlib1/Example;"]!!.methods.map { it.name }).contains(
-                    "g")
+                "g")
             assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains(
-                    "f2")
+                "f2")
+        }
+    }
+
+    @Test
+    fun testDexingWithR8optimization() {
+        val privacySandboxSdkProject = project.getSubproject(":privacy-sandbox-sdk")
+        privacySandboxSdkProject.buildFile.appendText(
+            """
+                    android.experimentalProperties["android.experimental.privacysandboxsdk.optimize"] = true
+                    android.optimization.keepRules.files.add(new File(project.projectDir, "proguard-rules.pro"))
+
+            """
+        )
+        val dexLocation = project.getSubproject(":privacy-sandbox-sdk")
+            .getIntermediateFile("dex", "single", "minifyBundleWithR8", "classes.dex")
+
+        executor().run(":privacy-sandbox-sdk:minifyBundleWithR8")
+
+        Dex(dexLocation).also { dex ->
+            assertThat(dex.classes.keys).doesNotContain(
+                "Lcom/example/androidlib1/Example;"
+            )
+            assertThat(dex.classes.keys).contains(
+                "Lcom/example/androidlib2/Example;",
+            )
+            assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains(
+                "f2")
+            // none of the resources should be removed
+            assertThat(dex.classes["Lcom/example/androidlib1/R\$string;"]!!.fields.map { it.name }).containsExactly(
+                "string_from_android_lib_1")
         }
 
+        // Check incremental changes are handled
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("android-lib2")
+                .file("src/main/java/com/example/androidlib2/Example.java"),
+            "public void f2() {}",
+            "public void g() {}"
+        )
+
+        executor().run(":privacy-sandbox-sdk:minifyBundleWithR8")
+
+        Dex(dexLocation).also { dex ->
+            assertThat(dex.classes["Lcom/example/androidlib2/Example;"]!!.methods.map { it.name }).contains(
+                "g")
+        }
     }
 
     @Test

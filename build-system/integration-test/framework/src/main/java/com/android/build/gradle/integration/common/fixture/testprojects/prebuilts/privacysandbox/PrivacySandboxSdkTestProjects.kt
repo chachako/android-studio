@@ -108,6 +108,10 @@ fun privacySandboxSampleProject(): GradleTestProject {
                 include("com.externaldep:externaljar:1")
                 include("com.externaldep:externalaar:1")
             }
+            addFile(
+                "proguard-rules.pro",
+            """-keep class com.example.androidlib2.Example { *; }
+                """.trimMargin())
         }
         privacySandboxSdkLibraryProject(":android-lib2") {
             android {

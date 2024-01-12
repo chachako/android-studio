@@ -34,15 +34,19 @@ import com.android.build.gradle.internal.res.PrivacySandboxSdkLinkAndroidResourc
 import com.android.build.gradle.internal.services.Aapt2DaemonBuildService
 import com.android.build.gradle.internal.services.Aapt2ThreadPoolBuildService
 import com.android.build.gradle.internal.services.DslServices
+import com.android.build.gradle.internal.services.R8ParallelBuildService
 import com.android.build.gradle.internal.services.SymbolTableBuildService
 import com.android.build.gradle.internal.services.VersionedSdkLoaderService
 import com.android.build.gradle.internal.tasks.AppMetadataTask
+import com.android.build.gradle.internal.tasks.GeneratePrivacySandboxProguardRulesTask
 import com.android.build.gradle.internal.tasks.SignAsbTask
 import com.android.build.gradle.internal.tasks.MergeJavaResourceTask
 import com.android.build.gradle.internal.tasks.PerModuleBundleTask
+import com.android.build.gradle.internal.tasks.R8Task
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfigImpl
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask
 import com.android.build.gradle.tasks.FusedLibraryMergeClasses
 import com.android.build.gradle.tasks.GeneratePrivacySandboxAsar
@@ -131,6 +135,11 @@ class PrivacySandboxSdkPlugin @Inject constructor(
         Aapt2ThreadPoolBuildService.RegistrationAction(project, projectOptions).execute()
         Aapt2DaemonBuildService.RegistrationAction(project, projectOptions).execute()
         SymbolTableBuildService.RegistrationAction(project).execute()
+
+        R8ParallelBuildService.RegistrationAction(
+            project,
+            projectOptions.get(IntegerOption.R8_MAX_WORKERS)
+        ).execute()
     }
 
     override fun configureExtension(project: Project) {
@@ -337,9 +346,9 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                         PrivacySandboxSdkManifestGeneratorTask.CreationAction(variantScope),
                         PrivacySandboxSdkManifestMergerTask.CreationAction(variantScope),
                         PrivacySandboxSdkLinkAndroidResourcesTask.CreationAction(variantScope),
-                        PrivacySandboxSdkDexTask.CreationAction(variantScope),
-                        PrivacySandboxSdkMergeDexTask.CreationAction(variantScope),
+                        R8Task.PrivacySandboxSdkCreationAction(variantScope, false),
                         PrivacySandboxSdkGenerateRClassTask.CreationAction(variantScope),
+                        GeneratePrivacySandboxProguardRulesTask.CreationAction(variantScope),
                         PerModuleBundleTask.PrivacySandboxSdkCreationAction(variantScope),
                         PackagePrivacySandboxSdkBundle.CreationAction(variantScope),
                         ValidateSigningTask.PrivacySandboxSdkCreationAction(variantScope),

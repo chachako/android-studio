@@ -20,6 +20,7 @@ import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.dsl.PrivacySandboxSdkExtension
 import com.android.build.api.dsl.SigningConfig
 import com.android.build.gradle.internal.dsl.PrivacySandboxSdkBundleImpl
+import com.android.build.gradle.internal.dsl.PrivacySandboxSdkOptimizationImpl
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryConfigurations
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryDependencies
 import com.android.build.gradle.internal.fusedlibrary.NAMESPACED_ANDROID_RESOURCES_FOR_PRIVACY_SANDBOX_ENABLED
@@ -86,6 +87,8 @@ class PrivacySandboxSdkVariantScopeImpl(
         get() = extension.bundle as PrivacySandboxSdkBundleImpl
     override val signingConfig: SigningConfig
         get() = extension.signingConfig
+    override val optimization: PrivacySandboxSdkOptimizationImpl
+        get() = extension.optimization as PrivacySandboxSdkOptimizationImpl
     override val experimentalProperties: MapProperty<String, Any>
         get() = internalServices.mapPropertyOf(
                 String::class.java,
