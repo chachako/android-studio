@@ -21,8 +21,8 @@ import com.android.tools.lint.detector.api.AnnotationInfo
 import com.android.tools.lint.detector.api.AnnotationUsageInfo
 import com.android.tools.lint.detector.api.AnnotationUsageType
 import com.android.tools.lint.detector.api.AnnotationUsageType.CLASS_REFERENCE
-import com.android.tools.lint.detector.api.AnnotationUsageType.FIELD_REFERENCE
 import com.android.tools.lint.detector.api.AnnotationUsageType.METHOD_CALL
+import com.android.tools.lint.detector.api.AnnotationUsageType.METHOD_OVERRIDE
 import com.android.tools.lint.detector.api.AnnotationUsageType.METHOD_REFERENCE
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
@@ -33,7 +33,7 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
-import com.android.tools.lint.detector.api.minSdkLessThan
+import com.android.tools.lint.detector.api.minSdkAtLeast
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
@@ -55,10 +55,10 @@ class DeprecatedSinceApiDetector : Detector(), SourceCodeScanner {
         briefDescription = "Using a method deprecated in earlier SDK",
         explanation =
           """
-                Some backport methods are only necessary until a specific version of Android. These have been \
-                annotated with `@DeprecatedSinceApi`, specifying the relevant API level and replacement suggestions. \
-                Calling these methods when the `minSdkVersion` is already at the deprecated API level or above is unnecessary.
-                """,
+          Some backport methods are only necessary until a specific version of Android. These have been \
+          annotated with `@DeprecatedSinceApi`, specifying the relevant API level and replacement suggestions. \
+          Calling these methods when the `minSdkVersion` is already at the deprecated API level or above is unnecessary.
+          """,
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,
@@ -75,9 +75,9 @@ class DeprecatedSinceApiDetector : Detector(), SourceCodeScanner {
   override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean =
     when (type) {
       METHOD_CALL,
-      FIELD_REFERENCE,
       CLASS_REFERENCE,
-      METHOD_REFERENCE -> true
+      METHOD_REFERENCE,
+      METHOD_OVERRIDE -> true
       else -> false
     }
 
@@ -103,7 +103,7 @@ class DeprecatedSinceApiDetector : Detector(), SourceCodeScanner {
         }"
     context.report(
       Incident(ISSUE, message, context.getLocation(element), element, null),
-      minSdkLessThan(apiLevel)
+      minSdkAtLeast(apiLevel)
     )
   }
 }
