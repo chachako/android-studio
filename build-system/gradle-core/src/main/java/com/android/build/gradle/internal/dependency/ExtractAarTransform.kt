@@ -29,6 +29,7 @@ import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Classpath
 import org.gradle.work.DisableCachingByDefault
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.jar.JarOutputStream
 import java.util.zip.ZipInputStream
@@ -117,12 +118,18 @@ internal class AarExtractor {
         // If classes.jar does not exist, create an empty one
         val classesJar = outputDir.resolve("${SdkConstants.FD_JARS}/${SdkConstants.FN_CLASSES_JAR}")
         if (!classesJar.exists()) {
-            // It's not required to create a manifest inside the empty jar, but if we ever want to
-            // create it, be sure to set a fixed timestamp so that the jar is deterministic
-            // (see b/315336689).
-            FileUtils.mkdirs(classesJar.parentFile)
-            JarOutputStream(classesJar.outputStream()).use {  }
+            Files.createParentDirs(classesJar)
+            classesJar.writeBytes(emptyJar)
         }
     }
 
 }
+
+private val emptyJar: ByteArray =
+    // Note:
+    //  - A jar doesn't need a manifest entry, but if we ever want to create a manifest entry, be
+    //    sure to set a fixed timestamp for it so that the jar is deterministic (see b/315336689).
+    //  - This empty jar takes up only ~22 bytes, so we don't need to GC it at the end of the build.
+    ByteArrayOutputStream().apply {
+        JarOutputStream(this).use { }
+    }.toByteArray()
