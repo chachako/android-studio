@@ -351,10 +351,6 @@ open class ConfigurationHierarchy(
         }
       } else {
         val xmlConfiguration = LintXmlConfiguration.create(this, fallback)
-        // This XML configuration is not associated with its location so remove its
-        // directory scope
-        xmlConfiguration.dir = null
-        xmlConfiguration.fileLevel = false
         addGlobalConfigurations(xmlConfiguration, override)
         return
       }
@@ -363,9 +359,13 @@ open class ConfigurationHierarchy(
   }
 
   fun addGlobalConfigurations(fallback: Configuration? = null, override: Configuration? = null) {
+    // Both fallback and override Configurations are not associated with their directory, so we
+    // remove the directory scope (config.fileLevel and config.dir).
+
     if (override != null) {
       override.isOverriding = true
       override.fileLevel = false
+      override.dir = null
       val prev = overrides
       overrides = override
       assert(parentOf[override] == null)
@@ -374,6 +374,7 @@ open class ConfigurationHierarchy(
 
     if (fallback != null) {
       fallback.fileLevel = false
+      fallback.dir = null
       val prev = this.fallback
       assert(parentOf[fallback] == null)
       this.fallback = fallback

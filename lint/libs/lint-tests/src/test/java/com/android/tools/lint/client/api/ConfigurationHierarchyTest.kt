@@ -597,6 +597,84 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
     )
   }
 
+  fun testOverrideAndFallbackConfigurations3() {
+    // Like testOverrideAndFallbackConfigurations, but both the --config XML file and the
+    // --override-config XML file are under the project dir, but not at the root. This previously
+    // caused a stack overflow due to a "cycle" when looking up the severity of an issue.
+    //
+    // ConfigurationHierarchy$ProjectPlaceholderConfiguration (for project dir)
+    //  | parent
+    //  v
+    // LintXmlConfiguration (from --config)
+    //  | overridden by (via "overrides" property)
+    //  | (Not a parent edge, so no cycle detected, but getDefinedSeverity delegates to the
+    //  | override config.)
+    //  v
+    // CliConfiguration
+    //  | parent
+    //  v
+    // LintXmlConfiguration (from --override-config)
+    //  (before fix: parent edge was here, connecting back to the top)
+    //
+    val project =
+      getProjectDir(
+        null,
+        manifest().minSdk(1),
+        xml(
+            "misc/config.xml",
+            """
+                <lint>
+                    <issue id="DuplicateIds" severity="ignore"/>
+                </lint>
+                """
+          )
+          .indented(),
+        xml(
+            "build/temp/override.xml",
+            """
+                <lint>
+                    <issue id="DuplicateDefinition" severity="ignore"/>
+                </lint>
+                """
+          )
+          .indented(),
+        xml(
+            "res/layout/test.xml",
+            """
+                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                    <Button android:id='@+id/duplicated'/>    <Button android:id='@+id/duplicated'/></LinearLayout>
+                """
+          )
+          .indented(),
+        xml(
+            "res/values/duplicates.xml",
+            """
+                <resources>
+                    <item type="id" name="name" />
+                    <item type="id" name="name" />
+                </resources>
+                """
+          )
+          .indented()
+      )
+    checkDriver(
+      "No issues found.",
+      "", // Expected exit code
+      LintCliFlags.ERRNO_SUCCESS,
+      arrayOf(
+        "--disable",
+        "LintError",
+        "--disable",
+        "UnusedResources,ButtonStyle,UnusedResources,AllowBackup",
+        "--config",
+        File(project, "misc/config.xml").path,
+        "--override-config",
+        File(project, "build/temp/override.xml").path,
+        project.path
+      )
+    )
+  }
+
   private fun checkDriver(
     expectedOutput: String,
     expectedError: String,
