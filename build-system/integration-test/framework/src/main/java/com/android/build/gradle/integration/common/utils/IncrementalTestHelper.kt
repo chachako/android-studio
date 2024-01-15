@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.common.utils
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.TaskStateList
+import com.android.testutils.TestUtils
 import com.google.common.truth.Truth.assertWithMessage
 import java.io.File
 import java.nio.file.Files
@@ -141,6 +142,8 @@ class IncrementalTestHelper(
 
         /** Runs an incremental build. */
         fun runIncrementalBuild(): IncrementalTestHelperAfterIncrementalBuild {
+            // Wait a little between 2 builds, so we can detect timestamp changes reliably
+            TestUtils.waitForFileSystemTick()
             with(incrementalTestHelper) {
                 val result = project.executor()
                     .apply(executorUpdater ?: {})
@@ -181,10 +184,7 @@ class IncrementalTestHelper(
                 IncrementalTestHelperAfterIncrementalBuild {
             val assertionFailures = mutableListOf<String>()
             for ((file, expectedChangeType) in expectedFileChanges) {
-                val actualChangeType = incrementalTestHelper.fileChanges[file]
-                check(actualChangeType != null) {
-                    "File ${file.path} is missing from the set of files to track."
-                }
+                val actualChangeType = incrementalTestHelper.fileChanges[file] ?: ChangeType.NEW
                 if (actualChangeType != expectedChangeType) {
                     assertionFailures.add(
                         "File ${file.path} has expected state $expectedChangeType" +
@@ -200,15 +200,18 @@ class IncrementalTestHelper(
     }
 }
 
-/** Type of a file change. */
+/** Type of file change. */
 enum class ChangeType {
 
-    /** Changed timestamp and contents. */
+    /** A new file was created. */
+    NEW,
+
+    /** The file has changed timestamp and contents. */
     CHANGED,
 
-    /** Changed timestamp but not contents. */
+    /** The file has changed timestamp but not contents. */
     CHANGED_TIMESTAMPS_BUT_NOT_CONTENTS,
 
-    /** Unchanged timestamp and contents. */
+    /** The file has unchanged timestamp and contents. */
     UNCHANGED
 }
