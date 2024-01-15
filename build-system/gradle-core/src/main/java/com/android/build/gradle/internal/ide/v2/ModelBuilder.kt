@@ -50,12 +50,11 @@ import com.android.build.gradle.internal.ide.DependencyFailureHandler
 import com.android.build.gradle.internal.ide.Utils.getGeneratedResourceFolders
 import com.android.build.gradle.internal.ide.Utils.getGeneratedSourceFolders
 import com.android.build.gradle.internal.ide.Utils.getGeneratedSourceFoldersForUnitTests
-import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputs
-import com.android.build.gradle.internal.ide.dependencies.ArtifactCollectionsInputsImpl
 import com.android.build.gradle.internal.ide.dependencies.FullDependencyGraphBuilder
 import com.android.build.gradle.internal.ide.dependencies.GraphEdgeCache
 import com.android.build.gradle.internal.ide.dependencies.LibraryService
 import com.android.build.gradle.internal.ide.dependencies.LibraryServiceImpl
+import com.android.build.gradle.internal.ide.dependencies.getArtifactsForComponent
 import com.android.build.gradle.internal.ide.dependencies.getVariantName
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecksForModel
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -913,15 +912,9 @@ class ModelBuilder<
             )
         }
 
-        val inputs = ArtifactCollectionsInputsImpl(
-            variantDependencies = component.variantDependencies,
-            projectPath = project.path,
-            variantName = component.name,
-            runtimeType = ArtifactCollectionsInputs.RuntimeType.FULL,
-        )
-
         return FullDependencyGraphBuilder(
-            inputs,
+            { configType ->  getArtifactsForComponent( component, configType) },
+            project.path,
             component.variantDependencies,
             libraryService,
             graphEdgeCache,

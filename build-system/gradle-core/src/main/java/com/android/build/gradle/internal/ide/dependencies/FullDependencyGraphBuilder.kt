@@ -46,7 +46,8 @@ import org.gradle.internal.component.local.model.OpaqueComponentArtifactIdentifi
 import java.io.File
 
 class FullDependencyGraphBuilder(
-    private val inputs: ArtifactCollectionsInputs,
+    private val artifactsProvider: (AndroidArtifacts.ConsumedConfigType) -> Set<ResolvedArtifact>,
+    private val projectPath: String,
     private val resolutionResultProvider: ResolutionResultProvider,
     private val libraryService: LibraryService,
     private val graphEdgeCache: GraphEdgeCache?,
@@ -85,7 +86,7 @@ class FullDependencyGraphBuilder(
         // to contain information about the actual artifacts (whether they are sub-projects
         // or external dependencies, whether they are java or android, whether they are
         // wrapper local jar/aar, etc...)
-        val artifacts = inputs.getAllArtifacts(configType)
+        val artifacts = artifactsProvider(configType)
 
         val artifactMap = artifacts.associateBy { it.variant.toKey() }
 
@@ -196,14 +197,14 @@ class FullDependencyGraphBuilder(
         }
 
         val library = getLibrary(
-            inputs = inputs,
-            libraryService = libraryService,
-            variant = variant,
-            variantDependencies = variantDependencies,
-            artifactMap = artifactMap,
-            javadocArtifacts = javadocArtifacts,
-            sourceArtifacts = sourceArtifacts,
-            sampleArtifacts = sampleArtifacts
+            projectPath,
+            libraryService,
+            variant,
+            variantDependencies,
+            artifactMap,
+            javadocArtifacts,
+            sourceArtifacts,
+            sampleArtifacts
         )
 
         if (library != null) {
@@ -255,7 +256,7 @@ private sealed class Graph {
 }
 
 fun getLibrary(
-    inputs: ArtifactCollectionsInputs,
+    projectPath: String,
     libraryService: LibraryService,
     variant: ResolvedVariantResult,
     variantDependencies: List<DependencyResult>,
@@ -306,7 +307,7 @@ fun getLibrary(
                 ),
                 additionalArtifacts
             )
-        } else if (owner is ProjectComponentIdentifier && inputs.projectPath == owner.projectPath) {
+        } else if (owner is ProjectComponentIdentifier && projectPath == owner.projectPath) {
             // Scenario 2
             // create on the fly a ResolvedArtifact around this project
             // and get the matching library item

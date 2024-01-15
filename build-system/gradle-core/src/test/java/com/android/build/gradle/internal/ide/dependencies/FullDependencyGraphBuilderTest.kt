@@ -20,7 +20,6 @@ import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.gradle.internal.dependency.AdditionalArtifactType
 import com.android.build.gradle.internal.dependency.ResolutionResultProvider
 import com.android.build.gradle.internal.fixtures.FakeObjectFactory
-import com.android.build.gradle.internal.ide.DependencyFailureHandler
 import com.android.build.gradle.internal.ide.dependencies.ResolvedArtifact.DependencyType.ANDROID
 import com.android.build.gradle.internal.ide.dependencies.ResolvedArtifact.DependencyType.NO_ARTIFACT_FILE
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -33,7 +32,6 @@ import org.gradle.api.artifacts.result.DependencyResult
 import org.gradle.api.artifacts.result.ResolutionResult
 import org.gradle.api.artifacts.result.ResolvedArtifactResult
 import org.gradle.api.artifacts.result.ResolvedComponentResult
-import org.gradle.api.provider.Provider
 import org.junit.Test
 import org.mockito.Mockito
 import java.io.File
@@ -252,7 +250,8 @@ private fun buildModelGraph(
     val (dependencyResults, resolvedArtifacts) = buildGraph(action)
 
     val builder = FullDependencyGraphBuilder(
-        getInputs(resolvedArtifacts),
+        { resolvedArtifacts },
+        ":path:to:project",
         getResolutionResultProvider(dependencyResults),
         libraryService,
         GraphEdgeCacheImpl(),
@@ -263,8 +262,6 @@ private fun buildModelGraph(
     return builder.build() to libraryService.getAllLibraries()
 }
 
-private fun getInputs(artifacts: Set<ResolvedArtifact>): ArtifactCollectionsInputs =
-    FakeArtifactCollectionsInputs(artifacts)
 
 private fun getResolutionResultProvider(
     compileResultsResults: Set<DependencyResult>
@@ -302,36 +299,4 @@ private class ResolutionResultProviderImpl(
     ): ArtifactCollection {
         return additionalArtifacts
     }
-}
-
-private class FakeArtifactCollectionsInputs(
-    private val artifacts: Set<ResolvedArtifact>,
-    override val projectPath: String = ":path:to:project",
-    override val variantName: String = "variant-name"
-): ArtifactCollectionsInputs {
-
-    override fun getAllArtifacts(
-        consumedConfigType: AndroidArtifacts.ConsumedConfigType,
-        dependencyFailureHandler: DependencyFailureHandler?
-    ): Set<ResolvedArtifact> {
-        return artifacts
-    }
-
-    override val projectBuildTreePath: Provider<String>
-        get() = TODO("Not yet implemented")
-
-    override val compileClasspath: ArtifactCollections
-        get() = TODO("Not needed by code under test")
-
-    override val runtimeClasspath: ArtifactCollections
-        get() = TODO("Not needed by code under test")
-
-    override val runtimeLintJars: ArtifactCollection
-        get() = TODO("Not needed by code under test")
-
-    override val compileLintJars: ArtifactCollection
-        get() = TODO("Not needed by code under test")
-
-    override val level1RuntimeArtifactCollections: Level1RuntimeArtifactCollections
-        get() = TODO("Not needed by code under test")
 }
