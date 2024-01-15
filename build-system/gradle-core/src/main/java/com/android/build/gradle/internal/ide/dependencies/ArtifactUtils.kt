@@ -284,15 +284,14 @@ class ArtifactCollections(
  * @param consumedConfigType the type of the dependency to resolve (compile vs runtime)
  * @param dependencyFailureHandler handler for dependency resolution errors
  */
-fun getAllArtifacts(
+fun getArtifactsForComponent(
     componentImpl: ComponentCreationConfig,
     consumedConfigType: AndroidArtifacts.ConsumedConfigType,
-    dependencyFailureHandler: DependencyFailureHandler?,
 ): Set<ResolvedArtifact> {
     val collections = ArtifactCollections(componentImpl, consumedConfigType)
     return getAllArtifacts(
         collections,
-        dependencyFailureHandler,
+        dependencyFailureHandler = null,
         componentImpl.services.projectInfo.path,
         componentImpl.name,
     )
