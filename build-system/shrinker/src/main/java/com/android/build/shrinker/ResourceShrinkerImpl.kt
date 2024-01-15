@@ -171,9 +171,7 @@ class ResourceShrinkerImpl(
     private fun removeResourceUnusedTableEntries(zis: InputStream,
                                                  zos: JarOutputStream,
                                                  srcEntry: ZipEntry) {
-        val resourceIdsToRemove =
-            model.resourceStore.resources.filter { !it.isReachable
-                    && it.type != ResourceType.ID}.map { it.value }.toList()
+        val resourceIdsToRemove = unused.map { resource -> resource.value }
         val shrunkenResourceTable = Resources.ResourceTable.parseFrom(zis)
                 .nullOutEntriesWithIds(resourceIdsToRemove)
         val bytes = shrunkenResourceTable.toByteArray()
