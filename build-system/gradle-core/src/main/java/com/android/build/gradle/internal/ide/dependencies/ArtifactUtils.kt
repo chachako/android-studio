@@ -226,22 +226,13 @@ class ArtifactCollections(
      * This captures dependencies without transforming them using `AttributeCompatibilityRule`s.
      **/
     @get:Internal
-    val all: ArtifactCollection = variantDependencies.getArtifactCollectionForToolingModel(
-        consumedConfigType,
-        AndroidArtifacts.ArtifactScope.ALL,
-        AndroidArtifacts.ArtifactType.AAR_OR_JAR
-    )
+    val all: ArtifactCollection = variantDependencies.allArtifacts(consumedConfigType)
 
     @get:Classpath
-    val allFileCollection: FileCollection
-        get() = all.artifactFiles
+    val allFileCollection: FileCollection get() = all.artifactFiles
 
     @get:Internal
-    val lintJar: ArtifactCollection = variantDependencies.getArtifactCollectionForToolingModel(
-        consumedConfigType,
-        AndroidArtifacts.ArtifactScope.ALL,
-        AndroidArtifacts.ArtifactType.LINT
-    )
+    val lintJar: ArtifactCollection = variantDependencies.lintJars(consumedConfigType)
 
     // We still need to understand wrapped jars and aars. The former is difficult (TBD), but
     // the latter can be done by querying for EXPLODED_AAR. If a sub-project is in this list,
@@ -252,11 +243,7 @@ class ArtifactCollections(
     // Contents of ASARs to be used by IDE, (i.e. the interface descriptor jars) for privacy sandbox
     // is also grouped into this query for efficiency
     @get:Internal
-    val aarOrAsar: ArtifactCollection = variantDependencies.getArtifactCollectionForToolingModel(
-            consumedConfigType,
-            AndroidArtifacts.ArtifactScope.ALL,
-            AndroidArtifacts.ArtifactType.EXPLODED_AAR_OR_ASAR_INTERFACE_DESCRIPTOR
-    )
+    val aarOrAsar: ArtifactCollection = variantDependencies.aarsOrAsars(consumedConfigType)
 
 
     /**
@@ -276,6 +263,21 @@ class ArtifactCollections(
     @get:Classpath
     val projectJarsFileCollection: FileCollection
         get() = projectJars.artifactFiles
+}
+
+/**
+ * Model builder is decoupled from artifact collections / inputs to be able to optimize some of its
+ * behavior.
+ */
+fun getArtifactsForModelBuilder(
+    component: ComponentCreationConfig,
+    configType: AndroidArtifacts.ConsumedConfigType,
+): Set<ResolvedArtifact> {
+    return resolveArtifacts(
+        component.variantDependencies.allArtifacts(configType),
+        component.variantDependencies.aarsOrAsars(configType),
+        component.variantDependencies.lintJars(configType)
+    )
 }
 
 /**
@@ -480,4 +482,23 @@ fun ResolvedVariantResult.toKey(): VariantKey = VariantKey(
     owner,
     capabilities,
     externalVariant.orElse(null)?.toKey()
+)
+
+
+private fun VariantDependencies.allArtifacts(configType: AndroidArtifacts.ConsumedConfigType) = getArtifactCollectionForToolingModel(
+    configType,
+    AndroidArtifacts.ArtifactScope.ALL,
+    AndroidArtifacts.ArtifactType.AAR_OR_JAR
+)
+
+private fun VariantDependencies.lintJars(configType: AndroidArtifacts.ConsumedConfigType) = getArtifactCollectionForToolingModel(
+    configType,
+    AndroidArtifacts.ArtifactScope.ALL,
+    AndroidArtifacts.ArtifactType.LINT
+)
+
+private fun VariantDependencies.aarsOrAsars(configType: AndroidArtifacts.ConsumedConfigType) = getArtifactCollectionForToolingModel(
+    configType,
+    AndroidArtifacts.ArtifactScope.ALL,
+    AndroidArtifacts.ArtifactType.EXPLODED_AAR_OR_ASAR_INTERFACE_DESCRIPTOR
 )

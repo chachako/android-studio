@@ -54,7 +54,7 @@ import com.android.build.gradle.internal.ide.dependencies.FullDependencyGraphBui
 import com.android.build.gradle.internal.ide.dependencies.GraphEdgeCache
 import com.android.build.gradle.internal.ide.dependencies.LibraryService
 import com.android.build.gradle.internal.ide.dependencies.LibraryServiceImpl
-import com.android.build.gradle.internal.ide.dependencies.getArtifactsForComponent
+import com.android.build.gradle.internal.ide.dependencies.getArtifactsForModelBuilder
 import com.android.build.gradle.internal.ide.dependencies.getVariantName
 import com.android.build.gradle.internal.lint.getLocalCustomLintChecksForModel
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -913,7 +913,7 @@ class ModelBuilder<
         }
 
         return FullDependencyGraphBuilder(
-            { configType ->  getArtifactsForComponent( component, configType) },
+            { configType ->  getArtifactsForModelBuilder(component, configType) },
             project.path,
             component.variantDependencies,
             libraryService,
