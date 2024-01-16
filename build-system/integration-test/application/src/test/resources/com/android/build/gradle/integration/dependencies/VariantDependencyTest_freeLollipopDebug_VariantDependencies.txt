@@ -240,7 +240,7 @@
    < mainArtifact
    > androidTestArtifact:
       > compileDependencies:
-         - :|:|debug|api>Lollipop, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeLollipopDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+         - :|:|debug|api>Lollipop, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeLollipopDebug, org.gradle.usage>java-api|:project:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
          > com.android.support|leanback-v17|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:leanback-v17:28.0.0:
@@ -681,7 +681,7 @@
                         - dependencies = "*visited*"
             < dependencies
          < com.android.support|leanback-v17|28.0.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support:leanback-v17:28.0.0
-         - :|:|debug|api>Lollipop, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeLollipopDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+         - :|:|debug|api>Lollipop, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeLollipopDebug, org.gradle.usage>java-api|:project:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
       < compileDependencies
@@ -713,7 +713,7 @@
    < unitTestArtifact
    - testFixturesArtifact = (null)
    > libraries:
-      > :|:|debug|api>Lollipop, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeLollipopDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified:
+      > :|:|debug|api>Lollipop, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeLollipopDebug, org.gradle.usage>java-api|:project:unspecified:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -727,7 +727,6 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> freeLollipopDebug"
-               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-api"
             - capabilities:
                * ":project:unspecified"
@@ -735,7 +734,7 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:|debug|api>Lollipop, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeLollipopDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|:project:unspecified
+      < :|:|debug|api>Lollipop, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeLollipopDebug, org.gradle.usage>java-api|:project:unspecified
       > :|:|debug|api>Lollipop, model>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeLollipopDebug, org.gradle.usage>java-runtime|:project:unspecified:
          - type               = PROJECT
          - artifact           = (null)

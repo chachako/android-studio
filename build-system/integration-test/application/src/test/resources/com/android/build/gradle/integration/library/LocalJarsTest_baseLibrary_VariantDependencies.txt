@@ -22,7 +22,7 @@
          - com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.google.guava:guava:19.0:
             - requestedCoordinates = (null)
             - dependencies         = []
-         - :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localJars:baseLibrary:1.0:
+         - :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|localJars:baseLibrary:1.0:
             - requestedCoordinates = (null)
             - dependencies:
                - com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.google.guava:guava:19.0:
@@ -32,7 +32,7 @@
             - dependencies         = []
       < compileDependencies
       > runtimeDependencies:
-         - :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|localJars:baseLibrary:1.0:
+         - :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|localJars:baseLibrary:1.0:
             - requestedCoordinates = (null)
             - dependencies:
                - com.google.guava|guava|19.0|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|com.google.guava:guava:19.0:
@@ -47,7 +47,7 @@
    < unitTestArtifact
    - testFixturesArtifact = (null)
    > libraries:
-      > :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localJars:baseLibrary:1.0:
+      > :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|localJars:baseLibrary:1.0:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -59,7 +59,6 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
-               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-api"
             - capabilities:
                * "localJars:baseLibrary:1.0"
@@ -67,8 +66,8 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localJars:baseLibrary:1.0
-      > :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|localJars:baseLibrary:1.0:
+      < :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|localJars:baseLibrary:1.0
+      > :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|localJars:baseLibrary:1.0:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -80,7 +79,6 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
-               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-runtime"
             - capabilities:
                * "localJars:baseLibrary:1.0"
@@ -88,7 +86,7 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|localJars:baseLibrary:1.0
+      < :|:baseLibrary|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|localJars:baseLibrary:1.0
       > __local_aars__|{PROJECT}/baseLibrary/libs/util-1.0.jar{F}|unspecified||:
          - type               = JAVA_LIBRARY
          - artifact           = {PROJECT}/baseLibrary/libs/util-1.0.jar{F}

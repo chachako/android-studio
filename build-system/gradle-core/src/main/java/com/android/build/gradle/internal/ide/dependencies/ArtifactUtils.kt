@@ -30,6 +30,8 @@ import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedArtifactResult
+import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.result.ResolvedVariantResult
 import org.gradle.api.capabilities.Capability
 import org.gradle.api.file.FileCollection
@@ -226,7 +228,7 @@ class ArtifactCollections(
      * This captures dependencies without transforming them using `AttributeCompatibilityRule`s.
      **/
     @get:Internal
-    val all: ArtifactCollection = variantDependencies.allArtifacts(consumedConfigType)
+    val all: ArtifactCollection = variantDependencies.aarOrJar(consumedConfigType)
 
     @get:Classpath
     val allFileCollection: FileCollection get() = all.artifactFiles
@@ -272,10 +274,16 @@ class ArtifactCollections(
 fun getArtifactsForModelBuilder(
     component: ComponentCreationConfig,
     configType: AndroidArtifacts.ConsumedConfigType,
+    root: ResolvedComponentResult
 ): Set<ResolvedArtifact> {
+    // For project Android variant dependencies, we don't actually need the AARs or JARs, as just
+    // the module path is enough for us to set up dependencies correctly. Here, a filter is created
+    // to filter out any project dependencies that only has Android variant dependencies. This
+    // results in significant performance improvements for larger builds with many projects.
+    val nonAndroidProjectsFilter = filterProjectDependenciesWithNonAndroidVariants(root)
     return resolveArtifacts(
-        component.variantDependencies.allArtifacts(configType),
-        component.variantDependencies.aarsOrAsars(configType),
+        component.variantDependencies.aarOrJar(configType, nonAndroidProjectsFilter),
+        component.variantDependencies.aarsOrAsars(configType, nonAndroidProjectsFilter),
         component.variantDependencies.lintJars(configType, externalOnly = true)
     )
 }
@@ -387,7 +395,7 @@ private fun resolveArtifacts(
                 )
             }
             AndroidArtifacts.ArtifactType.JAR.type ->
-                if (resolvedComponentResult.isAndroidProjectLibrary()) {
+                if (resolvedComponentResult.isAndroidProjectDependency()) {
                     // When a project dependency is an Android one, the artifact file doesn't matter
                     // We can safely set it to null. The variant attributes will be used to compute
                     // the key to the library model objects, so they are passed further down.
@@ -405,7 +413,7 @@ private fun resolveArtifacts(
                     //
                     // The check here iterates over all the jars this particular project publishes
                     // and skips this dependency completely if any of them is android.
-                    if (projectJarsMap[variantKey].any {it.isAndroidProjectLibrary()}) {
+                    if (projectJarsMap[variantKey].any {it.isAndroidProjectDependency()}) {
                         continue
                     }
                     val projectJars = projectJarsMap[variantKey]
@@ -428,14 +436,39 @@ private fun resolveArtifacts(
     return artifacts
 }
 
-/**
- * Checks whether a local project library is and Android one.
- *
- * [AgpVersionAttr] is only present for android libraries.
- */
-private fun ResolvedArtifactResult.isAndroidProjectLibrary() =
-    variant.attributes.getAttribute(AgpVersionAttr.ATTRIBUTE) != null
+private fun filterProjectDependenciesWithNonAndroidVariants(root: ResolvedComponentResult): (ComponentIdentifier) -> Boolean {
+    val seen = mutableSetOf<ResolvedComponentResult>()
+    fun ResolvedComponentResult.traverse() {
+        seen.add(this)
+        dependencies
+            .forEach {
+                if (it is ResolvedDependencyResult
+                    && it.resolvedVariant.owner is ProjectComponentIdentifier
+                    && it.selected !in seen) {
+                    it.selected.traverse()
+                }
+            }
+    }
+    root.traverse()
+    val androidProjects = mutableSetOf<String>();
+    seen.forEach {
+      it.variants.forEach {
+        if (it.owner is ProjectComponentIdentifier && it.isAndroidProjectDependency()) {
+            // If any of the resolved variants is Android for a project, we consider that a single
+            // project dependency as we don't really handle this case properly in the IDE side.
+            androidProjects.add((it.owner as ProjectComponentIdentifier).getIdString())
+        }
+      }
+    }
 
+    // This will be passed into Gradle APIs later down the line
+    return fun(it: ComponentIdentifier): Boolean {
+        return when (it) {
+            is ProjectComponentIdentifier -> it.getIdString() !in androidProjects
+            else -> true
+        }
+    }
+}
 
 /**
  * This is a multi map to handle when there are multiple jars with the same component id.
@@ -484,11 +517,25 @@ fun ResolvedVariantResult.toKey(): VariantKey = VariantKey(
     externalVariant.orElse(null)?.toKey()
 )
 
+/**
+ * Checks whether a local project dependency is an Android one.
+ *
+ * [AgpVersionAttr] is only present for variants  from Android projects.
+ */
+fun ResolvedVariantResult.isAndroidProjectDependency() =
+    attributes.getAttribute(
+        attributes.keySet().firstOrNull { it.name == AgpVersionAttr.ATTRIBUTE.name }) != null
 
-private fun VariantDependencies.allArtifacts(configType: AndroidArtifacts.ConsumedConfigType) = getArtifactCollectionForToolingModel(
+private fun ResolvedArtifactResult.isAndroidProjectDependency() = variant.isAndroidProjectDependency()
+
+private fun VariantDependencies.aarOrJar(
+    configType: AndroidArtifacts.ConsumedConfigType,
+    additionalFilter: ((ComponentIdentifier) -> Boolean)? = null
+) = getArtifactCollectionForToolingModel(
     configType,
     AndroidArtifacts.ArtifactScope.ALL,
-    AndroidArtifacts.ArtifactType.AAR_OR_JAR
+    AndroidArtifacts.ArtifactType.AAR_OR_JAR,
+    additionalFilter
 )
 
 private fun VariantDependencies.lintJars(configType: AndroidArtifacts.ConsumedConfigType, externalOnly: Boolean) = getArtifactCollectionForToolingModel(
@@ -497,8 +544,9 @@ private fun VariantDependencies.lintJars(configType: AndroidArtifacts.ConsumedCo
     AndroidArtifacts.ArtifactType.LINT
 )
 
-private fun VariantDependencies.aarsOrAsars(configType: AndroidArtifacts.ConsumedConfigType) = getArtifactCollectionForToolingModel(
+private fun VariantDependencies.aarsOrAsars(configType: AndroidArtifacts.ConsumedConfigType, additionalFilter: ((ComponentIdentifier) -> Boolean)? = null) = getArtifactCollectionForToolingModel(
     configType,
     AndroidArtifacts.ArtifactScope.ALL,
-    AndroidArtifacts.ArtifactType.EXPLODED_AAR_OR_ASAR_INTERFACE_DESCRIPTOR
+    AndroidArtifacts.ArtifactType.EXPLODED_AAR_OR_ASAR_INTERFACE_DESCRIPTOR,
+    additionalFilter
 )

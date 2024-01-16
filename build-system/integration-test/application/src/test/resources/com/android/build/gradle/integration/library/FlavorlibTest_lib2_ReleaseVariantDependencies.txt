@@ -7,7 +7,7 @@
    - androidTestArtifact  = (null)
    > unitTestArtifact:
       > compileDependencies:
-         - :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|flavorlib:lib2:unspecified:
+         - :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|flavorlib:lib2:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
          - junit|junit|4.12|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|junit:junit:4.12:
@@ -18,7 +18,7 @@
                   - dependencies         = []
       < compileDependencies
       > runtimeDependencies:
-         - :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|flavorlib:lib2:unspecified:
+         - :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|flavorlib:lib2:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
          - junit|junit|4.12|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|junit:junit:4.12:
@@ -32,7 +32,7 @@
    < unitTestArtifact
    - testFixturesArtifact = (null)
    > libraries:
-      > :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|flavorlib:lib2:unspecified:
+      > :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|flavorlib:lib2:unspecified:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -44,7 +44,6 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
-               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-api"
             - capabilities:
                * "flavorlib:lib2:unspecified"
@@ -52,8 +51,8 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|flavorlib:lib2:unspecified
-      > :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|flavorlib:lib2:unspecified:
+      < :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|flavorlib:lib2:unspecified
+      > :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|flavorlib:lib2:unspecified:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -65,7 +64,6 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
-               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-runtime"
             - capabilities:
                * "flavorlib:lib2:unspecified"
@@ -73,7 +71,7 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|flavorlib:lib2:unspecified
+      < :|:lib2|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|flavorlib:lib2:unspecified
       > junit|junit|4.12|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|junit:junit:4.12:
          - type               = JAVA_LIBRARY
          - artifact           = {LOCAL_REPO}/junit/junit/4.12/junit-4.12.jar{F}

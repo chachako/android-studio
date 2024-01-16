@@ -250,7 +250,7 @@ private fun buildModelGraph(
     val (dependencyResults, resolvedArtifacts) = buildGraph(action)
 
     val builder = FullDependencyGraphBuilder(
-        { resolvedArtifacts },
+        { _, _  -> resolvedArtifacts },
         ":path:to:project",
         getResolutionResultProvider(dependencyResults),
         libraryService,

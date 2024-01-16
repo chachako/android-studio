@@ -9,7 +9,7 @@
          - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:jar:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
-         - :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified:
+         - :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.usage>java-api|projectWithModules:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
       - runtimeDependencies:
@@ -20,7 +20,7 @@
    < androidTestArtifact
    > unitTestArtifact:
       - compileDependencies:
-         - :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified:
+         - :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.usage>java-api|projectWithModules:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
       - runtimeDependencies:
@@ -31,7 +31,7 @@
    < unitTestArtifact
    - testFixturesArtifact = (null)
    > libraries:
-      > :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified:
+      > :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.usage>java-api|projectWithModules:app:unspecified:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -44,7 +44,6 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> freeDebug"
-               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-api"
             - capabilities:
                * "projectWithModules:app:unspecified"
@@ -52,7 +51,7 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified
+      < :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.usage>java-api|projectWithModules:app:unspecified
       > :|:app|debug|foo>free|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>freeDebug, org.gradle.usage>java-runtime|projectWithModules:app:unspecified:
          - type               = PROJECT
          - artifact           = (null)

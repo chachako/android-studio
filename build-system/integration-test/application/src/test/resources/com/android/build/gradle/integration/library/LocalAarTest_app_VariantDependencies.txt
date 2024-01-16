@@ -14,7 +14,7 @@
          - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
-         - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localAarTest:app:unspecified:
+         - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-api|localAarTest:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies:
                - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
@@ -27,7 +27,7 @@
          - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
-         - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localAarTest:app:unspecified:
+         - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-api|localAarTest:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies:
                - __wrapped_aars__|:lib1|unspecified||localAarTest:lib1:unspecified:
@@ -44,7 +44,7 @@
    < unitTestArtifact
    - testFixturesArtifact = (null)
    > libraries:
-      > :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localAarTest:app:unspecified:
+      > :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-api|localAarTest:app:unspecified:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -56,7 +56,6 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> debug"
-               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-api"
             - capabilities:
                * "localAarTest:app:unspecified"
@@ -64,7 +63,7 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|localAarTest:app:unspecified
+      < :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-api|localAarTest:app:unspecified
       > :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|localAarTest:app:unspecified:
          - type               = PROJECT
          - artifact           = (null)

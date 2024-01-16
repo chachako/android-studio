@@ -2,7 +2,7 @@
    - name                 = "release"
    > mainArtifact:
       > compileDependencies:
-         > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified:
+         > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|projectWithModules:library:unspecified:
             - requestedCoordinates = (null)
             > dependencies:
                - org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-android-aar:1.2.3:
@@ -15,10 +15,10 @@
                               - requestedCoordinates = (null)
                               - dependencies         = []
             < dependencies
-         < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified
+         < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|projectWithModules:library:unspecified
       < compileDependencies
       > runtimeDependencies:
-         > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+         > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
             - requestedCoordinates = (null)
             > dependencies:
                - org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jdeferred:jdeferred-android-aar:1.2.3:
@@ -31,14 +31,14 @@
                               - requestedCoordinates = (null)
                               - dependencies         = []
             < dependencies
-         < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified
+         < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:library:unspecified
       < runtimeDependencies
       - unresolvedDependencies = []
    < mainArtifact
    - androidTestArtifact  = (null)
    > unitTestArtifact:
       > compileDependencies:
-         > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified:
+         > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|projectWithModules:library:unspecified:
             - requestedCoordinates = (null)
             > dependencies:
                - org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-android-aar:1.2.3:
@@ -51,8 +51,8 @@
                               - requestedCoordinates = (null)
                               - dependencies         = []
             < dependencies
-         < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified
-         - :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified:
+         < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|projectWithModules:library:unspecified
+         - :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|projectWithModules:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
       < compileDependencies
@@ -60,7 +60,7 @@
          > :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:app:unspecified:
             - requestedCoordinates = (null)
             > dependencies:
-               > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+               > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
                   - requestedCoordinates = (null)
                   > dependencies:
                      - org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-runtime|org.jdeferred:jdeferred-android-aar:1.2.3:
@@ -73,17 +73,17 @@
                                     - requestedCoordinates = (null)
                                     - dependencies         = []
                   < dependencies
-               < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified
+               < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:library:unspecified
             < dependencies
          < :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:app:unspecified
-         - :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+         - :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
             - dependencies = "*visited*"
       < runtimeDependencies
       - unresolvedDependencies = []
    < unitTestArtifact
    - testFixturesArtifact = (null)
    > libraries:
-      > :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified:
+      > :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|projectWithModules:app:unspecified:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -95,7 +95,6 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
-               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-api"
             - capabilities:
                * "projectWithModules:app:unspecified"
@@ -103,7 +102,7 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:app:unspecified
+      < :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|projectWithModules:app:unspecified
       > :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:app:unspecified:
          - type               = PROJECT
          - artifact           = (null)
@@ -124,7 +123,7 @@
          - lintJar            = (null)
          - androidLibraryData = (null)
       < :|:app|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:app:unspecified
-      > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified:
+      > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|projectWithModules:library:unspecified:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -136,7 +135,6 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
-               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-api"
             - capabilities:
                * "projectWithModules:library:unspecified"
@@ -144,8 +142,8 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:library:unspecified
-      > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
+      < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-api|projectWithModules:library:unspecified
+      > :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:library:unspecified:
          - type               = PROJECT
          - artifact           = (null)
          > projectInfo:
@@ -157,7 +155,6 @@
             - attributes:
                * "com.android.build.api.attributes.AgpVersionAttr -> {AGP_Version}"
                * "com.android.build.gradle.internal.attributes.VariantAttr -> release"
-               * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-runtime"
             - capabilities:
                * "projectWithModules:library:unspecified"
@@ -165,7 +162,7 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:library:unspecified
+      < :|:library|release|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>release, org.gradle.usage>java-runtime|projectWithModules:library:unspecified
       > org.jdeferred|jdeferred-android-aar|1.2.3|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|org.jdeferred:jdeferred-android-aar:1.2.3:
          - type        = ANDROID_LIBRARY
          - artifact    = {LOCAL_REPO}/org/jdeferred/jdeferred-android-aar/1.2.3/jdeferred-android-aar-1.2.3.aar{F}

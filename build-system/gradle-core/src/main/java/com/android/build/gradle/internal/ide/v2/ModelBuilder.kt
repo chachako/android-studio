@@ -1011,7 +1011,7 @@ class ModelBuilder<
         }
 
         return FullDependencyGraphBuilder(
-            { configType ->  getArtifactsForModelBuilder(component, configType) },
+            { configType, root ->  getArtifactsForModelBuilder(component, configType, root) },
             project.path,
             component.variantDependencies,
             libraryService,
