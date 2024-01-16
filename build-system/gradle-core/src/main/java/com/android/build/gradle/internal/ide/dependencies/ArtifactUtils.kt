@@ -232,7 +232,7 @@ class ArtifactCollections(
     val allFileCollection: FileCollection get() = all.artifactFiles
 
     @get:Internal
-    val lintJar: ArtifactCollection = variantDependencies.lintJars(consumedConfigType)
+    val lintJar: ArtifactCollection = variantDependencies.lintJars(consumedConfigType, externalOnly = false)
 
     // We still need to understand wrapped jars and aars. The former is difficult (TBD), but
     // the latter can be done by querying for EXPLODED_AAR. If a sub-project is in this list,
@@ -276,7 +276,7 @@ fun getArtifactsForModelBuilder(
     return resolveArtifacts(
         component.variantDependencies.allArtifacts(configType),
         component.variantDependencies.aarsOrAsars(configType),
-        component.variantDependencies.lintJars(configType)
+        component.variantDependencies.lintJars(configType, externalOnly = true)
     )
 }
 
@@ -491,9 +491,9 @@ private fun VariantDependencies.allArtifacts(configType: AndroidArtifacts.Consum
     AndroidArtifacts.ArtifactType.AAR_OR_JAR
 )
 
-private fun VariantDependencies.lintJars(configType: AndroidArtifacts.ConsumedConfigType) = getArtifactCollectionForToolingModel(
+private fun VariantDependencies.lintJars(configType: AndroidArtifacts.ConsumedConfigType, externalOnly: Boolean) = getArtifactCollectionForToolingModel(
     configType,
-    AndroidArtifacts.ArtifactScope.ALL,
+    if (externalOnly) AndroidArtifacts.ArtifactScope.EXTERNAL else AndroidArtifacts.ArtifactScope.ALL,
     AndroidArtifacts.ArtifactType.LINT
 )
 

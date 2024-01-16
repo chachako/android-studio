@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-55c74b8b23a68eb49c28f054a6ec4151f24c7c5181da43429b5ae3a03e27e292
+83b960d02cdaf269168483ea9ed960ddd344493d3da4e52f85d2e38fde441898
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -810,6 +810,7 @@ com.android.builder.model.v2.models.AndroidProject.getDynamicFeatures: java.util
 com.android.builder.model.v2.models.AndroidProject.getFlags: com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags ()
 com.android.builder.model.v2.models.AndroidProject.getJavaCompileOptions: com.android.builder.model.v2.ide.JavaCompileOptions ()
 com.android.builder.model.v2.models.AndroidProject.getLintChecksJars: java.util.List<java.io.File> ()
+com.android.builder.model.v2.models.AndroidProject.getLintJar: java.io.File ()
 com.android.builder.model.v2.models.AndroidProject.getNamespace: java.lang.String ()
 com.android.builder.model.v2.models.AndroidProject.getResourcePrefix: java.lang.String ()
 com.android.builder.model.v2.models.AndroidProject.getTestFixturesNamespace: java.lang.String ()

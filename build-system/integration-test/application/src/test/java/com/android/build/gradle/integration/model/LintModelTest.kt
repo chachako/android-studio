@@ -146,21 +146,12 @@ class AppAndLibWithLintPublishModelTest {
     }
 
     @Test
-    fun `test lint model in app dependency`() {
-        val variantDeps = result.container.getProject(":app").variantDependencies
-            ?: throw RuntimeException("No VariantDependencies model for :app")
+    fun `test lint jar in library project model`() {
+        val androidProject = result.container.getProject(":lib").androidProject
+            ?: throw RuntimeException("No AndroidProject model for :lib")
 
-        val lib = variantDeps.libraries.values.singleOrNull {
-            it.projectInfo?.let { info ->
-                info.projectPath == ":lib" && info.attributes["org.gradle.usage"] == "java-api"
-            } ?: false
-        }
-
-        Truth.assertWithMessage("lib Library instance").that(lib).isNotNull()
-
-        Truth.assertThat(lib?.lintJar?.toValueString(result.normalizer)).isEqualTo(
-            "{PROJECT}/lib/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}"
-        )
+        Truth.assertThat(androidProject.lintJar.toValueString(result.normalizer))
+            .isEqualTo("{PROJECT}/lib/libs/lint-publish.jar{F}")
     }
 
     @Test

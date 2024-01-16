@@ -960,7 +960,7 @@
                * "com.test.composite:composite1:1.0"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {INCLUDED_BUILD(:TestCompositeLib1)}/composite1/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - lintJar            = (null)
          - androidLibraryData = (null)
       < :TestCompositeLib1|:composite1|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.category>library, org.gradle.jvm.environment>android, org.gradle.libraryelements>jar, org.gradle.usage>java-api, org.jetbrains.kotlin.platform.type>androidJvm|com.test.composite:composite1:1.0
       > :TestCompositeLib1|:composite1|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.category>library, org.gradle.jvm.environment>android, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime, org.jetbrains.kotlin.platform.type>androidJvm|com.test.composite:composite1:1.0:
@@ -984,7 +984,7 @@
                * "com.test.composite:composite1:1.0"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {INCLUDED_BUILD(:TestCompositeLib1)}/composite1/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - lintJar            = (null)
          - androidLibraryData = (null)
       < :TestCompositeLib1|:composite1|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.category>library, org.gradle.jvm.environment>android, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime, org.jetbrains.kotlin.platform.type>androidJvm|com.test.composite:composite1:1.0
       > :TestCompositeLib2|:|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>{Java_Version}, org.gradle.libraryelements>jar, org.gradle.usage>java-api|com.test.composite:composite2:1.0:
@@ -1049,7 +1049,7 @@
                * "com.test.composite:composite3:1.0"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {INCLUDED_BUILD(:TestCompositeLib3)}/composite3/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - lintJar            = (null)
          - androidLibraryData = (null)
       < :TestCompositeLib3|:composite3|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|com.test.composite:composite3:1.0
       > :TestCompositeLib3|:composite3|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|com.test.composite:composite3:1.0:
@@ -1070,7 +1070,7 @@
                * "com.test.composite:composite3:1.0"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {INCLUDED_BUILD(:TestCompositeLib3)}/composite3/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - lintJar            = (null)
          - androidLibraryData = (null)
       < :TestCompositeLib3|:composite3|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|com.test.composite:composite3:1.0
       > :TestCompositeLib4|:|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>{Java_Version}, org.gradle.libraryelements>jar, org.gradle.usage>java-api|com.test.composite:composite4:1.0:
@@ -1185,7 +1185,7 @@
                * "com.test.composite:composite0:1.0"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/composite0/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - lintJar            = (null)
          - androidLibraryData = (null)
       < :|:composite0|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.category>library, org.gradle.jvm.environment>android, org.gradle.libraryelements>jar, org.gradle.usage>java-api, org.jetbrains.kotlin.platform.type>androidJvm|com.test.composite:composite0:1.0
       > :|:composite0|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.category>library, org.gradle.jvm.environment>android, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime, org.jetbrains.kotlin.platform.type>androidJvm|com.test.composite:composite0:1.0:
@@ -1209,7 +1209,7 @@
                * "com.test.composite:composite0:1.0"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/composite0/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - lintJar            = (null)
          - androidLibraryData = (null)
       < :|:composite0|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.category>library, org.gradle.jvm.environment>android, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime, org.jetbrains.kotlin.platform.type>androidJvm|com.test.composite:composite0:1.0
       > android.arch.core|common|1.1.1|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|android.arch.core:common:1.1.1:

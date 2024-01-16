@@ -69,6 +69,7 @@ import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
 import com.android.build.gradle.internal.tasks.ExportConsumerProguardFilesTask.Companion.checkProguardFiles
 import com.android.build.gradle.internal.tasks.ExtractPrivacySandboxCompatApks
 import com.android.build.gradle.internal.tasks.GenerateAdditionalApkSplitForDeploymentViaApk
+import com.android.build.gradle.internal.tasks.getPublishedCustomLintChecks
 import com.android.build.gradle.internal.utils.getDesugarLibConfigFile
 import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.internal.utils.toImmutableSet
@@ -404,6 +405,8 @@ class ModelBuilder<
             ),
             lintChecksJars = getLocalCustomLintChecksForModel(project, variantModel.syncIssueReporter),
             desugarLibConfig = desugarLibConfig,
+            // Using first as we are going to use the global artifacts anyway
+            lintJar = variantModel.variants.firstOrNull()?.global?.getPublishedCustomLintChecks()?.files?.singleOrNull()
         )
     }
 

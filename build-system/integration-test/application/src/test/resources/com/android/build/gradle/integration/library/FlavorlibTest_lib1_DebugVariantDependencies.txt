@@ -116,7 +116,7 @@
                * "flavorlib:lib1:unspecified"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/lib1/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - lintJar            = (null)
          - androidLibraryData = (null)
       < :|:lib1|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-api|flavorlib:lib1:unspecified
       > :|:lib1|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|flavorlib:lib1:unspecified:
@@ -137,7 +137,7 @@
                * "flavorlib:lib1:unspecified"
          < projectInfo
          - libraryInfo        = (null)
-         - lintJar            = {PROJECT}/lib1/build/intermediates/lint_publish_jar/global/prepareLintJarForPublish/lint.jar{!}
+         - lintJar            = (null)
          - androidLibraryData = (null)
       < :|:lib1|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|flavorlib:lib1:unspecified
       > com.android.support.test|monitor|1.0.2|org.gradle.category>library, org.gradle.libraryelements>jar, org.gradle.status>release, org.gradle.usage>java-api|com.android.support.test:monitor:1.0.2:

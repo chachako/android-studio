@@ -406,7 +406,9 @@ class LibraryCacheImpl(
                 stringCache.cacheString(projectInfo.computeKey()),
                 projectInfo,
                 artifactFile = artifactFile,
-                lintJar = artifact.publishedLintJar,
+                // For sync model building, this will be null and will be available through project
+                // models, but for lint model building, it is still used
+                lintJar = artifact.publishedLintJar
             )
         }
     }
