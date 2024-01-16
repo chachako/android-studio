@@ -27,4 +27,7 @@
                * {PROJECT}/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/releaseUnitTest/generateReleaseUnitTestStubRFile/R.jar{!}{REMOVED}
       < release
    < variants
+   - flags:
+      * "BUILD_FEATURE_ANDROID_RESOURCES -> false"{ADDED}
+      * "BUILD_FEATURE_ANDROID_RESOURCES -> true"{REMOVED}
 < AndroidProject

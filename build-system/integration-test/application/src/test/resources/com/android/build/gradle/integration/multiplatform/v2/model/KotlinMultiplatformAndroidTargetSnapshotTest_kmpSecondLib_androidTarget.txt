@@ -102,6 +102,10 @@
           {
             "flag": "ENABLE_VCS_INFO",
             "value": false
+          },
+          {
+            "flag": "BUILD_FEATURE_ANDROID_RESOURCES",
+            "value": false
           }
         ]
       },

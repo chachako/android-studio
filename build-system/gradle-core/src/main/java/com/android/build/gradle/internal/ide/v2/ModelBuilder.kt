@@ -1216,6 +1216,10 @@ class ModelBuilder<
                 BooleanFlag.USE_ANDROID_X,
                 projectOptions[BooleanOption.USE_ANDROID_X]
             )
+            flags.put(
+                BooleanFlag.BUILD_FEATURE_ANDROID_RESOURCES,
+                variants.any { it.buildFeatures.androidResources }
+            )
 
             return AndroidGradlePluginProjectFlagsImpl(flags.build())
         }

@@ -156,8 +156,9 @@
       - isCoreLibraryDesugaringEnabled = false
    - viewBindingOptions:
       - isEnabled = false
-   - flags:
+   > flags:
       * "APPLICATION_R_CLASS_CONSTANT_IDS -> false"
+      * "BUILD_FEATURE_ANDROID_RESOURCES -> true"
       * "ENABLE_VCS_INFO -> false"
       * "JETPACK_COMPOSE -> false"
       * "ML_MODEL_BINDING -> false"
@@ -165,5 +166,6 @@
       * "TRANSITIVE_R_CLASS -> false"
       * "UNIFIED_TEST_PLATFORM -> true"
       * "USE_ANDROID_X -> false"
+   < flags
    - lintChecksJars        = []
 < AndroidProject
