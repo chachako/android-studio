@@ -21,6 +21,7 @@ import com.android.ide.common.resources.ResourceResolver
 import com.android.ide.common.util.PathString
 import com.android.tools.analytics.crash.CrashReport
 import com.android.tools.analytics.crash.CrashReporter
+import com.android.tools.idea.layoutlib.LayoutLibrary
 import com.android.tools.layoutlib.LayoutlibContext
 import com.android.tools.rendering.IRenderLogger
 import com.android.tools.rendering.RenderProblem
@@ -33,20 +34,18 @@ import com.android.tools.rendering.parsers.RenderXmlFile
 import com.android.tools.rendering.parsers.RenderXmlFileSnapshot
 import com.android.tools.rendering.security.RenderSecurityManager
 import com.android.tools.sdk.AndroidPlatform
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 /** [EnvironmentContext] for the CLI case with no UI. */
 internal class StandaloneEnvironmentContext(
-    disposable: Disposable,
     private val project: Project,
     private val moduleClassLoaderManager: ModuleClassLoaderManager<out ModuleClassLoader>
 ) : EnvironmentContext {
     private val crashReporter = ConsoleCrashReporter()
     override val layoutlibContext: LayoutlibContext = object : LayoutlibContext {
-        override val parentDisposable: Disposable = disposable
         override fun hasLayoutlibCrash(): Boolean = false
+        override fun register(layoutlib: LayoutLibrary) { }
     }
 
     override val runnableFixFactory: RenderProblem.RunnableFixFactory =

@@ -128,7 +128,6 @@ internal fun renderImpl(
 
         val environment =
             StandaloneEnvironmentContext(
-                framework.disposable,
                 framework.project,
                 moduleClassLoaderManager
             )
