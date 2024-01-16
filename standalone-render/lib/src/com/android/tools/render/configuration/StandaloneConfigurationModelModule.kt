@@ -18,7 +18,6 @@ package com.android.tools.render.configuration
 
 import com.android.sdklib.IAndroidTarget
 import com.android.tools.configurations.ConfigurationModelModule
-import com.android.tools.configurations.ConfigurationStateManager
 import com.android.tools.configurations.ThemeInfoProvider
 import com.android.tools.layoutlib.LayoutlibContext
 import com.android.tools.module.AndroidModuleInfo
