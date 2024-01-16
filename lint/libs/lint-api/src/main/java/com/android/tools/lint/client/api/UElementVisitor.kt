@@ -73,6 +73,7 @@ import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.ULocalVariable
 import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.UNamedExpression
 import org.jetbrains.uast.UObjectLiteralExpression
 import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.UParenthesizedExpression
@@ -752,6 +753,16 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
         }
       }
       return super.visitMethod(node)
+    }
+
+    override fun visitNamedExpression(node: UNamedExpression): Boolean {
+      val list = nodePsiTypeDetectors[UNamedExpression::class.java]
+      if (list != null) {
+        for (v in list) {
+          v.visitor.visitNamedExpression(node)
+        }
+      }
+      return super.visitNamedExpression(node)
     }
 
     override fun visitObjectLiteralExpression(node: UObjectLiteralExpression): Boolean {

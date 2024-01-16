@@ -16,7 +16,10 @@
 package com.android.tools.lint.detector.api
 
 import com.android.tools.lint.checks.AbstractCheckTest
+import com.android.tools.lint.client.api.UElementHandler
 import org.jetbrains.uast.UClass
+import org.jetbrains.uast.UElement
+import org.jetbrains.uast.UNamedExpression
 
 class UElementVisitorTest : AbstractCheckTest() {
 
@@ -66,6 +69,49 @@ class UElementVisitorTest : AbstractCheckTest() {
       )
   }
 
+  fun testVisitNamedExpression() {
+    lint()
+      .files(
+        kotlin(
+            """
+            annotation class Foo(val name: String)
+
+            @Foo("test")
+            fun test1() {
+            }
+
+            @Foo(name = "test")
+            fun test2() {
+            }
+            """
+          )
+          .indented(),
+        java(
+            """
+            @Foo(name = "test")
+            public class Test {
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        src/Foo.kt:3: Warning: Visited name [_TestIssueId]
+        @Foo("test")
+             ~~~~~~
+        src/Foo.kt:7: Warning: Visited name [_TestIssueId]
+        @Foo(name = "test")
+             ~~~~~~~~~~~~~
+        src/Test.java:1: Warning: Visited name [_TestIssueId]
+        @Foo(name = "test")
+             ~~~~~~~~~~~~~
+        0 errors, 3 warnings
+        """
+      )
+  }
+
   override fun getDetector(): Detector = TestDetector()
 
   override fun getIssues(): List<Issue> = listOf(TEST_ISSUE)
@@ -81,6 +127,18 @@ class UElementVisitorTest : AbstractCheckTest() {
         context.getNameLocation(declaration),
         "Visited `${declaration.name}`"
       )
+    }
+
+    override fun getApplicableUastTypes(): List<Class<out UElement>> {
+      return listOf(UNamedExpression::class.java)
+    }
+
+    override fun createUastHandler(context: JavaContext): UElementHandler {
+      return object : UElementHandler() {
+        override fun visitNamedExpression(node: UNamedExpression) {
+          context.report(TEST_ISSUE, node, context.getNameLocation(node), "Visited `${node.name}`")
+        }
+      }
     }
   }
 

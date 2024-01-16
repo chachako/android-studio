@@ -48,6 +48,7 @@ import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.ULocalVariable
 import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.UNamedExpression
 import org.jetbrains.uast.UObjectLiteralExpression
 import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.UParenthesizedExpression
@@ -213,6 +214,10 @@ open class UElementHandler {
     error(UMethod::class.java)
   }
 
+  open fun visitNamedExpression(node: UNamedExpression) {
+    error(UNamedExpression::class.java)
+  }
+
   open fun visitObjectLiteralExpression(node: UObjectLiteralExpression) {
     error(UObjectLiteralExpression::class.java)
   }
@@ -289,6 +294,7 @@ open class UElementHandler {
     error(UWhileExpression::class.java)
   }
 
+  @Suppress("UnstableApiUsage")
   open fun visitYieldExpression(node: UYieldExpression) {
     error(UYieldExpression::class.java)
   }
