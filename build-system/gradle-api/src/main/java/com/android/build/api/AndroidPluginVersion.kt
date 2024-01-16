@@ -168,10 +168,36 @@ class AndroidPluginVersion private constructor(
         return Objects.hash(major, minor, micro, _previewType, preview)
     }
 
-    override fun toString(): String =
-        "Android Gradle Plugin version $major.$minor.$micro" +
-                (if (previewType != null) "-$previewType" else "") +
-                (if (preview > 0) preview else "")
+    override fun toString(): String {
+        return "Android Gradle Plugin version $version"
+    }
+
+    /**
+     * Returns the string representing this AGP version in maven version form.
+     *
+     * This corresponds exactly to the format of the version of the Android Gradle plugin artifacts
+     * published in the Google maven repository.
+     */
+    val version: String = StringBuilder().apply {
+        append(major).append('.').append(minor).append('.').append(micro)
+        // This duplicates encoding the same special cases as in AgpVersion. Sadly it's challenging
+        // to share code as gradle-api should  have as few dependencies as possible.
+        // See AndroidPluginVersionTest
+        when (_previewType) {
+            PreviewType.FINAL -> {}
+            PreviewType.DEV -> append("-dev")
+            else -> {
+                append('-').append(previewType)
+                val isTwoDigitPreviewFormat = major > 3 ||
+                        major == 3 && minor > 1 ||
+                        major == 3 && minor == 1 && micro == 0 && _previewType != PreviewType.BETA
+                if (isTwoDigitPreviewFormat && preview < 10) append('0')
+                append(preview)
+            }
+        }
+    }.toString()
+
+
 
     companion object {
         private val comparator: Comparator<AndroidPluginVersion> =

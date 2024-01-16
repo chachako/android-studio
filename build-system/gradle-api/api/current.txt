@@ -14,12 +14,14 @@ package com.android.build.api {
     method public int getMinor();
     method public int getPreview();
     method public String? getPreviewType();
+    method public String getVersion();
     method public com.android.build.api.AndroidPluginVersion rc(int rc);
     property public final int major;
     property public final int micro;
     property public final int minor;
     property public final int preview;
     property public final String? previewType;
+    property public final String version;
     field public static final com.android.build.api.AndroidPluginVersion.Companion Companion;
   }
 

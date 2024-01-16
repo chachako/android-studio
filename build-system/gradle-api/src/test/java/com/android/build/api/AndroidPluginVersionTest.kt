@@ -23,16 +23,58 @@ import java.io.IOException
 import kotlin.test.assertFailsWith
 
 class AndroidPluginVersionTest {
+
     @Test
     fun `test to string`() {
         val stableVersion = AndroidPluginVersion(7, 0, 1)
         assertThat(stableVersion.toString()).isEqualTo("Android Gradle Plugin version 7.0.1")
 
         val alphaVersion = AndroidPluginVersion(7, 1).alpha(4)
-        assertThat(alphaVersion.toString()).isEqualTo("Android Gradle Plugin version 7.1.0-alpha4")
+        assertThat(alphaVersion.toString()).isEqualTo("Android Gradle Plugin version 7.1.0-alpha04")
 
         val devVersion = AndroidPluginVersion(7, 1, 0).dev()
         assertThat(devVersion.toString()).isEqualTo("Android Gradle Plugin version 7.1.0-dev")
+
+    }
+
+    @Test
+    fun `test getVersion`() {
+        val stableVersion = AndroidPluginVersion(7, 0, 1)
+        assertThat(stableVersion.version).isEqualTo("7.0.1")
+
+        val alphaVersion = AndroidPluginVersion(7, 1).alpha(4)
+        assertThat(alphaVersion.version).isEqualTo("7.1.0-alpha04")
+
+        val devVersion = AndroidPluginVersion(7, 1, 0).dev()
+        assertThat(devVersion.version).isEqualTo("7.1.0-dev")
+
+        /** See the corresponding assertions in AgpVersionTest */
+        /** 3.0.0 has no zero-padding on preview versions */
+        assertThat(AndroidPluginVersion(3, 0).alpha(1).version)
+                .isEqualTo("3.0.0-alpha1")
+        assertThat(AndroidPluginVersion(3, 0).beta(1).version)
+                .isEqualTo("3.0.0-beta1")
+        assertThat(AndroidPluginVersion(3, 0).rc(1).version)
+                .isEqualTo("3.0.0-rc1")
+        /** 3.1.0 has zero-padding on alpha and rc but not beta preview versions */
+        assertThat(AndroidPluginVersion(3, 1).alpha(1).version)
+                .isEqualTo("3.1.0-alpha01")
+        assertThat(AndroidPluginVersion(3, 1).beta(1).version)
+                .isEqualTo("3.1.0-beta1")
+        assertThat(AndroidPluginVersion(3, 1).rc(1).version)
+                .isEqualTo("3.1.0-rc01")
+        /** 3.2.0 has zero-padding on all preview versions */
+        assertThat(AndroidPluginVersion(3, 2).alpha(1).version)
+                .isEqualTo("3.2.0-alpha01")
+        assertThat(AndroidPluginVersion(3, 2).beta(1).version)
+                .isEqualTo("3.2.0-beta01")
+        assertThat(AndroidPluginVersion(3, 2).rc(1).version)
+                .isEqualTo("3.2.0-rc01")
+        /** dev versions */
+        assertThat(AndroidPluginVersion(3, 0).dev().version)
+                .isEqualTo("3.0.0-dev")
+        assertThat(AndroidPluginVersion(3, 1).dev().version)
+                .isEqualTo("3.1.0-dev")
 
     }
 
@@ -70,7 +112,9 @@ class AndroidPluginVersionTest {
 
     @Test
     fun `check equals`() {
-        EqualsVerifier.forClass(AndroidPluginVersion::class.java).verify()
+        EqualsVerifier.forClass(AndroidPluginVersion::class.java)
+                .withIgnoredFields("version") // Ignore version field as it is derived from the others
+                .verify()
     }
 
     @Test
