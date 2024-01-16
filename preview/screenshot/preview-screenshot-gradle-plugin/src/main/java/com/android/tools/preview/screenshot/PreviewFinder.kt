@@ -33,8 +33,6 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import org.objectweb.asm.Type
 
-const val PERIOD = "."
-
 fun configureInput (
     classPath: List<String>,
     sdkPath: String,
@@ -70,7 +68,7 @@ fun findPreviewsAndSerialize(classPath: List<String>, outputFile: Path) {
 }
 
 private fun getClassName(fqcn: String): String {
-    return fqcn.substring(0, fqcn.lastIndexOf(PERIOD))
+    return fqcn.substring(0, fqcn.lastIndexOf("."))
 }
 
 private fun serializePreviews(
