@@ -244,7 +244,12 @@ private fun KotlinCompile.addPluginOption(pluginId: String, key: String, value: 
     //         })
     //     } else { ... }
     // For now, continue to use the old way to add plugin options.
-    kotlinOptions.freeCompilerArgs += listOf("-P", "plugin:$pluginId:$key=$value")
+    val pluginOption = "plugin:$pluginId:$key"
+
+    // Only add the plugin option if it was not previously added by the user (see b/318384658)
+    if (kotlinOptions.freeCompilerArgs.none { it.startsWith("$pluginOption=") }) {
+        kotlinOptions.freeCompilerArgs += listOf("-P", "$pluginOption=$value")
+    }
 }
 
 /**

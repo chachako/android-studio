@@ -219,6 +219,7 @@ interface AarMetadataBuilder {
 interface BuildFeaturesBuilder {
     var aidl: Boolean?
     var buildConfig: Boolean?
+    var compose: Boolean?
     var dataBinding: Boolean?
     var prefab: Boolean?
     var prefabPublishing: Boolean?

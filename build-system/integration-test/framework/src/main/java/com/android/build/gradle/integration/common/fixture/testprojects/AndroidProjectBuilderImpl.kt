@@ -200,6 +200,7 @@ internal class AndroidProjectBuilderImpl(
             sb.append("  buildFeatures {\n")
             buildFeatures.aidl?.let { sb.append("    aidl = $it\n") }
             buildFeatures.buildConfig?.let { sb.append("    buildConfig = $it\n") }
+            buildFeatures.compose?.let { sb.append("    compose = $it\n") }
             buildFeatures.dataBinding?.let { sb.append("    dataBinding = $it\n") }
             buildFeatures.prefab?.let { sb.append("    prefab = $it\n") }
             buildFeatures.prefabPublishing?.let { sb.append("    prefabPublishing = $it\n") }
@@ -358,6 +359,7 @@ internal class AarMetadataBuilderImpl : AarMetadataBuilder {
 internal class BuildFeaturesBuilderImpl: BuildFeaturesBuilder {
     override var aidl: Boolean? = null
     override var buildConfig: Boolean? = null
+    override var compose: Boolean? = null
     override var dataBinding: Boolean? = null
     override var prefab: Boolean? = null
     override var prefabPublishing: Boolean? = null
@@ -371,6 +373,7 @@ internal class BuildFeaturesBuilderImpl: BuildFeaturesBuilder {
     fun hasNonDefaultValue(): Boolean {
         return aidl != null
                 || buildConfig != null
+                || compose != null
                 || dataBinding != null
                 || prefab != null
                 || renderScript != null
