@@ -40,7 +40,6 @@ internal class StandaloneConfigurationModelModule(
     override val project: Project,
     override val resourcePackage: String,
     override val layoutlibContext: LayoutlibContext,
-    override val configurationStateManager: ConfigurationStateManager,
     private val layoutlibPath: String,
 ) : ConfigurationModelModule {
     override val themeInfoProvider: ThemeInfoProvider = StandaloneThemeInfoProvider()

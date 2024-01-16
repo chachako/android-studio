@@ -26,7 +26,6 @@ import com.android.tools.fonts.DownloadableFontCacheService
 import com.android.tools.module.ModuleKey
 import com.android.tools.render.configuration.StandaloneConfigurationModelModule
 import com.android.tools.render.configuration.StandaloneConfigurationSettings
-import com.android.tools.render.configuration.StandaloneConfigurationStateManager
 import com.android.tools.render.environment.StandaloneEnvironmentContext
 import com.android.tools.render.framework.StandaloneFramework
 import com.android.tools.rendering.RenderLogger
@@ -145,7 +144,6 @@ internal fun renderImpl(
             framework.project,
             packageName,
             environment.layoutlibContext,
-            StandaloneConfigurationStateManager(),
             layoutlibPath,
         )
 
