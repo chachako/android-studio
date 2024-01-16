@@ -1348,13 +1348,18 @@ allprojects { proj ->
             .getProject(projectPath, buildName).issues?.syncIssues.orEmpty()
     }
 
-    fun locateBundleFileViaModel(variantName: String, projectPath: String?): File {
-        val bundleFile = modelV2().fetchModels().container.getProject(projectPath).androidProject
+    fun locateBundleFileViaModel(modelV2: ModelBuilderV2, variantName: String, projectPath: String?): File {
+        val bundleFile = modelV2.fetchModels()
+            .container.getProject(projectPath).androidProject
             ?.getVariantByName(variantName)
             ?.getBundleLocation()
 
         return bundleFile
             ?: throw RuntimeException("Failed to get bundle file for $projectPath module")
+    }
+
+    fun locateBundleFileViaModel(variantName: String, projectPath: String?): File {
+        return locateBundleFileViaModel(modelV2(), variantName, projectPath)
     }
 
     fun locateApkFolderViaModel(variantName: String, projectPath: String?): File {

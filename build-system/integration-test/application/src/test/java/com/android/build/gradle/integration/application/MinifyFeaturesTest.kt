@@ -24,6 +24,7 @@ import com.android.build.gradle.integration.common.truth.AabSubject.Companion.as
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.builder.errors.IssueReporter
 import com.android.builder.model.SyncIssue
 import com.android.testutils.AssumeUtil
 import com.android.testutils.TestInputsGenerator
@@ -31,11 +32,13 @@ import com.android.testutils.apk.Aab
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.android.utils.Pair
+import com.google.common.collect.Iterables
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.nio.file.Files
+import java.util.stream.Collectors
 
 /**
  * Tests using R8 to shrink and obfuscate code in a project with features.
@@ -635,8 +638,8 @@ class MinifyFeaturesTest {
     @Test
     fun testBundleIsMinified() {
         project.executor().run("bundleMinified")
-
-        val bundleFile = project.locateBundleFileViaModel("minified", ":baseModule")
+        val modelV2 = project.modelV2().ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
+        val bundleFile = project.locateBundleFileViaModel(modelV2, "minified", ":baseModule")
         assertThat(bundleFile).exists()
 
         Aab(bundleFile).use {
@@ -714,6 +717,19 @@ class MinifyFeaturesTest {
     }
 
     @Test
+    @Throws(Exception::class)
+    fun testWarningOnDebuggableAndMinifiedEnabledBuild() {
+        val container = project.modelV2().ignoreSyncIssues().fetchModels().container
+        val syncIssues = container.getProject(":baseModule").issues?.syncIssues!!
+        Truth.assertThat(syncIssues).hasSize(1)
+        Truth.assertThat(Iterables.getOnlyElement(syncIssues)!!.message)
+            .contains(
+                ("BuildType 'minified' is both debuggable and has 'isMinifyEnabled' set to true.\n"
+                        + "Debuggable builds are no longer name minified and all code optimizations and obfuscation will be disabled.")
+            )
+    }
+
+    @Test
     fun testMinifyEnabledSyncError() {
         project.getSubproject(":foo:otherFeature1")
             .buildFile
@@ -721,12 +737,20 @@ class MinifyFeaturesTest {
         val container = project.modelV2().ignoreSyncIssues().fetchModels().container
         val syncIssues = container.getProject(":foo:otherFeature1").issues?.syncIssues!!
 
-        Truth.assertThat(syncIssues.size).isEqualTo(1)
-        Truth.assertThat(syncIssues.first().type).isEqualTo(SyncIssue.TYPE_GENERIC)
-        Truth.assertThat(syncIssues.first().data).isNull()
-        Truth.assertThat(syncIssues.first().message).contains(
-            "cannot set minifyEnabled to true."
-        )
+        Truth.assertThat(syncIssues.size).isEqualTo(2)
+        Truth.assertThat(syncIssues.stream().map { it.severity to it.type to it.message }.collect(Collectors.toList()))
+            .containsExactlyElementsIn(
+            listOf(
+                IssueReporter.Severity.ERROR.severity to
+                        IssueReporter.Type.GENERIC.type to
+                        """
+                            Dynamic feature modules cannot set minifyEnabled to true. minifyEnabled is set to true in build type 'minified'.
+                            To enable minification for a dynamic feature module, set minifyEnabled to true in the base module.
+                            """.trimIndent(),
+                IssueReporter.Severity.WARNING.severity to
+                        IssueReporter.Type.GENERIC.type to
+                        "BuildType 'minified' is both debuggable and has 'isMinifyEnabled' set to true.\n"
+                        + "Debuggable builds are no longer name minified and all code optimizations and obfuscation will be disabled."))
     }
 
     @Test

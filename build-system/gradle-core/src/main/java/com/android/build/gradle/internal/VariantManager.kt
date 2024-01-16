@@ -274,7 +274,6 @@ class VariantManager<
                 project.layout.buildDirectory,
                 dslServices
         )
-
         // We must first add the flavors to the variant config, in order to get the proper
         // variant-specific and multi-flavor name as we add/create the variant providers later.
         for (productFlavorData in productFlavorDataList) {
@@ -814,6 +813,15 @@ class VariantManager<
                     is ApkCreationConfig -> variant.targetSdk
                     is LibraryCreationConfig -> variant.targetSdk
                     else -> minSdkVersion
+                }
+                if (buildTypeData.buildType.isDebuggable && buildTypeData.buildType.isMinifyEnabled) {
+                    val warningMsg = """BuildType '${buildType.name}' is both debuggable and has 'isMinifyEnabled' set to true.
+                    |Debuggable builds are no longer name minified and all code optimizations and obfuscation will be disabled.
+                """.trimMargin()
+                    dslServices.issueReporter.reportWarning(
+                        IssueReporter.Type.GENERIC,
+                        warningMsg
+                    )
                 }
                 if (minSdkVersion.apiLevel > targetSdkVersion.apiLevel) {
                     projectServices
