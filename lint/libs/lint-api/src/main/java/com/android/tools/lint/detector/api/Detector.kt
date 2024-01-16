@@ -415,6 +415,10 @@ abstract class Detector {
 
   open fun applicableSuperClasses(): List<String>? = null
 
+  // Deprecated methods from the old JavaScanner PSI-based interface; these should no longer
+  // be used.
+
+  @Deprecated("Use UAST instead of PSI")
   open fun visitMethod(
     context: JavaContext,
     visitor: JavaElementVisitor?,
@@ -422,6 +426,7 @@ abstract class Detector {
     method: PsiMethod
   ) {}
 
+  @Deprecated("Use UAST instead of PSI")
   open fun visitConstructor(
     context: JavaContext,
     visitor: JavaElementVisitor?,
@@ -429,6 +434,7 @@ abstract class Detector {
     constructor: PsiMethod
   ) {}
 
+  @Deprecated("Use UAST instead of PSI")
   open fun visitResourceReference(
     context: JavaContext,
     visitor: JavaElementVisitor?,
@@ -438,10 +444,13 @@ abstract class Detector {
     isFramework: Boolean
   ) {}
 
+  @Deprecated("Use UAST instead of PSI")
   open fun checkClass(context: JavaContext, declaration: PsiClass) {}
 
+  @Deprecated("Use UAST instead of PSI", ReplaceWith("createUastHandler"))
   open fun createPsiVisitor(context: JavaContext): JavaElementVisitor? = null
 
+  @Deprecated("Use UAST instead of PSI")
   open fun visitReference(
     context: JavaContext,
     visitor: JavaElementVisitor?,

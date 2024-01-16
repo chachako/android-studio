@@ -67,203 +67,14 @@ import org.jetbrains.uast.UReferenceExpression
  * case, [UCallExpression], but the called method itself is a [PsiMethod], since that method might
  * be anywhere (including in a library that we don't have source for, so UAST doesn't make sense.)
  *
- * ## Migrating JavaPsiScanner to SourceCodeScanner
- * As described above, PSI is still used, so a lot of code will remain the same. For example, all
- * resolve methods, including those in UAST, will continue to return PsiElement, not necessarily a
- * UElement. For example, if you resolve a method call or field reference, you'll get a [PsiMethod]
- * or [PsiField] back.
- *
- * However, the visitor methods have all changed, generally to change to UAST types. For example,
- * the signature [JavaPsiScanner.visitMethodCall] should be changed to
- * [SourceCodeScanner.visitMethodCall].
- *
- * Similarly, replace [JavaPsiScanner.createPsiVisitor] with [SourceCodeScanner.createUastHandler],
- * [JavaPsiScanner.getApplicablePsiTypes] with [SourceCodeScanner.getApplicableUastTypes], etc.
- *
- * There are a bunch of new methods on classes like [JavaContext] which lets you pass in a
- * [UElement] to match the existing [PsiElement] methods.
- *
- * If you have code which does something specific with PSI classes, the following mapping table in
- * alphabetical order might be helpful, since it lists the corresponding UAST classes.
- * <table>
- *
- *     <caption>Mapping between PSI and UAST classes</caption>
- *     <tr><th>PSI</th><th>UAST</th></tr>
- *     <tr><th>com.intellij.psi.</th><th>org.jetbrains.uast.</th></tr>
- *     <tr><td>IElementType</td><td>UastBinaryOperator</td></tr>
- *     <tr><td>PsiAnnotation</td><td>UAnnotation</td></tr>
- *     <tr><td>PsiAnonymousClass</td><td>UAnonymousClass</td></tr>
- *     <tr><td>PsiArrayAccessExpression</td><td>UArrayAccessExpression</td></tr>
- *     <tr><td>PsiBinaryExpression</td><td>UBinaryExpression</td></tr>
- *     <tr><td>PsiCallExpression</td><td>UCallExpression</td></tr>
- *     <tr><td>PsiCatchSection</td><td>UCatchClause</td></tr>
- *     <tr><td>PsiClass</td><td>UClass</td></tr>
- *     <tr><td>PsiClassObjectAccessExpression</td><td>UClassLiteralExpression</td></tr>
- *     <tr><td>PsiConditionalExpression</td><td>UIfExpression</td></tr>
- *     <tr><td>PsiDeclarationStatement</td><td>UDeclarationsExpression</td></tr>
- *     <tr><td>PsiDoWhileStatement</td><td>UDoWhileExpression</td></tr>
- *     <tr><td>PsiElement</td><td>UElement</td></tr>
- *     <tr><td>PsiExpression</td><td>UExpression</td></tr>
- *     <tr><td>PsiForeachStatement</td><td>UForEachExpression</td></tr>
- *     <tr><td>PsiIdentifier</td><td>USimpleNameReferenceExpression</td></tr>
- *     <tr><td>PsiIfStatement</td><td>UIfExpression</td></tr>
- *     <tr><td>PsiImportStatement</td><td>UImportStatement</td></tr>
- *     <tr><td>PsiImportStaticStatement</td><td>UImportStatement</td></tr>
- *     <tr><td>PsiJavaCodeReferenceElement</td><td>UReferenceExpression</td></tr>
- *     <tr><td>PsiLiteral</td><td>ULiteralExpression</td></tr>
- *     <tr><td>PsiLocalVariable</td><td>ULocalVariable</td></tr>
- *     <tr><td>PsiMethod</td><td>UMethod</td></tr>
- *     <tr><td>PsiMethodCallExpression</td><td>UCallExpression</td></tr>
- *     <tr><td>PsiNameValuePair</td><td>UNamedExpression</td></tr>
- *     <tr><td>PsiNewExpression</td><td>UCallExpression</td></tr>
- *     <tr><td>PsiParameter</td><td>UParameter</td></tr>
- *     <tr><td>PsiParenthesizedExpression</td><td>UParenthesizedExpression</td></tr>
- *     <tr><td>PsiPolyadicExpression</td><td>UPolyadicExpression</td></tr>
- *     <tr><td>PsiPostfixExpression</td><td>UPostfixExpression or UUnaryExpression</td></tr>
- *     <tr><td>PsiPrefixExpression</td><td>UPrefixExpression or UUnaryExpression</td></tr>
- *     <tr><td>PsiReference</td><td>UReferenceExpression</td></tr>
- *     <tr><td>PsiReference</td><td>UResolvable</td></tr>
- *     <tr><td>PsiReferenceExpression</td><td>UReferenceExpression</td></tr>
- *     <tr><td>PsiReturnStatement</td><td>UReturnExpression</td></tr>
- *     <tr><td>PsiSuperExpression</td><td>USuperExpression</td></tr>
- *     <tr><td>PsiSwitchLabelStatement</td><td>USwitchClauseExpression</td></tr>
- *     <tr><td>PsiSwitchStatement</td><td>USwitchExpression</td></tr>
- *     <tr><td>PsiThisExpression</td><td>UThisExpression</td></tr>
- *     <tr><td>PsiThrowStatement</td><td>UThrowExpression</td></tr>
- *     <tr><td>PsiTryStatement</td><td>UTryExpression</td></tr>
- *     <tr><td>PsiTypeCastExpression</td><td>UBinaryExpressionWithType</td></tr>
- *     <tr><td>PsiWhileStatement</td><td>UWhileExpression</td></tr>
- *
- * </table>
- *
- * Note however that UAST isn't just a "renaming of classes"; there are some changes to the
- * structure of the AST as well. Particularly around calls.
- *
- * ### Parents
- * In UAST, you get your parent [UElement] by calling {@code getUastParent} instead of {@code
- * getParent}. This is to avoid method name clashes on some elements which are both UAST elements
- * and PSI elements at the same time - such as [UMethod].
- *
- * ### Children
- * When you're going in the opposite direction (e.g. you have a [PsiMethod] and you want to look at
- * its content, you should **not** use [PsiMethod.getBody]. This will only give you the PSI child
- * content, which won't work for example when dealing with Kotlin methods. Normally lint passes you
- * the [UMethod] which you should be processing instead. But if for some reason you need to look up
- * the UAST method body from a [PsiMethod], use this:
- * ```
- *     UastContext context = UastUtils.getUastContext(element);
- *     UExpression body = context.getMethodBody(method);
- * ```
- *
- * Similarly if you have a [PsiField] and you want to look up its field initializer, use this:
- * ```
- *     UastContext context = UastUtils.getUastContext(element);
- *     UExpression initializer = context.getInitializerBody(field);
- * ```
- *
- * ### Call names
- * In PSI, a call was represented by a PsiCallExpression, and to get to things like the method
- * called or to the operand/qualifier, you'd first need to get the "method expression". In UAST
- * there is no method expression and this information is available directly on the [UCallExpression]
- * element. Therefore, here's how you'd change the code:
- * ```
- * &lt;    call.getMethodExpression().getReferenceName();
- * ---
- * &gt;    call.getMethodName()
- * ```
- *
- * ### Call qualifiers
- * Similarly,
- * ```
- * &lt;    call.getMethodExpression().getQualifierExpression();
- * ---
- * &gt;    call.getReceiver()
- * ```
- *
- * ### Call arguments
- * PSI had a separate PsiArgumentList element you had to look up before you could get to the actual
- * arguments, as an array. In UAST these are available directly on the call, and are represented as
- * a list instead of an array.
- *
- * ```
- * &lt;    PsiExpression[] args = call.getArgumentList().getExpressions();
- * ---
- * &gt;    List<UExpression> args = call.getValueArguments();
- * ```
- *
- * Typically you also need to go through your code and replace array access, arg\[i], with list
- * access, {@code arg.get(i)}. Or in Kotlin, just arg\[i]...
- *
- * ### Instanceof
- * You may have code which does something like "parent instanceof PsiAssignmentExpression" to see if
- * something is an assignment. Instead, use one of the many utilities in [UastExpressionUtils] such
- * as [UastExpressionUtils.isAssignment]. Take a look at all the methods there now - there are
- * methods for checking whether a call is a constructor, whether an expression is an array
- * initializer, etc etc.
- *
- * ### Android Resources
- * Don't do your own AST lookup to figure out if something is a reference to an Android resource
- * (e.g. see if the class refers to an inner class of a class named "R" etc.) There is now a new
- * utility class which handles this: [ResourceReference]. Here's an example of code which has a
- * [UExpression] and wants to know it's referencing a R.styleable resource:
- * ```
- *        ResourceReference reference = ResourceReference.get(expression);
- *        if (reference == null || reference.getType() != ResourceType.STYLEABLE) {
- *            return;
- *        }
- *        ...
- * ```
- *
- * ### Binary Expressions
- * If you had been using [PsiBinaryExpression] for things like checking comparator operators or
- * arithmetic combination of operands, you can replace this with [UBinaryExpression]. **But you
- * normally shouldn't; you should use [UPolyadicExpression] instead**. A polyadic expression is just
- * like a binary expression, but possibly with more than two terms. With the old parser backend, an
- * expression like "A + B + C" would be represented by nested binary expressions (first A + B, then
- * a parent element which combined that binary expression with C). However, this will now be
- * provided as a [UPolyadicExpression] instead. And the binary case is handled trivially without the
- * need to special case it.
- *
- * ### Method name changes
- * The following table maps some common method names and what their corresponding names are in UAST.
- * <table>
- *
- *     <caption>Mapping between PSI and UAST method names</caption></caption>
- *     <tr><th>PSI</th><th>UAST</th></tr>
- *     <tr><td>getArgumentList</td><td>getValueArguments</td></tr>
- *     <tr><td>getCatchSections</td><td>getCatchClauses</td></tr>
- *     <tr><td>getDeclaredElements</td><td>getDeclarations</td></tr>
- *     <tr><td>getElseBranch</td><td>getElseExpression</td></tr>
- *     <tr><td>getInitializer</td><td>getUastInitializer</td></tr>
- *     <tr><td>getLExpression</td><td>getLeftOperand</td></tr>
- *     <tr><td>getOperationTokenType</td><td>getOperator</td></tr>
- *     <tr><td>getOwner</td><td>getUastParent</td></tr>
- *     <tr><td>getParent</td><td>getUastParent</td></tr>
- *     <tr><td>getRExpression</td><td>getRightOperand</td></tr>
- *     <tr><td>getReturnValue</td><td>getReturnExpression</td></tr>
- *     <tr><td>getText</td><td>asSourceString</td></tr>
- *     <tr><td>getThenBranch</td><td>getThenExpression</td></tr>
- *     <tr><td>getType</td><td>getExpressionType</td></tr>
- *     <tr><td>getTypeParameters</td><td>getTypeArguments</td></tr>
- *     <tr><td>resolveMethod</td><td>resolve</td></tr>
- *
- * </table>
- *
  * ### Handlers versus visitors
- * If you are processing a method on your own, or even a full class, you should switch from
- * JavaRecursiveElementVisitor to AbstractUastVisitor. However, most lint checks don't do their own
- * full AST traversal; they instead participate in a shared traversal of the tree, registering
- * element types they're interested with using [getApplicableUastTypes] and then providing a visitor
- * where they implement the corresponding visit methods. However, from these visitors you should
- * **not** be calling super.visitX. To remove this whole confusion, lint now provides a separate
- * class, [UElementHandler]. For the shared traversal, just provide this handler instead and
- * implement the appropriate visit methods. It will throw an error if you register element types in
- * [getApplicableUastTypes] that you don't override.
- *
- * ### Migrating JavaScanner to SourceCodeScanner
- * First read the javadoc on how to convert from the older [JavaScanner] interface over to
- * [JavaPsiScanner]. While [JavaPsiScanner] is itself deprecated, it's a lot closer to
- * [SourceCodeScanner] so a lot of the same concepts apply; then follow the above section.
+ * Most lint checks don't do their own full AST traversal; they instead participate in a shared
+ * traversal of the tree, registering element types they're interested with using
+ * [getApplicableUastTypes] and then providing a visitor where they implement the corresponding
+ * visit methods. However, from these visitors you should **not** be calling super.visitX. To remove
+ * this whole confusion, lint now provides a separate class, [UElementHandler]. For the shared
+ * traversal, just provide this handler instead and implement the appropriate visit methods. It will
+ * throw an error if you register element types in [getApplicableUastTypes] that you don't override.
  */
 interface SourceCodeScanner : FileScanner {
 
@@ -274,7 +85,7 @@ interface SourceCodeScanner : FileScanner {
    *
    * This makes it easy to write detectors that focus on some fixed calls. For example, the
    * StringFormatDetector uses this mechanism to look for "format" calls, and when found it looks
-   * around (using the AST's [PsiElement.getParent] method) to see if it's called on a String class
+   * around (using the UAST's [UElement.uastParent] method) to see if it's called on a String class
    * instance, and if so do its normal processing. Note that since it doesn't need to do any other
    * AST processing, that detector does not actually supply a visitor.
    *
