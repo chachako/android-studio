@@ -335,7 +335,7 @@ public class TestFile {
     static boolean isComponent(@NonNull String path) {
         return !path.endsWith(DOT_JAR)
                 && path.indexOf(':') != -1
-                && Component.Companion.tryParse(path) != null;
+                && Component.tryParse(path) != null;
     }
 
     @NonNull

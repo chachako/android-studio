@@ -101,7 +101,7 @@ public class FontDetector extends ResourceXmlDetector {
 
     public static final Module APPSUPPORT_MODULE =
             new Module(SUPPORT_LIB_GROUP_ID, APPCOMPAT_LIB_ARTIFACT_ID);
-    private static final Version MIN_APPSUPPORT_VERSION = Version.Companion.parse("26.0.0");
+    private static final Version MIN_APPSUPPORT_VERSION = Version.parse("26.0.0");
 
     private FontLoader mFontLoader;
 
@@ -206,7 +206,7 @@ public class FontDetector extends ResourceXmlDetector {
         LintModelExternalLibrary extLibrary = (LintModelExternalLibrary) library;
 
         LintModelMavenName rc = extLibrary.getResolvedCoordinates();
-        Version version = Version.Companion.parse(rc.getVersion());
+        Version version = Version.parse(rc.getVersion());
         if (version.compareTo(MIN_APPSUPPORT_VERSION) < 0) {
             String message =
                     "Using version "

@@ -147,11 +147,11 @@ public class SdkMavenRepositoryTest extends TestCase {
     public void testGetCoordinateFromSdkPath() {
         Component result = SdkMavenRepository
                 .getComponentFromSdkPath("extras;m2repository;foo;bar;baz;artifact1;1.2.3-alpha1");
-        assertEquals(Component.Companion.parse("foo.bar.baz:artifact1:1.2.3-alpha1"), result);
+        assertEquals(Component.parse("foo.bar.baz:artifact1:1.2.3-alpha1"), result);
 
         result = SdkMavenRepository
                 .getComponentFromSdkPath("extras;m2repository;foo;bar;baz;artifact1;1");
-        assertEquals(Component.Companion.parse("foo.bar.baz:artifact1:1"), result);
+        assertEquals(Component.parse("foo.bar.baz:artifact1:1"), result);
 
         result = SdkMavenRepository.getComponentFromSdkPath("bogus;foo;bar;baz;artifact1;1");
         assertNull(result);
@@ -166,31 +166,31 @@ public class SdkMavenRepositoryTest extends TestCase {
         RepoPackage other = new FakePackage.FakeRemotePackage("extras;m2repository;group2;artifact;2.1.3");
         List<RepoPackage> packages = ImmutableList.of(r1, r123, r2, r211, bogus, other);
 
-        Dependency dependency = Dependency.Companion.parse("group:artifact:1");
+        Dependency dependency = Dependency.parse("group:artifact:1");
         assertEquals(r1, SdkMavenRepository.findBestPackageMatching(dependency, packages));
 
-        dependency = Dependency.Companion.parse("group:artifact:1.2.3");
+        dependency = Dependency.parse("group:artifact:1.2.3");
         assertEquals(r123, SdkMavenRepository.findBestPackageMatching(dependency, packages));
 
-        dependency = Dependency.Companion.parse("group:artifact:1.+");
+        dependency = Dependency.parse("group:artifact:1.+");
         assertEquals(r123, SdkMavenRepository.findBestPackageMatching(dependency, packages));
 
-        dependency = Dependency.Companion.parse("group:artifact:[1.0,2.0]");
+        dependency = Dependency.parse("group:artifact:[1.0,2.0]");
         assertEquals(r2, SdkMavenRepository.findBestPackageMatching(dependency, packages));
 
-        dependency = Dependency.Companion.parse("group:artifact:+");
+        dependency = Dependency.parse("group:artifact:+");
         assertEquals(r211, SdkMavenRepository.findBestPackageMatching(dependency, packages));
 
-        dependency = Dependency.Companion.parse("group:artifact:1.0");
+        dependency = Dependency.parse("group:artifact:1.0");
         assertNull(SdkMavenRepository.findBestPackageMatching(dependency, packages));
 
-        dependency = Dependency.Companion.parse("group:artifact:1.1");
+        dependency = Dependency.parse("group:artifact:1.1");
         assertNull(SdkMavenRepository.findBestPackageMatching(dependency, packages));
 
-        dependency = Dependency.Companion.parse("group:artifact:2.1.2");
+        dependency = Dependency.parse("group:artifact:2.1.2");
         assertNull(SdkMavenRepository.findBestPackageMatching(dependency, packages));
 
-        dependency = Dependency.Companion.parse("group:artifact:2.1.3");
+        dependency = Dependency.parse("group:artifact:2.1.3");
         assertNull(SdkMavenRepository.findBestPackageMatching(dependency, packages));
     }
 
@@ -217,8 +217,9 @@ public class SdkMavenRepositoryTest extends TestCase {
         setUpLocalVersions();
 
         ProgressIndicator progress = new FakeProgressIndicator();
-        Dependency pattern = Dependency.Companion.parse("com.android.tools.build:gradle:1.0.0");
-        Dependency previewPattern = Dependency.Companion.parse("com.android.tools.build:gradle:1.0.0-alpha01");
+        Dependency pattern = Dependency.parse("com.android.tools.build:gradle:1.0.0");
+        Dependency previewPattern =
+                Dependency.parse("com.android.tools.build:gradle:1.0.0-alpha01");
         String basePath = "extras;m2repository;com;android;tools;build;gradle;";
 
         RepoPackage result = SdkMavenRepository.findLatestLocalVersion(pattern, mSdkHandler, null, progress);
@@ -254,8 +255,9 @@ public class SdkMavenRepositoryTest extends TestCase {
         setUpRemoteVersions();
 
         ProgressIndicator progress = new FakeProgressIndicator();
-        Dependency pattern = Dependency.Companion.parse("com.android.tools.build:gradle:1.0.0");
-        Dependency previewPattern = Dependency.Companion.parse("com.android.tools.build:gradle:1.0.0-alpha01");
+        Dependency pattern = Dependency.parse("com.android.tools.build:gradle:1.0.0");
+        Dependency previewPattern =
+                Dependency.parse("com.android.tools.build:gradle:1.0.0-alpha01");
         String basePath = "extras;m2repository;com;android;tools;build;gradle;";
 
         RepoPackage result = SdkMavenRepository.findLatestRemoteVersion(pattern, mSdkHandler, null, progress);
@@ -276,8 +278,9 @@ public class SdkMavenRepositoryTest extends TestCase {
         setUpRemoteVersions();
 
         ProgressIndicator progress = new FakeProgressIndicator();
-        Dependency pattern = Dependency.Companion.parse("com.android.tools.build:gradle:1.0.0");
-        Dependency previewPattern = Dependency.Companion.parse("com.android.tools.build:gradle:1.0.0-alpha01");
+        Dependency pattern = Dependency.parse("com.android.tools.build:gradle:1.0.0");
+        Dependency previewPattern =
+                Dependency.parse("com.android.tools.build:gradle:1.0.0-alpha01");
         String basePath = "extras;m2repository;com;android;tools;build;gradle;";
 
         RepoPackage result = SdkMavenRepository.findLatestVersion(pattern, mSdkHandler, null, progress);

@@ -155,8 +155,7 @@ public class CordovaVersionDetector extends Detector implements ClassScanner {
         }
     }
 
-    private static final Version firstNonVulnerableCordovaVersion =
-            Version.Companion.parse("6.1.2");
+    private static final Version firstNonVulnerableCordovaVersion = Version.parse("6.1.2");
 
     private static void validateCordovaVersion(
             @NonNull Context context, @NonNull Version cordovaVersion, Location location) {
@@ -257,7 +256,7 @@ public class CordovaVersionDetector extends Detector implements ClassScanner {
     private static Version createVersion(String version) {
         Matcher matcher = VERSION_STR.matcher(version);
         if (matcher.matches()) {
-            return Version.Companion.parse(matcher.group(1));
+            return Version.parse(matcher.group(1));
         }
         return null;
     }
@@ -283,7 +282,7 @@ public class CordovaVersionDetector extends Detector implements ClassScanner {
                     || line.contains("CORDOVA_JS_BUILD_LABEL")) {
                 Matcher matcher = PATTERN.matcher(line);
                 if (matcher.matches()) {
-                    mVersion = Version.Companion.parse(matcher.group(2));
+                    mVersion = Version.parse(matcher.group(2));
                     return false; // stop processing other lines.
                 }
             }

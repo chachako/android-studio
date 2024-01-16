@@ -103,7 +103,7 @@ public class GradleVersionRangeTest {
     @Test
     public void testIntersectionOneRangeOneSingleVersion2() {
         GradleVersionRange range = GradleVersionRange.parse("[2.3,4.1)");
-        Version version = Version.Companion.parse("3.1");
+        Version version = Version.parse("3.1");
         assertEquals("3.1", range.intersection(version).toString());
     }
 

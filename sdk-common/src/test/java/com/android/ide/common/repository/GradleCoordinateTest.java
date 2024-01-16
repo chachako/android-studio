@@ -46,7 +46,7 @@ public class GradleCoordinateTest extends BaseTestCase {
         assertNull(actual.getArtifactType());
         assertEquals(5, actual.getLowerBoundVersion().getMajor().intValue());
         assertEquals(4, actual.getLowerBoundVersion().getMinor().intValue());
-        assertEquals(Version.Companion.parse("5.4.2"), actual.getLowerBoundVersion());
+        assertEquals(Version.parse("5.4.2"), actual.getLowerBoundVersion());
         assertFalse(actual.acceptsGreaterRevisions());
 
         expected = new GradleCoordinate("a.b.c", "package", 5, 4, GradleCoordinate.PLUS_REV_VALUE);
@@ -458,19 +458,19 @@ public class GradleCoordinateTest extends BaseTestCase {
                 stabilityOf("com.android.support", "appcompat-v7", "1.0.0"),
                 KnownVersionStability.INCOMPATIBLE);
         assertEquals(
-                VersionRange.Companion.parse("[1.0.0,1.0.1)"),
+                VersionRange.parse("[1.0.0,1.0.1)"),
                 new GradleCoordinate("com.android.support", "appcompat-v7", "1.0.0")
                         .getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("1.0.+"),
+                VersionRange.parse("1.0.+"),
                 new GradleCoordinate("com.android.support", "appcompat-v7", "1.0.+")
                         .getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("1.+"),
+                VersionRange.parse("1.+"),
                 new GradleCoordinate("com.android.support", "appcompat-v7", "1.+")
                         .getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("+"),
+                VersionRange.parse("+"),
                 new GradleCoordinate("com.android.support", "appcompat-v7", "+").getVersionRange());
     }
 
@@ -480,19 +480,19 @@ public class GradleCoordinateTest extends BaseTestCase {
                 stabilityOf("org.jetbrains.kotlin", "kotlin-reflect", "1.0.0"),
                 KnownVersionStability.INCREMENTAL);
         assertEquals(
-                VersionRange.Companion.parse("[1.0.0,1.1)"),
+                VersionRange.parse("[1.0.0,1.1)"),
                 new GradleCoordinate("org.jetbrains.kotlin", "kotlin-reflect", "1.0.0")
                         .getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("1.0.+"),
+                VersionRange.parse("1.0.+"),
                 new GradleCoordinate("org.jetbrains.kotlin", "kotlin-reflect", "1.0.+")
                         .getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("1.+"),
+                VersionRange.parse("1.+"),
                 new GradleCoordinate("org.jetbrains.kotlin", "kotlin-reflect", "1.+")
                         .getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("+"),
+                VersionRange.parse("+"),
                 new GradleCoordinate("org.jetbrains.kotlin", "kotlin-reflect", "+")
                         .getVersionRange());
     }
@@ -501,16 +501,16 @@ public class GradleCoordinateTest extends BaseTestCase {
     public void testGetSemanticVersionRange() {
         assertEquals(stabilityOf("androidx.core", "core", "1.0.0"), KnownVersionStability.SEMANTIC);
         assertEquals(
-                VersionRange.Companion.parse("[1.0.0,2)"),
+                VersionRange.parse("[1.0.0,2)"),
                 new GradleCoordinate("androidx.core", "core", "1.0.0").getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("1.0.+"),
+                VersionRange.parse("1.0.+"),
                 new GradleCoordinate("androidx.core", "core", "1.0.+").getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("1.+"),
+                VersionRange.parse("1.+"),
                 new GradleCoordinate("androidx.core", "core", "1.+").getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("+"),
+                VersionRange.parse("+"),
                 new GradleCoordinate("androidx.core", "core", "+").getVersionRange());
     }
 
@@ -520,19 +520,19 @@ public class GradleCoordinateTest extends BaseTestCase {
                 stabilityOf("org.jetbrains.kotlin", "kotlin-stdlib", "1.0.0"),
                 KnownVersionStability.STABLE);
         assertEquals(
-                VersionRange.Companion.parse("[1.0.0," + Integer.MAX_VALUE + ")"),
+                VersionRange.parse("[1.0.0," + Integer.MAX_VALUE + ")"),
                 new GradleCoordinate("org.jetbrains.kotlin", "kotlin-stdlib", "1.0.0")
                         .getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("1.0.+"),
+                VersionRange.parse("1.0.+"),
                 new GradleCoordinate("org.jetbrains.kotlin", "kotlin-stdlib", "1.0.+")
                         .getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("1.+"),
+                VersionRange.parse("1.+"),
                 new GradleCoordinate("org.jetbrains.kotlin", "kotlin-stdlib", "1.+")
                         .getVersionRange());
         assertEquals(
-                VersionRange.Companion.parse("+"),
+                VersionRange.parse("+"),
                 new GradleCoordinate("org.jetbrains.kotlin", "kotlin-stdlib", "+")
                         .getVersionRange());
     }
