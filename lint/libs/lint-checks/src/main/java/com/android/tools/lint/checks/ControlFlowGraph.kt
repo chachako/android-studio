@@ -178,16 +178,8 @@ open class ControlFlowGraph<T : Any> private constructor() {
    * @param instruction the instruction
    * @return the control flow graph node corresponding to the given instruction
    */
-  internal open fun getOrCreate(instruction: T): Node {
-    var node = nodeMap[instruction]
-    if (node == null) {
-      node = Node(instruction)
-      nodeMap[instruction] = node
-      nodeList.add(node)
-    }
-
-    return node
-  }
+  internal open fun getOrCreate(instruction: T): Node =
+    nodeMap.getOrPut(instruction) { Node(instruction).also(nodeList::add) }
 
   /** Looks up the given graph node for the given instruction. */
   fun getNode(element: T): Node? {
@@ -319,7 +311,7 @@ open class ControlFlowGraph<T : Any> private constructor() {
 
       val successors =
         // If we're on an exceptional flow, only follow exceptional flows
-        if (request.followExceptionalFlow && seenException && node.exceptions.isNotEmpty())
+        if (seenException && request.followExceptionalFlow && node.exceptions.isNotEmpty())
           node.exceptions.asSequence()
         else node.successors.asSequence() + node.exceptions.asSequence()
 
@@ -572,25 +564,12 @@ open class ControlFlowGraph<T : Any> private constructor() {
      * purpose graph searching, see [ControlFlowGraph.dfs].
      */
     fun flowsTo(target: ControlFlowGraph<T>.Node): Boolean {
-      return flowsTo(target, mutableSetOf())
-    }
+      val visited = hashSetOf<ControlFlowGraph<T>.Node>()
 
-    private fun flowsTo(
-      target: ControlFlowGraph<T>.Node,
-      visited: MutableSet<ControlFlowGraph<T>.Node>,
-    ): Boolean {
-      if (!visited.add(this)) {
-        return false
-      }
-      if (this == target) {
-        return true
-      }
-      for (successor in this) {
-        if (successor.to.flowsTo(target, visited)) {
-          return true
-        }
-      }
-      return false
+      fun flowsTo(source: ControlFlowGraph<T>.Node, target: ControlFlowGraph<T>.Node): Boolean =
+        visited.add(source) && (source == target || source.any { flowsTo(it.to, target) })
+
+      return flowsTo(this, target)
     }
   }
 
