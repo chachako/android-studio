@@ -97,7 +97,7 @@ _git = [
 _vendor_git = [
     {
         "name": "androidndk",
-        "api_level": 21,
+        "api_level": 26,
     },
     # Use the Android SDK specified by the ANDROID_HOME variable (specified in
     # platform_specific.bazelrc)
