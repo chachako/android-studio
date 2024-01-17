@@ -20,6 +20,7 @@ import com.android.adblib.ConnectedDevice
 import com.android.adblib.DevicePropertyNames
 import com.android.adblib.adbLogger
 import com.android.adblib.deviceProperties
+import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.tools.EmulatorConsole
 import com.android.adblib.tools.defaultAuthTokenPath
@@ -355,30 +356,43 @@ class LocalEmulatorProvisionerPlugin(
                 // On a transition from not booted to booted, read the properties from the device.
                 // bootStatus is always reset when connectedDevice becomes null, so connectedDevice
                 // is guaranteed to become non-null before bootStatus becomes true
+                val connectedDevice = connectedDevice
                 if (connectedDevice != null && !bootStatus && message.bootStatus.isBooted) {
                   bootStatus = true
-                  val deviceProperties =
-                    withTimeoutOrNull(5.seconds) {
-                      connectedDevice.deviceProperties().all().asMap()
-                    }
-                  if (deviceProperties == null) {
-                    // Rather unlikely since we just read the boot status from device properties
-                    logger.warn("${logName()} Unable to read device properties in 5 seconds")
+                  // Spawn a job to do I/O with the device. Run on device scope so that if the
+                  // device disconnects, the job is cancelled.
+                  connectedDevice.scope.launch {
+                    messageChannel.send(
+                      DevicePropertiesUpdate(
+                        connectedDevice,
+                        runCatching { connectedDevice.deviceProperties().all().asMap() },
+                        Resolution.readFromDevice(connectedDevice),
+                      )
+                    )
+                  }
+                }
+              }
+              is DevicePropertiesUpdate -> {
+                if (message.connectedDevice == connectedDevice) {
+                  val newProperties = message.properties.getOrNull()
+                  if (newProperties == null) {
+                    val e = message.properties.exceptionOrNull()
+                    logger.warn(e, "Unable to read device properties")
                   } else {
                     properties =
                       LocalEmulatorProperties.build(activeAvdInfo) {
-                        readCommonProperties(deviceProperties)
+                        readCommonProperties(newProperties)
                         populateDeviceInfoProto(
                           PLUGIN_ID,
                           connectedDevice.serialNumber,
-                          deviceProperties,
+                          newProperties,
                           randomConnectionId()
                         )
                         // Device type is not always reliably read from properties
                         deviceType = activeAvdInfo.toDeviceType()
                         density =
-                          deviceProperties[DevicePropertyNames.QEMU_SF_LCD_DENSITY]?.toIntOrNull()
-                        resolution = Resolution.readFromDevice(connectedDevice)
+                          newProperties[DevicePropertyNames.QEMU_SF_LCD_DENSITY]?.toIntOrNull()
+                        resolution = message.resolution
                         disambiguator = emulatorConsolePort.toString()
                         wearPairingId =
                           activeAvdInfo.dataFolderPath.toString().takeIf { isPairable() }
@@ -775,6 +789,12 @@ private data class ConnectedDeviceStateUpdate(val deviceState: com.android.adbli
   LocalEmulatorMessage
 
 private data class BootStatusUpdate(val bootStatus: BootStatus) : LocalEmulatorMessage
+
+private data class DevicePropertiesUpdate(
+  val connectedDevice: ConnectedDevice,
+  val properties: Result<Map<String, String>>,
+  val resolution: Resolution?
+) : LocalEmulatorMessage
 
 private data class TransitionRequest(
   val transitionType: TransitionType,
