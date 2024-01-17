@@ -3962,13 +3962,26 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
   }
 }
 
-fun createGlobalLintJarClient(lintJar: File, clientName: String? = null) =
+fun createGlobalLintJarClient(
+  lintJar: File,
+  clientName: String? = null,
+  log: ((String) -> Unit)? = null
+) =
   object :
     com.android.tools.lint.checks.infrastructure.TestLintClient(clientName ?: CLIENT_UNIT_TESTS) {
     override fun findGlobalRuleJars(driver: LintDriver?, warnDeprecated: Boolean): List<File> =
       listOf(lintJar)
 
     override fun findRuleJars(project: Project): List<File> = emptyList()
+
+    override fun log(exception: Throwable?, format: String?, vararg args: Any) {
+      log?.invoke(String.format(format ?: "", *args)) ?: super.log(exception, format, *args)
+    }
+
+    override fun log(severity: Severity, exception: Throwable?, format: String?, vararg args: Any) {
+      log?.invoke(String.format(format ?: "", *args))
+        ?: super.log(severity, exception, format, *args)
+    }
   }
 
 fun createProjectLintJarClient(lintJar: File) =

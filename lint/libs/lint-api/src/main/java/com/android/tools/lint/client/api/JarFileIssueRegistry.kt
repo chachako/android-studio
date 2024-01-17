@@ -110,8 +110,8 @@ private constructor(
     private val rejectedIssueIds = CopyOnWriteArraySet<String>()
 
     /**
-     * Loads custom rules from the given list of jar files and returns a list
-     * of [JarFileIssueRegistry} instances.
+     * Loads custom rules from the given list of jar files and returns a list of
+     * [JarFileIssueRegistry] instances.
      *
      * It will also deduplicate issue registries, since in Gradle projects with local lint.jar's
      * it's possible for the same lint.jar to be handed back multiple times with different paths
@@ -371,8 +371,9 @@ private constructor(
             }
           }
         } catch (e: Throwable) {
+          // (Catching attempts to use reflection to call `getApi`)
           // Some older AndroidX libraries still in use don't have this defined, but we've
-          // check that they do work
+          // checked that they do work.
           if (className.startsWith("androidx.") || className.startsWith("android.")) {
             return registry
           }
@@ -429,8 +430,36 @@ private constructor(
 
         registry
       } catch (e: Throwable) {
-        if (logJarProblems()) {
-          client.log(e, "Could not load custom lint check jar file %1\$s", jarFile)
+        // Lint was asked to load an issue registry class, and that class isn't there in the
+        // jar file. See b/143231996 for examples. This is a google3 specific problem where
+        // the issue registry *does* contain a registration entry for the registry,
+        // but it's not always there in the jar files.
+        if (e is ClassNotFoundException && e.message == className) {
+          if (logJarProblems()) {
+            val stacktrace = StringBuilder()
+            LintDriver.appendStackTraceSummary(e, stacktrace)
+            client.log(
+              e,
+              "Could not load custom lint check jar file %1\$s: %2\$s",
+              jarFile,
+              stacktrace
+            )
+          }
+        } else if (reportErrors(driver)) {
+          val stacktrace = StringBuilder()
+          LintDriver.appendStackTraceSummary(e, stacktrace)
+          val message =
+            "Could not load custom lint check jar file. " +
+              "The issue registry class is $className. The initialization problem is ${e.message?.let { ("$it: ") } ?: ""}$stacktrace"
+
+          LintClient.report(
+            client = client,
+            issue = LINT_ERROR,
+            message = message,
+            file = jarFile,
+            project = currentProject,
+            driver = driver
+          )
         }
         null
       }
@@ -766,6 +795,12 @@ private constructor(
       }
     }
 
+    /**
+     * If set to false, don't log various problems related to loading custom jar files. This
+     * includes unexpected conditions like a lint jar file not containing an issue registry, or I/O
+     * errors reading the file. It does *not* include exceptions thrown by the IssueRegistry being
+     * initialized; these are reported as actual [IssueRegistry.LINT_ERROR] problems.
+     */
     private fun logJarProblems(): Boolean =
       System.getProperty("android.lint.log-jar-problems") != VALUE_FALSE
   }

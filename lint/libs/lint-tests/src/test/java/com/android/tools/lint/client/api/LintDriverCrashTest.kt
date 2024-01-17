@@ -16,12 +16,15 @@
 
 package com.android.tools.lint.client.api
 
+import com.android.SdkConstants.VALUE_FALSE
 import com.android.SdkConstants.VALUE_TRUE
 import com.android.resources.ResourceFolderType
 import com.android.tools.lint.checks.AbstractCheckTest
 import com.android.tools.lint.checks.ManifestDetector
+import com.android.tools.lint.checks.SdCardDetector
+import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestMode
-import com.android.tools.lint.checks.infrastructure.TestResultChecker
+import com.android.tools.lint.client.api.JarFileIssueRegistryTest.Companion.lintApiStubs
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
@@ -37,9 +40,11 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.XmlScanner
 import com.google.common.truth.Truth.assertThat
+import java.io.File
 import java.util.Locale
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UFile
+import org.junit.rules.TemporaryFolder
 import org.w3c.dom.Attr
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -228,7 +233,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           .indented(),
 
         // Deliberately crashing lint check
-        *JarFileIssueRegistryTest.lintApiStubs,
+        *lintApiStubs,
       )
       .allowSystemErrors(true)
       .allowExceptions(true)
@@ -298,54 +303,240 @@ class LintDriverCrashTest : AbstractCheckTest() {
   }
 
   fun testInitializationError() {
-    // Regression test for 261757191
+    // Regression test for b/261757191
     lint()
       .files(
         java(
-          """
-                    package test.pkg;
-                    @SuppressWarnings("ALL") class Foo {
-                    }
-                    """
-        )
+            """
+            package test.pkg;
+            @SuppressWarnings("ALL") class Foo {
+            }
+            """
+          )
+          .indented()
       )
       .allowSystemErrors(true)
       .allowExceptions(true)
       .testModes(TestMode.DEFAULT)
       .issues(BrokenInitializationDetector.BROKEN_INIT)
       .run()
-      .check(
-        TestResultChecker {
-          assertThat(it)
-            .contains(
-              "app: Error: Can't initialize detector com.android.tools.lint.client.api.LintDriverCrashTest＄BrokenInitializationDetector."
-            )
-          assertThat(it)
-            .contains(
-              "Unexpected failure during lint analysis (this is a bug in lint or one of the libraries it depends on)"
-            )
-          assertThat(it)
-            .contains(
-              "Stack: InvocationTargetException:NativeConstructorAccessorImpl.newInstance0(NativeConstructorAccessorImpl.java:"
-            )
+      .check({ message ->
+        assertThat(message)
+          .contains(
+            "app: Error: Can't initialize detector com.android.tools.lint.client.api.LintDriverCrashTest＄BrokenInitializationDetector."
+          )
+        assertThat(message)
+          .contains(
+            "Unexpected failure during lint analysis (this is a bug in lint or one of the libraries it depends on)"
+          )
+        assertThat(message)
+          .contains(
+            "Stack: InvocationTargetException:NativeConstructorAccessorImpl.newInstance0(NativeConstructorAccessorImpl.java:"
+          )
 
-          // It's not easy to set environment variables from Java once the process is running,
-          // so instead of attempting to set it to true and false in tests, we'll just make this
-          // test adapt to what's set in the environment. On our CI tests, it should not be
-          // set, so the doesNotContain() assertion will be used. For developers on the lint team
-          // it's typically set so the contains() assertion will be used.
-          val suggestion = "You can run with --stacktrace or set environment variable LINT_PRINT_"
-          if (System.getenv("LINT_PRINT_STACKTRACE") == VALUE_TRUE) {
-            assertThat(it).doesNotContain(suggestion)
-          } else {
-            assertThat(it).contains(suggestion)
-          }
-
-          assertThat(it).contains("1 errors, 0 warnings")
+        // It's not easy to set environment variables from Java once the process is running,
+        // so instead of attempting to set it to true and false in tests, we'll just make this
+        // test adapt to what's set in the environment. On our CI tests, it should not be
+        // set, so the doesNotContain() assertion will be used. For developers on the lint team
+        // it's typically set so the contains() assertion will be used.
+        val suggestion = "You can run with --stacktrace or set environment variable LINT_PRINT_"
+        if (System.getenv("LINT_PRINT_STACKTRACE") == VALUE_TRUE) {
+          assertThat(message).doesNotContain(suggestion)
+        } else {
+          assertThat(message).contains(suggestion)
         }
-      )
+
+        assertThat(message).contains("[LintError]")
+        assertThat(message).contains("1 errors, 0 warnings")
+      })
 
     LintDriver.clearCrashCount()
+  }
+
+  fun testRegistryInitializationError() {
+    // Tests behavior of IssueRegistry throwing an exception during initialization.
+    val temporaryFolder = TemporaryFolder()
+    temporaryFolder.create()
+
+    try {
+      val root = temporaryFolder.root
+
+      lint()
+        .files(
+          *lintApiStubs,
+          bytecode(
+            "lint.jar",
+            source(
+              "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
+              "test.pkg.MyIssueRegistry"
+            ),
+            0x70522285
+          ),
+          bytecode(
+            "lint.jar",
+            kotlin(
+                """
+                package test.pkg
+                import com.android.tools.lint.client.api.*
+                import com.android.tools.lint.detector.api.*
+                import java.util.EnumSet
+
+                class MyIssueRegistry : IssueRegistry() {
+                    init {
+                      error("Intentional breakage")
+                    }
+                    override val issues: List<Issue> = emptyList()
+                    override val api: Int = 9
+                    override val minApi: Int = 7
+                    override val vendor: Vendor = Vendor(
+                        vendorName = "Android Open Source Project: Lint Unit Tests",
+                        contact = "/dev/null"
+                    )
+                }
+                """
+              )
+              .indented(),
+            0xce6ea435,
+            """
+            META-INF/main.kotlin_module:
+            H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgMuZSTM7P1UvMSynKz0zRK8nPzynW
+            y8nMK9FLzslMBVKJBZlCfM5gdnxxSWlSsXeJEoMWAwC1C+QGTQAAAA==
+            """,
+            """
+            test/pkg/MyIssueRegistry.class:
+            H4sIAAAAAAAA/6VUW08bRxT+Zn1bLwssLmmMkzYkaYMxJGtoeoWQEnLRSoZK
+            UKFWPI3t0XbwehftjFHyxq/oD6j62Ic+VI3USi3KY39U1bO7Tk0MUVNF1s65
+            fd/Zc86e8V9///YHgLt4wlDVQmn3qOe72888pQZiV/hS6fhZCYzB7UR9l4fd
+            OJJdV0dRoNxAhtrtBFKQ4EfSHSPlGIrrMpR6gyFXX9y3UUDRQh4lhmuH/Ji7
+            AQ991wsC4fNgT3MtHj3tiCMto7CEMsOsF2rKTSYP5tux4D3uCxMTDM6I/lX7
+            UHR0CZMMpo72dCxDn6j1xdYIk3nXbEzDsTCFGYZL9fPxrMR3LFiYZcjr76Ri
+            qLVeN5Y1hrIvdOojYOXlKwdaBm6LIAS4f8653nrNILtCUyNRPBrl2gZluNmK
+            Yt89FLodcxkqYoYRjYqGotydSO8MgoBQRTmswhmvwcZVvFeGgfcJReVuHsn0
+            c3h08kRnno0buJlAPsg62pZhiir2U8XGQhauZ+F9EXajmGGZevvvpcjQSYnH
+            Q17jzVk2lnE7efUdhntvOciZVi/SBHC3heZdrjn5jP5xjtafJUc5OUDz6JH/
+            qUysJmndFYYfT0/qllE1ssekxzFJ5kjOD32Fl7Hq6cmq0WQPCi9+KBqOsTvr
+            5GpGM//Ni+8fkse0Tk9qebPgFHdrTqlmVvIVo1lumhTOj8KWM0E8+zxvkniz
+            zhQFpl9lOM5MUusqw8obTHd8janrpf8xTdr1satwp6dpN/akH3I9iAXDld0B
+            Xdy+8MJjqWQ7EJujtaWrtRV1CTTdkqHYGfTbIv6aE4bytqIOD/Z5LBN76LT2
+            okHcEY9lYswNE++fS4sV2pM8fbU8KsnOk/UlWQaa2CRZpCavkKwky57KhaGk
+            FaPYWUyBZCG1HpC1hRxpwEzjOczfYX1bsX9F5Tku/Zmm36JzCrmUTv9tMOn3
+            kCw7I+FdXE73qoo5QiUJ3WTLktc0fsG1n/9NUkyd1hlyYUjO+qi9UiPDPK4P
+            Kzyb8MOfxhJOXJCQ4daF5MVxsn0huYElQo2T3fFWJi8gn23BwKP0vI/HJDl5
+            Vwi3eoCch4883PXwMT4hFZ96+AyfH4ApfIG1A1QULiusKxQVbijcU5hXuK5w
+            NdU3FKoKcwoLCrcUlhVuKzQUlv4Bcv5ApO0GAAA=
+            """
+          )
+        )
+        .testModes(TestMode.DEFAULT)
+        .createProjects(root)
+
+      val lintJar = File(root, "app/lint.jar")
+      assertTrue(lintJar.exists())
+
+      lint()
+        .files(kotlin("fun test() { }"))
+        .clientFactory { createGlobalLintJarClient(lintJar) }
+        .testModes(TestMode.DEFAULT)
+        .allowSystemErrors(true)
+        .allowExceptions(true)
+        .allowObsoleteLintChecks(false)
+        .issueIds("MyIssueId")
+        .run()
+        .check({ message ->
+          assertThat(message)
+            .contains("app/lint.jar: Error: Could not load custom lint check jar file.")
+          assertThat(message)
+            .contains(
+              "The issue registry class is test.pkg.MyIssueRegistry. The initialization problem is NativeConstructorAccessorImpl.newInstance0(NativeConstructorAccessorImpl.java"
+            )
+          assertThat(message).contains("[LintError]")
+          assertThat(message).contains("1 errors, 0 warnings")
+        })
+    } finally {
+      LintDriver.clearCrashCount()
+      temporaryFolder.delete()
+    }
+  }
+
+  fun testNoErrorOnMissingIssueRegistry() {
+    // Tests that ClassNotFoundException on a missing issue registry isn't reported as an
+    // error if the right system property is false.
+    val temporaryFolder = TemporaryFolder()
+    temporaryFolder.create()
+
+    try {
+      val root = temporaryFolder.root
+
+      lint()
+        .files(
+          jar(
+            "lint.jar",
+            source(
+              "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
+              "test.pkg.MyIssueRegistry"
+            ),
+          )
+        )
+        .testModes(TestMode.DEFAULT)
+        .createProjects(root)
+
+      val lintJar = File(root, "app/lint.jar")
+      assertTrue(lintJar.exists())
+
+      // Make sure there's no warning when we set the flag to hide missing registry warnings:
+
+      val log = StringBuilder()
+      lint()
+        .files(kotlin("fun test() { }"))
+        .clientFactory { createGlobalLintJarClient(lintJar, log = { log.append(it).append('\n') }) }
+        .testModes(TestMode.DEFAULT)
+        .allowSystemErrors(true)
+        .allowExceptions(true)
+        .allowObsoleteLintChecks(false)
+        .issueIds("MyIssueId")
+        .run()
+        .expectClean()
+
+      val messages = log.toString()
+      assertTrue(messages, messages.contains("Could not load custom lint check jar file"))
+      assertTrue(
+        messages,
+        messages.contains(
+          "←JarFileIssueRegistry\$Factory.loadIssueRegistry(JarFileIssueRegistry.kt"
+        )
+      )
+
+      // Now make sure that the `android.lint.log-jar-problems` flag can be used to
+      // turn off logging of these problems.
+      val propertyName = "android.lint.log-jar-problems"
+      val prevFlag = System.getProperty(propertyName)
+      try {
+        System.setProperty(propertyName, VALUE_FALSE)
+        log.clear()
+        lint()
+          .files(kotlin("fun test() { }"))
+          .clientFactory {
+            createGlobalLintJarClient(lintJar, log = { log.append(it).append('\n') })
+          }
+          .testModes(TestMode.DEFAULT)
+          .allowSystemErrors(true)
+          .allowExceptions(true)
+          .allowObsoleteLintChecks(false)
+          .issueIds("MyIssueId")
+          .run()
+          .expectClean()
+        assertEquals("", log.toString())
+      } finally {
+        if (prevFlag != null) {
+          System.setProperty(propertyName, prevFlag)
+        } else {
+          System.clearProperty(propertyName)
+        }
+      }
+    } finally {
+      LintDriver.clearCrashCount()
+      temporaryFolder.delete()
+    }
   }
 
   fun testUnitTestErrors() {
@@ -375,14 +566,12 @@ class LintDriverCrashTest : AbstractCheckTest() {
     }
   }
 
-  override fun getIssues(): List<Issue> =
-    listOf(
-      CrashingDetector.CRASHING_ISSUE,
-      DisposedThrowingDetector.DISPOSED_ISSUE,
-      LinkageErrorDetector.LINKAGE_ERROR
-    )
+  override fun getIssues(): List<Issue> = emptyList()
 
-  override fun getDetector(): Detector = CrashingDetector()
+  override fun getDetector(): Detector {
+    // Each issue explicitly sets the issue id's to be tested. Just use a built-in one here.
+    return SdCardDetector()
+  }
 
   open class CrashingDetector : Detector(), SourceCodeScanner {
 
