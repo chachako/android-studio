@@ -19,9 +19,13 @@ package com.android.tools.firebase.testlab.gradle.services
 import com.android.tools.firebase.testlab.gradle.services.storage.FileHashCache
 import com.android.tools.firebase.testlab.gradle.services.storage.TestRunStorage
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
+import com.google.api.client.http.HttpResponseException
 import com.google.api.client.http.InputStreamContent
 import com.google.api.services.storage.Storage
 import com.google.api.services.storage.model.StorageObject
+import org.gradle.api.logging.LogLevel
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.ConcurrentHashMap
@@ -33,7 +37,8 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class StorageManager (
     private val storageClient: Storage,
-    private val hashingCache: FileHashCache = FileHashCache()
+    private val hashingCache: FileHashCache = FileHashCache(),
+    private val logger: Logger = Logging.getLogger(StorageManager::class.java)
 ) {
     private val fileLocks: ConcurrentHashMap<String, Any> = ConcurrentHashMap()
 
@@ -119,7 +124,10 @@ class StorageManager (
         }
     }
 
-    fun downloadFile(storageObject: StorageObject, destination: (objectName: String) -> File): File? =
+    fun downloadFile(
+        storageObject: StorageObject,
+        destination: (objectName: String) -> File
+    ): File? =
         download(storageObject.bucket, storageObject.name, destination(storageObject.name))
 
     fun downloadFile(fileUri: String, destination: (objectName: String) -> File): File? {
@@ -129,13 +137,20 @@ class StorageManager (
     }
 
     private fun download(bucketName: String, objectName: String, destination: File): File? =
-        destination.apply {
-            parentFile.mkdirs()
-            outputStream().use {
-                storageClient.objects()
-                    .get(bucketName, objectName)
-                    .executeMediaAndDownloadTo(it)
+        try {
+            destination.apply {
+                parentFile.mkdirs()
+                outputStream().use {
+                    storageClient.objects()
+                        .get(bucketName, objectName)
+                        .executeMediaAndDownloadTo(it)
+                }
             }
+        } catch (e: HttpResponseException) {
+            logger.log(
+                LogLevel.WARN,
+                "Failed to download storage object $objectName to file $destination")
+            null
         }
 
     private fun <V> lockOnFile(file: File, execution: () -> V) =

@@ -21,6 +21,7 @@ import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
+import com.google.api.client.http.HttpResponseException
 import com.google.api.client.util.DateTime
 import com.google.api.services.storage.Storage
 import com.google.api.services.storage.model.StorageObject
@@ -113,6 +114,32 @@ class StorageManagerTest {
         val returnValue = storageManager.downloadFile(storageObject) { resultFile }
 
         assertThat(returnValue).isSameInstanceAs(resultFile)
+
+        verify(mockObjects).get(eq("some-bucket"), eq("some-file-name"))
+        verify(mockGet).executeMediaAndDownloadTo(any())
+
+        verifyNoMoreInteractions(mockObjects)
+        verifyNoMoreInteractions(mockGet)
+    }
+
+    @Test
+    fun testDownloadFile_returnsNullWhenFailed() {
+        val storageObject: StorageObject = mock<StorageObject>().apply {
+            `when`(this.bucket).thenReturn("some-bucket")
+            `when`(this.name).thenReturn("some-file-name")
+        }
+        val exception: HttpResponseException = mock()
+        `when`(mockGet.executeMediaAndDownloadTo(any())).thenAnswer {
+            throw exception
+        }
+
+        val resultFile = temporaryFolderRule.newFile("localFile")
+
+        val storageManager = StorageManager(cloudStorageClient)
+
+        val returnValue = storageManager.downloadFile(storageObject) { resultFile }
+
+        assertThat(returnValue).isNull()
 
         verify(mockObjects).get(eq("some-bucket"), eq("some-file-name"))
         verify(mockGet).executeMediaAndDownloadTo(any())
