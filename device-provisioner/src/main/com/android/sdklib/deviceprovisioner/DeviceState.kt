@@ -66,7 +66,7 @@ sealed interface DeviceState {
   fun isOnline(): Boolean =
     connectedDevice?.deviceInfo?.deviceState == com.android.adblib.DeviceState.ONLINE
 
-  open class Disconnected(
+  data class Disconnected(
     override val properties: DeviceProperties,
     override val isTransitioning: Boolean,
     override val status: String,
@@ -77,21 +77,13 @@ sealed interface DeviceState {
 
     override val isReady: Boolean
       get() = false
-
-    open fun copy(
-      properties: DeviceProperties = this.properties,
-      isTransitioning: Boolean = this.isTransitioning,
-      status: String = this.status,
-      reservation: Reservation? = this.reservation,
-      error: DeviceError? = this.error,
-    ) = Disconnected(properties, isTransitioning, status, reservation, error)
   }
 
   /**
    * The state of a device that is connected to ADB. The device may not be usable yet; most clients
    * will want to wait for it to be [ready][isReady].
    */
-  open class Connected(
+  data class Connected(
     override val properties: DeviceProperties,
     override val isTransitioning: Boolean,
     override val isReady: Boolean,
@@ -113,16 +105,6 @@ sealed interface DeviceState {
       connectedDevice,
       reservation
     )
-
-    open fun copy(
-      properties: DeviceProperties = this.properties,
-      isTransitioning: Boolean = this.isTransitioning,
-      isReady: Boolean = this.isReady,
-      status: String = this.status,
-      connectedDevice: ConnectedDevice = this.connectedDevice,
-      reservation: Reservation? = this.reservation,
-      error: DeviceError? = this.error,
-    ) = Connected(properties, isTransitioning, isReady, status, connectedDevice, reservation, error)
   }
 }
 

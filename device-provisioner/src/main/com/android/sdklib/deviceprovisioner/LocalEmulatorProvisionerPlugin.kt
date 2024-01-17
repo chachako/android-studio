@@ -268,6 +268,7 @@ class LocalEmulatorProvisionerPlugin(
   private inner class LocalEmulatorDeviceHandle(
     override val scope: CoroutineScope,
     initialAvdInfo: AvdInfo,
+    initialDeviceProperties: LocalEmulatorProperties = disconnectedDeviceProperties(initialAvdInfo),
     val clock: Clock = Clock.System,
   ) : DeviceHandle {
     private val messageChannel: Channel<LocalEmulatorMessage> = Channel()
@@ -289,7 +290,7 @@ class LocalEmulatorProvisionerPlugin(
           var connectedDeviceState: com.android.adblib.DeviceState? = null
           var pendingTransition: TransitionRequest? = null
           var bootStatus = false
-          var properties = disconnectedDeviceProperties(initialAvdInfo)
+          var properties = initialDeviceProperties
 
           fun logName(): String {
             val port = emulatorConsolePort?.let { " ($it)" } ?: ""
@@ -301,8 +302,10 @@ class LocalEmulatorProvisionerPlugin(
             when (message) {
               is AvdInfoUpdate -> {
                 if (connectedDevice == null) {
-                  activeAvdInfo = message.avdInfo
-                  properties = disconnectedDeviceProperties(activeAvdInfo)
+                  if (activeAvdInfo != message.avdInfo) {
+                    activeAvdInfo = message.avdInfo
+                    properties = disconnectedDeviceProperties(activeAvdInfo)
+                  }
                 } else if (pendingAvdInfo != null || activeAvdInfo != message.avdInfo) {
                   pendingAvdInfo = message.avdInfo
                 }
@@ -493,22 +496,13 @@ class LocalEmulatorProvisionerPlugin(
         .stateIn(
           scope,
           SharingStarted.Eagerly,
-          InternalState(
-            Disconnected(disconnectedDeviceProperties(initialAvdInfo)),
-            null,
-            initialAvdInfo,
-            null
-          )
+          InternalState(Disconnected(initialDeviceProperties), null, initialAvdInfo, null)
         )
 
     override val stateFlow =
       internalStateFlow
         .map { it.deviceState }
-        .stateIn(
-          scope,
-          SharingStarted.Eagerly,
-          Disconnected(disconnectedDeviceProperties(initialAvdInfo))
-        )
+        .stateIn(scope, SharingStarted.Eagerly, Disconnected(initialDeviceProperties))
 
     /** The currently active AvdInfo for the device. */
     val avdInfo: AvdInfo
