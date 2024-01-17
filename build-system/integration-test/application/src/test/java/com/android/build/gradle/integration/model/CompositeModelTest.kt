@@ -99,3 +99,51 @@ class HelloWorldCompositeModelTest: ModelComparator() {
         )
     }
 }
+
+class CompositeBuildWithSameNameTest: ModelComparator() {
+
+    @get:Rule
+    val project = createGradleProject {
+        subProject(":app") {
+            plugins.add(PluginType.ANDROID_APP)
+            android {
+                setUpHelloWorld()
+            }
+            dependencies {
+                implementation("com.androidlib:lib:1.0")
+                implementation("com.javalib:lib:1.0")
+            }
+        }
+        includedBuild("includedBuild1") {
+            subProject(":lib") {
+                group = "com.androidlib"
+                version = "1.0"
+                plugins.add(PluginType.ANDROID_LIB)
+                android {
+                    setUpHelloWorld()
+                }
+            }
+        }
+        includedBuild("includedBuild2") {
+            subProject(":lib") {
+                group = "com.javalib"
+                version = "1.0"
+                plugins.add(PluginType.JAVA_LIBRARY)
+            }
+        }
+    }
+
+    private val result: ModelBuilderV2.FetchResult<ModelContainerV2> by lazy {
+        project.modelV2()
+            .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
+            .fetchModels(variantName = "debug")
+    }
+
+    @Test
+    fun `test VariantDependencies`() {
+        with(result).compareVariantDependencies(
+            projectAction = { getProject(":app") },
+            goldenFile = "VariantDependencies"
+        )
+    }
+}
