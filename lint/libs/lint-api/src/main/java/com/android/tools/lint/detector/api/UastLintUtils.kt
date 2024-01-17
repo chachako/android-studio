@@ -724,16 +724,27 @@ fun UElement.nextStatement(): UExpression? {
  * used as lambda's return while lambda's return type is Unit or Nothing. To avoid an expensive
  * type/resolution involved in parent retrieval, such implicit lambda return expression is added
  * unconditionally.
- *
- * That is, you will see something like: ULambdaExpression [{...}] : PsiType:Function0<? extends
- * Unit> UBlockExpression [{...}] UReturnExpression [return ...] // may not be correct _real last
- * expression_
  */
 fun UElement.isIncorrectImplicitReturnInLambda(): Boolean {
+  // That is, you will see something like:
+  //   ULambdaExpression [{...}] : PsiType:Function0<? extends Unit>
+  //     UBlockExpression [{...}]
+  //       UReturnExpression [return ...] // may not be correct _real last expression_
+  //
+  // which was previously:
+  //   ULambdaExpression [{...}] : PsiType:Function0<? extends Unit>
+  //     UBlockExpression [{...}]
+  //       ... // original last expression
+
+  // Check if it is an implicit return, i.e., no source PSI
   if (this !is UReturnExpression || this.sourcePsi != null) return false
+  // Check if it's not from body expression, e.g.,
+  //   fun foo() = 42
   if (uastParent !is UBlockExpression) return false
   val block = uastParent as UBlockExpression
+  // Check if this is the last expression of the lambda body
   if (block.expressions.lastOrNull() != this) return false
+  // Make sure the lambda body belongs to a lambda
   if (block.uastParent !is ULambdaExpression) return false
   val lambda = block.uastParent as ULambdaExpression
   val lambdaReturnType =
@@ -742,7 +753,9 @@ fun UElement.isIncorrectImplicitReturnInLambda(): Boolean {
       .let { returnType -> if (returnType is PsiWildcardType) returnType.bound else returnType }
       ?.canonicalText ?: return false
   // Only non-Unit returning lambda should have an implicit return at the end.
-  return lambdaReturnType.endsWith("Unit") || lambdaReturnType.endsWith("Nothing")
+  return lambdaReturnType.endsWith("Unit") ||
+    lambdaReturnType.endsWith("Nothing") ||
+    lambdaReturnType.endsWith("void")
 }
 
 // Copied from `...codeInspection.analysisUastUtil`

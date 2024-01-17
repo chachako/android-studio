@@ -26,13 +26,16 @@ import com.android.tools.lint.useFirUast
 import com.intellij.codeInsight.AnnotationTargetUtil
 import com.intellij.openapi.util.Disposer
 import com.intellij.pom.java.LanguageLevel
+import com.intellij.psi.LambdaUtil
 import com.intellij.psi.PsiAnnotation.TargetType
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiRecursiveElementVisitor
+import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
+import com.intellij.psi.PsiWildcardType
 import junit.framework.TestCase
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.kotlin.analysis.api.analyze
@@ -54,6 +57,7 @@ import org.jetbrains.kotlin.psi.KtSuperTypeCallEntry
 import org.jetbrains.kotlin.psi.KtTypeParameter
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UBinaryExpression
+import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UCallableReferenceExpression
 import org.jetbrains.uast.UClass
@@ -61,11 +65,13 @@ import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.UForEachExpression
+import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULocalVariable
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UPostfixExpression
 import org.jetbrains.uast.UPrefixExpression
 import org.jetbrains.uast.UReferenceExpression
+import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.UastCallKind
 import org.jetbrains.uast.skipParenthesizedExprDown
@@ -2874,6 +2880,119 @@ class UastTest : TestCase() {
           }
         }
       )
+    }
+  }
+
+  fun testIncorrectImplicitReturnInLambda() {
+    val testFiles =
+      arrayOf(
+        kotlin(
+            """
+          import android.content.Context
+          import android.widget.Toast
+          import kotlinx.coroutines.CompletableDeferred
+          import kotlinx.coroutines.async
+          import kotlinx.coroutines.coroutineScope
+          import org.junit.Assert.assertThrows
+          //import org.junit.function.ThrowingRunnable
+          import my.junit.function.ThrowingRunnable
+
+          fun test(c: Context, r: Int, d: Int) {
+            with(Toast.makeText(c, r, d)) { show() } // 1 // Unit
+
+            // Returning context object
+            Toast.makeText(c, r, d).also { println("it") }.show() // 2 // Unit
+            Toast.makeText(c, r, d).apply { println("it") }.show() // 3 // Unit
+            // Returning lambda result
+            with("hello") { Toast.makeText(c, r, d) }.show() // 4 // Toast
+            "hello".let { Toast.makeText(c, r, d) }.show() // 5 // Toast
+            "hello".run { Toast.makeText(c, r, d) }.show() // 6 // Toast
+          }
+
+          fun testContextReturns(c: Context, r: Int, d: Int) {
+            val toast1 = Toast.makeText(c, r, d)
+            toast1.apply {
+              Toast.makeText(c, r, d) // 7 // Unit
+            }.show()
+
+            Toast.makeText(c, r, d).also {
+              Toast.makeText(c, r, d) // 8 // Unit
+            }.show()
+          }
+
+          fun testThrowing() {
+            assertThrows<RuntimeException>(RuntimeException::class.java) {
+              CompletableDeferred<Any?>("later/assertThrows") // 9 // CompletableDeferred<Object>
+            }
+            assertThrows<RuntimeException>(
+              RuntimeException::class.java,
+              ThrowingRunnable {
+                CompletableDeferred<Any?>("later/ThrowingRunnable") // 10 // CompletableDeferred<Object>
+              }
+            )
+          }
+
+          suspend fun testLaunchSuggestionWithUnusedAsync(): Unit = coroutineScope { // 11 // Object
+            async { "Deferred value" } // 12 // Object
+          }
+        """
+          )
+          .indented(),
+        java(
+            "my/junit/function/ThrowingRunnable.java",
+            """
+              package my.junit.function;
+
+              public interface ThrowingRunnable {
+                void run() throws Throwable;
+              }
+            """
+          )
+          .indented(),
+      )
+
+    val expectedCount = 12
+    check(*testFiles) { file ->
+      var lambdaCount = 0
+      var returnCount = 0
+      file.accept(
+        object : AbstractUastVisitor() {
+          var lambdaType: PsiType? = null
+
+          override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
+            lambdaCount++
+            lambdaType = node.functionalInterfaceType ?: node.getExpressionType()
+            return super.visitLambdaExpression(node)
+          }
+
+          override fun afterVisitLambdaExpression(node: ULambdaExpression) {
+            lambdaType = null
+            super.afterVisitLambdaExpression(node)
+          }
+
+          override fun visitReturnExpression(node: UReturnExpression): Boolean {
+            // Skip an implicit return for body expression, e.g.,
+            //   suspend fun test...(): Unit = ...
+            if (
+              node.uastParent !is UBlockExpression ||
+                node.uastParent?.uastParent !is ULambdaExpression
+            )
+              return super.visitReturnExpression(node)
+
+            returnCount++
+            val lambdaReturnType = LambdaUtil.getFunctionalInterfaceReturnType(lambdaType)
+            val returnTypeText =
+              lambdaReturnType.let { if (it is PsiWildcardType) it.bound else it }?.canonicalText
+                ?: "<null>"
+            val lambdaReturnsUnit =
+              returnTypeText.endsWith("Unit") || returnTypeText.endsWith("void")
+            assertEquals(lambdaReturnsUnit, node.isIncorrectImplicitReturnInLambda())
+            return super.visitReturnExpression(node)
+          }
+        }
+      )
+      assertEquals(expectedCount, lambdaCount)
+      assertEquals(lambdaCount, returnCount)
     }
   }
 }
