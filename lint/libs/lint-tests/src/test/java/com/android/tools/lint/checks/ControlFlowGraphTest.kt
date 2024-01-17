@@ -711,7 +711,8 @@ class ControlFlowGraphTest {
 
           val startNode = graph.getNode(start)!!
           graph.dfs(
-            object : ControlFlowGraph.DfsRequest<UElement, Unit>(startNode, Unit) {
+            ControlFlowGraph.UnitDomain,
+            object : ControlFlowGraph.DfsRequest<UElement, Unit>(startNode) {
               override fun visitNode(
                 node: ControlFlowGraph<UElement>.Node,
                 path: List<ControlFlowGraph<UElement>.Edge>,
@@ -728,7 +729,7 @@ class ControlFlowGraphTest {
                 val parent = instruction.uastParent
                 return parent is UTryExpression && parent.catchClauses.any { it == instruction }
               }
-            }
+            },
           )
 
           assertEquals(
@@ -3715,7 +3716,8 @@ class ControlFlowGraphTest {
 
     val startNode = graph.getNode(start)!!
     graph.dfs(
-      object : ControlFlowGraph.DfsRequest<UElement, Boolean>(startNode, false) {
+      ControlFlowGraph.BoolDomain,
+      object : ControlFlowGraph.DfsRequest<UElement, Boolean>(startNode) {
         override fun visitNode(
           node: ControlFlowGraph<UElement>.Node,
           path: List<ControlFlowGraph<UElement>.Edge>,
@@ -3729,7 +3731,7 @@ class ControlFlowGraphTest {
         }
 
         override fun isDone(status: Boolean): Boolean = status
-      }
+      },
     )
 
     assertEquals(expected, ControlFlowGraph.describePath(foundPath))
@@ -3746,7 +3748,8 @@ class ControlFlowGraphTest {
     for (entry in entryPoints) {
       val reaches = mutableListOf<ControlFlowGraph<UElement>.Node>()
       graph.dfs(
-        object : ControlFlowGraph.DfsRequest<UElement, Unit>(entry, Unit) {
+        ControlFlowGraph.UnitDomain,
+        object : ControlFlowGraph.DfsRequest<UElement, Unit>(entry) {
           override fun visitNode(
             node: ControlFlowGraph<UElement>.Node,
             path: List<ControlFlowGraph<UElement>.Edge>,
@@ -3754,7 +3757,7 @@ class ControlFlowGraphTest {
           ) {
             reaches.add(node)
           }
-        }
+        },
       )
       clusters.add(Pair(entry, reaches))
     }

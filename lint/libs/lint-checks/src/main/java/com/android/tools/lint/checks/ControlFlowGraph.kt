@@ -297,17 +297,65 @@ open class ControlFlowGraph<T : Any> private constructor() {
   }
 
   /** Search from the given node towards the target. */
-  fun <C> dfs(request: DfsRequest<T, C>): C {
+  fun <C> dfs(domain: Domain<C>, request: DfsRequest<T, C>): C {
     nodeMap.values.forEach { it.visit = 0 }
-    return dfs(request, request.startNode, request.initial, ArrayDeque(), seenException = false)
+
+    fun visit(node: Node, initial: C, path: ArrayDeque<Edge>, seenException: Boolean): C {
+      if (node.visit != 0) {
+        return initial
+      }
+      node.visit = 1
+
+      val status = request.visitNode(node, path, initial)
+      if (request.isDone(status)) {
+        return status
+      }
+
+      if (request.prune(node, path, status)) {
+        return status
+      }
+
+      var result = status
+
+      val successors =
+        // If we're on an exceptional flow, only follow exceptional flows
+        if (request.followExceptionalFlow && seenException && node.exceptions.isNotEmpty())
+          node.exceptions.asSequence()
+        else node.successors.asSequence() + node.exceptions.asSequence()
+
+      for (edge in successors) {
+        try {
+          path.addLast(edge)
+
+          result =
+            domain.merge(
+              visit(
+                edge.to,
+                status,
+                path,
+                (seenException || edge.isException) &&
+                  (!request.followExceptionalFlow || !request.consumesException(edge)),
+              ),
+              result,
+            )
+          if (request.isDone(result)) {
+            return result
+          }
+        } finally {
+          path.removeLast()
+        }
+      }
+
+      return result
+    }
+
+    return visit(request.startNode, domain.initial, ArrayDeque(), seenException = false)
   }
 
   /** Configuration for a DFS search */
   abstract class DfsRequest<T : Any, C>(
     /** The node to begin the search from */
-    val startNode: ControlFlowGraph<T>.Node,
-    /** The initial value (the meaning of this is up to the client) */
-    val initial: C,
+    val startNode: ControlFlowGraph<T>.Node
   ) {
     /**
      * Visits a reachable control flow node. The arguments are the node itself, the path taken to
@@ -344,21 +392,6 @@ open class ControlFlowGraph<T : Any> private constructor() {
       path: List<ControlFlowGraph<T>.Edge>,
       status: C,
     ): Boolean = false
-
-    /**
-     * How to merge values of [C] when combining results from visiting a branch with the result from
-     * [visitNode].
-     */
-    @Suppress("UNCHECKED_CAST")
-    open fun merge(value1: C, value2: C): C {
-      return if (value1 is Boolean && value2 is Boolean) {
-        (value1 or value2) as C
-      } else if (value1 is Int && value2 is Int) {
-        (value1 or value2) as C
-      } else {
-        value1
-      }
-    }
 
     /**
      * Whether to only follow exceptional paths (when available) once we've already taken an
@@ -406,61 +439,16 @@ open class ControlFlowGraph<T : Any> private constructor() {
     open fun consumesException(edge: ControlFlowGraph<T>.Edge): Boolean = false
   }
 
-  private fun <C> dfs(
-    request: DfsRequest<T, C>,
-    node: Node,
-    initial: C,
-    path: ArrayDeque<Edge>,
-    seenException: Boolean,
-  ): C {
-    if (node.visit != 0) {
-      return initial
-    }
-    node.visit = 1
+  data class Domain<C>(
+    /** Identity element of [merge], i.e. forall x, merge(x, initial) = merge(initial, x) = x */
+    val initial: C,
 
-    val status = request.visitNode(node, path, initial)
-    if (request.isDone(status)) {
-      return status
-    }
-
-    if (request.prune(node, path, initial)) {
-      return status
-    }
-
-    var result = status
-
-    val successors =
-      // If we're on an exceptional flow, only follow exceptional flows
-      if (request.followExceptionalFlow && seenException && node.exceptions.isNotEmpty())
-        node.exceptions.asSequence()
-      else node.successors.asSequence() + node.exceptions.asSequence()
-
-    for (edge in successors) {
-      try {
-        path.addLast(edge)
-
-        result =
-          request.merge(
-            dfs(
-              request,
-              edge.to,
-              status,
-              path,
-              (seenException || edge.isException) &&
-                (!request.followExceptionalFlow || !request.consumesException(edge)),
-            ),
-            result,
-          )
-        if (request.isDone(result)) {
-          return result
-        }
-      } finally {
-        path.removeLast()
-      }
-    }
-
-    return result
-  }
+    /**
+     * How to merge values of [C] when combining results from visiting a branch with the result from
+     * [visitNode].
+     */
+    val merge: (C, C) -> C,
+  )
 
   /**
    * Branch decisions in the control flow graph: should we follow both branches or do we know which
@@ -629,6 +617,10 @@ open class ControlFlowGraph<T : Any> private constructor() {
     private val DEFAULT_EXCEPTIONS_JAVA: List<String> = listOf(JAVA_LANG_RUNTIME_EXCEPTION)
     private val DEFAULT_EXCEPTIONS_KOTLIN: List<String> = listOf(JAVA_LANG_EXCEPTION)
     private val DEFAULT_EXCEPTIONS_STRICT: List<String> = listOf(JAVA_LANG_THROWABLE)
+
+    val BoolDomain = Domain(false, Boolean::or)
+    val IntBitsDomain = Domain(0, Int::or)
+    val UnitDomain = Domain(Unit) { _, _ -> }
 
     /**
      * Creates a new [ControlFlowGraph] and populates it with the flow control for the given method.

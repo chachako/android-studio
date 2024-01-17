@@ -375,7 +375,8 @@ class WakelockDetector : Detector(), ClassScanner, SourceCodeScanner {
     releaseNodes: MutableList<Node>,
   ): Int {
     return graph.dfs(
-      object : ControlFlowGraph.DfsRequest<UElement, Int>(startNode, 0) {
+      ControlFlowGraph.IntBitsDomain,
+      object : ControlFlowGraph.DfsRequest<UElement, Int>(startNode) {
         override fun visitNode(
           node: ControlFlowGraph<UElement>.Node,
           path: List<ControlFlowGraph<UElement>.Edge>,
@@ -406,7 +407,7 @@ class WakelockDetector : Detector(), ClassScanner, SourceCodeScanner {
         override fun isDone(status: Int): Boolean {
           return (status and SEEN_EXIT) != 0
         }
-      }
+      },
     )
   }
 }
