@@ -149,7 +149,6 @@ internal fun renderImpl(
         val configurationSettings =
             StandaloneConfigurationSettings(
                 configModule,
-                framework.project,
                 androidTarget
             )
 

@@ -28,7 +28,6 @@ import com.android.tools.configurations.ResourceResolverCache
 import com.android.utils.NullLogger
 import com.google.common.collect.ImmutableList
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.project.Project
 
 /**
  * Mostly stub [ConfigurationSettings] essentially used to pass [ConfigurationModelModule] to
@@ -36,7 +35,6 @@ import com.intellij.openapi.project.Project
  */
 internal class StandaloneConfigurationSettings(
     override val configModule: ConfigurationModelModule,
-    override val project: Project,
     private val androidTarget: IAndroidTarget,
 ) : ConfigurationSettings {
 
