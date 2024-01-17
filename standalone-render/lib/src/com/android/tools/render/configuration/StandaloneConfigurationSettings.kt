@@ -27,7 +27,6 @@ import com.android.tools.configurations.ConfigurationSettings
 import com.android.tools.configurations.ResourceResolverCache
 import com.android.utils.NullLogger
 import com.google.common.collect.ImmutableList
-import com.intellij.openapi.module.Module
 
 /**
  * Mostly stub [ConfigurationSettings] essentially used to pass [ConfigurationModelModule] to
@@ -48,8 +47,6 @@ internal class StandaloneConfigurationSettings(
     override fun getTarget(minVersion: Int): IAndroidTarget = androidTarget
     override val stateVersion: Int = 0 // State does not change
     override val resolverCache: ResourceResolverCache = ResourceResolverCache(this)
-    override val module: Module
-        get() = throw UnsupportedOperationException("Should not be called in standalone rendering")
     override val localesInProject: ImmutableList<Locale> = ImmutableList.of()
     override val devices: ImmutableList<Device> =
         ImmutableList
