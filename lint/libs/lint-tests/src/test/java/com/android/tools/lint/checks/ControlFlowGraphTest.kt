@@ -3921,7 +3921,7 @@ class ControlFlowGraphTest {
 }
 
 /** On a Mac or Linux, renders the graph to PNG and opens it. */
-fun <T> ControlFlowGraph<T>.show(
+fun <T : Any> ControlFlowGraph<T>.show(
   start: T? = null,
   end: T? = null,
   reuseFile: Boolean = false,
@@ -4087,7 +4087,7 @@ fun ControlFlowGraph<UElement>.Node.sourceString(): String {
  * readable format such that it can be used in unit tests (to more directly test the operation of
  * the control flow graph construction than testing it indirectly via detector behaviors).
  */
-fun <T> ControlFlowGraph<T>.prettyPrintGraph(
+fun <T : Any> ControlFlowGraph<T>.prettyPrintGraph(
   start: T,
   nodeTypeString: (ControlFlowGraph<T>.Node) -> String,
   sourceString: (ControlFlowGraph<T>.Node) -> String?,

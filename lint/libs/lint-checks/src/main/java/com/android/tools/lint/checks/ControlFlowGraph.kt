@@ -129,7 +129,7 @@ import org.objectweb.asm.tree.analysis.BasicValue
  * /usr/bin/open /tmp/image.png
  * ```
  */
-open class ControlFlowGraph<T> private constructor() {
+open class ControlFlowGraph<T : Any> private constructor() {
   /**
    * Map from instructions to nodes.
    *
@@ -303,7 +303,7 @@ open class ControlFlowGraph<T> private constructor() {
   }
 
   /** Configuration for a DFS search */
-  abstract class DfsRequest<T, C>(
+  abstract class DfsRequest<T : Any, C>(
     /** The node to begin the search from */
     val startNode: ControlFlowGraph<T>.Node,
     /** The initial value (the meaning of this is up to the client) */
