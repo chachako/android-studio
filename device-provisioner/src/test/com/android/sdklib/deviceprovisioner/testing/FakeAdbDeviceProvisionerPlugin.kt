@@ -47,13 +47,23 @@ import kotlinx.coroutines.launch
 class FakeAdbDeviceProvisionerPlugin(
   val scope: CoroutineScope,
   private val fakeAdb: FakeAdbServerProvider,
-  override val priority: Int = 1
+  override val priority: Int = 1,
 ) : DeviceProvisionerPlugin {
+  /** If true, devices do not enter ready state after activation until finishBoot is called */
+  @get:Synchronized @set:Synchronized var explicitBoot: Boolean = false
 
   /** Claims any device that has been registered with [addDevice] (based on serial number). */
   override suspend fun claim(device: ConnectedDevice): DeviceHandle? {
     val handle = devices.value.find { it.serialNumber == device.serialNumber } ?: return null
-    handle.stateFlow.update { Connected(it.properties, device) }
+    handle.stateFlow.update {
+      Connected(
+        it.properties,
+        isTransitioning = explicitBoot,
+        isReady = !explicitBoot,
+        status = if (explicitBoot) "Booting" else "Connected",
+        device
+      )
+    }
     scope.launch {
       device.awaitDisconnection()
       handle.stateFlow.update { Disconnected(it.properties) }
@@ -129,6 +139,10 @@ class FakeAdbDeviceProvisionerPlugin(
 
     override val stateFlow = MutableStateFlow(initialState)
     override var sourceTemplate: DeviceTemplate? = null
+
+    fun finishBoot() {
+      stateFlow.update { (it as? Connected)?.copy(isTransitioning = false, isReady = true) ?: it }
+    }
 
     override val activationAction =
       object : ActivationAction {
