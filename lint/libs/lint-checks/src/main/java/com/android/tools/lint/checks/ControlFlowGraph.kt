@@ -31,6 +31,8 @@ import com.intellij.psi.PsiSynchronizedStatement
 import com.intellij.psi.PsiType
 import com.intellij.psi.util.InheritanceUtil
 import java.util.IdentityHashMap
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.js.translate.declaration.hasCustomGetter
@@ -300,7 +302,7 @@ open class ControlFlowGraph<T : Any> private constructor() {
   fun <C> dfs(domain: Domain<C>, request: DfsRequest<T, C>): C {
     nodeMap.values.forEach { it.visit = 0 }
 
-    fun visit(node: Node, initial: C, path: ArrayDeque<Edge>, seenException: Boolean): C {
+    fun visit(node: Node, initial: C, path: PersistentList<Edge>, seenException: Boolean): C {
       if (node.visit != 0) {
         return initial
       }
@@ -315,41 +317,29 @@ open class ControlFlowGraph<T : Any> private constructor() {
         return status
       }
 
-      var result = status
-
       val successors =
         // If we're on an exceptional flow, only follow exceptional flows
         if (request.followExceptionalFlow && seenException && node.exceptions.isNotEmpty())
           node.exceptions.asSequence()
         else node.successors.asSequence() + node.exceptions.asSequence()
 
-      for (edge in successors) {
-        try {
-          path.addLast(edge)
-
-          result =
-            domain.merge(
-              visit(
-                edge.to,
-                status,
-                path,
-                (seenException || edge.isException) &&
-                  (!request.followExceptionalFlow || !request.consumesException(edge)),
-              ),
-              result,
-            )
-          if (request.isDone(result)) {
-            return result
-          }
-        } finally {
-          path.removeLast()
-        }
+      return successors.fold(status) { result, edge ->
+        domain
+          .merge(
+            visit(
+              edge.to,
+              status,
+              path.add(edge),
+              (seenException || edge.isException) &&
+                (!request.followExceptionalFlow || !request.consumesException(edge)),
+            ),
+            result,
+          )
+          .also { if (request.isDone(it)) return it }
       }
-
-      return result
     }
 
-    return visit(request.startNode, domain.initial, ArrayDeque(), seenException = false)
+    return visit(request.startNode, domain.initial, persistentListOf(), seenException = false)
   }
 
   /** Configuration for a DFS search */
@@ -364,6 +354,8 @@ open class ControlFlowGraph<T : Any> private constructor() {
      *
      * The method should return a new value. The [isDone] lambda will be used to determine if this
      * value means we're done.
+     *
+     * The [path] is an immutable value that's safe to share
      */
     abstract fun visitNode(
       node: ControlFlowGraph<T>.Node,
@@ -386,6 +378,8 @@ open class ControlFlowGraph<T : Any> private constructor() {
      * we don't want to conclude that everything is safe; we need to keep searching *other* paths
      * (but not the current one, since for this particular path we've reached a release-call).
      * That's what this method is used for.
+     *
+     * The [path] is an immutable value that's safe to share
      */
     open fun prune(
       node: ControlFlowGraph<T>.Node,

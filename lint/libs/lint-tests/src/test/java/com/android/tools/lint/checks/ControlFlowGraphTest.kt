@@ -718,7 +718,7 @@ class ControlFlowGraphTest {
                 path: List<ControlFlowGraph<UElement>.Edge>,
                 status: Unit,
               ) {
-                if (node.isExit()) matches.add(path.toList())
+                if (node.isExit()) matches.add(path)
                 node.visit = 0
               }
 
@@ -3725,7 +3725,7 @@ class ControlFlowGraphTest {
         ): Boolean {
           val instruction = node.instruction
           return if (targetNode(instruction)) {
-            foundPath = path.toList()
+            foundPath = path
             true
           } else false
         }

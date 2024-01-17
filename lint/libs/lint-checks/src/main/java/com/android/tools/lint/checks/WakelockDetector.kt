@@ -383,7 +383,7 @@ class WakelockDetector : Detector(), ClassScanner, SourceCodeScanner {
           status: Int,
         ): Int {
           return if (node.isExit()) {
-            exitPaths.add(path.toList())
+            exitPaths.add(path)
             SEEN_EXIT or (if (path.any { it.isException }) SEEN_EXCEPTION else 0)
           } else {
             0
