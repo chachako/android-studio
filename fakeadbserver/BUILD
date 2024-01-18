@@ -30,7 +30,7 @@ maven_library(
         "src/main/java/**/*.java",
     ]),
     bundled_deps = [
-        ":adb-server-proto",
+        "//tools/base/adblib:adb-server-proto",
     ],
     coordinates = "com.android.tools.fakeadbserver:fakeadbserver",
     description = "Library implementing the ADB Server protocol",
@@ -61,13 +61,4 @@ kotlin_test(
         "@maven//:com.google.guava.guava",
         "@maven//:junit.junit",
     ],
-)
-
-java_proto_library(
-    name = "adb-server-proto",
-    srcs = glob([
-        "src/main/proto/app_processes.proto",
-        "src/main/proto/devices.proto",
-    ]),
-    visibility = ["//visibility:public"],
 )
