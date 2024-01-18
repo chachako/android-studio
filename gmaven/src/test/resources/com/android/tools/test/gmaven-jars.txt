@@ -733,6 +733,7 @@ com/android/tools/dvlib
   com/android/dvlib/devices-5.xsd
   com/android/dvlib/devices-6.xsd
   com/android/dvlib/devices-7.xsd
+  com/android/dvlib/devices-8.xsd
 
 com/android/tools/emulator/proto
   META-INF/
@@ -3700,6 +3701,7 @@ com/android/tools/sdklib
   com/android/sdklib/repository/generated/sysimg/v1/
   com/android/sdklib/repository/generated/sysimg/v2/
   com/android/sdklib/repository/generated/sysimg/v3/
+  com/android/sdklib/repository/generated/sysimg/v4/
   com/android/sdklib/repository/installer/
   com/android/sdklib/repository/legacy/
   com/android/sdklib/repository/legacy/descriptors/
@@ -3718,6 +3720,7 @@ com/android/tools/sdklib
   com/android/sdklib/repository/sources/generated/v3/
   com/android/sdklib/repository/sources/generated/v4/
   com/android/sdklib/repository/sources/generated/v5/
+  com/android/sdklib/repository/sources/generated/v6/
   com/android/sdklib/repository/targets/
   com/android/sdklib/tool/
   com/android/sdklib/tool/sdkmanager/
@@ -3765,12 +3768,14 @@ com/android/tools/sdklib
   xsd/sdk-sys-img-01.xsd
   xsd/sdk-sys-img-02.xsd
   xsd/sdk-sys-img-03.xsd
+  xsd/sdk-sys-img-04.xsd
   xsd/sources/
   xsd/sources/sdk-sites-list-1.xsd
   xsd/sources/sdk-sites-list-2.xsd
   xsd/sources/sdk-sites-list-3.xsd
   xsd/sources/sdk-sites-list-4.xsd
   xsd/sources/sdk-sites-list-5.xsd
+  xsd/sources/sdk-sites-list-6.xsd
 
 com/android/tools/testutils
   META-INF/

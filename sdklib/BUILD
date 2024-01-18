@@ -383,12 +383,41 @@ xsd_to_java(
 )
 
 xsd_to_java(
+    name = "sdk-sysimg-4",
+    binding_deps = [
+        "//tools/base/repository:repo-common-02.xjb",
+        ":sdk-common-03.xjb",
+    ],
+    catalog = "src/main/resources/xsd/catalog.xml",
+    package = "com.android.sdklib.repository.generated.sysimg.v4",
+    src_location = "tools/base/sdklib/src/main/java",
+    xsd = "src/main/resources/xsd/sdk-sys-img-04.xsd",
+    deps = [
+        ":tools.sdklib.core",
+        "//tools/base/repository:tools.repository.lib",
+    ],
+)
+
+xsd_to_java(
     name = "sdk-sites-list-5",
     binding_deps = ["//tools/base/repository:sources/repo-sites-common-1.xjb"],
     catalog = "src/main/resources/xsd/catalog.xml",
     package = "com.android.sdklib.repository.sources.generated.v5",
     src_location = "tools/base/sdklib/src/main/java",
     xsd = "src/main/resources/xsd/sources/sdk-sites-list-5.xsd",
+    deps = [
+        ":tools.sdklib.core",
+        "//tools/base/repository:tools.repository.lib",
+    ],
+)
+
+xsd_to_java(
+    name = "sdk-sites-list-6",
+    binding_deps = ["//tools/base/repository:sources/repo-sites-common-1.xjb"],
+    catalog = "src/main/resources/xsd/catalog.xml",
+    package = "com.android.sdklib.repository.sources.generated.v6",
+    src_location = "tools/base/sdklib/src/main/java",
+    xsd = "src/main/resources/xsd/sources/sdk-sites-list-6.xsd",
     deps = [
         ":tools.sdklib.core",
         "//tools/base/repository:tools.repository.lib",

@@ -28,11 +28,11 @@ import com.android.resources.ScreenRound;
 import com.android.resources.ScreenSize;
 import com.android.resources.TouchScreen;
 import com.android.sdklib.devices.Storage.Unit;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import java.awt.Dimension;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,8 +110,10 @@ public class DeviceParserTest extends TestCase {
             assertTrue(hw.hasSdCard());
             assertEquals("OMAP 4460", hw.getCpu());
             assertEquals("PowerVR SGX540", hw.getGpu());
-            Set<Abi> abis = hw.getSupportedAbis();
+            List<Abi> abis = hw.getSupportedAbis();
             assertEquals(2, abis.size());
+            List<Abi> translatedAbis = hw.getTranslatedAbis();
+            assertEquals(0, translatedAbis.size());
             assertTrue(abis.contains(Abi.ARMEABI));
             assertTrue(abis.contains(Abi.ARMEABI_V7A));
             assertEquals(0, hw.getSupportedUiModes().size());
@@ -179,7 +181,9 @@ public class DeviceParserTest extends TestCase {
                           "ro.build.display.id=sdk-eng 4.3 JB_MR2 774058 test-keys}",
                          device2.getBootProps().toString());
             assertEquals("Snapdragon 800 (MSM8974)", device2.getDefaultHardware().getCpu());
-            assertEquals("[armeabi, armeabi-v7a]", device2.getDefaultHardware().getSupportedAbis().toString());
+            assertEquals(
+                    "[armeabi-v7a, armeabi]",
+                    device2.getDefaultHardware().getSupportedAbis().toString());
             assertEquals(device2.getChinSize(), 0);
             assertFalse(device2.isScreenRound());
 
@@ -309,7 +313,8 @@ public class DeviceParserTest extends TestCase {
             assertEquals("android-automotive", device1.getTagId());
             assertEquals(Collections.emptyMap(), device1.getBootProps());
             assertEquals("Generic CPU", device1.getDefaultHardware().getCpu());
-            assertEquals(EnumSet.of(Abi.ARM64_V8A, Abi.X86_64),
+            assertEquals(
+                    Lists.newArrayList(Abi.ARM64_V8A, Abi.X86_64),
                     device1.getDefaultHardware().getSupportedAbis());
 
             assertTrue(!device1.getDefaultHardware().hasSdCard());

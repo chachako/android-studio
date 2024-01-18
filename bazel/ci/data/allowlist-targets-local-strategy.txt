@@ -12,5 +12,7 @@
 //tools/base/sdklib:sdk-repository-3
 //tools/base/sdklib:sdk-sites-list-4
 //tools/base/sdklib:sdk-sites-list-5
+//tools/base/sdklib:sdk-sites-list-6
 //tools/base/sdklib:sdk-sysimg-2
 //tools/base/sdklib:sdk-sysimg-3
+//tools/base/sdklib:sdk-sysimg-4

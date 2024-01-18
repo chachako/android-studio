@@ -464,7 +464,7 @@ public class DeviceManagerTest {
                         sdkPath.resolve("system-images/android-22/tag-1/x86"),
                         IdDisplay.create("tag-1", "tag-1"),
                         IdDisplay.create("OEM", "Tag 1 OEM"),
-                        "x86",
+                        Abi.X86.toString(),
                         new Path[] {},
                         p);
 
@@ -742,7 +742,7 @@ public class DeviceManagerTest {
                         sdkPath.resolve("system-images/android-22/android-wear/x86"),
                         IdDisplay.create("android-wear", "android-wear"),
                         IdDisplay.create("Google", "Google"),
-                        "x86",
+                        Abi.X86.toString(),
                         new Path[] {},
                         p);
         sdkManager.makeSystemImageFolder(imageWithDevice22, "wearos_small_round");
@@ -757,7 +757,7 @@ public class DeviceManagerTest {
                         sdkPath.resolve("system-images/android-25/android-wear/x86"),
                         IdDisplay.create("android-wear", "android-wear"),
                         IdDisplay.create("Google", "Google"),
-                        "arm",
+                        Abi.ARMEABI.toString(),
                         new Path[] {},
                         p);
         sdkManager.makeSystemImageFolder(imageWithDevice25, "wearos_small_round");
@@ -771,7 +771,8 @@ public class DeviceManagerTest {
         localDevice = localDeviceManager.getDevice("wearos_small_round", "Google");
         // (The "Android wear" part comes from the tag "android-wear")
         assertThat(localDevice.getDisplayName()).isEqualTo("Mock Android wear Device Name");
-        assertThat(localDevice.getDefaultState().getHardware().getCpu()).isEqualTo("arm");
+        assertThat(localDevice.getDefaultState().getHardware().getCpu())
+                .isEqualTo(Abi.ARMEABI.toString());
 
         // Change the name of that device and add it to our local DeviceManager again
         Device dmDevice = dm.getDevice("wearos_small_round", "Google");
@@ -806,9 +807,13 @@ public class DeviceManagerTest {
             devBuilder.setName("Test Round User Wear Device");
             devBuilder.setManufacturer("User");
 
-            State defaultState = squareDevice.getDefaultState().deepCopy();
-            defaultState.getHardware().getScreen().setScreenRound(ScreenRound.ROUND);
-            devBuilder.addState(defaultState);
+            State stateCopy = squareDevice.getDefaultState().deepCopy();
+            stateCopy.setName("Test State");
+            stateCopy.setDefaultState(false);
+            stateCopy.getHardware().getScreen().setScreenRound(ScreenRound.ROUND);
+            assertThat(stateCopy.getHardware().getChargeType()).isEqualTo(PowerType.BATTERY);
+            stateCopy.getHardware().setChargeType(PowerType.PLUGGEDIN);
+            devBuilder.addState(stateCopy);
 
             Device roundDevice = devBuilder.build();
             assertThat(roundDevice).isNotNull();
@@ -836,5 +841,7 @@ public class DeviceManagerTest {
         assertThat(testDeviceAfter.isScreenRound()).isTrue();
         assertThat(testDeviceAfter.getBootProps().get(DeviceParser.ROUND_BOOT_PROP))
                 .isEqualTo("true");
+        assertThat(testDeviceAfter.getState("Test State").getHardware().getChargeType())
+                .isEqualTo(PowerType.PLUGGEDIN);
     }
 }

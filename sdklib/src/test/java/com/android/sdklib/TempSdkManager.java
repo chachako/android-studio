@@ -31,6 +31,7 @@ import com.android.resources.ScreenOrientation;
 import com.android.resources.ScreenRatio;
 import com.android.resources.ScreenSize;
 import com.android.resources.TouchScreen;
+import com.android.sdklib.devices.Abi;
 import com.android.sdklib.devices.ButtonType;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.Device.Builder;
@@ -307,6 +308,7 @@ public class TempSdkManager extends ExternalResource {
             hw.setButtonType(ButtonType.SOFT);
             hw.setChargeType(PowerType.BATTERY);
             hw.setCpu(abiType);
+            hw.addSupportedAbi(Abi.getEnum(abiType));
             hw.setGpu("pixelpushing");
             hw.setHasMic(true);
             hw.setKeyboard(Keyboard.QWERTY);
