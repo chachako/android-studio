@@ -583,6 +583,26 @@ maven_import(
 )
 
 maven_artifact(
+    name = "com.google.example.y_1",
+    pom = "repository/com/google/example/y/1/y-1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/example/y/1",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.google.example.y",
+    classifiers = [],
+    jars = [
+    ],
+    original_deps = [],
+    pom = "repository/com/google/example/y/1/y-1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/example/y/1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.example.a_2",
     pom = "repository/com/google/example/a/2/a-2.pom",
     repo_root_path = "repository",

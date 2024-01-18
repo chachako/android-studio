@@ -31,7 +31,7 @@ public class HandleAarDescriptorReaderDelegate extends ArtifactDescriptorReaderD
             RepositorySystemSession session, ArtifactDescriptorResult result, Model model) {
         super.populateResult(session, result, model);
 
-        if (model.getPackaging().equals("pom") &&!result.getArtifact().getClassifier().isEmpty()) {
+        if (model.getPackaging().equals("pom") && !result.getArtifact().getClassifier().isEmpty()) {
             // We consider it OK to have a JAR dependency to an artifact that has packaging=pom as long as the
             // dependency also has a classifier. In this case, we don't need to overwrite the dependency type.
             //
@@ -66,6 +66,18 @@ public class HandleAarDescriptorReaderDelegate extends ArtifactDescriptorReaderD
                 result.setArtifact(
                         new DifferentExtensionArtifact(
                                 getArtifactExtension(model), result.getArtifact()));
+                return;
+            }
+
+            // Packaging type is jar, but the dependency type is pom.
+            if ("jar".equals(getArtifactExtension(model))
+                    && "pom".equals(result.getArtifact().getExtension())) {
+                // The artifact's pom file does not declare itself with packaging=pom, which
+                // defaults to jar packaging type. However, the dependency is declared as "pom"
+                // dependency. This happens with some BOMs (such as "asm-bom") that do not declare
+                // themselves correctly to have pom packaging, and at the same time does not poblish
+                // a jar file either, which causes the artifact resolution to fail.
+                // To fix this, we use the pom type (i.e., do not overwrite it with the jar type).
                 return;
             }
 

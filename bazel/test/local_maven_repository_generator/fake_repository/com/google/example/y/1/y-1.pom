@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.google.example</groupId>
+  <artifactId>y</artifactId>
+  <version>1</version>
+  <!-- This artifact mimics asm-bom:9.6 behavior:
+    1. It should have had: packaging=pom
+    2. But, it does not, so it defaults to packaging=jar
+    3. It does not publish a "jar" file.
+    4. Users depend on it using dependency type "pom".
+    <packaging>pom</packaging>
+  -->
+  <name>Y</name>
+  <description>Y artifact</description>
+
+</project>
