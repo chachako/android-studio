@@ -16,21 +16,20 @@
 
 package com.android.tools.preview.screenshot.tasks
 
-import com.android.tools.render.compose.ComposeScreenshot
-import com.android.tools.render.compose.readComposeScreenshotsJson
+import com.android.tools.render.compose.ComposeScreenshotResult
+import com.android.tools.render.compose.readComposeRenderingResultJson
 import com.android.utils.FileUtils
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.VerificationTask
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 
 /**
  * Update reference images of a variant.
@@ -45,27 +44,25 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask(), VerificationTask {
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val renderTaskOutputDir: DirectoryProperty
 
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val previewFile: RegularFileProperty
 
     @TaskAction
     fun run() {
         //throw exception at the first encountered error
-        val screenshots = readComposeScreenshotsJson(previewFile.get().asFile.reader())
-        for (screenshot in screenshots) {
-            saveReferenceImage(screenshot)
+        val resultFile = renderTaskOutputDir.file("results.json").get().asFile
+        val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
+        val screenshotResults = composeRenderingResult.screenshotResults
+        for (result in composeRenderingResult.screenshotResults) {
+            saveReferenceImage(result)
         }
     }
 
-    private fun saveReferenceImage(composeScreenshot: ComposeScreenshot) {
-        val screenshotName = composeScreenshot.imageName
-        val screenshotNamePng = "$screenshotName.png"
-        val renderedFile = renderTaskOutputDir.asFile.get().toPath().resolve(screenshotName + "_0.png").toFile()
+    private fun saveReferenceImage(composeScreenshot: ComposeScreenshotResult) {
+
+        val renderedFile = File(composeScreenshot.imagePath!!)
         if (!renderedFile.exists()) {
-            throw GradleException("Preview render failed")
+            throw GradleException("Preview render failed $renderedFile")
         }
-        val goldenPath = referenceImageDir.asFile.get().toPath().resolve(screenshotNamePng)
-        FileUtils.copyFile(renderedFile, goldenPath.toFile())
+        val referenceImagePath = referenceImageDir.asFile.get().toPath().resolve("${composeScreenshot.resultId}.png")
+        FileUtils.copyFile(renderedFile, referenceImagePath.toFile())
     }
 }

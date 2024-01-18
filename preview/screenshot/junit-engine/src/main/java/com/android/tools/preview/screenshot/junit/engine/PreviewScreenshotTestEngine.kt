@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package com.android.tools.preview.screenshot.junit.engine
 
 import com.android.tools.render.compose.readComposeScreenshotsJson
+import com.android.tools.render.compose.readComposeRenderingResultJson
 import com.android.tools.render.compose.ComposeScreenshot
+import com.android.tools.render.compose.ComposeScreenshotResult
 import com.android.utils.FileUtils
 import com.android.utils.cxx.os.getEnvironmentPaths
 import java.io.File
@@ -66,7 +68,9 @@ class PreviewScreenshotTestEngine : TestEngine {
     override fun execute(request: ExecutionRequest) {
         val listener = request.engineExecutionListener
         val resultsToSave = mutableListOf<PreviewResult>()
-        val screenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")).reader())
+        val resultFile = File(getParam("renderTaskOutputDirPath")).toPath().resolve("results.json").toFile()
+        val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
+        val screenshotResults = composeRenderingResult.screenshotResults
         for (classDescriptor in request.getRootTestDescriptor().getChildren()) {
             listener.executionStarted(classDescriptor)
             var classTestResult = TestExecutionResult.successful()
@@ -74,17 +78,20 @@ class PreviewScreenshotTestEngine : TestEngine {
                 listener.executionStarted(methodDescriptor)
                 val className: String = (methodDescriptor as TestMethodDescriptor).className
                 val methodName: String = methodDescriptor.methodName
-                val screenshot =
-                    screenshots.find {
-                        it.methodFQN.contains(className) && it.methodFQN.contains(methodName)
+                val screenshots =
+                    screenshotResults.filter {
+                        it.resultId.contains(className) && it.resultId.contains(methodName)
                     }
-                val imageComparison = compareImages(screenshot!!)
-                resultsToSave.add(imageComparison)
-                val testResult = if (imageComparison.responseCode != 0) {
+                for (screenshot in screenshots) {
+                    val imageComparison = compareImages(screenshot!!)
+                    resultsToSave.add(imageComparison)
+                }
+                val failedComparisons = resultsToSave.filter { it.responseCode != 0 }
+                val testResult = if (failedComparisons.size != 0) {
                     val reportUrl = File(File(getParam("reportUrlPath")), "index.html").toURI().toASCIIString()
                     classTestResult =
                         TestExecutionResult.failed(AssertionError("There were failing tests. Creating test report at $reportUrl"))
-                    TestExecutionResult.failed(AssertionError(imageComparison.message))
+                    TestExecutionResult.failed(AssertionError(failedComparisons.first().message))
                 } else {
                     TestExecutionResult.successful()
                 }
@@ -97,14 +104,14 @@ class PreviewScreenshotTestEngine : TestEngine {
         }
     }
 
-    private fun compareImages(composeScreenshot: ComposeScreenshot): PreviewResult {
+    private fun compareImages(composeScreenshot: ComposeScreenshotResult): PreviewResult {
         // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
         val imageDiffer = ImageDiffer.MSSIMMatcher()
-        val screenshotName = composeScreenshot.imageName
+        val screenshotName = composeScreenshot.resultId
         val screenshotNamePng = "$screenshotName.png"
         var referencePath = File(getParam("referenceImageDirPath")).toPath().resolve(screenshotNamePng)
         var referenceMessage: String? = null
-        val actualPath = File(getParam("renderTaskOutputDirPath")).toPath().resolve(screenshotName + "_0.png")
+        val actualPath = File(composeScreenshot.imagePath).toPath()
         var diffPath = File(getParam("diffImageDirPath")).toPath().resolve(screenshotNamePng)
         var diffMessage: String? = null
         var code = 0
@@ -119,7 +126,7 @@ class PreviewScreenshotTestEngine : TestEngine {
             }
 
             return PreviewResult(1,
-                composeScreenshot.methodFQN,
+                composeScreenshot.resultId,
                 "Image render failed",
                 referenceImage = ImageDetails(referencePath, referenceMessage),
                 actualImage = ImageDetails(null, "Image render failed")
@@ -155,7 +162,7 @@ class PreviewScreenshotTestEngine : TestEngine {
                 code = 1
             }
         }
-        return result.toPreviewResponse(code, composeScreenshot.methodFQN,
+        return result.toPreviewResponse(code, composeScreenshot.resultId,
             ImageDetails(referencePath, referenceMessage),
             ImageDetails(actualPath, null),
             ImageDetails(diffPath, diffMessage))

@@ -16,11 +16,16 @@
 
 package com.android.tools.preview.screenshot.tasks
 
+import com.android.tools.render.compose.ComposeRenderingResult
+import com.android.tools.render.compose.ComposeScreenshotResult
+import com.android.tools.render.compose.writeComposeRenderingResult
+import com.google.gson.Gson
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -37,27 +42,25 @@ class PreviewScreenshotUpdateTaskTest {
     }
     @Test
     fun testPreviewScreenshotUpdate() {
-        val previewsFile = tempDirRule.newFile("previews_discovered.json")
-        previewsFile.writeText("""
-            {
-              "screenshots": [{
-                  "methodFQN": "com.example.agptest.ExampleInstrumentedTest.previewThere",
-                  "methodParams": [],
-                  "previewParams": {
-                    "showBackground": "true"
-                  },
-                  "imageName": "com.example.agptest.ExampleInstrumentedTest.previewThere_3d8b4969_da39a3ee"
-                }]
-            }
-        """.trimIndent())
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderTaskOutputDir = tempDirRule.newFolder("rendered")
-        Files.createFile(Paths.get(renderTaskOutputDir.absolutePath).resolve("com.example.agptest.ExampleInstrumentedTest.previewThere_3d8b4969_da39a3ee_0.png"))
+        val resultsFile = File(renderTaskOutputDir, "results.json")
+        val path1 = Paths.get(renderTaskOutputDir.absolutePath).resolve("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0.png")
+        val path2 = Paths.get(renderTaskOutputDir.absolutePath).resolve("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0.png")
+        val path3 = Paths.get(renderTaskOutputDir.absolutePath).resolve("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1.png")
+        val composeResults = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", path1.toString(), null ),
+            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0", path2.toString(), null ),
+            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1", path3.toString(), null ))
+        val result = ComposeRenderingResult(globalError = null, screenshotResults = composeResults)
+        writeComposeRenderingResult(resultsFile.writer(), result)
+        Files.createFile(path1)
+        Files.createFile(path2)
+        Files.createFile(path3)
         task.referenceImageDir.set(referenceImageDir)
-        task.previewFile.set(previewsFile)
         task.renderTaskOutputDir.set(renderTaskOutputDir)
 
         task.run()
         assert(referenceImageDir.listFiles().isNotEmpty())
+        assert(referenceImageDir.listFiles().size == 3)
     }
 }

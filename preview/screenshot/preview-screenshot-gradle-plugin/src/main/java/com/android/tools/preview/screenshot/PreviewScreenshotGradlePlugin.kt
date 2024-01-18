@@ -215,7 +215,6 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         PreviewScreenshotUpdateTask::class.java
                     ) { task ->
                         task.referenceImageDir.set(referenceImageDir)
-                        task.previewFile.set(previewOut)
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
                         task.description = "Update screenshots for the $variantName build."
                         task.group = JavaBasePlugin.VERIFICATION_GROUP
