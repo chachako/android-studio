@@ -50,6 +50,8 @@ KOTLIN_MULTIPLATFORM_TESTS = [
     "src/test/java/com/android/build/gradle/integration/lint/KotlinMultiplatformAndroidLintTest.kt",
 ]
 
+OOM_ERROR_TEST = ["src/test/java/com/android/build/gradle/integration/lint/LintErrorTest.kt"]
+
 # create a bazel target for some long-running tests
 gradle_integration_test(
     name = "long-running-tests",
@@ -82,6 +84,16 @@ gradle_integration_test(
 )
 
 gradle_integration_test(
+    name = "oom-error-test",
+    timeout = "moderate",
+    srcs = OOM_ERROR_TEST,
+    data = DATA,
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = MAVEN_REPOS,
+    deps = DEPS,
+)
+
+gradle_integration_test(
     name = "tests",
     timeout = "long",
     srcs = glob(
@@ -89,7 +101,7 @@ gradle_integration_test(
             "src/test/java/**/*.java",
             "src/test/java/**/*.kt",
         ],
-        exclude = LONG_RUNNING_TESTS + KOTLIN_MULTIPLATFORM_TESTS,
+        exclude = LONG_RUNNING_TESTS + KOTLIN_MULTIPLATFORM_TESTS + OOM_ERROR_TEST,
     ),
     data = DATA + [
         "//tools/base/build-system/integration-test:test-projects/dynamicApp",

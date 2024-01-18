@@ -81,6 +81,8 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
 
     private static Path jvmLogDir;
 
+    private static final Path jvmErrorLog;
+
     static {
         String timeoutOverride = System.getenv("TEST_TIMEOUT");
         if (timeoutOverride != null) {
@@ -94,6 +96,7 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
         }
         try {
             jvmLogDir = Files.createTempDirectory("GRADLE_JVM_LOGS");
+            jvmErrorLog = jvmLogDir.resolve("java_error.log");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -116,6 +119,8 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
     private boolean localPrefsRoot = false;
     private boolean perTestPrefsRoot = false;
     private boolean failOnWarning = true;
+
+    private boolean crashOnOutOfMemory = false;
     private ConfigurationCaching configurationCaching;
 
     BaseGradleExecutor(
@@ -236,6 +241,12 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
         return (T) this;
     }
 
+    /** Forces JVM exit in the event of an OutOfMemoryError, without collecting a heap dump. */
+    public final T crashOnOutOfMemory() {
+        this.crashOnOutOfMemory = true;
+        return (T) this;
+    }
+
     protected final List<String> getArguments() throws IOException {
         List<String> arguments = new ArrayList<>();
         arguments.addAll(this.arguments);
@@ -342,8 +353,12 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
 
         List<String> jvmArguments = new ArrayList<>(this.memoryRequirement.getJvmArgs());
 
-        jvmArguments.add("-XX:+HeapDumpOnOutOfMemoryError");
-        jvmArguments.add("-XX:HeapDumpPath=" + jvmLogDir.resolve("heapdump.hprof").toString());
+        if (crashOnOutOfMemory) {
+            jvmArguments.add("-XX:+CrashOnOutOfMemoryError");
+        } else {
+            jvmArguments.add("-XX:+HeapDumpOnOutOfMemoryError");
+            jvmArguments.add("-XX:HeapDumpPath=" + jvmLogDir.resolve("heapdump.hprof"));
+        }
 
         String debugIntegrationTest = System.getenv("DEBUG_INNER_TEST");
         if (!Strings.isNullOrEmpty(debugIntegrationTest)) {
@@ -359,7 +374,7 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
                     JacocoAgent.getJvmArg(projectLocation.getTestLocation().getBuildDir()));
         }
 
-        jvmArguments.add("-XX:ErrorFile=" + jvmLogDir.resolve("java_error.log").toString());
+        jvmArguments.add("-XX:ErrorFile=" + jvmErrorLog);
         if (CAPTURE_JVM_LOGS) {
             jvmArguments.add("-XX:+UnlockDiagnosticVMOptions");
             jvmArguments.add("-XX:+LogVMOutput");
@@ -385,6 +400,11 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
         } else {
             launcher.setStandardError(stderr);
         }
+    }
+
+    @NonNull
+    public File getJvmErrorLog() {
+        return jvmErrorLog.toFile();
     }
 
     private void printJvmLogs() throws IOException {

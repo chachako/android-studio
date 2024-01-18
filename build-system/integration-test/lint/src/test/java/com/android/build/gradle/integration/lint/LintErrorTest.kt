@@ -19,11 +19,9 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Com
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import org.junit.Assume.assumeFalse
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import java.util.Locale
+import java.util.Scanner
 
 class LintErrorTest {
 
@@ -31,6 +29,9 @@ class LintErrorTest {
     val project =
         builder().fromTestApp(MinimalSubProject.app("com.example.app"))
             .withHeap("100m")
+            // Disable system health checks inside Gradle daemon, we are going for an OOM:
+            // https://docs.gradle.org/current/userguide/gradle_daemon.html#performance_monitoring
+            .addGradleProperties("systemProp.org.gradle.daemon.performance.enable-monitoring=false")
             .create()
 
     /**
@@ -38,10 +39,7 @@ class LintErrorTest {
      * build failure instead of a LintError being added to the lint baseline file.
      */
     @Test
-    @Ignore("b/318511007")
     fun testOutOfMemoryErrorCausesBuildFailureWhenUpdatingLintBaseline() {
-        // Flaky on Windows (b/298483978)
-        assumeFalse(System.getProperty("os.name").lowercase(Locale.US).contains("windows"))
         TestFileUtils.appendToFile(
             project.buildFile,
             """
@@ -52,7 +50,13 @@ class LintErrorTest {
                 }
             """.trimIndent()
         )
-        val result = project.executor().expectFailure().run("updateLintBaseline")
-        ScannerSubject.assertThat(result.stderr).contains("Java heap space")
+        val executor = project.executor()
+        executor
+            .crashOnOutOfMemory() // Avoids hangs such as https://github.com/gradle/gradle/issues/15621
+            .expectFailure()
+            .run("updateLintBaseline")
+
+        ScannerSubject.assertThat(Scanner(executor.jvmErrorLog))
+            .contains("fatal error: OutOfMemory encountered: Java heap space")
     }
 }
