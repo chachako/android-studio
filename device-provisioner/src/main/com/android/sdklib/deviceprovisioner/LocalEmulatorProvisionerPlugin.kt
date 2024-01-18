@@ -358,7 +358,6 @@ class LocalEmulatorProvisionerPlugin(
                 // is guaranteed to become non-null before bootStatus becomes true
                 val connectedDevice = connectedDevice
                 if (connectedDevice != null && !bootStatus && message.bootStatus.isBooted) {
-                  bootStatus = true
                   // Spawn a job to do I/O with the device. Run on device scope so that if the
                   // device disconnects, the job is cancelled.
                   connectedDevice.scope.launch {
@@ -374,6 +373,7 @@ class LocalEmulatorProvisionerPlugin(
               }
               is DevicePropertiesUpdate -> {
                 if (message.connectedDevice == connectedDevice) {
+                  bootStatus = true
                   val newProperties = message.properties.getOrNull()
                   if (newProperties == null) {
                     val e = message.properties.exceptionOrNull()
