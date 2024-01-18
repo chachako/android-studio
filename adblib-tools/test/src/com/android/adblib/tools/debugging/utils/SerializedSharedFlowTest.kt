@@ -17,18 +17,20 @@ package com.android.adblib.tools.debugging.utils
 
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.Assert
 import org.junit.Test
-import java.util.concurrent.atomic.AtomicInteger
 
 class SerializedSharedFlowTest : AdbLibToolsTestBase() {
 
@@ -178,6 +180,112 @@ class SerializedSharedFlowTest : AdbLibToolsTestBase() {
 
         // Assert
         Assert.assertEquals(listOf(5, 6), replayCache)
+    }
+
+    @Test
+    fun testSendIsAtomic(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val flow = MutableSerializedSharedFlowForTesting<ValueToken>(onEmit = {
+            // Add a delay between "emit" and "emit(SKIP)" so that we can reliably
+            // interleave "emitterJob" and "concurrentEmitterJob"
+            delay(200)
+        })
+
+        // Act
+        // Note: The whole point of the test below is to interleave "emit" calls from
+        // two concurrent jobs, so that code emitting and collecting a shared flow
+        // concurrently can make assumptions about the serialization of calls (i.e.
+        // A call to "emit" with a given value is guaranteed to terminate if a "collector"
+        // receives the value emitted)
+        val firstEmittedValue = ValueToken("'first value'")
+        val secondEmittedValue = ValueToken("'second value'")
+        val firstEmittedValueReceived = CompletableDeferred<Unit>()
+        val firstValueEmitted = CompletableDeferred<Unit>()
+
+        // Ensures "second value" is emitted after "first value" *and* collected by the
+        // collector
+        val concurrentEmitterJob = async(Dispatchers.Default) {
+            // Delay a little so that "emitterJob" starts first
+            delay(200)
+
+            // Emit a non-interesting value
+            flow.emit(secondEmittedValue)
+
+            Assert.assertTrue("Value should have been received by collector", secondEmittedValue.wasCollected)
+        }
+
+        // Ensures "first value" is emitted first *and* collected by the collector
+        val emitterJob = async(Dispatchers.Default) {
+            // Delay a little bit to ensure "receiverJob" has started collecting
+            // the shared flow (reminder: "emit" calls do nothing if there is no
+            // active collected on a shared flow).
+            delay(100)
+            while (true) {
+                // Send the value the receiver wants until the receiver
+                // acknowledges it received it
+                flow.emit(firstEmittedValue)
+                Assert.assertTrue("Value should have been received by collector", firstEmittedValue.wasCollected)
+
+                // If the shared flow is working as intended, "expectedValueReceived.isCompleted"
+                // is guaranteed to be true if "receiverJob" observed the value (because the
+                // shared flow "emit" calls are supposed to terminate only when the receivers
+                // are done processing each value).
+                if (firstEmittedValueReceived.isCompleted) {
+                    firstValueEmitted.complete(Unit)
+                    break
+                }
+            }
+        }
+
+        // Collect the share flow: the collector should see "first value" then "second value"
+        // (in that order).
+        val receiverJob = async(Dispatchers.Default) {
+            flow.first { value ->
+                value.wasCollected = true
+                when (value) {
+                    firstEmittedValue -> {
+                        // Tell sender we got the value and keep going
+                        firstEmittedValueReceived.complete(Unit)
+                        false
+                    }
+                    secondEmittedValue -> {
+                        // Wait for sender `emit` call to terminate and complete the deferred.
+                        // If the `emit` call was not atomic, the sender could be "stuck" in
+                        // its `emit` call and this wait would never terminate.
+                        firstValueEmitted.await()
+                        true
+                    }
+                    else -> {
+                        Assert.fail("Unexpected value '$value' received from shared flow")
+                        false
+                    }
+                }
+            }
+        }
+
+        // Assert
+        withTimeoutOrNull(5_000) {
+            // Note: Using "await" ensures all jobs terminate, but also any
+            // assertion failure/exception/cancellation is rethrown and reported as a test failure.
+            awaitAll(emitterJob, receiverJob, concurrentEmitterJob)
+        } ?: run {
+            val message =  listOf(
+                "All jobs did not terminate within a reasonable time, meaning ",
+                "there is probably a deadlock exercised by this test code.\n",
+                "  concurrentEmitterJob.isCompleted=${concurrentEmitterJob.isCompleted}\n",
+                "  receiverJob.isCompleted=${receiverJob.isCompleted}\n",
+                "  emitterJob.isCompleted=${emitterJob.isCompleted}\n"
+            ).joinToString("")
+            Assert.fail(message)
+        }
+    }
+
+    class ValueToken(val text: String) {
+        var wasCollected: Boolean = false
+
+        override fun toString(): String {
+            return "ValueToken(text=$text, wasCollected=$wasCollected)"
+        }
     }
 
     private class MixedIntWrapper(val value: Int, val mutableInt: MutableIntWrapper)

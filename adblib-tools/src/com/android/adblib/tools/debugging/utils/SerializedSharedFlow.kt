@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -101,10 +103,25 @@ internal fun <T> MutableSerializedSharedFlow(replay: Int = 0): MutableSerialized
 }
 
 /**
+ * Creates a [MutableSerializedSharedFlow] given the maximum number of [replay] packets, calling
+ * [onEmit] during each [MutableSerializedSharedFlow.emit] invocation.
+ *
+ * **Note: This class and the [onEmit] callback use are intended for testing purpose only.
+ * Use [MutableSerializedSharedFlow] in production code.**
+ */
+internal fun <T> MutableSerializedSharedFlowForTesting(
+    replay: Int = 0,
+    onEmit: (suspend (T) -> Unit)? = null
+): MutableSerializedSharedFlow<T> {
+    return MutableSerializedSharedFlowImpl(replay, onEmit)
+}
+
+/**
  * Implementation of [MutableSerializedSharedFlow]
  */
 private class MutableSerializedSharedFlowImpl<T>(
-    replay: Int
+    replay: Int,
+    private val onEmit: (suspend (T) -> Unit)? = null
 ) : MutableSerializedSharedFlow<T>, AutoCloseable {
 
     /**
@@ -124,6 +141,11 @@ private class MutableSerializedSharedFlowImpl<T>(
      * `'value:T'` emitted to this flow.
      */
     private val sharedFlow = MutableSharedFlow<Any?>(replay = replay * 2)
+
+    /**
+     * [Mutex] to ensure [emit] is atomic
+     */
+    private val emitMutex = Mutex()
 
     override val replayCache: List<T>
         get() {
@@ -166,18 +188,18 @@ private class MutableSerializedSharedFlowImpl<T>(
     override suspend fun emit(value: T) {
         cancelIfClosed()
 
-        // We emit the value, then the "SKIP" constant to ensure all collectors are
-        // done processing the value before returning from this "emit" call
-        // See https://github.com/Kotlin/kotlinx.coroutines/issues/2603#issuecomment-808859170
-        //
-        // Note on thread-safety: If 2 threads calls this method concurrently with respectively
-        // [value1] and [value2], the order of packets may not be [value1, skip, value2, skip],
-        // but something like [value2, value1, skip, skip].
-        // Even though this is non-deterministic, it stills guarantee that no thread will exit
-        // this method before their respective value ([value1] or [value2]) has been receive and processed
-        // by all receivers.
-        sharedFlow.emit(value)
-        sharedFlow.emit(SKIP)
+        emitMutex.withLock {
+            // We emit the value, then the "SKIP" constant to ensure all collectors are
+            // done processing the value before returning from this "emit" call
+            // See https://github.com/Kotlin/kotlinx.coroutines/issues/2603#issuecomment-808859170
+            //
+            // Note on thread-safety: We need to prevent 2 concurrent threads from emitting
+            // concurrently, so that each [emit] operation ends only when the [SKIP] value
+            // has been received by the collector(s).
+            sharedFlow.emit(value)
+            onEmit?.invoke(value)
+            sharedFlow.emit(SKIP)
+        }
     }
 
     override fun close() {
