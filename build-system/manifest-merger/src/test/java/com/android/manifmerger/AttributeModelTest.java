@@ -73,6 +73,17 @@ public class AttributeModelTest extends TestCase {
         assertTrue(booleanValidator.validates(mMergingReport, mXmlAttribute, "TRUE"));
         assertTrue(booleanValidator.validates(mMergingReport, mXmlAttribute, "False"));
         assertTrue(booleanValidator.validates(mMergingReport, mXmlAttribute, "True"));
+        assertTrue(booleanValidator.validates(mMergingReport, mXmlAttribute, "@bool/abc"));
+        assertTrue(booleanValidator.validates(mMergingReport, mXmlAttribute, "?bool/abc"));
+        assertTrue(booleanValidator.validates(mMergingReport, mXmlAttribute, "@android:bool/abc"));
+        assertTrue(booleanValidator.validates(mMergingReport, mXmlAttribute, "?android:bool/abc"));
+        assertTrue(
+                booleanValidator.validates(mMergingReport, mXmlAttribute, "@com.example:bool/abc"));
+        assertTrue(
+                booleanValidator.validates(mMergingReport, mXmlAttribute, "?com.example:bool/abc"));
+        assertFalse(booleanValidator.validates(mMergingReport, mXmlAttribute, "@:bool/abc"));
+        assertFalse(booleanValidator.validates(mMergingReport, mXmlAttribute, "@bool/"));
+        assertFalse(booleanValidator.validates(mMergingReport, mXmlAttribute, "bool/"));
 
         assertFalse(booleanValidator.validates(mMergingReport, mXmlAttribute, "foo"));
         verify(mMergingReport)
@@ -81,22 +92,6 @@ public class AttributeModelTest extends TestCase {
                         MergingReport.Record.Severity.ERROR,
                         "Attribute Id at Position has an illegal value=(foo), "
                                 + "expected 'true' or 'false'");
-    }
-
-    public void testMultiValuesValidator() {
-        AttributeModel.MultiValueValidator multiValueValidator =
-                new AttributeModel.MultiValueValidator("foo", "bar", "doh !");
-        assertTrue(multiValueValidator.validates(mMergingReport, mXmlAttribute, "foo"));
-        assertTrue(multiValueValidator.validates(mMergingReport, mXmlAttribute, "bar"));
-        assertTrue(multiValueValidator.validates(mMergingReport, mXmlAttribute, "doh !"));
-
-        assertFalse(multiValueValidator.validates(mMergingReport, mXmlAttribute, "oh no !"));
-        verify(mMergingReport)
-                .addMessage(
-                        mXmlAttribute,
-                        MergingReport.Record.Severity.ERROR,
-                        "Invalid value for attribute Id at Position, value=(oh no !), "
-                                + "acceptable values are (foo,bar,doh !)");
     }
 
     public void testSeparatedValuesValidator() {
@@ -125,6 +120,19 @@ public class AttributeModelTest extends TestCase {
     public void testIntegerValueValidator() {
         AttributeModel.IntegerValueValidator integerValueValidator =
                 new AttributeModel.IntegerValueValidator();
+        assertTrue(integerValueValidator.validates(mMergingReport, mXmlAttribute, "@integer/abc"));
+        assertTrue(integerValueValidator.validates(mMergingReport, mXmlAttribute, "?integer/abc"));
+        assertTrue(
+                integerValueValidator.validates(
+                        mMergingReport, mXmlAttribute, "@android:integer/abc"));
+        assertTrue(
+                integerValueValidator.validates(
+                        mMergingReport, mXmlAttribute, "@com.example:integer/abc"));
+        assertFalse(
+                integerValueValidator.validates(mMergingReport, mXmlAttribute, "@:integer/abc"));
+        assertFalse(integerValueValidator.validates(mMergingReport, mXmlAttribute, "@:integer/"));
+        assertFalse(integerValueValidator.validates(mMergingReport, mXmlAttribute, "@int/abc"));
+
         assertFalse(integerValueValidator.validates(mMergingReport, mXmlAttribute, "abcd"));
         assertFalse(
                 integerValueValidator.validates(
