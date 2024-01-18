@@ -43,6 +43,21 @@ message InstallableApk {
         // If true, install APKs as test service
         // Install as test service will need some additional flags depending on API level
         bool install_as_test_service = 4;
+
+        // Options to run AOT compile forcibly after installation before running the app.
+        // See https://source.android.com/docs/core/runtime/jit-compiler#force-compilation-of-a-specific-package
+        enum ForceCompilation {
+            // No force compilation.
+            NO_FORCE_COMPILATION = 0;
+            // adb shell cmd package compile -m speed-profile -f $my_package_name
+            PROFILE_BASED_COMPILATION = 1;
+            // adb shell cmd package compile -m speed -f $my_package_name
+            FULL_COMPILATION = 2;
+        }
+
+        // Runs AOT compilation soon after the APK is installed.
+        // This option is ignored when a device's API level is lower than 24.
+        ForceCompilation force_compilation = 5;
     }
 
     // The APK package manager install options to be used to install the APK.

@@ -20,6 +20,9 @@ package com.android.tools.utp.plugins.host.apkinstaller
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.AndroidApkInstallerConfig
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk.InstallOption
+import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk.InstallOption.ForceCompilation
+import com.google.testing.platform.api.config.androidSdk
+import com.google.testing.platform.api.config.environment
 import com.google.testing.platform.api.config.parseConfig
 import com.google.testing.platform.api.config.setup
 import com.google.testing.platform.api.context.Context
@@ -30,6 +33,10 @@ import com.google.testing.platform.api.plugin.HostPlugin
 import com.google.testing.platform.core.error.ErrorType
 import com.google.testing.platform.core.error.UtpException
 import com.google.testing.platform.lib.logging.jvm.getLogger
+import com.google.testing.platform.lib.process.inject.DaggerSubprocessComponent
+import com.google.testing.platform.lib.process.inject.SubprocessComponent
+import com.google.testing.platform.lib.process.logger.DefaultSubprocessLogger
+import com.google.testing.platform.lib.process.logger.SubprocessLogger
 import com.google.testing.platform.proto.api.core.TestArtifactProto.Artifact
 import com.google.testing.platform.proto.api.core.TestCaseProto
 import com.google.testing.platform.proto.api.core.TestResultProto.TestResult
@@ -43,7 +50,19 @@ import java.util.logging.Logger
  * This plugin handles test APKs installation for all instrumented tests.
  * It uninstalls them after test finishes.
  */
-class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : HostPlugin {
+class AndroidTestApkInstallerPlugin(
+    private val logger: Logger = getLogger(),
+    private val subprocessComponentFactory: (Context) -> SubprocessComponent = {
+        val subprocessLoggerFactory = object: SubprocessLogger.Factory {
+            override fun create() = DefaultSubprocessLogger(
+                it.config.environment.outputDirectory,
+                flushEagerly = true)
+        }
+        DaggerSubprocessComponent.builder()
+            .subprocessLoggerFactory(subprocessLoggerFactory)
+            .build()
+    }
+) : HostPlugin {
 
     companion object {
         /**
@@ -64,11 +83,16 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
             override val errorType: Enum<*> = ErrorType.TEST
             override val namespace: String = "AndroidTestApkInstallerPlugin"
         }
+
+        private val packageNameRegex = "package:\\sname='(\\S*)'.*$".toRegex()
     }
 
     private lateinit var pluginConfig: AndroidApkInstallerConfig
     private lateinit var installables: Set<Artifact>
     private var userId: String? = null
+
+    private lateinit var subprocessComponent: SubprocessComponent
+    private lateinit var aaptPath: String
 
     /**
      * Returns minimum API level given install options
@@ -123,13 +147,30 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
         return installCmd
     }
 
+    /**
+     * Returns the package name of the given APK file. Returns null if it fails
+     * to resolve package name.
+     */
+    private fun getPackageNameFromApk(apkPath: String): String? {
+        var packageName: String? = null
+        subprocessComponent.subprocess().executeAsync(
+                args = listOf(aaptPath, "dump", "badging", apkPath),
+                stdoutProcessor = {
+                    if (packageNameRegex.matches(it)) {
+                        packageName = packageNameRegex.find(it)?.groupValues?.get(1)
+                    }
+                }
+        ).waitFor()
+        return packageName
+    }
+
     override fun configure(context: Context) {
         val config = context.config
         this.pluginConfig = config.parseConfig() ?: AndroidApkInstallerConfig.getDefaultInstance()
         installables = config.setup.installables
-        if (installables.isEmpty()) {
-            logger.info("No installables found in test fixture. Nothing to install.")
-        }
+
+        subprocessComponent = subprocessComponentFactory(context)
+        aaptPath = config.androidSdk.aaptPath
     }
 
     private fun apkInstallErrorMessage(
@@ -236,6 +277,47 @@ class AndroidTestApkInstallerPlugin(private val logger: Logger = getLogger()) : 
                                 result.output
                             )
                         )
+                    }
+                }
+            }
+
+            if (deviceApiLevel >= 24 &&
+                !installableApk.apkPathsList.isEmpty() &&
+                installableApk.installOptions.forceCompilation != ForceCompilation.NO_FORCE_COMPILATION) {
+                val packageName = getPackageNameFromApk(installableApk.apkPathsList.first())
+                if (packageName == null) {
+                    logger.warning(
+                        "Failed to resolve package name for ${installableApk.apkPathsList.first()}")
+                } else {
+                    when (installableApk.installOptions.forceCompilation) {
+                        ForceCompilation.FULL_COMPILATION -> {
+                            deviceController.execute(
+                                listOf("shell",
+                                       "cmd",
+                                       "package",
+                                       "compile",
+                                       "-m",
+                                       "speed",
+                                       "-f",
+                                       packageName))
+                        }
+
+                        ForceCompilation.PROFILE_BASED_COMPILATION -> {
+                            deviceController.execute(
+                                listOf("shell",
+                                       "cmd",
+                                       "package",
+                                       "compile",
+                                       "-m",
+                                       "speed-profile",
+                                       "-f",
+                                       packageName))
+                        }
+
+                        else -> {
+                            logger.warning("Unknown force compilation option is specified: " +
+                                    "${installableApk.installOptions.forceCompilation}")
+                        }
                     }
                 }
             }

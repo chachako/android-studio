@@ -17,8 +17,11 @@
 package com.android.tools.utp.plugins.host.apkinstaller
 
 import com.android.testutils.MockitoKt.any
+import com.android.testutils.MockitoKt.argThat
 import com.android.testutils.MockitoKt.eq
+import com.android.testutils.MockitoKt.mock
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.AndroidApkInstallerConfig
+import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk.InstallOption.ForceCompilation
 import com.google.common.truth.Truth
 import com.google.protobuf.Any
 import com.google.testing.platform.api.config.ConfigBase
@@ -28,6 +31,8 @@ import com.google.testing.platform.api.device.DeviceController
 import com.google.testing.platform.api.error.ErrorSummary
 import com.google.testing.platform.core.error.ErrorType
 import com.google.testing.platform.core.error.UtpException
+import com.google.testing.platform.lib.process.Handle
+import com.google.testing.platform.lib.process.inject.SubprocessComponent
 import com.google.testing.platform.proto.api.config.AndroidSdkProto
 import com.google.testing.platform.proto.api.config.FixtureProto.TestFixture
 import com.google.testing.platform.proto.api.config.FixtureProto.TestFixtureId
@@ -49,6 +54,7 @@ import org.junit.runners.JUnit4
 import org.mockito.Answers
 import org.mockito.Mock
 import org.mockito.Mockito.anyList
+import org.mockito.Mockito.anyMap
 import org.mockito.Mockito.inOrder
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
@@ -73,6 +79,9 @@ class AndroidTestApkInstallerPluginTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private lateinit var mockDeviceController: DeviceController
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private lateinit var mockSubprocessComponent: SubprocessComponent
 
     @Mock
     private lateinit var mockLogger: Logger
@@ -143,7 +152,7 @@ class AndroidTestApkInstallerPluginTest {
     private fun createPlugin(
             config: AndroidApkInstallerConfig,
             installablePath: List<String>? = null): AndroidTestApkInstallerPlugin {
-        return AndroidTestApkInstallerPlugin(mockLogger).apply {
+        return AndroidTestApkInstallerPlugin(mockLogger) { mockSubprocessComponent }.apply {
             configure(object : Context {
                 override fun get(key: String) =
                     when (key) {
@@ -163,12 +172,6 @@ class AndroidTestApkInstallerPluginTest {
     }
 
     @Test
-    fun configureWithNoInstallable() {
-        createPlugin(AndroidApkInstallerConfig.getDefaultInstance())
-        verify(mockLogger).info("No installables found in test fixture. Nothing to install.")
-    }
-
-    @Test
     fun emptyAPKInstallListTest() {
         createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
             clearApksToInstall()
@@ -177,7 +180,6 @@ class AndroidTestApkInstallerPluginTest {
             beforeEach(TestCase.getDefaultInstance(), mockDeviceController)
             afterEach(TestResult.getDefaultInstance(), mockDeviceController, false)
         }
-        verify(mockLogger).info("No installables found in test fixture. Nothing to install.")
         verify(mockDeviceController, never()).execute(anyList(), any(Duration::class.java))
         verify(mockDeviceController, times(3)).getDevice()
     }
@@ -614,5 +616,57 @@ class AndroidTestApkInstallerPluginTest {
     @Test
     fun canRun_IsTrue() {
         Truth.assertThat(androidTestApkInstallerPlugin.canRun()).isTrue()
+    }
+
+    @Test
+    fun installWithForceCompilationOption() {
+        `when`(mockDeviceController.execute(anyList(), eq(null))).thenReturn(CommandResult(0, listOf()))
+        `when`(mockDeviceController.execute(eq(listOf("shell", "am", "get-current-user")), eq(null)))
+                .thenReturn(CommandResult(0, listOf(mockUserId)))
+        `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
+        mockDeviceProperties =
+                AndroidDeviceProperties(mapOf(DEVICE_API_LEVEL to "30"))
+        `when`(mockDeviceController.getDevice().properties).thenReturn(mockDeviceProperties)
+        `when`(mockSubprocessComponent.subprocess().executeAsync(
+            anyList(), anyMap(), argThat { true }, argThat { true })).then {
+            it.getArgument<(String) -> Unit>(2)("package: name='com.example.myapplication' " +
+                "versionCode='1' versionName='1.0' platformBuildVersionName='14' " +
+                "platformBuildVersionCode='34' compileSdkVersion='34' " +
+                "compileSdkVersionCodename='14'")
+            mock<Handle>()
+        }
+
+        createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
+            addApksToInstallBuilder().apply {
+                addAllApkPaths(testApkPaths)
+                installOptionsBuilder.apply {
+                    addAllCommandLineParameter(additionalInstallOptions)
+                    forceCompilation = ForceCompilation.FULL_COMPILATION
+                }.build()
+            }.build()
+        }.build()).apply {
+            beforeAll(mockDeviceController)
+        }
+
+        verify(mockLogger).info("Installing $testApkPaths on device $mockDeviceSerial.")
+        verify(mockDeviceController, times(5)).getDevice()
+        testApkPaths.forEach {
+            verify(mockDeviceController).execute(
+                listOf(INSTALL_MULTIPLE_CMD, "-t", "--user", mockUserId) +
+                    additionalInstallOptions + it,
+                null)
+        }
+
+        `verify`(mockSubprocessComponent.subprocess()).executeAsync(
+            eq(listOf("/Android/Sdk/aapt", "dump", "badging", "base.apk")),
+            anyMap(),
+            any(),
+            eq(null),
+        )
+
+        verify(mockDeviceController).execute(
+            listOf("shell", "cmd", "package", "compile",
+                "-m", "speed", "-f", "com.example.myapplication"),
+            null)
     }
 }
