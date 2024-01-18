@@ -312,9 +312,9 @@ open class ControlFlowGraph<T : Any> private constructor() {
           node.exceptions.asSequence()
         else node.successors.asSequence() + node.exceptions.asSequence()
 
-      return successors.fold(status) { result, edge ->
+      return successors.fold(domain.id) { result, edge ->
         domain
-          .merge(
+          .join(
             visit(
               edge.to,
               status,
@@ -328,7 +328,7 @@ open class ControlFlowGraph<T : Any> private constructor() {
       }
     }
 
-    return visit(request.startNode, domain.initial, persistentListOf(), seenException = false)
+    return visit(request.startNode, domain.id, persistentListOf(), seenException = false)
   }
 
   /** Configuration for a DFS search */
@@ -415,14 +415,11 @@ open class ControlFlowGraph<T : Any> private constructor() {
   }
 
   data class Domain<C>(
-    /** Identity element of [merge], i.e. forall x, merge(x, initial) = merge(initial, x) = x */
-    val initial: C,
+    /** Identity element of [join], i.e. forall x, join(x, initial) = join(initial, x) = x */
+    val id: C,
 
-    /**
-     * How to merge values of [C] when combining results from visiting a branch with the result from
-     * [visitNode].
-     */
-    val merge: (C, C) -> C,
+    /** How to merge values of [C] when combining results from multiple branches */
+    val join: (C, C) -> C,
   )
 
   /**
