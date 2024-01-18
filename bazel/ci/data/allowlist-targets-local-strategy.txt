@@ -1,4 +1,5 @@
 //tools/base/bazel:iml_to_build_consistency_test
+//tools/base/repository:find_workspace
 //tools/base/repository:generic-2
 //tools/base/repository:repo-common-1
 //tools/base/repository:repo-common-2
