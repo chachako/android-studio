@@ -44,9 +44,9 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
  * Checks for problems with wakelocks (such as failing to release them) which can lead to
  * unnecessary battery usage.
  */
-private typealias Node = ControlFlowGraph<UElement>.Node
+private typealias Node = ControlFlowGraph.Node<UElement>
 
-private typealias Edge = ControlFlowGraph<UElement>.Edge
+private typealias Edge = ControlFlowGraph.Edge<UElement>
 
 class WakelockDetector : Detector(), ClassScanner, SourceCodeScanner {
   companion object {
@@ -377,11 +377,7 @@ class WakelockDetector : Detector(), ClassScanner, SourceCodeScanner {
     return graph.dfs(
       ControlFlowGraph.IntBitsDomain,
       object : ControlFlowGraph.DfsRequest<UElement, Int>(startNode) {
-        override fun visitNode(
-          node: ControlFlowGraph<UElement>.Node,
-          path: List<ControlFlowGraph<UElement>.Edge>,
-          status: Int,
-        ): Int {
+        override fun visitNode(node: Node, path: List<Edge>, status: Int): Int {
           return if (node.isExit()) {
             exitPaths.add(path)
             SEEN_EXIT or (if (path.any { it.isException }) SEEN_EXCEPTION else 0)
@@ -390,11 +386,7 @@ class WakelockDetector : Detector(), ClassScanner, SourceCodeScanner {
           }
         }
 
-        override fun prune(
-          node: ControlFlowGraph<UElement>.Node,
-          path: List<ControlFlowGraph<UElement>.Edge>,
-          status: Int,
-        ): Boolean {
+        override fun prune(node: Node, path: List<Edge>, status: Int): Boolean {
           val instruction = node.instruction
           return if (instruction is UCallExpression && instruction.isReleaseCall()) {
             releaseNodes.add(node)

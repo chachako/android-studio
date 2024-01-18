@@ -707,15 +707,15 @@ class ControlFlowGraphTest {
         // Test the DFS methods to print out all exit paths here -- both with and
         // without followExceptionalFlow enabled.
         fun checkPaths(expected: String, followExceptionalFlow: Boolean) {
-          val matches = mutableListOf<List<ControlFlowGraph<UElement>.Edge>>()
+          val matches = mutableListOf<List<ControlFlowGraph.Edge<UElement>>>()
 
           val startNode = graph.getNode(start)!!
           graph.dfs(
             ControlFlowGraph.UnitDomain,
             object : ControlFlowGraph.DfsRequest<UElement, Unit>(startNode) {
               override fun visitNode(
-                node: ControlFlowGraph<UElement>.Node,
-                path: List<ControlFlowGraph<UElement>.Edge>,
+                node: ControlFlowGraph.Node<UElement>,
+                path: List<ControlFlowGraph.Edge<UElement>>,
                 status: Unit,
               ) {
                 if (node.isExit()) matches.add(path)
@@ -724,7 +724,7 @@ class ControlFlowGraphTest {
 
               override val followExceptionalFlow: Boolean = followExceptionalFlow
 
-              override fun consumesException(edge: ControlFlowGraph<UElement>.Edge): Boolean {
+              override fun consumesException(edge: ControlFlowGraph.Edge<UElement>): Boolean {
                 val instruction = edge.to.instruction
                 val parent = instruction.uastParent
                 return parent is UTryExpression && parent.catchClauses.any { it == instruction }
@@ -3553,7 +3553,7 @@ class ControlFlowGraphTest {
     expected: String,
     printGraph:
       (
-        JavaContext, ControlFlowGraph<UElement>, UMethod, List<ControlFlowGraph<UElement>.Node>,
+        JavaContext, ControlFlowGraph<UElement>, UMethod, List<ControlFlowGraph.Node<UElement>>,
       ) -> String? =
       { _, _, _, _ ->
         null
@@ -3589,12 +3589,12 @@ class ControlFlowGraphTest {
       return method ?: error("Couldn't find method $methodName in ${testFile.contents}")
     }
 
-    val renderNode: (ControlFlowGraph<UElement>.Node) -> String = { node ->
+    val renderNode: (ControlFlowGraph.Node<UElement>) -> String = { node ->
       if (node.isExit()) "exit"
       else ("${node.typeString()}\n${node.sourceString().trimMiddle(30)}").trim()
     }
     val renderEdge:
-      (ControlFlowGraph<UElement>.Node, ControlFlowGraph<UElement>.Edge, Int) -> String =
+      (ControlFlowGraph.Node<UElement>, ControlFlowGraph.Edge<UElement>, Int) -> String =
       { from, edge, index ->
         if (edge.label != null) {
           edge.label!!
@@ -3712,15 +3712,15 @@ class ControlFlowGraphTest {
     targetNode: (UElement) -> Boolean,
     expected: String,
   ) {
-    var foundPath: List<ControlFlowGraph<UElement>.Edge> = emptyList()
+    var foundPath: List<ControlFlowGraph.Edge<UElement>> = emptyList()
 
     val startNode = graph.getNode(start)!!
     graph.dfs(
       ControlFlowGraph.BoolDomain,
       object : ControlFlowGraph.DfsRequest<UElement, Boolean>(startNode) {
         override fun visitNode(
-          node: ControlFlowGraph<UElement>.Node,
-          path: List<ControlFlowGraph<UElement>.Edge>,
+          node: ControlFlowGraph.Node<UElement>,
+          path: List<ControlFlowGraph.Edge<UElement>>,
           status: Boolean,
         ): Boolean {
           val instruction = node.instruction
@@ -3741,18 +3741,18 @@ class ControlFlowGraphTest {
   private fun getClusters(
     graph: ControlFlowGraph<UElement>,
     method: UMethod,
-  ): List<Pair<ControlFlowGraph<UElement>.Node, List<ControlFlowGraph<UElement>.Node>>> {
+  ): List<Pair<ControlFlowGraph.Node<UElement>, List<ControlFlowGraph.Node<UElement>>>> {
     val entryPoints = graph.getEntryPoints()
     val clusters =
-      mutableListOf<Pair<ControlFlowGraph<UElement>.Node, List<ControlFlowGraph<UElement>.Node>>>()
+      mutableListOf<Pair<ControlFlowGraph.Node<UElement>, List<ControlFlowGraph.Node<UElement>>>>()
     for (entry in entryPoints) {
-      val reaches = mutableListOf<ControlFlowGraph<UElement>.Node>()
+      val reaches = mutableListOf<ControlFlowGraph.Node<UElement>>()
       graph.dfs(
         ControlFlowGraph.UnitDomain,
         object : ControlFlowGraph.DfsRequest<UElement, Unit>(entry) {
           override fun visitNode(
-            node: ControlFlowGraph<UElement>.Node,
-            path: List<ControlFlowGraph<UElement>.Edge>,
+            node: ControlFlowGraph.Node<UElement>,
+            path: List<ControlFlowGraph.Edge<UElement>>,
             status: Unit,
           ) {
             reaches.add(node)
@@ -3773,19 +3773,19 @@ class ControlFlowGraphTest {
    */
   private fun getInstructionOrder(
     graph: ControlFlowGraph<UElement>,
-    nodes: List<ControlFlowGraph<UElement>.Node>,
-    start: ControlFlowGraph<UElement>.Node,
+    nodes: List<ControlFlowGraph.Node<UElement>>,
+    start: ControlFlowGraph.Node<UElement>,
     method: UMethod,
     dfsOrder: Boolean,
-  ): List<ControlFlowGraph<UElement>.Node> {
+  ): List<ControlFlowGraph.Node<UElement>> {
     if (dfsOrder) {
-      fun dfs(startNode: ControlFlowGraph<UElement>.Node): List<ControlFlowGraph<UElement>.Node> {
-        val visited = mutableSetOf<ControlFlowGraph<UElement>.Node>()
-        val result = mutableListOf<ControlFlowGraph<UElement>.Node>()
+      fun dfs(startNode: ControlFlowGraph.Node<UElement>): List<ControlFlowGraph.Node<UElement>> {
+        val visited = mutableSetOf<ControlFlowGraph.Node<UElement>>()
+        val result = mutableListOf<ControlFlowGraph.Node<UElement>>()
 
         fun dfs(
-          node: ControlFlowGraph<UElement>.Node,
-          visited: MutableSet<ControlFlowGraph<UElement>.Node>,
+          node: ControlFlowGraph.Node<UElement>,
+          visited: MutableSet<ControlFlowGraph.Node<UElement>>,
         ) {
           if (!visited.add(node)) {
             return
@@ -3807,10 +3807,10 @@ class ControlFlowGraphTest {
 
     // Assign the id's in source order
     var next = 0
-    val nodeOrder = LinkedHashMap<ControlFlowGraph<UElement>.Node, Int>()
-    val sourceOffsets = LinkedHashMap<ControlFlowGraph<UElement>.Node, Segment>()
+    val nodeOrder = LinkedHashMap<ControlFlowGraph.Node<UElement>, Int>()
+    val sourceOffsets = LinkedHashMap<ControlFlowGraph.Node<UElement>, Segment>()
 
-    val nodeMap = mutableMapOf<UElement, ControlFlowGraph<UElement>.Node>()
+    val nodeMap = mutableMapOf<UElement, ControlFlowGraph.Node<UElement>>()
     for (node in nodes) {
       nodeMap[node.instruction] = node
     }
@@ -3852,8 +3852,8 @@ class ControlFlowGraphTest {
     /** Are these two nodes fully on the same source code line? */
     val source = method.sourcePsi!!.containingFile.text
     fun sameLine(
-      o1: ControlFlowGraph<UElement>.Node,
-      o2: ControlFlowGraph<UElement>.Node,
+      o1: ControlFlowGraph.Node<UElement>,
+      o2: ControlFlowGraph.Node<UElement>,
     ): Boolean {
       val source1 = sourceOffsets[o1]
       val source2 = sourceOffsets[o2]
@@ -3870,13 +3870,13 @@ class ControlFlowGraphTest {
       return false
     }
 
-    val instructionOrder: MutableList<ControlFlowGraph<UElement>.Node> = nodes.toMutableList()
+    val instructionOrder: MutableList<ControlFlowGraph.Node<UElement>> = nodes.toMutableList()
     Collections.sort(
       instructionOrder,
-      object : Comparator<ControlFlowGraph<UElement>.Node> {
+      object : Comparator<ControlFlowGraph.Node<UElement>> {
         override fun compare(
-          o1: ControlFlowGraph<UElement>.Node,
-          o2: ControlFlowGraph<UElement>.Node,
+          o1: ControlFlowGraph.Node<UElement>,
+          o2: ControlFlowGraph.Node<UElement>,
         ): Int {
           val segment1 = sourceOffsets[o1]
           val segment2 = sourceOffsets[o2]
@@ -3932,8 +3932,8 @@ fun <T : Any> ControlFlowGraph<T>.show(
   // Can use "sfdp", "neato", "circo", "osage", "patchwork", "twopi", etc here to
   // use different graphviz algorithms.
   algorithm: String = "dot",
-  renderNode: (ControlFlowGraph<T>.Node) -> String = { node -> node.instruction.toString() },
-  renderEdge: (ControlFlowGraph<T>.Node, ControlFlowGraph<T>.Edge, Int) -> String =
+  renderNode: (ControlFlowGraph.Node<T>) -> String = { node -> node.instruction.toString() },
+  renderEdge: (ControlFlowGraph.Node<T>, ControlFlowGraph.Edge<T>, Int) -> String =
     { _, edge, index ->
       edge.label ?: "s${index}"
     },
@@ -3968,7 +3968,7 @@ fun <T : Any> ControlFlowGraph<T>.show(
 }
 
 /** Creates the type string for a control graph node. */
-fun ControlFlowGraph<UElement>.Node.typeString(): String {
+fun ControlFlowGraph.Node<UElement>.typeString(): String {
   val node = this
   val element = node.instruction
 
@@ -4047,7 +4047,7 @@ fun ControlFlowGraph<UElement>.Node.typeString(): String {
 }
 
 /** Produce a source snippet for a given control flow graph node */
-fun ControlFlowGraph<UElement>.Node.sourceString(): String {
+fun ControlFlowGraph.Node<UElement>.sourceString(): String {
   return if (!this.isExit()) {
     val sourcePsi = instruction.sourcePsi
     val text =
@@ -4092,19 +4092,19 @@ fun ControlFlowGraph<UElement>.Node.sourceString(): String {
  */
 fun <T : Any> ControlFlowGraph<T>.prettyPrintGraph(
   start: T,
-  nodeTypeString: (ControlFlowGraph<T>.Node) -> String,
-  sourceString: (ControlFlowGraph<T>.Node) -> String?,
-  nodes: List<ControlFlowGraph<T>.Node> = getAllNodes().toList(),
-  filter: (ControlFlowGraph<T>.Node) -> Boolean = { true },
+  nodeTypeString: (ControlFlowGraph.Node<T>) -> String,
+  sourceString: (ControlFlowGraph.Node<T>) -> String?,
+  nodes: List<ControlFlowGraph.Node<T>> = getAllNodes().toList(),
+  filter: (ControlFlowGraph.Node<T>) -> Boolean = { true },
 ): String {
   val sb = StringBuilder()
-  val ids = LinkedHashMap<ControlFlowGraph<T>.Node, String>()
+  val ids = LinkedHashMap<ControlFlowGraph.Node<T>, String>()
 
   // Assign id's in source visit order
   var nextId = 1
   val width = floor(log10(nodes.size.toDouble()) + 1).toInt()
 
-  fun assignId(graphNode: ControlFlowGraph<T>.Node?) {
+  fun assignId(graphNode: ControlFlowGraph.Node<T>?) {
     graphNode ?: return
     val id = if (graphNode.isExit()) nodes.size else nextId++
     ids[graphNode] = String.format(Locale.US, "N%0${width}d", id)
@@ -4123,10 +4123,10 @@ fun <T : Any> ControlFlowGraph<T>.prettyPrintGraph(
 
   // Compute edge data
   val entries = ids.entries
-  val sortedNodes: List<MutableMap.MutableEntry<ControlFlowGraph<T>.Node, String>> =
+  val sortedNodes: List<MutableMap.MutableEntry<ControlFlowGraph.Node<T>, String>> =
     entries.sortedBy { ids[it.key]!! }
 
-  fun indexOf(target: ControlFlowGraph<T>.Node): Int {
+  fun indexOf(target: ControlFlowGraph.Node<T>): Int {
     for (i in sortedNodes.indices) {
       if (target == sortedNodes[i].key) {
         return i
