@@ -399,7 +399,6 @@ public class UnusedResourceDetectorTest extends AbstractCheckTest {
     }
 
     public void testMultiProject3() {
-        // TODO (b/200577800) fix when not running lint with partial analysis.
         // Regression test for b/200577800.
         // Similar to testMultiProject2, except there are 2 library modules with
         // the same unused resource
@@ -454,7 +453,6 @@ public class UnusedResourceDetectorTest extends AbstractCheckTest {
 
         lint().projects(main, library1, library2)
                 .reportFrom(main)
-                .testModes(TestMode.PARTIAL)
                 .run()
                 .expect(
                         ""
