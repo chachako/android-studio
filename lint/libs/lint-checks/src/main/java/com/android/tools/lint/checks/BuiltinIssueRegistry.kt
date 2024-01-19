@@ -91,6 +91,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           BidirectionalTextDetector.BIDI_SPOOFING,
           BinderGetCallingInMainThreadDetector.ISSUE,
           BottomAppBarDetector.ISSUE,
+          BuildListDetector.ISSUE,
           ButtonDetector.BACK_BUTTON,
           ButtonDetector.CASE,
           ButtonDetector.ORDER,
