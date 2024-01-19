@@ -5564,25 +5564,25 @@ maven_import(
 )
 
 maven_artifact(
-    name = "net.bytebuddy.byte-buddy_1.14.8",
-    pom = "repository/net/bytebuddy/byte-buddy/1.14.8/byte-buddy-1.14.8.pom",
+    name = "net.bytebuddy.byte-buddy_1.14.11",
+    pom = "repository/net/bytebuddy/byte-buddy/1.14.11/byte-buddy-1.14.11.pom",
     repo_root_path = "repository",
-    repo_path = "net/bytebuddy/byte-buddy/1.14.8",
-    parent = "net.bytebuddy.byte-buddy-parent_1.14.8",
+    repo_path = "net/bytebuddy/byte-buddy/1.14.11",
+    parent = "net.bytebuddy.byte-buddy-parent_1.14.11",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "net.bytebuddy.byte-buddy",
     classifiers = [],
-    parent = "net.bytebuddy.byte-buddy-parent_1.14.8",
+    parent = "net.bytebuddy.byte-buddy-parent_1.14.11",
     jars = [
-        "repository/net/bytebuddy/byte-buddy/1.14.8/byte-buddy-1.14.8.jar"
+        "repository/net/bytebuddy/byte-buddy/1.14.11/byte-buddy-1.14.11.jar"
     ],
     original_deps = [],
-    pom = "repository/net/bytebuddy/byte-buddy/1.14.8/byte-buddy-1.14.8.pom",
+    pom = "repository/net/bytebuddy/byte-buddy/1.14.11/byte-buddy-1.14.11.pom",
     repo_root_path = "repository",
-    repo_path = "net/bytebuddy/byte-buddy/1.14.8",
+    repo_path = "net/bytebuddy/byte-buddy/1.14.11",
     visibility = ["//visibility:public"],
 )
 
@@ -5739,25 +5739,34 @@ maven_import(
 )
 
 maven_artifact(
-    name = "nl.jqno.equalsverifier.equalsverifier_3.8",
-    pom = "repository/nl/jqno/equalsverifier/equalsverifier/3.8/equalsverifier-3.8.pom",
+    name = "nl.jqno.equalsverifier.equalsverifier_3.15.6",
+    pom = "repository/nl/jqno/equalsverifier/equalsverifier/3.15.6/equalsverifier-3.15.6.pom",
     repo_root_path = "repository",
-    repo_path = "nl/jqno/equalsverifier/equalsverifier/3.8",
-    parent = "org.sonatype.oss.oss-parent_9",
+    repo_path = "nl/jqno/equalsverifier/equalsverifier/3.15.6",
+    deps = [
+        "org.objenesis.objenesis_3.3",
+        "net.bytebuddy.byte-buddy_1.14.11",
+    ],
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "nl.jqno.equalsverifier.equalsverifier",
     classifiers = [],
-    parent = "org.sonatype.oss.oss-parent_9",
     jars = [
-        "repository/nl/jqno/equalsverifier/equalsverifier/3.8/equalsverifier-3.8.jar"
+        "repository/nl/jqno/equalsverifier/equalsverifier/3.15.6/equalsverifier-3.15.6.jar"
     ],
-    original_deps = [],
-    pom = "repository/nl/jqno/equalsverifier/equalsverifier/3.8/equalsverifier-3.8.pom",
+    exports = [
+        "org.objenesis.objenesis",
+        "net.bytebuddy.byte-buddy",
+    ],
+    original_deps = [
+        "org.objenesis.objenesis_3.3",
+        "net.bytebuddy.byte-buddy_1.14.11",
+    ],
+    pom = "repository/nl/jqno/equalsverifier/equalsverifier/3.15.6/equalsverifier-3.15.6.pom",
     repo_root_path = "repository",
-    repo_path = "nl/jqno/equalsverifier/equalsverifier/3.8",
+    repo_path = "nl/jqno/equalsverifier/equalsverifier/3.15.6",
     visibility = ["//visibility:public"],
 )
 
@@ -44021,6 +44030,15 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "net.bytebuddy.byte-buddy_1.14.8",
+    pom = "repository/net/bytebuddy/byte-buddy/1.14.8/byte-buddy-1.14.8.pom",
+    repo_root_path = "repository",
+    repo_path = "net/bytebuddy/byte-buddy/1.14.8",
+    parent = "net.bytebuddy.byte-buddy-parent_1.14.8",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "net.ltgt.gradle.incap.incap_0.2",
     pom = "repository/net/ltgt/gradle/incap/incap/0.2/incap-0.2.pom",
     repo_root_path = "repository",
@@ -55859,6 +55877,13 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "javax/xml/bind/jaxb-api-parent/2.3.1",
     parent = "net.java.jvnet-parent_5",
+)
+
+maven_artifact(
+    name = "net.bytebuddy.byte-buddy-parent_1.14.11",
+    pom = "repository/net/bytebuddy/byte-buddy-parent/1.14.11/byte-buddy-parent-1.14.11.pom",
+    repo_root_path = "repository",
+    repo_path = "net/bytebuddy/byte-buddy-parent/1.14.11",
 )
 
 maven_artifact(
