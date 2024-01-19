@@ -9457,6 +9457,7 @@ maven_import(
     name = "org.jetbrains.kotlinx.kotlinx-coroutines-core",
     classifiers = [],
     jars = [
+        "repository/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.6.4/kotlinx-coroutines-core-1.6.4.jar"
     ],
     exports = [
         "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm",
@@ -53695,22 +53696,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.junit.junit-bom_5.9.2",
-    pom = "repository/org/junit/junit-bom/5.9.2/junit-bom-5.9.2.pom",
-    repo_root_path = "repository",
-    repo_path = "org/junit/junit-bom/5.9.2",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.junit.junit-bom_5.9.3",
-    pom = "repository/org/junit/junit-bom/5.9.3/junit-bom-5.9.3.pom",
-    repo_root_path = "repository",
-    repo_path = "org/junit/junit-bom/5.9.3",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "org.junit.junit-bom_5.10.1",
     pom = "repository/org/junit/junit-bom/5.10.1/junit-bom-5.10.1.pom",
     repo_root_path = "repository",
@@ -53723,6 +53708,22 @@ maven_artifact(
     pom = "repository/org/junit/junit-bom/5.7.0/junit-bom-5.7.0.pom",
     repo_root_path = "repository",
     repo_path = "org/junit/junit-bom/5.7.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.junit.junit-bom_5.9.2",
+    pom = "repository/org/junit/junit-bom/5.9.2/junit-bom-5.9.2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/junit/junit-bom/5.9.2",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.junit.junit-bom_5.9.3",
+    pom = "repository/org/junit/junit-bom/5.9.3/junit-bom-5.9.3.pom",
+    repo_root_path = "repository",
+    repo_path = "org/junit/junit-bom/5.9.3",
     visibility = ["//visibility:public"],
 )
 

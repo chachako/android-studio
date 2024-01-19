@@ -42,19 +42,59 @@ public class HandleAarDescriptorReaderDelegate extends ArtifactDescriptorReaderD
         }
 
         if (!getArtifactExtension(model).equals(result.getArtifact().getExtension())) {
-            // When the dependency type does not match the packaging type of the target, we use the
-            // packaging type of the target to clarify the dependency type.
+            // When the dependency type does not match the packaging type of the target, we may need
+            // to use the packaging type of the target to clarify the dependency type.
             //
             // Example: An aar artifact can refer to other aar artifacts without explicitly stating
             // the dependency type to be "aar". Aether default is "jar", so here we have to convert
             // it back to "aar".
-            //
-            // Example: lint-gradle depends on groovy-all without expressing a dependency type. This
-            // defaults to "jar" dependency type, but groovy-all has packaging type "pom", so we
-            // have to convert it to "pom".
-            //
-            // This is something that Gradle handles automatically by looking at the packaging type
-            // of the target artifact, so we do the same here.
+            //    android.arch.lifecycle:extensions:aar depends on support-fragment, but
+            //    dependency does not have a type, so it defaults to type=jar.
+            //    support-fragment has packaging=aar.
+            if ("aar".equals(getArtifactExtension(model))) {
+                result.setArtifact(
+                        new DifferentExtensionArtifact(
+                                getArtifactExtension(model), result.getArtifact()));
+                return;
+            }
+
+            // Example: An artifact has a dependency of type "aar", but the target artifact has
+            // packaging type that is not "aar". We use the packaging type.
+            //    animation:jar depends on animation-core with dependency type=aar, but
+            //    animation-core has packaging=jar
+            if ("aar".equals(result.getArtifact().getExtension())) {
+                result.setArtifact(
+                        new DifferentExtensionArtifact(
+                                getArtifactExtension(model), result.getArtifact()));
+                return;
+            }
+
+            // Packaging type is pom, but the dependency type is jar.
+            if ("pom".equals(getArtifactExtension(model))
+                    && "jar".equals(result.getArtifact().getExtension())) {
+                // We respect the packaging type implied by the dependency.
+                // Example: We depend on equalsverifier:jar, but equalsverifier declares
+                // packaging=pom.
+                // In this case, we use the dependency type, i.e., jar.
+                //
+                // However, we have one exception. Example:
+                // lint-gradle depends on groovy-all without expressing a dependency type. This
+                // defaults to "jar" dependency type, but groovy-all has packaging type "pom", so we
+                // have to convert it to "pom".
+                if ("org.codehaus.groovy".equals(result.getArtifact().getGroupId())
+                        && "groovy-all".equals(result.getArtifact().getArtifactId())) {
+                    result.setArtifact(
+                            new DifferentExtensionArtifact(
+                                    getArtifactExtension(model), result.getArtifact()));
+                    return;
+                }
+
+                return;
+            }
+
+            // For everything else, we use the packaging type in the pom file. This way, we don't
+            // need to write the obvious file types for some artifacts.
+            // Example: androidx.test:orchestrator[:apk]:1.5.2-alpha02
             result.setArtifact(
                     new DifferentExtensionArtifact(
                             getArtifactExtension(model), result.getArtifact()));
