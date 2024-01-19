@@ -33,6 +33,27 @@ maven_import(
 )
 
 maven_artifact(
+    name = "com.google.example.aa_3",
+    pom = "repository/com/google/example/aa/3/aa-3.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/example/aa/3",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.google.example.aa",
+    classifiers = [],
+    jars = [
+        "repository/com/google/example/aa/3/aa-3.jar"
+    ],
+    original_deps = [],
+    pom = "repository/com/google/example/aa/3/aa-3.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/example/aa/3",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.example.b_1",
     pom = "repository/com/google/example/b/1/b-1.pom",
     repo_root_path = "repository",
@@ -486,7 +507,9 @@ maven_artifact(
     repo_path = "com/google/example/u/1",
     deps = [
         "com.google.example.w_1",
+        "com.google.example.aa_3",
         "com.google.example.v_1",
+        "com.google.example.z_2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -499,10 +522,13 @@ maven_import(
     ],
     exports = [
         "com.google.example.w",
+        "com.google.example.aa",
     ],
     original_deps = [
         "com.google.example.w_1",
+        "com.google.example.aa_3",
         "com.google.example.v_1",
+        "com.google.example.z_2",
     ],
     pom = "repository/com/google/example/u/1/u-1.pom",
     repo_root_path = "repository",
@@ -599,6 +625,26 @@ maven_import(
     pom = "repository/com/google/example/y/1/y-1.pom",
     repo_root_path = "repository",
     repo_path = "com/google/example/y/1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.example.z_2",
+    pom = "repository/com/google/example/z/2/z-2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/example/z/2",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.google.example.z",
+    classifiers = [],
+    jars = [
+    ],
+    original_deps = [],
+    pom = "repository/com/google/example/z/2/z-2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/example/z/2",
     visibility = ["//visibility:public"],
 )
 

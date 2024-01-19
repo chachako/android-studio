@@ -24,7 +24,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.maven.model.Model;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -120,10 +123,13 @@ public class ImportDependencyVisitor implements DependencyVisitor {
                                     // Since we are working with the raw pom model, the model
                                     // may contain unsubstituted project variables.
                                     // https://maven.apache.org/guides/introduction/introduction-to-the-pom.html#project-interpolation-and-variables
-                                    String version =
-                                            d.getVersion().equals("${project.version}")
-                                                    ? node.getArtifact().getVersion()
-                                                    : d.getVersion();
+                                    String version = d.getVersion();
+                                    if (version.equals("${project.version}")) {
+                                        version = node.getArtifact().getVersion();
+                                    } else if (version.contains("$")) {
+                                        version = substituteVariables(version, rawPomModel.getProperties());
+                                    }
+
                                     try {
                                         File pomFile =
                                                 repository.getPomFile(
@@ -271,5 +277,21 @@ public class ImportDependencyVisitor implements DependencyVisitor {
     @Override
     public boolean visitLeave(DependencyNode node) {
         return true;
+    }
+
+    // Replaces the variables in the given version string with the properties. If a variable is not
+    // found in properties, it's left as-is.
+    private static String substituteVariables(String version, Properties properties) {
+        Pattern variablePattern = Pattern.compile("\\$\\{(.+?)\\}");
+        Matcher matcher = variablePattern.matcher(version);
+        StringBuilder result = new StringBuilder();
+        while (matcher.find()) {
+            String value = properties.getProperty(matcher.group(1));
+            if (value != null) {
+                matcher.appendReplacement(result, value);
+            }
+        }
+        matcher.appendTail(result);
+        return result.toString();
     }
 }
