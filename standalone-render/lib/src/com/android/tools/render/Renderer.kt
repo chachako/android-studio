@@ -35,6 +35,7 @@ import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.rendering.parsers.RenderXmlFileSnapshot
 import com.android.tools.res.FrameworkResourceRepositoryManager
 import com.android.tools.res.LocalResourceRepository
+import com.android.tools.res.SingleRepoResourceRepositoryManager
 import com.android.tools.res.apk.ApkResourceRepository
 import com.android.tools.res.ids.apk.ApkResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
@@ -120,7 +121,7 @@ internal fun renderImpl(
 
         val androidPlatform = AndroidPlatform(androidSdkData, androidTarget)
 
-        val resourceRepositoryManager = StandaloneResourceRepositoryManager(resourcesRepo)
+        val resourceRepositoryManager = SingleRepoResourceRepositoryManager(resourcesRepo)
 
         val moduleClassLoaderManager = StandaloneModuleClassLoaderManager(classPath)
 
