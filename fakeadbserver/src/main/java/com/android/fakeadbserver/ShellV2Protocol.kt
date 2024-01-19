@@ -45,7 +45,7 @@ enum class ShellProtocolType {
             get() = "exec"
 
         override fun createServiceOutput(socket: Socket, device: DeviceState): ShellCommandOutput {
-            return ExecOutput(socket)
+            return ExecOutput(socket, device)
         }
     },
     SHELL_V2 {
@@ -54,7 +54,7 @@ enum class ShellProtocolType {
             get() = "shell,v2"
 
         override fun createServiceOutput(socket: Socket, device: DeviceState): ShellCommandOutput {
-            return ShellV2Output(socket)
+            return ShellV2Output(socket, device)
         }
     };
 

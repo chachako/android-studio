@@ -28,6 +28,7 @@ import java.util.TreeMap
 import java.util.Vector
 import java.util.function.Consumer
 import java.util.stream.Collectors
+import kotlin.time.Duration
 
 class DeviceState internal constructor(
     private val mServer: FakeAdbServer,
@@ -54,6 +55,7 @@ class DeviceState internal constructor(
     val features: Set<String>
     val properties: Map<String, String>
     private var mDeviceStatus: DeviceStatus
+    var delayStdout: Duration = Duration.ZERO
     val serviceManager: ServiceManager
 
     // Keep track of all PM commands invocation

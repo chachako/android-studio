@@ -117,6 +117,16 @@ class PackageManager : Service {
             cmd.startsWith("install") -> {
                 install(args.drop(1), shellCommandOutput)
             }
+            cmd.startsWith("-l") -> {
+                listOf(
+                    "package:one",
+                    "package:two",
+                    "package:three"
+                ).forEach {
+                    shellCommandOutput.writeStdout("$it\n")
+                }
+                shellCommandOutput.writeExitCode(0)
+            }
 
             else -> {
                 shellCommandOutput.writeStderr("Error: Package command '$cmd' is not supported")

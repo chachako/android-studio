@@ -42,7 +42,7 @@ class AbbCommandHandler : DeviceCommandHandler(COMMAND) {
         device.addAbbLog(args)
 
         // Wrap stdin/stdout and execute abb command
-        val serviceOutput = ShellV2Output(socket)
+        val serviceOutput = ShellV2Output(socket, device)
         device.serviceManager.processCommand(args.split("\u0000"), serviceOutput)
     }
 }

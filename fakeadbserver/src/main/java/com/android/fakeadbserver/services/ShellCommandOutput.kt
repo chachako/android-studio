@@ -20,6 +20,8 @@ import com.android.fakeadbserver.ShellV2Protocol
 import java.io.EOFException
 import java.net.Socket
 import java.nio.charset.StandardCharsets.UTF_8
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 /**
  * Abstraction over access to stdin/stdout/stderr/exit code of an ADB shell command.
@@ -78,6 +80,9 @@ class LegacyShellOutput(socket: Socket, val device: DeviceState) : ShellCommandO
     private val output = socket.getOutputStream()
 
     override fun writeStdout(bytes: ByteArray) {
+        if (device.delayStdout != Duration.ZERO) {
+            Thread.sleep(device.delayStdout.toLong(DurationUnit.MILLISECONDS))
+        }
         output.write(bytes.replaceNewLineForOlderDevices(device))
     }
 
@@ -99,12 +104,16 @@ class LegacyShellOutput(socket: Socket, val device: DeviceState) : ShellCommandO
  * [Socket.getOutputStream], and ignores exit code. This corresponds to how
  * the legacy "exec:" ADB service works
  */
-class ExecOutput(socket: Socket) : ShellCommandOutput {
+class ExecOutput(socket: Socket, val device: DeviceState) :
+    ShellCommandOutput {
 
     private val input = socket.getInputStream()
     private val output = socket.getOutputStream()
 
     override fun writeStdout(bytes: ByteArray) {
+        if (device.delayStdout != Duration.ZERO) {
+            Thread.sleep(device.delayStdout.toLong(DurationUnit.MILLISECONDS))
+        }
         output.write(bytes)
     }
 
@@ -144,7 +153,7 @@ fun ByteArray.replaceNewLineForOlderDevices(device: DeviceState): ByteArray {
  * Implementation of [ShellCommandOutput] that read and writes from/to the underlying socket
  * using the [ShellV2Protocol]. This corresponds to how the "shell,v2:" ADB service works.
  */
-class ShellV2Output(socket: Socket) : ShellCommandOutput {
+class ShellV2Output(socket: Socket, val device: DeviceState) : ShellCommandOutput {
 
     private val protocol = ShellV2Protocol(socket)
 
@@ -152,6 +161,9 @@ class ShellV2Output(socket: Socket) : ShellCommandOutput {
     private var currentStdinPacketOffset = 0
 
     override fun writeStdout(bytes: ByteArray) {
+        if (device.delayStdout != Duration.ZERO) {
+            Thread.sleep(device.delayStdout.toLong(DurationUnit.MILLISECONDS))
+        }
         protocol.writeStdout(bytes)
     }
 
