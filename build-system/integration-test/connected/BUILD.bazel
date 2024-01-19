@@ -635,10 +635,8 @@ gradle_connected_test(
         "//prebuilts/studio/sdk:ndk",
         "//tools/base/build-system/integration-test:test-projects/ndkSanAngeles",
     ],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
-    tags = ["very_flaky"],  # b/148626301, b/149226610, b/243668188
     deps = TEST_DEPS,
 )
 
