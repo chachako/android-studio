@@ -22,7 +22,6 @@ import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.resources.ResourceFolderType
 import com.android.sdklib.AndroidVersion
 import com.android.tools.configurations.Configuration
-import com.android.tools.fonts.DownloadableFontCacheService
 import com.android.tools.module.ModuleKey
 import com.android.tools.render.configuration.StandaloneConfigurationModelModule
 import com.android.tools.render.configuration.StandaloneConfigurationSettings
@@ -100,7 +99,6 @@ internal fun renderImpl(
 
     StandaloneFramework(!isForTest).use { framework ->
         framework.registerService(FrameworkResourceRepositoryManager::class.java, FrameworkResourceRepositoryManager())
-        framework.registerService(DownloadableFontCacheService::class.java, StandaloneFontCacheService(sdkPath))
 
         val resourceIdManager = ApkResourceIdManager()
         resourceApkPath?.let {
@@ -130,7 +128,8 @@ internal fun renderImpl(
         val environment =
             StandaloneEnvironmentContext(
                 framework.project,
-                moduleClassLoaderManager
+                moduleClassLoaderManager,
+                StandaloneFontCacheService(sdkPath)
             )
         val moduleDependencies = StandaloneModuleDependencies()
         val moduleKey = ModuleKey()
