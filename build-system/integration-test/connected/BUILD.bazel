@@ -60,6 +60,12 @@ avd(
     image = "@system_image_android-32_aosp_atd_x86_64//:x86_64-android-32AospAtd-images",
 )
 
+# For tests that require 32-bit x86 support.
+avd(
+    name = "avd_default_30",
+    image = "@system_image_android-30_default_x86_64//:x86_64-android-30-images",
+)
+
 avd(
     name = "avd_TiramisuPrivacySandbox",
     image = "@system_image_android-TiramisuPrivacySandbox_default_x86_64//:x86_64-android-TiramisuPrivacySandbox-images",
@@ -623,7 +629,7 @@ gradle_connected_test(
 gradle_connected_test(
     name = "NdkSanAngelesConnectedTest",
     srcs = "src/test/java/com/android/build/gradle/integration/connected/ndk/",
-    avd = ":avd",
+    avd = ":avd_default_30",
     data = TEST_DATA + [
         "//prebuilts/studio/sdk:cmake",
         "//prebuilts/studio/sdk:ndk",
