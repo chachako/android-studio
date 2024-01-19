@@ -399,7 +399,6 @@ public class UnusedResourceDetectorTest extends AbstractCheckTest {
     }
 
     public void testMultiProject3() {
-        // TODO (b/200577800) fix when not running lint with partial analysis.
         // Regression test for b/200577800.
         // Similar to testMultiProject2, except there are 2 library modules with
         // the same unused resource
@@ -409,7 +408,23 @@ public class UnusedResourceDetectorTest extends AbstractCheckTest {
                                 mLibraryCode,
                                 mLibraryStrings,
                                 xml(
+                                        "res/values-fr/strings2.xml",
+                                        ""
+                                                + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                                + "<resources>\n"
+                                                + "    <string name=\"unused1\">Unused 1</string>\n"
+                                                + "    <string name=\"kept1\">Kept 1</string>\n"
+                                                + "</resources>\n"),
+                                xml(
                                         "res/values/strings2.xml",
+                                        ""
+                                                + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                                                + "<resources>\n"
+                                                + "    <string name=\"unused1\">Unused 1</string>\n"
+                                                + "    <string name=\"kept1\">Kept 1</string>\n"
+                                                + "</resources>\n"),
+                                xml(
+                                        "res/values-en/strings2.xml",
                                         ""
                                                 + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
                                                 + "<resources>\n"
@@ -454,7 +469,6 @@ public class UnusedResourceDetectorTest extends AbstractCheckTest {
 
         lint().projects(main, library1, library2)
                 .reportFrom(main)
-                .testModes(TestMode.PARTIAL)
                 .run()
                 .expect(
                         ""
