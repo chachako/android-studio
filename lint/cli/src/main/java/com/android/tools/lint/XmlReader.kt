@@ -472,6 +472,7 @@ class XmlReader(
     var familyName: String? = null
     var robot = false
     var independent = false
+    var sortPriority = -1
 
     val n = parser.attributeCount
     for (i in 0 until n) {
@@ -491,6 +492,7 @@ class XmlReader(
         ATTR_FAMILY -> familyName = value
         ATTR_INDEPENDENT -> independent = true
         ATTR_ROBOT -> robot = true
+        ATTR_PRIORITY -> sortPriority = value.toInt()
         // TODO
         else -> error("Unexpected note attribute: $name")
       }
@@ -512,6 +514,7 @@ class XmlReader(
       .apply { imports?.let { this.imports(*it.toTypedArray()) } }
       .repeatedly(repeatedly)
       .optional(optional)
+      .priority(sortPriority)
       .autoFix(robot, independent)
       .build()
   }

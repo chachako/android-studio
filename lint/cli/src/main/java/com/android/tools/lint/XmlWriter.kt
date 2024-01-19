@@ -476,6 +476,7 @@ open class XmlWriter(
       writer.write(">\n")
 
       for (file in files) {
+        val source = performer.getSourceText(file.file)
         for (edit in file.edits) {
           indent(3)
           writer.write("<$TAG_EDIT")
@@ -540,6 +541,9 @@ open class XmlWriter(
         }
         if (lintFix.optional) {
           writeAttribute(writer, indented, ATTR_OPTIONAL, VALUE_TRUE)
+        }
+        if (lintFix.sortPriority != -1) {
+          writeAttribute(writer, indented, ATTR_PRIORITY, lintFix.sortPriority.toString())
         }
         val range = lintFix.range
         if (range != null) {

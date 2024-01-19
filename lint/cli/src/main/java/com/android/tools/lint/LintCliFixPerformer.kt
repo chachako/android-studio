@@ -344,9 +344,7 @@ open class LintCliFixPerformer(
                 "import $import\n"
               }
 
-            file.edits.add(
-              PendingEdit(replaceFix, contents, insertOffset, insertOffset, importStatement)
-            )
+            file.edits.add(PendingEdit(replaceFix, insertOffset, insertOffset, importStatement))
           }
         }
       }

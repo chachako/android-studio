@@ -802,6 +802,7 @@ protected constructor(
     private var imports: MutableList<String>? = null
     private var repeatedly = false
     private var optional = false
+    private var sortPriority = 0
 
     @RegExp private var oldPattern: String? = null
     private var range: Location? = null
@@ -878,6 +879,19 @@ protected constructor(
      */
     fun range(range: Location): ReplaceStringBuilder {
       this.range = extractOffsets(range)
+      return this
+    }
+
+    /**
+     * Sets the sorting priority of this fix. This is *only* relevant when there are multiple
+     * insertions at the same location; in that case, the sorting priority will be used to sort the
+     * items. If no sorting priority is set, it will be the reverse insertion order. In other words,
+     * if you have the fixes "at 0, insert foo", followed by "at 0, insert bar", the result will be
+     * "foobar", since we *first* insert "foo" at 0, and inserting bar at 0 on that result would end
+     * up as "foobar".
+     */
+    fun priority(priority: Int): ReplaceStringBuilder {
+      this.sortPriority = priority
       return this
     }
 
@@ -1068,7 +1082,8 @@ protected constructor(
         repeatedly,
         optional,
         robot,
-        independent
+        independent,
+        sortPriority
       )
     }
   }
@@ -1906,7 +1921,12 @@ protected constructor(
      */
     val optional: Boolean,
     robot: Boolean,
-    independent: Boolean
+    independent: Boolean,
+    /**
+     * The sorting priority of this fix. This is *only* relevant when there are multiple insertions
+     * at the same location; in that case, the sorting priority will be used to sort the items.
+     */
+    val sortPriority: Int,
   ) : LintFix(displayName, familyName, range) {
     init {
       this.robot = robot

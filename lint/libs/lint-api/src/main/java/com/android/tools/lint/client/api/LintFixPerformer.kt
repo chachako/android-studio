@@ -241,17 +241,17 @@ abstract class LintFixPerformer(
           // Only whitespace on both sides of this edit from line start to line end,
           // so delete the entire line.
           nextLineEnd++ // include \n
-          file.edits.add(PendingEdit(edit.fix, source, edit.endOffset, nextLineEnd, ""))
+          file.edits.add(PendingEdit(edit.fix, edit.endOffset, nextLineEnd, ""))
           if (prevLineStart < edit.startOffset) {
-            file.edits.add(PendingEdit(edit.fix, source, prevLineStart, edit.startOffset, ""))
+            file.edits.add(PendingEdit(edit.fix, prevLineStart, edit.startOffset, ""))
           }
         } else if (nextLineEnd != -1 && (nextLineEnd > edit.endOffset || k < edit.startOffset)) {
           // Remove trailing whitespace
           if (nextLineEnd > edit.endOffset) {
-            file.edits.add(PendingEdit(edit.fix, source, edit.endOffset, nextLineEnd, ""))
+            file.edits.add(PendingEdit(edit.fix, edit.endOffset, nextLineEnd, ""))
           }
           if (k < edit.startOffset) {
-            file.edits.add(PendingEdit(edit.fix, source, k, edit.startOffset, ""))
+            file.edits.add(PendingEdit(edit.fix, k, edit.startOffset, ""))
           }
         }
       }
@@ -496,7 +496,7 @@ abstract class LintFixPerformer(
         file.createText = true
         file.reformat = fix.reformat
         val (selectStart, selectEnd) = getSelectionDeltas(fix.selectPattern, text, optional = false)
-        file.edits.add(PendingEdit(fix, "", 0, 0, text, selectStart, selectEnd))
+        file.edits.add(PendingEdit(fix, 0, 0, text, selectStart, selectEnd))
       } else {
         file.createBytes = fix.binary
       }
@@ -564,7 +564,7 @@ abstract class LintFixPerformer(
         val endOffset: Int = client.xmlParser.getNodeEndOffset(client, file.file, attr)
         // Remove surrounding whitespace too
         val padding = if (contents[endOffset] == ' ') 1 else 0
-        file.edits.add(PendingEdit(setFix, contents, startOffset, endOffset + padding, ""))
+        file.edits.add(PendingEdit(setFix, startOffset, endOffset + padding, ""))
         return true
       }
       return false
@@ -587,7 +587,6 @@ abstract class LintFixPerformer(
         file.edits.add(
           PendingEdit(
             setFix,
-            contents,
             startOffset,
             endOffset,
             replacement,
@@ -629,7 +628,6 @@ abstract class LintFixPerformer(
         file.edits.add(
           PendingEdit(
             setFix,
-            contents,
             rootInsertOffset,
             rootInsertOffset,
             "$padLeft$namespaceAttribute=\"$namespace\"$padRight"
@@ -655,7 +653,6 @@ abstract class LintFixPerformer(
       file.edits.add(
         PendingEdit(
           setFix,
-          contents,
           insertOffset,
           insertOffset,
           leftPart + valuePart + rightPart,
@@ -887,12 +884,12 @@ abstract class LintFixPerformer(
       val edit =
         PendingEdit(
           replaceFix,
-          contents,
           startOffset,
           endOffset,
           replacement,
           selectStart,
-          selectEnd
+          selectEnd,
+          replaceFix.sortPriority
         )
       file.edits.add(edit)
 
@@ -1350,6 +1347,7 @@ abstract class LintFixPerformer(
 
     /** Set of imports to add to the file; see [ReplaceString.imports] for more. */
     var imports: MutableList<String>? = null
+
     /**
      * Whether we should shorten references in edited regions; see [ReplaceString.shortenNames] for
      * more.
@@ -1398,13 +1396,11 @@ abstract class LintFixPerformer(
   class PendingEdit(
     /** The fix associated with this edit */
     val fix: LintFix,
-    /** The original source that this edit is operating within */
-    val source: String,
-    /** Where in the original [source] to start the edit operation */
+    /** Where in the original source to start the edit operation */
     val startOffset: Int,
     /**
-     * Where in the original [source] to end the edit operation. If same as [startOffset], this is
-     * an insert operation, otherwise it's a replacement or deletion operation.
+     * Where in the original source to end the edit operation. If same as [startOffset], this is an
+     * insert operation, otherwise it's a replacement or deletion operation.
      */
     val endOffset: Int,
     /** The string to insert. If empty, this is a deletion operation. */
@@ -1412,8 +1408,11 @@ abstract class LintFixPerformer(
     /** If not -1, the delta **relative to [startOffset]** to start a selection. */
     val selectStart: Int = -1,
     /** If not -1, the delta **relative to [startOffset]** to end the selection. */
-    val selectEnd: Int = -1
+    val selectEnd: Int = -1,
+    /** Sorting priority to use for edits that start at the same location. */
+    private val sortPriority: Int = -1,
   ) : Comparable<PendingEdit> {
+
     override fun compareTo(other: PendingEdit): Int {
       val delta = other.startOffset - this.startOffset
       if (delta != 0) {
@@ -1430,6 +1429,11 @@ abstract class LintFixPerformer(
         if (deleteDelta != 0) {
           return deleteDelta
         }
+      }
+
+      val sortDelta = other.sortPriority - sortPriority
+      if (sortDelta != 0) {
+        return sortDelta
       }
 
       return other.endOffset - this.endOffset
@@ -1453,27 +1457,30 @@ abstract class LintFixPerformer(
       return fix.getFamilyName() ?: return fix.getDisplayName() ?: fix.javaClass.simpleName
     }
 
-    override fun toString(): String {
+    override fun toString(): String = toString(null)
+
+    fun toString(source: String?): String {
       return when {
         isDelete() ->
           "At $startOffset, delete \"${
-            source.substring(
+            source?.substring(
               startOffset,
               endOffset
-            )
+            ) ?: "${endOffset - startOffset} characters"
           }\""
         isInsert() -> "At $startOffset, insert \"$replacement\""
         else ->
           "At $startOffset, change \"${
-            source.substring(
+            source?.substring(
               startOffset,
               endOffset
-            )
+            ) ?: "${endOffset - startOffset} characters"
           }\" to \"$replacement\""
       }
     }
 
     override fun equals(other: Any?): Boolean {
+      // (Deliberately does not include sort priority -- content only.)
       if (this === other) return true
       if (javaClass != other?.javaClass) return false
 
@@ -1489,6 +1496,7 @@ abstract class LintFixPerformer(
     }
 
     override fun hashCode(): Int {
+      // (Deliberately does not include sort priority -- content only.)
       var result = startOffset
       result = 31 * result + endOffset
       result = 31 * result + replacement.hashCode()

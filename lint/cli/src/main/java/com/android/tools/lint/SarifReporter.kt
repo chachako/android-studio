@@ -635,12 +635,13 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
     var indent = indent
     writer.indent(indent++).write("\"fixes\": [\n")
     edits.forEachIndexed { index, (fix, files) ->
-      writeQuickFix(incident, fix, files, index == fixes.size - 1, indent)
+      writeQuickFix(performer, incident, fix, files, index == fixes.size - 1, indent)
     }
     writer.indent(--indent).write("],\n")
   }
 
   private fun writeQuickFix(
+    performer: LintCliFixPerformer,
     incident: Incident,
     fix: LintFix,
     files: List<LintFixPerformer.PendingEditFile>,
@@ -660,7 +661,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
 
       files.forEachIndexed { index, file ->
         if (file.edits.isNotEmpty()) {
-          writeArtifactChange(incident, file, index == files.size - 1, indent)
+          writeArtifactChange(performer, incident, file, index == files.size - 1, indent)
         }
       }
 
@@ -674,7 +675,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
    * line number.
    */
   private fun getLineNumber(
-    source: String,
+    source: CharSequence,
     offset: Int,
     startOffset: Int = 0,
     startLineNumber: Int = 1
@@ -689,18 +690,20 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
   }
 
   /** Returns a 1-based column number for the character [offset] in the given [source] */
-  private fun getColumn(source: String, offset: Int): Int {
+  private fun getColumn(source: CharSequence, offset: Int): Int {
     assert(offset in source.indices)
     val prevNewline = source.subSequence(0, offset).lastIndexOf('\n')
     return offset - prevNewline
   }
 
   private fun writeArtifactChange(
+    performer: LintCliFixPerformer,
     incident: Incident,
     file: LintFixPerformer.PendingEditFile,
     last: Boolean,
     indent: Int
   ) {
+    val source = performer.getSourceText(file.file)
     var indent = indent
     writer.indent(indent++).write("{\n")
     writeArtifactLocation(incident, file.file, indent, false)

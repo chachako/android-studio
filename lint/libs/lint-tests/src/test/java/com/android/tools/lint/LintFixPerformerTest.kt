@@ -21,6 +21,7 @@ import com.android.SdkConstants.AUTO_URI
 import com.android.tools.lint.checks.LintDetectorDetector
 import com.android.tools.lint.checks.infrastructure.TestLintClient
 import com.android.tools.lint.checks.infrastructure.dos2unix
+import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintFixPerformer
 import com.android.tools.lint.client.api.LintFixPerformer.Companion.canAutoFix
 import com.android.tools.lint.client.api.LintFixPerformer.Companion.compareAttributeNames
@@ -46,6 +47,10 @@ import org.junit.rules.TemporaryFolder
 
 class LintFixPerformerTest {
   @get:Rule var temporaryFolder = TemporaryFolder()
+
+  init {
+    LintClient.clientName = LintClient.CLIENT_UNIT_TESTS
+  }
 
   private fun fix() = LintFix.create()
 
@@ -1647,6 +1652,96 @@ class LintFixPerformerTest {
         }
         """,
       expectedOutput = "Applied 2 edits across 1 files for this fix: Remove comment",
+    )
+  }
+
+  @Test
+  fun testInsertOrder() {
+    // Insert multiple edits at the same location: verify that they are applied in the
+    // same order
+    val source =
+      """
+      [libraries]
+      androidx-activity-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+      """
+        .trimIndent()
+    val (file, range) = getFileAndRange("test.txt", source)
+    val fix =
+      fix()
+        .name("Add version")
+        .composite(
+          fix().replace().beginning().with("appCompat = \"1.5.1\"\n").range(range).build(),
+          fix().replace().beginning().with("[versions]\n").range(range).build()
+        )
+        .autoFix()
+
+    check(
+      file,
+      source,
+      fix,
+      expected =
+        """
+        [versions]
+        appCompat = "1.5.1"
+        [libraries]
+        androidx-activity-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+        """
+    )
+  }
+
+  @Test
+  fun testDuplicateIds() {
+    // Insert multiple edits at the same location: verify that they are applied in the
+    // same order
+    val source =
+      """
+      [libraries]
+      androidx-activity-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+      """
+        .trimIndent()
+    val (file, range) = getFileAndRange("test.txt", source)
+    val fix1 =
+      fix()
+        .name("Add appCompat")
+        .composite(
+          fix().replace().beginning().with("[versions]\n").priority(0).range(range).build(),
+          fix()
+            .replace()
+            .beginning()
+            .with("appCompat = \"1.5.1\"\n")
+            .priority(1)
+            .range(range)
+            .build()
+        )
+        .autoFix()
+    val fix2 =
+      fix()
+        .name("Add activityCompose")
+        .composite(
+          fix().replace().beginning().with("[versions]\n").priority(0).range(range).build(),
+          fix()
+            .replace()
+            .beginning()
+            .with("activityCompose = \"1.7.0-alpha02\"\n")
+            .priority(2)
+            .range(range)
+            .build()
+        )
+        .autoFix()
+
+    check(
+      file,
+      source,
+      fix1,
+      fix2,
+      expected =
+        """
+        [versions]
+        appCompat = "1.5.1"
+        activityCompose = "1.7.0-alpha02"
+        [libraries]
+        androidx-activity-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+        """
     )
   }
 
