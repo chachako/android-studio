@@ -94,7 +94,7 @@ public class SdkVersionInfo {
      * downloadable system images for TV to see if there are more recent
      * versions.
      */
-    public static final int HIGHEST_KNOWN_API_TV = 24;
+    public static final int HIGHEST_KNOWN_API_TV = 34;
 
     /**
      * The highest known API level for Android Auto. To find out if this value needs to be updated,
