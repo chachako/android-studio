@@ -61,6 +61,7 @@ import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UCallableReferenceExpression
 import org.jetbrains.uast.UClass
+import org.jetbrains.uast.UClassLiteralExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UFile
@@ -2994,5 +2995,81 @@ class UastTest : TestCase() {
       assertEquals(expectedCount, lambdaCount)
       assertEquals(lambdaCount, returnCount)
     }
+  }
+
+  fun testReferenceQualifierType() {
+    val testFiles =
+      arrayOf(
+        kotlin(
+            """
+            import my.math.IntMath
+
+            interface MyInterface
+
+            fun test1() = MyInterface::class
+            fun test2(x: MyInterface) = x::class
+            fun test3() = Int::class
+            fun test4() = Number::toInt
+            fun test5(a: Number) = a::toInt
+            fun test6() = IntMath::factorial
+          """
+          )
+          .indented(),
+        java(
+            """
+            package my.math;
+            public final class IntMath {
+              public static int factorial(int n) {
+                return 42;
+              }
+            }
+          """
+          )
+          .indented()
+      )
+
+    val expectedTypes =
+      mapOf(
+        "test1" to "MyInterface",
+        "test2" to "MyInterface",
+        "test3" to "java.lang.Integer",
+        "test4" to "java.lang.Number",
+        "test5" to "java.lang.Number",
+        "test6" to "my.math.IntMath",
+      )
+
+    var count = 0
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          var currentMethod: String? = null
+
+          override fun visitMethod(node: UMethod): Boolean {
+            currentMethod = node.name
+            return super.visitMethod(node)
+          }
+
+          override fun afterVisitMethod(node: UMethod) {
+            currentMethod = null
+            super.afterVisitMethod(node)
+          }
+
+          override fun visitClassLiteralExpression(node: UClassLiteralExpression): Boolean {
+            count++
+            assertEquals(expectedTypes[currentMethod], node.type?.canonicalText)
+            return super.visitClassLiteralExpression(node)
+          }
+
+          override fun visitCallableReferenceExpression(
+            node: UCallableReferenceExpression
+          ): Boolean {
+            count++
+            assertEquals(expectedTypes[currentMethod], node.qualifierType?.canonicalText)
+            return super.visitCallableReferenceExpression(node)
+          }
+        }
+      )
+    }
+    assertEquals(expectedTypes.size, count)
   }
 }
