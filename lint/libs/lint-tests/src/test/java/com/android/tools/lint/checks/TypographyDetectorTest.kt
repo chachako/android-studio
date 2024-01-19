@@ -451,8 +451,8 @@ class TypographyDetectorTest : AbstractCheckTest() {
     lint()
       .files(
         xml(
-          "res/values/strings.xml",
-          """
+            "res/values/strings.xml",
+            """
                 <resources>
                     <string name="test1">Hello John's Cat</string>  <!-- error 1 -->
                     <string name="test2">Hello
@@ -461,7 +461,7 @@ class TypographyDetectorTest : AbstractCheckTest() {
                     </string>  <!-- error 1 -->
                 </resources>
                 """
-        )
+          )
           .indented()
       )
       .run()

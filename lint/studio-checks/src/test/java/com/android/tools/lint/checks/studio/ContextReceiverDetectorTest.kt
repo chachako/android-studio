@@ -10,7 +10,7 @@ class ContextReceiverDetectorTest {
     studioLint()
       .files(
         kotlin(
-          """
+            """
             package test.pkg
 
             class Test {
@@ -32,7 +32,8 @@ class ContextReceiverDetectorTest {
               }
           }
           """
-        ).indented()
+          )
+          .indented()
       )
       .issues(ContextReceiverDetector.ISSUE)
       .run()
@@ -47,6 +48,5 @@ class ContextReceiverDetectorTest {
           2 errors, 0 warnings
         """
       )
-
   }
 }

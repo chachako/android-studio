@@ -88,7 +88,15 @@ public class MainTest extends AbstractCheckTest {
             @NonNull String[] args,
             @Nullable Cleanup cleanup,
             @Nullable LintListener listener) {
-        checkDriver(expectedOutput, expectedError, expectedExitCode, args, cleanup, listener, null, true);
+        checkDriver(
+                expectedOutput,
+                expectedError,
+                expectedExitCode,
+                args,
+                cleanup,
+                listener,
+                null,
+                true);
     }
 
     public static void checkDriver(
@@ -152,7 +160,8 @@ public class MainTest extends AbstractCheckTest {
             if (expectedError != null && !expectedError.trim().equals(stderr.trim())) {
                 // TODO: https://youtrack.jetbrains.com/issue/KT-57715
                 //  Until then, we can't assert explicit "equals" yet.
-                if (!expectedExactMatch || Arrays.stream(args).anyMatch((arg) -> arg == "--XuseK2Uast")) {
+                if (!expectedExactMatch
+                        || Arrays.stream(args).anyMatch((arg) -> arg == "--XuseK2Uast")) {
                     assertThat(stderr).contains(expectedError);
                 } else {
                     // instead of fail: get difference in output
@@ -620,28 +629,28 @@ public class MainTest extends AbstractCheckTest {
 
         String expected =
                 "    <issue\n"
-                    + "        id=\"ContentDescription\"\n"
-                    + "        message=\"Missing `contentDescription` attribute on image\"\n"
-                    + "        errorLine1=\"    &lt;ImageView android:id=&quot;@+id/android_logo&quot; android:layout_width=&quot;wrap_content&quot; android:layout_height=&quot;wrap_content&quot; android:src=&quot;@drawable/android_button&quot; android:focusable=&quot;false&quot; android:clickable=&quot;false&quot; android:layout_weight=&quot;1.0&quot; />\"\n"
-                    + "        errorLine2=\"     ~~~~~~~~~\">\n"
-                    + "        <location\n"
-                    + "            file=\"res/layout/accessibility.xml\"\n"
-                    + "            line=\"4\"\n"
-                    + "            column=\"6\"/>\n"
-                    + "    </issue>\n"
-                    + "\n"
-                    + "    <issue\n"
-                    + "        id=\"ContentDescription\"\n"
-                    + "        message=\"Missing `contentDescription` attribute on image\"\n"
-                    + "        errorLine1=\"    &lt;ImageButton android:importantForAccessibility=&quot;yes&quot; android:id=&quot;@+id/android_logo2&quot; android:layout_width=&quot;wrap_content&quot; android:layout_height=&quot;wrap_content&quot; android:src=&quot;@drawable/android_button&quot; android:focusable=&quot;false&quot; android:clickable=&quot;false&quot; android:layout_weight=&quot;1.0&quot; />\"\n"
-                    + "        errorLine2=\"     ~~~~~~~~~~~\">\n"
-                    + "        <location\n"
-                    + "            file=\"res/layout/accessibility.xml\"\n"
-                    + "            line=\"5\"\n"
-                    + "            column=\"6\"/>\n"
-                    + "    </issue>\n"
-                    + "\n"
-                    + "</issues>";
+                        + "        id=\"ContentDescription\"\n"
+                        + "        message=\"Missing `contentDescription` attribute on image\"\n"
+                        + "        errorLine1=\"    &lt;ImageView android:id=&quot;@+id/android_logo&quot; android:layout_width=&quot;wrap_content&quot; android:layout_height=&quot;wrap_content&quot; android:src=&quot;@drawable/android_button&quot; android:focusable=&quot;false&quot; android:clickable=&quot;false&quot; android:layout_weight=&quot;1.0&quot; />\"\n"
+                        + "        errorLine2=\"     ~~~~~~~~~\">\n"
+                        + "        <location\n"
+                        + "            file=\"res/layout/accessibility.xml\"\n"
+                        + "            line=\"4\"\n"
+                        + "            column=\"6\"/>\n"
+                        + "    </issue>\n"
+                        + "\n"
+                        + "    <issue\n"
+                        + "        id=\"ContentDescription\"\n"
+                        + "        message=\"Missing `contentDescription` attribute on image\"\n"
+                        + "        errorLine1=\"    &lt;ImageButton android:importantForAccessibility=&quot;yes&quot; android:id=&quot;@+id/android_logo2&quot; android:layout_width=&quot;wrap_content&quot; android:layout_height=&quot;wrap_content&quot; android:src=&quot;@drawable/android_button&quot; android:focusable=&quot;false&quot; android:clickable=&quot;false&quot; android:layout_weight=&quot;1.0&quot; />\"\n"
+                        + "        errorLine2=\"     ~~~~~~~~~~~\">\n"
+                        + "        <location\n"
+                        + "            file=\"res/layout/accessibility.xml\"\n"
+                        + "            line=\"5\"\n"
+                        + "            column=\"6\"/>\n"
+                        + "    </issue>\n"
+                        + "\n"
+                        + "</issues>";
 
         assertEquals(expected, newBaseline);
 

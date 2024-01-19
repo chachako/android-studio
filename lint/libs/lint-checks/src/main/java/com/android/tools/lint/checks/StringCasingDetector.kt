@@ -85,7 +85,7 @@ class StringCasingDetector : ResourceXmlDetector() {
 
   override fun visitElement(context: XmlContext, element: Element) {
     val text = element.textContent
-    if (text.isNotEmpty()){
+    if (text.isNotEmpty()) {
       checkTextNode(context, element, StringFormatDetector.stripQuotes(text))
     }
   }

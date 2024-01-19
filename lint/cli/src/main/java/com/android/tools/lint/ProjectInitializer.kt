@@ -932,18 +932,19 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     return sourceRoots
   }
 
-  private fun getDependencyKind(node : Element) : DependencyKind =
+  private fun getDependencyKind(node: Element): DependencyKind =
     when (val kindText = node.getAttribute(ATTR_KIND)) {
       "dependsOn" -> DependencyKind.DependsOn
       "regular",
       "" -> DependencyKind.Regular
-      else -> DependencyKind.Regular.also {
-        client.log(
-          Severity.WARNING,
-          null,
-          "Unexpected dependency kind '$kindText' parsed as 'regular'"
-        )
-      }
+      else ->
+        DependencyKind.Regular.also {
+          client.log(
+            Severity.WARNING,
+            null,
+            "Unexpected dependency kind '$kindText' parsed as 'regular'"
+          )
+        }
     }
 
   /**

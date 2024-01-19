@@ -613,7 +613,7 @@ public class Project {
         if (klibs == null) {
             klibs = new LinkedHashMap<>();
             for (var klib : client.getKlibs(this)) {
-              klibs.put(klib, /* TODO ok? */ DependencyKind.Regular);
+                klibs.put(klib, /* TODO ok? */ DependencyKind.Regular);
             }
         }
         return klibs;

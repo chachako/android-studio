@@ -69,6 +69,8 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMember
+import java.io.File
+import java.util.EnumSet
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UCallableReferenceExpression
 import org.jetbrains.uast.UElement
@@ -78,8 +80,6 @@ import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
-import java.io.File
-import java.util.EnumSet
 
 /** Finds unused resources. */
 class UnusedResourceDetector :
@@ -466,7 +466,9 @@ class UnusedResourceDetector :
               is PsiClass -> visitClass(resolved) { node.identifier }
               is PsiField ->
                 if (resolved.containingClass?.name in bindingClasses) {
-                  ResourceUsageModel.markReachable(model.getResource(ResourceType.ID, resolved.name))
+                  ResourceUsageModel.markReachable(
+                    model.getResource(ResourceType.ID, resolved.name)
+                  )
                 }
             }
           }
