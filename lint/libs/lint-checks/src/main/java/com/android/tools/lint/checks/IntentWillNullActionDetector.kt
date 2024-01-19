@@ -72,7 +72,7 @@ class IntentWillNullActionDetector : Detector(), SourceCodeScanner, XmlScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     // This is an Intent constructor. We will track the Intent to see if it
     // satisfies various conditions.
@@ -184,7 +184,7 @@ class IntentWillNullActionDetector : Detector(), SourceCodeScanner, XmlScanner {
       Implementation(
         IntentWillNullActionDetector::class.java,
         EnumSet.of(Scope.JAVA_FILE, Scope.MANIFEST),
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     /** Issue describing the problem and pointing to the detector implementation. */
@@ -206,7 +206,7 @@ class IntentWillNullActionDetector : Detector(), SourceCodeScanner, XmlScanner {
         priority = 9,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

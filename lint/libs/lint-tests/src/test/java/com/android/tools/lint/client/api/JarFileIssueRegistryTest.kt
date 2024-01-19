@@ -81,7 +81,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
         "registry manifest key (Lint-Registry-v2).\n" +
         "Either the custom jar is invalid, or it uses an outdated API not " +
         "supported this lint client\n",
-      loggedWarnings.toString()
+      loggedWarnings.toString(),
     )
 
     // Make sure we handle up to date checks properly too
@@ -124,7 +124,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
     assertEquals("android.support.v7.lint.appcompat", vendor.identifier)
     assertEquals(
       "Android Open Source Project (android.support.v7.lint.appcompat)",
-      vendor.vendorName
+      vendor.vendorName,
     )
     assertEquals("https://issuetracker.google.com/issues/new?component=192731", vendor.feedbackUrl)
   }
@@ -152,7 +152,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
         severity: Severity,
         exception: Throwable?,
         format: String?,
-        vararg args: Any
+        vararg args: Any,
       ) {
         if (format != null) {
           loggedWarnings.append(String.format(format, *args) + '\n')
@@ -178,9 +178,9 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
           "lint.jar",
           source(
             "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
-            "test.pkg.MyIssueRegistry"
+            "test.pkg.MyIssueRegistry",
           ),
-          0x70522285
+          0x70522285,
         ),
         bytecode(
           "lint.jar",
@@ -233,8 +233,8 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                     META-INF/main.kotlin_module:
                     H4sIAAAAAAAAAGNgYGBmYGBgBGIWIGYCYgYuYy7F5PxcvcS8lKL8zBS9kvz8
                     nGK9nMy8Er3knMxUIJVYkCnE5wxmxxeXlCYVe5coMWgxAAANsEImTQAAAA==
-                    """
-        )
+                    """,
+        ),
       )
       .testModes(TestMode.DEFAULT)
       .createProjects(root)
@@ -249,7 +249,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
             """
                 <?xml version="1.0" encoding="utf-8"?>
                 <resources/>
-                """
+                """,
           )
           .indented()
       )
@@ -275,9 +275,9 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
           "lint.jar",
           source(
             "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
-            "androidx.annotation.experimental.lint.ExperimentalIssueRegistry"
+            "androidx.annotation.experimental.lint.ExperimentalIssueRegistry",
           ),
-          0x7ca072f0
+          0x7ca072f0,
         ),
         bytecode(
           "lint.jar",
@@ -307,8 +307,8 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                 ZUF2xjrhlDVc/lL4Md6oycA39BppRfi603VFdz3t2GpNE5EpbcqXydwtiwXg
                 FFVafnEqYEXHFD36HdPN6K6fvYK90IOhSbFRJpsUfQRUUqBHK7T2hsrzH9LH
                 Vindot92+dr5BoPJPOP3AQAA
-                """
-        )
+                """,
+        ),
       )
       .testModes(TestMode.DEFAULT)
       .createProjects(root)
@@ -323,7 +323,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
             """
                 <?xml version="1.0" encoding="utf-8"?>
                 <resources/>
-                """
+                """,
           )
           .indented()
       )
@@ -345,9 +345,9 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
           "lint.jar",
           source(
             "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
-            "test.pkg.MyIssueRegistry"
+            "test.pkg.MyIssueRegistry",
           ),
-          0x70522285
+          0x70522285,
         ),
         bytecode(
           "lint.jar",
@@ -376,7 +376,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                 61S1tNOcPTbGeum1NQ67EPwO+eGl82dhLrKKCs132XrF6AsHAnVmUJgCS8zq
                 TwHGEBbecsEFrBTfRhjnXPUOpQYmGphkYipHrYFpzNyBHGYxx3mH0GHeIfgG
                 eDuJRfMBAAA=
-                """
+                """,
         ),
         bytecode(
           "lint.jar",
@@ -427,8 +427,8 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                 TyinxsqjZN9/ISGGBZTH6Zw0OPvThEHnJQZpKLBIUpPKc5PRZF6ifDIKC2vD
                 s4q7BHeIepPk+A4SNVRqWKITy+b4oEb/to9IQOFjfLIDV+GawqcKtsIFhc8U
                 FhTKCtPD+y2FeYWcgqdwVeG6wuIzYkwLpiEHAAA=
-                """
-        )
+                """,
+        ),
       )
       .testModes(TestMode.DEFAULT)
       .createProjects(root)
@@ -440,7 +440,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
       .files(
         source("res/values/strings.xml", """
                 <resources/>
-                """)
+                """,)
           .indented()
       )
       .clientFactory { createGlobalLintJarClient(lintJar) }
@@ -464,9 +464,9 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
           "lint.jar",
           source(
             "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
-            "test.pkg.MyIssueRegistry"
+            "test.pkg.MyIssueRegistry",
           ),
-          0x70522285
+          0x70522285,
         ),
         bytecode(
           "lint.jar",
@@ -561,7 +561,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                 T2MsgxXZQuJ9x+d2FxvoMRxCsou8z5MkWLktpNNH08Pp4a8YeZHObOH0J2SJ
                 wvwQDQ3+oM+49BGJD3/YBhDULc3+R3lPc3SFIA7cwBzLKUZd4YgmVhA2cdWE
                 wTsmTX4xbeIaZlZAPmZxfQUhH1EfsV8QdIFtHAYAAA==
-                """
+                """,
         ),
         bytecode(
           "lint.jar",
@@ -585,7 +585,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                     R2Z/RCclZaplYpG2RaY8/yeGF2aQxfJEebLwe6Cd6sm2soqqh1obJ5wy2mIL
                     AWVE2fmBaVFohIvEeM6B0vojwgefAr4TlnMxwBJh9b0BE3Tz2o8cv2GZzn2q
                     faHa10sUItQi1CNMYuqDTUeYwSxdMXcJZjGPBpUsqhYLFmNv+k/OETwCAAA=
-                    """
+                    """,
         ),
       )
       .testModes(TestMode.DEFAULT)
@@ -601,7 +601,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
             """
                 <?xml version="1.0" encoding="utf-8"?>
                 <resources/>
-                """
+                """,
           )
           .indented()
       )
@@ -668,7 +668,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
             """
                 <?xml version="1.0" encoding="utf-8"?>
                 <resources/>
-                """
+                """,
           )
           .indented()
       )
@@ -687,7 +687,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
             """
             <?xml version="1.0" encoding="utf-8"?>
             <resources/>
-            """
+            """,
           )
           .indented()
       )
@@ -703,10 +703,10 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
         dir.path,
         "--XskipJarVerification",
         "--disable",
-        "_TestIssueId"
+        "_TestIssueId",
       ),
       null,
-      null
+      null,
     )
   }
 
@@ -724,7 +724,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
           "lint.jar",
           source(
             "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
-            "androidx.fragment.lint.FragmentIssueRegistry"
+            "androidx.fragment.lint.FragmentIssueRegistry",
           ),
           bytes(
             "androidx/fragment/lint/FragmentIssueRegistry.class",
@@ -3471,8 +3471,8 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
               115,
               0,
               68,
-            )
-          )
+            ),
+          ),
         )
       )
       .testModes(TestMode.DEFAULT)
@@ -3488,7 +3488,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
             """
                 <?xml version="1.0" encoding="utf-8"?>
                 <resources/>
-                """
+                """,
           )
           .indented()
       )
@@ -3536,9 +3536,9 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
           "lint.jar",
           source(
             "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
-            "test.pkg.MyIssueRegistry"
+            "test.pkg.MyIssueRegistry",
           ),
-          0x70522285
+          0x70522285,
         ),
         bytecode(
           "lint.jar",
@@ -3692,8 +3692,8 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGIWIGYCYgYuYy7F5PxcvcS8lKL8zBS9kvz8
                 nGK9nMy8Er3knMxUIJVYkCnE5wxmxxeXlCYVe5coMWgxAAANsEImTQAAAA==
-                """
-        )
+                """,
+        ),
       )
       .testModes(TestMode.DEFAULT)
       .createProjects(root)
@@ -3717,7 +3717,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                     <string name="string3">String 3</string>
 
                 </resources>
-                """
+                """,
           )
           .indented(),
         // Reference <MyIssueId> from a lint.xml file; this would normally result
@@ -3729,7 +3729,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                 <lint>
                     <issue id="MyIssueId" severity="error" />
                 </lint>
-                """
+                """,
           )
           .indented(),
       )
@@ -3914,7 +3914,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                         @JvmField val EMPTY: EnumSet<Scope> = EnumSet.noneOf(Scope::class.java)
                     }
                 }
-                """
+                """,
         ),
         kotlin(
             "src/client_stubs.kt",
@@ -3940,7 +3940,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                         open val vendor: Vendor? = null
                         open fun sameMessage(issue: Issue, new: String, old: String): Boolean = false
                     }
-                """
+                """,
           )
           .indented(),
         // The following classes are classes or methods or fields which don't
@@ -3957,7 +3957,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
   }
 }
@@ -3965,7 +3965,7 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
 fun createGlobalLintJarClient(
   lintJar: File,
   clientName: String? = null,
-  log: ((String) -> Unit)? = null
+  log: ((String) -> Unit)? = null,
 ) =
   object :
     com.android.tools.lint.checks.infrastructure.TestLintClient(clientName ?: CLIENT_UNIT_TESTS) {

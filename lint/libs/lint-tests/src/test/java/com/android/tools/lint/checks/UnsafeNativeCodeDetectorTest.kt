@@ -49,7 +49,7 @@ class UnsafeNativeCodeDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -77,7 +77,7 @@ class UnsafeNativeCodeDetectorTest : AbstractCheckTest() {
         bytes("assets/hello", bytesWithElfHeader),
         bytes("assets/libhello-jni.so", bytesWithElfHeader),
         bytes("lib/armeabi/hello", bytesWithElfHeader),
-        bytes("lib/armeabi/libhello-jni.so", bytesWithElfHeader)
+        bytes("lib/armeabi/libhello-jni.so", bytesWithElfHeader),
       )
       .run()
       .expect(
@@ -105,7 +105,7 @@ class UnsafeNativeCodeDetectorTest : AbstractCheckTest() {
         bytes("assets/hello", bytesWithElfHeader),
         bytes("assets/libhello-jni.so", bytesWithElfHeader),
         bytes("lib/armeabi/hello", bytesWithElfHeader),
-        bytes("lib/armeabi/libhello-jni.so", bytesWithElfHeader)
+        bytes("lib/armeabi/libhello-jni.so", bytesWithElfHeader),
       )
       .incremental("src/test/pkg/Load.java")
       .run()

@@ -45,7 +45,7 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -175,7 +175,7 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -267,7 +267,7 @@ class CallSuperDetectorTest : AbstractCheckTest() {
 
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -317,10 +317,10 @@ class CallSuperDetectorTest : AbstractCheckTest() {
 
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -475,7 +475,7 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -643,7 +643,7 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -679,7 +679,7 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -712,7 +712,7 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -766,7 +766,7 @@ class CallSuperDetectorTest : AbstractCheckTest() {
           """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGJWKM2gxKDFAABNj30wGAAAAA==
-                """
+                """,
         ),
         compiled(
           "libs/lib2.jar",
@@ -798,9 +798,9 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 O5x6oe0RrlIW08vctLt/UPtdltcIg5L0sE5YfxDgBUK3G8xQlZfmvTKn+9To
                 /2dkU+PGtFovta9LbGCT3g/EzpJnrgOvhfkWIkIsOFhs4SVedcAKLGG5A79A
                 WGClQFBghoJ7aI1RU0ICAAA=
-                """
+                """,
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(

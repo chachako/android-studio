@@ -207,7 +207,7 @@ class AppCompatCustomViewDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        appCompatJar
+        appCompatJar,
       )
       .run()
       .expect(expected)
@@ -282,7 +282,7 @@ class AppCompatCustomViewDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -307,7 +307,7 @@ class AppCompatCustomViewDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         appCompatJar,
-        manifest().minSdk(20)
+        manifest().minSdk(20),
       )
       .run()
       .expect(

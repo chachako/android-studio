@@ -31,7 +31,7 @@ class InvalidImeActionIdDetectorTest : AbstractCheckTest() {
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
                     <EditText android:layout_width="match_parent" android:layout_height="wrap_content" android:imeActionId="6"/>
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -48,7 +48,7 @@ class InvalidImeActionIdDetectorTest : AbstractCheckTest() {
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
                     <EditText android:layout_width="match_parent" android:layout_height="wrap_content" android:imeActionId="@+id/login"/>
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -72,7 +72,7 @@ class InvalidImeActionIdDetectorTest : AbstractCheckTest() {
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
                     <EditText android:layout_width="match_parent" android:layout_height="wrap_content" android:imeActionId="mmm"/>
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )

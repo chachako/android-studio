@@ -40,7 +40,7 @@ class VectorDrawableCompatDetectorTest : AbstractCheckTest() {
         image("src/main/res/drawable-hdpi/bitmap.png", 10, 10).fill(0),
         xml("src/main/res/layout/main_activity.xml", layoutSrcCompat),
         xml("src/main/res/layout/main_activity_src.xml", layoutSrc), // OK
-        getGradleTestFile("2.0.0", false)
+        getGradleTestFile("2.0.0", false),
       )
       .run()
       .expect(expected)
@@ -59,7 +59,7 @@ class VectorDrawableCompatDetectorTest : AbstractCheckTest() {
         xml("src/main/res/drawable/foo.xml", vector),
         xml("src/main/res/layout/main_activity.xml", layoutSrc),
         xml("src/main/res/layout/main_activity_compat.xml", layoutSrcCompat), // OK
-        getGradleTestFile("2.0.0", true)
+        getGradleTestFile("2.0.0", true),
       )
       .run()
       .expect(expected)
@@ -102,10 +102,10 @@ class VectorDrawableCompatDetectorTest : AbstractCheckTest() {
                     </target>
 
                 </animated-vector>
-                """
+                """,
           )
           .indented(),
-        getGradleTestFile("3.2.0", true)
+        getGradleTestFile("3.2.0", true),
       )
       .run()
       .expect(
@@ -125,7 +125,7 @@ class VectorDrawableCompatDetectorTest : AbstractCheckTest() {
           xml("src/main/res/drawable/foo.xml", vector),
           xml("src/main/res/layout/lib_activity.xml", layoutSrc),
           xml("src/main/res/layout/lib_activity_compat.xml", layoutSrcCompat),
-          getGradleTestFile("7.0.0", false)
+          getGradleTestFile("7.0.0", false),
         )
 
     val app =
@@ -134,7 +134,7 @@ class VectorDrawableCompatDetectorTest : AbstractCheckTest() {
           manifest().minSdk(21),
           xml("src/main/res/layout/main_activity.xml", layoutSrc),
           xml("src/main/res/layout/main_activity_compat.xml", layoutSrcCompat),
-          getGradleTestFile("7.0.0", false)
+          getGradleTestFile("7.0.0", false),
         )
         .dependsOn(library)
 
@@ -160,7 +160,7 @@ class VectorDrawableCompatDetectorTest : AbstractCheckTest() {
         .files(
           xml("src/main/res/layout/main_activity.xml", layoutSrc),
           xml("src/main/res/layout/main_activity_compat.xml", layoutSrcCompat),
-          getGradleTestFile("7.0.0", false)
+          getGradleTestFile("7.0.0", false),
         )
         .dependsOn(library)
 
@@ -186,7 +186,7 @@ class VectorDrawableCompatDetectorTest : AbstractCheckTest() {
         .files(
           xml("src/main/res/layout/main_activity.xml", layoutSrc),
           xml("src/main/res/layout/main_activity_compat.xml", layoutSrcCompat),
-          getGradleTestFile("7.0.0", true)
+          getGradleTestFile("7.0.0", true),
         )
         .dependsOn(library)
 
@@ -212,7 +212,7 @@ class VectorDrawableCompatDetectorTest : AbstractCheckTest() {
         .files(
           xml("src/main/res/layout/main_activity.xml", layoutSrc),
           xml("src/main/res/layout/main_activity_compat.xml", layoutSrcCompat),
-          getGradleTestFile("7.0.0", false)
+          getGradleTestFile("7.0.0", false),
         )
         .dependsOn(library)
 
@@ -238,7 +238,7 @@ class VectorDrawableCompatDetectorTest : AbstractCheckTest() {
         .files(
           xml("src/main/res/layout/main_activity.xml", layoutSrc),
           xml("src/main/res/layout/main_activity_compat.xml", layoutSrcCompat),
-          getGradleTestFile("7.0.0", true)
+          getGradleTestFile("7.0.0", true),
         )
         .dependsOn(library)
 

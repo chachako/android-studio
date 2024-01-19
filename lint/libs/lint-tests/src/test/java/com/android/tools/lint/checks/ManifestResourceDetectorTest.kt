@@ -57,7 +57,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                     <string name="app_name">App Name (Default)</string>
                     <bool name="has_honeycomb">false</bool>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -66,7 +66,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources>
                     <bool name="has_honeycomb">true</bool>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -75,7 +75,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="app_name">App Name (English)</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -84,9 +84,9 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources>
                     <dimen name="activity_horizontal_margin">16dp</dimen>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .incremental("AndroidManifest.xml")
       .run()
@@ -119,7 +119,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="location_process">Location Process</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -128,7 +128,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                     <bool name="enable_wearable_location_service">true</bool>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -137,7 +137,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="location_process">Location Process (English)</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -146,7 +146,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                     <bool name="enable_wearable_location_service">false</bool>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -157,7 +157,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -166,9 +166,9 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <full-backup-content>
                      <include domain="file" path="mcc"/>
                 </full-backup-content>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .incremental("AndroidManifest.xml")
       .run()
@@ -229,7 +229,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                     <string name="app_name">App Name (Default)</string>
                     <bool name="has_honeycomb">false</bool>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -238,7 +238,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                     <bool name="enable_wearable_location_service">true</bool>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -248,7 +248,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                     <string name="location_process">Location Process (English)</string>
                     <string name="app_name">App Name (English)</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -257,7 +257,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                     <bool name="enable_wearable_location_service">false</bool>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -266,7 +266,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources>
                     <bool name="has_honeycomb">true</bool>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -275,7 +275,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources>
                     <dimen name="activity_horizontal_margin">16dp</dimen>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -286,7 +286,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -295,9 +295,9 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <full-backup-content>
                      <include domain="file" path="mcc"/>
                 </full-backup-content>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -357,7 +357,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                     <string name="permlab_readContacts">read your contacts</string>
                     <string name="permdesc_readContacts">Allows the app to...</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -369,9 +369,9 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                     <string name="permlab_readContacts">"lese kontaktene dine"</string>
                     <string name="permdesc_readContacts">"Lar appen lese...</string>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .incremental("AndroidManifest.xml")
       .run()
@@ -410,7 +410,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                     <string name="app_id">Id</string>
                     <mipmap name="ic_launcher">@mipmap/other</mipmap>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -419,7 +419,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="app_id">"Id"</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -428,9 +428,9 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
                 <resources>
                     <mipmap name="ic_launcher">@mipmap/other</mipmap>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .incremental("AndroidManifest.xml")
       .run()
@@ -456,7 +456,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
         image("res/mipmap-hdpi/round_icon.png", 472, 290).fill(-0x1),
         image("res/mipmap-xhdpi/round_icon.png", 472, 290).fill(-0x1),
         image("res/mipmap-xxhdpi/round_icon.png", 472, 290).fill(-0x1),
-        image("res/mipmap-xxxhdpi/round_icon.png", 472, 290).fill(-0x1)
+        image("res/mipmap-xxxhdpi/round_icon.png", 472, 290).fill(-0x1),
       )
       .incremental("AndroidManifest.xml")
       .run()
@@ -479,7 +479,7 @@ class ManifestResourceDetectorTest : AbstractCheckTest() {
           .indented(),
         image("res/mipmap-mdpi/round_icon.png", 472, 290).fill(-0x1),
         image("res/mipmap-hdpi-v4/round_icon.png", 472, 290).fill(-0x1),
-        image("res/mipmap-v21/round_icon.png", 472, 290).fill(-0x1)
+        image("res/mipmap-v21/round_icon.png", 472, 290).fill(-0x1),
       )
       .incremental("AndroidManifest.xml")
       .run()

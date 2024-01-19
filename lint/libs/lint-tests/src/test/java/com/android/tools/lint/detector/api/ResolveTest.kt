@@ -46,7 +46,7 @@ class ResolveTest : TestCase() {
                         System.out.println("hello");
                     }
                 }
-            """
+            """,
           )
           .indented(),
         kotlin(
@@ -57,9 +57,9 @@ class ResolveTest : TestCase() {
                 fun test() {
                     Foo.test()
                 }
-            """
+            """,
           )
-          .indented()
+          .indented(),
       )
 
     val pair = LintUtilsTest.parseAll(*tests)
@@ -79,7 +79,7 @@ class ResolveTest : TestCase() {
             """
         .trimIndent()
         .trim(),
-      file?.asResolveString()?.trim()
+      file?.asResolveString()?.trim(),
     )
     Disposer.dispose(pair.second)
   }
@@ -121,7 +121,7 @@ class ResolveTest : TestCase() {
             """
         .trimIndent()
         .trim(),
-      file?.asResolveString()?.trim()
+      file?.asResolveString()?.trim(),
     )
     Disposer.dispose(pair.second)
   }
@@ -142,7 +142,7 @@ class ResolveTest : TestCase() {
             """
           )
           .indented(),
-        libBar
+        libBar,
       )
 
     val pair = LintUtilsTest.parse(*tests)
@@ -171,7 +171,7 @@ class ResolveTest : TestCase() {
             """
         .trimIndent()
         .trim(),
-      file?.asResolveString()?.trim()
+      file?.asResolveString()?.trim(),
     )
     Disposer.dispose(pair.second)
   }
@@ -193,7 +193,7 @@ class ResolveTest : TestCase() {
                 }
                 """
         ),
-        libBar
+        libBar,
       )
 
     val pair = LintUtilsTest.parse(*tests)
@@ -219,7 +219,7 @@ class ResolveTest : TestCase() {
             """
         .trimIndent()
         .trim(),
-      file?.asResolveString()?.trim()
+      file?.asResolveString()?.trim(),
     )
     Disposer.dispose(pair.second)
   }
@@ -266,7 +266,7 @@ class ResolveTest : TestCase() {
             """
         .trimIndent()
         .trim(),
-      uastFile?.asResolveString()?.trim()
+      uastFile?.asResolveString()?.trim(),
     )
     Disposer.dispose(pair.second)
   }
@@ -319,7 +319,7 @@ class ResolveTest : TestCase() {
             """
         .trimIndent()
         .trim(),
-      uastFile?.asResolveString()?.trim()
+      uastFile?.asResolveString()?.trim(),
     )
     Disposer.dispose(pair.second)
   }
@@ -376,7 +376,7 @@ class ResolveTest : TestCase() {
         "QT/BwV9e2Ly5UQIqn/C5eUspNiSMzjF/4PDSC8vALoUJca6flN3NrPd14xxb" +
         "R0mhgJS4CD8EEiS4jhIeXgSEm9//kH0d/tyLaxRslm7EMYJLZviDQbCxwjq2" +
         "NzJuG1eFxv9BfKN2nYIbTcG5tH/wbGIiyUoAWE/wr+3ZtfOrwPrtTxRMPJAF" +
-        "BwAA"
+        "BwAA",
     )
 }
 

@@ -75,7 +75,7 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                 <lint>
                     <issue id="SdCardPath" severity="ignore" />
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -84,7 +84,7 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                 <lint>
                     <issue id="SdCardPath" severity="error" />
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -93,10 +93,10 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                 <lint>
                     <issue id="SdCardPath" severity="warning" />
                 </lint>
-                """
+                """,
           )
           .indented(),
-        gradle("") // Trigger src/main/java source sets
+        gradle(""), // Trigger src/main/java source sets
       )
       .issues(SdCardDetector.ISSUE)
       .run()
@@ -140,7 +140,7 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
       ManifestDetector.DUPLICATE_USES_FEATURE,
       ManifestDetector.ILLEGAL_REFERENCE,
       ManifestDetector.MULTIPLE_USES_SDK,
-      ManifestDetector.WRONG_PARENT
+      ManifestDetector.WRONG_PARENT,
     )
 
   fun testLintXmlSeverityInheritance() {
@@ -155,10 +155,10 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                     <!-- overrides inherited -->
                     <issue id="ManifestOrder" severity="error" />
                 </lint>
-                """
+                """,
             )
             .indented(),
-          gradle("apply plugin: 'com.android.library'")
+          gradle("apply plugin: 'com.android.library'"),
         )
         .name("indirectLib")
 
@@ -174,10 +174,10 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                     <!-- does not override inherited (would in a direct project, not a lib project -->
                     <issue id="ManifestOrder" severity="error" />
                 </lint>
-                """
+                """,
             )
             .indented(),
-          gradle("apply plugin: 'com.android.library'")
+          gradle("apply plugin: 'com.android.library'"),
         )
         .dependsOn(indirectLib)
         .name("lib")
@@ -194,7 +194,7 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                     <issue id="ManifestOrder" severity="ignore" />
                     <issue id="IllegalResourceRef" severity="ignore"/>
                 </lint>
-            """
+            """,
             )
             .indented(),
           xml(
@@ -204,10 +204,10 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                     <!-- This will turn it off both in app and in lib -->
                     <issue id="MultipleUsesSdk" severity="ignore" />
                 </lint>
-                """
+                """,
             )
             .indented(),
-          gradle("apply plugin: 'com.android.application'")
+          gradle("apply plugin: 'com.android.application'"),
         )
         .dependsOn(lib)
         .name("app")
@@ -260,10 +260,10 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                         <ignore regexp="AndroidManifest.xml" />
                     </issue>
                 </lint>
-                """
+                """,
             )
             .indented(),
-          gradle("apply plugin: 'com.android.library'")
+          gradle("apply plugin: 'com.android.library'"),
         )
         .name("indirectLib")
 
@@ -279,10 +279,10 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                         <ignore regexp="AndroidManifest.xml" />
                     </issue>
                 </lint>
-                """
+                """,
             )
             .indented(),
-          gradle("apply plugin: 'com.android.library'")
+          gradle("apply plugin: 'com.android.library'"),
         )
         .dependsOn(indirectLib)
         .name("lib")
@@ -305,7 +305,7 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                         <ignore regexp="must be a literal integer" />
                     </issue>
                 </lint>
-            """
+            """,
             )
             .indented(),
           xml(
@@ -317,10 +317,10 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                         <ignore regexp="AndroidManifest.xml" />
                     </issue>
                 </lint>
-                """
+                """,
             )
             .indented(),
-          gradle("apply plugin: 'com.android.application'")
+          gradle("apply plugin: 'com.android.application'"),
         )
         .dependsOn(lib)
         .name("app")
@@ -395,7 +395,7 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                          that one configuration wins -->
                     <issue id="OldTargetApi" severity="error" />
                 </lint>
-            """
+            """,
           )
           .indented(),
         xml(
@@ -404,7 +404,7 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                 <lint>
                     <issue id="AllowBackup" severity="ignore" />
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -418,7 +418,7 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                     <!-- Also configured by lint-default.xml in same folder: this one wins -->
                     <issue id="OldTargetApi" severity="ignore" />
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -427,7 +427,7 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                 <lint>
                     <issue id="MissingApplicationIcon" severity="ignore" />
                 </lint>
-            """
+            """,
           )
           .indented(),
         xml(
@@ -437,9 +437,9 @@ class ConfigurationHierarchyTest : AbstractCheckTest() {
                     <!-- Overrides setting in build.gradle because it's closer to the source -->
                     <issue id="MultipleUsesSdk" severity="fatal" />
                 </lint>
-            """
+            """,
           )
-          .indented()
+          .indented(),
       )
       .issues(*manifestIssues)
       .run()
@@ -472,7 +472,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                         <!-- // Not set in fallback or override: this is used -->
                         <issue id="SdCardPath" severity="ignore"/>
                     </lint>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -481,7 +481,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                 <lint>
                     <issue id="DuplicateIds" severity="fatal"/>
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -490,7 +490,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                 <lint>
                     <issue id="DuplicateDefinition" severity="ignore"/>
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -498,7 +498,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
             """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
                     <Button android:id='@+id/duplicated'/>    <Button android:id='@+id/duplicated'/></LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -508,10 +508,10 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                     <item type="id" name="name" />
                     <item type="id" name="name" />
                 </resources>
-                """
+                """,
           )
           .indented(),
-        kotlin("val path = \"/sdcard/path\"")
+        kotlin("val path = \"/sdcard/path\""),
       )
     checkDriver(
       "No issues found.",
@@ -526,8 +526,8 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
         File(project, "fallback.xml").path,
         "--override-config",
         File(project, "override.xml").path,
-        project.path
-      )
+        project.path,
+      ),
     )
   }
 
@@ -548,7 +548,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                 <lint>
                     <issue id="DuplicateIds" severity="ignore"/>
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -557,7 +557,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                 <lint>
                     <issue id="DuplicateDefinition" severity="ignore"/>
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -565,7 +565,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
             """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
                     <Button android:id='@+id/duplicated'/>    <Button android:id='@+id/duplicated'/></LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -575,9 +575,9 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                     <item type="id" name="name" />
                     <item type="id" name="name" />
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
     checkDriver(
       "No issues found.",
@@ -592,8 +592,8 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
         File(project, "fallback.xml").path,
         "--override-config",
         File(project, "override.xml").path,
-        project.path
-      )
+        project.path,
+      ),
     )
   }
 
@@ -626,7 +626,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                 <lint>
                     <issue id="DuplicateIds" severity="ignore"/>
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -635,7 +635,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                 <lint>
                     <issue id="DuplicateDefinition" severity="ignore"/>
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -643,7 +643,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
             """
                 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
                     <Button android:id='@+id/duplicated'/>    <Button android:id='@+id/duplicated'/></LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -653,9 +653,9 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                     <item type="id" name="name" />
                     <item type="id" name="name" />
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
     checkDriver(
       "No issues found.",
@@ -670,8 +670,8 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
         File(project, "misc/config.xml").path,
         "--override-config",
         File(project, "build/temp/override.xml").path,
-        project.path
-      )
+        project.path,
+      ),
     )
   }
 
@@ -679,7 +679,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
     expectedOutput: String,
     expectedError: String,
     expectedExitCode: Int,
-    args: Array<String>
+    args: Array<String>,
   ) {
     checkDriver(expectedOutput, expectedError, expectedExitCode, args, this::cleanup, null)
   }
@@ -695,7 +695,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                 <lint>
                     <issue id="UseValueOf" severity="error" />
                 </lint>
-                """
+                """,
             )
             .indented(),
           gradle("apply plugin: 'com.android.library'"),
@@ -708,7 +708,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                         val z = java.lang.Integer(42)
                     }
                 """
-          )
+          ),
         )
         .name("lib")
 
@@ -723,10 +723,10 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                     <issue id="SdCardPath" severity="ignore" />
                     <issue id="UseValueOf" severity="warning" />
                 </lint>
-            """
+            """,
             )
             .indented(),
-          gradle("apply plugin: 'com.android.application'")
+          gradle("apply plugin: 'com.android.application'"),
         )
         .dependsOn(lib)
         .name("app")
@@ -771,9 +771,9 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                 <lint>
 
                 </lint>
-                """)
+                """,)
           .indented(),
-        gradle("") // Trigger src/main/java source sets
+        gradle(""), // Trigger src/main/java source sets
       )
       .useTestConfiguration(false)
       .overrideConfig(
@@ -783,9 +783,9 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                     <lint>
                         <issue id="SdCardPath" severity="error" />
                     </lint>
-                    """
+                    """,
           )
-          .indented(),
+          .indented()
       )
       .issues(SdCardDetector.ISSUE)
       .run()
@@ -822,10 +822,10 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                          and flag it if not. -->
                     <issue id="MyIssueId" severity="ignore" />
                 </lint>
-            """
+            """,
             )
             .indented(),
-          gradle("apply plugin: 'com.android.application'")
+          gradle("apply plugin: 'com.android.application'"),
         )
         .dependsOn(lib)
         .name("app")
@@ -862,9 +862,9 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                 <lint>
                     <issue id="SomeUnknownIssue1" severity="ignore" />
                 </lint>
-            """
+            """,
             )
-            .indented()
+            .indented(),
         )
         .dependsOn(lib)
         .name("app")
@@ -881,7 +881,7 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
           driver: LintDriver,
           type: LintListener.EventType,
           project: Project?,
-          context: Context?
+          context: Context?,
         ) {
           // Make sure we have an associated location for the override configuration; in a Gradle
           // project,
@@ -915,10 +915,10 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
         "LintError",
         "--disable",
         "UnusedResources,ButtonStyle,UnusedResources,AllowBackup,LintError,SomeUnknownIssue2",
-        projectDir.path
+        projectDir.path,
       ),
       null,
-      listener
+      listener,
     )
 
     temp.delete()

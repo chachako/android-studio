@@ -42,7 +42,7 @@ class ResourceTypeDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -116,11 +116,11 @@ src/test/pkg/WrongColor.java:20: Error: Expected resource of type color [Resourc
                     private void foo2(@androidx.annotation.ColorInt int c) {
                     }
                 }
-                """
+                """,
           )
           .indented(),
         rClass("test.pkg", "@color/red", "@color/green", "@color/blue"),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -174,10 +174,10 @@ src/test/pkg/ColorTest.java:17: Error: Expected a color resource id (R.color.) b
                         setColor2(getColor2()); // OK
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -210,10 +210,10 @@ src/test/pkg/ColorTest.java:11: Error: Expected a color resource id (R.color.) b
                         setColor(actualColor);
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -283,7 +283,7 @@ src/test/pkg/ColorTest.java:11: Error: Expected a color resource id (R.color.) b
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowDuplicates()
       .run()
@@ -363,7 +363,7 @@ src/test/pkg/ColorTest.java:11: Error: Expected a color resource id (R.color.) b
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -544,10 +544,10 @@ src/p1/p2/Flow.java:120: Error: Expected resource of type font [ResourceType]
                         }
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -581,10 +581,10 @@ src/test/pkg/ActivityType.java:6: Error: Expected resource of type drawable [Res
                     ActivityType(@DrawableRes int iconResId) {
                         mIconResId = iconResId;
                     }
-                }"""
+                }""",
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -624,10 +624,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                         new ConstructorTest(res, range);
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -681,7 +681,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                         this.id = id;
                         this.visible = true;
                     }
-                }"""
+                }""",
           )
           .indented(),
         java(
@@ -702,10 +702,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                             public static final int somelayout = 0x7f0a0000;
                         }
                     }
-                }"""
+                }""",
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -753,9 +753,9 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "            public static final int my_raw_file = 0x7f0a0002;\n" +
             "        }\n" +
             "    }" +
-            "}"
+            "}",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -794,9 +794,9 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "        if (id != 0) { // OK\n" +
             "        }\n" +
             "    }\n" +
-            "}"
+            "}",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowDuplicates()
       .run()
@@ -836,9 +836,9 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "        if (id != 0) { // OK\n" +
             "        }\n" +
             "    }\n" +
-            "}"
+            "}",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowDuplicates()
       .run()
@@ -918,7 +918,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "    // TODO: Add cast\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -969,7 +969,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1015,9 +1015,9 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "            public static final int my_raw_file = 0x7f0a0002;\n" +
             "        }\n" +
             "    }" +
-            "}"
+            "}",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -1083,9 +1083,9 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "            public static final int BezelImageView_maskDrawable = 0;\n" +
             "        }\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1120,7 +1120,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "    }\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .checkMessage({ context, issue, severity, location, message, fixData ->
         this.checkReportedError(context, issue, severity, location, message, fixData)
@@ -1194,7 +1194,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "    string.handleResourceTypes(myIcon, dimensions = myString) // ERROR\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1293,7 +1293,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -1404,7 +1404,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -1434,7 +1434,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "  }\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1471,7 +1471,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -1527,7 +1527,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1682,7 +1682,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(
         ResourceTypeDetector.RESOURCE_TYPE,
@@ -1691,7 +1691,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
         CheckResultDetector.CHECK_RESULT,
         PermissionDetector.MISSING_PERMISSION,
         ThreadDetector.THREAD,
-        TypedefDetector.TYPE_DEF
+        TypedefDetector.TYPE_DEF,
       )
       .run()
       .expectInlinedMessages()
@@ -1749,7 +1749,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -1769,7 +1769,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1836,7 +1836,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1883,10 +1883,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                     import androidx.annotation.StringRes
 
                     fun Context.foobar(@StringRes msgId: Int, @DrawableRes imgId: Int) {  }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1922,7 +1922,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2011,7 +2011,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2046,7 +2046,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             """
                 package test.pkg
                 data class TestFragmentArgs(val myenum: MYENUM)
-                """
+                """,
           )
           .indented(),
         kotlin(
@@ -2104,7 +2104,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2151,7 +2151,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -2191,7 +2191,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2233,7 +2233,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2311,7 +2311,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2369,7 +2369,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2409,7 +2409,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
           )
           .indented(),
         rClass("test.pkg", "@string/app_name"),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2465,7 +2465,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -2541,7 +2541,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2597,7 +2597,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2656,9 +2656,9 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
                 H/O6nKgb7azbUaFHM7mQXfhoEnpWVVYUL9NTEbmnBm4n5tJMxV0yUxOLAzSW
                 l/gqyIkYW9ztcSbOzZN30JuzQsDY+h0yttFhiaPucviO8Z/WQch46HGzxtGN
                 0VuV66uyz2mw/GDjBxc+8B57AQAA
-                """
+                """,
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(

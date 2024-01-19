@@ -128,11 +128,8 @@ sealed class Command(
  * 2. The device ID (ignored for TCP devices)
  * 3. properties (e.g. "ro.device.model=hammerhead"), separated by semicolons
  */
-class ConnectCommand(
-  val adbVersion: Int = 0x01000001,
-  maxData: Int = 1024 * 1024,
-  banner: String,
-) : Command(CNXN, adbVersion, maxData, banner.toByteArray())
+class ConnectCommand(val adbVersion: Int = 0x01000001, maxData: Int = 1024 * 1024, banner: String) :
+  Command(CNXN, adbVersion, maxData, banner.toByteArray())
 
 /**
  * A StreamCommand is an extraction of common properties of commands sent to streams.
@@ -159,10 +156,8 @@ abstract class StreamCommand(
  *
  * @see [Command] to explain local ID
  */
-class OpenCommand(
-  val localId: Int,
-  val service: String,
-) : StreamCommand(OPEN, localId, 0, service.toByteArray())
+class OpenCommand(val localId: Int, val service: String) :
+  StreamCommand(OPEN, localId, 0, service.toByteArray())
 
 /**
  * The okay command (A_OKAY in protocol.txt) is sent when the stream is ready for more data.
@@ -188,8 +183,5 @@ class CloseCommand(localId: Int, remoteId: Int) : StreamCommand(CLSE, localId, r
  *
  * @see [Command] to explain local and remote IDs
  */
-class WriteCommand(
-  localId: Int,
-  remoteId: Int,
-  val payload: ByteArray,
-) : StreamCommand(WRTE, localId, remoteId, payload)
+class WriteCommand(localId: Int, remoteId: Int, val payload: ByteArray) :
+  StreamCommand(WRTE, localId, remoteId, payload)

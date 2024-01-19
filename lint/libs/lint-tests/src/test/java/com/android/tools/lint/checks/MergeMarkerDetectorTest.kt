@@ -41,7 +41,7 @@ class MergeMarkerDetectorTest : AbstractCheckTest() {
                     <string name="string3">String 3</string>
 
                 </resources>
-                """
+                """,
           )
           .indented(),
         // Make sure we don't try to read binary contents
@@ -52,9 +52,9 @@ class MergeMarkerDetectorTest : AbstractCheckTest() {
                 =======
                 >>>>>>> branch-a
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

@@ -43,7 +43,7 @@ class BodyRemovalTestMode :
   UastSourceTransformationTestMode(
     description = "Body Removal",
     "TestMode.BODY_REMOVAL",
-    "body-removal"
+    "body-removal",
   ) {
   override val diffExplanation: String =
     // first line shorter: expecting to prefix that line with
@@ -70,7 +70,7 @@ class BodyRemovalTestMode :
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
     val edits = mutableListOf<Edit>()
     val seen = mutableSetOf<PsiElement>()

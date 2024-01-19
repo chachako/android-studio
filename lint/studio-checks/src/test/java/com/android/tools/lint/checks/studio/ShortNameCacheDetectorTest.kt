@@ -138,7 +138,7 @@ class ShortNameCacheDetectorTest {
                       public interface PsiField { }
                     }
                     """
-        )
+        ),
       )
       .issues(ShortNameCacheDetector.ISSUE)
       .run()

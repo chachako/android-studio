@@ -220,7 +220,7 @@ class NoOpDetectorTest : AbstractCheckTest() {
                     }
                     """
           )
-          .indented()
+          .indented(),
       )
       .configureOption(NoOpDetector.ASSUME_PURE_GETTERS, true)
       .run()
@@ -311,7 +311,7 @@ class NoOpDetectorTest : AbstractCheckTest() {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -547,7 +547,7 @@ class NoOpDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -637,7 +637,7 @@ class NoOpDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -784,7 +784,7 @@ class NoOpDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -804,7 +804,7 @@ class NoOpDetectorTest : AbstractCheckTest() {
                 private object ShellImpl
                 """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -860,7 +860,7 @@ class NoOpDetectorTest : AbstractCheckTest() {
                     return IntValue(value)
                 }
                 """
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -891,7 +891,7 @@ class NoOpDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -945,7 +945,7 @@ class NoOpDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

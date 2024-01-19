@@ -51,7 +51,7 @@ interface PlatformLookup {
   fun getLatestSdkTarget(
     minApi: Int = 1,
     includePreviews: Boolean = true,
-    includeAddOns: Boolean = false
+    includeAddOns: Boolean = false,
   ): IAndroidTarget?
 
   /** Returns the platform installed for the given [buildTargetHash], if found. */

@@ -120,9 +120,9 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                             android:restrictionType="hidden"
                             android:title="@string/title_secret_code"/>
 
-                    </restrictions>"""
+                    </restrictions>""",
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -149,7 +149,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
             """
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                             <restriction />
-                        </restrictions>"""
+                        </restrictions>""",
           )
           .indented()
       )
@@ -215,7 +215,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                          />
                         </restriction>
                     </restrictions>
-                    """
+                    """,
           )
           .indented()
       )
@@ -245,7 +245,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:key="number"
                                 android:restrictionType="choice"
                                 android:title="@string/title_number"/>
-                        </restrictions>"""
+                        </restrictions>""",
           )
           .indented()
       )
@@ -266,7 +266,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                         android:restrictionType="hidden"
                         android:title="@string/title_number"/>
                 </restrictions>
-                """
+                """,
           )
           .indented()
       )
@@ -313,7 +313,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:key="message3"
                                 android:restrictionType="integer"
                                 android:title="@string/title_number3"/>
-                        </restrictions>"""
+                        </restrictions>""",
           )
           .indented()
       )
@@ -338,7 +338,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                             <!-- Comments are okay -->
                             <wrongtag />
                         </restrictions>
-                        """
+                        """,
           )
           .indented()
       )
@@ -367,7 +367,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:restrictionType="bool"
                                 android:title="@string/title_can_say_hello"/>
                         </restrictions>
-                        """
+                        """,
           )
           .indented()
       )
@@ -413,7 +413,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:restrictionType="integer"
                                 android:title="@string/title_number"/>
                         </restrictions>
-                        """
+                        """,
           )
           .indented()
       )
@@ -449,7 +449,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                   android:title="@string/title_can_say_hello"/>
                             </restriction>
                         </restrictions>
-                    """
+                    """,
           )
           .indented()
       )
@@ -477,7 +477,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:restrictionType="bundle"
                                 android:title="@string/title_message"/>
                         </restrictions>
-                        """
+                        """,
           )
           .indented()
       )
@@ -505,7 +505,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                                 android:restrictionType="bundle_array"
                                 android:title="@string/title_message"/>
                         </restrictions>
-                        """
+                        """,
           )
           .indented()
       )
@@ -539,7 +539,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                         $sb
                         </restrictions>
-                    """
+                    """,
           )
           .indented()
       )
@@ -595,7 +595,7 @@ class RestrictionsDetectorTest : AbstractCheckTest() {
                         <restrictions xmlns:android="http://schemas.android.com/apk/res/android">
                         $sb
                         </restrictions>
-                    """
+                    """,
         )
       )
       .run()

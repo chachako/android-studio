@@ -50,8 +50,8 @@ class MediaBrowserServiceCompatVersionDetector : Detector(), SourceCodeScanner {
         implementation =
           Implementation(
             MediaBrowserServiceCompatVersionDetector::class.java,
-            Scope.JAVA_FILE_SCOPE
-          )
+            Scope.JAVA_FILE_SCOPE,
+          ),
       )
 
     /**

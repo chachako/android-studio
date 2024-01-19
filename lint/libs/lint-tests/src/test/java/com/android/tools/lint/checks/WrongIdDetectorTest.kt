@@ -85,7 +85,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                     android:id="@+id/video_badges"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
-                """
+                """,
           )
           .indented(),
         xml(
@@ -103,9 +103,9 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                         android:layout_below="@id/video_badges" />
 
                 </RelativeLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -191,7 +191,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                         android:text="Button" />
 
                 </RelativeLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -249,7 +249,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                     </LinearLayout>
 
                 </android.support.constraint.ConstraintLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -320,7 +320,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                     </LinearLayout>
 
                 </RelativeLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -382,7 +382,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                         android:text="Button" />
 
                 </RelativeLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -408,7 +408,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                         android:layout_height="wrap_content"
                         layout_below="@+id/tv_portfolio_title"/>
                 </RelativeLayout>
-            """
+            """,
           )
           .indented()
       )
@@ -434,7 +434,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                         android:layout_height="wrap_content"
                         android:layout_below="@+id/tv_portfolio_title"/>
                 </RelativeLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -476,7 +476,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                             app:layout_widthPercent="60%"/>
 
                 </android.support.percent.PercentRelativeLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -502,7 +502,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                     android:id="@*android:id/parentPanel"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
-                """
+                """,
           )
           .indented()
       )
@@ -541,7 +541,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                         app:layout_editor_absoluteY="94dp"
                         android:id="@+id/button5" />
                 </android.support.constraint.ConstraintLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -627,9 +627,9 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                             android:id="@id/my_id0" />
                     </LinearLayout>
                 </android.support.constraint.ConstraintLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -710,7 +710,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                             android:id="@id/my_id0" />
                     </LinearLayout>
                 </android.support.constraint.ConstraintLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -758,7 +758,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                     <include layout="@layout/included1"/>
                     <include layout="@layout/included2"/>
                 </RelativeLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -771,7 +771,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                     android:id="@+id/id1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -791,9 +791,9 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                         android:id="@+id/id2"
                     />
                 </merge>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .incremental("res/layout/layout4.xml")
       .run()
@@ -824,7 +824,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                     <include layout="@layout/included1"/>
                     <include layout="@layout/included2"/>
                 </RelativeLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -851,7 +851,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                         android:id="@drawable/ic_launcher" /> <!-- ERROR -->
                     <TabWidget android:id="@android:id/tabs"/> <!-- OK -->
                 </RelativeLayout>
-                """
+                """,
           )
           .indented(),
         rClass("test.pkg", "@drawable/ic_launcher"),
@@ -862,8 +862,8 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                       xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                       <string name="test">"Test<xliff:g id="APPLICATION_NAME">%s</xliff:g>Test"</string>
                     </resources>
-                """
-        )
+                """,
+        ),
       )
       .run()
       .expect(
@@ -900,7 +900,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                         android:layout_height="wrap_content"
                         app:id="@{uxContent.id}"/>
                 </layout>
-                """
+                """,
           )
           .indented()
       )
@@ -920,7 +920,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                 <item name="my_id1" type="id"/>
 
             </resources>
-            """
+            """,
       )
       .indented()
 
@@ -976,7 +976,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                     android:text="Button" />
 
             </RelativeLayout>
-            """
+            """,
       )
       .indented()
 
@@ -1030,7 +1030,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                 android:text="Button" />
 
         </RelativeLayout>
-        """
+        """,
       )
       .indented()
 
@@ -1051,7 +1051,7 @@ class WrongIdDetectorTest : AbstractCheckTest() {
                 android:text="Button" />
 
         </LinearLayout>
-        """
+        """,
       )
       .indented()
 }

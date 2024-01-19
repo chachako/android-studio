@@ -71,7 +71,7 @@ class ImplicitExecutorDetectorTest {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(ImplicitExecutorDetector.ISSUE)
       .run()

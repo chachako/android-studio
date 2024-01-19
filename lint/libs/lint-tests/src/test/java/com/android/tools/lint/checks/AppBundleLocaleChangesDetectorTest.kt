@@ -252,7 +252,7 @@ class AppBundleLocaleChangesDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -274,7 +274,7 @@ class AppBundleLocaleChangesDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -302,7 +302,7 @@ class AppBundleLocaleChangesDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -330,7 +330,7 @@ class AppBundleLocaleChangesDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -354,7 +354,7 @@ class AppBundleLocaleChangesDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

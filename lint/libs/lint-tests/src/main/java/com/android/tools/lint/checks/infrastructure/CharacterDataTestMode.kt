@@ -28,7 +28,7 @@ class CharacterDataTestMode :
   SourceTransformationTestMode(
     description = "Converting text nodes to CDATA XML sections",
     "TestMode.CDATA",
-    "cdata"
+    "cdata",
   ) {
   override val diffExplanation: String =
     // first line shorter: expecting to prefix that line with

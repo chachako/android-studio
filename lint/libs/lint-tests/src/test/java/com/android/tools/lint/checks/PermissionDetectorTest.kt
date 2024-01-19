@@ -45,7 +45,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
                     public static class Location {
                     }
                 }
-                """
+                """,
       )
       .indented()
 
@@ -62,7 +62,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
                         LocationManager.Location location = locationManager.myMethod(provider);
                     }
                 }
-                """
+                """,
       )
       .indented()
 
@@ -73,7 +73,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
   private fun getThingsManifestWithPermissions(
     targetSdk: Int,
     isRequired: Boolean?,
-    vararg permissions: String
+    vararg permissions: String,
   ): TestFile {
     val applicationBlock = StringBuilder()
     applicationBlock.append("<uses-library android:name=\"com.google.android.things\"")
@@ -92,7 +92,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
   private fun getManifestWithPermissions(
     minSdk: Int,
     targetSdk: Int,
-    vararg permissions: String
+    vararg permissions: String,
   ): TestFile {
     return getManifestWithPermissions(null, minSdk, targetSdk, *permissions)
   }
@@ -101,7 +101,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
     applicationBlock: String?,
     minSdk: Int,
     targetSdk: Int,
-    vararg permissions: String
+    vararg permissions: String,
   ): TestFile {
     val permissionBlock = StringBuilder()
     for (permission in permissions) {
@@ -133,7 +133,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
         (applicationBlock ?: "") +
         "    </application>\n" +
         "\n" +
-        "</manifest>"
+        "</manifest>",
     )
   }
 
@@ -240,7 +240,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
                     }
 
                 }
-                """
+                """,
       )
       .indented()
 
@@ -256,7 +256,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
         getManifestWithPermissions(14),
         mPermissionTest,
         mLocationManagerStub,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -268,7 +268,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
         getManifestWithPermissions(14, "android.permission.ACCESS_FINE_LOCATION"),
         mPermissionTest,
         mLocationManagerStub,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -305,7 +305,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
         getManifestWithPermissions(23, "android.permission.ACCESS_FINE_LOCATION"),
         mLocationManagerStub,
         mRevokeTest,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -346,9 +346,9 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "        // missing a permission!\n" +
             "        method1(); // OK\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -360,7 +360,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
         getManifestWithPermissions(14, "android.permission.ACCESS_FINE_LOCATION"),
         mLocationManagerStub,
         mRevokeTest,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -371,7 +371,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
       getManifestWithPermissions(
         14,
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.BLUETOOTH"
+        "android.permission.BLUETOOTH",
       )
     val contents = manifest.getContents()
     assertNotNull(contents)
@@ -388,7 +388,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
       getManifestWithPermissions(
         14,
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.BLUETOOTH"
+        "android.permission.BLUETOOTH",
       )
     val contents = manifest.getContents()
     assertNotNull(contents)
@@ -437,9 +437,9 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "    public static void test(LocationManager manager) {\n" +
             "        Location location = manager.getLastKnownLocation(\"provider\");\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -458,7 +458,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
         getThingsManifestWithPermissions(24, null),
         mPermissionTest,
         mLocationManagerStub,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -470,7 +470,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
         getThingsManifestWithPermissions(24, null, "android.permission.ACCESS_FINE_LOCATION"),
         mPermissionTest,
         mLocationManagerStub,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -489,7 +489,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
         getThingsManifestWithPermissions(24, false, "android.permission.ACCESS_FINE_LOCATION"),
         mPermissionTest,
         mLocationManagerStub,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -665,9 +665,9 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "        myReadResolverMethod(\"\", BOOKMARKS_URI);\n" +
             "        myWriteResolverMethod(BOOKMARKS_URI);\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -694,7 +694,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -730,7 +730,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -766,7 +766,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -817,7 +817,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -950,7 +950,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -1036,7 +1036,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -1068,7 +1068,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1114,7 +1114,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1173,7 +1173,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1227,7 +1227,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1284,9 +1284,9 @@ class PermissionDetectorTest : AbstractCheckTest() {
             "5wdBuV6/PK5Uy5dhFPiNSlQl7PyNDCK/Vv+KLdZNErfksUpfa/HLzYOusLbU" +
             "EQMxgRHkCMsdEXupfgcRZlKY1xX62ouaHdly2ECGvyuVLCjls81zts6e2Od2" +
             "H0D3HBAKbPNvRYxhlG1mCF3Bm/yAjTIMGOe4yDpuMcGFyf95U0Pe7Dtv6gIZ" +
-            "i2mLGU5muZHB3CvnFPqobQIAAA=="
+            "i2mLGU5muZHB3CvnFPqobQIAAA==",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1459,7 +1459,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1477,7 +1477,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
 
         // App skeleton
         getManifestWithPermissions(14, "android.permission.ACCESS_FINE_LOCATION")
-          .to("../app/AndroidManifest.xml")
+          .to("../app/AndroidManifest.xml"),
       )
       .run()
       .expectClean()
@@ -1555,10 +1555,10 @@ class PermissionDetectorTest : AbstractCheckTest() {
                         </annotation>
                       </item>
                     </root>
-                    """
+                    """,
               )
-              .indented()
-          )
+              .indented(),
+          ),
         )
 
     // No warnings if targetSdkVersion < S
@@ -1630,7 +1630,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
 
         // App skeleton
         getManifestWithPermissions(14, "android.permission.ACCESS_FINE_LOCATION")
-          .to("../app/AndroidManifest.xml")
+          .to("../app/AndroidManifest.xml"),
       )
       .run()
       .expect(
@@ -1671,7 +1671,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
       .files(
         getManifestWithPermissions(33, "android.permission.ACCESS_FINE_LOCATION"),
         nearbyPermissionExample,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1691,10 +1691,10 @@ class PermissionDetectorTest : AbstractCheckTest() {
         getManifestWithPermissions(
           33,
           "android.permission.ACCESS_FINE_LOCATION",
-          "android.permission.NEARBY_WIFI_DEVICES"
+          "android.permission.NEARBY_WIFI_DEVICES",
         ),
         nearbyPermissionExample,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1710,7 +1710,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
       .files(
         getManifestWithPermissions(33, "android.permission.NEARBY_WIFI_DEVICES"),
         nearbyPermissionExample,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1723,7 +1723,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
       .files(
         getManifestWithPermissions(32, "android.permission.ACCESS_FINE_LOCATION"),
         nearbyPermissionExample,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1765,7 +1765,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         notificationManagerCompatStub,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1826,7 +1826,7 @@ class PermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         notificationManagerCompatStub,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .skipTestModes(TestMode.IF_TO_WHEN)
       .run()

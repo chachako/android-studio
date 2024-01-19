@@ -98,7 +98,7 @@ class LintBaselineTest {
     location: Location,
     message: String,
     severity: Severity?,
-    project: Project?
+    project: Project?,
   ): Boolean {
     val incident =
       Incident(issue, location, message).apply {
@@ -182,7 +182,7 @@ class LintBaselineTest {
         Location.create(File("bogus")),
         "Unrelated",
         Severity.WARNING,
-        null
+        null,
       )
     assertThat(found).isFalse()
     assertThat(baseline.foundWarningCount).isEqualTo(0)
@@ -198,7 +198,7 @@ class LintBaselineTest {
         Location.create(File("bogus")),
         "Hardcoded string \"Fooo\", should use @string resource",
         Severity.WARNING,
-        null
+        null,
       )
     assertThat(found).isFalse()
     assertThat(baseline.foundWarningCount).isEqualTo(0)
@@ -212,7 +212,7 @@ class LintBaselineTest {
         Location.create(File("res/layout-port/main.xml")),
         "Hardcoded string \"Fooo\", should use @string resource",
         Severity.WARNING,
-        null
+        null,
       )
     assertThat(found).isFalse()
     assertThat(baseline.foundWarningCount).isEqualTo(0)
@@ -226,7 +226,7 @@ class LintBaselineTest {
         Location.create(File("res/layout/main.xml")),
         "Hardcoded string \"Fooo\", should use @string resource",
         Severity.WARNING,
-        null
+        null,
       )
     assertThat(found).isTrue()
     assertThat(baseline.fixedCount).isEqualTo(2)
@@ -241,7 +241,7 @@ class LintBaselineTest {
         Location.create(File("res/layout/main.xml")),
         "Hardcoded string \"Fooo\", should use @string resource",
         Severity.WARNING,
-        null
+        null,
       )
     assertThat(found).isFalse()
     assertThat(baseline.foundWarningCount).isEqualTo(1)
@@ -256,7 +256,7 @@ class LintBaselineTest {
         // Actual: "Value must be \u2265 0 (was -1)", Severity.WARNING, null
         "Value must be \u2265 0",
         Severity.WARNING,
-        null
+        null,
       )
     assertThat(found).isTrue()
     assertThat(baseline.fixedCount).isEqualTo(1)
@@ -297,25 +297,25 @@ class LintBaselineTest {
     assertTrue(
       stringsEquivalent(
         "Suspicious equality check: equals() is not implemented in targetType",
-        "Suspicious equality check: `equals()` is not implemented in targetType"
+        "Suspicious equality check: `equals()` is not implemented in targetType",
       )
     )
     assertTrue(
       stringsEquivalent(
         "This Handler class should be static or leaks might occur name",
-        "This `Handler` class should be static or leaks might occur name"
+        "This `Handler` class should be static or leaks might occur name",
       )
     )
     assertTrue(
       stringsEquivalent(
         "Using the AllowAllHostnameVerifier HostnameVerifier is unsafe ",
-        "Using the `AllowAllHostnameVerifier` HostnameVerifier is unsafe "
+        "Using the `AllowAllHostnameVerifier` HostnameVerifier is unsafe ",
       )
     )
     assertTrue(
       stringsEquivalent(
         "Reading app signatures from getPackageInfo: The app signatures could be exploited if not validated properly; see issue explanation for details.",
-        "Reading app signatures from `getPackageInfo`: The app signatures could be exploited if not validated properly; see issue explanation for details"
+        "Reading app signatures from `getPackageInfo`: The app signatures could be exploited if not validated properly; see issue explanation for details",
       )
     )
     assertTrue(stringsEquivalent("````abc", "abc"))
@@ -343,7 +343,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         PxUsageDetector.SMALL_SP_ISSUE,
         "Avoid using sizes smaller than 12sp: 11sp",
-        "Avoid using sizes smaller than 11sp: 11sp"
+        "Avoid using sizes smaller than 11sp: 11sp",
       )
     )
   }
@@ -355,7 +355,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         RangeDetector.RANGE,
         "Value must be ≥ 0 but can be -1",
-        "Value must be ≥ 0"
+        "Value must be ≥ 0",
       )
     )
   }
@@ -367,7 +367,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         IconDetector.ICON_MISSING_FOLDER,
         "Missing density variation folders in `res`: drawable-hdpi, drawable-xhdpi, drawable-xxhdpi",
-        "Missing density variation folders in `/some/full/path/to/app/res`: drawable-hdpi, drawable-xhdpi, drawable-xxhdpi"
+        "Missing density variation folders in `/some/full/path/to/app/res`: drawable-hdpi, drawable-xhdpi, drawable-xxhdpi",
       )
     )
   }
@@ -379,7 +379,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         IconDetector.WEBP_UNSUPPORTED,
         "WebP requires Android 4.0 (API 15); current minSdkVersion is 9",
-        "WebP requires Android 4.0 (API 15); current minSdkVersion is 10"
+        "WebP requires Android 4.0 (API 15); current minSdkVersion is 10",
       )
     )
 
@@ -387,7 +387,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         OverrideConcreteDetector.ISSUE,
         "Must override android.service.notification.NotificationListenerService.onNotificationPosted(android.service.notification.StatusBarNotification): Method was abstract until 21, and your minSdkVersion is 9",
-        "Must override android.service.notification.NotificationListenerService.onNotificationPosted(android.service.notification.StatusBarNotification): Method was abstract until 21, and your minSdkVersion is 10"
+        "Must override android.service.notification.NotificationListenerService.onNotificationPosted(android.service.notification.StatusBarNotification): Method was abstract until 21, and your minSdkVersion is 10",
       )
     )
 
@@ -395,7 +395,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         LocaleFolderDetector.GET_LOCALES,
         "The app will crash on platforms older than v21 (minSdkVersion is 9) because AssetManager#getLocales is called and it contains one or more v21-style (3-letter or BCP47 locale) folders: values-b+kok+IN, values-fil",
-        "The app will crash on platforms older than v21 (minSdkVersion is 10) because AssetManager#getLocales is called and it contains one or more v21-style (3-letter or BCP47 locale) folders: values-b+kok+IN, values-fil"
+        "The app will crash on platforms older than v21 (minSdkVersion is 10) because AssetManager#getLocales is called and it contains one or more v21-style (3-letter or BCP47 locale) folders: values-b+kok+IN, values-fil",
       )
     )
 
@@ -403,7 +403,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         FontDetector.FONT_VALIDATION,
         "For minSdkVersion=27 only app: attributes should be used",
-        "For minSdkVersion=100 only app: attributes should be used"
+        "For minSdkVersion=100 only app: attributes should be used",
       )
     )
   }
@@ -415,7 +415,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         IconDetector.ICON_XML_AND_PNG,
         "The following images appear both as density independent `.xml` files and as bitmap files: res/drawable/background.xml",
-        "The following images appear both as density independent `.xml` files and as bitmap files: /some/full/path/to/app/res/drawable/background.xml"
+        "The following images appear both as density independent `.xml` files and as bitmap files: /some/full/path/to/app/res/drawable/background.xml",
       )
     )
   }
@@ -427,21 +427,21 @@ class LintBaselineTest {
       baseline.sameMessage(
         RestrictToDetector.RESTRICTED,
         "LibraryCode.method3 can only be called from within the same library group (referenced groupId=test.pkg.library from groupId=other.app)",
-        "LibraryCode.method3 can only be called from within the same library group (groupId=test.pkg.library)"
+        "LibraryCode.method3 can only be called from within the same library group (groupId=test.pkg.library)",
       )
     )
     assertTrue(
       baseline.sameMessage(
         RestrictToDetector.RESTRICTED,
         "LibraryCode.method3 can only be called from within the same library group (referenced groupId=test.pkg.library from groupId=other.app)",
-        "LibraryCode.method3 can only be called from within the same library group"
+        "LibraryCode.method3 can only be called from within the same library group",
       )
     )
     assertFalse(
       baseline.sameMessage(
         RestrictToDetector.RESTRICTED,
         "LibraryCode.FIELD3 can only be called from within the same library group (referenced groupId=test.pkg.library from groupId=other.app)",
-        "LibraryCode.method3 can only be called from within the same library group (groupId=test.pkg.library)"
+        "LibraryCode.method3 can only be called from within the same library group (groupId=test.pkg.library)",
       )
     )
   }
@@ -463,7 +463,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ScopedStorageDetector.ISSUE,
         "The Google Play store has a policy that limits usage of MANAGE_EXTERNAL_STORAGE",
-        "Most apps are not allowed to use MANAGE_EXTERNAL_STORAGE"
+        "Most apps are not allowed to use MANAGE_EXTERNAL_STORAGE",
       )
     )
   }
@@ -477,7 +477,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         "Call requires API level 23 (current min is 1): `foo`",
-        "Call requires API level 23 (current min is 22): `foo`"
+        "Call requires API level 23 (current min is 22): `foo`",
       )
     )
 
@@ -487,7 +487,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         "Call requires version 4 of the R Extensions SDK (current min is 0): `requiresExtRv4`",
-        "Call requires version 4 of the R Extensions SDK (current min is 10): `requiresExtRv4`"
+        "Call requires version 4 of the R Extensions SDK (current min is 10): `requiresExtRv4`",
       )
     )
 
@@ -495,7 +495,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         "Call requires API level 10000 (current min is 1): `android.app.GameManager#getGameMode`",
-        "Call requires API level CUR_DEVELOPMENT/10000 (current min is 1): `android.app.GameManager#getGameMode`"
+        "Call requires API level CUR_DEVELOPMENT/10000 (current min is 1): `android.app.GameManager#getGameMode`",
       )
     )
 
@@ -503,7 +503,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         "Call requires API level R (current min is 1): `setZOrderedOnTop`",
-        "Call requires API level 30 (current min is 29): `setZOrderedOnTop`"
+        "Call requires API level 30 (current min is 29): `setZOrderedOnTop`",
       )
     )
 
@@ -511,7 +511,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         "Call requires API level R (current min is 1): `setZOrderedOnTop`",
-        "Call requires API level 30 (current min is 29): `otherMethod`"
+        "Call requires API level 30 (current min is 29): `otherMethod`",
       )
     )
 
@@ -519,7 +519,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         "Field requires API level R (current min is 29): `setZOrderedOnTop`",
-        "Call requires API level 30 (current min is 29): `setZOrderedOnTop`"
+        "Call requires API level 30 (current min is 29): `setZOrderedOnTop`",
       )
     )
 
@@ -527,7 +527,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         "Call requires API level R (current min is 29): `setZOrderedOnTop`",
-        "Call requires API level 30 (current min is 29): `setZOrdered`"
+        "Call requires API level 30 (current min is 29): `setZOrdered`",
       )
     )
 
@@ -535,7 +535,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         "Call requires API level 24 (current min is 18): `java.util.Map#getOrDefault` (called from kotlin.collections.Map#getOrDefault)",
-        "Call requires API level 24 (current min is 13): `java.util.Map#getOrDefault`"
+        "Call requires API level 24 (current min is 13): `java.util.Map#getOrDefault`",
       )
     )
 
@@ -543,7 +543,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         "Call requires API level 24 (current min is 18): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault)",
-        "Call requires API level 24 (current min is 13): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault)"
+        "Call requires API level 24 (current min is 13): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault)",
       )
     )
 
@@ -551,7 +551,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         new = "Cast from Cursor to Closeable requires API level 16 (current min is 18)",
-        old = "Cast from Cursor to Closeable requires API level 16 (current min is 14)"
+        old = "Cast from Cursor to Closeable requires API level 16 (current min is 14)",
       )
     )
 
@@ -562,7 +562,7 @@ class LintBaselineTest {
         new =
           "Field requires version 4 of the AD_SERVICES-ext SDK (current min is 0): `android.app.GameManager#GAME_MODE_BATTERY`",
         old =
-          "Field requires API level 34 (current min is 24): `android.app.GameManager#GAME_MODE_BATTERY`"
+          "Field requires API level 34 (current min is 24): `android.app.GameManager#GAME_MODE_BATTERY`",
       )
     )
 
@@ -581,7 +581,7 @@ class LintBaselineTest {
         ApiDetector.UNSUPPORTED,
         new =
           "Cast from `Cursor` to `Closeable` requires version 4 of the AD_SERVICES-ext SDK (current min is 0)",
-        old = "Cast from `Cursor` to `Closeable` requires API level 16 (current min is 14)"
+        old = "Cast from `Cursor` to `Closeable` requires API level 16 (current min is 14)",
       )
     )
 
@@ -591,7 +591,7 @@ class LintBaselineTest {
         new =
           "Implicit cast from `TypedArray` to `AutoCloseable` requires API level 31 (current min is 29)",
         old =
-          "Implicit cast from `TypedArray` to `AutoCloseable` requires API level 31 (current min is 24)"
+          "Implicit cast from `TypedArray` to `AutoCloseable` requires API level 31 (current min is 24)",
       )
     )
 
@@ -600,7 +600,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         new = "Repeatable annotation requires API level 24 (current min is 33)",
-        old = "Repeatable annotation requires API level 24 (current min is 15)"
+        old = "Repeatable annotation requires API level 24 (current min is 15)",
       )
     )
 
@@ -609,7 +609,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         new = "Using theme references in XML drawables requires API level 21 (current min is 33)",
-        old = "Using theme references in XML drawables requires API level 21 (current min is 9)"
+        old = "Using theme references in XML drawables requires API level 21 (current min is 9)",
       )
     )
 
@@ -618,7 +618,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         new = "Custom drawables requires API level 24 (current min is 33)",
-        old = "Custom drawables requires API level 24 (current min is 15)"
+        old = "Custom drawables requires API level 24 (current min is 15)",
       )
     )
 
@@ -630,7 +630,7 @@ class LintBaselineTest {
         new =
           "`switchTextAppearance` requires API level 14 (current min is 33), but note that attribute `editTextColor` is only used in API level 11 and higher",
         old =
-          "`switchTextAppearance` requires API level 14 (current min is 1), but note that attribute `editTextColor` is only used in API level 11 and higher"
+          "`switchTextAppearance` requires API level 14 (current min is 1), but note that attribute `editTextColor` is only used in API level 11 and higher",
       )
     )
 
@@ -644,7 +644,7 @@ class LintBaselineTest {
         new =
           "The type of the for loop iterated value is java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which requires API level 24 (current min is 33); to work around this, add an explicit cast to (Map) before the keySet call.",
         old =
-          "The type of the for loop iterated value is java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which requires API level 24 (current min is 1); to work around this, add an explicit cast to (Map) before the keySet call."
+          "The type of the for loop iterated value is java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which requires API level 24 (current min is 1); to work around this, add an explicit cast to (Map) before the keySet call.",
       )
     )
 
@@ -656,7 +656,7 @@ class LintBaselineTest {
         new =
           "Implicit `TypedArray.close()` call from try-with-resources requires API level 31 (current min is 33)",
         old =
-          "Implicit `TypedArray.close()` call from try-with-resources requires API level 31 (current min is 24)"
+          "Implicit `TypedArray.close()` call from try-with-resources requires API level 31 (current min is 24)",
       )
     )
 
@@ -669,7 +669,7 @@ class LintBaselineTest {
         new =
           "Multi-catch with these reflection exceptions requires API level 19 (current min is 29) because they get compiled to the common but new super type `ReflectiveOperationException`. As a workaround either create individual catch statements, or catch `Exception`.",
         old =
-          "Multi-catch with these reflection exceptions requires API level 19 (current min is 1) because they get compiled to the common but new super type `ReflectiveOperationException`. As a workaround either create individual catch statements, or catch `Exception`."
+          "Multi-catch with these reflection exceptions requires API level 19 (current min is 1) because they get compiled to the common but new super type `ReflectiveOperationException`. As a workaround either create individual catch statements, or catch `Exception`.",
       )
     )
 
@@ -679,7 +679,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNSUPPORTED,
         new = "`<vector>` requires API level 21 (current min is 21)",
-        old = "`<vector>` requires API level 21 (current min is 1)"
+        old = "`<vector>` requires API level 21 (current min is 1)",
       )
     )
     assertTrue(
@@ -688,7 +688,7 @@ class LintBaselineTest {
         new =
           "`<vector>` requires API level 21 (current min is 21) or building with Android Gradle plugin 1.4.0 or higher",
         old =
-          "`<vector>` requires API level 21 (current min is 1) or building with Android Gradle plugin 1.4.0 or higher"
+          "`<vector>` requires API level 21 (current min is 1) or building with Android Gradle plugin 1.4.0 or higher",
       )
     )
   }
@@ -702,7 +702,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         TypoDetector.ISSUE,
         "Did you mean \"intended\" instead of \"actual\" ?",
-        "Did you mean \"intended\" instead of \"actual\"?"
+        "Did you mean \"intended\" instead of \"actual\"?",
       )
     )
   }
@@ -714,7 +714,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         HardcodedValuesDetector.ISSUE,
         "Hardcoded string \"Fooo\", should use @string resource",
-        "[I18N] Hardcoded string \"Fooo\", should use @string resource"
+        "[I18N] Hardcoded string \"Fooo\", should use @string resource",
       )
     )
 
@@ -722,7 +722,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         AccessibilityDetector.ISSUE,
         "Empty contentDescription attribute on image",
-        "[Accessibility] Empty contentDescription attribute on image"
+        "[Accessibility] Empty contentDescription attribute on image",
       )
     )
   }
@@ -734,7 +734,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         RtlDetector.COMPAT,
         "To support older versions than API 17 (project specifies 11) you should also add android:layout_alignParentLeft=\"true\"",
-        "To support older versions than API 17 (project specifies 14) you should also add android:layout_alignParentLeft=\"true\""
+        "To support older versions than API 17 (project specifies 14) you should also add android:layout_alignParentLeft=\"true\"",
       )
     )
   }
@@ -746,7 +746,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         ApiDetector.UNUSED,
         "Attribute `Abc` is only used in API level 19 and higher (current min is 16)",
-        "Attribute `Abc` is only used in API level 18 and higher (current min is 17)"
+        "Attribute `Abc` is only used in API level 18 and higher (current min is 17)",
       )
     )
   }
@@ -774,18 +774,18 @@ class LintBaselineTest {
       Location.create(sourceFile, "", 0),
       "Hardcoded string \"Fooo\", should use `@string` resource",
       Severity.WARNING,
-      project2
+      project2,
     )
     baseline.findAndMark(
       ManifestDetector.MULTIPLE_USES_SDK,
       Location.create(
         File("/foo/bar/Foo/AndroidManifest.xml"),
         DefaultPosition(6, 4, 198),
-        DefaultPosition(6, 42, 236)
+        DefaultPosition(6, 42, 236),
       ),
       "There should only be a single `<uses-sdk>` element in the manifest: merge these together",
       Severity.WARNING,
-      null
+      null,
     )
     baseline.close()
 
@@ -827,7 +827,7 @@ class LintBaselineTest {
         Location.create(sourceFile, "", 0),
         "Hardcoded string \"Fooo\", should use `@string` resource",
         Severity.WARNING,
-        project2
+        project2,
       )
     assertThat(found).isTrue()
     found =
@@ -836,11 +836,11 @@ class LintBaselineTest {
         Location.create(
           File("/foo/bar/Foo/AndroidManifest.xml"),
           DefaultPosition(6, 4, 198),
-          DefaultPosition(6, 42, 236)
+          DefaultPosition(6, 42, 236),
         ),
         "There should only be a single `<uses-sdk>` element in the manifest: merge these together",
         Severity.WARNING,
-        null
+        null,
       )
     assertThat(found).isTrue()
     baseline.close()
@@ -860,7 +860,7 @@ class LintBaselineTest {
         Location.create(sourceFile, "", 0),
         "Hardcoded string \"Fooo\", should use `@string` resource",
         Severity.WARNING,
-        project2
+        project2,
       )
     assertThat(found).isTrue()
 
@@ -871,11 +871,11 @@ class LintBaselineTest {
         Location.create(
           File("/foo/bar/Foo/AndroidManifest.xml"),
           DefaultPosition(4, 4, 198),
-          DefaultPosition(4, 42, 236)
+          DefaultPosition(4, 42, 236),
         ),
         "Should explicitly set `android:icon`, there is no default",
         Severity.WARNING,
-        null
+        null,
       )
     assertThat(found).isFalse()
     baseline.close()
@@ -938,7 +938,7 @@ class LintBaselineTest {
         Location.create(File("src/main/AndroidManifest.xml")),
         errorMessage,
         Severity.WARNING,
-        null
+        null,
       )
     )
 
@@ -1012,10 +1012,10 @@ class LintBaselineTest {
         "LintError",
         "--sdk-home",
         TestUtils.getSdk().toFile().path,
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     @Language("XML")
@@ -1072,10 +1072,10 @@ class LintBaselineTest {
         outputBaseline.path,
         "--disable",
         "LintError",
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     @Language("XML")
@@ -1131,10 +1131,10 @@ class LintBaselineTest {
         "--baseline-omit-line-numbers",
         "--disable",
         "LintError",
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     @Language("XML")
@@ -1212,10 +1212,10 @@ class LintBaselineTest {
         "--baseline-omit-line-numbers",
         "--disable",
         "LintError",
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     @Language("XML")
@@ -1296,10 +1296,10 @@ class LintBaselineTest {
         "LintError",
         "--sdk-home",
         TestUtils.getSdk().toFile().path,
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
   }
 
@@ -1382,128 +1382,128 @@ class LintBaselineTest {
         location,
         message,
         Severity.WARNING,
-        null
+        null,
       )
     }
 
     assertTrue(
       mark(
         "Class requires API level S (current min is 30): `android.net.ipsec.ike.exceptions.IkeException`",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Class requires API level S (current min is 30): `android.net.ipsec.ike.exceptions.IkeException`",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `IkeException` to `Throwable` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `IkeInternalException` to `IkeException` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `IkeException` to `Exception` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Exception requires API level S (current min is 30): `android.net.ipsec.ike.exceptions.IkeProtocolException`",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `IkeProtocolException` to `Exception` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `IkeException` to `Exception` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `ChildSaProposal` to `SaProposal` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Class requires API level S (current min is 30): `android.net.ipsec.ike.exceptions.IkeProtocolException`",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Class requires API level S (current min is 30): `android.net.ipsec.ike.exceptions.IkeProtocolException`",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `IkeException` to `Throwable` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `IkeProtocolException` to `Throwable` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Exception requires API level S (current min is 30): `android.net.ipsec.ike.exceptions.IkeProtocolException`",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `IkeProtocolException` to `Throwable` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Class requires API level S (current min is 30): `android.net.ipsec.ike.TunnelModeChildSessionParams`",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `IkeProtocolException` to `IkeException` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Exception requires API level S (current min is 30): `android.net.ipsec.ike.exceptions.IkeProtocolException`",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Class requires API level S (current min is 30): `android.net.ipsec.ike.exceptions.IkeProtocolException`",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     assertTrue(
       mark(
         "Cast from `IkeInternalException` to `IkeException` requires API level 31 (current min is 30)",
-        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java"
+        "/packages/modules/IPsec/src/java/com/android/internal/net/ipsec/ike/ChildSessionStateMachine.java",
       )
     )
     baseline.close()
@@ -1534,7 +1534,7 @@ class LintBaselineTest {
         Location.create(File("MyFile.java")),
         "Call requires API level S: `Something`",
         Severity.WARNING,
-        null
+        null,
       )
     )
     baseline.close()
@@ -1566,7 +1566,7 @@ class LintBaselineTest {
         location,
         message,
         Severity.WARNING,
-        null
+        null,
       )
     }
 
@@ -1594,7 +1594,7 @@ class LintBaselineTest {
                     <ImageView android:id="@+id/android_logo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/android_button" android:focusable="false" android:clickable="false" android:layout_weight="1.0" />
                     <ImageButton android:importantForAccessibility="yes" android:id="@+id/android_logo2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/android_button" android:focusable="false" android:clickable="false" android:layout_weight="1.0" />
                 </LinearLayout>
-                """
+                """,
         )
         .indented()
 
@@ -1655,7 +1655,7 @@ class LintBaselineTest {
       listOf(
         null to outputWithoutBaseline,
         nonexistentBaseline to outputWithoutBaseline,
-        existingBaseline to outputWithBaseline
+        existingBaseline to outputWithBaseline,
       )
 
     for ((baselineFile, output) in scenarios) {
@@ -1682,10 +1682,10 @@ class LintBaselineTest {
           outputBaseline.path,
           "--disable",
           "LintError",
-          project.path
+          project.path,
         ),
         { it.replace(root.path, "ROOT") },
-        null
+        null,
       )
 
       val newBaseline = readBaseline(outputBaseline)
@@ -1774,9 +1774,9 @@ class LintBaselineTest {
               "lint.jar",
               source(
                 "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
-                "test.pkg.MyIssueRegistry"
+                "test.pkg.MyIssueRegistry",
               ),
-              0x70522285
+              0x70522285,
             ),
             bytecode(
               "lint.jar",
@@ -1915,8 +1915,8 @@ class LintBaselineTest {
                 sPpWdQzX6U/GRhxe+mnI4cIpDhlunmo8N2y8eKrxLdwmrWHj5eFSMqcYD5ag
                 oNRdH6JM1CDpx6R3Zw8BHQUd6zruYoO2uKfjExT3wATuY3MPSYEVgS2BsMCM
                 wAOB6wI3BC509wkBTSAvMCtwU2BJICdwS+D2KzTjhGAACAAA
-                """
-            )
+                """,
+            ),
           )
           .testModes(TestMode.DEFAULT)
           .createProjects(root)
@@ -1974,7 +1974,7 @@ class LintBaselineTest {
           lintJar.path,
           "--sdk-home",
           TestUtils.getSdk().toFile().path,
-          projects[0].path
+          projects[0].path,
         ),
         { it.replace(root.path, "ROOT") },
         null,
@@ -1986,7 +1986,7 @@ class LintBaselineTest {
             )
             .isTrue()
         },
-        true
+        true,
       )
 
       @Language("XML")
@@ -2083,10 +2083,10 @@ class LintBaselineTest {
         baseline.path,
         "--disable",
         "LintError",
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     PathSubject.assertThat(baseline).doesNotExist()
@@ -2111,10 +2111,10 @@ class LintBaselineTest {
         baseline.path,
         "--disable",
         "LintError",
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     @Language("XML")
@@ -2168,10 +2168,10 @@ class LintBaselineTest {
         baseline.path,
         "--disable",
         "LintError",
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     PathSubject.assertThat(baseline).exists()
@@ -2216,10 +2216,10 @@ class LintBaselineTest {
         baseline.path,
         "--disable",
         "LintError",
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     PathSubject.assertThat(baseline).doesNotExist()
@@ -2251,10 +2251,10 @@ class LintBaselineTest {
         baseline.path,
         "--disable",
         "LintError",
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     @Language("XML")
@@ -2288,10 +2288,10 @@ class LintBaselineTest {
         baseline.path,
         "--disable",
         "LintError",
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     PathSubject.assertThat(baseline).doesNotExist()
@@ -2335,7 +2335,7 @@ class LintBaselineTest {
         Location.create(File("src/main/res/layout-sw600dp/activity_main.xml")),
         "The id \"hello1\" in layout \"activity_main\" is missing from the following layout configurations: layout (present in layout-sw600dp)",
         Severity.WARNING,
-        null
+        null,
       )
     )
     baseline.close()
@@ -2387,10 +2387,10 @@ class LintBaselineTest {
         "LintError",
         "--sdk-home",
         TestUtils.getSdk().toFile().path,
-        project.path
+        project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
 
     @Language("XML")
@@ -2429,7 +2429,7 @@ class LintBaselineTest {
       Location.create(gradleFile),
       "My message",
       Severity.WARNING,
-      null
+      null,
     )
 
     baseline.close()
@@ -2452,7 +2452,7 @@ class LintBaselineTest {
 
       """
         .trimIndent(),
-      baselineFile.readText()
+      baselineFile.readText(),
     )
   }
 
@@ -2575,7 +2575,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         DuplicateIdDetector.CROSS_LAYOUT,
         "Duplicate id @+id/foo, defined or included multiple times in layout/bar.xml...",
-        "Duplicate id @+id/foo, defined or included multiple times in layout\\bar.xml..."
+        "Duplicate id @+id/foo, defined or included multiple times in layout\\bar.xml...",
       )
     )
 
@@ -2583,7 +2583,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         DuplicateIdDetector.CROSS_LAYOUT,
         "Duplicate id @+id/button2, defined or included multiple times in layout/layout1.xml: [layout/layout1.xml defines @+id/button2, layout/layout1.xml => layout/layout2.xml => layout/layout4.xml defines @+id/button2]",
-        "Duplicate id @+id/button2, defined or included multiple times in layout\\layout1.xml: [layout\\layout1.xml defines @+id/button2, layout\\layout1.xml => layout\\layout2.xml => layout\\layout4.xml defines @+id/button2]"
+        "Duplicate id @+id/button2, defined or included multiple times in layout\\layout1.xml: [layout\\layout1.xml defines @+id/button2, layout\\layout1.xml => layout\\layout2.xml => layout\\layout4.xml defines @+id/button2]",
       )
     )
 
@@ -2604,9 +2604,9 @@ class LintBaselineTest {
           "lint.jar",
           source(
             "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
-            "test.pkg.MyIssueRegistry"
+            "test.pkg.MyIssueRegistry",
           ),
-          0x70522285
+          0x70522285,
         ),
         bytecode(
           "lint.jar",
@@ -2714,8 +2714,8 @@ class LintBaselineTest {
           ov07Ol4luvZw/QuSREG+iVriv+grbn1G9NMhWxP8NLYzvgMJlkFM8T7KpwN8
           FkcnHvl+4T6mWY6x/jZ7OLyGoI4RHZqOUYzpGMeEzj+LyTWQh7u4t4aAh5CH
           8B89/7DSSAYAAA==
-          """
-        )
+          """,
+        ),
       )
       .testModes(TestMode.DEFAULT)
       .createProjects(root)
@@ -2734,7 +2734,7 @@ class LintBaselineTest {
     baseline.sameMessage(
       ApiDetector.UNSUPPORTED,
       "Call requires API level 23 (current min is 1): `foo`",
-      "Call requires API level 23 (current min is 22): `foo`"
+      "Call requires API level 23 (current min is 22): `foo`",
     )
 
     assertTrue(
@@ -2742,7 +2742,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         issue,
         new = "Value must be ≥ 0 but can be -1",
-        old = "Value must be ≥ 0"
+        old = "Value must be ≥ 0",
       )
     )
 
@@ -2752,7 +2752,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         issue,
         new = "PreviousMessage", // matches hardcoded check in Detector's sameMessage()
-        old = "Value must be ≥ 0"
+        old = "Value must be ≥ 0",
       )
     )
 
@@ -2760,7 +2760,7 @@ class LintBaselineTest {
       baseline.sameMessage(
         RangeDetector.RANGE, // make sure this only works for the new issue, not an unrelated one
         new = "PreviousDetector",
-        old = "Value must be ≥ 0"
+        old = "Value must be ≥ 0",
       )
     )
   }
@@ -2800,7 +2800,7 @@ class LintBaselineTest {
                   @SuppressWarnings("ALL") class Foo {
                   }
                   """
-        )
+        ),
       )
       .allowSystemErrors(true)
       .allowExceptions(true)
@@ -2835,7 +2835,7 @@ class LintBaselineTest {
         </issues>
       """
         .trimIndent(),
-      readBaseline(outputBaseline).dos2unix()
+      readBaseline(outputBaseline).dos2unix(),
     )
 
     // Writing to the baseline the way Lint CLI does when creating a new
@@ -2850,7 +2850,7 @@ class LintBaselineTest {
         </issues>
       """
         .trimIndent(),
-      readBaseline(outputBaseline).dos2unix()
+      readBaseline(outputBaseline).dos2unix(),
     )
   }
 

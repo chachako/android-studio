@@ -42,9 +42,9 @@ class MotionLayoutIdDetectorTest : AbstractCheckTest() {
                         android:text="Button" />
 
                 </android.support.constraint.motion.MotionLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -73,9 +73,9 @@ class MotionLayoutIdDetectorTest : AbstractCheckTest() {
                         android:text="Button" />
 
                 </android.support.constraint.motion.MotionLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -132,9 +132,9 @@ class MotionLayoutIdDetectorTest : AbstractCheckTest() {
                         a:text="Button" />
 
                 </android.support.constraint.motion.MotionLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -183,9 +183,9 @@ class MotionLayoutIdDetectorTest : AbstractCheckTest() {
                     <madeUpTag></madeUpTag>
 
                 </android.support.constraint.motion.MotionLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

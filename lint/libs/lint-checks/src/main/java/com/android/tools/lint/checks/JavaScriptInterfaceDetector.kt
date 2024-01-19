@@ -95,7 +95,7 @@ class JavaScriptInterfaceDetector : Detector(), SourceCodeScanner {
                 ISSUE,
                 node as UElement,
                 context.getNameLocation(node),
-                "Must be public when using `@JavascriptInterface`"
+                "Must be public when using `@JavascriptInterface`",
               )
             context.report(incident, isAndroidProject())
           }
@@ -123,7 +123,7 @@ class JavaScriptInterfaceDetector : Detector(), SourceCodeScanner {
           priority = 8,
           severity = Severity.ERROR,
           implementation =
-            Implementation(JavaScriptInterfaceDetector::class.java, Scope.JAVA_FILE_SCOPE)
+            Implementation(JavaScriptInterfaceDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
         .addMoreInfo("https://goo.gle/JavascriptInterface")
 

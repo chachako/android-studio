@@ -29,7 +29,7 @@ fun assertRawResponse(response: AppInspectionResponse, responseContent: ByteArra
 
 fun assertDisposeInspectorResponseStatus(
   response: AppInspectionResponse,
-  expected: AppInspectionResponse.Status
+  expected: AppInspectionResponse.Status,
 ) {
   assertThat(response.hasDisposeInspectorResponse()).isTrue()
   assertThat(response.status).isEqualTo(expected)
@@ -37,7 +37,7 @@ fun assertDisposeInspectorResponseStatus(
 
 fun assertCreateInspectorResponseStatus(
   response: AppInspectionResponse,
-  expected: CreateInspectorResponse.Status
+  expected: CreateInspectorResponse.Status,
 ) {
   assertThat(response.hasCreateInspectorResponse()).isTrue()
   assertThat(response.createInspectorResponse.status).isEqualTo(expected)

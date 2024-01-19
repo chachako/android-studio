@@ -77,14 +77,14 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       PERMISSION_ANNOTATION_READ.oldName(),
       PERMISSION_ANNOTATION_READ.newName(),
       PERMISSION_ANNOTATION_WRITE.oldName(),
-      PERMISSION_ANNOTATION_WRITE.newName()
+      PERMISSION_ANNOTATION_WRITE.newName(),
     )
 
   override fun visitAnnotationUsage(
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val type = usageInfo.type
     val method = usageInfo.referenced as? PsiMethod
@@ -107,7 +107,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     signature: String,
     method: PsiMethod,
-    argument: UExpression
+    argument: UExpression,
   ) {
     var operation: PermissionFinder.Operation? = null
 
@@ -142,7 +142,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
   private fun conditionMet(
     context: JavaContext,
     requirement: PermissionRequirement,
-    method: PsiMethod?
+    method: PsiMethod?,
   ): Boolean {
     method ?: return false
 
@@ -163,7 +163,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
   private fun isExactAlarmRequirement(
     requirement: PermissionRequirement,
     context: JavaContext,
-    method: PsiMethod?
+    method: PsiMethod?,
   ): Boolean {
     return requirement.isSingle &&
       requirement.toString() == "android.permission.SCHEDULE_EXACT_ALARM" &&
@@ -178,7 +178,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     node: UElement,
     method: PsiMethod?,
     result: PermissionFinder.Result?,
-    requirement: PermissionRequirement
+    requirement: PermissionRequirement,
   ) {
     if (requirement.isConditional && !conditionMet(context, requirement, method)) {
       return
@@ -264,8 +264,8 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
                 KEY_MISSING_PERMISSIONS,
                 missingPermissions.toList(),
                 KEY_LAST_API,
-                requirement.lastApplicableApi
-              )
+                requirement.lastApplicableApi,
+              ),
           )
 
         if (isExactAlarmRequirement(requirement, context, method)) {
@@ -310,7 +310,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
           if (localPermissionRequirements.isNotEmpty()) {
             map.put(
               KEY_LOCAL_PERMISSION,
-              localPermissionRequirements.joinToString(separator = ";") { it.serialize() }
+              localPermissionRequirements.joinToString(separator = ";") { it.serialize() },
             )
           }
           context.report(incident, map)
@@ -340,9 +340,9 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
               mutableSetOf(),
               mutableSetOf(),
               permissions.minSdkVersion,
-              permissions.targetSdkVersion
+              permissions.targetSdkVersion,
             ),
-            localPermissionRequirements
+            localPermissionRequirements,
           )
         if (requirement.isSatisfied(localRequirements)) {
           return
@@ -374,8 +374,8 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
                 KEY_MISSING_PERMISSIONS,
                 requirement.getRevocablePermissions(permissions).toList(),
                 KEY_REQUIREMENT,
-                requirement.serialize()
-              )
+                requirement.serialize(),
+              ),
           )
         context.report(incident, map())
       }
@@ -385,12 +385,12 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
   private fun getMissingMessage(
     messageFormat: String,
     requirement: PermissionRequirement,
-    permissions: PermissionHolder
+    permissions: PermissionHolder,
   ): String {
     return String.format(messageFormat, requirement.describeMissingPermissions(permissions))
       .replace(
         "carrier privileges",
-        "carrier privileges (see TelephonyManager#hasCarrierPrivileges)"
+        "carrier privileges (see TelephonyManager#hasCarrierPrivileges)",
       )
   }
 
@@ -430,7 +430,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
   private fun getLocalPermissions(
     node: UElement,
-    isNotifyPermission: Boolean
+    isNotifyPermission: Boolean,
   ): List<PermissionRequirement> {
     // Accumulate @RequirePermissions available in the local context
     val method = node.getParentOfType(UMethod::class.java, true) ?: return emptyList()
@@ -463,7 +463,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
   private fun mergePermissions(
     permissions: PermissionHolder,
-    requirements: List<PermissionRequirement>
+    requirements: List<PermissionRequirement>,
   ): PermissionHolder {
     var merged = permissions
     for (requirement in requirements) {
@@ -531,7 +531,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
   private fun getPermissions(
     context: Context,
-    accessMergedManifest: Boolean = false
+    accessMergedManifest: Boolean = false,
   ): PermissionHolder {
     return mPermissions
       ?: if (accessMergedManifest || context.isGlobalAnalysis())
@@ -563,7 +563,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
   private fun createManifestPermissionHolder(
     manifest: Document?,
     minSdkVersion: AndroidVersion,
-    targetSdkVersion: AndroidVersion
+    targetSdkVersion: AndroidVersion,
   ): PermissionHolder {
     val permissions = Sets.newHashSetWithExpectedSize<String>(30)
     val revocable = Sets.newHashSetWithExpectedSize<String>(4)
@@ -594,7 +594,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       permissions,
       revocable,
       minSdkVersion,
-      targetSdkVersion
+      targetSdkVersion,
     )
   }
 
@@ -670,14 +670,14 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         priority = 9,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     fun handlesException(
       node: UElement,
       exceptionClass: PsiClass?,
       allowSuperClass: Boolean,
-      exceptionClassName: String
+      exceptionClassName: String,
     ): Boolean {
       // Ensure that the caller is handling a security exception
       // First check to see if we're inside a try/catch which catches a SecurityException
@@ -694,7 +694,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
                 catchClause.types,
                 exceptionClass,
                 allowSuperClass,
-                exceptionClassName
+                exceptionClassName,
               )
             ) {
               return true
@@ -715,7 +715,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
             listOf<PsiClassType>(*thrownTypes),
             exceptionClass,
             allowSuperClass,
-            exceptionClassName
+            exceptionClassName,
           )
         ) {
           return true
@@ -729,7 +729,7 @@ class PermissionDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       types: List<PsiType>,
       exceptionClass: PsiClass?,
       allowSuperClass: Boolean,
-      exceptionClassName: String?
+      exceptionClassName: String?,
     ): Boolean {
       for (type in types) {
         if (type is PsiClassType) {

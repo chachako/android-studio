@@ -98,7 +98,7 @@ class LintClientTest {
     assertEquals(file("../d/e/f").path, client.getRelativePath(file("a/b/c"), file("a/d/e/f")))
     assertEquals(
       file("../d/e/f").path,
-      client.getRelativePath(file("1/2/3/a/b/c"), file("1/2/3/a/d/e/f"))
+      client.getRelativePath(file("1/2/3/a/b/c"), file("1/2/3/a/d/e/f")),
     )
     assertEquals(file("c").path, client.getRelativePath(file("a/b/c"), file("a/b/c")))
     assertEquals(file("../../e").path, client.getRelativePath(file("a/b/c/d/e/f"), file("a/b/c/e")))
@@ -129,7 +129,7 @@ class LintClientTest {
                     <resources>
                         <string name="string1">String 1</string>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -138,13 +138,13 @@ class LintClientTest {
                     <resources>
                         <string name="ignore">Ignore</string>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml("res/values/empty.xml", ""),
         kotlin("""
                 fun test() = TODO()
-                """).indented()
+                """).indented(),
       )
       .issues(TestXmlParsingDetector.ISSUE)
       .allowAbsolutePathsInMessages(true)
@@ -207,7 +207,7 @@ class LintClientTest {
                     <resources>
                         <string name="project_a_string">project_a_string</string>
                     </resources>
-                    """
+                    """,
               )
               .indented()
           )
@@ -219,12 +219,12 @@ class LintClientTest {
                     <resources>
                         <string name="project_b_string">project_b_string</string>
                     </resources>
-                    """
+                    """,
               )
               .indented()
           )
           .name("project_b")
-          .dependsOn("project_a")
+          .dependsOn("project_a"),
       )
       .issues(TestXmlFakeIssueDetector.ISSUE)
       .testModes(TestMode.PARTIAL)
@@ -293,8 +293,8 @@ class LintClientTest {
           implementation =
             Implementation(
               TestXmlParsingDetector::class.java,
-              EnumSet.of(Scope.JAVA_FILE, Scope.RESOURCE_FILE)
-            )
+              EnumSet.of(Scope.JAVA_FILE, Scope.RESOURCE_FILE),
+            ),
         )
     }
   }
@@ -342,8 +342,8 @@ class LintClientTest {
           implementation =
             Implementation(
               TestXmlFakeIssueDetector::class.java,
-              EnumSet.of(Scope.ALL_RESOURCE_FILES)
-            )
+              EnumSet.of(Scope.ALL_RESOURCE_FILES),
+            ),
         )
     }
   }

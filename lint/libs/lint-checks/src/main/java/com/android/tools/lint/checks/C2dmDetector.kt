@@ -94,7 +94,7 @@ class C2dmDetector : Detector(), XmlScanner {
         category = Category.SECURITY,
         priority = 8,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

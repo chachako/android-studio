@@ -88,7 +88,7 @@ class KotlincFE10DetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *TestFiles.getLintClassPath()
+        *TestFiles.getLintClassPath(),
       )
       .skipTestModes(TestMode.BODY_REMOVAL, TestMode.IMPORT_ALIAS)
       .run()
@@ -166,7 +166,7 @@ class KotlincFE10DetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *TestFiles.getLintClassPath()
+        *TestFiles.getLintClassPath(),
       )
       .skipTestModes(TestMode.BODY_REMOVAL, TestMode.IMPORT_ALIAS)
       .run()
@@ -258,7 +258,7 @@ class KotlincFE10DetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *TestFiles.getLintClassPath()
+        *TestFiles.getLintClassPath(),
       )
       .skipTestModes(TestMode.BODY_REMOVAL, TestMode.IMPORT_ALIAS, TestMode.IF_TO_WHEN)
       .allowDuplicates()

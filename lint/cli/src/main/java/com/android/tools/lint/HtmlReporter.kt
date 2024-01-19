@@ -85,7 +85,7 @@ class HtmlReporter(client: LintCliClient, output: File, flags: LintCliFlags) :
         "Overview",
         true,
         "OverviewCard",
-        appender = { writeOverview(related, missing.size, extra.size) }
+        appender = { writeOverview(related, missing.size, extra.size) },
       )
       var previousCategory: Category? = null
       for (warnings in related) {
@@ -144,7 +144,7 @@ class HtmlReporter(client: LintCliClient, output: File, flags: LintCliFlags) :
       title = XmlUtils.toXmlTextValue(firstIssue.getBriefDescription(TextFormat.TEXT)),
       dismissible = true,
       cardId = firstIssue.id + "Card",
-      actions = listOf(Action("Explain", getExplanationId(firstIssue), "reveal"))
+      actions = listOf(Action("Explain", getExplanationId(firstIssue), "reveal")),
     ) {
       val first = incidents[0]
       val issue = first.issue
@@ -180,7 +180,7 @@ class HtmlReporter(client: LintCliClient, output: File, flags: LintCliFlags) :
             String.format(
               Locale.getDefault(),
               "+ %1\$d More Occurrences...",
-              incidents.size - SHOWN_COUNT
+              incidents.size - SHOWN_COUNT,
             )
           )
           append("</button>\n")
@@ -228,7 +228,7 @@ class HtmlReporter(client: LintCliClient, output: File, flags: LintCliFlags) :
             fileContents,
             incident.startOffset,
             incident.endOffset,
-            incident.severity
+            incident.severity,
           )
         }
         append('\n')
@@ -545,7 +545,7 @@ document.getElementById(id).style.display = 'none';
             "%2\$sSuppressing Warnings and Errors%3\$s section.",
           issue.id,
           "<a href=\"#SuppressInfo\">",
-          "</a>"
+          "</a>",
         )
       )
     }
@@ -573,7 +573,7 @@ document.getElementById(id).style.display = 'none';
 
   private fun computeMissingIssues(
     registry: IssueRegistry,
-    incidents: List<Incident>
+    incidents: List<Incident>,
   ): Map<Issue, String> {
     val projects: MutableSet<Project> = HashSet()
     val seen: MutableSet<Issue> = HashSet()
@@ -620,7 +620,7 @@ document.getElementById(id).style.display = 'none';
         title = "Disabled Checks",
         dismissible = true,
         cardId = "MissingIssuesCard",
-        actions = listOf(Action("List Missing Issues", "SuppressedIssues", "reveal"))
+        actions = listOf(Action("List Missing Issues", "SuppressedIssues", "reveal")),
       ) {
         append(
           """
@@ -650,7 +650,7 @@ document.getElementById(id).style.display = 'none';
             disabledBy,
             hide = false,
             includeSuppressInfo = false,
-            includeVendorInfo = false
+            includeVendorInfo = false,
           )
           append("</div>\n")
         }
@@ -666,7 +666,7 @@ document.getElementById(id).style.display = 'none';
         title = "Included Additional Checks",
         dismissible = true,
         cardId = "ExtraIssuesCard",
-        actions = listOf(Action("List Issues", "IncludedIssues", "reveal"))
+        actions = listOf(Action("List Issues", "IncludedIssues", "reveal")),
       ) {
         append(
           """
@@ -694,7 +694,7 @@ document.getElementById(id).style.display = 'none';
             null,
             hide = false,
             includeSuppressInfo = false,
-            includeVendorInfo = true
+            includeVendorInfo = true,
           )
           append("</div>\n")
         }
@@ -826,7 +826,7 @@ ${action.title}</button>"""
     dismissible: Boolean,
     cardId: String?,
     actions: List<Action> = emptyList(),
-    appender: () -> Unit
+    appender: () -> Unit,
   ) {
     @Suppress("NAME_SHADOWING")
     val cardId =
@@ -1028,7 +1028,7 @@ ${action.title}</button>"""
     contents: CharSequence,
     startOffset: Int,
     endOffset: Int,
-    severity: Severity
+    severity: Severity,
   ) {
     val builder = builder ?: return
     val start = max(0, startOffset)

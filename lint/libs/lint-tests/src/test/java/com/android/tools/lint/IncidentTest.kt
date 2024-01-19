@@ -98,9 +98,9 @@ class IncidentTest : AbstractCheckTest() {
                     <Button android:id="@+android:id/summary" android:contentDescription="@string/label" />
                     <ImageButton android:importantForAccessibility="no" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/android_button" android:focusable="false" android:clickable="false" android:layout_weight="1.0" />
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
     val holder = AtomicReference<List<Incident>>()
     val lintClient: TestLintClient =
@@ -154,13 +154,13 @@ class IncidentTest : AbstractCheckTest() {
         DefaultPosition(
           location1.start!!.line,
           location1.start!!.column + 1,
-          location1.start!!.offset + 1
+          location1.start!!.offset + 1,
         ),
         DefaultPosition(
           location1.end!!.line,
           location1.end!!.column + 1,
-          location1.end!!.offset + 1
-        )
+          location1.end!!.offset + 1,
+        ),
       )
     val incident2 =
       Incident(incident1.issue, incident1.message, location2, incident1.fix).apply {

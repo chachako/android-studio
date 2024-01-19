@@ -85,7 +85,7 @@ class ResolveCheckerTest {
                 https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:lint/docs/api-guide/unit-testing.md.html
                 """
           .trimIndent(),
-        e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
+        e.message?.replace(" \n", "\n")?.dos2unix()?.trim(),
       )
     }
   }
@@ -133,7 +133,7 @@ class ResolveCheckerTest {
                 https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:lint/docs/api-guide/unit-testing.md.html
                 """
           .trimIndent(),
-        e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
+        e.message?.replace(" \n", "\n")?.dos2unix()?.trim(),
       )
     }
   }
@@ -180,7 +180,7 @@ class ResolveCheckerTest {
                 https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:lint/docs/api-guide/unit-testing.md.html
                 """
           .trimIndent(),
-        e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
+        e.message?.replace(" \n", "\n")?.dos2unix()?.trim(),
       )
     }
   }
@@ -233,7 +233,7 @@ class ResolveCheckerTest {
                 https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-main:lint/docs/api-guide/unit-testing.md.html
                 """
           .trimIndent(),
-        e.message?.replace(" \n", "\n")?.dos2unix()?.trim()
+        e.message?.replace(" \n", "\n")?.dos2unix()?.trim(),
       )
     }
   }
@@ -277,7 +277,7 @@ class ResolveCheckerTest {
                 fun test() { }
                 """
           )
-          .indented()
+          .indented(),
       )
       .testModes(TestMode.DEFAULT)
       .issues(AlwaysShowActionDetector.ISSUE)
@@ -300,7 +300,7 @@ class ResolveCheckerTest {
                 fun test() {
                     val foo = remember { true }
                 }
-            """
+            """,
         ),
         kotlin(
           "src/androidx/compose/runtime/Remember.kt",
@@ -313,8 +313,8 @@ class ResolveCheckerTest {
                     vararg inputs: Any?,
                     calculation: () -> V
                 ): V = calculation()
-            """
-        )
+            """,
+        ),
       )
       .issues(AlwaysShowActionDetector.ISSUE)
       .configureDriver { it.checkTestSources = true }
@@ -368,7 +368,7 @@ class ResolveCheckerTest {
                         vararg inputs: Any?,
                         calculation: () -> V
                     ): V = calculation()
-                    """
+                    """,
             )
             .indented(),
           0x8c16884e,
@@ -404,8 +404,8 @@ class ResolveCheckerTest {
                 LP14MXefShk2gAwt6dkAMgMDGMcc5j348QsDuOdzCwGrLwVserKKb0i3yLtA
                 1RT3IdawWMMSSSzX8ABKDSWU98E4KljZxxhHlGOVI8HxGUeM4yHHHY48x+cc
                 0xxTHF9wzHLc5fiSY47jkfct/AfDBOqMsAoAAA==
-                """
-        )
+                """,
+        ),
       )
       .issues(AlwaysShowActionDetector.ISSUE)
       .run()
@@ -464,7 +464,7 @@ class ResolveCheckerTest {
         }
 """
             )
-            .indented()
+            .indented(),
         )
 
     val app =
@@ -502,13 +502,13 @@ class ResolveCheckerTest {
       JavaPsiFacade.getInstance(context.project.ideaProject!!)
         .findClass(
           "test.pkg.lib.LibAnnotationKotlin",
-          GlobalSearchScope.allScope(context.project.ideaProject!!)
+          GlobalSearchScope.allScope(context.project.ideaProject!!),
         )!!
 
       JavaPsiFacade.getInstance(context.project.ideaProject!!)
         .findClass(
           "test.pkg.lib.LibAnnotationJava",
-          GlobalSearchScope.allScope(context.project.ideaProject!!)
+          GlobalSearchScope.allScope(context.project.ideaProject!!),
         )!!
     }
 
@@ -521,10 +521,7 @@ class ResolveCheckerTest {
           Category.MESSAGES,
           5,
           Severity.WARNING,
-          Implementation(
-            FindClassDetector::class.java,
-            Scope.JAVA_FILE_SCOPE,
-          ),
+          Implementation(FindClassDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }

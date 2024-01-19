@@ -57,7 +57,7 @@ class DiffUtilDetector : Detector(), SourceCodeScanner {
       "android.support.v7.util.DiffUtil.ItemCallback",
       "androidx.recyclerview.widget.DiffUtil.ItemCallback",
       "android.support.v17.leanback.widget.DiffCallback",
-      "androidx.leanback.widget.DiffCallback"
+      "androidx.leanback.widget.DiffCallback",
     )
   }
 
@@ -206,7 +206,7 @@ class DiffUtilDetector : Detector(), SourceCodeScanner {
   private fun isCastWithEquals(
     context: JavaContext,
     node: UExpression,
-    target: PsiElement?
+    target: PsiElement?,
   ): Boolean {
     when {
       node is UBinaryExpressionWithType -> {
@@ -287,7 +287,7 @@ class DiffUtilDetector : Detector(), SourceCodeScanner {
         androidSpecific = true,
         moreInfo = "https://issuetracker.google.com/116789824",
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

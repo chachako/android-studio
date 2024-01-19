@@ -58,7 +58,7 @@ class CategoryTest : TestCase() {
         "Interoperability:Kotlin Interoperability\n" +
         "Interoperability:Java Interoperability\n" +
         "Lint Implementation Issues",
-      Joiner.on("\n").join(categories)
+      Joiner.on("\n").join(categories),
     )
   }
 

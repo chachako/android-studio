@@ -55,7 +55,7 @@ class AllCapsDetectorTest : AbstractCheckTest() {
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                 </merge>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -65,9 +65,9 @@ class AllCapsDetectorTest : AbstractCheckTest() {
                     <string name="plain">Home Sample</string>
                     <string name="has_markup">This is <b>bold</b></string>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .skipTestModes(TestMode.CDATA)
       .run()

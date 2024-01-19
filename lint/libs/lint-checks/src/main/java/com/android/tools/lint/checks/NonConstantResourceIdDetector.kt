@@ -96,7 +96,7 @@ class NonConstantResourceIdDetector : Detector(), SourceCodeScanner {
         element,
         location,
         "Resource IDs will be non-final by default in Android Gradle Plugin version 8.0, " +
-          "avoid using them $where"
+          "avoid using them $where",
       )
     }
 
@@ -133,7 +133,7 @@ class NonConstantResourceIdDetector : Detector(), SourceCodeScanner {
         severity = Severity.WARNING,
         androidSpecific = true,
         implementation =
-          Implementation(NonConstantResourceIdDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(NonConstantResourceIdDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
   }
 }

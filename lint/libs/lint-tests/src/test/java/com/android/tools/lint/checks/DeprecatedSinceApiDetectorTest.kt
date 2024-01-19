@@ -81,7 +81,7 @@ class DeprecatedSinceApiDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        deprecatedSdkVersionStub
+        deprecatedSdkVersionStub,
       )
       .run()
       .expect(
@@ -150,7 +150,7 @@ class DeprecatedSinceApiDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

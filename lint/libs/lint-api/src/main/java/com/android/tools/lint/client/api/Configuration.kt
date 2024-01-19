@@ -91,8 +91,8 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
     "Use the new isIgnored(Context, Incident) method instead",
     ReplaceWith(
       "isIgnored(Incident(context, incident))",
-      "com.android.tools.lint.detector.api.Incident"
-    )
+      "com.android.tools.lint.detector.api.Incident",
+    ),
   )
   fun isIgnored(context: Context, issue: Issue, location: Location?, message: String): Boolean {
     return isIgnored(context, Incident(issue, location ?: Location.NONE, message))
@@ -129,7 +129,7 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
   open fun getDefinedSeverity(
     issue: Issue,
     source: Configuration = this,
-    visibleDefault: Severity = issue.defaultSeverity
+    visibleDefault: Severity = issue.defaultSeverity,
   ): Severity? {
     if (!isOverriding && source === this) {
       overrides?.let {
@@ -148,7 +148,7 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
    */
   protected open fun getDefaultSeverity(
     issue: Issue,
-    visibleDefault: Severity = issue.defaultSeverity
+    visibleDefault: Severity = issue.defaultSeverity,
   ): Severity {
     return if (!issue.isEnabledByDefault()) Severity.IGNORE else visibleDefault
   }
@@ -287,7 +287,7 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
     client: LintClient,
     driver: LintDriver,
     project: Project?,
-    registry: IssueRegistry
+    registry: IssueRegistry,
   ) {
     parent?.validateIssueIds(client, driver, project, registry)
   }
@@ -333,7 +333,7 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
   abstract fun addConfiguredIssues(
     targetMap: MutableMap<String, Severity>,
     registry: IssueRegistry,
-    specificOnly: Boolean
+    specificOnly: Boolean,
     // TODO: IF you enable all warnings with -w, those will be enabled individually
     // here. Decide if that's the right behavior. Probably more relevant for
     // -nowarn.
@@ -354,7 +354,7 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
   fun getIssueConfigLocation(
     issue: String,
     specificOnly: Boolean = false,
-    severityOnly: Boolean = false
+    severityOnly: Boolean = false,
   ): Location? {
     overrides?.getLocalIssueConfigLocation(issue, specificOnly, severityOnly, this)?.let {
       return it
@@ -371,7 +371,7 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
     issue: String,
     specificOnly: Boolean = false,
     severityOnly: Boolean = false,
-    source: Configuration = this
+    source: Configuration = this,
   ): Location? = null
 
   /** Convenience method for configurations to report unknown issue id problems. */
@@ -380,7 +380,7 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
     driver: LintDriver?,
     issueRegistry: IssueRegistry,
     project: Project?,
-    id: String
+    id: String,
   ) {
     val newId = IssueRegistry.getNewId(id)
     val message =
@@ -415,7 +415,7 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
           driver = driver,
           project = project,
           location = location,
-          fix = LintFix.create().data(ATTR_ID, id)
+          fix = LintFix.create().data(ATTR_ID, id),
         )
       }
     }
@@ -449,7 +449,7 @@ abstract class Configuration(val configurations: ConfigurationHierarchy) {
     private fun appendIssueDescription(
       message: StringBuilder,
       id: String,
-      issueRegistry: IssueRegistry
+      issueRegistry: IssueRegistry,
     ) {
       message.append("'").append(id).append("'")
       val issue = issueRegistry.getIssue(id)

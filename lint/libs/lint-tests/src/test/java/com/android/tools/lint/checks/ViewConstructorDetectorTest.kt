@@ -75,7 +75,7 @@ class ViewConstructorDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -126,7 +126,7 @@ class ViewConstructorDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -158,7 +158,7 @@ class ViewConstructorDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

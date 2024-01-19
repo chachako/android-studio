@@ -55,7 +55,7 @@ class SharedPrefsDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -83,7 +83,7 @@ class SharedPrefsDetector : Detector(), SourceCodeScanner {
               ISSUE,
               call,
               context.getLocation(call),
-              "Do not modify the set returned by `SharedPreferences.getStringSet()``"
+              "Do not modify the set returned by `SharedPreferences.getStringSet()``",
             )
           }
         }

@@ -30,7 +30,7 @@ class StringCasingDetectorTest : AbstractCheckTest() {
                     <string name="hello_world">hello world</string>
                     <string name="title_casing_hello_world">Hello World</string>
                 </resources>
-                """
+                """,
     )
 
   override fun getDetector(): Detector {
@@ -65,7 +65,7 @@ class StringCasingDetectorTest : AbstractCheckTest() {
                     <string name="hello i">hello i</string>
                     <string name="hello_cap">hello I</string>
                 </resources>
-                """
+                """,
     )
 
   fun testTurkishNonDuplicateStrings() {
@@ -80,7 +80,7 @@ class StringCasingDetectorTest : AbstractCheckTest() {
                     <string name="hello">hello i</string>
                     <string name="hello_caps">hello İ</string>
                 </resources>
-                """
+                """,
     )
 
   fun testTurkishDuplicateStrings() {
@@ -121,7 +121,7 @@ class StringCasingDetectorTest : AbstractCheckTest() {
                     <string name="hello2">Hello</string>
                     <string name="hello3">Hello</string>
                 </resources>
-                """
+                """,
         )
       )
       .run()
@@ -140,7 +140,7 @@ class StringCasingDetectorTest : AbstractCheckTest() {
                     <string name="off">off</string>
                     <string translatable="false" name="off_debug">Off</string>
                 </resources>
-                """
+                """,
           )
           .indented()
       )
@@ -159,7 +159,7 @@ class StringCasingDetectorTest : AbstractCheckTest() {
               "    <string name=\"app_name\">lint bug</string>\n" +
               "    <string name=\"item_one\"><![CDATA[<b>%1$\\s</b>]]> did something</string>\n" +
               "    <string name=\"item_two\"><![CDATA[<b>You</b>]]> did something <![CDATA[<b>%1$\\s</b>]]></string>\n" +
-              "</resources>"
+              "</resources>",
           )
           .indented()
       )

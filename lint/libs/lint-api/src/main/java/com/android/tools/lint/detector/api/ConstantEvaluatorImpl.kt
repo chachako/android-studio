@@ -488,7 +488,7 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
   private data class PrimArrayType(
     val constructorName: String,
     val varargConstructorName: String,
-    val type: PsiPrimitiveType
+    val type: PsiPrimitiveType,
   )
 
   private fun surroundedByVariableCheck(node: UElement?, variable: PsiVariable): Boolean {
@@ -576,7 +576,7 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
     private inline fun <X, reified T> runEvaluator(
       allowUnknown: Boolean,
       expr: X,
-      eval: ConstantEvaluator.(X) -> Any?
+      eval: ConstantEvaluator.(X) -> Any?,
     ): T? =
       with(ConstantEvaluator().apply { if (allowUnknown) allowUnknowns() }) { eval(expr) as? T }
 
@@ -628,7 +628,7 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
     fun findLastAssignment(
       usage: PsiElement,
       variable: PsiVariable,
-      allowNonConst: Boolean = false
+      allowNonConst: Boolean = false,
     ): PsiExpression? =
       variable.name?.let { targetName ->
         data class Exact<T>(
@@ -689,7 +689,7 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
         PrimArrayType("LongArray", "longArrayOf", PsiTypes.longType()),
         PrimArrayType("FloatArray", "floatArrayOf", PsiTypes.floatType()),
         PrimArrayType("DoubleArray", "doubleArrayOf", PsiTypes.doubleType()),
-        PrimArrayType("BooleanArray", "booleanArrayOf", PsiTypes.booleanType())
+        PrimArrayType("BooleanArray", "booleanArrayOf", PsiTypes.booleanType()),
       )
     private val kotlinPrimArrayFixedArgConstructors =
       kotlinPrimArrayTypes.map(PrimArrayType::constructorName)
@@ -704,7 +704,7 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
     private val variable: PsiVariable,
     private val endAt: UElement,
     private val constantEvaluator: ConstantEvaluator?,
-    private var variableLevel: Int
+    private var variableLevel: Int,
   ) : AbstractUastVisitor() {
     private var isDone = false
     private var currentLevel = 0
@@ -778,7 +778,7 @@ sealed class ArrayReference {
   private data class ByClass(
     private val type: Class<*>,
     override val size: Int,
-    override val dimensions: Int
+    override val dimensions: Int,
   ) : ArrayReference() {
     override val className
       get() = type.toString()
@@ -787,7 +787,7 @@ sealed class ArrayReference {
   private data class ByName(
     override val className: String,
     override val size: Int,
-    override val dimensions: Int
+    override val dimensions: Int,
   ) : ArrayReference()
 
   override fun toString(): String =
@@ -873,7 +873,7 @@ private fun ArgList<Any?>.reduceAsNumbers(
   opDouble: (Double, Double) -> Double,
   opFloat: (Float, Float) -> Float,
   opLong: (Long, Long) -> Long,
-  opInt: (Int, Int) -> Int
+  opInt: (Int, Int) -> Int,
 ): Number? =
   ifAll<Number>()?.let {
     it.ifAny<Double>()?.reduceOn(Number::toDouble, opDouble)
@@ -884,7 +884,7 @@ private fun ArgList<Any?>.reduceAsNumbers(
 
 private fun ArgList<Any?>.reduceAsInts(
   opLong: (Long, Long) -> Long,
-  opInt: (Int, Int) -> Int
+  opInt: (Int, Int) -> Int,
 ): Number? =
   ifAll<Number>()?.let {
     it.ifAny<Long>()?.reduceOn(Number::toLong, opLong)
@@ -893,7 +893,7 @@ private fun ArgList<Any?>.reduceAsInts(
 
 private inline fun ArgList<Any?>.isOrdered(
   onDouble: (Double, Double) -> Boolean,
-  onLong: (Long, Long) -> Boolean
+  onLong: (Long, Long) -> Boolean,
 ) =
   ifAll<Number>()?.let {
     (it.ifAny<Float>() ?: it.ifAny<Double>())?.isOrderedOn(Number::toDouble, onDouble)
@@ -1018,7 +1018,7 @@ private fun List<Any?>.reifiedAsArray(klass: Class<*>): Array<*> = toArray { n -
 
 private inline fun <reified A, X> Any.asArray(
   crossinline indices: (A) -> IntRange,
-  crossinline get: (A, Int) -> X
+  crossinline get: (A, Int) -> X,
 ): ((Int) -> X?)? = (this as? A)?.let { { if (it in indices(this)) get(this, it) else null } }
 
 /**

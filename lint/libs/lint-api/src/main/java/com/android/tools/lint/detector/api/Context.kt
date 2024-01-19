@@ -75,7 +75,7 @@ open class Context(
   @JvmField val file: File,
 
   /** The contents of the file. */
-  private var contents: CharSequence? = null
+  private var contents: CharSequence? = null,
 ) {
 
   /** The current configuration controlling which checks are enabled etc. */
@@ -172,13 +172,13 @@ open class Context(
             context.getCallLocation(
               node as UCallExpression,
               includeReceiver = false,
-              includeArguments = true
+              includeArguments = true,
             )
           LocationType.CALL_WITH_RECEIVER ->
             context.getCallLocation(
               node as UCallExpression,
               includeReceiver = true,
-              includeArguments = false
+              includeArguments = false,
             )
           LocationType.VALUE -> error("$type not supported for ${node.javaClass}")
         }
@@ -363,7 +363,7 @@ open class Context(
     issue: Issue,
     location: Location,
     message: String,
-    quickfixData: LintFix? = null
+    quickfixData: LintFix? = null,
   ) {
     val incident = Incident(issue, location, message, quickfixData)
     driver.client.report(this, incident)
@@ -645,7 +645,7 @@ open class Context(
     private fun findPrefixOnPreviousLine(
       contents: CharSequence,
       lineStart: Int,
-      prefix: String
+      prefix: String,
     ): Int {
       // Search backwards on the previous line until you find the prefix start (also look
       // back on previous lines if the previous line(s) contain just whitespace
@@ -693,7 +693,7 @@ open class Context(
             RuntimeException(),
             stack,
             skipFrames = 1,
-            maxFrames = 20
+            maxFrames = 20,
           )
           val vendors =
             issues
@@ -740,7 +740,7 @@ open class Context(
             issue = IssueRegistry.LINT_ERROR,
             message = message,
             location = Location.create(file),
-            driver = currentDriver
+            driver = currentDriver,
           )
         }
 

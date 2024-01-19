@@ -58,7 +58,7 @@ Please check for the Android version before calling the method.
         priority = 5,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     const val PUBLIC_KEY_CREDENTIAL_CLASS_FQNAME =
@@ -72,7 +72,7 @@ Please check for the Android version before calling the method.
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     if (context.project.dependsOn(PLAY_SERVICES_DEPENDENCY) == true) {
       val api = ApiConstraint.atLeast(MIN_SDK_FOR_PUBLIC_KEY_CREDENTIAL)

@@ -120,7 +120,7 @@ protected constructor(
   @JvmField protected val client: LintCliClient,
 
   /** The report file, if any (reporters may write to stdout/stderr too) */
-  val output: File?
+  val output: File?,
 ) {
   /** Whether this reporter is writing to the console. */
   val isWriteToConsole: Boolean
@@ -235,7 +235,7 @@ protected constructor(
       flags: LintCliFlags,
       file: File?,
       writer: Writer,
-      close: Boolean
+      close: Boolean,
     ): TextReporter {
       return TextReporter(client, flags, file, writer, close)
     }
@@ -253,7 +253,7 @@ protected constructor(
     fun createXmlReporter(
       client: LintCliClient,
       output: File,
-      reportType: XmlFileType = XmlFileType.REPORT
+      reportType: XmlFileType = XmlFileType.REPORT,
     ): XmlReporter {
       return XmlReporter(client, output, reportType)
     }
@@ -510,7 +510,7 @@ protected constructor(
             WatchFaceEditorDetector.ISSUE,
             WearStandaloneAppDetector.WEAR_STANDALONE_APP_ISSUE,
             WrongCallDetector.ISSUE,
-            WrongCaseDetector.WRONG_CASE
+            WrongCaseDetector.WRONG_CASE,
           )
       }
       return studioFixes?.contains(issue) ?: false

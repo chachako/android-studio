@@ -73,8 +73,8 @@ class VectorDrawableCompatDetector : ResourceXmlDetector() {
             Implementation(
               VectorDrawableCompatDetector::class.java,
               Scope.ALL_RESOURCES_SCOPE,
-              Scope.RESOURCE_FILE_SCOPE
-            )
+              Scope.RESOURCE_FILE_SCOPE,
+            ),
         )
         .addMoreInfo(
           "https://developer.android.com/guide/topics/graphics/vector-drawable-resources"

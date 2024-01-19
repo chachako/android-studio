@@ -55,8 +55,8 @@ class AllCapsDetector : LayoutDetector() {
           Implementation(
             AllCapsDetector::class.java,
             Scope.ALL_RESOURCES_SCOPE,
-            Scope.RESOURCE_FILE_SCOPE
-          )
+            Scope.RESOURCE_FILE_SCOPE,
+          ),
       )
   }
 

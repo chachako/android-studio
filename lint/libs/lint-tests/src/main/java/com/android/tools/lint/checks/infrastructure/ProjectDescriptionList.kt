@@ -37,7 +37,7 @@ internal class ProjectDescriptionList(
    * report will show paths like `app/src/main` and `lib/src/main`. If [reportFrom] is set to the
    * app, the paths will instead be `src/main/` and `../lib/src/main`.
    */
-  var reportFrom: ProjectDescription? = null
+  var reportFrom: ProjectDescription? = null,
 ) : Iterable<ProjectDescription> {
   /**
    * If the project set was constructed implicitly (via ../module/path) file names, this property

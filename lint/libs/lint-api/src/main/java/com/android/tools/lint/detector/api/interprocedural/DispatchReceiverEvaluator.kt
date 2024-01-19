@@ -77,7 +77,7 @@ abstract class DispatchReceiverEvaluator(
    */
   operator fun get(
     element: UElement,
-    root: DispatchReceiverEvaluator = this
+    root: DispatchReceiverEvaluator = this,
   ): Collection<DispatchReceiver> {
     val ours = getOwn(element, root)
     val theirs = delegate?.get(element, root) ?: emptyList()
@@ -93,7 +93,7 @@ abstract class DispatchReceiverEvaluator(
 
   protected abstract fun getOwn(
     element: UElement,
-    root: DispatchReceiverEvaluator
+    root: DispatchReceiverEvaluator,
   ): Collection<DispatchReceiver>
 
   protected abstract fun getOwnForImplicitThis(): Collection<DispatchReceiver>
@@ -129,7 +129,7 @@ sealed class DispatchReceiver {
 
     data class Reference(
       override val element: UCallableReferenceExpression,
-      val receiver: DispatchReceiver.Class?
+      val receiver: DispatchReceiver.Class?,
     ) : Functional(element) {
 
       override fun toTarget(): CallTarget.Method? {
@@ -175,7 +175,7 @@ class SimpleExpressionDispatchReceiverEvaluator(private val cha: ClassHierarchy)
 
   override fun getOwn(
     element: UElement,
-    root: DispatchReceiverEvaluator
+    root: DispatchReceiverEvaluator,
   ): Collection<DispatchReceiver> =
     when {
       element is UArrayAccessExpression -> root[element.receiver] // Unwrap.
@@ -255,12 +255,12 @@ class SimpleExpressionDispatchReceiverEvaluator(private val cha: ClassHierarchy)
 class IntraproceduralDispatchReceiverEvaluator(
   simpleExprEval: SimpleExpressionDispatchReceiverEvaluator,
   private val varMap: Multimap<UVariable, DispatchReceiver>,
-  private val methodMap: Multimap<UMethod, DispatchReceiver>
+  private val methodMap: Multimap<UMethod, DispatchReceiver>,
 ) : DispatchReceiverEvaluator(simpleExprEval) {
 
   override fun getOwn(
     element: UElement,
-    root: DispatchReceiverEvaluator
+    root: DispatchReceiverEvaluator,
   ): Collection<DispatchReceiver> =
     when (element) {
       is UVariable -> varMap[element]
@@ -288,7 +288,7 @@ class IntraproceduralDispatchReceiverVisitor(cha: ClassHierarchy) : AbstractUast
     IntraproceduralDispatchReceiverEvaluator(
       SimpleExpressionDispatchReceiverEvaluator(cha),
       varMap,
-      methodMap
+      methodMap,
     )
 
   override fun visitMethod(node: UMethod): Boolean {

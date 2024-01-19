@@ -44,7 +44,7 @@ open class LintCliFixPerformer(
    * Whether to perform shortening of all symbols in the replacement string, not just imported
    * symbpls.
    */
-  private val shortenAll: Boolean = includeMarkers
+  private val shortenAll: Boolean = includeMarkers,
 ) : LintFixPerformer(client, requireAutoFixable) {
   override fun getSourceText(file: File): CharSequence {
     return client.getSourceText(file)
@@ -78,7 +78,7 @@ open class LintCliFixPerformer(
   override fun applyEdits(
     fileProvider: FileProvider,
     fileData: PendingEditFile,
-    edits: List<PendingEdit>
+    edits: List<PendingEdit>,
   ) {
     var fileContents = fileProvider.getFileContents(fileData)
 
@@ -99,7 +99,7 @@ open class LintCliFixPerformer(
             injectSelection(
               fileContents,
               edit.startOffset + edit.selectStart,
-              edit.startOffset + edit.selectEnd
+              edit.startOffset + edit.selectEnd,
             )
         }
       }
@@ -114,7 +114,7 @@ open class LintCliFixPerformer(
   private fun injectSelection(
     fileContents: String,
     selectionStartOffset: Int,
-    selectionEndOffset: Int
+    selectionEndOffset: Int,
   ): String {
     assert(includeMarkers)
     if (selectionStartOffset == -1) {
@@ -135,7 +135,7 @@ open class LintCliFixPerformer(
   override fun printStatistics(
     editMap: MutableMap<String, Int>,
     appliedEditCount: Int,
-    editedFileCount: Int
+    editedFileCount: Int,
   ) {
     if (printStatistics && editedFileCount > 0) {
       val printWriter = PrintWriter(System.out, true, Charsets.UTF_8)
@@ -147,7 +147,7 @@ open class LintCliFixPerformer(
     writer: PrintWriter,
     editMap: MutableMap<String, Int>,
     appliedEditCount: Int,
-    editedFileCount: Int
+    editedFileCount: Int,
   ) {
     if (editMap.keys.size == 1) {
       writer.println(
@@ -173,7 +173,7 @@ open class LintCliFixPerformer(
     fileProvider: FileProvider,
     file: PendingEditFile,
     replaceFix: LintFix.ReplaceString,
-    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE") originalReplacement: String
+    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE") originalReplacement: String,
   ): String {
     var replacement = originalReplacement
     val contents: String = fileProvider.getFileContents(file)
@@ -365,7 +365,7 @@ open class LintCliFixPerformer(
     source: String,
     prefix: String,
     names: Set<String>,
-    isWildcard: Boolean
+    isWildcard: Boolean,
   ): String {
     if (prefix.isEmpty()) {
       return source

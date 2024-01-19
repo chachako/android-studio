@@ -37,7 +37,7 @@ internal interface ConnectionReporter : ThreadReporter {
     callstack: String,
     method: String,
     headers: Map<String, List<String>>,
-    transport: HttpTransport
+    transport: HttpTransport,
   )
 
   fun onResponse(responseCode: Int, headers: Map<String?, List<String>>)
@@ -80,7 +80,7 @@ private class ConnectionReporterImpl(private val connection: Connection) :
     callstack: String,
     method: String,
     headers: Map<String, List<String>>,
-    transport: HttpTransport
+    transport: HttpTransport,
   ) {
     connection.sendHttpConnectionEvent(
       NetworkInspectorProtocol.HttpConnectionEvent.newBuilder()

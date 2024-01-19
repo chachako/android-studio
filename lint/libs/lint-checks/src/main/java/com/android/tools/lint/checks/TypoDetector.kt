@@ -190,7 +190,7 @@ class TypoDetector : ResourceXmlDetector() {
     node: Node,
     text: String,
     index: Int,
-    begin: Int
+    begin: Int,
   ) {
     // Peek ahead: if we find punctuation or lower case letter don't flag it
     var problem = true
@@ -230,7 +230,7 @@ class TypoDetector : ResourceXmlDetector() {
         node,
         context.getLocation(node, begin, index),
         "Did you mean \"$intended\" instead of \"$actual\"?",
-        fix
+        fix,
       )
     }
   }
@@ -243,7 +243,7 @@ class TypoDetector : ResourceXmlDetector() {
     lastWordBegin: Int,
     lastWordEnd: Int,
     begin: Int,
-    end: Int
+    end: Int,
   ) {
     if (lastWordBegin != -1 && end - begin == lastWordEnd - lastWordBegin && end - begin > 1) {
       // See whether we have a repeated word
@@ -272,7 +272,7 @@ class TypoDetector : ResourceXmlDetector() {
     byteStart: Int,
     byteEnd: Int,
     text: String,
-    charStart: Int
+    charStart: Int,
   ) {
     var charStart = charStart
     var lastWordBegin = -1
@@ -339,7 +339,7 @@ class TypoDetector : ResourceXmlDetector() {
         lastWordBegin,
         lastWordEnd,
         charStart,
-        charEnd
+        charEnd,
       )
       lastWordBegin = charStart
       lastWordEnd = charEnd
@@ -353,7 +353,7 @@ class TypoDetector : ResourceXmlDetector() {
     node: Node,
     text: String,
     begin: Int,
-    replacements: List<String>
+    replacements: List<String>,
   ) {
     if (replacements.size < 2) {
       return
@@ -407,7 +407,7 @@ class TypoDetector : ResourceXmlDetector() {
     text: String,
     lastWordBegin: Int,
     begin: Int,
-    end: Int
+    end: Int,
   ) {
     val word = text.substring(begin, end)
     if (isAllowed(word)) {
@@ -440,7 +440,7 @@ class TypoDetector : ResourceXmlDetector() {
         category = Category.MESSAGES,
         priority = 7,
         severity = Severity.WARNING,
-        implementation = Implementation(TypoDetector::class.java, RESOURCE_FILE_SCOPE)
+        implementation = Implementation(TypoDetector::class.java, RESOURCE_FILE_SCOPE),
       )
 
     private fun onlySpace(text: String, fromInclusive: Int, toExclusive: Int): Boolean {

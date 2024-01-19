@@ -72,7 +72,7 @@ class LintBatchAnalyticsTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
     MainTest.checkDriver(
       null,
@@ -90,10 +90,10 @@ class LintBatchAnalyticsTest : AbstractCheckTest() {
         "--disable",
         "LintError",
         "-Werror",
-        project.path
+        project.path,
       ),
       null,
-      null
+      null,
     )
 
     val usages = usageTracker.usages

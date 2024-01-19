@@ -881,7 +881,7 @@ object BroadcastReceiverUtils {
       "NotificationManagerService.TIMEOUT",
       "ScheduleConditionProvider.EVALUATE",
       "SnoozeHelper.EVALUATE",
-      "wifi_scan_available", -> true
+      "wifi_scan_available" -> true
       else -> false
     }
   }

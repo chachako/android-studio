@@ -84,7 +84,7 @@ class LintFixPerformerTest {
           requireAutoFixable = requireAutoFixable,
           includeMarkers = includeMarkers,
           updateImports = updateImports,
-          shortenAll = shortenAll
+          shortenAll = shortenAll,
         ) {
         override fun writeFile(file: File, contents: String) {
           after = contents
@@ -94,7 +94,7 @@ class LintFixPerformerTest {
           writer: PrintWriter,
           editMap: MutableMap<String, Int>,
           appliedEditCount: Int,
-          editedFileCount: Int
+          editedFileCount: Int,
         ) {
           val stringWriter = StringWriter()
           val collector = PrintWriter(stringWriter)
@@ -112,7 +112,7 @@ class LintFixPerformerTest {
             Category.CORRECTNESS,
             5,
             Severity.WARNING,
-            Implementation(LintDetectorDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+            Implementation(LintDetectorDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
           )
         if (location != null) {
           this.location = location
@@ -124,7 +124,7 @@ class LintFixPerformerTest {
       if (expectedFailure != null) {
         assertEquals(
           expectedFailure.trimIndent().trim(),
-          e.message?.replace(file.path, file.name)?.replace(file.path.dos2unix(), file.name)
+          e.message?.replace(file.path, file.name)?.replace(file.path.dos2unix(), file.name),
         )
       } else {
         throw e
@@ -141,7 +141,7 @@ class LintFixPerformerTest {
     fileName: String,
     source: String,
     startOffset: Int = 0,
-    endOffset: Int = source.length
+    endOffset: Int = source.length,
   ): Pair<File, Location> {
     val file = temporaryFolder.newFile(fileName)
     file.writeText(source)
@@ -168,7 +168,7 @@ class LintFixPerformerTest {
             First line.
             2nd line.
             Third line.""",
-      expectedOutput = "Applied 1 edits across 1 files for this fix: Replace with 2nd"
+      expectedOutput = "Applied 1 edits across 1 files for this fix: Replace with 2nd",
     )
   }
 
@@ -194,7 +194,7 @@ class LintFixPerformerTest {
         Second sentence.
         Third sentence.
         """,
-      expectedOutput = "Applied 3 edits across 1 files for this fix: Replace with sentence"
+      expectedOutput = "Applied 3 edits across 1 files for this fix: Replace with sentence",
     )
   }
 
@@ -226,7 +226,7 @@ class LintFixPerformerTest {
         line: Second!
         line: Third!
         """,
-      expectedOutput = "Applied 3 edits across 1 files for this fix: Replace with \\k<3>: \\k<2>!"
+      expectedOutput = "Applied 3 edits across 1 files for this fix: Replace with \\k<3>: \\k<2>!",
     )
   }
 
@@ -514,7 +514,7 @@ class LintFixPerformerTest {
         }
         """,
       includeMarkers = false,
-      updateImports = false
+      updateImports = false,
     )
 
     // Now update imports -- and rewrite code in the replacement to use the new and existing imports
@@ -544,7 +544,7 @@ class LintFixPerformerTest {
         }
         """,
       includeMarkers = false,
-      updateImports = true
+      updateImports = true,
     )
 
     // Finally, apply imports and reference shortening, but also infer additional fully qualified
@@ -579,7 +579,7 @@ class LintFixPerformerTest {
         }
         """,
       includeMarkers = true,
-      updateImports = true
+      updateImports = true,
     )
   }
 
@@ -625,7 +625,7 @@ class LintFixPerformerTest {
         """
           .trimIndent(),
       includeMarkers = true,
-      updateImports = true
+      updateImports = true,
     )
   }
 
@@ -653,7 +653,7 @@ class LintFixPerformerTest {
 
         (This fix is associated with the issue id `_FixPerformerTestIssue`,
         reported via com.android.tools.lint.checks.LintDetectorDetector.)
-        """
+        """,
     )
   }
 
@@ -673,7 +673,7 @@ class LintFixPerformerTest {
 
         (This fix is associated with the issue id `_FixPerformerTestIssue`,
         reported via com.android.tools.lint.checks.LintDetectorDetector.)
-        """
+        """,
     )
   }
 
@@ -701,7 +701,7 @@ class LintFixPerformerTest {
          class Test {
         }
         """,
-      expectedOutput = "Applied 1 edits across 1 files for this fix: Delete"
+      expectedOutput = "Applied 1 edits across 1 files for this fix: Delete",
     )
   }
 
@@ -736,7 +736,7 @@ class LintFixPerformerTest {
         1: Replace with 3rd
         1: Replace with 2nd
         1: Replace with 1st
-        """
+        """,
     )
   }
 
@@ -766,7 +766,7 @@ class LintFixPerformerTest {
             <element1 android:new_attribute="new value" attribute1="value1" />
             <element2 attribute1="value1" attribute2="value2"/>
         </root>
-        """
+        """,
     )
   }
 
@@ -802,7 +802,7 @@ class LintFixPerformerTest {
             <element1 android:new_attribute="[a &lt; b &amp; c > d]|" attribute1="value1" />
         </root>
         """,
-      includeMarkers = true
+      includeMarkers = true,
     )
   }
 
@@ -833,7 +833,7 @@ class LintFixPerformerTest {
             <element2 attribute1="value1" attribute2="value2"/>
         </root>
         """,
-      expectedOutput = ""
+      expectedOutput = "",
     )
   }
 
@@ -861,7 +861,7 @@ class LintFixPerformerTest {
         <root xmlns:android="http://schemas.android.com/apk/res/android">
             <element1 android:layout_width="wrap_content" android:layout_height="wrap_content" android:width="foo" />
         </root>
-        """
+        """,
     )
   }
 
@@ -889,7 +889,7 @@ class LintFixPerformerTest {
         <root xmlns:android="http://schemas.android.com/apk/res/android">
             <element1 android:id="@+id/my_id" android:layout_width="wrap_content" android:width="foo" />
         </root>
-        """
+        """,
     )
   }
 
@@ -914,7 +914,7 @@ class LintFixPerformerTest {
         .composite(
           fix().set(ANDROID_URI, "layout_width", "wrap_content").range(range).autoFix().build(),
           fix().set(ANDROID_URI, "z-order", "5").range(range).autoFix().build(),
-          fix().set(ANDROID_URI, "layout_height", "wrap_content").range(range).autoFix().build()
+          fix().set(ANDROID_URI, "layout_height", "wrap_content").range(range).autoFix().build(),
         )
     check(
       file,
@@ -926,7 +926,7 @@ class LintFixPerformerTest {
         <root xmlns:android="http://schemas.android.com/apk/res/android">
             <element1 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1.0" android:width="foo" android:z-order="5" />
         </root>
-        """
+        """,
     )
   }
 
@@ -956,7 +956,7 @@ class LintFixPerformerTest {
             <element1 attribute1="value1" />
             <element2 attribute1="value1" />
         </root>
-        """
+        """,
     )
   }
 
@@ -986,7 +986,7 @@ class LintFixPerformerTest {
               xmlns:tools="http://schemas.android.com/tools">
             <element2 attribute1="value1" tools:attribute1="value1" />
         </root>
-        """
+        """,
     )
   }
 
@@ -1016,7 +1016,7 @@ class LintFixPerformerTest {
               xmlns:tools="http://schemas.android.com/tools">
             <element2 attribute1="value1" tools:attribute1="value1" />
         </root>
-        """
+        """,
     )
   }
 
@@ -1052,7 +1052,7 @@ class LintFixPerformerTest {
               xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
             <element2 app:attribute1="value1" tools:attribute1="value1" />
         </root>
-        """
+        """,
     )
 
     assertEquals(
@@ -1060,11 +1060,11 @@ class LintFixPerformerTest {
       fix()
         .replaceAttribute(ANDROID_URI, "attribute1", "value1", null, "attribute2")
         .build()
-        .getDisplayName()
+        .getDisplayName(),
     )
     assertEquals(
       "Drop namespace prefix",
-      fix().replaceAttribute(ANDROID_URI, "attribute1", "value1", null).build().getDisplayName()
+      fix().replaceAttribute(ANDROID_URI, "attribute1", "value1", null).build().getDisplayName(),
     )
   }
 
@@ -1098,7 +1098,7 @@ class LintFixPerformerTest {
         <root>
             <element2 attribute2="value1" />
         </root>
-        """
+        """,
     )
   }
 
@@ -1127,7 +1127,7 @@ class LintFixPerformerTest {
       assertEquals(
         "You should explicitly set a display name for composite group actions; " +
           "unlike string replacement, set attribute, etc. it cannot produce a good default on its own",
-        e.message
+        e.message,
       )
     }
 
@@ -1143,7 +1143,7 @@ class LintFixPerformerTest {
             <element1 android:new_attribute="new value" />
             <element2 attribute1="value1" attribute2="value2"/>
         </root>
-        """
+        """,
     )
   }
 
@@ -1173,7 +1173,7 @@ class LintFixPerformerTest {
         "test.xml",
         source,
         startOffset = source.indexOf("android:layout_column"),
-        endOffset = source.indexOf("android:layout_column") + "android:layout_column".length
+        endOffset = source.indexOf("android:layout_column") + "android:layout_column".length,
       )
     val fix =
       fix()
@@ -1210,7 +1210,7 @@ class LintFixPerformerTest {
         "Applied 5 edits across 1 files\n" +
           "2: Set layout_column=\"1\"\n" +
           "3: Delete layout_column",
-      location = range
+      location = range,
     )
   }
 
@@ -1234,7 +1234,7 @@ class LintFixPerformerTest {
         "color",
         "tools:ignore",
         "tools:targetApi",
-        "xliff:name"
+        "xliff:name",
       )
     val shuffled = list.shuffled()
     val comparator =
@@ -1265,7 +1265,7 @@ class LintFixPerformerTest {
         "color\n" +
         "tools:ignore\n" +
         "tools:targetApi",
-      sorted.joinToString("\n")
+      sorted.joinToString("\n"),
     )
   }
 
@@ -1287,7 +1287,7 @@ class LintFixPerformerTest {
         "test.xml",
         source,
         source.indexOf("<element1"),
-        source.indexOf("</element1>") + "</element1>".length
+        source.indexOf("</element1>") + "</element1>".length,
       )
     val fix = fix().renameTag("element1", "newElement", range).autoFix().build()
     check(
@@ -1303,7 +1303,7 @@ class LintFixPerformerTest {
             </newElement>
         </root>
         """,
-      requireAutoFixable = false
+      requireAutoFixable = false,
     )
   }
 
@@ -1358,7 +1358,7 @@ class LintFixPerformerTest {
         """,
       expectedOutput =
         "Applied 2 edits across 1 files for this fix: Replace with (android.graphics.drawable.Drawable drawable, android.graphics.Outline outline)",
-      includeMarkers = true
+      includeMarkers = true,
     )
   }
 
@@ -1392,7 +1392,7 @@ class LintFixPerformerTest {
             public void test() { }
         }
         """,
-      includeMarkers = true
+      includeMarkers = true,
     )
   }
 
@@ -1427,7 +1427,7 @@ class LintFixPerformerTest {
         const val someProperty = ""
         """
           .trimIndent(),
-      requireAutoFixable = false
+      requireAutoFixable = false,
     )
   }
 
@@ -1465,7 +1465,7 @@ class LintFixPerformerTest {
         const val someProperty = ""
         """
           .trimIndent(),
-      requireAutoFixable = false
+      requireAutoFixable = false,
     )
   }
 
@@ -1501,7 +1501,7 @@ class LintFixPerformerTest {
         const val someProperty = ""
         """
           .trimIndent(),
-      requireAutoFixable = false
+      requireAutoFixable = false,
     )
   }
 
@@ -1534,7 +1534,7 @@ class LintFixPerformerTest {
         const val someProperty = ""
         """
           .trimIndent(),
-      requireAutoFixable = false
+      requireAutoFixable = false,
     )
   }
 
@@ -1586,7 +1586,7 @@ class LintFixPerformerTest {
           inline fun test() {
           }
       }
-      """
+      """,
     )
   }
 
@@ -1671,7 +1671,7 @@ class LintFixPerformerTest {
         .name("Add version")
         .composite(
           fix().replace().beginning().with("appCompat = \"1.5.1\"\n").range(range).build(),
-          fix().replace().beginning().with("[versions]\n").range(range).build()
+          fix().replace().beginning().with("[versions]\n").range(range).build(),
         )
         .autoFix()
 
@@ -1685,7 +1685,7 @@ class LintFixPerformerTest {
         appCompat = "1.5.1"
         [libraries]
         androidx-activity-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
-        """
+        """,
     )
   }
 
@@ -1711,7 +1711,7 @@ class LintFixPerformerTest {
             .with("appCompat = \"1.5.1\"\n")
             .priority(1)
             .range(range)
-            .build()
+            .build(),
         )
         .autoFix()
     val fix2 =
@@ -1725,7 +1725,7 @@ class LintFixPerformerTest {
             .with("activityCompose = \"1.7.0-alpha02\"\n")
             .priority(2)
             .range(range)
-            .build()
+            .build(),
         )
         .autoFix()
 
@@ -1741,7 +1741,7 @@ class LintFixPerformerTest {
         activityCompose = "1.7.0-alpha02"
         [libraries]
         androidx-activity-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
-        """
+        """,
     )
   }
 
@@ -1754,7 +1754,7 @@ class LintFixPerformerTest {
   fun testSkipComments() {
     checkSkip(
       " /* this /* is nested */ */ // line\n|test",
-      LintFixPerformer.Companion::skipCommentsAndWhitespace
+      LintFixPerformer.Companion::skipCommentsAndWhitespace,
     )
   }
 
@@ -1790,7 +1790,7 @@ class LintFixPerformerTest {
   fun testCollectNames() {
     checkShorten(
       "[foo.Bar]",
-      "/* not.Code /* nested */ not.Code */ val x = \"not.Code\"; val y = foo.Bar"
+      "/* not.Code /* nested */ not.Code */ val x = \"not.Code\"; val y = foo.Bar",
     )
     checkShorten("[foo.Bar]", "val x = \"\\\"not.Code\\\"\"; val y = foo.Bar")
   }

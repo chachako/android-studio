@@ -85,7 +85,7 @@ class SuppressibleTestModeTest {
                             android:title="My title 2">
                         </item>
                     </menu>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -98,9 +98,9 @@ class SuppressibleTestModeTest {
                         <string name="app_name2">App Name 2</string>
 
                     </resources>
-                    """
+                    """,
           )
-          .indented()
+          .indented(),
       )
     val output =
       """
@@ -169,7 +169,7 @@ class SuppressibleTestModeTest {
             +     <string tools:ignore="DuplicateDefinition" name="app_name">App Name 1</string>
                   <string name="app_name2">App Name 2</string>
             """
-        .trimIndent()
+        .trimIndent(),
     )
   }
 
@@ -189,7 +189,7 @@ class SuppressibleTestModeTest {
                         </tech>
                     </tech-list>
                 </resources>
-                """
+                """,
           )
           .indented()
       )
@@ -215,7 +215,7 @@ class SuppressibleTestModeTest {
             -         <tech>
             +         <tech tools:ignore="NfcTechWhitespace">
                       android.nfc.tech.NfcA
-            """
+            """,
     )
   }
 
@@ -233,7 +233,7 @@ class SuppressibleTestModeTest {
                     tools:ignore="ExtraTranslation">
                     <string name="bar">Bar</string>
                 </resources>
-                """
+                """,
           )
           .indented()
       )
@@ -258,7 +258,7 @@ class SuppressibleTestModeTest {
             -     tools:ignore="ExtraTranslation">
             +     tools:ignore="NamespaceTypo,ExtraTranslation">
                   <string name="bar">Bar</string>
-            """
+            """,
     )
   }
 
@@ -291,7 +291,7 @@ class SuppressibleTestModeTest {
                             public static final long MY_INTERVAL = 1000L;
                         }
                     }
-                    """
+                    """,
           )
           .indented()
       )
@@ -322,7 +322,7 @@ class SuppressibleTestModeTest {
             -     public void test(AlarmManager alarmManager) {
             +     @SuppressWarnings("ShortAlarm") public void test(AlarmManager alarmManager) {
                       alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 5000, 60000, null); // OK
-            """
+            """,
     )
   }
 
@@ -373,7 +373,7 @@ class SuppressibleTestModeTest {
             +         @SuppressWarnings("BlockedPrivateApi") Field deniedField = TelephonyManager.class.getDeclaredField("NETWORK_TYPES"); // ERROR 1
             +         @SuppressWarnings({"BlockedPrivateApi", "SoonBlockedPrivateApi"}) Field maybeField = TelephonyManager.class.getDeclaredField("OTASP_NEEDED"); // ERROR 2
                   }
-            """
+            """,
     )
   }
 
@@ -424,7 +424,7 @@ class SuppressibleTestModeTest {
             -     @SuppressWarnings("deprecation")
             +     @SuppressWarnings({"Wakelock", "deprecation"})
                   public void test(Context context) {
-            """
+            """,
     )
   }
 
@@ -458,7 +458,7 @@ class SuppressibleTestModeTest {
                 fun String.myMethod(): String = this
                 """
           )
-          .indented(),
+          .indented()
       )
     val output =
       """
@@ -570,7 +570,7 @@ class SuppressibleTestModeTest {
             -     val a = { i: Int -> i + 1 }
             +     @Suppress("TestId21", "TestId20") val a = { i: Int -> i + 1 }
                   "foo".myMethod().myMethod()
-            """
+            """,
     )
   }
 
@@ -592,7 +592,7 @@ class SuppressibleTestModeTest {
                 }
                 """
           )
-          .indented(),
+          .indented()
       )
     val output =
       """
@@ -645,7 +645,7 @@ class SuppressibleTestModeTest {
             +     @Suppress("TestId", "test1") fun test2() {}
             +     @Suppress("TestId2", "TestId", "test1", "test2") fun test3() {}
               }
-            """
+            """,
     )
   }
 
@@ -676,7 +676,7 @@ class SuppressibleTestModeTest {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
     val output =
       """
@@ -713,7 +713,7 @@ class SuppressibleTestModeTest {
                   // STOPSHIP
             +     //noinspection StopShip
                   /* We must STOPSHIP! */
-            """
+            """,
     )
   }
 
@@ -762,7 +762,7 @@ class SuppressibleTestModeTest {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
     val output =
       """
@@ -797,7 +797,7 @@ class SuppressibleTestModeTest {
             -     fun test() {
             +     @Suppress("TestId") fun test() {
                       create { param: Any? -> null }
-            """
+            """,
     )
   }
 
@@ -814,7 +814,7 @@ class SuppressibleTestModeTest {
             }
             """
           )
-          .indented(),
+          .indented()
       )
     val output =
       """
@@ -828,7 +828,7 @@ class SuppressibleTestModeTest {
       output,
       testFiles,
       // The source code is broken; don't attempt to fix it
-      "foo/MyModule.java:"
+      "foo/MyModule.java:",
     )
   }
 }

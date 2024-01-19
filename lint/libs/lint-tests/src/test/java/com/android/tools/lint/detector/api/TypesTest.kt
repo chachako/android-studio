@@ -50,7 +50,7 @@ class TypesTest : TestCase() {
           "    open fun method2(value: Boolean, value: Boolean?): String? = null\n" +
           "    open fun method3(value: Int?, value2: Int): Int = null\n" +
           "}\n",
-        File("src/test/pkg/Tor.kt")
+        File("src/test/pkg/Tor.kt"),
       )
 
     val file = pair.first.uastFile
@@ -118,7 +118,7 @@ class TypesTest : TestCase() {
         "                UReturnExpression [return null]\n" +
         "                    ULiteralExpression (value = null) [null] : PsiType:Void\n" +
         "        UMethod (name = Parent) [public fun Parent() = UastEmptyExpression]\n",
-      file?.asLogTypes()
+      file?.asLogTypes(),
     )
 
     assertEquals(
@@ -188,7 +188,7 @@ class TypesTest : TestCase() {
 
             """
         .trimIndent(),
-      file?.asRecursiveLogString()?.replace("\r", "")
+      file?.asRecursiveLogString()?.replace("\r", ""),
     )
     Disposer.dispose(pair.second)
   }
@@ -200,7 +200,7 @@ class TypesTest : TestCase() {
           "package test.pkg\n" +
           "\n" +
           "fun calc(@java.lang.Override x: Int, y: Int?, z: String?): Int = x * 2",
-        File("src/test/pkg/test.kt")
+        File("src/test/pkg/test.kt"),
       )
 
     val file = pair.first.uastFile
@@ -221,7 +221,7 @@ class TypesTest : TestCase() {
         "                    UBinaryExpression (operator = *) [x * 2] : PsiType:int\n" +
         "                        USimpleNameReferenceExpression (identifier = x) [x] : PsiType:int\n" +
         "                        ULiteralExpression (value = 2) [2] : PsiType:int\n",
-      file?.asLogTypes()
+      file?.asLogTypes(),
     )
     Disposer.dispose(pair.second)
   }
@@ -246,7 +246,7 @@ class TypesTest : TestCase() {
           "    Foo()\n" +
           "    Foo(5)\n" +
           "}",
-        File("src/test/pkg/test.kt")
+        File("src/test/pkg/test.kt"),
       )
 
     val file = pair.first.uastFile
@@ -270,7 +270,7 @@ class TypesTest : TestCase() {
         "        sideeffect(number)\n" +
         "    }\n" +
         "}\n",
-      file?.asRenderString()?.replace("\r", "")
+      file?.asRenderString()?.replace("\r", ""),
     )
     Disposer.dispose(pair.second)
   }
@@ -284,7 +284,7 @@ class TypesTest : TestCase() {
           "}\n" +
           "\n" +
           "class Five : Parent(5)",
-        File("src/test/pkg/test.kt")
+        File("src/test/pkg/test.kt"),
       )
 
     val file = pair.first.uastFile
@@ -310,7 +310,7 @@ class TypesTest : TestCase() {
         "                    UIdentifier (Identifier (Parent)) [UIdentifier (Identifier (Parent))]\n" +
         "                    USimpleNameReferenceExpression (identifier = <init>, resolvesTo = PsiClass: Parent) [<init>]\n" +
         "                    ULiteralExpression (value = 5) [5] : PsiType:int\n",
-      file?.asLogTypes()
+      file?.asLogTypes(),
     )
     Disposer.dispose(pair.second)
   }
@@ -327,7 +327,7 @@ class TypesTest : TestCase() {
           "    JavaEnum(int arg) {\n" +
           "    }\n" +
           "}",
-        File("src/test/pkg/JavaEnum.java")
+        File("src/test/pkg/JavaEnum.java"),
       )
 
     val file = pair.first.uastFile
@@ -351,7 +351,7 @@ class TypesTest : TestCase() {
         "        UMethod (name = values) [public static fun values() : test.pkg.JavaEnum[] = UastEmptyExpression] : PsiType:JavaEnum[]\n" +
         "        UMethod (name = valueOf) [public static fun valueOf(name: java.lang.String) : test.pkg.JavaEnum = UastEmptyExpression] : PsiType:JavaEnum\n" +
         "            UParameter (name = name) [var name: java.lang.String] : PsiType:String\n",
-      file?.asLogTypes()
+      file?.asLogTypes(),
     )
     Disposer.dispose(pair.second)
   }
@@ -365,7 +365,7 @@ class TypesTest : TestCase() {
           "enum class KotlinEnum(val resId: Int) {\n" +
           " FOO(1), BAR(2), BAZ(3) \n" +
           "}",
-        File("src/test/pkg/KotlinEnum.kt")
+        File("src/test/pkg/KotlinEnum.kt"),
       )
 
     val file = pair.first.uastFile
@@ -396,7 +396,7 @@ class TypesTest : TestCase() {
         "        UMethod (name = values) [public static fun values() : test.pkg.KotlinEnum[] = UastEmptyExpression] : PsiType:KotlinEnum[]\n" +
         "        UMethod (name = valueOf) [public static fun valueOf(value: java.lang.String) : test.pkg.KotlinEnum = UastEmptyExpression] : PsiType:KotlinEnum\n" +
         "            UParameter (name = value) [var value: java.lang.String] : PsiType:String\n",
-      file?.asLogTypes()
+      file?.asLogTypes(),
     )
     Disposer.dispose(pair.second)
   }
@@ -423,7 +423,7 @@ class TypesTest : TestCase() {
                     baz
                 }
                 """,
-        File("src/test/pkg/test.kt")
+        File("src/test/pkg/test.kt"),
       )
 
     val file = pair.first.uastFile
@@ -471,7 +471,7 @@ class TypesTest : TestCase() {
         "                UQualifiedReferenceExpression [AnnotationTarget.FILE] : PsiType:AnnotationTarget\n" +
         "                    USimpleNameReferenceExpression (identifier = AnnotationTarget) [AnnotationTarget]\n" +
         "                    USimpleNameReferenceExpression (identifier = FILE) [FILE] : PsiType:AnnotationTarget\n",
-      file?.asLogTypes()
+      file?.asLogTypes(),
     )
     Disposer.dispose(pair.second)
   }

@@ -100,7 +100,7 @@ class LocaleDetectorTest : AbstractCheckTest() {
                     new SimpleDateFormat("yyyy-MM-dd", Locale.US); // OK
                 }
             }
-            """
+            """,
           )
           .indented()
       )
@@ -227,7 +227,7 @@ class LocaleDetectorTest : AbstractCheckTest() {
                             String.format("WRONG: %f", 1.0f); // Implies locale
                         }
                     }
-                    """
+                    """,
           )
           .indented()
       )
@@ -321,7 +321,7 @@ class LocaleDetectorTest : AbstractCheckTest() {
                         "WRONG".toLowerCase()
                         "ok".toLowerCase(Locale.US)
                     }
-                    """
+                    """,
           )
           .indented()
       )
@@ -389,7 +389,7 @@ class LocaleDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
           .indented(),
         kotlin(
@@ -418,7 +418,7 @@ class LocaleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -444,7 +444,7 @@ class LocaleDetectorTest : AbstractCheckTest() {
                         throw new NullPointerException(String.format("This message isn't user-facing %d", argument));
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -542,7 +542,7 @@ class LocaleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -585,7 +585,7 @@ class LocaleDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-        )
+        ),
       )
       .run()
       .expectClean()

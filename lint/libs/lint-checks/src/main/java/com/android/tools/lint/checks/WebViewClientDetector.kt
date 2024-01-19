@@ -87,7 +87,7 @@ class WebViewClientDetector : Detector(), SourceCodeScanner {
         priority = 5,
         androidSpecific = true,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

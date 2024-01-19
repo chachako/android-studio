@@ -51,7 +51,7 @@ class ExternalAnnotationsDetector : Detector(), SourceCodeScanner {
             """,
         severity = Severity.ERROR,
         implementation =
-          Implementation(ExternalAnnotationsDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(ExternalAnnotationsDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     private val relevantClasses =
@@ -59,7 +59,7 @@ class ExternalAnnotationsDetector : Detector(), SourceCodeScanner {
         "com.intellij.psi.PsiModifierListOwner",
         "com.intellij.psi.PsiAnnotationOwner",
         "org.jetbrains.uast.UAnnotated",
-        "com.intellij.lang.jvm.JvmAnnotatedElement"
+        "com.intellij.lang.jvm.JvmAnnotatedElement",
       )
   }
 
@@ -76,7 +76,7 @@ class ExternalAnnotationsDetector : Detector(), SourceCodeScanner {
   override fun visitReference(
     context: JavaContext,
     reference: UReferenceExpression,
-    referenced: PsiElement
+    referenced: PsiElement,
   ) {
     if (isKotlin(referenced)) {
       check(reference, referenced as? PsiMember ?: return, context)
@@ -93,7 +93,7 @@ class ExternalAnnotationsDetector : Detector(), SourceCodeScanner {
         ISSUE,
         expression,
         context.getLocation(expression),
-        "${member.name} used instead of `JavaEvaluator.getAllAnnotations`."
+        "${member.name} used instead of `JavaEvaluator.getAllAnnotations`.",
       )
     }
   }

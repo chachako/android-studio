@@ -86,26 +86,12 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
   private val registerReceiverMethods = BROADCAST_RECEIVER_METHOD_NAMES
 
   override fun getApplicableMethodNames() =
-    listOf(
-      "getParcelableExtra",
-      "getParcelable",
-      "getIntent",
-      "parseUri",
-    ) + registerReceiverMethods
+    listOf("getParcelableExtra", "getParcelable", "getIntent", "parseUri") + registerReceiverMethods
 
   override fun applicableSuperClasses() =
-    listOf(
-      "android.app.Activity",
-      "android.content.BroadcastReceiver",
-      "android.app.Service",
-    )
+    listOf("android.app.Activity", "android.content.BroadcastReceiver", "android.app.Service")
 
-  override fun getApplicableElements() =
-    listOf(
-      TAG_ACTIVITY,
-      TAG_SERVICE,
-      TAG_RECEIVER,
-    )
+  override fun getApplicableElements() = listOf(TAG_ACTIVITY, TAG_SERVICE, TAG_RECEIVER)
 
   override fun visitElement(context: XmlContext, element: Element) {
     storeUnprotectedComponents(context, getProtectedComponent(context, element) ?: return)
@@ -114,7 +100,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
   private fun isComponentExported(
     context: Context,
     root: Element,
-    incidentComponent: String?
+    incidentComponent: String?,
   ): Boolean {
     val application = root.subtag(SdkConstants.TAG_APPLICATION) ?: return false
     for (component in application) {
@@ -184,7 +170,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
             location = context.getLocation(intentParam.sourcePsi),
             checkProtectedBroadcast =
               UNSAFE_INTENT_AS_PARAMETER_METHODS[BROADCAST_RECEIVER_CLASS]?.contains(methodName) ==
-                true
+                true,
           )
         method.accept(visitor)
         if (visitor.launched) {
@@ -210,7 +196,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         IntentLaunchChecker(
           initial = setOf(node),
           context = context,
-          location = context.getLocation(node)
+          location = context.getLocation(node),
         )
       val containingMethod = node.getParentOfType(UMethod::class.java)
       containingMethod?.accept(visitor)
@@ -229,7 +215,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
   private fun isParseUnsafeUri(
     evaluator: JavaEvaluator,
     call: UCallExpression,
-    method: PsiMethod
+    method: PsiMethod,
   ): Boolean {
     if (method.name == "parseUri" && evaluator.isMemberInClass(method, INTENT_CLASS)) {
       val intentArg = call.getArgumentForParameter(0)?.skipParenthesizedExprDown()
@@ -266,7 +252,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
   private fun processRuntimeReceiver(
     context: JavaContext,
     call: UCallExpression,
-    method: PsiMethod
+    method: PsiMethod,
   ) {
     val receiverArg = UastLintUtils.findArgument(call, method, BROADCAST_RECEIVER_CLASS) ?: return
     if (receiverArg.isNullLiteral()) return
@@ -282,7 +268,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
   fun isRuntimeReceiverProtected(
     call: UCallExpression,
     method: PsiMethod,
-    javaEvaluator: JavaEvaluator
+    javaEvaluator: JavaEvaluator,
   ): Boolean {
     // The parameter positions vary across the various registerReceiver*() methods, so rather
     // than hardcode them we simply look them up based on the parameter name and type.
@@ -302,7 +288,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
       BroadcastReceiverUtils.checkIsProtectedReceiverAndReturnUnprotectedActions(
         filterArg,
         call,
-        javaEvaluator
+        javaEvaluator,
       )
 
     return isProtected
@@ -323,7 +309,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         isComponentExported(
           context,
           context.mainProject.mergedManifest?.documentElement ?: return,
-          incidentComponent
+          incidentComponent,
         )
       ) {
         reportIssue(context, incidentComponent, visitor.location)
@@ -338,7 +324,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
           put(KEY_LOCATION, visitor.location)
           put(KEY_SECONDARY_LOCATION, visitor.location.secondary ?: return)
           put(KEY_INCIDENT_CLASS, visitor.incidentClass ?: return)
-        }
+        },
       )
     }
   }
@@ -384,7 +370,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     var returned: Boolean = false,
     var unprotectedReceiver: Boolean = false,
     var resolveCallDepth: Int = 0,
-    var checkProtectedBroadcast: Boolean = false
+    var checkProtectedBroadcast: Boolean = false,
   ) : DataFlowAnalyzer(initial) {
 
     override fun returnsSelf(call: UCallExpression): Boolean {
@@ -443,7 +429,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
             context = context,
             location = location,
             incidentClass = incidentClass,
-            resolveCallDepth = resolveCallDepth + 1
+            resolveCallDepth = resolveCallDepth + 1,
           )
         containingMethod.accept(visitor)
         if (visitor.launched) {
@@ -471,7 +457,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     private fun inProtectedBroadcastBranch(
       context: JavaContext,
       call: UCallExpression,
-      reference: UElement
+      reference: UElement,
     ): Boolean {
       return inProtectedBroadcastIfBranch(context, call, reference) ||
         inProtectedBroadcastSwitchCase(call, reference)
@@ -480,7 +466,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
     private fun inProtectedBroadcastIfBranch(
       context: JavaContext,
       call: UCallExpression,
-      reference: UElement
+      reference: UElement,
     ): Boolean {
       var ifExp = call.getParentOfType<UIfExpression>()
       while (ifExp != null) {
@@ -514,7 +500,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
 
     private fun inProtectedBroadcastSwitchCase(
       call: UCallExpression,
-      reference: UElement
+      reference: UElement,
     ): Boolean {
       var switchExp = call.getParentOfType<USwitchExpression>()
       while (switchExp != null) {
@@ -578,7 +564,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
 
     private fun isIntentLaunchedByContextMethods(
       evaluator: JavaEvaluator,
-      method: PsiMethod
+      method: PsiMethod,
     ): Boolean {
       return method.containingClass?.qualifiedName == CONTEXT_CLASS ||
         method.containingClass?.qualifiedName == CONTEXT_COMPAT_CLASS ||
@@ -587,7 +573,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
 
     private fun isIntentLaunchedByActivityMethods(
       evaluator: JavaEvaluator,
-      method: PsiMethod
+      method: PsiMethod,
     ): Boolean {
       return method.name in ACTIVITY_INTENT_LAUNCH_METHODS &&
         (evaluator.isMemberInSubClassOf(method, ACTIVITY_CLASS) ||
@@ -596,7 +582,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
 
     private fun isIntentLaunchedByBroadcastReceiver(
       evaluator: JavaEvaluator,
-      method: PsiMethod
+      method: PsiMethod,
     ): Boolean {
       return method.name == "peekService" &&
         evaluator.isMemberInSubClassOf(method, BROADCAST_RECEIVER_CLASS)
@@ -604,7 +590,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
 
     private fun isIntentLaunchedByPendingIntentMethods(
       evaluator: JavaEvaluator,
-      method: PsiMethod
+      method: PsiMethod,
     ): Boolean {
       return method.name in PENDING_INTENT_LAUNCH_METHODS &&
         evaluator.isMemberInClass(method, PENDING_INTENT_CLASS)
@@ -659,7 +645,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
       val context: JavaContext,
       tracked: UElement,
       var returned: Boolean = false,
-      var resolveCallDepth: Int = 0
+      var resolveCallDepth: Int = 0,
     ) : DataFlowAnalyzer(setOf(tracked)) {
       override fun returns(expression: UReturnExpression) {
         returned = true
@@ -704,7 +690,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val RECEIVER_NOT_EXPORTED = 0x4
@@ -732,7 +718,7 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         BROADCAST_RECEIVER_CLASS to arrayOf("onReceive"),
         ACTIVITY_CLASS to arrayOf("onNewIntent", "onActivityResult", "onActivityReenter"),
         SERVICE_CLASS to
-          arrayOf("onBind", "onUnbind", "onRebind", "onTaskRemoved", "onStartCommand", "onStart")
+          arrayOf("onBind", "onUnbind", "onRebind", "onTaskRemoved", "onStartCommand", "onStart"),
       )
 
     private val ACTIVITY_INTENT_LAUNCH_METHODS =
@@ -748,19 +734,14 @@ class UnsafeIntentLaunchDetector : Detector(), SourceCodeScanner, XmlScanner {
         "startIntentSenderFromChild",
         "startIntentSenderForResult",
         "startNextMatchingActivity",
-        "setResult"
+        "setResult",
       )
 
     private val PENDING_INTENT_LAUNCH_METHODS =
       listOf("getActivity", "getBroadcast", "getService", "getForegroundService")
 
     private val INTENT_METHODS_RETURNS_INTENT_BUT_NOT_SELF =
-      arrayOf(
-        "cloneFilter",
-        "getOriginalIntent",
-        "getSelector",
-        "getParcelableExtra",
-      )
+      arrayOf("cloneFilter", "getOriginalIntent", "getSelector", "getParcelableExtra")
 
     private val KNOWN_NORMAL_PERMISSIONS =
       listOf(

@@ -59,7 +59,7 @@ class BidirectionalTextDetector : ResourceXmlDetector(), SourceCodeScanner, Grad
         BIDI_SPOOFING,
         node,
         context.getLocation(node),
-        "$type contains misleading Unicode bidirectional text"
+        "$type contains misleading Unicode bidirectional text",
       )
     }
   }

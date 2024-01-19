@@ -107,7 +107,7 @@ class DefaultJavaEvaluatorTest {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .sdkHome(TestUtils.getSdk().toFile())
       .issues(TestAnnotationLookupDetector.ISSUE)
@@ -213,8 +213,8 @@ class DefaultJavaEvaluatorTest {
                     }
                     """
               )
-              .indented()
-          )
+              .indented(),
+          ),
       )
 
     var methodCount = 0
@@ -252,7 +252,7 @@ class DefaultJavaEvaluatorTest {
           Category.CORRECTNESS,
           6,
           Severity.WARNING,
-          Implementation(TestAnnotationLookupDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(TestAnnotationLookupDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
 
@@ -276,19 +276,19 @@ class DefaultJavaEvaluatorTest {
             ISSUE,
             node,
             context.getCallLocation(node, false, true),
-            "Error with arguments but no receiver"
+            "Error with arguments but no receiver",
           )
           context.report(
             ISSUE,
             node,
             context.getCallLocation(node, true, true),
-            "Error with receiver and arguments"
+            "Error with receiver and arguments",
           )
           context.report(
             ISSUE,
             node,
             context.getCallLocation(node, true, false),
-            "Error with receiver and no arguments"
+            "Error with receiver and no arguments",
           )
         }
       }
@@ -371,7 +371,7 @@ class DefaultJavaEvaluatorTest {
           Category.CORRECTNESS,
           6,
           Severity.ERROR,
-          Implementation(RangeTestDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(RangeTestDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }
@@ -444,7 +444,7 @@ class DefaultJavaEvaluatorTest {
               suspend fun isSuspend1() { }
               suspend fun isSuspend2(): Int = 0
               suspend fun isSuspend3(int: Int): List<String> = emptyList()
-              """
+              """,
             )
             .indented(),
           0x14f5ac5d,
@@ -473,8 +473,8 @@ class DefaultJavaEvaluatorTest {
           lEbyHv3ikqaFlDR6/pLrIXlU3UFfM3u0gT16hP3CWez9GAjZZ8mmyNJ2MNJM
           HgvIe/f9GMW1cEQyDQvTXD6WJqkEs2oJ3HPBOY15kgWyXqcqsytQDeQM3DBw
           E7cMjGHcoDbzK2ByF5MrdIsQ9THlIx6cCR89PvoDnb6jPgb+ADtWbP14BgAA
-          """
-        )
+          """,
+        ),
       )
       .use(temporaryFolder, TestUtils.getSdk().toFile()) { context ->
         val evaluator = context.evaluator
@@ -533,7 +533,7 @@ class DefaultJavaEvaluatorTest {
                   evaluator.getMethodDescription(
                     method = node,
                     includeName = false,
-                    includeReturn = false
+                    includeReturn = false,
                   )
                 )
                 .append("\n")
@@ -543,7 +543,7 @@ class DefaultJavaEvaluatorTest {
                   evaluator.getMethodDescription(
                     method = node,
                     includeName = true,
-                    includeReturn = true
+                    includeReturn = true,
                   )
                 )
                 .append("\n\n")
@@ -585,7 +585,7 @@ class DefaultJavaEvaluatorTest {
             """
         .trimIndent()
         .trim(),
-      sb.toString().trim()
+      sb.toString().trim(),
     )
   }
 
@@ -598,7 +598,7 @@ class DefaultJavaEvaluatorTest {
         context.report(
           ISSUE,
           context.getNameLocation(method),
-          "Found reference to `test.pkg.TargetClass.foo`"
+          "Found reference to `test.pkg.TargetClass.foo`",
         )
       }
     }
@@ -613,7 +613,7 @@ class DefaultJavaEvaluatorTest {
           Category.CORRECTNESS,
           6,
           Severity.ERROR,
-          Implementation(MethodMatchesDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(MethodMatchesDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }

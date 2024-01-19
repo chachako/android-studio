@@ -73,7 +73,7 @@ class LocalEmulatorSnapshotReaderTest {
     assertThat(snapshotReader.readSnapshots(snapshotsPath))
       .containsExactly(
         LocalEmulatorSnapshot("Bug-567", snapshot1Path),
-        LocalEmulatorSnapshot(snapshot2Path)
+        LocalEmulatorSnapshot(snapshot2Path),
       )
       .inOrder()
   }

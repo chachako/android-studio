@@ -31,7 +31,7 @@ class LocaleFolderDetectorTest : AbstractCheckTest() {
         xml("res/values-no/strings.xml", stringsXml),
         xml("res/values-he/strings.xml", stringsXml),
         xml("res/values-id/strings.xml", stringsXml),
-        xml("res/values-yi/strings.xml", stringsXml)
+        xml("res/values-yi/strings.xml", stringsXml),
       )
       .run()
       .expect(
@@ -54,7 +54,7 @@ class LocaleFolderDetectorTest : AbstractCheckTest() {
         xml("res/values-nb-rSE/strings.xml", stringsXml),
         xml("res/values-sv-rSV/strings.xml", stringsXml),
         xml("res/values-en-rXA/strings.xml", stringsXml),
-        xml("res/values-ff-rNO/strings.xml", stringsXml)
+        xml("res/values-ff-rNO/strings.xml", stringsXml),
       )
       .run()
       .expect(
@@ -80,7 +80,7 @@ class LocaleFolderDetectorTest : AbstractCheckTest() {
         xml("res/values-no/strings.xml", stringsXml),
         xml("res/values-b+kok+IN//strings.xml", stringsXml), // OK
         xml("res/values-b+nor+NOR/strings.xml", stringsXml),
-        xml("res/values-b+es+419/strings.xml", stringsXml)
+        xml("res/values-b+es+419/strings.xml", stringsXml),
       )
       .run()
       .expect(expected)
@@ -92,7 +92,7 @@ class LocaleFolderDetectorTest : AbstractCheckTest() {
         xml("res/values/strings.xml", stringsXml),
         xml("res/values-ldtrl-mnc123/strings.xml", stringsXml),
         xml("res/values-kok-rIN//strings.xml", stringsXml),
-        xml("res/values-no-rNOR/strings.xml", stringsXml)
+        xml("res/values-no-rNOR/strings.xml", stringsXml),
       )
       .run()
       .expect(
@@ -117,7 +117,7 @@ class LocaleFolderDetectorTest : AbstractCheckTest() {
         xml("res/values-b+no+Scr2-v21/strings.xml", stringsXml),
         xml("res/values-b+se+Scr1/strings.xml", stringsXml),
         xml("res/values-b+de+Scr1+DE/strings.xml", stringsXml),
-        xml("res/values-b+de+Scr2+AT/strings.xml", stringsXml)
+        xml("res/values-b+de+Scr2+AT/strings.xml", stringsXml),
       )
       .run()
       .expect(
@@ -137,7 +137,7 @@ class LocaleFolderDetectorTest : AbstractCheckTest() {
         manifest().minSdk(18),
         xml("res/values-no/strings.xml", stringsXml),
         xml("res/values-fil/strings.xml", stringsXml),
-        xml("res/values-b+kok+IN//strings.xml", stringsXml)
+        xml("res/values-b+kok+IN//strings.xml", stringsXml),
       )
       .run()
       .expectClean()
@@ -166,7 +166,7 @@ class LocaleFolderDetectorTest : AbstractCheckTest() {
         ),
         xml("res/values-no/strings.xml", stringsXml),
         xml("res/values-fil/strings.xml", stringsXml),
-        xml("res/values-b+kok+IN//strings.xml", stringsXml)
+        xml("res/values-b+kok+IN//strings.xml", stringsXml),
       )
       .run()
       .expect(
@@ -197,12 +197,12 @@ class LocaleFolderDetectorTest : AbstractCheckTest() {
               "Ch126S54EE+Cx0JHvG0NbaS+386g58opn/uRduigZRTgedgqYxs7Hmpl1LHLUJ90F0Pld9N" +
               "V50GGlmH7X6V0ViRtK02lpXi/0fzzsKx/IbSIpCHt9UkYOo+mBt8vUG00/3gD7CJPf4H7cm" +
               "DuZLJFyjh5Rn764BXsOWuXyBZGRfhky+N4hiJQdxZzY3KLfM7VDl6Qe8FU8DvAzxoewYrZk" +
-              "JUREPOokC8ScQGL2e6ljLP8BSDzZ1KvAgAA"
-          )
+              "JUREPOokC8ScQGL2e6ljLP8BSDzZ1KvAgAA",
+          ),
         ),
         xml("res/values-no/strings.xml", stringsXml),
         xml("res/values-fil/strings.xml", stringsXml),
-        xml("res/values-b+kok+IN//strings.xml", stringsXml)
+        xml("res/values-b+kok+IN//strings.xml", stringsXml),
       )
       .run()
       .expect(
@@ -248,11 +248,11 @@ class LocaleFolderDetectorTest : AbstractCheckTest() {
             "Fbd0LFF8+9VTwqp/Gdt9/YBck/8VzG+U/OsbfxclvEvZ5HrKotKt7tcD0TeW" +
             "2dNPiLm5/kg5/biiTSmgXKw4uai75txVvrgJ1QdDPlgfOC8ld7Dr5oSpggKf" +
             "V0zQFypk7L75bmnP5j+soBhV+JweVMvIwLCeCRSjjEwiDIg4RY5tUKJBBbiS" +
-            "ELopyDaoo5iQSHw6CfBmZQNpYQLC2UDamAnEAwBHypjM8QIAAA=="
+            "ELopyDaoo5iQSHw6CfBmZQNpYQLC2UDamAnEAwBHypjM8QIAAA==",
         ),
         xml("res/values-no/strings.xml", stringsXml),
         xml("res/values-fil/strings.xml", stringsXml),
-        xml("res/values-b+kok+IN//strings.xml", stringsXml)
+        xml("res/values-b+kok+IN//strings.xml", stringsXml),
       )
       .run()
       .expect(

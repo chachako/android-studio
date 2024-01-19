@@ -144,7 +144,7 @@ abstract class XmlParser {
     element: Element,
     node: Node? = null,
     namespace: String? = null,
-    attribute: String? = null
+    attribute: String? = null,
   ): Location {
     if (node != null) {
       return getLocation(context, node)
@@ -264,7 +264,7 @@ abstract class XmlParser {
     client: LintClient,
     item: ResourceItem,
     nameOnly: Boolean = false,
-    valueOnly: Boolean = false
+    valueOnly: Boolean = false,
   ): Location? {
     val file = item.getFile() ?: return null
     if (item.isFileBased) {

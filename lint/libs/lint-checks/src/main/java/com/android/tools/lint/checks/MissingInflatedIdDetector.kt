@@ -111,7 +111,7 @@ class MissingInflatedIdDetector : Detector(), SourceCodeScanner {
    */
   private fun getFirstArgAsResource(
     setContentView: UCallExpression,
-    context: JavaContext
+    context: JavaContext,
   ): ResourceUrl? {
     val resourceArgument =
       setContentView.valueArguments.firstOrNull()?.skipParenthesizedExprDown() ?: return null
@@ -175,8 +175,8 @@ class MissingInflatedIdDetector : Detector(), SourceCodeScanner {
           Implementation(
             MissingInflatedIdDetector::class.java,
             EnumSet.of(Scope.ALL_RESOURCE_FILES, Scope.ALL_JAVA_FILES),
-            Scope.JAVA_FILE_SCOPE
-          )
+            Scope.JAVA_FILE_SCOPE,
+          ),
       )
   }
 }

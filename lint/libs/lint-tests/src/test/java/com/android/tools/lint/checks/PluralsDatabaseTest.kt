@@ -42,11 +42,11 @@ class PluralsDatabaseTest : TestCase() {
     val db = PluralsDatabase.LATEST
     assertEquals(
       "1, 101, 201, 301, 401, 501, 601, 701, 1001, \u2026",
-      db.findIntegerExamples("sl", Quantity.one)
+      db.findIntegerExamples("sl", Quantity.one),
     )
     assertEquals(
       "1, 21, 31, 41, 51, 61, 71, 81, 101, 1001, \u2026",
-      db.findIntegerExamples("ru", Quantity.one)
+      db.findIntegerExamples("ru", Quantity.one),
     )
   }
 
@@ -536,7 +536,7 @@ class PluralsDatabaseTest : TestCase() {
       db: PluralsTextDatabase,
       quantity: Quantity,
       sets: Set<String>,
-      languageMap: Map<String, String>
+      languageMap: Map<String, String>,
     ): Map<String, String> {
       val setsWithExamples = Maps.newHashMap<String, String>()
       for (set in sets) {
@@ -555,7 +555,7 @@ class PluralsDatabaseTest : TestCase() {
       languages: List<String>,
       languageIndices: Map<String, Int>,
       indices: Map<String, Int>,
-      setsWithExamples: Map<String, String>
+      setsWithExamples: Map<String, String>,
     ) {
       val output = buildString {
         val quantityName =

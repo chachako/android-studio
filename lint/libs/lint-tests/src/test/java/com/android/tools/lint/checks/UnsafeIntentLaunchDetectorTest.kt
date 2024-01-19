@@ -91,7 +91,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -160,7 +160,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -213,7 +213,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -256,7 +256,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -342,7 +342,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -386,7 +386,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -431,7 +431,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -481,7 +481,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -559,7 +559,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -693,7 +693,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -831,7 +831,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -906,7 +906,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .testModes(TestMode.PARTIAL)
@@ -970,7 +970,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -1023,7 +1023,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .testModes(TestMode.PARTIAL)
@@ -1080,7 +1080,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -1140,7 +1140,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -1228,7 +1228,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -1309,7 +1309,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -1390,7 +1390,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .run()
@@ -1574,7 +1574,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
           """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .testModes(TestMode.PARTIAL)
@@ -1711,7 +1711,7 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
           """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .issues(UnsafeIntentLaunchDetector.ISSUE)
       .skipTestModes(TestMode.SUPPRESSIBLE)

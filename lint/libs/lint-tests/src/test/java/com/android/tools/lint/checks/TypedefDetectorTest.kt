@@ -61,7 +61,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -248,7 +248,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -269,7 +269,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -326,9 +326,9 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "        setDuration(LENGTH_LONG); // OK (@IntDef)\n" +
             "        setDuration(LENGTH_SHORT); // OK (@IntDef)\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowNonAlphabeticalFixOrder(true)
       .run()
@@ -415,7 +415,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "    public @interface MyTypeDef {\n" +
             "\n" +
             "    }\n" +
-            "}"
+            "}",
         ),
         // test.zpkg: alphabetically after test.pkg: We want to make sure
         // that the SomeClass source unit is disposed before we try to
@@ -435,7 +435,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "        SomeClass.doSomething(SomeClass.MY_CONSTANT);\n" +
             "        SomeClass.doSomething(\"error\");\n" +
             "    }\n" +
-            "}"
+            "}",
         ),
         // junit stub:
         java(
@@ -446,7 +446,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -524,9 +524,9 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "    private void restrictedEllipsis(@MyIntDef int... test) {}\n" +
             "\n" +
             "    private void restrictedArray(@MyIntDef int[] test) {}\n" +
-            "}"
+            "}",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -595,9 +595,9 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "            return new Product(\"\", DEFAULT_STATUS);\n" +
             "        }\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -672,7 +672,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                     }"""
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -727,7 +727,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "    void addLocationListener();\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -831,7 +831,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowCompilationErrors()
       .run()
@@ -876,7 +876,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -934,7 +934,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -997,7 +997,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1041,7 +1041,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1104,7 +1104,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1202,7 +1202,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1256,7 +1256,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1297,7 +1297,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1351,7 +1351,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1388,7 +1388,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1465,7 +1465,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "nDM01qFLJxL+yg9ENJdi4SzkiPY6/bXmkWajgH0bNkyG039df6QxlOM8J+Bq" +
             "7PSGE+Hr5FIPx1RphqoxUEMWZtwYsRRyxK0fPE+TspM3VY0izRKxJvEUodV8" +
             "RaqZfoHxlPRepllEXHqeEoq0zyZ1E1tr3xEhI8w0n2E8fluyiVihWUmitr8A" +
-            "fb+LPAUCAAA="
+            "fb+LPAUCAAA=",
         ),
         bytecode(
           "libs/recyclerview.jar",
@@ -1518,7 +1518,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             "6abV4pXytVW0nl7urGqjxhB6IMy98rWBPYaLKdmb6U1VHJCK5lC0O1ybv5XN" +
             "VT1Bv57MYYjOZYmZTNVWlzua4WChcjM1DGQZTv/xFYaTpXdlOFqKOc/AECBb" +
             "wfgEsUp3gPwa+TjVDbIQRxgRRKmUoDQ2Lj2DccqSSE0a0tggn6Iojl2sX2UI" +
-            "k8ZWPvwNltmVBL4CAAA="
+            "k8ZWPvwNltmVBL4CAAA=",
         ),
         jar(
           "annotations.zip",
@@ -1542,10 +1542,10 @@ class TypedefDetectorTest : AbstractCheckTest() {
               "      <val name=\"value\" val=\"{androidx.recyclerview.widget.RecyclerView.HORIZONTAL, androidx.recyclerview.widget.RecyclerView.VERTICAL}\" />\n" +
               "    </annotation>\n" +
               "  </item>\n" +
-              "</root>\n"
-          )
+              "</root>\n",
+          ),
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1593,7 +1593,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .checkUInjectionHost(false)
       .run()
@@ -1632,7 +1632,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1800,7 +1800,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1852,7 +1852,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .allowNonAlphabeticalFixOrder(true)
       .run()
@@ -1993,7 +1993,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2073,7 +2073,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2150,7 +2150,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2177,7 +2177,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2223,7 +2223,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2239,7 +2239,7 @@ class TypedefDetectorTest : AbstractCheckTest() {
       baseline.sameMessage(
         TypedefDetector.TYPE_DEF,
         "Must be one of: IntDefTest.STYLE_NORMAL, IntDefTest.NEW_CONSTANT, IntDefTest.NEW_CONSTANT_2, IntDefTest.STYLE_NO_TITLE, IntDefTest.STYLE_NO_FRAME, IntDefTest.STYLE_NO_INPUT",
-        "Must be one of: IntDefTest.STYLE_NORMAL, IntDefTest.STYLE_NO_TITLE, IntDefTest.STYLE_NO_FRAME, IntDefTest.STYLE_NO_INPUT"
+        "Must be one of: IntDefTest.STYLE_NORMAL, IntDefTest.STYLE_NO_TITLE, IntDefTest.STYLE_NO_FRAME, IntDefTest.STYLE_NO_INPUT",
       )
     )
 

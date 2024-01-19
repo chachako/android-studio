@@ -74,14 +74,14 @@ class LeanbackWifiUsageDetector : Detector(), XmlScanner {
         context.report(
           ISSUE,
           context.getLocation(wifiFeatureNode),
-          "Requiring `android.hardware.wifi` limits app availability on TVs that support only Ethernet"
+          "Requiring `android.hardware.wifi` limits app availability on TVs that support only Ethernet",
         )
       }
     } else if (wifiPermissionsNode != null) {
       context.report(
         ISSUE,
         context.getLocation(wifiPermissionsNode),
-        "Requiring Wifi permissions limits app availability on TVs that support only Ethernet"
+        "Requiring Wifi permissions limits app availability on TVs that support only Ethernet",
       )
     }
   }
@@ -122,7 +122,7 @@ class LeanbackWifiUsageDetector : Detector(), XmlScanner {
         severity = Severity.WARNING,
         implementation =
           Implementation(LeanbackWifiUsageDetector::class.java, Scope.MANIFEST_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
   }
 }

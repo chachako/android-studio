@@ -47,7 +47,7 @@ class BottomAppBarDetector : LayoutDetector() {
         ISSUE,
         element,
         context.getNameLocation(element),
-        "This `BottomAppBar` must be wrapped in a `CoordinatorLayout` (`$coordinatorLayout`)"
+        "This `BottomAppBar` must be wrapped in a `CoordinatorLayout` (`$coordinatorLayout`)",
       )
     }
   }
@@ -69,7 +69,7 @@ class BottomAppBarDetector : LayoutDetector() {
         category = Category.CORRECTNESS,
         priority = 9,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val OLD_BOTTOM_APP_BAR = "android.support.design.bottomappbar.BottomAppBar"

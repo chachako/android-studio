@@ -62,7 +62,7 @@ class Incident(
   var scope: Any? = location.source,
 
   /** A quickfix descriptor, if any, capable of addressing this issue. */
-  var fix: LintFix? = null
+  var fix: LintFix? = null,
 ) : Comparable<Incident> {
 
   // This class has a large number of secondary constructors in order to make it
@@ -72,7 +72,7 @@ class Incident(
   constructor(
     issue: Issue,
     message: String,
-    location: Location
+    location: Location,
   ) : this(issue, message, location, null, null)
 
   /** Secondary constructor for convenience from Java where default arguments are not available. */
@@ -80,7 +80,7 @@ class Incident(
     issue: Issue,
     message: String,
     location: Location,
-    fix: LintFix?
+    fix: LintFix?,
   ) : this(issue, message, location, null, fix)
 
   /**
@@ -90,7 +90,7 @@ class Incident(
   constructor(
     issue: Issue,
     location: Location,
-    message: String
+    message: String,
   ) : this(issue, message, location, null, null)
 
   /**
@@ -101,7 +101,7 @@ class Incident(
     issue: Issue,
     location: Location,
     message: String,
-    fix: LintFix?
+    fix: LintFix?,
   ) : this(issue, message, location, null, fix)
 
   /**
@@ -112,7 +112,7 @@ class Incident(
     issue: Issue,
     scope: Any,
     location: Location,
-    message: String
+    message: String,
   ) : this(issue, message, location, scope, null)
 
   /**
@@ -124,7 +124,7 @@ class Incident(
     scope: Any,
     location: Location,
     message: String,
-    fix: LintFix?
+    fix: LintFix?,
   ) : this(issue, message, location, scope, fix)
 
   /** The associated [Project] */

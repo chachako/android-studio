@@ -79,7 +79,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
         severity = Severity.ERROR,
         platforms = JDK_SET, // does not apply for Android, where the charset is always UTF-8
         implementation = IMPLEMENTATION,
-        enabledByDefault = false
+        enabledByDefault = false,
       )
 
     private const val JAVA_IO_INPUT_STREAM_READER = "java.io.InputStreamReader"
@@ -166,7 +166,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     val qualifiedName = constructor.containingClass?.qualifiedName ?: return
     val evaluator = context.evaluator
@@ -208,7 +208,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
             canonicalText.endsWith("Stream") ||
             evaluator.extendsClass(
               evaluator.getTypeClass(expressionType),
-              JAVA_IO_OUTPUT_STREAM
+              JAVA_IO_OUTPUT_STREAM,
             )) && !haveCharset(node)
         ) {
           report(context, node, constructor, qualifiedName)
@@ -240,7 +240,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     node: UCallExpression,
     method: PsiMethod,
-    qualifiedName: String
+    qualifiedName: String,
   ) {
     val charset = if (isKotlin(node.sourcePsi)) "Charsets.UTF_8" else "StandardCharsets.UTF_8"
     val typeName = qualifiedName.substringAfterLast('.')
@@ -278,7 +278,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
       Incident(
         ISSUE,
         context.getLocation(node),
-        "$message; ${fixSuggestion?.replaceFirstChar { it.lowercase(Locale.US) }}?"
+        "$message; ${fixSuggestion?.replaceFirstChar { it.lowercase(Locale.US) }}?",
       )
     incident.fix(fix)
     context.report(incident, notAndroidProject())
@@ -288,7 +288,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     node: UCallExpression,
     method: PsiMethod,
-    qualifiedName: String
+    qualifiedName: String,
   ): LintFix? {
     val fixes = mutableListOf<LintFix>()
     addFix(fixes, context, node, method, qualifiedName)
@@ -304,7 +304,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     node: UCallExpression,
     method: PsiMethod,
-    qualifiedName: String
+    qualifiedName: String,
   ) {
     val isKotlin = isKotlin(node.sourcePsi)
     val name = method.name
@@ -499,7 +499,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
     fixes: MutableList<LintFix>,
     isKotlin: Boolean,
     name: String,
-    languageLevel: LanguageLevel = LanguageLevel.JDK_1_7
+    languageLevel: LanguageLevel = LanguageLevel.JDK_1_7,
   ) {
     // Just add a Charset
     if (context.project.javaLanguageLevel.isAtLeast(languageLevel)) {

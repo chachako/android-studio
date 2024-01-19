@@ -46,7 +46,7 @@ class StringEscapeDetector : ResourceXmlDetector() {
         category = Category.MESSAGES,
         priority = 9,
         severity = Severity.ERROR,
-        implementation = Implementation(StringEscapeDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+        implementation = Implementation(StringEscapeDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
       )
   }
 
@@ -92,7 +92,7 @@ class StringEscapeDetector : ResourceXmlDetector() {
     context: XmlContext,
     textNode: Node,
     element: Element,
-    string: String
+    string: String,
   ) {
     var s = 0
     var len = string.length
@@ -182,7 +182,7 @@ class StringEscapeDetector : ResourceXmlDetector() {
                       STRING_ESCAPING,
                       element,
                       location,
-                      "Bad character in \\\\u unicode escape sequence"
+                      "Bad character in \\\\u unicode escape sequence",
                     )
                     return
                   }

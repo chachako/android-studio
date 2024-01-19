@@ -66,7 +66,7 @@ class MotionLayoutIdDetector : LayoutDetector() {
           child,
           context.getNameLocation(child),
           "Views inside `MotionLayout` require an `$prefix:id` attribute",
-          fix().set().todo(ANDROID_URI, ATTR_ID, "@+id/").build()
+          fix().set().todo(ANDROID_URI, ATTR_ID, "@+id/").build(),
         )
       }
     }
@@ -84,7 +84,7 @@ class MotionLayoutIdDetector : LayoutDetector() {
         severity = Severity.ERROR,
         implementation =
           Implementation(MotionLayoutIdDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
   }
 }

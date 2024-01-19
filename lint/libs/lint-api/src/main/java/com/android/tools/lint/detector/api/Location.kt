@@ -65,7 +65,7 @@ protected constructor(
    *
    * @return the end position of the range, may be null for an empty range
    */
-  val end: Position?
+  val end: Position?,
 ) {
 
   /**
@@ -137,7 +137,7 @@ protected constructor(
   fun withSecondary(
     secondary: Location,
     message: String,
-    selfExplanatory: Boolean = false
+    selfExplanatory: Boolean = false,
   ): Location {
     this.secondary = secondary
     secondary.message = message
@@ -289,7 +289,7 @@ protected constructor(
     protected val client: LintClient,
     val item: ResourceItem,
     protected val nameOnly: Boolean,
-    protected val valueOnly: Boolean
+    protected val valueOnly: Boolean,
   ) : Handle {
     override fun resolve(): Location {
       val parser = client.xmlParser
@@ -478,7 +478,7 @@ protected constructor(
       return Location(
         file,
         DefaultPosition(position.startLine, position.startColumn, position.startOffset),
-        DefaultPosition(position.endLine, position.endColumn, position.endOffset)
+        DefaultPosition(position.endLine, position.endColumn, position.endOffset),
       )
     }
 
@@ -514,7 +514,7 @@ protected constructor(
         return Location(
           file,
           DefaultPosition(-1, -1, startOffset),
-          DefaultPosition(-1, -1, endOffset)
+          DefaultPosition(-1, -1, endOffset),
         )
       }
 
@@ -575,7 +575,7 @@ protected constructor(
       line: Int,
       patternStart: String?,
       patternEnd: String?,
-      hints: SearchHints?
+      hints: SearchHints?,
     ): Location {
 
       var targetLine = line
@@ -664,7 +664,7 @@ protected constructor(
               return Location(
                 file,
                 DefaultPosition(targetLine, column, index),
-                DefaultPosition(targetLine, -1, end + patternEnd.length)
+                DefaultPosition(targetLine, -1, end + patternEnd.length),
               )
             }
           } else if (hints != null && (hints.isJavaSymbol || hints.isWholeWord)) {
@@ -677,14 +677,14 @@ protected constructor(
               DefaultPosition(
                 targetLine,
                 column + targetPattern.length,
-                index + targetPattern.length
-              )
+                index + targetPattern.length,
+              ),
             )
           }
           return Location(
             file,
             DefaultPosition(targetLine, column, index),
-            DefaultPosition(targetLine, column, index + targetPattern.length)
+            DefaultPosition(targetLine, column, index + targetPattern.length),
           )
         }
       }
@@ -698,7 +698,7 @@ protected constructor(
       contents: CharSequence,
       offset: Int,
       pattern: String,
-      hints: SearchHints?
+      hints: SearchHints?,
     ): Int {
       var currentOffset = offset
       val loopDecrement = max(1, pattern.length)
@@ -721,7 +721,7 @@ protected constructor(
       contents: CharSequence,
       offset: Int,
       pattern: String,
-      hints: SearchHints?
+      hints: SearchHints?,
     ): Int {
       var currentOffset = offset
       var constructorIndex = -1
@@ -757,7 +757,7 @@ protected constructor(
       contents: CharSequence,
       offset: Int,
       pattern: String,
-      hints: SearchHints?
+      hints: SearchHints?,
     ): Boolean {
       if (!startsWith(contents, pattern, offset)) {
         return false

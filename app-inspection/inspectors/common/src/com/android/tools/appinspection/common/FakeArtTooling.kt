@@ -31,7 +31,7 @@ abstract class FakeArtTooling : ArtTooling {
   override fun registerEntryHook(
     originClass: Class<*>,
     originMethod: String,
-    entryHook: ArtTooling.EntryHook
+    entryHook: ArtTooling.EntryHook,
   ) {
     entryHooks["${originClass.name}:$originMethod"] = entryHook
   }
@@ -39,7 +39,7 @@ abstract class FakeArtTooling : ArtTooling {
   override fun <T> registerExitHook(
     originClass: Class<*>,
     originMethod: String,
-    exitHook: ArtTooling.ExitHook<T>
+    exitHook: ArtTooling.ExitHook<T>,
   ) {
     exitHooks["${originClass.name}:$originMethod"] = exitHook
   }
@@ -48,7 +48,7 @@ abstract class FakeArtTooling : ArtTooling {
     originClass: Class<*>,
     originMethod: String,
     thisObject: Any?,
-    args: List<Any>
+    args: List<Any>,
   ) {
     entryHooks["${originClass.name}:$originMethod"]!!.onEntry(thisObject, args)
   }

@@ -165,7 +165,7 @@ class AssertDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        kotlinAssertionRuntime
+        kotlinAssertionRuntime,
       )
       .skipTestModes(TestMode.PARENTHESIZED)
       .issues(AssertDetector.EXPENSIVE)
@@ -255,7 +255,7 @@ class AssertDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        kotlinAssertionRuntime
+        kotlinAssertionRuntime,
       )
       .issues(AssertDetector.SIDE_EFFECT)
       .platforms(Platform.JDK_SET)

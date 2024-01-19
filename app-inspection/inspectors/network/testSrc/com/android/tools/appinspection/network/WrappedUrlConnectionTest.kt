@@ -55,12 +55,12 @@ class WrappedUrlConnectionTest {
             override fun trackRequest(
               method: String,
               headers: Map<String, List<String>>,
-              transport: HttpTransport
+              transport: HttpTransport,
             ) = Unit
 
             override fun trackResponseHeaders(
               responseCode: Int,
-              headers: Map<String?, List<String>>
+              headers: Map<String?, List<String>>,
             ) = Unit
 
             override fun trackResponseBody(stream: InputStream) = stream
@@ -188,9 +188,9 @@ class WrappedUrlConnectionTest {
           "myKey" to listOf("myValue1", "myValue2"),
           "myInt" to listOf("12345"),
           "myLong" to listOf("123123123123123"),
-          "myData" to listOf("Wed, 21 Oct 2015 07:28:00 GMT")
+          "myData" to listOf("Wed, 21 Oct 2015 07:28:00 GMT"),
         ),
-        "myBody".byteInputStream()
+        "myBody".byteInputStream(),
       )
     val interceptionService =
       object : InterceptionRuleService {

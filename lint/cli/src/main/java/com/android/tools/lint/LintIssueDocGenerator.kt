@@ -128,7 +128,7 @@ class LintIssueDocGenerator(
   private val includeSuppressInfo: Boolean,
   private val includeExamples: Boolean,
   private val includeSourceLinks: Boolean,
-  private val includeSeverityColor: Boolean
+  private val includeSeverityColor: Boolean,
 ) {
   private val allIssues: List<Issue> = registryMap.keys.flatMap { it.issues }
 
@@ -294,7 +294,7 @@ class LintIssueDocGenerator(
   private fun writeStats(
     sb: StringBuilder,
     categories: HashMap<Category, MutableList<Issue>>,
-    issues: List<Issue>
+    issues: List<Issue>,
   ) {
     sb.append("\n## Vital Stats\n")
 
@@ -472,7 +472,7 @@ class LintIssueDocGenerator(
     val atLeastMap =
       arrayOf(
         "Min" to "Lint ${describeApi(registry.minApi)}",
-        "Compiled" to "Lint ${describeApi(registry.api)}"
+        "Compiled" to "Lint ${describeApi(registry.api)}",
       )
 
     val array = arrayOf(*vendorInfo, *atLeastMap, *artifactMap)
@@ -950,7 +950,7 @@ class LintIssueDocGenerator(
       if (registry !is BuiltinIssueRegistry && registry != null) {
         arrayOf(
           "Min" to "Lint ${describeApi(registry.minApi)}",
-          "Compiled" to "Lint ${describeApi(registry.api)}"
+          "Compiled" to "Lint ${describeApi(registry.api)}",
         )
       } else {
         emptyArray()
@@ -972,7 +972,7 @@ class LintIssueDocGenerator(
         "Editing" to inEditor,
         *moreInfoUrls,
         *sourceUrls,
-        *copyrightYearInfo
+        *copyrightYearInfo,
       )
 
     val table = if (isMarkDeep) markdeepTable(*array) else markdownTable(*array)
@@ -1217,7 +1217,7 @@ class LintIssueDocGenerator(
   private fun writeCodeLine(
     sb: StringBuilder,
     language: String = "",
-    lineNumbers: Boolean = false
+    lineNumbers: Boolean = false,
   ) {
     if (format == DocFormat.MARKDEEP) {
       val max = 70 - language.length - if (lineNumbers) " linenumbers".length else 0
@@ -1238,7 +1238,7 @@ class LintIssueDocGenerator(
     sb: StringBuilder,
     issueData: IssueData,
     example: Example,
-    issue: Issue
+    issue: Issue,
   ) {
     sb.append("(##) Example\n")
     sb.append('\n')
@@ -1616,7 +1616,7 @@ class LintIssueDocGenerator(
 
   private fun initializeSources(
     issueData: IssueData,
-    sources: Pair<Map<String, Map<File, List<File>>>, Map<String, Map<File, List<File>>>>
+    sources: Pair<Map<String, Map<File, List<File>>>, Map<String, Map<File, List<File>>>>,
   ) {
     println("Analyzing ${issueData.issue.id}")
     val (sourceFiles, testFiles) = sources
@@ -1650,7 +1650,7 @@ class LintIssueDocGenerator(
     val issueData = issueMap[issue.id] ?: return emptyArray()
     return listOfNotNull(
         issueData.sourceUrl?.let { url -> Pair("Implementation", "[Source Code]($url)") },
-        issueData.testUrl?.let { url -> Pair("Tests", "[Source Code]($url)") }
+        issueData.testUrl?.let { url -> Pair("Tests", "[Source Code]($url)") },
       )
       .toTypedArray()
   }
@@ -1669,7 +1669,7 @@ class LintIssueDocGenerator(
     detectorClass: Class<out Detector>,
     detectorName: String,
     sourcePath: Map<String, Map<File, List<File>>>,
-    store: (file: File?, url: String?) -> Unit
+    store: (file: File?, url: String?) -> Unit,
   ) {
     val relative = detectorName.replace('/', separatorChar)
     val relativeKt = relative + DOT_KT
@@ -1808,7 +1808,7 @@ class LintIssueDocGenerator(
     method: UMethod,
     issueData: IssueData,
     inferred: Boolean,
-    suppress: Boolean
+    suppress: Boolean,
   ): Example? {
     val issue = issueData.issue
     var example: Example? = null
@@ -1909,7 +1909,7 @@ class LintIssueDocGenerator(
     method: UMethod,
     node: UCallExpression,
     inferred: Boolean,
-    suppress: Boolean
+    suppress: Boolean,
   ): Example? {
     val valueArgument = node.valueArguments.firstOrNull() ?: return null
     val expected = evaluateString(valueArgument) ?: return null
@@ -1982,7 +1982,7 @@ class LintIssueDocGenerator(
     issue: Issue,
     method: UMethod,
     inferred: Boolean,
-    suppress: Boolean
+    suppress: Boolean,
   ): Example? {
     val exampleFiles = mutableListOf<ExampleFile>()
     for (argument in node.valueArguments) {
@@ -2058,7 +2058,7 @@ class LintIssueDocGenerator(
           testMethod = method.name,
           files = exampleFiles,
           output = null,
-          inferred = inferred
+          inferred = inferred,
         )
       }
       return null
@@ -2130,7 +2130,7 @@ class LintIssueDocGenerator(
           testMethod = method.name,
           files = listOf(exampleFile),
           output = errors.toString().trimEnd() + "\n",
-          inferred = true
+          inferred = true,
         )
       }
     }
@@ -2141,7 +2141,7 @@ class LintIssueDocGenerator(
         testMethod = method.name,
         files = exampleFiles,
         output = errors.toString().trimEnd() + "\n",
-        inferred = false
+        inferred = false,
       )
     }
 
@@ -2198,7 +2198,7 @@ class LintIssueDocGenerator(
     private val MESSAGE_PATTERN: Pattern =
       Pattern.compile(
         """([^\n]+): (Error|Warning|Information): (.+?) \[([^]]+?)]$""",
-        Pattern.MULTILINE or Pattern.DOTALL
+        Pattern.MULTILINE or Pattern.DOTALL,
       )
     private val LOCATION_PATTERN: Pattern = Pattern.compile("""(.+):(\d+)""")
     private val YEAR_PATTERN = Pattern.compile("""\b(\d\d\d\d)\b""")
@@ -2216,7 +2216,7 @@ class LintIssueDocGenerator(
     private val CLASS_PATTERN =
       Pattern.compile(
         """(\bclass\b|\binterface\b|\benum class\b|\benum\b|\bobject\b)+?\s*([^\s:(]+)""",
-        Pattern.MULTILINE
+        Pattern.MULTILINE,
       )
 
     private val NUMBER_PATTERN = Pattern.compile("^\\d+\\. ")
@@ -2236,7 +2236,7 @@ class LintIssueDocGenerator(
             "https://raw.githubusercontent.com/slackhq/slack-lints/main/slack-lint-checks/src/main/java",
           testContentUrl =
             "https://raw.githubusercontent.com/slackhq/slack-lints/main/slack-lint-checks/src/test/java",
-          lintLibrary = true
+          lintLibrary = true,
         ),
         MavenCentralLibrary(
           "com.slack.lint.compose",
@@ -2251,7 +2251,7 @@ class LintIssueDocGenerator(
             "https://raw.githubusercontent.com/slackhq/compose-lints/main/compose-lint-checks/src/main/java",
           testContentUrl =
             "https://raw.githubusercontent.com/slackhq/compose-lints/main/compose-lint-checks/src/test/java",
-          lintLibrary = true
+          lintLibrary = true,
         ),
         MavenCentralLibrary(
           "com.vanniktech",
@@ -2266,7 +2266,7 @@ class LintIssueDocGenerator(
             "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-android-lint/src/main/java",
           testContentUrl =
             "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-android-lint/src/test/java",
-          lintLibrary = true
+          lintLibrary = true,
         ),
         MavenCentralLibrary(
           "com.vanniktech",
@@ -2281,7 +2281,7 @@ class LintIssueDocGenerator(
             "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-kotlin-lint/src/main/java",
           testContentUrl =
             "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-kotlin-lint/src/test/java",
-          lintLibrary = true
+          lintLibrary = true,
         ),
         MavenCentralLibrary(
           "com.vanniktech",
@@ -2296,7 +2296,7 @@ class LintIssueDocGenerator(
             "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-rxjava2-lint/src/main/java",
           testContentUrl =
             "https://raw.githubusercontent.com/vanniktech/lint-rules/master/lint-rules-rxjava2-lint/src/test/java",
-          lintLibrary = true
+          lintLibrary = true,
         ),
         MavenCentralLibrary(
           "com.google.dagger",
@@ -2307,7 +2307,7 @@ class LintIssueDocGenerator(
           testUrl = "https://github.com/google/dagger/tree/master/javatests",
           sourceContentUrl = "https://raw.githubusercontent.com/google/dagger/master/java",
           testContentUrl = "https://raw.githubusercontent.com/google/dagger/master/javatests",
-          lintLibrary = false
+          lintLibrary = false,
         ),
         MavenCentralLibrary(
           "com.jakewharton.timber",
@@ -2320,7 +2320,7 @@ class LintIssueDocGenerator(
             "https://raw.githubusercontent.com/JakeWharton/timber/trunk/timber-lint/src/main/java",
           testContentUrl =
             "https://raw.githubusercontent.com/JakeWharton/timber/trunk/timber-lint/src/test/java",
-          lintLibrary = false
+          lintLibrary = false,
         ),
         MavenCentralLibrary(
           "com.uber.autodispose2",
@@ -2335,7 +2335,7 @@ class LintIssueDocGenerator(
             "https://raw.githubusercontent.com/uber/AutoDispose/main/static-analysis/autodispose-lint/src/main/kotlin",
           testContentUrl =
             "https://raw.githubusercontent.com/uber/AutoDispose/main/static-analysis/autodispose-lint/src/test/kotlin",
-          lintLibrary = true
+          lintLibrary = true,
         ),
       )
 
@@ -2354,7 +2354,7 @@ class LintIssueDocGenerator(
     @VisibleForTesting
     fun computeResultMap(
       issueId: String,
-      expected: String
+      expected: String,
     ): MutableMap<String, MutableMap<Int, MutableList<String>>> {
       val map = HashMap<String, MutableMap<Int, MutableList<String>>>()
 
@@ -2437,7 +2437,7 @@ class LintIssueDocGenerator(
       /** First source line, if present */
       val sourceLine1: String?,
       /** Second source line, if present */
-      val sourceLine2: String?
+      val sourceLine2: String?,
     )
 
     fun getOutputIncidents(output: String): List<ReportedIncident> {
@@ -2489,7 +2489,7 @@ class LintIssueDocGenerator(
             message,
             id,
             sourceLine1,
-            sourceLine2
+            sourceLine2,
           )
         )
       }
@@ -2522,7 +2522,7 @@ class LintIssueDocGenerator(
 
     private fun getRegistries(
       registryMap: Map<IssueRegistry, String?>,
-      includeBuiltins: Boolean
+      includeBuiltins: Boolean,
     ): Map<IssueRegistry, String?> {
       return if (includeBuiltins) {
         val builtIns = mapOf<IssueRegistry, String?>(BuiltinIssueRegistry() to null)
@@ -2564,7 +2564,7 @@ class LintIssueDocGenerator(
     @Suppress("SpellCheckingInspection")
     private fun addAospUrls(
       sourcePath: MutableMap<String, MutableList<File>>,
-      testPath: MutableMap<String, MutableList<File>>
+      testPath: MutableMap<String, MutableList<File>>,
     ) {
       if (!LintClient.isUnitTest) {
         val lintRoot = findStudioSource()?.let { File("tools/base/lint") }
@@ -2575,7 +2575,7 @@ class LintIssueDocGenerator(
             mutableListOf(
               File(
                 "$lintRoot/libs/lint-checks/src/main/java",
-                "$lintRoot/studio-checks/src/main/java"
+                "$lintRoot/studio-checks/src/main/java",
               )
             )
         }
@@ -2768,7 +2768,7 @@ class LintIssueDocGenerator(
               findLintIssueRegistries(
                 client,
                 jarPath,
-                { id, lintLibrary -> GmavenLibrary(id, lintLibrary) }
+                { id, lintLibrary -> GmavenLibrary(id, lintLibrary) },
               )
             else emptyMap()
           jarMap + gmavenMap + mavenCentralMap
@@ -2794,7 +2794,7 @@ class LintIssueDocGenerator(
           includeSuppressInfo,
           includeExamples,
           includeSourceLinks,
-          includeSeverityColor
+          includeSeverityColor,
         )
       generator.generate()
 
@@ -2811,7 +2811,7 @@ class LintIssueDocGenerator(
         client,
         cacheDir.path,
         { id, lintLibrary -> GmavenLibrary(id, lintLibrary) },
-        searchWithinArchives = false
+        searchWithinArchives = false,
       )
     }
 
@@ -2829,7 +2829,7 @@ class LintIssueDocGenerator(
             ?: error("Couldn't find registration info for $id")
         },
         searchWithinArchives = true,
-        allJarsAreLintChecks = true
+        allJarsAreLintChecks = true,
       )
     }
 
@@ -2875,7 +2875,7 @@ class LintIssueDocGenerator(
     private fun downloadMavenFile(
       library: MavenCentralLibrary,
       version: String,
-      url: URL = library.getUrl(version)
+      url: URL = library.getUrl(version),
     ): ByteArray? {
       if (SKIP_NETWORK) return null
 
@@ -3048,7 +3048,7 @@ class LintIssueDocGenerator(
       jarPath: String,
       libraryFactory: (String, Boolean) -> Library,
       searchWithinArchives: Boolean = true,
-      allJarsAreLintChecks: Boolean = false
+      allJarsAreLintChecks: Boolean = false,
     ): Map<IssueRegistry, String?> {
       val into =
         mutableMapOf<String, LibraryVersionEntry>() // Issue registry to (optional) maven artifact
@@ -3115,7 +3115,7 @@ class LintIssueDocGenerator(
        * If true, this is a lint jar library (which you would use via `lintChecks`); if false, it's
        * an AAR library (usually not lint related) which also includes a lint payload
        */
-      val lintLibrary: Boolean
+      val lintLibrary: Boolean,
     ) {
       val versions: MutableMap<Version, LibraryVersionEntry> = TreeMap { o1, o2 ->
         -o1.compareTo(o2)
@@ -3140,7 +3140,7 @@ class LintIssueDocGenerator(
         issue: Issue,
         detectorPath: String,
         sourceSet: String = "java",
-        extension: String = ".kt"
+        extension: String = ".kt",
       ): String
 
       private fun versionsWithoutOldPreviews(): List<Version> {
@@ -3165,7 +3165,7 @@ class LintIssueDocGenerator(
         issue: Issue,
         detectorPath: String,
         sourceSet: String,
-        extension: String
+        extension: String,
       ): String {
         val url = StringBuilder()
         if (view) {
@@ -3290,7 +3290,7 @@ class LintIssueDocGenerator(
       val testUrl: String = "",
       val sourceContentUrl: String = "",
       val testContentUrl: String = "",
-      lintLibrary: Boolean
+      lintLibrary: Boolean,
     ) : Library("$group:$artifact", lintLibrary) {
       override fun getUrl(
         view: Boolean,
@@ -3298,7 +3298,7 @@ class LintIssueDocGenerator(
         issue: Issue,
         detectorPath: String,
         sourceSet: String,
-        extension: String
+        extension: String,
       ): String {
         val url = StringBuilder()
         if (view) {
@@ -3366,7 +3366,7 @@ class LintIssueDocGenerator(
 
       private fun getLatestVersionFromRemoteRepo(
         client: LintClient,
-        dependency: GradleCoordinate
+        dependency: GradleCoordinate,
       ): List<String> {
         val groupId = dependency.groupId
         val artifactId = dependency.artifactId
@@ -3424,7 +3424,7 @@ class LintIssueDocGenerator(
       val jarBytes: ByteArray,
       val pom: String,
       val date: String,
-      val lintLibrary: Boolean
+      val lintLibrary: Boolean,
     ) {
       val id = artifact.substringBeforeLast(':')
       val version = Version.parse(artifact.substringAfterLast(':').removeSuffix("-lint"))
@@ -3435,7 +3435,7 @@ class LintIssueDocGenerator(
       into: MutableMap<String, LibraryVersionEntry>,
       file: File,
       artifact: String?,
-      bytes: ByteArray = file.readBytes()
+      bytes: ByteArray = file.readBytes(),
     ) {
       artifact ?: return
       val base = file.path.removeSuffix(".jar").removeSuffix(".aar").removeSuffix("-lint")
@@ -3456,7 +3456,7 @@ class LintIssueDocGenerator(
       into: MutableMap<String, LibraryVersionEntry>,
       file: File,
       searchWithinArchives: Boolean,
-      allJarsAreLintChecks: Boolean
+      allJarsAreLintChecks: Boolean,
     ) {
       if (file.isDirectory) {
         val children = file.listFiles() ?: return
@@ -3672,7 +3672,7 @@ class LintIssueDocGenerator(
           ARG_NO_SEVERITY,
           "Do not include the red, orange or green informational boxes showing the severity of each issue",
         ),
-        false
+        false,
       )
     }
 
@@ -3863,7 +3863,7 @@ class LintIssueDocGenerator(
     val testMethod: String,
     val files: List<ExampleFile>,
     val output: String?,
-    val inferred: Boolean = true
+    val inferred: Boolean = true,
   )
 
   inner class IssueData(val issue: Issue) {
@@ -3909,7 +3909,7 @@ class LintIssueDocGenerator(
       library: Library,
       detectorPath: String,
       test: Boolean,
-      assign: (String, File, String) -> Unit
+      assign: (String, File, String) -> Unit,
     ) {
       var url: String? = null
       val cacheDir = getSourceCache()
@@ -3942,7 +3942,7 @@ class LintIssueDocGenerator(
       test: Boolean,
       sourceSet: String,
       extension: String,
-      cacheDir: File
+      cacheDir: File,
     ): Pair<File, String>? {
       val relative =
         (if (test) "test" else "main") +
@@ -4012,7 +4012,7 @@ class LintIssueDocGenerator(
           "<style class=\"fallback\">body{visibility:hidden;white-space:pre;font-family:monospace}</style>" +
           "<script src=\"markdeep.min.js\" charset=\"utf-8\"></script>" +
           "<script src=\"https://morgan3d.github.io/markdeep/latest/markdeep.min.js\" charset=\"utf-8\"></script>" +
-          "<script>window.alreadyProcessedMarkdeep||(document.body.style.visibility=\"visible\")</script>"
+          "<script>window.alreadyProcessedMarkdeep||(document.body.style.visibility=\"visible\")</script>",
     ),
     MARKDOWN(".md"),
     HTML(".html")

@@ -318,7 +318,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
   private fun generateCallGraph(
     projectContext: Context,
     parser: UastParser,
-    contexts: List<JavaContext>
+    contexts: List<JavaContext>,
   ): CallGraphResult? {
     if (contexts.isEmpty()) {
       return null
@@ -366,7 +366,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
       projectContext.report(
         IssueRegistry.LINT_ERROR,
         Location.create(projectContext.project.dir),
-        message
+        message,
       )
       return null
     }
@@ -1026,7 +1026,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
               reference.node,
               reference.type,
               reference.name,
-              reference.`package` == ANDROID_PKG
+              reference.`package` == ANDROID_PKG,
             )
           }
         } else if (aliasedImports && node.resolve() == null) {
@@ -1048,7 +1048,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
                     resource.node,
                     resource.type,
                     resource.name,
-                    resource.`package` == ANDROID_PKG
+                    resource.`package` == ANDROID_PKG,
                   )
                 }
                 break

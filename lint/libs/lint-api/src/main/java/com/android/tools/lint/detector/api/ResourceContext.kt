@@ -42,7 +42,7 @@ open class ResourceContext(
   main: Project?,
   file: File,
   val resourceFolderType: ResourceFolderType?,
-  contents: CharSequence?
+  contents: CharSequence?,
 ) : Context(driver, project, main, file, contents) {
   private var folderConfiguration: FolderConfiguration? = null
 

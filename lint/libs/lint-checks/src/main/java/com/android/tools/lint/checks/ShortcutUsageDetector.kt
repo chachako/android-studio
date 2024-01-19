@@ -51,7 +51,7 @@ class ShortcutUsageDetector : Detector(), SourceCodeScanner {
       "addDynamicShortcuts",
       "setDynamicShortcuts",
       "pushDynamicShortcut",
-      "reportShortcutUsed"
+      "reportShortcutUsed",
     )
   }
 
@@ -147,7 +147,7 @@ class ShortcutUsageDetector : Detector(), SourceCodeScanner {
           Implementation(ShortcutUsageDetector::class.java, EnumSet.of(Scope.ALL_JAVA_FILES)),
         androidSpecific = true,
         moreInfo =
-          "https://developer.android.com/develop/ui/views/launch/shortcuts/managing-shortcuts"
+          "https://developer.android.com/develop/ui/views/launch/shortcuts/managing-shortcuts",
       )
   }
 }

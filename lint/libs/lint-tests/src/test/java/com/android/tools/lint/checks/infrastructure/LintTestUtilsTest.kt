@@ -79,11 +79,11 @@ class LintTestUtilsTest {
     assertEquals("This is a path:\nC:/a/b/c.kt\n", "This is a path:\nC:\\a\\b\\c.kt\r\n".dos2unix())
     assertEquals(
       "This is a path separator:\nsrc/java/main:src/java/test\n",
-      "This is a path separator:\nsrc\\java\\main;src\\java\\test\r\n".dos2unix()
+      "This is a path separator:\nsrc\\java\\main;src\\java\\test\r\n".dos2unix(),
     )
     assertEquals(
       "This is &quot;XML&QUOT; &lt; and &#9029;.",
-      "This is &quot;XML&QUOT; &lt; and &#9029;.".dos2unix()
+      "This is &quot;XML&QUOT; &lt; and &#9029;.".dos2unix(),
     )
     assertEquals("First, a test; ", "First, a test; ".dos2unix())
     assertEquals("style=\"display: block;\"", "style=\"display: block;\"".dos2unix())
@@ -119,7 +119,7 @@ class LintTestUtilsTest {
             """
         .trimIndent(),
       bucketSize = 2,
-      absolutePaths = false
+      absolutePaths = false,
     )
   }
 }

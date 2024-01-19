@@ -55,7 +55,7 @@ class NonConstantResourceIdDetectorTest : AbstractCheckTest() {
                     }
 
                 }"""
-        )
+        ),
       )
       .run()
       .expect(
@@ -94,7 +94,7 @@ class NonConstantResourceIdDetectorTest : AbstractCheckTest() {
                         }
                     }
                 """
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -136,7 +136,7 @@ class NonConstantResourceIdDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-        )
+        ),
       )
       .run()
       .expect(
@@ -178,7 +178,7 @@ class NonConstantResourceIdDetectorTest : AbstractCheckTest() {
                     fun annotatedMethodWithNonConstantResourceId(value : Int) : Int = 0
                 }
             """
-        )
+        ),
       )
       .run()
       .expect(
@@ -231,7 +231,7 @@ class NonConstantResourceIdDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        rClass("test.pkg", "@id/text", "@id/bottom")
+        rClass("test.pkg", "@id/text", "@id/bottom"),
       )
       .run()
       .expect(
@@ -273,7 +273,7 @@ class NonConstantResourceIdDetectorTest : AbstractCheckTest() {
                     }
                 """
         ),
-        rClass("test.pkg", "@id/text")
+        rClass("test.pkg", "@id/text"),
       )
       .run()
       .expect(

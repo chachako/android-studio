@@ -111,7 +111,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
                 return types, and no arguments) should not have side effects. With this \
                 option turned on, lint will assume that is the case and will list any \
                 getter calls whose results are ignored as suspicious code.
-                """
+                """,
       )
 
     @JvmField
@@ -129,7 +129,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
           category = CORRECTNESS,
           severity = Severity.WARNING,
           implementation = IMPLEMENTATION,
-          enabledByDefault = false
+          enabledByDefault = false,
         )
         .setAliases(listOf("ResultOfMethodCallIgnored"))
         .setOptions(listOf(ASSUME_PURE_GETTERS))
@@ -283,7 +283,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
       USimpleNameReferenceExpression::class.java,
       UQualifiedReferenceExpression::class.java,
       UBinaryExpression::class.java,
-      ULiteralExpression::class.java
+      ULiteralExpression::class.java,
     )
   }
 
@@ -343,7 +343,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
               node,
               selector.identifier,
               resolved,
-              resolved.containingClass?.qualifiedName
+              resolved.containingClass?.qualifiedName,
             )
           } else {
             if (isExpressionValueUnused(selector) && !expectsSideEffect(context, selector)) {
@@ -358,7 +358,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
           report(
             context,
             node,
-            node.sourcePsi?.text ?: node.value?.toString() ?: node.asSourceString()
+            node.sourcePsi?.text ?: node.value?.toString() ?: node.asSourceString(),
           )
         }
       }
@@ -371,7 +371,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
             node,
             call.methodIdentifier?.name ?: methodName,
             method,
-            method.containingClass?.qualifiedName
+            method.containingClass?.qualifiedName,
           )
         }
         if (method == null) {
@@ -386,7 +386,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
               node,
               callName,
               null,
-              symbol.callableIdIfNonLocal?.classId?.asFqNameString()
+              symbol.callableIdIfNonLocal?.classId?.asFqNameString(),
             )
           }
         }
@@ -406,7 +406,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
             call ?: node,
             method,
             method?.name ?: callName,
-            containingClassFqName
+            containingClassFqName,
           )
         ) {
           return
@@ -619,7 +619,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     // TODO: Look for @Immutable too?
     val pure = UastLintUtils.getAnnotationBooleanValue(annotationInfo.annotation, "pure", false)

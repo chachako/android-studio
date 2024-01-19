@@ -70,7 +70,7 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
         AvdManager.AVD_INI_TAG_ID to tag.id,
         AvdManager.AVD_INI_TAG_DISPLAY to tag.display,
       ),
-      avdStatus
+      avdStatus,
     )
   }
 
@@ -105,7 +105,7 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
           "ro.test.coldboot" to if (coldBoot) "1" else "0",
           "ro.test.snapshot" to (snapshot?.path?.toString() ?: ""),
           "dev.bootcomplete" to if (coldBoot) "" else "1",
-        )
+        ),
     )
     device.start()
     runningDevices += device
@@ -115,11 +115,7 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
   fun finishBoot(device: ConnectedDevice) {
     session.deviceServices.configureDeviceProperties(
       DeviceSelector.fromSerialNumber(device.serialNumber),
-      properties +
-        mapOf(
-          "ro.test.coldboot" to "1",
-          "dev.bootcomplete" to "1",
-        )
+      properties + mapOf("ro.test.coldboot" to "1", "dev.bootcomplete" to "1"),
     )
   }
 
@@ -156,7 +152,7 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
         avdInfo.dataFolderPath,
         avdInfo.systemImage,
         avdInfo.properties,
-        AvdInfo.AvdStatus.OK
+        AvdInfo.AvdStatus.OK,
       )
   }
 
@@ -168,7 +164,7 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
     session.hostServices.devices =
       DeviceList(
         runningDevices.map { DeviceInfo("emulator-${it.port}", DeviceState.ONLINE) },
-        emptyList()
+        emptyList(),
       )
   }
 

@@ -31,7 +31,7 @@ class HttpURLConnectionWrapper(
   wrapped: HttpURLConnection,
   callstack: String,
   trackerFactory: HttpTrackerFactory,
-  interceptionRuleService: InterceptionRuleService
+  interceptionRuleService: InterceptionRuleService,
 ) : HttpURLConnection(wrapped.url) {
 
   private val trackedConnection: TrackedHttpURLConnection =

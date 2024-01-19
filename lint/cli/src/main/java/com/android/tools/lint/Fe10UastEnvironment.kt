@@ -105,7 +105,7 @@ private constructor(
   // application environment (because Kotlin uses IntelliJ to parse Java). So most of
   // the work here is delegated to the Kotlin compiler.
   private val kotlinCompilerEnv: KotlinCoreEnvironment,
-  override val projectDisposable: Disposable
+  override val projectDisposable: Disposable,
 ) : UastEnvironment {
   override val coreAppEnv: CoreApplicationEnvironment
     get() = kotlinCompilerEnv.projectEnvironment.environment
@@ -129,7 +129,7 @@ private constructor(
     // Legacy merging behavior for Fe 1.0
     override fun addModules(
       modules: List<UastEnvironment.Module>,
-      bootClassPaths: Iterable<File>?
+      bootClassPaths: Iterable<File>?,
     ) {
       kotlinLanguageLevel =
         modules.map(UastEnvironment.Module::kotlinLanguageLevel).reduce { r, t ->
@@ -209,7 +209,7 @@ private constructor(
       CliBindingTraceForLint(),
       kotlinCompilerConfig,
       kotlinCompilerEnv::createPackagePartProvider,
-      klibList = klibs
+      klibList = klibs,
     )
 
     perfManager?.notifyAnalysisFinished()
@@ -277,7 +277,7 @@ private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): Compiler
   if (enableKotlinScripting) {
     config.add(
       ComponentRegistrar.PLUGIN_COMPONENT_REGISTRARS,
-      ScriptingCompilerConfigurationComponentRegistrar()
+      ScriptingCompilerConfigurationComponentRegistrar(),
     )
   }
 
@@ -286,13 +286,13 @@ private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): Compiler
 
 private fun createKotlinCompilerEnv(
   parentDisposable: Disposable,
-  config: Fe10UastEnvironment.Configuration
+  config: Fe10UastEnvironment.Configuration,
 ): KotlinCoreEnvironment {
   val env =
     KotlinCoreEnvironment.createForProduction(
       parentDisposable,
       config.kotlinCompilerConfig,
-      JVM_CONFIG_FILES
+      JVM_CONFIG_FILES,
     )
   appLock.withLock { configureFe10ApplicationEnvironment(env.projectEnvironment.environment) }
   configureFe10ProjectEnvironment(env.projectEnvironment, config)
@@ -302,14 +302,14 @@ private fun createKotlinCompilerEnv(
 
 private fun configureFe10ProjectEnvironment(
   env: KotlinCoreProjectEnvironment,
-  config: Fe10UastEnvironment.Configuration
+  config: Fe10UastEnvironment.Configuration,
 ) {
   val project = env.project
   // UAST support.
   AnalysisHandlerExtension.registerExtension(project, UastAnalysisHandlerExtension())
   project.registerService(
     KotlinUastResolveProviderService::class.java,
-    CliKotlinUastResolveProviderService::class.java
+    CliKotlinUastResolveProviderService::class.java,
   )
 
   // PsiNameHelper is used by Kotlin UAST.
@@ -329,7 +329,7 @@ private fun configureAnalysisApiServices(
   // But, for FIR, AA session builder already register these
   project.registerService(
     KotlinModificationTrackerFactory::class.java,
-    KotlinStaticModificationTrackerFactory::class.java
+    KotlinStaticModificationTrackerFactory::class.java,
   )
   project.registerKtLifetimeTokenProvider()
 
@@ -337,31 +337,31 @@ private fun configureAnalysisApiServices(
 
   project.registerService(
     ProjectStructureProvider::class.java,
-    buildKtModuleProviderByCompilerConfiguration(env, config.kotlinCompilerConfig, ktFiles)
+    buildKtModuleProviderByCompilerConfiguration(env, config.kotlinCompilerConfig, ktFiles),
   )
 
   project.registerService(
     KotlinAnnotationsResolverFactory::class.java,
-    KotlinStaticAnnotationsResolverFactory(project, ktFiles)
+    KotlinStaticAnnotationsResolverFactory(project, ktFiles),
   )
   project.registerService(
     KotlinDeclarationProviderFactory::class.java,
-    KotlinStaticDeclarationProviderFactory(project, ktFiles)
+    KotlinStaticDeclarationProviderFactory(project, ktFiles),
   )
   project.registerService(
     KotlinPackageProviderFactory::class.java,
-    KotlinStaticPackageProviderFactory(project, ktFiles)
+    KotlinStaticPackageProviderFactory(project, ktFiles),
   )
 
   project.registerService(
     KotlinReferenceProvidersService::class.java,
-    HLApiReferenceProviderService::class.java
+    HLApiReferenceProviderService::class.java,
   )
 
   // Analysis API FE1.0-specific
   project.registerService(
     KtAnalysisSessionProvider::class.java,
-    KtFe10AnalysisSessionProvider(project)
+    KtFe10AnalysisSessionProvider(project),
   )
   project.registerService(Fe10AnalysisFacade::class.java, CliFe10AnalysisFacade::class.java)
   // Duplicate: already registered at [KotlinCoreEnvironment]
@@ -369,11 +369,11 @@ private fun configureAnalysisApiServices(
   // CliModuleVisibilityManagerImpl(enabled = true))
   project.registerService(
     ReadWriteAccessChecker::class.java,
-    ReadWriteAccessCheckerDescriptorsImpl()
+    ReadWriteAccessCheckerDescriptorsImpl(),
   )
   project.registerService(
     KotlinReferenceProviderContributor::class.java,
-    KtFe10KotlinReferenceProviderContributor::class.java
+    KtFe10KotlinReferenceProviderContributor::class.java,
   )
 
   AnalysisHandlerExtension.registerExtension(project, KtFe10AnalysisHandlerExtension())
@@ -385,22 +385,22 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
 
     it.application.registerService(
       BaseKotlinUastResolveProviderService::class.java,
-      CliKotlinUastResolveProviderService::class.java
+      CliKotlinUastResolveProviderService::class.java,
     )
 
     it.application.registerService(
       KtFe10ReferenceResolutionHelper::class.java,
-      DummyKtFe10ReferenceResolutionHelper
+      DummyKtFe10ReferenceResolutionHelper,
     )
 
     it.application.registerService(
       BuiltInsVirtualFileProvider::class.java,
-      BuiltInsVirtualFileProviderCliImpl(appEnv.jarFileSystem as CoreJarFileSystem)
+      BuiltInsVirtualFileProviderCliImpl(appEnv.jarFileSystem as CoreJarFileSystem),
     )
     it.application.registerService(ClsKotlinBinaryClassCache::class.java)
     it.application.registerService(
       FileAttributeService::class.java,
-      DummyFileAttributeService::class.java
+      DummyFileAttributeService::class.java,
     )
 
     // Note that this app-level service should be initialized before any other entities attempt to
@@ -410,7 +410,7 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
     it.application.registerService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
     it.application.registerService(
       InternalPersistentJavaLanguageLevelReaderService::class.java,
-      InternalPersistentJavaLanguageLevelReaderService.DefaultImpl()
+      InternalPersistentJavaLanguageLevelReaderService.DefaultImpl(),
     )
     reRegisterProgressManager(it.application)
   }

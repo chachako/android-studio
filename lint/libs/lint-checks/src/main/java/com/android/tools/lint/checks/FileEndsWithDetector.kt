@@ -62,7 +62,7 @@ class FileEndsWithDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -73,7 +73,7 @@ class FileEndsWithDetector : Detector(), SourceCodeScanner {
   override fun visitReference(
     context: JavaContext,
     reference: UReferenceExpression,
-    referenced: PsiElement
+    referenced: PsiElement,
   ) {
     if (isFileExtension(context, referenced)) {
       val parent = reference.uastParent ?: return

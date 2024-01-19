@@ -39,7 +39,7 @@ class PrivateResourceDetectorTest {
                 int y = R.string.my_public_string; // OK
             }
         }
-        """
+        """,
       )
       .indented()
 
@@ -53,7 +53,7 @@ class PrivateResourceDetectorTest {
             <string name="my_public_string">String 2</string>
 
         </resources>
-        """
+        """,
       )
       .indented()
 
@@ -67,9 +67,9 @@ class PrivateResourceDetectorTest {
             "@string/my_public_string",
             "@layout/my_private_layout",
             "@id/title",
-            "@style/Theme_AppCompat_DayNight"
+            "@style/Theme_AppCompat_DayNight",
           ),
-        public = listOf("@string/my_public_string", "@style/Theme_AppCompat_DayNight")
+        public = listOf("@string/my_public_string", "@style/Theme_AppCompat_DayNight"),
       )
     )
 
@@ -119,10 +119,10 @@ class PrivateResourceDetectorTest {
                             android:layout_height="wrap_content"
                             android:text="@string/my_public_string" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
-        gradle
+        gradle,
       )
       .run()
       .expect(expected)
@@ -150,11 +150,11 @@ class PrivateResourceDetectorTest {
                         int z = android.R.string.my_private_string; // OK (not in project namespace)
                     }
                 }
-                """
+                """,
           )
           .indented(),
         defaultRClass,
-        gradle
+        gradle,
       )
       .allowCompilationErrors()
       .run()
@@ -181,10 +181,10 @@ class PrivateResourceDetectorTest {
                         android:theme="@style/Theme_AppCompat_DayNight" />
 
                 </merge>
-                """
+                """,
           )
           .indented(),
-        gradle
+        gradle,
       )
       .run()
       .expectClean()
@@ -222,7 +222,7 @@ class PrivateResourceDetectorTest {
                     <string tools:override="false" name="my_private_string">String 2</string>
                     <string tools:override="true" name="my_private_string">String 2</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml("src/main/res/layout/my_private_layout.xml", "<LinearLayout/>"),
@@ -237,7 +237,7 @@ class PrivateResourceDetectorTest {
                 """
           )
           .indented()
-          .withMockerConfigurator(defaultLibraryMocks)
+          .withMockerConfigurator(defaultLibraryMocks),
       )
       .run()
       .expect(expected)
@@ -256,7 +256,7 @@ class PrivateResourceDetectorTest {
                               android:orientation="vertical"
                               android:layout_width="match_parent"
                               android:layout_height="match_parent"/>
-                """
+                """,
         ),
         java(
             "src/main/java/test/pkg/Private.java",
@@ -272,7 +272,7 @@ class PrivateResourceDetectorTest {
                         }
                     }
                 }
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -285,7 +285,7 @@ class PrivateResourceDetectorTest {
                 """
           )
           .indented()
-          .withMockerConfigurator(defaultLibraryMocks)
+          .withMockerConfigurator(defaultLibraryMocks),
       )
       .run()
       .expectClean()
@@ -344,12 +344,12 @@ class PrivateResourceDetectorTest {
         rClass(
           "com.example.resourcevisibility",
           "@anim/abc_fade_in",
-          "@style/Animation_Design_BottomSheetDialog"
+          "@style/Animation_Design_BottomSheetDialog",
         ),
         rClass(
           "com.google.android.material",
           "@anim/abc_fade_in",
-          "@style/Animation_Design_BottomSheetDialog"
+          "@style/Animation_Design_BottomSheetDialog",
         ),
         gradle(
             """
@@ -371,9 +371,9 @@ class PrivateResourceDetectorTest {
                     "@attr/showMotionSpec",
                     "@anim/abc_fade_in",
                     "@anim/abc_tooltip_enter",
-                    "@style/Animation_Design_BottomSheetDialog"
+                    "@style/Animation_Design_BottomSheetDialog",
                   ),
-                public = listOf("@attr/showMotionSpec", "@style/Animation_Design_BottomSheetDialog")
+                public = listOf("@attr/showMotionSpec", "@style/Animation_Design_BottomSheetDialog"),
               ),
               createLibrary(
                 artifact = "androidx.appcompat:appcompat:1.3.1",
@@ -381,20 +381,17 @@ class PrivateResourceDetectorTest {
                   listOf(
                     "@attr/autoCompleteTextViewStyle",
                     "@anim/abc_fade_in",
-                    "@drawable/abc_edit_text_material"
+                    "@drawable/abc_edit_text_material",
                   ),
-                public = listOf("@attr/autoCompleteTextViewStyle")
+                public = listOf("@attr/autoCompleteTextViewStyle"),
               ),
               createLibrary(
                 artifact = "androidx.activity:activity:1.3.1",
-                all =
-                  listOf(
-                    "@color/ripple_material_light",
-                  )
+                all = listOf("@color/ripple_material_light"),
                 // no public resources
-              )
+              ),
             )
-          )
+          ),
       )
       .run()
       .expect(
@@ -424,7 +421,7 @@ class PrivateResourceDetectorTest {
                         <item name="cardElevation">@dimen/cardview_default_elevation</item>
                     </style>
                 </resources>
-                """
+                """,
         ),
         gradle(
             """
@@ -440,27 +437,17 @@ class PrivateResourceDetectorTest {
             createLibraryMocker(
               createLibrary(
                 artifact = "com.google.android.material:material:1.4.0",
-                all =
-                  listOf(
-                    "@dimen/cardview_default_elevation",
-                    "@style/some_other_thing",
-                  ),
-                public =
-                  listOf(
-                    "@style/some_other_thing",
-                  )
+                all = listOf("@dimen/cardview_default_elevation", "@style/some_other_thing"),
+                public = listOf("@style/some_other_thing"),
               ),
               createLibrary(
                 artifact = "androidx.cardview:cardview:1.0.0",
-                all =
-                  listOf(
-                    "@dimen/cardview_default_elevation",
-                  ),
+                all = listOf("@dimen/cardview_default_elevation"),
                 public =
                   emptyList(), // No public.txt file at all, so all resources are implicitly public.
-              )
+              ),
             )
-          )
+          ),
       )
       .run()
       .expectClean()
@@ -495,7 +482,7 @@ class PrivateResourceDetectorTest {
   private fun createLibrary(
     artifact: String,
     all: List<String>,
-    public: List<String> = emptyList()
+    public: List<String> = emptyList(),
   ): Triple<String, List<String>, List<String>> = Triple(artifact, all, public)
 
   private fun createLibraryMocker(
@@ -506,11 +493,11 @@ class PrivateResourceDetectorTest {
         val (artifact, all, public) = library
         mocker.withLibraryPublicResourcesFile(
           artifact,
-          createPublicSymbolsFile(artifact, *public.toTypedArray()).path
+          createPublicSymbolsFile(artifact, *public.toTypedArray()).path,
         )
         mocker.withLibrarySymbolFile(
           artifact,
-          createAllSymbolsFile(artifact, *all.toTypedArray()).path
+          createAllSymbolsFile(artifact, *all.toTypedArray()).path,
         )
       }
     }

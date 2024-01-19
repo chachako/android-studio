@@ -269,7 +269,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
             context.report(
               MISSING,
               context.getValueLocation(root.getAttributeNodeNS(TOOLS_URI, ATTR_LOCALE)),
-              "Suspicious `tools:locale` declaration of language `$defaultLanguage`; the parent folder `$parentFolderName` implies language $folderLanguage"
+              "Suspicious `tools:locale` declaration of language `$defaultLanguage`; the parent folder `$parentFolderName` implies language $folderLanguage",
             )
           }
         }
@@ -289,7 +289,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
                 child,
                 context.getLocation(child),
                 "Missing `name` attribute in `<${child.tagName}>` declaration",
-                fix
+                fix,
               )
             }
           } else {
@@ -308,7 +308,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
     name: String,
     originalName: String,
     element: Element?,
-    defaultLocale: String?
+    defaultLocale: String?,
   ) {
     when (type) {
       MIPMAP,
@@ -330,7 +330,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
             originalName,
             element,
             folderName,
-            defaultLocale
+            defaultLocale,
           )
         }
       }
@@ -345,7 +345,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
     originalName: String,
     element: Element?,
     folderName: String,
-    defaultLocale: String?
+    defaultLocale: String?,
   ) {
     // Incremental mode
     val client = context.client
@@ -372,7 +372,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
         Severity.ERROR,
         null,
         "Resource repository is out-of-date:" +
-          " Could not find resource $originalName of type $type in namespace $namespace"
+          " Could not find resource $originalName of type $type in namespace $namespace",
       )
       return
     }
@@ -404,7 +404,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
                   defaultLocale
                 }
               }
-              .toSet()
+              .toSet(),
           )
       }
       val locales = locales!!.toHashSet()
@@ -436,7 +436,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
     context: ResourceContext,
     name: String,
     element: Element?,
-    defaultLocale: String?
+    defaultLocale: String?,
   ) {
     // Batch mode
     val isDefault = isDefaultFolder(context.getFolderConfiguration(), folderName)
@@ -568,7 +568,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
     name: String,
     element: Element,
     context: XmlContext,
-    isDefaultFolder: Boolean
+    isDefaultFolder: Boolean,
   ): Boolean {
     val translatable: Attr? = element.getAttributeNode(ATTR_TRANSLATABLE)
     if (translatable != null && !translatable.value!!.toBoolean()) {
@@ -603,7 +603,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
         name,
         element,
         element.getAttributeNode(ATTR_NAME) ?: element,
-        false
+        false,
       )
     }
     return false
@@ -624,7 +624,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
     name: String?,
     element: Element,
     locationNode: Node,
-    translatableDefinedLocally: Boolean
+    translatableDefinedLocally: Boolean,
   ) {
     val language = getLanguageTagFromFolder(context.file.parentFile.name) ?: return
 
@@ -656,7 +656,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
       locationNode,
       context.getLocation(locationNode),
       message,
-      fix
+      fix,
     )
   }
 
@@ -664,7 +664,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
     type: ResourceType,
     name: String,
     context: ResourceContext,
-    element: Element?
+    element: Element?,
   ) {
     // Found resource in folder that isn't present in the base folder;
     // this can lead to a crash
@@ -720,7 +720,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
     name: String,
     context: XmlContext,
     element: Element,
-    missingFrom: Set<String>
+    missingFrom: Set<String>,
   ) {
     // Found resource in folder that isn't present in the base folder;
     // this can lead to a crash
@@ -820,9 +820,9 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
           Scope.ALL_RESOURCE_FILES,
           Scope.RESOURCE_FILE,
           Scope.RESOURCE_FOLDER,
-          Scope.BINARY_RESOURCE_FILE
+          Scope.BINARY_RESOURCE_FILE,
         ),
-        Scope.RESOURCE_FILE_SCOPE
+        Scope.RESOURCE_FILE_SCOPE,
       )
 
     /** Are all translations complete? */
@@ -850,7 +850,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
         category = Category.MESSAGES,
         priority = 8,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Are there extra translations that are "unused" (appear only in specific languages) ? */
@@ -871,7 +871,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
         category = Category.MESSAGES,
         priority = 6,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Are there extra resources that are "unused" (appear only in non-default folders) ? */
@@ -907,7 +907,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
         category = Category.CORRECTNESS,
         priority = 6,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Are there extra translations that are "unused" (appear only in specific languages) ? */
@@ -928,7 +928,7 @@ class TranslationDetector : Detector(), XmlScanner, ResourceFolderScanner, Binar
         category = Category.MESSAGES,
         priority = 6,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmStatic

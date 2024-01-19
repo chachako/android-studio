@@ -121,7 +121,7 @@ protected constructor(
   configurations: ConfigurationHierarchy,
   val configFile: File,
   dir: File? = configFile.parentFile,
-  override var fileLevel: Boolean = true
+  override var fileLevel: Boolean = true,
 ) : Configuration(configurations) {
   init {
     this.dir = dir
@@ -129,7 +129,7 @@ protected constructor(
 
   protected constructor(
     configurations: ConfigurationHierarchy,
-    project: Project
+    project: Project,
   ) : this(configurations, project.dir.getLintXmlFile(), project.dir, true)
 
   private var bulkEditing = false
@@ -178,7 +178,7 @@ protected constructor(
      */
     var patterns: MutableList<Pattern>? = null,
     /** Optional parameters to the issue checker, defined by the detector. */
-    var options: MutableMap<String, String>? = null
+    var options: MutableMap<String, String>? = null,
   ) {
     /**
      * Returns true if there is no significant configuration for this issue (so can be skipped in
@@ -316,7 +316,7 @@ protected constructor(
       client = client,
       issue = IssueRegistry.LINT_ERROR,
       message = message,
-      location = location
+      location = location,
     )
   }
 
@@ -334,7 +334,7 @@ protected constructor(
               // (for third party loaded lint checks)
               reportOptionValidationError(
                 option,
-                "Option value must be `true` or `false` (was $valueString)"
+                "Option value must be `true` or `false` (was $valueString)",
               )
               option.defaultValue
             }
@@ -350,7 +350,7 @@ protected constructor(
           } catch (e: NumberFormatException) {
             reportOptionValidationError(
               option,
-              "${option.name} must be an integer (was $valueString)"
+              "${option.name} must be an integer (was $valueString)",
             )
             option.defaultValue
           }
@@ -514,7 +514,7 @@ protected constructor(
     id: String,
     message: String,
     location: Location,
-    context: Context
+    context: Context,
   ): Boolean {
     return checkIgnored(id) { data -> isPatternIgnored(data, message, location, context) }
   }
@@ -523,7 +523,7 @@ protected constructor(
     issueData: IssueData,
     message: String,
     location: Location,
-    context: Context
+    context: Context,
   ): Boolean {
     val regexps = issueData.patterns
     if (regexps == null || regexps.isEmpty()) {
@@ -581,7 +581,7 @@ protected constructor(
   override fun addConfiguredIssues(
     targetMap: MutableMap<String, Severity>,
     registry: IssueRegistry,
-    specificOnly: Boolean
+    specificOnly: Boolean,
   ) {
     parent?.addConfiguredIssues(targetMap, registry, specificOnly)
 
@@ -608,7 +608,7 @@ protected constructor(
     issue: String,
     specificOnly: Boolean,
     severityOnly: Boolean,
-    source: Configuration
+    source: Configuration,
   ): Location? {
     val issueMaps = getIssueMaps()
 
@@ -638,7 +638,7 @@ protected constructor(
   override fun getDefinedSeverity(
     issue: Issue,
     source: Configuration,
-    visibleDefault: Severity
+    visibleDefault: Severity,
   ): Severity? {
     if (issue.suppressNames != null) {
       // Not allowed to suppress this issue via lint.xml.
@@ -743,14 +743,14 @@ protected constructor(
         exception != null -> getLocation(exception)
         else -> Location.create(configFile)
       },
-    severity: Severity = Severity.WARNING
+    severity: Severity = Severity.WARNING,
   ) {
     report(
       client = client,
       issue = if (severity.isError) IssueRegistry.LINT_ERROR else IssueRegistry.LINT_WARNING,
       message = message,
       location = location,
-      driver = null
+      driver = null,
     )
   }
 
@@ -803,7 +803,7 @@ protected constructor(
                         "$ATTR_IN for the whole " +
                           "file, if specified, must always be the " +
                           "first attribute in <$TAG_LINT>",
-                        parser
+                        parser,
                       )
                     } else if (value == VALUE_ALL) {
                       reportError("$VALUE_ALL not supported for $ATTR_IN", parser)
@@ -830,7 +830,7 @@ protected constructor(
                     if (fileLevel) {
                       reportError(
                         "`lintJar` can only be specified for lint.xml files at the module level or higher",
-                        parser
+                        parser,
                       )
                     } else if (applies()) {
                       // Using ; instead of File.pathSeparator here
@@ -876,7 +876,7 @@ protected constructor(
                     if (fileClients != null) {
                       reportError(
                         "If you specify `$ATTR_IN` on the root <$TAG_LINT> element you cannot specify it anywhere else",
-                        parser
+                        parser,
                       )
                     } else if (value == VALUE_ALL) {
                       reportError("$VALUE_ALL not supported for $ATTR_IN", parser)
@@ -891,7 +891,7 @@ protected constructor(
                   else ->
                     reportError(
                       "Unexpected attribute `$name`, expected `$ATTR_ID`, `$ATTR_IN` or `$ATTR_SEVERITY`",
-                      parser
+                      parser,
                     )
                 }
               }
@@ -935,7 +935,7 @@ protected constructor(
                     else ->
                       reportError(
                         "Unexpected attribute `$name`, expected `$ATTR_PATH` or `$ATTR_REGEXP`",
-                        parser
+                        parser,
                       )
                   }
                 }
@@ -963,7 +963,7 @@ protected constructor(
                       n,
                       SdkUtils.globToRegexp(path),
                       fileClients,
-                      issueClients
+                      issueClients,
                     )
                   } else {
                     addPaths(idList, n, path, fileClients, issueClients)
@@ -987,14 +987,14 @@ protected constructor(
                     else ->
                       reportError(
                         "Unexpected attribute `$name`, expected `$ATTR_NAME` or `$ATTR_VALUE`",
-                        parser
+                        parser,
                       )
                   }
                 }
                 if (optionKey.isEmpty() || optionValue.isEmpty()) {
                   reportError(
                     "Must specify both $ATTR_NAME and $ATTR_VALUE in <$TAG_OPTION>",
-                    parser
+                    parser,
                   )
                 } else {
                   // If it's a path?
@@ -1005,7 +1005,7 @@ protected constructor(
             else ->
               reportError(
                 "Unsupported tag <`${parser.name}`>, expected one of `$TAG_LINT`, `$TAG_ISSUE`, `$TAG_IGNORE` or `$TAG_OPTION`",
-                parser
+                parser,
               )
           }
         } else if (eventType == XmlPullParser.END_TAG) {
@@ -1069,7 +1069,7 @@ protected constructor(
   private fun isApplicableClient(
     client: String?,
     checkEquals: Boolean = true,
-    checkOther: Boolean = true
+    checkOther: Boolean = true,
   ): Boolean {
     client ?: return true
 
@@ -1103,7 +1103,7 @@ protected constructor(
     idList: Iterable<String>,
     severity: Severity,
     fileClients: String?,
-    issueClients: String?
+    issueClients: String?,
   ) {
     val issueMap = getOrCreateIssueMap(issueClients ?: fileClients)
     for (id in idList) {
@@ -1121,7 +1121,7 @@ protected constructor(
     n: Int,
     path: String,
     fileClients: String?,
-    issueClients: String?
+    issueClients: String?,
   ) {
     val issueMap = getOrCreateIssueMap(issueClients ?: fileClients)
     for (id in ids) {
@@ -1142,7 +1142,7 @@ protected constructor(
     n: Int,
     regexp: String,
     fileClients: String?,
-    issueClients: String?
+    issueClients: String?,
   ) {
     try {
       val issueMap = getOrCreateIssueMap(issueClients ?: fileClients)
@@ -1162,7 +1162,7 @@ protected constructor(
     key: String,
     value: String,
     fileClients: String? = null,
-    issueClients: String? = null
+    issueClients: String? = null,
   ) {
     val issueMap = getOrCreateIssueMap(issueClients ?: fileClients)
     for (id in ids) {
@@ -1288,7 +1288,7 @@ protected constructor(
             } else {
               lintPath.replace(File.separatorChar, '/')
             }
-          }
+          },
         )
       }
       writer.write(">\n")
@@ -1468,7 +1468,7 @@ protected constructor(
     client: LintClient,
     driver: LintDriver,
     project: Project?,
-    registry: IssueRegistry
+    registry: IssueRegistry,
   ) {
     parent?.validateIssueIds(client, driver, project, registry)
     if (validated) {
@@ -1488,7 +1488,7 @@ protected constructor(
     driver: LintDriver,
     project: Project?,
     registry: IssueRegistry,
-    map: MutableMap<String, IssueData>
+    map: MutableMap<String, IssueData>,
   ) {
     for (id in map.keys.toList()) {
       if (id == SUPPRESS_ALL) {
@@ -1592,7 +1592,7 @@ protected constructor(
     fun create(
       configurations: ConfigurationHierarchy,
       lintFile: File,
-      contents: CharSequence
+      contents: CharSequence,
     ): LintXmlConfiguration {
       val config = LintXmlConfiguration(configurations, lintFile)
       val parser = KXmlParser()

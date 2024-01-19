@@ -61,7 +61,7 @@ class FakeAdbDeviceProvisionerPlugin(
         isTransitioning = explicitBoot,
         isReady = !explicitBoot,
         status = if (explicitBoot) "Booting" else "Connected",
-        device
+        device,
       )
     }
     scope.launch {
@@ -85,7 +85,7 @@ class FakeAdbDeviceProvisionerPlugin(
    */
   fun newDevice(
     serialNumber: String = nextSerial(),
-    properties: DeviceProperties = DEFAULT_PROPERTIES
+    properties: DeviceProperties = DEFAULT_PROPERTIES,
   ): FakeDeviceHandle {
     return FakeDeviceHandle(scope.createChildScope(true), Disconnected(properties), serialNumber)
   }
@@ -93,7 +93,7 @@ class FakeAdbDeviceProvisionerPlugin(
   /** Creates a FakeDeviceHandle in the Disconnected state that is already known to the plugin. */
   fun addNewDevice(
     serialNumber: String = nextSerial(),
-    properties: DeviceProperties = DEFAULT_PROPERTIES
+    properties: DeviceProperties = DEFAULT_PROPERTIES,
   ): FakeDeviceHandle = newDevice(serialNumber, properties).also { addDevice(it) }
 
   /** Makes the device known to the plugin, in its current state. */
@@ -159,7 +159,7 @@ class FakeAdbDeviceProvisionerPlugin(
                 properties.model ?: "(Unknown model)",
                 properties.androidRelease ?: "(Unknown release)",
                 properties.androidVersion?.apiLevel?.toString() ?: "",
-                com.android.fakeadbserver.DeviceState.HostConnectionType.USB
+                com.android.fakeadbserver.DeviceState.HostConnectionType.USB,
               )
               .also { it.deviceStatus = com.android.fakeadbserver.DeviceState.DeviceStatus.ONLINE }
         }

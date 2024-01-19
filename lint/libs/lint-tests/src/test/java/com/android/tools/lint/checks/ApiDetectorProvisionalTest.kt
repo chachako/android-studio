@@ -45,7 +45,7 @@ class ApiDetectorProvisionalTest : AbstractCheckTest() {
                 }
                 """
             )
-            .indented()
+            .indented(),
         )
         .name("library")
 
@@ -91,9 +91,9 @@ class ApiDetectorProvisionalTest : AbstractCheckTest() {
                     <!-- Disable here, but *also* in app; that should not be a warning -->
                     <issue id="UseSparseArrays" severity="hide" />
                 </lint>
-                """
+                """,
             )
-            .indented()
+            .indented(),
         )
         .name("lib")
 
@@ -120,9 +120,9 @@ class ApiDetectorProvisionalTest : AbstractCheckTest() {
                     <!-- Don't complain about issues suppressed in both library and app -->
                     <issue id="UseSparseArrays" severity="hide" />
                 </lint>
-                """
+                """,
             )
-            .indented()
+            .indented(),
         )
         .dependsOn(lib)
         .name("app")
@@ -135,7 +135,7 @@ class ApiDetectorProvisionalTest : AbstractCheckTest() {
         JavaPerformanceDetector.USE_SPARSE_ARRAY,
         HardcodedValuesDetector.ISSUE,
         ApiDetector.UNSUPPORTED,
-        SdCardDetector.ISSUE
+        SdCardDetector.ISSUE,
       )
       // Normally issues referenced by a test are all forced to
       // be enabled (to make it easy to test issues that are disabled
@@ -197,7 +197,7 @@ class ApiDetectorProvisionalTest : AbstractCheckTest() {
                     <!-- Normally enabled; disabled while analyzing this module -->
                     <issue id="UseValueOf" severity="hide" />
                 </lint>
-                """
+                """,
             )
             .indented(),
           gradle(
@@ -208,7 +208,7 @@ class ApiDetectorProvisionalTest : AbstractCheckTest() {
                     }
                 }
                 """
-          )
+          ),
         )
         .name("lib")
 
@@ -239,9 +239,9 @@ class ApiDetectorProvisionalTest : AbstractCheckTest() {
                     <issue id="NewApi2" severity="hide" />
                     <issue id="SdCardPath2" severity="hide" />
                 </lint>
-                """
+                """,
             )
-            .indented()
+            .indented(),
         )
         .dependsOn(lib)
         .name("app")
@@ -253,7 +253,7 @@ class ApiDetectorProvisionalTest : AbstractCheckTest() {
         JavaPerformanceDetector.USE_VALUE_OF,
         HardcodedValuesDetector.ISSUE,
         ApiDetector.UNSUPPORTED,
-        SdCardDetector.ISSUE
+        SdCardDetector.ISSUE,
       )
       // TODO: Try setting lint.xml file above library and make sure it's
       // not inherited  "../lint.xml" for one of the issues that

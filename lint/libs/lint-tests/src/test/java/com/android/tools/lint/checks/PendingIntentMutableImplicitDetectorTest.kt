@@ -66,7 +66,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -215,7 +215,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -404,7 +404,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -639,7 +639,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -740,7 +740,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
             """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -830,7 +830,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
             """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -1030,7 +1030,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
             """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -1101,7 +1101,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
             """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -1172,7 +1172,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
             """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -1282,7 +1282,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -1390,7 +1390,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -1824,7 +1824,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -1879,7 +1879,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -1958,7 +1958,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -2105,7 +2105,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -2252,7 +2252,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -2311,7 +2311,7 @@ class PendingIntentMutableImplicitDetectorTest : AbstractCheckTest() {
               }
               """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()

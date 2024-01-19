@@ -37,7 +37,7 @@ class TileServiceActivityDetectorTest : AbstractCheckTest() {
               }
 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -68,7 +68,7 @@ class TileServiceActivityDetectorTest : AbstractCheckTest() {
               }
 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

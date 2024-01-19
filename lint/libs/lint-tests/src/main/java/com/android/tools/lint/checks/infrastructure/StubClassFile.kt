@@ -115,7 +115,7 @@ internal open class StubClassFile(
   /** The test source files to be stubbed */
   val stubSources: List<TestFile>,
   /** Any library-only (needed for compilation, but not to be packaged) dependencies */
-  val compileOnly: List<TestFile>
+  val compileOnly: List<TestFile>,
 ) : TestFile(), BytecodeTestFile {
   var task: TestLintTask? = null
 
@@ -188,7 +188,7 @@ internal open class StubClassFile(
         parse(
           temporaryFolder = folder,
           sdkHome = task?.sdkHome,
-          testFiles = (stubSources + compileOnly).toTypedArray()
+          testFiles = (stubSources + compileOnly).toTypedArray(),
         )
       try {
         val filtered =
@@ -324,7 +324,7 @@ internal open class StubClassFile(
                     "this$1",
                     "L${containingClass.internalName()};",
                     null,
-                    null
+                    null,
                   )
                 outerClassFieldVisitor.visitEnd()
                 classModifierList?.hasModifierProperty(PsiModifier.STATIC) != true
@@ -340,7 +340,7 @@ internal open class StubClassFile(
               val methodSignature =
                 getGenericsSignature(
                   psiMethod,
-                  if (hasSyntheticConstructorArgument0) containingClass else null
+                  if (hasSyntheticConstructorArgument0) containingClass else null,
                 )
               val isConstructor = psiMethod.isConstructor
               val methodName = if (isConstructor) "<init>" else psiMethod.name
@@ -362,7 +362,7 @@ internal open class StubClassFile(
                   methodName,
                   description,
                   methodSignature,
-                  exceptions
+                  exceptions,
                 )
               visitAnnotations(psiMethod.modifierList, mv::visitAnnotation)
 
@@ -380,7 +380,7 @@ internal open class StubClassFile(
                   parameter.modifierList,
                   null,
                   parameterIndex,
-                  mv::visitParameterAnnotation
+                  mv::visitParameterAnnotation,
                 )
                 mv.visitParameter(parameter.name, getModifiers(parameter))
               }
@@ -393,7 +393,7 @@ internal open class StubClassFile(
               } else {
                 mv.visitTypeInsn(
                   NEW,
-                  "java/lang/UnsupportedOperationException"
+                  "java/lang/UnsupportedOperationException",
                 ) // otherwise throw unsupported exception
                 mv.visitInsn(DUP)
                 mv.visitMethodInsn(
@@ -401,7 +401,7 @@ internal open class StubClassFile(
                   "java/lang/UnsupportedOperationException",
                   "<init>",
                   "()V",
-                  false
+                  false,
                 )
                 mv.visitInsn(ATHROW)
                 mv.visitMaxs(2, 3)
@@ -419,7 +419,7 @@ internal open class StubClassFile(
                   field.name,
                   descriptor,
                   fieldSignature,
-                  if (field is PsiEnumConstant) null else field.computeConstantValue()
+                  if (field is PsiEnumConstant) null else field.computeConstantValue(),
                 )
               visitAnnotations(field.modifierList, fv::visitAnnotation)
               fv.visitEnd()
@@ -454,7 +454,7 @@ internal open class StubClassFile(
       internalName,
       null,
       "java/lang/Object",
-      null
+      null,
     )
     visitAnnotations(annotations, cw::visitAnnotation)
     cw.visitEnd()
@@ -496,7 +496,7 @@ internal open class StubClassFile(
     modifierList: PsiModifierList?,
     visit: ((String, Boolean) -> AnnotationVisitor)? = null,
     index: Int = -1,
-    parameterVisit: ((Int, String, Boolean) -> AnnotationVisitor)? = null
+    parameterVisit: ((Int, String, Boolean) -> AnnotationVisitor)? = null,
   ) {
     modifierList ?: return
     visitAnnotations(modifierList.annotations, visit, index, parameterVisit)
@@ -506,7 +506,7 @@ internal open class StubClassFile(
     annotations: Array<PsiAnnotation>,
     visit: ((String, Boolean) -> AnnotationVisitor)? = null,
     index: Int = -1,
-    parameterVisit: ((Int, String, Boolean) -> AnnotationVisitor)? = null
+    parameterVisit: ((Int, String, Boolean) -> AnnotationVisitor)? = null,
   ) {
     for (annotation in annotations) {
       visitAnnotation(annotation, visit, index, parameterVisit)
@@ -517,7 +517,7 @@ internal open class StubClassFile(
     annotation: PsiAnnotation,
     visit: ((String, Boolean) -> AnnotationVisitor)?,
     index: Int,
-    parameterVisit: ((Int, String, Boolean) -> AnnotationVisitor)?
+    parameterVisit: ((Int, String, Boolean) -> AnnotationVisitor)?,
   ) {
     val internalName = annotation.internalName() ?: return
     val annotationType = annotation.toUElement()?.tryResolve() as? PsiClass
@@ -556,7 +556,7 @@ internal open class StubClassFile(
   private fun writeAttribute(
     attribute: PsiNameValuePair,
     visitor: AnnotationVisitor,
-    annotationType: PsiClass?
+    annotationType: PsiClass?,
   ) {
     val name = attribute.name ?: ATTR_VALUE
     val element = attribute.value
@@ -575,7 +575,7 @@ internal open class StubClassFile(
     name: String?,
     value: PsiElement?,
     visitor: AnnotationVisitor,
-    type: PsiType?
+    type: PsiType?,
   ) {
     if (value is PsiReference) {
       val resolved = value.resolve() ?: return
@@ -763,7 +763,7 @@ internal open class StubClassFile(
     private fun appendMethodTypeSignature(
       method: PsiMethod,
       signature: StringBuilder,
-      instanceOuterClass: PsiClass?
+      instanceOuterClass: PsiClass?,
     ) {
       signature.append('(')
       if (instanceOuterClass != null) {
@@ -795,7 +795,7 @@ internal open class StubClassFile(
 
     private fun appendFormalTypeParameters(
       typeParameters: Array<PsiTypeParameter>,
-      signature: StringBuilder
+      signature: StringBuilder,
     ) {
       if (typeParameters.isEmpty()) {
         return

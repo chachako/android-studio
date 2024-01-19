@@ -232,7 +232,7 @@ class ResourceCycleDetector : ResourceXmlDetector() {
             element,
             ResourceType.COLOR,
             currentColor,
-            color.substring(COLOR_RESOURCE_PREFIX.length)
+            color.substring(COLOR_RESOURCE_PREFIX.length),
           )
         }
       } else if (folderType == ResourceFolderType.DRAWABLE) {
@@ -244,7 +244,7 @@ class ResourceCycleDetector : ResourceXmlDetector() {
             element,
             ResourceType.DRAWABLE,
             currentColor,
-            drawable.substring(DRAWABLE_PREFIX.length)
+            drawable.substring(DRAWABLE_PREFIX.length),
           )
         }
       }
@@ -267,7 +267,7 @@ class ResourceCycleDetector : ResourceXmlDetector() {
               context.getLocation(parentNode),
               "Potential cycle: `$name` is the implied parent of `${
                             parent.substring(STYLE_RESOURCE_PREFIX.length)}` and " +
-                "this defines the opposite"
+                "this defines the opposite",
             )
           }
           // Don't record this reference; we don't want to double report this
@@ -283,7 +283,7 @@ class ResourceCycleDetector : ResourceXmlDetector() {
               CYCLE,
               parentNode,
               context.getLocation(parentNode),
-              "Invalid parent reference: expected a @style"
+              "Invalid parent reference: expected a @style",
             )
           }
         }
@@ -423,7 +423,7 @@ class ResourceCycleDetector : ResourceXmlDetector() {
             String.format(
               "%1\$s Resource definition cycle: %2\$s",
               type.displayName,
-              Joiner.on(" => ").join(chain)
+              Joiner.on(" => ").join(chain),
             )
 
           context.report(CYCLE, location, message)
@@ -487,7 +487,7 @@ class ResourceCycleDetector : ResourceXmlDetector() {
     node: Node,
     type: ResourceType,
     from: String,
-    to: String
+    to: String,
   ) {
     if (from == to) {
       // Report immediately; don't record
@@ -503,7 +503,7 @@ class ResourceCycleDetector : ResourceXmlDetector() {
                         ResourceType.STYLE -> "extend"
                         else -> "reference"
                     }
-                    } itself"
+                    } itself",
         )
       }
     } else if (mReferences != null) {
@@ -595,7 +595,7 @@ class ResourceCycleDetector : ResourceXmlDetector() {
     map: Multimap<String, String>,
     from: String,
     visiting: MutableSet<String>,
-    visited: MutableSet<String>
+    visited: MutableSet<String>,
   ): MutableList<String>? {
     visiting.add(from)
     visited.add(from)
@@ -641,7 +641,7 @@ class ResourceCycleDetector : ResourceXmlDetector() {
         category = Category.CORRECTNESS,
         priority = 8,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Parent cycles. */
@@ -659,7 +659,7 @@ class ResourceCycleDetector : ResourceXmlDetector() {
         category = Category.CORRECTNESS,
         priority = 8,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

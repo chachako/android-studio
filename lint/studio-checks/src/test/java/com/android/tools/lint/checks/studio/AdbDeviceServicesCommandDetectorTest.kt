@@ -53,7 +53,7 @@ class AdbDeviceServicesCommandDetectorTest {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(AdbDeviceServicesCommandDetector.ISSUE)
       .run()
@@ -82,7 +82,7 @@ class AdbDeviceServicesCommandDetectorTest {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(AdbDeviceServicesCommandDetector.ISSUE)
       .run()
@@ -111,7 +111,7 @@ class AdbDeviceServicesCommandDetectorTest {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(AdbDeviceServicesCommandDetector.ISSUE)
       .run()
@@ -149,7 +149,7 @@ class AdbDeviceServicesCommandDetectorTest {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(AdbDeviceServicesCommandDetector.ISSUE)
       .run()
@@ -175,7 +175,7 @@ class AdbDeviceServicesCommandDetectorTest {
                   }
               """
           )
-          .indented()
+          .indented(),
       )
       .issues(AdbDeviceServicesCommandDetector.ISSUE)
       .run()

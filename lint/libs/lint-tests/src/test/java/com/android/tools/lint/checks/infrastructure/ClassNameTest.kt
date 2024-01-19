@@ -53,7 +53,7 @@ class ClassNameTest {
           " * extends the public API\n" +
           " */\n" +
           "public class ApiCallTest3 extends Intermediate {}"
-      )
+      ),
     )
   }
 
@@ -70,7 +70,7 @@ class ClassNameTest {
             "inline fun <reified T> Context.systemService1() = getSystemService(T::class.java)\n" +
             "inline fun Context.systemService2() = getSystemService(String::class.java)"
         )
-        .className
+        .className,
     )
   }
 
@@ -79,11 +79,11 @@ class ClassNameTest {
     // https://groups.google.com/g/lint-dev/c/MF1KJP4hijo/m/3QkHST3IAAAJ
     assertEquals(
       "com.test.classes.test",
-      getPackage("package com.test.classes.test; class Foo { }")
+      getPackage("package com.test.classes.test; class Foo { }"),
     )
     assertEquals(
       "com.test.objects.test",
-      getPackage("package com.test.objects.test; class Foo { }")
+      getPackage("package com.test.objects.test; class Foo { }"),
     )
     assertEquals("Foo", getClassName("package com.test.objects.test; class Foo { }"))
   }
@@ -101,7 +101,7 @@ class ClassNameTest {
                 }
                 """
           .trimIndent()
-      )
+      ),
     )
     assertEquals(
       "NavigationView",
@@ -113,7 +113,7 @@ class ClassNameTest {
                 }
                 """
           .trimIndent()
-      )
+      ),
     )
   }
 
@@ -135,7 +135,7 @@ class ClassNameTest {
         @interface Anno {
             char value();
         }"""
-      )
+      ),
     )
   }
 
@@ -160,7 +160,7 @@ class ClassNameTest {
           "    }\n" +
           "\n" +
           "}\n"
-      )
+      ),
     )
   }
 
@@ -177,10 +177,10 @@ class ClassNameTest {
                 /** Comment */
                 // Line comment
                 public class MyClass { String s = "/* This comment is \"in\" a string */" }""",
-          DOT_JAVA
+          DOT_JAVA,
         )
         .trimIndent()
-        .trim()
+        .trim(),
     )
   }
 
@@ -201,10 +201,10 @@ class ClassNameTest {
                 /* /* */ fun wrong() { } */
                 fun test2() { }
                 """,
-          DOT_KT
+          DOT_KT,
         )
         .trimIndent()
-        .trim()
+        .trim(),
     )
   }
 

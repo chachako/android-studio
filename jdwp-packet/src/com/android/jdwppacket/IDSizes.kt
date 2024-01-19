@@ -22,7 +22,7 @@ class IDSizes(
   val methodIDSize: Int = 8,
   val objectIDSize: Int = 8,
   val referenceTypeIDSize: Int = 8,
-  val frameIDSize: Int = 8
+  val frameIDSize: Int = 8,
 ) {
 
   constructor(size: Int) : this(size, size, size, size, size)
@@ -34,6 +34,6 @@ class IDSizes(
     idSizes.methodIDSize,
     idSizes.objectIDSize,
     idSizes.referenceTypeIDSize,
-    idSizes.frameIDSize
+    idSizes.frameIDSize,
   )
 }

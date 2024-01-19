@@ -70,7 +70,7 @@ class ItemDecoratorDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

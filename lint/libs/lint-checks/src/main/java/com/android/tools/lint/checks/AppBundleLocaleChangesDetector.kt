@@ -101,7 +101,7 @@ class AppBundleLocaleChangesDetector : Detector(), SourceCodeScanner, GradleScan
   override fun visitReference(
     context: JavaContext,
     reference: UReferenceExpression,
-    referenced: PsiElement
+    referenced: PsiElement,
   ) {
     if (
       localeChangeLocation == null &&
@@ -143,7 +143,7 @@ class AppBundleLocaleChangesDetector : Detector(), SourceCodeScanner, GradleScan
     parentParent: String?,
     propertyCookie: Any,
     valueCookie: Any,
-    statementCookie: Any
+    statementCookie: Any,
   ) {
     if (
       property == "enableSplit" &&
@@ -162,7 +162,7 @@ class AppBundleLocaleChangesDetector : Detector(), SourceCodeScanner, GradleScan
           context,
           localeChangeLocation,
           playCoreLanguageRequestFound = playCoreLanguageRequestFound,
-          bundleLanguageSplittingDisabled = bundleLanguageSplittingDisabled
+          bundleLanguageSplittingDisabled = bundleLanguageSplittingDisabled,
         )
       }
     } else {
@@ -187,7 +187,7 @@ class AppBundleLocaleChangesDetector : Detector(), SourceCodeScanner, GradleScan
           getLocation(KEY_LOCALE_CHANGE_LOCATION),
           playCoreLanguageRequestFound = getBoolean(KEY_PLAYCORE_LANGUAGE_REQUEST_FOUND) ?: false,
           bundleLanguageSplittingDisabled =
-            getBoolean(KEY_BUNDLE_LANGUAGE_SPLITTING_DISABLED) ?: false
+            getBoolean(KEY_BUNDLE_LANGUAGE_SPLITTING_DISABLED) ?: false,
         )
       }
     }
@@ -197,7 +197,7 @@ class AppBundleLocaleChangesDetector : Detector(), SourceCodeScanner, GradleScan
     context: Context,
     localeChangeLocation: Location?,
     playCoreLanguageRequestFound: Boolean,
-    bundleLanguageSplittingDisabled: Boolean
+    bundleLanguageSplittingDisabled: Boolean,
   ) {
     if (
       localeChangeLocation != null &&
@@ -234,10 +234,10 @@ class AppBundleLocaleChangesDetector : Detector(), SourceCodeScanner, GradleScan
         implementation =
           Implementation(
             AppBundleLocaleChangesDetector::class.java,
-            EnumSet.of(Scope.JAVA_FILE, Scope.GRADLE_FILE)
+            EnumSet.of(Scope.JAVA_FILE, Scope.GRADLE_FILE),
           ),
         moreInfo =
-          "https://developer.android.com/guide/app-bundle/configure-base#handling_language_changes"
+          "https://developer.android.com/guide/app-bundle/configure-base#handling_language_changes",
       )
 
     private const val REF_SETLOCALE = "setLocale"

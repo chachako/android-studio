@@ -57,10 +57,10 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
                         ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts);
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(expected)
@@ -102,10 +102,10 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
                         ShortcutManagerCompat.addDynamicShortcuts(context, shortcuts);
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(expected)
@@ -137,10 +137,10 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
                         ShortcutManagerCompat.pushDynamicShortcut(shortuctInfoCompat);
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expectClean()
@@ -172,10 +172,10 @@ class ShortcutUsageDetectorTest : AbstractCheckTest() {
                         ShortcutManagerCompat.reportShortcutUsed(context, shortuctInfoCompat.getId());
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expectClean()

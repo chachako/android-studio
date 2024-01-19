@@ -92,7 +92,7 @@ class ForbiddenStudioCallDetectorTest {
                     }
                     """
           )
-          .indented(),
+          .indented()
       )
       .issues(ForbiddenStudioCallDetector.FILES_COPY)
       .run()
@@ -280,7 +280,7 @@ class ForbiddenStudioCallDetectorTest {
 
                 inline fun <reified T : Any> Any?.safeAs(): T?
 
-                """
+                """,
       )
       .within("src")
 }

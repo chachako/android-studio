@@ -55,7 +55,7 @@ class ParenthesisTestMode(private val includeUnlikely: Boolean = false) :
   UastSourceTransformationTestMode(
     description = "Extra parentheses added",
     "TestMode.PARENTHESIZED",
-    "parentheses"
+    "parentheses",
   ) {
   override val diffExplanation: String =
     // first line shorter: expecting to prefix that line with
@@ -94,7 +94,7 @@ class ParenthesisTestMode(private val includeUnlikely: Boolean = false) :
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
     val edits = mutableListOf<Edit>()
     root.acceptSourceFile(

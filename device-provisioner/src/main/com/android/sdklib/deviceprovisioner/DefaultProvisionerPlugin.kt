@@ -66,7 +66,7 @@ class DefaultProvisionerPlugin(val scope: CoroutineScope, private val defaultIco
     val handle =
       DefaultDeviceHandle.create(
         scope.createChildScope(isSupervisor = true),
-        Connected(deviceProperties, device)
+        Connected(deviceProperties, device),
       )
 
     _devices.update { it + handle }
@@ -104,7 +104,7 @@ class DefaultProvisionerPlugin(val scope: CoroutineScope, private val defaultIco
                   flowOf(baseState.copy(isReady = false, status = deviceState.displayString()))
               }
             }
-            .stateIn(scope)
+            .stateIn(scope),
         )
     }
 
@@ -112,7 +112,7 @@ class DefaultProvisionerPlugin(val scope: CoroutineScope, private val defaultIco
       DeviceId(
         PLUGIN_ID,
         false,
-        "serial=${state.properties.wearPairingId!!};connection=${state.properties.deviceInfoProto.connectionId}"
+        "serial=${state.properties.wearPairingId!!};connection=${state.properties.deviceInfoProto.connectionId}",
       )
   }
 }
@@ -121,5 +121,5 @@ private fun DeviceState.Connected.applyBootStatus(bootStatus: BootStatus) =
   copy(
     isTransitioning = !bootStatus.isBooted,
     isReady = bootStatus.isBooted,
-    status = if (bootStatus.isBooted) status else "Booting"
+    status = if (bootStatus.isBooted) status else "Booting",
   )

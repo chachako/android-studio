@@ -66,7 +66,7 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
         platforms = STUDIO_PLATFORMS,
         implementation = IMPLEMENTATION,
         //noinspection LintImplUnexpectedDomain
-        moreInfo = "https://shipilev.net/jvm/anatomy-quarks/10-string-intern/"
+        moreInfo = "https://shipilev.net/jvm/anatomy-quarks/10-string-intern/",
       )
 
     @JvmField
@@ -85,7 +85,7 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
         implementation = IMPLEMENTATION,
-        moreInfo = "https://issuetracker.google.com/182063560"
+        moreInfo = "https://issuetracker.google.com/182063560",
       )
 
     @JvmField
@@ -103,7 +103,7 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
         enabledByDefault = false,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -120,7 +120,7 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
             ADD_TO_STDLIB_USAGE,
             node,
             context.getCallLocation(node, includeReceiver = false, includeArguments = true),
-            "Avoid using methods from the unstable `addToStdlib` package"
+            "Avoid using methods from the unstable `addToStdlib` package",
           )
         }
       }
@@ -136,7 +136,7 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
         INTERN,
         node,
         context.getCallLocation(node, includeReceiver = false, includeArguments = true),
-        "Do not intern strings; if reusing strings is truly necessary build a local cache"
+        "Do not intern strings; if reusing strings is truly necessary build a local cache",
       )
     }
     // Files#copy
@@ -152,7 +152,7 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
         node,
         context.getCallLocation(node, includeReceiver = false, includeArguments = true),
         "Do not use `java.nio.file.Files.copy(Path, Path)`. " +
-          "Instead, use `FileUtils.copyFile(Path, Path)` or Kotlin's `File#copyTo(File)`"
+          "Instead, use `FileUtils.copyFile(Path, Path)` or Kotlin's `File#copyTo(File)`",
       )
     }
 
@@ -178,7 +178,7 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
         node,
         context.getCallLocation(node, includeReceiver = false, includeArguments = true),
         "Do not use `Mockito.when` from Kotlin; use `MocktioKt.whenever` instead",
-        fix
+        fix,
       )
     }
   }

@@ -53,7 +53,7 @@ const val VC_VERSIONS = "versions"
  */
 fun getLibraryFromTomlEntry(
   versions: LintTomlMapValue?,
-  library: LintTomlValue
+  library: LintTomlValue,
 ): Pair<String, LintTomlValue>? {
   if (library is LintTomlLiteralValue) {
     val coordinate = library.getActualValue()?.toString()?.trim() ?: return null
@@ -77,7 +77,7 @@ fun getLibraryFromTomlEntry(
 
 fun getPluginFromTomlEntry(
   versions: LintTomlMapValue?,
-  library: LintTomlValue
+  library: LintTomlValue,
 ): Pair<String, LintTomlValue>? {
   if (library is LintTomlLiteralValue) {
     val coordinate = library.getActualValue()?.toString()?.trim() ?: return null
@@ -190,7 +190,7 @@ fun createMoveToTomlFix(
         context,
         valueCookie,
         versionVar,
-        includeVersionInKey = true
+        includeVersionInKey = true,
       )
     // (2) Change this gradle dependency reference to instead point to the version catalog
     val key = artifactLibrary.getKey()!!
@@ -202,7 +202,7 @@ fun createMoveToTomlFix(
         context,
         valueCookie,
         libraryVersion = artifactVersion,
-        safe = false
+        safe = false,
       )
     val fix = LintFix.create().alternatives(addNew, switchToVersion)
     val artifact = "${dependency.group}:${dependency.name}"
@@ -234,7 +234,7 @@ fun createMoveToTomlFix(
               matchExistingVar,
               allowExistingVersionVar = true,
               overrideMessage =
-                "Replace with new library catalog declaration, reusing version variable $matchExistingVar"
+                "Replace with new library catalog declaration, reusing version variable $matchExistingVar",
             )
           } else {
             null
@@ -249,8 +249,8 @@ fun createMoveToTomlFix(
             versionVar,
             true,
             autoFix = true,
-            independent = false
-          ) ?: return null
+            independent = false,
+          ) ?: return null,
         )
     return null to fix
   } else {
@@ -273,7 +273,7 @@ fun createMoveToTomlFix(
             allowExistingVersionVar = true,
             overrideMessage =
               "Replace with new library catalog declaration, reusing version variable $versionVar (version=$existingVersion)",
-            autoFix = false
+            autoFix = false,
           ),
           createChangeVersionFix(richVersionIdentifier, existingVersionNode),
           createAddNewCatalogLibrary(
@@ -284,7 +284,7 @@ fun createMoveToTomlFix(
             context,
             valueCookie,
             versionVar,
-            allowExistingVersionVar = false
+            allowExistingVersionVar = false,
           ),
         )
     return null to fix
@@ -300,7 +300,7 @@ fun createMoveToTomlFix(
 private fun findExistingVariable(
   dependency: Dependency,
   versions: LintTomlMapValue?,
-  libraries: LintTomlMapValue?
+  libraries: LintTomlMapValue?,
 ): Map.Entry<String, LintTomlValue>? {
   versions ?: return null
   libraries ?: return null
@@ -368,7 +368,7 @@ private fun createAddNewCatalogLibrary(
   includeVersionInKey: Boolean = false,
   overrideMessage: String? = null,
   autoFix: Boolean = true,
-  independent: Boolean = autoFix
+  independent: Boolean = autoFix,
 ): LintFix? {
   // TODO: Be smarter about version variables:
   //   (1) use the same naming convention
@@ -379,7 +379,7 @@ private fun createAddNewCatalogLibrary(
       dependency,
       versionsMap?.getMappedValues(),
       versionVar,
-      allowExistingVersionVar
+      allowExistingVersionVar,
     )
   val libraryVariable =
     pickLibraryVariableName(dependency, librariesMap.getMappedValues(), includeVersionInKey)
@@ -402,7 +402,7 @@ private fun createAddNewCatalogLibrary(
       libraryVariable,
       dependency,
       usedVariable,
-      document
+      document,
     ) ?: return null
   val gradleFix =
     createReplaceWithLibraryReferenceFix(document, context, valueCookie, libraryVariable, true)
@@ -415,7 +415,7 @@ private fun createAddNewCatalogLibrary(
       // Insert library declaration
       insertLibraryFix,
       // Update build.gradle to link to it
-      gradleFix
+      gradleFix,
     )
     .autoFix(autoFix, independent)
 }
@@ -431,7 +431,7 @@ private fun createSwitchToLibraryFix(
   context: GradleContext,
   valueCookie: Any,
   libraryVersion: Version? = null,
-  safe: Boolean
+  safe: Boolean,
 ): LintFix.ReplaceString? {
   val variableName = library.getFullKey()?.removePrefix("libraries.") ?: return null
   return createReplaceWithLibraryReferenceFix(
@@ -440,7 +440,7 @@ private fun createSwitchToLibraryFix(
     valueCookie,
     variableName,
     safe,
-    "Replace with existing version catalog reference `$key`${libraryVersion?.let { " (version $it)"} ?: ""}"
+    "Replace with existing version catalog reference `$key`${libraryVersion?.let { " (version $it)"} ?: ""}",
   )
 }
 
@@ -450,7 +450,7 @@ private fun createReplaceWithLibraryReferenceFix(
   valueCookie: Any,
   libraryVariable: String,
   safe: Boolean,
-  name: String? = null
+  name: String? = null,
 ): LintFix.ReplaceString {
   val catalogName = getCatalogName(document)
   // https://docs.gradle.org/current/userguide/platforms.html#sub:mapping-aliases-to-accessors
@@ -554,7 +554,7 @@ private fun createAddVersionFix(
   source: CharSequence,
   document: LintTomlDocument,
   versionVariable: String,
-  dependency: Dependency
+  dependency: Dependency,
 ): LintFix? {
   val versionIdentifier = dependency.version?.toIdentifier() ?: return null
   val separator = if (spaceAroundEquals(versionsMap)) " = " else "="
@@ -608,7 +608,7 @@ private fun createInsertLibraryFix(
   libraryVariable: String,
   dependency: Dependency,
   versionVariable: String?,
-  document: LintTomlDocument
+  document: LintTomlDocument,
 ): LintFix? {
   val before = getBeforeIfAlphabeticOrder(librariesMap, libraryVariable)
   var libraryInsertOffset: Int =
@@ -704,7 +704,7 @@ private fun spaceAroundEquals(versionsMap: LintTomlMapValue?): Boolean {
 fun pickLibraryVariableName(
   dependency: Dependency,
   libraries: Map<String, LintTomlValue>,
-  includeVersionInKey: Boolean
+  includeVersionInKey: Boolean,
 ): String {
   val reserved = TreeSet(String.CASE_INSENSITIVE_ORDER)
   for ((key, _) in libraries) {
@@ -744,7 +744,7 @@ fun pickVersionVariableName(
   dependency: Dependency,
   versionsMap: Map<String, LintTomlValue>?,
   versionVar: String? = null,
-  allowExistingVersionVar: Boolean = false
+  allowExistingVersionVar: Boolean = false,
 ): String {
   if (allowExistingVersionVar && versionVar != null) {
     return versionVar

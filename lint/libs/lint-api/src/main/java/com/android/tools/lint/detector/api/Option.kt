@@ -34,7 +34,7 @@ sealed class Option(
   private val description: String,
 
   /** Optional longer explanation of the option, formatted as [TextFormat.RAW]. */
-  private val explanation: String? = null
+  private val explanation: String? = null,
 ) {
   /** Looks up the configured value for this option */
   abstract fun getValue(configuration: Configuration): Any?
@@ -133,7 +133,7 @@ sealed class Option(
     fun describe(
       options: List<Option>,
       format: TextFormat = TextFormat.RAW,
-      includeExample: Boolean = true
+      includeExample: Boolean = true,
     ): String {
       if (options.isNotEmpty()) {
         val sb = StringBuilder()
@@ -161,7 +161,7 @@ class StringOption(
   val defaultValue: String? = null,
 
   /** Longer explanation. See [Option.explanation] */
-  explanation: String? = null
+  explanation: String? = null,
 ) : Option(name, description, explanation) {
   /** Looks up the configured value for this option in the given configuration. */
   override fun getValue(configuration: Configuration): String? {
@@ -189,7 +189,7 @@ class BooleanOption(
   var defaultValue: Boolean = false,
 
   /** Longer explanation. See [Option.explanation] */
-  explanation: String? = null
+  explanation: String? = null,
 ) : Option(name, description, explanation) {
   override fun getValue(configuration: Configuration): Boolean {
     ensureRegistered()
@@ -224,7 +224,7 @@ class IntOption(
   val min: Int = Integer.MIN_VALUE,
 
   /** Maximum allowed value, exclusive */
-  val max: Int = Integer.MAX_VALUE
+  val max: Int = Integer.MAX_VALUE,
 ) : Option(name, description, explanation) {
   override fun getValue(configuration: Configuration): Int {
     ensureRegistered()
@@ -269,7 +269,7 @@ class FloatOption(
   val min: Float = Float.MIN_VALUE,
 
   /** Maximum allowed value, exclusive */
-  val max: Float = Float.MAX_VALUE
+  val max: Float = Float.MAX_VALUE,
 ) : Option(name, description, explanation) {
   override fun getValue(configuration: Configuration): Float {
     ensureRegistered()
@@ -308,7 +308,7 @@ class FileOption(
   val defaultValue: File? = null,
 
   /** Longer explanation. See [Option.explanation] */
-  explanation: String? = null
+  explanation: String? = null,
 ) : Option(name, description, explanation) {
   override fun getValue(configuration: Configuration): File? {
     ensureRegistered()

@@ -33,7 +33,7 @@ class ReporterTest : TestCase() {
     assertEquals("a/b/c", encodeUrl("a\\b\\c"))
     assertEquals(
       "a/b/c/%24%26%2B%2C%3A%3B%3D%3F%40/foo+bar%25/d",
-      encodeUrl("a/b/c/$&+,:;=?@/foo bar%/d")
+      encodeUrl("a/b/c/$&+,:;=?@/foo bar%/d"),
     )
     assertEquals("a/%28b%29/d", encodeUrl("a/(b)/d"))
     assertEquals("a/b+c/d", encodeUrl("a/b c/d")) // + or %20
@@ -92,9 +92,7 @@ class ReporterTest : TestCase() {
     }
   }
 
-  private fun findField(
-    issue: Issue,
-  ): Field? {
+  private fun findField(issue: Issue): Field? {
     val id = issue.id
     val clz: Class<*> = issue.implementation.detectorClass
     findField(id, clz)?.let {

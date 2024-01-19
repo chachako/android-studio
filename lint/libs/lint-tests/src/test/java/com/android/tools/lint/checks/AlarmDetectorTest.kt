@@ -51,7 +51,7 @@ class AlarmDetectorTest : AbstractCheckTest() {
                             public static final long MY_INTERVAL = 1000L;
                         }
                     }
-                    """
+                    """,
           )
           .indented()
       )
@@ -145,7 +145,7 @@ class AlarmDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -185,7 +185,7 @@ class AlarmDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -216,7 +216,7 @@ class AlarmDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -247,7 +247,7 @@ class AlarmDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

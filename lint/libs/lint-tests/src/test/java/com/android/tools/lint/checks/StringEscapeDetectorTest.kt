@@ -74,7 +74,7 @@ class StringEscapeDetectorTest : AbstractCheckTest() {
                         <item quantity="other">%d piosenek.</item>
                     </plurals>
                     </resources>
-                    """
+                    """,
           )
           .indented()
       )

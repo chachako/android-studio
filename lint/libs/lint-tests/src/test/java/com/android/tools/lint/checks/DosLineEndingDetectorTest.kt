@@ -34,7 +34,7 @@ class DosLineEndingDetectorTest : AbstractCheckTest() {
             "XLlWQvcpPQa5aiJNsviWPDtnwmZ6JtbMqhdmbqEeqGFdiRZY6boDj5Z/BzXS" +
             "h+YXMtulSbrg5QVvfCUclu/fpQYPXa2c5Z9SG+Xeo1V00R+cp++IgqkE+x7/" +
             "46/omdQGzXGkShzQGPfgztss5p4mOz8B2b2KZyUeRSanlSSlfD51FO+BbabY" +
-            "/QEAAA=="
+            "/QEAAA==",
         )
       )
       .run()
@@ -59,7 +59,7 @@ class DosLineEndingDetectorTest : AbstractCheckTest() {
             "1aJX2g8SwruMmOSiiWJX5jH72XubNt0TsXgWvbZThHakjo0SA7A2bYCIjtdB" +
             "g9QbXiWn42vqnY+oxAFcb7F7Pu5fRPlQ7IoZat7wyifCcV7+HmWMEFrtHX9d" +
             "sBHnf7TOuxhffaSPjIJVguMZ/+JPGJn0Bs35SUo8Jo7k+vxHoXUwfAfnykzx" +
-            "7mR1AHJPOncA8U2U8l6diV2bG/mzWzL8CZ0ik0FAAgAA"
+            "7mR1AHJPOncA8U2U8l6diV2bG/mzWzL8CZ0ik0FAAgAA",
         )
       )
       .run()
@@ -97,7 +97,7 @@ class DosLineEndingDetectorTest : AbstractCheckTest() {
                         android:text="Button" />
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )

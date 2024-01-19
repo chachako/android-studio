@@ -73,7 +73,7 @@ import org.xml.sax.SAXException
 abstract class LintFixPerformer(
   private val client: LintClient,
   /** Should applied fixes be limited to those marked as safe to be applied automatically? */
-  private val requireAutoFixable: Boolean = false
+  private val requireAutoFixable: Boolean = false,
 ) {
   abstract fun getSourceText(file: File): CharSequence
 
@@ -135,7 +135,7 @@ abstract class LintFixPerformer(
     fileProvider: FileProvider,
     fileMap: MutableMap<File, PendingEditFile>,
     incident: Incident,
-    lintFix: LintFix
+    lintFix: LintFix,
   ) {
     if (addEdits(fileProvider, fileMap, incident, lintFix)) {
       incident.wasAutoFixed = true
@@ -151,7 +151,7 @@ abstract class LintFixPerformer(
   fun registerFixes(
     incident: Incident,
     fixes: List<LintFix>,
-    fileProvider: FileProvider = createFileProvider()
+    fileProvider: FileProvider = createFileProvider(),
   ): List<PendingEditFile> {
     val fileMap = mutableMapOf<File, PendingEditFile>()
     for (fix in fixes) {
@@ -271,7 +271,7 @@ abstract class LintFixPerformer(
   protected open fun applyEdits(
     fileData: PendingEditFile,
     edits: List<PendingEdit>,
-    applier: (PendingEditFile, PendingEdit) -> Unit
+    applier: (PendingEditFile, PendingEdit) -> Unit,
   ) {
     for (edit in edits) {
       applier(fileData, edit)
@@ -281,7 +281,7 @@ abstract class LintFixPerformer(
   abstract fun applyEdits(
     fileProvider: FileProvider,
     fileData: PendingEditFile,
-    edits: List<PendingEdit>
+    edits: List<PendingEdit>,
   )
 
   fun applyEdits(
@@ -289,7 +289,7 @@ abstract class LintFixPerformer(
     files: List<PendingEditFile>,
     performEdits: (PendingEditFile, List<PendingEdit>) -> Unit = { fileData, edits ->
       applyEdits(fileProvider, fileData, edits)
-    }
+    },
   ): Boolean {
     var appliedEditCount = 0
     var editedFileCount = 0
@@ -343,12 +343,12 @@ abstract class LintFixPerformer(
   open fun printStatistics(
     editMap: MutableMap<String, Int>,
     appliedEditCount: Int,
-    editedFileCount: Int
+    editedFileCount: Int,
   ) {}
 
   private fun findApplicableFixes(
     fileProvider: FileProvider,
-    incidents: List<Incident>
+    incidents: List<Incident>,
   ): List<PendingEditFile> {
     val fileMap = mutableMapOf<File, PendingEditFile>()
     for (incident in incidents) {
@@ -399,7 +399,7 @@ abstract class LintFixPerformer(
             "Involved fixes: ${prev.fix.getDisplayName()} in [" +
             "${prev.startOffset}-${prev.endOffset}] and ${
                 fix.fix.getDisplayName()
-              } in [${fix.startOffset}-${fix.endOffset}]"
+              } in [${fix.startOffset}-${fix.endOffset}]",
         )
         return true
       }
@@ -411,7 +411,7 @@ abstract class LintFixPerformer(
   private fun isValid(
     file: PendingEditFile,
     edits: List<PendingEdit>,
-    checker: (PendingEditFile, PendingEdit) -> Boolean
+    checker: (PendingEditFile, PendingEdit) -> Boolean,
   ): Boolean {
     return edits.all { checker(file, it) }
   }
@@ -427,7 +427,7 @@ abstract class LintFixPerformer(
     fileMap: MutableMap<File, PendingEditFile>,
     incident: Incident,
     lintFix: LintFix,
-    isTopLevel: Boolean = true
+    isTopLevel: Boolean = true,
   ): Boolean {
     if (lintFix is LintFixGroup && lintFix.type == GroupType.COMPOSITE) {
       var all = true
@@ -476,13 +476,13 @@ abstract class LintFixPerformer(
     file: PendingEditFile,
     incident: Incident,
     annotateFix: AnnotateFix,
-    fixLocation: Location?
+    fixLocation: Location?,
   ): Boolean {
     val replaceFix =
       createAnnotationFix(
         annotateFix,
         annotateFix.range ?: fixLocation,
-        fileProvider.getFileContents(file)
+        fileProvider.getFileContents(file),
       )
     return addReplaceString(fileProvider, file, incident, replaceFix, fixLocation)
   }
@@ -508,7 +508,7 @@ abstract class LintFixPerformer(
     fileProvider: FileProvider,
     file: PendingEditFile,
     setFix: SetAttribute,
-    fixLocation: Location?
+    fixLocation: Location?,
   ): Boolean {
     val location = setFix.range ?: fixLocation ?: return false
     val start = location.start ?: return false
@@ -593,7 +593,7 @@ abstract class LintFixPerformer(
             // Also select value. The SetAttribute dot/mark properties are relative to
             // the value portion, not the whole attribute.
             if (setFix.point == null) -1 else prefix.length + min(point, mark),
-            if (setFix.point == null) -1 else prefix.length + max(point, mark)
+            if (setFix.point == null) -1 else prefix.length + max(point, mark),
           )
         )
         return true
@@ -630,7 +630,7 @@ abstract class LintFixPerformer(
             setFix,
             rootInsertOffset,
             rootInsertOffset,
-            "$padLeft$namespaceAttribute=\"$namespace\"$padRight"
+            "$padLeft$namespaceAttribute=\"$namespace\"$padRight",
           )
         )
       }
@@ -659,7 +659,7 @@ abstract class LintFixPerformer(
           // Also select value. The SetAttribute point/mark properties are relative to
           // the value portion, not the whole attribute.
           if (setFix.point == null) -1 else leftPart.length + min(point, mark),
-          if (setFix.point == null) -1 else leftPart.length + max(point, mark)
+          if (setFix.point == null) -1 else leftPart.length + max(point, mark),
         )
       )
 
@@ -673,7 +673,7 @@ abstract class LintFixPerformer(
     xml: String,
     element: Element,
     namespacePrefix: String,
-    attributeName: String
+    attributeName: String,
   ): Int {
     val attributes = element.attributes
 
@@ -730,7 +730,7 @@ abstract class LintFixPerformer(
     file: PendingEditFile,
     incident: Incident,
     replaceFix: ReplaceString,
-    fixLocation: Location?
+    fixLocation: Location?,
   ): Boolean {
     val contents = fileProvider.getFileContents(file)
     val oldPattern = replaceFix.oldPattern
@@ -889,7 +889,7 @@ abstract class LintFixPerformer(
           replacement,
           selectStart,
           selectEnd,
-          replaceFix.sortPriority
+          replaceFix.sortPriority,
         )
       file.edits.add(edit)
 
@@ -920,7 +920,7 @@ abstract class LintFixPerformer(
   private fun getSelectionDeltas(
     selectPattern: String?,
     source: String,
-    optional: Boolean
+    optional: Boolean,
   ): Pair<Int, Int> {
     if (selectPattern != null) {
       val pattern = selectPattern.toPattern()
@@ -946,7 +946,7 @@ abstract class LintFixPerformer(
     fileProvider: FileProvider,
     file: PendingEditFile,
     replaceFix: ReplaceString,
-    replacement: String
+    replacement: String,
   ): String {
     return replacement
   }
@@ -954,7 +954,7 @@ abstract class LintFixPerformer(
   fun computeEdits(
     incident: Incident,
     lintFix: LintFix,
-    fileProvider: FileProvider = createFileProvider()
+    fileProvider: FileProvider = createFileProvider(),
   ): List<PendingEditFile> {
     val fileMap = mutableMapOf<File, PendingEditFile>()
     registerFix(fileProvider, fileMap, incident, lintFix)
@@ -1103,7 +1103,7 @@ abstract class LintFixPerformer(
     fun createAnnotationFix(
       fix: AnnotateFix,
       location: Location?,
-      contents: String?
+      contents: String?,
     ): ReplaceString {
 
       val replaceFixBuilder = LintFix.create().replace().shortenNames().reformat(true)
@@ -1179,7 +1179,7 @@ abstract class LintFixPerformer(
             Location.create(
               range.file,
               DefaultPosition(-1, -1, offset),
-              DefaultPosition(-1, -1, max(range.end?.offset ?: -1, startOffset))
+              DefaultPosition(-1, -1, max(range.end?.offset ?: -1, startOffset)),
             )
         }
       }
@@ -1242,7 +1242,7 @@ abstract class LintFixPerformer(
       source: CharSequence,
       start: Int,
       allowCommentNesting: Boolean = true,
-      stopAtNewline: Boolean = false
+      stopAtNewline: Boolean = false,
     ): Int {
       var index = start
       val length = source.length
@@ -1465,7 +1465,7 @@ abstract class LintFixPerformer(
           "At $startOffset, delete \"${
             source?.substring(
               startOffset,
-              endOffset
+              endOffset,
             ) ?: "${endOffset - startOffset} characters"
           }\""
         isInsert() -> "At $startOffset, insert \"$replacement\""
@@ -1473,7 +1473,7 @@ abstract class LintFixPerformer(
           "At $startOffset, change \"${
             source?.substring(
               startOffset,
-              endOffset
+              endOffset,
             ) ?: "${endOffset - startOffset} characters"
           }\" to \"$replacement\""
       }

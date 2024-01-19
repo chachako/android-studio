@@ -101,7 +101,7 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -177,7 +177,7 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -247,7 +247,7 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -317,7 +317,7 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -399,7 +399,7 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -451,7 +451,7 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -520,7 +520,7 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -581,7 +581,7 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -634,7 +634,7 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -689,7 +689,7 @@ class NotificationTrampolineDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
   }
 }

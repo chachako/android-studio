@@ -50,7 +50,7 @@ class SwingWorkerDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -70,7 +70,7 @@ class SwingWorkerDetector : Detector(), SourceCodeScanner {
       ISSUE,
       node,
       context.getNameLocation(locationNode),
-      "Do not use `javax.swing.SwingWorker`, use `com.intellij.util.concurrency.SwingWorker` instead. See `go/do-not-freeze`."
+      "Do not use `javax.swing.SwingWorker`, use `com.intellij.util.concurrency.SwingWorker` instead. See `go/do-not-freeze`.",
     )
   }
 }

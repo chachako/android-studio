@@ -211,7 +211,7 @@ object TestFiles {
     bytes: ByteArray,
     indent: Int,
     indentStart: Boolean,
-    includeEmptyPrefix: Boolean
+    includeEmptyPrefix: Boolean,
   ): String {
     val base64 = toBase64gzipString(bytes)
     val indentString = StringBuilder()
@@ -239,7 +239,7 @@ object TestFiles {
     bytes: ByteArray,
     indent: Int,
     indentStart: Boolean,
-    includeQuotes: Boolean
+    includeQuotes: Boolean,
   ): String {
     val base64 = toBase64gzipString(bytes).replace('$', '＄')
     val indentString = StringBuilder()
@@ -332,7 +332,7 @@ object TestFiles {
         override fun produce(): ByteArray {
           return bytes
         }
-      }
+      },
     )
   }
 
@@ -476,7 +476,7 @@ object TestFiles {
     stubSources: List<TestFile>,
     /** Any library-only (needed for compilation, but not to be packaged) dependencies */
     compileOnly: List<TestFile> = emptyList(),
-    byteOnly: Boolean = true
+    byteOnly: Boolean = true,
   ): TestFile {
     val default =
       if (byteOnly) BytecodeTestFile.Type.BYTECODE_ONLY
@@ -503,7 +503,7 @@ object TestFiles {
     stubSources: List<TestFile>,
     /** Any library-only (needed for compilation, but not to be packaged) dependencies */
     compileOnly: List<TestFile> = emptyList(),
-    byteOnly: Boolean = true
+    byteOnly: Boolean = true,
     // TODO: Preserve artifact name, and then in test infrastructure, make sure
     // all exploded-aar files are accounted for in the dependency graph!
     // Maybe even build dependency graph here with a PomBuilder?
@@ -526,7 +526,7 @@ object TestFiles {
     artifact: String,
     /** The test source files to be stubbed */
     vararg files: TestFile,
-    byteOnly: Boolean = true
+    byteOnly: Boolean = true,
   ): TestFile {
     val default =
       if (byteOnly) BytecodeTestFile.Type.BYTECODE_ONLY
@@ -563,7 +563,7 @@ object TestFiles {
 
   private fun getCompileType(
     default: BytecodeTestFile.Type,
-    vararg sources: TestFile
+    vararg sources: TestFile,
   ): BytecodeTestFile.Type {
     for (source in sources) {
       val targetRelativePath = source.targetRelativePath

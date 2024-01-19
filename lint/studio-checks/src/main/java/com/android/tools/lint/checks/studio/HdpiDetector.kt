@@ -58,7 +58,7 @@ class HdpiDetector : Detector(), SourceCodeScanner {
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
         implementation = IMPLEMENTATION,
-        moreInfo = "https://issuetracker.google.com/132441250"
+        moreInfo = "https://issuetracker.google.com/132441250",
       )
   }
 
@@ -101,7 +101,7 @@ class HdpiDetector : Detector(), SourceCodeScanner {
       ISSUE,
       node,
       context.getNameLocation(node),
-      "Do not store `JBUI.scale` scaled results in fields; this will not work correctly on dynamic theme or font size changes"
+      "Do not store `JBUI.scale` scaled results in fields; this will not work correctly on dynamic theme or font size changes",
     )
   }
 }

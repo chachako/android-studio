@@ -103,7 +103,7 @@ class ProjectInitializerTest {
                         // Invoke a method that takes a generic type.
                         loadInBackground(mParam);
                     }
-                }"""
+                }""",
             )
             .indented(),
           java(
@@ -115,9 +115,9 @@ class ProjectInitializerTest {
                 public class Foo {
                     private String foo = "/sdcard/foo";
                 }
-                """
+                """,
             )
-            .indented()
+            .indented(),
         )
         .type(LIBRARY)
         .name("Library")
@@ -155,7 +155,7 @@ class ProjectInitializerTest {
                     <string name="string3">String 3</string>
                     <string name="string3">String 4</string>
                 </resources>
-                """
+                """,
             )
             .indented(),
           xml(
@@ -165,7 +165,7 @@ class ProjectInitializerTest {
                     <string name="string2">String 1</string>
                     <string name="string2">String 2</string>
                 </resources>
-                """
+                """,
             )
             .indented(),
           java(
@@ -174,7 +174,7 @@ class ProjectInitializerTest {
                 @SuppressWarnings({"MethodMayBeStatic", "ClassNameDiffersFromFileName"})
                 public class Test {
                   String path = "/sdcard/file";
-                }"""
+                }""",
             )
             .indented(),
           java(
@@ -183,9 +183,9 @@ class ProjectInitializerTest {
                 @SuppressWarnings({"MethodMayBeStatic", "ClassNameDiffersFromFileName"})
                 public class Test {
                   String path = "/sdcard/file";
-                }"""
+                }""",
             )
-            .indented()
+            .indented(),
         )
         .name("App")
         .dependsOn(library)
@@ -308,7 +308,7 @@ class ProjectInitializerTest {
           driver: LintDriver,
           type: LintListener.EventType,
           project: Project?,
-          context: Context?
+          context: Context?,
         ) {
           val client = driver.client
           when (type) {
@@ -391,7 +391,7 @@ class ProjectInitializerTest {
         "--text",
         "stdout",
         "--project",
-        File(root, "project.xml").path
+        File(root, "project.xml").path,
       ),
       {
         it
@@ -402,7 +402,7 @@ class ProjectInitializerTest {
       },
       listener,
       null,
-      false
+      false,
     )
 
     // Make sure we hit all our checks with the listener
@@ -457,7 +457,7 @@ class ProjectInitializerTest {
       ERRNO_SUCCESS,
       arrayOf("--project", projectXml.path),
       null,
-      null
+      null,
     )
   }
 
@@ -498,7 +498,7 @@ class ProjectInitializerTest {
       ERRNO_SUCCESS,
       arrayOf("--project", projectXml.path),
       null,
-      null
+      null,
     )
   }
 
@@ -523,7 +523,7 @@ class ProjectInitializerTest {
                             System.out.println("test");
                         }
                     }
-                    """
+                    """,
             )
             .indented(),
           java(
@@ -537,7 +537,7 @@ class ProjectInitializerTest {
                       void test(Fragment fragment) {
                         Object host = fragment.getHost(); // Requires API 23
                       }
-                    }"""
+                    }""",
             )
             .indented(),
           manifest(
@@ -560,9 +560,9 @@ class ProjectInitializerTest {
                     <string name="string2">String 1</string>
                     <string name="string2">String 2</string>
                 </resources>
-                """
+                """,
             )
-            .indented()
+            .indented(),
         )
         .createProjects(root)
     val projectDir = projects[0]
@@ -606,7 +606,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--project", descriptorFile.path),
       null,
-      null
+      null,
     )
   }
 
@@ -628,7 +628,7 @@ class ProjectInitializerTest {
                         android:minSdkVersion="15"
                         android:targetSdkVersion="29" />
 
-                </manifest>"""
+                </manifest>""",
             )
             .indented()
         )
@@ -660,7 +660,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--check", "RequiredSize", "--project", descriptorFile.path),
       null,
-      null
+      null,
     )
   }
 
@@ -684,7 +684,7 @@ class ProjectInitializerTest {
                             super.onCreate(savedInstanceState);
                         }
                     }
-                    """
+                    """,
             )
             .indented(),
           manifest(
@@ -705,10 +705,10 @@ class ProjectInitializerTest {
               """
                 <resources xmlns:tools="http://schemas.android.com/tools">
                     <string name="nam${'\ufeff'}e">Value</string>
-                </resources>"""
+                </resources>""",
             )
             .indented(),
-          bytes("res/raw/sample.txt", "a\uFEFFb".toByteArray())
+          bytes("res/raw/sample.txt", "a\uFEFFb".toByteArray()),
         )
         .createProjects(root)
     val projectDir = projects[0]
@@ -746,7 +746,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--check", "ByteOrderMark", "--project", descriptorFile.path),
       null,
-      null
+      null,
     )
   }
 
@@ -777,7 +777,7 @@ class ProjectInitializerTest {
                         <string name="string2">String 1</string>
                         <string name="string2">String 2</string>
                     </resources>
-                    """
+                    """,
             )
             .indented(),
           java(
@@ -790,9 +790,9 @@ class ProjectInitializerTest {
                             int y = R.string.my_public_string; // OK
                         }
                     }
-                    """
+                    """,
             )
-            .indented()
+            .indented(),
         )
         .createProjects(root)
     val projectDir = projects[0]
@@ -864,10 +864,10 @@ class ProjectInitializerTest {
         "--check",
         "MissingApplicationIcon,PrivateResource",
         "--project",
-        descriptorFile.path
+        descriptorFile.path,
       ),
       { it.dos2unix() },
-      null
+      null,
     )
   }
 
@@ -898,7 +898,7 @@ class ProjectInitializerTest {
 
                     }
                 }
-                """
+                """,
             )
             .indented()
         )
@@ -923,8 +923,8 @@ class ProjectInitializerTest {
               "fyR0ZzcbQrSwlSKMcm3U8+G9UG4ti5qVaW5LWW+k04Gfxci/6oYwyb1qvNi/" +
               "bcVSOmX8PSFd2YMr1ZMOvuFJvtvJD5mhh5gT/q0QxmEqamm24qXYqZKlK2kq" +
               "Z3UlbBNspapDbnSNDn/B8fwScfFBxoSZaDnQu/0CfXLTQZ8xPokYMGbnPsWw" +
-              "Xc9a18UfxkO3QyIBAAA="
-          )
+              "Xc9a18UfxkO3QyIBAAA=",
+          ),
         )
         .createFile(root)
 
@@ -961,7 +961,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--check", "ParcelCreator", "--project", descriptorFile.path),
       null,
-      null
+      null,
     )
   }
 
@@ -1005,9 +1005,9 @@ class ProjectInitializerTest {
             <src file="src/test/pkg/RequiresApiFieldTest.java" />
             </module>
             </project>
-            """
+            """,
             )
-            .indented()
+            .indented(),
         )
         .createProjects(root)
     val projectDir = projects[0]
@@ -1029,7 +1029,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--check", "NewApi", "--project", descriptorFile.path),
       { it.dos2unix() },
-      null
+      null,
     )
   }
 
@@ -1051,9 +1051,9 @@ class ProjectInitializerTest {
                     public class Test {
                         public String path = "/sdcard/my.path";
                     }
-                    """
+                    """,
               )
-              .indented()
+              .indented(),
           ),
           jar(
             "src/my2.srcjar",
@@ -1066,10 +1066,10 @@ class ProjectInitializerTest {
                     public class Test2 {
                         public String path = "/sdcard/my2.path";
                     }
-                    """
+                    """,
               )
-              .indented()
-          )
+              .indented(),
+          ),
         )
         .createProjects(root)
     val projectDir = projects[0]
@@ -1108,7 +1108,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--check", "SdCardPath", "--project", descriptorFile.path),
       null,
-      null
+      null,
     )
   }
 
@@ -1124,7 +1124,7 @@ class ProjectInitializerTest {
                     @SuppressWarnings({"MethodMayBeStatic", "ClassNameDiffersFromFileName"})
                     public class C {
                       String path = "/sdcard/file";
-                    }"""
+                    }""",
             )
             .indented()
         )
@@ -1156,7 +1156,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--project", descriptorFile.path),
       null,
-      null
+      null,
     )
   }
 
@@ -1191,7 +1191,7 @@ class ProjectInitializerTest {
                             Stream stream = collection.parallelStream(); // ERROR
                         }
                     }
-                    """
+                    """,
             )
             .indented()
         )
@@ -1229,7 +1229,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--check", "NewApi", "--project", descriptorFile.path),
       null,
-      null
+      null,
     )
   }
 
@@ -1291,9 +1291,9 @@ class ProjectInitializerTest {
                         <annotation name="androidx.annotation.UiThread"/>
                       </item>
                     </root>
-                    """
+                    """,
                   )
-                  .indented()
+                  .indented(),
               ),
               // dir annotation files
               xml(
@@ -1304,7 +1304,7 @@ class ProjectInitializerTest {
                     <annotation name="androidx.annotation.UiThread"/>
                   </item>
                 </root>
-                """
+                """,
                 )
                 .indented(),
               xml(
@@ -1322,9 +1322,9 @@ class ProjectInitializerTest {
                 <src file="src/test/pkg/Client.java" />
                 </module>
                 </project>
-            """
+            """,
                 )
-                .indented()
+                .indented(),
             )
             .name("project")
         )
@@ -1349,7 +1349,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--check", "WrongThread", "--project", descriptorFile.path),
       { it.dos2unix() },
-      null
+      null,
     )
   }
 
@@ -1403,9 +1403,9 @@ class ProjectInitializerTest {
                 <src file="src/test/pkg/Java14Test.java" />
                 </module>
                 </project>
-            """
+            """,
                 )
-                .indented()
+                .indented(),
             )
             .name("project")
         )
@@ -1428,7 +1428,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--check", "SwitchIntDef", "--project", descriptorFile.path),
       { it.dos2unix() },
-      null
+      null,
     )
   }
 
@@ -1486,7 +1486,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--project", descriptorFile.path),
       { it.dos2unix() },
-      null
+      null,
     )
   }
 
@@ -1506,7 +1506,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--project", root.path),
       { it.replace(root.path, "ROOT") },
-      null
+      null,
     )
   }
 
@@ -1635,10 +1635,10 @@ class ProjectInitializerTest {
         "--text",
         "stdout",
         "--project",
-        File(root, "project.xml").path
+        File(root, "project.xml").path,
       ),
       { it.replace(canonicalRoot, "ROOT").replace(root.path, "ROOT").dos2unix() },
-      null
+      null,
     )
 
     val newConfigFile = File(root, "default.xml")
@@ -1665,10 +1665,10 @@ class ProjectInitializerTest {
         "--text",
         "stdout",
         "--project",
-        File(root, "project.xml").path
+        File(root, "project.xml").path,
       ),
       { it.replace(canonicalRoot, "ROOT").replace(root.path, "ROOT").dos2unix() },
-      null
+      null,
     )
   }
 
@@ -1691,12 +1691,12 @@ class ProjectInitializerTest {
                     <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
                     <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="31" />
                 </manifest>
-                """
+                """,
             )
             .indented(),
           xml("res/layout/layout.xml", """
                 <merge/>
-                """).indented()
+                """,).indented(),
         )
         .createProjects(root)
     val projectDir = projects[0]
@@ -1736,10 +1736,10 @@ class ProjectInitializerTest {
         "--check",
         "RequiredSize,ManifestOrder,ContentDescription,MultipleUsesSdk",
         "--project",
-        descriptorFile.path
+        descriptorFile.path,
       ),
       null,
-      null
+      null,
     )
   }
 
@@ -1749,15 +1749,15 @@ class ProjectInitializerTest {
     assertEquals("foo.bar", findPackage("// Copyright 2021\npackage foo.bar;\n", File("Test.java")))
     assertEquals(
       "foo.bar",
-      findPackage("// package wrong; /*\npackage  foo. bar ;\n", File("Test.java"))
+      findPackage("// package wrong; /*\npackage  foo. bar ;\n", File("Test.java")),
     )
     assertEquals(
       "foo.bar",
-      findPackage("/* package wrong; */\npackage  foo .bar ;\n", File("Test.java"))
+      findPackage("/* package wrong; */\npackage  foo .bar ;\n", File("Test.java")),
     )
     assertEquals(
       "foo.bar",
-      findPackage("/* /* nested comment */ package wrong */\npackage foo.bar \n", File("x.kt"))
+      findPackage("/* /* nested comment */ package wrong */\npackage foo.bar \n", File("x.kt")),
     )
     // Regression test for 195004772
     @Language("java")
@@ -1813,7 +1813,7 @@ class ProjectInitializerTest {
       assertTrue(
         "The following files contain the buildRoot directory, " +
           "which should not happen: ${badFiles.joinToString()}",
-        badFiles.isEmpty()
+        badFiles.isEmpty(),
       )
     }
 
@@ -1842,7 +1842,7 @@ class ProjectInitializerTest {
                 <issue id="LongLogTag" severity="error" />
                 <issue id="MissingSuperCall" severity="error" />
                 <issue id="ExactAlarm" severity="error" />
-            </lint>"""
+            </lint>""",
       )
 
     // Project a:
@@ -1863,7 +1863,7 @@ class ProjectInitializerTest {
                     this.setTitle(R.string.a_string_used_in_a);
                     Log.d(TAG, "message");
                 }
-            }"""
+            }""",
     )
     createXmlFile(
       "java/com/google/a/AndroidManifest.xml",
@@ -1881,7 +1881,7 @@ class ProjectInitializerTest {
                         android:exported="false" />
                 </application>
 
-            </manifest>"""
+            </manifest>""",
     )
     createXmlFile(
       "java/com/google/a/res/values/strings.xml",
@@ -1891,7 +1891,7 @@ class ProjectInitializerTest {
                 <string name="a_string_used_in_b">a string used in b</string>
                 <string name="a_string_used_in_c">a string used in c</string>
                 <string name="a_string_unused">a string unused</string>
-            </resources>"""
+            </resources>""",
     )
     val projectA =
       createXmlFile(
@@ -1911,7 +1911,7 @@ class ProjectInitializerTest {
             <resource file="java/com/google/a/res/values/strings.xml" />
             </module>
             </project>
-            """
+            """,
       )
     File(root, "out/java/com/google/a/lint_partial_results").mkdirs()
 
@@ -1934,7 +1934,7 @@ class ProjectInitializerTest {
                     this.setTitle(R.string.b_string_used_in_b);
                     Log.d(TAG, "message");
                 }
-            }"""
+            }""",
     )
     createXmlFile(
       "java/com/google/b/AndroidManifest.xml",
@@ -1952,7 +1952,7 @@ class ProjectInitializerTest {
                         android:exported="false" />
                 </application>
 
-            </manifest>"""
+            </manifest>""",
     )
     createXmlFile(
       "java/com/google/b/res/values/strings.xml",
@@ -1961,7 +1961,7 @@ class ProjectInitializerTest {
                 <string name="b_string_used_in_b">b string used in b</string>
                 <string name="b_string_used_in_c">b string used in c</string>
                 <string name="b_string_unused">b string unused</string>
-            </resources>"""
+            </resources>""",
     )
     val projectB =
       createXmlFile(
@@ -1987,7 +1987,7 @@ class ProjectInitializerTest {
                 desugar="full"
                 partial-results-dir="out/java/com/google/a/lint_partial_results" />
             </project>
-            """
+            """,
       )
     File(root, "out/java/com/google/b/lint_partial_results").mkdirs()
 
@@ -2002,7 +2002,7 @@ class ProjectInitializerTest {
                     android:minSdkVersion="14"
                     android:targetSdkVersion="28" />
 
-            </manifest>"""
+            </manifest>""",
     )
     createXmlFile(
       "java/com/google/onlyres/res/values/strings.xml",
@@ -2010,7 +2010,7 @@ class ProjectInitializerTest {
             <resources>
                 <string name="onlyres_string_used_in_c">onlyres string used in c</string>
                 <string name="onlyres_string_unused">onlyres string unused</string>
-            </resources>"""
+            </resources>""",
     )
     val projectOnlyRes =
       createXmlFile(
@@ -2029,7 +2029,7 @@ class ProjectInitializerTest {
             <resource file="java/com/google/onlyres/res/values/strings.xml" />
             </module>
             </project>
-            """
+            """,
       )
     File(root, "out/java/com/google/onlyres/lint_partial_results").mkdirs()
 
@@ -2054,7 +2054,7 @@ class ProjectInitializerTest {
                     this.setTitle(R.string.c_string_used_in_c);
                     Log.d(TAG, "message");
                 }
-            }"""
+            }""",
     )
     createXmlFile(
       "java/com/google/c/AndroidManifest.xml",
@@ -2077,7 +2077,7 @@ class ProjectInitializerTest {
                     <category android:name="android.intent.category.LAUNCHER" />
                 </application>
 
-            </manifest>"""
+            </manifest>""",
     )
     createXmlFile(
       "java/com/google/c/res/values/strings.xml",
@@ -2085,7 +2085,7 @@ class ProjectInitializerTest {
             <resources>
                 <string name="c_string_used_in_c">c string used in c</string>
                 <string name="c_string_unused">c string unused</string>
-            </resources>"""
+            </resources>""",
     )
     createXmlFile(
       "out/java/com/google/c/AndroidManifestMerged.xml",
@@ -2114,7 +2114,7 @@ class ProjectInitializerTest {
                     <category android:name="android.intent.category.LAUNCHER" />
                 </application>
 
-            </manifest>"""
+            </manifest>""",
     )
     val projectC =
       createXmlFile(
@@ -2155,7 +2155,7 @@ class ProjectInitializerTest {
                 desugar="full"
                 partial-results-dir="out/java/com/google/onlyres/lint_partial_results" />
             </project>
-            """
+            """,
       )
     File(root, "out/java/com/google/c/lint_partial_results").mkdirs()
 
@@ -2173,10 +2173,10 @@ class ProjectInitializerTest {
         projectA.toString(),
         "--analyze-only",
         "--sdk-home",
-        TestUtils.getSdk().toString()
+        TestUtils.getSdk().toString(),
       ),
       null,
-      null
+      null,
     )
 
     MainTest.checkDriver(
@@ -2199,10 +2199,10 @@ class ProjectInitializerTest {
         projectA.toString(),
         "--report-only",
         "--sdk-home",
-        TestUtils.getSdk().toString()
+        TestUtils.getSdk().toString(),
       ),
       null,
-      null
+      null,
     )
     checkFilesDoNotContainBuildRoot(File(root, "out/java/com/google/a/lint_partial_results"))
 
@@ -2223,10 +2223,10 @@ class ProjectInitializerTest {
         projectB.toString(),
         "--analyze-only",
         "--sdk-home",
-        TestUtils.getSdk().toString()
+        TestUtils.getSdk().toString(),
       ),
       null,
-      null
+      null,
     )
 
     MainTest.checkDriver(
@@ -2252,10 +2252,10 @@ class ProjectInitializerTest {
         projectB.toString(),
         "--report-only",
         "--sdk-home",
-        TestUtils.getSdk().toString()
+        TestUtils.getSdk().toString(),
       ),
       null,
-      null
+      null,
     )
     checkFilesDoNotContainBuildRoot(File(root, "out/java/com/google/b/lint_partial_results"))
     // Delete definite issues.
@@ -2275,10 +2275,10 @@ class ProjectInitializerTest {
         projectOnlyRes.toString(),
         "--analyze-only",
         "--sdk-home",
-        TestUtils.getSdk().toString()
+        TestUtils.getSdk().toString(),
       ),
       null,
-      null
+      null,
     )
 
     MainTest.checkDriver(
@@ -2294,10 +2294,10 @@ class ProjectInitializerTest {
         projectOnlyRes.toString(),
         "--report-only",
         "--sdk-home",
-        TestUtils.getSdk().toString()
+        TestUtils.getSdk().toString(),
       ),
       null,
-      null
+      null,
     )
     checkFilesDoNotContainBuildRoot(File(root, "out/java/com/google/onlyres/lint_partial_results"))
     // Delete definite issues.
@@ -2317,10 +2317,10 @@ class ProjectInitializerTest {
         projectC.toString(),
         "--analyze-only",
         "--sdk-home",
-        TestUtils.getSdk().toString()
+        TestUtils.getSdk().toString(),
       ),
       null,
-      null
+      null,
     )
 
     MainTest.checkDriver(
@@ -2361,10 +2361,10 @@ class ProjectInitializerTest {
         projectC.toString(),
         "--report-only",
         "--sdk-home",
-        TestUtils.getSdk().toString()
+        TestUtils.getSdk().toString(),
       ),
       null,
-      null
+      null,
     )
     checkFilesDoNotContainBuildRoot(File(root, "out/java/com/google/c/lint_partial_results"))
   }
@@ -2385,7 +2385,7 @@ class ProjectInitializerTest {
                 <src file="com/google/b244342092repro/gen/com/google/b244342092repro/ToBeIgnored.java" generated="true"/>
                 </module>
                 </project>
-                """
+                """,
             )
             .indented(),
           java(
@@ -2397,7 +2397,7 @@ class ProjectInitializerTest {
                   private ToBeChecked() {
                   }
                 }
-                """
+                """,
             )
             .indented(),
           java(
@@ -2410,9 +2410,9 @@ class ProjectInitializerTest {
                   public void testFoo() {
                   }
                 }
-                """
+                """,
             )
-            .indented()
+            .indented(),
         )
         .createProjects(root)
     val descriptorFile = File(projects[0], "project.xml")
@@ -2427,7 +2427,7 @@ class ProjectInitializerTest {
       // Args
       arrayOf("--check", "IgnoreWithoutReason", "--project", descriptorFile.path),
       null,
-      null
+      null,
     )
   }
 
@@ -2444,7 +2444,7 @@ class ProjectInitializerTest {
             }
             expect fun getPlatform(): Platform
           """
-              .trimIndent()
+              .trimIndent(),
           ),
           kt(
             "src/commonMain/kotlin/pkg/Greeting.kt",
@@ -2454,7 +2454,7 @@ class ProjectInitializerTest {
                 private val platform: Platform = getPlatform()
             }
           """
-              .trimIndent()
+              .trimIndent(),
           ),
           kt(
             "src/androidMain/kotlin/pkg/Platform.kt",
@@ -2465,7 +2465,7 @@ class ProjectInitializerTest {
             }
             actual fun getPlatform(): Platform = AndroidPlatform()
           """
-              .trimIndent()
+              .trimIndent(),
           ),
           kt(
             "src/iosMain/kotlin/pkg/Platform.kt",
@@ -2477,7 +2477,7 @@ class ProjectInitializerTest {
             }
             actual fun getPlatform(): Platform = IOSPlatform()
           """
-              .trimIndent()
+              .trimIndent(),
           ),
           klib(
             "libs/SomeKlib.klib",
@@ -2543,7 +2543,7 @@ class ProjectInitializerTest {
                   interface Parcel
                 """
               )
-              .indented()
+              .indented(),
           ),
         )
         .type(LIBRARY)
@@ -2572,7 +2572,7 @@ class ProjectInitializerTest {
                   </activity>
               </application>
           </manifest>
-        """
+        """,
             )
             .indented(),
           xml(
@@ -2581,7 +2581,7 @@ class ProjectInitializerTest {
             <resources>
                 <style name="AppTheme" parent="android:Theme.Material.NoActionBar"/>
             </resources>
-          """
+          """,
             )
             .indented(),
           kt(
@@ -2636,7 +2636,7 @@ class ProjectInitializerTest {
                     GreetingView("Hello, Android!")
                 }
             }
-          """
+          """,
             )
             .indented(),
           kt(
@@ -2697,7 +2697,7 @@ class ProjectInitializerTest {
                     content = content
                 )
             }
-          """
+          """,
             )
             .indented(),
           kt(
@@ -2706,7 +2706,7 @@ class ProjectInitializerTest {
             package pkg
             expect fun getPlatform() : Platform
           """
-              .trimIndent()
+              .trimIndent(),
           ),
           kt(
             "src/main/java/pkg/android/actual.kt",
@@ -2714,7 +2714,7 @@ class ProjectInitializerTest {
             package pkg
             actual fun getPlatform() = TODO()
           """
-              .trimIndent()
+              .trimIndent(),
           ),
         )
         .name("androidApp")
@@ -2753,7 +2753,7 @@ class ProjectInitializerTest {
                 }
             }
           """
-              .trimIndent()
+              .trimIndent(),
           ),
           source(
             "iosApp/iOSApp.swift",
@@ -2769,8 +2769,8 @@ class ProjectInitializerTest {
               }
             }
           """
-              .trimIndent()
-          )
+              .trimIndent(),
+          ),
         )
         .name("iosApp")
 
@@ -2842,9 +2842,9 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
           driver: LintDriver,
           type: LintListener.EventType,
           project: Project?,
-          context: Context?
+          context: Context?,
         ) {}
-      }
+      },
     )
   }
 
@@ -2931,7 +2931,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
             }
             expect fun getPlatform(): Platform
           """
-                .trimIndent()
+                .trimIndent(),
             ),
             kt(
               "src/commonMain/kotlin/pkg/Greeting.kt",
@@ -2941,7 +2941,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
                 private val platform: Platform = getPlatform()
             }
           """
-                .trimIndent()
+                .trimIndent(),
             ),
             kt(
               "src/iosMain/kotlin/pkg/Platform.kt",
@@ -2952,7 +2952,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
             }
             actual fun getPlatform(): Platform = IOSPlatform()
           """
-                .trimIndent()
+                .trimIndent(),
             ),
           ),
           kt(
@@ -2964,7 +2964,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
             }
             actual fun getPlatform(): Platform = AndroidPlatform()
           """
-              .trimIndent()
+              .trimIndent(),
           ),
         )
         .type(LIBRARY)
@@ -2993,7 +2993,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
                   </activity>
               </application>
           </manifest>
-        """
+        """,
             )
             .indented(),
           xml(
@@ -3002,7 +3002,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
             <resources>
                 <style name="AppTheme" parent="android:Theme.Material.NoActionBar"/>
             </resources>
-          """
+          """,
             )
             .indented(),
           kt(
@@ -3057,7 +3057,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
                     GreetingView("Hello, Android!")
                 }
             }
-          """
+          """,
             )
             .indented(),
           kt(
@@ -3118,7 +3118,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
                     content = content
                 )
             }
-          """
+          """,
             )
             .indented(),
           kt(
@@ -3127,7 +3127,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
             package pkg
             expect fun getPlatform() : Platform
           """
-              .trimIndent()
+              .trimIndent(),
           ),
           kt(
             "src/main/java/pkg/android/actual.kt",
@@ -3135,7 +3135,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
             package pkg
             actual fun getPlatform() = TODO()
           """
-              .trimIndent()
+              .trimIndent(),
           ),
         )
         .name("androidApp")
@@ -3174,7 +3174,7 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
                 }
             }
           """
-              .trimIndent()
+              .trimIndent(),
           ),
           source(
             "iosApp/iOSApp.swift",
@@ -3190,8 +3190,8 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
               }
             }
           """
-              .trimIndent()
-          )
+              .trimIndent(),
+          ),
         )
         .name("iosApp")
 
@@ -3260,9 +3260,9 @@ src/main/AndroidManifest.xml:7: Warning: You must set android:targetSdkVersion t
           driver: LintDriver,
           type: LintListener.EventType,
           project: Project?,
-          context: Context?
+          context: Context?,
         ) {}
-      }
+      },
     )
   }
 

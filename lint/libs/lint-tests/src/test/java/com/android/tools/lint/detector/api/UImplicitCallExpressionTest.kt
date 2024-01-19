@@ -116,7 +116,7 @@ class UImplicitCallExpressionTest {
                 """
             .trimIndent()
             .trim(),
-          sb.toString().trim()
+          sb.toString().trim(),
         )
       }
   }
@@ -155,7 +155,7 @@ class UImplicitCallExpressionTest {
               val resolved = node.resolveOperator()
               assertEquals(
                 "operator fun get(key: Int, key2: List<CharSequence>) {}",
-                resolved?.text
+                resolved?.text,
               )
               return super.visitArrayAccessExpression(node)
             }
@@ -274,7 +274,7 @@ class UImplicitCallExpressionTest {
       context.report(
         ISSUE,
         context.getCallLocation(node, includeReceiver = false, includeArguments = false),
-        "Found overloaded function call ${node.methodName}"
+        "Found overloaded function call ${node.methodName}",
       )
     }
 
@@ -287,7 +287,7 @@ class UImplicitCallExpressionTest {
           Category.CORRECTNESS,
           5,
           Severity.ERROR,
-          Implementation(TestDispatchDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(TestDispatchDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }

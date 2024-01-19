@@ -46,7 +46,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                             android:showAsAction="always|collapseActionView"
                             android:actionViewClass="test.pkg.NotView" />
                     </menu>
-                    """
+                    """,
           )
           .indented(),
         kotlin(
@@ -63,7 +63,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                     abstract class NotView : android.app.Fragment()
                     """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -96,7 +96,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                             android:fromAlpha="0.1"
                             android:toAlpha="1.0" />
                     </transitionSet>
-                    """
+                    """,
           )
           .indented(),
         kotlin(
@@ -113,7 +113,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                     abstract class NotTransition : android.app.Fragment()
                     """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -143,7 +143,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                                     class="test.pkg.NotDrawable"/>
                             </foreground>
                         </adaptive-icon>
-                    """
+                    """,
           )
           .indented(),
         kotlin(
@@ -160,7 +160,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                     abstract class NotDrawable : android.app.Fragment()
                     """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -188,7 +188,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                         <test.pkg.MyView />
                         <test.pkg.NotView />
                     </LinearLayout>
-                    """
+                    """,
           )
           .indented(),
         kotlin(
@@ -204,7 +204,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                     abstract class NotView : android.app.Fragment()
                     """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -236,7 +236,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
               xmlns:android="http://schemas.android.com/apk/res/android"
               tools:ignore="MissingDefaultResource">
           </com.tools.someclass>
-          """
+          """,
           )
           .indented()
       )
@@ -258,7 +258,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                             <fragment class="test.pkg.MyAndroidXFragment" android:id="@+id/androidx" />
                             <fragment class="test.pkg.NotFragment" android:id="@+id/notfragment" />
                         </FrameLayout>
-                        """
+                        """,
           )
           .indented(),
         kotlin(
@@ -306,7 +306,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                     }
                     """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -463,7 +463,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
         testProvider2,
         testService,
         onClickActivity,
-        testReceiver
+        testReceiver,
       )
       .run()
       .expectClean()
@@ -498,7 +498,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                   }
                 }
                 """
-        )
+        ),
       )
       .run()
       .expect(
@@ -539,7 +539,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
         testService,
         testProvider,
         testProvider2,
-        testReceiver
+        testReceiver,
       )
       .run()
       .expect(
@@ -575,7 +575,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
         testService,
         testProvider,
         testProvider2,
-        testReceiver
+        testReceiver,
       )
       .run()
       .expectClean()
@@ -646,8 +646,8 @@ class MissingClassDetectorTest : AbstractCheckTest() {
             "5H5rvBUZuHatEYXrXVcLNOgaN90NJOEKAjdgYyH3Z9EB/8q6jV3Aa1yGAGtk" +
             "3p9cV9xWX89ia9w42f6X7FuPtXriwtZgYYCbXu/rgVbPK/gaoNecm4/r9Uir" +
             "W2dtSlNcm0679UCrqbJ9DRAVtFnfoS04uX6WBAw4xEqC80fF/gu8+KimcgwA" +
-            "AA=="
-        )
+            "AA==",
+        ),
       )
       .run()
       .expectClean()
@@ -671,7 +671,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
             "    public class Baz extends Activity {\n" +
             "    }\n" +
             "}\n"
-        )
+        ),
       )
       .run()
       .expect(
@@ -735,8 +735,8 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                     XZbJYrQUxkhDaIssLbRKE5HnyfXCqrWyb+zabufWbm+GEz7S43spjstFpeII
                     UGOsc3YKhwMI+2efoP4XnI/KEzL6zED5TbvMDiLsVdzAQdnBVZf1PugP9Gl4
                     R1QBAAA=
-                    """
-        )
+                    """,
+        ),
       )
       .run()
       .expect(
@@ -777,7 +777,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
             "    private Bar() {\n" +
             "    }\n" +
             "}\n"
-        )
+        ),
       )
       .run()
       .expect(
@@ -830,8 +830,8 @@ class MissingClassDetectorTest : AbstractCheckTest() {
             "n2UlWPgBfpS4usXOzM4s8/48XwAm6ERwEYVohWgTgqkutJ0R3MFwR/CWJleE" +
             "7koXal2fU1VtZXriS7QxdZWpRP9EYyGr8UFeZRsefELPqosV5XEvEmMEm4S+" +
             "LPLK6FzIshTzzOqrtjfEcLj8N8SMfxkDVjEjMfqjB+j+t0PeEYfAAY8VtzJ3" +
-            "0PwCQXjmIMkAAAA="
-        )
+            "0PwCQXjmIMkAAAA=",
+        ),
       )
       .run()
       .expect(
@@ -872,7 +872,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
             "    public static class Bar extends Activity {\n" +
             "    }\n" +
             "}\n"
-        )
+        ),
       )
       .run()
       .expect(
@@ -915,10 +915,10 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                       <string name="com.example.app.PrefsActivity">Preferences</string>
                       <string name="test.pkg.OnClickActivity">Clicks</string>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
-        onClickActivity
+        onClickActivity,
       )
       .run()
       .expect(
@@ -946,7 +946,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                         class="course.examples.DataManagement.PreferenceActivity.ViewAndUpdatePreferencesActivity＄UserPreferenceFragment"
                         android:id="@+id/userPreferenceFragment">
                     </fragment>
-                    """
+                    """,
           )
           .indented(),
         kotlin(
@@ -958,7 +958,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                         }
                     }
                     """
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -975,7 +975,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                         class="course.examples.dataManagement.ViewAndUpdatePreferencesActivity"
                         android:id="@+id/userPreferenceFragment">
                     </fragment>
-                    """
+                    """,
           )
           .indented(),
         java(
@@ -984,9 +984,9 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                     package course.examples.DataManagement;
                     public class ViewAndUpdatePreferencesActivity {
                     }
-                    """
+                    """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -1015,7 +1015,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                     <header android:fragment="test.pkg.FragmentTest＄Fragment1" />
                     <header android:fragment="test.pkg.FragmentTest.Fragment1" />
                     </preference-headers>
-                    """
+                    """,
           )
           .indented(),
         java(
@@ -1028,7 +1028,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
                     }
                     """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

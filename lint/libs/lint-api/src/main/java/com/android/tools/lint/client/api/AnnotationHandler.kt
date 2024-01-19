@@ -136,7 +136,7 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
 /** Looks up annotations on method calls and enforces the various things they express. */
 internal class AnnotationHandler(
   private val driver: LintDriver,
-  private val scanners: Multimap<String, SourceCodeScanner>
+  private val scanners: Multimap<String, SourceCodeScanner>,
 ) {
 
   val relevantAnnotations: Set<String> = HashSet<String>(scanners.keys())
@@ -149,7 +149,7 @@ internal class AnnotationHandler(
     context: JavaContext,
     origCall: UElement,
     annotations: List<AnnotationInfo>,
-    annotated: PsiModifierListOwner
+    annotated: PsiModifierListOwner,
   ) {
     var call = origCall
     // Handle typedefs and resource types: if you're comparing it, check that
@@ -327,7 +327,7 @@ internal class AnnotationHandler(
     evaluator: JavaEvaluator,
     owner: PsiModifierListOwner,
     source: AnnotationOrigin,
-    prepend: Boolean = false
+    prepend: Boolean = false,
   ): Int {
     val annotations = getRelevantAnnotations(evaluator, owner)
     val count = addAnnotations(owner, annotations, source, prepend)
@@ -346,7 +346,7 @@ internal class AnnotationHandler(
    */
   private fun MutableList<AnnotationInfo>.addDefaultAnnotations(
     evaluator: JavaEvaluator,
-    owner: PsiModifierListOwner
+    owner: PsiModifierListOwner,
   ): Int {
     if (owner is KtLightMember<*>) {
       val origin = owner.unwrapped
@@ -366,7 +366,7 @@ internal class AnnotationHandler(
   private fun MutableList<AnnotationInfo>.addDefaultSiteAnnotations(
     evaluator: JavaEvaluator,
     owner: PsiModifierListOwner,
-    entries: List<KtAnnotationEntry>
+    entries: List<KtAnnotationEntry>,
   ): Int {
     var count = 0
     for (ktAnnotation in entries) {
@@ -399,7 +399,7 @@ internal class AnnotationHandler(
     owner: PsiElement,
     annotations: List<UAnnotation>,
     source: AnnotationOrigin,
-    prepend: Boolean = false
+    prepend: Boolean = false,
   ): Int {
     return annotations.count { annotation -> addAnnotation(annotation, owner, source, prepend) }
   }
@@ -409,7 +409,7 @@ internal class AnnotationHandler(
     annotation: UAnnotation,
     owner: PsiElement,
     source: AnnotationOrigin,
-    prepend: Boolean = false
+    prepend: Boolean = false,
   ): Boolean {
     val info = annotation.toAnnotationInfo(owner, source) ?: return false
     if (prepend) add(0, info) else add(info)
@@ -418,7 +418,7 @@ internal class AnnotationHandler(
 
   private fun UAnnotation.toAnnotationInfo(
     owner: PsiElement,
-    source: AnnotationOrigin
+    source: AnnotationOrigin,
   ): AnnotationInfo? {
     val name = qualifiedName ?: return null
     return AnnotationInfo(this, name, owner, source)
@@ -427,7 +427,7 @@ internal class AnnotationHandler(
   private fun getRelevantAnnotations(
     evaluator: JavaEvaluator,
     annotated: UAnnotated,
-    origin: AnnotationOrigin
+    origin: AnnotationOrigin,
   ): List<AnnotationInfo> {
     @Suppress("UElementAsPsi") val owner = annotated as? PsiElement ?: return emptyList()
     val allAnnotations: List<UAnnotation> =
@@ -440,7 +440,7 @@ internal class AnnotationHandler(
   private fun getRelevantAnnotations(
     evaluator: JavaEvaluator,
     owner: PsiModifierListOwner,
-    origin: AnnotationOrigin
+    origin: AnnotationOrigin,
   ): List<AnnotationInfo> {
     val allAnnotations = evaluator.getAnnotations(owner, inHierarchy = true)
     return filterRelevantAnnotations(evaluator, allAnnotations).mapNotNull {
@@ -450,7 +450,7 @@ internal class AnnotationHandler(
 
   private fun getRelevantAnnotations(
     evaluator: JavaEvaluator,
-    owner: PsiModifierListOwner
+    owner: PsiModifierListOwner,
   ): List<UAnnotation> {
     val allAnnotations = evaluator.getAnnotations(owner, inHierarchy = true)
     return filterRelevantAnnotations(evaluator, allAnnotations)
@@ -459,7 +459,7 @@ internal class AnnotationHandler(
   /** Returns a list of annotations surrounding the given [annotated] element. */
   private fun getMemberAnnotations(
     context: JavaContext,
-    annotated: PsiModifierListOwner
+    annotated: PsiModifierListOwner,
   ): MutableList<AnnotationInfo> {
 
     // Using an ArrayDeque such that we can cheaply add/remove from the front of the
@@ -554,7 +554,7 @@ internal class AnnotationHandler(
     argument: UElement,
     type: AnnotationUsageType,
     referenced: UAnnotated?,
-    annotations: List<AnnotationInfo>
+    annotations: List<AnnotationInfo>,
   ) {
     // We do not manipulate or consult the element; it's only provided as a source
     @Suppress("UElementAsPsi") val owner = referenced as? PsiElement
@@ -566,7 +566,7 @@ internal class AnnotationHandler(
     argument: UElement,
     type: AnnotationUsageType,
     referenced: PsiElement?,
-    annotations: List<AnnotationInfo>
+    annotations: List<AnnotationInfo>,
   ) {
     val usageInfo = AnnotationUsageInfo(0, annotations, argument, referenced, type)
 
@@ -595,7 +595,7 @@ internal class AnnotationHandler(
     argument: UElement,
     type: AnnotationUsageType,
     info: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     // Don't flag annotations that have already appeared in a closer scope
     if (usageInfo.anyCloser { it.qualifiedName == signature }) {
@@ -617,7 +617,7 @@ internal class AnnotationHandler(
   // Visit the type of a declaration or parameter
   private fun visitDeclarationTypeReference(
     context: JavaContext,
-    reference: UTypeReferenceExpression
+    reference: UTypeReferenceExpression,
   ) {
     val psi = reference.sourcePsi ?: return
     if (psi is PsiCompiledElement) {
@@ -675,7 +675,7 @@ internal class AnnotationHandler(
             location,
             CLASS_REFERENCE_AS_IMPLICIT_DECLARATION_TYPE,
             cls,
-            annotations
+            annotations,
           )
         }
       }
@@ -728,7 +728,7 @@ internal class AnnotationHandler(
                   returnValue,
                   METHOD_RETURN,
                   method as UAnnotated,
-                  methodAnnotations
+                  methodAnnotations,
                 )
               }
               return super.visitReturnExpression(node)
@@ -750,7 +750,7 @@ internal class AnnotationHandler(
             uClass,
             method,
             METHOD_OVERRIDE,
-            method.uastParameters.isEmpty()
+            method.uastParameters.isEmpty(),
           )
         }
       }
@@ -788,7 +788,7 @@ internal class AnnotationHandler(
     uClass: UClass,
     method: UMethod?,
     usageType: AnnotationUsageType,
-    canOverride: Boolean
+    canOverride: Boolean,
   ) {
     val base = uClass.uastSuperTypes.firstOrNull() ?: return
     var cls = PsiTypesUtil.getPsiClass(base.type)
@@ -814,7 +814,7 @@ internal class AnnotationHandler(
                   argument,
                   IMPLICIT_CONSTRUCTOR_CALL,
                   defaultConstructor,
-                  annotations
+                  annotations,
                 )
               }
             }
@@ -841,7 +841,7 @@ internal class AnnotationHandler(
 
   fun visitSimpleNameReferenceExpression(
     context: JavaContext,
-    node: USimpleNameReferenceExpression
+    node: USimpleNameReferenceExpression,
   ) {
     /* Pending:
     // In a qualified expression like x.y.z, only do field reference checks on z?
@@ -910,7 +910,7 @@ internal class AnnotationHandler(
 
   fun visitCallableReferenceExpression(
     context: JavaContext,
-    methodReference: UCallableReferenceExpression
+    methodReference: UCallableReferenceExpression,
   ) {
     val method = methodReference.resolve() as? PsiMethod ?: return
     val annotations = getMemberAnnotations(context, method)
@@ -1024,7 +1024,7 @@ internal class AnnotationHandler(
             getRelevantAnnotations(
               context.evaluator,
               resolved as? UAnnotated ?: resolved.toUElement() as UAnnotated,
-              VARIABLE
+              VARIABLE,
             )
           else getMemberAnnotations(context, resolved)
         if (initializerAnnotations.isNotEmpty()) {
@@ -1071,7 +1071,7 @@ internal class AnnotationHandler(
     context: JavaContext,
     method: PsiMethod?,
     call: UExpression,
-    containingClass: PsiClass?
+    containingClass: PsiClass?,
   ) {
     val evaluator = context.evaluator
     if (method != null) {
@@ -1123,7 +1123,7 @@ internal class AnnotationHandler(
 
   private fun filterRelevantAnnotations(
     evaluator: JavaEvaluator,
-    annotations: List<UAnnotation>
+    annotations: List<UAnnotation>,
   ): List<UAnnotation> {
     var result: MutableList<UAnnotation>? = null
     val length = annotations.size

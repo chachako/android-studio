@@ -135,7 +135,7 @@ class MergeRootFrameLayoutDetector : LayoutDetector(), SourceCodeScanner {
               context.client,
               url,
               ANDROID_URI,
-              ATTR_FITS_SYSTEM_WINDOWS
+              ATTR_FITS_SYSTEM_WINDOWS,
             )
           if (styles != null && styles.any { it.value == VALUE_TRUE }) {
             return
@@ -193,8 +193,8 @@ class MergeRootFrameLayoutDetector : LayoutDetector(), SourceCodeScanner {
         implementation =
           Implementation(
             MergeRootFrameLayoutDetector::class.java,
-            EnumSet.of(Scope.ALL_RESOURCE_FILES, Scope.JAVA_FILE)
-          )
+            EnumSet.of(Scope.ALL_RESOURCE_FILES, Scope.JAVA_FILE),
+          ),
       )
 
     private const val ATTR_FITS_SYSTEM_WINDOWS = "fitsSystemWindows"

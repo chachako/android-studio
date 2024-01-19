@@ -59,7 +59,7 @@ class StartDestinationDetector : ResourceXmlDetector() {
         priority = 3,
         severity = Severity.WARNING,
         implementation =
-          Implementation(StartDestinationDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+          Implementation(StartDestinationDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
       )
   }
 
@@ -81,7 +81,7 @@ class StartDestinationDetector : ResourceXmlDetector() {
         ISSUE,
         element,
         context.getNameLocation(element),
-        "No start destination specified"
+        "No start destination specified",
       )
     } else {
       // TODO(namespaces): Support namespaces in ids
@@ -91,7 +91,7 @@ class StartDestinationDetector : ResourceXmlDetector() {
           ISSUE,
           element,
           context.getNameLocation(element),
-          "`startDestination` must be an id"
+          "`startDestination` must be an id",
         )
         return
       }
@@ -130,7 +130,7 @@ class StartDestinationDetector : ResourceXmlDetector() {
         ISSUE,
         element,
         context.getValueLocation(destinationAttr),
-        "Invalid start destination $destinationAttrValue"
+        "Invalid start destination $destinationAttrValue",
       )
     }
   }

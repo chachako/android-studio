@@ -215,7 +215,7 @@ open class ControlFlowGraph<T> private constructor() {
     renderEdge: (ControlFlowGraph<T>.Node, ControlFlowGraph<T>.Edge, Int) -> String =
       { _, edge, index ->
         edge.label ?: "s${index}"
-      }
+      },
   ): String {
     // make sure parent references are initialized since this is lazy
     val nodes = getAllNodes()
@@ -320,7 +320,7 @@ open class ControlFlowGraph<T> private constructor() {
     abstract fun visitNode(
       node: ControlFlowGraph<T>.Node,
       path: List<ControlFlowGraph<T>.Edge>,
-      status: C
+      status: C,
     ): C
 
     /**
@@ -342,7 +342,7 @@ open class ControlFlowGraph<T> private constructor() {
     open fun prune(
       node: ControlFlowGraph<T>.Node,
       path: List<ControlFlowGraph<T>.Edge>,
-      status: C
+      status: C,
     ): Boolean = false
 
     /**
@@ -411,7 +411,7 @@ open class ControlFlowGraph<T> private constructor() {
     node: Node,
     initial: C,
     path: ArrayDeque<Edge>,
-    seenException: Boolean
+    seenException: Boolean,
   ): C {
     if (node.visit != 0) {
       return initial
@@ -447,9 +447,9 @@ open class ControlFlowGraph<T> private constructor() {
               status,
               path,
               (seenException || edge.isException) &&
-                (!request.followExceptionalFlow || !request.consumesException(edge))
+                (!request.followExceptionalFlow || !request.consumesException(edge)),
             ),
-            result
+            result,
           )
         if (request.isDone(result)) {
           return result
@@ -489,7 +489,7 @@ open class ControlFlowGraph<T> private constructor() {
      */
     val label: String? = null,
     /** Whether this edge represents an exceptional flow. */
-    val isException: Boolean
+    val isException: Boolean,
   ) {
     operator fun component1(): Node = from
 
@@ -595,7 +595,7 @@ open class ControlFlowGraph<T> private constructor() {
 
     private fun flowsTo(
       target: ControlFlowGraph<T>.Node,
-      visited: MutableSet<ControlFlowGraph<T>.Node>
+      visited: MutableSet<ControlFlowGraph<T>.Node>,
     ): Boolean {
       if (!visited.add(this)) {
         return false
@@ -941,10 +941,7 @@ open class ControlFlowGraph<T> private constructor() {
      * - Implicit calls, e.g. "+" and "[]" overloaded operators, as well as property references
      * - Short circuit evaluation
      */
-    fun create(
-      method: UMethod,
-      builder: Builder,
-    ): ControlFlowGraph<UElement> {
+    fun create(method: UMethod, builder: Builder): ControlFlowGraph<UElement> {
       val graph =
         object : ControlFlowGraph<UElement>() {
           // There are scenarios (exposed by the unit tests) where UAST will recreate
@@ -1054,7 +1051,7 @@ open class ControlFlowGraph<T> private constructor() {
           private fun addThrowingCall(
             node: UElement,
             types: List<String>,
-            context: UElement?
+            context: UElement?,
           ): Boolean {
             var curr = context
             while (curr != method) {
@@ -1397,7 +1394,7 @@ open class ControlFlowGraph<T> private constructor() {
           private fun addExceptions(
             node: UElement,
             call: UCallExpression,
-            method: PsiMethod? = call.resolve()
+            method: PsiMethod? = call.resolve(),
           ) {
             method ?: return // can't find method -- ignore or report? Unclear.
             val types = builder.methodThrows(call, method)
@@ -1413,7 +1410,7 @@ open class ControlFlowGraph<T> private constructor() {
           private fun findInvokedLambda(
             psiElement: PsiElement,
             node: UCallExpression,
-            resolved: PsiMethod?
+            resolved: PsiMethod?,
           ): UElement? {
             val map = functions ?: return null
 
@@ -1583,7 +1580,7 @@ open class ControlFlowGraph<T> private constructor() {
 
           private fun visitCallArguments(
             node: UCallExpression,
-            arguments: List<UExpression> = node.valueArguments
+            arguments: List<UExpression> = node.valueArguments,
           ) {
             if (builder.callLambdaParameters) {
               // For all the lambda arguments, flow from the method into the lambda, and
@@ -1708,7 +1705,7 @@ open class ControlFlowGraph<T> private constructor() {
             addThrowingCall(
               node,
               type?.canonicalText?.let(::listOf) ?: builder.getDefaultMethodExceptions(node),
-              node.uastParent
+              node.uastParent,
             )
           }
 

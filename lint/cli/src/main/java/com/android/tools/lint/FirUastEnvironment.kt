@@ -79,7 +79,7 @@ private constructor(
   override val coreAppEnv: CoreApplicationEnvironment,
   override val ideaProject: MockProject,
   override val kotlinCompilerConfig: CompilerConfiguration,
-  override val projectDisposable: Disposable
+  override val projectDisposable: Disposable,
 ) : UastEnvironment {
 
   class Configuration
@@ -92,7 +92,7 @@ private constructor(
 
     override fun addModules(
       modules: List<UastEnvironment.Module>,
-      bootClassPaths: Iterable<File>?
+      bootClassPaths: Iterable<File>?,
     ) {
       this.modules.addAll(modules)
       bootClassPaths?.let(this.classPaths::addAll)
@@ -119,7 +119,7 @@ private constructor(
         analysisSession.coreApplicationEnvironment,
         analysisSession.mockProject,
         config.kotlinCompilerConfig,
-        parentDisposable
+        parentDisposable,
       )
     }
   }
@@ -137,7 +137,7 @@ private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): Compiler
     // NB: hacky solution to pass the registrar to the registration point below.
     config.add(
       CompilerPluginRegistrar.COMPILER_PLUGIN_REGISTRARS,
-      ScriptingK2CompilerPluginRegistrar()
+      ScriptingK2CompilerPluginRegistrar(),
     )
   }
 
@@ -146,7 +146,7 @@ private fun createKotlinCompilerConfig(enableKotlinScripting: Boolean): Compiler
 
 private fun createAnalysisSession(
   parentDisposable: Disposable,
-  config: FirUastEnvironment.Configuration
+  config: FirUastEnvironment.Configuration,
 ): StandaloneAnalysisAPISession {
   val analysisSession =
     buildStandaloneAnalysisAPISession(
@@ -158,12 +158,12 @@ private fun createAnalysisSession(
       CoreApplicationEnvironment.registerExtensionPoint(
         project.extensionArea,
         KtResolveExtensionProvider.EP_NAME.name,
-        KtResolveExtensionProvider::class.java
+        KtResolveExtensionProvider::class.java,
       )
       (project as MockProject).registerKtLifetimeTokenProvider()
       registerProjectService(
         ClsJavaStubByVirtualFileCache::class.java,
-        ClsJavaStubByVirtualFileCache()
+        ClsJavaStubByVirtualFileCache(),
       )
 
       appLock.withLock {
@@ -184,7 +184,7 @@ private fun createAnalysisSession(
         ) {
           registerApplicationService(
             InternalPersistentJavaLanguageLevelReaderService::class.java,
-            InternalPersistentJavaLanguageLevelReaderService.DefaultImpl()
+            InternalPersistentJavaLanguageLevelReaderService.DefaultImpl(),
           )
         }
         // We need to re-register Application-level service before AA session is built.
@@ -263,7 +263,7 @@ private fun createAnalysisSession(
               addDependsOnDependency(
                 buildKlibModule(
                   moduleKlibPathsDependsOn.map(File::toPath),
-                  "dependsOn klibs for $moduleName"
+                  "dependsOn klibs for $moduleName",
                 )
               )
             }
@@ -274,8 +274,8 @@ private fun createAnalysisSession(
               kotlinCoreProjectEnvironment,
               Helper.getSourceFilePaths(
                 (m.sourceRoots + m.gradleBuildScripts).map(File::getPath),
-                includeDirectoryRoot = true
-              )
+                includeDirectoryRoot = true,
+              ),
             )
           val (scriptFiles, _) = ktFiles.partition { it.isScript() }
           // TODO: https://youtrack.jetbrains.com/issue/KT-62161
@@ -290,7 +290,7 @@ private fun createAnalysisSession(
                 addSourceRoots(
                   Helper.getSourceFilePaths(
                     scriptFiles.map { it.virtualFilePath },
-                    includeDirectoryRoot = false
+                    includeDirectoryRoot = false,
                   )
                 )
               }
@@ -331,7 +331,7 @@ private fun createAnalysisSession(
             addSourceRoots(
               Helper.getSourceFilePaths(
                 m.sourceRoots.map(File::getPath),
-                includeDirectoryRoot = true
+                includeDirectoryRoot = true,
               )
             )
           }
@@ -351,7 +351,7 @@ private fun createAnalysisSession(
 
 private fun configureFirProjectEnvironment(
   analysisAPISession: StandaloneAnalysisAPISession,
-  config: UastEnvironment.Configuration
+  config: UastEnvironment.Configuration,
 ) {
   val project = analysisAPISession.mockProject
 
@@ -364,11 +364,11 @@ private fun configureFirApplicationEnvironment(appEnv: CoreApplicationEnvironmen
 
     it.application.registerService(
       BaseKotlinUastResolveProviderService::class.java,
-      FirCliKotlinUastResolveProviderService::class.java
+      FirCliKotlinUastResolveProviderService::class.java,
     )
     it.application.registerService(
       FirKotlinUastResolveProviderService::class.java,
-      FirCliKotlinUastResolveProviderService::class.java
+      FirCliKotlinUastResolveProviderService::class.java,
     )
   }
 }
@@ -435,7 +435,7 @@ private object Helper {
           // Skipping sibling may drop valid file paths afterward, so we just continue.
           return FileVisitResult.CONTINUE
         }
-      }
+      },
     )
   }
 }

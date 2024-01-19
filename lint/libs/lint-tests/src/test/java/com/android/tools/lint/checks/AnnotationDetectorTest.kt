@@ -137,7 +137,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -212,7 +212,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 public @interface Annotation6 { }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -284,10 +284,10 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     @IntDef(flag = true, value={FLAG1,FLAG9,FLAG12}) private @interface Flags12 {}
                     @IntDef(flag = true, value={FLAG1,FLAG9,FLAG13}) private @interface Flags13 {}
                     @IntDef(flag = true, value={FLAG1,FLAG9,FLAG14}) private @interface Flags14 {}
-                }"""
+                }""",
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -349,7 +349,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -505,10 +505,10 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -587,7 +587,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .javaLanguageLevel("17")
       .run()
@@ -687,7 +687,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -741,7 +741,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     public static final int STATE_STOPPED = 1;
                 }"""
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -793,7 +793,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     public static final int STATE_FAST_FORWARDING = 4;
                 }"""
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -938,7 +938,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1022,7 +1022,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(AnnotationDetector.ANNOTATION_USAGE, ApiDetector.OBSOLETE_SDK)
       .skipTestModes(TestMode.PARTIAL)
@@ -1125,7 +1125,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         SUPPORT_ANNOTATIONS_JAR,
-        requiresExtensionStub
+        requiresExtensionStub,
       )
       .issues(AnnotationDetector.ANNOTATION_USAGE)
       .skipTestModes(TestMode.PARTIAL)
@@ -1338,7 +1338,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1383,7 +1383,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1423,9 +1423,9 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1470,7 +1470,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1499,7 +1499,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1542,7 +1542,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1586,7 +1586,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                     }
                 }"""
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1614,7 +1614,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1652,7 +1652,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1684,7 +1684,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1746,7 +1746,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1784,7 +1784,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        openForTestingStub
+        openForTestingStub,
       )
       .run()
       .expect(
@@ -1825,7 +1825,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        emptySuperStub
+        emptySuperStub,
       )
       .run()
       .expect(
@@ -1874,7 +1874,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        returnThisStub
+        returnThisStub,
       )
       .run()
       .expect(
@@ -1981,7 +1981,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2005,7 +2005,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2056,7 +2056,7 @@ class AnnotationDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()

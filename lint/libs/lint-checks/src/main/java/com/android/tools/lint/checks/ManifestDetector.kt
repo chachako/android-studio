@@ -109,7 +109,7 @@ class ManifestDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using multiple `<uses-sdk>` elements */
@@ -129,7 +129,7 @@ class ManifestDetector : Detector(), XmlScanner {
         priority = 6,
         severity = Severity.FATAL,
         moreInfo = "https://developer.android.com/guide/topics/manifest/uses-sdk-element.html",
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Missing a `<uses-sdk>` element */
@@ -149,7 +149,7 @@ class ManifestDetector : Detector(), XmlScanner {
         priority = 6,
         severity = Severity.FATAL,
         moreInfo = "https://developer.android.com/guide/topics/manifest/manifest-intro.html",
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Missing a `<uses-sdk>` element */
@@ -168,7 +168,7 @@ class ManifestDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Not specifying data extraction rules */
@@ -193,7 +193,7 @@ class ManifestDetector : Detector(), XmlScanner {
           category = Category.SECURITY,
           priority = 3,
           moreInfo = "https://developer.android.com/about/versions/12/backup-restore#xml-changes",
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .addMoreInfo("https://goo.gle/DataExtractionRules")
 
@@ -216,7 +216,7 @@ class ManifestDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         priority = 6,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using a resource for attributes that do not allow it */
@@ -239,7 +239,7 @@ class ManifestDetector : Detector(), XmlScanner {
         priority = 2,
         severity = Severity.WARNING,
         moreInfo = "https://developer.android.com/studio/publish/versioning#appversioning",
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using a resource for attributes that do not allow it */
@@ -257,7 +257,7 @@ class ManifestDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         priority = 8,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Declaring a uses-feature multiple time */
@@ -270,7 +270,7 @@ class ManifestDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Not explicitly defining application icon */
@@ -289,7 +289,7 @@ class ManifestDetector : Detector(), XmlScanner {
         priority = 5,
         severity = Severity.WARNING,
         moreInfo = "https://developer.android.com/studio/publish/preparing#publishing-configure",
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Malformed Device Admin */
@@ -315,7 +315,7 @@ class ManifestDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         priority = 7,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using a mock location in a non-debug-specific manifest file */
@@ -333,7 +333,7 @@ class ManifestDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         priority = 8,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Defining a value that is overridden by Gradle */
@@ -351,7 +351,7 @@ class ManifestDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using drawable rather than mipmap launcher icons */
@@ -379,7 +379,7 @@ class ManifestDetector : Detector(), XmlScanner {
         category = Category.ICONS,
         priority = 5,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Uses Wear Bind Listener which is deprecated */
@@ -400,7 +400,7 @@ class ManifestDetector : Detector(), XmlScanner {
         severity = Severity.FATAL,
         moreInfo =
           "https://android-developers.googleblog.com/2016/04/deprecation-of-bindlistener.html",
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -419,7 +419,7 @@ class ManifestDetector : Detector(), XmlScanner {
         severity = Severity.WARNING,
         moreInfo =
           "https://firebase.google.com/docs/app-indexing/android/personal-content#add-a-broadcast-receiver-to-your-app",
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -435,7 +435,7 @@ class ManifestDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmStatic
@@ -572,7 +572,7 @@ class ManifestDetector : Detector(), XmlScanner {
             "an `@xml` resource which configures cloud backups and device transfers on Android 12 " +
             "and higher.",
           LocationType.VALUE,
-          fix
+          fix,
         )
       } else if (fullBackupNode != null && dataExtractionRules == null) {
         val fix = createDataExtractionRulesFix(context, fullBackupNode)
@@ -585,7 +585,7 @@ class ManifestDetector : Detector(), XmlScanner {
             "`android:dataExtractionRules` specifying an `@xml` resource which configures cloud " +
             "backups and device transfers on Android 12 and higher.",
           LocationType.VALUE,
-          fix
+          fix,
         )
       } else if (dataExtractionRules != null && fullBackupNode == null) {
         reportFromManifest(
@@ -594,7 +594,7 @@ class ManifestDetector : Detector(), XmlScanner {
           dataExtractionRules,
           "The attribute `android:dataExtractionRules` only applies for Android 12 and higher; since " +
             "`minSdkVersion` is API $min you should also set `android:fullBackupContent`",
-          LocationType.VALUE
+          LocationType.VALUE,
         )
       }
     } else if (min >= 31 && dataExtractionRules == null) {
@@ -608,7 +608,7 @@ class ManifestDetector : Detector(), XmlScanner {
           "The attribute `android:allowBackup` is deprecated from Android 12 and the default " +
             "allows backup",
           LocationType.VALUE,
-          fix().unset(ANDROID_URI, ATTR_ALLOW_BACKUP).build()
+          fix().unset(ANDROID_URI, ATTR_ALLOW_BACKUP).build(),
         )
       } else if (allowBackupNode != null) {
         val fix = createDataExtractionRulesFix(context, fullBackupNode)
@@ -621,7 +621,7 @@ class ManifestDetector : Detector(), XmlScanner {
             "specifying an `@xml` resource which configures backups and device transfers on " +
             "Android 12 and higher.",
           LocationType.VALUE,
-          fix
+          fix,
         )
       }
       if (fullBackupNode != null) {
@@ -635,7 +635,7 @@ class ManifestDetector : Detector(), XmlScanner {
             "`android:dataExtractionRules` specifying an `@xml` resource which configures backups " +
             "and device transfers on Android 12 and higher.",
           LocationType.VALUE,
-          fix
+          fix,
         )
       }
     }
@@ -669,7 +669,7 @@ class ManifestDetector : Detector(), XmlScanner {
       context,
       fullBackupNode,
       application,
-      MISSING_FULL_BACKUP_CONTENT_RESOURCE
+      MISSING_FULL_BACKUP_CONTENT_RESOURCE,
     )
     checkXmlResourceExists(context, dataExtractionRules, application, MISSING_EXTRACTION_RESOURCE)
   }
@@ -831,7 +831,7 @@ class ManifestDetector : Detector(), XmlScanner {
     context: Context,
     node: Attr?,
     application: Element,
-    message: String
+    message: String,
   ) {
     if (node == null || !node.value.startsWith(PREFIX_RESOURCE_REF)) {
       return
@@ -863,7 +863,7 @@ class ManifestDetector : Detector(), XmlScanner {
         application,
         "Should explicitly set `android:icon`, there is no default",
         LocationType.NAME,
-        fix
+        fix,
       )
     }
   }
@@ -879,7 +879,7 @@ class ManifestDetector : Detector(), XmlScanner {
         ILLEGAL_REFERENCE,
         element,
         context.getLocation(codeNode),
-        "The `android:versionCode` cannot be a resource url, it must be " + "a literal integer"
+        "The `android:versionCode` cannot be a resource url, it must be " + "a literal integer",
       )
     } else if (
       codeNode == null &&
@@ -895,7 +895,7 @@ class ManifestDetector : Detector(), XmlScanner {
         element,
         context.getNameLocation(element),
         "Should set `android:versionCode` to specify the application version",
-        fix
+        fix,
       )
     }
     val nameNode = element.getAttributeNodeNS(ANDROID_URI, ATTR_VERSION_NAME)
@@ -914,7 +914,7 @@ class ManifestDetector : Detector(), XmlScanner {
         element,
         context.getNameLocation(element),
         "Should set `android:versionName` to specify the application version",
-        fix
+        fix,
       )
     }
     val pkgNode = element.getAttributeNode(ATTR_PACKAGE)
@@ -926,7 +926,7 @@ class ManifestDetector : Detector(), XmlScanner {
           pkgNode,
           context.getLocation(pkgNode),
           "Cannot use placeholder for the package in the manifest; " +
-            "set `applicationId` in `build.gradle` instead"
+            "set `applicationId` in `build.gradle` instead",
         )
       }
     }
@@ -938,7 +938,7 @@ class ManifestDetector : Detector(), XmlScanner {
     node: Node?,
     message: String,
     type: LocationType,
-    fix: LintFix? = null
+    fix: LintFix? = null,
   ) {
     val location = context.getLocation(node, type)
     if (location.start == null) {
@@ -1015,7 +1015,7 @@ class ManifestDetector : Detector(), XmlScanner {
       TAG_ACTIVITY,
       TAG_SERVICE,
       TAG_PROVIDER,
-      TAG_RECEIVER
+      TAG_RECEIVER,
     )
   }
 
@@ -1032,7 +1032,7 @@ class ManifestDetector : Detector(), XmlScanner {
           WRONG_PARENT,
           element,
           context.getNameLocation(element),
-          "The `<$tag>` element must be a direct child of the <application> element"
+          "The `<$tag>` element must be a direct child of the <application> element",
         )
       }
       if (tag == TAG_ACTIVITY) {
@@ -1095,7 +1095,7 @@ class ManifestDetector : Detector(), XmlScanner {
             WEARABLE_BIND_LISTENER,
             bindListenerAttr,
             context.getLocation(bindListenerAttr),
-            "The `com.google.android.gms.wearable.BIND_LISTENER`" + " action is deprecated"
+            "The `com.google.android.gms.wearable.BIND_LISTENER`" + " action is deprecated",
           )
           return
         }
@@ -1116,7 +1116,7 @@ class ManifestDetector : Detector(), XmlScanner {
                 "play-services-wearable",
                 repository,
                 null,
-                false
+                false,
               )
             if (max != null && max.version > MIN_WEARABLE_GMS_VERSION) {
               message =
@@ -1141,7 +1141,7 @@ class ManifestDetector : Detector(), XmlScanner {
           WRONG_PARENT,
           element,
           context.getNameLocation(element),
-          "The `<$tag>` element must be a direct child of the `<application>` element or the `<queries>` element"
+          "The `<$tag>` element must be a direct child of the `<application>` element or the `<queries>` element",
         )
       }
       return
@@ -1155,7 +1155,7 @@ class ManifestDetector : Detector(), XmlScanner {
         WRONG_PARENT,
         element,
         context.getNameLocation(element),
-        "The `<$tag>` element must be a direct child of the `<manifest>` root element"
+        "The `<$tag>` element must be a direct child of the `<manifest>` root element",
       )
     }
     if (tag == TAG_USES_SDK) {
@@ -1182,7 +1182,7 @@ class ManifestDetector : Detector(), XmlScanner {
             element,
             location,
             "There should only be a single `<uses-sdk>` element in the manifest:" +
-              " merge these together"
+              " merge these together",
           )
         }
         return
@@ -1199,7 +1199,7 @@ class ManifestDetector : Detector(), XmlScanner {
             element,
             context.getLocation(codeNode),
             "The `android:minSdkVersion` cannot be a resource url, it must be " +
-              "a literal integer (or string if a preview codename)"
+              "a literal integer (or string if a preview codename)",
           )
         }
         checkOverride(context, element, ATTR_MIN_SDK_VERSION)
@@ -1218,7 +1218,7 @@ class ManifestDetector : Detector(), XmlScanner {
           element,
           context.getLocation(nameNode),
           "The `android:targetSdkVersion` cannot be a resource url, it must be " +
-            "a literal integer (or string if a preview codename)"
+            "a literal integer (or string if a preview codename)",
         )
       }
     }
@@ -1258,7 +1258,7 @@ class ManifestDetector : Detector(), XmlScanner {
           ORDER,
           element,
           context.getNameLocation(element),
-          "`<$tag>` tag appears after `<application>` tag"
+          "`<$tag>` tag appears after `<application>` tag",
         )
       }
 
@@ -1303,7 +1303,7 @@ class ManifestDetector : Detector(), XmlScanner {
       mainProject,
       mergedManifest,
       "permission group",
-      TAG_PERMISSION_GROUP
+      TAG_PERMISSION_GROUP,
     )
   }
 
@@ -1317,7 +1317,7 @@ class ManifestDetector : Detector(), XmlScanner {
     mainProject: Project,
     mergedManifest: Document,
     humanReadableName: String,
-    tagName: String
+    tagName: String,
   ) {
     var nameToFull: MutableMap<String, String>? = null
     val root = mergedManifest.documentElement ?: return
@@ -1423,7 +1423,7 @@ class ManifestDetector : Detector(), XmlScanner {
           MIPMAP,
           element,
           context.getLocation(attribute),
-          "Should use `@mipmap` instead of `@drawable` for launcher icons"
+          "Should use `@mipmap` instead of `@drawable` for launcher icons",
         )
       }
     }
@@ -1440,7 +1440,7 @@ class ManifestDetector : Detector(), XmlScanner {
         REDUNDANT_LABEL,
         context.getLocation(labelAttribute),
         "Redundant label can be removed",
-        fix
+        fix,
       )
     }
   }
@@ -1503,7 +1503,7 @@ class ManifestDetector : Detector(), XmlScanner {
         DEVICE_ADMIN,
         locationNode,
         context.getLocation(locationNode),
-        "You must have an intent filter for action " + "`android.app.action.DEVICE_ADMIN_ENABLED`"
+        "You must have an intent filter for action " + "`android.app.action.DEVICE_ADMIN_ENABLED`",
       )
     }
   }

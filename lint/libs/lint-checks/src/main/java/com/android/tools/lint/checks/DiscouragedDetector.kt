@@ -71,7 +71,7 @@ class DiscouragedDetector : AbstractAnnotationDetector(), XmlScanner, SourceCode
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     usageInfo.referenced ?: return
     val location = context.getNameLocation(element)
@@ -150,7 +150,7 @@ class DiscouragedDetector : AbstractAnnotationDetector(), XmlScanner, SourceCode
       ATTR_MIN_ASPECT_RATIO,
       ATTR_MAX_ASPECT_RATIO,
       ATTR_SCREEN_ORIENTATION,
-      ATTR_RESIZEABLE_ACTIVITY
+      ATTR_RESIZEABLE_ACTIVITY,
     )
 
   override fun visitAttribute(context: XmlContext, attribute: Attr) {
@@ -195,7 +195,7 @@ class DiscouragedDetector : AbstractAnnotationDetector(), XmlScanner, SourceCode
         EnumSet.of(Scope.MANIFEST, Scope.RESOURCE_FILE, Scope.JAVA_FILE),
         MANIFEST_SCOPE,
         RESOURCE_FILE_SCOPE,
-        JAVA_FILE_SCOPE
+        JAVA_FILE_SCOPE,
       )
 
     /** Usage of elements that are discouraged against. */
@@ -213,7 +213,7 @@ class DiscouragedDetector : AbstractAnnotationDetector(), XmlScanner, SourceCode
         priority = 2,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        platforms = Platform.UNSPECIFIED
+        platforms = Platform.UNSPECIFIED,
       )
   }
 }

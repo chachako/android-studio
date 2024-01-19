@@ -136,7 +136,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
                 TAG_PROVIDER -> CLASS_CONTENTPROVIDER
                 TAG_APPLICATION -> CLASS_APPLICATION
                 else -> null
-              }
+              },
           )
         }
       }
@@ -158,7 +158,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
               element,
               element,
               // Already doing hierarchy checks in Studio, don't duplicate effort
-              expectedParent = if (isStudio) null else CLASS_VIEW
+              expectedParent = if (isStudio) null else CLASS_VIEW,
             )
           }
           tag == VIEW_TAG -> {
@@ -169,7 +169,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
               attr.value,
               attr,
               element,
-              expectedParent = if (isStudio) null else CLASS_VIEW
+              expectedParent = if (isStudio) null else CLASS_VIEW,
             )
           }
           tag == VIEW_FRAGMENT -> {
@@ -184,7 +184,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
               attr,
               element,
               requireInstantiatable = true,
-              expectedParent = CLASS_FRAGMENT
+              expectedParent = CLASS_FRAGMENT,
             )
           }
         }
@@ -202,7 +202,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
               attr.value,
               attr,
               element,
-              expectedParent = "android.graphics.drawable.Drawable"
+              expectedParent = "android.graphics.drawable.Drawable",
             )
           }
         }
@@ -219,7 +219,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
             attr.value,
             attr,
             element,
-            expectedParent = expectedParent
+            expectedParent = expectedParent,
           )
         }
       }
@@ -233,7 +233,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
             attr,
             element,
             requireInstantiatable = true,
-            expectedParent = CLASS_FRAGMENT
+            expectedParent = CLASS_FRAGMENT,
           )
         }
       }
@@ -249,7 +249,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
               view.value,
               view,
               element,
-              expectedParent = CLASS_VIEW
+              expectedParent = CLASS_VIEW,
             )
           }
           val provider =
@@ -278,7 +278,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
     classNameNode: Node,
     element: Element,
     requireInstantiatable: Boolean = false,
-    expectedParent: String? = null
+    expectedParent: String? = null,
   ) {
     if (className.isEmpty()) {
       return
@@ -338,7 +338,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
     evaluator: JavaEvaluator,
     nameNode: Node,
     cls: PsiClass,
-    expectedParent: String
+    expectedParent: String,
   ) {
     if (!evaluator.inheritsFrom(cls, expectedParent, false)) {
       if (expectedParent == CLASS_FRAGMENT) {
@@ -387,7 +387,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
     cls: PsiClass,
     className: String,
     nameNode: Node,
-    element: Element
+    element: Element,
   ) {
     val name = cls.name
     if (cls.containingClass == null || name == null || className.contains("$")) {
@@ -407,7 +407,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
     evaluator: JavaEvaluator,
     cls: PsiClass,
     fqcn: String,
-    nameNode: Node
+    nameNode: Node,
   ) {
     if (evaluator.isPrivate(cls)) {
       val message = "This class should be public (`$fqcn`)"
@@ -480,7 +480,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
         MissingClassDetector::class.java,
         Scope.MANIFEST_AND_RESOURCE_SCOPE,
         Scope.MANIFEST_SCOPE,
-        Scope.RESOURCE_FILE_SCOPE
+        Scope.RESOURCE_FILE_SCOPE,
       )
 
     /** Manifest or layout referenced classes missing from the project or libraries. */
@@ -502,7 +502,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
           severity = Severity.ERROR,
           moreInfo = "https://developer.android.com/guide/topics/manifest/manifest-intro.html",
           androidSpecific = true,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .setAliases(listOf("MissingRegistered"))
 
@@ -528,7 +528,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
         priority = 6,
         severity = Severity.FATAL,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Is the right character used for inner class separators? */
@@ -551,7 +551,7 @@ class MissingClassDetector : LayoutDetector(), ClassScanner {
         priority = 3,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

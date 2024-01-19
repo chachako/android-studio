@@ -52,7 +52,7 @@ class ReturnThisDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        returnThisStub
+        returnThisStub,
       )
       .run()
       .expect(
@@ -103,7 +103,7 @@ class ReturnThisDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        returnThisStub
+        returnThisStub,
       )
       .run()
       .expect(

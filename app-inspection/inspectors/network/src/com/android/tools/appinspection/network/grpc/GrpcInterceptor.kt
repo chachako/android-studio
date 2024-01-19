@@ -36,19 +36,18 @@ import java.net.SocketAddress
 private const val UNKNOWN = "unknown"
 
 /** A GRPC [ClientInterceptor] that sends events to the Network Inspector tool. */
-internal class GrpcInterceptor(
-  private val trackerFactory: GrpcTracker.Factory,
-) : ClientInterceptor {
+internal class GrpcInterceptor(private val trackerFactory: GrpcTracker.Factory) :
+  ClientInterceptor {
   override fun <Req : Any, Res : Any> interceptCall(
     method: MethodDescriptor<Req, Res>,
     options: CallOptions,
-    next: Channel
+    next: Channel,
   ): ClientCall<Req, Res> {
     val tracker = trackerFactory.newGrpcTracker()
     return InterceptingClientCall(
       tracker,
       method,
-      next.newCall(method, options.withStreamTracerFactory(StreamTracer.Factory(tracker)))
+      next.newCall(method, options.withStreamTracerFactory(StreamTracer.Factory(tracker))),
     )
   }
 
@@ -64,7 +63,7 @@ internal class GrpcInterceptor(
         method.serviceName ?: UNKNOWN,
         method.bareMethodName ?: UNKNOWN,
         headers,
-        getStackTrace(1)
+        getStackTrace(1),
       )
     }
 

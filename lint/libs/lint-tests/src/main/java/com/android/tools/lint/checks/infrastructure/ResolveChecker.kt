@@ -216,7 +216,7 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
             name = "",
             symbolType = "import",
             nameMethod = "",
-            visitMethod = ""
+            visitMethod = "",
           )
         }
         return super.visitImportStatement(node)
@@ -257,7 +257,7 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
             name,
             "call",
             "getApplicableMethodNames",
-            "visitMethodCall"
+            "visitMethodCall",
           )
         }
       }
@@ -272,7 +272,7 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
             fqc,
             "constructor call",
             "getApplicableConstructorTypes",
-            "visitConstructor"
+            "visitConstructor",
           )
         }
       }
@@ -289,7 +289,7 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
             name,
             "reference",
             "getApplicableReferenceNames",
-            "visitReference"
+            "visitReference",
           )
         }
         return super.visitSimpleNameReferenceExpression(node)
@@ -301,7 +301,7 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
         name: String,
         symbolType: String,
         nameMethod: String,
-        visitMethod: String
+        visitMethod: String,
       ): Nothing {
         val isImport = name.isEmpty()
         val message =
@@ -397,7 +397,7 @@ fun JavaContext.checkFile(root: UFile?, task: TestLintTask, isStub: Boolean = fa
       private fun createErrorMessage(
         context: JavaContext,
         locationNode: UElement,
-        message: String
+        message: String,
       ): String {
         val writer = StringWriter()
         writer.write("\n")

@@ -39,13 +39,7 @@ internal class NetworkInspectorTest {
 
   @Test
   fun speedDataCollection() = runBlocking {
-    trafficStatsProvider.setData(
-      Stat(0, 0),
-      Stat(10, 10),
-      Stat(20, 10),
-      Stat(20, 20),
-      Stat(20, 30),
-    )
+    trafficStatsProvider.setData(Stat(0, 0), Stat(10, 10), Stat(20, 10), Stat(20, 20), Stat(20, 30))
     inspectorRule.start()
     delay(1000)
 
@@ -125,7 +119,7 @@ internal class NetworkInspectorTest {
 
     assertThat(logger.messages.filter { !it.contains("studio.inspectors") })
       .containsExactly(
-        "DEBUG: Network Inspector: Did not instrument OkHttpClient. App does not use OKHttp or class is omitted by app reduce",
+        "DEBUG: Network Inspector: Did not instrument OkHttpClient. App does not use OKHttp or class is omitted by app reduce"
       )
   }
 
@@ -158,7 +152,7 @@ internal class NetworkInspectorTest {
 
     assertThat(logger.messages.filter { !it.contains("studio.inspectors") })
       .containsExactly(
-        "DEBUG: Network Inspector: Did not instrument 'ManagedChannelBuilder'. App does not use gRPC or class is omitted by app reduce",
+        "DEBUG: Network Inspector: Did not instrument 'ManagedChannelBuilder'. App does not use gRPC or class is omitted by app reduce"
       )
   }
 
@@ -170,7 +164,7 @@ internal class NetworkInspectorTest {
         override fun <T : Any?> registerExitHook(
           originClass: Class<*>,
           originMethod: String,
-          exitHook: ArtTooling.ExitHook<T>
+          exitHook: ArtTooling.ExitHook<T>,
         ) {
           if (originClass.name.endsWith(rejectClassName)) {
             throw NoClassDefFoundError()
@@ -189,10 +183,8 @@ internal class NetworkInspectorTest {
   }
 }
 
-private fun speedEvent(
-  rxSpeed: Long,
-  txSpeed: Long,
-) = SpeedEvent.newBuilder().setRxSpeed(rxSpeed).setTxSpeed(txSpeed).build().toDebugString()
+private fun speedEvent(rxSpeed: Long, txSpeed: Long) =
+  SpeedEvent.newBuilder().setRxSpeed(rxSpeed).setTxSpeed(txSpeed).build().toDebugString()
 
 // Proto.toString is hard to read because fields with default values are elided
 private fun SpeedEvent.toDebugString() = "rx=$rxSpeed tx=$txSpeed"

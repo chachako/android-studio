@@ -89,7 +89,7 @@ class StorageDetector : Detector(), SourceCodeScanner {
         priority = 3,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = Implementation(StorageDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(StorageDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
   }
 }

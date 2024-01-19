@@ -208,7 +208,7 @@ internal class OkHttp2Test {
     inspectorRule.environment.fakeArtTooling.triggerExitHook(
       OkHttpClient::class.java,
       "networkInterceptors()Ljava/util/List;",
-      networkInterceptors()
+      networkInterceptors(),
     )
     return this
   }

@@ -54,7 +54,7 @@ class InvalidNotificationIdDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 

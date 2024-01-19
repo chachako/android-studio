@@ -68,7 +68,7 @@ class PropertyFileDetector : Detector() {
     contents: CharSequence,
     offset: Int,
     line: String,
-    valueStart: Int
+    valueStart: Int,
   ) {
     val distributionPrefix = "distributionUrl=http\\"
     if (line.startsWith(distributionPrefix)) {
@@ -170,7 +170,7 @@ class PropertyFileDetector : Detector() {
     contents: CharSequence,
     line: String,
     offset: Int,
-    valueStart: Int
+    valueStart: Int,
   ) {
     var escaped = false
     var hadNonPathEscape = false
@@ -249,7 +249,7 @@ class PropertyFileDetector : Detector() {
         category = Category.CORRECTNESS,
         priority = 6,
         severity = Severity.ERROR,
-        implementation = Implementation(PropertyFileDetector::class.java, Scope.PROPERTY_SCOPE)
+        implementation = Implementation(PropertyFileDetector::class.java, Scope.PROPERTY_SCOPE),
       )
 
     /** Using HTTP instead of HTTPS for the wrapper. */
@@ -268,7 +268,7 @@ class PropertyFileDetector : Detector() {
         category = Category.SECURITY,
         priority = 6,
         severity = Severity.WARNING,
-        implementation = Implementation(PropertyFileDetector::class.java, Scope.PROPERTY_SCOPE)
+        implementation = Implementation(PropertyFileDetector::class.java, Scope.PROPERTY_SCOPE),
       )
 
     /** Using HTTP instead of HTTPS for the wrapper. */
@@ -285,7 +285,7 @@ class PropertyFileDetector : Detector() {
         category = Category.SECURITY,
         priority = 2,
         severity = Severity.WARNING,
-        implementation = Implementation(PropertyFileDetector::class.java, Scope.PROPERTY_SCOPE)
+        implementation = Implementation(PropertyFileDetector::class.java, Scope.PROPERTY_SCOPE),
       )
 
     fun suggestEscapes(value: String): String {

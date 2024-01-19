@@ -61,7 +61,7 @@ class CipherGetInstanceDetector : Detector(), SourceCodeScanner {
           node,
           expression,
           transformation,
-          expression !is ULiteralExpression
+          expression !is ULiteralExpression,
         )
       }
     }
@@ -94,7 +94,7 @@ class CipherGetInstanceDetector : Detector(), SourceCodeScanner {
     call: UCallExpression,
     node: UElement,
     transformation: String,
-    includeValue: Boolean
+    includeValue: Boolean,
   ) {
     if (ALGORITHM_ONLY.contains(transformation)) {
       val message =
@@ -117,7 +117,7 @@ class CipherGetInstanceDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     call: UCallExpression,
     node: UElement,
-    provider: String
+    provider: String,
   ) {
     if (provider == "BC") {
       val atLeastP = ApiConstraint.get(28)
@@ -169,7 +169,7 @@ class CipherGetInstanceDetector : Detector(), SourceCodeScanner {
         severity = Severity.WARNING,
         androidSpecific = true,
         implementation =
-          Implementation(CipherGetInstanceDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(CipherGetInstanceDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     @JvmField
@@ -188,7 +188,7 @@ class CipherGetInstanceDetector : Detector(), SourceCodeScanner {
           severity = Severity.WARNING,
           androidSpecific = true,
           implementation =
-            Implementation(CipherGetInstanceDetector::class.java, Scope.JAVA_FILE_SCOPE)
+            Implementation(CipherGetInstanceDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
         .addMoreInfo("https://goo.gle/DeprecatedProvider")
 

@@ -48,7 +48,7 @@ class ScopedStorageDetector : Detector(), XmlScanner {
 
   private data class StoragePermissions(
     val canManageStorage: Boolean,
-    val requestedLegacyStorage: Boolean
+    val requestedLegacyStorage: Boolean,
   )
 
   override fun getApplicableElements() = listOf(TAG_USES_PERMISSION)
@@ -63,7 +63,7 @@ class ScopedStorageDetector : Detector(), XmlScanner {
       val incident = Incident(ISSUE, context.getValueLocation(permission), "")
       context.report(
         incident,
-        map().put(ATTR_MAX_SDK_VERSION, maxSdk).put(ATTR_READ, value == READ_STORAGE)
+        map().put(ATTR_MAX_SDK_VERSION, maxSdk).put(ATTR_READ, value == READ_STORAGE),
       )
     }
 
@@ -73,7 +73,7 @@ class ScopedStorageDetector : Detector(), XmlScanner {
         Incident(
           ISSUE,
           context.getValueLocation(permission),
-          "The Google Play store has a policy that limits usage of MANAGE_EXTERNAL_STORAGE"
+          "The Google Play store has a policy that limits usage of MANAGE_EXTERNAL_STORAGE",
         )
       context.report(incident)
     }
@@ -205,7 +205,7 @@ class ScopedStorageDetector : Detector(), XmlScanner {
         severity = Severity.WARNING,
         androidSpecific = true,
         implementation = Implementation(ScopedStorageDetector::class.java, Scope.MANIFEST_SCOPE),
-        moreInfo = "https://goo.gle/android-storage-usecases"
+        moreInfo = "https://goo.gle/android-storage-usecases",
       )
   }
 }

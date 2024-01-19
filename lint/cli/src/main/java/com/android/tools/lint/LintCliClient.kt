@@ -223,14 +223,14 @@ open class LintCliClient : LintClient {
       registry,
       lintRequest,
       analyze = { driver.analyze() },
-      finish = { performReporting() }
+      finish = { performReporting() },
     )
   }
 
   override fun addCustomLintRules(
     registry: IssueRegistry,
     driver: LintDriver?,
-    warnDeprecated: Boolean
+    warnDeprecated: Boolean,
   ): IssueRegistry {
     val custom = super.addCustomLintRules(registry, driver, warnDeprecated)
 
@@ -266,7 +266,7 @@ open class LintCliClient : LintClient {
           LintResourceRepository.get(this, project, ResourceRepositoryScope.PROJECT_ONLY)
         }
         ERRNO_INTERNAL_CONTINUE
-      }
+      },
     )
   }
 
@@ -282,7 +282,7 @@ open class LintCliClient : LintClient {
       registry,
       lintRequest,
       analyze = { driver.mergeOnly() },
-      finish = { performReporting() }
+      finish = { performReporting() },
     )
   }
 
@@ -296,7 +296,7 @@ open class LintCliClient : LintClient {
     registry: IssueRegistry,
     lintRequest: LintRequest,
     analyze: () -> Unit,
-    finish: () -> Int = { ERRNO_INTERNAL_CONTINUE }
+    finish: () -> Int = { ERRNO_INTERNAL_CONTINUE },
   ): Int {
     val startTime = System.currentTimeMillis()
     this.registry = registry
@@ -371,7 +371,7 @@ open class LintCliClient : LintClient {
         writeBaselineFile(
           stats,
           file = fileToWrite,
-          writeEmptyBaseline = !flags.missingBaselineIsEmptyBaseline || outputBaselineFile != null
+          writeEmptyBaseline = !flags.missingBaselineIsEmptyBaseline || outputBaselineFile != null,
         )
       if (exitCode != ERRNO_INTERNAL_CONTINUE) {
         return exitCode
@@ -417,7 +417,7 @@ open class LintCliClient : LintClient {
       reporter.write(
         stats,
         listOf(definiteIncidents.first { it.severity.isError }),
-        driver.registry
+        driver.registry,
       )
     }
 
@@ -644,7 +644,7 @@ open class LintCliClient : LintClient {
     library: Project,
     libraryConfigured: Map<String, Severity>,
     main: Project,
-    mainContext: Context
+    mainContext: Context,
   ) {
     val registry = registry!!
     val mainConfiguration = main.getConfiguration(driver)
@@ -669,7 +669,7 @@ open class LintCliClient : LintClient {
           Incident(
             IssueRegistry.CANNOT_ENABLE_HIDDEN,
             location,
-            "Issue `$issue` was configured with severity `$appSeverity` in ${main.name}, but was not enabled (or was disabled) in library ${library.name}"
+            "Issue `$issue` was configured with severity `$appSeverity` in ${main.name}, but was not enabled (or was disabled) in library ${library.name}",
           )
         )
       }
@@ -686,7 +686,7 @@ open class LintCliClient : LintClient {
     main: Project,
     mainContext: Context,
     definiteMap: Map<Project, List<Incident>>,
-    provisionalMap: Map<Project, List<Incident>>
+    provisionalMap: Map<Project, List<Incident>>,
   ) {
     val projectContext = Context(driver, library, main, main.dir)
 
@@ -753,7 +753,7 @@ open class LintCliClient : LintClient {
   private fun emitBaselineDiagnostics(
     baseline: LintBaseline,
     baselineFile: File,
-    stats: LintStats
+    stats: LintStats,
   ) {
     var hasConsoleOutput = false
     for (reporter in flags.reporters) {
@@ -781,7 +781,7 @@ open class LintCliClient : LintClient {
             stats.baselineErrorCount,
             stats.baselineWarningCount,
             comma = false,
-            capitalize = true
+            capitalize = true,
           )
         print(" ($count filtered by baseline ${baselineFile.name})")
       } else {
@@ -860,7 +860,7 @@ open class LintCliClient : LintClient {
           driver: LintDriver,
           type: LintListener.EventType,
           project: Project?,
-          context: Context?
+          context: Context?,
         ) {
           if (
             !validatedIds &&
@@ -913,7 +913,7 @@ open class LintCliClient : LintClient {
           driver: LintDriver,
           type: LintListener.EventType,
           project: Project?,
-          context: Context?
+          context: Context?,
         ) {
           // Some build systems such as Gradle use Thread.interrupt() to cancel workers.
           if (Thread.currentThread().isInterrupted) {
@@ -1073,7 +1073,7 @@ open class LintCliClient : LintClient {
         message = message,
         location = Location.create(incident.file),
         project = incident.project,
-        driver = driver
+        driver = driver,
       )
     }
 
@@ -1164,7 +1164,7 @@ open class LintCliClient : LintClient {
             classPath.getLibraries(false),
             classPath.testSourceFolders,
             classPath.testLibraries,
-            classPath.generatedFolders
+            classPath.generatedFolders,
           )
         val map =
           projectInfoMap
@@ -1247,7 +1247,7 @@ open class LintCliClient : LintClient {
     project: Project?,
     registry: IssueRegistry,
     ids: Collection<String>?,
-    file: File? = null
+    file: File? = null,
   ) {
     if (ids != null) {
       for (id in ids) {
@@ -1262,7 +1262,7 @@ open class LintCliClient : LintClient {
     project: Project?,
     registry: IssueRegistry,
     id: String,
-    file: File? = null
+    file: File? = null,
   ) {
     if (IssueRegistry.isDeletedIssueId(id)) {
       // Recently deleted, but avoid complaining about leftover configuration
@@ -1288,7 +1288,7 @@ open class LintCliClient : LintClient {
         driver,
         project,
         location,
-        LintFix.create().data(ATTR_ID, id)
+        LintFix.create().data(ATTR_ID, id),
       )
     } else {
       log(Severity.WARNING, null, "Lint: %1\$s", message)
@@ -1383,7 +1383,7 @@ open class LintCliClient : LintClient {
           jdkHome,
           !flags.isIgnoreTestSources,
           !flags.isIgnoreTestFixturesSources,
-          isUnitTest
+          isUnitTest,
         )
       }
     val maxLevel =
@@ -1401,7 +1401,7 @@ open class LintCliClient : LintClient {
     val config =
       UastEnvironment.Configuration.create(
         enableKotlinScripting = mayNeedKotlinScripting(allProjects),
-        useFirUast = flags.useK2Uast() || useFirUast()
+        useFirUast = flags.useK2Uast() || useFirUast(),
       )
     config.javaLanguageLevel = maxLevel
     config.addModules(allModules, getBootClassPath(knownProjects))
@@ -1538,7 +1538,7 @@ open class LintCliClient : LintClient {
     return if (isGradle || currentPlatform() == PLATFORM_WINDOWS) {
       createUrlClassLoader(
         urls.map { File(UrlClassLoader.urlToFilePath(it.path)) }.toList(),
-        parent
+        parent,
       )
     } else {
       @Suppress("DEPRECATION") super.createUrlClassLoader(urls, parent)
@@ -1644,7 +1644,7 @@ open class LintCliClient : LintClient {
             // ensure that all names are made fully qualified?
             ManifestMerger2.Invoker.Feature.SKIP_BLAME,
             ManifestMerger2.Invoker.Feature.SKIP_XML_STRING,
-            ManifestMerger2.Invoker.Feature.NO_PLACEHOLDER_REPLACEMENT
+            ManifestMerger2.Invoker.Feature.NO_PLACEHOLDER_REPLACEMENT,
           )
           .addLibraryManifests(*manifests.toTypedArray())
           .withFileStreamProvider(
@@ -1716,7 +1716,7 @@ open class LintCliClient : LintClient {
     override fun prepare(
       contexts: List<JavaContext>,
       javaLanguageLevel: LanguageLevel?,
-      kotlinLanguageLevel: LanguageVersionSettings?
+      kotlinLanguageLevel: LanguageVersionSettings?,
     ): Boolean {
       // If we're using Kotlin, ensure we initialize the bridge
       val kotlinFiles: MutableList<File> = ArrayList()
@@ -1785,14 +1785,14 @@ open class LintCliClient : LintClient {
       annotationsManager.updateAnnotationRoots(
         this@LintCliClient,
         target,
-        target == null && projects.isNotEmpty()
+        target == null && projects.isNotEmpty(),
       )
       return ok
     }
 
     override fun createEvaluator(
       project: Project?,
-      p: com.intellij.openapi.project.Project
+      p: com.intellij.openapi.project.Project,
     ): DefaultJavaEvaluator {
       return object : DefaultJavaEvaluator(p, project!!) {
         override fun findClass(qualifiedName: String): PsiClass? {

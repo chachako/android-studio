@@ -96,7 +96,7 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
  */
 abstract class DataFlowAnalyzer(
   val initial: Collection<UElement>,
-  initialReferences: Collection<PsiVariable> = emptyList()
+  initialReferences: Collection<PsiVariable> = emptyList(),
 ) : AbstractUastVisitor() {
 
   /** The instance being tracked is the receiver for a method call. */
@@ -814,7 +814,7 @@ abstract class DataFlowAnalyzer(
           element.getParentOfType<UElement>(
             false,
             UBlockExpression::class.java,
-            UIfExpression::class.java
+            UIfExpression::class.java,
           ) ?: return
 
         if (initialBlock === block) {
@@ -1011,7 +1011,7 @@ abstract class DataFlowAnalyzer(
     fun getVariableElement(
       rhs: UCallExpression,
       allowChainedCalls: Boolean,
-      allowFields: Boolean
+      allowFields: Boolean,
     ): PsiVariable? {
       var parent = skipParenthesizedExprUp(rhs.getQualifiedParentOrThis().uastParent)
 
@@ -1062,7 +1062,7 @@ abstract class DataFlowAnalyzer(
  */
 open class EscapeCheckingDataFlowAnalyzer(
   initial: Collection<UElement>,
-  initialReferences: Collection<PsiVariable> = emptyList()
+  initialReferences: Collection<PsiVariable> = emptyList(),
 ) : DataFlowAnalyzer(initial, initialReferences) {
   var escaped: Boolean = false
 
@@ -1097,7 +1097,7 @@ open class EscapeCheckingDataFlowAnalyzer(
  */
 abstract class TargetMethodDataFlowAnalyzer(
   initial: Collection<UElement>,
-  initialReferences: Collection<PsiVariable> = emptyList()
+  initialReferences: Collection<PsiVariable> = emptyList(),
 ) : EscapeCheckingDataFlowAnalyzer(initial, initialReferences) {
   var targetReached = false
   var targetReference: UElement? = null
@@ -1125,7 +1125,7 @@ abstract class TargetMethodDataFlowAnalyzer(
     name: String,
     method: PsiMethod?,
     call: UCallExpression?,
-    methodRef: UCallableReferenceExpression?
+    methodRef: UCallableReferenceExpression?,
   ): Boolean {
     return isTargetMethod(name, method)
   }
@@ -1254,7 +1254,7 @@ abstract class TargetMethodDataFlowAnalyzer(
     fun create(
       source: UElement,
       methodName: String,
-      containingClass: String?
+      containingClass: String?,
     ): TargetMethodDataFlowAnalyzer {
       return object : TargetMethodDataFlowAnalyzer(listOf(source)) {
         override fun isTargetMethodName(name: String): Boolean {
@@ -1282,7 +1282,7 @@ abstract class TargetMethodDataFlowAnalyzer(
  */
 fun UMethod.isMissingTarget(
   analyzer: TargetMethodDataFlowAnalyzer,
-  allowEscape: Boolean = false
+  allowEscape: Boolean = false,
 ): Boolean {
   accept(analyzer)
   return analyzer.isMissingTarget(this, allowEscape)

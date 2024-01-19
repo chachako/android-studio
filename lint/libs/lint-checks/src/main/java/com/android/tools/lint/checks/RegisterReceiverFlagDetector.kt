@@ -61,11 +61,7 @@ class RegisterReceiverFlagDetector : Detector(), SourceCodeScanner {
     val evaluator = ConstantEvaluator().allowFieldInitializers()
 
     val (isProtected, unprotectedActionsList) =
-      checkIsProtectedReceiverAndReturnUnprotectedActions(
-        filterArg,
-        node,
-        context.evaluator,
-      )
+      checkIsProtectedReceiverAndReturnUnprotectedActions(filterArg, node, context.evaluator)
 
     if (!isProtected) {
       val flags = evaluator.evaluate(flagsArg) as? Int
@@ -85,9 +81,9 @@ class RegisterReceiverFlagDetector : Detector(), SourceCodeScanner {
             node,
             context.getLocation(node),
             message,
-            buildAlternativesFix(context, filterArg, false)
+            buildAlternativesFix(context, filterArg, false),
           ),
-          lintMap
+          lintMap,
         )
       } else if (flags != null && (flags and RECEIVER_EXPORTED_FLAG_PRESENT_MASK) == 0) {
         context.report(
@@ -96,9 +92,9 @@ class RegisterReceiverFlagDetector : Detector(), SourceCodeScanner {
             node,
             context.getLocation(flagsArg),
             message,
-            buildAlternativesFix(context, flagsArg, true)
+            buildAlternativesFix(context, flagsArg, true),
           ),
-          lintMap
+          lintMap,
         )
       }
     }
@@ -157,8 +153,8 @@ class RegisterReceiverFlagDetector : Detector(), SourceCodeScanner {
         implementation =
           Implementation(
             RegisterReceiverFlagDetector::class.java,
-            EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES)
-          )
+            EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES),
+          ),
       )
 
     private fun buildAlternativesFix(
@@ -169,14 +165,14 @@ class RegisterReceiverFlagDetector : Detector(), SourceCodeScanner {
       LintFix.create()
         .alternatives(
           buildFlagFix(context, arg, isFlagsArg),
-          buildFlagFix(context, arg, isFlagsArg, true)
+          buildFlagFix(context, arg, isFlagsArg, true),
         )
 
     private fun buildFlagFix(
       context: JavaContext,
       arg: UExpression,
       isFlagsArg: Boolean,
-      exported: Boolean = false
+      exported: Boolean = false,
     ): LintFix {
 
       val addFlagText = if (exported) FLAG_EXPORTED_STR else FLAG_NOT_EXPORTED_STR

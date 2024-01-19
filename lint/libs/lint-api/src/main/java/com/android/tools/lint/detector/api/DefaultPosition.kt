@@ -23,5 +23,5 @@ data class DefaultPosition(
   /** The column number (where the first character on the line is 0), or -1 if unknown. */
   override val column: Int,
   /** The character offset. */
-  override val offset: Int
+  override val offset: Int,
 ) : Position()

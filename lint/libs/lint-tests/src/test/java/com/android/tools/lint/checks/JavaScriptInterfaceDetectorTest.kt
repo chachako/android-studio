@@ -28,7 +28,7 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
         annotatedObject,
         inheritsFromAnnotated,
         nonAnnotatedObject,
-        javaScriptTest
+        javaScriptTest,
       )
       .run()
       .expectClean()
@@ -59,7 +59,7 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -126,7 +126,7 @@ class JavaScriptInterfaceDetectorTest : AbstractCheckTest() {
         annotatedObject,
         inheritsFromAnnotated,
         nonAnnotatedObject,
-        javaScriptTest
+        javaScriptTest,
       )
       .run()
       .expect(expected)

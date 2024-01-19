@@ -60,7 +60,7 @@ class PrivateApiClass(name: String) : ApiClassBase(name) {
   internal override fun writeMemberData(
     info: Api<out ApiClassBase>,
     member: String,
-    buffer: ByteBuffer
+    buffer: ByteBuffer,
   ) {
     val payload = (if (member.indexOf('(') >= 0) methods[member] else fields[member]) ?: return
 

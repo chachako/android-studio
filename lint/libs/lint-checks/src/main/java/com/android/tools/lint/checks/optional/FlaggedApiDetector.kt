@@ -87,7 +87,7 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val FLAGGED_API_ANNOTATION = "android.annotation.FlaggedApi"
@@ -118,7 +118,7 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val flag = getFlaggedApi(annotationInfo.annotation)
     if (flag == null) {
@@ -132,7 +132,7 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
               ISSUE,
               expression,
               context.getLocation(expression),
-              "Invalid @FlaggedApi descriptor; should be `package.name`"
+              "Invalid @FlaggedApi descriptor; should be `package.name`",
             )
             return
           }
@@ -143,7 +143,7 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
             expression,
             context.getLocation(expression),
             "@FlaggedApi should specify an actual flag constant; " +
-              "raw strings are discouraged (and more importantly, **not enforced**)"
+              "raw strings are discouraged (and more importantly, **not enforced**)",
           )
         incident.overrideSeverity(Severity.WARNING)
         context.report(incident)
@@ -202,7 +202,7 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
   private fun isAlreadyAnnotated(
     evaluator: JavaEvaluator,
     element: UElement?,
-    flag: PsiField
+    flag: PsiField,
   ): Boolean {
     var current = element
     while (current != null) {
@@ -248,7 +248,7 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
   private fun isFlagChecked(
     element: UElement,
     flagClass: PsiClass,
-    flagMethodName: String
+    flagMethodName: String,
   ): Boolean {
     var curr = element.uastParent ?: return false
 
@@ -319,7 +319,7 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
   private fun isFlagExpression(
     element: UElement,
     flagClass: PsiClass,
-    flagMethodName: String
+    flagMethodName: String,
   ): Boolean {
     if (element is UUnaryExpression && element.operator == UastPrefixOperator.LOGICAL_NOT) {
       return !isFlagExpression(element.operand, flagClass, flagMethodName)

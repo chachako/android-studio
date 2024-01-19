@@ -49,7 +49,7 @@ class IgnoreWithoutReasonDetector : Detector(), Detector.UastScanner {
                 annotation, but with this option you can configure whether it should \
                 also allow ignore reasons to specified by a comment adjacent to \
                 the ignore tag.
-                """
+                """,
       )
 
     @JvmField
@@ -67,8 +67,8 @@ class IgnoreWithoutReasonDetector : Detector(), Detector.UastScanner {
           implementation =
             Implementation(
               IgnoreWithoutReasonDetector::class.java,
-              EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES)
-            )
+              EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES),
+            ),
         )
         .setOptions(listOf(ALLOW_COMMENT))
   }
@@ -82,7 +82,7 @@ class IgnoreWithoutReasonDetector : Detector(), Detector.UastScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val node = annotationInfo.annotation
     val parent = node.uastParent ?: return
@@ -114,7 +114,7 @@ class IgnoreWithoutReasonDetector : Detector(), Detector.UastScanner {
         parent,
         context.getLocation(node),
         "Test is ignored without giving any explanation",
-        fix
+        fix,
       )
     }
   }

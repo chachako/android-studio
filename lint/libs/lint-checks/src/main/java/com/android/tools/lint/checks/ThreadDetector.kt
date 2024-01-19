@@ -65,7 +65,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       WORKER_THREAD_ANNOTATION.oldName(),
       WORKER_THREAD_ANNOTATION.newName(),
       ANY_THREAD_ANNOTATION.oldName(),
-      ANY_THREAD_ANNOTATION.newName()
+      ANY_THREAD_ANNOTATION.newName(),
     )
 
   override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean =
@@ -90,7 +90,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     if (usageInfo.anyCloser { it.isThreadingAnnotation() }) {
       return
@@ -113,7 +113,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
           element,
           method,
           getThreadContext(context, element) ?: return,
-          getThreadsFromMethod(context, method) ?: return
+          getThreadsFromMethod(context, method) ?: return,
         )
       }
       METHOD_CALL_PARAMETER,
@@ -155,7 +155,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     node: UElement,
     method: PsiMethod,
     callerThreads: List<String>,
-    calleeThreads: List<String>
+    calleeThreads: List<String>,
   ) {
     if (calleeThreads.any { isCompatibleThread(callerThreads, it) }) {
       return
@@ -187,7 +187,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         if (method.isConstructor) "Constructor" else "Method",
         method.name,
         describeThreads(calleeThreads, true),
-        describeThreads(callerThreads, false)
+        describeThreads(callerThreads, false),
       )
     val location = context.getLocation(node)
     report(context, THREAD, node, location, message)
@@ -276,7 +276,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         callee,
         calleeNameIndex,
         caller.length - callerNameIndex,
-        false
+        false,
       )
     }
 
@@ -290,7 +290,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         UMethod::class.java,
         true,
         UAnonymousClass::class.java,
-        ULambdaExpression::class.java
+        ULambdaExpression::class.java,
       ) as? PsiMethod
 
     if (method != null) {
@@ -300,7 +300,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
           methodCall.getParentOfType<UObjectLiteralExpression>(
             UObjectLiteralExpression::class.java,
             true,
-            UCallExpression::class.java
+            UCallExpression::class.java,
           )
 
         // If it's an anonymous class, infer the context from the formal parameter
@@ -319,7 +319,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         ULambdaExpression::class.java,
         true,
         UAnonymousClass::class.java,
-        ULambdaExpression::class.java
+        ULambdaExpression::class.java,
       )
 
     return getThreadsFromExpressionContext(context, lambdaCall)
@@ -331,7 +331,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
    */
   private fun getThreadsFromExpressionContext(
     context: JavaContext,
-    lambdaCall: UExpression?
+    lambdaCall: UExpression?,
   ): List<String>? {
     val lambdaCallExpression = lambdaCall?.uastParent as? UCallExpression ?: return null
     val lambdaArgument = lambdaCallExpression.getParameterForArgument(lambdaCall) ?: return null
@@ -353,7 +353,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
   /** Attempts to infer the current thread context at the site of the given method call. */
   private fun getThreadsFromMethod(
     context: JavaContext,
-    originalMethod: PsiMethod?
+    originalMethod: PsiMethod?,
   ): List<String>? {
     var method = originalMethod
     if (method != null) {
@@ -406,7 +406,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
   private fun addThreadAnnotations(
     annotation: UAnnotation,
-    result: MutableList<String>?
+    result: MutableList<String>?,
   ): MutableList<String>? {
     var resultList = result
     val name = annotation.qualifiedName
@@ -461,7 +461,7 @@ class ThreadDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

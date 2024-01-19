@@ -96,7 +96,7 @@ class X509TrustManagerDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -211,7 +211,7 @@ class X509TrustManagerDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -259,7 +259,7 @@ class X509TrustManagerDetectorTest : AbstractCheckTest() {
             YTopvOELm0ek3X4p7IY8rJLzG11qpzP2h9U6wr5wEDUdZ+q3IKH9BXd1P2Ij
             hL0FjGNRIeTq50xnGe030s8rNgiEWqyV+L1UJ9SxGvtG7OrRTbAWVQ3NqFtz
             tf4BCHqzYQsCAAA=
-            """
+            """,
         )
       )
       .issues(X509TrustManagerDetector.TRUSTS_ALL)

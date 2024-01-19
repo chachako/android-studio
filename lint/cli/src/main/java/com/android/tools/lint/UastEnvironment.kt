@@ -91,7 +91,7 @@ interface UastEnvironment {
 
       fun mergeRoots(
         modules: List<Module>,
-        bootClassPaths: Iterable<File>?
+        bootClassPaths: Iterable<File>?,
       ): Pair<Set<File>, Set<File>> {
         fun mergedFiles(prop: (Module) -> Collection<File>): MutableSet<File> =
           modules.flatMapTo(mutableSetOf(), prop)
@@ -125,7 +125,7 @@ interface UastEnvironment {
 
     @Deprecated(
       "Pass real module structure through [addModules] instead of merging them",
-      ReplaceWith("addModules()")
+      ReplaceWith("addModules()"),
     )
     fun addClasspathRoots(classpathRoots: List<File>) {
       kotlinCompilerConfig.addJvmClasspathRoots(classpathRoots)
@@ -149,9 +149,7 @@ interface UastEnvironment {
      * using the environment, call [UastEnvironment.dispose].
      */
     @JvmStatic
-    fun create(
-      config: Configuration,
-    ): UastEnvironment {
+    fun create(config: Configuration): UastEnvironment {
       return when (config) {
         is FirUastEnvironment.Configuration -> FirUastEnvironment.create(config)
         is Fe10UastEnvironment.Configuration -> Fe10UastEnvironment.create(config)
@@ -215,7 +213,7 @@ interface UastEnvironment {
     internal val jdkHome: File?,
     includeTests: Boolean,
     includeTestFixtureSources: Boolean,
-    isUnitTest: Boolean
+    isUnitTest: Boolean,
   ) {
 
     enum class Variant {
@@ -271,7 +269,7 @@ interface UastEnvironment {
           instrumentationTestSourceFolders.takeIf { includeTests },
           testSourceFolders.takeIf { includeTests },
           generatedSourceFolders,
-          testFixturesSourceFolders.takeIf { includeTestFixtureSources }
+          testFixturesSourceFolders.takeIf { includeTestFixtureSources },
         )
       }
 
@@ -298,7 +296,7 @@ interface UastEnvironment {
             // As of 3.4, R.java is in a special jar file
             isGradleProject -> javaClassFolders.filter { it.name == SdkConstants.FN_R_CLASS_JAR }
             else -> null
-          }
+          },
         )
       }
 

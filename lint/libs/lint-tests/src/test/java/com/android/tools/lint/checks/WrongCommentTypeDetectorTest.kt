@@ -49,7 +49,7 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -94,7 +94,7 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -168,7 +168,7 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented(),
+          .indented()
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -192,7 +192,7 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -225,7 +225,7 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -278,7 +278,7 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
       baseline.sameMessage(
         WrongCommentTypeDetector.ISSUE,
         "This block comment looks like it was intended to be a KDoc comment",
-        "This block comment looks like it was intended to be a javadoc comment"
+        "This block comment looks like it was intended to be a javadoc comment",
       )
     )
 
@@ -286,7 +286,7 @@ class WrongCommentTypeDetectorTest : AbstractCheckTest() {
       baseline.sameMessage(
         WrongCommentTypeDetector.ISSUE,
         "This block comment looks like it was intended to be a javadoc comment",
-        "This block comment looks like it was intended to be a KDoc comment"
+        "This block comment looks like it was intended to be a KDoc comment",
       )
     )
   }

@@ -59,7 +59,7 @@ class InconsistentThreadingAnnotationDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -73,7 +73,7 @@ class InconsistentThreadingAnnotationDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     if (annotationInfo.origin == AnnotationOrigin.OUTER_CLASS) {
       // Threading annotations only apply to an immediate class, and so the annotations
@@ -105,14 +105,14 @@ class InconsistentThreadingAnnotationDetector : Detector(), SourceCodeScanner {
           ISSUE,
           element,
           context.getLocation(element),
-          "Overridden method needs to have a threading annotation matching the super method's annotation `$superAnnotation`"
+          "Overridden method needs to have a threading annotation matching the super method's annotation `$superAnnotation`",
         )
       } else if (overriddenMethodClassAnnotation != superAnnotation) {
         context.report(
           ISSUE,
           element,
           context.getLocation(element),
-          "Method's effective threading annotation `$overriddenMethodClassAnnotation` doesn't match the super method's annotation `$superAnnotation`"
+          "Method's effective threading annotation `$overriddenMethodClassAnnotation` doesn't match the super method's annotation `$superAnnotation`",
         )
       }
     } else if (overriddenMethodAnnotation != superAnnotation) {
@@ -120,7 +120,7 @@ class InconsistentThreadingAnnotationDetector : Detector(), SourceCodeScanner {
         ISSUE,
         element,
         context.getLocation(element),
-        "Method annotation `$overriddenMethodAnnotation` doesn't match the super method's annotation `$superAnnotation`"
+        "Method annotation `$overriddenMethodAnnotation` doesn't match the super method's annotation `$superAnnotation`",
       )
     }
   }

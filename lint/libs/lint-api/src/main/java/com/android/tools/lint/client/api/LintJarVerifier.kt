@@ -51,12 +51,12 @@ class LintJarVerifier(
   private val client: LintClient,
   private val jarFile: File,
   bytes: ByteArray,
-  private val skip: Boolean = false
+  private val skip: Boolean = false,
 ) : ClassVisitor(ASM9) {
   constructor(
     client: LintClient,
     jarFile: File,
-    skip: Boolean = false
+    skip: Boolean = false,
   ) : this(client, jarFile, jarFile.readBytes(), skip)
   /**
    * Is the class with the given [internal] class name part of an API we want to check for validity?
@@ -193,7 +193,7 @@ class LintJarVerifier(
         owner: String,
         name: String,
         descriptor: String,
-        isInterface: Boolean
+        isInterface: Boolean,
       ) {
         checkMethod(owner, name, descriptor)
         super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
@@ -385,7 +385,7 @@ class LintJarVerifier(
     name: String,
     signature: String?,
     superName: String?,
-    interfaces: Array<out String>?
+    interfaces: Array<out String>?,
   ) {
     currentClass = name
     currentSuperClass = superName
@@ -399,7 +399,7 @@ class LintJarVerifier(
     name: String?,
     descriptor: String?,
     signature: String?,
-    exceptions: Array<out String>?
+    exceptions: Array<out String>?,
   ): MethodVisitor {
     return methodVisitor
   }

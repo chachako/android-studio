@@ -111,7 +111,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
       OF_ARGB,
       OF_FLOAT,
       OF_OBJECT,
-      OF_PROPERTY_VALUES_HOLDER
+      OF_PROPERTY_VALUES_HOLDER,
     )
   }
 
@@ -121,7 +121,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
       SURFACE_CLS,
       VALUE_ANIMATOR_CLS,
       OBJECT_ANIMATOR_CLS,
-      ANIMATOR_SET_CLS
+      ANIMATOR_SET_CLS,
     )
   }
 
@@ -136,7 +136,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     val type = constructor.containingClass?.qualifiedName ?: return
     if (node.isThisOrSuperConstructorCall()) return
@@ -150,7 +150,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
   private fun checkResourceRecycled(
     context: JavaContext,
     node: UCallExpression,
-    method: PsiMethod
+    method: PsiMethod,
   ) {
     val name = method.name
 
@@ -263,7 +263,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     node: UCallExpression,
     originalRecycleType: String,
-    vararg recycleNames: String
+    vararg recycleNames: String,
   ) {
     // If it's an AutoCloseable in a try-with-resources clause, don't flag it: these will be
     // cleaned up automatically
@@ -290,7 +290,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
           name: String,
           method: PsiMethod?,
           call: UCallExpression?,
-          methodRef: UCallableReferenceExpression?
+          methodRef: UCallableReferenceExpression?,
         ): Boolean {
           if ("use" == name) {
             // Kotlin: "use" calls close; see issue 62377185
@@ -457,7 +457,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
   private fun checkTransactionCommits(
     context: JavaContext,
     node: UCallExpression,
-    calledMethod: PsiMethod
+    calledMethod: PsiMethod,
   ) {
     if (isBeginTransaction(context, calledMethod)) {
       val method = node.getParentOfType(UMethod::class.java) ?: return
@@ -481,7 +481,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
                   method,
                   FRAGMENT_TRANSACTION_ANDROIDX_CLS,
                   FRAGMENT_TRANSACTION_CLS,
-                  FRAGMENT_TRANSACTION_V4_CLS
+                  FRAGMENT_TRANSACTION_V4_CLS,
                 )
               SHOW ->
                 isMethodOnFragmentClass(
@@ -489,7 +489,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
                   method,
                   DIALOG_ANDROIDX_FRAGMENT,
                   DIALOG_FRAGMENT,
-                  DIALOG_V4_FRAGMENT
+                  DIALOG_V4_FRAGMENT,
                 )
               else -> false
             }
@@ -508,7 +508,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
     method: PsiMethod,
     fragmentClass: String,
     platformFragmentClass: String,
-    v4FragmentClass: String
+    v4FragmentClass: String,
   ): Boolean {
     // If we *can't* resolve the method call, caller can decide
     // whether to consider the method called or not
@@ -522,7 +522,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
   private fun checkEditorApplied(
     context: JavaContext,
     node: UCallExpression,
-    calledMethod: PsiMethod
+    calledMethod: PsiMethod,
   ) {
     if (isSharedEditorCreation(context, calledMethod)) {
       if (node.valueArguments.isNotEmpty()) {
@@ -543,7 +543,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
             name: String,
             method: PsiMethod?,
             call: UCallExpression?,
-            methodRef: UCallableReferenceExpression?
+            methodRef: UCallableReferenceExpression?,
           ): Boolean {
             when (name) {
               APPLY -> {
@@ -553,7 +553,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
                   return evaluator.extendsClass(
                     containingClass,
                     ANDROID_CONTENT_SHARED_PREFERENCES_EDITOR,
-                    false
+                    false,
                   )
                 } else if (call == null || call.valueArgumentCount == 0) {
                   // Couldn't find method but it *looks* like an apply call
@@ -569,7 +569,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
                     evaluator.extendsClass(
                       containingClass,
                       ANDROID_CONTENT_SHARED_PREFERENCES_EDITOR,
-                      false
+                      false,
                     )
                   ) {
                     return true
@@ -606,7 +606,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
       return (evaluator.implementsInterface(
         containingClass,
         ANDROID_CONTENT_SHARED_PREFERENCES,
-        false
+        false,
       ) && evaluator.typeMatches(type, ANDROID_CONTENT_SHARED_PREFERENCES_EDITOR))
     }
 
@@ -699,7 +699,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
         androidSpecific = true,
         priority = 7,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Problems with missing commit calls. */
@@ -716,7 +716,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
         androidSpecific = true,
         priority = 7,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Failing to commit a shared preference. */
@@ -733,7 +733,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
         androidSpecific = true,
         priority = 6,
         severity = Severity.WARNING,
-        implementation = Implementation(CleanupDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(CleanupDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     /** Using commit instead of apply on a shared preference. */
@@ -751,7 +751,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
         androidSpecific = true,
         priority = 6,
         severity = Severity.WARNING,
-        implementation = Implementation(CleanupDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(CleanupDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     // Target method names
@@ -835,7 +835,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
     fun getVariableElement(
       rhs: UCallExpression,
       allowChainedCalls: Boolean = false,
-      allowFields: Boolean = false
+      allowFields: Boolean = false,
     ): PsiVariable? {
       return DataFlowAnalyzer.getVariableElement(rhs, allowChainedCalls, allowFields)
     }

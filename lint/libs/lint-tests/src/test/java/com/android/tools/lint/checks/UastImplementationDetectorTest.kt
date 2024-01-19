@@ -128,7 +128,7 @@ class UastImplementationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *getLintClassPath()
+        *getLintClassPath(),
       )
       .skipTestModes(TestMode.IMPORT_ALIAS)
       .run()

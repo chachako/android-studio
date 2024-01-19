@@ -30,7 +30,7 @@ import com.android.tools.lint.detector.api.getSeverity
 open class CliConfiguration(
   configurations: ConfigurationHierarchy,
   private val flags: LintCliFlags,
-  private val fatalOnly: Boolean
+  private val fatalOnly: Boolean,
 ) : FlagConfiguration(configurations) {
   override fun fatalOnly(): Boolean = fatalOnly
 

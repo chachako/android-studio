@@ -207,7 +207,7 @@ class RequiresFeatureDetectorTest : AbstractCheckTest() {
                     val supportsFeatureX get() = FeatureChecker.hasFeature("some.name")
                 }
 
-                """
+                """,
           )
           .indented(),
         java(
@@ -233,7 +233,7 @@ class RequiresFeatureDetectorTest : AbstractCheckTest() {
                 }"""
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)

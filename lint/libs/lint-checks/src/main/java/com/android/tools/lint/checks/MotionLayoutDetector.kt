@@ -61,7 +61,7 @@ class MotionLayoutDetector : ResourceXmlDetector() {
           INVALID_SCENE_FILE_REFERENCE,
           location,
           "The motion scene file: ${reference.url} doesn't exist",
-          fix().name("Create ${reference.url}").data(KEY_URL, reference.url)
+          fix().name("Create ${reference.url}").data(KEY_URL, reference.url),
         )
       }
     }
@@ -92,7 +92,7 @@ class MotionLayoutDetector : ResourceXmlDetector() {
         element,
         context.getNameLocation(element),
         "The attribute: `$ATTR_CONSTRAINT_LAYOUT_DESCRIPTION` is missing",
-        fix().name("Create $sceneUrl and set attribute").data(KEY_URL, sceneUrl)
+        fix().name("Create $sceneUrl and set attribute").data(KEY_URL, sceneUrl),
       )
     } else {
       val model = resourceModel ?: ResourceUsageModel().also { resourceModel = it }
@@ -108,7 +108,7 @@ class MotionLayoutDetector : ResourceXmlDetector() {
           element,
           context.getValueLocation(description),
           "`${description.value}` is an invalid value for $ATTR_CONSTRAINT_LAYOUT_DESCRIPTION",
-          fix().name("Create $sceneUrl and set attribute").data(KEY_URL, sceneUrl)
+          fix().name("Create $sceneUrl and set attribute").data(KEY_URL, sceneUrl),
         )
       }
     }
@@ -140,7 +140,7 @@ class MotionLayoutDetector : ResourceXmlDetector() {
         category = Category.CORRECTNESS,
         priority = 8,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

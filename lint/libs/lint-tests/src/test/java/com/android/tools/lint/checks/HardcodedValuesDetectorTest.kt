@@ -36,7 +36,7 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                     <Button android:id="@+android:id/summary" android:contentDescription="@string/label" />
                     <ImageButton android:importantForAccessibility="no" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/android_button" android:focusable="false" android:clickable="false" android:layout_weight="1.0" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -75,7 +75,7 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                 </item>
 
             </menu>
-            """
+            """,
           )
           .indented()
       )
@@ -113,7 +113,7 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                         android:showAsAction="always"
                         android:icon="@drawable/ic_menu_plus1"/>
                 </menu>
-                """
+                """,
           )
           .indented()
       )
@@ -193,7 +193,7 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                     </Button>
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -268,7 +268,7 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                     </Button>
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -333,7 +333,7 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                         android:layout_height="wrap_content"
                         android:text="New Text" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -364,7 +364,7 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                         android:restrictionType="string"
                         android:title="Hardcoded title"/>
 
-                </restrictions>"""
+                </restrictions>""",
           )
           .indented(),
         xml(
@@ -376,9 +376,9 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                         android:title="Hardcoded title"/>
 
                 </myRoot>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -418,7 +418,7 @@ class HardcodedValuesDetectorTest : AbstractCheckTest() {
                      android:layout_height="wrap_content"
                      android:textOn="Hi tools!"
                      android:textOff="Bye tools!" />
-                 """
+                 """,
           )
           .indented()
       )

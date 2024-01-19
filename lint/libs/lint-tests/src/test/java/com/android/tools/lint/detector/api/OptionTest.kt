@@ -42,7 +42,7 @@ class OptionTest {
         """
                 Normally this lint check will flag all unannotated elements, but by \
                 setting this option to `true` it will skip any deprecated elements.
-                """
+                """,
       )
     private val stringOption =
       StringOption("namePrefix", "Prefix to prepend to suggested names", "my")
@@ -62,7 +62,7 @@ class OptionTest {
           category = Category.TESTING,
           priority = 10,
           severity = Severity.WARNING,
-          implementation = Implementation(TestOptionDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          implementation = Implementation(TestOptionDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
         .setOptions(
           listOf(
@@ -71,7 +71,7 @@ class OptionTest {
             stringOptionNoDefault,
             intOption,
             floatOption,
-            fileOption
+            fileOption,
           )
         )
   }
@@ -83,7 +83,7 @@ class OptionTest {
             namePrefix (default is "my"): Prefix to prepend to suggested names.
             """
         .trimIndent(),
-      stringOption.describe(TextFormat.TEXT, includeExample = false).trim()
+      stringOption.describe(TextFormat.TEXT, includeExample = false).trim(),
     )
 
     assertEquals(
@@ -91,7 +91,7 @@ class OptionTest {
             **suffix**: Suggested name suffix.
             """
         .trimIndent(),
-      stringOptionNoDefault.describe(TextFormat.RAW, includeExample = false).trim()
+      stringOptionNoDefault.describe(TextFormat.RAW, includeExample = false).trim(),
     )
 
     assertEquals(
@@ -100,7 +100,7 @@ class OptionTest {
             File listing names to be excluded.
             """
         .trimIndent(),
-      fileOption.describe(TextFormat.RAW, includeExample = false).trim().replace('\\', '/')
+      fileOption.describe(TextFormat.RAW, includeExample = false).trim().replace('\\', '/'),
     )
 
     assertEquals(
@@ -109,7 +109,7 @@ class OptionTest {
             Must be at least 10 and less than 50.
             """
         .trimIndent(),
-      intOption.describe(TextFormat.TEXT, includeExample = false).trim().replace('\\', '/')
+      intOption.describe(TextFormat.TEXT, includeExample = false).trim().replace('\\', '/'),
     )
 
     assertEquals(
@@ -118,7 +118,7 @@ class OptionTest {
             Must be less than 15.0.
             """
         .trimIndent(),
-      floatOption.describe(TextFormat.TEXT, includeExample = false).trim().replace('\\', '/')
+      floatOption.describe(TextFormat.TEXT, includeExample = false).trim().replace('\\', '/'),
     )
 
     assertEquals(
@@ -138,7 +138,7 @@ class OptionTest {
             </lint>
             """
         .trimIndent(),
-      booleanOption.describe(TextFormat.TEXT).trim()
+      booleanOption.describe(TextFormat.TEXT).trim(),
     )
 
     assertEquals(
@@ -159,7 +159,7 @@ class OptionTest {
             </pre>
             """
         .trimIndent(),
-      booleanOption.describe(TextFormat.HTML).trim()
+      booleanOption.describe(TextFormat.HTML).trim(),
     )
   }
 
@@ -198,7 +198,7 @@ class OptionTest {
             </pre>
             """
         .trimIndent(),
-      Option.describe(listOf(intOption, booleanOption), TextFormat.HTML).trim()
+      Option.describe(listOf(intOption, booleanOption), TextFormat.HTML).trim(),
     )
   }
 
@@ -325,9 +325,9 @@ class OptionTest {
                             <option name="duration" value="15.0" />
                         </issue>
                     </lint>
-                    """
+                    """,
           )
-          .indented()
+          .indented(),
       )
       .issues(issue)
       .run()
@@ -376,7 +376,7 @@ class OptionTest {
                         <option name="ignore-deprecated" value="enabled" />
                     </issue>
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -390,9 +390,9 @@ class OptionTest {
                             <option name="duration" value="false" />
                         </issue>
                     </lint>
-                    """
+                    """,
           )
-          .indented()
+          .indented(),
       )
       .issues(issue)
       .run()
@@ -433,7 +433,7 @@ class OptionTest {
     } catch (e: Throwable) {
       assertEquals(
         "Cannot combine lint.xml with `configureOption`; add options as <option> elements in your custom lint.xml instead",
-        e.message
+        e.message,
       )
     }
   }

@@ -35,7 +35,7 @@ import java.util.Locale
 class MultiProjectHtmlReporter(
   client: LintCliClient,
   private val dir: File,
-  private val flags: LintCliFlags
+  private val flags: LintCliFlags,
 ) : Reporter(client, File(dir, INDEX_NAME)) {
   @Throws(IOException::class)
   override fun write(stats: LintStats, issues: List<Incident>, registry: IssueRegistry) {
@@ -124,7 +124,7 @@ class MultiProjectHtmlReporter(
     val fileName: String,
     val errorCount: Int,
     val warningCount: Int,
-    val path: String
+    val path: String,
   ) : Comparable<ProjectEntry> {
     override fun compareTo(other: ProjectEntry): Int {
       var delta = other.errorCount - errorCount

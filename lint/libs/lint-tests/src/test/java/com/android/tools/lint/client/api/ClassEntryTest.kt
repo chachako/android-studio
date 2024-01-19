@@ -40,7 +40,7 @@ class ClassEntryTest {
           "Bar.class",
           "Foo\$Bar1\$Inner.class",
           "Foo\$Bar1.class",
-          "Bar1.class"
+          "Bar1.class",
         )
         .map { getTestClassEntry(it) }
     checkTransitiveComparator(classes)
@@ -53,7 +53,7 @@ class ClassEntryTest {
         "Foo\$Bar1.class\n" +
         "Foo\$Bar1\$Inner.class\n" +
         "Foo\$Bar2.class",
-      classes.sorted().joinToString("\n") { it.file.name }
+      classes.sorted().joinToString("\n") { it.file.name },
     )
   }
 
@@ -69,7 +69,7 @@ class ClassEntryTest {
     // Unsorted
     assertEquals(
       "" + "A.class\n" + "A\$1.class\n" + "A-\$ExternalSyntheticLambda0.class",
-      classes.sorted().joinToString("\n") { it.file.name }
+      classes.sorted().joinToString("\n") { it.file.name },
     )
   }
 
@@ -106,23 +106,23 @@ class ClassEntryTest {
             // OK
             "x.class",
             // broken file in the main jar content: should complain
-            classFileWithMajorVersion(255)
+            classFileWithMajorVersion(255),
           ),
           // multi-release jar files -- https://openjdk.java.net/jeps/238
           hexBytes(
             "META-INF/versions/16/x.class",
-            classFileWithMajorVersion(60) // JDK 16
+            classFileWithMajorVersion(60), // JDK 16
           ),
           hexBytes(
             "META-INF/versions/17/x.class",
-            classFileWithMajorVersion(61) // JDK 17
+            classFileWithMajorVersion(61), // JDK 17
           ),
           // Some speculative future version we *do* want flagged
           hexBytes(
             "META-INF/versions/128/x.class",
             // broken file in multi-release portion: do NOT complain
-            classFileWithMajorVersion(255) // JDK future
-          )
+            classFileWithMajorVersion(255), // JDK future
+          ),
         )
         .createFile(root)
 
@@ -139,7 +139,7 @@ class ClassEntryTest {
     }
     assertEquals(
       "Error: Error processing TESTROOT/parent.jar:x.class: broken class file? (Unsupported class file major version 255)",
-      client.getLoggedOutput().replace(root.path, "TESTROOT").portablePath()
+      client.getLoggedOutput().replace(root.path, "TESTROOT").portablePath(),
     )
     assertEquals(2, successfulVisits)
 

@@ -54,7 +54,7 @@ class ChildCountDetector : LayoutDetector() {
         category = Category.CORRECTNESS,
         priority = 8,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** The main issue discovered by this detector. */
@@ -71,7 +71,7 @@ class ChildCountDetector : LayoutDetector() {
         category = Category.CORRECTNESS,
         priority = 10,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -82,7 +82,7 @@ class ChildCountDetector : LayoutDetector() {
       LIST_VIEW,
       GRID_VIEW,
       CLASS_NESTED_SCROLL_VIEW.oldName(),
-      CLASS_NESTED_SCROLL_VIEW.newName()
+      CLASS_NESTED_SCROLL_VIEW.newName(),
       // TODO: Shouldn't Spinner be in this list too? (Was not there in layoutopt)
     )
 
@@ -105,7 +105,7 @@ class ChildCountDetector : LayoutDetector() {
           SCROLLVIEW_ISSUE,
           element,
           context.getNameLocation(element),
-          "A scroll view can have only one child"
+          "A scroll view can have only one child",
         )
       }
     } else {
@@ -115,7 +115,7 @@ class ChildCountDetector : LayoutDetector() {
           ADAPTER_VIEW_ISSUE,
           element,
           context.getNameLocation(element),
-          "A list/grid should have no children declared in XML"
+          "A list/grid should have no children declared in XML",
         )
       }
     }

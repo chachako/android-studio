@@ -35,7 +35,7 @@ interface ThreadReporter {
 
 private class ThreadReporterImpl(
   private val connection: Connection,
-  private val connectionId: Long
+  private val connectionId: Long,
 ) : ThreadReporter {
 
   private var lastThread: Thread? = null

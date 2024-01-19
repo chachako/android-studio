@@ -50,7 +50,7 @@ class WrongConstructorDetector : Detector(), SourceCodeScanner {
           category = Category.CORRECTNESS,
           priority = 4,
           severity = Severity.WARNING,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .setAliases(listOf("MethodNameSameAsClassName")) // IntelliJ inspection
   }
@@ -81,7 +81,7 @@ class WrongConstructorDetector : Detector(), SourceCodeScanner {
             ISSUE,
             node,
             context.getLocation(node),
-            "Method ${node.name} looks like a constructor but is a normal method"
+            "Method ${node.name} looks like a constructor but is a normal method",
           )
         }
       }

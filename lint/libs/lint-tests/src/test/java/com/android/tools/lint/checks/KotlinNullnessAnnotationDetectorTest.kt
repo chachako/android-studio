@@ -55,7 +55,7 @@ class KotlinNullnessAnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -152,7 +152,7 @@ class KotlinNullnessAnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -275,7 +275,7 @@ class KotlinNullnessAnnotationDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -329,7 +329,7 @@ class KotlinNullnessAnnotationDetectorTest : AbstractCheckTest() {
                 public @interface NotNull { }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -379,7 +379,7 @@ class KotlinNullnessAnnotationDetectorTest : AbstractCheckTest() {
                 public @interface Nonnull { }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

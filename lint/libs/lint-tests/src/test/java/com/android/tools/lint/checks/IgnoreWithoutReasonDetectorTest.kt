@@ -67,7 +67,7 @@ class IgnoreWithoutReasonDetectorTest {
                   }
                 }"""
           )
-          .indented()
+          .indented(),
       )
       .issues(IgnoreWithoutReasonDetector.ISSUE)
       .run()
@@ -93,7 +93,7 @@ class IgnoreWithoutReasonDetectorTest {
                   }
                 }"""
           )
-          .indented()
+          .indented(),
       )
       .issues(IgnoreWithoutReasonDetector.ISSUE)
       .run()
@@ -119,7 +119,7 @@ class IgnoreWithoutReasonDetectorTest {
                   }
                 }"""
           )
-          .indented()
+          .indented(),
       )
       .issues(IgnoreWithoutReasonDetector.ISSUE)
       .run()
@@ -145,7 +145,7 @@ class IgnoreWithoutReasonDetectorTest {
                   }
                 }"""
           )
-          .indented()
+          .indented(),
       )
       .issues(IgnoreWithoutReasonDetector.ISSUE)
       .run()
@@ -180,7 +180,7 @@ class IgnoreWithoutReasonDetectorTest {
                     }
                     """
           )
-          .indented()
+          .indented(),
       )
       .issues(IgnoreWithoutReasonDetector.ISSUE)
       .run()
@@ -220,7 +220,7 @@ class IgnoreWithoutReasonDetectorTest {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(IgnoreWithoutReasonDetector.ISSUE)
       .run()
@@ -310,7 +310,7 @@ class IgnoreWithoutReasonDetectorTest {
                     }
                     """
           )
-          .indented()
+          .indented(),
       )
       .issues(IgnoreWithoutReasonDetector.ISSUE)
       .configureOption(IgnoreWithoutReasonDetector.ALLOW_COMMENT, true)
@@ -345,7 +345,7 @@ class IgnoreWithoutReasonDetectorTest {
                       @Test public void test1() {
                       }
                     }
-                    """
+                    """,
           )
           .indented(),
       )
@@ -381,7 +381,7 @@ class IgnoreWithoutReasonDetectorTest {
                       @Test public void test1() {
                       }
                     }
-                    """
+                    """,
           )
           .indented(),
       )

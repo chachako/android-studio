@@ -89,7 +89,7 @@ class GradleModelMocker
 @JvmOverloads
 constructor(
   @field:Language("Groovy") @param:Language("Groovy") private val gradle: String,
-  @VisibleForTesting val projectDir: File = File("")
+  @VisibleForTesting val projectDir: File = File(""),
 ) : LintModelLibraryResolver {
 
   private class DepConf {
@@ -104,7 +104,7 @@ constructor(
       compileTarget = "android-" + SdkVersionInfo.HIGHEST_KNOWN_API,
       agpVersion = AgpVersion.parse("2.2.2"),
       javaSourceLevel = "1.7",
-      modulePath = "test_project-${projectDir.name}"
+      modulePath = "test_project-${projectDir.name}",
     )
   private var buildFeatures: TestLintModelBuildFeatures = TestLintModelBuildFeatures()
   private var defaultConfig: TestProductFlavor =
@@ -184,7 +184,7 @@ constructor(
 
   fun withLibraryPublicResourcesFile(
     library: String,
-    publicResourcesPath: String
+    publicResourcesPath: String,
   ): GradleModelMocker {
     ensureNotInitialized()
     libraryPublicResourcesFiles[library] = publicResourcesPath
@@ -357,20 +357,20 @@ constructor(
       val testSourceProviders =
         listOfNotNull(
           defaultConfig.instrumentationTestSourceProvider,
-          defaultConfig.unitTestSourceProvider
+          defaultConfig.unitTestSourceProvider,
         ) +
           productFlavorsInConfigOrder.flatMap {
             listOfNotNull(it.instrumentationTestSourceProvider, it.unitTestSourceProvider)
           } +
           listOfNotNull(
             buildType.instrumentationTestSourceProvider,
-            buildType.unitTestSourceProvider
+            buildType.unitTestSourceProvider,
           )
 
       val testFixturesSourceProviders =
         listOfNotNull(
           defaultConfig.testFixturesSourceProvider,
-          buildType.testFixturesSourceProvider
+          buildType.testFixturesSourceProvider,
         ) + productFlavorsInConfigOrder.mapNotNull { it.testFixturesSourceProvider }
       val generated = File(projectDir, "generated")
       val mergedFlavorsAndBuildType = merge(defaultConfig, productFlavors, buildType)
@@ -383,7 +383,7 @@ constructor(
           classOutputs =
             listOf(
               File(projectDir, "build/intermediates/javac/$variantName/classes"),
-              File(projectDir, "build/tmp/kotlin-classes/$variantName")
+              File(projectDir, "build/tmp/kotlin-classes/$variantName"),
             ),
           desugaredMethodsFiles = emptySet(),
           type = LintModelArtifactType.MAIN,
@@ -420,7 +420,7 @@ constructor(
               classOutputs =
                 listOf(
                   File(projectDir, "build/intermediates/javac/${variantName}TestFixtures/classes"),
-                  File(projectDir, "build/tmp/kotlin-classes/${variantName}TestFixtures")
+                  File(projectDir, "build/tmp/kotlin-classes/${variantName}TestFixtures"),
                 ),
               desugaredMethodsFiles = emptySet(),
               type = LintModelArtifactType.TEST_FIXTURES,
@@ -445,7 +445,7 @@ constructor(
           buildFeatures = buildFeatures,
           libraryResolver = this,
           partialResultsDir = null,
-          desugaredMethodsFiles = emptySet()
+          desugaredMethodsFiles = emptySet(),
         )
       )
     }
@@ -471,7 +471,7 @@ constructor(
 
   private fun buildVariantName(
     productFlavors: List<TestProductFlavor>,
-    buildType: TestBuildType? = null
+    buildType: TestBuildType? = null,
   ): String {
     return buildString {
       productFlavors.forEach { appendCamelCase(it.name) }
@@ -484,14 +484,14 @@ constructor(
   private fun merge(
     defaultConfig: TestProductFlavor,
     productFlavors: List<TestProductFlavor>,
-    buildType: TestBuildType
+    buildType: TestBuildType,
   ): TestProductFlavor {
 
     fun <T> combineValues(
       combine: (T?, T) -> T,
       f: TestProductFlavor.() -> T,
       b: (TestBuildType.() -> T)? = null,
-      reverseFlavors: Boolean = true
+      reverseFlavors: Boolean = true,
     ): T {
       return combine(
         productFlavors
@@ -504,9 +504,9 @@ constructor(
           .map { it.f() } // second
           .fold(
             if (b != null) buildType.b() else null, // first
-            combine
+            combine,
           ),
-        defaultConfig.f() // third
+        defaultConfig.f(), // third
       )
     }
 
@@ -574,7 +574,7 @@ constructor(
                 },
               requestedCoordinates = null,
               dependencies = emptyList(),
-              this
+              this,
             ) to it.provided
           },
           dep?.javaLibraries?.resolveConflicts()?.map {
@@ -586,7 +586,7 @@ constructor(
                 },
               requestedCoordinates = null,
               dependencies = emptyList(),
-              this
+              this,
             ) to it.provided
           },
           dep?.moduleLibraries?.map {
@@ -595,15 +595,15 @@ constructor(
               artifactName = "artifacts:${it.projectPath}",
               requestedCoordinates = null,
               dependencies = emptyList(),
-              this
+              this,
             ) to it.provided
-          }
+          },
         )
         .flatten()
 
     return TestLintModelDependencies(
       DefaultLintModelDependencyGraph(deps.map { it.first }, this),
-      DefaultLintModelDependencyGraph(deps.filter { !it.second }.map { it.first }, this)
+      DefaultLintModelDependencyGraph(deps.filter { !it.second }.map { it.first }, this),
     ) {
       this
     }
@@ -784,7 +784,7 @@ constructor(
           jarOutputStream.putNextEntry(ZipEntry("sample.txt"))
           ByteStreams.copy(
             ByteArrayInputStream("Sample".toByteArray(Charsets.UTF_8)),
-            jarOutputStream
+            jarOutputStream,
           )
           jarOutputStream.closeEntry()
         }
@@ -903,7 +903,7 @@ constructor(
     fun updateProjectType(
       moduleType: LintModelModuleType,
       hasJavaOrJavaLibraryPlugin: Boolean,
-      isLibrary: Boolean
+      isLibrary: Boolean,
     ): Boolean {
       this.hasJavaOrJavaLibraryPlugin = hasJavaOrJavaLibraryPlugin
       _isLibrary = isLibrary
@@ -918,38 +918,38 @@ constructor(
           updateProjectType(
             LintModelModuleType.LIBRARY,
             hasJavaOrJavaLibraryPlugin = false,
-            isLibrary = true
+            isLibrary = true,
           )
         "apply plugin: 'com.android.application'",
         "apply plugin: 'android'" ->
           updateProjectType(
             LintModelModuleType.APP,
             hasJavaOrJavaLibraryPlugin = false,
-            isLibrary = false
+            isLibrary = false,
           )
         "apply plugin: 'com.android.feature'" ->
           updateProjectType(
             LintModelModuleType.FEATURE,
             hasJavaOrJavaLibraryPlugin = false,
-            isLibrary = false
+            isLibrary = false,
           )
         "apply plugin: 'com.android.instantapp'" ->
           updateProjectType(
             LintModelModuleType.INSTANT_APP,
             hasJavaOrJavaLibraryPlugin = false,
-            isLibrary = false
+            isLibrary = false,
           )
         "apply plugin: 'java'" ->
           updateProjectType(
             LintModelModuleType.JAVA_LIBRARY,
             hasJavaOrJavaLibraryPlugin = true,
-            isLibrary = false
+            isLibrary = false,
           )
         "apply plugin: 'java-library'" ->
           updateProjectType(
             LintModelModuleType.LIBRARY,
             hasJavaOrJavaLibraryPlugin = true,
-            isLibrary = true
+            isLibrary = true,
           )
         else ->
           when {
@@ -1347,7 +1347,7 @@ constructor(
     lintConfig: File?,
     severities: Map<String, LintModelSeverity>?,
     tests: Boolean?,
-    dependencies: Boolean?
+    dependencies: Boolean?,
   ) {
     updateModule {
       it.copy(
@@ -1395,7 +1395,7 @@ constructor(
 
   private fun stripQuotes(
     string: String,
-    @Suppress("SameParameterValue") reportError: Boolean
+    @Suppress("SameParameterValue") reportError: Boolean,
   ): String {
     if (string.startsWith("'") && string.endsWith("'") && string.length >= 2) {
       return string.substring(1, string.length - 1)
@@ -1428,7 +1428,7 @@ constructor(
   private fun updateFlavorFromContext(
     context: String,
     defaultToDefault: Boolean = false,
-    f: (TestProductFlavor) -> TestProductFlavor
+    f: (TestProductFlavor) -> TestProductFlavor,
   ) {
     when {
       context == "android.defaultConfig" -> {
@@ -1472,7 +1472,7 @@ constructor(
                   createSourceProvider(projectDir, name, isDebugOnly = isDebuggable),
                 unitTestSourceProvider = null,
                 instrumentationTestSourceProvider = null,
-                testFixturesSourceProvider = null
+                testFixturesSourceProvider = null,
               )
             )
       } else {
@@ -1524,7 +1524,7 @@ constructor(
   private fun updateProductFlavor(
     name: String,
     create: Boolean,
-    f: (TestProductFlavor) -> TestProductFlavor
+    f: (TestProductFlavor) -> TestProductFlavor,
   ) {
     val index = productFlavors.indexOfFirst { it.name == name }
     if (index >= 0) {
@@ -1545,13 +1545,13 @@ constructor(
                 createSourceProvider(
                   projectDir,
                   "androidTest".appendCapitalized(name),
-                  isInstrumentationTest = true
+                  isInstrumentationTest = true,
                 ),
               testFixturesSourceProvider =
                 createSourceProvider(
                   projectDir,
                   "testFixtures".appendCapitalized(name),
-                  isTestFixture = true
+                  isTestFixture = true,
                 ),
             )
           )
@@ -1642,7 +1642,7 @@ constructor(
 
   private fun createAndroidLibrary(
     coordinateString: String,
-    isProvided: Boolean
+    isProvided: Boolean,
   ): TestLintModelAndroidLibrary {
     return createAndroidLibrary(coordinateString, null, isProvided, null)
   }
@@ -1651,7 +1651,7 @@ constructor(
     coordinateString: String,
     promotedTo: String?,
     isProvided: Boolean,
-    jar: File?
+    jar: File?,
   ): TestLintModelAndroidLibrary {
     var jar = jar
     val component = getComponent(coordinateString, promotedTo)
@@ -1681,14 +1681,14 @@ constructor(
         proguardRules = dir.resolve(File("proguard.pro")),
         externalAnnotations = dir.resolve(File(SdkConstants.FN_ANNOTATIONS_ZIP)),
         provided = isProvided,
-        partialResultsDir = null
+        partialResultsDir = null,
       )
     )
   }
 
   private fun createJavaLibrary(
     coordinateString: String,
-    isProvided: Boolean
+    isProvided: Boolean,
   ): TestLintModelJavaLibrary {
     return createJavaLibrary(coordinateString, null, isProvided, null)
   }
@@ -1697,7 +1697,7 @@ constructor(
     coordinateString: String,
     promotedTo: String?,
     isProvided: Boolean,
-    jar: File?
+    jar: File?,
   ): TestLintModelJavaLibrary {
     var jar = jar
     val component = getComponent(coordinateString, promotedTo)
@@ -1711,7 +1711,7 @@ constructor(
               // behavior stable
               "9c6ef172e8de35fd8d4d8783e4821e57cdef7445/" +
               "$name-$version${SdkConstants.DOT_JAR}"
-          }
+          },
         )
       if (!jar.exists()) {
         createEmptyJar(jar)
@@ -1724,7 +1724,7 @@ constructor(
         lintJar = null,
         jarFiles = listOf(jar),
         resolvedCoordinates = getMavenName(coordinateString),
-        partialResultsDir = null
+        partialResultsDir = null,
       )
     )
   }
@@ -1735,7 +1735,7 @@ constructor(
         provided = false,
         identifier = "artifacts:$name",
         lintJar = null,
-        projectPath = name
+        projectPath = name,
       )
     )
   }
@@ -1811,7 +1811,7 @@ constructor(
    */
   private fun parseDependencyGraph(
     graph: String,
-    map: MutableMap<String, Dep> = Maps.newHashMap()
+    map: MutableMap<String, Dep> = Maps.newHashMap(),
   ): List<Dep> {
     val lines = graph.split("\n").filter { it.isNotBlank() }.toTypedArray()
     // TODO: Check that it's using the expected graph format - e.g. indented to levels
@@ -2018,7 +2018,7 @@ constructor(
       isUnitTest: Boolean = false,
       isInstrumentationTest: Boolean = false,
       isDebugOnly: Boolean = false,
-      isTestFixture: Boolean = false
+      isTestFixture: Boolean = false,
     ): TestLintModelSourceProvider {
       return TestLintModelSourceProvider(
         name = name,
@@ -2029,7 +2029,7 @@ constructor(
         manifestFiles = listOf(File(root, "src/" + name + "/" + SdkConstants.ANDROID_MANIFEST_XML)),
         javaDirectories = listOf(File(root, "src/$name/java"), File(root, "src/$name/kotlin")),
         resDirectories = listOf(File(root, "src/$name/res")),
-        assetsDirectories = listOf(File(root, "src/$name/assets"))
+        assetsDirectories = listOf(File(root, "src/$name/assets")),
       )
     }
 
@@ -2110,10 +2110,7 @@ constructor(
   }
 }
 
-private data class WellKnownLib(
-  val groupAndName: String,
-  val dependencies: String,
-)
+private data class WellKnownLib(val groupAndName: String, val dependencies: String)
 
 private val wellKnownLibraries =
   listOf(
@@ -2139,7 +2136,7 @@ private val wellKnownLibraries =
 |    |    \--- com.android.support:support-compat:VERSION (*)
 |    \--- com.android.support:animated-vector-drawable:VERSION
 |         \--- com.android.support:support-vector-drawable:VERSION (*)
-"""
+""",
     ),
     WellKnownLib(
       "com.android.support:support-v4",
@@ -2158,14 +2155,14 @@ private val wellKnownLibraries =
 |         +--- com.android.support:support-media-compat:VERSION (*)
 |         +--- com.android.support:support-core-ui:VERSION (*)
 |         \--- com.android.support:support-core-utils:VERSION (*)
-"""
+""",
     ),
     WellKnownLib(
       "com.android.support.constraint:constraint-layout",
       """
 +--- com.android.support.constraint:constraint-layout:VERSION
      \--- com.android.support.constraint:constraint-layout-solver:VERSION
-"""
+""",
     ),
     WellKnownLib(
       "com.firebase:firebase-client-android",
@@ -2175,7 +2172,7 @@ private val wellKnownLibraries =
           +--- com.fasterxml.jackson.core:jackson-databind:2.2.2
           |    +--- com.fasterxml.jackson.core:jackson-annotations:2.2.2
           |    \--- com.fasterxml.jackson.core:jackson-core:2.2.2
-          \--- com.firebase:tubesock:0.0.12"""
+          \--- com.firebase:tubesock:0.0.12""",
     ),
     WellKnownLib(
       "com.android.support:design",
@@ -2185,7 +2182,7 @@ private val wellKnownLibraries =
 |    |    +--- com.android.support:support-annotations:VERSION
 |    |    \--- com.android.support:support-v4:VERSION (*)
 |    +--- com.android.support:appcompat-v7:VERSION (*)
-|    \--- com.android.support:support-v4:VERSION (*)"""
+|    \--- com.android.support:support-v4:VERSION (*)""",
     ),
     WellKnownLib(
       "com.google.android.gms:play-services-analytics",
@@ -2193,7 +2190,7 @@ private val wellKnownLibraries =
 +--- com.google.android.gms:play-services-analytics:VERSION
 |    \--- com.google.android.gms:play-services-basement:VERSION
 |         \--- com.android.support:support-v4:23.0.0 -> 23.4.0
-|              \--- com.android.support:support-annotations:23.4.0"""
+|              \--- com.android.support:support-annotations:23.4.0""",
     ),
     WellKnownLib(
       "com.google.android.gms:play-services-gcm",
@@ -2201,14 +2198,14 @@ private val wellKnownLibraries =
 +--- com.google.android.gms:play-services-gcm:VERSION
 |    +--- com.google.android.gms:play-services-base:VERSION (*)
 |    \--- com.google.android.gms:play-services-measurement:VERSION
-|         \--- com.google.android.gms:play-services-basement:VERSION (*)"""
+|         \--- com.google.android.gms:play-services-basement:VERSION (*)""",
     ),
     WellKnownLib(
       "com.google.android.gms:play-services-appindexing",
       """
 +--- com.google.android.gms:play-services-appindexing:VERSION
 |    \--- com.google.android.gms:play-services-base:VERSION
-|         \--- com.google.android.gms:play-services-basement:VERSION (*)"""
+|         \--- com.google.android.gms:play-services-basement:VERSION (*)""",
     ),
     WellKnownLib(
       "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
@@ -2218,7 +2215,7 @@ private val wellKnownLibraries =
 |         +--- org.jetbrains.kotlin:kotlin-stdlib-common:VERSION
 |         \--- org.jetbrains:annotations:13.0
 +--- org.jetbrains.kotlin:kotlin-stdlib:VERSION (*)
-+--- org.jetbrains.kotlin:kotlin-stdlib-common:VERSION"""
++--- org.jetbrains.kotlin:kotlin-stdlib-common:VERSION""",
     ),
     WellKnownLib(
       "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
@@ -2228,7 +2225,7 @@ private val wellKnownLibraries =
 |    |    +--- org.jetbrains.kotlin:kotlin-stdlib-common:VERSION
 |    |    \--- org.jetbrains:annotations:13.0
 |    \--- org.jetbrains.kotlin:kotlin-stdlib-jdk7:VERSION
-|         \--- org.jetbrains.kotlin:kotlin-stdlib:VERSION (*)"""
+|         \--- org.jetbrains.kotlin:kotlin-stdlib:VERSION (*)""",
     ),
   )
 
@@ -2247,7 +2244,7 @@ private data class TestLintModelModule(
   override val javaSourceLevel: String = "",
   override val compileTarget: String = "",
   override val variants: List<LintModelVariant> = emptyList(),
-  val neverShrinking: Boolean = false
+  val neverShrinking: Boolean = false,
 ) : LintModelModule {
   override val loader: LintModelModuleLoader
     get() = TestLintModelModuleLoader
@@ -2286,7 +2283,7 @@ private data class TestLintModelLintOptions(
   override val checkReleaseBuilds: Boolean = true,
   override val checkDependencies: Boolean = false,
   override val baselineFile: File? = null,
-  override val severityOverrides: Map<String, LintModelSeverity>? = null
+  override val severityOverrides: Map<String, LintModelSeverity>? = null,
 ) : LintModelLintOptions
 
 private data class TestLintModelVariant(
@@ -2316,7 +2313,7 @@ private data class TestLintModelVariant(
   override val buildFeatures: LintModelBuildFeatures,
   override val libraryResolver: LintModelLibraryResolver,
   override val partialResultsDir: File?,
-  override val desugaredMethodsFiles: Collection<File>
+  override val desugaredMethodsFiles: Collection<File>,
 ) : LintModelVariant {
   override val module: LintModelModule
     get() = _module()
@@ -2333,7 +2330,7 @@ private data class TestLintModelAndroidArtifact(
   override val applicationId: String,
   override val generatedResourceFolders: Collection<File>,
   override val generatedSourceFolders: Collection<File>,
-  override val desugaredMethodsFiles: Collection<File>
+  override val desugaredMethodsFiles: Collection<File>,
 ) : LintModelAndroidArtifact
 
 private data class TestLintModelJavaArtifact(
@@ -2364,7 +2361,7 @@ object EmptyLintModelDependencyGraph : LintModelDependencyGraph {
 private data class TestLintModelMavenName(
   override val groupId: String = "",
   override val artifactId: String = "",
-  override val version: String = ""
+  override val version: String = "",
 ) : LintModelMavenName {
   override fun toString(): String = "$groupId:$artifactId:$version"
 }
@@ -2372,7 +2369,7 @@ private data class TestLintModelMavenName(
 private data class TestLintModelBuildFeatures(
   override val viewBinding: Boolean = false,
   override val coreLibraryDesugaringEnabled: Boolean = false,
-  override val namespacingMode: LintModelNamespacingMode = LintModelNamespacingMode.DISABLED
+  override val namespacingMode: LintModelNamespacingMode = LintModelNamespacingMode.DISABLED,
 ) : LintModelBuildFeatures
 
 private data class TestProductFlavor(
@@ -2410,7 +2407,7 @@ private data class TestBuildType(
 private data class TestLintModelResourceField(
   override val type: String,
   override val name: String,
-  override val value: String
+  override val value: String,
 ) : LintModelResourceField
 
 private data class TestLintModelSourceProvider(
@@ -2422,7 +2419,7 @@ private data class TestLintModelSourceProvider(
   override val manifestFiles: Collection<File>,
   override val javaDirectories: Collection<File>,
   override val resDirectories: Collection<File>,
-  override val assetsDirectories: Collection<File>
+  override val assetsDirectories: Collection<File>,
 ) : LintModelSourceProvider {
   override fun isUnitTest(): Boolean = _isUnitTest
 
@@ -2447,7 +2444,7 @@ private data class TestLintModelAndroidLibrary(
   override val symbolFile: File,
   override val externalAnnotations: File,
   override val proguardRules: File,
-  override val partialResultsDir: File?
+  override val partialResultsDir: File?,
 ) : LintModelAndroidLibrary
 
 private data class TestLintModelJavaLibrary(
@@ -2456,14 +2453,14 @@ private data class TestLintModelJavaLibrary(
   override val lintJar: File?,
   override val jarFiles: List<File>,
   override val resolvedCoordinates: LintModelMavenName,
-  override val partialResultsDir: File?
+  override val partialResultsDir: File?,
 ) : LintModelJavaLibrary
 
 private data class TestLintModelModuleLibrary(
   override val provided: Boolean,
   override val identifier: String,
   override val lintJar: File?,
-  override val projectPath: String
+  override val projectPath: String,
 ) : LintModelModuleLibrary
 
 private fun getMavenName(artifactAddress: String): LintModelMavenName {

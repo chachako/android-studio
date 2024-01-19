@@ -131,7 +131,7 @@ class AppCompatCustomViewDetector : Detector(), SourceCodeScanner {
         severity = Severity.ERROR,
         androidSpecific = true,
         implementation =
-          Implementation(AppCompatCustomViewDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(AppCompatCustomViewDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     private fun getAppCompatDelegate(widgetName: String, androidx: Boolean): String {

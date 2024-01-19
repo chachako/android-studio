@@ -79,7 +79,7 @@ class ScrollViewChildDetector : LayoutDetector() {
         priority = 7,
         severity = Severity.WARNING,
         implementation =
-          Implementation(ScrollViewChildDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+          Implementation(ScrollViewChildDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
       )
   }
 }

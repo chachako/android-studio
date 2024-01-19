@@ -156,7 +156,7 @@ class LintIssueDocGeneratorTest {
             <!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://morgan3d.github.io/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
             """
         .trimIndent(),
-      text
+      text,
     )
   }
 
@@ -184,7 +184,7 @@ class LintIssueDocGeneratorTest {
         "https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-master-dev:lint/",
         sourceFolder.path,
         "--output",
-        outputFolder.path
+        outputFolder.path,
       )
     )
     val files = outputFolder.listFiles()!!.sortedBy { it.name }
@@ -300,7 +300,7 @@ class LintIssueDocGeneratorTest {
               [here](https://googlesamples.github.io/android-custom-lint-rules/usage/baselines.md.html).
             """
         .trimIndent(),
-      text
+      text,
     )
   }
 
@@ -325,14 +325,14 @@ class LintIssueDocGeneratorTest {
         "https://cs.android.com/android-studio/platform/tools/base/+/mirror-goog-studio-master-dev:lint/",
         sourceFolder.path,
         "--output",
-        outputFolder.path
+        outputFolder.path,
       )
     )
     val files = outputFolder.listFiles()!!.sortedBy { it.name }
     val names = files.joinToString { it.name }
     assertEquals(
       "LambdaLast.md, MissingClass.md, SdCardPath.md, ViewTag.md, categories.md, index.md, libraries.md, severity.md, vendors.md, year.md",
-      names
+      names,
     )
     val alphabetical = files[5].readText()
     assertEquals(
@@ -350,7 +350,7 @@ class LintIssueDocGeneratorTest {
               - [ViewTag](ViewTag.md)
             """
         .trimIndent(),
-      alphabetical
+      alphabetical,
     )
     val categories = files[4].readText()
     assertEquals(
@@ -373,7 +373,7 @@ class LintIssueDocGeneratorTest {
               - [ViewTag](ViewTag.md)
             """
         .trimIndent(),
-      categories
+      categories,
     )
     val severities = files[7].readText()
     assertEquals(
@@ -400,7 +400,7 @@ class LintIssueDocGeneratorTest {
               - [ViewTag](ViewTag.md)
             """
         .trimIndent(),
-      severities
+      severities,
     )
     val vendors = files[8].readText()
     assertEquals(
@@ -420,7 +420,7 @@ class LintIssueDocGeneratorTest {
               - [ViewTag](ViewTag.md)
             """
         .trimIndent(),
-      vendors
+      vendors,
     )
     val years = files[9].readText()
     assertEquals(
@@ -446,7 +446,7 @@ class LintIssueDocGeneratorTest {
               - [ViewTag](ViewTag.md)
             """
         .trimIndent(),
-      years
+      years,
     )
   }
 
@@ -461,7 +461,7 @@ class LintIssueDocGeneratorTest {
         // MissingRegistered has been renamed, ViewTag has been deleted
         "SdCardPath,MissingRegistered,ViewTag",
         "--output",
-        outputFolder.path
+        outputFolder.path,
       )
     )
     val files = outputFolder.listFiles()!!.sortedBy { it.name }
@@ -477,7 +477,7 @@ class LintIssueDocGeneratorTest {
             (Additional metadata not available.)
             """
         .trimIndent(),
-      text
+      text,
     )
     val text2 = files[2].readText()
     assertEquals(
@@ -490,7 +490,7 @@ class LintIssueDocGeneratorTest {
             (Additional metadata not available.)
             """
         .trimIndent(),
-      text2
+      text2,
     )
   }
 
@@ -504,7 +504,7 @@ class LintIssueDocGeneratorTest {
         "--issues",
         "SdCardPath,MissingClass",
         "--output",
-        output.path
+        output.path,
       )
     )
     val text = output.readText()
@@ -560,7 +560,7 @@ class LintIssueDocGeneratorTest {
             `Context.getFilesDir().getPath()`.
             """
         .trimIndent(),
-      text
+      text,
     )
   }
 
@@ -579,7 +579,7 @@ class LintIssueDocGeneratorTest {
           "--issues",
           "SdCardPath,MissingClass,ViewTag",
           "--output",
-          outputFolder.path
+          outputFolder.path,
         )
       )
     val files = outputFolder.listFiles()!!.sortedBy { it.name }
@@ -596,7 +596,7 @@ class LintIssueDocGeneratorTest {
             (Additional metadata not available.)
             """
         .trimIndent(),
-      text
+      text,
     )
   }
 
@@ -649,7 +649,7 @@ class LintIssueDocGeneratorTest {
             """
         .trimIndent()
         .trim(),
-      usage.trim()
+      usage.trim(),
     )
   }
 
@@ -730,7 +730,7 @@ class LintIssueDocGeneratorTest {
         "SdCardPath",
         "--no-suppress-info",
         "--output",
-        outputFolder.path
+        outputFolder.path,
       )
     )
     val files = outputFolder.listFiles()!!.sortedBy { it.name }
@@ -796,7 +796,7 @@ class LintIssueDocGeneratorTest {
             https://issuetracker.google.com/issues/new?component=192708.
             """
         .trimIndent(),
-      text
+      text,
     )
   }
 
@@ -880,7 +880,7 @@ class LintIssueDocGeneratorTest {
         "StringFormatMatches",
         "--no-suppress-info",
         "--output",
-        outputFolder.path
+        outputFolder.path,
       )
     )
     val files = outputFolder.listFiles()!!.sortedBy { it.name }
@@ -943,7 +943,7 @@ class LintIssueDocGeneratorTest {
             ```
             """
         .trimIndent(),
-      text
+      text,
     )
   }
 
@@ -958,7 +958,7 @@ class LintIssueDocGeneratorTest {
         "UnknownNullness",
         "--no-suppress-info",
         "--output",
-        outputFolder.path
+        outputFolder.path,
       )
     )
     val files = outputFolder.listFiles()!!.sortedBy { it.name }
@@ -1027,7 +1027,7 @@ class LintIssueDocGeneratorTest {
             <!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://morgan3d.github.io/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
             """
         .trimIndent(),
-      text
+      text,
     )
   }
 
@@ -1052,7 +1052,7 @@ class LintIssueDocGeneratorTest {
         "UnsafeRepeatOnLifecycleDetector.md.html, UseGetLayoutInflater.md.html, UseRequireInsteadOfGet.md.html, " +
         "androidx_fragment_fragment.md.html, categories.md.html, index.md.html, libraries.md.html, " +
         "severity.md.html, vendors.md.html, year.md.html",
-      names
+      names,
     )
     val vendor = files.first { it.name == "androidx_fragment_fragment.md.html" }
     val text = vendor.readText()
@@ -1173,7 +1173,7 @@ class LintIssueDocGeneratorTest {
       <!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://morgan3d.github.io/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
       """
         .trimIndent(),
-      text.replace("  \n", "\n") // intentional trailing spaces to force markdown new lines
+      text.replace("  \n", "\n"), // intentional trailing spaces to force markdown new lines
     )
 
     val libraries = files.first { it.name == "libraries.md.html" }
@@ -1193,7 +1193,7 @@ class LintIssueDocGeneratorTest {
         .trimIndent(),
       libraries
         .readText()
-        .replace("  \n", "\n") // intentional trailing spaces to force markdown new lines
+        .replace("  \n", "\n"), // intentional trailing spaces to force markdown new lines
     )
   }
 
@@ -1263,7 +1263,7 @@ class LintIssueDocGeneratorTest {
         " message=Value will be forced up to 60000 as of Android 5.1; don't rely on this to be exact, id=ShortAlarm," +
         " sourceLine1=        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 50, 10, null); // ERROR," +
         " sourceLine2=                                                                     ~~)]",
-      incidents.toString()
+      incidents.toString(),
     )
 
     val lines = getOutputLines(expected)
@@ -1273,7 +1273,7 @@ class LintIssueDocGeneratorTest {
         "[Unnecessary; SDK_INT is always >= 14, " +
         "Value will be forced up to 5000 as of Android 5.1; don't rely on this to be exact, " +
         "Value will be forced up to 60000 as of Android 5.1; don't rely on this to be exact]",
-      lines.toString()
+      lines.toString(),
     )
 
     val map = computeResultMap("ShortAlarm", expected)
@@ -1284,7 +1284,7 @@ class LintIssueDocGeneratorTest {
         "         alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 50, 10, null); // ERROR," +
         "                                                                      ~~]}" +
         "}",
-      map.toString()
+      map.toString(),
     )
   }
 
@@ -1320,7 +1320,7 @@ class LintIssueDocGeneratorTest {
         " id=ComposeModifierWithoutDefault," +
         " sourceLine1=fun Something(modifier: Modifier = Modifier, modifier2: Modifier) { }," +
         " sourceLine2=                                             ~~~~~~~~~~~~~~~~~~~)]",
-      incidents.toString()
+      incidents.toString(),
     )
 
     val lines = getOutputLines(expected)
@@ -1331,7 +1331,7 @@ class LintIssueDocGeneratorTest {
         "See https://slackhq.github.io/compose-lints/rules/#modifiers-should-have-default-parameters for more information., " +
         "This @Composable function has a modifier parameter but it doesn't have a default value.\n" +
         "See https://slackhq.github.io/compose-lints/rules/#modifiers-should-have-default-parameters for more information.]",
-      lines.toString()
+      lines.toString(),
     )
 
     val map = computeResultMap("ComposeModifierWithoutDefault", expected)
@@ -1347,7 +1347,7 @@ class LintIssueDocGeneratorTest {
         " fun Something(modifier: Modifier = Modifier, modifier2: Modifier) { }," +
         "                                              ~~~~~~~~~~~~~~~~~~~]}" +
         "}",
-      map.toString()
+      map.toString(),
     )
   }
 
@@ -1377,7 +1377,7 @@ class LintIssueDocGeneratorTest {
         " id=DuplicateIncludedIds," +
         " sourceLine1=    <include," +
         " sourceLine2=    ^)]",
-      incidents.toString()
+      incidents.toString(),
     )
   }
 

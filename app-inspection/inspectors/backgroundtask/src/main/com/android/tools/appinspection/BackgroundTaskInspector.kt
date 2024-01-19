@@ -50,7 +50,7 @@ class BackgroundTaskInspectorFactory :
 
 class BackgroundTaskInspector(
   connection: Connection,
-  private val environment: InspectorEnvironment
+  private val environment: InspectorEnvironment,
 ) : Inspector(connection) {
 
   @VisibleForTesting lateinit var alarmHandler: AlarmHandler
@@ -97,7 +97,7 @@ class BackgroundTaskInspector(
         "(IJJJILandroid/app/PendingIntent;" +
         "Landroid/app/AlarmManager\$OnAlarmListener;Ljava/lang/String;" +
         "Landroid/os/Handler;Landroid/os/WorkSource;" +
-        "Landroid/app/AlarmManager\$AlarmClockInfo;)V"
+        "Landroid/app/AlarmManager\$AlarmClockInfo;)V",
     ) { _, args ->
       alarmHandler.onAlarmSet(
         type = args[0] as Int,
@@ -106,18 +106,18 @@ class BackgroundTaskInspector(
         intervalMs = args[3] as Long,
         operation = args[5] as PendingIntent?,
         listener = args[6] as AlarmManager.OnAlarmListener?,
-        listenerTag = args[7] as String?
+        listenerTag = args[7] as String?,
       )
     }
     environment.artTooling().registerEntryHook(
       AlarmManager::class.java,
-      "cancel(Landroid/app/PendingIntent;)V"
+      "cancel(Landroid/app/PendingIntent;)V",
     ) { _, args ->
       alarmHandler.onAlarmCancelled((args[0] as? PendingIntent) ?: return@registerEntryHook)
     }
     environment.artTooling().registerEntryHook(
       AlarmManager::class.java,
-      "cancel(Landroid/app/AlarmManager\$OnAlarmListener;)V"
+      "cancel(Landroid/app/AlarmManager\$OnAlarmListener;)V",
     ) { _, args ->
       alarmHandler.onAlarmCancelled(
         (args[0] as? AlarmManager.OnAlarmListener) ?: return@registerEntryHook
@@ -125,7 +125,7 @@ class BackgroundTaskInspector(
     }
     environment.artTooling().registerEntryHook(
       AlarmManager.OnAlarmListener::class.java,
-      "onAlarm()V"
+      "onAlarm()V",
     ) { listener, _ ->
       alarmHandler.onAlarmFired(listener as AlarmManager.OnAlarmListener)
     }
@@ -146,7 +146,7 @@ class BackgroundTaskInspector(
 
     listOf(
         CALL_ACTIVITY_ON_CREATE_METHOD_NAME,
-        CALL_ACTIVITY_ON_CREATE_PERSISTABLE_BUNDLE_METHOD_NAME
+        CALL_ACTIVITY_ON_CREATE_PERSISTABLE_BUNDLE_METHOD_NAME,
       )
       .forEach { methodName ->
         environment.artTooling().registerEntryHook(Instrumentation::class.java, methodName) {
@@ -160,21 +160,21 @@ class BackgroundTaskInspector(
 
     environment.artTooling().registerEntryHook(
       IntentService::class.java,
-      ON_START_COMMAND_METHOD_NAME
+      ON_START_COMMAND_METHOD_NAME,
     ) { _, args ->
       pendingIntentHandler.onIntentReceived((args[0] as? Intent) ?: return@registerEntryHook)
     }
 
     environment.artTooling().registerEntryHook(
       ActivityThread::class.java,
-      HANDLE_RECEIVER_METHOD_NAME
+      HANDLE_RECEIVER_METHOD_NAME,
     ) { _, args ->
       pendingIntentHandler.onReceiverDataCreated(args[0] ?: return@registerEntryHook)
     }
 
     environment.artTooling().registerEntryHook(
       BroadcastReceiver::class.java,
-      SET_PENDING_RESULT_METHOD_NAME
+      SET_PENDING_RESULT_METHOD_NAME,
     ) { _, args ->
       pendingIntentHandler.onReceiverDataResult(args[0] ?: return@registerEntryHook)
     }
@@ -185,13 +185,13 @@ class BackgroundTaskInspector(
 
     environment.artTooling().registerEntryHook(
       PowerManager::class.java,
-      "newWakeLock" + "(ILjava/lang/String;)Landroid/os/PowerManager\$WakeLock;"
+      "newWakeLock" + "(ILjava/lang/String;)Landroid/os/PowerManager\$WakeLock;",
     ) { _, args ->
       wakeLockHandler.onNewWakeLockEntry(args[0] as Int, (args[1] as String?) ?: "")
     }
     environment.artTooling().registerExitHook<WakeLock>(
       PowerManager::class.java,
-      "newWakeLock" + "(ILjava/lang/String;)Landroid/os/PowerManager\$WakeLock;"
+      "newWakeLock" + "(ILjava/lang/String;)Landroid/os/PowerManager\$WakeLock;",
     ) { wakeLock ->
       wakeLockHandler.onNewWakeLockExit(wakeLock)
     }
@@ -210,10 +210,7 @@ class BackgroundTaskInspector(
       wakeLockHandler.onWakeLockReleasedEntry(wakeLock as WakeLock, args[0] as Int)
     }
 
-    environment.artTooling().registerExitHook<Void>(
-      WakeLock::class.java,
-      "release(I)V",
-    ) {
+    environment.artTooling().registerExitHook<Void>(WakeLock::class.java, "release(I)V") {
       wakeLockHandler.onWakeLockReleasedExit()
       it
     }
@@ -223,14 +220,14 @@ class BackgroundTaskInspector(
     jobHandler = JobHandlerImpl(connection)
     environment.artTooling().registerEntryHook(
       JobSchedulerImpl::class.java,
-      "schedule(Landroid/app/job/JobInfo;)I"
+      "schedule(Landroid/app/job/JobInfo;)I",
     ) { _, args ->
       jobHandler.onScheduleJobEntry((args[0] as JobInfo?) ?: return@registerEntryHook)
     }
 
     environment.artTooling().registerExitHook<Int>(
       JobSchedulerImpl::class.java,
-      "schedule(Landroid/app/job/JobInfo;)I"
+      "schedule(Landroid/app/job/JobInfo;)I",
     ) { scheduleResult ->
       jobHandler.onScheduleJobExit(scheduleResult)
     }
@@ -238,31 +235,31 @@ class BackgroundTaskInspector(
     val jobHandlerClass = Class.forName("android.app.job.JobServiceEngine\$JobHandler")
     environment.artTooling().registerEntryHook(
       jobHandlerClass,
-      "ackStartMessage(Landroid/app/job/JobParameters;Z)V"
+      "ackStartMessage(Landroid/app/job/JobParameters;Z)V",
     ) { _, args ->
       jobHandler.wrapOnStartJob(
         params = (args[0] as? JobParameters) ?: return@registerEntryHook,
-        workOngoing = args[1] as Boolean
+        workOngoing = args[1] as Boolean,
       )
     }
 
     environment.artTooling().registerEntryHook(
       jobHandlerClass,
-      "ackStopMessage(Landroid/app/job/JobParameters;Z)V"
+      "ackStopMessage(Landroid/app/job/JobParameters;Z)V",
     ) { _, args ->
       jobHandler.wrapOnStopJob(
         params = (args[0] as? JobParameters) ?: return@registerEntryHook,
-        reschedule = args[1] as Boolean
+        reschedule = args[1] as Boolean,
       )
     }
 
     environment.artTooling().registerEntryHook(
       JobService::class.java,
-      "jobFinished(Landroid/app/job/JobParameters;Z)V"
+      "jobFinished(Landroid/app/job/JobParameters;Z)V",
     ) { _, args ->
       jobHandler.wrapJobFinished(
         params = (args[0] as? JobParameters) ?: return@registerEntryHook,
-        wantsReschedule = args[1] as Boolean
+        wantsReschedule = args[1] as Boolean,
       )
     }
   }

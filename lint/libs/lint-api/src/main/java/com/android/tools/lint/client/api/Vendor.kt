@@ -58,7 +58,7 @@ constructor(
    *
    * Note that this is optional, especially if your [feedbackUrl] provides general information.
    */
-  val contact: String? = null
+  val contact: String? = null,
 ) {
 
   /** Returns a description of the vendor with the given [format] */

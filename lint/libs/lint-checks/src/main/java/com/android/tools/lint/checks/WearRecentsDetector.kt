@@ -44,7 +44,7 @@ class WearRecentsDetector : WearDetector(), XmlScanner, SourceCodeScanner {
         WearRecentsDetector::class.java,
         EnumSet.of(Scope.JAVA_FILE, Scope.MANIFEST),
         Scope.JAVA_FILE_SCOPE,
-        Scope.MANIFEST_SCOPE
+        Scope.MANIFEST_SCOPE,
       )
 
     @JvmField
@@ -59,7 +59,7 @@ class WearRecentsDetector : WearDetector(), XmlScanner, SourceCodeScanner {
           category = Category.USABILITY,
           severity = Severity.WARNING,
           implementation = IMPLEMENTATION,
-          enabledByDefault = true
+          enabledByDefault = true,
         )
         .addMoreInfo("https://developer.android.com/training/wearables/apps/launcher")
   }
@@ -76,7 +76,7 @@ class WearRecentsDetector : WearDetector(), XmlScanner, SourceCodeScanner {
           ISSUE,
           context.getLocation(element),
           "In addition to `excludeFromRecents`, set `noHistory` flag to avoid showing this activity in recents",
-          fix().name("Set noHistory").set(ANDROID_URI, ATTR_NO_HISTORY, "true").build()
+          fix().name("Set noHistory").set(ANDROID_URI, ATTR_NO_HISTORY, "true").build(),
         )
       }
       return
@@ -97,10 +97,10 @@ class WearRecentsDetector : WearDetector(), XmlScanner, SourceCodeScanner {
               .name("Exclude from recents")
               .composite(
                 fix().set(ANDROID_URI, ATTR_EXCLUDE_FROM_RECENTS, "true").build(),
-                fix().set(ANDROID_URI, ATTR_NO_HISTORY, "true").build()
+                fix().set(ANDROID_URI, ATTR_NO_HISTORY, "true").build(),
               )
-              .autoFix()
-          )
+              .autoFix(),
+          ),
       )
     }
   }
@@ -111,7 +111,7 @@ class WearRecentsDetector : WearDetector(), XmlScanner, SourceCodeScanner {
   override fun visitReference(
     context: JavaContext,
     reference: UReferenceExpression,
-    referenced: PsiElement
+    referenced: PsiElement,
   ) {
     if (!isWearProject) {
       return

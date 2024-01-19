@@ -103,7 +103,7 @@ sealed interface DeviceState {
       isReady = adbDeviceState == com.android.adblib.DeviceState.ONLINE,
       adbDeviceState.displayString(),
       connectedDevice,
-      reservation
+      reservation,
     )
   }
 }

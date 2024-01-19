@@ -30,7 +30,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     GOOGLE_PLAY_SDK_INDEX_SNAPSHOT_URL,
     GOOGLE_PLAY_SDK_INDEX_KEY,
     cacheDir,
-    cacheExpiryHours = TimeUnit.DAYS.toHours(GOOGLE_PLAY_SDK_CACHE_EXPIRY_INTERVAL_DAYS).toInt()
+    cacheExpiryHours = TimeUnit.DAYS.toHours(GOOGLE_PLAY_SDK_CACHE_EXPIRY_INTERVAL_DAYS).toInt(),
   ) {
   companion object {
     const val SDK_INDEX_SNAPSHOT_TEST_BASE_URL_ENV_VAR = "SDK_INDEX_TEST_BASE_URL"
@@ -56,7 +56,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
         LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS to "Permissions",
         LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MOBILE_UNWANTED_SOFTWARE to
           "Mobile Unwanted Software",
-        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE to "Malware"
+        LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_MALWARE to "Malware",
       )
   }
 
@@ -94,7 +94,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     return ReadDataResult(
       index = null,
       readDataErrorType = ReadDataErrorType.DATA_FUNCTION_NULL_ERROR,
-      exception = null
+      exception = null,
     )
   }
 
@@ -164,7 +164,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     groupId: String,
     artifactId: String,
     versionString: String,
-    buildFile: File?
+    buildFile: File?,
   ): Boolean {
     val isNonCompliant =
       getLabels(groupId, artifactId, versionString)?.hasPolicyIssuesInfo() ?: false
@@ -188,7 +188,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     groupId: String,
     artifactId: String,
     versionString: String,
-    buildFile: File?
+    buildFile: File?,
   ): Boolean {
     val isOutdated = getLabels(groupId, artifactId, versionString)?.hasOutdatedIssueInfo() ?: false
     if (isOutdated) {
@@ -211,7 +211,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     groupId: String,
     artifactId: String,
     versionString: String,
-    buildFile: File?
+    buildFile: File?,
   ): Boolean {
     val hasCriticalIssues =
       getLabels(groupId, artifactId, versionString)?.hasCriticalIssueInfo() ?: false
@@ -233,7 +233,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   fun hasLibraryBlockingIssues(
     groupId: String,
     artifactId: String,
-    versionString: String
+    versionString: String,
   ): Boolean {
     val labels = getLabels(groupId, artifactId, versionString) ?: return false
     val severity = labels.severity
@@ -253,7 +253,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   fun hasLibraryErrorOrWarning(
     groupId: String,
     artifactId: String,
-    versionString: String
+    versionString: String,
   ): Boolean {
     val labels = getLabels(groupId, artifactId, versionString) ?: return false
     return labels.severity == LibraryVersionLabels.Severity.BLOCKING_SEVERITY ||
@@ -279,7 +279,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   private fun getLabels(
     groupId: String,
     artifactId: String,
-    versionString: String
+    versionString: String,
   ): LibraryVersionLabels? {
     if (!isReady()) {
       return null
@@ -291,7 +291,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   private fun getLibraryVersion(
     groupId: String,
     artifactId: String,
-    versionString: String
+    versionString: String,
   ): LibraryVersion? {
     val coordinate = createCoordinateString(groupId, artifactId)
     val sdk = libraryToSdk[coordinate] ?: return null
@@ -311,7 +311,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
         val coordinate =
           createCoordinateString(
             library.libraryId.mavenId.groupId,
-            library.libraryId.mavenId.artifactId
+            library.libraryId.mavenId.artifactId,
           )
         val currentLibrary = LibraryToSdk(coordinate, sdk)
         for (version in library.versionsList) {
@@ -371,7 +371,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     groupId: String,
     artifactId: String,
     versionString: String,
-    buildFile: File?
+    buildFile: File?,
   ): LintFix? {
     val url = getSdkUrl(groupId, artifactId)
     return if (url != null) LintFix.ShowUrl(VIEW_DETAILS_MESSAGE, null, url) else null
@@ -381,7 +381,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   fun generateBlockingPolicyMessages(
     groupId: String,
     artifactId: String,
-    versionString: String
+    versionString: String,
   ): List<String> {
     return getPolicyLabels(getLabels(groupId, artifactId, versionString)).map { label ->
       "$groupId:$artifactId version $versionString has $label issues that will block publishing of your app to Play Console"
@@ -392,7 +392,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   fun generatePolicyMessages(
     groupId: String,
     artifactId: String,
-    versionString: String
+    versionString: String,
   ): List<String> {
     return getPolicyLabels(getLabels(groupId, artifactId, versionString)).map { label ->
       "$groupId:$artifactId version $versionString has $label issues that will block publishing of your app to Play Console in the future"
@@ -419,7 +419,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   fun generateBlockingGenericIssueMessage(
     groupId: String,
     artifactId: String,
-    versionString: String
+    versionString: String,
   ) =
     "$groupId:$artifactId version $versionString has one or more issues that will block publishing of your app to Play Console"
 
@@ -431,21 +431,21 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     groupId: String,
     artifactId: String,
     versionString: String,
-    file: File?
+    file: File?,
   ) {}
 
   protected open fun logNonCompliant(
     groupId: String,
     artifactId: String,
     versionString: String,
-    file: File?
+    file: File?,
   ) {}
 
   protected open fun logOutdated(
     groupId: String,
     artifactId: String,
     versionString: String,
-    file: File?
+    file: File?,
   ) {}
 
   protected open fun logCachingError(readResult: ReadDataResult, dataSourceType: DataSourceType) {}
@@ -471,7 +471,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   protected class ReadDataResult(
     val index: Index?,
     val readDataErrorType: ReadDataErrorType,
-    val exception: Exception?
+    val exception: Exception?,
   )
 
   @VisibleForTesting fun getLastReadSource() = lastReadSourceType

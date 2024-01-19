@@ -108,7 +108,7 @@ class SCacheTest {
     Assert.assertEquals(
       "Not speculating on all frames",
       frameSpeculators.edict.upstreamList.size,
-      16
+      16,
     )
 
     // Find the SourceFile speculation
@@ -173,7 +173,7 @@ class SCacheTest {
     Assert.assertEquals(
       "Not speculating on all frames",
       frameSpeculators.edict.upstreamList.size,
-      16
+      16,
     )
 
     // Find the SourceFile speculation
@@ -229,7 +229,7 @@ class SCacheTest {
         0,
         stringClass.id,
         stringClass.signature,
-        0
+        0,
       )
     scache.onDownstreamPacket(CompositeCmd(0, listOf(cpS)).toPacket(id.get(), idSizes))
 
@@ -241,7 +241,7 @@ class SCacheTest {
         0,
         vectorClass.id,
         vectorClass.signature,
-        0
+        0,
       )
     scache.onDownstreamPacket(CompositeCmd(0, listOf(cpV)).toPacket(id.get(), idSizes))
 
@@ -255,7 +255,7 @@ class SCacheTest {
     Assert.assertEquals(
       "Not speculating on all frames",
       frameSpeculators.edict.upstreamList.size,
-      16
+      16,
     )
 
     // Find the SourceFile speculation
@@ -312,7 +312,7 @@ class SCacheTest {
     Assert.assertEquals(
       "Not speculating on all frames",
       frameSpeculators.edict.upstreamList.size,
-      16
+      16,
     )
 
     // Find the SourceFile speculation

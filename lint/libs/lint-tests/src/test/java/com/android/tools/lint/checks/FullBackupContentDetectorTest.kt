@@ -54,7 +54,7 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                         <include domain="sharedpref" path="something"/>
                     </device-transfer>
                 </data-extraction-rules>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -66,9 +66,9 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                      <exclude domain="sharedpref" path="foo.xml"/>
                 </full-backup-content>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -95,7 +95,7 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented()
       )
@@ -122,7 +122,7 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                      <exclude domain="sharedpref" path="foo.xml"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented()
       )
@@ -140,7 +140,7 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                 <full-backup-content>
                      <exclude domain="file" path="dd/fo3o.txt"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented()
       )
@@ -161,7 +161,7 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <include domain="sharedpref" path="something"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented()
       )
@@ -184,7 +184,7 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <include domain="sharedpref" path="."/>
                      <exclude domain="sharedpref" path="device.xml"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented()
       )
@@ -204,7 +204,7 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                      <exclude domain="sharedpref" path="foo.xml" tools:ignore="FullBackupContent"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented()
       )
@@ -235,7 +235,7 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <include domain="file" path="def"/>
                      <exclude domain="external" path="def/ghi.txt"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented()
       )
@@ -295,7 +295,7 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                      <include domain="root" />
                      <wrongtag />
                 </full-backup-content>
-                """
+                """,
           )
           .indented()
       )

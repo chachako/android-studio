@@ -119,7 +119,7 @@ class RelativeOverlapDetectorTest : AbstractCheckTest() {
                             android:layout_toLeftOf="@id/image" />
                     </RelativeLayout>
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -188,7 +188,7 @@ class RelativeOverlapDetectorTest : AbstractCheckTest() {
                             android:ellipsize="end" />
                     </android.support.percent.PercentRelativeLayout>
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )

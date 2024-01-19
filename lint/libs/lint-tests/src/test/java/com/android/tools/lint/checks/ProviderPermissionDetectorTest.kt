@@ -38,7 +38,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         javaSingleApi,
-        kotlinSingleApi
+        kotlinSingleApi,
       )
       .run()
       .expect(
@@ -83,7 +83,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         javaSingleApi,
-        kotlinSingleApi
+        kotlinSingleApi,
       )
       .run()
       .expect(
@@ -128,7 +128,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         javaSomeApis,
-        kotlinSomeApis
+        kotlinSomeApis,
       )
       .run()
       .expect(
@@ -175,7 +175,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
           .indented(),
         javaNoApis,
         kotlinNoApis,
-        kotlinNoApisWithThrows
+        kotlinNoApisWithThrows,
       )
       .run()
       .expectClean()
@@ -198,7 +198,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         javaSomeApis,
-        kotlinSomeApis
+        kotlinSomeApis,
       )
       .run()
       .expectClean()
@@ -221,7 +221,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         javaSomeApis,
-        kotlinSomeApis
+        kotlinSomeApis,
       )
       .run()
       .expectClean()
@@ -243,7 +243,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        javaSingleApi
+        javaSingleApi,
       )
       .isolated(javaSingleApiPath)
       .run()
@@ -282,7 +282,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
             </manifest>
             """
             )
-            .indented()
+            .indented(),
         )
 
     val project2 =
@@ -339,10 +339,10 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
                 <provider android:name=".KotlinTestContentProvider" android:readPermission="android.permission.READ_DATA"/>
               </application>
             </manifest>
-            """
+            """,
           )
           .indented(),
-        javaSingleApi
+        javaSingleApi,
       )
       .isolated("AndroidManifest.xml")
       .run()
@@ -366,7 +366,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         javaSomeApis,
-        kotlinSomeApis
+        kotlinSomeApis,
       )
       .run()
       .expectClean()
@@ -392,7 +392,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
               </manifest>
               """
             )
-            .indented(),
+            .indented()
         )
         .dependsOn(project1)
         .dependsOn(project2)
@@ -443,7 +443,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
               </manifest>
               """
             )
-            .indented(),
+            .indented()
         )
         .dependsOn(project1)
         .dependsOn(project2)
@@ -470,7 +470,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
               """
             )
             .indented(),
-          kotlinSingleApi
+          kotlinSingleApi,
         )
         .dependsOn(project1)
 
@@ -518,7 +518,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
               """
             )
             .indented(),
-          javaNoApisJvModule
+          javaNoApisJvModule,
         )
     val project2 = project().files(kotlinSingleApiKtModule)
     val project3 =
@@ -536,7 +536,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
               </manifest>
               """
             )
-            .indented(),
+            .indented()
         )
         .dependsOn(project1)
         .dependsOn(project2)
@@ -560,7 +560,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
               """
             )
             .indented(),
-          javaNoApisJvModule
+          javaNoApisJvModule,
         )
     val project2 = project().files(kotlinSingleApiKtModule)
     val project3 =
@@ -577,7 +577,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
               </manifest>
               """
             )
-            .indented(),
+            .indented()
         )
         .dependsOn(project1)
         .dependsOn(project2)
@@ -634,7 +634,7 @@ class ProviderPermissionDetectorTest : AbstractCheckTest() {
             System.out.println(uri);
           }
         }
-        """
+        """,
       )
       .indented()
   private val kotlinSingleApi: TestFile =

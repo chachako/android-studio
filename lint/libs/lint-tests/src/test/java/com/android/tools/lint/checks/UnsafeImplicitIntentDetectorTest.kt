@@ -1773,7 +1773,7 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                     }
                 """
               )
-              .indented(),
+              .indented()
           ),
         project()
           .name("app")
@@ -1818,8 +1818,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                     </manifest>
                     """
               )
-              .indented()
-          )
+              .indented(),
+          ),
       )
       .run()
       .expect(
@@ -1922,7 +1922,7 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                     </manifest>
                     """
               )
-              .indented()
+              .indented(),
           ),
         project()
           .name("app")
@@ -2010,8 +2010,8 @@ class UnsafeImplicitIntentDetectorTest : AbstractCheckTest() {
                     </manifest>
                     """
               )
-              .indented()
-          )
+              .indented(),
+          ),
       )
       .run()
       .expect(

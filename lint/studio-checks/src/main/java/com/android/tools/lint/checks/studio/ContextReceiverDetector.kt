@@ -52,7 +52,7 @@ class ContextReceiverDetector : Detector(), SourceCodeScanner {
         category = CROSS_PLATFORM,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -70,7 +70,7 @@ class ContextReceiverDetector : Detector(), SourceCodeScanner {
             ISSUE,
             contextReceiver,
             context.getLocation(contextReceiver),
-            "Do not use context receivers. They are an experimental feature at this time."
+            "Do not use context receivers. They are an experimental feature at this time.",
           )
         }
       }

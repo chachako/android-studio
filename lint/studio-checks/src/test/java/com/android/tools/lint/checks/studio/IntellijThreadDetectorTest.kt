@@ -165,7 +165,7 @@ class IntellijThreadDetectorTest {
                     public @interface WorkerThread {}
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(IntellijThreadDetector.ISSUE)
       .run()
@@ -443,10 +443,10 @@ class IntellijThreadDetectorTest {
                                 <annotation name='com.android.annotations.concurrency.UiThread' />
                             </item>
                         </root>
-                        """
+                        """,
             )
-            .indented()
-        )
+            .indented(),
+        ),
       )
       .issues(IntellijThreadDetector.ISSUE)
       .run()

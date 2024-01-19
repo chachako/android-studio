@@ -260,7 +260,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -440,7 +440,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
         fragment,
         dialogFragment,
         fragmentTransaction,
-        fragmentManager
+        fragmentManager,
       )
       .run()
       .expect(expected)
@@ -477,7 +477,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
         fragment,
         dialogFragment,
         fragmentTransaction,
-        fragmentManager
+        fragmentManager,
       )
       .run()
       .expectClean()
@@ -526,7 +526,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
         fragment,
         dialogFragment,
         fragmentTransaction,
-        fragmentManager
+        fragmentManager,
       )
       .run()
       .expectClean()
@@ -620,7 +620,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
         fragment,
         dialogFragment,
         fragmentTransaction,
-        fragmentManager
+        fragmentManager,
       )
       .run()
       .expect(expected)
@@ -659,7 +659,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
         fragment,
         dialogFragment,
         fragmentTransaction,
-        fragmentManager
+        fragmentManager,
       )
       .run()
       .expect(expected)
@@ -723,7 +723,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -755,7 +755,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -855,7 +855,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -978,7 +978,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -1070,7 +1070,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         cursor.close();
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -1529,7 +1529,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                                 .putString("wat", "wat");
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -1570,7 +1570,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         trans.commit();
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -1602,7 +1602,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         transaction.commit();
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -1639,7 +1639,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         return PreferenceManager.getDefaultSharedPreferences(this);
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -1665,7 +1665,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         trans.commitNow();
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -1713,7 +1713,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -1738,7 +1738,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -1771,7 +1771,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         edit.putInt("foo", 1).apply();
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -1799,7 +1799,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         transaction.commitNowAllowingStateLoss();
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -1995,9 +1995,9 @@ class CleanupDetectorTest : AbstractCheckTest() {
                         editor.apply()
                     }
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -2122,7 +2122,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -2441,7 +2441,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 fun testUnrelated() {
                     val proto = Proto.ofInt(1000)
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -2586,7 +2586,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -3042,7 +3042,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -3531,7 +3531,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
               fun Sink.buffer(): BufferedSink = RealBufferedSink(this)
               """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -3650,7 +3650,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -3821,7 +3821,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -4036,7 +4036,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -4097,7 +4097,7 @@ class CleanupDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

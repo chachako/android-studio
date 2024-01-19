@@ -86,7 +86,7 @@ internal class SimplePlatformLookup(private val sdkHome: File) : PlatformLookup 
   override fun getLatestSdkTarget(
     minApi: Int,
     includePreviews: Boolean,
-    includeAddOns: Boolean
+    includeAddOns: Boolean,
   ): IAndroidTarget? {
     if (includeAddOns) {
       error("Add-ons not supported in this platform lookup")
@@ -126,7 +126,7 @@ internal class SimplePlatformLookup(private val sdkHome: File) : PlatformLookup 
       into: MutableList<IAndroidTarget>,
       sdkHome: File,
       folder: String,
-      prefix: String?
+      prefix: String?,
     ) {
       val platformFolders = File(sdkHome, folder).listFiles() ?: return
       for (platformFolder in platformFolders) {
@@ -260,7 +260,7 @@ internal class SimplePlatformLookup(private val sdkHome: File) : PlatformLookup 
               sourceProperties.parentFile!!.name,
               AndroidVersion(apiLevel, codeName),
               revision,
-              true
+              true,
             )
           }
         }
@@ -417,7 +417,7 @@ internal class SimplePlatformLookup(private val sdkHome: File) : PlatformLookup 
     val buildTargetHash: String,
     private val version: AndroidVersion,
     private val revision: Int,
-    private val platform: Boolean
+    private val platform: Boolean,
   ) : IAndroidTarget, Comparable<IAndroidTarget> {
     override fun isPlatform(): Boolean = platform
 

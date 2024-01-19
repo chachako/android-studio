@@ -80,7 +80,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val type = usageInfo.type
     if (type == AnnotationUsageType.EXTENDS && element is UTypeReferenceExpression) {
@@ -183,7 +183,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     node: UElement,
     member: PsiMember,
     annotation: UAnnotation,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val visibility = getVisibilityNotForTesting(annotation, getVisibility(member))
     if (visibility == VISIBILITY_NONE) { // not the default
@@ -254,7 +254,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     node: UElement,
     annotation: UAnnotation,
     usageInfo: AnnotationUsageInfo,
-    desc: String
+    desc: String,
   ) {
     val type =
       when (node) {
@@ -293,7 +293,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     method: PsiMember?,
     annotation: UAnnotation,
     usageInfo: AnnotationUsageInfo,
-    applyClassAnnotationsToMembers: Boolean = true
+    applyClassAnnotationsToMembers: Boolean = true,
   ) {
     val scope = getRestrictionScope(annotation)
     if (scope != 0) {
@@ -304,7 +304,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         annotation,
         usageInfo,
         scope,
-        applyClassAnnotationsToMembers
+        applyClassAnnotationsToMembers,
       )
     }
   }
@@ -316,7 +316,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     annotation: UAnnotation,
     usageInfo: AnnotationUsageInfo,
     scope: Int,
-    applyClassAnnotationsToMembers: Boolean = true
+    applyClassAnnotationsToMembers: Boolean = true,
   ) {
 
     val containingClass =
@@ -478,7 +478,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     member: PsiMember?,
     context: JavaContext,
     node: UElement,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     var api: String
     api =
@@ -780,7 +780,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using an intended-for-tests API */
@@ -813,7 +813,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -829,7 +829,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

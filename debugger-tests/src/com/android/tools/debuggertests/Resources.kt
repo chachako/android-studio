@@ -62,7 +62,7 @@ internal object Resources {
       System.getenv("BUILD_WORKSPACE_DIRECTORY")
         ?: System.getProperty("user.dir").removeSuffix("tools/adt/idea"),
       "tools/base/debugger-tests",
-      "resources/res/golden"
+      "resources/res/golden",
     )
 
   // Test classes jar file

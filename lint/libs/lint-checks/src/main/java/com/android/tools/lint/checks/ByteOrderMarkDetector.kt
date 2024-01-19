@@ -64,7 +64,7 @@ class ByteOrderMarkDetector : ResourceXmlDetector(), SourceCodeScanner, GradleSc
               Scope.JAVA_FILE,
               Scope.GRADLE_FILE,
               Scope.PROPERTY_FILE,
-              Scope.PROGUARD_FILE
+              Scope.PROGUARD_FILE,
             ),
             Scope.RESOURCE_FILE_SCOPE,
             Scope.JAVA_FILE_SCOPE,
@@ -72,8 +72,8 @@ class ByteOrderMarkDetector : ResourceXmlDetector(), SourceCodeScanner, GradleSc
             Scope.JAVA_FILE_SCOPE,
             Scope.GRADLE_SCOPE,
             Scope.PROPERTY_SCOPE,
-            Scope.PROGUARD_SCOPE
-          )
+            Scope.PROGUARD_SCOPE,
+          ),
       )
   }
 

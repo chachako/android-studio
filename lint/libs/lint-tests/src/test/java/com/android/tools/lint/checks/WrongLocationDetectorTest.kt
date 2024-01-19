@@ -43,7 +43,7 @@ class WrongLocationDetectorTest : AbstractCheckTest() {
                     <string name="wallpaper_instructions">Tap picture to set portrait wallpaper</string>
                 </resources>
 
-                """
+                """,
           )
           .indented()
       )
@@ -72,7 +72,7 @@ class WrongLocationDetectorTest : AbstractCheckTest() {
                     <string name="wallpaper_instructions">Tap picture to set portrait wallpaper</string>
                 </resources>
 
-                """
+                """,
           )
           .indented()
       )

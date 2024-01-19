@@ -32,7 +32,7 @@ import org.junit.rules.TemporaryFolder
 abstract class UastSourceTransformationTestMode(
   description: String,
   testMode: String,
-  folder: String
+  folder: String,
 ) : SourceTransformationTestMode(description, testMode, folder) {
 
   /**
@@ -49,7 +49,7 @@ abstract class UastSourceTransformationTestMode(
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit>
 
   @Suppress("DEPRECATION")
@@ -58,7 +58,7 @@ abstract class UastSourceTransformationTestMode(
     context: JavaContext,
     root: UFile,
     clientData: MutableMap<String, Any>,
-    testModeContext: TestModeContext
+    testModeContext: TestModeContext,
   ): MutableList<Edit> = transform(source, context, root, clientData)
 
   protected open fun isRelevantFile(file: TestFile): Boolean {
@@ -126,7 +126,7 @@ abstract class UastSourceTransformationTestMode(
     sdkHome: File?,
     testModeContext: TestModeContext?,
     contextFilter: (JavaContext) -> Boolean,
-    changeCallback: (JavaContext, String) -> Unit
+    changeCallback: (JavaContext, String) -> Unit,
   ): Boolean {
     val temporaryFolder = TemporaryFolder().apply { create() }
     try {
@@ -134,7 +134,7 @@ abstract class UastSourceTransformationTestMode(
         parse(
           temporaryFolder = temporaryFolder,
           sdkHome = sdkHome,
-          testFiles = testFiles.toTypedArray()
+          testFiles = testFiles.toTypedArray(),
         )
       val contexts = allContexts.filter { contextFilter(it) }
       try {
@@ -145,7 +145,7 @@ abstract class UastSourceTransformationTestMode(
               temporaryFolder.root,
               emptyList(),
               listOf(contexts.first().project.dir),
-              null
+              null,
             )
         return processTestFiles(contexts, context, changeCallback)
       } finally {
@@ -159,7 +159,7 @@ abstract class UastSourceTransformationTestMode(
   private fun processTestFiles(
     contexts: List<JavaContext>,
     testContext: TestModeContext,
-    changeCallback: (JavaContext, String) -> Unit
+    changeCallback: (JavaContext, String) -> Unit,
   ): Boolean {
     val fileEdits = processTestFiles(contexts, mutableMapOf(), testContext)
     if (fileEdits.isEmpty()) {
@@ -180,7 +180,7 @@ abstract class UastSourceTransformationTestMode(
   protected open fun processTestFiles(
     contexts: List<JavaContext>,
     clientData: MutableMap<String, Any>,
-    testModeContext: TestModeContext
+    testModeContext: TestModeContext,
   ): List<Pair<JavaContext, List<Edit>>> {
     val result: MutableList<Pair<JavaContext, List<Edit>>> = mutableListOf()
     for (context in contexts.sortedBy { it.file.path }) {
@@ -231,7 +231,7 @@ abstract class UastSourceTransformationTestMode(
       beginNode: UExpression,
       endNode: UExpression,
       open: String,
-      close: String
+      close: String,
     ) {
       surround(beginNode.sourcePsi, endNode.sourcePsi, open, close)
     }
@@ -240,7 +240,7 @@ abstract class UastSourceTransformationTestMode(
       beginPsi: PsiElement?,
       endPsi: PsiElement?,
       open: String,
-      close: String
+      close: String,
     ) {
       beginPsi ?: return
       endPsi ?: return
@@ -271,7 +271,7 @@ abstract class UastSourceTransformationTestMode(
       endNode: UExpression,
       open: String,
       close: String,
-      source: String
+      source: String,
     ) {
       unsurround(beginNode.sourcePsi, endNode.sourcePsi, open, close, source)
     }
@@ -281,7 +281,7 @@ abstract class UastSourceTransformationTestMode(
       endPsi: PsiElement?,
       open: String,
       close: String,
-      source: String
+      source: String,
     ) {
       beginPsi ?: return
       endPsi ?: return

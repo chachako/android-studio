@@ -153,7 +153,7 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       TRANSITION_RES_ANNOTATION.oldName(),
       TRANSITION_RES_ANNOTATION.newName(),
       XML_RES_ANNOTATION.oldName(),
-      XML_RES_ANNOTATION.newName()
+      XML_RES_ANNOTATION.newName(),
     )
 
   // Include all types, including equality and comparisons
@@ -164,7 +164,7 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     when (val qualifiedName = annotationInfo.qualifiedName) {
       COLOR_INT_ANNOTATION.oldName(),
@@ -206,8 +206,8 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
                     "than equality is dangerous and usually " +
                     "wrong;  some resource types set top bit " +
                     "which turns the value negative",
-                  SUPPORT_ANNOTATIONS_PREFIX.removeFrom(qualifiedName)
-                )
+                  SUPPORT_ANNOTATIONS_PREFIX.removeFrom(qualifiedName),
+                ),
               )
               return
             }
@@ -256,7 +256,7 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         String.format(
           "Should pass resolved color instead of resource id here: " +
             "`getResources().getColor(%1\$s)`",
-          argument.asSourceString()
+          argument.asSourceString(),
         )
       report(context, COLOR_USAGE, argument, context.getLocation(argument), message)
     }
@@ -327,7 +327,7 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         val message =
           String.format(
             "Half-float type in expression widened to %1\$s",
-            expressionType.canonicalText
+            expressionType.canonicalText,
           )
         report(context, HALF_FLOAT, argument, context.getLocation(argument), message)
         break
@@ -381,7 +381,7 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     argument: UElement,
     expectedTypes: EnumSet<ResourceType>,
-    calledMethod: PsiMethod?
+    calledMethod: PsiMethod?,
   ) {
     val actual = ResourceEvaluator.getResourceTypes(context.evaluator, argument)
 
@@ -568,7 +568,7 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         priority = 7,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Attempting to set a resource id as a color. */
@@ -589,7 +589,7 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         priority = 7,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Incorrect usage of half floats. */
@@ -607,7 +607,7 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         priority = 7,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

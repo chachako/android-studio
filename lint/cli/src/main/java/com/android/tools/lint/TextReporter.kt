@@ -35,7 +35,7 @@ class TextReporter(
   private val flags: LintCliFlags,
   file: File?,
   private val writer: Writer,
-  private val close: Boolean
+  private val close: Boolean,
 ) : Reporter(client, file) {
   var format = TextFormat.TEXT
 
@@ -59,7 +59,7 @@ class TextReporter(
     client: LintCliClient,
     flags: LintCliFlags,
     writer: Writer,
-    close: Boolean
+    close: Boolean,
   ) : this(client, flags, null, writer, close)
 
   @Throws(IOException::class)
@@ -76,7 +76,7 @@ class TextReporter(
               stats.baselineErrorCount,
               stats.baselineWarningCount,
               comma = true,
-              capitalize = true
+              capitalize = true,
             )
           writer.write(" ($counts filtered by baseline ${baselineFile.name})")
         }
@@ -219,7 +219,7 @@ class TextReporter(
               stats.baselineErrorCount,
               stats.baselineWarningCount,
               comma = true,
-              capitalize = true
+              capitalize = true,
             )
           writer.write(" ($counts filtered by baseline ${baselineFile.name})")
         }

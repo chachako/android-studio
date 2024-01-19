@@ -65,7 +65,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       INT_DEF_ANNOTATION.oldName(),
       INT_DEF_ANNOTATION.newName(),
       LONG_DEF_ANNOTATION.oldName(),
-      LONG_DEF_ANNOTATION.newName()
+      LONG_DEF_ANNOTATION.newName(),
 
       // Consider including org.jetbrains.annotations.Range here, but be careful
       // such that we don't end up with a double set of warnings in the IDE (one
@@ -76,7 +76,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val annotation = annotationInfo.annotation
     when (annotationInfo.qualifiedName) {
@@ -103,7 +103,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     annotation: UAnnotation,
     argument: UElement,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     if (argument is UIfExpression) {
       argument.thenExpression?.let { thenExpression ->
@@ -135,7 +135,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     annotation: UAnnotation,
     argument: UElement,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     if (argument is UIfExpression) {
       argument.thenExpression?.let { thenExpression ->
@@ -230,7 +230,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     annotation: UAnnotation,
     argument: UElement,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val actual: Long
     var isString = false
@@ -310,7 +310,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       context: JavaContext,
       annotation: UAnnotation,
       argument: UElement,
-      usageInfo: AnnotationUsageInfo
+      usageInfo: AnnotationUsageInfo,
     ): String? {
       if (argument.isNewArrayWithInitializer()) {
         val newExpression = argument as UCallExpression
@@ -370,7 +370,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
     private fun getRangeConstraint(
       context: JavaContext,
-      resolvable: UResolvable?
+      resolvable: UResolvable?,
     ): RangeConstraint? {
       val resolved = resolvable?.resolve() ?: return null
       // TODO: What about parameters or local variables here?
@@ -412,7 +412,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     private fun getRangeConstraints(
       resolvable: USimpleNameReferenceExpression,
       condition: UExpression?,
-      previousConstraint: RangeConstraint?
+      previousConstraint: RangeConstraint?,
     ): RangeConstraint? {
       if (condition !is UBinaryExpression) return null
       val operator = condition.operator
@@ -421,13 +421,13 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
           getRangeConstraints(
             resolvable,
             condition.leftOperand.skipParenthesizedExprDown(),
-            previousConstraint
+            previousConstraint,
           )
         val right =
           getRangeConstraints(
             resolvable,
             condition.rightOperand.skipParenthesizedExprDown(),
-            previousConstraint
+            previousConstraint,
           )
         return when {
           left == null && right == null -> null
@@ -499,7 +499,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       allowed: RangeConstraint?,
       actual: RangeConstraint,
       argument: UElement,
-      usageInfo: AnnotationUsageInfo
+      usageInfo: AnnotationUsageInfo,
     ): String? {
       allowed ?: return null
       val contains = allowed.contains(actual) ?: return null
@@ -552,7 +552,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 6,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

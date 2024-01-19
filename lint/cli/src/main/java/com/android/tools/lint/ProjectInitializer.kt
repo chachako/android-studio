@@ -168,7 +168,7 @@ data class ProjectMetadata(
    * A client name to use instead of the default; this is written into baseline files, can be
    * queried by detectors from [LintClient] etc.
    */
-  val clientName: String? = null
+  val clientName: String? = null,
 )
 
 /**
@@ -260,7 +260,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
       issue = IssueRegistry.LINT_ERROR,
       message = message,
       location = location,
-      file = file
+      file = file,
     )
   }
 
@@ -406,7 +406,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
       incomplete = incomplete,
       jdkBootClasspath = jdkBootClasspath,
       platforms = if (android) Platform.ANDROID_SET else Platform.JDK_SET,
-      clientName = client
+      clientName = client,
     )
   }
 
@@ -545,7 +545,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
           if (languageLevel != null) {
             LanguageVersionSettingsImpl(
               languageLevel,
-              ApiVersion.createByLanguageVersion(languageLevel)
+              ApiVersion.createByLanguageVersion(languageLevel),
             )
           } else {
             null
@@ -575,7 +575,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
         android,
         partialResultsDir,
         testSources,
-        generatedSources
+        generatedSources,
       )
     modules[name] = module
 
@@ -712,7 +712,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     resources: MutableList<File>,
     manifests: MutableList<File>,
     classes: MutableList<File>,
-    sourceRoots: MutableList<File>
+    sourceRoots: MutableList<File>,
   ) {
     // * Remove any .srcjar files in `source`
     // * Distribute its unzipped content to the right targets
@@ -874,7 +874,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
   private fun computeUniqueSourceRoots(
     type: String,
     typeSources: MutableList<File>,
-    sourceRoots: MutableList<File>
+    sourceRoots: MutableList<File>,
   ): List<File> {
     when {
       typeSources.isEmpty() -> return emptyList()
@@ -942,7 +942,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
           client.log(
             Severity.WARNING,
             null,
-            "Unexpected dependency kind '$kindText' parsed as 'regular'"
+            "Unexpected dependency kind '$kindText' parsed as 'regular'",
           )
         }
     }
@@ -956,7 +956,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     element: Element,
     dir: File,
     attribute: String? = null,
-    required: Boolean = false
+    required: Boolean = false,
   ): File {
     var path: String
     if (attribute != null) {
@@ -1007,7 +1007,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
                 if (!File(path).isAbsolute) "(relative to " +
                     relativePath + ") " else ""
                 }does not exist",
-        element
+        element,
       )
     }
     return source
@@ -1036,7 +1036,7 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
         client.log(
           Severity.INFORMATIONAL,
           null,
-          "The source file ${file.name} does not appear to be in the right project location; its package implies ...$expected but it was found in ...$actual"
+          "The source file ${file.name} does not appear to be in the right project location; its package implies ...$expected but it was found in ...$actual",
         )
         return null
       }
@@ -1157,7 +1157,7 @@ private class ManualProject(
   private var android: Boolean,
   partialResultsDir: File?,
   private val testFiles: List<File>,
-  private val generatedFiles: List<File>
+  private val generatedFiles: List<File>,
 ) : Project(client, dir, dir, partialResultsDir) {
 
   var variant: LintModelVariant? = null
@@ -1347,7 +1347,7 @@ private class ManualProject(
       testContexts,
       emptyList(),
       generatedContexts,
-      gradleKtsContexts
+      gradleKtsContexts,
     )
   }
 
@@ -1363,7 +1363,7 @@ private class ManualProject(
       client.log(
         Severity.WARNING,
         IllegalStateException("Tried to initialize project SDK level info more than once"),
-        null
+        null,
       )
       return
     }

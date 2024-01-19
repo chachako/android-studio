@@ -23,7 +23,7 @@ import com.android.adblib.AdbOutputChannel
  */
 internal class ResponseWriter(
   private val adbOutputChannel: AdbOutputChannel,
-  private val needsCrc32: Boolean
+  private val needsCrc32: Boolean,
 ) {
   suspend fun writeStringResponse(streamId: Int, output: String) =
     writeResponse(streamId, output.withHexLengthPrefix())

@@ -68,7 +68,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
                         <item>Piccolo (100)</item>
                     </string-array>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -86,9 +86,9 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
                         <item>5m/yd (fine, default)</item>
                     </string-array>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -127,7 +127,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
                         <item>@drawable/ic_setups_signal_4</item>
                     </array>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -143,9 +143,9 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
                         <item>@drawable/extra</item>
                     </array>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -174,7 +174,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
                         <item>@drawable/ic_setups_signal_4</item>
                     </array>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -189,7 +189,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
                     <item>"Název střední školy"</item>
                   </string-array>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -205,7 +205,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
                         <item>@drawable/extra</item>
                     </array>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -219,7 +219,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
                     <item>"Naam van middelbare school?"</item>
                   </string-array>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -243,9 +243,9 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
                     <item>"Nombre de tu colegio"</item>
                   </string-array>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -296,7 +296,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
             </array>
         </resources>
 
-        """
+        """,
       )
       .indented()
 
@@ -314,7 +314,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
             <item>"Název střední školy"</item>
           </string-array>
         </resources>
-        """
+        """,
       )
       .indented()
 
@@ -334,7 +334,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
             </array>
         </resources>
 
-        """
+        """,
       )
       .indented()
 
@@ -351,7 +351,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
             <item>"Naam van middelbare school?"</item>
           </string-array>
         </resources>
-        """
+        """,
       )
       .indented()
 
@@ -378,7 +378,7 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
             <item>"Nombre de tu colegio"</item>
           </string-array>
         </resources>
-        """
+        """,
       )
       .indented()
 }

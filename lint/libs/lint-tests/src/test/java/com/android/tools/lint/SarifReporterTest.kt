@@ -52,7 +52,7 @@ class SarifReporterTest {
             <Button xmlns:android="http://schemas.android.com/apk/res/android"
                     android:id="@+id/button1"
                     android:text="Fooo" />
-            """
+            """,
       )
       .indented()
 
@@ -65,7 +65,7 @@ class SarifReporterTest {
                 <string name="second">Second</string>
                 <string name="first">Third</string>
             </resources>
-            """
+            """,
       )
       .indented()
 
@@ -101,7 +101,7 @@ class SarifReporterTest {
         // Issue included in registry but not found in results, to make
         // sure our rules section only included encountered issues
         MotionLayoutDetector.INVALID_SCENE_FILE_REFERENCE,
-        CommentDetector.STOP_SHIP
+        CommentDetector.STOP_SHIP,
       )
       .variant("release") // To enable STOP_SHIP detector.
       .stripRoot(false)
@@ -563,7 +563,7 @@ class SarifReporterTest {
                             android:inputType="password">
                         <requestFocus/>
                     </EditText>
-                </LinearLayout>"""
+                </LinearLayout>""",
           )
           .indented(),
         // Quickfix should edit existing range (both delete and insert)
@@ -575,9 +575,9 @@ class SarifReporterTest {
                         <item name="android:textSize">50dp</item>
                     </style>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .issues(AutofillDetector.ISSUE, PxUsageDetector.DP_ISSUE)
       .stripRoot(false)
@@ -834,9 +834,9 @@ class SarifReporterTest {
                         android:orderInCategory="100"
                         app:showAsAction="never" />
                 </menu>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .issues(AppCompatResourceDetector.ISSUE)
       .stripRoot(false)

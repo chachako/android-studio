@@ -120,9 +120,9 @@ public class MyClass {
     </application>
 </manifest>
 
-"""
+""",
         ),
-        MY_SERVICE
+        MY_SERVICE,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -154,9 +154,9 @@ public class MyClass {
     </application>
 </manifest>
 
-"""
+""",
         ),
-        MY_SERVICE
+        MY_SERVICE,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -186,9 +186,9 @@ public class MyClass {
     </application>
 </manifest>
 
-"""
+""",
         ),
-        MY_SERVICE
+        MY_SERVICE,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -217,9 +217,9 @@ public class MyClass {
     </application>
 </manifest>
 
-"""
+""",
         ),
-        MY_CLASS
+        MY_CLASS,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -246,9 +246,9 @@ public class MyClass {
     </application>
 </manifest>
 
-"""
+""",
         ),
-        MY_SERVICE
+        MY_SERVICE,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -278,10 +278,10 @@ public class MyClass {
     </application>
 </manifest>
 
-"""
+""",
         ),
         MY_SERVICE_COMPAT,
-        *serviceCompatStubs
+        *serviceCompatStubs,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -318,10 +318,10 @@ public class MyClass {
     </application>
 </manifest>
 
-"""
+""",
         ),
         MY_SERVICE_COMPAT,
-        *serviceCompatStubs
+        *serviceCompatStubs,
       )
       .testModes(TestMode.DEFAULT)
       .run()

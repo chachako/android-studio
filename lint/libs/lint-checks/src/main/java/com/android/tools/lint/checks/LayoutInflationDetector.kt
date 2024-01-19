@@ -179,7 +179,7 @@ class LayoutInflationDetector : LayoutDetector(), SourceCodeScanner {
       Implementation(
         LayoutInflationDetector::class.java,
         Scope.JAVA_AND_RESOURCE_FILES,
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     /** Passing in a null parent to a layout inflater. */
@@ -199,7 +199,7 @@ class LayoutInflationDetector : LayoutDetector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val ERROR_MESSAGE =

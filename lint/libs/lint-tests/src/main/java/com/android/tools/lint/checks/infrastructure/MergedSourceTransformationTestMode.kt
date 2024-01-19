@@ -25,12 +25,12 @@ import org.jetbrains.uast.UFile
  */
 internal class MergedSourceTransformationTestMode(
   internal val modes: List<TestMode>,
-  internal val edits: MutableMap<File, Pair<String, MutableList<Edit>>>
+  internal val edits: MutableMap<File, Pair<String, MutableList<Edit>>>,
 ) :
   UastSourceTransformationTestMode(
     "Merged Source code transformations",
     "TestMode.SOURCE_CODE_TRANSFORMATIONS",
-    "source-transformations"
+    "source-transformations",
   ) {
   override val description: String
     get() = modes.joinToString { it.description }
@@ -71,7 +71,7 @@ internal class MergedSourceTransformationTestMode(
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
     // This should never be called since we override [processTestFiles]
     // to perform composite editing

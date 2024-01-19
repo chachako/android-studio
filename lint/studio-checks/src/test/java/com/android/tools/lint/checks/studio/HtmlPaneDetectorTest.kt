@@ -153,7 +153,7 @@ class HtmlPaneDetectorTest {
                     public class EditorKit {
                     }
                     """
-        )
+        ),
       )
       .issues(HtmlPaneDetector.ISSUE)
       .checkUInjectionHost(false)

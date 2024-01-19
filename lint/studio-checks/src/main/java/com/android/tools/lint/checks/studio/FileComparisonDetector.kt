@@ -62,7 +62,7 @@ class FileComparisonDetector : Detector(), SourceCodeScanner {
         priority = 3,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -110,7 +110,7 @@ class FileComparisonDetector : Detector(), SourceCodeScanner {
       ISSUE,
       node,
       context.getLocation(node),
-      "Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`."
+      "Do not compare java.io.File with `equals` or `==`: will not work correctly on case insensitive file systems! See `go/files-howto`.",
     )
   }
 }

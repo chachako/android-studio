@@ -25,7 +25,7 @@ data class MethodsWithGenericsReply(val methods: List<Method>) : Reply() {
     val name: String,
     val signature: String,
     val genericSignature: String,
-    val modBits: Int
+    val modBits: Int,
   ) {
 
     fun write(writer: Writer) {
@@ -50,7 +50,7 @@ data class MethodsWithGenericsReply(val methods: List<Method>) : Reply() {
             reader.getString(),
             reader.getString(),
             reader.getString(),
-            reader.getInt()
+            reader.getInt(),
           )
         )
       }

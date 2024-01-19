@@ -24,7 +24,7 @@ data class AllClassesReply(val classes: List<Class>) : Reply() {
     val refTypeTag: Byte,
     val referenceTypeID: Long,
     val signature: String,
-    val status: Int
+    val status: Int,
   ) {
 
     fun write(writer: Writer) {

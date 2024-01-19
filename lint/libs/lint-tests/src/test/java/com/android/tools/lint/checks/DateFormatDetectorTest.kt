@@ -79,9 +79,9 @@ class DateFormatDetectorTest : AbstractCheckTest() {
                         new SimpleDateFormat("yyyy-MM-dd", Locale.US); // OK
                     }
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -136,7 +136,7 @@ class DateFormatDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(

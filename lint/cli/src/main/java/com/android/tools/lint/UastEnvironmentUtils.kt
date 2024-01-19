@@ -93,16 +93,16 @@ internal fun createCommonKotlinCompilerConfig(): CompilerConfiguration {
 
 internal fun configureProjectEnvironment(
   project: MockProject,
-  config: UastEnvironment.Configuration
+  config: UastEnvironment.Configuration,
 ) {
   // Annotation support.
   project.registerService(
     ExternalAnnotationsManager::class.java,
-    LintExternalAnnotationsManager::class.java
+    LintExternalAnnotationsManager::class.java,
   )
   project.registerService(
     InferredAnnotationsManager::class.java,
-    LintInferredAnnotationsManager::class.java
+    LintInferredAnnotationsManager::class.java,
   )
 
   // Java language level.
@@ -123,7 +123,7 @@ internal fun MockProject.registerKtLifetimeTokenProvider() {
   @Suppress("DEPRECATION") registerService(KtDefaultLifetimeTokenProvider::class.java)
   registerService(
     KtLifetimeTokenProvider::class.java,
-    KtAlwaysAccessibleLifetimeTokenProvider::class.java
+    KtAlwaysAccessibleLifetimeTokenProvider::class.java,
   )
 }
 
@@ -135,7 +135,7 @@ private var appConfigured = false
 
 internal fun configureApplicationEnvironment(
   appEnv: CoreApplicationEnvironment,
-  configurator: (CoreApplicationEnvironment) -> Unit
+  configurator: (CoreApplicationEnvironment) -> Unit,
 ) {
   check(appLock.isHeldByCurrentThread)
 
@@ -151,11 +151,11 @@ internal fun configureApplicationEnvironment(
   // The Kotlin compiler does not use UAST, so we must configure it ourselves.
   CoreApplicationEnvironment.registerApplicationExtensionPoint(
     UastLanguagePlugin.extensionPointName,
-    UastLanguagePlugin::class.java
+    UastLanguagePlugin::class.java,
   )
   CoreApplicationEnvironment.registerApplicationExtensionPoint(
     UEvaluatorExtension.EXTENSION_POINT_NAME,
-    UEvaluatorExtension::class.java
+    UEvaluatorExtension::class.java,
   )
   appEnv.addExtension(UastLanguagePlugin.extensionPointName, JavaUastLanguagePlugin())
 
@@ -167,11 +167,11 @@ internal fun configureApplicationEnvironment(
   // triggers different IntelliJ code paths than the Kotlin compiler does.
   CoreApplicationEnvironment.registerApplicationExtensionPoint(
     CustomExceptionHandler.KEY,
-    CustomExceptionHandler::class.java
+    CustomExceptionHandler::class.java,
   )
   CoreApplicationEnvironment.registerApplicationExtensionPoint(
     DiagnosticSuppressor.EP_NAME,
-    DiagnosticSuppressor::class.java
+    DiagnosticSuppressor::class.java,
   )
 
   appConfigured = true
@@ -190,7 +190,7 @@ internal fun reRegisterProgressManager(application: MockApplication) {
       }
 
       override fun isInNonCancelableSection() = true
-    }
+    },
   )
 }
 

@@ -44,7 +44,7 @@ class BackgroundTaskInspectorRule : ExternalResource() {
         override fun reply(response: ByteArray) {}
 
         override fun addCancellationListener(executor: Executor, runnable: Runnable) {}
-      }
+      },
     )
   }
 

@@ -31,7 +31,7 @@ constructor(
   val baselineWarningCount: Int = 0,
   val baselineFixedCount: Int = 0,
   val autoFixedCount: Int = 0,
-  val hasAutoFixCount: Int = 0
+  val hasAutoFixCount: Int = 0,
   // TODO: Timing stats too?
 ) {
 
@@ -98,7 +98,7 @@ constructor(
         baselineWarningCount,
         baselineFixedCount,
         autofixed,
-        hasAutoFixCount
+        hasAutoFixCount,
       )
     }
   }

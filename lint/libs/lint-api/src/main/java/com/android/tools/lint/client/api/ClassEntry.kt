@@ -85,7 +85,7 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
       name: String,
       signature: String?,
       superName: String?,
-      interfaces: Array<String>?
+      interfaces: Array<String>?,
     ) {
       // Record super class in the map (but don't waste space on java.lang.Object)
       if (superName != null && "java/lang/Object" != superName) {
@@ -125,7 +125,7 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
     fun fromClassFiles(
       client: LintClient,
       classFiles: List<File>,
-      classFolders: List<File>
+      classFolders: List<File>,
     ): List<ClassEntry> {
       val entries: MutableList<ClassEntry> = ArrayList(classFiles.size)
       if (classFolders.isNotEmpty()) {
@@ -158,7 +158,7 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
     private fun addEntries(
       client: LintClient,
       entries: MutableList<ClassEntry>,
-      classPath: List<File>
+      classPath: List<File>,
     ) {
       for (classPathEntry in classPath) {
         val name = classPathEntry.name
@@ -268,7 +268,7 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
     fun createSuperClassMap(
       client: LintClient,
       libraryEntries: List<ClassEntry>,
-      classEntries: List<ClassEntry>
+      classEntries: List<ClassEntry>,
     ): Map<String, String> {
       val size = libraryEntries.size + classEntries.size
       val map: MutableMap<String, String> = Maps.newHashMapWithExpectedSize(size)
@@ -296,7 +296,7 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
     private fun addSuperClasses(
       client: LintClient,
       visitor: SuperclassVisitor,
-      entries: List<ClassEntry>
+      entries: List<ClassEntry>,
     ) {
       val flags = ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES
       for (entry in entries) {
@@ -318,7 +318,7 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
       relative: String?,
       bytes: ByteArray,
       visitor: ClassVisitor,
-      flags: Int = 0
+      flags: Int = 0,
     ): ClassVisitor? {
       return try {
         val reader = ClassReader(bytes)
@@ -343,7 +343,7 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
           null,
           "Error processing %1\$s: broken class file? (%2\$s)",
           file.path + if (relative != null) ":$relative" else "",
-          message
+          message,
         )
         null
       }

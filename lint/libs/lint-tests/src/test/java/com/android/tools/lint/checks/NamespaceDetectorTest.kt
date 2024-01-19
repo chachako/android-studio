@@ -53,7 +53,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
         "        tools:ignore=\"HardcodedText\" >\n" +
         "    </foo.bar.Baz>\n" +
         "\n" +
-        "</LinearLayout>\n"
+        "</LinearLayout>\n",
     )
 
   private val mLibrary = source("build.gradle", "")
@@ -79,7 +79,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
         "        app:exampleDrawable=\"@android:drawable/ic_menu_add\"\n" +
         "        app:exampleString=\"Hello, MyView\" />\n" +
         "\n" +
-        "</FrameLayout>\n"
+        "</FrameLayout>\n",
     )
 
   private val mNamespace4 =
@@ -103,7 +103,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
         "        app:layout_row=\"0\"\n" +
         "        android:text=\"Button\" />\n" +
         "\n" +
-        "</android.support.v7.widget.GridLayout>\n"
+        "</android.support.v7.widget.GridLayout>\n",
     )
 
   override fun getDetector(): Detector {
@@ -129,7 +129,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
                           android:layout_width="match_parent"
                           android:text="@library:string/hello"/>
                     </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -149,7 +149,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
       .files(
         manifest().pkg("foo.library").minSdk(14),
         projectProperties().library(true),
-        mCustomview
+        mCustomview,
       )
       .run()
       .expect(expected)
@@ -166,7 +166,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
     lint()
       .files(
         mLibrary, // placeholder; only name counts
-        mCustomview
+        mCustomview,
       )
       .run()
       .expect(expected)
@@ -183,7 +183,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
     lint()
       .files(
         mLibraryKts, // placeholder; only name counts
-        mCustomview
+        mCustomview,
       )
       .run()
       .expect(expected)
@@ -194,7 +194,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
     lint()
       .files(
         xml("src/main/res/layout/customview.xml", mCustomview.contents),
-        gradle("android.aaptOptions.namespaced true")
+        gradle("android.aaptOptions.namespaced true"),
       )
       .run()
       .expectClean()
@@ -209,7 +209,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
         // not a library project:
         // "multiproject/library.properties⇒project.properties",
 
-        mCustomview
+        mCustomview,
       )
       .run()
       .expectClean()
@@ -243,8 +243,8 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "        tools:ignore=\"HardcodedText\" >\n" +
             "    </foo.bar.Baz>\n" +
             "\n" +
-            "</LinearLayout>\n"
-        )
+            "</LinearLayout>\n",
+        ),
       )
       .run()
       .expectClean()
@@ -286,7 +286,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "        android:layout_height=\"wrap_content\"\n" +
             "        android:text=\"Button\" />\n" +
             "\n" +
-            "</LinearLayout>\n"
+            "</LinearLayout>\n",
         )
       )
       .run()
@@ -329,7 +329,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "        android:layout_height=\"wrap_content\"\n" +
             "        android:text=\"Button\" />\n" +
             "\n" +
-            "</LinearLayout>\n"
+            "</LinearLayout>\n",
         )
       )
       .run()
@@ -372,7 +372,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "        a:layout_height=\"wrap_content\"\n" +
             "        a:text=\"Button\" />\n" +
             "\n" +
-            "</LinearLayout>\n"
+            "</LinearLayout>\n",
         )
       )
       .run()
@@ -408,7 +408,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "    android:layout_width=\"match_parent\"\n" +
             "    android:layout_height=\"match_parent\" >\n" +
             "\n" +
-            "</RelativeLayout>\n"
+            "</RelativeLayout>\n",
         )
       )
       .run()
@@ -439,7 +439,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "    android:layout_height=\"match_parent\"\n" +
             "    android:orientation=\"vertical\"\n" +
             "    app:foo=\"true\"\n" +
-            "    tools:bar=\"true\" />\n"
+            "    tools:bar=\"true\" />\n",
         )
       )
       .run()
@@ -478,7 +478,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "        android:layout_height=\"wrap_content\"\n" +
             "        android:text=\"Button\" />\n" +
             "\n" +
-            "</LinearLayout>\n"
+            "</LinearLayout>\n",
         )
       )
       .run()
@@ -514,7 +514,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "        tools:ignore=\"HardcodedText\" >\n" +
             "    </foo.bar.Button>\n" +
             "\n" +
-            "</foo.bar.LinearLayout>\n"
+            "</foo.bar.LinearLayout>\n",
         )
       )
       .run()
@@ -550,7 +550,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "        android:layout_height=\"wrap_content\"\n" +
             "        android:text=\"Button\" />\n" +
             "\n" +
-            "</LinearLayout>\n"
+            "</LinearLayout>\n",
         )
       )
       .run()
@@ -577,7 +577,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
       .files(
         mNamespace3,
         manifest().pkg("foo.library").minSdk(14),
-        projectProperties().library(true)
+        projectProperties().library(true),
       )
       .run()
       .expect(expected)
@@ -595,7 +595,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
       .files(
         mNamespace4,
         manifest().pkg("foo.library").minSdk(14),
-        projectProperties().library(true)
+        projectProperties().library(true),
       )
       .run()
       .expect(expected)
@@ -631,10 +631,10 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "        app:layout_row=\"0\"\n" +
             "        android:text=\"Button\" />\n" +
             "\n" +
-            "</android.support.v7.widget.GridLayout>\n"
+            "</android.support.v7.widget.GridLayout>\n",
         ),
         manifest().pkg("foo.library").minSdk(14),
-        projectProperties().library(true)
+        projectProperties().library(true),
       )
       .run()
       .expect(expected)
@@ -680,12 +680,12 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "    xmlns:tools=\"https://schemas.android.com/tools\"\n" +
             "    tools:ignore=\"ExtraTranslation\">\n" +
             "    <string name=\"bar\">Bar</string>\n" +
-            "</resources>"
+            "</resources>",
         ),
         xml(
           "res/xml/random.xml",
-          "" + "<foo xmlns:foo=\"https://schemas.android.com/apk/res/android\"/>\n"
-        )
+          "" + "<foo xmlns:foo=\"https://schemas.android.com/apk/res/android\"/>\n",
+        ),
       )
       .run()
       .expect(
@@ -730,7 +730,7 @@ class NamespaceDetectorTest : AbstractCheckTest() {
             "        android:id=\"@+id/button1\"\n" +
             "        android:layout_width=\"wrap_content\"\n" +
             "        android:layout_height=\"wrap_content\"\n />" +
-            "</LinearLayout>\n"
+            "</LinearLayout>\n",
         )
       )
       .run()

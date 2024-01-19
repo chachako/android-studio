@@ -160,8 +160,8 @@ abstract class LintClient {
     "Use the new report(Incident) method instead",
     ReplaceWith(
       "report(context, Incident(issue, message, location, fix), format)",
-      "com.android.tools.lint.detector.api.Incident"
-    )
+      "com.android.tools.lint.detector.api.Incident",
+    ),
   )
   fun report(
     context: Context,
@@ -170,7 +170,7 @@ abstract class LintClient {
     location: Location,
     message: String,
     format: TextFormat,
-    fix: LintFix?
+    fix: LintFix?,
   ) {
     val incident = Incident(issue, message, location, fix)
     incident.severity = severity
@@ -315,7 +315,7 @@ abstract class LintClient {
         issue = IssueRegistry.LINT_ERROR,
         message =
           TextFormat.TEXT.convertTo(message, TextFormat.RAW), // ensure \ paths are escaped etc
-        file = file
+        file = file,
       )
       null
     }
@@ -351,7 +351,7 @@ abstract class LintClient {
   open fun fileExists(
     file: File,
     requireFile: Boolean = false,
-    requireDirectory: Boolean = false
+    requireDirectory: Boolean = false,
   ): Boolean {
     return when {
       requireFile -> file.isFile
@@ -395,7 +395,7 @@ abstract class LintClient {
   open fun isEdited(
     file: File,
     returnIfUnknown: Boolean = true,
-    savedSinceMsAgo: Long = 5 * 60 * 1000L
+    savedSinceMsAgo: Long = 5 * 60 * 1000L,
   ): Boolean {
     return returnIfUnknown
   }
@@ -723,7 +723,7 @@ abstract class LintClient {
     val testSourceFolders: List<File>,
     val testLibraries: List<File>,
     val generatedFolders: List<File>,
-    val klibs: List<File> = listOf()
+    val klibs: List<File> = listOf(),
   ) {
 
     fun getLibraries(includeProvided: Boolean): List<File> =
@@ -831,7 +831,7 @@ abstract class LintClient {
               val gen =
                 File(
                   projectDir,
-                  "target" + File.separator + "generated-sources" + File.separator + "r"
+                  "target" + File.separator + "generated-sources" + File.separator + "r",
                 )
               if (gen.exists()) {
                 generated.add(gen)
@@ -1281,7 +1281,7 @@ abstract class LintClient {
    */
   private fun addLintJarsFromDependencies(
     lintJars: MutableList<File>,
-    libraries: Collection<LintModelLibrary>
+    libraries: Collection<LintModelLibrary>,
   ) {
     for (library in libraries) {
       addLintJarsFromDependency(lintJars, library)
@@ -1312,7 +1312,7 @@ abstract class LintClient {
               "intermediates",
               "lint_publish_jar",
               "global",
-              SdkConstants.FN_LINT_JAR
+              SdkConstants.FN_LINT_JAR,
             ),
             Paths.get(
               buildDir,
@@ -1320,8 +1320,8 @@ abstract class LintClient {
               "lint_publish_jar",
               "global",
               "prepareLintJarForPublish",
-              SdkConstants.FN_LINT_JAR
-            )
+              SdkConstants.FN_LINT_JAR,
+            ),
           )
         for (lintPath in lintPaths) {
           val manualLintJar = lintPath.toFile()
@@ -1398,7 +1398,7 @@ abstract class LintClient {
   open fun addCustomLintRules(
     registry: IssueRegistry,
     driver: LintDriver?,
-    warnDeprecated: Boolean
+    warnDeprecated: Boolean,
   ): IssueRegistry {
     val jarFiles = findGlobalRuleJars(driver, warnDeprecated)
     if (jarFiles.isNotEmpty()) {
@@ -1492,7 +1492,7 @@ abstract class LintClient {
   @Deprecated("Use the Dependency version")
   open fun getHighestKnownVersion(
     coordinate: GradleCoordinate,
-    filter: Predicate<Version>?
+    filter: Predicate<Version>?,
   ): Version? = getHighestKnownVersion(Dependency.parse(coordinate.toString()), filter)
 
   /**
@@ -1590,7 +1590,7 @@ abstract class LintClient {
   open fun getDisplayPath(
     file: File,
     project: Project? = null,
-    format: TextFormat = TextFormat.TEXT
+    format: TextFormat = TextFormat.TEXT,
   ): String {
     val base = project?.referenceDir ?: getRootDir()
     if (base != null) {
@@ -1690,12 +1690,12 @@ abstract class LintClient {
    */
   @Deprecated(
     "Use getResources(project, scope) instead",
-    replaceWith = ReplaceWith("getResources(project, scope")
+    replaceWith = ReplaceWith("getResources(project, scope"),
   )
   fun getResourceRepository(
     project: Project,
     includeModuleDependencies: Boolean,
-    includeLibraries: Boolean
+    includeLibraries: Boolean,
   ): ResourceRepository {
     val scope =
       when {
@@ -1720,7 +1720,7 @@ abstract class LintClient {
   open fun createResourceItemHandle(
     item: ResourceItem,
     nameOnly: Boolean = false,
-    valueOnly: Boolean = true
+    valueOnly: Boolean = true,
   ): Location.ResourceItemHandle = Location.ResourceItemHandle(this, item, nameOnly, valueOnly)
 
   /**
@@ -2069,7 +2069,7 @@ abstract class LintClient {
     fun getGradleDesugaring(
       version: AgpVersion,
       languageLevel: LanguageLevel?,
-      coreLibraryDesugaringEnabled: Boolean
+      coreLibraryDesugaringEnabled: Boolean,
     ): Set<Desugaring> {
       // Desugar runs if the Gradle plugin is 2.4.0 alpha 8 or higher...
       if (!version.isAtLeast(2, 4, 0, "alpha", 8, true)) {
@@ -2109,7 +2109,7 @@ abstract class LintClient {
       project: Project? = null,
       mainProject: Project? = null,
       driver: LintDriver? = null,
-      location: Location? = null
+      location: Location? = null,
     ) {
 
       val realLocation =
@@ -2187,7 +2187,7 @@ abstract class LintClient {
                     override val vendor: Vendor = AOSP_VENDOR
                   },
                   client,
-                  request
+                  request,
                 )
               }
 
@@ -2196,7 +2196,7 @@ abstract class LintClient {
               realProject,
               mainProject ?: realProject,
               realFile,
-              if (realFile.isDirectory) "" else null
+              if (realFile.isDirectory) "" else null,
             )
           }
         }
@@ -2219,7 +2219,7 @@ abstract class LintClient {
         file = file,
         project = project,
         // ensure we call the main reporting method, not a recursive call to self:
-        driver = null
+        driver = null,
       )
     }
 
@@ -2234,7 +2234,7 @@ abstract class LintClient {
       driver: LintDriver,
       project: Project,
       location: Location?,
-      fix: LintFix?
+      fix: LintFix?,
     ) {
       report(
         client = client,
@@ -2245,7 +2245,7 @@ abstract class LintClient {
         location = location,
         fix = fix,
         // ensure we call the main reporting method, not a recursive call to self:
-        file = null
+        file = null,
       )
     }
   }

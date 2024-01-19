@@ -122,7 +122,7 @@ dependencies {
       .containsAllOf(
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7:\$kotlin_version",
         "org.jetbrains.kotlin:kotlin-stdlib:\$kotlin_version",
-        "org.jetbrains.kotlin:kotlin-stdlib-common:\$kotlin_version"
+        "org.jetbrains.kotlin:kotlin-stdlib-common:\$kotlin_version",
       )
   }
 
@@ -157,7 +157,7 @@ dependencies {
         "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.21",
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.21",
         "org.jetbrains.kotlin:kotlin-stdlib:1.3.21",
-        "org.jetbrains:annotations:13.0"
+        "org.jetbrains:annotations:13.0",
       )
   }
 
@@ -229,7 +229,7 @@ android {
         "freeBetaRelease",
         "paidBetaRelease",
         "freeNormalRelease",
-        "paidNormalRelease"
+        "paidNormalRelease",
       )
 
     Truth.assertThat(module.findVariant("freeBetaDebug")!!.debuggable).isTrue()
@@ -329,7 +329,7 @@ dependencies {
     Truth.assertThat(libraries)
       .containsExactly(
         "com.android.support:support-v4:19.0",
-        "com.android.support:support-annotations:19.0"
+        "com.android.support:support-annotations:19.0",
       )
   }
 
@@ -782,7 +782,7 @@ dependencies {
     Truth.assertThat(javaLibraries)
       .containsExactly(
         "com.android.support:support-annotations:25.0.1",
-        "com.android.support.constraint:constraint-layout-solver:1.0.0-beta3"
+        "com.android.support.constraint:constraint-layout-solver:1.0.0-beta3",
       )
     Truth.assertThat(androidLibraries)
       .containsExactly(
@@ -1026,7 +1026,7 @@ dependencies {
   companion object {
     fun createMocker(
       @Language("Groovy") gradle: String?,
-      tempFolder: TemporaryFolder
+      tempFolder: TemporaryFolder,
     ): GradleModelMocker {
       return try {
         GradleModelMocker(gradle!!, tempFolder.newFolder("build"))

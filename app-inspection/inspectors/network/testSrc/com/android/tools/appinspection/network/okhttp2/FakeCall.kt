@@ -23,7 +23,7 @@ import com.squareup.okhttp.Response
 class FakeCall(
   private val client: FakeOkHttp2Client,
   private val request: Request,
-  private val response: Response
+  private val response: Response,
 ) : Call(client, request) {
 
   override fun execute(): Response {

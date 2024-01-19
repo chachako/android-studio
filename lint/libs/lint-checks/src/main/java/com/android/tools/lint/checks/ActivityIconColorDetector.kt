@@ -65,7 +65,7 @@ class ActivityIconColorDetector : Detector(), SourceCodeScanner, BinaryResourceS
         implementation =
           Implementation(
             ActivityIconColorDetector::class.java,
-            EnumSet.of(Scope.JAVA_FILE, Scope.BINARY_RESOURCE_FILE, Scope.RESOURCE_FILE)
+            EnumSet.of(Scope.JAVA_FILE, Scope.BINARY_RESOURCE_FILE, Scope.RESOURCE_FILE),
           ),
       )
 
@@ -79,7 +79,7 @@ class ActivityIconColorDetector : Detector(), SourceCodeScanner, BinaryResourceS
     val url: ResourceUrl,
     val element: UElement,
     val location: Location,
-    val message: String
+    val message: String,
   )
 
   private val iconSetCalls: MutableMap<String, IconSetterInfo> = mutableMapOf()
@@ -123,7 +123,7 @@ class ActivityIconColorDetector : Detector(), SourceCodeScanner, BinaryResourceS
         element = node,
         location = context.getLocation(iconResource),
         message =
-          "The $iconKind for an ongoing activity should be white with a transparent background"
+          "The $iconKind for an ongoing activity should be white with a transparent background",
       )
   }
 

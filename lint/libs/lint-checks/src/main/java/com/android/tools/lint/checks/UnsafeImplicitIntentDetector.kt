@@ -160,7 +160,7 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     // This is an Intent constructor. We will track the Intent to see if it
     // satisfies various conditions.
@@ -403,7 +403,7 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner {
                 .alternatives(
                   buildClassNameQuickFix(location, firstComponent),
                   buildPackageNameQuickFix(location),
-                )
+                ),
             )
           )
         }
@@ -416,14 +416,7 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner {
             "then you should use `Intent.setPackage(<APPLICATION_ID>)`."
 
         for (location in locations) {
-          context.report(
-            Incident(
-              ISSUE,
-              location,
-              message,
-              buildPackageNameQuickFix(location),
-            )
-          )
+          context.report(Incident(ISSUE, location, message, buildPackageNameQuickFix(location)))
         }
       }
     }
@@ -474,10 +467,7 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner {
     private const val BROADCAST_ACTION_SUFFIX = " (used to send a broadcast)"
 
     private val IMPLEMENTATION =
-      Implementation(
-        UnsafeImplicitIntentDetector::class.java,
-        Scope.JAVA_FILE_SCOPE,
-      )
+      Implementation(UnsafeImplicitIntentDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
     /**
      * Returns the most common way to get the application id by calling getPackageName(), but of
@@ -509,7 +499,7 @@ class UnsafeImplicitIntentDetector : Detector(), SourceCodeScanner {
         severity = Severity.ERROR,
         androidSpecific = true,
         enabledByDefault = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

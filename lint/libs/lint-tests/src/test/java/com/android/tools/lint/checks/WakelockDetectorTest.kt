@@ -22,7 +22,7 @@ import com.android.tools.lint.detector.api.Detector
   "CallToPrintStackTrace",
   "ConstantValue",
   "CatchMayIgnoreException",
-  "RedundantSuppression"
+  "RedundantSuppression",
 )
 class WakelockDetectorTest : AbstractCheckTest() {
   override fun getDetector(): Detector {
@@ -62,7 +62,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
           }
           """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .run()
@@ -145,7 +145,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .run()
@@ -187,7 +187,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .run()
@@ -211,7 +211,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .incremental("src/test/pkg/LockUtility.java")
       .issues(WakelockDetector.ISSUE)
@@ -261,7 +261,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .run()
@@ -302,7 +302,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .run()
@@ -333,7 +333,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .skipTestModes(TestMode.IF_TO_WHEN)
@@ -376,7 +376,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .skipTestModes(TestMode.IF_TO_WHEN)
       .issues(WakelockDetector.ISSUE)
@@ -488,7 +488,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       // Skipped because the block ({ }) shows up as expected in the error message path
@@ -522,7 +522,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .run()
@@ -550,7 +550,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .run()
@@ -584,7 +584,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .run()
@@ -623,7 +623,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .run()
@@ -662,7 +662,7 @@ class WakelockDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(WakelockDetector.ISSUE)
       .run()

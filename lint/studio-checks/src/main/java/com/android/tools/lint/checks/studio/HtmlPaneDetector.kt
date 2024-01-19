@@ -59,7 +59,7 @@ class HtmlPaneDetector : Detector(), SourceCodeScanner {
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
         implementation = IMPLEMENTATION,
-        moreInfo = "https://issuetracker.google.com/157600808"
+        moreInfo = "https://issuetracker.google.com/157600808",
       )
   }
 
@@ -69,7 +69,7 @@ class HtmlPaneDetector : Detector(), SourceCodeScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     val arguments = node.valueArguments
     if (arguments.size == 2) {
@@ -90,7 +90,7 @@ class HtmlPaneDetector : Detector(), SourceCodeScanner {
   private fun checkContentTypeWithoutEditorKit(
     context: JavaContext,
     contentTypeParameter: UExpression,
-    locationElement: UElement
+    locationElement: UElement,
   ) {
     val contentType = ConstantEvaluator.evaluate(context, contentTypeParameter)
     if (contentType == "text/html" && !setsEditorKit(contentTypeParameter)) {
@@ -101,7 +101,7 @@ class HtmlPaneDetector : Detector(), SourceCodeScanner {
         "Constructing an HTML JEditorPane directly can lead to subtle theming " +
           "bugs; either set the editor kit directly " +
           "(`setEditorKit(UIUtil.getHTMLEditorKit())`) or better yet use " +
-          "`SwingHelper.createHtmlViewer`"
+          "`SwingHelper.createHtmlViewer`",
       )
     }
   }

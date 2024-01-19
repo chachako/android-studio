@@ -42,9 +42,9 @@ class HighSensorSamplingRateDetector : Detector(), XmlScanner {
       Incident(
         ISSUE,
         context.getValueLocation(element.getAttributeNodeNS(ANDROID_URI, ATTR_NAME)),
-        "Most apps don't need access to high sensor sampling rate."
+        "Most apps don't need access to high sensor sampling rate.",
       ),
-      targetSdkAtLeast(S)
+      targetSdkAtLeast(S),
     )
   }
 
@@ -68,7 +68,7 @@ class HighSensorSamplingRateDetector : Detector(), XmlScanner {
         priority = 5,
         severity = Severity.WARNING,
         implementation =
-          Implementation(HighSensorSamplingRateDetector::class.java, Scope.MANIFEST_SCOPE)
+          Implementation(HighSensorSamplingRateDetector::class.java, Scope.MANIFEST_SCOPE),
       )
   }
 }

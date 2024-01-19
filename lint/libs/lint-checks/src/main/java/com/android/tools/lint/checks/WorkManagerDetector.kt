@@ -59,7 +59,7 @@ class WorkManagerDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val CLASS_WORK_MANAGER = "androidx.work.WorkManager"
@@ -163,7 +163,7 @@ class WorkManagerDetector : Detector(), SourceCodeScanner {
         ISSUE,
         node,
         context.getLocation(node),
-        "WorkContinuation ${nameString}not enqueued: did you forget to call `enqueue()`?"
+        "WorkContinuation ${nameString}not enqueued: did you forget to call `enqueue()`?",
       )
     }
   }

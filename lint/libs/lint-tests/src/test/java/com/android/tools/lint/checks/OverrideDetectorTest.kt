@@ -79,7 +79,7 @@ class OverrideDetectorTest : AbstractCheckTest() {
             "31sJQmbsuGJyOiyEP7MXe1b0gwg23opgTr2TvxQDJ1ST/b0tZauxtc82IT4R" +
             "Mhh6MrAQRYyQP+7WrebbUlHQ5qAPsUauK3y1CclRP2aUEeEnw4qAwjCeOm8l" +
             "RmKM1a+gCxOCwVNXYoE7/rUW1BX/tiInJ1SyiaRCDRlGk68hTyPxArsJjdos" +
-            "AQAA"
+            "AQAA",
         ),
         compiled(
           "bin/classes",
@@ -139,7 +139,7 @@ class OverrideDetectorTest : AbstractCheckTest() {
             "Mivn3I3k4CoSvi/jSYo9L/QfxIWMhyiZsZs7sWyKukIHlyIeUpdhoUCp0aDf" +
             "tBNWEu0m0S7D7LfaRrJNrCNDe45PASxuQXaSolXyjHxu+wXsmQAJIZs3yTzd" +
             "UkpdMlX8phXoljH1jZb5ixZ3qvzohr9oFXo9Pf7TKrKYGU+bJ1sdT6uTnSVa" +
-            "5n9aA3NGITN9a3dgGgu017qZedE8zFIla1ZXNCiDHNgnGw9xae8CAAA="
+            "5n9aA3NGITN9a3dgGgu017qZedE8zFIla1ZXNCiDHNgnGw9xae8CAAA=",
         ),
       )
       .run()

@@ -59,7 +59,7 @@ class LintBaseline(
    * The file to read the baselines from, and if [writeOnClose] is set, to write to when the
    * baseline is [close]'ed.
    */
-  var file: File
+  var file: File,
 ) {
 
   /** The number of errors that have been matched from the baseline. */
@@ -136,7 +136,7 @@ class LintBaseline(
         describeBaselineFilter(
           foundErrorCount,
           foundWarningCount,
-          getDisplayPath(client, project, baselineFile)
+          getDisplayPath(client, project, baselineFile),
         )
       LintClient.report(
         client,
@@ -144,7 +144,7 @@ class LintBaseline(
         message,
         file = baselineFile,
         project = project,
-        driver = driver
+        driver = driver,
       )
     }
 
@@ -191,7 +191,7 @@ class LintBaseline(
             "baseline file (%2\$s) but not found in the project; perhaps they have " +
             "been fixed?",
           fixedCount,
-          TextFormat.TEXT.convertTo(getDisplayPath(client, project, baselineFile), TextFormat.RAW)
+          TextFormat.TEXT.convertTo(getDisplayPath(client, project, baselineFile), TextFormat.RAW),
         )
       if (
         LintClient.isGradle &&
@@ -212,7 +212,7 @@ class LintBaseline(
         message,
         file = baselineFile,
         project = project,
-        driver = driver
+        driver = driver,
       )
     }
   }
@@ -251,7 +251,7 @@ class LintBaseline(
     location: Location,
     message: String,
     severity: Severity?,
-    alreadyChecked: MutableSet<String>?
+    alreadyChecked: MutableSet<String>?,
   ): Boolean {
     if (message.isEmpty()) {
       return false
@@ -699,7 +699,7 @@ class LintBaseline(
             pathVariables = client.pathVariables,
             preferRelativePathOverPathVariables = false,
             allowParentRelativePaths = false,
-            preferRelativeOverAbsolute = true
+            preferRelativeOverAbsolute = true,
           )
         writeAttribute(writer, 3, ATTR_FILE, path)
         val line = currentLocation.line
@@ -877,7 +877,7 @@ class LintBaseline(
       relative: String,
       full: String,
       prefix: String = "",
-      suffix: String = ""
+      suffix: String = "",
     ): Boolean {
       if (
         !relative.startsWith(prefix) ||
@@ -897,7 +897,7 @@ class LintBaseline(
         first,
         full,
         full.length - last - relativeLength,
-        relativeLength
+        relativeLength,
       )
     }
 

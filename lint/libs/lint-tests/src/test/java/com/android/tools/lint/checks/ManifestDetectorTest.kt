@@ -73,7 +73,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.ORDER)
       .run()
@@ -133,7 +133,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.MULTIPLE_USES_SDK)
       .run()
@@ -291,7 +291,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.DUPLICATE_ACTIVITY)
       .run()
@@ -308,7 +308,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
           projectProperties()
             .property("android.library.reference.1", "../LibraryProject")
             .property("manifestmerger.enabled", "true"),
-          mainCode
+          mainCode,
         )
         .name("MainProject")
         .dependsOn(library)
@@ -345,7 +345,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.DUPLICATE_ACTIVITY)
       .run()
@@ -374,7 +374,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .run()
@@ -412,7 +412,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .run()
@@ -441,7 +441,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .run()
@@ -503,7 +503,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .run()
@@ -567,7 +567,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.UNIQUE_PERMISSION)
       .run()
@@ -612,7 +612,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.UNIQUE_PERMISSION)
       .run()
@@ -888,7 +888,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.DUPLICATE_USES_FEATURE)
       .run()
@@ -918,7 +918,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        strings
+        strings,
       )
       .issues(ManifestDetector.DUPLICATE_USES_FEATURE)
       .run()
@@ -1094,7 +1094,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                     <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1110,7 +1110,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                     <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1126,7 +1126,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                     <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -1143,7 +1143,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.MOCK_LOCATION)
       .run()
@@ -1205,7 +1205,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(
         ManifestDetector.GRADLE_OVERRIDES
@@ -1256,7 +1256,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.GRADLE_OVERRIDES)
       .run()
@@ -1286,7 +1286,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        gradle("android {\n}")
+        gradle("android {\n}"),
       )
       .issues(ManifestDetector.GRADLE_OVERRIDES)
       .run()
@@ -1331,7 +1331,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.MIPMAP)
       .variant("freeBetaDebug")
@@ -1417,7 +1417,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 </manifest>
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .incremental("AndroidManifest.xml")
@@ -1453,9 +1453,9 @@ class ManifestDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .incremental("AndroidManifest.xml")
@@ -1736,9 +1736,9 @@ class ManifestDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
-                """
+                """,
             )
-            .indented()
+            .indented(),
         )
         .type(ProjectDescription.Type.LIBRARY)
         .name("LibraryProject")
@@ -1795,7 +1795,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -1807,7 +1807,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.WEARABLE_BIND_LISTENER)
       .run()
@@ -1836,7 +1836,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -1851,7 +1851,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.WEARABLE_BIND_LISTENER)
       .run()
@@ -1888,7 +1888,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -1900,7 +1900,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(
         ManifestDetector.WEARABLE_BIND_LISTENER
@@ -1935,7 +1935,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -1947,7 +1947,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.APP_INDEXING_SERVICE)
       .run()
@@ -1982,7 +1982,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -1994,7 +1994,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.APP_INDEXING_SERVICE)
       .run()
@@ -2025,7 +2025,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 </manifest>
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.SET_VERSION)
       .run()
@@ -2108,7 +2108,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
           )
           .indented()
           .indented(),
-        fullBackup
+        fullBackup,
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .run()
@@ -2170,9 +2170,9 @@ class ManifestDetectorTest : AbstractCheckTest() {
                      <!--<exclude domain="file" path="dd/ss/foo.txt" requireFlags="clientSideEncryption|deviceToDeviceTransfer" />-->
                      <!-- Final comment -->
                 </full-backup-content>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .run()
@@ -2224,7 +2224,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
           )
           .indented()
           .indented(),
-        fullBackup
+        fullBackup,
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .run()
@@ -2303,7 +2303,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        dataExtractionRules
+        dataExtractionRules,
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .run()
@@ -2336,7 +2336,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         fullBackup,
-        dataExtractionRules
+        dataExtractionRules,
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .run()
@@ -2392,7 +2392,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        dataExtractionRules
+        dataExtractionRules,
       )
       .issues(ManifestDetector.DATA_EXTRACTION_RULES)
       .run()
@@ -2480,7 +2480,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
-                """
+                """,
       )
       .indented()
 
@@ -2493,7 +2493,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
-                """
+                """,
       )
       .indented()
 
@@ -2715,7 +2715,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
             <string name="wallpaper_instructions">Tap picture to set portrait wallpaper</string>
         </resources>
 
-        """
+        """,
       )
       .indented()
 
@@ -2762,7 +2762,7 @@ class ManifestDetectorTest : AbstractCheckTest() {
             <string name="string3">String 3</string>
 
         </resources>
-        """
+        """,
       )
       .indented()
 }

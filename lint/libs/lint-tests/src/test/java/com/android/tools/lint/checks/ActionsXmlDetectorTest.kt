@@ -51,7 +51,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         <parameter name="serviceClass" type="com.taxiapp.types.ServiceClass"/>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented(),
         manifest(
@@ -70,7 +70,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                 </manifest>
             """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -107,7 +107,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -142,9 +142,9 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         <fulfillment urlTemplate="foo"/>
                     </action>
                 </actions>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -164,7 +164,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
             "res/xml/actions.xml",
             """
                 <actions supportedLocales="en-US,en-GB,es-ES,es-419" />
-                """
+                """,
           )
           .indented()
       )
@@ -179,7 +179,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
             "res/xml/actions.xml",
             """
                 <actions supportedLocales="en-US,en-GB,abcdefg,es-419" />
-                """
+                """,
           )
           .indented()
       )
@@ -206,7 +206,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </action>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -234,7 +234,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -254,7 +254,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
       .files(
         xml("res/xml/actions.xml", """
                 <action />
-                """).indented()
+                """,).indented()
       )
       .run()
       .expect(
@@ -276,7 +276,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                 <actions>
                     <fulfillment urlTemplate="foo"/>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -300,7 +300,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                 <actions>
                     <parameter name="foo"/>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -328,7 +328,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -352,7 +352,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                 <actions>
                     <parameter-mapping intentName="foo"/>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -378,7 +378,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                       labelTemplate="@array/rideActionLabel"
                       icon="@mipmap/rideActionIcon" />
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -405,7 +405,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -442,7 +442,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                     <action intentName="wrong">
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -475,7 +475,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </parameter>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -494,7 +494,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         <fulfillment />
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -529,7 +529,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         <fulfillment urlTemplate="foo"/>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -559,7 +559,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         <fulfillment urlTemplate="foo"/>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -590,7 +590,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -618,7 +618,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -654,7 +654,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -688,7 +688,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -733,7 +733,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -756,7 +756,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
     assertEquals("[path]", getUriTemplateParameters("{#path:6}/here").sorted().toString())
     assertEquals(
       "[list, path]",
-      getUriTemplateParameters("prefix{/list*,path:4}suffix").sorted().toString()
+      getUriTemplateParameters("prefix{/list*,path:4}suffix").sorted().toString(),
     )
     assertEquals("[who]", getUriTemplateParameters("{.who,who}").sorted().toString())
     assertEquals("[who]", getUriTemplateParameters("{.who,who}").sorted().toString())
@@ -805,7 +805,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </parameter>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -854,7 +854,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -881,7 +881,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                     </fulfillment>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented()
       )
@@ -924,7 +924,7 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                         <parameter name="serviceClass" type="com.taxiapp.types.ServiceClass"/>
                     </action>
                 </actions>
-                """
+                """,
           )
           .indented(),
         manifest(
@@ -942,9 +942,9 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
                        </activity>
                    </application>
                 </manifest>
-            """
+            """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

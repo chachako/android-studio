@@ -54,7 +54,7 @@ class OpenForTestingDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     const val OPEN_FOR_TESTING_ANNOTATION = "androidx.annotation.OpenForTesting"
@@ -69,7 +69,7 @@ class OpenForTestingDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     if (context.isTestSource) {
       return

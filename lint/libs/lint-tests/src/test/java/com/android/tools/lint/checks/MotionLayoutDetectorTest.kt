@@ -37,9 +37,9 @@ class MotionLayoutDetectorTest : AbstractCheckTest() {
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                 </android.support.constraint.motion.MotionLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -59,7 +59,7 @@ class MotionLayoutDetectorTest : AbstractCheckTest() {
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                 </android.support.constraint.motion.MotionLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -89,7 +89,7 @@ class MotionLayoutDetectorTest : AbstractCheckTest() {
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                 </android.support.constraint.motion.MotionLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -112,7 +112,7 @@ class MotionLayoutDetectorTest : AbstractCheckTest() {
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                 </android.support.constraint.motion.MotionLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -141,7 +141,7 @@ class MotionLayoutDetectorTest : AbstractCheckTest() {
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                 </android.support.constraint.motion.MotionLayout>
-                """
+                """,
           )
           .indented()
       )

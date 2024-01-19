@@ -91,7 +91,7 @@ class ByLazyDetector : Detector(), SourceCodeScanner {
         severity = ERROR,
         enabledByDefault = false,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 

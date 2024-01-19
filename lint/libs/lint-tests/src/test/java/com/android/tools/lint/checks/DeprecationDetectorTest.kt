@@ -166,7 +166,7 @@ class DeprecationDetectorTest : AbstractCheckTest() {
             <EditText android:editable="false" />
 
         </AbsoluteLayout>
-        """
+        """,
       )
       .indented()
 
@@ -189,7 +189,7 @@ class DeprecationDetectorTest : AbstractCheckTest() {
                         app:summary="Report technical issues or suggest new features"/>
 
                 </androidx.preference.PreferenceScreen>
-                """
+                """,
           )
           .indented()
       )
@@ -207,10 +207,10 @@ class DeprecationDetectorTest : AbstractCheckTest() {
                     <CheckBoxPreference>
                     </CheckBoxPreference>
                 </android.preference.PreferenceScreen>
-                """
+                """,
           )
           .indented(),
-        manifest().targetSdk(29)
+        manifest().targetSdk(29),
       )
       .run()
       .expect(
@@ -233,10 +233,10 @@ class DeprecationDetectorTest : AbstractCheckTest() {
                     <CheckBoxPreference>
                     </CheckBoxPreference>
                 </android.preference.PreferenceScreen>
-                """
+                """,
           )
           .indented(),
-        manifest().targetSdk(30)
+        manifest().targetSdk(30),
       )
       .run()
       .expect(
@@ -278,10 +278,10 @@ class DeprecationDetectorTest : AbstractCheckTest() {
                     <CheckBoxPreference>
                     </CheckBoxPreference>
                 </com.example.myapplication.CustomOldPreference>
-                """
+                """,
           )
           .indented(),
-        manifest().targetSdk(30)
+        manifest().targetSdk(30),
       )
       .run()
       .expect(
@@ -358,7 +358,7 @@ class DeprecationDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -474,7 +474,7 @@ class DeprecationDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -560,7 +560,7 @@ class DeprecationDetectorTest : AbstractCheckTest() {
                 </manifest>
                 """
           )
-          .to("../app/AndroidManifest.xml")
+          .to("../app/AndroidManifest.xml"),
       )
       .run()
       .expect(

@@ -44,7 +44,7 @@ class CharacterDataTestModeTest {
                     Other
                 </string>
             </resources>
-            """
+            """,
         )
         .indented()
 
@@ -64,7 +64,7 @@ class CharacterDataTestModeTest {
                     Other
                 ]]></string>
             </resources>
-            """
+            """,
         )
         .indented()
 
@@ -82,7 +82,7 @@ class CharacterDataTestModeTest {
               <resources>
                 <string name="test"></string>
               </resources>
-            """
+            """,
         )
         .indented()
 
@@ -93,7 +93,7 @@ class CharacterDataTestModeTest {
             <resources>
               <string name="test"><![CDATA[]]></string>
             </resources>
-            """
+            """,
         )
         .indented()
 

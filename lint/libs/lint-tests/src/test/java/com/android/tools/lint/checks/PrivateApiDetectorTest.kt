@@ -54,7 +54,7 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                 }
                """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -411,7 +411,7 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -462,7 +462,7 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -554,7 +554,7 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -669,7 +669,7 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -709,7 +709,7 @@ class PrivateApiDetectorTest : AbstractCheckTest() {
                 }
                """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

@@ -83,7 +83,7 @@ class SelectedPhotoAccessDetector : Detector(), XmlScanner {
               ISSUE,
               node,
               context.getLocation(attributeNodeNS, LocationType.VALUE),
-              "Your app is currently not handling Selected Photos Access introduced in Android 14+"
+              "Your app is currently not handling Selected Photos Access introduced in Android 14+",
             )
         }
         "android.permission.READ_MEDIA_VISUAL_USER_SELECTED" -> {

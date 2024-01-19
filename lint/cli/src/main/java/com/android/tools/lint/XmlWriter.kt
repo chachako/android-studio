@@ -73,7 +73,7 @@ open class XmlWriter(
   /** Writer to send output to. */
   private val writer: Writer,
   /** Path variables to use when writing */
-  private val pathVariables: PathVariables
+  private val pathVariables: PathVariables,
 ) {
   constructor(
     /** Client handling IO, path normalization and error reporting. */
@@ -81,7 +81,7 @@ open class XmlWriter(
     /** File to write report to. */
     output: File,
     /** The type of report to create. */
-    type: XmlFileType
+    type: XmlFileType,
   ) : this(client, type, output.bufferedWriter(), client.pathVariables)
 
   /** Flush any buffered changes to the file. */
@@ -200,7 +200,7 @@ open class XmlWriter(
         writer,
         indent + 1,
         ATTR_SEVERITY,
-        if (type.isPersistenceFile()) incident.severity.toName() else incident.severity.description
+        if (type.isPersistenceFile()) incident.severity.toName() else incident.severity.description,
       )
     }
     writeAttribute(writer, indent + 1, ATTR_MESSAGE, incident.message)
@@ -241,13 +241,13 @@ open class XmlWriter(
         writer,
         indent + 1,
         ATTR_INCLUDED_VARIANTS,
-        Joiner.on(',').join(applicableVariants.includedVariantNames)
+        Joiner.on(',').join(applicableVariants.includedVariantNames),
       )
       writeAttribute(
         writer,
         indent + 1,
         ATTR_EXCLUDED_VARIANTS,
-        Joiner.on(',').join(applicableVariants.excludedVariantNames)
+        Joiner.on(',').join(applicableVariants.excludedVariantNames),
       )
     }
 
@@ -310,7 +310,7 @@ open class XmlWriter(
     map: LintMap,
     indent: Int = 2,
     name: String? = null,
-    project: Project? = null
+    project: Project? = null,
   ) {
     val entries = LintMap.getInternalMap(map).entries
     if (entries.isEmpty()) {
@@ -375,7 +375,7 @@ open class XmlWriter(
     location: Location,
     tag: String = TAG_LOCATION,
     indent: Int = 2,
-    key: String? = null
+    key: String? = null,
   ) {
     indent(indent)
     val indented = indent + 1
@@ -721,7 +721,7 @@ open class XmlWriter(
   /** Writes the given list. */
   fun writeIncidents(
     incidents: List<Incident>,
-    extraAttributes: List<Pair<String, String?>> = emptyList()
+    extraAttributes: List<Pair<String, String?>> = emptyList(),
   ) {
     writeProlog()
     val rootTag = if (type.isPersistenceFile()) TAG_INCIDENTS else TAG_ISSUES

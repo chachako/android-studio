@@ -25,7 +25,7 @@ data class AllClassesWithGenericsReply(val classes: List<Class>) : Reply() {
     val referenceTypeID: Long,
     val signature: String,
     val genericSignature: String,
-    val status: Int
+    val status: Int,
   ) {
 
     fun write(writer: Writer) {

@@ -61,7 +61,7 @@ class KotlinNullnessAnnotationDetector : Detector(), SourceCodeScanner {
         severity = Severity.ERROR,
         androidSpecific = true,
         implementation = IMPLEMENTATION,
-        enabledByDefault = true
+        enabledByDefault = true,
       )
 
     const val IDEA_NULLABLE = "org.jetbrains.annotations.Nullable"
@@ -73,7 +73,7 @@ class KotlinNullnessAnnotationDetector : Detector(), SourceCodeScanner {
       "Nullable", // everybody
       "NonNull", // androidx
       "NotNull", // jetbrains
-      "Nonnull" // jsr305
+      "Nonnull", // jsr305
     )
 
   override fun inheritAnnotation(annotation: String): Boolean {
@@ -89,7 +89,7 @@ class KotlinNullnessAnnotationDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     // Only applies for Kotlin annotations
     val sourcePsi = element.sourcePsi ?: return
@@ -178,7 +178,7 @@ class KotlinNullnessAnnotationDetector : Detector(), SourceCodeScanner {
 
   private fun findKotlinTypeAnnotation(
     annotated: UAnnotated,
-    annotationInfo: AnnotationInfo
+    annotationInfo: AnnotationInfo,
   ): String? {
     //noinspection ExternalAnnotations
     val directAnnotations = annotated.uAnnotations
@@ -220,7 +220,7 @@ class KotlinNullnessAnnotationDetector : Detector(), SourceCodeScanner {
   private fun locationWithNextSpace(
     location: Location,
     context: JavaContext,
-    element: UElement
+    element: UElement,
   ): Location {
     var fixLocation = location
 

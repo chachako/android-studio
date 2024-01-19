@@ -39,7 +39,7 @@ class HttpTrackerFactoryImpl(private val inspectorConnection: androidx.inspectio
     return ConnectionTracker(
       url,
       callstack,
-      ConnectionReporter.createConnectionTracker(inspectorConnection)
+      ConnectionReporter.createConnectionTracker(inspectorConnection),
     )
   }
 }

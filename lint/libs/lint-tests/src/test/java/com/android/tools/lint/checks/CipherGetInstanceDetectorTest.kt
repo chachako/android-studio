@@ -280,7 +280,7 @@ class CipherGetInstanceDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -322,7 +322,7 @@ class CipherGetInstanceDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

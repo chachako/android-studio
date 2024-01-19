@@ -47,7 +47,7 @@ internal sealed class AnnotationValuesExtractor {
 
   internal abstract fun getAnnotationStringValues(
     annotation: UAnnotation?,
-    name: String
+    name: String,
   ): Array<String>?
 
   private object Source : AnnotationValuesExtractor() {

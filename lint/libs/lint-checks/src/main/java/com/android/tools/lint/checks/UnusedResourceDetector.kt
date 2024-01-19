@@ -113,7 +113,7 @@ class UnusedResourceDetector :
 
   private fun addDynamicResources(
     project: Project,
-    resValues: Map<String, LintModelResourceField>
+    resValues: Map<String, LintModelResourceField>,
   ) {
     val resFields = resValues.values
     if (resFields.isNotEmpty()) {
@@ -421,7 +421,7 @@ class UnusedResourceDetector :
     node: UElement,
     type: ResourceType,
     name: String,
-    isFramework: Boolean
+    isFramework: Boolean,
   ) {
     if (!isFramework) {
       ResourceUsageModel.markReachable(model.addResource(type, name, null))
@@ -447,7 +447,7 @@ class UnusedResourceDetector :
 
           private fun <C : PsiClass> visitClass(
             psiClass: C?,
-            getBindingClassName: (C) -> String? = PsiClass::getName
+            getBindingClassName: (C) -> String? = PsiClass::getName,
           ) {
             if (psiClass != null && isBindingClass(context.evaluator, psiClass)) {
               bindingClasses[getBindingClassName(psiClass)]?.let { resourceName ->
@@ -600,7 +600,7 @@ class UnusedResourceDetector :
           Scope.MANIFEST,
           Scope.ALL_RESOURCE_FILES,
           Scope.ALL_JAVA_FILES,
-          Scope.BINARY_RESOURCE_FILE
+          Scope.BINARY_RESOURCE_FILE,
         )
         .let { scopeSet ->
           // Whether to include test sources in the scope. Currently true but controllable
@@ -648,7 +648,7 @@ class UnusedResourceDetector :
         category = Category.PERFORMANCE,
         priority = 3,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Unused id's */
@@ -670,7 +670,7 @@ class UnusedResourceDetector :
         priority = 1,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        enabledByDefault = false
+        enabledByDefault = false,
       )
 
     /**
@@ -681,7 +681,7 @@ class UnusedResourceDetector :
 
     private fun findUnused(
       context: Context,
-      model: ResourceUsageModel
+      model: ResourceUsageModel,
     ): Sequence<ResourceUsageModel.Resource> {
       model.processToolsAttributes()
       val idEnabled = context.isEnabled(ISSUE_IDS)

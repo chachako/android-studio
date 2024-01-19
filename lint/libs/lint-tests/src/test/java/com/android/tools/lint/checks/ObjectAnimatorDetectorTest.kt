@@ -166,7 +166,7 @@ class ObjectAnimatorDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -227,7 +227,7 @@ class ObjectAnimatorDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(MISSING_KEEP)
       .run()
@@ -383,7 +383,7 @@ class ObjectAnimatorDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(MISSING_KEEP)
       .allowCompilationErrors()
@@ -426,7 +426,7 @@ class ObjectAnimatorDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(MISSING_KEEP)
       .run()
@@ -592,7 +592,7 @@ class ObjectAnimatorDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -634,7 +634,7 @@ class ObjectAnimatorDetectorTest : AbstractCheckTest() {
                         android:background="@color/status_bar_scrim_translucent_dark" />
 
                 </android.support.constraint.motion.MotionLayout>
-            """
+            """,
           )
           .indented(),
         xml(
@@ -688,7 +688,7 @@ class ObjectAnimatorDetectorTest : AbstractCheckTest() {
                     </Constraint>
 
                 </MotionScene>
-            """
+            """,
           )
           .indented(),
         java(
@@ -748,7 +748,7 @@ class ObjectAnimatorDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(MISSING_KEEP)
       .run()

@@ -224,7 +224,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -261,7 +261,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -305,7 +305,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -353,7 +353,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -393,7 +393,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -432,7 +432,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -489,7 +489,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -529,7 +529,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -569,7 +569,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -623,7 +623,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -660,7 +660,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -695,7 +695,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -742,7 +742,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -785,7 +785,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -834,7 +834,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -881,7 +881,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -929,7 +929,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -983,7 +983,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1051,7 +1051,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1095,7 +1095,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1145,7 +1145,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1215,7 +1215,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1257,7 +1257,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1267,9 +1267,9 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <string name="path_prefix">/pathprefix</string>
                     <string name="port">8080</string>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .incremental("AndroidManifest.xml")
       .run()
@@ -1320,7 +1320,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1330,9 +1330,9 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <string name="path_prefix">pathprefix</string>
                     <string name="port">gizmos</string>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .incremental("AndroidManifest.xml")
       .run()
@@ -1379,7 +1379,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1423,7 +1423,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1467,7 +1467,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1523,7 +1523,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1555,7 +1555,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1587,7 +1587,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1619,7 +1619,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -1631,7 +1631,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -1664,7 +1664,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1695,7 +1695,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     </application>
 
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -1730,7 +1730,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
 
             </manifest>
             """,
-        true
+        true,
       )
     val root = document.documentElement
     val application = XmlUtils.getFirstSubTag(root)
@@ -1740,7 +1740,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
     val detector = AppLinksValidDetector()
     fun createUriInfos(
       activity: Element,
-      context: XmlContext?
+      context: XmlContext?,
     ): List<AppLinksValidDetector.UriInfo> = detector.createUriInfos(activity, context)
     fun testElement(testUrl: URL, infos: List<AppLinksValidDetector.UriInfo>): String? =
       detector.testElement(testUrl, infos)

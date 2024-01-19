@@ -196,7 +196,7 @@ internal class OkHttp3Test {
       inspectorRule.environment.fakeArtTooling.triggerExitHook(
         okhttp3.OkHttpClient::class.java,
         "networkInterceptors()Ljava/util/List;",
-        emptyList()
+        emptyList(),
       )
     )
   }

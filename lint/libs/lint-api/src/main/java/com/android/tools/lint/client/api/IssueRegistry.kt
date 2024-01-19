@@ -155,7 +155,7 @@ abstract class IssueRegistry protected constructor() {
     configuration: Configuration,
     scope: EnumSet<Scope>,
     platforms: EnumSet<Platform>,
-    scopeToDetectors: MutableMap<Scope, MutableList<Detector>>?
+    scopeToDetectors: MutableMap<Scope, MutableList<Detector>>?,
   ): List<Detector> {
 
     val issues = getIssuesForScope(scope)
@@ -220,7 +220,7 @@ abstract class IssueRegistry protected constructor() {
           t,
           "Can't initialize detector ${clz.name}.\n",
           null,
-          project
+          project,
         )
       }
     }
@@ -435,7 +435,7 @@ abstract class IssueRegistry protected constructor() {
         category = Category.LINT,
         priority = 10,
         severity = Severity.ERROR,
-        implementation = EMPTY_IMPLEMENTATION
+        implementation = EMPTY_IMPLEMENTATION,
       )
 
     /**
@@ -459,7 +459,7 @@ abstract class IssueRegistry protected constructor() {
         category = Category.LINT,
         priority = 10,
         severity = Severity.ERROR,
-        implementation = EMPTY_IMPLEMENTATION
+        implementation = EMPTY_IMPLEMENTATION,
       )
 
     /**
@@ -483,7 +483,7 @@ abstract class IssueRegistry protected constructor() {
         category = Category.LINT,
         priority = 5,
         severity = Severity.WARNING,
-        implementation = EMPTY_IMPLEMENTATION
+        implementation = EMPTY_IMPLEMENTATION,
       )
 
     /** Lint is configured with references to an issue id that it does not recognize. */
@@ -500,7 +500,7 @@ abstract class IssueRegistry protected constructor() {
         category = Category.LINT,
         priority = 1,
         severity = Severity.WARNING,
-        implementation = EMPTY_IMPLEMENTATION
+        implementation = EMPTY_IMPLEMENTATION,
       )
 
     /**
@@ -525,7 +525,7 @@ abstract class IssueRegistry protected constructor() {
         category = Category.LINT,
         priority = 1,
         severity = Severity.WARNING,
-        implementation = EMPTY_IMPLEMENTATION
+        implementation = EMPTY_IMPLEMENTATION,
       )
 
     /**
@@ -558,7 +558,7 @@ abstract class IssueRegistry protected constructor() {
         category = Category.LINT,
         priority = 10,
         severity = Severity.INFORMATIONAL,
-        implementation = EMPTY_IMPLEMENTATION
+        implementation = EMPTY_IMPLEMENTATION,
       )
 
     /**
@@ -582,7 +582,7 @@ abstract class IssueRegistry protected constructor() {
         category = Category.LINT,
         priority = 10,
         severity = Severity.INFORMATIONAL,
-        implementation = EMPTY_IMPLEMENTATION
+        implementation = EMPTY_IMPLEMENTATION,
       )
 
     /**
@@ -612,7 +612,7 @@ abstract class IssueRegistry protected constructor() {
         category = Category.LINT,
         priority = 10,
         severity = Severity.WARNING,
-        implementation = EMPTY_IMPLEMENTATION
+        implementation = EMPTY_IMPLEMENTATION,
       )
 
     /** Vendor used for the built-in lint checks. */
@@ -620,7 +620,7 @@ abstract class IssueRegistry protected constructor() {
       Vendor(
         vendorName = "Android Open Source Project",
         feedbackUrl = "https://issuetracker.google.com/issues/new?component=192708",
-        contact = "https://groups.google.com/g/lint-dev"
+        contact = "https://groups.google.com/g/lint-dev",
       )
 
     /** Reset the registry such that it recomputes its available issues. */

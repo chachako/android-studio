@@ -61,7 +61,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
                     @SuppressWarnings("ALL") class Foo {
                     }
                     """
-        )
+        ),
       )
       .allowSystemErrors(true)
       .allowExceptions(true)
@@ -132,7 +132,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
                     @SuppressWarnings("ALL") class Foo {
                     }
                     """
-        )
+        ),
       )
       .allowSystemErrors(true)
       .allowExceptions(true)
@@ -182,7 +182,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
                     @SuppressWarnings("ALL") class Foo {
                     }
                     """
-        )
+        ),
       )
       .allowSystemErrors(true)
       .allowExceptions(true)
@@ -368,9 +368,9 @@ class LintDriverCrashTest : AbstractCheckTest() {
             "lint.jar",
             source(
               "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
-              "test.pkg.MyIssueRegistry"
+              "test.pkg.MyIssueRegistry",
             ),
-            0x70522285
+            0x70522285,
           ),
           bytecode(
             "lint.jar",
@@ -424,8 +424,8 @@ class LintDriverCrashTest : AbstractCheckTest() {
             Kzyb8MOfxhJOXJCQ4daF5MVxsn0huYElQo2T3fFWJi8gn23BwKP0vI/HJDl5
             Vwi3eoCch4883PXwMT4hFZ96+AyfH4ApfIG1A1QULiusKxQVbijcU5hXuK5w
             NdU3FKoKcwoLCrcUlhVuKzQUlv4Bcv5ApO0GAAA=
-            """
-          )
+            """,
+          ),
         )
         .testModes(TestMode.DEFAULT)
         .createProjects(root)
@@ -473,7 +473,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
             "lint.jar",
             source(
               "META-INF/services/com.android.tools.lint.client.api.IssueRegistry",
-              "test.pkg.MyIssueRegistry"
+              "test.pkg.MyIssueRegistry",
             ),
           )
         )
@@ -503,7 +503,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
         messages,
         messages.contains(
           "←JarFileIssueRegistry\$Factory.loadIssueRegistry(JarFileIssueRegistry.kt"
-        )
+        ),
       )
 
       // Now make sure that the `android.lint.log-jar-problems` flag can be used to
@@ -596,7 +596,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           Category.LINT,
           10,
           Severity.FATAL,
-          Implementation(CrashingDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(CrashingDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }
@@ -621,7 +621,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           Category.LINT,
           10,
           Severity.FATAL,
-          Implementation(CrashingImplementationDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(CrashingImplementationDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }
@@ -638,7 +638,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           Category.LINT,
           10,
           Severity.FATAL,
-          Implementation(CrashingInheritorDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(CrashingInheritorDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }
@@ -655,7 +655,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           Category.LINT,
           10,
           Severity.FATAL,
-          Implementation(CrashingInheritorDetector2::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(CrashingInheritorDetector2::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }
@@ -693,7 +693,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           L25.807,516.129 L632.258,516.129
           C639.384,516.129,645.161,521.906,645.161,529.032 L670.968,529.032
           C670.968,521.906,676.745,516.129,683.871,516.129 Z"/>
-          </vector>"""
+          </vector>""",
           )
           .indented()
       )
@@ -754,7 +754,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
 
                 Error message was: `found error in TESTROOT/default/app/res/drawable/drawable.xml!`
                 """,
-        java.lang.AssertionError::class.java
+        java.lang.AssertionError::class.java,
       )
 
     // Allowing absolute paths
@@ -775,7 +775,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
       context.report(
         ABS_PATH_ISSUE,
         Location.create(context.file),
-        "found error in " + context.file + "!"
+        "found error in " + context.file + "!",
       )
     }
 
@@ -788,7 +788,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           Category.CORRECTNESS,
           5,
           Severity.WARNING,
-          Implementation(AbsPathTestDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+          Implementation(AbsPathTestDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
         )
     }
   }
@@ -819,7 +819,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
             it,
             context.getValueLocation(it as Attr),
             "Should be using uppercase letters",
-            fix
+            fix,
           )
         }
     }
@@ -836,7 +836,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           Category.CORRECTNESS,
           5,
           Severity.WARNING,
-          Implementation(ColorCasingDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+          Implementation(ColorCasingDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
         )
 
       internal fun Node.attributes() = (0 until attributes.length).map { attributes.item(it) }
@@ -863,7 +863,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           Category.LINT,
           10,
           Severity.FATAL,
-          Implementation(DisposedThrowingDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+          Implementation(DisposedThrowingDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
         )
     }
   }
@@ -899,7 +899,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           Category.LINT,
           10,
           Severity.FATAL,
-          Implementation(LinkageErrorDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(LinkageErrorDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }
@@ -926,7 +926,7 @@ class LintDriverCrashTest : AbstractCheckTest() {
           Category.LINT,
           10,
           Severity.FATAL,
-          Implementation(BrokenInitializationDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(BrokenInitializationDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }

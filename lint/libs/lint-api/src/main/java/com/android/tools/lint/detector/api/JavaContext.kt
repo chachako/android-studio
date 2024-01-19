@@ -74,7 +74,7 @@ open class JavaContext(
   main: Project?,
 
   /** the file to be analyzed */
-  file: File
+  file: File,
 ) : Context(driver, project, main, file) {
 
   /** The parse tree, when using PSI. */
@@ -117,7 +117,7 @@ open class JavaContext(
     from: UDeclaration,
     fromDelta: Int,
     to: UDeclaration,
-    toDelta: Int
+    toDelta: Int,
   ): Location = uastParser.getRangeLocation(this, from as UElement, fromDelta, to, toDelta)
 
   /**
@@ -213,7 +213,7 @@ open class JavaContext(
   fun getCallLocation(
     call: UCallExpression,
     includeReceiver: Boolean,
-    includeArguments: Boolean
+    includeArguments: Boolean,
   ): Location = uastParser.getCallLocation(this, call, includeReceiver, includeArguments)
 
   val evaluator: JavaEvaluator
@@ -263,7 +263,7 @@ open class JavaContext(
     scope: PsiElement?,
     location: Location,
     message: String,
-    quickfixData: LintFix? = null
+    quickfixData: LintFix? = null,
   ) {
     val incident = Incident(issue, message, location, scope, quickfixData)
     driver.client.report(this, incident)
@@ -287,7 +287,7 @@ open class JavaContext(
     scope: UElement?,
     location: Location,
     message: String,
-    quickfixData: LintFix? = null
+    quickfixData: LintFix? = null,
   ) {
     val incident = Incident(issue, message, location, scope, quickfixData)
     driver.client.report(this, incident)
@@ -309,7 +309,7 @@ open class JavaContext(
     scopeClass: UClass?,
     location: Location,
     message: String,
-    quickfixData: LintFix?
+    quickfixData: LintFix?,
   ) = report(issue, scopeClass as UElement?, location, message, quickfixData)
 
   /**
@@ -328,7 +328,7 @@ open class JavaContext(
     scopeClass: UMethod?,
     location: Location,
     message: String,
-    quickfixData: LintFix?
+    quickfixData: LintFix?,
   ) = report(issue, scopeClass as UElement?, location, message, quickfixData)
 
   /**
@@ -347,7 +347,7 @@ open class JavaContext(
     scopeClass: UField?,
     location: Location,
     message: String,
-    quickfixData: LintFix?
+    quickfixData: LintFix?,
   ) = report(issue, scopeClass as UElement?, location, message, quickfixData)
 
   override val suppressCommentPrefix: String?
@@ -387,7 +387,7 @@ open class JavaContext(
   @Deprecated(
     "Use UastFacade instead",
     ReplaceWith("org.jetbrains.uast.UastFacade"),
-    DeprecationLevel.HIDDEN
+    DeprecationLevel.HIDDEN,
   )
   val uastContext: UastContext
     get() = uastFile?.getUastContext()!!

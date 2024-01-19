@@ -131,9 +131,9 @@ class IndentationDetectorTest : AbstractCheckTest() {
                     }
                     return Pair(line, column)
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .skipTestModes(TestMode.PARENTHESIZED, TestMode.WHITESPACE)
       .run()
@@ -251,7 +251,7 @@ class IndentationDetectorTest : AbstractCheckTest() {
       "UnusedAssignment",
       "RedundantIfStatement",
       "ConstantConditions",
-      "SuspiciousIndentAfterControlStatement"
+      "SuspiciousIndentAfterControlStatement",
     )
     lint()
       .files(
@@ -308,7 +308,7 @@ class IndentationDetectorTest : AbstractCheckTest() {
               "          \"test.xml.rewritten:7:1:  and here:\")\n" +
               "      assertThat(errorMsg)\n" +
               "          .contains(\"test.xml.rewritten:6:1\")\n" +
-              "  }"
+              "  }",
           )
           .indented(),
         kotlin(
@@ -499,7 +499,7 @@ class IndentationDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .skipTestModes(TestMode.PARENTHESIZED)
       .run()
@@ -548,7 +548,7 @@ class IndentationDetectorTest : AbstractCheckTest() {
                     if (true)
                         println("test")
                 }
-                """
+                """,
           )
           .indented(),
         kotlin(
@@ -562,9 +562,9 @@ class IndentationDetectorTest : AbstractCheckTest() {
                     // (true)
                     println("test")
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -635,7 +635,7 @@ class IndentationDetectorTest : AbstractCheckTest() {
                         println("test1b")
                     }
                 }
-                """
+                """,
           )
           .indented(),
         kotlin(
@@ -650,9 +650,9 @@ class IndentationDetectorTest : AbstractCheckTest() {
                         println("test2a")
                     println("test2b")
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -720,7 +720,7 @@ class IndentationDetectorTest : AbstractCheckTest() {
           override fun isEdited(
             file: File,
             returnIfUnknown: Boolean,
-            savedSinceMsAgo: Long
+            savedSinceMsAgo: Long,
           ): Boolean {
             return false
           }

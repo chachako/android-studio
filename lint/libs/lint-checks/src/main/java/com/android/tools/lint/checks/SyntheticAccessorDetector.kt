@@ -75,7 +75,7 @@ class SyntheticAccessorDetector : Detector(), SourceCodeScanner {
           severity = Severity.WARNING,
           androidSpecific = true,
           enabledByDefault = false,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .setAliases(listOf("SyntheticAccessorCall", "PrivateMemberAccessBetweenOuterAndInnerClass"))
   }
@@ -181,7 +181,7 @@ class SyntheticAccessorDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     node: UElement,
     member: PsiMember,
-    target: PsiClass
+    target: PsiClass,
   ) {
     val location =
       if (node is UCallExpression) {

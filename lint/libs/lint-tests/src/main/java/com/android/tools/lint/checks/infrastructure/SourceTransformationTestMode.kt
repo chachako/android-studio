@@ -119,7 +119,7 @@ class Edit(
   val endOffset: Int,
   val with: String,
   private val biasRight: Boolean = false,
-  private val ordinal: Int = nextOrdinal++
+  private val ordinal: Int = nextOrdinal++,
 ) : Comparable<Edit> {
 
   override fun compareTo(other: Edit): Int {

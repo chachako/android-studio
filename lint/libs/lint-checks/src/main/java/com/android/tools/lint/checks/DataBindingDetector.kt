@@ -58,7 +58,7 @@ class DataBindingDetector : LayoutDetector() {
           attribute,
           context.getValueLocation(attribute),
           "`<` must be escaped (as `&lt;`) in attribute values",
-          fix
+          fix,
         )
       }
     }
@@ -83,7 +83,7 @@ class DataBindingDetector : LayoutDetector() {
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.ERROR,
-        implementation = Implementation(DataBindingDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+        implementation = Implementation(DataBindingDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
       )
   }
 }

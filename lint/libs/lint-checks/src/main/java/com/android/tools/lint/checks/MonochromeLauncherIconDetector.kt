@@ -57,7 +57,7 @@ class MonochromeLauncherIconDetector : Detector(), XmlScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -69,10 +69,7 @@ class MonochromeLauncherIconDetector : Detector(), XmlScanner {
   }
 
   override fun getApplicableElements(): Collection<String> {
-    return listOf(
-      TAG_APPLICATION,
-      TAG_ADAPTIVE_ICON,
-    )
+    return listOf(TAG_APPLICATION, TAG_ADAPTIVE_ICON)
   }
 
   override fun visitElement(context: XmlContext, element: Element) {

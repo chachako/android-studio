@@ -20,7 +20,7 @@
   "RemoveExplicitTypeArguments",
   "HasPlatformType",
   "ConstantConditions",
-  "MemberVisibilityCanBePrivate"
+  "MemberVisibilityCanBePrivate",
 )
 
 package com.android.tools.lint.checks.infrastructure
@@ -330,7 +330,7 @@ class ImportAliasTestModeTest {
     }
     assertEquals(
       "[test.pkg.Test1, test.pkg.Test2, test.pkg.sub.Test3]",
-      map.keys.sorted().toString()
+      map.keys.sorted().toString(),
     )
     assertEquals(
       """
@@ -343,7 +343,7 @@ class ImportAliasTestModeTest {
             """
         .trimIndent()
         .trim(),
-      map["test.pkg.Test1"]!!.trim()
+      map["test.pkg.Test1"]!!.trim(),
     )
     assertEquals(
       """
@@ -354,7 +354,7 @@ class ImportAliasTestModeTest {
             """
         .trimIndent()
         .trim(),
-      map["test.pkg.Test2"]!!.trim()
+      map["test.pkg.Test2"]!!.trim(),
     )
     assertEquals(
       """
@@ -367,7 +367,7 @@ class ImportAliasTestModeTest {
             """
         .trimIndent()
         .trim(),
-      map["test.pkg.sub.Test3"]!!.trim()
+      map["test.pkg.sub.Test3"]!!.trim(),
     )
   }
 
@@ -435,19 +435,19 @@ class ImportAliasTestModeTest {
     assertTrue(
       mode.messagesMatch(
         "This method should be annotated with @ChecksSdkIntAtLeast(api=BUILD.VERSION_CODES.GINGERBREAD)",
-        "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.GINGERBREAD)"
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.GINGERBREAD)",
       )
     )
     assertTrue(
       mode.messagesMatch(
         "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.O, lambda=1)",
-        "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.O, lambda=1)"
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.O, lambda=1)",
       )
     )
     assertFalse(
       mode.messagesMatch(
         "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.O, lambda=1)",
-        "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.P, lambda=1)"
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.P, lambda=1)",
       )
     )
   }

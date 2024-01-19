@@ -43,7 +43,7 @@ class BlockedDependencies(val project: Project) {
   fun checkDependency(
     groupId: String,
     artifactId: String,
-    remove: Boolean
+    remove: Boolean,
   ): List<LintModelDependency>? {
     val map = this.map ?: return null
     val coordinate = "$groupId:$artifactId"
@@ -65,7 +65,7 @@ class BlockedDependencies(val project: Project) {
 
   private fun visitLibraries(
     stack: ArrayDeque<LintModelDependency>,
-    libraries: List<LintModelDependency>
+    libraries: List<LintModelDependency>,
   ) {
     for (library in libraries) {
       visitLibrary(stack, library)

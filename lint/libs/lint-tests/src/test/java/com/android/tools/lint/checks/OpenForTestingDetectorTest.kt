@@ -73,7 +73,7 @@ class OpenForTestingDetectorTest : AbstractCheckTest() {
                 class MyBuilder4 extends Builder1 { // OK: In unit test
                     @Override void someMethod(int arg) { }
                 }
-                """
+                """,
           )
           .indented(),
         java(
@@ -83,10 +83,10 @@ class OpenForTestingDetectorTest : AbstractCheckTest() {
                 class MyBuilder5 extends Builder2 { // OK: In unit test
                     @Override void someMethod(int arg) { }
                 }
-                """
+                """,
           )
           .indented(),
-        openForTestingStub
+        openForTestingStub,
       )
       .run()
       .expect(

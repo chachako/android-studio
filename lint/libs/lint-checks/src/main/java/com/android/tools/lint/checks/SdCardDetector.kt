@@ -51,7 +51,7 @@ class SdCardDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = Implementation(SdCardDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(SdCardDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
   }
 

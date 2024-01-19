@@ -41,7 +41,7 @@ abstract class RangeConstraint {
   abstract fun describeDelta(
     actual: RangeConstraint,
     actualLabel: String,
-    allowedLabel: String
+    allowedLabel: String,
   ): String
 
   /** Intersect two ranges */

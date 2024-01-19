@@ -71,7 +71,7 @@ class ViewBindingTypeDetector : LayoutDetector(), XmlScanner {
         priority = 1,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -87,7 +87,7 @@ class ViewBindingTypeDetector : LayoutDetector(), XmlScanner {
         Incident(
           ISSUE,
           "`tools:viewBindingType` is not applicable in data binding layouts.",
-          context.getLocation(attribute)
+          context.getLocation(attribute),
         )
       )
     } else {
@@ -98,7 +98,7 @@ class ViewBindingTypeDetector : LayoutDetector(), XmlScanner {
           Incident(
             ISSUE,
             "`tools:viewBindingType` is not applicable on `<$tagName>` tags.",
-            context.getLocation(attribute)
+            context.getLocation(attribute),
           )
         )
       } else {
@@ -110,7 +110,7 @@ class ViewBindingTypeDetector : LayoutDetector(), XmlScanner {
             Incident(
               ISSUE,
               "`tools:viewBindingType` (`$typeTag`) must refer to a class that inherits from `$CLASS_VIEW`",
-              context.getLocation(attribute)
+              context.getLocation(attribute),
             )
           )
         } else {
@@ -121,7 +121,7 @@ class ViewBindingTypeDetector : LayoutDetector(), XmlScanner {
               Incident(
                 ISSUE,
                 "`tools:viewBindingType` should be defined on a tag that also defines an `android:id`. Otherwise, its value won't have any effect.",
-                context.getLocation(attribute)
+                context.getLocation(attribute),
               )
             )
           } else {
@@ -136,7 +136,7 @@ class ViewBindingTypeDetector : LayoutDetector(), XmlScanner {
                 Incident(
                   ISSUE,
                   "`tools:viewBindingType` (`$typeTag`) is not compatible (i.e. a match or superclass) with its tag (`$tagView`).",
-                  context.getLocation(attribute)
+                  context.getLocation(attribute),
                 )
               )
             } else {
@@ -154,7 +154,7 @@ class ViewBindingTypeDetector : LayoutDetector(), XmlScanner {
     context: XmlContext,
     idAttribute: Attr,
     evaluator: JavaEvaluator,
-    element: Element
+    element: Element,
   ) {
     val full = context.isGlobalAnalysis()
     val client = context.client
@@ -182,7 +182,7 @@ class ViewBindingTypeDetector : LayoutDetector(), XmlScanner {
             Incident(
               ISSUE,
               "`tools:viewBindingType` is not defined consistently, with the following types resolved across layouts: ${views.joinToString { "`$it`" }}",
-              location
+              location,
             )
           )
         }
@@ -267,7 +267,7 @@ class ViewBindingTypeDetector : LayoutDetector(), XmlScanner {
 
   private fun getViewBindingTypesForId(
     context: Context,
-    file: PathString
+    file: PathString,
   ): Multimap<String, String>? {
     if (!file.fileName.endsWith(DOT_XML)) {
       return null

@@ -149,7 +149,7 @@ class TestLintRunner(private val task: TestLintTask) {
                 "No output because the configured test mode $mode is not " +
                   "applicable in this project context",
                 emptyList(),
-                null
+                null,
               )
               .apply { skipped = true }
         }
@@ -180,7 +180,7 @@ class TestLintRunner(private val task: TestLintTask) {
   private fun getTestModeFiles(
     mode: TestMode,
     rootDir: File,
-    projectMap: MutableMap<String, List<File>>
+    projectMap: MutableMap<String, List<File>>,
   ): Pair<File, List<File>> {
     // Look up output folder for projects; this allows
     // multiple test types to share a single project tree
@@ -205,7 +205,7 @@ class TestLintRunner(private val task: TestLintTask) {
     rootDir: File,
     projectMap: MutableMap<String, List<File>>,
     results: MutableMap<TestMode, TestResultState>,
-    forceCleanDir: Boolean = false
+    forceCleanDir: Boolean = false,
   ) {
     currentTestMode = mode
     firstThrowable = null
@@ -246,7 +246,7 @@ class TestLintRunner(private val task: TestLintTask) {
     results: MutableMap<TestMode, TestResultState>,
     root: File,
     projectList: List<ProjectDescription>,
-    files: List<File>
+    files: List<File>,
   ) {
     val beforeState = TestModeContext(this, root, projectList, files, null, results = results)
     val clientState: Any? = mode.before(beforeState)
@@ -263,7 +263,7 @@ class TestLintRunner(private val task: TestLintTask) {
               driver: LintDriver,
               type: LintListener.EventType,
               project: Project?,
-              context: Context?
+              context: Context?,
             ) {
               val testContext =
                 TestModeContext(
@@ -274,7 +274,7 @@ class TestLintRunner(private val task: TestLintTask) {
                   clientState,
                   driver,
                   context,
-                  results
+                  results,
                 )
               it.invoke(testContext, type, clientState)
             }
@@ -325,7 +325,7 @@ class TestLintRunner(private val task: TestLintTask) {
     client: TestLintClient,
     rootDir: File,
     files: List<File>,
-    mode: TestMode
+    mode: TestMode,
   ): TestResultState {
     client.addCleanupDir(rootDir)
     client.setLintTask(task)
@@ -353,7 +353,7 @@ class TestLintRunner(private val task: TestLintTask) {
   private fun checkConsistentOutput(
     results: Map<TestMode, TestResultState>,
     mode: TestMode,
-    first: TestMode
+    first: TestMode,
   ) {
     if (mode == first) {
       return
@@ -398,7 +398,7 @@ class TestLintRunner(private val task: TestLintTask) {
         assertEquals(
           message,
           "$expectedLabel$expected$originalFiles",
-          "$actualLabel$actual$modifiedFiles"
+          "$actualLabel$actual$modifiedFiles",
         )
       } else {
         assertEquals(message, "$expectedLabel$expected", "$actualLabel$actual")
@@ -430,7 +430,7 @@ class TestLintRunner(private val task: TestLintTask) {
     dir1: File,
     dir2: File,
     path: String,
-    depth: Int
+    depth: Int,
   ) {
     val list = dir1.listFiles() ?: return
     for (file1 in list) {
@@ -708,7 +708,7 @@ class TestLintRunner(private val task: TestLintTask) {
         "Couldn't parse JSON test data: ${e.localizedMessage}\n" +
           "If intentional, set `.allowCompilationErrors()` on the lint() test task.\n" +
           "Exact file content=\n\"\"\"$json\"\"\"",
-        e
+        e,
       )
     }
   }
@@ -729,7 +729,7 @@ class TestLintRunner(private val task: TestLintTask) {
         "Couldn't parse XML test file: ${e.localizedMessage}\n" +
           "If intentional, set `.allowCompilationErrors()` on the lint() test task.\n" +
           "Exact file content=\n\"\"\"$xml\"\"\"",
-        e
+        e,
       )
     }
   }

@@ -66,12 +66,12 @@ constructor(
   private val project: Project?,
   internal val typeToMap: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>,
   private val namespace: ResourceNamespace,
-  val libraryName: String?
+  val libraryName: String?,
 ) : AbstractResourceRepository(), SingleNamespaceResourceRepository {
 
   override fun getResourcesInternal(
     namespace: ResourceNamespace,
-    resourceType: ResourceType
+    resourceType: ResourceType,
   ): ListMultimap<String, ResourceItem> {
     // We could enforce namespace == this.namespace here, but
     // right now there's a mixture of RES_AUTO and so we'd
@@ -115,7 +115,7 @@ constructor(
 
   override fun getPublicResources(
     namespace: ResourceNamespace,
-    type: ResourceType
+    type: ResourceType,
   ): MutableCollection<ResourceItem> {
     unsupported()
   }
@@ -129,7 +129,7 @@ constructor(
   internal class MergedResourceRepository(
     private val project: Project,
     private val repositories: List<LintResourceRepository>,
-    private val namespace: ResourceNamespace
+    private val namespace: ResourceNamespace,
   ) : AbstractResourceRepository() {
     override fun accept(visitor: ResourceVisitor): ResourceVisitor.VisitResult {
       for (type in ResourceType.values()) {
@@ -153,7 +153,7 @@ constructor(
 
     override fun getPublicResources(
       namespace: ResourceNamespace,
-      type: ResourceType
+      type: ResourceType,
     ): MutableCollection<ResourceItem> {
       unsupported()
     }
@@ -171,7 +171,7 @@ constructor(
 
     override fun getResourcesInternal(
       namespace: ResourceNamespace,
-      type: ResourceType
+      type: ResourceType,
     ): ListMultimap<String, ResourceItem> {
       return cache[type]
         ?: run {
@@ -191,7 +191,7 @@ constructor(
     override fun getResources(
       namespace: ResourceNamespace,
       resourceType: ResourceType,
-      resourceName: String
+      resourceName: String,
     ): MutableList<ResourceItem> {
       // Optimized because most of the time, only
       // hasResources(type,name) and getResources(type,name) are called,
@@ -210,7 +210,7 @@ constructor(
     override fun hasResources(
       namespace: ResourceNamespace,
       resourceType: ResourceType,
-      resourceName: String
+      resourceName: String,
     ): Boolean {
       // Optimized because most of the time, only
       // hasResources(type,name) and getResources(type,name) are called,
@@ -246,13 +246,13 @@ constructor(
   class LintLibraryRepository(
     private val client: LintCliClient,
     private val library: LintModelAndroidLibrary,
-    namespace: ResourceNamespace
+    namespace: ResourceNamespace,
   ) :
     LintResourceRepository(
       null,
       EnumMap(ResourceType::class.java),
       namespace,
-      library.resolvedCoordinates.toString()
+      library.resolvedCoordinates.toString(),
     ) {
     // Just passing in an empty mutable map to the super which we'll populate
     // lazily in getResourcesInternal
@@ -266,7 +266,7 @@ constructor(
 
     override fun getResourcesInternal(
       namespace: ResourceNamespace,
-      resourceType: ResourceType
+      resourceType: ResourceType,
     ): ListMultimap<String, ResourceItem> {
       // Populate lazily since in libraries there tend to be a LOT
       // of resources
@@ -331,7 +331,7 @@ constructor(
         null,
         EnumMap(ResourceType::class.java),
         ResourceNamespace.RES_AUTO,
-        null
+        null,
       ) {
       override fun accept(visitor: ResourceVisitor): ResourceVisitor.VisitResult {
         return ResourceVisitor.VisitResult.ABORT
@@ -347,7 +347,7 @@ constructor(
 
       override fun getResourcesInternal(
         namespace: ResourceNamespace,
-        resourceType: ResourceType
+        resourceType: ResourceType,
       ): ListMultimap<String, ResourceItem> {
         return ImmutableListMultimap.of()
       }
@@ -373,7 +373,7 @@ constructor(
     fun get(
       client: LintCliClient,
       project: Project,
-      scope: ResourceRepositoryScope
+      scope: ResourceRepositoryScope,
     ): ResourceRepository {
       // Repository with dependencies
       return project.getClientProperty<ResourceRepository>(scope)
@@ -383,7 +383,7 @@ constructor(
     private fun createRepository(
       client: LintCliClient,
       project: Project,
-      scope: ResourceRepositoryScope
+      scope: ResourceRepositoryScope,
     ): ResourceRepository {
 
       if (scope == ResourceRepositoryScope.ANDROID) {
@@ -464,7 +464,7 @@ constructor(
             client.pathVariables,
             root,
             project,
-            allowMissingPathVariable = isModuleDependency
+            allowMissingPathVariable = isModuleDependency,
           )
         } catch (e: Throwable) {
           // Some sort of problem deserializing the lint resource repository. Try to gracefully
@@ -491,7 +491,7 @@ constructor(
               issue = IssueRegistry.LINT_WARNING,
               message = sb.toString(),
               file = serializedFile,
-              project = project
+              project = project,
             )
           }
 
@@ -518,7 +518,7 @@ constructor(
     private fun getForProjectOnly(
       client: LintCliClient,
       project: Project,
-      isModuleDependency: Boolean
+      isModuleDependency: Boolean,
     ): LintResourceRepository {
       return project.getClientProperty<LintResourceRepository>(ResourceRepositoryScope.PROJECT_ONLY)
         ?: getOrCreateRepository(
@@ -526,7 +526,7 @@ constructor(
             client,
             project.dir,
             project,
-            isModuleDependency
+            isModuleDependency,
           ) {
             createFromFolder(client, project, ResourceNamespace.TODO())
           }
@@ -535,12 +535,12 @@ constructor(
 
     private fun getLibraryResourceCacheFile(
       client: LintCliClient,
-      library: LintModelAndroidLibrary
+      library: LintModelAndroidLibrary,
     ): File {
       return File(
         client.getCacheDir("library-resources-v1", true),
         // avoid ":" in filenames for Windows
-        library.identifier.replace(':', '_')
+        library.identifier.replace(':', '_'),
       )
     }
 
@@ -551,7 +551,7 @@ constructor(
     /** Returns a repository for a library consumed by the given project. */
     private fun getForLibrary(
       client: LintCliClient,
-      library: LintModelAndroidLibrary
+      library: LintModelAndroidLibrary,
     ): LintResourceRepository {
       val cache =
         client.getClientProperty<MutableMap<LintModelAndroidLibrary, LintResourceRepository>>(
@@ -565,7 +565,7 @@ constructor(
 
     private fun getForFramework(
       client: LintCliClient,
-      target: IAndroidTarget
+      target: IAndroidTarget,
     ): LintResourceRepository {
       val res = target.getPath(IAndroidTarget.RESOURCES).toFile()
       return getForFramework(target.hashString(), res, client)
@@ -578,7 +578,7 @@ constructor(
     private fun getForFramework(
       hash: String,
       res: File,
-      client: LintCliClient
+      client: LintCliClient,
     ): LintResourceRepository {
       // Cache from target hash, such as "android-12" or "android-S"
       val cache =
@@ -597,7 +597,7 @@ constructor(
       client: LintCliClient,
       hash: String,
       res: File,
-      cache: MutableMap<String, LintResourceRepository>
+      cache: MutableMap<String, LintResourceRepository>,
     ): LintResourceRepository {
       return cache[hash]
         ?: getOrCreateRepository(
@@ -605,7 +605,7 @@ constructor(
             client,
             root = null,
             project = null,
-            isModuleDependency = false
+            isModuleDependency = false,
           ) {
             createFromFolder(client, sequenceOf(res), null, null, ResourceNamespace.ANDROID)
           }
@@ -616,7 +616,7 @@ constructor(
     private fun getForLibrary(
       client: LintCliClient,
       library: LintModelAndroidLibrary,
-      cache: MutableMap<LintModelAndroidLibrary, LintResourceRepository>
+      cache: MutableMap<LintModelAndroidLibrary, LintResourceRepository>,
     ): LintResourceRepository {
       return cache[library]
         // TODO: Handle relative paths over in AAR folders under ~/.gradle/
@@ -625,7 +625,7 @@ constructor(
             client,
             root = null,
             project = null,
-            isModuleDependency = false
+            isModuleDependency = false,
           ) {
             LintLibraryRepository(client, library, ResourceNamespace.TODO())
           }
@@ -635,14 +635,14 @@ constructor(
     private fun createFromFolder(
       client: LintClient,
       project: Project,
-      namespace: ResourceNamespace
+      namespace: ResourceNamespace,
     ): LintResourceRepository {
       return createFromFolder(
         client,
         project.resourceFolders.asSequence() + project.generatedResourceFolders,
         project,
         null,
-        namespace
+        namespace,
       )
     }
 
@@ -651,7 +651,7 @@ constructor(
       resourceFolders: Sequence<File>,
       project: Project?,
       libraryName: String?,
-      namespace: ResourceNamespace
+      namespace: ResourceNamespace,
     ): LintResourceRepository {
       val map: MutableMap<ResourceType, ListMultimap<String, ResourceItem>> =
         EnumMap(ResourceType::class.java)
@@ -672,7 +672,7 @@ constructor(
       folder: File,
       libraryName: String?,
       namespace: ResourceNamespace,
-      map: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>
+      map: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>,
     ) {
       if (!folder.isDirectory) return
 
@@ -698,7 +698,7 @@ constructor(
       map: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>,
       config: FolderConfiguration,
       libraryName: String?,
-      file: File
+      file: File,
     ) {
       if (!isXmlFile(file)) {
         return
@@ -734,7 +734,7 @@ constructor(
       libraryName: String?,
       namespace: ResourceNamespace,
       map: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>,
-      added: MutableList<LintResourceItem>?
+      added: MutableList<LintResourceItem>?,
     ) {
       // See ValueResourceParser2
       val item =
@@ -747,7 +747,7 @@ constructor(
           libraryName != null,
           libraryName,
           config,
-          false
+          false,
         )
       recordItem(map, type, name, item)
       added?.add(item)
@@ -764,7 +764,7 @@ constructor(
       namespace: ResourceNamespace,
       map: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>,
       config: FolderConfiguration,
-      added: MutableList<LintResourceItem>?
+      added: MutableList<LintResourceItem>?,
     ) {
       assert(styleableNode.nodeName == SdkConstants.TAG_DECLARE_STYLEABLE)
       for (element in styleableNode) {
@@ -783,7 +783,7 @@ constructor(
             isFromDependency = false,
             libraryName = null,
             config = config,
-            fileBased = false
+            fileBased = false,
           )
         recordItem(map, type, name, attr)
         added?.add(attr)
@@ -797,7 +797,7 @@ constructor(
       config: FolderConfiguration,
       file: File,
       namespace: ResourceNamespace,
-      added: MutableList<ResourceMergerItem>
+      added: MutableList<ResourceMergerItem>,
     ) {
       val attributes = element.attributes
       for (i in 0 until attributes.length) {
@@ -815,7 +815,7 @@ constructor(
               isFromDependency = false,
               libraryName = null,
               config = config,
-              fileBased = true
+              fileBased = true,
             )
           recordItem(map, ResourceType.ID, name, item)
           added.add(item)
@@ -834,7 +834,7 @@ constructor(
       config: FolderConfiguration,
       libraryName: String?,
       namespace: ResourceNamespace,
-      file: File
+      file: File,
     ) {
       if (isXmlFile(file) && FolderTypeRelationship.isIdGeneratingFolderType(folderType)) {
         client.getXmlDocument(file)?.documentElement?.let {
@@ -863,7 +863,7 @@ constructor(
           isFromDependency = libraryName != null,
           libraryName = libraryName,
           config = config,
-          fileBased = true
+          fileBased = true,
         )
       recordItem(map, type, name, item)
       // Side effect: sets item source file
@@ -874,7 +874,7 @@ constructor(
       map: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>,
       type: ResourceType,
       name: String,
-      item: ResourceItem
+      item: ResourceItem,
     ) {
       val typeMap =
         map[type]
@@ -898,7 +898,7 @@ internal class LintResourceItem(
   isFromDependency: Boolean?,
   libraryName: String?,
   private val config: FolderConfiguration,
-  private val fileBased: Boolean
+  private val fileBased: Boolean,
 ) : ResourceMergerItem(name, namespace, type, value, isFromDependency, libraryName) {
 
   override fun getConfiguration(): FolderConfiguration {

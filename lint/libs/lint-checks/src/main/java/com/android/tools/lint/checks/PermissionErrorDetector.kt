@@ -64,7 +64,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
       TAG_ACTIVITY_ALIAS,
       TAG_RECEIVER,
       TAG_SERVICE,
-      TAG_PROVIDER
+      TAG_PROVIDER,
     )
   }
 
@@ -151,7 +151,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
               potentialCustomPermissionUsage.ownerElement,
               context.getLocation(potentialCustomPermissionUsage, LocationType.VALUE),
               "Did you mean `$it`?",
-              fix().replace().text(permissionName).with(it).build()
+              fix().replace().text(permissionName).with(it).build(),
             )
           )
         }
@@ -177,7 +177,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
           RESERVED_SYSTEM_PERMISSION,
           attr.ownerElement,
           context.getLocation(attr, LocationType.VALUE),
-          "`${attr.value}` is a reserved permission"
+          "`${attr.value}` is a reserved permission",
         )
       )
     } else if (attr.value.startsWith(ANDROID_PKG_PREFIX)) {
@@ -186,7 +186,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
           RESERVED_SYSTEM_PERMISSION,
           attr.ownerElement,
           context.getLocation(attr, LocationType.VALUE),
-          "`${attr.value}` is using the reserved system prefix `$ANDROID_PKG_PREFIX`"
+          "`${attr.value}` is using the reserved system prefix `$ANDROID_PKG_PREFIX`",
         )
       )
     }
@@ -197,7 +197,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
           PERMISSION_NAMING_CONVENTION,
           attr.ownerElement,
           context.getLocation(attr, LocationType.VALUE),
-          "`${attr.value} does not follow recommended naming convention`"
+          "`${attr.value} does not follow recommended naming convention`",
         )
       )
     }
@@ -213,7 +213,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
           KNOWN_PERMISSION_ERROR,
           attr.ownerElement,
           context.getLocation(attr, LocationType.VALUE),
-          "`${attr.value}` is not a valid permission value"
+          "`${attr.value}` is not a valid permission value",
         )
       )
     }
@@ -225,7 +225,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
           attr.ownerElement,
           context.getLocation(attr, LocationType.VALUE),
           "Did you mean `$almost`?",
-          fix().replace().text(attr.value).with(almost).build()
+          fix().replace().text(attr.value).with(almost).build(),
         )
       )
     }
@@ -255,14 +255,14 @@ class PermissionErrorDetector : Detector(), XmlScanner {
         severity = Severity.WARNING,
         enabledByDefault = false,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private val PERMISSION_SUFFIX_REGEX = Regex("[A-Z\\d_]+")
 
     fun followsCustomPermissionNamingConvention(
       packageName: String,
-      permissionName: String
+      permissionName: String,
     ): Boolean {
       if (packageName.isEmpty()) return true
 
@@ -290,7 +290,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
         priority = 5,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private val KNOWN_PERMISSION_ERROR_VALUES =
@@ -313,7 +313,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
         priority = 5,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -332,7 +332,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
         priority = 5,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -352,7 +352,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
         priority = 5,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     // the edit distance at which we have reasonable confidence that there is a typo
@@ -363,7 +363,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
 
     fun findAlmostCustomPermission(
       requiredPermission: String,
-      customPermissions: List<String>
+      customPermissions: List<String>,
     ): String? {
       if (customPermissions.contains(requiredPermission)) return null
       return customPermissions.firstOrNull {
@@ -418,7 +418,7 @@ class PermissionErrorDetector : Detector(), XmlScanner {
               permission,
               nameBegin,
               length,
-              ignoreCase = true
+              ignoreCase = true,
             )
         ) {
           return permission

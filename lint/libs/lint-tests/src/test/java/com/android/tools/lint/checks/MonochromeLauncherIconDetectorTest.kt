@@ -28,7 +28,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         <background android:drawable="@drawable/ic_launcher_background" />
                         <foreground android:drawable="@drawable/ic_launcher_foreground" />
                     </adaptive-icon>
-                """
+                """,
         ),
         xml(
           "res/drawable-ldpi/ic_round_icon.xml",
@@ -37,7 +37,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         <background android:drawable="@drawable/ic_launcher_background" />
                         <foreground android:drawable="@drawable/ic_launcher_foreground" />
                     </adaptive-icon>
-                """
+                """,
         ),
         manifest(
             """
@@ -49,7 +49,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         </application>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -76,7 +76,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         <foreground android:drawable="@drawable/ic_launcher_foreground" />
                         <monochrome android:drawable="@drawable/myicon" />
                     </adaptive-icon>
-                """
+                """,
         ),
         xml(
           "res/drawable-ldpi/ic_round_icon.xml",
@@ -86,7 +86,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         <foreground android:drawable="@drawable/ic_launcher_foreground" />
                         <monochrome android:drawable="@drawable/myicon" />
                     </adaptive-icon>
-                """
+                """,
         ),
         manifest(
             """
@@ -98,7 +98,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         </application>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -114,7 +114,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         <background android:drawable="@drawable/ic_launcher_background" />
                         <foreground android:drawable="@drawable/ic_launcher_foreground" />
                     </adaptive-icon>
-                """
+                """,
         ),
         xml(
           "res/drawable-ldpi/ic_round_icon.xml",
@@ -124,7 +124,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         <foreground android:drawable="@drawable/ic_launcher_foreground" />
                         <monochrome android:drawable="@drawable/myicon" />
                     </adaptive-icon>
-                """
+                """,
         ),
         manifest(
             """
@@ -136,7 +136,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         </application>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -160,7 +160,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         <foreground android:drawable="@drawable/ic_launcher_foreground" />
                         <monochrome android:drawable="@drawable/myicon" />
                     </adaptive-icon>
-                """
+                """,
         ),
         image("res/drawable/ic_round_icon.png", 48, 48),
         manifest(
@@ -173,7 +173,7 @@ class MonochromeLauncherIconDetectorTest : AbstractCheckTest() {
                         </application>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

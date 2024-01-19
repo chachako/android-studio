@@ -62,7 +62,7 @@ class SimplePlatformLookupTest {
     val handler =
       AndroidSdkHandler.getInstance(
         FakeAndroidLocationsProvider(homeFolder.root.toPath()),
-        sdkFolder.toPath()
+        sdkFolder.toPath(),
       )
 
     val logger =
@@ -116,7 +116,7 @@ class SimplePlatformLookupTest {
     checkQueries { lookup ->
       assertEquals(
         "Platform android-31; api=API 31, rev=2",
-        lookup.getLatestSdkTarget(includePreviews = false).describe()
+        lookup.getLatestSdkTarget(includePreviews = false).describe(),
       )
       //            assertEquals(
       //                "Platform android-S; api=API 30, S preview, rev=2",
@@ -153,12 +153,12 @@ class SimplePlatformLookupTest {
       // Return preview if we specifically ask for it
       assertEquals(
         "Platform android-R; api=API 29, R preview, rev=4",
-        lookup.getTarget("android-R").describe()
+        lookup.getTarget("android-R").describe(),
       )
       // Only has preview at that API level: return it
       assertEquals(
         "Platform android-O; api=API 25, O preview, rev=1",
-        lookup.getTarget(25).describe()
+        lookup.getTarget(25).describe(),
       )
     }
   }
@@ -204,11 +204,11 @@ class SimplePlatformLookupTest {
 
     assertEquals(
       "Add-on google:google_apis:18: api=18",
-      lookup.getTarget("google:google_apis:18").describe()
+      lookup.getTarget("google:google_apis:18").describe(),
     )
     assertEquals(
       "Add-on barnes_and_noble_inc:nook_tablet:10: api=10",
-      lookup.getTarget("barnes_and_noble_inc:nook_tablet:10").describe()
+      lookup.getTarget("barnes_and_noble_inc:nook_tablet:10").describe(),
     )
   }
 
@@ -258,7 +258,7 @@ class SimplePlatformLookupTest {
           "Platform android-30; api=API 30, rev=3\n" +
           "Platform android-S; api=API 30, S preview, rev=2\n" +
           "Platform android-31; api=API 31, rev=2",
-        string
+        string,
       )
     }
   }
@@ -286,7 +286,7 @@ class SimplePlatformLookupTest {
       // Check sorting, correct parsing of package.xml and source.properties files
       assertEquals(
         "Platform stable; api=API 26, rev=8\n" + "Platform experimental; api=API 30, rev=1",
-        string
+        string,
       )
     }
   }
@@ -305,7 +305,7 @@ class SimplePlatformLookupTest {
           "OptionalLibrary(android.test.mock,android.test.mock.jar,false)\n" +
           "OptionalLibrary(android.test.base,android.test.base.jar,false)\n" +
           "OptionalLibrary(android.test.runner,android.test.runner.jar,true)",
-        target?.optionalLibraries?.joinToString(separator = "\n") { it.describe() }
+        target?.optionalLibraries?.joinToString(separator = "\n") { it.describe() },
       )
     }
   }
@@ -415,7 +415,7 @@ class SimplePlatformLookupTest {
     hash: String,
     api: Int,
     codename: String?,
-    revision: Int
+    revision: Int,
   ) {
     val platforms = File(sdk, "platforms")
     val folder = File(platforms, hash)
@@ -537,12 +537,12 @@ class SimplePlatformLookupTest {
 
   class SdkManagerPlatformLookup(
     private val sdkHandler: AndroidSdkHandler,
-    private val logger: ProgressIndicatorAdapter = TestLogger()
+    private val logger: ProgressIndicatorAdapter = TestLogger(),
   ) : PlatformLookup {
     override fun getLatestSdkTarget(
       minApi: Int,
       includePreviews: Boolean,
-      includeAddOns: Boolean
+      includeAddOns: Boolean,
     ): IAndroidTarget? {
       val targets = getTargets(includeAddOns)
       for (i in targets.indices.reversed()) {

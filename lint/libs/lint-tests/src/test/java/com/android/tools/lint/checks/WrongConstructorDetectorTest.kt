@@ -144,7 +144,7 @@ class WrongConstructorDetectorTest : AbstractCheckTest() {
             """
                 package test.pkg
                 fun FileKt() { } // OK
-                """
+                """,
           )
           .indented(),
         kotlin(
@@ -153,7 +153,7 @@ class WrongConstructorDetectorTest : AbstractCheckTest() {
                 fun MyClass() { } // OK
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

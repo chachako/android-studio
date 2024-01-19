@@ -221,10 +221,10 @@ class PhysicalDeviceProvisionerPluginTest : DeviceProvisionerTestFixture() {
           listOf(
             com.android.adblib.DeviceInfo(
               SerialNumbers.PHYSICAL1_USB,
-              com.android.adblib.DeviceState.UNAUTHORIZED
+              com.android.adblib.DeviceState.UNAUTHORIZED,
             )
           ),
-          emptyList()
+          emptyList(),
         )
 
       unclaimedDevices.receiveUntilPassing { devices ->

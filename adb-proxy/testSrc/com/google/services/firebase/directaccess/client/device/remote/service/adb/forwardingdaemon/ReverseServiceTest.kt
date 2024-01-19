@@ -52,7 +52,7 @@ class ReverseServiceTest {
         serialNumber,
         fakeAdbSession.scope,
         ResponseWriter(adbChannel, true),
-        fakeAdbSession
+        fakeAdbSession,
       ) { _, _, _ ->
         mockReverseForwardStream
       }

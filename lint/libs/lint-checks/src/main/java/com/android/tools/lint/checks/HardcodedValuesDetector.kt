@@ -59,7 +59,7 @@ class HardcodedValuesDetector : LayoutDetector() {
       ATTR_TITLE,
 
       // App restrictions
-      ATTR_DESCRIPTION
+      ATTR_DESCRIPTION,
     )
   }
 
@@ -112,7 +112,7 @@ class HardcodedValuesDetector : LayoutDetector() {
         ISSUE,
         attribute,
         context.getLocation(attribute),
-        String.format("Hardcoded string \"%1\$s\", should use `@string` resource", value)
+        String.format("Hardcoded string \"%1\$s\", should use `@string` resource", value),
       )
     }
   }
@@ -144,7 +144,7 @@ class HardcodedValuesDetector : LayoutDetector() {
         priority = 5,
         severity = Severity.WARNING,
         implementation =
-          Implementation(HardcodedValuesDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+          Implementation(HardcodedValuesDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
       )
   }
 }

@@ -140,7 +140,7 @@ class LabelForDetector : LayoutDetector() {
         fix()
           .alternatives(
             fix().set().todo(ANDROID_URI, ATTR_TEXT).build(),
-            fix().set().todo(ANDROID_URI, ATTR_CONTENT_DESCRIPTION).build()
+            fix().set().todo(ANDROID_URI, ATTR_CONTENT_DESCRIPTION).build(),
           )
       context.report(
         ISSUE,
@@ -150,7 +150,7 @@ class LabelForDetector : LayoutDetector() {
           "when using `android:labelFor`, you must also define an " +
             "`android:text` or an `android:contentDescription`"
         ),
-        fix
+        fix,
       )
     }
   }
@@ -163,7 +163,7 @@ class LabelForDetector : LayoutDetector() {
           ISSUE,
           hintAttributeNode,
           context.getLocation(hintAttributeNode),
-          "Empty `android:hint` attribute"
+          "Empty `android:hint` attribute",
         )
       }
     }
@@ -192,7 +192,7 @@ class LabelForDetector : LayoutDetector() {
         category = Category.A11Y,
         priority = 2,
         severity = Severity.WARNING,
-        implementation = Implementation(LabelForDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+        implementation = Implementation(LabelForDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
       )
 
     private const val PREFIX = "Missing accessibility label"

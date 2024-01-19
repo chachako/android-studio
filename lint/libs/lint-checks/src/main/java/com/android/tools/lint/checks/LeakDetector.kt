@@ -112,7 +112,7 @@ class LeakDetector : Detector(), SourceCodeScanner {
           UMethod::class.java,
           true,
           UClass::class.java,
-          UObjectLiteralExpression::class.java
+          UObjectLiteralExpression::class.java,
         )
       if (method != null && evaluator.isStatic(method)) {
         return
@@ -123,7 +123,7 @@ class LeakDetector : Detector(), SourceCodeScanner {
       declaration.getParentOfType<UCallExpression>(
         UObjectLiteralExpression::class.java,
         true,
-        UMethod::class.java
+        UMethod::class.java,
       )
     val location: Location =
       if (isAnonymous && invocation != null) {
@@ -146,7 +146,7 @@ class LeakDetector : Detector(), SourceCodeScanner {
       ISSUE,
       declaration,
       location,
-      "This `$superClassName` class should be static or leaks might occur ($name)"
+      "This `$superClassName` class should be static or leaks might occur ($name)",
     )
   }
 
@@ -272,7 +272,7 @@ class LeakDetector : Detector(), SourceCodeScanner {
   private fun isAssignedInConstructor(
     context: JavaContext,
     containingClass: UClass,
-    field: UField
+    field: UField,
   ): Boolean {
     val targetField = field.javaPsi ?: return false
     if (isKotlin(targetField)) {
@@ -339,7 +339,7 @@ class LeakDetector : Detector(), SourceCodeScanner {
         androidSpecific = true,
         priority = 6,
         severity = Severity.WARNING,
-        implementation = Implementation(LeakDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(LeakDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     private val SUPER_CLASSES =
@@ -349,7 +349,7 @@ class LeakDetector : Detector(), SourceCodeScanner {
         "androidx.loader.content.Loader",
         "android.os.AsyncTask",
         "android.arch.lifecycle.ViewModel",
-        "androidx.lifecycle.ViewModel"
+        "androidx.lifecycle.ViewModel",
       )
   }
 }
@@ -404,7 +404,7 @@ private fun UAnnotation.isApplicationContext(): Boolean {
 private fun isInitializedToAppContext(
   context: JavaContext,
   field: PsiField,
-  typeClass: PsiClass
+  typeClass: PsiClass,
 ): Boolean {
   if (!context.evaluator.extendsClass(typeClass, CLASS_CONTEXT, false)) {
     return false
@@ -418,7 +418,7 @@ private fun isInitializedToAppContext(
 private fun isInitializedToAppContext(
   context: JavaContext,
   field: UField,
-  typeClass: PsiClass
+  typeClass: PsiClass,
 ): Boolean {
   val containingClass = field.getContainingUClass() ?: return false
 

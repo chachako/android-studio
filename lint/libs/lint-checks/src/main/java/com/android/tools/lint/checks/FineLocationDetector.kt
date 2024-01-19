@@ -51,7 +51,7 @@ class FineLocationDetector : Detector(), XmlScanner {
           ISSUE,
           context.getLocation(fineElement),
           "If you need access to FINE location, you must request both " +
-            "`ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`"
+            "`ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`",
         )
       )
     }
@@ -77,7 +77,7 @@ class FineLocationDetector : Detector(), XmlScanner {
         priority = 5,
         severity = Severity.ERROR,
         implementation = Implementation(FineLocationDetector::class.java, Scope.MANIFEST_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
   }
 }

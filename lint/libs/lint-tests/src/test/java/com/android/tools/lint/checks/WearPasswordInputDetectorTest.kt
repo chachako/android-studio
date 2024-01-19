@@ -37,7 +37,7 @@ private val INPUT_TYPE_TEXT =
                 android:inputType="text"
                 tools:ignore="LabelFor" />
           </LinearLayout>
-    """
+    """,
     )
     .indented()
 
@@ -57,7 +57,7 @@ private val INPUT_TYPE_PASSWORD =
                 android:inputType="textPassword"
                 tools:ignore="LabelFor" />
           </LinearLayout>
-    """
+    """,
     )
     .indented()
 

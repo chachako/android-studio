@@ -104,9 +104,9 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "        protected final void publishProgress(Object... values) {\n" +
             "        }\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -138,10 +138,10 @@ class ThreadDetectorTest : AbstractCheckTest() {
                         int status = view.field; // OK
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -179,9 +179,9 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "    public void testMethod(int res, int range) {\n" +
             "        new ConstructorTest(res, range);\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -227,7 +227,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "    @WorkerThread // this single method is not UI, it's something else\n" +
             "    void g() { }\n" +
             "    BigClass() { }\n" +
-            "}\n"
+            "}\n",
         ),
         java(
           "src/test/pkg/BigClassClient.java",
@@ -255,9 +255,9 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "        o.f100(); // no problem\n" +
             "        o.g();    // correct WrongThread: must be called from the worker thread currently inferred thread is UI\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -286,9 +286,9 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "            }\n" +
             "        });\n" +
             "    }\n" +
-            "}"
+            "}",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -322,9 +322,9 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "    static void worker() {\n" +
             "        threadSafe(); // OK\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -378,9 +378,9 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "    private static void call3() {\n" +
             "        callee(); // Not ok: thread could be binder thread, not supported by target\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -422,9 +422,9 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "    public static boolean workerThreadMethod() {\n" +
             "        return true;\n" +
             "    }\n" +
-            "}"
+            "}",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -473,7 +473,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -522,7 +522,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -607,7 +607,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowCompilationErrors()
       .run()
@@ -653,7 +653,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -766,7 +766,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -831,7 +831,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
                     }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -924,7 +924,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -981,7 +981,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1033,7 +1033,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1076,7 +1076,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1115,7 +1115,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1163,7 +1163,7 @@ class ThreadDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(

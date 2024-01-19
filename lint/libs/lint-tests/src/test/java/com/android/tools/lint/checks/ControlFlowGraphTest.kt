@@ -73,7 +73,7 @@ private val UPDATE_IN_PLACE: String? = null
   "InfiniteLoopStatement",
   "ResultOfMethodCallIgnored",
   "TestFunctionName",
-  "ConvertToStringTemplate"
+  "ConvertToStringTemplate",
 )
 class ControlFlowGraphTest {
   @get:Rule val temporaryFolder = TemporaryFolder()
@@ -166,7 +166,7 @@ class ControlFlowGraphTest {
             N017 -> N00A [label=" exit "]
           }
         }
-        """
+        """,
     )
   }
 
@@ -253,7 +253,7 @@ class ControlFlowGraphTest {
             N017 -> N00A [label=" exit "]
           }
         }
-        """
+        """,
     )
   }
 
@@ -521,7 +521,7 @@ class ControlFlowGraphTest {
             N01C -> N00A [label=" exit "]
           }
         }
-        """
+        """,
     )
   }
 
@@ -715,7 +715,7 @@ class ControlFlowGraphTest {
               override fun visitNode(
                 node: ControlFlowGraph<UElement>.Node,
                 path: List<ControlFlowGraph<UElement>.Edge>,
-                status: Unit
+                status: Unit,
               ) {
                 if (node.isExit()) matches.add(path.toList())
                 node.visit = 0
@@ -733,7 +733,7 @@ class ControlFlowGraphTest {
 
           assertEquals(
             expected.trimIndent().trim(),
-            matches.joinToString("\n") { ControlFlowGraph.describePath(it) }.trim()
+            matches.joinToString("\n") { ControlFlowGraph.describePath(it) }.trim(),
           )
         }
 
@@ -744,7 +744,7 @@ class ControlFlowGraphTest {
           try → randomCall1() → java.io.FileNotFoundException → cleanup() → next() → exit
           try → randomCall1() → java.io.FileNotFoundException → cleanup() → java.io.FileNotFoundException exit
           """,
-          followExceptionalFlow = false
+          followExceptionalFlow = false,
         )
 
         // Notice how the third path is no longer there: we do not flow to the "next" node via an
@@ -755,9 +755,9 @@ class ControlFlowGraphTest {
           try → randomCall1() → finally → cleanup() → java.io.FileNotFoundException exit
           try → randomCall1() → java.io.FileNotFoundException → cleanup() → java.io.FileNotFoundException exit
           """,
-          followExceptionalFlow = true
+          followExceptionalFlow = true,
         )
-      }
+      },
     )
   }
 
@@ -811,7 +811,7 @@ class ControlFlowGraphTest {
            FuncCall: ╭─╰→ done()
                      ╰→   *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -854,7 +854,7 @@ class ControlFlowGraphTest {
                  FuncCall: ╭─╰→ next()                          ┆
                            ╰→   *exit*                         ←╯
       """,
-      canThrow = { _, method -> method.name == "randomCall" }
+      canThrow = { _, method -> method.name == "randomCall" },
     )
   }
 
@@ -912,7 +912,7 @@ class ControlFlowGraphTest {
                  FuncCall:   ╭─╰→ after()
                              ╰→   *exit*
       """,
-      canThrow = { _, method -> method.name == "randomCall" }
+      canThrow = { _, method -> method.name == "randomCall" },
     )
   }
 
@@ -954,7 +954,7 @@ class ControlFlowGraphTest {
                  FuncCall: ╰→╭─ release()                      ─╮ Exception
                              ╰→ *exit*                         ←╯
       """,
-      canThrow = { _, method -> method.name == "randomCall" }
+      canThrow = { _, method -> method.name == "randomCall" },
     )
   }
 
@@ -988,7 +988,7 @@ class ControlFlowGraphTest {
            FuncCall: ╭─╰→ next()                            ┆
                      ╰→   *exit*                           ←╯
       """,
-      canThrow = { _, method -> method.name == "randomCall" }
+      canThrow = { _, method -> method.name == "randomCall" },
     )
   }
 
@@ -1013,7 +1013,7 @@ class ControlFlowGraphTest {
            FuncCall: ╭─╰→ randomCall()                   ─╮ Exception
             Postfix: ╰→╭─ i++                             ┆
                        ╰→ *exit*                         ←╯
-      """
+      """,
     )
   }
 
@@ -1046,7 +1046,7 @@ class ControlFlowGraphTest {
                  FuncCall: ╭─╰→ endSection()                    ┆
                            ╰→   *exit*                         ←╯
       """,
-      canThrow = { _, method -> method.name == "blockingCall" }
+      canThrow = { _, method -> method.name == "blockingCall" },
     )
   }
 
@@ -1090,7 +1090,7 @@ class ControlFlowGraphTest {
                  FuncCall:   ╰→╭─ endSection()                      ┆
                                ╰→ *exit*                           ←╯
       """,
-      canThrow = { _, method -> method.name == "blockingCall" || method.name == "printStackTrace" }
+      canThrow = { _, method -> method.name == "blockingCall" || method.name == "printStackTrace" },
     )
   }
 
@@ -1125,7 +1125,7 @@ class ControlFlowGraphTest {
                  FuncCall: ╰→╭─ endSection()                    ┆
                              ╰→ *exit*                         ←╯
       """,
-      canThrow = { _, method -> method.name == "blockingCall" }
+      canThrow = { _, method -> method.name == "blockingCall" },
     )
   }
 
@@ -1194,7 +1194,7 @@ class ControlFlowGraphTest {
           expected =
             "try → before() → try → blockingCall() → finally → firstFinally1() → firstFinally2() → after() → finally → secondFinally1() → secondFinally2()",
         )
-      }
+      },
     )
   }
 
@@ -1275,7 +1275,7 @@ class ControlFlowGraphTest {
             N016 -> N00A [label=" exit "]
           }
         }
-        """
+        """,
     )
   }
 
@@ -1319,7 +1319,7 @@ class ControlFlowGraphTest {
              Declarations: ╰→│ ╭─ var i: int = 0
                              ╰→╰→ *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
 
     // Prune graph to only follow then-branch
@@ -1337,7 +1337,7 @@ class ControlFlowGraphTest {
                            ╰→   *exit*
       """,
       canThrow = { _, _ -> false },
-      checkBranchPaths = { ControlFlowGraph.FollowBranch.THEN }
+      checkBranchPaths = { ControlFlowGraph.FollowBranch.THEN },
     )
 
     // Prune graph to only follow else-branch
@@ -1355,7 +1355,7 @@ class ControlFlowGraphTest {
                            ╰→   *exit*
       """,
       canThrow = { _, _ -> false },
-      checkBranchPaths = { ControlFlowGraph.FollowBranch.ELSE }
+      checkBranchPaths = { ControlFlowGraph.FollowBranch.ELSE },
     )
   }
 
@@ -1396,7 +1396,7 @@ class ControlFlowGraphTest {
               Declarations: ╰─╰→│   │  var i = 0
                                 ╰→  ╰→ *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
 
     // Prune graph to only follow then-branch
@@ -1415,7 +1415,7 @@ class ControlFlowGraphTest {
                                   ╰→ *exit*
       """,
       canThrow = { _, _ -> false },
-      checkBranchPaths = { ControlFlowGraph.FollowBranch.THEN }
+      checkBranchPaths = { ControlFlowGraph.FollowBranch.THEN },
     )
 
     // Prune graph to only follow else-branch
@@ -1433,7 +1433,7 @@ class ControlFlowGraphTest {
                                 ╰→   *exit*
       """,
       canThrow = { _, _ -> false },
-      checkBranchPaths = { ControlFlowGraph.FollowBranch.ELSE }
+      checkBranchPaths = { ControlFlowGraph.FollowBranch.ELSE },
     )
   }
 
@@ -1517,7 +1517,7 @@ class ControlFlowGraphTest {
           },
           expected = "try → + → = → ! → in → catch → printStackTrace()",
         )
-      }
+      },
     )
   }
 
@@ -1555,7 +1555,7 @@ class ControlFlowGraphTest {
       Implicit Return: ╭─╰→ return var call2: int = bar     ┆ ┆
                        ╰→   *exit*                         ←╯←╯
       """,
-      canThrow = { _, _ -> true }
+      canThrow = { _, _ -> true },
     )
   }
 
@@ -1610,7 +1610,7 @@ class ControlFlowGraphTest {
                 SimpleRef: ╰→╭─ lazyValue                       ┆ ┆ ┆ ┆─╮ Exception
                              ╰→ *exit*                         ←╯←╯←╯←╯←╯
       """,
-      canThrow = { _, _ -> true }
+      canThrow = { _, _ -> true },
     )
   }
 
@@ -1682,7 +1682,7 @@ class ControlFlowGraphTest {
           targetNode = { node -> node is UBreakExpression },
           expected = "for → < → if → === → % → then → break",
         )
-      }
+      },
     )
   }
 
@@ -1715,7 +1715,7 @@ class ControlFlowGraphTest {
       FuncCall:   ╰→  ╭─ next()
                       ╰→ *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -1754,7 +1754,7 @@ class ControlFlowGraphTest {
                      Call:     ╰→╭─╰→ println("Done")
                                  ╰→   *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -1797,7 +1797,7 @@ class ControlFlowGraphTest {
            Call:     ╭─╰→╰→ println("Done")
                      ╰→     *exit*
        """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -1832,7 +1832,7 @@ class ControlFlowGraphTest {
            Call:     ╰→╭─╰→ println("Done")
                        ╰→   *exit*
        """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -1890,7 +1890,7 @@ class ControlFlowGraphTest {
                                  ╰→╰→ *exit*
       """,
       // keep graph simpler for test
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -1950,7 +1950,7 @@ class ControlFlowGraphTest {
           },
           expected = "when → println()",
         )
-      }
+      },
     )
   }
 
@@ -2007,7 +2007,7 @@ class ControlFlowGraphTest {
                  FuncCall:   ╰→╰→╰→╰→╭─ println("after")
                                      ╰→ *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2034,7 +2034,7 @@ class ControlFlowGraphTest {
              Declarations:   ╭─╰→ val x = list1.…2.contains("1")
                              ╰→   *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2065,7 +2065,7 @@ class ControlFlowGraphTest {
                   FuncCall: ╰→╰→╭─╰→ after()
                                 ╰→   *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2141,7 +2141,7 @@ class ControlFlowGraphTest {
       FuncCall: ╭─╰→ unsafe3()                       ┆ ┆─╮ Exception
                 ╰→   *exit*                         ←╯←╯←╯
       """,
-      strict = false
+      strict = false,
     )
 
     // Strict mode: no longer trusts the throws clauses of functions,
@@ -2161,7 +2161,7 @@ class ControlFlowGraphTest {
       FuncCall: ╭─╰→ unsafe3()                       ┆ ┆─╮ Exception
                 ╰→   *exit*                         ←╯←╯←╯
       """,
-      strict = true
+      strict = true,
     )
   }
 
@@ -2199,7 +2199,7 @@ class ControlFlowGraphTest {
            Throw:   ╰→   throw RuntimeException("Exit")  ┆ ┆─╮ RuntimeException
                          *exit*                         ←╯←╯←╯
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2233,7 +2233,7 @@ class ControlFlowGraphTest {
          FuncCall: ╰→╰→╭─ next()
                        ╰→ *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2264,7 +2264,7 @@ class ControlFlowGraphTest {
                          ╰→   *exit*
       """,
       canThrow = { _, _ -> false },
-      dfsOrder = true
+      dfsOrder = true,
     )
   }
 
@@ -2301,7 +2301,7 @@ class ControlFlowGraphTest {
                            ╰→ *exit*
       """,
       canThrow = { _, _ -> false },
-      dfsOrder = true
+      dfsOrder = true,
     )
   }
 
@@ -2329,7 +2329,7 @@ class ControlFlowGraphTest {
              Declarations: ╭─╰→ val x = "Acqui…ock.release()}"
                            ╰→   *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2356,7 +2356,7 @@ class ControlFlowGraphTest {
        Declarations: ╰→  ╭─ var x: boolean…oo()) : (bar())
                          ╰→ *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2414,7 +2414,7 @@ class ControlFlowGraphTest {
                  FuncCall:     ╰→╭─ endSection()                   ─╮ finally
                                  ╰→ *exit*                         ←╯
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2608,7 +2608,7 @@ class ControlFlowGraphTest {
                  FuncCall:     ╭─╰→ endSection()                    ┆
                                ╰→   *exit*                         ←╯
       """,
-      canThrow = { _, method -> method.name == "blockingCall" }
+      canThrow = { _, method -> method.name == "blockingCall" },
     )
   }
 
@@ -2666,7 +2666,7 @@ class ControlFlowGraphTest {
       canThrow = { _, method ->
         if (method.name == "println" || method.name == "clear" || method.name == "next") false
         else null
-      }
+      },
     )
   }
 
@@ -2714,7 +2714,7 @@ class ControlFlowGraphTest {
         val name = method.name
         if (name == "println" || name == "clear" || name == "next" || name == "print") false
         else null
-      }
+      },
     )
   }
 
@@ -2742,7 +2742,7 @@ class ControlFlowGraphTest {
                   FuncCall: ╰→╭─╰→ next()
                               ╰→   *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2774,7 +2774,7 @@ class ControlFlowGraphTest {
                              ╰→     *exit*
       """,
       canThrow = { _, _ -> false },
-      dfsOrder = true
+      dfsOrder = true,
     )
   }
 
@@ -2807,7 +2807,7 @@ class ControlFlowGraphTest {
                            ╰→   *exit*
       """,
       callLambdaParameters = false,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
 
     // Connect lambdas:
@@ -2830,7 +2830,7 @@ class ControlFlowGraphTest {
                                    ╰→ *exit*
       """,
       callLambdaParameters = true,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2872,7 +2872,7 @@ class ControlFlowGraphTest {
                  FuncCall:       ╰→│ ╭─ next()
                                    ╰→╰→ *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -2909,7 +2909,7 @@ class ControlFlowGraphTest {
                                      ╰→ *exit*
       """,
       canThrow = { _, _ -> false },
-      dfsOrder = true
+      dfsOrder = true,
     )
 
     // In strict mode, lambdas are not connected
@@ -2933,7 +2933,7 @@ class ControlFlowGraphTest {
       """,
       canThrow = { _, _ -> false },
       // Strict mode: don't connect lambdas
-      strict = true
+      strict = true,
     )
   }
 
@@ -2962,7 +2962,7 @@ class ControlFlowGraphTest {
              FuncCall: ╰→╭─ println(s)
       Implicit Return:   ╰→ return println(s)
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -3008,7 +3008,7 @@ class ControlFlowGraphTest {
                                    ╰→ *exit*
       """,
       canThrow = { _, _ -> false },
-      dfsOrder = true
+      dfsOrder = true,
     )
   }
 
@@ -3050,7 +3050,7 @@ class ControlFlowGraphTest {
       """,
       canThrow = { _, _ -> false },
       callLambdaParameters = false,
-      dfsOrder = true
+      dfsOrder = true,
     )
   }
 
@@ -3098,7 +3098,7 @@ class ControlFlowGraphTest {
       // Here we have direct invocation of lambdas, so the
       // call graph should unconditionally add these edges on its own:
       callLambdaParameters = false,
-      dfsOrder = true
+      dfsOrder = true,
     )
   }
 
@@ -3136,7 +3136,7 @@ class ControlFlowGraphTest {
       """,
       canThrow = { _, _ -> false },
       callLambdaParameters = false,
-      dfsOrder = true
+      dfsOrder = true,
     )
   }
 
@@ -3170,7 +3170,7 @@ class ControlFlowGraphTest {
                  FuncCall:     ╰→╭─ next()
                                  ╰→ *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -3198,7 +3198,7 @@ class ControlFlowGraphTest {
               Call: ╰→╭─ after()
                       ╰→ *exit*
       """,
-      canThrow = { _, _ -> false }
+      canThrow = { _, _ -> false },
     )
   }
 
@@ -3249,7 +3249,7 @@ class ControlFlowGraphTest {
                              ╰→ *exit*
       """,
       canThrow = { _, _ -> false },
-      callLambdaParameters = false
+      callLambdaParameters = false,
     )
 
     // With lambda call connections we'll also include the onClick handler
@@ -3273,7 +3273,7 @@ class ControlFlowGraphTest {
                              ╰→ *exit*
       """,
       canThrow = { _, _ -> false },
-      callLambdaParameters = true
+      callLambdaParameters = true,
     )
   }
 
@@ -3378,7 +3378,7 @@ class ControlFlowGraphTest {
           "lQlLFeni3x9mmVWqCxyLrO0CNS0qvD5oJk/OEiehcK4f45inEjy56COYJY7L" +
           "lHyTcm5RrExMw1V+c99DiygXlNtVtkc8WcScvIZVCTs1svQzBn/BULKDYVaM" +
           "sxRnZxVfIgH4h5HCHWSY3jBKVLyKaTwg1UOlXkfiPS5o/Uwp32u8nNIPZAib" +
-          "Helg9ES+obbKDF/nbF5xFdjUcocvI3JNYfR/L6FM7+cGAAA="
+          "Helg9ES+obbKDF/nbF5xFdjUcocvI3JNYfR/L6FM7+cGAAA=",
       )
 
     checkCompiledGraph(
@@ -3425,7 +3425,7 @@ class ControlFlowGraphTest {
           ╰→   RETURN (InsnNode)
       """
         .trimIndent(),
-      methodName = "wrongFlow1"
+      methodName = "wrongFlow1",
     )
   }
 
@@ -3436,7 +3436,7 @@ class ControlFlowGraphTest {
   private fun checkCompiledGraph(
     testFile: BytecodeTestFile,
     expected: String,
-    methodName: String = "target"
+    methodName: String = "target",
   ) {
     fun getOpcodeString(opcode: Int): String? {
       try {
@@ -3457,7 +3457,7 @@ class ControlFlowGraphTest {
     fun AbstractInsnNode.describe(
       method: MethodNode? = null,
       source: String? = null,
-      labelKeys: Map<Label, String>? = null
+      labelKeys: Map<Label, String>? = null,
     ): String {
       val opcode = getOpcodeString(opcode) ?: "OPCODE $opcode"
       return when (this) {
@@ -3518,11 +3518,7 @@ class ControlFlowGraphTest {
             labelKeys[label] = "LABEL${i + 1}"
           }
 
-          val graph =
-            ControlFlowGraph.create(
-              classNode,
-              method,
-            )
+          val graph = ControlFlowGraph.create(classNode, method)
           val actual =
             graph
               .prettyPrintGraph(
@@ -3532,7 +3528,7 @@ class ControlFlowGraphTest {
                 },
                 sourceString = { null },
                 method.instructions.mapNotNull { graph.getNode(it) },
-                filter = { true }
+                filter = { true },
               )
               .trimEnd()
 
@@ -3556,7 +3552,7 @@ class ControlFlowGraphTest {
     expected: String,
     printGraph:
       (
-        JavaContext, ControlFlowGraph<UElement>, UMethod, List<ControlFlowGraph<UElement>.Node>
+        JavaContext, ControlFlowGraph<UElement>, UMethod, List<ControlFlowGraph<UElement>.Node>,
       ) -> String? =
       { _, _, _, _ ->
         null
@@ -3568,13 +3564,13 @@ class ControlFlowGraphTest {
     methodName: String = "target",
     expectedDotGraph: String? = null,
     useGraph: ((ControlFlowGraph<UElement>, UExpression) -> Unit)? = null,
-    dfsOrder: Boolean = false
+    dfsOrder: Boolean = false,
   ) {
     val (context, disposable) =
       parseFirst(
         temporaryFolder = temporaryFolder,
         sdkHome = TestUtils.getSdk().toFile(),
-        testFiles = arrayOf(testFile)
+        testFiles = arrayOf(testFile),
       )
 
     fun JavaContext.findTarget(): UMethod {
@@ -3616,7 +3612,7 @@ class ControlFlowGraphTest {
             ControlFlowGraph.Companion.Builder(
               strict = strict,
               trackCallThrows = true,
-              callLambdaParameters = callLambdaParameters
+              callLambdaParameters = callLambdaParameters,
             ) {
             override fun checkBranchPaths(conditional: UExpression): ControlFlowGraph.FollowBranch {
               return checkBranchPaths?.invoke(conditional) ?: super.checkBranchPaths(conditional)
@@ -3625,7 +3621,7 @@ class ControlFlowGraphTest {
             override fun canThrow(reference: UElement, method: PsiMethod): Boolean {
               return canThrow?.invoke(reference, method) ?: super.canThrow(reference, method)
             }
-          }
+          },
       )
 
     val start = method.uastBody!!
@@ -3641,7 +3637,7 @@ class ControlFlowGraphTest {
             entry.instruction,
             nodeTypeString = { node -> if (node.isExit()) "" else node.typeString() },
             sourceString = { node -> if (node.isExit()) "*exit*" else node.sourceString() },
-            instructions
+            instructions,
           )
       }
 
@@ -3700,7 +3696,7 @@ class ControlFlowGraphTest {
           .toDot(start, renderNode = renderNode, renderEdge = renderEdge)
           .split("\n")
           .joinToString("\n") { it.trimEnd() }
-          .trimEnd()
+          .trimEnd(),
       )
     }
 
@@ -3713,7 +3709,7 @@ class ControlFlowGraphTest {
     graph: ControlFlowGraph<UElement>,
     start: UExpression,
     targetNode: (UElement) -> Boolean,
-    expected: String
+    expected: String,
   ) {
     var foundPath: List<ControlFlowGraph<UElement>.Edge> = emptyList()
 
@@ -3723,7 +3719,7 @@ class ControlFlowGraphTest {
         override fun visitNode(
           node: ControlFlowGraph<UElement>.Node,
           path: List<ControlFlowGraph<UElement>.Edge>,
-          status: Boolean
+          status: Boolean,
         ): Boolean {
           val instruction = node.instruction
           return if (targetNode(instruction)) {
@@ -3742,7 +3738,7 @@ class ControlFlowGraphTest {
   /** Clusters the graph into entry points and nodes reachable from each entry point */
   private fun getClusters(
     graph: ControlFlowGraph<UElement>,
-    method: UMethod
+    method: UMethod,
   ): List<Pair<ControlFlowGraph<UElement>.Node, List<ControlFlowGraph<UElement>.Node>>> {
     val entryPoints = graph.getEntryPoints()
     val clusters =
@@ -3754,7 +3750,7 @@ class ControlFlowGraphTest {
           override fun visitNode(
             node: ControlFlowGraph<UElement>.Node,
             path: List<ControlFlowGraph<UElement>.Edge>,
-            status: Unit
+            status: Unit,
           ) {
             reaches.add(node)
           }
@@ -3777,7 +3773,7 @@ class ControlFlowGraphTest {
     nodes: List<ControlFlowGraph<UElement>.Node>,
     start: ControlFlowGraph<UElement>.Node,
     method: UMethod,
-    dfsOrder: Boolean
+    dfsOrder: Boolean,
   ): List<ControlFlowGraph<UElement>.Node> {
     if (dfsOrder) {
       fun dfs(startNode: ControlFlowGraph<UElement>.Node): List<ControlFlowGraph<UElement>.Node> {
@@ -3786,7 +3782,7 @@ class ControlFlowGraphTest {
 
         fun dfs(
           node: ControlFlowGraph<UElement>.Node,
-          visited: MutableSet<ControlFlowGraph<UElement>.Node>
+          visited: MutableSet<ControlFlowGraph<UElement>.Node>,
         ) {
           if (!visited.add(node)) {
             return
@@ -3854,7 +3850,7 @@ class ControlFlowGraphTest {
     val source = method.sourcePsi!!.containingFile.text
     fun sameLine(
       o1: ControlFlowGraph<UElement>.Node,
-      o2: ControlFlowGraph<UElement>.Node
+      o2: ControlFlowGraph<UElement>.Node,
     ): Boolean {
       val source1 = sourceOffsets[o1]
       val source2 = sourceOffsets[o2]
@@ -3877,7 +3873,7 @@ class ControlFlowGraphTest {
       object : Comparator<ControlFlowGraph<UElement>.Node> {
         override fun compare(
           o1: ControlFlowGraph<UElement>.Node,
-          o2: ControlFlowGraph<UElement>.Node
+          o2: ControlFlowGraph<UElement>.Node,
         ): Int {
           val segment1 = sourceOffsets[o1]
           val segment2 = sourceOffsets[o2]
@@ -3917,7 +3913,7 @@ class ControlFlowGraphTest {
           }
           return nodeOrder[o1]!! - nodeOrder[o2]!!
         }
-      }
+      },
     )
 
     return instructionOrder
@@ -3937,7 +3933,7 @@ fun <T> ControlFlowGraph<T>.show(
   renderEdge: (ControlFlowGraph<T>.Node, ControlFlowGraph<T>.Edge, Int) -> String =
     { _, edge, index ->
       edge.label ?: "s${index}"
-    }
+    },
 ) {
   val dotPath = "/opt/homebrew/bin/dot"
   if (!File(dotPath).isFile) {
@@ -4096,7 +4092,7 @@ fun <T> ControlFlowGraph<T>.prettyPrintGraph(
   nodeTypeString: (ControlFlowGraph<T>.Node) -> String,
   sourceString: (ControlFlowGraph<T>.Node) -> String?,
   nodes: List<ControlFlowGraph<T>.Node> = getAllNodes().toList(),
-  filter: (ControlFlowGraph<T>.Node) -> Boolean = { true }
+  filter: (ControlFlowGraph<T>.Node) -> Boolean = { true },
 ): String {
   val sb = StringBuilder()
   val ids = LinkedHashMap<ControlFlowGraph<T>.Node, String>()
@@ -4213,7 +4209,7 @@ private class Arrows(val size: Int) {
     toIndex: Int,
     forward: Boolean = true,
     dashed: Boolean = false,
-    rhs: Boolean = true
+    rhs: Boolean = true,
   ) {
     if (fromIndex > toIndex) {
       // Swap from/to such that we always draw downwards, but flip arrow directions too
@@ -4222,7 +4218,7 @@ private class Arrows(val size: Int) {
         toIndex = fromIndex,
         forward = !forward,
         dashed = dashed,
-        rhs = rhs
+        rhs = rhs,
       )
       return
     }

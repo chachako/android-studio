@@ -84,8 +84,8 @@ class TranslucentViewDetector : Detector(), XmlScanner, SourceCodeScanner {
         implementation =
           Implementation(
             TranslucentViewDetector::class.java,
-            EnumSet.of(Scope.MANIFEST, Scope.ALL_RESOURCE_FILES, Scope.JAVA_FILE)
-          )
+            EnumSet.of(Scope.MANIFEST, Scope.ALL_RESOURCE_FILES, Scope.JAVA_FILE),
+          ),
       )
   }
 

@@ -65,7 +65,7 @@ class StringCasingDetector : ResourceXmlDetector() {
         category = Category.APP_SIZE,
         priority = 2,
         severity = Severity.WARNING,
-        enabledByDefault = false
+        enabledByDefault = false,
       )
   }
 

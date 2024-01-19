@@ -55,7 +55,7 @@ class AddJavascriptInterfaceDetector : Detector(), SourceCodeScanner {
           severity = Severity.WARNING,
           androidSpecific = true,
           implementation =
-            Implementation(AddJavascriptInterfaceDetector::class.java, Scope.JAVA_FILE_SCOPE)
+            Implementation(AddJavascriptInterfaceDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
         .addMoreInfo("https://support.google.com/faqs/answer/9095419?hl=en")
         .addMoreInfo("https://goo.gle/AddJavascriptInterface")

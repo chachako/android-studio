@@ -37,7 +37,7 @@ class IfToWhenTestMode :
   UastSourceTransformationTestMode(
     description = "Converting if/else to when/switch",
     "TestMode.IF_TO_WHEN",
-    "if_to_when"
+    "if_to_when",
   ) {
   override val diffExplanation: String =
     // first line shorter: expecting to prefix that line with
@@ -67,7 +67,7 @@ class IfToWhenTestMode :
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
     if (!isKotlin(root.sourcePsi)) {
       return mutableListOf()

@@ -62,7 +62,7 @@ class AnalysisApiFirDiagnosticsTest : AbstractCheckTest(), AnalysisApiDiagnostic
                      ~~~~~~~~~~~~
       0 errors, 1 warnings
       """,
-      "2.0"
+      "2.0",
     )
   }
 

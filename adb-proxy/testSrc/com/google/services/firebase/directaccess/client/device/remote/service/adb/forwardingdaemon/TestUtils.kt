@@ -29,7 +29,7 @@ internal fun createByteBuffer(
   firstArg: Int = 0,
   secondArg: Int = 0,
   payloadSize: Int = 0,
-  payload: String? = null
+  payload: String? = null,
 ): ByteBuffer {
   val bufferSize = 24 + payloadSize
   return ByteBuffer.allocate(bufferSize).apply {

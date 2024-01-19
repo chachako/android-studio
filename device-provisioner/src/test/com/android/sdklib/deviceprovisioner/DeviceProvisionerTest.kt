@@ -46,7 +46,7 @@ class DeviceProvisionerTest : DeviceProvisionerTestFixture() {
         async(Dispatchers.IO) {
           provisioner.findConnectedDeviceHandle(
             DeviceSelector.fromSerialNumber(SerialNumbers.EMULATOR),
-            Duration.ofSeconds(5)
+            Duration.ofSeconds(5),
           )
         }
 
@@ -80,7 +80,7 @@ class DeviceProvisionerTest : DeviceProvisionerTestFixture() {
       fakeSession.hostServices.devices =
         DeviceList(
           listOf(DeviceInfo(SerialNumbers.PHYSICAL1_USB, DeviceState.OFFLINE)),
-          emptyList()
+          emptyList(),
         )
 
       yieldUntil {

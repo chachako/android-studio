@@ -73,7 +73,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
   override fun visitReference(
     context: JavaContext,
     reference: UReferenceExpression,
-    referenced: PsiElement
+    referenced: PsiElement,
   ) {
     // Make sure it's android.os.Build.VERSION.SDK_INT, though that's highly likely
     val evaluator = context.evaluator
@@ -138,7 +138,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     fun checkAnnotation(context: JavaContext, sdkInt: UElement, sdkId: Int = ANDROID_SDK_ID) {
@@ -237,7 +237,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       receiver: UExpression,
       comparison: UBinaryExpression,
       isGreaterOrEquals: Boolean,
-      sdkId: Int
+      sdkId: Int,
     ) {
       val method: UMethod =
         if (parentParent is UReturnExpression) {
@@ -270,7 +270,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       receiver: UExpression,
       comparison: UBinaryExpression,
       isGreaterOrEquals: Boolean,
-      sdkId: Int
+      sdkId: Int,
     ) {
       val parameter = receiver.tryResolve() as? PsiParameter ?: return
       val index = getParameterIndex(parameter)
@@ -290,7 +290,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       isGreaterOrEquals: Boolean,
       method: UMethod,
       sdkId: Int,
-      lambda: Int = -1
+      lambda: Int = -1,
     ) {
       if (!context.evaluator.isPublic(method)) {
         return
@@ -317,7 +317,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
             // See VersionChecks#isKnownVersionCheck
             map.put(
               methodDesc,
-              "api=$apiAtLeast${if (lambda != -1) ",lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", extension=$sdkId" else ""}"
+              "api=$apiAtLeast${if (lambda != -1) ",lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", extension=$sdkId" else ""}",
             )
           }
         }
@@ -339,7 +339,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
               val map = context.getPartialResults(SDK_INT_VERSION_DATA).map()
               map.put(
                 methodDesc,
-                "parameter=$index${if (lambda != -1) ",lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", extension=$sdkId" else ""}"
+                "parameter=$index${if (lambda != -1) ",lambda=$lambda" else ""}${if (sdkId != ANDROID_SDK_ID)", extension=$sdkId" else ""}",
               )
             }
           }
@@ -350,7 +350,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
     private fun createAnnotationFix(
       context: JavaContext,
       element: UElement,
-      args: String
+      args: String,
     ): LintFix? {
       // if not on classpath (older annotation library) don't suggest annotating
       if (context.evaluator.findClass(CHECKS_SDK_INT_AT_LEAST_ANNOTATION) == null) return null
@@ -359,7 +359,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
         .annotate(
           "$CHECKS_SDK_INT_AT_LEAST_ANNOTATION($args)",
           context = context,
-          element = element.sourcePsi
+          element = element.sourcePsi,
         )
         .build()
     }
@@ -385,7 +385,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
       context: JavaContext,
       isGreaterOrEquals: Boolean,
       field: UField,
-      sdkId: Int
+      sdkId: Int,
     ) {
       if (!context.evaluator.isPublic(field)) {
         return
@@ -409,7 +409,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
           val map = context.getPartialResults(SDK_INT_VERSION_DATA).map()
           map.put(
             fieldDesc,
-            "api=$atLeast${if (sdkId != ANDROID_SDK_ID)", extension=$sdkId" else ""}"
+            "api=$atLeast${if (sdkId != ANDROID_SDK_ID)", extension=$sdkId" else ""}",
           )
         }
       }

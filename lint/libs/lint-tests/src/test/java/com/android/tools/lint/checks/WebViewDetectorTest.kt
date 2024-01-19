@@ -57,7 +57,7 @@ class WebViewDetectorTest : AbstractCheckTest() {
                     </LinearLayout>
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -111,7 +111,7 @@ class WebViewDetectorTest : AbstractCheckTest() {
                     </LinearLayout>
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -150,7 +150,7 @@ class WebViewDetectorTest : AbstractCheckTest() {
                       android:layout_height="match_parent" />
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )

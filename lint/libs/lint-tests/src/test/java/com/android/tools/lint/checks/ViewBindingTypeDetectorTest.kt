@@ -31,7 +31,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     tools:keep="@layout/db">
                     <EditText android:id="@+id/test_view" tools:viewBindingType="TextView" />
                 </layout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -45,7 +45,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <include android:id="@+id/included" layout="@layout/included" tools:viewBindingType="TextView" />
                     <EditText android:id="@+id/inconsistent" tools:viewBindingType="TextView" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -57,9 +57,9 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     tools:keep="@layout/vb">
                     <SurfaceView android:id="@+id/inconsistent" />
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -101,7 +101,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <view android:id="@+id/text_view6" class="TextView" tools:viewBindingType="TextView" />
                     <TextView android:id="@+id/text_view7" tools:viewBindingType="android.widget.TextView" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -116,7 +116,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <view android:id="@+id/text_view2" class="CheckedTextView" tools:viewBindingType="TextView" />
                     <view android:id="@+id/text_view2" class="TextView"/>
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
       )
@@ -136,7 +136,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     tools:keep="@layout/db">
                     <EditText android:id="@+id/test_view" tools:viewBindingType="TextView" />
                 </layout>
-                """
+                """,
           )
           .indented()
       )
@@ -162,7 +162,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     tools:keep="@layout/included">
                     <Button />
                 </merge>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -174,9 +174,9 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     tools:keep="@layout/vb">
                     <include android:id="@+id/included" layout="@layout/included" tools:viewBindingType="TextView" />
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -200,7 +200,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     tools:keep="@layout/vb">
                     <EditText tools:viewBindingType="TextView" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -228,7 +228,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <EditText android:id="@+id/inconsistent" tools:viewBindingType="TextView" />
                     <EditText android:id="@+id/inconsistent2" tools:viewBindingType="TextView" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -241,7 +241,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <ExtractEditText android:id="@+id/inconsistent" tools:viewBindingType="EditText" />
                     <EditText android:id="@+id/inconsistent2" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
         // Make sure IDs don't leak across layouts - these should be reported as separate errors
@@ -254,7 +254,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     tools:keep="@layout/vb_alt">
                     <CheckBox android:id="@+id/inconsistent" tools:viewBindingType="Button" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -266,7 +266,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     tools:keep="@layout/vb_alt">
                     <RadioButton android:id="@+id/inconsistent" tools:viewBindingType="CompoundButton" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
       )
@@ -311,7 +311,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <EditText android:id="@+id/inconsistent" tools:viewBindingType="TextView" />
                     <EditText android:id="@+id/inconsistent2" tools:viewBindingType="TextView" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -324,9 +324,9 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <ExtractEditText android:id="@+id/inconsistent" tools:viewBindingType="EditText" />
                     <SurfaceView android:id="@+id/inconsistent2" />
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .isolated("res/layout/vb.xml")
       .run()
@@ -358,9 +358,9 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <EditText android:id="@+id/compatible" tools:viewBindingType="TextView" />
                     <TextView android:id="@+id/incompatible3" tools:viewBindingType="EditText" />
                 </LinearLayout>
-                """
+                """,
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -423,7 +423,7 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
                     <CustomViewChild android:id="@+id/good_type" tools:viewBindingType="test.pkg.CustomViewBase" />
                     <CustomViewChild android:id="@+id/good_type2" tools:viewBindingType="android.view.View" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
       )

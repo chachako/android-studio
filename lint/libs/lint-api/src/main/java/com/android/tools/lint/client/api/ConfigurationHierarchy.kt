@@ -39,7 +39,7 @@ open class ConfigurationHierarchy(
   val client: LintClient,
 
   /** The root folder where lint.xml configuration search should end, or null. */
-  var rootDir: File? = defaultRootDir
+  var rootDir: File? = defaultRootDir,
 ) {
   private val dirToConfiguration: MutableMap<File, Configuration> = HashMap()
   private val projectToConfiguration: MutableMap<Project, Configuration> = HashMap()
@@ -60,7 +60,7 @@ open class ConfigurationHierarchy(
      * Create a configuration for the given directory. If the configuration parameter is not null,
      * this corresponds to a LintXmlConfiguration that should be included in the inheritance chain.
      */
-    create: ((File, Configuration?) -> Configuration?) = lintXmlCreator
+    create: ((File, Configuration?) -> Configuration?) = lintXmlCreator,
   ): Configuration {
     val prev = dirToConfiguration[project.dir]
     if (prev != null && prev !== NONE) {
@@ -246,7 +246,7 @@ open class ConfigurationHierarchy(
       LintOptionsConfiguration(this, lintOptions, fatalOnly).also {
         it.associatedLocation = Location.create(project.dir)
       }
-    }
+    },
   ): Configuration {
     return createChainedConfigurations(project, default, configFactory) {
       val lintConfigXml = lintOptions.lintConfig
@@ -276,7 +276,7 @@ open class ConfigurationHierarchy(
      * Optionally creates the new configuration that should be the last/fallback configuration for
      * the project (also known as the scope leaf; see [getScopeLeaf])
      */
-    createLast: (() -> Configuration?) = { null }
+    createLast: (() -> Configuration?) = { null },
   ): Configuration {
     val dir = project.dir
 
@@ -346,7 +346,7 @@ open class ConfigurationHierarchy(
             Severity.ERROR,
             null,
             "Warning: Configuration file %1\$s does not exist",
-            fallback
+            fallback,
           )
         }
       } else {
@@ -394,7 +394,7 @@ open class ConfigurationHierarchy(
   fun getDefinedSeverityWithoutOverride(
     source: Configuration,
     issue: Issue,
-    visibleDefault: Severity = issue.defaultSeverity
+    visibleDefault: Severity = issue.defaultSeverity,
   ): Severity? {
     if (source == overrides || overrides == null) {
       return null
@@ -438,7 +438,7 @@ open class ConfigurationHierarchy(
                 severity: Severity,
                 exception: Throwable?,
                 format: String?,
-                vararg args: Any
+                vararg args: Any,
               ) {
                 unsupported()
               }
@@ -460,7 +460,7 @@ open class ConfigurationHierarchy(
 
               override fun getResources(
                 project: Project,
-                scope: ResourceRepositoryScope
+                scope: ResourceRepositoryScope,
               ): ResourceRepository {
                 unsupported()
               }
@@ -480,7 +480,7 @@ open class ConfigurationHierarchy(
         override fun addConfiguredIssues(
           targetMap: MutableMap<String, Severity>,
           registry: IssueRegistry,
-          specificOnly: Boolean
+          specificOnly: Boolean,
         ) {}
 
         override fun getOption(issue: Issue, name: String, default: String?): String? = default
@@ -578,7 +578,7 @@ open class ConfigurationHierarchy(
    */
   private inner class ProjectPlaceholderConfiguration(
     configurations: ConfigurationHierarchy,
-    dir: File
+    dir: File,
   ) : Configuration(configurations) {
     init {
       this.dir = dir
@@ -592,7 +592,7 @@ open class ConfigurationHierarchy(
     override fun getDefinedSeverity(
       issue: Issue,
       source: Configuration,
-      visibleDefault: Severity
+      visibleDefault: Severity,
     ): Severity? {
       return parent?.getDefinedSeverity(issue, source, visibleDefault)
         ?: super.getDefinedSeverity(issue, source, visibleDefault)
@@ -610,7 +610,7 @@ open class ConfigurationHierarchy(
       client: LintClient,
       driver: LintDriver,
       project: Project?,
-      registry: IssueRegistry
+      registry: IssueRegistry,
     ) {
       parent?.validateIssueIds(client, driver, project, registry)
     }
@@ -618,7 +618,7 @@ open class ConfigurationHierarchy(
     override fun addConfiguredIssues(
       targetMap: MutableMap<String, Severity>,
       registry: IssueRegistry,
-      specificOnly: Boolean
+      specificOnly: Boolean,
     ) {
       parent?.addConfiguredIssues(targetMap, registry, specificOnly)
     }
@@ -627,7 +627,7 @@ open class ConfigurationHierarchy(
       issue: String,
       specificOnly: Boolean,
       severityOnly: Boolean,
-      source: Configuration
+      source: Configuration,
     ): Location? {
       return parent?.getLocalIssueConfigLocation(issue, specificOnly, severityOnly, source)
     }

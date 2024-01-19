@@ -70,7 +70,7 @@ class FullBackupContentDetector : ResourceXmlDetector() {
             ISSUE,
             element,
             context.getNameLocation(element),
-            "Unexpected element `<$tag>`"
+            "Unexpected element `<$tag>`",
           )
         }
       }
@@ -130,7 +130,7 @@ class FullBackupContentDetector : ResourceXmlDetector() {
           ISSUE,
           exclude,
           context.getValueLocation(pathNode),
-          "`$excludePath` is not in an included path"
+          "`$excludePath` is not in an included path",
         )
       }
     }
@@ -144,14 +144,14 @@ class FullBackupContentDetector : ResourceXmlDetector() {
         ISSUE,
         element,
         context.getValueLocation(pathNode),
-        "Paths are not allowed to contain `//`"
+        "Paths are not allowed to contain `//`",
       )
     } else if (value.contains("..")) {
       context.report(
         ISSUE,
         element,
         context.getValueLocation(pathNode),
-        "Paths are not allowed to contain `..`"
+        "Paths are not allowed to contain `..`",
       )
     } else if (value.contains("/")) {
       val domain = element.getAttribute(ATTR_DOMAIN)
@@ -160,7 +160,7 @@ class FullBackupContentDetector : ResourceXmlDetector() {
           ISSUE,
           element,
           context.getValueLocation(pathNode),
-          "Subdirectories are not allowed for domain `$domain`"
+          "Subdirectories are not allowed for domain `$domain`",
         )
       }
     }
@@ -188,7 +188,7 @@ class FullBackupContentDetector : ResourceXmlDetector() {
       ISSUE,
       element,
       context.getValueLocation(domainNode),
-      "Unexpected domain `$domain`, expected one of ${VALID_DOMAINS.joinToString(", ")}"
+      "Unexpected domain `$domain`, expected one of ${VALID_DOMAINS.joinToString(", ")}",
     )
     return domain
   }
@@ -211,7 +211,7 @@ class FullBackupContentDetector : ResourceXmlDetector() {
         moreInfo =
           "https://android-developers.googleblog.com/2015/07/auto-backup-for-apps-made-simple.html",
         implementation =
-          Implementation(FullBackupContentDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+          Implementation(FullBackupContentDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
       )
 
     private const val DOMAIN_SHARED_PREF = "sharedpref"

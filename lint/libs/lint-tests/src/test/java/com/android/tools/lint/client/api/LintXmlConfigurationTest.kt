@@ -152,22 +152,22 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
     assertNull(configuration.getOption(InteroperabilityDetector.PLATFORM_NULLNESS, "unknown", null))
     assertEquals(
       "default",
-      configuration.getOption(InteroperabilityDetector.PLATFORM_NULLNESS, "unknown", "default")
+      configuration.getOption(InteroperabilityDetector.PLATFORM_NULLNESS, "unknown", "default"),
     )
     assertEquals(
       true,
       configuration.getOptionAsBoolean(
         InteroperabilityDetector.PLATFORM_NULLNESS,
         "ignore-deprecated",
-        false
-      )
+        false,
+      ),
     )
     assertEquals(5, configuration.getOptionAsInt(TooManyViewsDetector.TOO_DEEP, "maxDepth", 1))
     val file = configuration.getOptionAsFile(ApiDetector.UNSUPPORTED, "allowed", null)
     assertNotNull(file)
     assertEquals(
       file!!.canonicalFile,
-      File(configuration.configFile.parentFile, "api" + separator + "list.xml").canonicalFile
+      File(configuration.configFile.parentFile, "api" + separator + "list.xml").canonicalFile,
     )
 
     configuration.startBulkEditing()
@@ -175,7 +175,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
     configuration.setBooleanOption(
       InteroperabilityDetector.PLATFORM_NULLNESS,
       "ignore-deprecated",
-      null
+      null,
     )
     // replace
     configuration.setIntOption(TooManyViewsDetector.TOO_DEEP, "maxDepth", 5)
@@ -207,7 +207,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
             </lint>
             """
         .trimIndent(),
-      updated
+      updated,
     )
   }
 
@@ -227,7 +227,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
             </lint>
             """
           .trimIndent(),
-        initialDir = File(folder, "parent")
+        initialDir = File(folder, "parent"),
       )
 
     val configuration =
@@ -241,7 +241,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
             </lint>
             """
           .trimIndent(),
-        initialDir = File(folder, "child")
+        initialDir = File(folder, "child"),
       )
 
     configuration.configurations.setParent(configuration, parentConfiguration)
@@ -253,13 +253,13 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
 
     assertEquals(
       "/parent/api/list.xml", // not /child/api/list.xml
-      getPath(configuration.getOptionAsFile(ApiDetector.UNSUPPORTED, "allowed"))
+      getPath(configuration.getOptionAsFile(ApiDetector.UNSUPPORTED, "allowed")),
     )
     assertEquals(
       "/child/new-exceptions.xml",
       getPath(
         configuration.getOptionAsFile(InteroperabilityDetector.PLATFORM_NULLNESS, "exceptions")
-      )
+      ),
     )
   }
 
@@ -319,7 +319,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
             </lint>
             """
         .trimIndent(),
-      updated
+      updated,
     )
   }
 
@@ -475,7 +475,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         windowsContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         windowsLocation,
-        ""
+        "",
       )
     )
     assertTrue(configuration.isIgnored(largeContext, ApiDetector.UNSUPPORTED, largeLocation, ""))
@@ -540,7 +540,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         windowsContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         windowsLocation,
-        ""
+        "",
       )
     )
     assertTrue(
@@ -557,7 +557,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         plainContext,
         UnusedResourceDetector.ISSUE,
         plainLocation,
-        "The resource R.font. appears to be unused"
+        "The resource R.font. appears to be unused",
       )
     )
   }
@@ -568,12 +568,12 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
       getProjectDir(
         java(
           "src/main/java/com/domain/android/lever/RepositoryShould.java",
-          "" + "package com.domain.android.lever;\n" + "class RepositoryShould() { }"
+          "" + "package com.domain.android.lever;\n" + "class RepositoryShould() { }",
         ),
         java(
           "src/androidTest/java/com/domain/android/lever2/RepositoryShould2.java",
-          "" + "package com.domain.android.lever2;\n" + "class RepositoryShould2() { }"
-        )
+          "" + "package com.domain.android.lever2;\n" + "class RepositoryShould2() { }",
+        ),
       )
 
     val client: LintClient = createClient()
@@ -683,7 +683,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         windowsContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         windowsLocation,
-        ""
+        "",
       )
     )
     assertTrue(
@@ -692,7 +692,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
     val res2 =
       File(
         projectDir,
-        "something" + separator + "res2" + separator + "something" + separator + "something2.xml"
+        "something" + separator + "res2" + separator + "something" + separator + "something2.xml",
       )
     val res2Location = create(res2)
     val res2Context = Context(driver, project, project, res2, null)
@@ -730,7 +730,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         plainContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         location,
-        "Missing the following drawables in drawable-hdpi: some_random.gif (found in drawable-mdpi)"
+        "Missing the following drawables in drawable-hdpi: some_random.gif (found in drawable-mdpi)",
       )
     )
     assertTrue(
@@ -738,7 +738,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         plainContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         location,
-        "Missing the following drawables in drawable-hdpi: sample_icon.gif (found in drawable-mdpi)"
+        "Missing the following drawables in drawable-hdpi: sample_icon.gif (found in drawable-mdpi)",
       )
     )
     assertFalse(
@@ -746,7 +746,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         plainContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         location,
-        "Invalid package reference in library; not included in Android: java.awt. Referenced from test.pkg.LibraryClass."
+        "Invalid package reference in library; not included in Android: java.awt. Referenced from test.pkg.LibraryClass.",
       )
     )
     assertTrue(
@@ -754,7 +754,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         plainContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         location,
-        "Invalid package reference in library; not included in Android: javax.swing. Referenced from test.pkg.LibraryClass."
+        "Invalid package reference in library; not included in Android: javax.swing. Referenced from test.pkg.LibraryClass.",
       )
     )
   }
@@ -776,17 +776,17 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
     // Inherit from ChromeOS category
     assertEquals(
       Severity.WARNING,
-      configuration.getSeverity(ChromeOsDetector.PERMISSION_IMPLIES_UNSUPPORTED_HARDWARE)
+      configuration.getSeverity(ChromeOsDetector.PERMISSION_IMPLIES_UNSUPPORTED_HARDWARE),
     )
     // Inherit from nested Interoperability category
     assertEquals(
       Severity.FATAL,
-      configuration.getSeverity(InteroperabilityDetector.PLATFORM_NULLNESS)
+      configuration.getSeverity(InteroperabilityDetector.PLATFORM_NULLNESS),
     )
     // Make sure issue which has issue-specific severity uses that instead of inherited category
     assertEquals(
       Severity.ERROR,
-      configuration.getSeverity(ChromeOsDetector.UNSUPPORTED_CHROME_OS_HARDWARE)
+      configuration.getSeverity(ChromeOsDetector.UNSUPPORTED_CHROME_OS_HARDWARE),
     )
   }
 
@@ -810,7 +810,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
           val lintJar = File(f.parentFile!!, "foo/lint.jar")
           lintJar.parentFile!!.mkdirs()
           lintJar.createNewFile()
-        }
+        },
       )
     configuration.startBulkEditing()
     configuration.setSeverity(TypoDetector.ISSUE, Severity.ERROR)
@@ -834,7 +834,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
             </lint>
             """
         .trimIndent(),
-      updated
+      updated,
     )
   }
 
@@ -842,7 +842,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
     xml: String,
     projectLevel: Boolean = false,
     create: (File) -> Unit = {},
-    initialDir: File? = null
+    initialDir: File? = null,
   ): LintXmlConfiguration {
     val client: LintClient = createClient()
     val dir = initialDir ?: temporaryFolder.root
@@ -890,7 +890,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         override fun getResourceFolders(project: Project): List<File> {
           return listOf(
             File(project.dir, "src" + separator + "main" + separator + "res"),
-            File(project.dir, "generated-res")
+            File(project.dir, "generated-res"),
           )
         }
       }
@@ -921,15 +921,15 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         plainContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         create(plainFile),
-        ""
-      )
+        "",
+      ),
     )
     assertTrue(
       configuration.isIgnored(
         largeContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         create(largeFile),
-        ""
+        "",
       )
     )
     assertTrue(
@@ -937,7 +937,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         windowsContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         create(windowsFile),
-        ""
+        "",
       )
     )
     // directory allowlist
@@ -946,7 +946,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         landscapeContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         landscapeLocation,
-        ""
+        "",
       )
     )
   }
@@ -977,7 +977,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         xml(
             // parsing error
             "src/main/kotlin/test/lint.xml",
-            invalidXml
+            invalidXml,
           )
           .indented(),
         xml( // missing id attribute
@@ -998,11 +998,11 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
                     <issue id="NonexistentId" severity="fatal" other="other" />
                     <issue id="Correctness" severity="warning" />
                 </lint>
-                """
+                """,
           )
           .indented(),
         // Trigger src/main/java source sets
-        gradle("")
+        gradle(""),
       )
       .skipTestModes(TestMode.PARTIAL)
       .allowCompilationErrors()
@@ -1057,7 +1057,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
     val projectDir =
       getProjectDir(
         image("src/main/res/drawable/abc.png", 48, 48),
-        source("build/generated/R.java", "class R { };")
+        source("build/generated/R.java", "class R { };"),
       )
     // Let's say you ignore a specific path for "all". If you also
     // deliberately enable a check in the same lint.xml file, that
@@ -1079,7 +1079,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
           .trimIndent(),
         // Place the configuration file in the project directory to make sure that
         // relative paths are resolved relative to the config file
-        initialDir = projectDir
+        initialDir = projectDir,
       )
     val client: LintClient = TestLintClient()
     val project = Project.create(client, projectDir, projectDir)
@@ -1096,7 +1096,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         drawableContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         create(drawable),
-        ""
+        "",
       )
     )
     assertFalse(
@@ -1104,7 +1104,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         generatedRContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         create(generatedR),
-        ""
+        "",
       )
     )
     assertFalse(
@@ -1119,7 +1119,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
     val projectDir =
       getProjectDir(
         image("src/main/res/drawable/abc.png", 48, 48),
-        source("build/generated/R.java", "class R { };")
+        source("build/generated/R.java", "class R { };"),
       )
     // Let's say you ignore a specific path for "all". If you also
     // deliberately enable a check in the same lint.xml file, that
@@ -1137,7 +1137,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
           .trimIndent(),
         // Place the configuration file in somewhere in the project to make sure
         // relative paths are resolved relative to the config file
-        initialDir = File(projectDir, "src/main/res")
+        initialDir = File(projectDir, "src/main/res"),
       )
     val client: LintClient = TestLintClient()
     val project = Project.create(client, projectDir, projectDir)
@@ -1154,7 +1154,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         drawableContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         create(drawable),
-        ""
+        "",
       )
     )
     assertFalse(
@@ -1162,7 +1162,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         generatedRContext,
         ObsoleteLayoutParamsDetector.ISSUE,
         create(generatedR),
-        ""
+        "",
       )
     )
   }
@@ -1196,7 +1196,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
                 </lint>
                     """
             .trimIndent(),
-          file.readText()
+          file.readText(),
         )
       }
     )
@@ -1246,7 +1246,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
         override fun fileExists(
           file: File,
           requireFile: Boolean,
-          requireDirectory: Boolean
+          requireDirectory: Boolean,
         ): Boolean {
           if (isConfigFile(file)) {
             return true
@@ -1276,7 +1276,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
     projectName: String? = null,
     check: (LintDriver, Project, Configuration) -> Unit = { _, _, _ -> },
     expected: String = "No warnings.",
-    vararg testFiles: TestFile
+    vararg testFiles: TestFile,
   ) {
     lint()
       .files(
@@ -1290,7 +1290,7 @@ class LintXmlConfigurationTest : AbstractCheckTest() {
           )
           .indented(),
         // Trigger src/main/java source sets
-        gradle("")
+        gradle(""),
       )
       .clientFactory {
         object : com.android.tools.lint.checks.infrastructure.TestLintClient() {

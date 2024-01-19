@@ -45,7 +45,7 @@ class NestedScrollingWidgetDetectorTest : AbstractCheckTest() {
                     </LinearLayout>
 
                 </ScrollView>
-                """
+                """,
           )
           .indented()
       )

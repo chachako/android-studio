@@ -151,7 +151,7 @@ class InconsistentThreadingAnnotationDetectorTest {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(InconsistentThreadingAnnotationDetector.ISSUE)
       .run()
@@ -217,7 +217,7 @@ class InconsistentThreadingAnnotationDetectorTest {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(InconsistentThreadingAnnotationDetector.ISSUE)
       .run()
@@ -291,7 +291,7 @@ class InconsistentThreadingAnnotationDetectorTest {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(InconsistentThreadingAnnotationDetector.ISSUE)
       .run()
@@ -359,7 +359,7 @@ class InconsistentThreadingAnnotationDetectorTest {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(InconsistentThreadingAnnotationDetector.ISSUE)
       .run()

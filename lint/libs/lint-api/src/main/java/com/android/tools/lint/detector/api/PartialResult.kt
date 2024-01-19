@@ -32,7 +32,7 @@ class PartialResult
 private constructor(
   val issue: Issue,
   private val data: MutableMap<Project, LintMap>,
-  private val requestedProject: Project?
+  private val requestedProject: Project?,
 ) : Iterable<Map.Entry<@JvmSuppressWildcards Project, @JvmSuppressWildcards LintMap>> {
   // @JvmSuppressWildcards above: Make it easy to iterate from Java
 

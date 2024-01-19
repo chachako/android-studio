@@ -38,7 +38,7 @@ internal class PartialTestMode :
   private class State(
     val manifestFile: File?,
     val originalManifest: String?,
-    val overrides: Configuration?
+    val overrides: Configuration?,
   )
 
   override val folderName: String = "partial"

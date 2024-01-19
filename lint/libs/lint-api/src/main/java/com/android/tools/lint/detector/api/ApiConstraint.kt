@@ -162,7 +162,7 @@ sealed class ApiConstraint {
     "Use the ApiConstraint version instead to make sure you're checking the right SDK extension",
     ReplaceWith(
       "isAtLeast(ApiConstraint.get(apiLevel,com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID))"
-    )
+    ),
   )
   open fun isAtLeast(apiLevel: Int): Boolean = isAtLeast(atLeast(apiLevel))
 
@@ -170,7 +170,7 @@ sealed class ApiConstraint {
     "Use the ApiConstraint version instead to make sure you're checking the right SDK extension",
     ReplaceWith(
       "alwaysAtLeast(ApiConstraint.get(apiLevel,com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID))"
-    )
+    ),
   )
   abstract fun alwaysAtLeast(apiLevel: Int): Boolean
 
@@ -178,7 +178,7 @@ sealed class ApiConstraint {
     "Use the ApiConstraint version instead to make sure you're checking the right SDK extension",
     ReplaceWith(
       "everHigher(ApiConstraint.get(apiLevel,com.android.tools.lint.detector.api.ExtensionSdk.Companion.ANDROID_SDK_ID))"
-    )
+    ),
   )
   abstract fun everHigher(apiLevel: Int): Boolean
 
@@ -252,7 +252,7 @@ sealed class ApiConstraint {
                   MultiSdkApiConstraint(
                     listOf(
                       SdkApiConstraints(sdkId, api1, either),
-                      SdkApiConstraints(api2.sdkId, api2, either)
+                      SdkApiConstraints(api2.sdkId, api2, either),
                     )
                   )
                 }
@@ -389,7 +389,7 @@ sealed class ApiConstraint {
             addMinSdkVersion = false
           }
           list.add(
-            SdkApiConstraint.createConstraint(fromInclusive = extensionVersion, sdkId = sdkVersion),
+            SdkApiConstraint.createConstraint(fromInclusive = extensionVersion, sdkId = sdkVersion)
           )
         }
         curr = curr.nextSibling ?: break
@@ -397,7 +397,7 @@ sealed class ApiConstraint {
       if (addMinSdkVersion) {
         list.add(
           0,
-          SdkApiConstraint.createConstraint(fromInclusive = minSdkVersion, sdkId = ANDROID_SDK_ID)
+          SdkApiConstraint.createConstraint(fromInclusive = minSdkVersion, sdkId = ANDROID_SDK_ID),
         )
       }
       return MultiSdkApiConstraint(list, anyOf = false)
@@ -414,7 +414,7 @@ sealed class ApiConstraint {
      * way up. The very last bit represents infinity.
      */
     val bits: ULong,
-    val sdkId: Int = ANDROID_SDK_ID
+    val sdkId: Int = ANDROID_SDK_ID,
   ) : ApiConstraint() {
     override fun fromInclusive(): Int {
       if (bits == 0UL) {
@@ -552,7 +552,7 @@ sealed class ApiConstraint {
             return MultiSdkApiConstraint(
               listOf(
                 SdkApiConstraints(sdkId, null, this),
-                SdkApiConstraints(other.sdkId, null, other)
+                SdkApiConstraints(other.sdkId, null, other),
               )
             )
           }
@@ -780,7 +780,7 @@ sealed class ApiConstraint {
         fromInclusive: Int? = null,
         toExclusive: Int? = null,
         negate: Boolean = false,
-        sdkId: Int = ANDROID_SDK_ID
+        sdkId: Int = ANDROID_SDK_ID,
       ): SdkApiConstraint {
         return SdkApiConstraint(createConstraintBits(fromInclusive, toExclusive, negate), sdkId)
       }
@@ -788,7 +788,7 @@ sealed class ApiConstraint {
       fun createConstraintBits(
         fromInclusive: Int? = null,
         toExclusive: Int? = null,
-        negate: Boolean = false
+        negate: Boolean = false,
       ): ULong {
         val from = toInternalApiLevel(fromInclusive, 1)
         val to = toInternalApiLevel(toExclusive, INFINITY)
@@ -852,7 +852,7 @@ sealed class ApiConstraint {
     constructor(
       sdkId: Int,
       constraint: SdkApiConstraint,
-      either: Boolean
+      either: Boolean,
     ) : this(sdkId, if (either) null else constraint, if (either) constraint else null)
 
     infix fun and(other: SdkApiConstraints): SdkApiConstraints {
@@ -865,7 +865,7 @@ sealed class ApiConstraint {
 
     private fun andWith(
       matchAlways: SdkApiConstraint?,
-      matchSometimes: SdkApiConstraint?
+      matchSometimes: SdkApiConstraint?,
     ): SdkApiConstraints {
       val have = this
       val always =
@@ -906,7 +906,7 @@ sealed class ApiConstraint {
 
     private fun orWith(
       matchAlways: SdkApiConstraint?,
-      matchSometimes: SdkApiConstraint?
+      matchSometimes: SdkApiConstraint?,
     ): SdkApiConstraints {
       val have = this
       val always =
@@ -968,7 +968,7 @@ sealed class ApiConstraint {
   internal constructor(internal val sdkConstraints: List<SdkApiConstraints>) : ApiConstraint() {
     constructor(
       apis: List<SdkApiConstraint>,
-      anyOf: Boolean
+      anyOf: Boolean,
     ) : this(
       apis.map {
         if (anyOf) SdkApiConstraints(it.sdkId, always = null, sometimes = it)

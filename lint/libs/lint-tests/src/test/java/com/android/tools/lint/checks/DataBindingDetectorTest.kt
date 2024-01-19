@@ -51,7 +51,7 @@ class DataBindingDetectorTest : AbstractCheckTest() {
             "      android:text=\"@{calc.a &lt; (calc.b &lt;&lt; 2) ? calc.textA : calc.textB}\"/>\n" +
             "  </androidx.constraintlayout.widget.ConstraintLayout>\n" +
             "</layout>\n" +
-            "\n"
+            "\n",
         )
       )
       .run()
@@ -114,7 +114,7 @@ class DataBindingDetectorTest : AbstractCheckTest() {
             "      android:text=\"@{calc.a  <  calc.b ? calc.textA : calc.textB}\"/>\n" +
             "  </androidx.constraintlayout.widget.ConstraintLayout>\n" +
             "</layout>\n" +
-            "\n"
+            "\n",
         )
       )
       .allowCompilationErrors()

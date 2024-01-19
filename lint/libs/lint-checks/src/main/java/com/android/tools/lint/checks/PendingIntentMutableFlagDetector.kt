@@ -47,7 +47,7 @@ class PendingIntentMutableFlagDetector : Detector(), SourceCodeScanner {
         fix()
           .alternatives(
             buildMutabilityFlagFix(context, flagsArgument),
-            buildMutabilityFlagFix(context, flagsArgument, mutable = true)
+            buildMutabilityFlagFix(context, flagsArgument, mutable = true),
           )
       val incident =
         Incident(
@@ -103,14 +103,14 @@ class PendingIntentMutableFlagDetector : Detector(), SourceCodeScanner {
             Implementation(PendingIntentMutableFlagDetector::class.java, Scope.JAVA_FILE_SCOPE),
           androidSpecific = true,
           moreInfo =
-            "https://developer.android.com/about/versions/12/behavior-changes-12#pending-intent-mutability"
+            "https://developer.android.com/about/versions/12/behavior-changes-12#pending-intent-mutability",
         )
         .addMoreInfo("https://goo.gle/UnspecifiedImmutableFlag")
 
     private fun buildMutabilityFlagFix(
       context: JavaContext,
       originalArg: UExpression,
-      mutable: Boolean = false
+      mutable: Boolean = false,
     ): LintFix {
       val addFlagText =
         if (mutable) PendingIntentUtils.FLAG_MUTABLE_STR else PendingIntentUtils.FLAG_IMMUTABLE_STR

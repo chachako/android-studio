@@ -49,7 +49,7 @@ class BinderGetCallingInMainThreadDetector : Detector(), Detector.UastScanner {
         severity = Severity.ERROR,
         androidSpecific = true,
         implementation =
-          Implementation(BinderGetCallingInMainThreadDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(BinderGetCallingInMainThreadDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     private val GET_CALLING_METHODS =
@@ -60,11 +60,11 @@ class BinderGetCallingInMainThreadDetector : Detector(), Detector.UastScanner {
         Method("android.app.Service", listOf("onCreate", "onBind", "onRebind")),
         Method(
           "android.app.Fragment",
-          listOf("onAttach", "onCreate", "onCreateView", "onStart", "onViewCreated")
+          listOf("onAttach", "onCreate", "onCreateView", "onStart", "onViewCreated"),
         ),
         Method(
           "androidx.fragment.app.Fragment",
-          listOf("onAttach", "onCreate", "onCreateView", "onStart", "onViewCreated")
+          listOf("onAttach", "onCreate", "onCreateView", "onStart", "onViewCreated"),
         ),
       )
   }
@@ -86,7 +86,7 @@ class BinderGetCallingInMainThreadDetector : Detector(), Detector.UastScanner {
               ISSUE,
               node,
               context.getLocation(node),
-              """Binder.${method.name}() should not be used inside ${containingMethod.name}()"""
+              """Binder.${method.name}() should not be used inside ${containingMethod.name}()""",
             )
           context.report(incident)
           return

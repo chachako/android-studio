@@ -47,7 +47,7 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                 <shape>>
                   <item></item>>
                 </shape>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -56,7 +56,7 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="test">Test</string> <!-- Text is allowed in value resource files -->
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -65,9 +65,9 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                 <foo>
                     Test <!-- Text is allowed in xml and raw folder files -->
                 </foo>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -105,7 +105,7 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                     <Button android:text="Button" android:id="@+id/button2" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
                     <Button android:id="@+android:id/summary" android:contentDescription="@string/label" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -164,7 +164,7 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="foo">Foo</string>
                 </resources>
-                """
+                """,
           )
           .indented()
       )
@@ -196,7 +196,7 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                         </aapt:attr>
                     </TextView>
                 </merge>
-                """
+                """,
           )
           .indented()
       )
@@ -220,7 +220,7 @@ class ExtraTextDetectorTest : AbstractCheckTest() {
                     <item name="android:shadowRadius">@dimen/tv_volume_seek_bar_thumb_shadow_radius</item>
                     <item name="android:shadowDy">@dimen/tv_volume_seek_bar_thumb_shadow_dy</item>
                 </shape>
-                """
+                """,
           )
           .indented()
       )

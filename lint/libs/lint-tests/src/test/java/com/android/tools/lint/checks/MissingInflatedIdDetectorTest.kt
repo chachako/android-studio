@@ -58,7 +58,7 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
             """
                 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="match_parent" android:layout_height="match_parent" />
-                """
+                """,
           )
           .indented(),
         xml(
@@ -66,7 +66,7 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
             """
                 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
                     android:layout_width="match_parent" android:layout_height="match_parent" />
-                """
+                """,
           )
           .indented(),
         rClass(
@@ -75,7 +75,7 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
           "@layout/list_item",
           "@id/image_view",
           "@id/text_field",
-        )
+        ),
       )
       .run()
       .expect(
@@ -129,7 +129,7 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                         app:defaultNavHost="true"
                         app:navGraph="@navigation/nav_graph" />
                 </FrameLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -139,7 +139,7 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                     android:id="@+id/an_id_in_another_viewgroup"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"/>
-                """
+                """,
           )
           .indented(),
         rClass(
@@ -148,8 +148,8 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
           "@layout/unrelated_layout",
           "@id/an_id_in_another_viewgroup",
           "@id/navigation_host_fragment",
-          "@id/frame_layout"
-        )
+          "@id/frame_layout",
+        ),
       )
       .run()
       .expect(
@@ -210,10 +210,10 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                         android:layout_height="wrap_content"
                         android:text="EditText" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
-        rClass("test.pkg", "@layout/casts", "@id/unknown", "@id/button", "@id/edittext")
+        rClass("test.pkg", "@layout/casts", "@id/unknown", "@id/button", "@id/edittext"),
       )
       .run()
       .expect(
@@ -249,7 +249,7 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                 """
         ),
         xml("res/layout/my_layout.xml", "<merge/>"),
-        rClass("test.pkg", "@layout/my_layout", "@id/my_id")
+        rClass("test.pkg", "@layout/my_layout", "@id/my_id"),
       )
       .run()
       .expectClean()
@@ -285,11 +285,11 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
                 <merge>
                     <include layout="@layout/content_main" />
                 </merge>
-                """
+                """,
           )
           .indented(),
         xml("res/layout/content_main.xml", "<LinearLayout/>").indented(),
-        rClass("test.pkg", "@layout/casts", "@layout/content_main", "@id/button")
+        rClass("test.pkg", "@layout/casts", "@layout/content_main", "@id/button"),
       )
       .run()
       .expectClean()

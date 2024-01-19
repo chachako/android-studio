@@ -102,7 +102,7 @@ private constructor(
    * replacement for a given issue which performs better or in some other way works better within
    * the IDE.
    */
-  var implementation: Implementation
+  var implementation: Implementation,
 ) : Comparable<Issue> {
   private var moreInfoUrls: Any? = null
   private var enabledByDefault = true
@@ -352,7 +352,7 @@ private constructor(
       category: Category,
       priority: Int,
       severity: Severity,
-      implementation: Implementation
+      implementation: Implementation,
     ): Issue {
       val platforms = computePlatforms(null, implementation)
       return Issue(
@@ -364,7 +364,7 @@ private constructor(
         severity,
         platforms,
         null,
-        implementation
+        implementation,
       )
     }
 
@@ -399,7 +399,7 @@ private constructor(
       enabledByDefault: Boolean = true,
       androidSpecific: Boolean? = null,
       platforms: EnumSet<Platform>? = null,
-      suppressAnnotations: Collection<String>? = null
+      suppressAnnotations: Collection<String>? = null,
     ): Issue {
       val applicablePlatforms = platforms ?: computePlatforms(androidSpecific, implementation)
       val issue =
@@ -412,7 +412,7 @@ private constructor(
           severity,
           applicablePlatforms,
           suppressAnnotations,
-          implementation
+          implementation,
         )
       if (moreInfo != null) {
         issue.addMoreInfo(moreInfo)
@@ -426,7 +426,7 @@ private constructor(
 
     private fun computePlatforms(
       androidSpecific: Boolean?,
-      implementation: Implementation
+      implementation: Implementation,
     ): EnumSet<Platform> {
       val android = androidSpecific ?: scopeImpliesAndroid(implementation.scope)
       return when {

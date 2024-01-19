@@ -30,7 +30,7 @@ import javax.net.ssl.HttpsURLConnection
 fun wrapURLConnection(
   wrapped: URLConnection,
   trackerFactory: HttpTrackerFactory,
-  interceptionRuleService: InterceptionRuleService
+  interceptionRuleService: InterceptionRuleService,
 ): URLConnection {
   // Skip the irrelevant stack trace elements (including app inspection stack frames)
   val callstack = getStackTrace(2)

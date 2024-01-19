@@ -25,7 +25,7 @@ data class IDSizesReply(
   val methodIDSize: Int,
   val objectIDSize: Int,
   val referenceTypeIDSize: Int,
-  val frameIDSize: Int
+  val frameIDSize: Int,
 ) : Reply() {
 
   constructor(
@@ -35,7 +35,7 @@ data class IDSizesReply(
     idSizes.methodIDSize,
     idSizes.objectIDSize,
     idSizes.referenceTypeIDSize,
-    idSizes.frameIDSize
+    idSizes.frameIDSize,
   )
 
   companion object {

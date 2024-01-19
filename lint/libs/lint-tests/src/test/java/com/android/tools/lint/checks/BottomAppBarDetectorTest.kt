@@ -54,7 +54,7 @@ class BottomAppBarDetectorTest : AbstractCheckTest() {
                       app:srcCompat="@drawable/ic_add_black_24dp"
                       tools:ignore="RtlHardcoded"/>
                 </android.support.design.widget.CoordinatorLayout>
-            """
+            """,
           )
           .indented(),
         xml(
@@ -77,7 +77,7 @@ class BottomAppBarDetectorTest : AbstractCheckTest() {
                       app:navigationIcon="@drawable/ic_menu_black_24dp"/>
 
                 </LinearLayout>
-            """
+            """,
           )
           .indented(),
         xml(
@@ -92,9 +92,9 @@ class BottomAppBarDetectorTest : AbstractCheckTest() {
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
 app:navigationIcon="@drawable/ic_menu_black_24dp"/>
-            """
+            """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

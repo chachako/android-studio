@@ -65,7 +65,7 @@ internal class SCache(internal var enabled: Boolean = true, private val logger: 
         override fun handle(reader: MessageReader, response: SCacheResponse) {
           onIDSizesReply(reader, response)
         }
-      }
+      },
     )
   }
 

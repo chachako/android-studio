@@ -64,7 +64,7 @@ class WearableConfigurationActionDetector : Detector(), XmlScanner {
         severity = Severity.WARNING,
         implementation =
           Implementation(WearableConfigurationActionDetector::class.java, Scope.MANIFEST_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     @JvmField
@@ -84,7 +84,7 @@ class WearableConfigurationActionDetector : Detector(), XmlScanner {
         severity = Severity.WARNING,
         implementation =
           Implementation(WearableConfigurationActionDetector::class.java, Scope.MANIFEST_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
   }
 
@@ -146,7 +146,7 @@ class WearableConfigurationActionDetector : Detector(), XmlScanner {
           location,
           "Watch face configuration tag is required",
         ),
-        minSdkLessThan(30)
+        minSdkLessThan(30),
       )
     } else if (foundAction != null && foundMetaData == null) {
       val location = context.getLocation(foundAction.getAttributeNodeNS(ANDROID_URI, "name"))
@@ -157,7 +157,7 @@ class WearableConfigurationActionDetector : Detector(), XmlScanner {
           location,
           "`wearableConfigurationAction` metadata is missing",
         ),
-        minSdkLessThan(30)
+        minSdkLessThan(30),
       )
     }
   }

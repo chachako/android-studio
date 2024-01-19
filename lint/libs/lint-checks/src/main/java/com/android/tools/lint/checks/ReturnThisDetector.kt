@@ -57,7 +57,7 @@ class ReturnThisDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     const val RETURN_THIS_ANNOTATION = "androidx.annotation.ReturnThis"
@@ -72,7 +72,7 @@ class ReturnThisDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val method =
       if (usageInfo.type == DEFINITION) element.getParentOfType<UMethod>(true) ?: return

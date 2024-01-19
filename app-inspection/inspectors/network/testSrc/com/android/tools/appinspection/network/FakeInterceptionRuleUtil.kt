@@ -83,6 +83,6 @@ internal fun NetworkInspector.receiveInterceptCommand(
       override fun reply(response: ByteArray) {}
 
       override fun addCancellationListener(executor: Executor, runnable: Runnable) {}
-    }
+    },
   )
 }

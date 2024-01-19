@@ -54,7 +54,7 @@ class WatchFaceForAndroidXDetector : Detector(), XmlScanner {
         severity = Severity.WARNING,
         implementation =
           Implementation(WatchFaceForAndroidXDetector::class.java, Scope.MANIFEST_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
   }
 
@@ -76,7 +76,7 @@ class WatchFaceForAndroidXDetector : Detector(), XmlScanner {
           metaData.getAttributeNodeNS(ANDROID_URI, "value")?.let { context.getValueLocation(it) }
             ?: context.getLocation(metaData),
           "Watch face configuration action must be set to WATCH_FACE_EDITOR for an AndroidX watch face",
-          fix
+          fix,
         )
       )
     }

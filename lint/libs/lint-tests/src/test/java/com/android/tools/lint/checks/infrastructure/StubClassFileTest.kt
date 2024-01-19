@@ -431,8 +431,8 @@ class StubClassFileTest {
                     }
                     """
           )
-          .indented()
-      )
+          .indented(),
+      ),
     )
   }
 
@@ -526,8 +526,8 @@ class StubClassFileTest {
                         """
               )
               .indented()
-          )
-      )
+          ),
+      ),
     )
   }
 
@@ -712,9 +712,9 @@ class StubClassFileTest {
                         }
                         """
               )
-              .indented()
-          )
-      )
+              .indented(),
+          ),
+      ),
     )
   }
 
@@ -760,9 +760,9 @@ class StubClassFileTest {
                     }
                     """
           )
-          .indented()
+          .indented(),
       ),
-      allowKotlin = true
+      allowKotlin = true,
     )
   }
 
@@ -788,8 +788,8 @@ class StubClassFileTest {
               )
               .indented()
           ),
-        compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR)
-      )
+        compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR),
+      ),
     )
   }
 
@@ -809,8 +809,8 @@ class StubClassFileTest {
                         }
                         """
             )
-            .indented()
-        )
+            .indented(),
+        ),
       )
       fail("Unstubbable method `displayName` should have raised an error")
     } catch (e: Throwable) {
@@ -825,7 +825,7 @@ class StubClassFileTest {
 
                 """
           .trimIndent(),
-        e.message
+        e.message,
       )
     }
   }
@@ -843,8 +843,8 @@ class StubClassFileTest {
                         class Test
                     """
             )
-            .indented()
-        )
+            .indented(),
+        ),
       )
       fail("Using Kotlin without opting in should throw exception")
     } catch (e: Throwable) {
@@ -857,7 +857,7 @@ class StubClassFileTest {
                 default values or inline methods), that will not work.
                 """
           .trimIndent(),
-        e.message
+        e.message,
       )
     }
   }

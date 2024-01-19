@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 class PeriodicAction(
   private val scope: CoroutineScope,
   private val period: Duration,
-  private val action: suspend () -> Unit
+  private val action: suspend () -> Unit,
 ) {
   private val lock = Object()
 

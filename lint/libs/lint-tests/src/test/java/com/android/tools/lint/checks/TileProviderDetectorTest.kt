@@ -39,7 +39,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                                 <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
                             </intent-filter>
                         </service>
-                    </manifest>"""
+                    </manifest>""",
           )
           .indented()
       )
@@ -91,7 +91,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                             </intent-filter>
                         </service>
                     </manifest>
-                    """
+                    """,
           )
           .indented()
       )
@@ -140,7 +140,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                                 <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
                             </intent-filter>
                         </service>
-                    </manifest>"""
+                    </manifest>""",
           )
           .indented()
       )
@@ -178,7 +178,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -207,7 +207,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -245,7 +245,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -274,7 +274,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -309,7 +309,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -338,7 +338,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -373,7 +373,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -402,7 +402,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -437,7 +437,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -466,7 +466,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -523,7 +523,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
           """<selector xmlns:android="http://schemas.android.com/apk/res/android">
                 <item  android:color="#ff000000"/>
             </selector>
-            """
+            """,
         ),
         manifest(
             """
@@ -543,7 +543,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -579,7 +579,7 @@ class TileProviderDetectorTest : AbstractCheckTest() {
                         </service>
                     </manifest>"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

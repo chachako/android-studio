@@ -133,7 +133,7 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                         android:layout_height="match_parent" >
                     </FrameLayout>
                 </merge>
-                """
+                """,
           )
           .indented()
       )
@@ -172,7 +172,7 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                     </LinearLayout>
 
                 </TabHost>
-                """
+                """,
           )
           .indented()
       )
@@ -190,7 +190,7 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     style="@style/keyboard_table_row">
                 </TableRow>
-                """
+                """,
           )
           .indented()
       )
@@ -208,7 +208,7 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                     android:layout_width="0dip"
                     android:layout_height="0dip"
                     android:visibility="gone" />
-                """
+                """,
           )
           .indented()
       )
@@ -242,7 +242,7 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                             android:layout_height="5dp" />
                     </LinearLayout>
                 </FrameLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -281,7 +281,7 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                                 android:layout_height="wrap_content"/>
                     </RelativeLayout>
                 </FrameLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -323,7 +323,7 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                     </LinearLayout>
                   </FrameLayout>
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -349,7 +349,7 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                             android:orientation="vertical"
                             app:viewModel="@{viewModel}" />
                 </FrameLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -384,7 +384,7 @@ class UselessViewDetectorTest : AbstractCheckTest() {
                     android:tag="fragment_container">
                   </FrameLayout>
                 </test.pkg.CardContainerView>
-                """
+                """,
           )
           .indented()
       )

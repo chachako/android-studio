@@ -66,7 +66,7 @@ class ChromeOsSourceDetector : Detector(), SourceCodeScanner {
 
   private fun reportRearCameraOnlySystemFeatureViolations(
     node: UCallExpression,
-    context: JavaContext
+    context: JavaContext,
   ) {
     val cameraFeatureRequested = determinePropertyString(node)
     if (FEATURE_CAMERA_STRING == cameraFeatureRequested) {
@@ -133,7 +133,7 @@ class ChromeOsSourceDetector : Detector(), SourceCodeScanner {
           priority = 4,
           severity = Severity.WARNING,
           androidSpecific = true,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .setEnabledByDefault(true)
 
@@ -158,7 +158,7 @@ class ChromeOsSourceDetector : Detector(), SourceCodeScanner {
           androidSpecific = true,
           implementation = IMPLEMENTATION,
           moreInfo =
-            "https://developer.android.com/guide/topics/large-screens/large-screen-cookbook#restricted_app_orientation"
+            "https://developer.android.com/guide/topics/large-screens/large-screen-cookbook#restricted_app_orientation",
         )
         .setEnabledByDefault(true)
 
@@ -182,7 +182,7 @@ class ChromeOsSourceDetector : Detector(), SourceCodeScanner {
           androidSpecific = true,
           implementation = IMPLEMENTATION,
           moreInfo =
-            "https://developer.android.com/guide/topics/large-screens/large-screen-cookbook#chromebook_camera_support"
+            "https://developer.android.com/guide/topics/large-screens/large-screen-cookbook#chromebook_camera_support",
         )
         .setEnabledByDefault(true)
 
@@ -191,7 +191,7 @@ class ChromeOsSourceDetector : Detector(), SourceCodeScanner {
         "SCREEN_ORIENTATION_PORTRAIT",
         "SCREEN_ORIENTATION_REVERSE_PORTRAIT",
         "SCREEN_ORIENTATION_SENSOR_PORTRAIT",
-        "SCREEN_ORIENTATION_USER_PORTRAIT"
+        "SCREEN_ORIENTATION_USER_PORTRAIT",
       )
 
     const val UNSPECIFIED_ORIENTATION_VALUE = "SCREEN_ORIENTATION_UNSPECIFIED"

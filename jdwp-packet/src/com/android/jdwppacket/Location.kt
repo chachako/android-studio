@@ -32,7 +32,7 @@ data class Location(val typeTag: Byte, val classID: Long, val methodID: Long, va
         reader.getTypeTag(),
         reader.getClassID(),
         reader.getMethodID(),
-        reader.getLong()
+        reader.getLong(),
       )
     }
   }

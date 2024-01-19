@@ -195,7 +195,7 @@ interface SourceCodeScanner : FileScanner {
     node: UElement,
     type: ResourceType,
     name: String,
-    isFramework: Boolean
+    isFramework: Boolean,
   )
 
   /**
@@ -305,7 +305,7 @@ interface SourceCodeScanner : FileScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   )
 
   /**
@@ -352,7 +352,7 @@ interface SourceCodeScanner : FileScanner {
     annotations: List<UAnnotation>,
     allMemberAnnotations: List<UAnnotation>,
     allClassAnnotations: List<UAnnotation>,
-    allPackageAnnotations: List<UAnnotation>
+    allPackageAnnotations: List<UAnnotation>,
   )
 
   /**
@@ -401,7 +401,7 @@ interface SourceCodeScanner : FileScanner {
     annotations: List<UAnnotation>,
     allMemberAnnotations: List<UAnnotation>,
     allClassAnnotations: List<UAnnotation>,
-    allPackageAnnotations: List<UAnnotation>
+    allPackageAnnotations: List<UAnnotation>,
   )
 
   /**

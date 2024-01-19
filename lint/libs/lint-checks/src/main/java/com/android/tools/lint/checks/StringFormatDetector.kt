@@ -167,7 +167,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
 
   private fun createLocationHandleForXmlDomElement(
     context: XmlContext,
-    element: Element
+    element: Element,
   ): Location.Handle {
     val handle = context.createLocationHandle(element)
     handle.clientData = element
@@ -200,7 +200,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
           context,
           method,
           node,
-          if (method.parameterList.parametersCount == 3) 1 else 0
+          if (method.parameterList.parametersCount == 3) 1 else 0,
         )
       } else if (cls == LocaleDetector.KOTLIN_STRINGS_JVM_KT) {
         // Kotlin stdlib extension functions from kotlin.txt
@@ -212,7 +212,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
           context,
           method,
           node,
-          if (method.parameterList.parametersCount == 4) 1 else 0
+          if (method.parameterList.parametersCount == 4) 1 else 0,
         )
 
         // TODO: Consider also enforcing
@@ -241,12 +241,12 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
           evaluator.isMemberInSubClassOf(
             method,
             AndroidXConstants.CLASS_V4_FRAGMENT.oldName(),
-            false
+            false,
           ) ||
           evaluator.isMemberInSubClassOf(
             method,
             AndroidXConstants.CLASS_V4_FRAGMENT.newName(),
-            false
+            false,
           )
       ) {
         checkStringFormatCall(context, method, node, 0)
@@ -280,7 +280,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
     context: JavaContext,
     calledMethod: PsiMethod,
     call: UCallExpression,
-    argIndex: Int
+    argIndex: Int,
   ) {
     val args = call.valueArguments
     if (args.size <= argIndex) {
@@ -408,7 +408,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
               context,
               call,
               name,
-              item.createResourceItemHandle(context, valueOnlyHandle)
+              item.createResourceItemHandle(context, valueOnlyHandle),
             )
             found = true
           }
@@ -433,7 +433,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
               Locale.US,
               "This definition requires %1\$d argument%2\$s",
               count,
-              if (count != 1) "s" else ""
+              if (count != 1) "s" else "",
             )
           location.secondary = secondary
           val message =
@@ -443,7 +443,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
                 "call supplies `%3\$d`",
               name,
               count,
-              callCount
+              callCount,
             )
           context.report(ARG_TYPES, call, location, message)
           if (reported == null) {
@@ -547,7 +547,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
                     formatType,
                     canonicalText,
                     argumentIndex + 1,
-                    suggestion
+                    suggestion,
                   )
                 if ((last == 's' || last == 'S') && isNumericType(type)) {
                   message =
@@ -561,7 +561,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
                       formatType,
                       canonicalText,
                       argumentIndex + 1,
-                      suggestion
+                      suggestion,
                     )
                 }
                 context.report(ARG_TYPES, call, location, message)
@@ -580,7 +580,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
   private fun resourceFormatString(
     name: String,
     item: ResourceItem,
-    resources: ResourceRepository
+    resources: ResourceRepository,
   ): FormatString {
     var v: ResourceValue? = item.resourceValue ?: return FormatString(name, IGNORE)
     var value: String? = v?.rawXmlValue ?: return FormatString(name, IGNORE)
@@ -647,7 +647,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
     context: Context,
     name: String,
     strings: List<FormatString>,
-    valueOnlyHandle: Boolean
+    valueOnlyHandle: Boolean,
   ) {
     val list = ArrayList<Pair<Location.Handle, String>>()
     for (formatString in strings) {
@@ -710,7 +710,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
     calledMethod: PsiMethod,
     call: UCallExpression,
     args: List<UExpression>,
-    stringIndex: Int
+    stringIndex: Int,
   ) {
     val s = ConstantEvaluator.evaluateString(context, args[stringIndex], false) ?: return
     var uppercase = false
@@ -777,7 +777,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
   private fun checkArityAndTypes(
     context: XmlContext,
     element: Element,
-    formatType: StringFormatType
+    formatType: StringFormatType,
   ) {
     if (formatType == FORMATTED || formatType == NOT_FORMATTED) {
       val name = element.getAttribute(SdkConstants.ATTR_NAME)
@@ -824,7 +824,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
     val name: String,
     val type: StringFormatType,
     val resourceItem: ResourceItem? = null,
-    val value: String? = null
+    val value: String? = null,
   ) {
 
     fun createResourceItemHandle(context: Context, valueOnly: Boolean): ResourceItemHandle? {
@@ -832,7 +832,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
         context.client.createResourceItemHandle(
           resourceItem,
           nameOnly = false,
-          valueOnly = valueOnly
+          valueOnly = valueOnly,
         )
       } else {
         null
@@ -847,7 +847,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
       Implementation(
         StringFormatDetector::class.java,
         EnumSet.of(Scope.ALL_RESOURCE_FILES, Scope.JAVA_FILE),
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     /** Whether formatting strings are invalid */
@@ -868,7 +868,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
         Category.MESSAGES,
         9,
         Severity.ERROR,
-        IMPLEMENTATION_XML
+        IMPLEMENTATION_XML,
       )
 
     /** Whether formatting argument types are consistent across translations */
@@ -885,7 +885,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
         Category.MESSAGES,
         5,
         Severity.WARNING,
-        IMPLEMENTATION_XML
+        IMPLEMENTATION_XML,
       )
 
     /** Whether the string format used in a String.format call is trivial */
@@ -901,7 +901,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
           Category.PERFORMANCE,
           5,
           Severity.WARNING,
-          IMPLEMENTATION_XML_AND_JAVA
+          IMPLEMENTATION_XML_AND_JAVA,
         )
         .setAndroidSpecific(true)
         .setEnabledByDefault(false)
@@ -920,7 +920,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
         Category.MESSAGES,
         9,
         Severity.ERROR,
-        IMPLEMENTATION_XML_AND_JAVA
+        IMPLEMENTATION_XML_AND_JAVA,
       )
 
     /** This plural does not use the quantity value */
@@ -948,7 +948,7 @@ This will ensure that in other languages the right set of translations are provi
           Category.MESSAGES,
           5,
           Severity.WARNING,
-          IMPLEMENTATION_XML
+          IMPLEMENTATION_XML,
         )
         .addMoreInfo(
           "https://developer.android.com/guide/topics/resources/string-resource.html#Plurals"
@@ -992,7 +992,7 @@ This will ensure that in other languages the right set of translations are provi
     private fun checkTextNode(
       context: XmlContext,
       element: Element,
-      text: String
+      text: String,
     ): StringFormatType {
       var found = false
       var foundPlural = false
@@ -1067,7 +1067,7 @@ This will ensure that in other languages the right set of translations are provi
       context: XmlContext,
       element: Element,
       text: String,
-      wordBegin: Int
+      wordBegin: Int,
     ): Boolean {
       // This method should only be called if the text is known to start with a word
       assert(Character.isLetter(text[wordBegin]))
@@ -1122,7 +1122,7 @@ This will ensure that in other languages the right set of translations are provi
           String.format(
             "Formatting %%d followed by words (\"%1\$s\"): " +
               "This should probably be a plural rather than a string",
-            word
+            word,
           )
         context.report(POTENTIAL_PLURAL, element, context.getLocation(element), message)
         // Avoid reporting multiple errors on the same string
@@ -1153,7 +1153,7 @@ This will ensure that in other languages the right set of translations are provi
       checkValid: Boolean,
       checkTypes: Boolean,
       name: String,
-      list: List<Pair<Location.Handle, String>>
+      list: List<Pair<Location.Handle, String>>,
     ) {
       val types: MutableMap<Int, String> = HashMap()
       val typeDefinition: MutableMap<Int, Location.Handle> = HashMap()
@@ -1183,7 +1183,7 @@ This will ensure that in other languages the right set of translations are provi
                     "Incorrect formatting string `%1\$s`; missing conversion " +
                       "character in '`%2\$s`'?",
                     name,
-                    str
+                    str,
                   )
                 context.report(INVALID, location, message)
                 // warned = true;
@@ -1228,7 +1228,7 @@ This will ensure that in other languages the right set of translations are provi
                 str,
                 format,
                 currentFormat,
-                getFileNameWithParent(context.client, f)
+                getFileNameWithParent(context.client, f),
               )
             // warned = true;
             context.report(ARG_TYPES, location, message)
@@ -1298,7 +1298,7 @@ This will ensure that in other languages the right set of translations are provi
       location: Location,
       formatString: String,
       substringStart: Int,
-      substringEnd: Int
+      substringEnd: Int,
     ): Location {
       val startLocation = location.start
       val endLocation = location.end
@@ -1314,7 +1314,7 @@ This will ensure that in other languages the right set of translations are provi
                 location.file,
                 contents,
                 formatOffset + substringStart,
-                formatOffset + substringEnd
+                formatOffset + substringEnd,
               )
             }
           }
@@ -1330,7 +1330,7 @@ This will ensure that in other languages the right set of translations are provi
     private fun checkArity(
       context: Context,
       name: String,
-      list: List<Pair<Location.Handle, String>>?
+      list: List<Pair<Location.Handle, String>>?,
     ) {
       // Check to make sure that the argument counts and types are consistent
       var prevCount = -1
@@ -1361,7 +1361,7 @@ This will ensure that in other languages the right set of translations are provi
               name,
               count,
               prevCount,
-              path
+              path,
             )
           context.report(ARG_COUNT, location, message)
           break
@@ -1382,7 +1382,7 @@ This will ensure that in other languages the right set of translations are provi
               String.format(
                 "Formatting string '`%1\$s`' is not referencing numbered arguments %2\$s",
                 name,
-                sorted
+                sorted,
               )
             context.report(ARG_COUNT, location, message)
             break
@@ -1517,7 +1517,7 @@ This will ensure that in other languages the right set of translations are provi
       context: JavaContext,
       call: UCallExpression,
       name: String,
-      handle: Location.Handle?
+      handle: Location.Handle?,
     ) {
       if (isSuppressed(context, INVALID, handle)) {
         return
@@ -1530,7 +1530,7 @@ This will ensure that in other languages the right set of translations are provi
         String.format(
           "Format string '`%1\$s`' is not a valid format string so it should not be " +
             "passed to `String.format`",
-          name
+          name,
         )
       context.report(INVALID, call, location, message)
     }
@@ -1550,12 +1550,12 @@ This will ensure that in other languages the right set of translations are provi
     private val isIntType =
       TypeTest(
         listOf(PsiTypes.intType(), PsiTypes.longType(), PsiTypes.byteType(), PsiTypes.shortType()),
-        listOf(TYPE_INTEGER_WRAPPER, TYPE_LONG_WRAPPER, TYPE_BYTE_WRAPPER, TYPE_SHORT_WRAPPER)
+        listOf(TYPE_INTEGER_WRAPPER, TYPE_LONG_WRAPPER, TYPE_BYTE_WRAPPER, TYPE_SHORT_WRAPPER),
       )
     private val isFloatType =
       TypeTest(
         listOf(PsiTypes.floatType(), PsiTypes.doubleType()),
-        listOf(TYPE_FLOAT_WRAPPER, TYPE_DOUBLE_WRAPPER)
+        listOf(TYPE_FLOAT_WRAPPER, TYPE_DOUBLE_WRAPPER),
       )
     private val isNumericType = isIntType or isFloatType
     private val isNumericOrBigNumberType =

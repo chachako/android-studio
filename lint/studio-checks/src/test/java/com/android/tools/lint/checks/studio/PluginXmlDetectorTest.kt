@@ -45,9 +45,9 @@ class PluginXmlDetectorTest {
                                                                 implementationClass="test.pkg.SomeClassC"/>
               </extensions>
             </idea-plugin>
-            """
+            """,
           )
-          .indented()
+          .indented(),
       )
       .issues(PluginXmlDetector.ISSUE)
       .run()

@@ -84,7 +84,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       "CheckResult",
       "CheckReturnValue",
       "CanIgnoreReturnValue",
-      "org.jetbrains.annotations.Contract"
+      "org.jetbrains.annotations.Contract",
     )
 
   override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
@@ -95,7 +95,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val qualifiedName = annotationInfo.qualifiedName
     if (qualifiedName.endsWith(".CanIgnoreReturnValue")) {
@@ -181,7 +181,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
           String.format(
             "The result of `%1\$s` is not used; did you mean to call `%2\$s`?",
             methodName,
-            suggested
+            suggested,
           )
       } else if (
         "intersect" == methodName &&
@@ -476,7 +476,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       Implementation(
         CheckResultDetector::class.java,
         EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES),
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     /** Method result should be used. */
@@ -492,7 +492,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 6,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Failing to enforce security by just calling check permission. */
@@ -513,7 +513,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

@@ -44,7 +44,7 @@ class LocaleConfigDetectorTest : AbstractCheckTest() {
                     <locale android:name="nor-NOR"/>
                     <locale android:name="pt"/>
                 </locale-config>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -53,7 +53,7 @@ class LocaleConfigDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="hello">Hello</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -62,7 +62,7 @@ class LocaleConfigDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="hello">أهلا</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -71,7 +71,7 @@ class LocaleConfigDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="hello">Hallo</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -80,7 +80,7 @@ class LocaleConfigDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="hello">Hola</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -89,9 +89,9 @@ class LocaleConfigDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="hello">你好</string>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -164,7 +164,7 @@ class LocaleConfigDetectorTest : AbstractCheckTest() {
                 <locale-config xmlns:a="http://schemas.android.com/apk/res/android">
                     <locale a:name="en-us"/>
                 </locale-config>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -173,7 +173,7 @@ class LocaleConfigDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="hello">Hello</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -182,9 +182,9 @@ class LocaleConfigDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="hello">Hallo</string>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

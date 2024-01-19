@@ -20,7 +20,7 @@
   "RemoveExplicitTypeArguments",
   "HasPlatformType",
   "ConstantConditions",
-  "MemberVisibilityCanBePrivate"
+  "MemberVisibilityCanBePrivate",
 )
 
 package com.android.tools.lint.checks.infrastructure

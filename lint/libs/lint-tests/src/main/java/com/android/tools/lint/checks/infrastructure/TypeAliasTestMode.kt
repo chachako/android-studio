@@ -51,7 +51,7 @@ class TypeAliasTestMode :
   UastSourceTransformationTestMode(
     description = "Type aliases",
     "TestMode.TYPE_ALIAS",
-    "type-alias"
+    "type-alias",
   ) {
   override val diffExplanation: String =
     // first line shorter: expecting to prefix that line with
@@ -78,14 +78,14 @@ class TypeAliasTestMode :
 
   class PackageAliases(
     var nextAliasId: Int = 1,
-    val aliasesPerPackage: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
+    val aliasesPerPackage: MutableMap<String, MutableMap<String, String>> = mutableMapOf(),
   )
 
   override fun transform(
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
     if (!isKotlin(root.sourcePsi)) {
       return mutableListOf()
@@ -126,7 +126,7 @@ class TypeAliasTestMode :
           node: UElement,
           cls: PsiClass?,
           offset: Int,
-          type: PsiType
+          type: PsiType,
         ) {
           if (cls?.containingClass != null) {
             // Don't try to handle containing classes yet; we need to fix references that include
@@ -193,7 +193,7 @@ class TypeAliasTestMode :
 
         override fun allowClassReference(
           node: USimpleNameReferenceExpression,
-          parent: UQualifiedReferenceExpression
+          parent: UQualifiedReferenceExpression,
         ): Boolean {
           val parentResolved = parent.resolve() ?: return false
           return parentResolved is PsiField

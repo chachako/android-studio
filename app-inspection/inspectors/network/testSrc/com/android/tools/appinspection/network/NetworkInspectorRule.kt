@@ -35,7 +35,7 @@ internal class NetworkInspectorRule(val autoStart: Boolean = true) : ExternalRes
       environment,
       trafficStatsProvider,
       speedDataIntervalMs = 10,
-      logger = logger
+      logger = logger,
     )
 
   override fun before() {
@@ -56,7 +56,7 @@ internal class NetworkInspectorRule(val autoStart: Boolean = true) : ExternalRes
         override fun reply(response: ByteArray) {}
 
         override fun addCancellationListener(executor: Executor, runnable: Runnable) {}
-      }
+      },
     )
   }
 

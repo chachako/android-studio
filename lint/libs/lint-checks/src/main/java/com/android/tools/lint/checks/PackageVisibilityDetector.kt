@@ -50,7 +50,7 @@ class PackageVisibilityDetector : Detector(), XmlScanner, SourceCodeScanner {
 
   private data class QueryPermissions(
     val canQuerySomePackages: Boolean,
-    val canQueryAllPackages: Boolean
+    val canQueryAllPackages: Boolean,
   )
 
   // ---- Implements XmlScanner ----
@@ -69,7 +69,7 @@ class PackageVisibilityDetector : Detector(), XmlScanner, SourceCodeScanner {
                 A `<queries>` declaration should generally be used instead of QUERY_ALL_PACKAGES; \
                 see https://g.co/dev/packagevisibility for details
                 """
-            .trimIndent()
+            .trimIndent(),
         )
       context.report(incident, targetSdkAtLeast(INITIAL_API))
     }
@@ -89,7 +89,7 @@ class PackageVisibilityDetector : Detector(), XmlScanner, SourceCodeScanner {
       "queryIntentActivities",
       // Intent.
       "resolveActivity",
-      "resolveActivityInfo"
+      "resolveActivityInfo",
     )
   }
 
@@ -124,7 +124,7 @@ class PackageVisibilityDetector : Detector(), XmlScanner, SourceCodeScanner {
                 As of Android 11, this method no longer returns information about all apps; \
                 see https://g.co/dev/packagevisibility for details
                 """
-            .trimIndent()
+            .trimIndent(),
         )
       context.report(incident, map().put(KEY_REQ_QUERY_ALL, true))
     } else {
@@ -137,7 +137,7 @@ class PackageVisibilityDetector : Detector(), XmlScanner, SourceCodeScanner {
                 Consider adding a `<queries>` declaration to your manifest when calling this \
                 method; see https://g.co/dev/packagevisibility for details
                 """
-            .trimIndent()
+            .trimIndent(),
         )
       context.report(incident, map().put(KEY_REQ_QUERY_ALL, false))
     }
@@ -206,7 +206,7 @@ class PackageVisibilityDetector : Detector(), XmlScanner, SourceCodeScanner {
         implementation =
           Implementation(PackageVisibilityDetector::class.java, Scope.MANIFEST_SCOPE),
         androidSpecific = true,
-        moreInfo = "https://g.co/dev/packagevisibility"
+        moreInfo = "https://g.co/dev/packagevisibility",
       )
 
     @JvmField
@@ -232,10 +232,10 @@ class PackageVisibilityDetector : Detector(), XmlScanner, SourceCodeScanner {
           Implementation(
             PackageVisibilityDetector::class.java,
             EnumSet.of(Scope.JAVA_FILE, Scope.MANIFEST),
-            Scope.JAVA_FILE_SCOPE
+            Scope.JAVA_FILE_SCOPE,
           ),
         androidSpecific = true,
-        moreInfo = "https://g.co/dev/packagevisibility"
+        moreInfo = "https://g.co/dev/packagevisibility",
       )
   }
 }

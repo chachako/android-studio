@@ -297,7 +297,7 @@ enum class TextFormat {
               nextLineStart,
               end + 1,
               escapeUnicode,
-              newlinesAsBr = false
+              newlinesAsBr = false,
             )
             if (html) {
               sb.append("</pre>\n")
@@ -570,7 +570,7 @@ enum class TextFormat {
       start: Int,
       end: Int,
       escapeUnicode: Boolean,
-      newlinesAsBr: Boolean = true
+      newlinesAsBr: Boolean = true,
     ) {
       if (html) {
         for (i in start until end) {

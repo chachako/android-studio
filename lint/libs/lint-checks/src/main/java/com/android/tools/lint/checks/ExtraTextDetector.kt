@@ -61,8 +61,8 @@ class ExtraTextDetector : ResourceXmlDetector() {
             ExtraTextDetector::class.java,
             Scope.MANIFEST_AND_RESOURCE_SCOPE,
             Scope.RESOURCE_FILE_SCOPE,
-            Scope.MANIFEST_SCOPE
-          )
+            Scope.MANIFEST_SCOPE,
+          ),
       )
   }
 

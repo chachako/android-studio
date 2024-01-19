@@ -54,7 +54,7 @@ class PluralsDetector : ResourceXmlDetector() {
         MISSING,
         element,
         context.getLocation(element),
-        "There should be at least one quantity string in this `<plural>` definition"
+        "There should be at least one quantity string in this `<plural>` definition",
       )
       return
     }
@@ -156,7 +156,7 @@ class PluralsDetector : ResourceXmlDetector() {
         String.format(
           "For language %1\$s the following quantities are not relevant: %2\$s",
           getLanguageDescription(language),
-          Quantity.formatSet(extra)
+          Quantity.formatSet(extra),
         )
       context.report(EXTRA, element, context.getLocation(element), message)
     }
@@ -189,7 +189,7 @@ class PluralsDetector : ResourceXmlDetector() {
         severity = Severity.ERROR,
         implementation = IMPLEMENTATION,
         moreInfo =
-          "https://developer.android.com/guide/topics/resources/string-resource.html#Plurals"
+          "https://developer.android.com/guide/topics/resources/string-resource.html#Plurals",
       )
 
     /** This translation is not needed in this locale */
@@ -214,7 +214,7 @@ class PluralsDetector : ResourceXmlDetector() {
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
         moreInfo =
-          "https://developer.android.com/guide/topics/resources/string-resource.html#Plurals"
+          "https://developer.android.com/guide/topics/resources/string-resource.html#Plurals",
       )
 
     /** This plural does not use the quantity value */
@@ -237,7 +237,7 @@ class PluralsDetector : ResourceXmlDetector() {
         severity = Severity.ERROR,
         implementation = IMPLEMENTATION,
         moreInfo =
-          "https://developer.android.com/guide/topics/resources/string-resource.html#Plurals"
+          "https://developer.android.com/guide/topics/resources/string-resource.html#Plurals",
       )
 
     /**

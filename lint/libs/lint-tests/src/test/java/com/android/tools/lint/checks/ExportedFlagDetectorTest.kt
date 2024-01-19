@@ -93,7 +93,7 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                         </activity>
                     </application>
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -145,7 +145,7 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                         </activity>
                     </application>
                 </manifest>
-                """
+                """,
           )
           .indented()
       )
@@ -223,7 +223,7 @@ class ExportedFlagDetectorTest : AbstractCheckTest() {
                         </activity>
                     </application>
                 </manifest>
-                """
+                """,
           )
           .indented()
       )

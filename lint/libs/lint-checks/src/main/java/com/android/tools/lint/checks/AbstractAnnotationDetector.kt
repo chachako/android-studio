@@ -31,7 +31,7 @@ abstract class AbstractAnnotationDetector : Detector(), SourceCodeScanner {
     issue: Issue,
     scope: UElement?,
     location: Location,
-    message: String
+    message: String,
   ) {
     report(context, issue, scope, location, message, null)
   }
@@ -42,7 +42,7 @@ abstract class AbstractAnnotationDetector : Detector(), SourceCodeScanner {
     scope: UElement?,
     location: Location,
     message: String,
-    quickfixData: LintFix?
+    quickfixData: LintFix?,
   ) {
     // In the IDE historically (until 2.0) many checks were covered by the
     // ResourceTypeInspection, and when suppressed, these would all be suppressed with the

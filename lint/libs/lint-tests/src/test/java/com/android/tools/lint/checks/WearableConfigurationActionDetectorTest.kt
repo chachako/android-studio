@@ -67,7 +67,7 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                 </manifest>
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -175,7 +175,7 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
 
                 </manifest>                    """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -244,7 +244,7 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
 
                 </manifest>                    """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -272,7 +272,7 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                 </manifest>
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -355,7 +355,7 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                 """
             )
             .indented(),
-          GRADLE_WATCHFACE_DEPENDENCY
+          GRADLE_WATCHFACE_DEPENDENCY,
         )
         .dependsOn(lib1)
     lint().projects(app).run().expectClean()
@@ -479,7 +479,7 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                 </manifest>
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -560,7 +560,7 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
                 </manifest>
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

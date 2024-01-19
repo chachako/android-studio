@@ -143,7 +143,7 @@ class MutableCallGraph : CallGraph {
 
   class MutableNode(
     override val target: CallTarget,
-    override val edges: MutableCollection<Edge> = ArrayList()
+    override val edges: MutableCollection<Edge> = ArrayList(),
   ) : Node {
     override fun toString() = shortName
   }
@@ -172,7 +172,7 @@ class MutableCallGraph : CallGraph {
 fun <T : Any> searchForPaths(
   sources: Collection<T>,
   isSink: (T) -> Boolean,
-  getNeighbors: (T) -> Collection<T>
+  getNeighbors: (T) -> Collection<T>,
 ): Collection<List<T>> {
   val res = ArrayList<List<T>>()
   val prev = HashMap<T, T?>(sources.associate { Pair(it, null) })
@@ -202,7 +202,7 @@ fun <T : Any> searchForPaths(
 /** Describes a parameter specialization tuple, mapping each parameter to one concrete receiver. */
 data class ParamContext(
   val params: List<Pair<UVariable, DispatchReceiver>>,
-  val implicitThis: DispatchReceiver?
+  val implicitThis: DispatchReceiver?,
 ) {
 
   operator fun get(param: UVariable) = params.firstOrNull { it.first == param }?.second
@@ -225,12 +225,12 @@ data class ContextualEdge(val contextualNode: ContextualNode, val cause: UElemen
 /** Augments the non-contextual receiver evaluator with a parameter context. */
 class ContextualDispatchReceiverEvaluator(
   private val paramContext: ParamContext,
-  nonContextualEval: IntraproceduralDispatchReceiverEvaluator
+  nonContextualEval: IntraproceduralDispatchReceiverEvaluator,
 ) : DispatchReceiverEvaluator(nonContextualEval) {
 
   override fun getOwn(
     element: UElement,
-    root: DispatchReceiverEvaluator
+    root: DispatchReceiverEvaluator,
   ): Collection<DispatchReceiver> =
     when (element) {
       is UThisExpression -> getForImplicitThis() // TODO: Qualified `this` not yet in UAST.
@@ -251,7 +251,7 @@ fun buildParamContextsFromCall(
   callee: CallTarget,
   call: UCallExpression,
   implicitThisDispatchReceivers: Collection<DispatchReceiver>,
-  receiverEval: ContextualDispatchReceiverEvaluator
+  receiverEval: ContextualDispatchReceiverEvaluator,
 ): Collection<ParamContext> {
 
   // The potential for an implicit receiver argument to the callee complicates the logic here.
@@ -319,7 +319,7 @@ fun buildParamContextsFromCall(
 /** Examines call sites to find contextualized neighbors of a search node. */
 fun ContextualNode.computeEdges(
   callGraph: CallGraph,
-  nonContextualReceiverEval: IntraproceduralDispatchReceiverEvaluator
+  nonContextualReceiverEval: IntraproceduralDispatchReceiverEvaluator,
 ): Collection<ContextualEdge> {
 
   val contextualReceiverEval =
@@ -339,7 +339,7 @@ fun ContextualNode.computeEdges(
               edge.node.target,
               edge.call,
               implicitReceiverDispatchReceivers,
-              contextualReceiverEval
+              contextualReceiverEval,
             )
         paramContexts.map { calleeContext ->
           val node = ContextualNode(edge.node, calleeContext)
@@ -357,7 +357,7 @@ fun ContextualNode.computeEdges(
                 target,
                 edge.call,
                 listOfNotNull(dispatchReceiver),
-                contextualReceiverEval
+                contextualReceiverEval,
               )
             paramContexts.map { calleeContext ->
               val node = ContextualNode(callGraph.getNode(target.element), calleeContext)
@@ -429,7 +429,7 @@ fun CallGraph.buildContextualCallGraph(
         }
         .map { (nbr, _) -> nbr }
         .toList()
-    }
+    },
   )
   return contextualGraph
 }
@@ -440,7 +440,7 @@ fun CallGraph.buildContextualCallGraph(
  */
 fun ContextualCallGraph.searchForContextualPaths(
   contextualSources: Collection<ContextualNode>,
-  contextualSinks: Collection<ContextualNode>
+  contextualSinks: Collection<ContextualNode>,
 ): Collection<List<ContextualEdge>> {
 
   val searchSources = contextualSources.map { ContextualEdge(it, it.node.target.element) }
@@ -448,7 +448,7 @@ fun ContextualCallGraph.searchForContextualPaths(
   return searchForPaths(
     sources = searchSources,
     isSink = { it.contextualNode in sinkSet },
-    getNeighbors = { outEdges(it.contextualNode) }
+    getNeighbors = { outEdges(it.contextualNode) },
   )
 }
 
@@ -456,7 +456,7 @@ fun ContextualCallGraph.searchForContextualPaths(
 @Suppress("unused")
 fun ContextualCallGraph.searchForPaths(
   sources: Collection<Node>,
-  sinks: Collection<Node>
+  sinks: Collection<Node>,
 ): Collection<List<ContextualEdge>> {
 
   val sourceSet = sources.toSet()

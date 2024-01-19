@@ -35,7 +35,7 @@ class StateListDetectorTest : AbstractCheckTest() {
                     <item android:state_focused="true"
                           android:color="#ff0000ff"/> <!-- focused -->
                 </selector>
-                """
+                """,
           )
           .indented()
       )
@@ -67,7 +67,7 @@ class StateListDetectorTest : AbstractCheckTest() {
                     app:mystate_custom="false"
                     android:drawable="@drawable/item" />
                 </selector>
-                """
+                """,
           )
           .indented()
       )
@@ -130,7 +130,7 @@ class StateListDetectorTest : AbstractCheckTest() {
                     <item android:state_checked="false" android:drawable="@drawable/btn_star_big_off" />
                     <item android:state_checked="true" android:drawable="@drawable/btn_star_big_on" />
                 </selector>
-                """
+                """,
           )
           .indented()
       )

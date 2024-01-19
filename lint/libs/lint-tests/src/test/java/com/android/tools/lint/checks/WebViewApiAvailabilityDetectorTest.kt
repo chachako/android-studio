@@ -66,7 +66,7 @@ class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(WebViewApiAvailabilityDetector.ISSUE)
       .run()
@@ -145,7 +145,7 @@ class WebViewApiAvailabilityDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(WebViewApiAvailabilityDetector.ISSUE)
       .run()

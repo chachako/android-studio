@@ -33,7 +33,7 @@ import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.Ht
 
 class OkHttp3Interceptor(
   private val trackerFactory: HttpTrackerFactory,
-  private val interceptionRuleService: InterceptionRuleService
+  private val interceptionRuleService: InterceptionRuleService,
 ) : Interceptor {
 
   override fun intercept(chain: Interceptor.Chain): Response {
@@ -47,7 +47,7 @@ class OkHttp3Interceptor(
       logError(
         "Could not track an OkHttp3 request due to a missing method, which could" +
           " happen if your project uses proguard to remove unused code",
-        error
+        error,
       )
     }
     var response: Response
@@ -68,7 +68,7 @@ class OkHttp3Interceptor(
       logError(
         "Could not track an OkHttp3 response due to a missing method, which could" +
           " happen if your project uses proguard to remove unused code",
-        error
+        error,
       )
     }
     return response
@@ -92,7 +92,7 @@ class OkHttp3Interceptor(
   private fun trackResponse(
     tracker: HttpConnectionTracker,
     request: Request,
-    response: Response
+    response: Response,
   ): Response {
     val fields = mutableMapOf<String?, List<String>>()
     fields.putAll(response.headers().toMultimap())
@@ -102,12 +102,12 @@ class OkHttp3Interceptor(
     val interceptedResponse =
       interceptionRuleService.interceptResponse(
         NetworkConnection(request.url().toString(), request.method()),
-        NetworkResponse(response.code(), fields, body.source().inputStream())
+        NetworkResponse(response.code(), fields, body.source().inputStream()),
       )
 
     tracker.trackResponseHeaders(
       interceptedResponse.responseCode,
-      interceptedResponse.responseHeaders
+      interceptedResponse.responseHeaders,
     )
     val source = Okio.buffer(Okio.source(tracker.trackResponseBody(interceptedResponse.body)))
     val responseBody = ResponseBody.create(body.contentType(), body.contentLength(), source)

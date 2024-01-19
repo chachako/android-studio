@@ -45,7 +45,7 @@ class LintBatchAnalytics {
     flags: LintCliFlags,
     driver: LintDriver,
     projects: Collection<Project>,
-    incidents: List<Incident>
+    incidents: List<Incident>,
   ) {
     val client = driver.client
     if (LintClient.isUnitTest) {
@@ -183,7 +183,7 @@ class LintBatchAnalytics {
   private fun recordSeverityOverride(
     map: HashMap<String, LintIssueId.Builder>,
     id: String,
-    lintSeverity: Severity
+    lintSeverity: Severity,
   ) {
     val builder = map[id]
     if (builder != null) {
@@ -212,7 +212,7 @@ class LintBatchAnalytics {
   private fun computeIssueData(
     incidents: List<Incident>,
     flags: LintCliFlags,
-    registry: IssueRegistry
+    registry: IssueRegistry,
   ): Map<String, LintIssueId.Builder> {
     val map = LinkedHashMap<String, LintIssueId.Builder>(registry.issues.size)
     for (incident in incidents) {

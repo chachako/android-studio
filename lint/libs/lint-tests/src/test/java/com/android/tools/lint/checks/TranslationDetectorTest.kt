@@ -66,12 +66,12 @@ class TranslationDetectorTest : AbstractCheckTest() {
         xml(
           "res/values/public.xml",
           // Make sure we don't flag missing name here
-          "<resources><public /></resources>"
+          "<resources><public /></resources>",
         ),
 
         // Regression test for https://issuetracker.google.com/111819105
         xml("res/layout/foo.xml", "<LinearLayout/>"),
-        xml("res/layout-ja/foo.xml", "<LinearLayout/>")
+        xml("res/layout-ja/foo.xml", "<LinearLayout/>"),
       )
       .run()
       .expect(expected)
@@ -88,7 +88,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         valuesLandStrings,
         valuesCsArrays,
         doNotTranslateEsStrings,
-        valuesNlNlStrings
+        valuesNlNlStrings,
       )
       .incremental("res/values-cs/arrays.xml")
       .run()
@@ -113,7 +113,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         valuesLandStrings,
         valuesCsArrays,
         doNotTranslateEsStrings,
-        valuesNlNlStrings
+        valuesNlNlStrings,
       )
       .incremental("res/values/strings.xml")
       .run()
@@ -181,7 +181,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="abc_abc.abc.abc_abc">ABC</string>
                 </resources>
-            """
+            """,
           )
           .indented()
       )
@@ -202,7 +202,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "    <item>\"Jméno nejlep\u0161ího kamaráda z d\u011btství?\"</item>\n" +
         "    <item>\"Název st\u0159ední \u0161koly\"</item>\n" +
         "  </string-array>\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val doNotTranslateEsStrings =
@@ -212,7 +212,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
         "<resources xmlns:xliff=\"urn:oasis:names:tc:xliff:document:1.2\">\n" +
         "    <string name=\"full_wday_month_day_no_year\">EEEE, d MMMM</string>\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val valuesStrings =
@@ -249,7 +249,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "    <!-- Wallpaper -->\n" +
         "    <string name=\"wallpaper_instructions\">Tap picture to set portrait wallpaper</string>\n" +
         "</resources>\n" +
-        "\n"
+        "\n",
     )
 
   private val strings13 =
@@ -273,7 +273,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "    <item>\"Nombre de tu mejor amigo/a de la infancia\"</item>\n" +
         "    <item>\"Nombre de tu colegio\"</item>\n" +
         "  </string-array>\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val strings14 =
@@ -284,7 +284,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "<resources xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
         "    xmlns:xliff=\"urn:oasis:names:tc:xliff:document:1.2\">\n" +
         "    <string name=\"menu_search\">\"Búsqueda\"</string>\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val valuesCsStrings =
@@ -301,7 +301,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "    <!-- no translation found for menu_settings (1769059051084007158) -->\n" +
         "    <skip />\n" +
         "    <string name=\"wallpaper_instructions\">\"Klepnutím na obrázek nastavíte tapetu portrétu\"</string>\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val valuesStrings2 =
@@ -313,7 +313,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                 <string name="hello">Hello</string>
             </resources>
 
-            """
+            """,
       )
       .indented()
 
@@ -325,7 +325,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "<resources>\n" +
         "    <string name=\"hello\">Hello</string>\n" +
         "</resources>\n" +
-        "\n"
+        "\n",
     )
 
   private val valuesDeDeStrings =
@@ -343,7 +343,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "    <skip />\n" +
         "    <string name=\"wallpaper_instructions\">\"Tippen Sie auf Bild, um Porträt-Bildschirmhintergrund einzustellen\"</string>\n" +
         "    <string name=\"continue_skip_label\">\"Weiter\"</string>\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val valuesEnRgbStrings =
@@ -355,7 +355,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "\n" +
         "    <string name=\"dateFormat\">ukformat</string>\n" +
         "\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val valuesDeRdeStrings =
@@ -367,7 +367,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "\n" +
         "    <string name=\"dateFormat\">ukformat</string>\n" +
         "\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val valuesEsStrings =
@@ -391,7 +391,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "    <item>\"Nombre de tu mejor amigo/a de la infancia\"</item>\n" +
         "    <item>\"Nombre de tu colegio\"</item>\n" +
         "  </string-array>\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val valuesEsUsStrings =
@@ -402,7 +402,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "<resources xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
         "    xmlns:xliff=\"urn:oasis:names:tc:xliff:document:1.2\">\n" +
         "    <string name=\"menu_search\">\"Búsqueda\"</string>\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val valuesLandStrings =
@@ -429,7 +429,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "    <!-- Wallpaper -->\n" +
         "    <string name=\"wallpaper_instructions\">Tap image to set landscape wallpaper</string>\n" +
         "</resources>\n" +
-        "\n"
+        "\n",
     )
 
   private val valuesNlNlStrings =
@@ -448,7 +448,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "    <!-- no translation found for menu_settings (1769059051084007158) -->\n" +
         "    <skip />\n" +
         "    <string name=\"wallpaper_instructions\">\"Tik op afbeelding om portretachtergrond in te stellen\"</string>\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val valuesTlhStrings =
@@ -465,7 +465,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         "    <!-- no translation found for menu_settings (1769059051084007158) -->\n" +
         "    <skip />\n" +
         "    <string name=\"wallpaper_instructions\">\"Klepnutím na obrázek nastavíte tapetu portrétu\"</string>\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val valuesStringsPlural =
@@ -480,7 +480,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
             </plurals>
         </resources>
         """
-        .trimIndent()
+        .trimIndent(),
     )
 
   private val valuesFrStringsNoPlural =
@@ -492,7 +492,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
             <string name="my_string">Ma chaîne</string>
         </resources>
         """
-        .trimIndent()
+        .trimIndent(),
     )
 
   private val valuesFrStringsPlural =
@@ -506,7 +506,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
             </plurals>
         </resources>
         """
-        .trimIndent()
+        .trimIndent(),
     )
 
   fun testBcp47() {
@@ -533,7 +533,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "\ufeff<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
             "<resources xmlns:xliff=\"urn:oasis:names:tc:xliff:document:1.2\">\n" +
             "    <string name=\"app_name\">Unit Test</string>\n" +
-            "</resources>\n")
+            "</resources>\n"),
         )
       )
       .run()
@@ -553,7 +553,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "        <item>@string/item1</item>\n" +
             "        <item>@string/item2</item>\n" +
             "    </string-array>\n" +
-            "</resources>\n")
+            "</resources>\n"),
         ),
         xml(
           "res/values-cs/translatedarrays.xml",
@@ -561,8 +561,8 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "<resources>\n" +
             "    <string name=\"item1\">Item1-cs</string>\n" +
             "    <string name=\"item2\">Item2-cs</string>\n" +
-            "</resources>\n")
-        )
+            "</resources>\n"),
+        ),
       )
       .run()
       .expectClean()
@@ -588,7 +588,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "\n" +
             "    <!-- Wallpaper -->\n" +
             "    <string name=\"wallpaper_instructions\">Tap picture to set portrait wallpaper</string>\n" +
-            "</resources>\n")
+            "</resources>\n"),
         ),
         xml(
           "res/values-es/strings.xml",
@@ -612,9 +612,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "    <item>\"Nombre de tu mejor amigo/a de la infancia\"</item>\n" +
             "    <item>\"Nombre de tu colegio\"</item>\n" +
             "  </string-array>\n" +
-            "</resources>\n")
+            "</resources>\n"),
         ),
-        valuesNlNlStrings
+        valuesNlNlStrings,
       )
       .run()
       .expectClean()
@@ -637,7 +637,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "\t\t<item>@string/test_string</item>\n" +
             "\t</string-array>\n" +
             "\n" +
-            "</resources>\n")
+            "</resources>\n"),
         ),
         xml(
           "res/values-fr/strings.xml",
@@ -649,8 +649,8 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "\t\t<item>Test (French)</item>\n" +
             "\t</string-array>\n" +
             "\n" +
-            "</resources>\n")
-        )
+            "</resources>\n"),
+        ),
       )
       .run()
       .expectClean()
@@ -681,7 +681,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
               "    <!-- Wallpaper -->\n" +
               "    <string name=\"wallpaper_instructions\">Tap picture to set portrait wallpaper</string>\n" +
               "</resources>\n" +
-              "\n"
+              "\n",
           ),
           xml(
             "res/values-cs/strings.xml",
@@ -696,8 +696,8 @@ class TranslationDetectorTest : AbstractCheckTest() {
               "    <!-- no translation found for menu_settings (1769059051084007158) -->\n" +
               "    <skip />\n" +
               "    <string name=\"wallpaper_instructions\">\"Klepnutím na obrázek nastavíte tapetu portrétu\"</string>\n" +
-              "</resources>\n"
-          )
+              "</resources>\n",
+          ),
         )
         .type(ProjectDescription.Type.LIBRARY)
         .name("LibraryProject")
@@ -711,7 +711,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
             <resources>
                 <string name="hello">Hello</string>
             </resources>
-            """
+            """,
             )
             .indented()
         )
@@ -744,7 +744,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources>
                         <string>Ignore Me</string>
                     </resources>
-                    """
+                    """,
           )
           .indented()
       )
@@ -762,7 +762,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="" />
                 </resources>
-                """
+                """,
           )
           .indented()
       )
@@ -793,7 +793,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources>
                         <string name="sample" translatable="false">Ignore Me</string>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -803,9 +803,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
                         <string name="sample">Ignore Me</string>
                     </resources>
 
-                    """
+                    """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -829,10 +829,10 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "    <string name=\"google_maps_key\">\n" +
             "        YOUR_KEY_HERE\n" +
             "    </string>\n" +
-            "</resources>\n")
+            "</resources>\n"),
         ),
         valuesStrings2,
-        valuesNbStrings2
+        valuesNbStrings2,
       )
       .run()
       .expectClean()
@@ -867,10 +867,10 @@ class TranslationDetectorTest : AbstractCheckTest() {
                             <item>"Nombre de tu colegio"</item>
                         </string-array>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
-        valuesEsUsStrings
+        valuesEsUsStrings,
       )
       .run()
       .expectClean()
@@ -901,9 +901,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "  <string name=\"test.pkg.OnClickActivity\">Clicks</string>\n" +
             "\n" +
             "  <string name=\"google_crash_reporting_api_key\" translatable=\"false\">AIzbSyCILMsOuUKwN3qhtxrPq7FFemDJUAXTyZ8</string>\n" +
-            "</resources>\n")
+            "</resources>\n"),
         ),
-        doNotTranslateEsStrings // to make app multilingual
+        doNotTranslateEsStrings, // to make app multilingual
       )
       .run()
       .expectClean()
@@ -927,7 +927,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                             <string name="dateFormat">MM/dd/yyyy</string>
                             <string name="dateTimeFormat">MM/dd/yyyy - HH:mm</string>
                         </resources>
-                        """
+                        """,
           )
           .indented(),
         xml(
@@ -936,7 +936,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources>
                         <string name="dateFormat">dd.MM.yyyy</string>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -945,9 +945,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources>
                         <string name="dateFormat">dd/MM/yyyy</string>
                     </resources>
-                    """
+                    """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -967,7 +967,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "\n" +
             "    <!-- DeleteThisFileToGetRidOfOtherWarning -->\n" +
             "\n" +
-            "</resources>\n")
+            "</resources>\n"),
         ),
         xml(
           "res/values/strings.xml",
@@ -977,7 +977,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "\n" +
             "    <string name=\"dateFormat\">defaultformat</string>\n" +
             "\n" +
-            "</resources>\n")
+            "</resources>\n"),
         ),
         xml(
           "res/values-en-rGB/strings.xml",
@@ -988,8 +988,8 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "    <string name=\"dateFormat\">ukformat</string>\n" +
             "    <string name=\"sample\" tools:ignore=\"ExtraTranslation\">DeleteMeToGetRidOfOtherWarning</string>\n" +
             "\n" +
-            "</resources>\n")
-        )
+            "</resources>\n"),
+        ),
       )
       .run()
       .expectClean()
@@ -1010,9 +1010,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "    <string name=\"dateFormat\">defaultformat</string>\n" +
             "    <string name=\"other\">other</string>\n" +
             "\n" +
-            "</resources>\n")
+            "</resources>\n"),
         ),
-        valuesEnRgbStrings
+        valuesEnRgbStrings,
       )
       .run()
       .expectClean()
@@ -1038,13 +1038,13 @@ class TranslationDetectorTest : AbstractCheckTest() {
                             <string name="dateFormat">defaultformat</string>
                             <string name="other">other</string>
                         </resources>
-                        """
+                        """,
           )
           .indented(),
         // Flagged because it's not the default locale:
         valuesDeRdeStrings,
         // Not flagged because it's the implicit default locale
-        valuesEnRgbStrings
+        valuesEnRgbStrings,
       )
       .run()
       .expect(expected)
@@ -1065,9 +1065,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
             "    <string name=\"dateFormat\">defaultformat</string>\n" +
             "    <string name=\"other\">other</string>\n" +
             "\n" +
-            "</resources>\n")
+            "</resources>\n"),
         ),
-        valuesDeRdeStrings
+        valuesDeRdeStrings,
       )
       .run()
       .expectClean()
@@ -1083,7 +1083,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <style name="Base.V21.Theme.AppCompat" parent="Base.V7.Theme.AppCompat">
                     </style>
                 </resources>
-                """
+                """,
           )
           .indented()
       )
@@ -1140,7 +1140,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                             paid { dimension "pricing" }
                         }
                     }"""
-        )
+        ),
       )
       .run()
       .expect(expected)
@@ -1190,7 +1190,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                             paid { dimension "pricing" }
                         }
                     }"""
-        )
+        ),
       )
       .incremental("src/main/res/values/strings.xml")
       .run()
@@ -1252,7 +1252,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                 <resources xmlns:android="http://schemas.android.com/apk/res/android">
                     <string name="name">Name</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1263,7 +1263,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     xmlns:tools="http://schemas.android.com/tools" tools:locale="en-US">
                     <string name="name">Name (en)</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1274,9 +1274,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     xmlns:tools="http://schemas.android.com/tools" tools:locale="en">
                     <string name="name">Name (nb)</string>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -1303,7 +1303,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                             <string name="google_app_id">App Id</string>
                             <string name="ga_trackingID">Analytics</string>
                         </resources>
-                        """
+                        """,
           )
           .indented(),
         xml(
@@ -1312,7 +1312,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                         <resources>
                             <string name="app_name">My Application</string>
                         </resources>
-                        """
+                        """,
           )
           .indented(),
         xml(
@@ -1321,9 +1321,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
                         <resources>
                             <string name="app_name">Min Applikasjon</string>
                         </resources>
-                        """
+                        """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -1338,7 +1338,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources>
                         <string name="name">base</string>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -1347,7 +1347,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources>
                         <string name="name" translatable="false">base</string>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -1356,7 +1356,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                 <resources xmlns:tools="http://schemas.android.com/tools">
                     <string name="name" translatable="false" tools:ignore="Untranslatable">base</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1365,7 +1365,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources xmlns:tools="http://schemas.android.com/tools">
                         <string name="name" translatable="false" tools:ignore="ExtraTranslation">base</string>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -1374,7 +1374,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                         <!-- Version dependent font string, in v21 we added sans-serif-medium. [DO NOT TRANSLATE] -->
                         <string name="games_font_roboto_medium">sans-serif</string>
-                    </resources>"""
+                    </resources>""",
           )
           .indented(),
         xml(
@@ -1383,7 +1383,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources>
                         <string name="name">base</string>
                         <string name="games_font_roboto_medium" msgid="2018081468373942067">sans-serif-medium</string>
-                    </resources>"""
+                    </resources>""",
           )
           .indented(),
         xml(
@@ -1392,9 +1392,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources>
                         <!-- Version specific font string for v21 and up. [DO NOT TRANSLATE] -->
                         <string name="games_font_roboto_medium" translatable="false">sans-serif-medium</string>
-                    </resources>"""
+                    </resources>""",
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -1418,7 +1418,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                         <dimen name="ok_dimen">base</dimen> <!-- ok -->
                         <style name="ok_style"></style> <!-- ok -->
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -1430,7 +1430,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                         <dimen name="extra_dimen1">1pt</dimen> <!-- error -->
                         <style name="extra_style1"></style> <!-- ok -->
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -1441,7 +1441,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                              resources for API levels, often used for theming -->
                         <dimen name="ok_extra_dimen">1pt</dimen> <!-- ok -->
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -1451,7 +1451,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                         <dimen name="ok_extra_dimen">2pt</dimen> <!-- ok -->
                         <dimen name="extra_dimen2">1pt</dimen> <!-- error -->
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -1460,20 +1460,20 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources>
                         <drawable name="color_drawable">#ffffffff</drawable>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
             "res/color/ok_color.xml",
-            """<color xmlns:android="http://schemas.android.com/apk/res/android" android:color="#ff0000" />"""
+            """<color xmlns:android="http://schemas.android.com/apk/res/android" android:color="#ff0000" />""",
           )
           .indented(),
         xml(
             "res/color-port/extra_color.xml",
-            """<color xmlns:android="http://schemas.android.com/apk/res/android" android:color="#ff0000" />"""
+            """<color xmlns:android="http://schemas.android.com/apk/res/android" android:color="#ff0000" />""",
           )
           .indented(),
-        xml("res/layout-land/extra_layout.xml", """<merge/>""").indented()
+        xml("res/layout-land/extra_layout.xml", """<merge/>""").indented(),
       )
       .run()
       .expect(
@@ -1523,7 +1523,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     android.aaptOptions.namespaced true
                     """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -1539,7 +1539,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                         <dimen name="ok_dimen">base</dimen> <!-- ok -->
                         <style name="ok_style"></style> <!-- ok -->
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -1551,7 +1551,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                         <dimen name="extra_dimen1">1pt</dimen> <!-- error -->
                         <style name="extra_style1"></style> <!-- ok -->
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -1562,7 +1562,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                              resources for API levels, often used for theming -->
                         <dimen name="ok_extra_dimen">1pt</dimen> <!-- ok -->
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -1572,9 +1572,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
                         <dimen name="ok_extra_dimen">2pt</dimen> <!-- ok -->
                         <dimen name="extra_dimen2">1pt</dimen> <!-- error -->
                     </resources>
-                    """
+                    """,
           )
-          .indented()
+          .indented(),
       )
       .incremental("res/values-land/dimen.xml")
       .run()
@@ -1599,7 +1599,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                              resources for API levels, often used for theming -->
                         <dimen name="ok_extra_dimen">1pt</dimen> <!-- ok -->
                     </resources>
-                    """
+                    """,
           )
           .indented()
       )
@@ -1615,7 +1615,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
         image("res/drawable-mdpi/ok1.png", 48, 48),
         image("res/drawable-hdpi/ok1.png", 48, 48),
         image("res/drawable-en-hdpi/ok1.png", 48, 48).fill(0xff0000),
-        image("res/drawable-da-xxxhdpi/error1.png", 48, 48).fill(0xff0000)
+        image("res/drawable-da-xxxhdpi/error1.png", 48, 48).fill(0xff0000),
       )
       .run()
       .expect(
@@ -1638,7 +1638,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
                       <string name="foo">Foo</string>
                     </resources>
-                    """
+                    """,
         ),
         xml(
           "res/values-nb/strings.xml",
@@ -1646,8 +1646,8 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="ExtraTranslation">
                       <string name="bar">Bar</string>
                     </resources>
-                    """
-        )
+                    """,
+        ),
       )
       .run()
       .expectClean()
@@ -1666,19 +1666,19 @@ class TranslationDetectorTest : AbstractCheckTest() {
                       <string name="foo">Foo</string>
                       <string name="bar">Bar</string>
                     </resources>
-                    """
+                    """,
         ),
         xml("res/layout/foo.xml", """
                     <View/>
-                    """),
+                    """,),
         xml(
           "res/values-nb/strings.xml",
           """
                     <resources>
                       <string name="bar">Bar</string>
                     </resources>
-                    """
-        )
+                    """,
+        ),
       )
       .run()
       .expectClean()
@@ -1695,7 +1695,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <string name="app_name">My Application</string>
                     <string name="test">This is a test</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1704,9 +1704,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="app_name">My Application</string>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .incremental("res/values/strings.xml")
       .run()
@@ -1724,7 +1724,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="app_name">My Application</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1733,7 +1733,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                 <resources>
                     <string name="app_name">My Application</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1743,7 +1743,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     <string name="misc">Misc</string>
                     <string name="test">Test</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1752,7 +1752,7 @@ class TranslationDetectorTest : AbstractCheckTest() {
                 <resources translatable="false">
                     <string name="app_name">My Application</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -1761,9 +1761,9 @@ class TranslationDetectorTest : AbstractCheckTest() {
                 <resources translatable="false">
                     <string name="app_name">My Application</string>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

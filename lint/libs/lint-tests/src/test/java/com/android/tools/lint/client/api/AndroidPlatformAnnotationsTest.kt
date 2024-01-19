@@ -134,7 +134,7 @@ class AndroidPlatformAnnotationsTest {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(ApiDetector.UNSUPPORTED)
       .run()

@@ -104,13 +104,13 @@ class JavaEvaluator {
   abstract fun implementsInterface(
     cls: PsiClass,
     interfaceName: String,
-    strict: Boolean = false
+    strict: Boolean = false,
   ): Boolean
 
   open fun isMemberInSubClassOf(
     member: PsiMember,
     className: String,
-    strict: Boolean = false
+    strict: Boolean = false,
   ): Boolean {
     val containingClass = member.containingClass
     return containingClass != null && extendsClass(containingClass, className, strict)
@@ -153,7 +153,7 @@ class JavaEvaluator {
     method: PsiMethod,
     className: String?,
     allowInherit: Boolean,
-    vararg argumentTypes: String
+    vararg argumentTypes: String,
   ): Boolean {
     val classMatches =
       when {
@@ -459,7 +459,7 @@ class JavaEvaluator {
   open fun getMethodDescription(
     method: PsiMethod,
     includeName: Boolean,
-    includeReturn: Boolean
+    includeReturn: Boolean,
   ): String? {
     val signature = StringBuilder()
 
@@ -542,7 +542,7 @@ class JavaEvaluator {
     includeName: Boolean = false,
     argumentTypes: Array<PsiType>,
     returnType: PsiType? = null,
-    includeReturn: Boolean = false
+    includeReturn: Boolean = false,
   ): String? = buildString {
     if (includeName) {
       append(method)
@@ -570,7 +570,7 @@ class JavaEvaluator {
   fun getInternalDescription(
     method: PsiMethod,
     includeName: Boolean = false,
-    includeReturn: Boolean = true
+    includeReturn: Boolean = true,
   ): String? {
     val signature = StringBuilder()
 
@@ -769,45 +769,45 @@ class JavaEvaluator {
 
   @Deprecated(
     "Use getAnnotations() instead; consider providing a parent",
-    replaceWith = ReplaceWith("getAnnotations(owner, inHierarchy)")
+    replaceWith = ReplaceWith("getAnnotations(owner, inHierarchy)"),
   )
   abstract fun getAllAnnotations(
     owner: PsiModifierListOwner,
-    inHierarchy: Boolean
+    inHierarchy: Boolean,
   ): Array<PsiAnnotation>
 
   abstract fun getAnnotations(
     owner: PsiModifierListOwner?,
     inHierarchy: Boolean = false,
-    parent: UElement? = null
+    parent: UElement? = null,
   ): List<UAnnotation>
 
   @Deprecated(
     "Use getAnnotationInHierarchy returning a UAnnotation instead",
-    replaceWith = ReplaceWith("getAnnotationInHierarchy(listOwner, *annotationNames)")
+    replaceWith = ReplaceWith("getAnnotationInHierarchy(listOwner, *annotationNames)"),
   )
   abstract fun findAnnotationInHierarchy(
     listOwner: PsiModifierListOwner,
-    vararg annotationNames: String
+    vararg annotationNames: String,
   ): PsiAnnotation?
 
   abstract fun getAnnotationInHierarchy(
     listOwner: PsiModifierListOwner,
-    vararg annotationNames: String
+    vararg annotationNames: String,
   ): UAnnotation?
 
   @Deprecated(
     "Use getAnnotation returning a UAnnotation instead",
-    replaceWith = ReplaceWith("getAnnotation(listOwner, *annotationNames)")
+    replaceWith = ReplaceWith("getAnnotation(listOwner, *annotationNames)"),
   )
   abstract fun findAnnotation(
     listOwner: PsiModifierListOwner?,
-    vararg annotationNames: String
+    vararg annotationNames: String,
   ): PsiAnnotation?
 
   abstract fun getAnnotation(
     listOwner: PsiModifierListOwner?,
-    vararg annotationNames: String
+    vararg annotationNames: String,
   ): UAnnotation?
 
   /** Try to determine the path to the .jar file containing the element, **if** applicable. */
@@ -1001,7 +1001,7 @@ class JavaEvaluator {
 
   private fun findOwnerLibrary(
     dependencies: Collection<LintModelLibrary>,
-    jarFile: String
+    jarFile: String,
   ): LintModelLibrary? {
     for (library in dependencies.asSequence().filterIsInstance<LintModelExternalLibrary>()) {
       for (jar in library.jarFiles) {
@@ -1017,7 +1017,7 @@ class JavaEvaluator {
   private fun findOwnerLibrary(
     dependencies: Collection<LintModelLibrary>,
     pathPrefix: String,
-    pathSuffix: String
+    pathSuffix: String,
   ): LintModelLibrary? {
     for (library in dependencies.asSequence().filterIsInstance<LintModelExternalLibrary>()) {
       for (jar in library.jarFiles) {
@@ -1038,7 +1038,7 @@ class JavaEvaluator {
    */
   open fun computeArgumentMapping(
     call: UCallExpression,
-    method: PsiMethod
+    method: PsiMethod,
   ): Map<UExpression, PsiParameter> {
     return emptyMap()
   }
@@ -1057,7 +1057,7 @@ class JavaEvaluator {
   fun filterRelevantAnnotations(
     annotations: Array<PsiAnnotation>,
     context: UElement? = null,
-    relevantAnnotations: Set<String>? = null
+    relevantAnnotations: Set<String>? = null,
   ): List<UAnnotation> {
     val length = annotations.size
     if (length == 0) {
@@ -1134,7 +1134,7 @@ class JavaEvaluator {
   fun filterRelevantAnnotations(
     annotations: List<UAnnotation>,
     context: UElement? = null,
-    relevantAnnotations: Set<String>? = null
+    relevantAnnotations: Set<String>? = null,
   ): List<UAnnotation> {
     val length = annotations.size
     if (length == 0) {

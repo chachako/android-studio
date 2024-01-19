@@ -54,7 +54,7 @@ class IntentDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = Implementation(IntentDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(IntentDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     private const val INTENT_CLASS = "android.content.Intent"
@@ -70,7 +70,7 @@ class IntentDetector : Detector(), SourceCodeScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     var seenInConstructor = false
     var seenData: UElement? = null
@@ -152,7 +152,7 @@ class IntentDetector : Detector(), SourceCodeScanner {
             UMethod::class.java,
             UBlockExpression::class.java,
             UIfExpression::class.java,
-            USwitchClauseExpression::class.java
+            USwitchClauseExpression::class.java,
           )
         }
       }

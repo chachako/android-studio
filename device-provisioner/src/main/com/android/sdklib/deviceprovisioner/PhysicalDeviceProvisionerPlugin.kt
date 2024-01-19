@@ -36,7 +36,7 @@ import kotlinx.coroutines.sync.withLock
 /** Plugin providing access to physical devices, connected over USB or Wi-Fi. */
 class PhysicalDeviceProvisionerPlugin(
   val scope: CoroutineScope,
-  private val deviceIcons: DeviceIcons
+  private val deviceIcons: DeviceIcons,
 ) : DeviceProvisionerPlugin {
 
   companion object {
@@ -101,7 +101,7 @@ class PhysicalDeviceProvisionerPlugin(
                   PhysicalDeviceHandle(
                     serialNumber,
                     scope.createChildScope(isSupervisor = true),
-                    newState
+                    newState,
                   )
                 else ->
                   // The device is already connected by either USB or Wi-Fi, and we got a new

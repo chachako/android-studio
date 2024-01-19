@@ -53,7 +53,7 @@ class ShortNameCacheDetector : Detector(), SourceCodeScanner {
         priority = 1,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = Implementation(ShortNameCacheDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(ShortNameCacheDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
   }
 
@@ -94,7 +94,7 @@ class ShortNameCacheDetector : Detector(), SourceCodeScanner {
               context.getLocation(node),
               "Do **not** return `false`; this will mark processing as " +
                 "consumed for this element and other cache processors will not " +
-                "run. This can lead to bugs like b/152432842."
+                "run. This can lead to bugs like b/152432842.",
             )
           }
           return true

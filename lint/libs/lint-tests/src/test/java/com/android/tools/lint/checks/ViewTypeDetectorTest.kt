@@ -48,7 +48,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
         "        android:layout_width=\"wrap_content\"\n" +
         "        android:layout_height=\"wrap_content\" />\n" +
         "\n" +
-        "</LinearLayout>\n"
+        "</LinearLayout>\n",
     )
 
   private val casts2 =
@@ -77,7 +77,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
         "            android:layout_height=\"wrap_content\" />\n" +
         "    </RadioGroup>\n" +
         "\n" +
-        "</ScrollView>\n"
+        "</ScrollView>\n",
     )
 
   private val wrongCastActivity =
@@ -177,10 +177,10 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        android:layout_height=\"wrap_content\"\n" +
             "        android:text=\"EditText\" />\n" +
             "\n" +
-            "</LinearLayout>\n"
+            "</LinearLayout>\n",
         ),
         wrongCastActivity,
-        rClass
+        rClass,
       )
       .run()
       .expect(expected)
@@ -212,10 +212,10 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        android:layout_height=\"wrap_content\"\n" +
             "        android:text=\"EditText\" />\n" +
             "\n" +
-            "</LinearLayout>\n"
+            "</LinearLayout>\n",
         ),
         wrongCastActivity,
-        rClass
+        rClass,
       )
       .run()
       .expectClean()
@@ -253,7 +253,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        public static final int reminder_lead = 0x7f0a0001;\n" +
             "    }\n" +
             "}\n"
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -286,7 +286,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        public static final int additional = 0x7f0a0000;\n" +
             "    }\n" +
             "}\n"
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -313,7 +313,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        ToggleButton toggleButton = (ToggleButton) findViewById(R.id.button);\n" +
             "    }\n" +
             "}\n"
-        )
+        ),
       )
       .incremental("src/test/pkg/WrongCastActivity.java")
       .run()
@@ -384,8 +384,8 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        android:layout_width=\"wrap_content\"\n" +
             "        android:layout_height=\"wrap_content\" />\n" +
             "\n" +
-            "</LinearLayout>"
-        )
+            "</LinearLayout>",
+        ),
       )
       .run()
       .expectClean()
@@ -422,7 +422,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        android:layout_width=\"wrap_content\"\n" +
             "        android:layout_height=\"wrap_content\"\n" +
             "        android:text=\"TextView\" />\n" +
-            "</LinearLayout>"
+            "</LinearLayout>",
         ),
         TestFiles.rClass("test.pkg", "@id/textview"),
         java(
@@ -436,7 +436,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        throw new RuntimeException(\"Stub!\");\n" +
             "    }\n" +
             "}\n"
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -505,7 +505,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        android:layout_width=\"wrap_content\"\n" +
             "        android:layout_height=\"wrap_content\" />\n" +
             "\n" +
-            "</LinearLayout>"
+            "</LinearLayout>",
         ),
         java(
           "" +
@@ -532,7 +532,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        throw new RuntimeException(\"Stub!\");\n" +
             "    }\n" +
             "}\n"
-        )
+        ),
       )
       .incremental("src/test/pkg/ImplicitCastTest.java")
       .run()
@@ -664,7 +664,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        targetCompatibility JavaVersion.VERSION_1_8\n" +
             "    }\n" +
             "}"
-        )
+        ),
       )
       .run()
       .expect(
@@ -719,7 +719,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        targetCompatibility JavaVersion.VERSION_1_8\n" +
             "    }\n" +
             "}"
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -771,8 +771,8 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        android:layout_height=\"wrap_content\"\n" +
             "        android:text=\"Hello World!\" />\n" +
             "\n" +
-            "</LinearLayout>"
-        )
+            "</LinearLayout>",
+        ),
       )
       .run()
       .expectClean()
@@ -828,8 +828,8 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        android:layout_height=\"wrap_content\"\n" +
             "        android:text=\"Hello World!\" />\n" +
             "\n" +
-            "</LinearLayout>"
-        )
+            "</LinearLayout>",
+        ),
       )
       .run()
       .expectClean()
@@ -857,7 +857,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
 
 
                 </FrameLayout>
-                """
+                """,
         ),
         kotlin(
           """
@@ -889,7 +889,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
 
                 class FragmentContainerView
             """
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -923,7 +923,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        android:id=\"@+id/my_other_id\"\n" +
             "        android:layout_width=\"match_parent\"\n" +
             "        android:layout_height=\"match_parent\" />\n" +
-            "</merge>"
+            "</merge>",
         ),
         java(
           "" +
@@ -963,7 +963,7 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
             "        public static final int my_other_id = 0x7f0a0001;\n" +
             "    }\n" +
             "}\n"
-        )
+        ),
       )
       .run()
       .expect(

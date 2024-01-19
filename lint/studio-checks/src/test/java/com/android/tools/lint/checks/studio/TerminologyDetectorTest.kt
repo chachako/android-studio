@@ -84,11 +84,11 @@ class TerminologyDetectorTest {
                             val $w11: String = ""
                       }
                       private var hasHitLimit = false
-                    """
+                    """,
           )
           .indented(),
         source("src/main/resources/cts/${w2}_devices.json", "something"),
-        source("src/main/resources/something", "device $w2:")
+        source("src/main/resources/something", "device $w2:"),
       )
       .issues(TerminologyDetector.ISSUE)
       .run()
@@ -144,7 +144,7 @@ class TerminologyDetectorTest {
       val words: Boolean = true,
       val alias1: String? = null,
       val alias2: String? = null,
-      val alias3: String? = null
+      val alias3: String? = null,
     ) {
       fun getNames(): List<String> = listOfNotNull(replace, alias1, alias2, alias3)
     }
@@ -156,29 +156,29 @@ class TerminologyDetectorTest {
           replace = "\u0062\u006c\u0061\u0063\u006b\u006c\u0069\u0073\u0074",
           alias1 = "\u0062\u006c\u0061\u0063\u006b-\u006c\u0069\u0073\u0074",
           with = "\u0065\u0078\u0063\u006c\u0075\u0064\u0065",
-          words = false
+          words = false,
         ),
         Recommendation(
           replace = "\u0077\u0068\u0069\u0074\u0065\u006c\u0069\u0073\u0074",
           alias1 = "\u0077\u0068\u0069\u0074\u0065-\u006c\u0069\u0073\u0074",
           with = "\u0069\u006e\u0063\u006c\u0075\u0064\u0065",
-          words = false
+          words = false,
         ),
         Recommendation(
           replace =
             "\u0067\u0072\u0061\u006e\u0064\u0066\u0061\u0074\u0068\u0065\u0072\u0065\u0064",
-          with = "\u0062\u0061\u0073\u0065\u006c\u0069\u006e\u0065"
+          with = "\u0062\u0061\u0073\u0065\u006c\u0069\u006e\u0065",
         ),
         Recommendation(
           replace = "\u0073\u006c\u0061\u0076\u0065",
           with = "\u0073\u0065\u0063\u006f\u006e\u0064\u0061\u0072\u0079",
-          words = true
+          words = true,
         ),
         Recommendation(replace = "\u0066\u0075\u0063\u006b", with = "?", words = true),
         Recommendation(
           replace = "\u0066\u0075\u0063\u006b\u0069\u006e\u0067",
           with = "?",
-          words = true
+          words = true,
         ),
         Recommendation(replace = "\u0066*\u0063\u006b", with = "?", words = true),
         Recommendation(replace = "\u0066*\u0063\u006b\u0069\u006e\u0067", with = "?", words = true),
@@ -361,7 +361,7 @@ class TerminologyDetectorTest {
           "tools/base/lint/studio-checks/src/main/java/com/android/tools/lint/checks/studio/TerminologyDetector.kt",
         startMarker = "// <editor-fold",
         endMarker = "// </editor-fold>",
-        replacementFunction = { generated.trim() }
+        replacementFunction = { generated.trim() },
       )
     ) {
       return
@@ -407,7 +407,7 @@ class TerminologyDetectorTest {
           }
         }
         sb.toString()
-      }
+      },
     )
   }
 
@@ -442,7 +442,7 @@ class TerminologyDetectorTest {
           i++
         }
         sb.toString()
-      }
+      },
     )
   }
 
@@ -452,7 +452,7 @@ class TerminologyDetectorTest {
     path: String,
     startMarker: String,
     endMarker: String,
-    replacementFunction: (String) -> String
+    replacementFunction: (String) -> String,
   ): Boolean {
     // Set $ADT_SOURCE_TREE to point to your git repository root; if done, then
     // this will replace the updated source into the source file in place

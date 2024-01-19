@@ -127,8 +127,8 @@ class LintJarVerifierTest {
             """
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGIWIGYCYgYlBi0GAA1qZtQYAAAA
-                """
-          )
+                """,
+          ),
         )
         .createProjects(temporaryFolder.newFolder())
 
@@ -139,7 +139,7 @@ class LintJarVerifierTest {
     assertFalse(verifier.isCompatible())
     assertEquals(
       "com.android.tools.lint.client.api.ResourceReference: ResourceReference(org.jetbrains.uast.UExpression,java.lang.String,com.android.resources.ResourceType,java.lang.String)",
-      verifier.describeFirstIncompatibleReference()
+      verifier.describeFirstIncompatibleReference(),
     )
   }
 
@@ -218,8 +218,8 @@ class LintJarVerifierTest {
                 yJMcQnRsw0CqRO+mgdmgnklMOuKYoyqq5iwFz1HdG7hJHqoQVldWAjPkWQsv
                 E4NB04VAruAe6Q1Cb1PDc/uIlDBfwgJJ3FFisYQlZPbBfGSxvA/Dh+kj50P3
                 0R8YCR8zfwB4GuhTewQAAA==
-                """
-          )
+                """,
+          ),
         )
         .createProjects(temporaryFolder.newFolder())
 
@@ -230,7 +230,7 @@ class LintJarVerifierTest {
     assertFalse(verifier.isCompatible())
     assertEquals(
       "org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass()",
-      verifier.describeFirstIncompatibleReference()
+      verifier.describeFirstIncompatibleReference(),
     )
 
     // Test SKIP
@@ -313,8 +313,8 @@ class LintJarVerifierTest {
                 yJMcQnRsw0CqRO+mgdmgnklMOuKYoyqq5iwFz1HdG7hJHqoQVldWAjPkWQsv
                 E4NB04VAruAe6Q1Cb1PDc/uIlDBfwgJJ3FFisYQlZPbBfGSxvA/Dh+kj50P3
                 0R8YCR8zfwB4GuhTewQAAA==
-                """
-          )
+                """,
+          ),
         )
         .createProjects(temporaryFolder.newFolder())
 
@@ -325,7 +325,7 @@ class LintJarVerifierTest {
     assertFalse(verifier.isCompatible())
     assertEquals(
       "org.jetbrains.uast.kotlin.KotlinUClass: org.jetbrains.kotlin.psi.KtClassOrObject getKtClass()",
-      verifier.describeFirstIncompatibleReference()
+      verifier.describeFirstIncompatibleReference(),
     )
   }
 

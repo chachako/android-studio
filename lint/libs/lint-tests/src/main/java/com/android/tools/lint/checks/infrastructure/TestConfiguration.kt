@@ -32,7 +32,7 @@ class TestConfiguration(private val task: TestLintTask, configurations: Configur
   override fun getDefinedSeverity(
     issue: Issue,
     source: Configuration,
-    visibleDefault: Severity
+    visibleDefault: Severity,
   ): Severity {
     val override = overrideSeverity(task, issue, visibleDefault)
     if (override != null) {
@@ -57,7 +57,7 @@ class TestConfiguration(private val task: TestLintTask, configurations: Configur
   override fun addConfiguredIssues(
     targetMap: MutableMap<String, Severity>,
     registry: IssueRegistry,
-    specificOnly: Boolean
+    specificOnly: Boolean,
   ) {
     parent?.addConfiguredIssues(targetMap, registry, specificOnly)
 

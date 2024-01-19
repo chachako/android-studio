@@ -47,10 +47,10 @@ class ActivityIconColorDetectorTest : AbstractCheckTest() {
                                     .build()
                         }
                     }
-                    """
+                    """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -89,10 +89,10 @@ class ActivityIconColorDetectorTest : AbstractCheckTest() {
                                     .build()
                         }
                     }
-                    """
+                    """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -129,10 +129,10 @@ class ActivityIconColorDetectorTest : AbstractCheckTest() {
                                     .build()
                         }
                     }
-                    """
+                    """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -185,7 +185,7 @@ class ActivityIconColorDetectorTest : AbstractCheckTest() {
 
     }
     """
-        .trimIndent()
+        .trimIndent(),
     )
 
   private val COLORED_ICON_DATA =

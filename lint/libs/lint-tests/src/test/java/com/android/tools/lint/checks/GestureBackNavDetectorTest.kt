@@ -79,9 +79,9 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -124,9 +124,9 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -160,9 +160,9 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -196,9 +196,9 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -233,9 +233,9 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                         }
                     }
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -275,9 +275,9 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                         }
                      }
                  }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -302,9 +302,9 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                      Log.i("Is KEYCODE_BACK", KeyEvent.KEYCODE_BACK == keyCode)
                    }
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -360,9 +360,9 @@ class GestureBackNavDetectorTest : AbstractCheckTest() {
                         }
                      }
                  }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

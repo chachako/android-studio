@@ -313,7 +313,7 @@ object CLDR42Database :
         0x0000,
         0x0042,
       ),
-    apiLevel = VersionCodes.TIRAMISU
+    apiLevel = VersionCodes.TIRAMISU,
   ) {
 
   override fun getExampleForQuantityZero(language: String): String? {

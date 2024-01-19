@@ -96,7 +96,7 @@ class MediaBrowserServiceCompatVersionDetectorTest : AbstractCheckTest() {
             "    compile 'com.android.support:support-v4:23.4.0' \n" +
             "}"
         ),
-        manifest().minSdk(22)
+        manifest().minSdk(22),
       )
       .allowCompilationErrors()
       .run()
@@ -123,7 +123,7 @@ class MediaBrowserServiceCompatVersionDetectorTest : AbstractCheckTest() {
             "    compile 'com.android.support:support-v4:24.0.0' \n" +
             "}"
         ),
-        manifest().minSdk(22)
+        manifest().minSdk(22),
       )
       .allowCompilationErrors()
       .run()

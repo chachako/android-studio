@@ -55,7 +55,7 @@ open class XmlContext(
 
   /** The XML document. */
   @JvmField // backwards compatibility
-  val document: Document
+  val document: Document,
 ) : ResourceContext(driver, project, main, file, folderType, contents) {
 
   /** The XML parser. */
@@ -110,7 +110,7 @@ open class XmlContext(
     element: Element,
     node: Node? = null,
     namespace: String? = null,
-    attribute: String? = null
+    attribute: String? = null,
   ): Location = parser.getElementLocation(this, element, node, namespace, attribute)
 
   /** Convenience wrapper for java so you don't have to specify default attributes. */
@@ -151,7 +151,7 @@ open class XmlContext(
     scope: Node?,
     location: Location,
     message: String,
-    quickfixData: LintFix? = null
+    quickfixData: LintFix? = null,
   ) {
     val incident = Incident(issue, message, location, scope, quickfixData)
     driver.client.report(this, incident)

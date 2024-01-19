@@ -48,7 +48,7 @@ constructor(
   main: Project?,
 
   /** the file to be analyzed */
-  file: File
+  file: File,
 ) : Context(driver, project, main, file) {
 
   /** Returns a location for the given range. */

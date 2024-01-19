@@ -24,8 +24,4 @@ package com.android.sdklib.deviceprovisioner
  *   the same plugin ID). This is public only for the purpose of serialization; it should not be
  *   interpreted.
  */
-data class DeviceId(
-  val pluginId: String,
-  val isTemplate: Boolean,
-  val identifier: String,
-)
+data class DeviceId(val pluginId: String, val isTemplate: Boolean, val identifier: String)

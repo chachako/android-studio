@@ -33,7 +33,7 @@ class TestLintResultTest {
             + bbb
             """
         .trimIndent(),
-      getDiff("aaa", "bbb")
+      getDiff("aaa", "bbb"),
     )
     assertEquals(
       """
@@ -57,8 +57,8 @@ class TestLintResultTest {
                 new
                 test
                 """
-          .trimIndent()
-      )
+          .trimIndent(),
+      ),
     )
     assertEquals(
       """
@@ -92,8 +92,8 @@ class TestLintResultTest {
                 line7.5
                 line9
                 """
-          .trimIndent()
-      )
+          .trimIndent(),
+      ),
     )
 
     assertEquals(
@@ -134,8 +134,8 @@ class TestLintResultTest {
                 line9
                 """
           .trimIndent(),
-        3
-      )
+        3,
+      ),
     )
     assertEquals(
       """
@@ -221,8 +221,8 @@ class TestLintResultTest {
 
                 </RelativeLayout>
                 """
-          .trimIndent()
-      )
+          .trimIndent(),
+      ),
     )
   }
 
@@ -317,7 +317,7 @@ class TestLintResultTest {
                       android:text="@string/hello_world" />
             """
         .trimIndent(),
-      getDiff(a, b, 3)
+      getDiff(a, b, 3),
     )
   }
 
@@ -514,7 +514,7 @@ class TestLintResultTest {
       - 3
       """
         .trimIndent(),
-      getDiff(before, after, 0)
+      getDiff(before, after, 0),
     )
     assertEquals(
       """
@@ -523,7 +523,7 @@ class TestLintResultTest {
       - 3
       """
         .trimIndent(),
-      getDiff(before, after, 0, diffCompatMode2 = true)
+      getDiff(before, after, 0, diffCompatMode2 = true),
     )
   }
 
@@ -555,7 +555,7 @@ class TestLintResultTest {
       - 3
       """
         .trimIndent(),
-      getDiff(before, after, 0)
+      getDiff(before, after, 0),
     )
   }
 

@@ -62,6 +62,6 @@ interface LintListener {
     driver: LintDriver,
     type: EventType,
     project: Project? = null,
-    context: Context? = null
+    context: Context? = null,
   )
 }

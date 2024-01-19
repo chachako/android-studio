@@ -45,7 +45,7 @@ class TextReporterTest : AbstractCheckTest() {
                             android:title="My title 2">
                         </item>
                     </menu>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -58,9 +58,9 @@ class TextReporterTest : AbstractCheckTest() {
                         <string name="app_name2">App Name 2</string>
 
                     </resources>
-                    """
+                    """,
           )
-          .indented()
+          .indented(),
       )
       .issues(HardcodedValuesDetector.ISSUE, DuplicateResourceDetector.ISSUE)
       .run()
@@ -78,7 +78,7 @@ class TextReporterTest : AbstractCheckTest() {
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 2 warnings
                 """,
-        LintCliFlags().apply { isShowEverything = true }
+        LintCliFlags().apply { isShowEverything = true },
       )
   }
 
@@ -109,7 +109,7 @@ class TextReporterTest : AbstractCheckTest() {
                             android:title="My title 2">
                         </item>
                     </menu>
-                    """
+                    """,
             )
             .indented(),
           xml(
@@ -122,9 +122,9 @@ class TextReporterTest : AbstractCheckTest() {
                         <string name="app_name2">App Name 2</string>
 
                     </resources>
-                    """
+                    """,
             )
-            .indented()
+            .indented(),
         )
         .issues(HardcodedValuesDetector.ISSUE, DuplicateResourceDetector.ISSUE)
         .run()
@@ -170,7 +170,7 @@ class TextReporterTest : AbstractCheckTest() {
 
                 1 errors, 2 warnings
                 """,
-          LintCliFlags().apply { isExplainIssues = true }
+          LintCliFlags().apply { isExplainIssues = true },
         )
     } finally {
       HardcodedValuesDetector.ISSUE.vendor = BuiltinIssueRegistry().vendor
@@ -192,7 +192,7 @@ class TextReporterTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented(),
+          .indented()
       )
       .issues(InteroperabilityDetector.PLATFORM_NULLNESS)
       .run()
@@ -230,7 +230,7 @@ class TextReporterTest : AbstractCheckTest() {
 
             0 errors, 2 warnings
             """,
-        LintCliFlags().apply { isExplainIssues = true }
+        LintCliFlags().apply { isExplainIssues = true },
       )
   }
 
@@ -240,7 +240,7 @@ class TextReporterTest : AbstractCheckTest() {
       DOT_TXT,
       { client, file ->
         Reporter.createTextReporter(client, flags, file, file.bufferedWriter(), true)
-      }
+      },
     )
   }
 
@@ -252,6 +252,6 @@ fun createTestVendor(): Vendor {
     vendorName = "AOSP Unit Tests",
     contact = "lint@example.com",
     feedbackUrl = "https://example.com/lint/file-new-bug.html",
-    identifier = "mylibrary-1.0"
+    identifier = "mylibrary-1.0",
   )
 }

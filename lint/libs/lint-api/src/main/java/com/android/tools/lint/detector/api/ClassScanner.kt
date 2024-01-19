@@ -45,7 +45,7 @@ interface ClassScanner : FileScanner {
     context: ClassContext,
     classNode: ClassNode,
     method: MethodNode,
-    instruction: AbstractInsnNode
+    instruction: AbstractInsnNode,
   )
 
   /**
@@ -98,7 +98,7 @@ interface ClassScanner : FileScanner {
     context: ClassContext,
     classNode: ClassNode,
     method: MethodNode,
-    call: MethodInsnNode
+    call: MethodInsnNode,
   )
 
   /**

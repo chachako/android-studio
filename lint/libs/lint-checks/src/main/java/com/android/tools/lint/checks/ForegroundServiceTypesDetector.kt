@@ -91,7 +91,7 @@ class ForegroundServiceTypesDetector : Detector(), XmlScanner, SourceCodeScanner
           call,
           context.getNameLocation(call),
           "To call `Service.startForeground()`, the `<service>` element of manifest file must " +
-            "have the `foregroundServiceType` attribute specified"
+            "have the `foregroundServiceType` attribute specified",
         )
       context.report(incident, targetSdkAtLeast(34))
     }
@@ -105,7 +105,7 @@ class ForegroundServiceTypesDetector : Detector(), XmlScanner, SourceCodeScanner
         ForegroundServiceTypesDetector::class.java,
         EnumSet.of(Scope.MANIFEST, Scope.JAVA_FILE),
         Scope.MANIFEST_SCOPE,
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     /** Foreground service type related issues */
@@ -121,7 +121,7 @@ class ForegroundServiceTypesDetector : Detector(), XmlScanner, SourceCodeScanner
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.ERROR, // It is an error, missing permission causes SecurityException.
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

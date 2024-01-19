@@ -49,7 +49,7 @@ class MethodTest {
       LineTableReply(
         Long.MAX_VALUE - 1,
         Long.MAX_VALUE - 2,
-        listOf(LineTableReply.Line(Long.MAX_VALUE, Int.MAX_VALUE))
+        listOf(LineTableReply.Line(Long.MAX_VALUE, Int.MAX_VALUE)),
       )
     assertJDWPObjectAndWireEquals(packet, LineTableReply::parse)
   }
@@ -72,9 +72,9 @@ class MethodTest {
             "b",
             "c",
             Int.MAX_VALUE - 1,
-            Int.MAX_VALUE - 2
+            Int.MAX_VALUE - 2,
           )
-        )
+        ),
       )
     assertJDWPObjectAndWireEquals(packet, VariableTableWithGenericReply::parse)
   }

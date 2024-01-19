@@ -38,7 +38,7 @@ class WatchFaceEditorDetectorTest : AbstractCheckTest() {
                                 </intent-filter>
                             </activity>
                         </application>
-                    </manifest>"""
+                    </manifest>""",
           )
           .indented()
       )
@@ -78,7 +78,7 @@ class WatchFaceEditorDetectorTest : AbstractCheckTest() {
                                 </intent-filter>
                             </activity>
                         </application>
-                    </manifest>"""
+                    </manifest>""",
           )
           .indented()
       )

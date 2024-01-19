@@ -145,7 +145,7 @@ class LintModelSerializationTest {
             }
             """
           .trimIndent(),
-        temporaryFolder
+        temporaryFolder,
       )
 
     checkSerialization(
@@ -1067,7 +1067,7 @@ class LintModelSerializationTest {
                 <libraries>
                 </libraries>
                 """,
-      )
+      ),
     )
   }
 
@@ -1085,7 +1085,7 @@ class LintModelSerializationTest {
                 compileTarget="android-25">
             </lint-module>
             """,
-      "Missing data at testfile.xml:11"
+      "Missing data at testfile.xml:11",
     )
   }
 
@@ -1098,7 +1098,7 @@ class LintModelSerializationTest {
                 compileTarget="android-25">
             </lint-module>
             """,
-      "Expected `name` attribute in <lint-module> tag at testfile.xml:4"
+      "Expected `name` attribute in <lint-module> tag at testfile.xml:4",
     )
   }
 
@@ -1117,7 +1117,7 @@ class LintModelSerializationTest {
                 <foobar />
             </lint-module>
             """,
-      "Unexpected tag `<foobar>` at testfile.xml:10"
+      "Unexpected tag `<foobar>` at testfile.xml:10",
     )
   }
 
@@ -1418,7 +1418,7 @@ class LintModelSerializationTest {
       module,
       modelsDir,
       listOf(debugVariant1),
-      writeDependencies = false
+      writeDependencies = false,
     )
 
     val debugVariant2 =
@@ -1582,7 +1582,7 @@ class LintModelSerializationTest {
       LintModelSerialization.readModule(
         source = modelsDir,
         pathVariables = PathVariables().apply { add("ANDROID_HOME", sdkHome) },
-        readDependencies = false
+        readDependencies = false,
       )
 
     val debugVariant = module.defaultVariant()
@@ -1661,7 +1661,7 @@ class LintModelSerializationTest {
       assertEquals(
         "XML parsed and written back out does not match original for file " + key,
         contents,
-        newXml[key]
+        newXml[key],
       )
     }
   }
@@ -1681,7 +1681,7 @@ class LintModelSerializationTest {
   private fun getMapKey(
     target: TargetFile,
     variantName: String = "",
-    artifactName: String = ""
+    artifactName: String = "",
   ): String {
     //noinspection DefaultLocale
     val key = StringBuilder(target.name.lowercase())
@@ -1709,7 +1709,7 @@ class LintModelSerializationTest {
           val key = getMapKey(target, variantName, artifactName)
           map[key] ?: StringWriter().also { map[key] = it }
         }
-      )
+      ),
     )
     return map.mapValues { it.value.toString() }
   }
@@ -1718,7 +1718,7 @@ class LintModelSerializationTest {
     val writer = StringWriter()
     LintModelSerialization.writeVariant(
       variant,
-      LintModelSerializationStringAdapter(writer = { _, _, _ -> writer })
+      LintModelSerializationStringAdapter(writer = { _, _, _ -> writer }),
     )
     return writer.toString()
   }
@@ -1729,7 +1729,7 @@ class LintModelSerializationTest {
       StringReader("<error>")
     },
     private val writer: (TargetFile, String, String) -> Writer = { _, _, _ -> StringWriter() },
-    override val pathVariables: PathVariables = PathVariables()
+    override val pathVariables: PathVariables = PathVariables(),
   ) : LintModelSerialization.LintModelSerializationAdapter {
     override fun file(target: TargetFile, variantName: String, artifactName: String): File {
       return if (variantName.isNotEmpty()) File("variant-$variantName.xml")

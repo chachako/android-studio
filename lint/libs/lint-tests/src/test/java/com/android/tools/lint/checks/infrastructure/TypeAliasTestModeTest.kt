@@ -20,7 +20,7 @@
   "RemoveExplicitTypeArguments",
   "HasPlatformType",
   "ConstantConditions",
-  "MemberVisibilityCanBePrivate"
+  "MemberVisibilityCanBePrivate",
 )
 
 package com.android.tools.lint.checks.infrastructure
@@ -42,7 +42,7 @@ class TypeAliasTestModeTest {
 
   private fun alias(
     testFiles: List<TestFile>,
-    filter: (JavaContext) -> Boolean = { true }
+    filter: (JavaContext) -> Boolean = { true },
   ): String {
     val sdkHome = TestUtils.getSdk().toFile()
     var source = testFiles[0].contents
@@ -306,7 +306,7 @@ class TypeAliasTestModeTest {
     }
     assertEquals(
       "[test.pkg.Test1, test.pkg.Test2, test.pkg.sub.Test3]",
-      map.keys.sorted().toString()
+      map.keys.sorted().toString(),
     )
     assertEquals(
       """
@@ -318,7 +318,7 @@ class TypeAliasTestModeTest {
             typealias TYPE_ALIAS_1 = File?
             """
         .trimIndent(),
-      map["test.pkg.Test1"]!!.trim()
+      map["test.pkg.Test1"]!!.trim(),
     )
     assertEquals(
       """
@@ -329,7 +329,7 @@ class TypeAliasTestModeTest {
             typealias TYPE_ALIAS_2 = File
             """
         .trimIndent(),
-      map["test.pkg.Test2"]!!.trim()
+      map["test.pkg.Test2"]!!.trim(),
     )
     // Different package: must create new alias for File
     assertEquals(
@@ -342,7 +342,7 @@ class TypeAliasTestModeTest {
             typealias TYPE_ALIAS_3 = File?
             """
         .trimIndent(),
-      map["test.pkg.sub.Test3"]!!.trim()
+      map["test.pkg.sub.Test3"]!!.trim(),
     )
   }
 
@@ -549,7 +549,7 @@ class TypeAliasTestModeTest {
                 class MutableLiveData<T> : LiveData<T>()
                 """
           )
-          .indented()
+          .indented(),
       )
 
     val aliased = alias(files) { context -> !context.getContents()!!.contains("Stubs") }
@@ -571,7 +571,7 @@ class TypeAliasTestModeTest {
             typealias TYPE_ALIAS_3 = Any?
             """
         .trimIndent(),
-      aliased.trim()
+      aliased.trim(),
     )
   }
 
@@ -606,7 +606,7 @@ class TypeAliasTestModeTest {
                 annotation class Composeable
                 """
           )
-          .indented()
+          .indented(),
       )
 
     val aliased = alias(files) { context -> !context.getContents()!!.contains("Stubs") }
@@ -630,7 +630,7 @@ class TypeAliasTestModeTest {
             typealias TYPE_ALIAS_1 = Int
             """
         .trimIndent(),
-      aliased.trim()
+      aliased.trim(),
     )
   }
 
@@ -640,19 +640,19 @@ class TypeAliasTestModeTest {
     assertTrue(
       mode.messagesMatch(
         "This method should be annotated with @ChecksSdkIntAtLeast(api=BUILD.VERSION_CODES.GINGERBREAD)",
-        "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.GINGERBREAD)"
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.GINGERBREAD)",
       )
     )
     assertTrue(
       mode.messagesMatch(
         "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.O, lambda=1)",
-        "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.O, lambda=1)"
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=IMPORT_ALIAS_3_BUILD.VERSION_CODES.O, lambda=1)",
       )
     )
     assertFalse(
       mode.messagesMatch(
         "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.O, lambda=1)",
-        "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.P, lambda=1)"
+        "This method should be annotated with @ChecksSdkIntAtLeast(api=Build.VERSION_CODES.P, lambda=1)",
       )
     )
   }

@@ -55,7 +55,7 @@ class ImplicitExecutorDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val COMPLETABLE_FUTURE = "java.util.concurrent.CompletableFuture"
@@ -67,7 +67,7 @@ class ImplicitExecutorDetector : Detector(), SourceCodeScanner {
         // https://github.com/google/guava/commit/87d87f5cac5a540d46a6382683722ead7b72d1b3#diff-3fe13f15fa4a5af9b4a55b21d7db2541
         put(
           "com.google.common.util.concurrent.Futures",
-          listOf("addCallback", "catching", "catchingAsync", "transform", "transformAsync")
+          listOf("addCallback", "catching", "catchingAsync", "transform", "transformAsync"),
         )
 
         // These got removed in later versions of Guava, see
@@ -81,7 +81,7 @@ class ImplicitExecutorDetector : Detector(), SourceCodeScanner {
             .asSequence()
             .map { it.name }
             .filter { it.endsWith("Async") }
-            .toSet()
+            .toSet(),
         )
       }
   }
@@ -118,7 +118,7 @@ class ImplicitExecutorDetector : Detector(), SourceCodeScanner {
         ISSUE,
         node,
         context.getCallLocation(node, includeReceiver = true, includeArguments = false),
-        "Use `${method.name}` overload with an explicit Executor instead. See `go/do-not-freeze`."
+        "Use `${method.name}` overload with an explicit Executor instead. See `go/do-not-freeze`.",
       )
     }
   }

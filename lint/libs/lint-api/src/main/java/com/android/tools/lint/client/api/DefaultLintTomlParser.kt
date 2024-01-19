@@ -85,7 +85,7 @@ internal class DefaultLintTomlParser(
             if (parent.find(currentArray) != null) {
               warn(
                 "You cannot define a table (`${currentArray.joinToString(".")}`) more than once",
-                start
+                start,
               )
             }
           }
@@ -152,7 +152,7 @@ internal class DefaultLintTomlParser(
                 currentArray.lastOrNull() ?: "",
                 start,
                 keyEnd,
-                false
+                false,
               )
             into.put(currentArray.lastOrNull() ?: "", arrayValue)
             target = TomlMapValue(arrayValue, arrayStart, offset)
@@ -235,9 +235,7 @@ internal class DefaultLintTomlParser(
     return true
   }
 
-  private fun parseArrayElements(
-    parent: TomlArrayValue,
-  ): TomlArrayValue {
+  private fun parseArrayElements(parent: TomlArrayValue): TomlArrayValue {
     while (offset < length) {
       val elementStart = skipToNextToken(false)
       val elementToken = getToken()
@@ -276,7 +274,7 @@ internal class DefaultLintTomlParser(
     key: String,
     keyStart: Int,
     keyEnd: Int,
-    valueStart: Int
+    valueStart: Int,
   ): TomlValue {
     val token = getToken(breakOnDot = false)
     if (token == "{") {
@@ -284,7 +282,7 @@ internal class DefaultLintTomlParser(
       if (validate && parent.find(key) != null) {
         warn(
           "Inline tables cannot be used to add keys or sub-tables to an already-defined table",
-          valueStart
+          valueStart,
         )
       }
       val target = parent.ensure(key)
@@ -317,7 +315,7 @@ internal class DefaultLintTomlParser(
       ) {
         warn(
           "The decimal point, if used, must be surrounded by at least one digit on each side",
-          valueStart
+          valueStart,
         )
       }
     }
@@ -369,7 +367,7 @@ internal class DefaultLintTomlParser(
   private fun getToken(
     breakAtNewline: Boolean = false,
     breakOnDot: Boolean = true,
-    arrayTableAllowed: Boolean = false
+    arrayTableAllowed: Boolean = false,
   ): String {
     skipToNextToken(breakAtNewline)
     if (offset == length || breakAtNewline && source[offset] == '\n') {
@@ -605,7 +603,7 @@ internal class DefaultLintTomlParser(
     private var endOffset: Int = parent?.getEndOffset() ?: -1,
     private var key: String? = null,
     private var keyStartOffset: Int = -1,
-    private var keyEndOffset: Int = -1
+    private var keyEndOffset: Int = -1,
   ) : LintTomlValue {
     override fun getDocument(): LintTomlDocument = document
 
@@ -713,7 +711,7 @@ internal class DefaultLintTomlParser(
         source,
         if (key != null && keyStartOffset > -1 && keyStartOffset < startOffset) keyStartOffset
         else startOffset,
-        endOffset
+        endOffset,
       )
     }
 
@@ -753,7 +751,7 @@ internal class DefaultLintTomlParser(
     endOffset: Int = parent?.getEndOffset() ?: -1,
     key: String? = null,
     keyStartOffset: Int = -1,
-    keyEndOffset: Int = -1
+    keyEndOffset: Int = -1,
   ) :
     TomlValue(parent, startOffset, endOffset, key, keyStartOffset, keyEndOffset), LintTomlMapValue {
     private val _map: MutableMap<String, TomlValue> =
@@ -799,7 +797,7 @@ internal class DefaultLintTomlParser(
       path: List<String>,
       index: Int,
       parent: TomlValue?,
-      validate: Boolean
+      validate: Boolean,
     ): TomlMapValue {
       if (path.isEmpty()) {
         return this
@@ -1052,7 +1050,7 @@ internal class DefaultLintTomlParser(
           ZonedDateTime::parse,
           LocalDateTime::parse,
           LocalDate::parse,
-          LocalTime::parse
+          LocalTime::parse,
         )) {
         try {
           return method(text)

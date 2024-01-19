@@ -61,7 +61,7 @@ class RegexpPathDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -104,7 +104,7 @@ class RegexpPathDetector : Detector(), SourceCodeScanner {
         context.getLocation(node),
         "Passing a path to a parameter which expects a regular expression " +
           "is dangerous; on Windows path separators will look like escapes. " +
-          "Wrap path with `Pattern.quote`."
+          "Wrap path with `Pattern.quote`.",
       )
     }
   }

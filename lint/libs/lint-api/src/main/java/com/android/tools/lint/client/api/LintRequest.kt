@@ -36,7 +36,7 @@ open class LintRequest(
    * containing Android projects, or individual XML or Java files (typically for incremental IDE
    * analysis).
    */
-  val files: List<File>
+  val files: List<File>,
 ) {
 
   /** The root directory containing all the projects. */

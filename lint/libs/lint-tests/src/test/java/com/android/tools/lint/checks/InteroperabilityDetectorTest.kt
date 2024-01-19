@@ -59,7 +59,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(InteroperabilityDetector.NO_HARD_KOTLIN_KEYWORDS)
       .run()
@@ -116,7 +116,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     fun error(bar: (Int) -> Int, foo: Int) { }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(InteroperabilityDetector.LAMBDA_LAST)
       .run()
@@ -245,7 +245,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(PLATFORM_NULLNESS)
       .run()
@@ -365,7 +365,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                         <option name="ignore-deprecated" value="true" />
                     </issue>
                 </lint>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -376,7 +376,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                         <option name="maxCount" value="20" />
                     </issue>
                 </lint>
-                """
+                """,
           )
           .indented(),
         java(
@@ -397,7 +397,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(PLATFORM_NULLNESS)
       .run()
@@ -422,7 +422,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                             <option name="ignore-deprecated" value="true" />
                         </issue>
                     </lint>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -433,7 +433,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                             <option name="maxCount" value="20" />
                         </issue>
                     </lint>
-                    """
+                    """,
           )
           .indented(),
         java(
@@ -453,8 +453,8 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
-      )
+        SUPPORT_ANNOTATIONS_JAR,
+      ),
     )
 
     PLATFORM_NULLNESS.setEnabledByDefault(false)
@@ -600,7 +600,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -629,7 +629,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(KOTLIN_PROPERTY)
       .run()
@@ -653,7 +653,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(KOTLIN_PROPERTY)
       .run()
@@ -691,7 +691,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(KOTLIN_PROPERTY)
       .run()
@@ -724,7 +724,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(KOTLIN_PROPERTY)
       .run()
@@ -759,7 +759,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(KOTLIN_PROPERTY)
       .run()
@@ -800,7 +800,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(KOTLIN_PROPERTY)
       .run()
@@ -841,7 +841,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(KOTLIN_PROPERTY)
       .run()
@@ -872,7 +872,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(KOTLIN_PROPERTY)
       .run()
@@ -910,7 +910,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(KOTLIN_PROPERTY)
       .run()
@@ -939,7 +939,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(KOTLIN_PROPERTY)
       .run()
@@ -975,7 +975,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(PLATFORM_NULLNESS)
       .run()
@@ -998,7 +998,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(PLATFORM_NULLNESS)
       .run()
@@ -1038,7 +1038,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(PLATFORM_NULLNESS)
       .run()
@@ -1077,7 +1077,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
             """
             )
             .indented(),
-          SUPPORT_ANNOTATIONS_JAR
+          SUPPORT_ANNOTATIONS_JAR,
         )
         .issues(PLATFORM_NULLNESS)
         .run()
@@ -1112,7 +1112,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 }
             """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(PLATFORM_NULLNESS)
       .run()
@@ -1153,7 +1153,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(PLATFORM_NULLNESS)
       .run()
@@ -1234,7 +1234,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1275,7 +1275,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                     }
                 """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -1339,7 +1339,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -1405,7 +1405,7 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()

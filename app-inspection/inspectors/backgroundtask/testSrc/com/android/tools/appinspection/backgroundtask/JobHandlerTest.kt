@@ -39,7 +39,7 @@ class JobHandlerTest {
       Bundle("TransientExtras"),
       true,
       arrayOf(),
-      arrayOf("authority")
+      arrayOf("authority"),
     )
 
   @Test

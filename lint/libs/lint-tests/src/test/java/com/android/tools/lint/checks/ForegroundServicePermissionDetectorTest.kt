@@ -65,9 +65,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -109,9 +109,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -150,9 +150,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -193,9 +193,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -235,9 +235,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -284,9 +284,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -326,9 +326,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -376,9 +376,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -418,9 +418,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -468,9 +468,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -510,9 +510,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -560,9 +560,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -602,9 +602,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -651,9 +651,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -693,9 +693,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -743,9 +743,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -788,9 +788,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -839,9 +839,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -881,9 +881,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -931,9 +931,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -973,9 +973,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1022,9 +1022,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1064,9 +1064,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1114,9 +1114,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1156,9 +1156,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1205,9 +1205,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1247,9 +1247,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1296,9 +1296,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1338,9 +1338,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1393,9 +1393,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1435,9 +1435,9 @@ class ForegroundServicePermissionDetectorTest : AbstractCheckTest() {
 
 </manifest>
 
-"""
+""",
         ),
-        mStrings
+        mStrings,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -1491,6 +1491,6 @@ AndroidManifest.xml:13: Error: foregroundServiceType:microphone requires permiss
     <string name="wallpaper_instructions">Tap picture to set portrait wallpaper</string>
 </resources>
 
-"""
+""",
     )
 }

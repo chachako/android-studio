@@ -66,7 +66,7 @@ class InternalInsetResourceDetector : Detector(), SourceCodeScanner {
         ISSUE,
         node,
         context.getLocation(node),
-        "Using internal inset dimension resource `$nameArg` is not supported"
+        "Using internal inset dimension resource `$nameArg` is not supported",
       )
     }
   }
@@ -90,7 +90,7 @@ class InternalInsetResourceDetector : Detector(), SourceCodeScanner {
         severity = Severity.WARNING,
         androidSpecific = true,
         implementation =
-          Implementation(InternalInsetResourceDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(InternalInsetResourceDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
   }
 }

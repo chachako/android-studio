@@ -78,7 +78,7 @@ internal fun ULambdaExpression.getThisParameter(
     resolveProviderService.getImplicitParameters(
       ktLambdaExpression,
       this,
-      includeExplicitParameters = true
+      includeExplicitParameters = true,
     ) as List<UParameter>
   return parameters.firstOrNull {
     (it.javaPsi as? PsiParameter)?.name == KotlinExtensionConstants.LAMBDA_THIS_PARAMETER_NAME

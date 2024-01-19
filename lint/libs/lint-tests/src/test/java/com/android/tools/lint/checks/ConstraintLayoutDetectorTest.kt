@@ -89,7 +89,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                             app:relativeBegin="20dp" />
                         <requestFocus/>
                     </android.support.constraint.ConstraintLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -174,7 +174,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                             app:constraint_referenced_ids="settingsLabel,cameraLabel"
                             tools:layout_editor_absoluteX="99dp" />
                     </android.support.constraint.ConstraintLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -251,7 +251,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                             app:constraint_referenced_ids="settingsLabel,cameraLabel"
                             tools:layout_editor_absoluteX="99dp" />
                     </android.support.constraint.ConstraintLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -275,7 +275,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                             android:layout_height="match_parent"
                      />
                     </android.support.constraint.ConstraintLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -299,7 +299,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                             android:layout_height="100dp"
                      />
                     </android.support.constraint.ConstraintLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -330,7 +330,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                             android:layout_height="match_parent"
                      />
                     </android.support.constraint.ConstraintLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -361,7 +361,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                             android:layout_height="100dp"
                              app:layout_constraintTop_toTopOf="parent" />
                     </android.support.constraint.ConstraintLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -385,7 +385,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                             android:layout_height="match_parent"
                              app:layout_constraintEnd_toEndOf="parent" />
                     </android.support.constraint.ConstraintLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -418,7 +418,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                                     app:constraint_referenced_ids="first_run_page3_text1,first_run_page3_text2" />
                     <include layout="@layout/include_remote_control" />
                     </android.support.constraint.ConstraintLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -477,7 +477,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                             app:layout_constraintStart_toStartOf="@+id/textView1"
                             app:layout_constraintTop_toBottomOf="@+id/textView1" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
-                    """
+                    """,
         )
       )
       .checkMessage { context, issue, severity, location, message, fixData ->
@@ -560,7 +560,7 @@ class ConstraintLayoutDetectorTest : AbstractCheckTest() {
                             </androidx.appcompat.widget.Toolbar>
                         </androidx.constraintlayout.motion.widget.MotionLayout>
                     </layout>
-                    """
+                    """,
         )
       )
       .checkMessage { context, issue, severity, location, message, fixData ->

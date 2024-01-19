@@ -84,7 +84,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
       "ofMultiInt",
       "ofMultiFloat",
       "ofObject",
-      "ofPropertyValuesHolder"
+      "ofPropertyValuesHolder",
     )
   }
 
@@ -127,7 +127,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
   private fun checkPropertyValueHolders(
     context: JavaContext,
     targetClass: PsiClass,
-    expressions: List<UExpression>
+    expressions: List<UExpression>,
   ) {
     for (i in 1 until expressions.size) { // expressions[0] is the target class
       val arg = expressions[i]
@@ -148,7 +148,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
     context: JavaContext,
     propertyNameExpression: UExpression,
     targetClass: PsiClass,
-    expectedType: String
+    expectedType: String,
   ) {
     val property = ConstantEvaluator.evaluate(context, propertyNameExpression) as? String ?: return
     val qualifiedName = targetClass.qualifiedName ?: return
@@ -180,7 +180,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
         propertyNameExpression,
         null,
         "Could not find property setter method `$methodName` on `$qualifiedName`",
-        null
+        null,
       )
       return
     }
@@ -192,7 +192,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
         bestMethod,
         "The setter for this property does not match the " +
           "expected signature (`public void $methodName($expectedType arg`)",
-        null
+        null,
       )
     } else if (context.evaluator.isStatic(bestMethod)) {
       report(
@@ -201,7 +201,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
         propertyNameExpression,
         bestMethod,
         "The setter for this property ($qualifiedName.$methodName) should not be static",
-        null
+        null,
       )
     } else {
       var owner: PsiModifierListOwner? = bestMethod
@@ -229,7 +229,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
         "This method is accessed from an ObjectAnimator so it should be " +
           "annotated with `@Keep` to ensure that it is not discarded or renamed " +
           "in release builds",
-        fix
+        fix,
       )
     }
   }
@@ -240,7 +240,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
     propertyNameExpression: UExpression,
     method: PsiMethod?,
     originalMessage: String,
-    fix: LintFix?
+    fix: LintFix?,
   ) {
     var message = originalMessage
     val reportOnMethod = issue === MISSING_KEEP && method != null
@@ -272,7 +272,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
             nameIdentifier,
             fromDelta = 0,
             to = method.parameterList,
-            toDelta = 0
+            toDelta = 0,
           )
         else context.getNameLocation(method)
     }
@@ -407,7 +407,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
 
   private fun isHolderConstructionMethod(
     context: JavaContext,
-    callExpression: UCallExpression
+    callExpression: UCallExpression,
   ): Boolean {
     val referenceName = getMethodName(callExpression)
     if (
@@ -442,7 +442,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
   // Copy of PropertyValuesHolder#getMethodName - copy to ensure lint & platform agree
   private fun getMethodName(
     @Suppress("SameParameterValue") prefix: String,
-    propertyName: String?
+    propertyName: String?,
   ): String {
     if (propertyName == null || propertyName.isEmpty()) {
       // shouldn't get here
@@ -560,7 +560,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
                   context.driver,
                   context.project,
                   context.project,
-                  VfsUtilCore.virtualToIoFile(targetClass.containingFile.virtualFile)
+                  VfsUtilCore.virtualToIoFile(targetClass.containingFile.virtualFile),
                 )
               location.withSecondary(
                 uastParser.getLocation(javaContext, m),
@@ -569,7 +569,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
                   "MotionScene ($sceneName) so it should be " +
                   "annotated with `@Keep` to ensure that it is not " +
                   "discarded or renamed in release builds",
-                selfExplanatory = true
+                selfExplanatory = true,
               )
               // TODO: Add a quickfix here (which should be trivial except
               // that the lint fix verifier does not handle fixes in different
@@ -584,7 +584,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
                     "custom view $viewClass which is not annotated with " +
                     "`@Keep`; it should be annotated with `@Keep` to " +
                     "ensure that it is not discarded or renamed in " +
-                    "release builds"
+                    "release builds",
                 )
               context.report(incident, map())
             }
@@ -607,7 +607,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
       Implementation(
         ObjectAnimatorDetector::class.java,
         Scope.JAVA_AND_RESOURCE_FILES,
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     /** Missing @Keep. */
@@ -630,7 +630,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
         priority = 4,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Incorrect ObjectAnimator binding. */
@@ -649,7 +649,7 @@ class ObjectAnimatorDetector : Detector(), SourceCodeScanner, XmlScanner {
         priority = 4,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

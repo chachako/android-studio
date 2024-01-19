@@ -313,7 +313,7 @@ object CLDR36Database :
         0x0000,
         0x0042,
       ),
-    apiLevel = VersionCodes.R
+    apiLevel = VersionCodes.R,
   ) {
 
   override fun getExampleForQuantityZero(language: String): String? {

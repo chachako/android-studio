@@ -89,7 +89,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       // We *don't* want to use provisional computation for this:
       // limit suggestions around SDK_INT checks to those implied
@@ -263,7 +263,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -532,7 +532,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -795,7 +795,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -1040,7 +1040,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -1190,7 +1190,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -1422,7 +1422,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -1602,10 +1602,10 @@ class VersionChecksTest : AbstractCheckTest() {
               "OYoZxBEOAFuBJzB9hlB84RS69gVa+GuPFAki7+FqEB8yntMlg4C57uG1AHh9" +
               "ODAxCvhkHHB+OHBxFDA7DnhjODA5ClgeB1wYDlwaBXw7DpggYKerb7rA1BnC" +
               "36Fpn7BCFpkT8b1TzJ3bh5//k5qllgMtarOk9h9R41rnsuskG6JN3zWJVPBK" +
-              "GP2Y7pJT9C+SvhI3tgQAAA=="
-          )
+              "GP2Y7pJT9C+SvhI3tgQAAA==",
+          ),
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1676,7 +1676,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -1719,7 +1719,7 @@ class VersionChecksTest : AbstractCheckTest() {
                     }
                 }"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -1750,7 +1750,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -1827,7 +1827,7 @@ class VersionChecksTest : AbstractCheckTest() {
                                 }
                             }
                         }
-                    """
+                    """,
             )
             .indented(),
           0x64a854c9,
@@ -1845,9 +1845,9 @@ class VersionChecksTest : AbstractCheckTest() {
                     4LkvyGW/UiZzjSmgnohklDeM8EU0UvwplcmCCuGrN9GVS7qc0E3cSumXKV1L
                     xYudn8gxTGd8FVlaG6TfpHgp6ZMFq1JiaXba5+kRFmWXmYnvWJjO+ahdP0UG
                     t5PPy7iTSEgnLaxC/hstPETxH5PQHcg3AwAA
-                    """
+                    """,
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(*issues)
       // If we only supply the bytecode, lint would have to analyze bytecode
@@ -1901,7 +1901,7 @@ class VersionChecksTest : AbstractCheckTest() {
                     }
                 }
                 """
-        )
+        ),
       )
       .run()
       .expectClean()
@@ -1932,7 +1932,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -1967,7 +1967,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -2007,7 +2007,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -2090,7 +2090,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2177,7 +2177,7 @@ class VersionChecksTest : AbstractCheckTest() {
                     }
                 }"""
           )
-          .indented()
+          .indented(),
       )
       .skipTestModes(PARTIAL)
       .run()
@@ -2259,7 +2259,7 @@ class VersionChecksTest : AbstractCheckTest() {
                     }
                 }"""
           )
-          .indented()
+          .indented(),
       )
       .skipTestModes(PARTIAL)
       .run()
@@ -2348,7 +2348,7 @@ class VersionChecksTest : AbstractCheckTest() {
                     }.toString()
                 }"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -2382,7 +2382,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2419,7 +2419,7 @@ class VersionChecksTest : AbstractCheckTest() {
                     }.toString()
                 }"""
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -2470,7 +2470,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2519,7 +2519,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2597,7 +2597,7 @@ class VersionChecksTest : AbstractCheckTest() {
           """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2692,7 +2692,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2817,7 +2817,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2849,7 +2849,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }"""
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2887,7 +2887,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2949,7 +2949,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2999,7 +2999,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -3157,7 +3157,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -3235,7 +3235,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -3335,7 +3335,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -3394,7 +3394,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -3438,7 +3438,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -3492,7 +3492,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -3539,7 +3539,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -3589,7 +3589,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -3684,7 +3684,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -3726,7 +3726,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -3768,7 +3768,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages(false)
@@ -3800,7 +3800,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages(false)
@@ -3836,7 +3836,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -3906,7 +3906,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages(false)
@@ -3946,7 +3946,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowCompilationErrors() // Deliberate resolve errors
       .run()
@@ -4011,7 +4011,7 @@ class VersionChecksTest : AbstractCheckTest() {
 
                 fun fallback() {
                 }
-                """
+                """,
           )
           .indented(),
         kotlin(
@@ -4045,7 +4045,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 @get:ChecksSdkIntAtLeast(api = Build.VERSION_CODES.HONEYCOMB)
                 val versionCheck1: Boolean
                     get() = false
-                """
+                """,
         ),
         binaryStub(
           "libs/library.jar",
@@ -4076,9 +4076,9 @@ class VersionChecksTest : AbstractCheckTest() {
                         """
               )
             ),
-          compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR)
+          compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR),
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -4154,7 +4154,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       // TODO: Add in other positions, maybe even out of order, to make sure we handle it right
@@ -4206,7 +4206,7 @@ class VersionChecksTest : AbstractCheckTest() {
 
                 fun fallback() {
                 }
-                """
+                """,
           )
           .indented(),
         bytecode(
@@ -4238,7 +4238,7 @@ class VersionChecksTest : AbstractCheckTest() {
                     @get:ChecksSdkIntAtLeast(api = Build.VERSION_CODES.HONEYCOMB)
                     val versionCheck1: Boolean
                         get() = false
-                    """
+                    """,
           ),
           0xdeff4caa,
           "test/pkg/utils/UtilsKt.class:" +
@@ -4268,7 +4268,7 @@ class VersionChecksTest : AbstractCheckTest() {
             "FcgLrAqsCQwF8lRwjgpsCNwTeCawIpARuC+QFFgQ2BT4XGDuXy4VqTB7CAAA",
           "META-INF/main.kotlin_module:" +
             "H4sIAAAAAAAAAGNgYGBmYGBgBGIWKM3AJcTFUZJaXKJXkJ0uxBYCZHmXcEly" +
-            "8cHE9EpLMnOKhdhDQZR3iRKDFgMA7UDMuUcAAAA="
+            "8cHE9EpLMnOKhdhDQZR3iRKDFgMA7UDMuUcAAAA=",
         ),
         bytecode(
           "libs/lib1.jar",
@@ -4285,7 +4285,7 @@ class VersionChecksTest : AbstractCheckTest() {
                         println("mytest")
                     }
 
-                    """
+                    """,
           ),
           0xe95da7a2,
           """
@@ -4304,7 +4304,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGJWKM3AJcTFUZJaXKJXkJ0uxBYCZHmXcClz
                 8cHE9EpLMnOKhThCQZSRd4kQO5jlXaLEoMUAAMCpI5xRAAAA
-                """
+                """,
         ),
         bytecode(
           "libs/lib2.jar",
@@ -4344,9 +4344,9 @@ class VersionChecksTest : AbstractCheckTest() {
             "HhnOlEvunowcd89FYBjmn6ADrYeCK9KmIaaH8iv2qx1U6Kcy5JphOZambNOp" +
             "QDlPq+CiiDRtyCjFObpap8woz3z6A3aZMEsUMwmYI/Y8FpBKSlcSjF7E+v2s" +
             "rvBSxcZbLP5DtF4llv4jll28I82lqbnKg6K9kLqGdYX0c4OLFN/HnbF8D6c8" +
-            "O3S7AgAA"
+            "O3S7AgAA",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -4417,7 +4417,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -4507,7 +4507,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -4562,7 +4562,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -4591,7 +4591,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -4619,7 +4619,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -4660,7 +4660,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -4720,7 +4720,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(ApiDetector.UNSUPPORTED)
       .run()
@@ -4767,7 +4767,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 @RequiresApi(10000) fun requires10000() { }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -4861,7 +4861,7 @@ class VersionChecksTest : AbstractCheckTest() {
           )
           .indented(),
         requiresExtensionStub,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -4958,7 +4958,7 @@ class VersionChecksTest : AbstractCheckTest() {
                         """
               ),
               requiresExtensionStub,
-              SUPPORT_ANNOTATIONS_JAR
+              SUPPORT_ANNOTATIONS_JAR,
             )
         }
         .expect(
@@ -5069,7 +5069,7 @@ class VersionChecksTest : AbstractCheckTest() {
             )
             .indented(),
           requiresExtensionStub,
-          SUPPORT_ANNOTATIONS_JAR
+          SUPPORT_ANNOTATIONS_JAR,
         )
         .run()
         .expect(
@@ -5184,7 +5184,7 @@ class VersionChecksTest : AbstractCheckTest() {
           )
           .indented(),
         requiresExtensionStub,
-        checksSdkIntWithSdkStub
+        checksSdkIntWithSdkStub,
       )
       .run()
       .expect(
@@ -5293,7 +5293,7 @@ class VersionChecksTest : AbstractCheckTest() {
                     public static void runOnR4(Runnable runnable) {
                     }
                 }
-                """
+                """,
           )
           .indented(),
         requiresExtensionStub,
@@ -5344,7 +5344,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -5454,7 +5454,7 @@ class VersionChecksTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -5530,7 +5530,7 @@ class VersionChecksTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(

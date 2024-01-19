@@ -289,7 +289,7 @@ internal class HttpUrlTest {
     return inspectorRule.environment.fakeArtTooling.triggerExitHook(
       URL::class.java,
       "openConnection()Ljava/net/URLConnection;",
-      this
+      this,
     )
   }
 }

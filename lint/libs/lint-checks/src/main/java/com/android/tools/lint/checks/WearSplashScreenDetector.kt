@@ -105,7 +105,7 @@ class WearSplashScreenDetector : WearDetector(), XmlScanner {
           context.getLocation(element),
           "Applications using splash screens are strongly recommended to use the '${SdkConstants.ANDROIDX_CORE_SPLASHSCREEN}' library",
         ),
-        minSdkLessThan(31)
+        minSdkLessThan(31),
       )
     }
   }

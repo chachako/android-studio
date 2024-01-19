@@ -49,38 +49,29 @@ abstract class DeviceProvisionerTestFixture {
   val devicePropertiesBySerial =
     mapOf(
       SerialNumbers.PHYSICAL1_USB to
-        baseProperties +
-          mapOf(
-            "ro.serialno" to SerialNumbers.PHYSICAL1_USB,
-          ),
+        baseProperties + mapOf("ro.serialno" to SerialNumbers.PHYSICAL1_USB),
       SerialNumbers.PHYSICAL2_USB to
-        baseProperties +
-          mapOf(
-            "ro.serialno" to SerialNumbers.PHYSICAL2_USB,
-          ),
+        baseProperties + mapOf("ro.serialno" to SerialNumbers.PHYSICAL2_USB),
       SerialNumbers.PHYSICAL2_WIFI to
-        baseProperties +
-          mapOf(
-            "ro.serialno" to SerialNumbers.PHYSICAL2_USB,
-          ),
+        baseProperties + mapOf("ro.serialno" to SerialNumbers.PHYSICAL2_USB),
       SerialNumbers.EMULATOR to
         baseProperties +
           mapOf(
             "ro.serialno" to "EMULATOR31X3X7X0",
             DevicePropertyNames.RO_PRODUCT_MODEL to "sdk_goog3_x86_64",
-          )
+          ),
     )
 
   init {
     for (serial in SerialNumbers.ALL) {
       fakeSession.deviceServices.configureDeviceProperties(
         DeviceSelector.fromSerialNumber(serial),
-        devicePropertiesBySerial[serial]!!
+        devicePropertiesBySerial[serial]!!,
       )
       fakeSession.deviceServices.configureShellCommand(
         DeviceSelector.fromSerialNumber(serial),
         command = "wm size",
-        stdout = "Physical size: 2000x1500\n"
+        stdout = "Physical size: 2000x1500\n",
       )
     }
   }
@@ -93,7 +84,7 @@ abstract class DeviceProvisionerTestFixture {
   protected fun setBootComplete(serial: String) {
     fakeSession.deviceServices.configureDeviceProperties(
       DeviceSelector.fromSerialNumber(serial),
-      devicePropertiesBySerial[serial]!! + mapOf("dev.bootcomplete" to "1")
+      devicePropertiesBySerial[serial]!! + mapOf("dev.bootcomplete" to "1"),
     )
   }
 

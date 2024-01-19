@@ -59,7 +59,7 @@ import org.jetbrains.uast.getContainingUFile
 
 open class DefaultJavaEvaluator(
   private val myProject: com.intellij.openapi.project.Project?,
-  private val myLintProject: Project?
+  private val myLintProject: Project?,
 ) : JavaEvaluator() {
   // cache of package name to package-info.class.
   private val packageInfoCache = mutableMapOf<String, PsiPackage>()
@@ -150,7 +150,7 @@ open class DefaultJavaEvaluator(
   @Suppress("DEPRECATION", "OverridingDeprecatedMember")
   override fun getAllAnnotations(
     owner: PsiModifierListOwner,
-    inHierarchy: Boolean
+    inHierarchy: Boolean,
   ): Array<PsiAnnotation> {
     if (owner is UDeclaration) {
       // Work around bug: Passing in a UAST node to this method generates a
@@ -167,7 +167,7 @@ open class DefaultJavaEvaluator(
   override fun getAnnotations(
     owner: PsiModifierListOwner?,
     inHierarchy: Boolean,
-    parent: UElement?
+    parent: UElement?,
   ): List<UAnnotation> {
     owner ?: return emptyList()
 
@@ -191,7 +191,7 @@ open class DefaultJavaEvaluator(
   @Suppress("DEPRECATION", "OverridingDeprecatedMember")
   override fun findAnnotationInHierarchy(
     listOwner: PsiModifierListOwner,
-    vararg annotationNames: String
+    vararg annotationNames: String,
   ): PsiAnnotation? {
     if (listOwner is UDeclaration) {
       // Work around UAST bug
@@ -203,7 +203,7 @@ open class DefaultJavaEvaluator(
 
   override fun getAnnotationInHierarchy(
     listOwner: PsiModifierListOwner,
-    vararg annotationNames: String
+    vararg annotationNames: String,
   ): UAnnotation? {
     @Suppress("DEPRECATION")
     return findAnnotationInHierarchy(listOwner, *annotationNames)?.let { psi ->
@@ -214,7 +214,7 @@ open class DefaultJavaEvaluator(
   @Suppress("DEPRECATION", "OverridingDeprecatedMember")
   override fun findAnnotation(
     listOwner: PsiModifierListOwner?,
-    vararg annotationNames: String
+    vararg annotationNames: String,
   ): PsiAnnotation? {
     if (listOwner is UDeclaration) {
       // Work around UAST bug
@@ -226,7 +226,7 @@ open class DefaultJavaEvaluator(
 
   override fun getAnnotation(
     listOwner: PsiModifierListOwner?,
-    vararg annotationNames: String
+    vararg annotationNames: String,
   ): UAnnotation? {
     @Suppress("DEPRECATION")
     return findAnnotation(listOwner, *annotationNames)?.let { psi ->
@@ -374,7 +374,7 @@ open class DefaultJavaEvaluator(
 
   override fun computeArgumentMapping(
     call: UCallExpression,
-    method: PsiMethod
+    method: PsiMethod,
   ): Map<UExpression, PsiParameter> {
     val parameterList = method.parameterList
     if (parameterList.parametersCount == 0) {

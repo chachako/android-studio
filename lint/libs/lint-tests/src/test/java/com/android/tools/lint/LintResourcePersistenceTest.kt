@@ -55,12 +55,7 @@ class LintResourcePersistenceTest {
 
     val pathVariables = getPathVariables()
     val deserialized =
-      LintResourcePersistence.deserialize(
-        expected.trim(),
-        pathVariables,
-        null,
-        null,
-      )
+      LintResourcePersistence.deserialize(expected.trim(), pathVariables, null, null)
     val serialized = deserialized.serialize(pathVariables, null, sort = true)
     assertEquals(expected, serialized.trim())
   }
@@ -96,7 +91,7 @@ class LintResourcePersistenceTest {
     val serialized =
       LintResourcePersistence.serialize(
         folderRepository as LintResourceRepository,
-        client.pathVariables
+        client.pathVariables,
       )
     val deserialized = LintResourcePersistence.deserialize(serialized, getPathVariables())
 
@@ -119,7 +114,7 @@ class LintResourcePersistenceTest {
         resources.getResources(
           ResourceNamespace.ANDROID,
           ResourceType.STRING,
-          "sms_short_code_details"
+          "sms_short_code_details",
         )
       val smsEn = smsItems.first() { it.configuration.isDefault }
       // Note -- this string can change in the platform; if it does, update the test
@@ -127,29 +122,29 @@ class LintResourcePersistenceTest {
       assertEquals("This may cause charges on your mobile account.", smsEn.resourceValue!!.value)
       assertEquals(
         "This <b>may cause charges</b> on your mobile account.",
-        smsEn.resourceValue!!.rawXmlValue
+        smsEn.resourceValue!!.rawXmlValue,
       )
       val smsNo = smsItems.first() { it.configuration.localeQualifier?.value == "nb" }
       assertEquals(
         "Dette kan føre til kostnader på mobilabonnementet ditt.",
-        smsNo.resourceValue!!.value
+        smsNo.resourceValue!!.value,
       )
       assertEquals(
         "\"Dette \"<b>\"kan føre til kostnader\"</b>\" på mobilabonnementet ditt.\"",
-        smsNo.resourceValue!!.rawXmlValue
+        smsNo.resourceValue!!.rawXmlValue,
       )
 
       val mimeItems =
         resources.getResources(
           ResourceNamespace.ANDROID,
           ResourceType.STRING,
-          "mime_type_document_ext"
+          "mime_type_document_ext",
         )
       val mimeEn = mimeItems.first() { it.configuration.isDefault }
       assertEquals("(PDF) document", mimeEn.resourceValue!!.value)
       assertEquals(
         "<xliff:g example=\"PDF\" id=\"extension\">%1\$s</xliff:g> document",
-        mimeEn.resourceValue!!.rawXmlValue
+        mimeEn.resourceValue!!.rawXmlValue,
       )
     }
 

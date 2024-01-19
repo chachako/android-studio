@@ -64,7 +64,7 @@ class FragmentDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         moreInfo = "https://developer.android.com/reference/android/app/Fragment.html#Fragment()",
-        implementation = Implementation(FragmentDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(FragmentDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
   }
 
@@ -82,7 +82,7 @@ class FragmentDetector : Detector(), SourceCodeScanner {
         ISSUE,
         declaration,
         context.getNameLocation(declaration),
-        "Fragments should be static such that they can be re-instantiated by the system, and anonymous classes are not static"
+        "Fragments should be static such that they can be re-instantiated by the system, and anonymous classes are not static",
       )
       return
     }
@@ -97,7 +97,7 @@ class FragmentDetector : Detector(), SourceCodeScanner {
         ISSUE,
         declaration,
         context.getNameLocation(declaration),
-        "This fragment class should be public (${declaration.qualifiedName})"
+        "This fragment class should be public (${declaration.qualifiedName})",
       )
       return
     }
@@ -107,7 +107,7 @@ class FragmentDetector : Detector(), SourceCodeScanner {
         ISSUE,
         declaration,
         context.getNameLocation(declaration),
-        "This fragment inner class should be static (${declaration.qualifiedName})"
+        "This fragment inner class should be static (${declaration.qualifiedName})",
       )
       return
     }

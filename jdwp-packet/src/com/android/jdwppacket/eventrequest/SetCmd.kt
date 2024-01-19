@@ -41,7 +41,7 @@ data class SetCmd(val kind: EventKind, val suspendPolicy: Byte, val modifiers: L
   class ModifierExceptionOnly(
     val exceptionOrNull: Long,
     val caught: Boolean,
-    val uncaught: Boolean
+    val uncaught: Boolean,
   ) : Modifier(ModKind.EXCEPTION_ONLY)
 
   class ModifierFieldOnly(val declaring: Long, val fieldID: Long) : Modifier(ModKind.FIELD_ONLY)
@@ -77,7 +77,7 @@ data class SetCmd(val kind: EventKind, val suspendPolicy: Byte, val modifiers: L
               ModifierExceptionOnly(
                 reader.getReferenceTypeID(),
                 reader.getBoolean(),
-                reader.getBoolean()
+                reader.getBoolean(),
               )
             ModKind.FIELD_ONLY ->
               ModifierFieldOnly(reader.getReferenceTypeID(), reader.getFieldID())

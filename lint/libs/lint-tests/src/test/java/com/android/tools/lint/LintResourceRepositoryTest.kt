@@ -79,7 +79,7 @@ class LintResourceRepositoryTest {
                         <string name="string2">String 2</string>
                         <string name="js_dialog_title" msgid="7464775045615023241">"På siden på \"<xliff:g id="TITLE">%s</xliff:g>\" står der:"</string>
                     </resources>
-                    """
+                    """,
         )
         .indented(),
       xml(
@@ -88,7 +88,7 @@ class LintResourceRepositoryTest {
                 <resources>
                     <dimen name="activity_horizontal_margin">16dp</dimen>
                 </resources>
-                """
+                """,
         )
         .indented(),
       xml(
@@ -101,7 +101,7 @@ class LintResourceRepositoryTest {
                         <item name="gravity">top</item>
                     </style>
                 </resources>
-                """
+                """,
       ),
       xml(
           "res/values/duplicates.xml",
@@ -149,7 +149,7 @@ class LintResourceRepositoryTest {
                         <item quantity="other">@string/hello3</item>
                     </plurals>
                 </resources>
-                """
+                """,
         )
         .indented(),
       xml(
@@ -162,23 +162,23 @@ class LintResourceRepositoryTest {
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         tools:context=".MainActivity"/>
-                """
+                """,
         )
         .indented(),
       image("res/drawable/ic_launcher.png", 48, 48).fill(10, 10, 20, 20, -0xff0001),
-      image("res/drawable-xhdpi-v4/ic_launcher2.png", 48, 48).fill(10, 10, 20, 20, -0xff0001)
+      image("res/drawable-xhdpi-v4/ic_launcher2.png", 48, 48).fill(10, 10, 20, 20, -0xff0001),
     ) { name, repository, root ->
       val namespace = ResourceNamespace.TODO()
       assertEquals(
         name,
         "array, attr, dimen, drawable, id, layout, plurals, string, " + "style, styleable",
-        repository.getResourceTypes(namespace).sorted().joinToString { it.getName() }
+        repository.getResourceTypes(namespace).sorted().joinToString { it.getName() },
       )
 
       assertEquals(
         name,
         "js_dialog_title, string1, string2",
-        repository.getResourceNames(namespace, ResourceType.STRING).sorted().joinToString { it }
+        repository.getResourceNames(namespace, ResourceType.STRING).sorted().joinToString { it },
       )
 
       assertEquals(
@@ -205,7 +205,7 @@ class LintResourceRepositoryTest {
           "  @style/MyStyle.Another (value) config=default source=/app/res/values/duplicates.xml;  parent=ResourceReference{namespace=apk/res-auto, type=style, name=MyStyle} [android:layout_margin]\n" +
           "  @style/Notification.Header (value) config=default source=/app/res/values/styles.xml;  parent=null [paddingTop,paddingBottom,gravity]\n" +
           "  @styleable/ContentFrame (value) config=default source=/app/res/values/duplicates.xml;  {[][][stateUnspecified=0,stateUnchanged=1][floating=0,atThumb=1,aboveThumb=2]}\n",
-        repository.prettyPrint(root).dos2unix()
+        repository.prettyPrint(root).dos2unix(),
       )
 
       fun indexInEscaped(s: String, char: Char, from: Int = 0): Int {
@@ -319,7 +319,7 @@ class LintResourceRepositoryTest {
     }
     assertEquals(
       "" + "one:@string/hello1\n" + "few:@string/hello2\n" + "other:@string/hello3\n",
-      pluralDescription.toString()
+      pluralDescription.toString(),
     )
 
     // Lookup by quantity name
@@ -345,7 +345,7 @@ class LintResourceRepositoryTest {
         "android:layout_marginLeft\n" +
         "android:layout_marginTop\n" +
         "android:layout_marginBottom\n",
-      styleDescription.toString()
+      styleDescription.toString(),
     )
   }
 
@@ -385,7 +385,7 @@ class LintResourceRepositoryTest {
     }
     assertEquals(
       "" + "windowSoftInputMode:[FLAGS]\n" + "  stateUnchanged:1\n" + "  stateUnspecified:0\n",
-      desc2.toString()
+      desc2.toString(),
     )
   }
 
@@ -410,14 +410,14 @@ class LintResourceRepositoryTest {
         "contentId:null:[REFERENCE]:{}\n" +
         "fastScrollOverlayPosition:null:[ENUM]:{aboveThumb=2, atThumb=1, floating=0}\n" +
         "windowSoftInputMode:null:[FLAGS]:{stateUnchanged=1, stateUnspecified=0}\n",
-      styleDescription.toString()
+      styleDescription.toString(),
     )
   }
 
   private fun checkDensity(
     repository: ResourceRepository,
     namespace: ResourceNamespace,
-    root: File
+    root: File,
   ) {
     val drawables = repository.getResources(namespace, ResourceType.DRAWABLE, "ic_launcher2")
     assertEquals(1, drawables.size)
@@ -430,7 +430,7 @@ class LintResourceRepositoryTest {
     )
     assertEquals(
       "Drawable/ic_launcher2: X-High Density: /app/res/drawable-xhdpi-v4/ic_launcher2.png",
-      description.toString().replace(root.path, "").dos2unix()
+      description.toString().replace(root.path, "").dos2unix(),
     )
 
     // For file based resources the value is the path; make sure we
@@ -452,7 +452,7 @@ class LintResourceRepositoryTest {
   private fun checkRepository(
     vararg files: TestFile,
     includeAgpRepository: Boolean = true,
-    assertions: (String, ResourceRepository, File) -> Unit
+    assertions: (String, ResourceRepository, File) -> Unit,
   ) {
     val root = temporaryFolder.root
     val desc = ProjectDescription(*files).name("app")
@@ -466,7 +466,7 @@ class LintResourceRepositoryTest {
           ResourceNamespace.RES_AUTO,
           null,
           listOf(Pair("app", listOf(res))),
-          true
+          true,
         )
       else null
 
@@ -476,7 +476,7 @@ class LintResourceRepositoryTest {
         sequenceOf(res),
         null,
         null,
-        ResourceNamespace.TODO()
+        ResourceNamespace.TODO(),
       )
 
     for (pair in
@@ -485,7 +485,7 @@ class LintResourceRepositoryTest {
           Pair("Backed by XML (using AGP resource repositories)", standardRepo)
         else null,
         Pair("Backed by serialization", deserialize(serialize(lintRepo))),
-        Pair("Backed by XML (using lint's folder processor)", lintRepo)
+        Pair("Backed by XML (using lint's folder processor)", lintRepo),
       )) {
       pair ?: continue
       assertions(pair.first, pair.second, root)
@@ -516,7 +516,7 @@ class LintResourceRepositoryTest {
                     <resources>
                         <string name="string1">String 1</string>
                     </resources>
-                    """
+                    """,
         )
         .indented(),
       xml(
@@ -525,16 +525,16 @@ class LintResourceRepositoryTest {
                     <resources>
                         <string name="ignore">Ignore</string>
                     </resources>
-                    """
+                    """,
         )
         .indented(),
       xml("res/values/empty.xml", ""),
-      includeAgpRepository = false
+      includeAgpRepository = false,
     ) { _, repository, root ->
       assertEquals(
         "namespace:apk/res-auto\n" +
           "  @string/string1 (value) config=default source=/app/res/values/test.xml;  String 1\n",
-        repository.prettyPrint(root).dos2unix()
+        repository.prettyPrint(root).dos2unix(),
       )
     }
   }
@@ -565,7 +565,7 @@ class LintResourceRepositoryTest {
                 <resources>
                     <string name="location_process">Location Process</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -574,7 +574,7 @@ class LintResourceRepositoryTest {
                 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                     <bool name="enable_wearable_location_service">true</bool>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -583,7 +583,7 @@ class LintResourceRepositoryTest {
                 <resources>
                     <string name="location_process">Location Process (English)</string>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -592,7 +592,7 @@ class LintResourceRepositoryTest {
                 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
                     <bool name="enable_wearable_location_service">false</bool>
                 </resources>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -603,7 +603,7 @@ class LintResourceRepositoryTest {
                      <exclude domain="file" path="dd/fo3o.txt"/>
                      <exclude domain="file" path="dd/ss/foo.txt"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -612,12 +612,12 @@ class LintResourceRepositoryTest {
                 <full-backup-content>
                      <include domain="file" path="mcc"/>
                 </full-backup-content>
-                """
+                """,
           )
           .indented(),
         kotlin("""
                 fun test() = TODO()
-                """).indented()
+                """).indented(),
       )
       .issues(RepositoryRecoveryDetector.ISSUE)
       .allowAbsolutePathsInMessages(true)
@@ -687,7 +687,7 @@ class LintResourceRepositoryTest {
 
                 """
           .trimIndent(),
-        resources.dos2unix()
+        resources.dos2unix(),
       )
     }
 
@@ -705,8 +705,8 @@ class LintResourceRepositoryTest {
           implementation =
             Implementation(
               RepositoryRecoveryDetector::class.java,
-              EnumSet.of(Scope.JAVA_FILE, Scope.RESOURCE_FILE)
-            )
+              EnumSet.of(Scope.JAVA_FILE, Scope.RESOURCE_FILE),
+            ),
         )
     }
   }

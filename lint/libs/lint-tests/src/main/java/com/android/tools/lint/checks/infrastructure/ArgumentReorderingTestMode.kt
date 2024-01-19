@@ -41,7 +41,7 @@ class ArgumentReorderingTestMode :
   UastSourceTransformationTestMode(
     description = "Reordered Named Arguments",
     "TestMode.REORDER_ARGUMENTS",
-    "reorder-arguments"
+    "reorder-arguments",
   ) {
   override val diffExplanation: String =
     // first line shorter: expecting to prefix that line with
@@ -72,7 +72,7 @@ class ArgumentReorderingTestMode :
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
     val edits = mutableListOf<Edit>()
     root.acceptSourceFile(

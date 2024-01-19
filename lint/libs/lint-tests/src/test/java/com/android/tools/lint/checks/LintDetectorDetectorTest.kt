@@ -57,7 +57,7 @@ class LintDetectorDetectorTest {
       UNEXPECTED_DOMAIN,
       DOLLAR_STRINGS,
       MISSING_VENDOR,
-      MISSING_DOC_EXAMPLE
+      MISSING_DOC_EXAMPLE,
     )
 
   @Test
@@ -347,7 +347,7 @@ class LintDetectorDetectorTest {
                     """
           )
           .indented(),
-        *getLintClassPath()
+        *getLintClassPath(),
       )
       .issues(*issues)
       .allowMissingSdk()
@@ -568,7 +568,7 @@ class LintDetectorDetectorTest {
             // Include unique index at the end to prevent conflicts
             LibraryReferenceTestFile("libs/${file.name}_$index", file)
           }
-          .toTypedArray()
+          .toTypedArray(),
       )
       .checkUInjectionHost(false)
       .testModes(TestMode.DEFAULT)
@@ -618,7 +618,7 @@ class LintDetectorDetectorTest {
             }
           """
         ),
-        *getLintClassPath()
+        *getLintClassPath(),
       )
       .issues(*issues)
       .allowMissingSdk()
@@ -646,7 +646,7 @@ class LintDetectorDetectorTest {
           """
           )
           .indented(),
-        *getLintClassPath()
+        *getLintClassPath(),
       )
       .issues(*issues)
       .allowMissingSdk()

@@ -36,7 +36,7 @@ class WrongCaseDetectorTest : AbstractCheckTest() {
                     <RequestFocus />
 
                 </Merge>
-                """
+                """,
           )
           .indented()
       )

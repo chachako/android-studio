@@ -380,7 +380,7 @@ class GooglePlaySdkIndexTest {
             group,
             artifact,
             versionString = "noVersion",
-            buildFile = null
+            buildFile = null,
           )
         assertThat(lintLink).isNotNull()
         assertThat(lintLink).isInstanceOf(LintFix.ShowUrl::class.java)
@@ -459,7 +459,7 @@ class GooglePlaySdkIndexTest {
   fun `multiple policy types issue message`() {
     verifyPolicyMessages(
       "7.1.7",
-      listOf("User Data policy", "Malware policy", "Permissions policy")
+      listOf("User Data policy", "Malware policy", "Permissions policy"),
     )
   }
 

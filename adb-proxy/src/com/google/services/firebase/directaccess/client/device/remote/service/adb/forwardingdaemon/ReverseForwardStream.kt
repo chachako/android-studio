@@ -73,7 +73,7 @@ internal class ReverseForwardStream(
   private val sendsDaemon: Boolean = true,
   private val socketFactory: suspend (InetSocketAddress) -> AdbChannel = { address ->
     adbSession.channelFactory.connectSocket(address)
-  }
+  },
 ) : Stream {
   private val openSockets = mutableMapOf<Int, AdbChannel>()
   var localPort: String = localPort
@@ -90,7 +90,7 @@ internal class ReverseForwardStream(
         device,
         daemonPath,
         "/data/local/tmp/reverse_daemon.dex",
-        RemoteFileMode.DEFAULT
+        RemoteFileMode.DEFAULT,
       )
     }
     scope.launch(Dispatchers.IO) {
@@ -103,7 +103,7 @@ internal class ReverseForwardStream(
             "CLASSPATH=/data/local/tmp/reverse_daemon.dex app_process " +
               "/data/local/tmp/ " +
               "com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.daemon." +
-              "ReverseDaemon $devicePort"
+              "ReverseDaemon $devicePort",
           )
           .withInputChannelCollector()
           .withStdin(stdinInputChannel)
@@ -182,7 +182,7 @@ internal class ReverseForwardStream(
   /** A reader class that reads and processes data from [shellCommandInput]. */
   private inner class StreamReader(
     private val shellCommandInput: AdbInputChannel,
-    private val shellCommandOutput: AdbOutputChannel
+    private val shellCommandOutput: AdbOutputChannel,
   ) {
     private val buffer = ByteBuffer.allocate(1024 * 1024)
     private val headerBuffer = ByteBuffer.allocate(12)
@@ -241,7 +241,7 @@ internal class ReverseForwardStream(
         socketFactory(
           InetSocketAddress(
             localhost,
-            Integer.parseInt(localPort.substringAfter("tcp:").substringBefore('\u0000'))
+            Integer.parseInt(localPort.substringAfter("tcp:").substringBefore('\u0000')),
           )
         )
       openSockets[header.streamId] = newSocket

@@ -43,7 +43,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -68,7 +68,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -94,7 +94,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -187,7 +187,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
               }
           }
           """
-        ),
+        )
       )
       .run()
       .expect(
@@ -236,7 +236,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
               public void utilMethod(IntentFilter filter) {}
           }
           """
-        )
+        ),
       )
       .run()
       .expect(
@@ -276,7 +276,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
               }
           }
           """
-        ),
+        )
       )
       .run()
       .expect(
@@ -316,7 +316,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
               }
           }
           """
-        ),
+        )
       )
       .run()
       .expect(
@@ -390,7 +390,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
               }
           }
           """
-        ),
+        )
       )
       .run()
       .expect(
@@ -455,7 +455,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -479,7 +479,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -504,7 +504,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -528,7 +528,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
           }
           """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -571,7 +571,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
           }
           """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -711,7 +711,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -735,7 +735,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
           }
           """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -779,7 +779,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -810,7 +810,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -836,7 +836,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -881,7 +881,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -916,7 +916,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -957,7 +957,7 @@ class RegisterReceiverFlagDetectorTest : AbstractCheckTest() {
                     }
                    """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(

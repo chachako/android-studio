@@ -76,11 +76,11 @@ class PathVariablesTest {
 
     assertEquals(
       "\$HOME/dir1/dir2",
-      variables.toPathString(underHome, relativeTo = home, unix = true)
+      variables.toPathString(underHome, relativeTo = home, unix = true),
     )
     assertEquals(
       "\$HOME${separator}dir1${separator}dir2",
-      variables.toPathString(underHome, relativeTo = home, unix = false)
+      variables.toPathString(underHome, relativeTo = home, unix = false),
     )
 
     assertEquals(underHome, variables.fromPathString("dir1/dir2", relativeTo = home))
@@ -90,7 +90,7 @@ class PathVariablesTest {
     assertEquals("dir1/dir2", variables.toPathString(underTemp, relativeTo = temp, unix = true))
     assertEquals(
       "dir1${separator}dir2",
-      variables.toPathString(underTemp, relativeTo = temp, unix = false)
+      variables.toPathString(underTemp, relativeTo = temp, unix = false),
     )
 
     assertEquals(underTemp, variables.fromPathString("dir1/dir2", relativeTo = temp))
@@ -155,7 +155,7 @@ class PathVariablesTest {
         "V8_canonical=canonicalized_foo/bar\n" +
         "V7_canonical=canonicalized_foo\n" +
         "V9_canonical=canonicalized_foo",
-      variables.toString().dos2unix()
+      variables.toString().dos2unix(),
     )
   }
 }

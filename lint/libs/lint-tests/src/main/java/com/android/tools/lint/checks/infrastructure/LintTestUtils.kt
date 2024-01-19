@@ -145,7 +145,7 @@ private class JavaTestContext(
   driver: LintDriver,
   project: Project,
   private val javaSource: String,
-  file: File
+  file: File,
 ) : JavaContext(driver, project, null, file) {
 
   override fun getContents(): String {
@@ -159,7 +159,7 @@ private class XmlTestContext(
   private val xmlSource: String,
   file: File,
   type: ResourceFolderType,
-  document: Document
+  document: Document,
 ) : XmlContext(driver, project, null, file, type, xmlSource, document) {
   override fun getContents(): String {
     return xmlSource
@@ -188,7 +188,7 @@ private fun createTestProjectForFiles(
   android: Boolean = true,
   javaLanguageLevel: LanguageLevel? = null,
   kotlinLanguageLevel: LanguageVersionSettings? = null,
-  sdkHome: File? = null
+  sdkHome: File? = null,
 ): Project {
   val includeKotlinStdlib = dir.walkBottomUp().any { it.path.endsWith(DOT_KT) }
   val client =
@@ -277,7 +277,7 @@ fun parseFirst(
       sdkHome,
       android,
       temporaryFolder,
-      *testFiles
+      *testFiles,
     )
   val first =
     contexts.firstOrNull { it.file.path.portablePath().endsWith(testFiles[0].targetRelativePath) }
@@ -292,7 +292,7 @@ fun parse(
   sdkHome: File? = null,
   android: Boolean = sdkHome != null,
   temporaryFolder: TemporaryFolder,
-  vararg testFiles: TestFile
+  vararg testFiles: TestFile,
 ): Pair<List<JavaContext>, Disposable> {
   val dir = temporaryFolder.newFolder()
   val projects = TestLintTask().files(*testFiles).createProjects(dir)
@@ -307,7 +307,7 @@ fun parse(
   sdkHome: File? = null,
   android: Boolean = sdkHome != null,
   sourceOverride: Map<File, String> = emptyMap(),
-  extraLibs: List<File> = emptyList()
+  extraLibs: List<File> = emptyList(),
 ): Pair<List<JavaContext>, Disposable> {
   val project =
     createTestProjectForFiles(
@@ -318,7 +318,7 @@ fun parse(
       android,
       javaLanguageLevel,
       kotlinLanguageLevel,
-      sdkHome
+      sdkHome,
     )
   val client = project.client as LintCliClient
   val request = LintRequest(client, sourceOverride.keys.toList())
@@ -356,7 +356,7 @@ fun parse(
 fun List<TestFile>.use(
   temporaryFolder: TemporaryFolder? = null,
   sdkHome: File? = null,
-  block: (JavaContext) -> Unit
+  block: (JavaContext) -> Unit,
 ) {
   var dir: Path? = null
   val folder =
@@ -504,7 +504,7 @@ fun runOnSources(
   testModes: List<TestMode> = listOf(TestMode.DEFAULT),
   verbose: Boolean = false,
   expectFixDiffs: String? = null,
-  applyFixes: ((Incident, List<LintFix>) -> LintFix?)? = null
+  applyFixes: ((Incident, List<LintFix>) -> LintFix?)? = null,
 ) {
   if (applyFixes != null && !absolutePaths) {
     error("applyFixes = true requires absolutePaths = true")
@@ -590,7 +590,7 @@ fun runOnSources(
             }
           }
           "" // such that we pass and continue
-        }
+        },
       )
 
       if (expectFixDiffs != null) {
@@ -610,7 +610,7 @@ fun runOnSources(
                 println("Partial:\n$cleaned\n")
               }
               "" // such that we pass and continue
-            }
+            },
           )
       }
     } catch (ignore: Throwable) {

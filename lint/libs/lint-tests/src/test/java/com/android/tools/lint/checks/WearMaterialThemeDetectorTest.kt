@@ -55,7 +55,7 @@ class WearMaterialThemeDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -91,7 +91,7 @@ class WearMaterialThemeDetectorTest : AbstractCheckTest() {
                 import androidx.compose.material.Icon // OK
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

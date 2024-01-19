@@ -86,7 +86,7 @@ class CustomRuleTest {
             mocker.withLibraryLintJar("my.test.group:artifact:1.0", lintJar.path)
           },
         appCompatTestSource,
-        appCompatTestClass
+        appCompatTestClass,
       )
       .incremental("build/intermediates/javac/debug/classes/test/pkg/AppCompatTest.class")
       .allowDelayedIssueRegistration()
@@ -112,7 +112,7 @@ class CustomRuleTest {
         ),
         xml("lint.xml", "<lint lintJars=\"" + lintJar.path + "\" />"),
         appCompatTestSource,
-        appCompatTestClass
+        appCompatTestClass,
       )
       .incremental("build/intermediates/javac/debug/classes/test/pkg/AppCompatTest.class")
       .allowDelayedIssueRegistration()
@@ -138,7 +138,7 @@ class CustomRuleTest {
           )
           .withMockerConfigurator { mocker -> mocker.withLintRuleJar(lintJar.path) },
         appCompatTestSource,
-        appCompatTestClass
+        appCompatTestClass,
       )
       .incremental("build/intermediates/javac/debug/classes/test/pkg/AppCompatTest.class")
       .allowDelayedIssueRegistration()
@@ -176,7 +176,7 @@ class CustomRuleTest {
             "        foo(5);\n" +
             "    }\n" +
             "}"
-        )
+        ),
       )
       .clientFactory { createGlobalLintJarClient(oldLintJar) }
       .issueIds("MyId")
@@ -224,7 +224,7 @@ class CustomRuleTest {
             "        foo(5);\n" +
             "    }\n" +
             "}"
-        )
+        ),
       )
       .clientFactory { createGlobalLintJarClient(psiLintJar) }
       .issueIds("MainActivityDetector")
@@ -326,8 +326,8 @@ class CustomRuleTest {
         manifest().minSdk(1),
         xml(
           "res/values/strings.xml",
-          "<resources>\n" + "<string name='test'>Test</string>\n" + "</resources>"
-        )
+          "<resources>\n" + "<string name='test'>Test</string>\n" + "</resources>",
+        ),
       )
       .clientFactory { createGlobalLintJarClient(lintXmlScannerAll30) }
       .issueIds("ShortUniqueId")
@@ -408,7 +408,7 @@ class CustomRuleTest {
         "8YphugeLeoceP8wXoRk9esI4rWwaGY2DqW8Y+hoeJwhjF5u4Qsgbc46rNDJc" +
         "axp/CZ0BmVQdIwWC8UKK1TEd4lwhNVDHQoh3C6loHfcMpAw8MPDQwGMDG63A" +
         "G2GQOIUbonUCoyRhivbmKewirVbot7KKMaxjgriTSNPpLqbbhGYaQiN4HuIL" +
-        "4oAsItjCDnZjw8TImvE3oCvXeGsFAAA="
+        "4oAsItjCDnZjw8TImvE3oCvXeGsFAAA=",
     )
 
   companion object {

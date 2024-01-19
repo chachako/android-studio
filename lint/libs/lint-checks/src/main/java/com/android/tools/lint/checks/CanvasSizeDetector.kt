@@ -91,7 +91,7 @@ class CanvasSizeDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     node: UElement,
     name: String,
-    containingClass: UClass
+    containingClass: UClass,
   ) {
     val drawable = context.evaluator.extendsClass(containingClass, CLASS_DRAWABLE, false)
     val calling = node is UCallExpression
@@ -119,7 +119,7 @@ class CanvasSizeDetector : Detector(), SourceCodeScanner {
   private fun computeQuickfixReplacementString(
     kotlin: Boolean,
     drawable: Boolean,
-    name: String
+    name: String,
   ): String {
     return if (drawable) {
       with(StringBuilder()) {
@@ -141,7 +141,7 @@ class CanvasSizeDetector : Detector(), SourceCodeScanner {
     verb: String,
     name: String,
     calling: Boolean,
-    replacement: String
+    replacement: String,
   ): String {
     return with(StringBuilder()) {
         append(verb)
@@ -165,7 +165,7 @@ class CanvasSizeDetector : Detector(), SourceCodeScanner {
     kotlin: Boolean,
     calling: Boolean,
     drawable: Boolean,
-    name: String
+    name: String,
   ): String {
     return with(StringBuilder()) {
         if (calling || drawable) {
@@ -225,7 +225,7 @@ class CanvasSizeDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val CLASS_CANVAS = "android.graphics.Canvas"

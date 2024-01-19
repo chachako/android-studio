@@ -163,7 +163,7 @@ class MemoryLeakTest {
                             app:layout_constraintTop_toTopOf="parent"/>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
-            """
+            """,
           )
           .indented(),
         java(
@@ -183,14 +183,14 @@ class MemoryLeakTest {
                 }
                 """
         ),
-        rClass("com.gharrma.sampleapp", "@layout/activity_main")
+        rClass("com.gharrma.sampleapp", "@layout/activity_main"),
       )
       // Needed to allow PrivateResourceDetector to run.
       // Needed to allow GradleDetector to run.
       .networkData(
         "https://search.maven.org/solrsearch/select" +
           "?q=g:%22androidx.appcompat%22+AND+a:%22appcompat%22&core=gav&wt=json",
-        "" // Response doesn't matter for this test.
+        "", // Response doesn't matter for this test.
       )
       .issues(*BuiltinIssueRegistry().issues.toTypedArray())
       .run()
@@ -213,17 +213,17 @@ class MemoryLeakTest {
 
     assertTrue(
       "Utility function `countLiveInstancesOf()` appears to be broken.",
-      countLiveInstancesOf(Object::class.java.name) > 0
+      countLiveInstancesOf(Object::class.java.name) > 0,
     )
 
     assertTrue(
       "Detected Lint memory leak; KotlinCoreEnvironment is reachable",
-      countLiveInstancesOf(KotlinCoreEnvironment::class.java.name) == 0
+      countLiveInstancesOf(KotlinCoreEnvironment::class.java.name) == 0,
     )
 
     assertTrue(
       "Detected Lint memory leak; PsiWhiteSpaceImpl is reachable",
-      countLiveInstancesOf(PsiWhiteSpaceImpl::class.java.name) == 0
+      countLiveInstancesOf(PsiWhiteSpaceImpl::class.java.name) == 0,
     )
   }
 }

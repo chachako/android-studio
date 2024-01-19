@@ -38,7 +38,7 @@ class TileServiceActivityDetector : Detector(), SourceCodeScanner {
     val IMPLEMENTATION =
       Implementation(
         TileServiceActivityDetector::class.java,
-        EnumSet.of(Scope.BINARY_RESOURCE_FILE, Scope.MANIFEST)
+        EnumSet.of(Scope.BINARY_RESOURCE_FILE, Scope.MANIFEST),
       )
 
     private const val UPSIDE_DOWN_CAKE_API_VERSION: Int = 34
@@ -59,7 +59,7 @@ class TileServiceActivityDetector : Detector(), SourceCodeScanner {
         severity = Severity.ERROR,
         implementation =
           Implementation(TileServiceActivityDetector::class.java, Scope.JAVA_FILE_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
   }
 
@@ -80,11 +80,11 @@ class TileServiceActivityDetector : Detector(), SourceCodeScanner {
     context.report(
       Incident(START_ACTIVITY_AND_COLLAPSE_DEPRECATED, node, location, message)
         .overrideSeverity(Severity.WARNING),
-      targetSdkLessThan(UPSIDE_DOWN_CAKE_API_VERSION)
+      targetSdkLessThan(UPSIDE_DOWN_CAKE_API_VERSION),
     )
     context.report(
       Incident(START_ACTIVITY_AND_COLLAPSE_DEPRECATED, node, location, message),
-      targetSdkAtLeast(UPSIDE_DOWN_CAKE_API_VERSION)
+      targetSdkAtLeast(UPSIDE_DOWN_CAKE_API_VERSION),
     )
   }
 }

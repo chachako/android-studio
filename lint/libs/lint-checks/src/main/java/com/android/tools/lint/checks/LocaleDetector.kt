@@ -50,7 +50,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
       FORMAT_METHOD,
       GET_DEFAULT,
       CAPITALIZE,
-      DECAPITALIZE
+      DECAPITALIZE,
     )
   }
 
@@ -82,7 +82,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
   private fun checkJavaToUpperLowerCase(
     context: JavaContext,
     method: PsiMethod,
-    node: UCallExpression
+    node: UCallExpression,
   ) {
     // In the IDE, don't flag java toUpperCase/toLowerCase; these
     // are already flagged by built-in IDE inspections, so we don't
@@ -95,7 +95,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
         "Implicitly using the default locale is a common source of bugs: " +
           "Use `%1\$s(Locale)` instead. For strings meant to be internal " +
           "use `Locale.ROOT`, otherwise `Locale.getDefault()`.",
-        method.name
+        method.name,
       )
     context.report(STRING_LOCALE, node, location, message)
   }
@@ -108,7 +108,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
         "Implicitly using the default locale is a common source of bugs: " +
           "Use `%1\$s(Locale)` instead. For strings meant to be internal " +
           "use `Locale.ROOT`, otherwise `Locale.getDefault()`.",
-        method.name
+        method.name,
       )
 
     val range = context.getCallLocation(node, includeReceiver = false, includeArguments = true)
@@ -137,7 +137,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     method: PsiMethod,
     call: UCallExpression,
-    stringIndex: Int
+    stringIndex: Int,
   ) {
     // Only check the non-locale version of String.format
     if (
@@ -183,14 +183,14 @@ class LocaleDetector : Detector(), SourceCodeScanner {
   private fun checkLocaleGetDefault(
     context: JavaContext,
     @Suppress("UNUSED_PARAMETER") method: PsiMethod,
-    node: UCallExpression
+    node: UCallExpression,
   ) {
     val field =
       node.getParentOfType<UField>(
         UField::class.java,
         true,
         UMethod::class.java,
-        ULambdaExpression::class.java
+        ULambdaExpression::class.java,
       ) ?: return
 
     val evaluator = context.evaluator
@@ -201,7 +201,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
         context.getLocation(node),
         "Assigning `Locale.getDefault()` to a final static field is suspicious; " +
           "this code will not work correctly if the user changes locale while " +
-          "the app is running"
+          "the app is running",
       )
     }
   }
@@ -257,7 +257,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 6,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Assuming locale doesn't change. */
@@ -274,7 +274,7 @@ class LocaleDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

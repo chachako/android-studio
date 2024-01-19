@@ -42,7 +42,7 @@ open class TestMode(
    * The qualified name of the canonical field referencing this test mode. This is used by test
    * output to provide guidance on how to run with or without this test mode.
    */
-  open val fieldName: String
+  open val fieldName: String,
 ) : Iterable<TestMode> {
   /**
    * Folder name to write the test project into. By passing the same name for multiple test types
@@ -127,7 +127,7 @@ open class TestMode(
       projects: Collection<ProjectDescription>,
       context: TestModeContext,
       deleteSourceFiles: Boolean = false,
-      deleteBinaryFiles: Boolean = false
+      deleteBinaryFiles: Boolean = false,
     ) {
       // Delete sources for any compiled files since when analyzing a project
       // you can only see the local sources.
@@ -357,7 +357,7 @@ open class TestMode(
         TYPE_ALIAS,
         IMPORT_ALIAS,
         IF_TO_WHEN,
-        WHITESPACE
+        WHITESPACE,
       )
 
     /** Returns all default included test modes. */
@@ -372,7 +372,7 @@ open class TestMode(
         SOURCE_ONLY,
         CDATA,
         SOURCE_TRANSFORMATION_GROUP,
-        SUPPRESSIBLE
+        SUPPRESSIBLE,
       )
   }
 
@@ -391,6 +391,6 @@ open class TestMode(
     val clientState: Any?,
     val driver: LintDriver? = null,
     val lintContext: Context? = null,
-    val results: Map<TestMode, TestResultState>? = null
+    val results: Map<TestMode, TestResultState>? = null,
   )
 }

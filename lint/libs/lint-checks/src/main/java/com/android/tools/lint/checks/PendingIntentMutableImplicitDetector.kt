@@ -93,7 +93,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     if (
       getIntentTypeForExpression(
           intentArgument,
-          IntentExpressionInfo(context.evaluator, node, intentArgument)
+          IntentExpressionInfo(context.evaluator, node, intentArgument),
         )
         .isImplicit()
     ) {
@@ -101,7 +101,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
         fix()
           .alternatives(
             buildImmutableFixOrNull(context, flagsArgument),
-            buildNoCreateFix(context, flagsArgument)
+            buildNoCreateFix(context, flagsArgument),
           )
       val incident =
         Incident(
@@ -109,7 +109,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
           scope = node,
           location = context.getLocation(node),
           message = "Mutable implicit `PendingIntent` will throw an exception",
-          fixes
+          fixes,
         )
       context.report(incident, map())
     }
@@ -178,7 +178,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     private data class IntentExpressionInfo(
       val javaEvaluator: JavaEvaluator,
       val call: UCallExpression,
-      val intentArgument: UExpression
+      val intentArgument: UExpression,
     )
 
     /**
@@ -189,7 +189,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     private data class IntentType(
       var hasComponent: Boolean,
       var hasPackage: Boolean,
-      var isEscaped: Boolean = false
+      var isEscaped: Boolean = false,
     ) {
       // If an intent is implicit, then it doesn't have a component and a package.
       constructor(isImplicit: Boolean) : this(hasComponent = !isImplicit, hasPackage = !isImplicit)
@@ -211,7 +211,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
      */
     private fun getIntentTypeForExpression(
       intentExp: UExpression,
-      intentInfo: IntentExpressionInfo
+      intentInfo: IntentExpressionInfo,
     ): IntentType =
       when (val intent = intentExp.skipParenthesizedExprDown()) {
         is UCallExpression -> getIntentTypeForCall(intent, intentInfo)
@@ -231,7 +231,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
      */
     private fun getIntentTypeForCall(
       intent: UCallExpression,
-      intentInfo: IntentExpressionInfo
+      intentInfo: IntentExpressionInfo,
     ): IntentType {
       return when (intent.kind) {
         CONSTRUCTOR_CALL -> {
@@ -241,7 +241,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
                 intent.resolve() ?: return IntentType(isImplicit = false),
                 CLASS_INTENT,
                 allowInherit = false,
-                *constructorArgs
+                *constructorArgs,
               )
             }
           ) {
@@ -301,7 +301,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
      */
     private fun getIntentTypeForQualified(
       intent: UQualifiedReferenceExpression,
-      intentInfo: IntentExpressionInfo
+      intentInfo: IntentExpressionInfo,
     ): IntentType {
       var qualifiedChain = intent.getQualifiedChain()
       if (qualifiedChain.isEmpty()) return IntentType(isImplicit = false)
@@ -369,7 +369,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
      */
     private fun getIntentTypeForSimpleName(
       intent: USimpleNameReferenceExpression,
-      intentInfo: IntentExpressionInfo
+      intentInfo: IntentExpressionInfo,
     ): IntentType {
       val (assign, assignParentUMethod) =
         findLastAssignmentAndItsParentUMethod(intent, intentInfo.call)
@@ -405,7 +405,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
 
     private fun findLastAssignmentAndItsParentUMethod(
       intent: USimpleNameReferenceExpression,
-      call: UCallExpression
+      call: UCallExpression,
     ): Pair<UExpression, UMethod?>? {
       val assign =
         findLastAssignment(intent.resolve() as? PsiVariable ?: return null, call)
@@ -423,7 +423,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     private fun setIntentTypeAfterCallInPlace(
       intentType: IntentType,
       call: UCallExpression,
-      intentInfo: IntentExpressionInfo
+      intentInfo: IntentExpressionInfo,
     ) {
       when (call.methodName) {
         METHOD_INTENT_SET_COMPONENT -> intentType.hasComponent = !call.isFirstArgNull()
@@ -441,15 +441,13 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
 
     private fun isIntentMethodCall(
       call: UCallExpression?,
-      intentInfo: IntentExpressionInfo
+      intentInfo: IntentExpressionInfo,
     ): Boolean = intentInfo.javaEvaluator.isMemberInClass(call?.resolve(), CLASS_INTENT)
 
     private fun isEscapeCall(call: UCallExpression, intentInfo: IntentExpressionInfo): Boolean =
       !isIntentMethodCall(call, intentInfo) && !isSelectorScopeCall(call) && !isWithScopeCall(call)
 
-    private fun isKotlinCollection(
-      call: UCallExpression,
-    ): Boolean {
+    private fun isKotlinCollection(call: UCallExpression): Boolean {
       val sourcePsi = call.sourcePsi as? KtElement ?: return false
       analyze(sourcePsi) {
         val symbol = getFunctionLikeSymbol(sourcePsi) ?: return false
@@ -467,7 +465,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
 
     private fun KtAnalysisSession.isArrayOfOrArrayOfNulls(
       symbol: KtFunctionLikeSymbol,
-      arrayOfMethodName: String
+      arrayOfMethodName: String,
     ): Boolean {
       if (!hasSingleTypeParameter(symbol) { it.isReified }) return false
       if (arrayOfMethodName == METHOD_ARRAY_OF && !hasVarargValueParameterOnly(symbol)) {
@@ -499,7 +497,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
 
     private fun hasSingleTypeParameter(
       symbol: KtFunctionLikeSymbol,
-      typeParameterCheck: (KtTypeParameterSymbol) -> Boolean = { true }
+      typeParameterCheck: (KtTypeParameterSymbol) -> Boolean = { true },
     ): Boolean {
       val typeParameters = symbol.typeParameters
       if (typeParameters.size != 1) return false
@@ -520,7 +518,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     // returns the lambda result
     private fun getIntentTypeForWithScopeCall(
       intent: UCallExpression,
-      intentInfo: IntentExpressionInfo
+      intentInfo: IntentExpressionInfo,
     ): IntentType {
       val intentObject =
         intent.getArgumentForParameter(0)?.skipParenthesizedExprDown()
@@ -548,7 +546,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       intentObject: UExpression,
       intentType: IntentType,
       call: UCallExpression,
-      intentInfo: IntentExpressionInfo
+      intentInfo: IntentExpressionInfo,
     ): IntentType {
       val lambdaExp = call.valueArguments.getOrNull(0) ?: return IntentType(isImplicit = false)
       if (
@@ -565,7 +563,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       intentObjectType: IntentType,
       lambdaExp: UExpression,
       intentInfo: IntentExpressionInfo,
-      intent: UExpression
+      intent: UExpression,
     ): IntentType {
       val analyzer =
         IntentDataFlowAnalyzer(
@@ -581,7 +579,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     private fun areAllLambdaExpressionsIntentMethodCalls(
       call: UCallExpression,
       lambdaExp: UExpression?,
-      intentInfo: IntentExpressionInfo
+      intentInfo: IntentExpressionInfo,
     ): Boolean {
       val expressions = getLambdaExpressionsOrNull(lambdaExp) ?: return false
       for (exp in expressions) {
@@ -613,7 +611,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     private fun containsQualifiedIntentMethodCalls(
       call: UCallExpression,
       exp: UQualifiedReferenceExpression,
-      intentInfo: IntentExpressionInfo
+      intentInfo: IntentExpressionInfo,
     ): Boolean {
       val chain = exp.getQualifiedChain()
       if (chain.isEmpty()) return false
@@ -641,7 +639,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       val intentFinalReference: USimpleNameReferenceExpression,
       val initialIntentInfo: IntentExpressionInfo,
       val intentArraySize: Int,
-      val assignIntentType: IntentType
+      val assignIntentType: IntentType,
     ) :
       IntentDataFlowAnalyzer(
         startExp = lastAssignment,
@@ -704,7 +702,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       val startExp: UExpression,
       val endExp: UExpression,
       var intentType: IntentType,
-      val intentInfo: IntentExpressionInfo
+      val intentInfo: IntentExpressionInfo,
     ) : DataFlowAnalyzer(setOf(startExp)) {
       var isEndReached: Boolean = false
 
@@ -748,7 +746,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
     /** Lint fixes related code */
     private fun buildImmutableFixOrNull(
       context: JavaContext,
-      flagsArgument: UExpression
+      flagsArgument: UExpression,
     ): LintFix? {
       val mutableFlagExpression = findMutableFlagExpression(context, flagsArgument) ?: return null
       return LintFix.create()
@@ -777,7 +775,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
 
     private fun findMutableFlagExpression(
       context: JavaContext,
-      flagsArgument: UExpression
+      flagsArgument: UExpression,
     ): UExpression? {
       var mutableFlagExpression: UExpression? = null
       flagsArgument.accept(

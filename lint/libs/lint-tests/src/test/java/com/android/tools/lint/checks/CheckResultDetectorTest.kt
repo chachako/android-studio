@@ -42,7 +42,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -114,7 +114,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -189,10 +189,10 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   void check(Rect rect, int aLeft, int aTop, int aRight, int aBottom) {
                     rect.intersect(aLeft, aTop, aRight, aBottom);
                   }
-                }"""
+                }""",
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
       .run()
@@ -236,7 +236,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
           .indented(),
         errorProneCanIgnoreReturnValueSource,
         javaxCheckReturnValueSource,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
       .run()
@@ -314,7 +314,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
         ),
         errorProneCanIgnoreReturnValueSource,
         javaxCheckReturnValueSource,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
       .allowDuplicates()
@@ -353,7 +353,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 fun test() {
                     assertThat(something()) // ERROR 1
                 }
-                """
+                """,
           )
           .indented(),
         java(
@@ -365,7 +365,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     return 42;
                   }
                 }
-                """
+                """,
           )
           .indented(),
         java(
@@ -375,7 +375,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 public class Lib {
                   public static void consume(Object o) {}
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#ignoreInTests
@@ -398,7 +398,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     } catch (Exception expected) {}
                   }
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#ignoreInTestsWithRule
@@ -412,7 +412,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     foo.f(); // OK 4
                   }
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#ignoreInTestsWithFailureMessage
@@ -435,7 +435,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     } catch (Exception expected) {}
                   }
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#ignoreInTestsWithRule
@@ -449,7 +449,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     foo.f(); // OK 8
                   }
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#ignoreInTestsWithFailureMessage
@@ -472,7 +472,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     } catch (Exception expected) {}
                   }
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#ignoreInThrowingRunnables
@@ -506,7 +506,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                   }
                   void bar(org.junit.function.ThrowingRunnable r) {}
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#ignoreTruthFailure
@@ -522,7 +522,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     } catch (Exception expected) {}
                   }
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#onlyIgnoreWithEnclosingTryCatch
@@ -540,7 +540,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     junit.framework.TestCase.fail();
                   }
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#ignoreInOrderVerification
@@ -553,7 +553,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     inOrder().verify(new Foo()).f(); // OK 21
                   }
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#ignoreVoidReturningMethodReferences
@@ -565,7 +565,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     xs.forEach(Lib::consume); // OK 22
                   }
                 }
-                """
+                """,
           )
           .indented(),
         // From CheckReturnValueTest#testIgnoreCRVOnMockito() {
@@ -584,7 +584,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     Mockito.doReturn(1).when(t).f(); // OK 26
                   }
                 }
-                """
+                """,
           )
           .indented(),
         java(
@@ -598,7 +598,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     foo.f(); // OK 22
                   }
                 }
-                """
+                """,
           )
           .indented(),
         SUPPORT_ANNOTATIONS_JAR,
@@ -752,7 +752,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     fun fromNullable(a: Any?): Any? = a"""
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
       .run()
@@ -805,7 +805,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     fun label(a: Any?): Any? = a"""
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
       .run()
@@ -874,7 +874,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
       .run()
@@ -928,7 +928,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
       .run()
@@ -966,7 +966,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
       .run()
@@ -1036,7 +1036,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(CheckResultDetector.CHECK_RESULT, CheckResultDetector.CHECK_PERMISSION)
       .run()
@@ -1110,7 +1110,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        errorProneCheckReturnValueSource
+        errorProneCheckReturnValueSource,
       )
       .run()
       .expectClean()
@@ -1169,7 +1169,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1223,7 +1223,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        errorProneCheckReturnValueSource
+        errorProneCheckReturnValueSource,
       )
       .run()
       .expectClean()
@@ -1273,7 +1273,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1341,9 +1341,9 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 META-INF/main.kotlin_module:
                 H4sIAAAAAAAAAGNgYGBmYGBgBGJWKM3AJcTFUZJaXKJXkJ0uxBYCZHmXcIlx
                 8cDE9IpLk2DiSgxaDACCij4oRAAAAA==
-                """
+                """,
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1410,7 +1410,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1468,7 +1468,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                     bar
                     baz
                 }
-                """
+                """,
           )
           .indented(),
         java(
@@ -1481,7 +1481,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowDuplicates()
       .run()
@@ -1562,7 +1562,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1602,7 +1602,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1681,7 +1681,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1745,7 +1745,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean() // until KTIJ-18765 is fixed
@@ -1779,7 +1779,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1815,7 +1815,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1867,11 +1867,11 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 inline fun <reified T : Throwable> assertFailsWith(message: String? = null, block: () -> Unit): T = TODO()
                 @JvmName("assertFailsInline")
                 inline fun assertFails(message: String?, block: () -> Unit): Throwable = TODO()
-                """
+                """,
           )
           .indented(),
         gradle("android { }"),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1942,7 +1942,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 Yzp7icm/T2WSVZn0Nd3amaQUKwtZPz7DGmchWwTLymUeK7RXSDtFnNObiBQw
                 U8DDAj7BIxLxaQGf4fNNmpCYxdwmrvkwfHzhI+YjpYTrak37GFLCiFpv+Ljr
                 Y9THPR9jSnO/nQzd/b+7Id9YPwkAAA==
-                """
+                """,
         ),
         kotlin(
             """
@@ -1962,7 +1962,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        javaxCheckReturnValueSource
+        javaxCheckReturnValueSource,
       )
       .run()
       .expect(
@@ -2003,7 +2003,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2049,7 +2049,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2084,7 +2084,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         javaxCheckReturnValueSource,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowDuplicates()
       .run()
@@ -2163,7 +2163,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 @io.reactivex.rxjava3.annotations.CheckReturnValue fun test2(): String = "test2"
                 @com.google.protobuf.CheckReturnValue fun test3(): String = "test3"
                 @org.mockito.CheckReturnValue fun test4(): String = "test4"
-                """
+                """,
           )
           .indented(),
         java(
@@ -2219,7 +2219,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 public @interface CanIgnoreReturnValue {}
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -2289,7 +2289,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -2326,7 +2326,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 import foo.bar.*;
                 @XCheckResult fun test1(): String = "test1"
                 @CheckResultX fun test2(): String = "test2"
-                """
+                """,
           )
           .indented(),
         java(
@@ -2344,7 +2344,7 @@ class CheckResultDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

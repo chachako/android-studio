@@ -94,7 +94,7 @@ class NegativeMarginDetectorTest : AbstractCheckTest() {
             <TextView android:layout_marginTop="-1dp" tools:ignore="NegativeMargin"/> <!-- SUPPRESSED -->
 
         </GridLayout>
-        """
+        """,
       )
       .indented()
 
@@ -116,7 +116,7 @@ class NegativeMarginDetectorTest : AbstractCheckTest() {
                 <item name="android:layout_marginBottom">-5dp</item> <!-- WARNING -->
             </style>
         </resources>
-        """
+        """,
       )
       .indented()
 }

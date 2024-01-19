@@ -22,7 +22,7 @@ import java.io.InputStream
 /** Wraps an InputStream to enable the network inspector capturing of response body */
 internal class InputStreamTracker(
   private val myWrapped: InputStream,
-  private val reporter: StreamReporter
+  private val reporter: StreamReporter,
 ) : InputStream() {
 
   override fun available(): Int {

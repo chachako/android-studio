@@ -66,7 +66,7 @@ class BidirectionalTextDetectorTest : AbstractCheckTest() {
                 val valid1 = "Left${RLO}Right${PDF}Left" // OK
                 val valid2 = "Left${RLO}Right${LRI}Nested Left${PDI}${PDF}Left" // OK
                 """
-        )
+        ),
       )
       .run()
       .expect(
@@ -117,7 +117,7 @@ class BidirectionalTextDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

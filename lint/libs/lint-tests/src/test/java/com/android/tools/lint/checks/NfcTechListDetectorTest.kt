@@ -50,7 +50,7 @@ class NfcTechListDetectorTest : AbstractCheckTest() {
                     </tech-list>
 
                 </resources>
-                """
+                """,
           )
           .indented()
       )
@@ -92,7 +92,7 @@ class NfcTechListDetectorTest : AbstractCheckTest() {
                           <tech>android.nfc.tech.ndefformatable</tech>
                      </tech-list>
                  </resources>
-                """
+                """,
           )
           .indented()
       )

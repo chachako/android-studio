@@ -83,7 +83,7 @@ class LeakDetectorTest : AbstractCheckTest() {
                     private static Context sAppContext2; // Probably app context leak
                     private static Context applicationCtx; // Probably app context leak
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -183,7 +183,7 @@ class LeakDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -385,7 +385,7 @@ class LeakDetectorTest : AbstractCheckTest() {
                 public class ViewModel { }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -514,7 +514,7 @@ class LeakDetectorTest : AbstractCheckTest() {
                         private Context applicationCtx;
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -716,7 +716,7 @@ class LeakDetectorTest : AbstractCheckTest() {
                 public class ViewModel { }
                 """
           )
-          .indented()
+          .indented(),
       )
       .skipTestModes(TestMode.TYPE_ALIAS, TestMode.IMPORT_ALIAS)
       .run()
@@ -766,7 +766,7 @@ class LeakDetectorTest : AbstractCheckTest() {
             public class ViewModel { }
             """
           )
-          .indented()
+          .indented(),
       )
       .skipTestModes(TestMode.TYPE_ALIAS, TestMode.IMPORT_ALIAS)
       .run()
@@ -812,7 +812,7 @@ class LeakDetectorTest : AbstractCheckTest() {
                 public @interface ApplicationContext {}
                 """
           )
-          .indented()
+          .indented(),
       )
       .skipTestModes(TestMode.TYPE_ALIAS, TestMode.IMPORT_ALIAS)
       .run()

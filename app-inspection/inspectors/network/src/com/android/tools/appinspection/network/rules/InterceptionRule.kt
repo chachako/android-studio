@@ -53,7 +53,7 @@ class InterceptionRuleImpl(proto: InterceptRule) : InterceptionRule {
 
   override fun transform(
     connection: NetworkConnection,
-    response: NetworkResponse
+    response: NetworkResponse,
   ): NetworkResponse {
     if (criteria.appliesTo(connection)) {
       return transformations.fold(

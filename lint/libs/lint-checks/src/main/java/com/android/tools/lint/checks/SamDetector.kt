@@ -71,7 +71,7 @@ class SamDetector : Detector(), SourceCodeScanner {
         severity = Severity.WARNING,
         androidSpecific = null,
         enabledByDefault = false,
-        implementation = Implementation(SamDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(SamDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     private const val HANDLER_CLASS = "android.os.Handler"
@@ -110,7 +110,7 @@ class SamDetector : Detector(), SourceCodeScanner {
   private fun checkCalls(
     context: JavaContext,
     lambda: ULambdaExpression,
-    variable: PsiLocalVariable
+    variable: PsiLocalVariable,
   ) {
     val method = lambda.getContainingUMethod() ?: return
     method.accept(
@@ -131,7 +131,7 @@ class SamDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     lambda: UExpression,
     call: UCallExpression,
-    argument: UReferenceExpression
+    argument: UReferenceExpression,
   ) {
     val psiMethod = call.resolve() ?: return
     val evaluator = context.evaluator
@@ -175,7 +175,7 @@ class SamDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     lambda: UExpression,
     type: String,
-    argument: UReferenceExpression
+    argument: UReferenceExpression,
   ) {
     val location = context.getLocation(argument)
     val simpleType = type.substring(type.lastIndexOf('.') + 1)
@@ -198,7 +198,7 @@ class SamDetector : Detector(), SourceCodeScanner {
       location,
       "Implicit new `$simpleType` instance being passed to method which ends up " +
         "checking instance equality; this can lead to subtle bugs",
-      fix
+      fix,
     )
   }
 

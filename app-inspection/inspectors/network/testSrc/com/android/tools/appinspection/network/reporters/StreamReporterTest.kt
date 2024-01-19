@@ -56,9 +56,7 @@ class StreamReporterTest {
 
     assertThat(reporter.data).isEqualTo("a")
     assertThat(logger.messages)
-      .containsExactly(
-        "ERROR: Network Inspector: Payload size exceeded max size (2)",
-      )
+      .containsExactly("ERROR: Network Inspector: Payload size exceeded max size (2)")
   }
 
   @Test
@@ -71,9 +69,7 @@ class StreamReporterTest {
 
     assertThat(reporter.data).isEqualTo("abc")
     assertThat(logger.messages)
-      .containsExactly(
-        "ERROR: Network Inspector: Payload size exceeded max size (6)",
-      )
+      .containsExactly("ERROR: Network Inspector: Payload size exceeded max size (6)")
   }
 
   @Test
@@ -84,10 +80,7 @@ class StreamReporterTest {
     reporter.onStreamClose()
 
     assertThat(reporter.data).isEqualTo("Payload omitted because it was too large")
-    assertThat(logger.messages)
-      .containsExactly(
-        "ERROR: Network Inspector: Payload too large (0)",
-      )
+    assertThat(logger.messages).containsExactly("ERROR: Network Inspector: Payload too large (0)")
   }
 
   @Test
@@ -99,10 +92,7 @@ class StreamReporterTest {
     reporter.onStreamClose()
 
     assertThat(reporter.data).isEqualTo("Payload omitted because it was too large")
-    assertThat(logger.messages)
-      .containsExactly(
-        "ERROR: Network Inspector: Payload too large (3)",
-      )
+    assertThat(logger.messages).containsExactly("ERROR: Network Inspector: Payload too large (3)")
   }
 
   @Test

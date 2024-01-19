@@ -58,7 +58,7 @@ class ForkJoinPoolDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -85,7 +85,7 @@ class ForkJoinPoolDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -94,7 +94,7 @@ class ForkJoinPoolDetector : Detector(), SourceCodeScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     // Called constructor directly
     // TODO: ForkJoinTask
@@ -102,7 +102,7 @@ class ForkJoinPoolDetector : Detector(), SourceCodeScanner {
       NEW_FJ_POOL,
       node,
       context.getLocation(node),
-      "Avoid using new ForkJoinPool instances when possible. Prefer using the IntelliJ application pool via `com.intellij.openapi.application.Application#executeOnPooledThread`, or for the Android Gradle Plugin use `com.android.build.gradle.internal.tasks.Workers`. See `go/do-not-freeze`."
+      "Avoid using new ForkJoinPool instances when possible. Prefer using the IntelliJ application pool via `com.intellij.openapi.application.Application#executeOnPooledThread`, or for the Android Gradle Plugin use `com.android.build.gradle.internal.tasks.Workers`. See `go/do-not-freeze`.",
     )
   }
 
@@ -126,7 +126,7 @@ class ForkJoinPoolDetector : Detector(), SourceCodeScanner {
       COMMON_FJ_POOL,
       node,
       context.getNameLocation(node),
-      "Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`."
+      "Avoid using common ForkJoinPool, directly or indirectly (for example via CompletableFuture). It has a limited set of threads on some machines which leads to hangs. See `go/do-not-freeze`.",
     )
   }
 }

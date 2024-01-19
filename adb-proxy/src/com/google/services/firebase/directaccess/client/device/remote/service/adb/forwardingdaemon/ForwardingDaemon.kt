@@ -87,5 +87,5 @@ interface ForwardingDaemon : AutoCloseable {
 fun ForwardingDaemon(
   streamOpener: StreamOpener,
   scope: CoroutineScope,
-  adbSession: AdbSession
+  adbSession: AdbSession,
 ): ForwardingDaemon = ForwardingDaemonImpl(streamOpener, scope, adbSession)

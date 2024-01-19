@@ -101,7 +101,7 @@ class RecyclerViewDetector : Detector(), SourceCodeScanner {
         CLEAR_ALL_DATA,
         context.getLocation(node),
         "It will always be more efficient to use more specific change events if " +
-          "you can. Rely on `notifyDataSetChanged` as a last resort."
+          "you can. Rely on `notifyDataSetChanged` as a last resort.",
       )
     }
   }
@@ -120,7 +120,7 @@ class RecyclerViewDetector : Detector(), SourceCodeScanner {
   private fun checkDataBinders(
     context: JavaContext,
     declaration: UMethod,
-    references: List<UCallExpression>?
+    references: List<UCallExpression>?,
   ) {
     if (references != null && references.isNotEmpty()) {
       val targets = Lists.newArrayList<UCallExpression>()
@@ -326,7 +326,7 @@ class RecyclerViewDetector : Detector(), SourceCodeScanner {
         priority = 8,
         androidSpecific = true,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -345,7 +345,7 @@ class RecyclerViewDetector : Detector(), SourceCodeScanner {
         priority = 8,
         androidSpecific = true,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -364,7 +364,7 @@ class RecyclerViewDetector : Detector(), SourceCodeScanner {
         priority = 8,
         androidSpecific = true,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val ON_BIND_VIEW_HOLDER = "onBindViewHolder"

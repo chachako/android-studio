@@ -32,7 +32,7 @@ class TomlContext(
   main: Project?,
   file: File,
   contents: CharSequence,
-  val document: LintTomlDocument
+  val document: LintTomlDocument,
 ) : Context(driver, project, main, file, contents) {
   override val suppressCommentPrefix: String = SUPPRESS_JAVA_COMMENT_PREFIX
 

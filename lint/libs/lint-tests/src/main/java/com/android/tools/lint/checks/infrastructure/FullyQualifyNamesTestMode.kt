@@ -74,7 +74,7 @@ class FullyQualifyNamesTestMode :
   UastSourceTransformationTestMode(
     description = "Names replaced with Fully Qualified Names",
     "TestMode.FULLY_QUALIFIED",
-    "qualified-imports"
+    "qualified-imports",
   ) {
   override val diffExplanation: String =
     // first line shorter: expecting to prefix that line with
@@ -96,7 +96,7 @@ class FullyQualifyNamesTestMode :
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
     // Edits at given offsets. By storing it this way
     // we can avoid a few cases where multiple PSI elements redundantly
@@ -222,7 +222,7 @@ class FullyQualifyNamesTestMode :
 
     protected open fun allowClassReference(
       node: USimpleNameReferenceExpression,
-      parent: UQualifiedReferenceExpression
+      parent: UQualifiedReferenceExpression,
     ): Boolean {
       return true
     }

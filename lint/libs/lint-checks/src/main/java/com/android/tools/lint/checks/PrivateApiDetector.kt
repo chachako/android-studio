@@ -69,7 +69,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = Implementation(PrivateApiDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(PrivateApiDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     @JvmField
@@ -88,7 +88,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = Implementation(PrivateApiDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(PrivateApiDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     @JvmField
@@ -107,7 +107,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = Implementation(PrivateApiDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(PrivateApiDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     @JvmField
@@ -126,7 +126,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.FATAL,
         androidSpecific = true,
-        implementation = Implementation(PrivateApiDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(PrivateApiDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     private const val LOAD_CLASS = "loadClass"
@@ -141,7 +141,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
         "declaredMembers",
         "declaredFunctions",
         "declaredMemberFunctions",
-        "declaredMemberProperties"
+        "declaredMemberProperties",
       )
     private const val ERROR_MESSAGE =
       "Accessing internal APIs via reflection is not " +
@@ -201,7 +201,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
   override fun visitReference(
     context: JavaContext,
     reference: UReferenceExpression,
-    referenced: PsiElement
+    referenced: PsiElement,
   ) {
     // Kotlin reflection is harder to analyze statically, there are multiple ways of
     // finally matching a method from the collection of declared members, etc. We heuristically
@@ -252,7 +252,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
   private fun getMethodDescriptor(
     arguments: List<UExpression>,
     context: JavaContext,
-    methodName: String
+    methodName: String,
   ): String? {
     val argTypes =
       if (arguments.size >= 2)
@@ -260,7 +260,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
       else emptyArray()
     return context.evaluator.constructMethodDescription(
       method = methodName,
-      argumentTypes = argTypes
+      argumentTypes = argTypes,
     )
   }
 
@@ -415,7 +415,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     restriction: Restriction?,
     api: String,
-    call: UCallExpression
+    call: UCallExpression,
   ) {
     val targetSdk = context.project.targetSdk
 
@@ -424,7 +424,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
         BLOCKED_PRIVATE_API,
         call,
         context.getLocation(call),
-        "Reflective access to $api is forbidden when targeting API $targetSdk and above"
+        "Reflective access to $api is forbidden when targeting API $targetSdk and above",
       )
     }
 
@@ -433,7 +433,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
         SOON_BLOCKED_PRIVATE_API,
         call,
         context.getLocation(call),
-        "Reflective access to $api will throw an exception when targeting API $targetSdk and above"
+        "Reflective access to $api will throw an exception when targeting API $targetSdk and above",
       )
     }
 
@@ -442,7 +442,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
         DISCOURAGED_PRIVATE_API,
         call,
         context.getLocation(call),
-        "Reflective access to $api, which is not part of the public SDK and therefore likely to change in future Android releases"
+        "Reflective access to $api, which is not part of the public SDK and therefore likely to change in future Android releases",
       )
     }
 
@@ -487,7 +487,7 @@ class PrivateApiDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     element: UCallExpression,
     targetSdk: Int,
-    apiLevel: Int
+    apiLevel: Int,
   ): Boolean {
     if (targetSdk <= apiLevel) {
       return true

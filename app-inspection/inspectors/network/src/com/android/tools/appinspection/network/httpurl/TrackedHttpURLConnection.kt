@@ -39,7 +39,7 @@ class TrackedHttpURLConnection(
   private val wrapped: HttpURLConnection,
   callstack: String,
   trackerFactory: HttpTrackerFactory,
-  private val interceptionRuleService: InterceptionRuleService
+  private val interceptionRuleService: InterceptionRuleService,
 ) {
   private data class HeaderEntry(val key: String?, val value: String)
 
@@ -112,7 +112,7 @@ class TrackedHttpURLConnection(
         interceptedResponse =
           interceptionRuleService.interceptResponse(
             NetworkConnection(wrapped.url.toString(), wrapped.requestMethod),
-            NetworkResponse(wrapped.responseCode, wrapped.headerFields, wrapped.inputStream)
+            NetworkResponse(wrapped.responseCode, wrapped.headerFields, wrapped.inputStream),
           )
         // Create a list for intercepted headers.
         interceptedHeaders =
@@ -123,7 +123,7 @@ class TrackedHttpURLConnection(
         // this method recursively.
         connectionTracker.trackResponseHeaders(
           interceptedResponse.responseCode,
-          interceptedResponse.responseHeaders
+          interceptedResponse.responseHeaders,
         )
         connectionTracker.trackResponseInterception(interceptedResponse.interception)
       } catch (e: IOException) {

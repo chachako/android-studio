@@ -50,7 +50,7 @@ class ConstraintLayoutDetector : LayoutDetector() {
       CONSTRAINT_LAYOUT.oldName(),
       CONSTRAINT_LAYOUT.newName(),
       MOTION_LAYOUT.oldName(),
-      MOTION_LAYOUT.newName()
+      MOTION_LAYOUT.newName(),
     )
   }
 
@@ -198,7 +198,7 @@ class ConstraintLayoutDetector : LayoutDetector() {
         severity = Severity.ERROR,
         implementation =
           Implementation(ConstraintLayoutDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     /**

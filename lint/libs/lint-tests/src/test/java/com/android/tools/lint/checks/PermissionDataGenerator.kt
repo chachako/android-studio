@@ -45,7 +45,7 @@ data class Permission(
   /** Manifest.permission class field name. */
   val field: String?,
   /** API level this permission was introduced in. */
-  val introducedIn: Int
+  val introducedIn: Int,
 ) {
 
   /** Bit mask for API levels where this permission was marked dangerous. */
@@ -356,7 +356,7 @@ class PermissionDataGenerator {
             nameToPermission,
             valueToFieldName,
             skipHidden,
-            apiLookup
+            apiLookup,
           )
           element = getNextTagByName(element, TAG_PERMISSION)
         }
@@ -371,7 +371,7 @@ class PermissionDataGenerator {
   private fun isDangerousPermission(
     protectionLevels: List<String>,
     name: String,
-    apiLevel: Int
+    apiLevel: Int,
   ): Boolean {
     if (apiLevel >= 23 && name == "android.permission.GET_ACCOUNTS") {
       // No longer needed in M. See issue 223244.
@@ -392,7 +392,7 @@ class PermissionDataGenerator {
     nameToPermission: MutableMap<String, Permission>,
     valueToFieldName: Map<String, String>,
     skipHidden: Boolean,
-    apiLookup: ApiLookup
+    apiLookup: ApiLookup,
   ) {
     val name = element.getAttributeNS(ANDROID_URI, ATTR_NAME)
     if (name.isEmpty()) {
@@ -496,7 +496,7 @@ class PermissionDataGenerator {
       jar =
         File(
           top, // API levels 1, 2 and 3
-          "prebuilts/tools/common/api-versions/android-$apiLevel/android.jar"
+          "prebuilts/tools/common/api-versions/android-$apiLevel/android.jar",
         )
       if (!jar.exists()) {
         if (apiLevel < 25) {

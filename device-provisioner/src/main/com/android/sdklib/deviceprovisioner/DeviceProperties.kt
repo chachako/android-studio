@@ -103,7 +103,7 @@ interface DeviceProperties {
       val density = density ?: return null
       return Resolution(
         width = ceil(Density.DEFAULT_DENSITY.toDouble() * resolution.width / density).toInt(),
-        height = ceil(Density.DEFAULT_DENSITY.toDouble() * resolution.height / density).toInt()
+        height = ceil(Density.DEFAULT_DENSITY.toDouble() * resolution.height / density).toInt(),
       )
     }
 
@@ -220,7 +220,7 @@ interface DeviceProperties {
       pluginId: String,
       serialNumber: String?,
       properties: Map<String, String>,
-      connectionId: String
+      connectionId: String,
     ) {
       deviceInfoProto.anonymizedSerialNumber = Anonymizer.anonymize(serialNumber) ?: ""
       deviceInfoProto.buildTags = properties[RO_BUILD_TAGS] ?: ""
@@ -279,7 +279,7 @@ interface DeviceProperties {
         density = density,
         icon = checkNotNull(icon),
         connectionType = connectionType,
-        deviceInfoProto = deviceInfoProto.build()
+        deviceInfoProto = deviceInfoProto.build(),
       )
   }
 
@@ -375,7 +375,7 @@ data class Resolution(val width: Int, val height: Int) {
 
 internal class SerialNumberAndMdnsConnectionType(
   val serialNumber: String,
-  val mdnsConnectionType: DeviceInfo.MdnsConnectionType
+  val mdnsConnectionType: DeviceInfo.MdnsConnectionType,
 ) {
   companion object {
     private const val ADB_MDNS_SERVICE_NAME = "adb"
@@ -397,12 +397,12 @@ internal class SerialNumberAndMdnsConnectionType(
             ADB_MDNS_TLS_SERVICE_NAME -> DeviceInfo.MdnsConnectionType.MDNS_AUTO_CONNECT_TLS
             ADB_MDNS_SERVICE_NAME -> DeviceInfo.MdnsConnectionType.MDNS_AUTO_CONNECT_UNENCRYPTED
             else -> DeviceInfo.MdnsConnectionType.MDNS_NONE
-          }
+          },
         )
       }
         ?: SerialNumberAndMdnsConnectionType(
           adbSerialNumber,
-          DeviceInfo.MdnsConnectionType.MDNS_NONE
+          DeviceInfo.MdnsConnectionType.MDNS_NONE,
         )
   }
 }

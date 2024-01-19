@@ -96,7 +96,7 @@ class GetContentDescriptionOverrideTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

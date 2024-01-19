@@ -32,7 +32,7 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
                 ;(function() {
                 var PLATFORM_VERSION_BUILD_LABEL = '7.1.1';
                 })();
-                """
+                """,
           )
           .indented()
       )
@@ -50,7 +50,7 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
                 ;(function() {
                 var CORDOVA_JS_BUILD_LABEL = '3.7.1-dev';
                 })();
-                """
+                """,
           )
           .indented()
       )
@@ -70,7 +70,7 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
                 ;(function() {
                 var PLATFORM_VERSION_BUILD_LABEL = '4.0.0';
                 })();
-                """
+                """,
           )
           .indented()
       )
@@ -93,7 +93,7 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
             """
                 ;(function() {
                 var CORDOVA_JS_BUILD_LABEL = '4.0.0';})();
-                """
+                """,
           )
           .indented()
       )
@@ -123,7 +123,7 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
             "ZG92YS9EZXZpY2UBABBqYXZhL2xhbmcvT2JqZWN0ACEABAAFAAAAAQAJAAYA" +
             "BwAAAAIAAQAIAAkAAQAKAAAAHQABAAEAAAAFKrcAAbEAAAABAAsAAAAGAAEA" +
             "AAAEAAgADAAJAAEACgAAAB4AAQAAAAAABhICswADsQAAAAEACwAAAAYAAQAA" +
-            "AAUAAQANAAAAAgAO"
+            "AAUAAQANAAAAAgAO",
         )
       )
       .run()
@@ -151,7 +151,7 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
             "hKE0dmkasVD2RZuKkMxWohFZKaoim9dWV8UlwZvqStdXhP7J6YLgXJulIoxm" +
             "ulJ366dc2QeRl+wEU1luyWhu1laqW936gxvVaKnSNjpGgJDgTtKL9DyGB59w" +
             "YGyRiWchH1W2XSj7GSGM//a5z1dK1jjmA1y+iRC249z1uOdU1ohfh1yJq3v2" +
-            "Btp04IDV60yHwfgXPeo8/kt6r+j/Z13WnS5++A0madraRwEAAA=="
+            "Btp04IDV60yHwfgXPeo8/kt6r+j/Z13WnS5++A0madraRwEAAA==",
         ),
         source(
             "assets/www/cordova.js.4.0.android",
@@ -159,9 +159,9 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
                 ;(function() {
                 var CORDOVA_JS_BUILD_LABEL = '4.0.1';
                 })();
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -186,7 +186,7 @@ class CordovaVersionDetectorTest : AbstractCheckTest() {
             "Q29yZG92YVdlYlZpZXcuamF2YQwACAAJAQAhb3JnL2FwYWNoZS9jb3Jkb3Zh" +
             "L0NvcmRvdmFXZWJWaWV3AQAQamF2YS9sYW5nL09iamVjdAEABTQuMC4wACEA" +
             "AgADAAAAAQAZAAQABQABAAYAAAACAAcAAQABAAgACQABAAoAAAAdAAEAAQAA" +
-            "AAUqtwABsQAAAAEACwAAAAYAAQAAAAMAAQAMAAAAAgAN"
+            "AAUqtwABsQAAAAEACwAAAAYAAQAAAAMAAQAMAAAAAgAN",
         )
       )
       .run()

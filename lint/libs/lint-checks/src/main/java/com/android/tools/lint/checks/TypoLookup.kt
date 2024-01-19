@@ -37,7 +37,7 @@ class TypoLookup
 private constructor(
   private var data: ByteArray,
   private var indices: IntArray,
-  private var wordCount: Int = 0
+  private var wordCount: Int = 0,
 ) {
   /**
    * Look up whether this word is a typo, and if so, return the typo itself and one or more likely
@@ -303,7 +303,7 @@ private constructor(
     private operator fun get(
       client: LintClient,
       xmlStream: InputStream,
-      name: String
+      name: String,
     ): TypoLookup? {
       val cacheDir =
         client.getCacheDir(null, true) ?: return null // should not happen since create=true above
@@ -316,7 +316,7 @@ private constructor(
             // conflicts on Windows (such as issue #26663)
             '-'.toString() +
             BINARY_FORMAT_VERSION +
-            ".bin"
+            ".bin",
         )
 
       @Suppress("ConstantConditionIf")
@@ -344,7 +344,7 @@ private constructor(
     private fun readData(
       client: LintClient,
       xmlStream: InputStream,
-      binaryFile: File?
+      binaryFile: File?,
     ): TypoLookup? {
       binaryFile ?: return null
 
@@ -364,7 +364,7 @@ private constructor(
           if (anExpectedHeader != buffer.get()) {
             client.log(
               null,
-              "Incorrect file header: not an typo database cache file, or a corrupt cache file"
+              "Incorrect file header: not an typo database cache file, or a corrupt cache file",
             )
             return null
           }
@@ -544,7 +544,7 @@ private constructor(
       terminator: Byte,
       s: CharSequence,
       begin: Int,
-      initialEnd: Int
+      initialEnd: Int,
     ): Int {
       var end = initialEnd
       var i = offset
@@ -612,7 +612,7 @@ private constructor(
       terminator: Byte,
       s: ByteArray,
       begin: Int,
-      initialEnd: Int
+      initialEnd: Int,
     ): Int {
       var end = initialEnd
       var i = offset

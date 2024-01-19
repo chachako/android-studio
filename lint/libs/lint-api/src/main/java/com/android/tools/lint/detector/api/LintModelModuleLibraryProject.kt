@@ -35,7 +35,7 @@ open class LintModelModuleLibraryProject(
   client: LintClient,
   dir: File,
   referenceDir: File,
-  val dependency: LintModelDependency?
+  val dependency: LintModelDependency?,
 ) : Project(client, dir, referenceDir) {
 
   init {
@@ -88,7 +88,7 @@ open class LintModelModuleJavaLibraryProject(
   dir: File,
   referenceDir: File,
   dependency: LintModelDependency?,
-  private val javaLibrary: LintModelJavaLibrary
+  private val javaLibrary: LintModelJavaLibrary,
 ) : LintModelModuleLibraryProject(client, dir, referenceDir, dependency) {
 
   override fun getJavaLibraries(includeProvided: Boolean): List<File> {
@@ -113,7 +113,7 @@ open class LintModelModuleAndroidLibraryProject(
   dir: File,
   referenceDir: File,
   dependency: LintModelDependency?,
-  private val androidLibrary: LintModelAndroidLibrary
+  private val androidLibrary: LintModelAndroidLibrary,
 ) : LintModelModuleLibraryProject(client, dir, referenceDir, dependency) {
   init {
     androidLibrary.manifest.let { manifest ->

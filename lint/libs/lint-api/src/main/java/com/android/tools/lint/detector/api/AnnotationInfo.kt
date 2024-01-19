@@ -66,7 +66,7 @@ class AnnotationInfo(
    * The source of the annotation, such as [AnnotationOrigin.FILE] if this annotation was from a
    * `@file:` annotation surrounding the target element.
    */
-  val origin: AnnotationOrigin
+  val origin: AnnotationOrigin,
 ) {
   /**
    * Returns true if this annotation is inherited from the hierarchy instead of being annotated
@@ -206,7 +206,7 @@ class AnnotationUsageInfo(
    * The type of annotation usage, which expresses how the [usage] element is associated with the
    * annotation.
    */
-  var type: AnnotationUsageType
+  var type: AnnotationUsageType,
 ) {
 
   /**

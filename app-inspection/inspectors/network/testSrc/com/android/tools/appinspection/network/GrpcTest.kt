@@ -48,7 +48,7 @@ private val EXPECTED_EVENT_TYPES =
     GRPC_MESSAGE_SENT,
     GRPC_RESPONSE_HEADERS,
     GRPC_MESSAGE_RECEIVED,
-    GRPC_CALL_ENDED
+    GRPC_CALL_ENDED,
   )
 
 class GrpcTest {
@@ -176,12 +176,7 @@ class GrpcTest {
     val events = fakeConnection.grpcData.groupBy({ it.connectionId }) { it.unionCase }
 
     assertThat(events)
-      .containsExactlyEntriesIn(
-        mapOf(
-          0L to EXPECTED_EVENT_TYPES,
-          1L to EXPECTED_EVENT_TYPES,
-        )
-      )
+      .containsExactlyEntriesIn(mapOf(0L to EXPECTED_EVENT_TYPES, 1L to EXPECTED_EVENT_TYPES))
   }
 
   private fun GrpcEvent.toDebugString(): String {

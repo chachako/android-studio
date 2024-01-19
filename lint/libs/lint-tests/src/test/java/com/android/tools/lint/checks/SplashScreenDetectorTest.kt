@@ -47,7 +47,7 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        manifest().minSdk(S)
+        manifest().minSdk(S),
       )
       .run()
       .expect(
@@ -82,7 +82,7 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         fragmentActivityStub,
-        manifest().minSdk(S)
+        manifest().minSdk(S),
       )
       .run()
       .expect(
@@ -120,7 +120,7 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         fragmentStub,
-        manifest().minSdk(S)
+        manifest().minSdk(S),
       )
       .run()
       .expect(
@@ -155,7 +155,7 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         fragmentStub,
-        manifest().minSdk(S)
+        manifest().minSdk(S),
       )
       .run()
       .expect(
@@ -184,7 +184,7 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         fragmentStub,
-        manifest().minSdk(R)
+        manifest().minSdk(R),
       )
       .run()
       .expectClean()
@@ -233,7 +233,7 @@ class SplashScreenDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        manifest().minSdk(S)
+        manifest().minSdk(S),
       )
       .run()
       .expectClean()

@@ -44,7 +44,7 @@ class WrongLocationDetector : LayoutDetector() {
         priority = 8,
         severity = Severity.FATAL,
         implementation =
-          Implementation(WrongLocationDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+          Implementation(WrongLocationDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
       )
   }
 
@@ -55,7 +55,7 @@ class WrongLocationDetector : LayoutDetector() {
         ISSUE,
         root,
         context.getElementLocation(root),
-        "This file should be placed in a `values`/ folder, not a `layout`/ folder"
+        "This file should be placed in a `values`/ folder, not a `layout`/ folder",
       )
     }
   }

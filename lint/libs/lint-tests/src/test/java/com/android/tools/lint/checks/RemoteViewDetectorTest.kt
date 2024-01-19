@@ -70,10 +70,10 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
                         <RadioGroup />
                         <androidx.appcompat.widget.AppCompatTextView />
                     </merge>
-                    """
+                    """,
           )
           .indented(),
-        rClass("test.pkg", "@layout/test")
+        rClass("test.pkg", "@layout/test"),
       )
       .run()
       .expect(
@@ -101,10 +101,10 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
                     <RadioButton />
                     <RadioGroup />
                 </merge>
-                """
+                """,
           )
           .indented(),
-        rClass("test.pkg", "@layout/test")
+        rClass("test.pkg", "@layout/test"),
       )
       .run()
       .expectClean()
@@ -123,10 +123,10 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
                     <RadioButton />
                     <RadioGroup />
                 </merge>
-                """
+                """,
           )
           .indented(),
-        rClass("test.pkg", "@layout/test")
+        rClass("test.pkg", "@layout/test"),
       )
       .run()
       .expectClean()
@@ -170,9 +170,9 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
                       android:background="@drawable/card_action_button_oval_bg">
                   </android.widget.LinearLayout>
                 </android.widget.RelativeLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

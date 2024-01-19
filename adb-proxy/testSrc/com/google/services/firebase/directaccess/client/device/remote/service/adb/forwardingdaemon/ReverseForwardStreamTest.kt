@@ -62,7 +62,7 @@ class ReverseForwardStreamTest {
     scope =
       fakeAdbSession.scope.createChildScope(
         true,
-        Dispatchers.Default.limitedParallelism(DEFAULT_DISPATCHER_PARALLELISM)
+        Dispatchers.Default.limitedParallelism(DEFAULT_DISPATCHER_PARALLELISM),
       )
     val socket = fakeAdbSession.channelFactory.createServerSocket()
 
@@ -97,7 +97,7 @@ class ReverseForwardStreamTest {
                 "com.google.services.firebase.directaccess.client.device.remote.service.adb.forwardingdaemon.reverse.daemon." +
                 "ReverseDaemon $port",
               inputData,
-              ByteBuffer.allocate(0)
+              ByteBuffer.allocate(0),
             )
           }
           return address

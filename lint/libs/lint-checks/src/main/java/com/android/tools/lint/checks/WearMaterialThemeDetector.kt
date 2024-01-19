@@ -45,7 +45,7 @@ class WearMaterialThemeDetector : WearDetector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         implementation = IMPLEMENTATION,
-        androidSpecific = true
+        androidSpecific = true,
       )
   }
 
@@ -68,7 +68,7 @@ class WearMaterialThemeDetector : WearDetector(), SourceCodeScanner {
           ISSUE,
           statement,
           location,
-          "Don't use `androidx.compose.material.MaterialTheme` in a Wear OS project; use `androidx.wear.compose.material.MaterialTheme` instead"
+          "Don't use `androidx.compose.material.MaterialTheme` in a Wear OS project; use `androidx.wear.compose.material.MaterialTheme` instead",
         )
       }
     }

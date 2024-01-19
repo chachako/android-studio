@@ -36,7 +36,7 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                     """
           )
           .indented(),
-        byteOnly = false
+        byteOnly = false,
       )
     )
 
@@ -70,7 +70,7 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *diffUtilStubs
+        *diffUtilStubs,
       )
       .run()
       .expectClean()
@@ -121,7 +121,7 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *diffUtilStubs
+        *diffUtilStubs,
       )
       .run()
       .expectClean()
@@ -169,7 +169,7 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *diffUtilStubs
+        *diffUtilStubs,
       )
       .run()
       .expectClean()
@@ -201,7 +201,7 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *diffUtilStubs
+        *diffUtilStubs,
       )
       .run()
       .expectClean()
@@ -256,7 +256,7 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *diffUtilStubs
+        *diffUtilStubs,
       )
       // TODO(b/314713392)
       .expectIdenticalTestModeOutput(false)
@@ -323,7 +323,7 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *diffUtilStubs
+        *diffUtilStubs,
       )
       // TODO(b/314713392)
       .expectIdenticalTestModeOutput(false)
@@ -369,7 +369,7 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *diffUtilStubs
+        *diffUtilStubs,
       )
       .run()
       .expectClean()
@@ -430,7 +430,7 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         *diffUtilStubs,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -508,7 +508,7 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *diffUtilStubs
+        *diffUtilStubs,
       )
       .run()
       .expectClean()

@@ -61,7 +61,7 @@ class SwingWorkerDetectorTest {
                         }
                     }
                 """
-        )
+        ),
       )
       .issues(SwingWorkerDetector.ISSUE)
       .run()

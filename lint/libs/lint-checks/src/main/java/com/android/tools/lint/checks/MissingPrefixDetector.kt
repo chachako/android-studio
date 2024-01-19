@@ -82,8 +82,8 @@ class MissingPrefixDetector : LayoutDetector() {
             MissingPrefixDetector::class.java,
             Scope.MANIFEST_AND_RESOURCE_SCOPE,
             Scope.MANIFEST_SCOPE,
-            Scope.RESOURCE_FILE_SCOPE
-          )
+            Scope.RESOURCE_FILE_SCOPE,
+          ),
       )
   }
 
@@ -150,7 +150,7 @@ class MissingPrefixDetector : LayoutDetector() {
         MISSING_NAMESPACE,
         attribute,
         context.getLocation(attribute),
-        "Attribute is missing the Android namespace prefix"
+        "Attribute is missing the Android namespace prefix",
       )
     } else if (
       ANDROID_URI != uri &&
@@ -179,8 +179,8 @@ class MissingPrefixDetector : LayoutDetector() {
               context.getLocation(attribute),
               String.format(
                 "Unused namespace declaration %1\$s; already " + "declared on the root element",
-                name
-              )
+                name,
+              ),
             )
           }
           i++

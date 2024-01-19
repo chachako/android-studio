@@ -50,7 +50,7 @@ class MultiProjectHtmlReporterTest : AbstractCheckTest() {
                           ManifestDetector.MULTIPLE_USES_SDK,
                           HardcodedValuesDetector.ISSUE,
                           // Not reported, but for the disabled-list
-                          ManifestDetector.MOCK_LOCATION
+                          ManifestDetector.MOCK_LOCATION,
                         )
                   }
                 super.registry = registry
@@ -68,14 +68,14 @@ class MultiProjectHtmlReporterTest : AbstractCheckTest() {
         create(
           File("/foo/bar/Foo/AndroidManifest.xml"),
           DefaultPosition(6, 4, 198),
-          DefaultPosition(6, 42, 236)
+          DefaultPosition(6, 42, 236),
         )
       val incident1 =
         Incident(
             ManifestDetector.MULTIPLE_USES_SDK,
             "There should only be a single `<uses-sdk>` element in the manifest: merge these together",
             location1,
-            null
+            null,
           )
           .apply {
             this.project = project
@@ -85,14 +85,14 @@ class MultiProjectHtmlReporterTest : AbstractCheckTest() {
         create(
           File("/foo/bar/Foo/res/layout/main.xml"),
           DefaultPosition(11, 8, 377),
-          DefaultPosition(11, 27, 396)
+          DefaultPosition(11, 27, 396),
         )
       val incident2 =
         Incident(
             HardcodedValuesDetector.ISSUE,
             "Hardcoded string \"Fooo\", should use @string resource",
             location2,
-            null
+            null,
           )
           .apply {
             this.project = project
@@ -179,7 +179,7 @@ document.getElementById(id).style.display = 'none';
 </div>
 </body>
 </html>""",
-        report
+        report,
       )
     } finally {
       dir.delete()

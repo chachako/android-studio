@@ -40,7 +40,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
     val typeTag: Byte,
     val referenceTypeID: Long,
     val signature: String,
-    val status: Int
+    val status: Int,
   ) : Event
 
   data class EventClassUnload(
@@ -61,7 +61,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
     override val requestID: Int,
     val threadID: Long,
     val location: Location,
-    val taggedValue: TaggedValue
+    val taggedValue: TaggedValue,
   ) : Event
 
   data class EventMonitorContended(
@@ -69,7 +69,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
     override val requestID: Int,
     val threadID: Long,
     val taggedObjectID: TaggedObjectID,
-    val location: Location
+    val location: Location,
   ) : Event
 
   data class EventMonitorWait(
@@ -78,7 +78,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
     val threadID: Long,
     val taggedObjectID: TaggedObjectID,
     val location: Location,
-    val timeout: Long
+    val timeout: Long,
   ) : Event
 
   data class EventMonitorWaited(
@@ -87,7 +87,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
     val threadID: Long,
     val taggedObjectID: TaggedObjectID,
     val location: Location,
-    val timedOut: Boolean
+    val timedOut: Boolean,
   ) : Event
 
   data class EventException(
@@ -96,13 +96,13 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
     val threadID: Long,
     val location: Location,
     val taggedObjectID: TaggedObjectID,
-    val catchLocation: Location
+    val catchLocation: Location,
   ) : Event
 
   data class EventLifeCycle(
     override val kind: EventKind,
     override val requestID: Int,
-    val threadID: Long
+    val threadID: Long,
   ) : Event
 
   data class EventFieldAccess(
@@ -113,7 +113,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
     val refType: Byte,
     val typeID: Long,
     val fieldID: Long,
-    val taggedObjectID: TaggedObjectID
+    val taggedObjectID: TaggedObjectID,
   ) : Event
 
   data class EventFieldModification(
@@ -125,7 +125,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
     val typeID: Long,
     val fieldID: Long,
     val taggedObjectID: TaggedObjectID,
-    val value: TaggedValue
+    val value: TaggedValue,
   ) : Event
 
   companion object {
@@ -158,7 +158,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
                 requestID,
                 reader.getThreadID(),
                 reader.getLocation(),
-                reader.getTagValue()
+                reader.getTagValue(),
               )
             )
           }
@@ -170,7 +170,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
                 requestID,
                 reader.getThreadID(),
                 reader.getTaggedObjectID(),
-                reader.getLocation()
+                reader.getLocation(),
               )
             )
           }
@@ -182,7 +182,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
                 reader.getThreadID(),
                 reader.getTaggedObjectID(),
                 reader.getLocation(),
-                reader.getLong()
+                reader.getLong(),
               )
             )
           }
@@ -194,7 +194,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
                 reader.getThreadID(),
                 reader.getTaggedObjectID(),
                 reader.getLocation(),
-                reader.getBoolean()
+                reader.getBoolean(),
               )
             )
           }
@@ -206,7 +206,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
                 reader.getThreadID(),
                 reader.getLocation(),
                 reader.getTaggedObjectID(),
-                reader.getLocation()
+                reader.getLocation(),
               )
             )
           }
@@ -229,7 +229,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
                 typeTag,
                 referenceTypeID,
                 signature,
-                status
+                status,
               )
             )
           }
@@ -247,7 +247,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
                 reader.getByte(),
                 reader.getReferenceTypeID(),
                 reader.getFieldID(),
-                reader.getTaggedObjectID()
+                reader.getTaggedObjectID(),
               )
             )
           }
@@ -262,7 +262,7 @@ data class CompositeCmd(val suspendPolicy: Byte, val events: List<Event>) :
                 reader.getObjectID(),
                 reader.getFieldID(),
                 reader.getTaggedObjectID(),
-                reader.getTagValue()
+                reader.getTagValue(),
               )
             )
           }

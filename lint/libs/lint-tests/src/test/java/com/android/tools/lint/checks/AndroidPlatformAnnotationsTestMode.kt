@@ -44,7 +44,7 @@ import org.objectweb.asm.TypePath
 internal class AndroidPlatformAnnotationsTestMode :
   TestMode(
     description = "Platform Annotations",
-    "AbstractCheckTest.PLATFORM_ANNOTATIONS_TEST_MODE"
+    "AbstractCheckTest.PLATFORM_ANNOTATIONS_TEST_MODE",
   ) {
   override val folderName: String = "platform-annotations"
   override val modifiesSources: Boolean = true
@@ -167,7 +167,7 @@ internal class AndroidPlatformAnnotationsTestMode :
           name: String,
           signature: String?,
           superName: String?,
-          interfaces: Array<out String>?
+          interfaces: Array<out String>?,
         ) {
           super.visit(version, access, mapName(name), signature, superName, interfaces)
         }
@@ -176,13 +176,13 @@ internal class AndroidPlatformAnnotationsTestMode :
           name: String?,
           outerName: String?,
           innerName: String?,
-          access: Int
+          access: Int,
         ) {
           super.visitInnerClass(
             name?.let { mapName(it) },
             outerName?.let { mapName(it) },
             innerName,
-            access
+            access,
           )
         }
 
@@ -191,7 +191,7 @@ internal class AndroidPlatformAnnotationsTestMode :
           name: String,
           descriptor: String?,
           signature: String?,
-          value: Any?
+          value: Any?,
         ): FieldVisitor {
           return super.visitField(access, name, descriptor?.let { mapName(it) }, signature, value)
         }
@@ -204,7 +204,7 @@ internal class AndroidPlatformAnnotationsTestMode :
           typeRef: Int,
           typePath: TypePath?,
           descriptor: String?,
-          visible: Boolean
+          visible: Boolean,
         ): AnnotationVisitor {
           return super.visitTypeAnnotation(typeRef, typePath, descriptor, visible)
         }
@@ -218,14 +218,14 @@ internal class AndroidPlatformAnnotationsTestMode :
           name: String,
           descriptor: String?,
           signature: String?,
-          exceptions: Array<out String>?
+          exceptions: Array<out String>?,
         ): MethodVisitor {
           return super.visitMethod(
             access,
             name,
             descriptor?.let { mapName(it) },
             signature,
-            exceptions
+            exceptions,
           )
         }
       }

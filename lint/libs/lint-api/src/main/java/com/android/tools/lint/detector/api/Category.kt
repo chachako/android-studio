@@ -31,7 +31,7 @@ constructor(
 
   /** The name of this category. */
   val name: String,
-  val priority: Int
+  val priority: Int,
 ) : Comparable<Category> {
   /**
    * Returns a full name for this category. For a top level category, this is just the [name] value,

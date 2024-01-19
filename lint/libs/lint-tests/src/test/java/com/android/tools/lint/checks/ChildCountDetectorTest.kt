@@ -43,7 +43,7 @@ class ChildCountDetectorTest : AbstractCheckTest() {
                         android:layout_height="match_parent" />
 
                 </ScrollView>
-                """
+                """,
           )
           .indented()
       )
@@ -75,7 +75,7 @@ class ChildCountDetectorTest : AbstractCheckTest() {
                         android:layout_height="match_parent" />
 
                 </ListView>
-                """
+                """,
           )
           .indented()
       )
@@ -106,7 +106,7 @@ class ChildCountDetectorTest : AbstractCheckTest() {
                         <requestFocus/>
 
                 </ListView>
-                """
+                """,
           )
           .indented()
       )
@@ -143,7 +143,7 @@ class ChildCountDetectorTest : AbstractCheckTest() {
 
                   </android.support.constraint.ConstraintLayout>
                 </ScrollView>
-                """
+                """,
           )
           .indented()
       )
@@ -176,7 +176,7 @@ class ChildCountDetectorTest : AbstractCheckTest() {
                     </androidx.core.widget.NestedScrollView>
 
                 </layout>
-                """
+                """,
           )
           .indented()
       )

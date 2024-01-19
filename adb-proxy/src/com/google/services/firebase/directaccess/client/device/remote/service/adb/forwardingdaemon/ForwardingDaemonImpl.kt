@@ -75,7 +75,7 @@ internal class ForwardingDaemonImpl(
   private val adbSession: AdbSession,
   private val serverSocketProvider: suspend () -> AdbServerSocket = {
     adbSession.channelFactory.createServerSocket()
-  }
+  },
 ) : ForwardingDaemon {
 
   private val streams = mutableMapOf<Int, Stream>()
@@ -143,7 +143,7 @@ internal class ForwardingDaemonImpl(
   private suspend fun pingDevice(
     byteArray: ByteArray,
     input: AdbInputChannel,
-    output: AdbOutputChannel
+    output: AdbOutputChannel,
   ): Long {
     val buffer = ByteBuffer.wrap(byteArray)
     return withTimeout(ROUND_TRIP_LATENCY_LIMIT.toMillis()) {
@@ -179,7 +179,7 @@ internal class ForwardingDaemonImpl(
                   override suspend fun writeExactly(
                     buffer: ByteBuffer,
                     timeout: Long,
-                    unit: TimeUnit
+                    unit: TimeUnit,
                   ) {
                     writeMutex.withLock { adbChannel.writeExactly(buffer, timeout, unit) }
                   }
@@ -257,7 +257,7 @@ internal class ForwardingDaemonImpl(
           } catch (_: TimeoutCancellationException) {
             logger.log(
               Level.WARNING,
-              "Command handler not cancelled after ${FAST_TASK_TIME_LIMIT.seconds}s."
+              "Command handler not cancelled after ${FAST_TASK_TIME_LIMIT.seconds}s.",
             )
           }
         }

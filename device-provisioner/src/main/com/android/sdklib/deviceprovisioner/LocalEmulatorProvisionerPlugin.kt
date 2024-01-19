@@ -258,7 +258,7 @@ class LocalEmulatorProvisionerPlugin(
     val deviceState: DeviceState,
     val emulatorConsole: EmulatorConsole?,
     val avdInfo: AvdInfo,
-    val pendingAvdInfo: AvdInfo?
+    val pendingAvdInfo: AvdInfo?,
   )
 
   /**
@@ -389,7 +389,7 @@ class LocalEmulatorProvisionerPlugin(
                           PLUGIN_ID,
                           connectedDevice.serialNumber,
                           newProperties,
-                          randomConnectionId()
+                          randomConnectionId(),
                         )
                         // Device type is not always reliably read from properties
                         deviceType = activeAvdInfo.toDeviceType()
@@ -467,7 +467,7 @@ class LocalEmulatorProvisionerPlugin(
                     properties,
                     isTransitioning = pendingTransition != null,
                     status = if (pendingTransition != null) "Starting up" else "Offline",
-                    error = activeAvdInfo.deviceError
+                    error = activeAvdInfo.deviceError,
                   )
                 } else {
                   Connected(
@@ -482,12 +482,12 @@ class LocalEmulatorProvisionerPlugin(
                         else -> "Connected"
                       },
                     connectedDevice,
-                    error = activeAvdInfo.deviceError ?: pendingAvdInfo?.let { AvdChangedError }
+                    error = activeAvdInfo.deviceError ?: pendingAvdInfo?.let { AvdChangedError },
                   )
                 },
                 emulatorConsole,
                 activeAvdInfo,
-                pendingAvdInfo
+                pendingAvdInfo,
               )
             )
           }
@@ -496,7 +496,7 @@ class LocalEmulatorProvisionerPlugin(
         .stateIn(
           scope,
           SharingStarted.Eagerly,
-          InternalState(Disconnected(initialDeviceProperties), null, initialAvdInfo, null)
+          InternalState(Disconnected(initialDeviceProperties), null, initialAvdInfo, null),
         )
 
     override val stateFlow =
@@ -539,7 +539,7 @@ class LocalEmulatorProvisionerPlugin(
     suspend fun updateConnectedDevice(
       connectedDevice: ConnectedDevice,
       emulatorConsole: EmulatorConsole,
-      emulatorConsolePort: Int
+      emulatorConsolePort: Int,
     ) {
       messageChannel.send(
         ConnectedDeviceUpdate(connectedDevice, emulatorConsole, emulatorConsolePort)
@@ -612,7 +612,7 @@ class LocalEmulatorProvisionerPlugin(
             TransitionRequest(
               TransitionType.DEACTIVATION,
               clock.now() + DISCONNECTION_TIMEOUT,
-              ::stop
+              ::stop,
             )
           messageChannel.send(request)
           request.completion.await()
@@ -626,7 +626,7 @@ class LocalEmulatorProvisionerPlugin(
           DeviceAction.Presentation(
               label = "Download system image",
               icon = AllIcons.Actions.Download,
-              enabled = false
+              enabled = false,
             )
             .enabledIf {
               (it.error as? AvdDeviceError)?.status in
@@ -728,7 +728,7 @@ class LocalEmulatorProperties(
           checkNotNull(avdName),
           avdInfo.dataFolderPath,
           checkNotNull(displayName),
-          avdInfo.properties
+          avdInfo.properties,
         )
       }
 
@@ -776,7 +776,7 @@ private data class AvdInfoUpdate(val avdInfo: AvdInfo) : LocalEmulatorMessage
 private data class ConnectedDeviceUpdate(
   val connectedDevice: ConnectedDevice,
   val emulatorConsole: EmulatorConsole,
-  val emulatorConsolePort: Int
+  val emulatorConsolePort: Int,
 ) : LocalEmulatorMessage
 
 private data class ConnectedDeviceStateUpdate(val deviceState: com.android.adblib.DeviceState) :
@@ -787,7 +787,7 @@ private data class BootStatusUpdate(val bootStatus: BootStatus) : LocalEmulatorM
 private data class DevicePropertiesUpdate(
   val connectedDevice: ConnectedDevice,
   val properties: Result<Map<String, String>>,
-  val resolution: Resolution?
+  val resolution: Resolution?,
 ) : LocalEmulatorMessage
 
 private data class TransitionRequest(

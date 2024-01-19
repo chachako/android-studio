@@ -85,7 +85,7 @@ class HdpiDetectorTest {
                         public static float scale(float f) { return f; }
                     }
                     """
-        )
+        ),
       )
       .issues(HdpiDetector.ISSUE)
       .run()

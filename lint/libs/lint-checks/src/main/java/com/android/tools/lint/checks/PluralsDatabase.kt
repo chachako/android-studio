@@ -27,7 +27,7 @@ import java.util.EnumSet
 abstract class PluralsDatabase(
   private val languageCodes: Array<String>,
   private val languageFlags: IntArray,
-  internal val apiLevel: Int
+  internal val apiLevel: Int,
 ) {
   private val plurals = mutableMapOf<String, EnumSet<Quantity>>()
 

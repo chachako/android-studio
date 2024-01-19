@@ -53,7 +53,7 @@ private constructor(
   /** The custom lint check's issue registry that this [JarFileIssueRegistry] wraps. */
   registry: IssueRegistry,
   /** Vendor for this lint registry. */
-  override val vendor: Vendor
+  override val vendor: Vendor,
 ) : IssueRegistry() {
 
   override fun cacheable(): Boolean = LintClient.isStudio
@@ -122,7 +122,7 @@ private constructor(
       jarFiles: Collection<File>,
       currentProject: Project? = null,
       driver: LintDriver? = null,
-      skipVerification: Boolean = false
+      skipVerification: Boolean = false,
     ): List<JarFileIssueRegistry> {
       val registryMap =
         try {
@@ -167,7 +167,7 @@ private constructor(
       jarFile: File,
       currentProject: Project?,
       driver: LintDriver?,
-      skipVerification: Boolean
+      skipVerification: Boolean,
     ): JarFileIssueRegistry? {
       val reference = cache[jarFile]
       if (reference != null) {
@@ -187,7 +187,7 @@ private constructor(
           registryClassName,
           currentProject,
           driver,
-          skipVerification
+          skipVerification,
         )
       return if (userRegistry != null) {
         val vendor = getVendor(client, userRegistry, jarFile)
@@ -199,7 +199,7 @@ private constructor(
               Severity.ERROR,
               null,
               "Issue ${issue.id} has defaultSeverity=IGNORE; that's " +
-                "not valid. Use enabledByDefault=false instead."
+                "not valid. Use enabledByDefault=false instead.",
             )
           }
         }
@@ -254,7 +254,7 @@ private constructor(
       className: String,
       currentProject: Project?,
       driver: LintDriver?,
-      skipVerification: Boolean
+      skipVerification: Boolean,
     ): IssueRegistry? {
       // Make a class loader for this jar
       return try {
@@ -283,7 +283,7 @@ private constructor(
                 message = message,
                 file = jarFile,
                 project = currentProject,
-                driver = driver
+                driver = driver,
               )
             }
             return null
@@ -318,7 +318,7 @@ private constructor(
                   message = message,
                   file = jarFile,
                   project = currentProject,
-                  driver = driver
+                  driver = driver,
                 )
               }
               recordRejectedIssues(issues)
@@ -341,7 +341,7 @@ private constructor(
                     message = message,
                     file = jarFile,
                     project = currentProject,
-                    driver = driver
+                    driver = driver,
                   )
                 }
                 recordRejectedIssues(issues)
@@ -357,7 +357,7 @@ private constructor(
                       message = message,
                       file = jarFile,
                       project = currentProject,
-                      driver = driver
+                      driver = driver,
                     )
                   }
                   recordRejectedIssues(issues)
@@ -412,7 +412,7 @@ private constructor(
                   .replace(
                     // Force indentation
                     "    ",
-                    "\u00a0\u00a0\u00a0\u00a0"
+                    "\u00a0\u00a0\u00a0\u00a0",
                   )
             }
 
@@ -422,7 +422,7 @@ private constructor(
               message = message,
               file = jarFile,
               project = currentProject,
-              driver = driver
+              driver = driver,
             )
           }
           // Not returning here: try to run the checks
@@ -442,7 +442,7 @@ private constructor(
               e,
               "Could not load custom lint check jar file %1\$s: %2\$s",
               jarFile,
-              stacktrace
+              stacktrace,
             )
           }
         } else if (reportErrors(driver)) {
@@ -458,7 +458,7 @@ private constructor(
             message = message,
             file = jarFile,
             project = currentProject,
-            driver = driver
+            driver = driver,
           )
         }
         null
@@ -499,7 +499,7 @@ private constructor(
               Vendor(
                 vendorName = "Android Open Source Project ($identifier)",
                 feedbackUrl = "https://issuetracker.google.com/issues/new?component=192731",
-                identifier = identifier
+                identifier = identifier,
               )
             } else if (registryClass.startsWith("com.google.")) {
               Vendor(vendorName = "Google ($identifier)", identifier = identifier)
@@ -514,7 +514,7 @@ private constructor(
               client.log(
                 Severity.WARNING,
                 null,
-                "$registryClass in $jarFile does not specify a vendor; see IssueRegistry#vendor"
+                "$registryClass in $jarFile does not specify a vendor; see IssueRegistry#vendor",
               )
             }
 
@@ -589,7 +589,7 @@ private constructor(
                 "Either the custom jar is invalid, or it uses an outdated " +
                 "API not supported this lint client",
               jarFile.path,
-              MF_LINT_REGISTRY
+              MF_LINT_REGISTRY,
             )
           }
         }
@@ -602,7 +602,7 @@ private constructor(
       api: Int,
       className: String,
       issues: List<Issue>,
-      verifier: LintJarVerifier
+      verifier: LintJarVerifier,
     ): String {
       val sb = StringBuilder()
       when {

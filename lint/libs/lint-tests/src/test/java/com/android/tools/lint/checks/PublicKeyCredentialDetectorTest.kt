@@ -47,7 +47,7 @@ class PublicKeyCredentialDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        publicKeyCredentialStub
+        publicKeyCredentialStub,
       )
       .run()
       .expect(
@@ -78,7 +78,7 @@ class PublicKeyCredentialDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        publicKeyCredentialStub
+        publicKeyCredentialStub,
       )
       .run()
       .expectClean()
@@ -110,7 +110,7 @@ class PublicKeyCredentialDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        publicKeyCredentialStub
+        publicKeyCredentialStub,
       )
       .run()
       .expectClean()
@@ -148,7 +148,7 @@ class PublicKeyCredentialDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        publicKeyCredentialStub
+        publicKeyCredentialStub,
       )
       .run()
       .expectClean()

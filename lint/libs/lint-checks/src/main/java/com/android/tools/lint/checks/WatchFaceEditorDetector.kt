@@ -47,7 +47,7 @@ class WatchFaceEditorDetector : Detector(), XmlScanner {
         priority = 5,
         severity = Severity.WARNING,
         implementation = Implementation(WatchFaceEditorDetector::class.java, Scope.MANIFEST_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     const val WATCH_FACE_EDITOR_ACTION = "androidx.wear.watchface.editor.action.WATCH_FACE_EDITOR"
@@ -69,7 +69,7 @@ class WatchFaceEditorDetector : Detector(), XmlScanner {
             activity,
             context.getNameLocation(activity.getAttributeNodeNS(ANDROID_URI, "launchMode")),
             "Watch face editor must use launchMode=\"standard\"",
-            fix
+            fix,
           )
         )
       }

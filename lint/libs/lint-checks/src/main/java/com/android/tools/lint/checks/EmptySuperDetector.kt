@@ -55,7 +55,7 @@ class EmptySuperDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 9,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     const val EMPTY_SUPER_ANNOTATION = "androidx.annotation.EmptySuper"

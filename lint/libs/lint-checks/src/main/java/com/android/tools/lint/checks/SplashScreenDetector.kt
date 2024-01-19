@@ -51,7 +51,7 @@ class SplashScreenDetector : Detector(), SourceCodeScanner {
             Incident(
               ISSUE,
               context.getNameLocation(node),
-              "The application should not provide its own launch screen"
+              "The application should not provide its own launch screen",
             )
           context.report(incident, targetSdkAtLeast(S))
         }
@@ -83,7 +83,7 @@ class SplashScreenDetector : Detector(), SourceCodeScanner {
           priority = 5,
           severity = Severity.WARNING,
           implementation = Implementation(SplashScreenDetector::class.java, Scope.JAVA_FILE_SCOPE),
-          androidSpecific = true
+          androidSpecific = true,
         )
         .addMoreInfo("https://developer.android.com/guide/topics/ui/splash-screen")
   }

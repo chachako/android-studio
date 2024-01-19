@@ -46,7 +46,7 @@ internal class CompiledSourceFile(
   /** The test source file for this compiled file. */
   val source: TestFile,
   private val checksum: Long?,
-  private val encodedFiles: Array<out String>
+  private val encodedFiles: Array<out String>,
 ) : TestFile(), BytecodeTestFile {
 
   init {
@@ -447,7 +447,7 @@ internal class CompiledSourceFile(
       val index = encoded.indexOf(':')
       assertTrue(
         "Expected encoded binary file to start with a colon " + "separated filename",
-        index != -1
+        index != -1,
       )
       val path = encoded.substring(0, index).replace('＄', '$').trim()
       val bytes = encoded.substring(index + 1).trim()
@@ -464,7 +464,7 @@ internal class CompiledSourceFile(
           classFiles
             .sortedBy { it.targetRelativePath }
             .map { (it as BinaryTestFile).binaryContents }
-            .toList()
+            .toList(),
         )
       // We only create integer checksums to keep the fingerprints short
       if (checksum.toInt() != actualChecksum) {

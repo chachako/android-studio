@@ -44,7 +44,7 @@ class WatchFaceForAndroidXDetectorTest : AbstractCheckTest() {
                 </manifest>
                           """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -92,7 +92,7 @@ class WatchFaceForAndroidXDetectorTest : AbstractCheckTest() {
                 </manifest>
                           """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -141,7 +141,7 @@ class WatchFaceForAndroidXDetectorTest : AbstractCheckTest() {
                 </manifest>
                           """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -244,7 +244,7 @@ class WatchFaceForAndroidXDetectorTest : AbstractCheckTest() {
                 </manifest>
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

@@ -36,7 +36,7 @@ class MotionSceneDetectorTest : AbstractCheckTest() {
                         </Constraint>
                     </ConstraintSet>
                 </MotionScene>
-                """
+                """,
           )
           .indented()
       )
@@ -82,7 +82,7 @@ class MotionSceneDetectorTest : AbstractCheckTest() {
                         </Constraint>
                     </ConstraintSet>
                 </MotionScene>
-                """
+                """,
           )
           .indented()
       )
@@ -120,7 +120,7 @@ class MotionSceneDetectorTest : AbstractCheckTest() {
                         <OnClick motion:clickAction="transitionToEnd"  />
                     </Transition>
                 </MotionScene>
-                """
+                """,
           )
           .indented()
       )

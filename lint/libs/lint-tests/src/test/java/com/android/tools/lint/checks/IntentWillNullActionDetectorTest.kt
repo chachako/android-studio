@@ -41,7 +41,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -86,7 +86,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -114,7 +114,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .requireCompileSdk()
       .run()
@@ -141,7 +141,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -167,7 +167,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .skipTestModes(TestMode.PARENTHESIZED)
       .run()
@@ -197,7 +197,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -380,7 +380,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -424,7 +424,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .isolated("src/test/pkg/TestActivity.kt")
       .run()
@@ -470,7 +470,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .isolated("src/test/pkg/TestActivity.java")
       .run()
@@ -516,7 +516,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .isolated("src/test/pkg/TestActivity.java")
       .run()
@@ -543,7 +543,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .isolated("src/test/pkg/TestActivity.java")
       .skipTestModes(TestMode.PARENTHESIZED)
@@ -574,7 +574,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .isolated("src/test/pkg/TestActivity.java")
       .run()
@@ -761,7 +761,7 @@ class IntentWillNullActionDetectorTest : AbstractCheckTest() {
                 }
             """
           )
-          .indented(),
+          .indented()
       )
       .isolated("src/test/pkg/TestActivity.java")
       .run()

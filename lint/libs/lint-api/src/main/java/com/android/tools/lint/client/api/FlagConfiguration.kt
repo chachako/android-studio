@@ -63,7 +63,7 @@ open class FlagConfiguration(configurations: ConfigurationHierarchy) :
   override fun getDefinedSeverity(
     issue: Issue,
     source: Configuration,
-    visibleDefault: Severity
+    visibleDefault: Severity,
   ): Severity? {
     if (issue.suppressNames != null) {
       return getDefaultSeverity(issue, visibleDefault)
@@ -159,7 +159,7 @@ open class FlagConfiguration(configurations: ConfigurationHierarchy) :
   private fun computeSeverity(
     issue: Issue,
     source: Configuration,
-    visibleDefault: Severity
+    visibleDefault: Severity,
   ): Severity? {
     if (issue.suppressNames != null && !allowSuppress()) {
       return getDefaultSeverity(issue, visibleDefault)
@@ -237,7 +237,7 @@ open class FlagConfiguration(configurations: ConfigurationHierarchy) :
     issue: Issue,
     severity: Severity?,
     source: Configuration,
-    visibleDefault: Severity
+    visibleDefault: Severity,
   ): Severity {
     val configuredSeverity =
       client.configurations.getDefinedSeverityWithoutOverride(source, issue, visibleDefault)
@@ -278,7 +278,7 @@ open class FlagConfiguration(configurations: ConfigurationHierarchy) :
     client: LintClient,
     driver: LintDriver,
     project: Project?,
-    registry: IssueRegistry
+    registry: IssueRegistry,
   ) {
     parent?.validateIssueIds(client, driver, project, registry)
     if (validated) {
@@ -297,7 +297,7 @@ open class FlagConfiguration(configurations: ConfigurationHierarchy) :
     driver: LintDriver,
     project: Project?,
     registry: IssueRegistry,
-    ids: Collection<String>
+    ids: Collection<String>,
   ) {
     for (id in ids) {
       if (id == SdkConstants.SUPPRESS_ALL) {
@@ -318,7 +318,7 @@ open class FlagConfiguration(configurations: ConfigurationHierarchy) :
   override fun addConfiguredIssues(
     targetMap: MutableMap<String, Severity>,
     registry: IssueRegistry,
-    specificOnly: Boolean
+    specificOnly: Boolean,
   ) {
     parent?.addConfiguredIssues(targetMap, registry, specificOnly)
 
@@ -399,7 +399,7 @@ open class FlagConfiguration(configurations: ConfigurationHierarchy) :
     issue: String,
     specificOnly: Boolean,
     severityOnly: Boolean,
-    source: Configuration
+    source: Configuration,
   ): Location? {
     if (specificOnly && !configuresIssue(issue) && source !== this) {
       return null

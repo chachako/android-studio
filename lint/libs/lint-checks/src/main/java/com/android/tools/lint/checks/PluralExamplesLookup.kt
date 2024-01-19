@@ -61,7 +61,7 @@ data class PluralExample(
   val language: String,
   val keyword: String,
   val number: String,
-  val example: String?
+  val example: String?,
 ) {
   fun formattedWithNumber() = example?.replace("{0}", number) ?: number
 }

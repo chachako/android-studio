@@ -97,7 +97,7 @@ class NamespaceDetector : ResourceXmlDetector() {
                 context.getValueLocation(attribute),
                 //noinspection LintImplUnexpectedDomain
                 "Suspicious namespace: should start with `http://`",
-                fix
+                fix,
               )
             }
             continue
@@ -110,7 +110,7 @@ class NamespaceDetector : ResourceXmlDetector() {
               RES_AUTO,
               attribute,
               context.getValueLocation(attribute),
-              "Suspicious namespace: Did you mean `$AUTO_URI`?"
+              "Suspicious namespace: Did you mean `$AUTO_URI`?",
             )
           } else if (
             value == TOOLS_URI &&
@@ -121,7 +121,7 @@ class NamespaceDetector : ResourceXmlDetector() {
               TYPO,
               attribute,
               context.getValueLocation(attribute),
-              "Suspicious namespace and prefix combination"
+              "Suspicious namespace and prefix combination",
             )
           }
 
@@ -142,7 +142,7 @@ class NamespaceDetector : ResourceXmlDetector() {
                   attribute,
                   context.getValueLocation(attribute),
                   "Possible typo in URL: was `\"$value\"`, should " +
-                    "probably be `\"$correctUri\"`"
+                    "probably be `\"$correctUri\"`",
                 )
               }
             }
@@ -164,7 +164,7 @@ class NamespaceDetector : ResourceXmlDetector() {
               TYPO,
               attribute,
               context.getValueLocation(attribute),
-              "URI is case sensitive: was `\"$value\"`, expected `\"$ANDROID_URI\"`"
+              "URI is case sensitive: was `\"$value\"`, expected `\"$ANDROID_URI\"`",
             )
           } else {
             context.report(
@@ -172,7 +172,7 @@ class NamespaceDetector : ResourceXmlDetector() {
               attribute,
               context.getValueLocation(attribute),
               "Unexpected namespace URI bound to the `\"android\"` " +
-                "prefix, was `$value`, expected `$ANDROID_URI`"
+                "prefix, was `$value`, expected `$ANDROID_URI`",
             )
           }
         } else if (
@@ -185,7 +185,7 @@ class NamespaceDetector : ResourceXmlDetector() {
             TYPO,
             attribute,
             context.getValueLocation(attribute),
-            "Suspicious namespace and prefix combination"
+            "Suspicious namespace and prefix combination",
           )
         }
       }
@@ -212,7 +212,7 @@ class NamespaceDetector : ResourceXmlDetector() {
               UNUSED,
               attribute,
               context.getLocation(attribute),
-              "Unused namespace `$prefix`"
+              "Unused namespace `$prefix`",
             )
           }
         }
@@ -274,7 +274,7 @@ class NamespaceDetector : ResourceXmlDetector() {
             attribute,
             context.getLocation(attribute),
             "This namespace declaration is redundant",
-            fix
+            fix,
           )
         }
       }
@@ -300,7 +300,7 @@ class NamespaceDetector : ResourceXmlDetector() {
               RES_AUTO,
               attribute,
               context.getValueLocation(attribute),
-              "In Gradle projects, always use `$AUTO_URI` for custom " + "attributes"
+              "In Gradle projects, always use `$AUTO_URI` for custom " + "attributes",
             )
           } else {
             context.report(
@@ -308,7 +308,7 @@ class NamespaceDetector : ResourceXmlDetector() {
               attribute,
               context.getValueLocation(attribute),
               "When using a custom namespace attribute in a library " +
-                "project, use the namespace `\"$AUTO_URI\"` instead"
+                "project, use the namespace `\"$AUTO_URI\"` instead",
             )
           }
         }
@@ -322,7 +322,7 @@ class NamespaceDetector : ResourceXmlDetector() {
         NamespaceDetector::class.java,
         Scope.MANIFEST_AND_RESOURCE_SCOPE,
         Scope.RESOURCE_FILE_SCOPE,
-        Scope.MANIFEST_SCOPE
+        Scope.MANIFEST_SCOPE,
       )
 
     /** Typos in the namespace. */
@@ -339,7 +339,7 @@ class NamespaceDetector : ResourceXmlDetector() {
         category = Category.CORRECTNESS,
         priority = 8,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Unused namespace declarations. */
@@ -355,7 +355,7 @@ class NamespaceDetector : ResourceXmlDetector() {
         category = Category.PERFORMANCE,
         priority = 1,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Unused namespace declarations. */
@@ -372,7 +372,7 @@ class NamespaceDetector : ResourceXmlDetector() {
         category = Category.PERFORMANCE,
         priority = 1,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using custom namespace attributes in a library project. */
@@ -391,7 +391,7 @@ class NamespaceDetector : ResourceXmlDetector() {
         category = Category.CORRECTNESS,
         priority = 6,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Unused namespace declarations. */
@@ -411,7 +411,7 @@ class NamespaceDetector : ResourceXmlDetector() {
         category = Category.CORRECTNESS,
         priority = 9,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val XMLNS_A = "xmlns:a"

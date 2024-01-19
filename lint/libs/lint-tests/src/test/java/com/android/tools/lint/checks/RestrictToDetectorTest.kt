@@ -57,7 +57,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -109,7 +109,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
           """
           )
           .indented(),
-        intellijVisibleForTestingAnnotation
+        intellijVisibleForTestingAnnotation,
       )
       // data class's constructor, copy, toString, and component2 will have
       // type reference to @VisibleForTesting Foo in a different package.
@@ -161,7 +161,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        guavaVisibleForTestingAnnotation
+        guavaVisibleForTestingAnnotation,
       )
       .run()
       .expect(
@@ -227,7 +227,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -273,7 +273,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                         PrivateClass.method(); // Not enforced in tests
                     }
                 }
-                """
+                """,
             )
             .indented(),
           library,
@@ -287,7 +287,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
             )
             .indented(),
-          SUPPORT_ANNOTATIONS_JAR
+          SUPPORT_ANNOTATIONS_JAR,
         )
     lint()
       .projects(project)
@@ -323,7 +323,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                         android:restrictionType="hidden"
                         android:title="@string/title_number"/>
                 </restrictions>
-                """
+                """,
           )
           .indented()
       )
@@ -400,7 +400,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
             )
             .indented(),
-          SUPPORT_ANNOTATIONS_JAR
+          SUPPORT_ANNOTATIONS_JAR,
         )
         .name("lib")
         .type(ProjectDescription.Type.LIBRARY)
@@ -425,7 +425,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
             )
             .indented(),
-          SUPPORT_ANNOTATIONS_JAR
+          SUPPORT_ANNOTATIONS_JAR,
         )
         .dependsOn(library)
         .name("app")
@@ -513,7 +513,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
             )
             .indented(),
-          SUPPORT_ANNOTATIONS_JAR
+          SUPPORT_ANNOTATIONS_JAR,
         )
     lint()
       .projects(project)
@@ -591,10 +591,10 @@ class RestrictToDetectorTest : AbstractCheckTest() {
 
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -692,10 +692,10 @@ class RestrictToDetectorTest : AbstractCheckTest() {
 
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -730,10 +730,10 @@ class RestrictToDetectorTest : AbstractCheckTest() {
 
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .incremental("test/test/pkg/UnitTest.java")
       .run()
@@ -765,7 +765,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -800,7 +800,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 b6bSnnT1huigK21SLiK9UcVrrqO46TFuvo1yZZfRQ7LSqcMJdtBkIExNTNCX
                 27EwCXcvPkDvMhACQb8VA8He1nrYvuK/rSc7++3mEAPhgahDObtT7P0CP54v
                 9VcBAAA=
-                """
+                """,
         ),
         manifest(),
         java(
@@ -815,7 +815,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -857,7 +857,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -971,12 +971,12 @@ class RestrictToDetectorTest : AbstractCheckTest() {
 
                     }
                 }
-                """
+                """,
           )
           .indented(),
         SUPPORT_ANNOTATIONS_JAR,
         // From Guava; also Apache licensed
-        guavaVisibleForTestingAnnotation
+        guavaVisibleForTestingAnnotation,
       )
       .run()
       .expect(expected)
@@ -1071,10 +1071,10 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                         new ProductionCode().testHelper5(); // OK
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        androidVisibleForTestingAnnotation
+        androidVisibleForTestingAnnotation,
       )
       .run()
       .expect(expected)
@@ -1124,7 +1124,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
             "zjQ35rn48PPq64yhNuHzYw95rbn3Q/hLYD/zujpZqxdFvbNYvwhs+qSpWxNY" +
             "/Yd9b7zC1oSQfFl5cErewhTw/BEwCIIYQYHEyCTCgJqvYDkOlClRAUoWRdeK" +
             "nEFEULTZ4sigyCaA4gg59uRRTDhJOFuhG4bsS1EUw/KYcER/gDcrG0gBCxDy" +
-            "ArVNZgbxABAMMsu2BAAA"
+            "ArVNZgbxABAMMsu2BAAA",
         ),
         java(
           "" +
@@ -1145,7 +1145,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
             "    compile 'my.group.id:mylib:25.0.0-SNAPSHOT'\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1171,7 +1171,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1196,7 +1196,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
             "internal class AndroidOSVersionChecker2 {\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1249,7 +1249,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1283,7 +1283,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                   @SuppressWarnings("ClassNameDiffersFromFileName")
                   public class MyTestJavaClass extends RestrictedClass {
                   }
-                  """
+                  """,
           )
           .indented(),
         kotlin(
@@ -1318,7 +1318,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .skipTestModes(TestMode.TYPE_ALIAS)
       .run()
@@ -1370,7 +1370,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1406,7 +1406,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1502,7 +1502,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1580,7 +1580,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1617,7 +1617,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1692,7 +1692,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1749,7 +1749,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
               ""
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1817,9 +1817,9 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                         import androidx.annotation.RestrictTo;
                         """
               )
-              .indented()
+              .indented(),
           ),
-        compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR)
+        compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR),
       )
   }
 
@@ -1900,7 +1900,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                     """
             )
             .indented(),
-          SUPPORT_ANNOTATIONS_JAR
+          SUPPORT_ANNOTATIONS_JAR,
         )
         .name("lib1")
 
@@ -1929,7 +1929,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                     """
             )
             .indented(),
-          SUPPORT_ANNOTATIONS_JAR
+          SUPPORT_ANNOTATIONS_JAR,
         )
         .name("lib3")
 
@@ -1963,7 +1963,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                     group=other.app
                     """
             )
-            .indented()
+            .indented(),
         )
         .name("lib2")
         .dependsOn(library)
@@ -2059,7 +2059,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        guavaVisibleForTestingAnnotation
+        guavaVisibleForTestingAnnotation,
       )
       .allowDuplicates()
       .run()
@@ -2107,7 +2107,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2157,7 +2157,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2201,7 +2201,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2244,7 +2244,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2354,7 +2354,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2400,7 +2400,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -2503,7 +2503,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2549,7 +2549,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -2587,9 +2587,9 @@ class RestrictToDetectorTest : AbstractCheckTest() {
               }
               """
                 )
-                .indented(),
+                .indented()
             ),
-          compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR)
+          compileOnly = listOf(SUPPORT_ANNOTATIONS_JAR),
         ),
         gradle(
             """
@@ -2601,7 +2601,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowKotlinClassStubs(true)
       .run()
@@ -2659,7 +2659,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
           """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -2722,7 +2722,7 @@ class RestrictToDetectorTest : AbstractCheckTest() {
           """
           )
           .indented(),
-        intellijVisibleForTestingAnnotation
+        intellijVisibleForTestingAnnotation,
       )
       .run()
       .expect(

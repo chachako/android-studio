@@ -214,7 +214,7 @@ class DefaultEncodingDetectorTest {
           .indented(),
         gradle("""
                 apply plugin: 'com.android.application'
-                """)
+                """),
       )
       .run()
       .expectClean()
@@ -313,7 +313,7 @@ class DefaultEncodingDetectorTest {
       "ResultOfMethodCallIgnored",
       "RedundantThrows",
       "EmptyTryBlock",
-      "CharsetObjectCanBeUsed"
+      "CharsetObjectCanBeUsed",
     )
     lint()
       .files(
@@ -501,7 +501,7 @@ class DefaultEncodingDetectorTest {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectFixDiffs(
@@ -596,7 +596,7 @@ class DefaultEncodingDetectorTest {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectFixDiffs(
@@ -724,7 +724,7 @@ class DefaultEncodingDetectorTest {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectFixDiffs(
@@ -786,7 +786,7 @@ class DefaultEncodingDetectorTest {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectFixDiffs(
@@ -905,7 +905,7 @@ class DefaultEncodingDetectorTest {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectFixDiffs(

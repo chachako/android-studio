@@ -59,7 +59,7 @@ enum class Desugaring(val constant: Int) {
         METHOD_REFERENCES,
         TYPE_ANNOTATIONS,
         INTERFACE_METHODS,
-        TRY_WITH_RESOURCES
+        TRY_WITH_RESOURCES,
       )
 
     /** Full desugaring. */
@@ -71,7 +71,7 @@ enum class Desugaring(val constant: Int) {
         TYPE_ANNOTATIONS,
         INTERFACE_METHODS,
         TRY_WITH_RESOURCES,
-        JAVA_8_LIBRARY
+        JAVA_8_LIBRARY,
       )
 
     fun fromConstant(constant: Int): Desugaring {

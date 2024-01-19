@@ -120,7 +120,7 @@ class MotionSceneDetector : ResourceXmlDetector() {
         element,
         context.getNameLocation(element),
         "`$ATTR_CUSTOM_ATTRIBUTE_NAME` should be defined",
-        fix().set().todo(AUTO_URI, ATTR_CUSTOM_ATTRIBUTE_NAME).build()
+        fix().set().todo(AUTO_URI, ATTR_CUSTOM_ATTRIBUTE_NAME).build(),
       )
     } else if (!customAttributeNames.add(name)) {
       context.report(
@@ -133,7 +133,7 @@ class MotionSceneDetector : ResourceXmlDetector() {
           .replace()
           .with("")
           .range(context.getLocation(element))
-          .build()
+          .build(),
       )
     }
   }
@@ -164,7 +164,7 @@ class MotionSceneDetector : ResourceXmlDetector() {
             .replace()
             .with("")
             .range(context.getLocation(onClickElement))
-            .build()
+            .build(),
         )
       }
   }
@@ -256,7 +256,7 @@ class MotionSceneDetector : ResourceXmlDetector() {
           .replace()
           .with("")
           .range(context.getLocation(subTag))
-          .build()
+          .build(),
       )
     }
   }
@@ -278,7 +278,7 @@ class MotionSceneDetector : ResourceXmlDetector() {
         category = Category.CORRECTNESS,
         priority = 8,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

@@ -63,7 +63,7 @@ class RemoteViewDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -74,7 +74,7 @@ class RemoteViewDetector : Detector(), SourceCodeScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     val arguments = node.valueArguments
     if (arguments.size != 2) return
@@ -121,7 +121,7 @@ class RemoteViewDetector : Detector(), SourceCodeScanner {
         ISSUE,
         node,
         context.getLocation(node),
-        "`@layout/${resource.name}` includes views not allowed in a `RemoteView`: ${sorted.joinToString()}"
+        "`@layout/${resource.name}` includes views not allowed in a `RemoteView`: ${sorted.joinToString()}",
       )
     }
   }

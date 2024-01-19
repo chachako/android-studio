@@ -60,7 +60,7 @@ class ForwardingDaemonTest {
       createByteBuffer(CNXN),
       createByteBuffer(OPEN, 1),
       createByteBuffer(WRTE, 1, 1, 4, "test"),
-      createByteBuffer(CLSE, 1, 1)
+      createByteBuffer(CLSE, 1, 1),
     )
 
   private val fakeAdbSession = FakeAdbSession()
@@ -134,7 +134,7 @@ class ForwardingDaemonTest {
             fakeAdbSession.deviceServices.configureShellV2Command(
               DeviceSelector.fromSerialNumber("localhost:$port"),
               "cat",
-              "Foo"
+              "Foo",
             )
           }
           return address

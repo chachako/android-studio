@@ -61,7 +61,7 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -90,10 +90,10 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     tools:ignore="MergeRootFrame" />
-                """
+                """,
           )
           .indented(),
-        simpleInclude
+        simpleInclude,
       )
       .run()
       .expectClean()
@@ -117,10 +117,10 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     android:keepScreenOn="true">
                     <View />
                 </FrameLayout>
-                """
+                """,
           )
           .indented(),
-        simpleInclude
+        simpleInclude,
       )
       .run()
       .expectClean()
@@ -139,7 +139,7 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     style="@style/Widget.MaterialComponents.NavigationView">
                     <View />
                 </FrameLayout>
-                """
+                """,
           )
           .indented(),
         simpleInclude,
@@ -154,9 +154,9 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     <style name="Widget.MaterialComponents.NavigationView" parent="@style/Widget.Design.NavigationView">
                     </style>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -175,7 +175,7 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     style="@style/Widget.MaterialComponents.NavigationView">
                     <View />
                 </FrameLayout>
-                """
+                """,
           )
           .indented(),
         simpleInclude,
@@ -190,9 +190,9 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                     <style name="Widget.MaterialComponents.NavigationView" parent="@style/Widget.Design.NavigationView">
                     </style>
                 </resources>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -206,7 +206,7 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-        """
+        """,
       )
       .indented()
 
@@ -237,7 +237,7 @@ class MergeRootFrameLayoutDetectorTest : AbstractCheckTest() {
                 android:text="Button" />
 
         </LinearLayout>
-        """
+        """,
       )
       .indented()
 }

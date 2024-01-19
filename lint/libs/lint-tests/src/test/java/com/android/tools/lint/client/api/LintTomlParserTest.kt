@@ -48,7 +48,7 @@ class LintTomlParserTest {
                   ~~~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~
                 """
           .trimIndent(),
-        document.trim()
+        document.trim(),
       )
     }
   }
@@ -131,7 +131,7 @@ class LintTomlParserTest {
                   ~~~~~~~~~~~~~~   ~~~~~~~~
                 """
           .trimIndent(),
-        described.trim()
+        described.trim(),
       )
       // Here above we've flattened site."google.com" into site.google.com when pretty printing the
       // key,
@@ -246,7 +246,7 @@ class LintTomlParserTest {
           "str=''''That,' she said, 'is still pointless.'''', String = 'That,' she said, 'is still pointless.'\n" +
           "  str = ''''That,' she said, 'is still pointless.''''\n" +
           "  ~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-        document.trim()
+        document.trim(),
       )
     }
   }
@@ -357,7 +357,7 @@ class LintTomlParserTest {
                 lt2=00:32:00.999999, LocalTime = 00:32:00.999999
                 """
           .trimIndent(),
-        document.trim()
+        document.trim(),
       )
     }
   }
@@ -389,7 +389,7 @@ class LintTomlParserTest {
                                                                                  ~~~~~~~   ~~~~~~
                 """
           .trimIndent(),
-        document.trim()
+        document.trim(),
       )
     }
   }
@@ -426,7 +426,7 @@ class LintTomlParserTest {
                              ~~~~~~~~~   ~~~~~
                 """
           .trimIndent(),
-        dump.trim()
+        dump.trim(),
       )
       val document = result.document
       assertEquals(2, document.getValue(listOf("point", "y"))?.getActualValue())
@@ -436,11 +436,11 @@ class LintTomlParserTest {
       // spot check ranges too
       assertEquals(
         "type.name",
-        document.getSource().substring(value.getKeyStartOffset(), value.getKeyEndOffset())
+        document.getSource().substring(value.getKeyStartOffset(), value.getKeyEndOffset()),
       )
       assertEquals(
         "\"pug\"",
-        document.getSource().substring(value.getStartOffset(), value.getEndOffset())
+        document.getSource().substring(value.getStartOffset(), value.getEndOffset()),
       )
     }
   }
@@ -480,7 +480,7 @@ class LintTomlParserTest {
           listOf(
             mapOf("name" to "Hammer", "sku" to 738594937),
             mutableMapOf(),
-            mapOf("name" to "Nail", "sku" to 284758393, "color" to "gray")
+            mapOf("name" to "Nail", "sku" to 284758393, "color" to "gray"),
           )
       )
     doTest(source, expected)
@@ -547,7 +547,7 @@ class LintTomlParserTest {
                   ~~~~~~~~~~~~~~~~~~~~
                 """
           .trimIndent(),
-        dump.trim()
+        dump.trim(),
       )
     }
   }
@@ -580,11 +580,11 @@ class LintTomlParserTest {
       Case(
         "= \"no key name\" # INVALID\nkey=value",
         "test.toml: 0:1: Warning: Bare key must be non-empty",
-        "key=value, String = value"
+        "key=value, String = value",
       ),
       Case(
         "\"\"\"key\"\"\" = \"not allowed\" # INVALID",
-        "test.toml: 0:0: Warning: Multi-line strings not allowed in keys"
+        "test.toml: 0:0: Warning: Multi-line strings not allowed in keys",
       ),
       Case("foo", "test.toml: 0:3: Warning: = missing after key `foo`"),
       Case("foo=", "test.toml: 0:4: Warning: Value missing after ="),
@@ -599,25 +599,25 @@ class LintTomlParserTest {
       Case(
         "foo=bar\nfoobar",
         "test.toml: 1:6: Warning: = missing after key `foobar`",
-        "foo=bar, String = bar"
+        "foo=bar, String = bar",
       ),
       // Recover from (and ignore) key without value in the middle
       Case(
         "foo=bar\nfoobar\nbar=baz",
         "test.toml: 1:6: Warning: Key cannot be alone on a line",
-        "foo=bar, String = bar\nbar=baz, String = baz"
+        "foo=bar, String = bar\nbar=baz, String = baz",
       ),
       Case(
         "first = \"Tom\" last = \"Preston-Werner\" # INVALID\n",
-        "test.toml: 0:14: Warning: There must be a newline (or EOF) after a key/value pair"
+        "test.toml: 0:14: Warning: There must be a newline (or EOF) after a key/value pair",
       ),
       Case(
         "name = \"Tom\"\nname = \"Pradyun\"",
-        "test.toml: 1:16: Warning: Defining a key (`name`) multiple times is invalid"
+        "test.toml: 1:16: Warning: Defining a key (`name`) multiple times is invalid",
       ),
       Case(
         "spelling = \"favorite\"\n\"spelling\" = \"favourite\"\n",
-        "test.toml: 1:24: Warning: Defining a key (`spelling`) multiple times is invalid"
+        "test.toml: 1:24: Warning: Defining a key (`spelling`) multiple times is invalid",
       ),
       Case(
         "# This defines the value of fruit.apple to be an integer.\n" +
@@ -626,43 +626,43 @@ class LintTomlParserTest {
           "# But then this treats fruit.apple like it's a table.\n" +
           "# You can't turn an integer into a table.\n" +
           "fruit.apple.smooth = true",
-        "test.toml: 5:25: Warning: Table `fruit` already specified as a value"
+        "test.toml: 5:25: Warning: Table `fruit` already specified as a value",
       ),
       Case(
         "str5 = \"\"\"Here are three quotation marks: \"\"\".\"\"\"  # INVALID",
-        "test.toml: 0:45: Warning: Unexpected content after string terminator"
+        "test.toml: 0:45: Warning: Unexpected content after string terminator",
       ),
       Case(
         "apos15 = '''Here are fifteen apostrophes: ''''''''''''''''''  # INVALID",
-        "test.toml: 0:47: Warning: Unexpected content after string terminator"
+        "test.toml: 0:47: Warning: Unexpected content after string terminator",
       ),
       Case(
         "invalid_float_1 = .7",
-        "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"
+        "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side",
       ),
       Case(
         "invalid_float_2 = 7.\n",
-        "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"
+        "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side",
       ),
       Case(
         "invalid_float_2 = [7.]\n",
-        "test.toml: 0:19: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"
+        "test.toml: 0:19: Warning: The decimal point, if used, must be surrounded by at least one digit on each side",
       ),
       Case(
         "invalid_float_3 = 3.e+20",
-        "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side"
+        "test.toml: 0:18: Warning: The decimal point, if used, must be surrounded by at least one digit on each side",
       ),
       Case(
         "[fruit]\n" + "apple = \"red\"\n" + "\n" + "[fruit]\n" + "orange = \"orange\"",
-        "test.toml: 3:0: Warning: You cannot define a table (`fruit`) more than once"
+        "test.toml: 3:0: Warning: You cannot define a table (`fruit`) more than once",
       ),
       Case(
         "type.name = \"Nail\"\n" + "type = { edible = false }  # INVALID",
-        "test.toml: 1:7: Warning: Inline tables cannot be used to add keys or sub-tables to an already-defined table"
+        "test.toml: 1:7: Warning: Inline tables cannot be used to add keys or sub-tables to an already-defined table",
       ),
       Case(
         "# INVALID TOML DOC\n" + "fruits = []\n" + "\n" + "[[fruits]] # Not allowed",
-        "test.toml: 3:0: Warning: Attempting to append to a statically defined array is not allowed"
+        "test.toml: 3:0: Warning: Attempting to append to a statically defined array is not allowed",
       ),
       Case(
         "# INVALID TOML DOC\n" +
@@ -675,15 +675,15 @@ class LintTomlParserTest {
           "# INVALID: This table conflicts with the previous array of tables\n" +
           "[fruits.varieties]",
         "test.toml: 8:0: Warning: You cannot define a table (`fruits.varieties`) more than once\n" +
-          "test.toml: 2:0: Warning: Table `fruits` already specified as a value"
+          "test.toml: 2:0: Warning: Table `fruits` already specified as a value",
       ),
       Case(
         "# Invalid TOML DOC\n" + "[floats]\n" + "flt3 = 2.718\n" + "]",
-        "test.toml: 3:0: Warning: Close found without a corresponding open: `]`"
+        "test.toml: 3:0: Warning: Close found without a corresponding open: `]`",
       ),
       Case(
         "# Invalid TOML DOC\n" + "[floats]\n" + "flt3 = 2.718\n" + "]]",
-        "test.toml: 3:0: Warning: Close found without a corresponding open: `]]`"
+        "test.toml: 3:0: Warning: Close found without a corresponding open: `]]`",
       ),
     )
   }
@@ -695,7 +695,7 @@ class LintTomlParserTest {
     file: File,
     s: String,
     source: Boolean,
-    validate: Boolean
+    validate: Boolean,
   ): Map<String, Any> {
     val result = parseToml(file, s, validate)
     return if (source) {
@@ -1019,7 +1019,7 @@ class LintTomlParserTest {
               listOf(
                 "groovy-core",
                 "groovy-json",
-                mapOf("name" to "groovy-nio", "version" to "3.14")
+                mapOf("name" to "groovy-nio", "version" to "3.14"),
               )
           )
       )
@@ -1059,7 +1059,7 @@ class LintTomlParserTest {
         "libraries" to
           mapOf(
             "junit" to mapOf("module" to "junit:junit", "version" to "4.13"),
-            "junit5" to mapOf("module" to "junit:junit", "version" to "5.14")
+            "junit5" to mapOf("module" to "junit:junit", "version" to "5.14"),
           )
       )
     doTest(toml, expected)
@@ -1082,7 +1082,7 @@ class LintTomlParserTest {
         "libraries" to
           mapOf(
             "junit" to mapOf(),
-            "junit5" to mapOf("module" to "junit:junit", "version" to "5.14")
+            "junit5" to mapOf("module" to "junit:junit", "version" to "5.14"),
           )
       )
     doTest(toml, expected)
@@ -1105,7 +1105,7 @@ class LintTomlParserTest {
         "libraries" to
           mapOf(
             "junit" to mapOf("a" to "1", "c" to "3"),
-            "junit5" to mapOf("module" to "junit:junit", "version" to "5.14")
+            "junit5" to mapOf("module" to "junit:junit", "version" to "5.14"),
           )
       )
     doTest(toml, expected)
@@ -1128,7 +1128,7 @@ class LintTomlParserTest {
         "libraries" to
           mapOf(
             "junit" to mapOf("a" to "1", "c" to "3"),
-            "junit5" to mapOf("module" to "junit:junit", "version" to "5.14")
+            "junit5" to mapOf("module" to "junit:junit", "version" to "5.14"),
           )
       )
     doTest(toml, expected)
@@ -1231,7 +1231,7 @@ class LintTomlParserTest {
   private class ParseResult(
     val document: LintTomlDocument,
     val problems: List<Triple<Severity, Location, String>>,
-    val validated: Boolean
+    val validated: Boolean,
   ) {
     fun describe(includeSources: Boolean = true, includeProblems: Boolean = false): String {
       val sb = StringBuilder()
@@ -1249,7 +1249,7 @@ class LintTomlParserTest {
       v: Any,
       fullKey: String,
       indent: Int,
-      includeSources: Boolean
+      includeSources: Boolean,
     ) {
       when (v) {
         is LintTomlArrayValue -> {
@@ -1279,7 +1279,7 @@ class LintTomlParserTest {
               v2,
               if (fullKey.isEmpty()) k else "$fullKey.$k",
               indent + 1,
-              includeSources
+              includeSources,
             )
           }
         }
@@ -1292,7 +1292,7 @@ class LintTomlParserTest {
       location: Location,
       message: String,
       includeSources: Boolean,
-      source: String
+      source: String,
     ): String {
       val start = location.start
       val path = location.file.name
@@ -1320,14 +1320,14 @@ class LintTomlParserTest {
           location,
           message,
           includeSources,
-          document.getSource().toString()
+          document.getSource().toString(),
         )
       }
     }
 
     private fun copy(
       map: LintTomlMapValue,
-      transformValue: (LintTomlValue) -> Any
+      transformValue: (LintTomlValue) -> Any,
     ): Map<String, Any> {
       val copy = mutableMapOf<String, Any>()
       for ((key, value) in map.getMappedValues()) {

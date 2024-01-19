@@ -23,7 +23,7 @@ data class VariableTableWithGenericReply(val argCnt: Int, val slots: List<Slot>)
     val signature: String,
     val genericSignature: String,
     val length: Int,
-    val slot: Int
+    val slot: Int,
   ) {
     fun write(writer: Writer) {
       writer.putLong(codeIndex)
@@ -54,7 +54,7 @@ data class VariableTableWithGenericReply(val argCnt: Int, val slots: List<Slot>)
             reader.getString(),
             reader.getString(),
             reader.getInt(),
-            reader.getInt()
+            reader.getInt(),
           )
         }
       return VariableTableWithGenericReply(argCnt, slots)

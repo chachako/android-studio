@@ -73,7 +73,7 @@ class IndentationDetector : Detector(), SourceCodeScanner {
                 avoid including this check when running on the fly in the editor, unless \
                 it looks like the file has not been recently edited. With this option, you \
                 can turn it on in all cases.
-                """
+                """,
       )
 
     @JvmField
@@ -96,7 +96,7 @@ class IndentationDetector : Detector(), SourceCodeScanner {
           category = Category.CORRECTNESS,
           priority = 6,
           severity = Severity.ERROR,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .setAliases(listOf("SuspiciousIndentAfterControlStatement"))
         .setOptions(listOf(ALWAYS_RUN_OPTION))
@@ -185,7 +185,7 @@ class IndentationDetector : Detector(), SourceCodeScanner {
               ISSUE,
               node,
               location,
-              "Suspicious indentation: This is conditionally executed; expected it to be indented"
+              "Suspicious indentation: This is conditionally executed; expected it to be indented",
             )
           }
         }
@@ -230,7 +230,7 @@ class IndentationDetector : Detector(), SourceCodeScanner {
                   ISSUE,
                   node,
                   location,
-                  "The indentation string here is different from on the previous line (`$prevChar` vs `$currChar`)"
+                  "The indentation string here is different from on the previous line (`$prevChar` vs `$currChar`)",
                 )
                 .overrideSeverity(Severity.WARNING)
             context.report(incident)
@@ -390,7 +390,7 @@ class IndentationDetector : Detector(), SourceCodeScanner {
     private fun getIndentationDeltaOffset(
       prevLineOffset: Int,
       currLineOffset: Int,
-      indentationLength: Int
+      indentationLength: Int,
     ): Int {
       for (i in 0 until indentationLength) {
         if (contents[prevLineOffset + i] != contents[currLineOffset + i]) {

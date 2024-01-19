@@ -79,7 +79,7 @@ class IteratorDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -131,9 +131,9 @@ class IteratorDetector : Detector(), SourceCodeScanner {
             ISSUE,
             node,
             context.getLocation(node),
-            "`LinkedHashMap#$name` was broken in API 24 and 25. Workaround: $workaround"
+            "`LinkedHashMap#$name` was broken in API 24 and 25. Workaround: $workaround",
           ),
-          minSdkLessThan(26)
+          minSdkLessThan(26),
         )
       } else if (canonical == "java.util.Vector") {
         // b/30974375
@@ -142,9 +142,9 @@ class IteratorDetector : Detector(), SourceCodeScanner {
             ISSUE,
             node,
             context.getLocation(node),
-            "`Vector#listIterator` was broken in API 24 and 25; it can return `hasNext()=false` before the last element. Consider switching to `ArrayList` with synchronization if you need it."
+            "`Vector#listIterator` was broken in API 24 and 25; it can return `hasNext()=false` before the last element. Consider switching to `ArrayList` with synchronization if you need it.",
           ),
-          minSdkLessThan(26)
+          minSdkLessThan(26),
         )
       }
     }

@@ -32,7 +32,7 @@ import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.Ht
 internal class ConnectionTracker(
   private val myUrl: String,
   private val callstack: String,
-  private val reporter: ConnectionReporter
+  private val reporter: ConnectionReporter,
 ) : HttpConnectionTracker {
 
   override fun disconnect() {}
@@ -48,7 +48,7 @@ internal class ConnectionTracker(
   override fun trackRequest(
     method: String,
     headers: Map<String, List<String>>,
-    transport: HttpTransport
+    transport: HttpTransport,
   ) {
     reporter.onRequest(myUrl, callstack, method, headers, transport)
     reporter.reportCurrentThread()

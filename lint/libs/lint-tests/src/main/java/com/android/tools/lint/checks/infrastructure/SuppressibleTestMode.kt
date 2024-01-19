@@ -70,7 +70,7 @@ class SuppressibleTestMode :
   SourceTransformationTestMode(
     description = "Suppressible",
     "TestMode.SUPPRESSIBLE",
-    "suppressible"
+    "suppressible",
   ) {
   override val diffExplanation: String =
     // first line shorter: expecting to prefix that line with
@@ -105,7 +105,7 @@ class SuppressibleTestMode :
 
   private fun getIncidents(
     lintTextReport: String,
-    task: TestLintTask? = null
+    task: TestLintTask? = null,
   ): List<LintIssueDocGenerator.Companion.ReportedIncident> {
     // If this unit test is referencing lint warnings that are not suppressible,
     // don't attempt to enforce suppressions
@@ -220,7 +220,7 @@ class SuppressibleTestMode :
   private fun rewriteXml(
     file: File,
     source: String,
-    incidents: List<LintIssueDocGenerator.Companion.ReportedIncident>
+    incidents: List<LintIssueDocGenerator.Companion.ReportedIncident>,
   ): List<Edit> {
     val client = TestLintClient()
     val parser = client.xmlParser
@@ -311,7 +311,7 @@ class SuppressibleTestMode :
     offset: Int,
     client: LintClient,
     file: File,
-    parser: XmlParser
+    parser: XmlParser,
   ): Element {
     for (child in this) {
       val start = parser.getNodeStartOffset(client, file, child)
@@ -329,7 +329,7 @@ class SuppressibleTestMode :
   private fun rewriteKotlinOrJava(
     context: JavaContext,
     source: String,
-    incidents: List<LintIssueDocGenerator.Companion.ReportedIncident>
+    incidents: List<LintIssueDocGenerator.Companion.ReportedIncident>,
   ): List<Edit> {
     val root = context.uastFile ?: return emptyList()
 
@@ -411,7 +411,7 @@ class SuppressibleTestMode :
         Context.Companion.getSuppressionDirective(
           Context.SUPPRESS_JAVA_COMMENT_PREFIX,
           source,
-          offset
+          offset,
         )
       if (suppress != null) {
         var start = source.lastIndexOf(Context.SUPPRESS_JAVA_COMMENT_PREFIX, offset)

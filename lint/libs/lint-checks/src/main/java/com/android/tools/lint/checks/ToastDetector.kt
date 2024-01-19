@@ -54,7 +54,7 @@ class ToastDetector : Detector(), SourceCodeScanner {
             duration,
             context.getLocation(duration),
             "Expected duration `Toast.LENGTH_SHORT` or `Toast.LENGTH_LONG`, a custom " +
-              "duration value is not supported"
+              "duration value is not supported",
           )
         }
       }
@@ -90,7 +90,7 @@ class ToastDetector : Detector(), SourceCodeScanner {
         node,
         context.getCallLocation(node, includeReceiver = true, includeArguments = false),
         "$toastName created but not shown: did you forget to call `show()`?",
-        fix
+        fix,
       )
     }
   }
@@ -110,7 +110,7 @@ class ToastDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = Implementation(ToastDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        implementation = Implementation(ToastDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
   }
 }

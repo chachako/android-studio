@@ -51,7 +51,7 @@ open class LintModelModuleProject(
   dir: File,
   referenceDir: File,
   private val variant: LintModelVariant,
-  mergedManifest: File?
+  mergedManifest: File?,
 ) : Project(client, dir, referenceDir) {
   private val model: LintModelModule
     get() = variant.module
@@ -516,7 +516,7 @@ open class LintModelModuleProject(
     @JvmStatic
     fun resolveDependencies(
       projects: Collection<LintModelModuleProject>,
-      reporting: Boolean
+      reporting: Boolean,
     ): List<LintModelModuleProject> {
       // Record project names such that we can resolve dependencies once all the
       // projects have been initialized

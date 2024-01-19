@@ -87,7 +87,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     if (usageInfo.anyCloser { it.isThreadingAnnotation() }) {
       return
@@ -105,7 +105,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
           element,
           method,
           getThreadContext(context, element) ?: return,
-          getThreadsFromMethod(context, method) ?: return
+          getThreadsFromMethod(context, method) ?: return,
         )
       }
       METHOD_CALL_PARAMETER -> {
@@ -116,7 +116,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
           element,
           referencedMethod,
           usageInfo.annotations.map { it.qualifiedName },
-          getThreadsFromMethod(context, referencedMethod) ?: return
+          getThreadsFromMethod(context, referencedMethod) ?: return,
         )
       }
       else -> {
@@ -146,7 +146,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
     node: UElement,
     method: PsiMethod,
     callerThreads: List<String>,
-    calleeThreads: List<String>
+    calleeThreads: List<String>,
   ) {
     val violation =
       callerThreads
@@ -162,7 +162,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
   private fun checkForThreadViolation(
     callerThread: String,
     calleeThread: String,
-    method: PsiMethod
+    method: PsiMethod,
   ): String? {
 
     // We enforce the following constraints:
@@ -232,7 +232,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
         UMethod::class.java,
         true,
         UAnonymousClass::class.java,
-        ULambdaExpression::class.java
+        ULambdaExpression::class.java,
       ) as? PsiMethod
 
     if (method != null) {
@@ -242,7 +242,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
           methodCall.getParentOfType<UObjectLiteralExpression>(
             UObjectLiteralExpression::class.java,
             true,
-            UCallExpression::class.java
+            UCallExpression::class.java,
           )
 
         // If it's an anonymous class, infer the context from the formal parameter
@@ -261,7 +261,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
         ULambdaExpression::class.java,
         true,
         UAnonymousClass::class.java,
-        ULambdaExpression::class.java
+        ULambdaExpression::class.java,
       )
 
     return getThreadsFromExpressionContext(context, lambdaCall)
@@ -273,7 +273,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
    */
   private fun getThreadsFromExpressionContext(
     context: JavaContext,
-    lambdaCall: UExpression?
+    lambdaCall: UExpression?,
   ): List<String>? {
     val lambdaCallExpression = lambdaCall?.uastParent as? UCallExpression ?: return null
     val lambdaArgument = lambdaCallExpression.getParameterForArgument(lambdaCall) ?: return null
@@ -291,7 +291,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
   /** Attempts to infer the current thread context at the site of the given method call. */
   private fun getThreadsFromMethod(
     context: JavaContext,
-    originalMethod: PsiMethod?
+    originalMethod: PsiMethod?,
   ): List<String>? {
     var method = originalMethod
     if (method != null) {
@@ -344,7 +344,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
 
   private fun addThreadAnnotations(
     annotation: UAnnotation,
-    result: MutableList<String>?
+    result: MutableList<String>?,
   ): MutableList<String>? {
     var resultList = result
     if (annotation.isThreadingAnnotation()) {
@@ -385,7 +385,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
         category = UI_RESPONSIVENESS,
         priority = 6,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

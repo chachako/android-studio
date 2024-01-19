@@ -42,21 +42,21 @@ import java.util.EnumSet
 data class AnnotatedCallPath(
   val contextualNodes: List<ContextualEdge>,
   val sourceAnnotation: String,
-  val sinkAnnotation: String
+  val sinkAnnotation: String,
 )
 
 /** Returns a collection of call paths that violate thread annotations found in source code. */
 // public because accessed from tools/adt/idea tests
 fun searchForInterproceduralThreadAnnotationViolations(
   callGraph: CallGraph,
-  receiverEval: IntraproceduralDispatchReceiverEvaluator
+  receiverEval: IntraproceduralDispatchReceiverEvaluator,
 ): Collection<AnnotatedCallPath> {
 
   fun PsiModifierListOwner.isAnnotatedWith(annotation: String) =
     AnnotationUtil.isAnnotated(
       this,
       annotation,
-      AnnotationUtil.CHECK_HIERARCHY xor AnnotationUtil.CHECK_EXTERNAL
+      AnnotationUtil.CHECK_HIERARCHY xor AnnotationUtil.CHECK_EXTERNAL,
     )
 
   fun CallTarget.isAnnotatedWith(annotation: String) =
@@ -138,7 +138,7 @@ class WrongThreadInterproceduralDetector : Detector(), SourceCodeScanner {
     val badPaths =
       searchForInterproceduralThreadAnnotationViolations(
         callGraph.callGraph,
-        callGraph.receiverEval
+        callGraph.receiverEval,
       )
     for ((searchNodes, sourceAnnotation, sinkAnnotation) in badPaths) {
       if (searchNodes.size == 1) {
@@ -182,8 +182,8 @@ class WrongThreadInterproceduralDetector : Detector(), SourceCodeScanner {
         implementation =
           Implementation(
             WrongThreadInterproceduralDetector::class.java,
-            EnumSet.of(Scope.ALL_JAVA_FILES)
-          )
+            EnumSet.of(Scope.ALL_JAVA_FILES),
+          ),
       )
   }
 }

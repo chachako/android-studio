@@ -54,7 +54,7 @@ class PropertyFileDetectorTest : AbstractCheckTest() {
             "windows.dir=C:\\my\\path\\to\\sdk\n" +
             "windows2.dir=C\\:\\\\my\\\\path\\\\to\\\\sdk\n" +
             "not.a.path.prop=Hello \\my\\path\\to\\sdk\n" +
-            "ok.sdk.dir=C:\\\\Documents and Settings\\\\UserName\\\\Local Settings\\\\Application Data\\\\Android\\\\android-studio\\\\sdk\n"
+            "ok.sdk.dir=C:\\\\Documents and Settings\\\\UserName\\\\Local Settings\\\\Application Data\\\\Android\\\\android-studio\\\\sdk\n",
         )
       )
       .run()
@@ -90,7 +90,7 @@ class PropertyFileDetectorTest : AbstractCheckTest() {
             "distributionPath=wrapper/dists\n" +
             "zipStoreBase=GRADLE_USER_HOME\n" +
             "zipStorePath=wrapper/dists\n" +
-            "distributionUrl=http\\://services.gradle.org/distributions/gradle-2.1-all.zip\n"
+            "distributionUrl=http\\://services.gradle.org/distributions/gradle-2.1-all.zip\n",
         )
       )
       .run()
@@ -146,14 +146,14 @@ class PropertyFileDetectorTest : AbstractCheckTest() {
               <com.android.tools.build/>
             </metadata>
             """
-        .trimIndent()
+        .trimIndent(),
     )
     task.networkData(
       "https://maven.google.com/com/android/tools/build/group-index.xml",
       "" +
         "<com.android.tools.build>\n" +
         "  <gradle versions=\"3.0.0-alpha1,7.0.0,7.1.0-alpha01,7.1.0-alpha02,7.1.0-alpha03\"/>\n" +
-        "</com.android.tools.build>"
+        "</com.android.tools.build>",
     )
     task
       .files(
@@ -168,7 +168,7 @@ class PropertyFileDetectorTest : AbstractCheckTest() {
             // Suppressed
             "#noinspection GradleDependency\n" +
             "android.experimental.lint.version=7.0.0-alpha11\n" +
-            ""
+            "",
 
           // TODO: Figure out if we're allowed to have comments trailing on lines
           // TODO write changes.md.html
@@ -231,8 +231,8 @@ class PropertyFileDetectorTest : AbstractCheckTest() {
             ".DS_Store\n" +
             "/build\n" +
             "/captures\n" +
-            ".externalNativeBuild"
-        )
+            ".externalNativeBuild",
+        ),
       )
       .run()
       .expectClean()

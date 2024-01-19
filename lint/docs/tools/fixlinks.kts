@@ -67,7 +67,7 @@ class FixLinks {
         val anchorHeading =
           anchorFileContents.substring(
             anchorHeadingIndex,
-            anchorFileContents.indexOf('\n', anchorHeadingIndex + 1)
+            anchorFileContents.indexOf('\n', anchorHeadingIndex + 1),
           )
         val anchor =
           "#" + anchorHeading.filter { it.isLetter() || it == ':' || it == '.' }.lowercase()

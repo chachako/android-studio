@@ -80,15 +80,15 @@ internal class NetworkInspector(
     listOf(
       GrpcHook(
         "io.grpc.ManagedChannelBuilder",
-        "forAddress(Ljava/lang/String;I)Lio/grpc/ManagedChannelBuilder;"
+        "forAddress(Ljava/lang/String;I)Lio/grpc/ManagedChannelBuilder;",
       ),
       GrpcHook(
         "io.grpc.ManagedChannelBuilder",
-        "forTarget(Ljava/lang/String;)Lio/grpc/ManagedChannelBuilder;"
+        "forTarget(Ljava/lang/String;)Lio/grpc/ManagedChannelBuilder;",
       ),
       GrpcHook(
         "io.grpc.android.AndroidChannelBuilder",
-        "forTarget(Ljava/lang/String;)Lio/grpc/android/AndroidChannelBuilder;"
+        "forTarget(Ljava/lang/String;)Lio/grpc/android/AndroidChannelBuilder;",
       ),
     )
 
@@ -222,7 +222,7 @@ internal class NetworkInspector(
         "openConnection()Ljava/net/URLConnection;",
         ArtTooling.ExitHook<URLConnection> { urlConnection ->
           wrapURLConnection(urlConnection, trackerService, interceptionService)
-        }
+        },
       )
     logger.debugHidden("Instrumented ${URL::class.qualifiedName}")
 
@@ -250,7 +250,7 @@ internal class NetworkInspector(
               list.add(0, OkHttp2Interceptor(trackerService, interceptionService))
             }
             list
-          }
+          },
         )
       logger.debugHidden("Instrumented ${OkHttpClient::class.qualifiedName}")
       okHttpInstrumented = true
@@ -269,7 +269,7 @@ internal class NetworkInspector(
             interceptors.add(OkHttp3Interceptor(trackerService, interceptionService))
             interceptors.addAll(list)
             interceptors
-          }
+          },
         )
       logger.debugHidden("Instrumented ${okhttp3.OkHttpClient::class.qualifiedName}")
       okHttpInstrumented = true
@@ -342,7 +342,7 @@ internal class NetworkInspector(
           ArtTooling.ExitHook<ManagedChannelBuilder<*>> { channelBuilder ->
             channelBuilder.intercept(grpcInterceptor)
             channelBuilder
-          }
+          },
         )
     }
   }
@@ -354,12 +354,12 @@ internal class NetworkInspector(
 
   private class InterceptingGrpcChannel(
     private val delegate: Channel,
-    private val interceptor: GrpcInterceptor
+    private val interceptor: GrpcInterceptor,
   ) : Channel() {
 
     override fun <Req : Any, Res : Any> newCall(
       methodDescriptor: MethodDescriptor<Req, Res>,
-      callOptions: CallOptions
+      callOptions: CallOptions,
     ): ClientCall<Req, Res> {
       return interceptor.interceptCall(methodDescriptor, callOptions, delegate)
     }

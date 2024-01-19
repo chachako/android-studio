@@ -54,28 +54,28 @@ class DeviceProvisioner
 private constructor(
   val scope: CoroutineScope,
   private val adbSession: AdbSession,
-  private val provisioners: List<DeviceProvisionerPlugin>
+  private val provisioners: List<DeviceProvisionerPlugin>,
 ) {
   companion object {
     @TestOnly
     fun create(
       adbSession: AdbSession,
       provisioners: List<DeviceProvisionerPlugin>,
-      icons: DeviceIcons
+      icons: DeviceIcons,
     ) = create(adbSession.scope, adbSession, provisioners, icons)
 
     fun create(
       coroutineScope: CoroutineScope,
       adbSession: AdbSession,
       provisioners: List<DeviceProvisionerPlugin>,
-      defaultIcons: DeviceIcons
+      defaultIcons: DeviceIcons,
     ) =
       DeviceProvisioner(
         coroutineScope,
         adbSession,
         (provisioners + DefaultProvisionerPlugin(coroutineScope, defaultIcons)).sortedByDescending {
           it.priority
-        }
+        },
       )
   }
 
@@ -120,7 +120,7 @@ private constructor(
    */
   suspend fun findConnectedDeviceHandle(
     deviceSelector: DeviceSelector,
-    timeout: Duration = Duration.ofSeconds(2)
+    timeout: Duration = Duration.ofSeconds(2),
   ): DeviceHandle? =
     withTimeoutOrNull(timeout) {
       val serialNumber = adbSession.hostServices.getSerialNo(deviceSelector)

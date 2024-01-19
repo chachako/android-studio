@@ -26,14 +26,14 @@ import org.junit.Test
 class ParenthesisTestModeTest {
   private fun parenthesizeKotlin(
     @Language("kotlin") source: String,
-    includeUnlikely: Boolean = false
+    includeUnlikely: Boolean = false,
   ): String {
     return parenthesize(kotlin(source), includeUnlikely)
   }
 
   private fun parenthesizeJava(
     @Language("java") source: String,
-    includeUnlikely: Boolean = false
+    includeUnlikely: Boolean = false,
   ): String {
     return parenthesize(java(source), includeUnlikely)
   }

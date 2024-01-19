@@ -75,7 +75,7 @@ class AlarmDetector : Detector(), SourceCodeScanner, XmlScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -115,7 +115,7 @@ class AlarmDetector : Detector(), SourceCodeScanner, XmlScanner {
         severity = Severity.ERROR,
         androidSpecific = true,
         implementation = IMPLEMENTATION,
-        moreInfo = "https://developer.android.com/training/scheduling/alarms#exact"
+        moreInfo = "https://developer.android.com/training/scheduling/alarms#exact",
       )
 
     // Relevant permissions for the two issues above
@@ -148,7 +148,7 @@ class AlarmDetector : Detector(), SourceCodeScanner, XmlScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val requirement = PermissionRequirement.create(annotationInfo.annotation)
     if (
@@ -186,7 +186,7 @@ class AlarmDetector : Detector(), SourceCodeScanner, XmlScanner {
     context: JavaContext,
     node: UCallExpression,
     parameter: Int,
-    min: Long
+    min: Long,
   ) {
     val argument = node.valueArguments[parameter]
     val value = getLongValue(context, argument)
@@ -268,7 +268,7 @@ class AlarmDetector : Detector(), SourceCodeScanner, XmlScanner {
             SCHEDULE_EXACT_ALARM,
             "When scheduling exact alarms, apps should explicitly call `AlarmManager#canScheduleExactAlarms`" +
               " or handle `SecurityException`s",
-            location
+            location,
           )
         )
       }

@@ -43,7 +43,7 @@ class DateFormatDetector : Detector(), SourceCodeScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     if (!specifiesLocale(constructor)) {
       val location = context.getLocation(node)
@@ -139,7 +139,7 @@ class DateFormatDetector : Detector(), SourceCodeScanner {
         WEEK_YEAR,
         argument,
         location,
-        "`DateFormat` character 'Y' in $digits is the week-era-year; did you mean 'y'?"
+        "`DateFormat` character 'Y' in $digits is the week-era-year; did you mean 'y'?",
       )
     }
   }
@@ -173,7 +173,7 @@ class DateFormatDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         moreInfo = "https://developer.android.com/reference/java/text/SimpleDateFormat.html",
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Accidentally(?) using week year instead of era year. */
@@ -197,7 +197,7 @@ class DateFormatDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         enabledByDefault = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     const val LOCALE_CLS = "java.util.Locale"

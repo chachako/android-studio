@@ -28,7 +28,7 @@ class PrivateKeyDetectorTest : AbstractCheckTest() {
       .files(
         // Not a private key file
         source("res/values/strings.xml", """
-                """).indented(),
+                """,).indented(),
         // Private key file
         source(
             "res/private_key.pem",
@@ -51,9 +51,9 @@ class PrivateKeyDetectorTest : AbstractCheckTest() {
                 9MDXXVaY6rqx1yfZYDcWVgKGXTJhBXALCeGMWF43bvAmPq3M13QJA0rlO7lAUUF2
                 5INqBUeJxZWYxn6tRr9WMty/UcYnPR3YHgt0RDZycvbcqPsU5tHk9Q==
                 -----END RSA PRIVATE KEY-----
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(

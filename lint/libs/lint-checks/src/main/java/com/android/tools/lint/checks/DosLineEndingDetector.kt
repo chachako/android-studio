@@ -50,7 +50,7 @@ class DosLineEndingDetector : LayoutDetector() {
         // This check is probably not relevant for most users anymore
         enabledByDefault = false,
         implementation =
-          Implementation(DosLineEndingDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+          Implementation(DosLineEndingDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
       )
   }
 

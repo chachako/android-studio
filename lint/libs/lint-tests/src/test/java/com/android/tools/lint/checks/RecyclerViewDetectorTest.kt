@@ -49,7 +49,7 @@ class RecyclerViewDetectorTest : AbstractCheckTest() {
                     public void notifyDataSetChanged() { }
                 }
             }
-            """
+            """,
       )
       .indented()
 
@@ -196,7 +196,7 @@ class RecyclerViewDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        recyclerViewStub
+        recyclerViewStub,
       )
       .run()
       .expect(expected)
@@ -398,7 +398,7 @@ class RecyclerViewDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        recyclerViewStub
+        recyclerViewStub,
       )
       .run()
       .expect(expected)
@@ -449,7 +449,7 @@ class RecyclerViewDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        recyclerViewStub
+        recyclerViewStub,
       )
       .run()
       .expect(expected)

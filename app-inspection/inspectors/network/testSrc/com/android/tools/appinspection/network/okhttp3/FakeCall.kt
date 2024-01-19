@@ -25,7 +25,7 @@ import okio.Timeout
 class FakeCall(
   private val client: FakeOkHttp3Client,
   private val request: Request,
-  private val response: Response
+  private val response: Response,
 ) : Call {
 
   override fun clone(): Call {

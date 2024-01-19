@@ -79,7 +79,7 @@ class ResponseWriterTest {
         0,
         20,
         1215945526,
-        payload = "OKAY${okayPayload.hexLength}$okayPayload"
+        payload = "OKAY${okayPayload.hexLength}$okayPayload",
       )
       channel.assertCommand(CLSE, 0)
     }

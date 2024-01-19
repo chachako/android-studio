@@ -63,7 +63,7 @@ class ResourceReference(
   val `package`: String,
   val type: ResourceType,
   val name: String,
-  val heuristic: Boolean = false
+  val heuristic: Boolean = false,
 ) {
 
   val isFramework: Boolean
@@ -189,7 +189,7 @@ class ResourceReference(
                 "",
                 ResourceType.ID,
                 element.identifier,
-                heuristic = true
+                heuristic = true,
               )
             }
           }

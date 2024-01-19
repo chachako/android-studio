@@ -63,7 +63,7 @@ class DeprecatedSinceApiDetector : Detector(), SourceCodeScanner {
         priority = 4,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     private const val DEPRECATED_SDK_VERSION_ANNOTATION = "androidx.annotation.DeprecatedSinceApi"
@@ -85,7 +85,7 @@ class DeprecatedSinceApiDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val apiLevel =
       annotationInfo.annotation.findAttributeValue(ATTR_API)?.evaluate() as? Int ?: return
@@ -103,7 +103,7 @@ class DeprecatedSinceApiDetector : Detector(), SourceCodeScanner {
         }"
     context.report(
       Incident(ISSUE, message, context.getLocation(element), element, null),
-      minSdkAtLeast(apiLevel)
+      minSdkAtLeast(apiLevel),
     )
   }
 }

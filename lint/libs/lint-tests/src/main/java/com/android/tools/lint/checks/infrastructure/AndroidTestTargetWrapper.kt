@@ -27,7 +27,7 @@ import com.android.sdklib.IAndroidTarget
  */
 internal class AndroidTestTargetWrapper(
   private val target: IAndroidTarget,
-  private val version: AndroidVersion
+  private val version: AndroidVersion,
 ) : IAndroidTarget by target {
   override fun getVersion(): AndroidVersion = version
 

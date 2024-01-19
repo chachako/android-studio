@@ -52,7 +52,7 @@ class UseCompoundDrawableDetectorTest : AbstractCheckTest() {
                             android:layout_height="wrap_content" />
 
                     </LinearLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -82,7 +82,7 @@ class UseCompoundDrawableDetectorTest : AbstractCheckTest() {
                         android:layout_height="wrap_content" />
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -113,7 +113,7 @@ class UseCompoundDrawableDetectorTest : AbstractCheckTest() {
                             android:layout_height="wrap_content" />
 
                     </LinearLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -156,7 +156,7 @@ class UseCompoundDrawableDetectorTest : AbstractCheckTest() {
                             android:textColor="?android:attr/textColorPrimary"
                             tools:text="Testing" />
                     </LinearLayout>
-                    """
+                    """,
           )
           .indented()
       )

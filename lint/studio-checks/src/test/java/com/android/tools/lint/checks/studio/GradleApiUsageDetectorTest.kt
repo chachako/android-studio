@@ -74,7 +74,7 @@ class GradleApiUsageDetectorTest {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(GradleApiUsageDetector.ISSUE)
       .run()

@@ -35,7 +35,7 @@ data class Reservation(
    * Maximum possible duration of the reservation. Current duration might be less than this duration
    * but may not exceed this value. null if there is no maximum duration.
    */
-  val maxDuration: Duration?
+  val maxDuration: Duration?,
 )
 
 enum class ReservationState {

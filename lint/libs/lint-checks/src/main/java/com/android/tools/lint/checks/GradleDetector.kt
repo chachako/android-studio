@@ -173,7 +173,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     val safeReplacement: Version?,
     val dependency: Dependency,
     val isResolved: Boolean,
-    val cookie: Any
+    val cookie: Any,
   )
 
   /** Stores information for a check of the Android gradle plugin dependency version. */
@@ -202,7 +202,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           checkTargetSdk(
             context,
             ManifestDetector.calendar ?: Calendar.getInstance(),
-            targetSdkVersion
+            targetSdkVersion,
           )
       ) {
         is TargetSdkCheckResult.Expired -> {
@@ -211,7 +211,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             element,
             location,
             tsdk.message,
-            targetSdkLintFix(targetSdkVersion, tsdk.requiredVersion)
+            targetSdkLintFix(targetSdkVersion, tsdk.requiredVersion),
           )
         }
         is TargetSdkCheckResult.Expiring -> {
@@ -220,7 +220,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             element,
             location,
             tsdk.message,
-            targetSdkLintFix(targetSdkVersion, tsdk.requiredVersion)
+            targetSdkLintFix(targetSdkVersion, tsdk.requiredVersion),
           )
         }
         is TargetSdkCheckResult.NotLatest -> {
@@ -230,7 +230,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               element,
               location,
               tsdk.message,
-              targetSdkLintFix(targetSdkVersion, tsdk.highestVersion)
+              targetSdkLintFix(targetSdkVersion, tsdk.highestVersion),
             )
           }
         }
@@ -285,7 +285,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     parentParent: String?,
     propertyCookie: Any,
     valueCookie: Any,
-    statementCookie: Any
+    statementCookie: Any,
   ) {
     if (parent == "defaultConfig") {
       if (property == "targetSdkVersion" || property == "targetSdk") {
@@ -347,7 +347,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                 statementCookie,
                 EDITED_TARGET_SDK_VERSION,
                 message,
-                fix().data("currentTargetSdkVersion", version)
+                fix().data("currentTargetSdkVersion", version),
               )
             }
           }
@@ -558,7 +558,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                     KEY_COORDINATE,
                     dependency.toString(),
                     KEY_REVISION,
-                    dependency.version?.toIdentifier()
+                    dependency.version?.toIdentifier(),
                   )
               report(context, valueCookie, PLUS, message, fix)
             }
@@ -597,7 +597,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               "Use the Lifecycle Java 8 API provided by the " +
                 "`lifecycle-common` library instead of Lifecycle annotations " +
                 "for faster incremental build.",
-              null
+              null,
             )
           }
           checkAnnotationProcessorOnCompilePath(property, dependencyString, context, propertyCookie)
@@ -650,7 +650,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         context,
         statementCookie,
         DEV_MODE_OBSOLETE,
-        "You no longer need a `dev` mode to enable multi-dexing during development, and this can break API version checks"
+        "You no longer need a `dev` mode to enable multi-dexing during development, and this can break API version checks",
       )
     } else if (
       parent == "dataBinding" && ((property == "enabled" || property == "isEnabled")) ||
@@ -737,7 +737,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
   private enum class DeprecatedConfiguration(
     private val deprecatedName: String,
-    private val replacementName: String
+    private val replacementName: String,
   ) {
     COMPILE("compile", "implementation"),
     PROVIDED("provided", "compileOnly"),
@@ -763,7 +763,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   private fun checkDeprecatedConfigurations(
     configuration: String,
     context: GradleContext,
-    propertyCookie: Any
+    propertyCookie: Any,
   ) {
     if (context.project.gradleModelVersion?.isAtLeastIncludingPreviews(3, 0, 0) == false) {
       // All of these deprecations were made in AGP 3.0.0
@@ -844,7 +844,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     configuration: String,
     dependency: String,
     context: GradleContext,
-    propertyCookie: Any
+    propertyCookie: Any,
   ) {
     for (compileConfiguration in CompileConfiguration.values()) {
       if (compileConfiguration.matches(configuration) && isCommonAnnotationProcessor(dependency)) {
@@ -888,7 +888,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: GradleContext,
     value: String,
     cookie: Any,
-    valueCookie: Any
+    valueCookie: Any,
   ) {
     // When done developing with a preview platform you might be tempted to switch from
     //     compileSdkVersion 'android-G'
@@ -911,7 +911,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     parentParent: String?,
     namedArguments: Map<String, String>,
     unnamedArguments: List<String>,
-    cookie: Any
+    cookie: Any,
   ) {
     val plugin = namedArguments["plugin"]
     if (statement == "apply" && parent == null) {
@@ -965,7 +965,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         cookie,
         JCENTER_REPOSITORY_OBSOLETE,
         message,
-        fix().alternatives(replaceFix, deleteFix)
+        fix().alternatives(replaceFix, deleteFix),
       )
     }
   }
@@ -977,7 +977,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     dependency: Dependency,
     isResolved: Boolean,
     cookie: Any,
-    statementCookie: Any
+    statementCookie: Any,
   ) {
     val version = dependency.version?.lowerBound ?: return
     val groupId = dependency.group ?: return
@@ -1064,7 +1064,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                 safeReplacement,
                 dependency,
                 isResolved,
-                statementCookie
+                statementCookie,
               )
             maybeReportAgpVersionIssue(context)
           }
@@ -1107,7 +1107,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               DEPENDENCY,
               "Use Fabric Gradle plugin version 1.21.6 or later to " +
                 "improve Instant Run performance (was $richVersionIdentifier)",
-              fix
+              fix,
             )
           } else {
             // From
@@ -1126,7 +1126,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               DEPENDENCY,
               "Use BugSnag Gradle plugin version 2.1.2 or later to " +
                 "improve Instant Run performance (was $richVersionIdentifier)",
-              fix
+              fix,
             )
           } else {
             // From http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.bugsnag%22%20AND
@@ -1147,7 +1147,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               DEPENDENCY,
               "Use robolectric version 4.2.1 or later to " +
                 "fix issues with parsing of Windows paths",
-              fix
+              fix,
             )
           }
         }
@@ -1208,7 +1208,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               PLAY_SDK_INDEX_NON_COMPLIANT,
               message,
               fix,
-              overrideSeverity = severity
+              overrideSeverity = severity,
             ) || hasSdkIndexIssues
         }
       }
@@ -1255,7 +1255,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           context.client,
           dependency,
           filter,
-          dependency.version?.lowerBound?.isPreview ?: true
+          dependency.version?.lowerBound?.isPreview ?: true,
         )
       if (latest != null && version < latest) {
         newerVersion = latest
@@ -1269,7 +1269,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             context.client,
             group,
             filter,
-            dependency.version?.lowerBound?.isPreview ?: true
+            dependency.version?.lowerBound?.isPreview ?: true,
           )
         if (pluginVersion != null && version < pluginVersion) {
           newerVersion = pluginVersion
@@ -1336,7 +1336,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: Context,
     groupId: String,
     artifactId: String,
-    sdkIndex: GooglePlaySdkIndex?
+    sdkIndex: GooglePlaySdkIndex?,
   ): Predicate<Version>? {
     return sdkIndex?.let {
       // Filter out versions with SDK Index errors or warnings (b/301295995)
@@ -1354,7 +1354,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: Context,
     groupId: String,
     artifactId: String,
-    version: Version
+    version: Version,
   ): Predicate<Version>? {
     if (
       (groupId == "com.android.tools.build" || ALL_PLUGIN_IDS.contains(groupId)) &&
@@ -1428,7 +1428,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         val home =
           File(
             gradleUserHome,
-            "caches" + File.separator + "modules-2" + File.separator + "files-2.1"
+            "caches" + File.separator + "modules-2" + File.separator + "files-2.1",
           )
         artifactCacheHome = home
         home
@@ -1437,7 +1437,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
   private fun findCachedNewerVersion(
     dependency: Dependency,
-    filter: Predicate<Version>?
+    filter: Predicate<Version>?,
   ): Version? {
     val group = dependency.group ?: return null
     val versionDir =
@@ -1476,7 +1476,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   private fun checkGradlePluginDependency(
     context: Context,
     dependency: Dependency,
-    cookie: Any
+    cookie: Any,
   ): Boolean {
     val minimum = Version.parse(GRADLE_PLUGIN_MINIMUM_VERSION)
     val dependencyVersion = dependency.version ?: return false
@@ -1505,7 +1505,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     dependency: Dependency,
     version: Version,
     cookie: Any,
-    statementCookie: Any
+    statementCookie: Any,
   ) {
     val groupId = dependency.group ?: return
     val artifactId = dependency.name
@@ -1591,7 +1591,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   private fun checkConsistentWearableLibraries(
     context: Context,
     cookie: Any?,
-    statementCookie: Any?
+    statementCookie: Any?,
   ) {
     // Make sure we have both
     //   compile 'com.google.android.support:wearable:2.0.0-alpha3'
@@ -1665,7 +1665,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
               if (sortedSupportVersions.size == 1) sortedSupportVersions[0]
               else sortedSupportVersions.toString(),
               if (supportedWearableVersions.size == 1) supportedWearableVersions[0]
-              else supportedWearableVersions.toString()
+              else supportedWearableVersions.toString(),
             )
           if (cookie != null) {
             reportFatalCompatibilityIssue(context, cookie, message)
@@ -1678,7 +1678,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                 sortedSupportVersions[0],
                 ANDROID_WEAR_GROUP_ID,
                 WEARABLE_ARTIFACT_ID,
-                supportedWearableVersions[0]
+                supportedWearableVersions[0],
               )
             reportFatalCompatibilityIssue(context, location, message)
           }
@@ -1695,7 +1695,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: Context,
     cookie: Any?,
     groupId: String,
-    groupId2: String?
+    groupId2: String?,
   ) {
     // Make sure we're using a consistent version across all play services libraries
     // (b/22709708)
@@ -1887,7 +1887,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
                 currentIdentifier,
                 versionString,
                 it.newerVersionIsSafe,
-                it.safeReplacement
+                it.safeReplacement,
               )
           }
         report(context, it.cookie, AGP_DEPENDENCY, message, fix)
@@ -1899,7 +1899,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     dependency: String,
     libTomlValue: LintTomlValue?,
     context: GradleContext,
-    statementCookie: Any
+    statementCookie: Any,
   ) {
     // Drop version, leaving "group:module"
     val module = dependency.substringBeforeLast(':')
@@ -1959,7 +1959,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         "This library supports using KSP instead of kapt," +
           " which greatly improves performance. Learn more: " +
           "https://developer.android.com/studio/build/migrate-to-ksp",
-      fix = fix
+      fix = fix,
     )
   }
 
@@ -1975,7 +1975,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     groupId: String,
     artifactId: String,
     version: Version,
-    cookie: Any
+    cookie: Any,
   ) {
     if (!mAppliedKotlinAndroidPlugin) return
     if (artifactId.endsWith("-ktx")) return
@@ -1999,7 +1999,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       groupId,
       "$artifactId-ktx",
       filter = { it == version },
-      allowPreview = true
+      allowPreview = true,
     ) ?: return
 
     // Note: once b/155974293 is fixed, we can check whether the KTX extension is
@@ -2023,7 +2023,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     dependency: String,
     value: String,
     context: GradleContext,
-    valueCookie: Any
+    valueCookie: Any,
   ) {
     if (listOf("platform", "enforcedPlatform").any { value.startsWith("$it(") }) {
       return
@@ -2082,7 +2082,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     message: String,
     fix: LintFix? = null,
     partial: Boolean = false,
-    overrideSeverity: Severity? = null
+    overrideSeverity: Severity? = null,
   ): Boolean {
     // Some methods in GradleDetector are run without the PSI read lock in order
     // to accommodate network requests, so we grab the read lock here.
@@ -2145,7 +2145,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: Context,
     cookie: Any,
     message: String,
-    fix: LintFix?
+    fix: LintFix?,
   ) {
     report(context, cookie, COMPATIBILITY, message, fix)
   }
@@ -2155,7 +2155,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     context: Context,
     cookie: Any,
     message: String,
-    lintFix: LintFix? = null
+    lintFix: LintFix? = null,
   ) {
     if (context.driver.fatalOnlyMode) {
       return
@@ -2174,7 +2174,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   private fun reportNonFatalCompatibilityIssue(
     context: Context,
     location: Location,
-    message: String
+    message: String,
   ) {
     if (context.driver.fatalOnlyMode) {
       return
@@ -2215,7 +2215,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   private fun resolveCoordinate(
     context: GradleContext,
     property: String,
-    dependency: Dependency
+    dependency: Dependency,
   ): Dependency? {
     fun Component.toDependency() = Dependency(group, name, RichVersion.require(version))
     assert(dependency.version?.toIdentifier()?.contains("$") ?: false) {
@@ -2261,7 +2261,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     currentVersion: String,
     suggestedVersion: String,
     suggestedVersionIsSafe: Boolean = false,
-    safeReplacement: Version? = null
+    safeReplacement: Version? = null,
   ): LintFix {
     val fix =
       fix()
@@ -2307,7 +2307,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   private fun getNewerVersionAvailableMessage(
     dependency: Dependency,
     version: String,
-    stable: Version?
+    stable: Version?,
   ): String {
     val message = StringBuilder()
     with(message) {
@@ -2403,7 +2403,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   private fun getGoogleMavenRepoVersion(
     context: Context,
     dependency: Dependency,
-    filter: Predicate<Version>?
+    filter: Predicate<Version>?,
   ): Version? {
     val repository = getGoogleMavenRepository(context.client)
     return repository.findVersion(dependency, filter, dependency.explicitlyIncludesPreview)
@@ -2463,14 +2463,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         GradleDetector::class.java,
         Scope.GRADLE_AND_TOML_SCOPE,
         Scope.GRADLE_SCOPE,
-        Scope.TOML_SCOPE
+        Scope.TOML_SCOPE,
       )
     private val IMPLEMENTATION_WITH_MANIFEST =
       Implementation(
         GradleDetector::class.java,
         EnumSet.of(Scope.GRADLE_FILE, Scope.MANIFEST),
         Scope.GRADLE_SCOPE,
-        Scope.MANIFEST_SCOPE
+        Scope.MANIFEST_SCOPE,
       )
 
     /** Obsolete dependencies. */
@@ -2489,7 +2489,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION_WITH_TOML
+        implementation = IMPLEMENTATION_WITH_TOML,
       )
 
     /**
@@ -2511,7 +2511,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         category = Category.PRODUCTIVITY,
         priority = 4,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION_WITH_TOML
+        implementation = IMPLEMENTATION_WITH_TOML,
       )
 
     /** A dependency on an obsolete version of the Android Gradle Plugin. */
@@ -2531,7 +2531,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 4,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION_WITH_TOML
+        implementation = IMPLEMENTATION_WITH_TOML,
       )
 
     /** Deprecated Gradle constructs. */
@@ -2548,7 +2548,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 6,
         androidSpecific = true,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Deprecated Gradle configurations. */
@@ -2566,7 +2566,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         moreInfo = "https://d.android.com/r/tools/update-dependency-configurations",
         priority = 6,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Incompatible Android Gradle plugin. */
@@ -2585,7 +2585,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 8,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Invalid or dangerous paths. */
@@ -2605,7 +2605,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Constructs the IDE support struggles with. */
@@ -2623,7 +2623,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using + in versions. */
@@ -2643,7 +2643,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Accidentally calling a getter instead of your own methods. */
@@ -2670,7 +2670,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 6,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using incompatible versions. */
@@ -2690,7 +2690,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 8,
         severity = Severity.FATAL,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using a string where an integer is expected. */
@@ -2713,7 +2713,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 8,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Attempting to use substitution with single quotes. */
@@ -2730,7 +2730,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         category = Category.CORRECTNESS,
         priority = 8,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** A newer version is available on a remote server. */
@@ -2751,7 +2751,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 4,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION_WITH_TOML,
-        enabledByDefault = false
+        enabledByDefault = false,
       )
 
     /** The API version is set too low. */
@@ -2770,7 +2770,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
         androidSpecific = true,
-        enabledByDefault = false
+        enabledByDefault = false,
       )
 
     /** Accidentally using octal numbers. */
@@ -2788,7 +2788,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         category = Category.CORRECTNESS,
         priority = 2,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -2809,7 +2809,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 4,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using a versionCode that is very high. */
@@ -2829,7 +2829,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 8,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Dev mode is no longer relevant. */
@@ -2857,7 +2857,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 2,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Duplicate HTTP classes. */
@@ -2882,7 +2882,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 8,
         severity = Severity.FATAL,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /**
@@ -2913,7 +2913,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           priority = 8,
           severity = Severity.WARNING,
           androidSpecific = true,
-          implementation = IMPLEMENTATION_WITH_MANIFEST
+          implementation = IMPLEMENTATION_WITH_MANIFEST,
         )
         .addMoreInfo(
           "https://support.google.com/googleplay/android-developer/answer/113469#targetsdk"
@@ -2944,7 +2944,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           priority = 8,
           severity = Severity.FATAL,
           androidSpecific = true,
-          implementation = IMPLEMENTATION_WITH_MANIFEST
+          implementation = IMPLEMENTATION_WITH_MANIFEST,
         )
         .addMoreInfo(
           "https://developer.android.com/distribute/best-practices/develop/target-sdk.html"
@@ -2974,7 +2974,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           category = Category.CORRECTNESS,
           priority = 6,
           severity = Severity.WARNING,
-          implementation = IMPLEMENTATION_WITH_MANIFEST
+          implementation = IMPLEMENTATION_WITH_MANIFEST,
         )
         .addMoreInfo(
           "https://developer.android.com/distribute/best-practices/develop/target-sdk.html"
@@ -3015,7 +3015,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 2,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using a deprecated library. */
@@ -3038,7 +3038,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         severity = Severity.WARNING,
         androidSpecific = true,
         implementation = IMPLEMENTATION_WITH_TOML,
-        moreInfo = GOOGLE_PLAY_SDK_INDEX_URL
+        moreInfo = GOOGLE_PLAY_SDK_INDEX_URL,
       )
 
     /** Using data binding with Kotlin but not Kotlin annotation processing. */
@@ -3056,7 +3056,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 1,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using Lifecycle annotation processor with java8. */
@@ -3086,7 +3086,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Using a vulnerable library. */
@@ -3114,7 +3114,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           severity = Severity.WARNING,
           androidSpecific = true,
           implementation = IMPLEMENTATION_WITH_TOML,
-          moreInfo = GOOGLE_PLAY_SDK_INDEX_URL
+          moreInfo = GOOGLE_PLAY_SDK_INDEX_URL,
         )
         .addMoreInfo("https://goo.gle/RiskyLibrary")
 
@@ -3133,7 +3133,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 8,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -3156,7 +3156,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         severity = Severity.INFORMATIONAL,
         androidSpecific = true,
         implementation = IMPLEMENTATION,
-        moreInfo = "https://developer.android.com/kotlin/ktx"
+        moreInfo = "https://developer.android.com/kotlin/ktx",
       )
 
     @JvmField
@@ -3174,7 +3174,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         severity = Severity.WARNING,
         androidSpecific = true,
         implementation = IMPLEMENTATION,
-        moreInfo = "https://developer.android.com/studio/build/migrate-to-ksp"
+        moreInfo = "https://developer.android.com/studio/build/migrate-to-ksp",
       )
 
     @JvmField
@@ -3192,7 +3192,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         severity = Severity.WARNING,
         androidSpecific = true,
         implementation = IMPLEMENTATION_WITH_TOML,
-        moreInfo = "https://developer.android.com/r/tools/gradle-bom-docs"
+        moreInfo = "https://developer.android.com/r/tools/gradle-bom-docs",
       )
 
     @JvmField
@@ -3213,7 +3213,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         category = Category.INTEROPERABILITY,
         priority = 6,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -3231,7 +3231,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 8,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        moreInfo = "https://developer.android.com/r/tools/jcenter-end-of-service"
+        moreInfo = "https://developer.android.com/r/tools/jcenter-end-of-service",
       )
 
     @JvmField
@@ -3246,7 +3246,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         severity = Severity.ERROR,
         implementation = IMPLEMENTATION_WITH_TOML,
         moreInfo = GOOGLE_PLAY_SDK_INDEX_URL,
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     @JvmField
@@ -3261,7 +3261,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         severity = Severity.ERROR,
         implementation = IMPLEMENTATION_WITH_TOML,
         moreInfo = GOOGLE_PLAY_SDK_INDEX_URL,
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     @JvmField
@@ -3281,7 +3281,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
         moreInfo = "https://developer.android.com/ndk/guides/abis",
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     /** Gradle plugin IDs based on the Java plugin. */
@@ -3310,7 +3310,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         "com.android.instant-app",
         "com.android.feature",
         "com.android.dynamic-feature",
-        "com.android.settings"
+        "com.android.settings",
       )
 
     /** Group ID for GMS. */
@@ -3340,7 +3340,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       context: Context,
       groupId: String,
       artifactId: String,
-      version: String
+      version: String,
     ): Location {
       val client = context.client
       val projectDir = context.project.dir
@@ -3365,7 +3365,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     fun getDependencyLocation(
       context: Context,
       address1: LintModelMavenName,
-      address2: LintModelMavenName
+      address2: LintModelMavenName,
     ): Location {
       return getDependencyLocation(
         context,
@@ -3374,7 +3374,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         address1.version,
         address2.groupId,
         address2.artifactId,
-        address2.version
+        address2.version,
       )
     }
 
@@ -3387,7 +3387,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       groupId2: String,
       artifactId2: String,
       version2: String,
-      message: String? = null
+      message: String? = null,
     ): Location {
       val location1 = getDependencyLocation(context, groupId1, artifactId1, version1)
       val location2 = getDependencyLocation(context, groupId2, artifactId2, version2)
@@ -3403,7 +3403,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       client: LintClient,
       pluginId: String,
       filter: Predicate<Version>?,
-      allowPreview: Boolean
+      allowPreview: Boolean,
     ): Version? {
       val pluginPath = pluginId.replace(".", "/")
       val url =
@@ -3416,7 +3416,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             null,
             "Could not connect to %1\$s to get the latest available version for plugin %2\$s",
             url,
-            pluginId
+            pluginId,
           )
           null
         }
@@ -3457,7 +3457,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       client: LintClient,
       dependency: Dependency,
       filter: Predicate<Version>?,
-      allowPreview: Boolean
+      allowPreview: Boolean,
     ): Version? {
       val group = dependency.group ?: return null
       val name = dependency.name
@@ -3496,7 +3496,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           null,
           "Could not connect to maven central to look up the latest " +
             "available version for %1\$s",
-          dependency
+          dependency,
         )
         return null
       }
@@ -3560,7 +3560,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
     private data class VersionCatalogDependency(
       val coordinates: String,
-      val tomlValue: LintTomlValue
+      val tomlValue: LintTomlValue,
     )
 
     /**
@@ -3570,7 +3570,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
      */
     private fun getDependencyFromVersionCatalog(
       expression: String,
-      context: GradleContext
+      context: GradleContext,
     ): VersionCatalogDependency? {
       if (!expression.startsWith(VC_LIBRARY_PREFIX)) return null
 
@@ -3600,7 +3600,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
      */
     private fun getPluginFromVersionCatalog(
       expression: String,
-      context: GradleContext
+      context: GradleContext,
     ): VersionCatalogDependency? {
       if (!expression.startsWith(VC_PLUGIN_PREFIX)) return null
 
@@ -3788,7 +3788,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         "com.smile.gifshow.annotation:preference_processor",
         "com.smile.gifshow.annotation:plugin_processor",
         "org.inferred:freebuilder",
-        "com.smile.gifshow.annotation:router_processor"
+        "com.smile.gifshow.annotation:router_processor",
       )
 
     // From https://kotlinlang.org/docs/ksp-overview.html#supported-libraries

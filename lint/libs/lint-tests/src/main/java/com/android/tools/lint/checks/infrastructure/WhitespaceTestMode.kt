@@ -44,7 +44,7 @@ class WhitespaceTestMode :
   UastSourceTransformationTestMode(
     description = "Extra whitespace added",
     "TestMode.WHITESPACE",
-    "whitespace"
+    "whitespace",
   ) {
   override val diffExplanation: String =
     // first line shorter: expecting to prefix that line with
@@ -68,7 +68,7 @@ class WhitespaceTestMode :
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
     var ordinal = 0
 

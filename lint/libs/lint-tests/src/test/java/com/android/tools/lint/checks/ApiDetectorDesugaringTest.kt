@@ -124,7 +124,7 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        gradleVersion24_language18
+        gradleVersion24_language18,
       )
       .run()
       .expectClean()
@@ -150,10 +150,10 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                     static void method3() {
                         System.out.println("test");
                     }
-                }"""
+                }""",
           )
           .indented(),
-        gradleVersion24_language18
+        gradleVersion24_language18,
       )
       .run()
       .expectClean()
@@ -205,7 +205,7 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        gradleVersion24_language18
+        gradleVersion24_language18,
       )
       .run()
       .expectClean()
@@ -247,7 +247,7 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .desugaring(Desugaring.FULL)
       .run()
@@ -319,7 +319,7 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .desugaring(Desugaring.FULL)
       .run()
@@ -368,7 +368,7 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
         // Make sure it's treated as a plain library
         gradle("""
                 apply plugin: 'java'
-                """).indented()
+                """).indented(),
       )
 
     val main = project(manifest().minSdk(1)).dependsOn(lib)

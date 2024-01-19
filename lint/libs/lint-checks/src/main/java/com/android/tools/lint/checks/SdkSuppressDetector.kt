@@ -42,7 +42,7 @@ class SdkSuppressDetector : Detector(), SourceCodeScanner {
     private val IMPLEMENTATION =
       Implementation(
         SdkSuppressDetector::class.java,
-        EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES)
+        EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES),
       )
 
     /** Using `@RequiresApi` instead of `SdkSuppress` in tests. */
@@ -62,7 +62,7 @@ class SdkSuppressDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -70,7 +70,7 @@ class SdkSuppressDetector : Detector(), SourceCodeScanner {
     listOf(
       REQUIRES_API_ANNOTATION.oldName(),
       REQUIRES_API_ANNOTATION.newName(),
-      REQUIRES_EXTENSION_ANNOTATION
+      REQUIRES_EXTENSION_ANNOTATION,
     )
 
   override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean = type == DEFINITION
@@ -79,7 +79,7 @@ class SdkSuppressDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     if (!context.isTestSource) {
       return

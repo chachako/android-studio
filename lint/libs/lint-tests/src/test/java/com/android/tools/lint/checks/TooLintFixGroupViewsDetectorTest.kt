@@ -439,7 +439,7 @@ class TooLintFixGroupViewsDetectorTest : AbstractCheckTest() {
                     </LinearLayout>
 
                 </FrameLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -532,7 +532,7 @@ class TooLintFixGroupViewsDetectorTest : AbstractCheckTest() {
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )

@@ -192,7 +192,7 @@ class LintFixVerifierTest {
                     """
           )
           .indented(),
-        source("delete_me.txt", "Delete\nThis\nFile")
+        source("delete_me.txt", "Delete\nThis\nFile"),
       )
       .sdkHome(TestUtils.getSdk().toFile())
       .issues(*LintFixVerifierRegistry().issues.toTypedArray())
@@ -379,7 +379,7 @@ class LintFixVerifierTest {
         "This call references a method added in API level 21; however, the containing class " +
           "`androidx.AutofixUnsafeVoidMethodReferenceJava` is reachable from earlier API levels and " +
           "will fail run-time class verification.",
-        fix
+        fix,
       )
     }
 
@@ -392,7 +392,7 @@ class LintFixVerifierTest {
             Category.CORRECTNESS,
             5,
             Severity.ERROR,
-            Implementation(ClassVerificationFailureDetector::class.java, Scope.JAVA_FILE_SCOPE)
+            Implementation(ClassVerificationFailureDetector::class.java, Scope.JAVA_FILE_SCOPE),
           )
           .setAndroidSpecific(true)
     }
@@ -422,7 +422,7 @@ class LintFixVerifierTest {
                     .asSourceString()
                     .replace(
                       "org.assertj.core.api.Assertions",
-                      "org.assertj.core.api.Java6Assertions"
+                      "org.assertj.core.api.Java6Assertions",
                     )
                 )
                 .build()
@@ -432,7 +432,7 @@ class LintFixVerifierTest {
               node,
               context.getLocation(importReference),
               "Should use Java6Assertions instead",
-              fix
+              fix,
             )
           }
         }
@@ -457,8 +457,8 @@ class LintFixVerifierTest {
           implementation =
             Implementation(
               AssertjDetector::class.java,
-              EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES)
-            )
+              EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES),
+            ),
         )
     }
   }
@@ -485,7 +485,7 @@ class LintFixVerifierDetector : Detector(), Detector.UastScanner {
         ISSUE,
         context.getLocation(node),
         "This error has a quickfix which edits parent method name instead",
-        fix
+        fix,
       )
     } else if (method.name == "updateBuildGradle") {
       val file =
@@ -512,7 +512,7 @@ class LintFixVerifierDetector : Detector(), Detector.UastScanner {
           .name("Create file")
           .newFile(
             File(range.file.parentFile, "new.txt"),
-            "First line in new file.\nSecond line.\nThe End."
+            "First line in new file.\nSecond line.\nThe End.",
           )
           .select("(new)")
           .build()
@@ -536,7 +536,7 @@ class LintFixVerifierDetector : Detector(), Detector.UastScanner {
         ISSUE,
         context.getLocation(node),
         "This error has a quickfix which edits something in a separate build.gradle file instead",
-        composite
+        composite,
       )
     } else if (method.name == "deleteStatement") {
       val deleteFix = fix().replace().with("").reformat(true)
@@ -560,7 +560,7 @@ class LintFixVerifierDetector : Detector(), Detector.UastScanner {
         node,
         context.getLocation(node),
         "This method call should be fully deleted",
-        deleteFix.build()
+        deleteFix.build(),
       )
     } else {
       error(method.name)
@@ -580,8 +580,8 @@ class LintFixVerifierDetector : Detector(), Detector.UastScanner {
         implementation =
           Implementation(
             LintFixVerifierDetector::class.java,
-            EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES)
-          )
+            EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES),
+          ),
       )
   }
 }

@@ -50,7 +50,7 @@ class DesugaredMethodLookupTest {
           "java/util/Map\$Entry",
           "comparingByValue",
           "(Ljava/util/Comparator;)",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
       assertTrue(
@@ -58,7 +58,7 @@ class DesugaredMethodLookupTest {
           "java/util/Map\$Entry",
           "comparingByValue",
           "()",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
       assertFalse(
@@ -66,7 +66,7 @@ class DesugaredMethodLookupTest {
           "java/util/Map\$Entry",
           "",
           "",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
       assertFalse(
@@ -74,7 +74,7 @@ class DesugaredMethodLookupTest {
           "java/util/Map",
           "comparingByValue",
           "()",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
     } finally {
@@ -98,7 +98,7 @@ class DesugaredMethodLookupTest {
         "java.util.Collection",
         "stream",
         "()",
-        SourceSetType.INSTRUMENTATION_TESTS
+        SourceSetType.INSTRUMENTATION_TESTS,
       )
     } finally {
       DesugaredMethodLookup.reset()
@@ -130,7 +130,7 @@ class DesugaredMethodLookupTest {
         "java.util.Collection",
         "stream",
         "()",
-        SourceSetType.INSTRUMENTATION_TESTS
+        SourceSetType.INSTRUMENTATION_TESTS,
       )
     } finally {
       DesugaredMethodLookup.reset()
@@ -167,7 +167,7 @@ class DesugaredMethodLookupTest {
           "java.util.Collection",
           "stream",
           "()",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
     } finally {
@@ -182,7 +182,7 @@ class DesugaredMethodLookupTest {
         "java/lang/Character",
         "compare",
         "(CC)",
-        SourceSetType.INSTRUMENTATION_TESTS
+        SourceSetType.INSTRUMENTATION_TESTS,
       )
     )
 
@@ -197,7 +197,7 @@ class DesugaredMethodLookupTest {
       val desc = entry.substring(paren, entry.indexOf(")") + 1)
       assertTrue(
         entry,
-        DesugaredMethodLookup.isDesugared(owner, name, desc, SourceSetType.INSTRUMENTATION_TESTS)
+        DesugaredMethodLookup.isDesugared(owner, name, desc, SourceSetType.INSTRUMENTATION_TESTS),
       )
     }
   }
@@ -209,7 +209,7 @@ class DesugaredMethodLookupTest {
         "foo.bar.Baz",
         "foo",
         "(I)",
-        SourceSetType.INSTRUMENTATION_TESTS
+        SourceSetType.INSTRUMENTATION_TESTS,
       )
     )
     assertFalse(
@@ -217,7 +217,7 @@ class DesugaredMethodLookupTest {
         "java/lang/Character",
         "wrongmethod",
         "(I)",
-        SourceSetType.INSTRUMENTATION_TESTS
+        SourceSetType.INSTRUMENTATION_TESTS,
       )
     )
     assertFalse(
@@ -225,7 +225,7 @@ class DesugaredMethodLookupTest {
         "java/lang/Character",
         "compare",
         "(JJJJ)",
-        SourceSetType.INSTRUMENTATION_TESTS
+        SourceSetType.INSTRUMENTATION_TESTS,
       )
     )
     assertFalse(
@@ -233,7 +233,7 @@ class DesugaredMethodLookupTest {
         "java/lang/Character",
         "compare",
         "()",
-        SourceSetType.INSTRUMENTATION_TESTS
+        SourceSetType.INSTRUMENTATION_TESTS,
       )
     )
   }
@@ -249,7 +249,7 @@ class DesugaredMethodLookupTest {
           "foo/Bar",
           "baz",
           "()",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
       assertTrue(
@@ -257,7 +257,7 @@ class DesugaredMethodLookupTest {
           "abc/def/GHI\$JKL",
           "abc",
           "(III)",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
       assertFalse(
@@ -265,7 +265,7 @@ class DesugaredMethodLookupTest {
           "abc/def/GHI",
           "abc",
           "(III)",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
       assertFalse(
@@ -273,7 +273,7 @@ class DesugaredMethodLookupTest {
           "abc/def/GHI\$JKL",
           "ab",
           "(III)",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
       assertTrue(
@@ -281,7 +281,7 @@ class DesugaredMethodLookupTest {
           "hij/kl/mn/O",
           "pQr",
           "()",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
 
@@ -291,7 +291,7 @@ class DesugaredMethodLookupTest {
           "def/gh/IJ",
           "name",
           "()",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
       // Match inner classes where the descriptor just lists the top level class name
@@ -300,7 +300,7 @@ class DesugaredMethodLookupTest {
           "def/gh/IJ\$Inner",
           "name",
           "()",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
       // Match methods where the descriptor just lists the class and method names
@@ -309,7 +309,7 @@ class DesugaredMethodLookupTest {
           "g/hijk/l/MN",
           "op",
           "()",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
       assertFalse(
@@ -317,7 +317,7 @@ class DesugaredMethodLookupTest {
           "g/hijk/l/MN",
           "wrongname",
           "()",
-          SourceSetType.INSTRUMENTATION_TESTS
+          SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
     }
@@ -399,7 +399,7 @@ class DesugaredMethodLookupTest {
         "abc",
         "(III)",
         SourceSetType.MAIN,
-        project
+        project,
       )
     )
     assertFalse(
@@ -408,7 +408,7 @@ class DesugaredMethodLookupTest {
         "ab",
         "(III)",
         SourceSetType.MAIN,
-        project
+        project,
       )
     )
     assertTrue(
@@ -421,7 +421,7 @@ class DesugaredMethodLookupTest {
         "compare",
         "(CC)",
         SourceSetType.MAIN,
-        project
+        project,
       )
     )
 
@@ -440,7 +440,7 @@ class DesugaredMethodLookupTest {
         "abc",
         "(III)",
         SourceSetType.MAIN,
-        project2
+        project2,
       )
     )
     // make sure we're picking up the defaults in that case
@@ -450,7 +450,7 @@ class DesugaredMethodLookupTest {
         "compare",
         "(CC)",
         SourceSetType.MAIN,
-        project2
+        project2,
       )
     )
   }
@@ -479,7 +479,7 @@ class DesugaredMethodLookupTest {
         "abc",
         "(III)",
         SourceSetType.MAIN,
-        project
+        project,
       )
     )
     assertFalse(
@@ -488,7 +488,7 @@ class DesugaredMethodLookupTest {
         "ab",
         "(III)",
         SourceSetType.MAIN,
-        project
+        project,
       )
     )
     assertTrue(

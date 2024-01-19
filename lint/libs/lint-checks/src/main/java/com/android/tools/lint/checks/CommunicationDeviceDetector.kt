@@ -91,7 +91,7 @@ class CommunicationDeviceDetector : Detector(), SourceCodeScanner {
         priority = 5,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     const val FOUND_CLEAR_COMMUNICATION_DEVICE = "foundClearCommunicationDevice"

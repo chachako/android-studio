@@ -39,7 +39,7 @@ object BackgroundTaskUtil {
    */
   fun Connection.sendBackgroundTaskEvent(
     taskId: Long,
-    setMetaData: BackgroundTaskEvent.Builder.() -> Unit
+    setMetaData: BackgroundTaskEvent.Builder.() -> Unit,
   ) {
     val eventBuilder =
       Event.newBuilder().apply {

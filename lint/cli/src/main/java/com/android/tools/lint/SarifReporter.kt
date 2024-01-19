@@ -212,7 +212,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
       indent,
       "fullDescription",
       "Static analysis originally for Android source code but now performing general analysis",
-      comma = true
+      comma = true,
     )
     writer.indent(indent).write("\"language\": \"en-US\",\n")
     writeRules(issues, indent)
@@ -392,7 +392,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
       location,
       last = true,
       indent = indent,
-      message = location.message
+      message = location.message,
     )
     writer.indent(--indent).write("],\n")
     location.secondary?.let { writeRelatedLocations(incident, it, indent) }
@@ -404,7 +404,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
     last: Boolean,
     indent: Int,
     id: Int = -1,
-    message: String? = null
+    message: String? = null,
   ) {
     var indent = indent
     writer.indent(indent++).write("{\n")
@@ -535,7 +535,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
   private fun computeContext(
     fileText: CharSequence,
     lineStart: Position,
-    lineEnd: Position
+    lineEnd: Position,
   ): Pair<Position, Position>? {
     if (fileText.isEmpty()) {
       return null
@@ -646,7 +646,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
     fix: LintFix,
     files: List<LintFixPerformer.PendingEditFile>,
     last: Boolean,
-    indent: Int
+    indent: Int,
   ) {
     // Only write fixes that have corresponding edits, since there are quickfixes
     // in lint that just communicate data to the IDE to act on or for example to
@@ -678,7 +678,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
     source: CharSequence,
     offset: Int,
     startOffset: Int = 0,
-    startLineNumber: Int = 1
+    startLineNumber: Int = 1,
   ): Int {
     var lineNumber = startLineNumber
     for (i in startOffset until min(offset, source.length)) {
@@ -701,7 +701,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
     incident: Incident,
     file: LintFixPerformer.PendingEditFile,
     last: Boolean,
-    indent: Int
+    indent: Int,
   ) {
     val source = performer.getSourceText(file.file)
     var indent = indent
@@ -750,7 +750,7 @@ constructor(client: LintCliClient, output: File) : Reporter(client, output) {
     name: String,
     raw: String,
     comma: Boolean = false,
-    newline: Boolean = false
+    newline: Boolean = false,
   ): Writer {
     writer.indent(indent).write("\"$name\": {\n")
     val text = RAW.convertTo(raw, TEXT)

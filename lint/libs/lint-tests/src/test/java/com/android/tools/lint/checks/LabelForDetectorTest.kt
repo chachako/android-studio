@@ -80,7 +80,7 @@ class LabelForDetectorTest : AbstractCheckTest() {
                             android:hint=""
                             android:text="MultiAutoCompleteTextView"/>
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -232,9 +232,9 @@ class LabelForDetectorTest : AbstractCheckTest() {
                             android:ems="10"
                             android:text="MultiAutoCompleteTextView"/>
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -360,9 +360,9 @@ class LabelForDetectorTest : AbstractCheckTest() {
                             android:ems="10"
                             android:text="MultiAutoCompleteTextView"/>
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -439,9 +439,9 @@ class LabelForDetectorTest : AbstractCheckTest() {
                             android:ems="10"
                             android:text="MultiAutoCompleteTextView"/>
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -505,9 +505,9 @@ class LabelForDetectorTest : AbstractCheckTest() {
                             android:ems="10"
                             android:text="MultiAutoCompleteTextView"/>
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -537,9 +537,9 @@ class LabelForDetectorTest : AbstractCheckTest() {
                                   android:layout_marginStart="40dp"
                                   android:inputType="textUri"
                                   android:enabled="false"/></LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -573,7 +573,7 @@ class LabelForDetectorTest : AbstractCheckTest() {
                             android:ems="10"
                             android:hint="My hint"/>
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -599,9 +599,9 @@ class LabelForDetectorTest : AbstractCheckTest() {
                         <requestFocus/>
                     </EditText>
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(expected)
@@ -642,7 +642,7 @@ class LabelForDetectorTest : AbstractCheckTest() {
                     android:hint="hint"
                     android:text="MultiAutoCompleteTextView"/>
         </LinearLayout>
-        """
+        """,
       )
       .indented()
 
@@ -702,7 +702,7 @@ class LabelForDetectorTest : AbstractCheckTest() {
                     android:ems="10"
                     android:text="MultiAutoCompleteTextView"/>
         </LinearLayout>
-        """
+        """,
       )
       .indented()
 
@@ -737,7 +737,7 @@ class LabelForDetectorTest : AbstractCheckTest() {
                     android:ems="10"
                     android:text="MultiAutoCompleteTextView"/>
         </LinearLayout>
-        """
+        """,
       )
       .indented()
 
@@ -800,7 +800,7 @@ class LabelForDetectorTest : AbstractCheckTest() {
                     android:hint="hint"
                     android:text="MultiAutoCompleteTextView"/>
         </LinearLayout>
-        """
+        """,
       )
       .indented()
 }

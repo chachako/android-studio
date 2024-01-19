@@ -54,7 +54,7 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
 class CallGraphVisitor(
   private val receiverEval: DispatchReceiverEvaluator,
   private val classHierarchy: ClassHierarchy,
-  private val conservative: Boolean = false
+  private val conservative: Boolean = false,
 ) : AbstractUastVisitor() {
   private val mutableCallGraph: MutableCallGraph = MutableCallGraph()
   val callGraph: CallGraph
@@ -103,7 +103,7 @@ class CallGraphVisitor(
         UMethod::class.java,
         ULambdaExpression::class.java,
         UClassInitializer::class.java,
-        UField::class.java
+        UField::class.java,
       )
 
     // Find the caller(s) based on surrounding context.

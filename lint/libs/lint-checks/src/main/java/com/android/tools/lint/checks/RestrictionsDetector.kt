@@ -61,7 +61,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
     element: Element,
     restrictionType: String?,
     keys: MutableMap<String, Element>,
-    depth: Int
+    depth: Int,
   ) {
     assert(depth == 0 || restrictionType != null)
 
@@ -77,7 +77,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
           ISSUE,
           element,
           context.getLocation(defaultValue),
-          "Restriction type `$restrictionType` should not have a default value"
+          "Restriction type `$restrictionType` should not have a default value",
         )
       }
       for (child in children) {
@@ -94,7 +94,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
             ISSUE,
             element,
             context.getElementLocation(element),
-            "Expected exactly one child for restriction of type `bundle_array`"
+            "Expected exactly one child for restriction of type `bundle_array`",
           )
         }
       } else {
@@ -104,7 +104,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
             ISSUE,
             element,
             context.getElementLocation(element),
-            "Restriction type `bundle` should have at least one nested restriction"
+            "Restriction type `bundle` should have at least one nested restriction",
           )
         }
       }
@@ -124,7 +124,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
           ISSUE,
           element,
           context.getElementLocation(element),
-          "Invalid nested restriction: nesting depth $depth too large (max $MAX_NESTING_DEPTH"
+          "Invalid nested restriction: nesting depth $depth too large (max $MAX_NESTING_DEPTH",
         )
       }
     } else if (children.isNotEmpty()) {
@@ -132,7 +132,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
         ISSUE,
         element,
         context.getNameLocation(element),
-        "Only restrictions of type `bundle` and `bundle_array` can have one or multiple nested restriction elements"
+        "Only restrictions of type `bundle` and `bundle_array` can have one or multiple nested restriction elements",
       )
     }
   }
@@ -142,7 +142,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
     context: XmlContext,
     node: Node,
     depth: Int,
-    keys: MutableMap<String, Element>
+    keys: MutableMap<String, Element>,
   ) {
 
     if (node.nodeType != Node.ELEMENT_NODE) {
@@ -169,7 +169,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
           ISSUE,
           element,
           valueLocation,
-          "Keys cannot be localized, they should be specified with a string literal"
+          "Keys cannot be localized, they should be specified with a string literal",
         )
       }
       keys.containsKey(key) -> {
@@ -220,7 +220,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
         ISSUE,
         element,
         context.getNameLocation(element),
-        "Unexpected tag `<$tagName>`, expected `<$TAG_RESTRICTION>`"
+        "Unexpected tag `<$tagName>`, expected `<$TAG_RESTRICTION>`",
       )
       return false
     }
@@ -230,7 +230,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
   private fun checkRequiredAttribute(
     context: XmlContext,
     element: Element,
-    attribute: String
+    attribute: String,
   ): String? {
     var fullAttribute = attribute
     if (!element.hasAttributeNS(ANDROID_URI, fullAttribute)) {
@@ -242,7 +242,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
         ISSUE,
         element,
         context.getElementLocation(element),
-        "Missing required attribute `$fullAttribute`"
+        "Missing required attribute `$fullAttribute`",
       )
       return null
     }
@@ -269,7 +269,7 @@ class RestrictionsDetector : ResourceXmlDetector() {
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.FATAL,
-        implementation = Implementation(RestrictionsDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
+        implementation = Implementation(RestrictionsDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
       )
 
     const val TAG_RESTRICTIONS = "restrictions"

@@ -22,7 +22,7 @@ import java.io.OutputStream
 /** Wraps an OutputStream to enable the network inspector capturing of request body */
 internal class OutputStreamTracker(
   private val myWrapped: OutputStream,
-  private val reporter: StreamReporter
+  private val reporter: StreamReporter,
 ) : OutputStream() {
 
   override fun close() {

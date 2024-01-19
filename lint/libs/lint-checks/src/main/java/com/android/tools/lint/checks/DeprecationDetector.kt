@@ -81,7 +81,7 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
           context.getNameLocation(rootElement),
           "The `android.preference` library is deprecated, it is " +
             "recommended that you migrate to the AndroidX Preference " +
-            "library instead."
+            "library instead.",
         )
         return
       }
@@ -98,7 +98,7 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
           context.getNameLocation(rootElement),
           "`$tagName` inherits from `android.preference.Preference` which is " +
             "now deprecated, it is recommended that you migrate to the " +
-            "AndroidX Preference library."
+            "AndroidX Preference library.",
         )
       }
     }
@@ -188,7 +188,7 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
             attribute,
             context.getLocation(attribute),
             "ChooserTargetService` is deprecated: Please see $SHARE_API_URL",
-            fix().url(SHARE_API_URL).build()
+            fix().url(SHARE_API_URL).build(),
           )
         }
         return
@@ -202,7 +202,7 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
               context.getLocation(attribute),
               "App actions via actions.xml is deprecated; Please migrate to " +
                 "shortcuts.xml. See $APP_ACTIONS_MIGRATION_URL.",
-              fix().url(APP_ACTIONS_MIGRATION_URL).build()
+              fix().url(APP_ACTIONS_MIGRATION_URL).build(),
             )
           context.report(incident, targetSdkAtLeast(21))
         }
@@ -240,7 +240,7 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
         ISSUE,
         attribute,
         context.getLocation(attribute),
-        "`${attribute.name}` is deprecated: $fix"
+        "`${attribute.name}` is deprecated: $fix",
       )
     context.report(incident, minSdkAtLeast(minSdk))
   }
@@ -254,7 +254,7 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     val url = "https://developer.android.com/topic/libraries/architecture/workmanager/migrating-fb"
     context.report(
@@ -262,7 +262,7 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
       node,
       context.getCallLocation(node, includeReceiver = false, includeArguments = false),
       "Job scheduling with `FirebaseJobDispatcher` is deprecated: Use AndroidX `WorkManager` instead",
-      fix().url(url).build()
+      fix().url(url).build(),
     )
   }
 
@@ -280,7 +280,7 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
       node,
       context.getCallLocation(node, includeReceiver = false, includeArguments = false),
       "Job scheduling with `GcmNetworkManager` is deprecated: Use AndroidX `WorkManager` instead",
-      fix().url(url).build()
+      fix().url(url).build(),
     )
   }
 
@@ -295,7 +295,7 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
       declaration,
       location,
       "`${declaration.name}` extends the deprecated `ChooserTargetService`: Use the Share API instead",
-      fix().url(SHARE_API_URL).build()
+      fix().url(SHARE_API_URL).build(),
     )
   }
 
@@ -342,8 +342,8 @@ class DeprecationDetector : ResourceXmlDetector(), SourceCodeScanner {
             EnumSet.of(Scope.MANIFEST, Scope.RESOURCE_FILE, Scope.JAVA_FILE),
             MANIFEST_SCOPE,
             RESOURCE_FILE_SCOPE,
-            JAVA_FILE_SCOPE
-          )
+            JAVA_FILE_SCOPE,
+          ),
       )
   }
 }

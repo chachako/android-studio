@@ -24,115 +24,115 @@ package com.android.tools.lint.client.api
 object JavaParser {
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_OBJECT")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_OBJECT"),
   )
   const val TYPE_OBJECT = com.android.tools.lint.client.api.TYPE_OBJECT
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_STRING")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_STRING"),
   )
   const val TYPE_STRING = com.android.tools.lint.client.api.TYPE_STRING
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_INT")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_INT"),
   )
   const val TYPE_INT = com.android.tools.lint.client.api.TYPE_INT
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_LONG")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_LONG"),
   )
   const val TYPE_LONG = com.android.tools.lint.client.api.TYPE_LONG
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_CHAR")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_CHAR"),
   )
   const val TYPE_CHAR = com.android.tools.lint.client.api.TYPE_CHAR
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_FLOAT")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_FLOAT"),
   )
   const val TYPE_FLOAT = com.android.tools.lint.client.api.TYPE_FLOAT
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_DOUBLE")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_DOUBLE"),
   )
   const val TYPE_DOUBLE = com.android.tools.lint.client.api.TYPE_DOUBLE
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_BOOLEAN")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_BOOLEAN"),
   )
   const val TYPE_BOOLEAN = com.android.tools.lint.client.api.TYPE_BOOLEAN
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_SHORT")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_SHORT"),
   )
   const val TYPE_SHORT = com.android.tools.lint.client.api.TYPE_SHORT
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_BYTE")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_BYTE"),
   )
   const val TYPE_BYTE = com.android.tools.lint.client.api.TYPE_BYTE
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_NULL")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_NULL"),
   )
   const val TYPE_NULL = com.android.tools.lint.client.api.TYPE_NULL
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_INTEGER_WRAPPER")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_INTEGER_WRAPPER"),
   )
   const val TYPE_INTEGER_WRAPPER = com.android.tools.lint.client.api.TYPE_INTEGER_WRAPPER
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_BOOLEAN_WRAPPER")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_BOOLEAN_WRAPPER"),
   )
   const val TYPE_BOOLEAN_WRAPPER = com.android.tools.lint.client.api.TYPE_BOOLEAN_WRAPPER
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_BYTE_WRAPPER")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_BYTE_WRAPPER"),
   )
   const val TYPE_BYTE_WRAPPER = com.android.tools.lint.client.api.TYPE_BYTE_WRAPPER
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_SHORT_WRAPPER")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_SHORT_WRAPPER"),
   )
   const val TYPE_SHORT_WRAPPER = com.android.tools.lint.client.api.TYPE_SHORT_WRAPPER
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_LONG_WRAPPER")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_LONG_WRAPPER"),
   )
   const val TYPE_LONG_WRAPPER = com.android.tools.lint.client.api.TYPE_LONG_WRAPPER
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_DOUBLE_WRAPPER")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_DOUBLE_WRAPPER"),
   )
   const val TYPE_DOUBLE_WRAPPER = com.android.tools.lint.client.api.TYPE_DOUBLE_WRAPPER
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_FLOAT_WRAPPER")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_FLOAT_WRAPPER"),
   )
   const val TYPE_FLOAT_WRAPPER = com.android.tools.lint.client.api.TYPE_FLOAT_WRAPPER
 
   @Deprecated(
     message = "Deprecated",
-    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_CHARACTER_WRAPPER")
+    replaceWith = ReplaceWith("com.android.tools.lint.client.api.TYPE_CHARACTER_WRAPPER"),
   )
   const val TYPE_CHARACTER_WRAPPER = com.android.tools.lint.client.api.TYPE_CHARACTER_WRAPPER
 }

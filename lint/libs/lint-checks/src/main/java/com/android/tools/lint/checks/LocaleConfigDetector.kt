@@ -83,7 +83,7 @@ class LocaleConfigDetector : Detector(), XmlScanner, ResourceFolderScanner {
             attribute,
             context.getValueLocation(attribute),
             message,
-            createFix(context, path, language)
+            createFix(context, path, language),
           )
         }
       }
@@ -159,7 +159,7 @@ class LocaleConfigDetector : Detector(), XmlScanner, ResourceFolderScanner {
       Implementation(
         LocaleConfigDetector::class.java,
         Scope.MANIFEST_AND_RESOURCE_SCOPE,
-        Scope.RESOURCE_FILE_SCOPE
+        Scope.RESOURCE_FILE_SCOPE,
       )
 
     /** Are all translations included in the localeConfig? */
@@ -179,7 +179,7 @@ class LocaleConfigDetector : Detector(), XmlScanner, ResourceFolderScanner {
         priority = 2,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        moreInfo = "https://developer.android.com/about/versions/13/features/app-languages"
+        moreInfo = "https://developer.android.com/about/versions/13/features/app-languages",
       )
   }
 }

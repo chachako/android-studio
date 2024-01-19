@@ -59,7 +59,7 @@ class BlameFileTest {
         </activity>
     </application>
 
-</manifest>"""
+</manifest>""",
         )
         .createFile(root)
     val mergedManifest =
@@ -91,7 +91,7 @@ class BlameFileTest {
         </activity>
     </application>
 
-</manifest>"""
+</manifest>""",
         )
         .createFile(root)
     var blameLog =
@@ -220,7 +220,7 @@ class BlameFileTest {
           assertThat(source!!.first).isEqualTo(sourceManifest)
           return false
         }
-      }
+      },
     )
   }
 }

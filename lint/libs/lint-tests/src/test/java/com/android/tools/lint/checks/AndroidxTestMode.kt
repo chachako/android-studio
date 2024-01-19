@@ -27,7 +27,7 @@ internal class AndroidxTestMode :
   SourceTransformationTestMode(
     description = "AndroidX Test Mode",
     "AbstractCheckTest.ANDROIDX_TEST_MODE",
-    "androidx"
+    "androidx",
   ) {
   private fun applies(file: TestFile): Boolean {
     if (!(file.targetRelativePath.endsWith(DOT_KT) || file.targetRelativePath.endsWith(DOT_JAVA))) {

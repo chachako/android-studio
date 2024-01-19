@@ -33,7 +33,7 @@ internal interface AnalysisApiDiagnosticsTestBase {
 
   fun checkDiagnostics_NullableFromJava_jspecify(
     expectedMessage: String,
-    kotlinLanguageVersion: String? = null
+    kotlinLanguageVersion: String? = null,
   ) {
     lint()
       .apply {
@@ -50,13 +50,13 @@ internal interface AnalysisApiDiagnosticsTestBase {
               JvmAnalysisFlags.javaTypeEnhancementState to
                 JavaTypeEnhancementStateParser(
                     MessageCollector.NONE,
-                    languageLevel.toKotlinVersion()
+                    languageLevel.toKotlinVersion(),
                   )
                   .parse(
                     jsr305Args = null,
                     supportCompatqualCheckerFrameworkAnnotations = null,
                     jspecifyState = "strict",
-                    nullabilityAnnotations = null
+                    nullabilityAnnotations = null,
                   )
             ),
             // TODO: need to pass/parse (compiler) CLI argument
@@ -64,7 +64,7 @@ internal interface AnalysisApiDiagnosticsTestBase {
             mapOf(
               LanguageFeature.TypeEnhancementImprovementsInStrictMode to
                 LanguageFeature.State.ENABLED
-            )
+            ),
           )
       }
       .files(
@@ -74,7 +74,7 @@ internal interface AnalysisApiDiagnosticsTestBase {
           import p.J
 
           fun go(j: J) = j.s().length
-      """
+      """,
           )
           .indented(),
         java(
@@ -86,7 +86,7 @@ internal interface AnalysisApiDiagnosticsTestBase {
           public interface J {
             @Nullable String s();
           }
-        """
+        """,
           )
           .indented(),
         bytecode(
@@ -103,7 +103,7 @@ internal interface AnalysisApiDiagnosticsTestBase {
               @Target(TYPE_USE)
               @Retention(RUNTIME)
               public @interface Nullable {}
-            """
+            """,
           ),
           0x8eacd2bc,
           """
@@ -114,8 +114,8 @@ internal interface AnalysisApiDiagnosticsTestBase {
                 IuGxsUwY/FZeNTnCcVQ5b5b8ZEojbpsrCaf3G7tjXaTsrwndtbaVdF5u5kLL
                 S3Y+rlcscC9+noav81lION/MR+wFFyX06B9kmluT1AIG0XwS3z2EIwJhS24X
                 zekg+Hl72JV5Iqovu70XEGMfAxw0P8Yhht//N/zNjAEAAA==
-                """
-        )
+                """,
+        ),
       )
       .issues(TestDiagnosticsDetector.ID)
       .testModes(TestMode.DEFAULT)
@@ -139,7 +139,7 @@ internal interface AnalysisApiDiagnosticsTestBase {
             // BUG: Diagnostic contains:
             val unused = v.compareTo("foo")
           }
-      """
+      """,
           )
           .indented(),
         java(
@@ -164,10 +164,10 @@ internal interface AnalysisApiDiagnosticsTestBase {
               return value.toString();
             }
           }
-        """
+        """,
           )
           .indented(),
-        AbstractCheckTest.SUPPORT_ANNOTATIONS_JAR
+        AbstractCheckTest.SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(TestDiagnosticsDetector.ID)
       .testModes(TestMode.DEFAULT)
@@ -191,7 +191,7 @@ internal interface AnalysisApiDiagnosticsTestBase {
             // BUG: Diagnostic contains:
             val unused = v.compareTo("foo")
           }
-        """
+        """,
           )
           .indented(),
         kotlin(
@@ -208,9 +208,9 @@ internal interface AnalysisApiDiagnosticsTestBase {
               return value!!.toString()
             }
           }
-        """
+        """,
           )
-          .indented()
+          .indented(),
       )
       .issues(TestDiagnosticsDetector.ID)
       .testModes(TestMode.DEFAULT)

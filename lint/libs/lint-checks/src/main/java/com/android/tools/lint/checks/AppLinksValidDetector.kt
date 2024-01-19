@@ -165,7 +165,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             " attributes to avoid confusion",
           location,
           dataTag,
-          LintFix.create().replace().with(newText).autoFix().build()
+          LintFix.create().replace().with(newText).autoFix().build(),
         )
     } while (
       run {
@@ -200,7 +200,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
                 context,
                 testUrlAttr,
                 context.getValueLocation(testUrlAttr),
-                reason
+                reason,
               )
             }
           } catch (e: MalformedURLException) {
@@ -209,7 +209,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
               context,
               testUrlAttr,
               context.getValueLocation(testUrlAttr),
-              message
+              message,
             )
           }
         }
@@ -219,7 +219,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           current,
           context.getNameLocation(current),
           "Validation nodes should be in the `tools:` namespace to " +
-            "ensure they are removed from the manifest at build time"
+            "ensure they are removed from the manifest at build time",
         )
       }
       current = XmlUtils.getNextTagByName(current, TAG_VALIDATION)
@@ -231,7 +231,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     node: Node,
     location: Location,
     message: String,
-    quickfixData: LintFix? = null
+    quickfixData: LintFix? = null,
   ) {
     // Validation errors were reported here before
     if (context.driver.isSuppressed(context, _OLD_ISSUE_URL, node)) {
@@ -244,7 +244,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     context: XmlContext,
     node: Node,
     location: Location,
-    message: String
+    message: String,
   ) {
     context.report(TEST_URL, node, location, message)
   }
@@ -351,7 +351,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           ATTR_PATH_PATTERN,
           AndroidPatternMatcher.PATTERN_SIMPLE_GLOB,
           paths,
-          data
+          data,
         )
       data = XmlUtils.getNextTagByName(data, TAG_DATA)
     }
@@ -362,7 +362,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         context,
         firstData,
         context.getLocation(firstData),
-        "Missing URL for the intent filter"
+        "Missing URL for the intent filter",
       )
     }
     var isHttp = false
@@ -398,7 +398,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           firstData,
           context.getLocation(firstData),
           "At least one `scheme` must be specified",
-          fix
+          fix,
         )
       }
       if (
@@ -412,7 +412,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           firstData,
           context.getLocation(firstData),
           "At least one `host` must be specified",
-          fix
+          fix,
         )
       }
 
@@ -423,7 +423,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           context,
           intent,
           context.getLocation(intent),
-          "Activity supporting ACTION_VIEW is not set as BROWSABLE"
+          "Activity supporting ACTION_VIEW is not set as BROWSABLE",
         )
       }
       if (actionView && (!hasScheme || implicitSchemes)) {
@@ -455,7 +455,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       context,
       activity,
       context.getLocation(activity),
-      "Activity supporting ACTION_VIEW is not exported"
+      "Activity supporting ACTION_VIEW is not exported",
     )
   }
 
@@ -499,7 +499,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     context: XmlContext?,
     attributeName: String,
     existing: MutableList<String>?,
-    data: Element
+    data: Element,
   ): MutableList<String>? {
     var current = existing
     val attribute = data.getAttributeNodeNS(ANDROID_URI, attributeName)
@@ -536,7 +536,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     attributeName: String,
     data: Element,
     attribute: Attr,
-    value: String
+    value: String,
   ) {
     // See https://developer.android.com/guide/topics/manifest/data-element.html
     when (attributeName) {
@@ -546,14 +546,14 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             context,
             attribute,
             context.getValueLocation(attribute),
-            "Don't include trailing colon in the `scheme` declaration"
+            "Don't include trailing colon in the `scheme` declaration",
           )
         } else if (CharSequences.containsUpperCase(value)) {
           reportUrlError(
             context,
             attribute,
             context.getValueLocation(attribute),
-            "Scheme matching is case sensitive and should only " + "use lower-case characters"
+            "Scheme matching is case sensitive and should only " + "use lower-case characters",
           )
         }
       }
@@ -563,14 +563,14 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             context,
             attribute,
             context.getValueLocation(attribute),
-            "The host wildcard (`*`) can only be the first character"
+            "The host wildcard (`*`) can only be the first character",
           )
         } else if (CharSequences.containsUpperCase(value)) {
           reportUrlError(
             context,
             attribute,
             context.getValueLocation(attribute),
-            "Host matching is case sensitive and should only " + "use lower-case characters"
+            "Host matching is case sensitive and should only " + "use lower-case characters",
           )
         }
       }
@@ -585,7 +585,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             context,
             attribute,
             context.getValueLocation(attribute),
-            "not a valid port number"
+            "not a valid port number",
           )
         }
 
@@ -597,7 +597,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
             context,
             attribute,
             context.getValueLocation(attribute),
-            "The port must be specified in the same `<data>` " + "element as the `host`"
+            "The port must be specified in the same `<data>` " + "element as the `host`",
           )
         }
       }
@@ -609,7 +609,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     attributeName: String,
     type: Int,
     matcher: MutableList<AndroidPatternMatcher>?,
-    data: Element
+    data: Element,
   ): MutableList<AndroidPatternMatcher>? {
     var current = matcher
     val attribute = data.getAttributeNodeNS(ANDROID_URI, attributeName)
@@ -642,7 +642,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           attribute,
           context.getValueLocation(attribute),
           "`${attribute.name}` attribute should start with `/`, but it is `$value`",
-          fix
+          fix,
         )
       }
     }
@@ -655,7 +655,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         context,
         attribute,
         context.getLocation(attribute),
-        "`${attribute.name}` cannot be empty"
+        "`${attribute.name}` cannot be empty",
       )
       return true
     }
@@ -686,7 +686,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     private val schemes: List<String>?,
     private val hosts: List<String>?,
     private val ports: List<String>?,
-    private val paths: List<AndroidPatternMatcher>?
+    private val paths: List<AndroidPatternMatcher>?,
   ) {
     /**
      * Matches a URL against this info, and returns null if successful or the failure reason if not
@@ -797,7 +797,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.FATAL,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -813,7 +813,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
           priority = 5,
           moreInfo = "https://developer.android.com/training/app-links",
           severity = Severity.ERROR,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .addMoreInfo("https://g.co/AppIndexing/AndroidStudio")
 
@@ -830,7 +830,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         category = Category.USABILITY,
         priority = 5,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Multiple attributes in an intent filter data declaration */
@@ -881,7 +881,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
         category = Category.CORRECTNESS,
         severity = Severity.WARNING,
         moreInfo = "https://developer.android.com/guide/components/intents-filters",
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val TAG_VALIDATION = "validation"

@@ -80,7 +80,7 @@ class NotificationPermissionDetector : Detector(), SourceCodeScanner, ClassScann
       Implementation(
         NotificationPermissionDetector::class.java,
         EnumSet.of(Scope.JAVA_FILE, Scope.JAVA_LIBRARIES),
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     @JvmField
@@ -97,7 +97,7 @@ class NotificationPermissionDetector : Detector(), SourceCodeScanner, ClassScann
         priority = 6,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Boolean property: whether we've found at least one notification call in the source code. */
@@ -288,7 +288,7 @@ class NotificationPermissionDetector : Detector(), SourceCodeScanner, ClassScann
     context: ClassContext,
     classNode: ClassNode,
     method: MethodNode,
-    call: MethodInsnNode
+    call: MethodInsnNode,
   ) {
     val owner = classNode.name
     if (
@@ -446,7 +446,7 @@ class NotificationPermissionDetector : Detector(), SourceCodeScanner, ClassScann
 
   private fun isHoldingPostNotificationsViaAnnotations(
     classNode: ClassNode,
-    method: MethodNode
+    method: MethodNode,
   ): Boolean {
     val requirement =
       method.invisibleAnnotations?.getPermissionRequirement()

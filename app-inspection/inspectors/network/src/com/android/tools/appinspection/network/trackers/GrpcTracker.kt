@@ -50,7 +50,7 @@ internal class GrpcTracker(
     service: String,
     method: String,
     requestHeaders: Metadata,
-    trace: String
+    trace: String,
   ) {
     try {
       connection.reportGrpcEvent(

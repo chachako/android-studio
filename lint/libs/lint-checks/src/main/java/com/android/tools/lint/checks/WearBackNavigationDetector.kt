@@ -32,10 +32,7 @@ class WearBackNavigationDetector : WearDetector(), XmlScanner {
 
   companion object Issues {
     private val IMPLEMENTATION =
-      Implementation(
-        WearBackNavigationDetector::class.java,
-        Scope.RESOURCE_FILE_SCOPE,
-      )
+      Implementation(WearBackNavigationDetector::class.java, Scope.RESOURCE_FILE_SCOPE)
 
     @JvmField
     val ISSUE =
@@ -84,7 +81,7 @@ class WearBackNavigationDetector : WearDetector(), XmlScanner {
         element,
         context.getLocation(element),
         "Disabling swipe-to-dismiss is generally not recommended for Wear applications",
-        fix
+        fix,
       )
     }
   }

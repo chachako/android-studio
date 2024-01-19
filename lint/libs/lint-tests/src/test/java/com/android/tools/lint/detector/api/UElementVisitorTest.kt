@@ -93,7 +93,7 @@ class UElementVisitorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -125,7 +125,7 @@ class UElementVisitorTest : AbstractCheckTest() {
         TEST_ISSUE,
         declaration,
         context.getNameLocation(declaration),
-        "Visited `${declaration.name}`"
+        "Visited `${declaration.name}`",
       )
     }
 
@@ -151,7 +151,7 @@ class UElementVisitorTest : AbstractCheckTest() {
         Category.CORRECTNESS,
         5,
         Severity.WARNING,
-        Implementation(TestDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        Implementation(TestDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
   }
 }

@@ -45,7 +45,7 @@ class BatteryDetector : ResourceXmlDetector(), SourceCodeScanner {
         BatteryDetector::class.java,
         EnumSet.of(Scope.MANIFEST, Scope.JAVA_FILE),
         Scope.MANIFEST_SCOPE,
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     /** Issues that negatively affect battery life. */
@@ -70,7 +70,7 @@ class BatteryDetector : ResourceXmlDetector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -107,7 +107,7 @@ class BatteryDetector : ResourceXmlDetector(), SourceCodeScanner {
           context.getValueLocation(attr),
           "Use of `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` violates the " +
             "Play Store Content Policy regarding acceptable use cases, as described in " +
-            "https://developer.android.com/training/monitoring-device-state/doze-standby.html"
+            "https://developer.android.com/training/monitoring-device-state/doze-standby.html",
         )
       context.report(incident, constraint = targetSdkAtLeast(23))
     }
@@ -132,7 +132,7 @@ class BatteryDetector : ResourceXmlDetector(), SourceCodeScanner {
   override fun visitReference(
     context: JavaContext,
     reference: UReferenceExpression,
-    referenced: PsiElement
+    referenced: PsiElement,
   ) {
     val evaluator = context.evaluator
     if (
@@ -147,7 +147,7 @@ class BatteryDetector : ResourceXmlDetector(), SourceCodeScanner {
           context.getNameLocation(reference),
           "Use of `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` violates the " +
             "Play Store Content Policy regarding acceptable use cases, as described in " +
-            "https://developer.android.com/training/monitoring-device-state/doze-standby.html"
+            "https://developer.android.com/training/monitoring-device-state/doze-standby.html",
         )
       context.report(incident, constraint = targetSdkAtLeast(23))
     }

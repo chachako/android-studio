@@ -51,7 +51,7 @@ class PathAsIterableDetector : Detector(), SourceCodeScanner {
         category = CORRECTNESS,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -74,7 +74,7 @@ class PathAsIterableDetector : Detector(), SourceCodeScanner {
                 ISSUE,
                 argument,
                 context.getLocation(argument),
-                "Using `Path` in an `Iterable` context: make sure this is doing what you expect and suppress this warning if so"
+                "Using `Path` in an `Iterable` context: make sure this is doing what you expect and suppress this warning if so",
               )
             }
           }

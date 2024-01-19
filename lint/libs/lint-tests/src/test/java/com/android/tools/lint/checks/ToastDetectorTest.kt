@@ -252,7 +252,7 @@ class ToastDetectorTest : AbstractCheckTest() {
                 }"""
           )
           .indented(),
-        *snackbarStubs
+        *snackbarStubs,
       )
       .run()
       .expect(
@@ -297,7 +297,7 @@ class ToastDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *snackbarStubs
+        *snackbarStubs,
       )
       .run()
       .expectClean()
@@ -320,7 +320,7 @@ class ToastDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *snackbarStubs
+        *snackbarStubs,
       )
       .run()
       .expectClean()
@@ -349,7 +349,7 @@ class ToastDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expectClean()
@@ -396,7 +396,7 @@ class ToastDetectorTest : AbstractCheckTest() {
                     }
                 }
                 """
-        )
+        ),
       )
   }
 
@@ -425,7 +425,7 @@ class ToastDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *snackbarStubs
+        *snackbarStubs,
       )
       .run()
       .expectClean()

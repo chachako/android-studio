@@ -124,7 +124,7 @@ class SecureRandomDetectorTest : AbstractCheckTest() {
                         }
 
                     }
-                    """
+                    """,
           )
           .indented()
       )

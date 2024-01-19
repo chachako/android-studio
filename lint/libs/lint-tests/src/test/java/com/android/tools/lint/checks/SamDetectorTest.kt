@@ -154,7 +154,7 @@ class SamDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -306,7 +306,7 @@ class SamDetectorTest : AbstractCheckTest() {
                     void setCommandLine(List<String> var1);
                 }
                 """
-        )
+        ),
       )
       .run()
       .expectClean()

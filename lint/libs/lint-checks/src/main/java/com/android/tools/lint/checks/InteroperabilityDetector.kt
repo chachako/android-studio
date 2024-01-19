@@ -106,7 +106,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         enabledByDefault = false,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     @JvmField
@@ -124,7 +124,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         enabledByDefault = false,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private val CHECK_DEPRECATED =
@@ -135,7 +135,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
         """
                 Normally this lint check will flag all unannotated elements, but by \
                 setting this option to `true` it will skip any deprecated elements.
-                """
+                """,
       )
 
     @JvmField
@@ -153,7 +153,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
           priority = 6,
           severity = Severity.WARNING,
           enabledByDefault = false,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .setOptions(listOf(CHECK_DEPRECATED))
 
@@ -173,7 +173,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         enabledByDefault = false,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private fun isKotlinHardKeyword(keyword: String): Boolean {
@@ -343,7 +343,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
         node,
         context.getNameLocation(node),
         "Should explicitly declare type here since implicit type does not specify nullness" +
-          if (typeString != null) " ($typeString)" else ""
+          if (typeString != null) " ($typeString)" else "",
       )
     }
 
@@ -510,7 +510,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
             KOTLIN_PROPERTY,
             location.source as? PsiElement ?: setter,
             location,
-            message
+            message,
           )
           return
         }
@@ -529,7 +529,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
             KOTLIN_PROPERTY,
             location.source as? PsiElement ?: setter,
             location,
-            message
+            message,
           )
           return
         }
@@ -554,7 +554,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
                 KOTLIN_PROPERTY,
                 location.source as? PsiElement ?: setter,
                 location,
-                message
+                message,
               )
               return
             }
@@ -633,7 +633,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
         .getNameLocation(primary)
         .withSecondary(
           context.getNameLocation(secondary),
-          "${if (secondary.name.startsWith("set")) "Setter" else "Getter"} here"
+          "${if (secondary.name.startsWith("set")) "Setter" else "Getter"} here",
         )
     }
 
@@ -756,7 +756,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
               .shortenNames()
               .reformat(true)
               .with("${getNullableAnnotation(context)} ")
-              .build()
+              .build(),
           )
       context.report(PLATFORM_NULLNESS, node as UElement, location, message, fix)
     }
@@ -876,7 +876,7 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
           NO_HARD_KOTLIN_KEYWORDS,
           node as UElement,
           context.getNameLocation(node as UElement),
-          message
+          message,
         )
       }
     }

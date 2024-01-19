@@ -120,7 +120,7 @@ class ProviderPermissionDetector : Detector(), SourceCodeScanner {
   private fun reportIfProviderReadPermissionOnlyOccurs(
     context: Context,
     provider: Element,
-    providersMap: LintMap
+    providersMap: LintMap,
   ) {
     val readPermission = provider.getAttributeNodeNS(ANDROID_URI, ATTR_READ_PERMISSION) ?: return
     provider.getAttributeNodeNS(ANDROID_URI, ATTR_WRITE_PERMISSION)?.let {
@@ -147,7 +147,7 @@ class ProviderPermissionDetector : Detector(), SourceCodeScanner {
           .text(ATTR_READ_PERMISSION)
           .with(ATTR_PERMISSION)
           .range(manifestLocation)
-          .build()
+          .build(),
       )
     )
   }
@@ -228,7 +228,7 @@ class ProviderPermissionDetector : Detector(), SourceCodeScanner {
         severity = Severity.WARNING,
         androidSpecific = true,
         implementation =
-          Implementation(ProviderPermissionDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(ProviderPermissionDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     const val KEY_LOCATION = "location"

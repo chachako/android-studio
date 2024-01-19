@@ -154,7 +154,7 @@ class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowSystemErrors(true)
       .allowDuplicates()
@@ -281,7 +281,7 @@ class WrongThreadInterproceduralDetectorTest : AbstractCheckTest() {
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .allowSystemErrors(true)
       .run()

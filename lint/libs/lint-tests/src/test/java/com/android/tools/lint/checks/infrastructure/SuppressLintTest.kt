@@ -66,7 +66,7 @@ class SuppressLintTest {
                     }
                     """
           )
-          .indented()
+          .indented(),
       )
       .issues(MySecurityDetector.TEST_ISSUE)
       .sdkHome(TestUtils.getSdk().toFile())
@@ -119,7 +119,7 @@ class SuppressLintTest {
                     public @interface MyOwnAnnotation {
                     }
                     """
-        )
+        ),
       )
       .issues(MySecurityDetector.TEST_ISSUE)
       .sdkHome(TestUtils.getSdk().toFile())
@@ -180,7 +180,7 @@ class SuppressLintTest {
                     }
                     """
           )
-          .indented()
+          .indented(),
       )
       .issues(MySecurityDetector.TEST_ISSUE)
       .sdkHome(TestUtils.getSdk().toFile())
@@ -224,7 +224,7 @@ class SuppressLintTest {
                         android:forbidden="true"
                         tools:ignore="_SecureIssue"/>
                     </LinearLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -260,7 +260,7 @@ class SuppressLintTest {
                       <!--suppress _SecureIssue -->
                       <androidx.compose.ui.platform.ComposeView android:forbidden="true"/>
                     </LinearLayout>
-                    """
+                    """,
           )
           .indented()
       )
@@ -299,9 +299,9 @@ class SuppressLintTest {
                         <issue id="all" severity="ignore" />
                         <issue id="_SecureIssue" severity="ignore" />
                     </lint>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .issues(MySecurityDetector.TEST_ISSUE)
       .sdkHome(TestUtils.getSdk().toFile())
@@ -336,9 +336,9 @@ class SuppressLintTest {
                          so we skip it for this issue but don't complain about it -->
                         <issue id="all" severity="ignore" />
                     </lint>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .issues(MySecurityDetector.TEST_ISSUE)
       .sdkHome(TestUtils.getSdk().toFile())
@@ -388,7 +388,7 @@ class SuppressLintTest {
                                 column="5"/>
                         </issue>
                     </issues>
-                    """
+                    """,
           )
           .indented()
       )
@@ -441,7 +441,7 @@ class SuppressLintTest {
                                 column="5"/>
                         </issue>
                     </issues>
-                """
+                """,
           )
           .indented()
       )
@@ -497,7 +497,7 @@ class SuppressLintTest {
                                 column="5"/>
                         </issue>
                     </issues>
-                """
+                """,
           )
           .indented()
       )
@@ -532,7 +532,7 @@ class SuppressLintTest {
                     }
                     """
           )
-          .indented()
+          .indented(),
       )
       .issues(MySecurityDetector.TEST_ISSUE)
       .skipTestModes(TestMode.PARTIAL)
@@ -652,7 +652,7 @@ class SuppressLintTest {
           severity = Severity.WARNING,
           suppressAnnotations = listOf("foo.bar.MyOwnAnnotation"),
           implementation =
-            Implementation(MySecurityDetector::class.java, Scope.JAVA_AND_RESOURCE_FILES)
+            Implementation(MySecurityDetector::class.java, Scope.JAVA_AND_RESOURCE_FILES),
         )
 
       @Suppress("SpellCheckingInspection")
@@ -667,7 +667,7 @@ class SuppressLintTest {
           severity = Severity.WARNING,
           suppressAnnotations = emptyList(),
           implementation =
-            Implementation(MySecurityDetector::class.java, Scope.JAVA_AND_RESOURCE_FILES)
+            Implementation(MySecurityDetector::class.java, Scope.JAVA_AND_RESOURCE_FILES),
         )
     }
   }
@@ -713,7 +713,7 @@ class SuppressLintTest {
           category = Category.CORRECTNESS,
           priority = 10,
           severity = Severity.WARNING,
-          implementation = Implementation(MyPropertyDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          implementation = Implementation(MyPropertyDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }

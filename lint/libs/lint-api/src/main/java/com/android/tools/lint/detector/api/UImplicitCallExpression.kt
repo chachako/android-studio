@@ -60,7 +60,7 @@ abstract class UImplicitCallExpression(
   /** The original expression that is implicitly making a call to an overloaded function. */
   val expression: UExpression,
   /** The function being called. */
-  val operator: PsiMethod
+  val operator: PsiMethod,
 ) : UCallExpression {
   abstract override val receiver: UExpression?
   abstract override val receiverType: PsiType?
@@ -235,7 +235,7 @@ fun UUnaryExpression.asCall(operator: PsiMethod): UCallExpression {
  */
 private class UnaryExpressionAsCallExpression(
   private val unary: UUnaryExpression,
-  operator: PsiMethod
+  operator: PsiMethod,
 ) : UImplicitCallExpression(unary, operator) {
   override val receiver: UExpression
     get() = unary.operand
@@ -259,7 +259,7 @@ private class UnaryExpressionAsCallExpression(
  */
 private class BinaryExpressionAsCallExpression(
   private val binary: UBinaryExpression,
-  operator: PsiMethod
+  operator: PsiMethod,
 ) : UImplicitCallExpression(binary, operator) {
   // See https://kotlinlang.org/docs/operator-overloading.html#binary-operations
   // All the operators are "a.something(b)" except for the containment operators
@@ -350,7 +350,7 @@ private class BinaryExpressionAsCallExpression(
 private class ArrayAccessAsCallExpression(
   private val accessExpression: UArrayAccessExpression,
   private val setter: UExpression?,
-  operator: PsiMethod
+  operator: PsiMethod,
 ) : UImplicitCallExpression(accessExpression, operator) {
   override val receiver: UExpression
     get() = accessExpression.receiver

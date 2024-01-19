@@ -757,7 +757,7 @@ class FlaggedApiDetectorTest : LintDetectorTest() {
           )
           .indented(),
         flaggedApiAnnotationStub,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -826,7 +826,7 @@ class FlaggedApiDetectorTest : LintDetectorTest() {
       LintCliFlags.ERRNO_SUCCESS,
       arrayOf("-q", "--check", "FlaggedApi", "--disable", "LintError", project.path),
       null,
-      null
+      null,
     )
 
     // No warnings by default
@@ -855,10 +855,10 @@ class FlaggedApiDetectorTest : LintDetectorTest() {
         "FlaggedApi",
         "--disable",
         "LintError",
-        project.path
+        project.path,
       ),
       null,
-      null
+      null,
     )
 
     // project.xml checks
@@ -908,10 +908,10 @@ class FlaggedApiDetectorTest : LintDetectorTest() {
         "--disable",
         "LintError",
         "--project",
-        projectXml.path
+        projectXml.path,
       ),
       null,
-      null
+      null,
     )
 
     // Redundantly also add the --include-aosp-issues to verify that we don't duplicate the warnings
@@ -941,10 +941,10 @@ class FlaggedApiDetectorTest : LintDetectorTest() {
         "--disable",
         "LintError",
         "--project",
-        projectXml.path
+        projectXml.path,
       ),
       null,
-      null
+      null,
     )
 
     // Don't enable it if it's not an Android build
@@ -966,10 +966,10 @@ class FlaggedApiDetectorTest : LintDetectorTest() {
         "--disable",
         "LintError",
         "--project",
-        projectXml.path
+        projectXml.path,
       ),
       null,
-      null
+      null,
     )
   }
 }

@@ -91,7 +91,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       // Such that the annotation is considered relevant by the annotation handler
       // even if the range check itself is disabled
       INT_RANGE_ANNOTATION.oldName(),
-      INT_RANGE_ANNOTATION.newName()
+      INT_RANGE_ANNOTATION.newName(),
     )
 
   override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean =
@@ -103,7 +103,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val annotation = annotationInfo.annotation
     when (annotationInfo.qualifiedName) {
@@ -130,7 +130,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     argument: UElement?,
     errorNode: UElement?,
     flag: Boolean,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     if (argument == null) {
       return
@@ -167,7 +167,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
             TYPE_DEF,
             argument,
             context.getLocation(argument),
-            "Flag not allowed here"
+            "Flag not allowed here",
           )
         } else if (operator === UastPrefixOperator.UNARY_MINUS) {
           reportTypeDef(context, annotation, argument, errorNode, usageInfo)
@@ -185,7 +185,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
           argument.thenExpression,
           errorNode,
           flag,
-          usageInfo
+          usageInfo,
         )
       }
       if (argument.elseExpression != null) {
@@ -195,7 +195,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
           argument.elseExpression,
           errorNode,
           flag,
-          usageInfo
+          usageInfo,
         )
       }
     } else if (argument is UPolyadicExpression) {
@@ -227,7 +227,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
             TYPE_DEF,
             argument,
             context.getLocation(argument),
-            "Flag not allowed here"
+            "Flag not allowed here",
           )
         }
       }
@@ -244,7 +244,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
             errorNode ?: argument,
             flag,
             resolved,
-            usageInfo
+            usageInfo,
           )
           return
         }
@@ -261,7 +261,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
             errorNode ?: argument,
             flag,
             resolved,
-            usageInfo
+            usageInfo,
           )
         } else {
           val lastAssignment = UastLintUtils.findLastAssignment(resolved, argument)
@@ -273,7 +273,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
               lastAssignment,
               errorNode ?: argument,
               flag,
-              usageInfo
+              usageInfo,
             )
           }
         }
@@ -285,7 +285,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
           errorNode ?: argument,
           flag,
           resolved,
-          usageInfo
+          usageInfo,
         )
       }
     } else if (argument is UCallExpression) {
@@ -309,7 +309,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
             errorNode ?: argument,
             flag,
             resolved,
-            usageInfo
+            usageInfo,
           )
         }
       }
@@ -323,7 +323,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     errorNode: UElement?,
     flag: Boolean,
     value: Any,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val rangeAnnotation = usageInfo.findSameScope { RangeDetector.isIntRange(it.qualifiedName) }
     if (rangeAnnotation != null && value !is PsiField) {
@@ -467,7 +467,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
                   errorNode,
                   flag,
                   const,
-                  usageInfo
+                  usageInfo,
                 )
               }
               return
@@ -544,7 +544,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         initializers,
         usageInfo,
         annotation,
-        unmatched
+        unmatched,
       )
     }
   }
@@ -587,7 +587,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     annotation: UAnnotation,
     argument: UElement,
     errorNode: UElement?,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val allowed = getAnnotationValue(annotation)?.skipParenthesizedExprDown()
     if (allowed != null && allowed.isArrayInitializer()) {
@@ -612,7 +612,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     allowedValues: List<UExpression>,
     usageInfo: AnnotationUsageInfo,
     annotation: UAnnotation,
-    unmatched: List<Any>?
+    unmatched: List<Any>?,
   ) {
     // Allow "0" as initial value in variable expressions
     if (UastLintUtils.isZero(node)) {
@@ -672,7 +672,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
   private fun createQuickFix(
     node: UElement,
     values: List<UExpression>,
-    context: UElement
+    context: UElement,
   ): LintFix? {
     var currentValue: Any? = null
     if (node is ULiteralExpression) {
@@ -816,7 +816,7 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Returns true if the given [qualifiedName] is one of the typedef annotations. */

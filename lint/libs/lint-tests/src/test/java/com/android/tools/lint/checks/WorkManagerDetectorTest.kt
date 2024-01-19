@@ -142,7 +142,7 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *workManagerStubs
+        *workManagerStubs,
       )
       .run()
       .expect(
@@ -271,7 +271,7 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *workManagerStubs
+        *workManagerStubs,
       )
       .run()
       .expect(
@@ -316,7 +316,7 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *workManagerStubs
+        *workManagerStubs,
       )
       .run()
       .expectClean()
@@ -380,7 +380,7 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *workManagerStubs
+        *workManagerStubs,
       )
       .run()
       .expect(
@@ -479,6 +479,6 @@ class WorkManagerDetectorTest : AbstractCheckTest() {
                 void enqueueSync();
             }
             """
-      )
+      ),
     )
 }

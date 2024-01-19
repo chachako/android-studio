@@ -54,7 +54,7 @@ class TileProviderDetector : WearDetector(), XmlScanner, BinaryResourceScanner {
     val IMPLEMENTATION =
       Implementation(
         TileProviderDetector::class.java,
-        EnumSet.of(Scope.BINARY_RESOURCE_FILE, Scope.MANIFEST)
+        EnumSet.of(Scope.BINARY_RESOURCE_FILE, Scope.MANIFEST),
       )
 
     @JvmField
@@ -71,7 +71,7 @@ class TileProviderDetector : WearDetector(), XmlScanner, BinaryResourceScanner {
         priority = 6,
         severity = Severity.WARNING,
         implementation = Implementation(TileProviderDetector::class.java, Scope.MANIFEST_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     @JvmField
@@ -89,7 +89,7 @@ class TileProviderDetector : WearDetector(), XmlScanner, BinaryResourceScanner {
           priority = 6,
           severity = Severity.WARNING,
           implementation = IMPLEMENTATION,
-          androidSpecific = true
+          androidSpecific = true,
         )
         .addMoreInfo(
           "https://developer.android.com/design/ui/wear/guides/surfaces/tiles#tile-previews"
@@ -108,7 +108,7 @@ class TileProviderDetector : WearDetector(), XmlScanner, BinaryResourceScanner {
           priority = 6,
           severity = Severity.ERROR,
           implementation = IMPLEMENTATION,
-          androidSpecific = true
+          androidSpecific = true,
         )
         .addMoreInfo(
           "https://developer.android.com/design/ui/wear/guides/surfaces/tiles#tile-previews"
@@ -292,7 +292,7 @@ class TileProviderDetector : WearDetector(), XmlScanner, BinaryResourceScanner {
           service,
           context.getNameLocation(service),
           "TileProvider does not specify BIND_TILE_PROVIDER permission",
-          fix
+          fix,
         )
       )
     }

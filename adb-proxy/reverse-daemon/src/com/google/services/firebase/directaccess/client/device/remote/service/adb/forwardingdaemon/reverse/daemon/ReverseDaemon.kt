@@ -180,9 +180,7 @@ object ReverseDaemon {
   }
 
   /** SocketAcceptor for standard TCP sockets. */
-  private class TcpSocketAcceptor(
-    port: Int,
-  ) : SocketAcceptor {
+  private class TcpSocketAcceptor(port: Int) : SocketAcceptor {
     private val serverSocket = ServerSocket(port)
 
     override fun accept(streamId: Int): SocketReader {
@@ -198,9 +196,7 @@ object ReverseDaemon {
   }
 
   /** SocketAcceptor for UNIX domain sockets in Android. */
-  private class LocalSocketAcceptor(
-    name: String,
-  ) : SocketAcceptor {
+  private class LocalSocketAcceptor(name: String) : SocketAcceptor {
     private val serverSocket = LocalServerSocket(name)
 
     override fun accept(streamId: Int): SocketReader {

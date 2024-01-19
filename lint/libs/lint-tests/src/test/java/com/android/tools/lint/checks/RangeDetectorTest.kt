@@ -198,7 +198,7 @@ class RangeDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -389,10 +389,10 @@ src/test/pkg/RangeTest.java:158: Error: Expected length 5 (was 7) [Range]
                     }
                 }
 
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -449,10 +449,10 @@ src/test/pkg/RangesMultiple.java:36: Error: Value must be ≥ 10 (was 0) [Range]
                     private void call(@FloatRange(from=-90.0, to=-5.0) double arg) {
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -489,7 +489,7 @@ src/test/pkg/FloatRangeTest.java:10: Error: Value must be ≤ -5.0 (was -3.0) [R
             "        makeSnackbar(100); // OK\n" +
             "        makeSnackbar(-100); // ERROR\n" +
             "    }\n" +
-            "}\n"
+            "}\n",
         ),
         java(
           "src/android/support/design/widget/Snackbar.java",
@@ -517,9 +517,9 @@ src/test/pkg/FloatRangeTest.java:10: Error: Value must be ≤ -5.0 (was -3.0) [R
             "    public static final int LENGTH_INDEFINITE = -2;\n" +
             "    public static final int LENGTH_SHORT = -1;\n" +
             "    public static final int LENGTH_LONG = 0;\n" +
-            "}\n"
+            "}\n",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .issues(RangeDetector.RANGE, TypedefDetector.TYPE_DEF)
       .run()
@@ -555,7 +555,7 @@ src/test/pkg/SnackbarTest.java:13: Error: Must be one of: Snackbar.LENGTH_INDEFI
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -625,7 +625,7 @@ src/test/pkg/SnackbarTest.java:13: Error: Must be one of: Snackbar.LENGTH_INDEFI
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -708,7 +708,7 @@ src/test/pkg/SnackbarTest.java:13: Error: Must be one of: Snackbar.LENGTH_INDEFI
                 }
                 """
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -748,10 +748,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
                         new ConstructorTest(res, range);
                     }
                 }
-                """
+                """,
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
@@ -807,7 +807,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -861,7 +861,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
             "    }\n" +
             "}\n"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectInlinedMessages()
@@ -888,7 +888,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
             "    Log.d(\"AppLog\", \"Radius:\" + radius)\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -917,7 +917,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
             "    check(100.0f) // ERROR\n" +
             "}"
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .testModes(TestMode.DEFAULT)
       .run()
@@ -959,7 +959,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -989,7 +989,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1020,7 +1020,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
                     """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1088,9 +1088,9 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
             "Eh2nH28+GBI3euA1RVnavrM/zF90ue/vd/iQpxBBlD6lwz3Xzt8ihoyVuV0q" +
             "4l41OqJpsIkQfbwdYbJPPEXb3TqtzDrYewZ7CnqLUXSCSwdTiNMMBdLl4BWT" +
             "sjgSFGdsoiRpUyVMI11ChshZzP1HJ7/peUtXkUW6ikU6WyaElU81KfZVPQIA" +
-            "AA=="
+            "AA==",
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1177,7 +1177,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expectClean()
@@ -1242,7 +1242,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .textFormat(TextFormat.RAW)
       .run()
@@ -1295,7 +1295,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
                 """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -1333,7 +1333,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
                     private void call(@FloatRange(from=-90.0, to=-5.0) double arg) {
                     }
                 }
-                """
+                """,
           )
           .indented(),
         SUPPORT_ANNOTATIONS_JAR,
@@ -1343,8 +1343,8 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
                 <issues format="6" by="lint 7.0.0-dev" type="baseline" client="cli" name="cli" variant="all" version="7.0.0-dev">
 
                 </issues>
-                """
-        )
+                """,
+        ),
       )
 
     val baselineFile = File(project, "baseline.xml")
@@ -1392,10 +1392,10 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
           xmlReport.path,
           "--disable",
           "LintError",
-          project.path
+          project.path,
         ),
         null,
-        null
+        null,
       )
 
       assertEquals(
@@ -1418,7 +1418,7 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
                 """
           .trimIndent()
           .trim(),
-        LintBaselineTest.readBaseline(baselineFile).trim().dos2unix() // b/209433064
+        LintBaselineTest.readBaseline(baselineFile).trim().dos2unix(), // b/209433064
       )
 
       assertTrue(textReport.readText().contains("Value must be ≥ -90.0 (was -150.0)"))
@@ -1550,8 +1550,8 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
           w8RJejcpGtoBmt4kxkmrLLPEOUA5JnGNrATluI4pqKlItzMrqx8ZquZuyHgJ
           99qV9pG+T3+dtR0ND0J5GwXSa4TeoNQ3txAp4lYR00XMYJZMzBUxj+wWWIAF
           mFvoDmAEyAWIBegJMBWgn+4uRPL/APUI4MjCBQAA
-          """
-        )
+          """,
+        ),
       )
       .run()
       .expectClean()

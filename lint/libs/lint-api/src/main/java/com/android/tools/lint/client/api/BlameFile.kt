@@ -32,7 +32,7 @@ import org.w3c.dom.Node
 class BlameFile
 internal constructor(
   private val nodes: MutableMap<String, BlameNode>,
-  private val actions: Actions?
+  private val actions: Actions?,
 ) {
 
   private fun findBlameNode(element: Element): BlameNode? {
@@ -120,7 +120,7 @@ internal constructor(
   private fun findElementOrAttribute(
     client: LintClient,
     element: Element,
-    attribute: Attr?
+    attribute: Attr?,
   ): Pair<File, Node>? {
     val blameNode = findBlameNode(element) ?: return null
 
@@ -210,7 +210,7 @@ internal constructor(
 
           return false
         }
-      }
+      },
     )
     return Pair.of(manifest, reference.get())
   }

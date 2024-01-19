@@ -59,7 +59,7 @@ class SecureRandomDetector : Detector(), SourceCodeScanner {
           node,
           context.getLocation(node),
           "Do not call `setSeed()` on a `SecureRandom` with a fixed seed: " +
-            "it is not secure. Use `getSeed()`."
+            "it is not secure. Use `getSeed()`.",
         )
       } else {
         // Called with a simple System.currentTimeMillis() seed or something like that?
@@ -73,7 +73,7 @@ class SecureRandomDetector : Detector(), SourceCodeScanner {
               context.getLocation(node),
               "It is dangerous to seed `SecureRandom` with the current " +
                 "time because that value is more predictable to " +
-                "an attacker than the default seed"
+                "an attacker than the default seed",
             )
           }
         }
@@ -109,7 +109,7 @@ class SecureRandomDetector : Detector(), SourceCodeScanner {
           category = Category.SECURITY,
           priority = 9,
           severity = Severity.WARNING,
-          implementation = Implementation(SecureRandomDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          implementation = Implementation(SecureRandomDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
         .addMoreInfo("https://developer.android.com/reference/java/security/SecureRandom.html")
 

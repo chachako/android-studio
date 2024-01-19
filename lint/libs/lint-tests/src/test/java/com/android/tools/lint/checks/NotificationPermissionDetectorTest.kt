@@ -40,7 +40,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         javaNotificationUsage,
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -67,7 +67,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         javaNotificationUsage,
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expectClean()
@@ -85,7 +85,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         javaNotificationUsage,
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expectClean()
@@ -121,7 +121,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
       .files(
         manifestTarget33LocationPermission,
         notificationUsageWithRequiresPermissionAnnotation,
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .skipTestModes(PLATFORM_ANNOTATIONS_TEST_MODE)
       .run()
@@ -148,9 +148,9 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
                 Y337n9HxnoxF7wh7dffpFRyeYR9LvGR7CiD7S5YOv3ZZE+vS0TfQPRuEZZbl
                 GbjCcgUVDrHUd/MUzsnu8VcUfpMtAahy0CqesbXBeJXv6jkKGZ5nWOPH+qz0
                 xiOQVjv9dQIAAA==
-                """
+                """,
         ),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .skipTestModes(PLATFORM_ANNOTATIONS_TEST_MODE)
       .run()
@@ -164,7 +164,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
         manifestTarget33LocationPermission,
         bytecodeUsage,
         javaNotificationUsage,
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expect(
@@ -196,7 +196,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         bytecodeUsage,
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expectClean()
@@ -215,7 +215,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         bytecodeUsage,
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expectClean()
@@ -254,7 +254,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         bytecodeUsage,
-        *notificationStubs
+        *notificationStubs,
       )
       .run()
       .expectClean()
@@ -304,7 +304,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        exoPlayerStub
+        exoPlayerStub,
       )
       .run()
       .expectClean()
@@ -343,7 +343,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        exoPlayerStub
+        exoPlayerStub,
       )
       .run()
       .expect(
@@ -417,7 +417,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       // We don't support checking permissions with previous cases in a switch statement
       .skipTestModes(TestMode.IF_TO_WHEN)
@@ -484,7 +484,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
       P8BSHctYIezHdihSa9NMiS9p9WBHmZyofE+M+Zn4qUNoOiWRSZOKi/5AxQVh
       45/WeTDGoRPCevTnN7ALj6fqVgXk2uUY8G2NM3GutZ9Bj3wgzHD0SzDALO/w
       k7rJEp5D26vbT6h8k0PWBBP9kjpXetQ/ADNNAgLPAQAA
-      """
+      """,
     )
 
   private val bytecodeUsage: TestFile =
@@ -510,7 +510,7 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
         gLXvCHxYzB0hmBjpIZzQeogkRnuIBnvQQz2MF8LJcA8TBW0xEesh/hOxQiQZ
         SSXJcfK8RB5jJMfoHUccE4QoRqXihGgSc4Q2S3hzhHSZvqwSgABu9dHfxgzp
         BFkBip0mSCHq7g6SfwBQWBTlJQUAAA==
-        """
+        """,
     )
 
   // Like bytecodeUsage, but with the package replaced with an androidx usage
@@ -537,6 +537,6 @@ class NotificationPermissionDetectorTest : AbstractCheckTest() {
             HxYzR/DHRnoIxoweQrHRHsL+HsxAD+P5YDzYw0TeWIxFeoj+QCQfiocScXKc
             PIfIYozkGL3jiGKCGEUIKkqMJjFLbNPEN0NMl+nLKhHw4Vaf/W3MkI6R5aPY
             aaIUoOruIv4bB1IRVioFAAA=
-            """
+            """,
     )
 }

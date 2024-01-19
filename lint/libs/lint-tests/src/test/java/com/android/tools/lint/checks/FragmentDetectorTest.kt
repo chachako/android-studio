@@ -118,7 +118,7 @@ class FragmentDetectorTest : AbstractCheckTest() {
                     public static class Fragment7 extends Fragment {
                     }
                 }
-                """
+                """,
           )
           .indented()
       )
@@ -149,7 +149,7 @@ class FragmentDetectorTest : AbstractCheckTest() {
                             };
                         }
                     }
-                    """
+                    """,
           )
           .indented()
       )
@@ -190,7 +190,7 @@ class FragmentDetectorTest : AbstractCheckTest() {
                             }
                         }
                     }
-                    """
+                    """,
           )
           .indented(),
         java(
@@ -208,7 +208,7 @@ class FragmentDetectorTest : AbstractCheckTest() {
                 public class Fragment {
                 }
                 """
-        )
+        ),
       )
       .run()
       .expect(expected)

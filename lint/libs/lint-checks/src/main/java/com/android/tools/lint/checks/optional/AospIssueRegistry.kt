@@ -28,10 +28,7 @@ import com.android.tools.lint.detector.api.Issue
  * having to have separate jar artifacts.
  */
 class AospIssueRegistry : IssueRegistry() {
-  override val issues: List<Issue> =
-    listOf(
-      FlaggedApiDetector.ISSUE,
-    )
+  override val issues: List<Issue> = listOf(FlaggedApiDetector.ISSUE)
 
   override val vendor: Vendor = AOSP_VENDOR
 

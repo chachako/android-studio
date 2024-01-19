@@ -35,7 +35,7 @@ interface AlarmHandler {
     intervalMs: Long,
     operation: PendingIntent?,
     listener: OnAlarmListener?,
-    listenerTag: String?
+    listenerTag: String?,
   )
 
   fun onAlarmCancelled(operation: PendingIntent)
@@ -59,7 +59,7 @@ class AlarmHandlerImpl(private val connection: Connection) : AlarmHandler {
     intervalMs: Long,
     operation: PendingIntent?,
     listener: OnAlarmListener?,
-    listenerTag: String?
+    listenerTag: String?,
   ) {
     if (type != AlarmManager.RTC_WAKEUP && type != AlarmManager.ELAPSED_REALTIME_WAKEUP) {
       // Only instrument wakeup alarms.

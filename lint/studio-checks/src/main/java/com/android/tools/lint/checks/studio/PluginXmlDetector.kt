@@ -54,11 +54,7 @@ class PluginXmlDetector : Detector(), OtherFileScanner {
         priority = 5,
         severity = Severity.ERROR,
         androidSpecific = false,
-        implementation =
-          Implementation(
-            PluginXmlDetector::class.java,
-            Scope.OTHER_SCOPE,
-          ),
+        implementation = Implementation(PluginXmlDetector::class.java, Scope.OTHER_SCOPE),
       )
   }
 
@@ -120,18 +116,7 @@ class PluginXmlDetector : Detector(), OtherFileScanner {
 
 /** Keywords that suggest association with a class name. */
 private val CLASS_KEYWORDS =
-  arrayOf(
-    "class",
-    "instance",
-    "implementation",
-    "interface",
-    "topic",
-    "provider",
-  )
+  arrayOf("class", "instance", "implementation", "interface", "topic", "provider")
 
 /** Suffixes that refute association with a class name. */
-private val NOT_CLASS_SUFFIXES =
-  arrayOf(
-    "id",
-    "key",
-  )
+private val NOT_CLASS_SUFFIXES = arrayOf("id", "key")

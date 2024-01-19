@@ -210,11 +210,7 @@ class UastLintUtils {
      *   specific parameter.
      */
     @JvmStatic
-    fun findArgument(
-      node: UCallExpression,
-      method: PsiMethod,
-      type: String,
-    ): UExpression? {
+    fun findArgument(node: UCallExpression, method: PsiMethod, type: String): UExpression? {
       val psiParameter =
         method.parameterList.parameters.firstOrNull { it.type.canonicalText == type } ?: return null
       val argument = node.getArgumentForParameter(psiParameter.parameterIndex())
@@ -239,7 +235,7 @@ class UastLintUtils {
       fullQualifiedClassName: String,
       origExpression: UExpression,
       endAt: UElement,
-      includeSubClass: Boolean = false
+      includeSubClass: Boolean = false,
     ): UCallExpression? {
       val expression = origExpression.skipParenthesizedExprDown()
 
@@ -255,7 +251,7 @@ class UastLintUtils {
                 InheritanceUtil.isInheritor(
                   classRef.resolve() as? PsiClass,
                   true,
-                  fullQualifiedClassName
+                  fullQualifiedClassName,
                 ))
         ) {
           return call
@@ -288,7 +284,7 @@ class UastLintUtils {
     private fun isFactoryMethodForClass(
       fullQualifiedClassName: String,
       method: PsiMethod,
-      includeSubClass: Boolean = false
+      includeSubClass: Boolean = false,
     ): Boolean {
       return (method.returnType?.canonicalText == fullQualifiedClassName || method.isConstructor) &&
         (isMemberInClass(method, fullQualifiedClassName) ||
@@ -298,7 +294,7 @@ class UastLintUtils {
     fun isMemberInSubClassOf(
       member: PsiMember,
       className: String,
-      strict: Boolean = false
+      strict: Boolean = false,
     ): Boolean {
       val containingClass = member.containingClass
       return containingClass != null &&
@@ -430,7 +426,7 @@ class UastLintUtils {
       context: JavaContext,
       annotation: UAnnotation,
       name: String,
-      defaultValue: Long
+      defaultValue: Long,
     ): Long {
       return getAnnotationLongValue(annotation, name, defaultValue)
     }
@@ -440,7 +436,7 @@ class UastLintUtils {
       context: JavaContext,
       annotation: UAnnotation,
       name: String,
-      defaultValue: Double
+      defaultValue: Double,
     ): Double {
       return getAnnotationDoubleValue(annotation, name, defaultValue)
     }
@@ -450,7 +446,7 @@ class UastLintUtils {
       context: JavaContext,
       annotation: UAnnotation,
       name: String,
-      defaultValue: Boolean
+      defaultValue: Boolean,
     ): Boolean {
       return getAnnotationBooleanValue(annotation, name, defaultValue)
     }
@@ -465,7 +461,7 @@ class UastLintUtils {
     fun getAnnotationBooleanValue(
       annotation: UAnnotation?,
       name: String,
-      defaultValue: Boolean
+      defaultValue: Boolean,
     ): Boolean {
       val value = getAnnotationBooleanValue(annotation, name)
       return value ?: defaultValue
@@ -493,7 +489,7 @@ class UastLintUtils {
     fun getAnnotationDoubleValue(
       annotation: UAnnotation?,
       name: String,
-      defaultValue: Double
+      defaultValue: Double,
     ): Double {
       val value = getAnnotationDoubleValue(annotation, name)
       return value ?: defaultValue

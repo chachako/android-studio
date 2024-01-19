@@ -84,7 +84,7 @@ class ClassContext(
   val isFromClassLibrary: Boolean,
 
   /** The contents of the source file, if source file is known/found. */
-  private var sourceContents: CharSequence?
+  private var sourceContents: CharSequence?,
 ) : Context(driver, project, main, file) {
 
   /** The source file, if known/found. */
@@ -200,7 +200,7 @@ class ClassContext(
     line: Int,
     patternStart: String?,
     patternEnd: String?,
-    hints: SearchHints?
+    hints: SearchHints?,
   ): Location {
     val sourceFile = getSourceFile()
     if (sourceFile != null) {
@@ -285,7 +285,7 @@ class ClassContext(
     method: MethodNode?,
     instruction: AbstractInsnNode?,
     location: Location,
-    message: String
+    message: String,
   ) {
     if (method != null && driver.isSuppressed(issue, classNode, method, instruction)) {
       return
@@ -342,7 +342,7 @@ class ClassContext(
       findLineNumber(classNode),
       pattern,
       null,
-      SearchHints.create(BACKWARD).matchJavaSymbol()
+      SearchHints.create(BACKWARD).matchJavaSymbol(),
     )
   }
 
@@ -377,7 +377,7 @@ class ClassContext(
       findLineNumber(methodNode),
       pattern,
       null,
-      SearchHints.create(searchMode).matchJavaSymbol()
+      SearchHints.create(searchMode).matchJavaSymbol(),
     )
   }
 

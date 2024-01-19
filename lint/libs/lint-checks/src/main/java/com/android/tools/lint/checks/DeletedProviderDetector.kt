@@ -71,7 +71,7 @@ class DeletedProviderDetector : Detector(), SourceCodeScanner {
         expression,
         context.getLocation(expression),
         "The Crypto provider has been deleted " +
-          "in Android P (and was deprecated in Android N), so the code will crash"
+          "in Android P (and was deprecated in Android N), so the code will crash",
       )
     }
   }
@@ -97,7 +97,7 @@ class DeletedProviderDetector : Detector(), SourceCodeScanner {
           severity = Severity.ERROR,
           androidSpecific = true,
           implementation =
-            Implementation(DeletedProviderDetector::class.java, Scope.JAVA_FILE_SCOPE)
+            Implementation(DeletedProviderDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
         .addMoreInfo("https://goo.gle/DeletedProvider")
 

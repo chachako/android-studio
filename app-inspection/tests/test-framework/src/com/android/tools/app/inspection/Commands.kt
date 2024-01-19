@@ -30,7 +30,7 @@ import com.android.tools.idea.protobuf.ByteString
 fun createLibraryInspector(
   inspectorId: String,
   dexPath: String,
-  minLibrary: ArtifactCoordinate
+  minLibrary: ArtifactCoordinate,
 ): AppInspectionCommand = createLibraryInspector(inspectorId, dexPath, minLibrary, emptyList())
 
 @JvmOverloads
@@ -38,7 +38,7 @@ fun createLibraryInspector(
   inspectorId: String,
   dexPath: String,
   minLibrary: ArtifactCoordinate,
-  expectedLibraryClassNames: List<String>
+  expectedLibraryClassNames: List<String>,
 ): AppInspectionCommand {
   val metadata =
     LaunchMetadata.newBuilder()
@@ -56,7 +56,7 @@ fun createLibraryInspector(
 fun createInspector(
   inspectorId: String,
   dexPath: String,
-  launchMetadata: LaunchMetadata? = null
+  launchMetadata: LaunchMetadata? = null,
 ): AppInspectionCommand =
   appInspectionCommand(inspectorId) {
     createInspectorCommand =
@@ -81,7 +81,7 @@ fun rawCommandInspector(inspectorId: String, commandData: ByteArray): AppInspect
 
 private fun appInspectionCommand(
   inspectorId: String,
-  initializer: AppInspectionCommand.Builder.() -> Unit
+  initializer: AppInspectionCommand.Builder.() -> Unit,
 ): AppInspectionCommand =
   AppInspectionCommand.newBuilder()
     .apply {

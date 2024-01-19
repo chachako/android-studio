@@ -23,10 +23,7 @@ open class FakeHttpUrlConnection(
   url: URL,
   fakeResponseBody: ByteArray = ByteArray(0),
   private val requestMethod: String = "GET",
-  private val headers: Map<String, List<String>> =
-    mapOf(
-      "null" to listOf("HTTP/1.0 200 OK"),
-    )
+  private val headers: Map<String, List<String>> = mapOf("null" to listOf("HTTP/1.0 200 OK")),
 ) : HttpURLConnection(url) {
 
   private val inputStream = FakeInputStream(fakeResponseBody)

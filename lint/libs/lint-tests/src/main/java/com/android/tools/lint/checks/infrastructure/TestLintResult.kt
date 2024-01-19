@@ -61,7 +61,7 @@ internal constructor(
   private val task: TestLintTask,
   private val states: MutableMap<TestMode, TestResultState>,
   /** The mode to use for result tasks that do not pass in a specific mode to check. */
-  private val defaultMode: TestMode
+  private val defaultMode: TestMode,
 ) {
   private var maxLineLength: Int = 0
 
@@ -97,7 +97,7 @@ internal constructor(
     expectedText: String,
     expectedException: Class<out Throwable>? = null,
     transformer: TestResultTransformer = TestResultTransformer { it },
-    testMode: TestMode = defaultMode
+    testMode: TestMode = defaultMode,
   ): TestLintResult {
     if (expectedException == null) {
       checkPendingErrors()
@@ -116,7 +116,7 @@ internal constructor(
             "instead of displaying paths directly (in unit tests they will then " +
             "be converted to forward slashes for test output stability.)\n",
           expected,
-          actual
+          actual,
         )
       }
 
@@ -142,7 +142,7 @@ internal constructor(
   fun expectContains(
     expectedText: String,
     transformer: TestResultTransformer = TestResultTransformer { it },
-    testMode: TestMode = defaultMode
+    testMode: TestMode = defaultMode,
   ): TestLintResult {
     checkPendingErrors()
     val actual = transformer.transform(describeOutput(null, testMode))
@@ -160,14 +160,14 @@ internal constructor(
             "instead of displaying paths directly (in unit tests they will then " +
             "be converted to forward slashes for test output stability.)\n",
           expected,
-          actual
+          actual,
         )
       }
     }
 
     assertTrue(
       "Not true that\n\"$expectedWithoutIndent\nis found in lint output\n\"$actual",
-      actual.contains(expectedWithoutIndent)
+      actual.contains(expectedWithoutIndent),
     )
 
     cleanup()
@@ -176,7 +176,7 @@ internal constructor(
 
   private fun describeOutput(
     expectedException: Class<out Throwable>? = null,
-    testMode: TestMode = defaultMode
+    testMode: TestMode = defaultMode,
   ): String {
     val state = states[testMode]!!
     return formatOutput(state.output, state.firstThrowable, expectedException, state.rootDir)
@@ -191,7 +191,7 @@ internal constructor(
     originalOutput: String,
     throwable: Throwable?,
     expectedThrowable: Class<out Throwable>?,
-    rootDir: File
+    rootDir: File,
   ): String {
     var output = originalOutput
     if (maxLineLength > TRUNCATION_MARKER.length) {
@@ -401,7 +401,7 @@ internal constructor(
   @JvmOverloads
   fun expectMatches(
     @Language("RegExp") regexp: String,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     checkPendingErrors()
     val output = transformer.transform(describeOutput())
@@ -438,7 +438,7 @@ internal constructor(
   @JvmOverloads
   fun check(
     checker: TestResultChecker,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     val output = transformer.transform(describeOutput())
     checker.check(output)
@@ -500,7 +500,7 @@ internal constructor(
           " but was " +
           count,
         expectedCount.toLong(),
-        count.toLong()
+        count.toLong(),
       )
     }
 
@@ -510,7 +510,7 @@ internal constructor(
   /** Applies the lint fixes in place */
   fun applyFixes(
     pickFix: (Incident, List<LintFix>) -> LintFix?,
-    apply: (Project?, File, ByteArray?) -> Unit
+    apply: (Project?, File, ByteArray?) -> Unit,
   ): TestLintResult {
     LintFixVerifier(task, defaultMode, states[defaultMode]!!).applyFixes(pickFix, apply)
     return this
@@ -572,14 +572,14 @@ internal constructor(
   @Suppress("MemberVisibilityCanBePrivate") // Also allow calls by 3rd party checks
   fun checkHtmlReport(
     vararg checkers: TestResultChecker,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     return checkReport(
       html = true,
       fullPaths = false,
       xmlReportType = XmlFileType.REPORT,
       transformer = transformer,
-      checkers = checkers
+      checkers = checkers,
     )
   }
 
@@ -590,7 +590,7 @@ internal constructor(
    */
   fun expectHtml(
     @Language("HTML") expected: String,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     val trimmed = normalizeOutput(expected.trimIndent())
     return checkHtmlReport(
@@ -602,7 +602,7 @@ internal constructor(
           assertEquals(trimmed, s)
         }
       },
-      transformer = transformer
+      transformer = transformer,
     )
   }
 
@@ -613,7 +613,7 @@ internal constructor(
     expected: String,
     extension: String,
     reporter: (LintCliClient, File) -> Reporter,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     val trimmed = normalizeOutput(expected.trimIndent())
     return checkReport(
@@ -628,7 +628,7 @@ internal constructor(
         } else {
           assertEquals(trimmed, s)
         }
-      }
+      },
     )
   }
 
@@ -640,14 +640,14 @@ internal constructor(
   @Suppress("MemberVisibilityCanBePrivate") // Also allow calls by 3rd party checks
   fun checkXmlReport(
     vararg checkers: TestResultChecker,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     return checkReport(
       xml = true,
       fullPaths = false,
       xmlReportType = XmlFileType.REPORT,
       transformer = transformer,
-      checkers = checkers
+      checkers = checkers,
     )
   }
 
@@ -658,7 +658,7 @@ internal constructor(
    */
   fun expectXml(
     @Language("XML") expected: String,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     return checkXmlReport(
       TestResultChecker { actual ->
@@ -669,7 +669,7 @@ internal constructor(
           assertEquals(expected, s)
         }
       },
-      transformer = transformer
+      transformer = transformer,
     )
   }
 
@@ -682,14 +682,14 @@ internal constructor(
     vararg checkers: TestResultChecker,
     fullPaths: Boolean = false,
     reportType: XmlFileType = XmlFileType.REPORT,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     return checkReport(
       xml = true,
       fullPaths = fullPaths,
       xmlReportType = reportType,
       transformer = transformer,
-      checkers = checkers
+      checkers = checkers,
     )
   }
 
@@ -702,7 +702,7 @@ internal constructor(
     @Language("XML") expected: String,
     fullPaths: Boolean = false,
     reportType: XmlFileType = XmlFileType.REPORT,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     val trimmed = normalizeOutput(expected.trimIndent())
     return checkXmlReport(
@@ -730,7 +730,7 @@ internal constructor(
    */
   fun expectSarif(
     @Language("JSON") expected: String,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     val trimmed = normalizeOutput(expected.trimIndent())
     return checkSarifReport(
@@ -757,7 +757,7 @@ internal constructor(
   @Suppress("MemberVisibilityCanBePrivate") // Also allow calls by 3rd party checks
   fun checkSarifReport(
     vararg checkers: TestResultChecker,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): TestLintResult {
     return checkReport(sarif = true, transformer = transformer, checkers = checkers)
   }
@@ -777,7 +777,7 @@ internal constructor(
     xmlReportType: XmlFileType = XmlFileType.REPORT,
     fullPaths: Boolean = false,
     transformer: TestResultTransformer = TestResultTransformer { it },
-    vararg checkers: TestResultChecker
+    vararg checkers: TestResultChecker,
   ): TestLintResult {
     checkPendingErrors()
     assertTrue(sequenceOf(xml, html, sarif).count { it } == 1)
@@ -801,7 +801,7 @@ internal constructor(
     extension: String,
     fullPaths: Boolean = false,
     transformer: TestResultTransformer = TestResultTransformer { it },
-    vararg checkers: TestResultChecker
+    vararg checkers: TestResultChecker,
   ): TestLintResult {
     val state = states[defaultMode]!!
     val throwable = state.firstThrowable
@@ -859,7 +859,7 @@ internal constructor(
           assertNotNull(document)
           assertEquals(
             incidents.size.toLong(),
-            document.getElementsByTagName("issue").length.toLong()
+            document.getElementsByTagName("issue").length.toLong(),
           )
         } catch (t: Throwable) {
           throw RuntimeException("Could not parse XML report file: " + t.message, t)
@@ -966,7 +966,7 @@ internal constructor(
       before: String,
       after: String,
       diffCompatMode: Boolean = false,
-      diffCompatMode2: Boolean = false
+      diffCompatMode2: Boolean = false,
     ): String {
       return getDiff(before, after, 0, diffCompatMode, diffCompatMode2)
     }
@@ -984,14 +984,14 @@ internal constructor(
       after: String,
       windowSize: Int,
       diffCompatMode: Boolean = false,
-      diffCompatMode2: Boolean = false
+      diffCompatMode2: Boolean = false,
     ): String {
       return getDiff(
         if (before.isEmpty()) emptyArray() else before.split("\n").toTypedArray(),
         if (after.isEmpty()) emptyArray() else after.split("\n").toTypedArray(),
         windowSize,
         diffCompatMode,
-        diffCompatMode2
+        diffCompatMode2,
       )
     }
 
@@ -1008,7 +1008,7 @@ internal constructor(
       after: Array<String>,
       windowSize: Int = 0,
       diffCompatMode: Boolean = false,
-      diffCompatMode2: Boolean = false
+      diffCompatMode2: Boolean = false,
     ): String {
       // Based on the LCS section in http://introcs.cs.princeton.edu/java/96optimization/
       val sb = StringBuilder()

@@ -129,7 +129,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
   private fun createIncident(
     actions: Element,
     context: XmlContext,
-    actionResourceName: String
+    actionResourceName: String,
   ): Incident {
     return Incident(
       ISSUE,
@@ -138,7 +138,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
       "This action resource should be registered in the manifest under the " +
         "`<application>` tag as " +
         "`<meta-data android:name=\"com.google.android.actions\" " +
-        "android:resource=\"@xml/$actionResourceName\" />`"
+        "android:resource=\"@xml/$actionResourceName\" />`",
     )
   }
 
@@ -168,7 +168,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
               DefaultPosition(
                 start.line,
                 start.column + locale.length,
-                start.offset + locale.length
+                start.offset + locale.length,
               )
             val location = Location.create(context.file, start, end)
             val message = "Invalid BCP-47 locale qualifier `$locale`"
@@ -226,7 +226,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
           context,
           action,
           context.getElementLocation(action),
-          "`<action>` must declare a `<fulfillment>` or a `<parameter>` with an `<entity-set-reference>`"
+          "`<action>` must declare a `<fulfillment>` or a `<parameter>` with an `<entity-set-reference>`",
         )
       }
     } else if (!foundNonRequiredTemplate) {
@@ -234,7 +234,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
         context,
         action,
         context.getElementLocation(action),
-        "At least one <fulfillment> `$ATTR_URL_TEMPLATE` must not be required"
+        "At least one <fulfillment> `$ATTR_URL_TEMPLATE` must not be required",
       )
     }
   }
@@ -259,7 +259,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
   private fun checkParameter(
     context: XmlContext,
     parameter: Element,
-    parameterNames: MutableSet<String>
+    parameterNames: MutableSet<String>,
   ): Boolean {
     checkParent(context, parameter) ?: return false
 
@@ -277,7 +277,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
       context,
       parameter,
       TAG_ACTION,
-      TAG_PARAMETER
+      TAG_PARAMETER,
     )
 
     var hasEntitySetReference = false
@@ -332,7 +332,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
               context,
               child,
               context.getElementLocation(child),
-              "The parameter `$parameter` is not present in the `$ATTR_URL_TEMPLATE`"
+              "The parameter `$parameter` is not present in the `$ATTR_URL_TEMPLATE`",
             )
           }
         }
@@ -397,14 +397,14 @@ class ActionsXmlDetector : ResourceXmlDetector() {
     context: XmlContext,
     parameterMapping: Element,
     intentParams: MutableSet<String>,
-    urlParameters: MutableSet<String>
+    urlParameters: MutableSet<String>,
   ): String? {
     val intentParameter =
       checkRequiredAttribute(
         context,
         parameterMapping,
         ATTR_INTENT_PARAMETER,
-        allowReference = false
+        allowReference = false,
       ) ?: return null
 
     checkParent(context, parameterMapping) ?: return null
@@ -421,7 +421,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
       context,
       parameterMapping,
       TAG_FULFILLMENT,
-      TAG_PARAMETER_MAPPING
+      TAG_PARAMETER_MAPPING,
     ) ?: return null
 
     return urlParameter
@@ -465,7 +465,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
       context,
       element,
       context.getNameLocation(element),
-      "`<${element.tagName}>` must be inside `<$expected>`"
+      "`<${element.tagName}>` must be inside `<$expected>`",
     )
   }
 
@@ -474,7 +474,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
       context,
       element,
       context.getNameLocation(element),
-      "Nesting `<${element.tagName}>` is not allowed"
+      "Nesting `<${element.tagName}>` is not allowed",
     )
   }
 
@@ -489,7 +489,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
     context: XmlContext,
     parameter: Element,
     parentTag: String,
-    nameTag: String
+    nameTag: String,
   ): Boolean? {
     name ?: return true
 
@@ -511,7 +511,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
         context,
         parameter,
         location,
-        "`<$parentTag>` contains two `<$nameTag>` elements with the same $nameAttribute, `$name`"
+        "`<$parentTag>` contains two `<$nameTag>` elements with the same $nameAttribute, `$name`",
       )
       return null
     }
@@ -528,7 +528,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
     element: Element,
     attribute: String,
     allowBlank: Boolean = false,
-    allowReference: Boolean = true
+    allowReference: Boolean = true,
   ): String? {
     val value = element.getAttribute(attribute)
     if (value != null && (allowBlank || !value.isBlank())) {
@@ -537,7 +537,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
           context,
           element,
           context.getLocation(element.getAttributeNode(attribute)),
-          "`$attribute` must be a value, not a reference"
+          "`$attribute` must be a value, not a reference",
         )
       }
 
@@ -549,7 +549,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
       element,
       context.getElementLocation(element),
       "Missing required attribute `$attribute`",
-      fix
+      fix,
     )
     return null
   }
@@ -559,7 +559,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
     element: Element,
     location: Location,
     message: String,
-    fix: LintFix? = null
+    fix: LintFix? = null,
   ) {
     foundProblem = true
     context.report(Incident(ISSUE, element, location, message, fix))
@@ -578,7 +578,7 @@ class ActionsXmlDetector : ResourceXmlDetector() {
         severity = Severity.FATAL,
         implementation = Implementation(ActionsXmlDetector::class.java, Scope.RESOURCE_FILE_SCOPE),
         // Disabled by default for now because the grammar is actively evolving: b/132733887
-        enabledByDefault = false
+        enabledByDefault = false,
       )
 
     private const val KEY_ID = "id"

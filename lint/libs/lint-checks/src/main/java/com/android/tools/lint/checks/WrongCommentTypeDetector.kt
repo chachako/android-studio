@@ -83,7 +83,7 @@ class WrongCommentTypeDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 9,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -196,7 +196,7 @@ class WrongCommentTypeDetector : Detector(), SourceCodeScanner {
             .with("/**")
             .range(context.getLocation(comment))
             .autoFix()
-            .build()
+            .build(),
         )
       }
 

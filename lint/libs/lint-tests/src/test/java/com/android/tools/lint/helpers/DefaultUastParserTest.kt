@@ -81,7 +81,7 @@ class DefaultUastParserTest {
                 ~~~~~~~~~~~~~~~~~
                 """
             .trimIndent(),
-          propertyLocation!!.getErrorLines { context.getContents() }?.trimIndent()
+          propertyLocation!!.getErrorLines { context.getContents() }?.trimIndent(),
         )
 
         assertEquals(
@@ -90,7 +90,7 @@ class DefaultUastParserTest {
                     ~~~~~~~~
                 """
             .trimIndent(),
-          propertyNameLocation!!.getErrorLines { context.getContents() }?.trimIndent()
+          propertyNameLocation!!.getErrorLines { context.getContents() }?.trimIndent(),
         )
 
         assertNotNull(setterParameterNameLocation)
@@ -105,7 +105,7 @@ class DefaultUastParserTest {
                 ~~~~~~~~~~~~~~~~~
                 """
             .trimIndent(),
-          setterParameterLocation!!.getErrorLines { context.getContents() }?.trimIndent()
+          setterParameterLocation!!.getErrorLines { context.getContents() }?.trimIndent(),
         )
 
         assertNull(
@@ -158,7 +158,7 @@ class DefaultUastParserTest {
                 ~~~~~~~~~~~~~~~~~~~~~~~~~
                 """
             .trimIndent(),
-          callLocation?.getErrorLines { context.getContents() }?.trimIndent()
+          callLocation?.getErrorLines { context.getContents() }?.trimIndent(),
         )
 
         assertEquals(
@@ -167,7 +167,7 @@ class DefaultUastParserTest {
                 ~~~~~~~~~~~~~~~~~~~
                 """
             .trimIndent(),
-          declarationLocation?.getErrorLines { context.getContents() }?.trimIndent()
+          declarationLocation?.getErrorLines { context.getContents() }?.trimIndent(),
         )
       }
   }

@@ -81,7 +81,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
     element: Element,
     type: String,
     allPermissions: List<String>,
-    anyPermission: List<String>?
+    anyPermission: List<String>?,
   ) {
     val wantAllPermissions = ArrayList(allPermissions)
     var hasAnyPermission = anyPermission == null
@@ -129,7 +129,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             element,
             type,
             listOf("android.permission.FOREGROUND_SERVICE_DATA_SYNC"),
-            null
+            null,
           )
         "mediaPlayback" ->
           checkPermission(
@@ -137,7 +137,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             element,
             type,
             listOf("android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"),
-            null
+            null,
           )
         "phoneCall" ->
           checkPermission(
@@ -145,7 +145,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             element,
             type,
             listOf("android.permission.FOREGROUND_SERVICE_PHONE_CALL"),
-            listOf("android.permission.MANAGE_OWN_CALLS")
+            listOf("android.permission.MANAGE_OWN_CALLS"),
           )
         "location" ->
           checkPermission(
@@ -155,8 +155,8 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             listOf("android.permission.FOREGROUND_SERVICE_LOCATION"),
             listOf(
               "android.permission.ACCESS_COARSE_LOCATION",
-              "android.permission.ACCESS_FINE_LOCATION"
-            )
+              "android.permission.ACCESS_FINE_LOCATION",
+            ),
           )
         "connectedDevice" ->
           checkPermission(
@@ -173,8 +173,8 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
               "android.permission.CHANGE_WIFI_MULTICAST_STATE",
               "android.permission.NFC",
               "android.permission.TRANSMIT_IR",
-              "android.permission.UWB_RANGING"
-            )
+              "android.permission.UWB_RANGING",
+            ),
           )
         "mediaProjection" ->
           checkPermission(
@@ -182,7 +182,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             element,
             type,
             listOf("android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"),
-            null
+            null,
           )
         "camera" ->
           checkPermission(
@@ -190,7 +190,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             element,
             type,
             listOf("android.permission.FOREGROUND_SERVICE_CAMERA"),
-            listOf("android.permission.CAMERA", "android.permission.SYSTEM_CAMERA")
+            listOf("android.permission.CAMERA", "android.permission.SYSTEM_CAMERA"),
           )
         "microphone" ->
           checkPermission(
@@ -204,8 +204,8 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
               "android.permission.CAPTURE_MEDIA_OUTPUT",
               "android.permission.CAPTURE_TUNER_AUDIO_INPUT",
               "android.permission.CAPTURE_VOICE_COMMUNICATION_OUTPUT",
-              "android.permission.RECORD_AUDIO"
-            )
+              "android.permission.RECORD_AUDIO",
+            ),
           )
         "health" ->
           checkPermission(
@@ -216,8 +216,8 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             listOf(
               "android.permission.ACTIVITY_RECOGNITION",
               "android.permission.BODY_SENSORS",
-              "android.permission.HIGH_SAMPLING_RATE_SENSORS"
-            )
+              "android.permission.HIGH_SAMPLING_RATE_SENSORS",
+            ),
           )
         "remoteMessaging" ->
           checkPermission(
@@ -225,7 +225,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             element,
             type,
             listOf("android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING"),
-            null
+            null,
           )
         "systemExempted" ->
           checkPermission(
@@ -233,7 +233,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             element,
             type,
             listOf("android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED"),
-            listOf("android.permission.SCHEDULE_EXACT_ALARM", "android.permission.USE_EXACT_ALARM")
+            listOf("android.permission.SCHEDULE_EXACT_ALARM", "android.permission.USE_EXACT_ALARM"),
           )
         "fileManagement" ->
           checkPermission(
@@ -241,7 +241,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             element,
             type,
             listOf("android.permission.FOREGROUND_SERVICE_FILE_MANAGEMENT"),
-            null
+            null,
           )
         "specialUse" ->
           checkPermission(
@@ -249,7 +249,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
             element,
             type,
             listOf("android.permission.FOREGROUND_SERVICE_SPECIAL_USE"),
-            null
+            null,
           )
         else -> continue
       }
@@ -262,7 +262,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
         ForegroundServicePermissionDetector::class.java,
         EnumSet.of(Scope.MANIFEST, Scope.JAVA_FILE),
         Scope.MANIFEST_SCOPE,
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     /** Foreground service type related issues */
@@ -280,7 +280,7 @@ class ForegroundServicePermissionDetector : ResourceXmlDetector(), SourceCodeSca
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.ERROR, // It is an error, missing permission causes SecurityException.
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

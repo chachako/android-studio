@@ -62,7 +62,7 @@ class WearBackNavigationDetectorTest : AbstractCheckTest() {
 
          </resources>
         """
-        .trimIndent()
+        .trimIndent(),
     )
 
   private val manifestWithActivityTheme =

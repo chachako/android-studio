@@ -54,7 +54,7 @@ class VmTest {
           Long.MAX_VALUE,
           "foo",
           "bar",
-          Int.MAX_VALUE
+          Int.MAX_VALUE,
         )
       )
     val packet = AllClassesWithGenericsReply(classes)

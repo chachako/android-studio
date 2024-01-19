@@ -31,7 +31,7 @@ class TestLintOptionsConfiguration(
   private val project: Project,
   configurations: ConfigurationHierarchy,
   lintOptions: LintModelLintOptions,
-  fatalOnly: Boolean
+  fatalOnly: Boolean,
 ) : LintOptionsConfiguration(configurations, lintOptions, fatalOnly) {
   init {
     associatedLocation = Location.create(project.dir)
@@ -40,7 +40,7 @@ class TestLintOptionsConfiguration(
   override fun getDefinedSeverity(
     issue: Issue,
     source: Configuration,
-    visibleDefault: Severity
+    visibleDefault: Severity,
   ): Severity {
     val override = overrideSeverity(task, issue, visibleDefault)
     if (override != null) {

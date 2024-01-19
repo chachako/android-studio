@@ -97,7 +97,7 @@ class AssertDetector : Detector(), SourceCodeScanner {
         category = Category.PERFORMANCE,
         priority = 4,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** In Kotlin arguments to assertions are always evaluated. */
@@ -147,7 +147,7 @@ class AssertDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        enabledByDefault = false
+        enabledByDefault = false,
       )
 
     /** Maximum number of indirect calls it will search */
@@ -211,7 +211,7 @@ class AssertDetector : Detector(), SourceCodeScanner {
   private fun checkKotlinAssertion(
     context: JavaContext,
     assertion: UCallExpression,
-    condition: UExpression
+    condition: UExpression,
   ) {
     if (context.isEnabled(EXPENSIVE) && warnAboutWork(assertion, condition)) {
       val location = context.getLocation(condition)
@@ -237,7 +237,7 @@ class AssertDetector : Detector(), SourceCodeScanner {
         SIDE_EFFECT,
         condition,
         context.getLocation(sideEffect.first),
-        "Assertion condition has a side effect: ${sideEffect.second}"
+        "Assertion condition has a side effect: ${sideEffect.second}",
       )
     }
   }
@@ -246,7 +246,7 @@ class AssertDetector : Detector(), SourceCodeScanner {
   private fun getSideEffect(
     node: UExpression?,
     depth: Int,
-    callDepth: Int
+    callDepth: Int,
   ): Pair<UExpression, String>? {
     node ?: return null
     if (depth == MAX_RECURSION_DEPTH) {
@@ -380,7 +380,7 @@ class AssertDetector : Detector(), SourceCodeScanner {
 
   private fun createKotlinAssertionStatusFix(
     context: JavaContext,
-    assertCall: UCallExpression
+    assertCall: UCallExpression,
   ): LintFix {
     return fix()
       .name("Surround with desiredAssertionStatus() check")
@@ -425,7 +425,7 @@ class AssertDetector : Detector(), SourceCodeScanner {
     } else if (argument is UParenthesizedExpression) {
       return isExpensive(
         argument.expression,
-        depth
+        depth,
       ) // not +1: cheap and want to allow parenthesis mode tests
     } else if (argument is UBinaryExpression) {
       return isExpensive(argument.leftOperand, depth + 1) ||

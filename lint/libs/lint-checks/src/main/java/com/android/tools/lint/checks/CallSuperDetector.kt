@@ -61,7 +61,7 @@ class CallSuperDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 9,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     val CALL_SUPER_ANNOTATION = AndroidxName.of(SUPPORT_ANNOTATIONS_PREFIX, "CallSuper")
@@ -101,7 +101,7 @@ class CallSuperDetector : Detector(), SourceCodeScanner {
           !evaluator.isMemberInSubClassOf(
             method,
             "android.support.wearable.watchface.WatchFaceService.Engine",
-            false
+            false,
           )
         ) {
           return null

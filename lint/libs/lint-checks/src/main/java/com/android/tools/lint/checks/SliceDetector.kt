@@ -83,7 +83,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val ICON_CLASS = "android.graphics.drawable.Icon"
@@ -189,7 +189,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
     context: Context,
     sliceProvider: String,
     onMapMethodLocation: Location?,
-    declarationLocation: Location
+    declarationLocation: Location,
   ) {
     // Make sure slice provider is registered correctly in the manifest
     // Make sure this actions resource is registered in the manifest
@@ -247,7 +247,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
             location,
             "All `SliceProvider` filters require category slice to be set: " +
               " <category android:name=\"android.app.slice.category.SLICE\" />",
-            null
+            null,
           )
         }
       }
@@ -264,7 +264,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
         onMapMethodLocation,
         "Define intent filters in your manifest on your " +
           "`<provider android:name=\"$sliceProvider\">`; otherwise " +
-          "`onMapIntentToUri` will not be called"
+          "`onMapIntentToUri` will not be called",
       )
     } else if (firstCategory != null && onMapMethodLocation == null) {
       context.client.findManifestSourceLocation(firstCategory)?.let {
@@ -274,7 +274,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
         ISSUE,
         declarationLocation,
         "Implement `SliceProvider#onMapIntentToUri` to handle the intents " +
-          "defined on your slice `<provider>` in your manifest"
+          "defined on your slice `<provider>` in your manifest",
       )
     }
   }
@@ -287,14 +287,14 @@ class SliceDetector : Detector(), SourceCodeScanner {
       GRID_ROW_CELL_BUILDER_CLASS,
       LIST_HEADER_BUILDER_CLASS,
       LIST_INPUT_RANGE_BUILDER_CLASS,
-      LIST_RANGE_BUILDER_CLASS
+      LIST_RANGE_BUILDER_CLASS,
     )
   }
 
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     val method = node.getParentOfType(UMethod::class.java, true) ?: return
     val name = constructor.containingClass?.qualifiedName ?: return
@@ -310,7 +310,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
   private fun checkListBuilder(
     context: JavaContext,
     listBuilder: UCallExpression,
-    method: UMethod
+    method: UMethod,
   ) {
     val rows = findRows(listBuilder, method)
     if (rows.isEmpty()) {
@@ -318,7 +318,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
         ISSUE,
         listBuilder,
         context.getLocation(listBuilder),
-        "A slice should have at least one row added to it"
+        "A slice should have at least one row added to it",
       )
       return
     }
@@ -354,7 +354,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
         ISSUE,
         listBuilder,
         context.getLocation(listBuilder),
-        "A slice should have a primary action set on one of its rows"
+        "A slice should have a primary action set on one of its rows",
       )
       return
     }
@@ -389,7 +389,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
                   "added to `ListBuilder`. Depending on where the slice is " +
                   "being displayed, all rows of content may not be visible, " +
                   "consider adding an intent to an activity with the rest " +
-                  "of the content."
+                  "of the content.",
               )
             }
           }
@@ -401,7 +401,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
       endActionItems,
       context,
       "A mixture of slice actions and icons are not supported on a list, " +
-        "add either actions or icons but not both"
+        "add either actions or icons but not both",
     )
   }
 
@@ -415,7 +415,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
   private fun ensureSingleToggleType(
     endActionItems: MutableList<UExpression>,
     context: JavaContext,
-    message: String
+    message: String,
   ) {
     if (endActionItems.size >= 2) {
       var custom: UExpression? = null
@@ -549,7 +549,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
     qualifiedName: String,
     context: JavaContext,
     node: UCallExpression,
-    method: UMethod
+    method: UMethod,
   ) {
     val analyzer =
       object : TargetMethodDataFlowAnalyzer(listOf(node)) {
@@ -596,7 +596,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
                   call,
                   location,
                   "`RowBuilder` can only have one timestamp added to it, " +
-                    "remove one of your timestamps"
+                    "remove one of your timestamps",
                 )
               } else {
                 timestamp = call
@@ -612,7 +612,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
                   call,
                   location,
                   "`RowBuilder` cannot have a mixture of icons and slice " +
-                    "actions added to the end items"
+                    "actions added to the end items",
                 )
               }
               endActionItem = call
@@ -626,14 +626,14 @@ class SliceDetector : Detector(), SourceCodeScanner {
                     .getLocation(call)
                     .withSecondary(
                       context.getLocation(endActionItem!!),
-                      "Earlier slice action here"
+                      "Earlier slice action here",
                     )
                 context.report(
                   ISSUE,
                   call,
                   location,
                   "`RowBuilder` cannot have a mixture of icons and slice " +
-                    "actions added to the end items"
+                    "actions added to the end items",
                 )
               }
               endIconItem = call
@@ -658,7 +658,7 @@ class SliceDetector : Detector(), SourceCodeScanner {
       ISSUE,
       node,
       context.getLocation(node),
-      "`$builder` should have a piece of content added to it"
+      "`$builder` should have a piece of content added to it",
     )
   }
 

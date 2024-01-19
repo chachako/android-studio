@@ -32,7 +32,7 @@ private constructor(
   val from: Double,
   val to: Double,
   val fromInclusive: Boolean,
-  val toInclusive: Boolean
+  val toInclusive: Boolean,
 ) : RangeConstraint() {
 
   constructor(
@@ -41,7 +41,7 @@ private constructor(
     if (range.from == Long.MIN_VALUE) NEGATIVE_INFINITY else range.from.toDouble(),
     if (range.to == Long.MAX_VALUE) POSITIVE_INFINITY else range.to.toDouble(),
     true,
-    true
+    true,
   )
 
   fun isValid(value: Double): Boolean {
@@ -60,7 +60,7 @@ private constructor(
   fun describe(
     argument: UExpression? = null,
     actualValue: Double? = null,
-    prefix: String = "Value must be "
+    prefix: String = "Value must be ",
   ): String {
     val sb = StringBuilder(20)
     sb.append(prefix)
@@ -174,7 +174,7 @@ private constructor(
   override fun describeDelta(
     actual: RangeConstraint,
     actualLabel: String,
-    allowedLabel: String
+    allowedLabel: String,
   ): String {
     if (actual !is FloatRangeConstraint) {
       return if (actual is IntRangeConstraint) {
@@ -321,7 +321,7 @@ private constructor(
       from: Double,
       fromInclusive: Boolean,
       to: Double,
-      toInclusive: Boolean
+      toInclusive: Boolean,
     ): FloatRangeConstraint {
       return FloatRangeConstraint(from, to, fromInclusive, toInclusive)
     }

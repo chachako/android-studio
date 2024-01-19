@@ -48,7 +48,7 @@ class TerminologyDetector : Detector(), SourceCodeScanner, OtherFileScanner {
       Implementation(
         TerminologyDetector::class.java,
         EnumSet.of(Scope.JAVA_FILE, Scope.OTHER, Scope.TEST_SOURCES),
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     /** Looks for terminology that has suggested replacements for our codebase. */
@@ -68,7 +68,7 @@ class TerminologyDetector : Detector(), SourceCodeScanner, OtherFileScanner {
         severity = Severity.FATAL,
         androidSpecific = false,
         moreInfo = "https://developers.google.com/style/word-list",
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -108,7 +108,7 @@ class TerminologyDetector : Detector(), SourceCodeScanner, OtherFileScanner {
       UVariable::class.java,
       UMethod::class.java,
       UClass::class.java,
-      ULiteralExpression::class.java
+      ULiteralExpression::class.java,
     )
   }
 
@@ -154,7 +154,7 @@ class TerminologyDetector : Detector(), SourceCodeScanner, OtherFileScanner {
         checkCommentStateMachine(
           context,
           JavaContext.findNameElement(node as UElement) ?: node,
-          name
+          name,
         )
         for (comment in node.comments) {
           val contents = comment.text
@@ -180,7 +180,7 @@ class TerminologyDetector : Detector(), SourceCodeScanner, OtherFileScanner {
     start: Int,
     end: Int,
     suggestion: String,
-    checkWholeWords: Boolean = false
+    checkWholeWords: Boolean = false,
   ) {
     if (checkWholeWords && !matchesWholeWords(source, start, end)) {
       return
@@ -234,7 +234,7 @@ class TerminologyDetector : Detector(), SourceCodeScanner, OtherFileScanner {
     context: JavaContext,
     argument: UElement,
     string: String,
-    location: Location = context.getLocation(argument)
+    location: Location = context.getLocation(argument),
   ): Location {
     val start = location.start?.offset ?: return location
     val end = location.end?.offset ?: return location

@@ -94,7 +94,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -183,7 +183,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -267,7 +267,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -356,7 +356,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -419,7 +419,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -500,7 +500,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -575,7 +575,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -640,7 +640,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -728,7 +728,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -778,7 +778,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expectClean()
@@ -884,7 +884,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expectClean()
@@ -919,7 +919,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -965,7 +965,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -1014,7 +1014,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expect(
@@ -1073,7 +1073,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expectClean()
@@ -1121,7 +1121,7 @@ class SliceDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        *stubs
+        *stubs,
       )
       .run()
       .expectClean()
@@ -1435,6 +1435,6 @@ class SliceDetectorTest : AbstractCheckTest() {
       defaultSliceProvider,
       consumer,
       slice,
-      iconCompat
+      iconCompat,
     )
 }

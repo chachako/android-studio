@@ -271,7 +271,7 @@ class ProjectDescription : Comparable<ProjectDescription> {
     fun TestLintTask.populateProjectDirectory(
       project: ProjectDescription,
       projectDir: File,
-      vararg testFiles: TestFile
+      vararg testFiles: TestFile,
     ) {
       if (!projectDir.exists()) {
         val ok = projectDir.mkdirs()

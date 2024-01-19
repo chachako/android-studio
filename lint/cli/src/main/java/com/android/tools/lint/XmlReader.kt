@@ -62,7 +62,7 @@ class XmlReader(
   private val client: LintCliClient,
   private val registry: IssueRegistry,
   private val project: Project?,
-  xmlFile: File
+  xmlFile: File,
 ) {
   private val incidents = mutableListOf<Incident>()
   private var data: MutableMap<Issue, LintMap>? = null
@@ -563,13 +563,13 @@ class XmlReader(
             DefaultPosition(
               if (line != null) line.toInt() - 1 else -1,
               column.toInt() - 1,
-              startOffset?.toInt() ?: -1
+              startOffset?.toInt() ?: -1,
             )
           val end =
             DefaultPosition(
               if (endLine != null) endLine.toInt() - 1 else -1,
               endColumn.toInt() - 1,
-              endOffset?.toInt() ?: -1
+              endOffset?.toInt() ?: -1,
             )
           Location.create(file, start, end)
         } catch (e: NumberFormatException) {

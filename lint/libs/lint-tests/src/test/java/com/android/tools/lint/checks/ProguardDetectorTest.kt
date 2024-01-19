@@ -61,8 +61,8 @@ class ProguardDetectorTest : AbstractCheckTest() {
                         target=android-14
                         proguard.config=${"$"}{sdk.dir}/foo.cfg:${"$"}{user.home}/bar.pro;myfile.txt
 
-                        """
-        )
+                        """,
+        ),
       )
       .run()
       .expect(
@@ -142,7 +142,7 @@ class ProguardDetectorTest : AbstractCheckTest() {
         -keep class * implements android.os.Parcelable {
           public static final android.os.Parcelable${"$"}Creator *;
         }
-        """
+        """,
       )
       .indented()
 
@@ -187,7 +187,7 @@ class ProguardDetectorTest : AbstractCheckTest() {
         -keep class * implements android.os.Parcelable {
           public static final android.os.Parcelable${"$"}Creator *;
         }
-        """
+        """,
       )
       .indented()
 
@@ -232,7 +232,7 @@ class ProguardDetectorTest : AbstractCheckTest() {
         -keep class * implements android.os.Parcelable {
           public static final android.os.Parcelable${"$"}Creator *;
         }
-        """
+        """,
       )
       .indented()
 
@@ -305,7 +305,7 @@ class ProguardDetectorTest : AbstractCheckTest() {
         # Don't warn about those in case this app is linking against an older
         # platform version.  We know about them, and they are safe.
         -dontwarn android.support.**
-        """
+        """,
       )
       .indented()
 }

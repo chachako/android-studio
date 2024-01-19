@@ -74,7 +74,7 @@ class ExportedFlagDetector : Detector(), XmlScanner {
             element,
             context.getNameLocation(element),
             "$message For launcher activities, this should be set to `true`.",
-            createSetToTrueFix()
+            createSetToTrueFix(),
           )
         } else {
           Incident(
@@ -82,7 +82,7 @@ class ExportedFlagDetector : Detector(), XmlScanner {
             element,
             context.getNameLocation(element),
             message,
-            LintFix.create().alternatives(createSetToTrueFix(), createSetToFalseFix())
+            LintFix.create().alternatives(createSetToTrueFix(), createSetToFalseFix()),
           )
         }
       context.report(incident, map())
@@ -93,7 +93,7 @@ class ExportedFlagDetector : Detector(), XmlScanner {
             exported,
             context.getLocation(exported),
             "A launchable activity must be exported as of Android 12, which also makes it available to other apps.",
-            createSetToTrueFix()
+            createSetToTrueFix(),
           )
           .overrideSeverity(Severity.ERROR)
       context.report(incident, map())
@@ -160,7 +160,7 @@ class ExportedFlagDetector : Detector(), XmlScanner {
         category = Category.SECURITY,
         priority = 5,
         severity = Severity.WARNING,
-        implementation = Implementation(ExportedFlagDetector::class.java, Scope.MANIFEST_SCOPE)
+        implementation = Implementation(ExportedFlagDetector::class.java, Scope.MANIFEST_SCOPE),
       )
   }
 }

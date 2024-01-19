@@ -121,7 +121,7 @@ class TypographyDetector : ResourceXmlDetector() {
           element,
           context.getLocation(textNode),
           ELLIPSIS_MESSAGE,
-          fix().replace().text("...").with("…").build()
+          fix().replace().text("...").with("…").build(),
         )
       }
     }
@@ -145,7 +145,7 @@ class TypographyDetector : ResourceXmlDetector() {
               element,
               context.getLocation(textNode),
               EN_DASH_MESSAGE,
-              if (isRtl(trimmedText)) null else fix().replace().text("-").with("–").build()
+              if (isRtl(trimmedText)) null else fix().replace().text("-").with("–").build(),
             )
           }
         }
@@ -160,7 +160,7 @@ class TypographyDetector : ResourceXmlDetector() {
             element,
             context.getLocation(textNode),
             EM_DASH_MESSAGE,
-            if (isRtl(trimmedText)) null else fix().replace().text("--").with("—").build()
+            if (isRtl(trimmedText)) null else fix().replace().text("--").with("—").build(),
           )
         }
       }
@@ -189,7 +189,7 @@ class TypographyDetector : ResourceXmlDetector() {
               .replace()
               .text(trimmedText.substring(quoteStart, quoteEnd + 1))
               .with("‘${trimmedText.substring(quoteStart + 1, quoteEnd)}’")
-              .build()
+              .build(),
           )
           return
         }
@@ -226,8 +226,8 @@ class TypographyDetector : ResourceXmlDetector() {
                 DefaultPosition(
                   textStartPosition.line + lineBreaks,
                   apostropheColumn + 1,
-                  apostropheOffset + 1
-                )
+                  apostropheOffset + 1,
+                ),
               )
             }
           context.report(
@@ -235,7 +235,7 @@ class TypographyDetector : ResourceXmlDetector() {
             element,
             apostropheLocation,
             TYPOGRAPHIC_APOSTROPHE_MESSAGE,
-            fix().replace().text("'").with("’").build()
+            fix().replace().text("'").with("’").build(),
           )
           return
         }
@@ -256,7 +256,7 @@ class TypographyDetector : ResourceXmlDetector() {
                 .replace()
                 .text(trimmedText.substring(quoteStart, quoteEnd + 1))
                 .with("“${trimmedText.substring(quoteStart + 1, quoteEnd)}”")
-                .build()
+                .build(),
             )
             return
           }
@@ -287,7 +287,7 @@ class TypographyDetector : ResourceXmlDetector() {
           element,
           context.getLocation(textNode),
           GRAVE_QUOTE_MESSAGE,
-          quickfix
+          quickfix,
         )
         return
       }
@@ -312,7 +312,7 @@ class TypographyDetector : ResourceXmlDetector() {
               element,
               context.getLocation(textNode),
               String.format(FRACTION_MESSAGE, '\u00BD', "&#189;", "1/2"),
-              getFractionFix(1, 2, "½")
+              getFractionFix(1, 2, "½"),
             )
           top == "1" && bottom == "4" ->
             context.report(
@@ -320,7 +320,7 @@ class TypographyDetector : ResourceXmlDetector() {
               element,
               context.getLocation(textNode),
               String.format(FRACTION_MESSAGE, '\u00BC', "&#188;", "1/4"),
-              getFractionFix(1, 4, "¼")
+              getFractionFix(1, 4, "¼"),
             )
           top == "3" && bottom == "4" ->
             context.report(
@@ -328,7 +328,7 @@ class TypographyDetector : ResourceXmlDetector() {
               element,
               context.getLocation(textNode),
               String.format(FRACTION_MESSAGE, '\u00BE', "&#190;", "3/4"),
-              getFractionFix(3, 4, "¾")
+              getFractionFix(3, 4, "¾"),
             )
           top == "1" && bottom == "3" ->
             context.report(
@@ -336,7 +336,7 @@ class TypographyDetector : ResourceXmlDetector() {
               element,
               context.getLocation(textNode),
               String.format(FRACTION_MESSAGE, '\u2153', "&#8531;", "1/3"),
-              getFractionFix(1, 3, "\u2153")
+              getFractionFix(1, 3, "\u2153"),
             )
           top == "2" && bottom == "3" ->
             context.report(
@@ -344,7 +344,7 @@ class TypographyDetector : ResourceXmlDetector() {
               element,
               context.getLocation(textNode),
               String.format(FRACTION_MESSAGE, '\u2154', "&#8532;", "2/3"),
-              getFractionFix(2, 3, "\u2154")
+              getFractionFix(2, 3, "\u2154"),
             )
         }
       }
@@ -361,7 +361,7 @@ class TypographyDetector : ResourceXmlDetector() {
           element,
           context.getLocation(textNode),
           COPYRIGHT_MESSAGE,
-          fix().replace().text(if (trimmedText.contains("(c)")) "(c)" else "(C)").with("©").build()
+          fix().replace().text(if (trimmedText.contains("(c)")) "(c)" else "(C)").with("©").build(),
         )
         // Replace (R) and TM as well? There are unicode characters for these but they
         // are probably not very common within Android app strings.
@@ -394,7 +394,7 @@ class TypographyDetector : ResourceXmlDetector() {
         priority = 5,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        moreInfo = "https://en.wikipedia.org/wiki/Dash"
+        moreInfo = "https://en.wikipedia.org/wiki/Dash",
       )
 
     /** Replace plain quotes with smart quotes? */
@@ -418,7 +418,7 @@ class TypographyDetector : ResourceXmlDetector() {
         moreInfo = "https://en.wikipedia.org/wiki/Quotation_mark",
         // This feature is apparently controversial: recent apps have started using
         // straight quotes to avoid inconsistencies. Disabled by default for now.
-        enabledByDefault = false
+        enabledByDefault = false,
       )
 
     /** Replace fraction strings with fraction characters? */
@@ -437,7 +437,7 @@ class TypographyDetector : ResourceXmlDetector() {
         priority = 5,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        moreInfo = "https://en.wikipedia.org/wiki/Number_Forms"
+        moreInfo = "https://en.wikipedia.org/wiki/Number_Forms",
       )
 
     /** Replace ... with the ellipsis character? */
@@ -455,7 +455,7 @@ class TypographyDetector : ResourceXmlDetector() {
         priority = 5,
         severity = Severity.WARNING,
         moreInfo = "https://en.wikipedia.org/wiki/Ellipsis",
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** The main issue discovered by this detector */
@@ -472,7 +472,7 @@ class TypographyDetector : ResourceXmlDetector() {
         category = Category.TYPOGRAPHY,
         priority = 3,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val GRAVE_QUOTE_MESSAGE =

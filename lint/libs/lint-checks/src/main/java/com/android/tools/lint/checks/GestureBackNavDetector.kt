@@ -55,7 +55,7 @@ class GestureBackNavDetector : ResourceXmlDetector(), SourceCodeScanner {
   override fun visitReference(
     context: JavaContext,
     reference: UReferenceExpression,
-    referenced: PsiElement
+    referenced: PsiElement,
   ) {
     if (
       referenced is PsiField &&
@@ -79,7 +79,7 @@ class GestureBackNavDetector : ResourceXmlDetector(), SourceCodeScanner {
             .build()
         context.report(
           Incident(ISSUE, reference, context.getLocation(keycodeBack), message, fix),
-          map()
+          map(),
         )
       }
     }
@@ -111,7 +111,7 @@ class GestureBackNavDetector : ResourceXmlDetector(), SourceCodeScanner {
         implementation = Implementation(GestureBackNavDetector::class.java, Scope.JAVA_FILE_SCOPE),
         androidSpecific = true,
         moreInfo =
-          "https://developer.android.com/about/versions/13/features/predictive-back-gesture"
+          "https://developer.android.com/about/versions/13/features/predictive-back-gesture",
       )
   }
 }

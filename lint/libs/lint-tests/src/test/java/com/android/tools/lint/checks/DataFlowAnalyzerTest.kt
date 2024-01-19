@@ -86,7 +86,7 @@ class DataFlowAnalyzerTest : TestCase() {
                     public Test other() { return this; }
                 }
             """,
-        File("test/pkg/Test.java")
+        File("test/pkg/Test.java"),
       )
 
     val target = findMethodCall(parsed, "d")
@@ -130,7 +130,7 @@ class DataFlowAnalyzerTest : TestCase() {
                     public void m(int x) { }
                 }
             """,
-        File("test/pkg/Test.java")
+        File("test/pkg/Test.java"),
       )
 
     val variable = findVariableDeclaration(parsed, "c")
@@ -182,7 +182,7 @@ class DataFlowAnalyzerTest : TestCase() {
                     fun other(): Test = this
                 }
             """,
-        File("test/pkg/Test.kt")
+        File("test/pkg/Test.kt"),
       )
 
     val target = findMethodCall(parsed, "d")
@@ -207,7 +207,7 @@ class DataFlowAnalyzerTest : TestCase() {
 
   private fun findMethodCall(
     parsed: com.android.utils.Pair<JavaContext, Disposable>,
-    targetName: String
+    targetName: String,
   ): UCallExpression {
     var target: UCallExpression? = null
     val file = parsed.first.uastFile!!
@@ -231,7 +231,7 @@ class DataFlowAnalyzerTest : TestCase() {
 
   private fun findVariableDeclaration(
     parsed: com.android.utils.Pair<JavaContext, Disposable>,
-    targetName: String
+    targetName: String,
   ): UVariable {
     var target: UVariable? = null
     val file = parsed.first.uastFile!!
@@ -372,7 +372,7 @@ class DataFlowAnalyzerTest : TestCase() {
                 """
           )
           .indented(),
-        rClass
+        rClass,
       )
       .testModes(TestMode.DEFAULT)
       .issues(ToastDetector.ISSUE)
@@ -467,7 +467,7 @@ class DataFlowAnalyzerTest : TestCase() {
                 """
           )
           .indented(),
-        rClass
+        rClass,
       )
       .testModes(TestMode.DEFAULT)
       .issues(ToastDetector.ISSUE)
@@ -534,7 +534,7 @@ class DataFlowAnalyzerTest : TestCase() {
                 """
           )
           .indented(),
-        rClass
+        rClass,
       )
       .testModes(TestMode.DEFAULT)
       .issues(ToastDetector.ISSUE)
@@ -571,7 +571,7 @@ class DataFlowAnalyzerTest : TestCase() {
                 """
           )
           .indented(),
-        *snackbarStubs
+        *snackbarStubs,
       )
       .issues(ToastDetector.ISSUE)
       .run()
@@ -625,7 +625,7 @@ class DataFlowAnalyzerTest : TestCase() {
                 """
           )
           .indented(),
-        *snackbarStubs
+        *snackbarStubs,
       )
       .issues(ToastDetector.ISSUE)
       .run()
@@ -697,7 +697,7 @@ class DataFlowAnalyzerTest : TestCase() {
           )
           .indented(),
         rClass,
-        *snackbarStubs
+        *snackbarStubs,
       )
       .testModes(TestMode.DEFAULT)
       .issues(ToastDetector.ISSUE)
@@ -733,7 +733,7 @@ class DataFlowAnalyzerTest : TestCase() {
                 """
           )
           .indented(),
-        *snackbarStubs
+        *snackbarStubs,
       )
       .issues(ToastDetector.ISSUE)
       .run()
@@ -779,7 +779,7 @@ class DataFlowAnalyzerTest : TestCase() {
                     public Snackbar toDebug() { return new Snackbar(); }
                 }
                 """
-        )
+        ),
       )
       .issues(ToastDetector.ISSUE)
       .run()
@@ -823,7 +823,7 @@ class DataFlowAnalyzerTest : TestCase() {
                 }
                 """
           )
-          .indented(),
+          .indented()
       )
       .issues(ToastDetector.ISSUE)
       .run()
@@ -893,7 +893,7 @@ class DataFlowAnalyzerTest : TestCase() {
             }
 
             private fun display(intent: Intent) {}
-            """,
+            """
           )
           .indented()
       )
@@ -912,7 +912,7 @@ class DataFlowAnalyzerTest : TestCase() {
       receiver(show())
       """
         .trimIndent(),
-      dfa.events.joinToString(separator = "\n") { it }
+      dfa.events.joinToString(separator = "\n") { it },
     )
     Disposer.dispose(parsed.second)
   }
@@ -998,7 +998,7 @@ class DataFlowAnalyzerTest : TestCase() {
                         context.registerReceiver(receiver, IntentFilter("ppp").apply { addAction("ooo") })
                     }
                 }
-                """,
+                """
           )
           .indented()
       )
@@ -1083,7 +1083,7 @@ class DataFlowAnalyzerTest : TestCase() {
 
                 }
 
-                """,
+                """
           )
           .indented()
       )
@@ -1111,7 +1111,7 @@ class DataFlowAnalyzerTest : TestCase() {
     assertEquals("fa, fb, fc, fh, fi, fj", argumentCalls.joinToString { it })
     assertEquals(
       "it, this, this@l, this@l, this, this@apply",
-      argumentReferences.joinToString { it }
+      argumentReferences.joinToString { it },
     )
 
     assertEquals("intentFun", receivers.joinToString { it })
@@ -1171,7 +1171,7 @@ class DataFlowAnalyzerTest : TestCase() {
         HMHBEuYjVbGMLPtP2HvFmjvFSrNc+IG15ndsfbPz4oClyzqLPOsCGuwX56Go
         YJv1IZ8cLwi5GaE5k4/xdPaNCTtcpXqGjI+aj10fd3HPxx7u+3iAh2egFI+w
         z/cpllPUU2z/BShsKIYDAwAA
-        """
+        """,
         ),
         kotlin(
             """
@@ -1186,9 +1186,9 @@ class DataFlowAnalyzerTest : TestCase() {
                 intent.extensionFunc()
               }
             }
-            """,
+            """
           )
-          .indented()
+          .indented(),
       )
       .testModes(TestMode.DEFAULT)
       .issues(ReportsIntentAndEscapes.ISSUE)
@@ -1210,18 +1210,13 @@ class DataFlowAnalyzerTest : TestCase() {
     override fun visitConstructor(
       context: JavaContext,
       node: UCallExpression,
-      constructor: PsiMethod
+      constructor: PsiMethod,
     ) {
       val method = node.getParentOfType(UMethod::class.java)
       val analyzer = EscapeCheckingDataFlowAnalyzer(listOf(node))
       method!!.accept(analyzer)
       context.report(
-        Incident(
-          ISSUE,
-          node,
-          context.getLocation(node),
-          "Intent use escaped? " + analyzer.escaped,
-        )
+        Incident(ISSUE, node, context.getLocation(node), "Intent use escaped? " + analyzer.escaped)
       )
     }
 
@@ -1255,7 +1250,7 @@ class DataFlowAnalyzerTest : TestCase() {
               val intent = Intent()
               intent.apply(handler) // escape
             }
-            """,
+            """
           )
           .indented()
       )
@@ -1286,7 +1281,7 @@ class DataFlowAnalyzerTest : TestCase() {
                 intentFun()
               }
             }
-            """,
+            """
           )
           .indented()
       )
@@ -1320,7 +1315,7 @@ class DataFlowAnalyzerTest : TestCase() {
               val i = intent.extensionProperty
               intent.extensionProperty = i + 1
             }
-            """,
+            """
           )
           .indented()
       )
@@ -1335,7 +1330,7 @@ class DataFlowAnalyzerTest : TestCase() {
 
   class LoggingDataFlowAnalyzer(
     initial: Collection<UElement>,
-    initialReferences: Collection<PsiVariable> = emptyList()
+    initialReferences: Collection<PsiVariable> = emptyList(),
   ) : DataFlowAnalyzer(initial, initialReferences) {
     val events = mutableListOf<String>()
 
@@ -1412,7 +1407,7 @@ class DataFlowAnalyzerTest : TestCase() {
             fun a(intent: Intent) {}
             fun b(intent: Intent) {}
             fun c(intent: Intent) {}
-            """,
+            """
           )
           .indented()
       )
@@ -1423,7 +1418,7 @@ class DataFlowAnalyzerTest : TestCase() {
     method?.accept(dfa)
     assertEquals(
       "argument(a(intent), intent), argument(b(intent2), intent2), returns(return@hello this)",
-      dfa.events.joinToString { it }
+      dfa.events.joinToString { it },
     )
     Disposer.dispose(parsed.second)
   }
@@ -1464,7 +1459,7 @@ class DataFlowAnalyzerTest : TestCase() {
               untracked2.intentFun()
             }
 
-            """,
+            """
           )
           .indented()
       )
@@ -1475,7 +1470,7 @@ class DataFlowAnalyzerTest : TestCase() {
     method?.accept(dfa)
     assertEquals(
       "argument(with(intent, handler), intent), receiver(intentFun())",
-      dfa.events.joinToString { it }
+      dfa.events.joinToString { it },
     )
     Disposer.dispose(parsed.second)
   }
@@ -1532,7 +1527,7 @@ class DataFlowAnalyzerTest : TestCase() {
               untracked2.f()
             }
 
-            """,
+            """
           )
           .indented()
       )
@@ -1543,7 +1538,7 @@ class DataFlowAnalyzerTest : TestCase() {
     method?.accept(dfa)
     assertEquals(
       "receiver(apply(handler)), argument(apply(handler), intent), receiver(d()), receiver(e())",
-      dfa.events.joinToString { it }
+      dfa.events.joinToString { it },
     )
     Disposer.dispose(parsed.second)
   }
@@ -1588,7 +1583,7 @@ class DataFlowAnalyzerTest : TestCase() {
               }
             }
 
-            """,
+            """
           )
           .indented()
       )
@@ -1613,7 +1608,7 @@ class DataFlowAnalyzerTest : TestCase() {
       returns(return intent)
       """
         .trimIndent(),
-      dfa.events.joinToString(separator = "\n") { it }
+      dfa.events.joinToString(separator = "\n") { it },
     )
     Disposer.dispose(parsed.second)
   }
@@ -1640,7 +1635,7 @@ class DataFlowAnalyzerTest : TestCase() {
               val a = A()
               a["aaa"]
             }
-            """,
+            """
           )
           .indented()
       )
@@ -1654,7 +1649,7 @@ class DataFlowAnalyzerTest : TestCase() {
       receiver(...something...)
       """
         .trimIndent(),
-      dfa.events.joinToString(separator = "\n") { it }
+      dfa.events.joinToString(separator = "\n") { it },
     )
     Disposer.dispose(parsed.second)
   }
@@ -1683,7 +1678,7 @@ class DataFlowAnalyzerTest : TestCase() {
                 m["s"] += Intent()
               }
             }
-            """,
+            """
           )
           .indented()
       )
@@ -1697,7 +1692,7 @@ class DataFlowAnalyzerTest : TestCase() {
       receiver(...something...)
       """
         .trimIndent(),
-      dfa.events.joinToString(separator = "\n") { it }
+      dfa.events.joinToString(separator = "\n") { it },
     )
     Disposer.dispose(parsed.second)
   }

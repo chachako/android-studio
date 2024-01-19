@@ -38,7 +38,7 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
             public @interface Discouraged {
                 String message() default "";
             }
-        """
+        """,
       )
       .indented()
 
@@ -61,7 +61,7 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
 
                 public int getValue(int id, TypedValue outValue, boolean resolveRefs) { }
             }
-        """
+        """,
       )
       .indented()
 
@@ -94,7 +94,7 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         resourcesStub,
-        discouragedAnnotationStub
+        discouragedAnnotationStub,
       )
       .run()
       .expect(expected)
@@ -131,7 +131,7 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         rClass("test.pkg", "@layout/activity_main", "@id/text"),
-        discouragedAnnotationStub
+        discouragedAnnotationStub,
       )
       .allowDuplicates()
       .run()
@@ -214,7 +214,7 @@ class DiscouragedDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(

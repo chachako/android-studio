@@ -29,7 +29,7 @@ import com.android.tools.lint.model.LintModelSeverity
 open class LintOptionsConfiguration(
   configurations: ConfigurationHierarchy,
   private val lintOptions: LintModelLintOptions,
-  private val fatalOnly: Boolean = false
+  private val fatalOnly: Boolean = false,
 ) : FlagConfiguration(configurations) {
 
   private var disabledIds: Set<String>
@@ -50,7 +50,7 @@ open class LintOptionsConfiguration(
       partition(
         disable,
         disabledIds as MutableSet<String>,
-        disabledCategories as MutableSet<Category>
+        disabledCategories as MutableSet<Category>,
       )
     }
     val enable = lintOptions.enable
@@ -77,7 +77,7 @@ open class LintOptionsConfiguration(
   private fun partition(
     candidates: Collection<String>,
     ids: MutableSet<String>,
-    categories: MutableSet<Category>
+    categories: MutableSet<Category>,
   ) {
     for (id in candidates) {
       val category = Category.getCategory(id)

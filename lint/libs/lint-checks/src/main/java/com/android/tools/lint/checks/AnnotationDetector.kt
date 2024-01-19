@@ -252,7 +252,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
                 ANNOTATION_USAGE,
                 annotation,
                 context.getLocation(annotation),
-                "@CheckResult should not be specified on `void` methods"
+                "@CheckResult should not be specified on `void` methods",
               )
             }
           }
@@ -278,7 +278,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
               ANNOTATION_USAGE,
               annotation,
               context.getLocation(annotation),
-              "Invalid range: the `from` attribute must be less than " + "the `to` attribute"
+              "Invalid range: the `from` attribute must be less than " + "the `to` attribute",
             )
           }
         }
@@ -296,21 +296,21 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
               ANNOTATION_USAGE,
               annotation,
               context.getLocation(annotation),
-              "Invalid size range: the `min` attribute must be less than " + "the `max` attribute"
+              "Invalid size range: the `min` attribute must be less than " + "the `max` attribute",
             )
           } else if (multiple < 1) {
             context.report(
               ANNOTATION_USAGE,
               annotation,
               context.getLocation(annotation),
-              "The size multiple must be at least 1"
+              "The size multiple must be at least 1",
             )
           } else if (exact < 0 && exact != unset.toLong() || min < 0 && min != Long.MIN_VALUE) {
             context.report(
               ANNOTATION_USAGE,
               annotation,
               context.getLocation(annotation),
-              "The size can't be negative"
+              "The size can't be negative",
             )
           }
         }
@@ -354,14 +354,14 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
                 annotation,
                 context.getLocation(annotation),
                 "For methods, permission annotation should specify one " +
-                  "of `value`, `anyOf` or `allOf`"
+                  "of `value`, `anyOf` or `allOf`",
               )
             } else if (set > 1) {
               context.report(
                 ANNOTATION_USAGE,
                 annotation,
                 context.getLocation(annotation),
-                "Only specify one of `value`, `anyOf` or `allOf`"
+                "Only specify one of `value`, `anyOf` or `allOf`",
               )
             }
           }
@@ -385,7 +385,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
                   ANNOTATION_USAGE,
                   annotation,
                   context.getLocation(annotation),
-                  "Restrict to what? Expected at least one `RestrictTo.Scope` arguments."
+                  "Restrict to what? Expected at least one `RestrictTo.Scope` arguments.",
                 )
                 return
               }
@@ -398,7 +398,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
               ANNOTATION_USAGE,
               annotation,
               context.getLocation(annotation),
-              "`RestrictTo.Scope.SUBCLASSES` should only be specified on methods and fields"
+              "`RestrictTo.Scope.SUBCLASSES` should only be specified on methods and fields",
             )
           }
         }
@@ -421,7 +421,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
                 ANNOTATION_USAGE,
                 annotation,
                 context.getLocation(annotation),
-                "`@EmptySuper` is pointless on a final method"
+                "`@EmptySuper` is pointless on a final method",
               )
             }
           }
@@ -437,7 +437,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
               ANNOTATION_USAGE,
               annotation,
               context.getLocation(annotation),
-              "`@OpenForTesting` only applies to Kotlin APIs"
+              "`@OpenForTesting` only applies to Kotlin APIs",
             )
           }
         }
@@ -454,7 +454,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
                 ANNOTATION_USAGE,
                 annotation,
                 context.getLocation(annotation),
-                "`@ReturnThis` should not be specified on `void` or primitive methods"
+                "`@ReturnThis` should not be specified on `void` or primitive methods",
               )
             }
           }
@@ -496,7 +496,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
               ANNOTATION_USAGE,
               a,
               location,
-              "Must specify an extension `sdk` id attribute"
+              "Must specify an extension `sdk` id attribute",
             )
             return
           }
@@ -507,7 +507,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
               ANNOTATION_USAGE,
               a,
               location,
-              "Must specify an extension `version` level attribute"
+              "Must specify an extension `version` level attribute",
             )
             return
           }
@@ -549,7 +549,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
               ANNOTATION_USAGE,
               triple.first,
               location,
-              "There should not be a gap in SDK extension levels; missing ${prev.second - 1}"
+              "There should not be a gap in SDK extension levels; missing ${prev.second - 1}",
             )
             return
           } else if (
@@ -568,7 +568,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
               ANNOTATION_USAGE,
               triple.first,
               location,
-              "Repeated SDK extension level ${triple.second}"
+              "Repeated SDK extension level ${triple.second}",
             )
           } else if (
             prev.third > triple.third &&
@@ -586,7 +586,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
               ANNOTATION_USAGE,
               triple.first,
               location,
-              "Suspicious extension level; expect previous extension versions to be at least as high as later SDK extension"
+              "Suspicious extension level; expect previous extension versions to be at least as high as later SDK extension",
             )
           }
         }
@@ -597,7 +597,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
     private fun getAttributeValueLocation(
       context: JavaContext,
       annotation: UAnnotation,
-      name: String
+      name: String,
     ): Location? {
       val attribute = annotation.findDeclaredAttributeValue(name) ?: return null
       return context.getLocation(attribute)
@@ -628,7 +628,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
           ANNOTATION_USAGE,
           annotation,
           context.getLocation(annotation),
-          "Top level class can't have private or protected access level"
+          "Top level class can't have private or protected access level",
         )
       }
     }
@@ -656,7 +656,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
             context.getLocation(annotation),
             "Did you mean `@get:$name`? Without `get:` this annotates the constructor " +
               "parameter itself instead of the associated getter.",
-            fix
+            fix,
           )
         }
       }
@@ -689,7 +689,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
       type2: String? = null,
       type3: String? = null,
       type4: String? = null,
-      allowCollection: Boolean = true
+      allowCollection: Boolean = true,
     ) {
       val parent = skipParenthesizedExprUp(node.uastParent)
       val parentType =
@@ -909,7 +909,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
         evaluator.filterRelevantAnnotations(
           annotations,
           expression,
-          setOf(INT_DEF_ANNOTATION.oldName(), INT_DEF_ANNOTATION.newName())
+          setOf(INT_DEF_ANNOTATION.oldName(), INT_DEF_ANNOTATION.newName()),
         )
       return findTypeDef(uAnnotations)
     }
@@ -1070,7 +1070,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
             Locale.US,
             "Consider declaring this constant using 1 %s %d instead",
             operator,
-            shift
+            shift,
           )
         val replace =
           String.format(Locale.ROOT, "1%s %s %d", if (o is Long) "L" else "", operator, shift)
@@ -1105,7 +1105,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
           context.getLocation(node),
           "The `@SuppressLint` annotation cannot be used on a local " +
             "variable with the lint check '$id': move out to the " +
-            "surrounding method"
+            "surrounding method",
         )
         return false
       }
@@ -1114,7 +1114,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
 
     private inner class SwitchChecker(
       private val switchExpression: USwitchExpression,
-      allowedValues: List<UExpression>
+      allowedValues: List<UExpression>,
     ) : AbstractUastVisitor() {
       private val allowedValues: List<UExpression>?
       private val fields: MutableList<Any>
@@ -1277,7 +1277,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
       "", // prefix
       "", // postfix
       -1, // limited
-      "" // truncated
+      "", // truncated
     ) { s: String ->
       val index = s.lastIndexOf('.')
       if (index != -1) {
@@ -1409,7 +1409,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 3,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Incorrectly using a support annotation */
@@ -1427,7 +1427,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 2,
         severity = Severity.ERROR,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** IntDef annotations should be unique */
@@ -1452,7 +1452,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
         priority = 3,
         severity = Severity.ERROR,
         implementation = IMPLEMENTATION,
-        androidSpecific = true
+        androidSpecific = true,
       )
 
     /** Flags should typically be specified as bit shifts */
@@ -1470,7 +1470,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         priority = 3,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** All IntDef constants should be included in switch */
@@ -1488,7 +1488,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
         priority = 3,
         severity = Severity.WARNING,
         implementation = IMPLEMENTATION,
-        androidSpecific = true
+        androidSpecific = true,
       )
   }
 }

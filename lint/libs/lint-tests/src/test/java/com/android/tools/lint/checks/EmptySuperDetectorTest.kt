@@ -57,7 +57,7 @@ class EmptySuperDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        emptySuperStub
+        emptySuperStub,
       )
       .run()
       .expect(

@@ -43,7 +43,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
 
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -100,7 +100,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
 
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -157,7 +157,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
 
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -215,7 +215,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
 
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -243,7 +243,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
 
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -271,7 +271,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
 
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -304,7 +304,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
                 }
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -337,7 +337,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
                 }
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -373,7 +373,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
                 }
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -407,7 +407,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
                 }
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -439,7 +439,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
                 }
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -465,7 +465,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
                 }
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()
@@ -492,7 +492,7 @@ class PendingIntentMutableFlagDetectorTest : AbstractCheckTest() {
                 }
                 """
             )
-            .indented()
+            .indented(),
         )
       )
       .run()

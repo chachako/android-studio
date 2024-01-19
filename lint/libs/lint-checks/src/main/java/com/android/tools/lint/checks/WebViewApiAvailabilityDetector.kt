@@ -54,7 +54,7 @@ class WebViewApiAvailabilityDetector : Detector(), SourceCodeScanner {
         "disableWebView",
         "setDataDirectorySuffix",
         "getWebViewLooper",
-        "isVisibleToUserForAutofill"
+        "isVisibleToUserForAutofill",
       )
 
     /** Main issue investigated by this detector. */
@@ -73,7 +73,7 @@ class WebViewApiAvailabilityDetector : Detector(), SourceCodeScanner {
         moreInfo = "https://developer.android.com/reference/androidx/webkit/package-summary",
         implementation =
           Implementation(WebViewApiAvailabilityDetector::class.java, Scope.JAVA_FILE_SCOPE),
-        androidSpecific = true
+        androidSpecific = true,
       )
   }
 
@@ -105,7 +105,7 @@ class WebViewApiAvailabilityDetector : Detector(), SourceCodeScanner {
         apiLookup.getMethodVersions(
           WEBVIEW_CLASS_NAME,
           method.name,
-          evaluator.getMethodDescription(method, includeName = false, includeReturn = false)!!
+          evaluator.getMethodDescription(method, includeName = false, includeReturn = false)!!,
         )
 
       // Note: we expect to bump the maximum sdk for future releases (but doing so requires
@@ -129,7 +129,7 @@ class WebViewApiAvailabilityDetector : Detector(), SourceCodeScanner {
           message =
             "Consider using `WebViewCompat." +
               method.name +
-              "` instead which will support more devices."
+              "` instead which will support more devices.",
         )
       context.report(incident)
     }

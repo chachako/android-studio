@@ -122,7 +122,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "    compile 'com.android.support:multidex:1.0.0'\n" +
         "\n" +
         "    androidTestCompile 'com.android.support.test:runner:0.3'\n" +
-        "}\n"
+        "}\n",
     )
 
   override fun tearDown() {
@@ -256,11 +256,11 @@ class GradleDetectorTest : AbstractCheckTest() {
       .sdkHome(mockSupportLibraryInstallation)
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22com.google.guava%22+AND+a:%22guava%22&core=gav&wt=json",
-        ""
+        "",
       )
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22com.autonomousapps.dependency-analysis%22+AND+a:%22com.autonomousapps.dependency-analysis.gradle.plugin%22&core=gav&wt=json",
-        ""
+        "",
       )
       .networkData(
         "https://plugins.gradle.org/m2/com/autonomousapps/dependency-analysis/com.autonomousapps.dependency-analysis.gradle.plugin/maven-metadata.xml",
@@ -291,7 +291,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 </versioning>
               </metadata>
               """
-          .trimIndent()
+          .trimIndent(),
       )
       .run()
       .expect(
@@ -390,7 +390,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "{\"id\":\"joda-time:joda-time:2.9.3\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.3\",\"p\":\"jar\",\"timestamp\":1459107331000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"joda-time:joda-time:2.9.2\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.2\",\"p\":\"jar\",\"timestamp\":1453988648000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"joda-time:joda-time:2.9.1\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.1\",\"p\":\"jar\",\"timestamp\":1447329806000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\".jar\",\".pom\"]}," +
-          "{\"id\":\"joda-time:joda-time:2.9\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9\",\"p\":\"jar\",\"timestamp\":1445680109000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-sources.jar\",\"-no-tzdb.jar\",\"-javadoc.jar\",\".jar\",\".pom\"]}]}}"
+          "{\"id\":\"joda-time:joda-time:2.9\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9\",\"p\":\"jar\",\"timestamp\":1445680109000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-sources.jar\",\"-no-tzdb.jar\",\"-javadoc.jar\",\".jar\",\".pom\"]}]}}",
       )
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22com.squareup.dagger%22+AND+a:%22dagger%22&core=gav&wt=json",
@@ -408,7 +408,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "{\"id\":\"com.squareup.dagger:dagger:1.2.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.2.0\",\"p\":\"jar\",\"timestamp\":1386979272000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\"-tests.jar\",\".pom\"]}," +
           "{\"id\":\"com.squareup.dagger:dagger:1.1.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.1.0\",\"p\":\"jar\",\"timestamp\":1375745812000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\"-tests.jar\",\".pom\"]}," +
           "{\"id\":\"com.squareup.dagger:dagger:1.0.1\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.0.1\",\"p\":\"jar\",\"timestamp\":1370304793000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"]}," +
-          "{\"id\":\"com.squareup.dagger:dagger:1.0.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.0.0\",\"p\":\"jar\",\"timestamp\":1367941344000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"]}]}}"
+          "{\"id\":\"com.squareup.dagger:dagger:1.0.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.0.0\",\"p\":\"jar\",\"timestamp\":1367941344000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"]}]}}",
       )
       .issues(REMOTE_VERSION)
       .run()
@@ -463,7 +463,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -509,7 +509,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -542,7 +542,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -593,7 +593,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -660,7 +660,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -753,7 +753,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -809,7 +809,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -878,7 +878,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -953,7 +953,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -1030,7 +1030,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -1093,7 +1093,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -1160,7 +1160,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .sdkHome(mockSupportLibraryInstallation)
       .issues(SWITCH_TO_TOML)
@@ -1217,7 +1217,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -1273,7 +1273,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -1342,7 +1342,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .sdkHome(mockSupportLibraryInstallation)
@@ -1401,7 +1401,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .sdkHome(mockSupportLibraryInstallation)
@@ -1451,7 +1451,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .sdkHome(mockSupportLibraryInstallation)
@@ -1501,7 +1501,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .sdkHome(mockSupportLibraryInstallation)
@@ -1525,7 +1525,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .sdkHome(mockSupportLibraryInstallation)
@@ -1578,9 +1578,9 @@ class GradleDetectorTest : AbstractCheckTest() {
                         classpath("com.android.application:com.android.application.gradle.plugin:8.0.1")
                     }
                 }
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .issues(SWITCH_TO_TOML)
       .run()
@@ -1770,7 +1770,7 @@ class GradleDetectorTest : AbstractCheckTest() {
       configuration ->
       listOf(
           "com.android.support:appcompat-v7" to ("13.0.0" to "25.3.1"),
-          "com.google.guava:guava" to ("11.0.2" to "21.0")
+          "com.google.guava:guava" to ("11.0.2" to "21.0"),
         )
         .forEach { libraryInfo ->
           val library = libraryInfo.first
@@ -1897,7 +1897,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                   <androidx.work/>
                 </metadata>
                 """
-          .trimIndent()
+          .trimIndent(),
       )
       .networkData(
         "https://maven.google.com/androidx/work/group-index.xml",
@@ -1913,7 +1913,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                   <work-multiprocess versions="2.7.0-alpha06,2.6.0"/>
                 </androidx.work>
                 """
-          .trimIndent()
+          .trimIndent(),
       )
       .run()
       .expect(
@@ -1986,7 +1986,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                   <androidx.test/>
                 </metadata>
                 """
-          .trimIndent()
+          .trimIndent(),
       )
       .networkData(
         "https://maven.google.com/androidx/work/group-index.xml",
@@ -2000,7 +2000,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                   <work-rxjava3 versions="3.0.0-SNAPSHOT,3.1.0-alpha01"/>
                 </androidx.work>
                 """
-          .trimIndent()
+          .trimIndent(),
       )
       .networkData(
         "https://maven.google.com/androidx/test/group-index.xml",
@@ -2014,7 +2014,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                   <work-rxjava3 versions="3.0.0-SNAPSHOT,3.1.0-alpha01"/>
                 </androidx.work>
                 """
-          .trimIndent()
+          .trimIndent(),
       )
       .run()
       .expect(
@@ -2065,11 +2065,11 @@ class GradleDetectorTest : AbstractCheckTest() {
       .issues(REMOTE_VERSION)
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22com.google.guava%22+AND+a:%22guava%22&core=gav&rows=1&wt=json",
-        """{"responseHeader":{"status":0,"QTime":0,"params":{"q":"g:\"com.google.guava\" AND a:\"guava\"","core":"gav","indent":"off","fl":"id,g,a,v,p,ec,timestamp,tags","start":"","sort":"score desc,timestamp desc,g asc,a asc,v desc","rows":"1","wt":"json","version":"2.2"}},"response":{"numFound":100,"start":0,"docs":[{"id":"com.google.guava:guava:30.1-jre","g":"com.google.guava","a":"guava","v":"30.1-jre","p":"bundle","timestamp":1607961950000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]}]}}"""
+        """{"responseHeader":{"status":0,"QTime":0,"params":{"q":"g:\"com.google.guava\" AND a:\"guava\"","core":"gav","indent":"off","fl":"id,g,a,v,p,ec,timestamp,tags","start":"","sort":"score desc,timestamp desc,g asc,a asc,v desc","rows":"1","wt":"json","version":"2.2"}},"response":{"numFound":100,"start":0,"docs":[{"id":"com.google.guava:guava:30.1-jre","g":"com.google.guava","a":"guava","v":"30.1-jre","p":"bundle","timestamp":1607961950000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]}]}}""",
       )
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22com.google.guava%22+AND+a:%22guava%22&core=gav&wt=json",
-        """{"responseHeader":{"status":0,"QTime":5,"params":{"q":"g:\"com.google.guava\" AND a:\"guava\"","core":"gav","indent":"off","fl":"id,g,a,v,p,ec,timestamp,tags","start":"","sort":"score desc,timestamp desc,g asc,a asc,v desc","rows":"","wt":"json","version":"2.2"}},"response":{"numFound":100,"start":0,"docs":[{"id":"com.google.guava:guava:30.1-jre","g":"com.google.guava","a":"guava","v":"30.1-jre","p":"bundle","timestamp":1607961950000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:30.1-android","g":"com.google.guava","a":"guava","v":"30.1-android","p":"bundle","timestamp":1607961275000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:30.0-jre","g":"com.google.guava","a":"guava","v":"30.0-jre","p":"bundle","timestamp":1602880862000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:30.0-android","g":"com.google.guava","a":"guava","v":"30.0-android","p":"bundle","timestamp":1602880118000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:29.0-jre","g":"com.google.guava","a":"guava","v":"29.0-jre","p":"bundle","timestamp":1586813033000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:29.0-android","g":"com.google.guava","a":"guava","v":"29.0-android","p":"bundle","timestamp":1586812496000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:28.2-jre","g":"com.google.guava","a":"guava","v":"28.2-jre","p":"bundle","timestamp":1577416125000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:28.2-android","g":"com.google.guava","a":"guava","v":"28.2-android","p":"bundle","timestamp":1577413219000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:28.1-jre","g":"com.google.guava","a":"guava","v":"28.1-jre","p":"bundle","timestamp":1567025587000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:28.1-android","g":"com.google.guava","a":"guava","v":"28.1-android","p":"bundle","timestamp":1567025039000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]}]}}"""
+        """{"responseHeader":{"status":0,"QTime":5,"params":{"q":"g:\"com.google.guava\" AND a:\"guava\"","core":"gav","indent":"off","fl":"id,g,a,v,p,ec,timestamp,tags","start":"","sort":"score desc,timestamp desc,g asc,a asc,v desc","rows":"","wt":"json","version":"2.2"}},"response":{"numFound":100,"start":0,"docs":[{"id":"com.google.guava:guava:30.1-jre","g":"com.google.guava","a":"guava","v":"30.1-jre","p":"bundle","timestamp":1607961950000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:30.1-android","g":"com.google.guava","a":"guava","v":"30.1-android","p":"bundle","timestamp":1607961275000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:30.0-jre","g":"com.google.guava","a":"guava","v":"30.0-jre","p":"bundle","timestamp":1602880862000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:30.0-android","g":"com.google.guava","a":"guava","v":"30.0-android","p":"bundle","timestamp":1602880118000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:29.0-jre","g":"com.google.guava","a":"guava","v":"29.0-jre","p":"bundle","timestamp":1586813033000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:29.0-android","g":"com.google.guava","a":"guava","v":"29.0-android","p":"bundle","timestamp":1586812496000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:28.2-jre","g":"com.google.guava","a":"guava","v":"28.2-jre","p":"bundle","timestamp":1577416125000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:28.2-android","g":"com.google.guava","a":"guava","v":"28.2-android","p":"bundle","timestamp":1577413219000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:28.1-jre","g":"com.google.guava","a":"guava","v":"28.1-jre","p":"bundle","timestamp":1567025587000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]},{"id":"com.google.guava:guava:28.1-android","g":"com.google.guava","a":"guava","v":"28.1-android","p":"bundle","timestamp":1567025039000,"ec":["-javadoc.jar","-sources.jar",".jar",".pom"],"tags":["libraries","classes","google","expanded","much","include","that","more","utility","guava","core","suite","collections"]}]}}""",
       )
       .run()
       .expect(
@@ -2146,11 +2146,11 @@ class GradleDetectorTest : AbstractCheckTest() {
       .issues(REMOTE_VERSION)
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22org.jetbrains.kotlinx%22+AND+a:%22kotlinx-coroutines-core%22&core=gav&wt=json",
-        """{"responseHeader":{"status":0,"QTime":1,"params":{"q":"g:\"org.jetbrains.kotlinx\" AND a:\"kotlinx-coroutines-core\"","core":"gav","indent":"off","fl":"id,g,a,v,p,ec,timestamp,tags","start":"","sort":"score desc,timestamp desc,g asc,a asc,v desc","rows":"","wt":"json","version":"2.2"}},"response":{"numFound":77,"start":0,"docs":[{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2-native-mt","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.2-native-mt","p":"jar","timestamp":1606484996000,"ec":["-javadoc.jar","-sources.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.2","p":"jar","timestamp":1606411162000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1-native-mt","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.1-native-mt","p":"jar","timestamp":1605797411000,"ec":["-javadoc.jar","-sources.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.1","p":"jar","timestamp":1604486053000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.0","p":"jar","timestamp":1603735442000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0-M1","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.0-M1","p":"jar","timestamp":1602593229000,"ec":["-javadoc.jar","-sources.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9-native-mt-2","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.3.9-native-mt-2","p":"jar","timestamp":1600769552000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9-native-mt","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.3.9-native-mt","p":"jar","timestamp":1598043333000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8-native-mt-1.4.0-rc","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.3.8-native-mt-1.4.0-rc","p":"jar","timestamp":1597826260000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.3.9","p":"jar","timestamp":1597402470000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]}]}}"""
+        """{"responseHeader":{"status":0,"QTime":1,"params":{"q":"g:\"org.jetbrains.kotlinx\" AND a:\"kotlinx-coroutines-core\"","core":"gav","indent":"off","fl":"id,g,a,v,p,ec,timestamp,tags","start":"","sort":"score desc,timestamp desc,g asc,a asc,v desc","rows":"","wt":"json","version":"2.2"}},"response":{"numFound":77,"start":0,"docs":[{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2-native-mt","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.2-native-mt","p":"jar","timestamp":1606484996000,"ec":["-javadoc.jar","-sources.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.2","p":"jar","timestamp":1606411162000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1-native-mt","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.1-native-mt","p":"jar","timestamp":1605797411000,"ec":["-javadoc.jar","-sources.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.1","p":"jar","timestamp":1604486053000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.0","p":"jar","timestamp":1603735442000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0-M1","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.4.0-M1","p":"jar","timestamp":1602593229000,"ec":["-javadoc.jar","-sources.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9-native-mt-2","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.3.9-native-mt-2","p":"jar","timestamp":1600769552000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9-native-mt","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.3.9-native-mt","p":"jar","timestamp":1598043333000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.8-native-mt-1.4.0-rc","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.3.8-native-mt-1.4.0-rc","p":"jar","timestamp":1597826260000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]},{"id":"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9","g":"org.jetbrains.kotlinx","a":"kotlinx-coroutines-core","v":"1.3.9","p":"jar","timestamp":1597402470000,"ec":["-sources.jar","-javadoc.jar",".jar",".module",".pom"],"tags":["libraries","support","kotlin","coroutines"]}]}}""",
       )
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22org.jetbrains.kotlinx%22+AND+a:%22kotlinx-coroutines-core%22&core=gav&rows=1&wt=json",
-        """{"responseHeader":{"status":0,"QTime":0,"params":{"q":"g:\"22org.jetbrains.kotlinx\" AND a:\"kotlinx-coroutines-core\"","core":"gav","indent":"off","fl":"id,g,a,v,p,ec,timestamp,tags","start":"","sort":"score desc,timestamp desc,g asc,a asc,v desc","rows":"","wt":"json","version":"2.2"}},"response":{"numFound":0,"start":0,"docs":[]}}"""
+        """{"responseHeader":{"status":0,"QTime":0,"params":{"q":"g:\"22org.jetbrains.kotlinx\" AND a:\"kotlinx-coroutines-core\"","core":"gav","indent":"off","fl":"id,g,a,v,p,ec,timestamp,tags","start":"","sort":"score desc,timestamp desc,g asc,a asc,v desc","rows":"","wt":"json","version":"2.2"}},"response":{"numFound":0,"start":0,"docs":[]}}""",
       )
       .run()
       .expect(
@@ -3346,7 +3346,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "{\"id\":\"joda-time:joda-time:2.9.3\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.3\",\"p\":\"jar\",\"timestamp\":1459107331000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"joda-time:joda-time:2.9.2\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.2\",\"p\":\"jar\",\"timestamp\":1453988648000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"joda-time:joda-time:2.9.1\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9.1\",\"p\":\"jar\",\"timestamp\":1447329806000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-no-tzdb.jar\",\".jar\",\".pom\"]}," +
-          "{\"id\":\"joda-time:joda-time:2.9\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9\",\"p\":\"jar\",\"timestamp\":1445680109000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-sources.jar\",\"-no-tzdb.jar\",\"-javadoc.jar\",\".jar\",\".pom\"]}]}}"
+          "{\"id\":\"joda-time:joda-time:2.9\",\"g\":\"joda-time\",\"a\":\"joda-time\",\"v\":\"2.9\",\"p\":\"jar\",\"timestamp\":1445680109000,\"tags\":[\"replace\",\"time\",\"library\",\"date\",\"handling\"],\"ec\":[\"-sources.jar\",\"-no-tzdb.jar\",\"-javadoc.jar\",\".jar\",\".pom\"]}]}}",
       )
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22com.squareup.dagger%22+AND+a:%22dagger%22&core=gav&wt=json",
@@ -3364,7 +3364,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "{\"id\":\"com.squareup.dagger:dagger:1.2.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.2.0\",\"p\":\"jar\",\"timestamp\":1386979272000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\"-tests.jar\",\".pom\"]}," +
           "{\"id\":\"com.squareup.dagger:dagger:1.1.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.1.0\",\"p\":\"jar\",\"timestamp\":1375745812000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\"-tests.jar\",\".pom\"]}," +
           "{\"id\":\"com.squareup.dagger:dagger:1.0.1\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.0.1\",\"p\":\"jar\",\"timestamp\":1370304793000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"]}," +
-          "{\"id\":\"com.squareup.dagger:dagger:1.0.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.0.0\",\"p\":\"jar\",\"timestamp\":1367941344000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"]}]}}"
+          "{\"id\":\"com.squareup.dagger:dagger:1.0.0\",\"g\":\"com.squareup.dagger\",\"a\":\"dagger\",\"v\":\"1.0.0\",\"p\":\"jar\",\"timestamp\":1367941344000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"]}]}}",
       )
       .issues(REMOTE_VERSION)
       .run()
@@ -3404,11 +3404,11 @@ class GradleDetectorTest : AbstractCheckTest() {
       .issues(REMOTE_VERSION)
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22com.google.guava%22+AND+a:%22guava%22&core=gav&rows=1&wt=json",
-        "{\"responseHeader\":{\"status\":0,\"QTime\":0,\"params\":{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"com.google.guava\\\" AND a:\\\"guava\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"rows\":\"1\",\"version\":\"2.2\"}},\"response\":{\"numFound\":38,\"start\":0,\"docs\":[{\"id\":\"com.google.guava:guava:18.0-rc1\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"18.0-rc1\",\"p\":\"bundle\",\"timestamp\":1407266204000,\"tags\":[\"spec\",\"libraries\",\"classes\",\"google\",\"code\",\"expanded\",\"much\",\"include\",\"annotation\",\"dependency\",\"that\",\"more\",\"utility\",\"guava\",\"javax\",\"only\",\"core\",\"suite\",\"collections\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\"-site.jar\",\".pom\"]}]}}"
+        "{\"responseHeader\":{\"status\":0,\"QTime\":0,\"params\":{\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"indent\":\"off\",\"q\":\"g:\\\"com.google.guava\\\" AND a:\\\"guava\\\"\",\"core\":\"gav\",\"wt\":\"json\",\"rows\":\"1\",\"version\":\"2.2\"}},\"response\":{\"numFound\":38,\"start\":0,\"docs\":[{\"id\":\"com.google.guava:guava:18.0-rc1\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"18.0-rc1\",\"p\":\"bundle\",\"timestamp\":1407266204000,\"tags\":[\"spec\",\"libraries\",\"classes\",\"google\",\"code\",\"expanded\",\"much\",\"include\",\"annotation\",\"dependency\",\"that\",\"more\",\"utility\",\"guava\",\"javax\",\"only\",\"core\",\"suite\",\"collections\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\"-site.jar\",\".pom\"]}]}}",
       )
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22com.google.guava%22+AND+a:%22guava%22&core=gav&wt=json",
-        "{\"responseHeader\":{\"status\":0,\"QTime\":0,\"params\":{\"q\":\"g:\\\"com.google.guava\\\" AND a:\\\"guava\\\"\",\"core\":\"gav\",\"indent\":\"off\",\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"wt\":\"json\",\"version\":\"2.2\"}},\"response\":{\"numFound\":68,\"start\":0,\"docs\":[{\"id\":\"com.google.guava:guava:23.6-jre\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.6-jre\",\"p\":\"bundle\",\"timestamp\":1513818220000,\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.6-android\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.6-android\",\"p\":\"bundle\",\"timestamp\":1513817611000,\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.5-jre\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.5-jre\",\"p\":\"bundle\",\"timestamp\":1511382806000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.5-android\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.5-android\",\"p\":\"bundle\",\"timestamp\":1511382148000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.4-jre\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.4-jre\",\"p\":\"bundle\",\"timestamp\":1510248931000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.4-android\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.4-android\",\"p\":\"bundle\",\"timestamp\":1510248248000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.3-jre\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.3-jre\",\"p\":\"bundle\",\"timestamp\":1509048371000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.3-android\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.3-android\",\"p\":\"bundle\",\"timestamp\":1509047759000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.2-jre\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.2-jre\",\"p\":\"bundle\",\"timestamp\":1507762486000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.2-android\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.2-android\",\"p\":\"bundle\",\"timestamp\":1507761822000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]}]}}"
+        "{\"responseHeader\":{\"status\":0,\"QTime\":0,\"params\":{\"q\":\"g:\\\"com.google.guava\\\" AND a:\\\"guava\\\"\",\"core\":\"gav\",\"indent\":\"off\",\"fl\":\"id,g,a,v,p,ec,timestamp,tags\",\"sort\":\"score desc,timestamp desc,g asc,a asc,v desc\",\"wt\":\"json\",\"version\":\"2.2\"}},\"response\":{\"numFound\":68,\"start\":0,\"docs\":[{\"id\":\"com.google.guava:guava:23.6-jre\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.6-jre\",\"p\":\"bundle\",\"timestamp\":1513818220000,\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.6-android\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.6-android\",\"p\":\"bundle\",\"timestamp\":1513817611000,\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.5-jre\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.5-jre\",\"p\":\"bundle\",\"timestamp\":1511382806000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.5-android\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.5-android\",\"p\":\"bundle\",\"timestamp\":1511382148000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.4-jre\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.4-jre\",\"p\":\"bundle\",\"timestamp\":1510248931000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.4-android\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.4-android\",\"p\":\"bundle\",\"timestamp\":1510248248000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.3-jre\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.3-jre\",\"p\":\"bundle\",\"timestamp\":1509048371000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.3-android\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.3-android\",\"p\":\"bundle\",\"timestamp\":1509047759000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.2-jre\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.2-jre\",\"p\":\"bundle\",\"timestamp\":1507762486000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]},{\"id\":\"com.google.guava:guava:23.2-android\",\"g\":\"com.google.guava\",\"a\":\"guava\",\"v\":\"23.2-android\",\"p\":\"bundle\",\"timestamp\":1507761822000,\"ec\":[\"-sources.jar\",\"-javadoc.jar\",\".jar\",\".pom\"],\"tags\":[\"libraries\",\"classes\",\"google\",\"expanded\",\"much\",\"include\",\"that\",\"more\",\"utility\",\"guava\",\"core\",\"suite\",\"collections\"]}]}}",
       )
       .run()
       .expect(expected)
@@ -3613,7 +3613,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             "\n" +
             "dependencies {\n" +
             "    compile \"com.google.android.gms:play-services-wearable:\${GPS_VERSION}\"\n" +
-            "}\n"
+            "}\n",
         ),
         gradle(
           "internal-only.gradle",
@@ -3622,8 +3622,8 @@ class GradleDetectorTest : AbstractCheckTest() {
             // the infrastructure
             "dependencies {\n" +
             "    compile 'com.google.android.gms:play-services-wearable:5.0.77'\n" +
-            "}"
-        )
+            "}",
+        ),
       )
       .issues(DEPENDENCY)
       .run()
@@ -4080,35 +4080,35 @@ class GradleDetectorTest : AbstractCheckTest() {
   fun testGetNamedDependency() {
     TestCase.assertEquals(
       "com.android.support:support-v4:21.0.+",
-      getNamedDependency("group: 'com.android.support', name: 'support-v4', version: '21.0.+'")
+      getNamedDependency("group: 'com.android.support', name: 'support-v4', version: '21.0.+'"),
     )
     TestCase.assertEquals(
       "com.android.support:support-v4:21.0.+",
-      getNamedDependency("name:'support-v4', group: \"com.android.support\", version: '21.0.+'")
+      getNamedDependency("name:'support-v4', group: \"com.android.support\", version: '21.0.+'"),
     )
     TestCase.assertEquals(
       "junit:junit:4.+",
-      getNamedDependency("group: 'junit', name: 'junit', version: '4.+'")
+      getNamedDependency("group: 'junit', name: 'junit', version: '4.+'"),
     )
     TestCase.assertEquals(
       "com.android.support:support-v4:19.0.+",
-      getNamedDependency("group: 'com.android.support', name: 'support-v4', version: '19.0.+'")
+      getNamedDependency("group: 'com.android.support', name: 'support-v4', version: '19.0.+'"),
     )
     TestCase.assertEquals(
       "com.google.guava:guava:11.0.1",
       getNamedDependency(
         "group: 'com.google.guava', name: 'guava', version: '11.0.1', transitive: false"
-      )
+      ),
     )
     TestCase.assertEquals(
       "com.google.api-client:google-api-client:1.6.0-beta",
       getNamedDependency(
         "group: 'com.google.api-client', name: 'google-api-client', version: '1.6.0-beta', transitive: false"
-      )
+      ),
     )
     TestCase.assertEquals(
       "org.robolectric:robolectric:2.3-SNAPSHOT",
-      getNamedDependency("group: 'org.robolectric', name: 'robolectric', version: '2.3-SNAPSHOT'")
+      getNamedDependency("group: 'org.robolectric', name: 'robolectric', version: '2.3-SNAPSHOT'"),
     )
   }
 
@@ -4545,7 +4545,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                         targetSdkVersion $targetSdkVersion
                     }
                 }
-                """
+                """,
               )
               .indented()
           )
@@ -4785,7 +4785,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                     }
                     """
             )
-            .indented()
+            .indented(),
         )
         .issues(EXPIRED_TARGET_SDK_VERSION, EXPIRING_TARGET_SDK_VERSION)
         .sdkHome(mockSupportLibraryInstallation)
@@ -4829,7 +4829,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                     }
                     """
             )
-            .indented()
+            .indented(),
         )
         .issues(EXPIRED_TARGET_SDK_VERSION, EXPIRING_TARGET_SDK_VERSION)
         .sdkHome(mockSupportLibraryInstallation)
@@ -4934,7 +4934,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         DEPRECATED_LIBRARY,
         DEPENDENCY,
         PLAY_SDK_INDEX_NON_COMPLIANT,
-        PLAY_SDK_INDEX_GENERIC_ISSUES
+        PLAY_SDK_INDEX_GENERIC_ISSUES,
       )
       .sdkHome(mockSupportLibraryInstallation)
       .run()
@@ -5055,7 +5055,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         DEPRECATED_LIBRARY,
         DEPENDENCY,
         PLAY_SDK_INDEX_NON_COMPLIANT,
-        PLAY_SDK_INDEX_GENERIC_ISSUES
+        PLAY_SDK_INDEX_GENERIC_ISSUES,
       )
       .sdkHome(mockSupportLibraryInstallation)
       .run()
@@ -5164,7 +5164,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "{\"id\":\"com.example.ads.third.party:example:8.0.0\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"8.0.0\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"com.example.ads.third.party:example:7.2.2\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.2.2\",\"p\":\"jar\",\"timestamp\":1462851968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"com.example.ads.third.party:example:7.2.1\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.2.1\",\"p\":\"jar\",\"timestamp\":1462850968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
-          "{\"id\":\"com.example.ads.third.party:example:7.2.0\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.2.0\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}"
+          "{\"id\":\"com.example.ads.third.party:example:7.2.0\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.2.0\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}",
       )
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22log4j%22+AND+a:%22log4j%22&core=gav&wt=json",
@@ -5177,7 +5177,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "{\"id\":\"log4j:log4j:1.2.12\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.12\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"log4j:log4j:1.2.11\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.11\",\"p\":\"jar\",\"timestamp\":1462851968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"log4j:log4j:1.2.10\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.10\",\"p\":\"jar\",\"timestamp\":1462850968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
-          "{\"id\":\"log4j:log4j:1.2.9\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.9\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}"
+          "{\"id\":\"log4j:log4j:1.2.9\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.9\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}",
       )
       .issues(
         REMOTE_VERSION,
@@ -5185,7 +5185,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         DEPRECATED_LIBRARY,
         DEPENDENCY,
         PLAY_SDK_INDEX_NON_COMPLIANT,
-        PLAY_SDK_INDEX_GENERIC_ISSUES
+        PLAY_SDK_INDEX_GENERIC_ISSUES,
       )
       .sdkHome(mockSupportLibraryInstallation)
       .run()
@@ -5242,7 +5242,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "{\"id\":\"log4j:log4j:1.2.15\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.15\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"log4j:log4j:1.2.11\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.11\",\"p\":\"jar\",\"timestamp\":1462851968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"log4j:log4j:1.2.10\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.10\",\"p\":\"jar\",\"timestamp\":1462850968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
-          "{\"id\":\"log4j:log4j:1.2.9\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.9\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}"
+          "{\"id\":\"log4j:log4j:1.2.9\",\"g\":\"log4j\",\"a\":\"log4j\",\"v\":\"1.2.9\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}",
       )
       .networkData(
         "https://search.maven.org/solrsearch/select?q=g:%22com.example.ads.third.party%22+AND+a:%22example%22&core=gav&wt=json",
@@ -5255,7 +5255,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "{\"id\":\"com.example.ads.third.party:example:7.1.4\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.4\",\"p\":\"jar\",\"timestamp\":1462852968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"com.example.ads.third.party:example:7.1.2\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.2\",\"p\":\"jar\",\"timestamp\":1462851968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
           "{\"id\":\"com.example.ads.third.party:example:7.1.1\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.1\",\"p\":\"jar\",\"timestamp\":1462850968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}," +
-          "{\"id\":\"com.example.ads.third.party:example:7.1.0\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.0\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}"
+          "{\"id\":\"com.example.ads.third.party:example:7.1.0\",\"g\":\"com.example.ads.third.party\",\"a\":\"example\",\"v\":\"7.1.0\",\"p\":\"jar\",\"timestamp\":1462849968000,\"tags\":[\"dependency\",\"android\",\"injector\",\"java\",\"fast\"],\"ec\":[\"-javadoc.jar\",\"-sources.jar\",\"-tests.jar\",\".jar\",\".pom\"]}]}}",
       )
       .issues(
         REMOTE_VERSION,
@@ -5263,7 +5263,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         DEPRECATED_LIBRARY,
         DEPENDENCY,
         PLAY_SDK_INDEX_NON_COMPLIANT,
-        PLAY_SDK_INDEX_GENERIC_ISSUES
+        PLAY_SDK_INDEX_GENERIC_ISSUES,
       )
       .sdkHome(mockSupportLibraryInstallation)
       .run()
@@ -5321,7 +5321,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         DEPRECATED_LIBRARY,
         DEPENDENCY,
         PLAY_SDK_INDEX_NON_COMPLIANT,
-        PLAY_SDK_INDEX_GENERIC_ISSUES
+        PLAY_SDK_INDEX_GENERIC_ISSUES,
       )
       .sdkHome(mockSupportLibraryInstallation)
       .run()
@@ -6081,7 +6081,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(KAPT_USAGE_INSTEAD_OF_KSP)
       .run()
@@ -6182,7 +6182,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(KAPT_USAGE_INSTEAD_OF_KSP)
       .run()
@@ -6236,7 +6236,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                     }
                 """
           )
-          .indented()
+          .indented(),
       )
       .issues(KAPT_USAGE_INSTEAD_OF_KSP)
       .run()
@@ -6304,7 +6304,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(DEPENDENCY)
       .run()
@@ -6396,7 +6396,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(BOM_WITHOUT_PLATFORM)
       .run()
@@ -6466,7 +6466,7 @@ class GradleDetectorTest : AbstractCheckTest() {
             }
             """
           )
-          .indented()
+          .indented(),
       )
       .issues(BOM_WITHOUT_PLATFORM)
       .run()
@@ -6481,7 +6481,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "java { sourceCompatibility JavaVersion.VERSION_1_8 }",
         "java { sourceCompatibility = JavaVersion.VERSION_1_8 }",
         // special-case syntax (assignment only)
-        "sourceCompatibility = JavaVersion.VERSION_1_8"
+        "sourceCompatibility = JavaVersion.VERSION_1_8",
       )
     val targetCompatibility =
       listOf(
@@ -6489,7 +6489,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "java.targetCompatibility = JavaVersion.VERSION_1_8",
         "java { targetCompatibility JavaVersion.VERSION_1_8 }",
         "java { targetCompatibility = JavaVersion.VERSION_1_8 }",
-        "targetCompatibility = JavaVersion.VERSION_1_8"
+        "targetCompatibility = JavaVersion.VERSION_1_8",
       )
     sourceCompatibility.forEach { sc ->
       targetCompatibility.forEach { tc ->
@@ -6519,7 +6519,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "java.targetCompatibility = JavaVersion.VERSION_1_8",
         "java { targetCompatibility JavaVersion.VERSION_1_8 }",
         "java { targetCompatibility = JavaVersion.VERSION_1_8 }",
-        "targetCompatibility = JavaVersion.VERSION_1_8"
+        "targetCompatibility = JavaVersion.VERSION_1_8",
       )
     targetCompatibility.forEach { tc ->
       lint()
@@ -6561,7 +6561,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "java.sourceCompatibility = JavaVersion.VERSION_1_8",
         "java { sourceCompatibility JavaVersion.VERSION_1_8 }",
         "java { sourceCompatibility = JavaVersion.VERSION_1_8 }",
-        "sourceCompatibility = JavaVersion.VERSION_1_8"
+        "sourceCompatibility = JavaVersion.VERSION_1_8",
       )
     sourceCompatibility.forEach { sc ->
       lint()
@@ -6604,7 +6604,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "application",
         "org.gradle.java",
         "org.gradle.java-library",
-        "org.gradle.application"
+        "org.gradle.application",
       )
     plugins.forEach { plugin ->
       lint()
@@ -6674,12 +6674,12 @@ class GradleDetectorTest : AbstractCheckTest() {
     val sourceCompatibility =
       listOf(
         "java.sourceCompatibility = JavaVersion.VERSION_1_8",
-        "java { sourceCompatibility = JavaVersion.VERSION_1_8 }"
+        "java { sourceCompatibility = JavaVersion.VERSION_1_8 }",
       )
     val targetCompatibility =
       listOf(
         "java.targetCompatibility = JavaVersion.VERSION_1_8",
-        "java { targetCompatibility = JavaVersion.VERSION_1_8 }"
+        "java { targetCompatibility = JavaVersion.VERSION_1_8 }",
       )
     sourceCompatibility.forEach { sc ->
       targetCompatibility.forEach { tc ->
@@ -6706,7 +6706,7 @@ class GradleDetectorTest : AbstractCheckTest() {
     val targetCompatibility =
       listOf(
         "java.targetCompatibility = JavaVersion.VERSION_1_8",
-        "java { targetCompatibility = JavaVersion.VERSION_1_8 }"
+        "java { targetCompatibility = JavaVersion.VERSION_1_8 }",
       )
     targetCompatibility.forEach { tc ->
       lint()
@@ -6745,7 +6745,7 @@ class GradleDetectorTest : AbstractCheckTest() {
     val sourceCompatibility =
       listOf(
         "java.sourceCompatibility = JavaVersion.VERSION_1_8",
-        "java { sourceCompatibility = JavaVersion.VERSION_1_8 }"
+        "java { sourceCompatibility = JavaVersion.VERSION_1_8 }",
       )
     sourceCompatibility.forEach { sc ->
       lint()
@@ -6788,7 +6788,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         "application",
         "org.gradle.java",
         "org.gradle.java-library",
-        "org.gradle.application"
+        "org.gradle.application",
       )
     plugins.forEach { plugin ->
       lint()
@@ -7039,7 +7039,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        kotlin("src/some/pkg/Empty.kt", "")
+        kotlin("src/some/pkg/Empty.kt", ""),
       )
       .allowMissingSdk()
       .issues(UastImplementationDetector.ISSUE) // Any detector that triggers FILE-level UAST visit
@@ -7057,7 +7057,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                 }
                 """
         ),
-        kotlin("src/NonEmpty.kt", "val p = 42")
+        kotlin("src/NonEmpty.kt", "val p = 42"),
       )
       .allowMissingSdk()
       .issues(UastImplementationDetector.ISSUE) // Any detector that triggers FILE-level UAST visit
@@ -7509,8 +7509,8 @@ class GradleDetectorTest : AbstractCheckTest() {
           arrayOf(
             // build tools
             "build-tools/23.0.0/aapt",
-            "build-tools/23.0.3/aapt"
-          )
+            "build-tools/23.0.3/aapt",
+          ),
         )
 
         leanSdkDir = File(sdkRootDir, "lean")
@@ -7519,8 +7519,8 @@ class GradleDetectorTest : AbstractCheckTest() {
           arrayOf(
             // build tools
             "build-tools/23.0.0/aapt",
-            "build-tools/23.0.3/aapt"
-          )
+            "build-tools/23.0.3/aapt",
+          ),
         )
 
         // Test-isolated version of ~/.gradle/
@@ -7554,8 +7554,8 @@ class GradleDetectorTest : AbstractCheckTest() {
             "caches/modules-2/files-2.1/com.android.support/recyclerview-v7/26.0.0/sample",
             "caches/modules-2/files-2.1/com.google.firebase/firebase-messaging/11.0.0/sample",
             "caches/modules-2/files-2.1/androidx.slidingpanelayout/slidingpanelayout/1.2.0/sample",
-            "caches/modules-2/files-2.1/androidx.compose.foundation/foundation/1.2.1/sample"
-          )
+            "caches/modules-2/files-2.1/androidx.compose.foundation/foundation/1.2.1/sample",
+          ),
         )
       }
     }
@@ -7582,7 +7582,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           <androidx.compose/>
         </metadata>
         """
-          .trimIndent()
+          .trimIndent(),
       )
       task.networkData(
         "https://maven.google.com/com/android/application/group-index.xml",
@@ -7599,7 +7599,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "8.1.0-beta03,8.1.0-beta04,8.1.0-beta05,8.1.0-rc01,8.2.0-alpha01,8.2.0-alpha02,8.2.0-alpha03,8.2.0-alpha04,8.2.0-alpha05," +
           "8.2.0-alpha06,8.2.0-alpha07,8.2.0-alpha08,8.2.0-alpha09,8.2.0-alpha10,8.2.0-alpha11,8.2.0-alpha12" +
           "\"/>\n" +
-          "</com.android.application>"
+          "</com.android.application>",
       )
       task.networkData(
         "https://maven.google.com/com/google/firebase/crashlytics/group-index.xml",
@@ -7608,7 +7608,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "<?xml version='1.0' encoding='UTF-8'?>\n" +
           "<com.google.firebase.crashlytics>\n" +
           "  <com.google.firebase.crashlytics.gradle.plugin versions=\"2.8.1,2.9.0,2.9.1,2.9.2,2.9.3,2.9.4,2.9.5,2.9.6,2.9.7\"/>\n" +
-          "</com.google.firebase.crashlytics>"
+          "</com.google.firebase.crashlytics>",
       )
       task.networkData(
         "https://maven.google.com/com/android/tools/build/group-index.xml",
@@ -7624,7 +7624,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           "3.5.0-alpha01,3.5.0-alpha02,3.5.0-alpha03,3.5.0-alpha04,3.5.0-alpha05,3.5.0-alpha06,3.5.0-alpha07,3.5.0-alpha08,3.5.0-alpha09,3.5.0-alpha10,3.5.0," +
           "" +
           "3.6.0-alpha01\"/>\n" +
-          "</com.android.tools.build>"
+          "</com.android.tools.build>",
       )
       task.networkData(
         "https://maven.google.com/com/android/support/group-index.xml",
@@ -7638,7 +7638,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           <support-v4 versions="19.1.0,21.0.2,25.3.1,26.0.0-beta1"/>
         </com.android.support>
         """
-          .trimIndent()
+          .trimIndent(),
       )
       task.networkData(
         "https://maven.google.com/com/google/android/support/group-index.xml",
@@ -7649,7 +7649,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           <wearable versions="1.3.0,26.0.0-alpha1"/>
         </com.google.android.support>
         """
-          .trimIndent()
+          .trimIndent(),
       )
       task.networkData(
         "https://maven.google.com/com/google/android/gms/group-index.xml",
@@ -7662,7 +7662,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           <play-services-maps versions="18.1.0,18.2.0,18.3.0"/>
         </com.google.android.gms>
         """
-          .trimIndent()
+          .trimIndent(),
       )
       task.networkData(
         "https://maven.google.com/com/android/support/constraint/group-index.xml",
@@ -7673,7 +7673,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           <constraint-layout versions="1.0.0,1.0.2"/>
         </com.android.support.constraint>
         """
-          .trimIndent()
+          .trimIndent(),
       )
       task.networkData(
         "https://maven.google.com/com/android/support/test/group-index.xml",
@@ -7684,7 +7684,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           <runner versions="0.3,0.5"/>
         </com.android.support.test>
         """
-          .trimIndent()
+          .trimIndent(),
       )
       task.networkData(
         "https://maven.google.com/androidx/core/group-index.xml",
@@ -7696,7 +7696,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           <core versions="1.2.0"/>
         </androidx.core>
         """
-          .trimIndent()
+          .trimIndent(),
       )
       task.networkData(
         "https://maven.google.com/androidx/slidingpanelayout/group-index.xml",
@@ -7707,7 +7707,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           <slidingpanelayout versions="1.1.0,1.2.0"/>
         </androidx.slidingpanelayout>
         """
-          .trimIndent()
+          .trimIndent(),
       )
       task.networkData(
         "https://maven.google.com/androidx/compose/group-index.xml",
@@ -7718,7 +7718,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           <compose-bom versions="2022.10.00,2022.11.00,2022.12.00,2023.01.00"/>
         </androidx.compose>
         """
-          .trimIndent()
+          .trimIndent(),
       )
       task.networkData(
         "https://maven.google.com/androidx/compose/foundation/group-index.xml",
@@ -7729,7 +7729,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           <foundation versions="1.1.0,1.2.0"/>
         </androidx.compose.foundation>
         """
-          .trimIndent()
+          .trimIndent(),
       )
 
       // Similarly set up the expected SDK Index network output from dl.google.com to
@@ -8109,7 +8109,7 @@ class GradleDetectorTest : AbstractCheckTest() {
       gzip.close()
       task.networkData(
         "${GooglePlaySdkIndex.GOOGLE_PLAY_SDK_INDEX_SNAPSHOT_URL}${GooglePlaySdkIndex.GOOGLE_PLAY_SDK_INDEX_SNAPSHOT_FILE}",
-        bos.toByteArray()
+        bos.toByteArray(),
       )
       bos.close()
 
@@ -8137,7 +8137,7 @@ class GradleDetectorTest : AbstractCheckTest() {
 
           override fun getHighestKnownVersion(
             dependency: Dependency,
-            filter: Predicate<Version>?
+            filter: Predicate<Version>?,
           ): Version? {
             // Hardcoded for unit test to ensure stable data
             return if (
@@ -8181,7 +8181,7 @@ class GradleDetectorTest : AbstractCheckTest() {
               Implementation(
                 GroovyGradleDetector::class.java,
                 issue.implementation.scope,
-                *issue.implementation.analysisScopes
+                *issue.implementation.analysisScopes,
               )
           } else {
             issue.implementation = IMPLEMENTATION

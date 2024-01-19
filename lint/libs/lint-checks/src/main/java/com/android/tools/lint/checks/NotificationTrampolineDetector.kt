@@ -77,7 +77,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
         priority = 6,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Launching services or broadcast receivers from a whole notification. */
@@ -100,7 +100,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
           priority = 3,
           severity = Severity.WARNING,
           androidSpecific = true,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .addMoreInfo(
           "https://developer.android.com/guide/topics/ui/notifiers/notifications?hl=en#Actions"
@@ -141,7 +141,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     pendingConstruction: UCallExpression,
     node: UCallExpression,
-    trampolineType: TrampolineType
+    trampolineType: TrampolineType,
   ): Boolean {
     // find the declaration of the intent argument
     val intentConstruction = findIntentConstruction(pendingConstruction) ?: return false
@@ -183,7 +183,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
 
   private fun findPendingIntentConstruction(
     pendingIntentArgument: UExpression?,
-    node: UElement
+    node: UElement,
   ): UCallExpression? {
     pendingIntentArgument ?: return null
     when (val resolved = pendingIntentArgument.tryResolve()) {
@@ -296,7 +296,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
     onReceiveMethod: PsiMethod,
     setPendingIntent: UCallExpression,
     broadcastClass: PsiClass,
-    description: String
+    description: String,
   ): Boolean {
     val method = onReceiveMethod.toUElementOfType<UMethod>() ?: return false
     method.accept(
@@ -318,7 +318,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
     startActivity: UCallExpression,
     setPendingIntent: UCallExpression,
     broadcastClass: PsiClass,
-    description: String
+    description: String,
   ) {
     val primaryLocation =
       context.getCallLocation(setPendingIntent, includeReceiver = false, includeArguments = true)
@@ -338,7 +338,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
     context: JavaContext,
     setPendingIntent: UCallExpression,
     pendingConstruction: UCallExpression,
-    trampolineType: TrampolineType
+    trampolineType: TrampolineType,
   ) {
     // It's a pending intent associated with a broadcast receiver, but we can't
     // access the receiver as source code (perhaps it's in a jar etc);
@@ -362,7 +362,7 @@ class NotificationTrampolineDetector : Detector(), SourceCodeScanner {
 
   private enum class TrampolineType(
     val handlerMethodName: String,
-    vararg val handlerMethodArgTypes: String
+    vararg val handlerMethodArgTypes: String,
   ) {
     BroadcastReceiver("onReceive", CLASS_CONTEXT, CLASS_INTENT),
     Service("onStartCommand", CLASS_INTENT, TYPE_INT, TYPE_INT);

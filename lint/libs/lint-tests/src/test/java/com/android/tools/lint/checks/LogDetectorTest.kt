@@ -42,7 +42,7 @@ class LogDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -76,7 +76,7 @@ class LogDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -105,7 +105,7 @@ class LogDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented(),
+          .indented()
       )
       .run()
       .expect(
@@ -302,7 +302,7 @@ class LogDetectorTest : AbstractCheckTest() {
                         public static final String MY_MESSAGE = "My Message";
                         public static final int MY_LEVEL = 5;
                     }
-                }"""
+                }""",
           )
           .indented()
       )
@@ -332,9 +332,9 @@ class LogDetectorTest : AbstractCheckTest() {
                                 Log.d("really_really_really_really_really_long_tag", "message"); // error: too long
                             }
                         }
-                    }"""
+                    }""",
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()

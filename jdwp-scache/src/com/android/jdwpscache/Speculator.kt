@@ -87,7 +87,7 @@ internal class Speculator(triggerManager: TriggerManager, val logger: SCacheLogg
         override fun handle(reader: MessageReader, response: SCacheResponse) {
           onFramesReply(reader, response)
         }
-      }
+      },
     )
 
     triggerManager.registerReplyTrigger(
@@ -97,7 +97,7 @@ internal class Speculator(triggerManager: TriggerManager, val logger: SCacheLogg
         override fun handle(reader: MessageReader, response: SCacheResponse) {
           onAllClassesReply(reader, response)
         }
-      }
+      },
     )
 
     triggerManager.registerReplyTrigger(
@@ -107,7 +107,7 @@ internal class Speculator(triggerManager: TriggerManager, val logger: SCacheLogg
         override fun handle(reader: MessageReader, response: SCacheResponse) {
           onAllClassesWithGenericReply(reader, response)
         }
-      }
+      },
     )
 
     keyableParsers[packCmd(CmdSet.ClassType.id, ClassType.Superclass.id)] = SuperClassCmd::parse
@@ -166,7 +166,7 @@ internal class Speculator(triggerManager: TriggerManager, val logger: SCacheLogg
       speculateClassInfo(
         loc.classID,
         VariableTableWithGenericCmd(loc.classID, loc.methodID),
-        response
+        response,
       )
       speculateClassInfo(loc.classID, MethodsWithGenericsCmd(loc.classID), response)
 

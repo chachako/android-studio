@@ -124,7 +124,7 @@ class HtmlReporterTest {
                     <Button xmlns:android="http://schemas.android.com/apk/res/android"
                         android:id="@+id/button1"
                         android:text="Fooo" />
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -133,7 +133,7 @@ class HtmlReporterTest {
                     <Button xmlns:android="http://schemas.android.com/apk/res/android"
                         android:id="@+id/button1"
                         android:text="Bar" />
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -142,7 +142,7 @@ class HtmlReporterTest {
                     <resources>
                         <string name="app_name">App Name</string>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         xml(
@@ -151,7 +151,7 @@ class HtmlReporterTest {
                     <resources>
                         <string name="app_name">App Name</string>
                     </resources>
-                    """
+                    """,
           )
           .indented(),
         image("res/drawable-hdpi/icon1.png", 48, 48).fill(-0xff00d7),
@@ -180,7 +180,7 @@ class HtmlReporterTest {
         // Issue which reports multiple linked locations to test the nested display
         // and secondary location offsets
         DuplicateResourceDetector.ISSUE,
-        InteroperabilityDetector.PLATFORM_NULLNESS
+        InteroperabilityDetector.PLATFORM_NULLNESS,
       )
       .clientFactory(factory)
       .testModes(TestMode.DEFAULT)
@@ -731,7 +731,7 @@ For more information, see <a href="https://developer.android.com/studio/write/li
     try {
       System.setProperty(
         REPORT_PREFERENCE_PROPERTY,
-        "maxIncidents=1,theme=darcula,window=1,underlineErrors=false"
+        "maxIncidents=1,theme=darcula,window=1,underlineErrors=false",
       )
       HtmlReporter.initializePreferences()
       checkReportOutput(

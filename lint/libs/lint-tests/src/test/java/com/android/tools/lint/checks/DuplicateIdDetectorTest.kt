@@ -47,7 +47,7 @@ class DuplicateIdDetectorTest : AbstractCheckTest() {
     <Button android:text="Button" android:id="@+id/button2" android:layout_width="wrap_content" android:layout_height="wrap_content"></Button>
 </LinearLayout>
 
-"""
+""",
         )
       )
       .run()
@@ -128,11 +128,11 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
         android:text="Button" />
 
 </LinearLayout>
-"""
+""",
         ),
         mLayout2,
         mLayout3,
-        mLayout4
+        mLayout4,
       )
       .run()
       .expect(expected)
@@ -182,11 +182,11 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
         android:text="Button" />
 
 </LinearLayout>
-"""
+""",
         ),
         mLayout2,
         mLayout3,
-        mLayout4
+        mLayout4,
       )
       .run()
       .expect(expected)
@@ -294,7 +294,7 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
     </android.support.constraint.Constraints>
 
 </android.support.constraint.ConstraintLayout>
-"""
+""",
         )
       )
       .run()
@@ -361,7 +361,7 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
         app:layout_constraintGuide_end="43dp" />
 
 </android.support.constraint.ConstraintLayout>
-"""
+""",
         )
       )
       .run()
@@ -383,7 +383,7 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
     <action android:id="@+id/next" app:destination="@+id/second" />
   </fragment>
   <fragment android:id="@+id/third" />
-</navigation>"""
+</navigation>""",
         )
       )
       .run()
@@ -402,7 +402,7 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
   </foo>
   <fragment android:id="@+id/first" />
   <fragment android:id="@+id/first" />
-</navigation>"""
+</navigation>""",
         )
       )
       .run()
@@ -447,7 +447,7 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
             motion:layout_constraintEnd_toEndOf="parent"
             motion:layout_constraintTop_toTopOf="parent" />
     </ConstraintSet>
-</MotionScene>"""
+</MotionScene>""",
         )
       )
       .run()
@@ -482,7 +482,7 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
               motion:layout_constraintEnd_toEndOf="parent"
               motion:layout_constraintTop_toTopOf="parent" />
       </ConstraintSet>
-  </MotionScene>"""
+  </MotionScene>""",
         )
       )
       .run()
@@ -515,7 +515,7 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
         layout="@layout/layout4" />
 
 </LinearLayout>
-"""
+""",
     )
 
   private val mLayout3 =
@@ -540,7 +540,7 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
         android:text="CheckBox" />
 
 </LinearLayout>
-"""
+""",
     )
 
   private val mLayout4 =
@@ -565,6 +565,6 @@ res/layout/layout2.xml:18: Warning: Duplicate id @+id/button1, defined or includ
         android:text="Button" />
 
 </LinearLayout>
-"""
+""",
     )
 }

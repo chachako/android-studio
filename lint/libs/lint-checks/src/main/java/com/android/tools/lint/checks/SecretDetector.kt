@@ -51,7 +51,7 @@ class SecretDetector : Detector(), SourceCodeScanner {
   override fun visitConstructor(
     context: JavaContext,
     node: UCallExpression,
-    constructor: PsiMethod
+    constructor: PsiMethod,
   ) {
     val keyArg =
       node.getArgumentForParameter(CONSTRUCTOR_API_KEY_PARAM_INDEX)?.skipParenthesizedExprDown()
@@ -68,7 +68,7 @@ class SecretDetector : Detector(), SourceCodeScanner {
         "This argument looks like an API key that has come from source code; API keys should not be included in source code",
         fix()
           .url("https://developers.google.com/maps/documentation/android-sdk/secrets-gradle-plugin")
-          .build()
+          .build(),
       )
     }
   }

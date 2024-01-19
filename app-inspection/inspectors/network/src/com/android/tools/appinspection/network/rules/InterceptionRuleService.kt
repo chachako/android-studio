@@ -19,10 +19,7 @@ package com.android.tools.appinspection.network.rules
 import java.io.IOException
 import java.io.InputStream
 
-data class NetworkConnection(
-  val url: String,
-  val method: String,
-)
+data class NetworkConnection(val url: String, val method: String)
 
 sealed class InterceptedResponseBody {
 
@@ -43,22 +40,22 @@ data class NetworkResponse(
   val responseCode: Int,
   val responseHeaders: Map<String?, List<String>>,
   val responseBody: InterceptedResponseBody,
-  val interception: NetworkInterceptionMetrics = NetworkInterceptionMetrics()
+  val interception: NetworkInterceptionMetrics = NetworkInterceptionMetrics(),
 ) {
   constructor(
     responseCode: Int,
     responseHeaders: Map<String?, List<String>>,
-    responseBody: InputStream
+    responseBody: InputStream,
   ) : this(
     responseCode,
     responseHeaders,
-    InterceptedResponseBody.SuccessfulResponseBody(responseBody)
+    InterceptedResponseBody.SuccessfulResponseBody(responseBody),
   )
 
   constructor(
     responseCode: Int,
     responseHeaders: Map<String?, List<String>>,
-    error: IOException
+    error: IOException,
   ) : this(responseCode, responseHeaders, InterceptedResponseBody.FailedResponseBody(error))
 
   val body: InputStream
@@ -71,7 +68,7 @@ data class NetworkInterceptionMetrics(
   val headerAdded: Boolean = false,
   val headerReplaced: Boolean = false,
   val bodyReplaced: Boolean = false,
-  val bodyModified: Boolean = false
+  val bodyModified: Boolean = false,
 )
 
 /**
@@ -101,7 +98,7 @@ class InterceptionRuleServiceImpl : InterceptionRuleService {
   @Synchronized
   override fun interceptResponse(
     connection: NetworkConnection,
-    response: NetworkResponse
+    response: NetworkResponse,
   ): NetworkResponse =
     ruleIdList
       .mapNotNull { id -> rules[id] }

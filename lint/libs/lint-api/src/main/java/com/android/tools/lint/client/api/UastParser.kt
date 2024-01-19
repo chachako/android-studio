@@ -59,7 +59,7 @@ abstract class UastParser {
   open fun prepare(
     contexts: List<JavaContext>,
     javaLanguageLevel: LanguageLevel? = null,
-    kotlinLanguageLevel: LanguageVersionSettings? = null
+    kotlinLanguageLevel: LanguageVersionSettings? = null,
   ): Boolean {
     prepared = true
     return true
@@ -94,7 +94,7 @@ abstract class UastParser {
     context: JavaContext,
     call: UCallExpression,
     includeReceiver: Boolean,
-    includeArguments: Boolean
+    includeArguments: Boolean,
   ): Location
 
   abstract fun getFile(file: PsiFile): File?
@@ -121,7 +121,7 @@ abstract class UastParser {
     from: PsiElement,
     fromDelta: Int,
     to: PsiElement,
-    toDelta: Int
+    toDelta: Int,
   ): Location
 
   abstract fun getRangeLocation(
@@ -129,7 +129,7 @@ abstract class UastParser {
     from: UElement,
     fromDelta: Int,
     to: UElement,
-    toDelta: Int
+    toDelta: Int,
   ): Location
 
   /**
@@ -147,14 +147,14 @@ abstract class UastParser {
     context: JavaContext,
     from: PsiElement,
     fromDelta: Int,
-    toDelta: Int
+    toDelta: Int,
   ): Location
 
   abstract fun getRangeLocation(
     context: JavaContext,
     from: UElement,
     fromDelta: Int,
-    toDelta: Int
+    toDelta: Int,
   ): Location
 
   /**
@@ -178,6 +178,6 @@ abstract class UastParser {
     val testContexts: List<JavaContext>,
     val testFixturesContexts: List<JavaContext>,
     val generatedContexts: List<JavaContext>,
-    val gradleKtsContexts: List<JavaContext>
+    val gradleKtsContexts: List<JavaContext>,
   )
 }

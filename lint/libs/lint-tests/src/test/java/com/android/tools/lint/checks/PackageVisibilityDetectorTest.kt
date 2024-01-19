@@ -71,7 +71,7 @@ class PackageVisibilityDetectorTest : AbstractCheckTest() {
                 </manifest>
                 """
         ),
-        kotlin(ACTIVITY_WITH_APP_QUERIES).indented()
+        kotlin(ACTIVITY_WITH_APP_QUERIES).indented(),
       )
       .run()
       .expect(
@@ -100,7 +100,7 @@ class PackageVisibilityDetectorTest : AbstractCheckTest() {
                 </manifest>
                 """
         ),
-        kotlin(ACTIVITY_WITH_APP_QUERIES).indented()
+        kotlin(ACTIVITY_WITH_APP_QUERIES).indented(),
       )
       .run()
       .expect(

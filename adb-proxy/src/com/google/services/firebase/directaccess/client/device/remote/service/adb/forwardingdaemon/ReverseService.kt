@@ -51,9 +51,9 @@ internal class ReverseService(
         deviceId,
         adbSession,
         responseWriter,
-        scope
+        scope,
       )
-    }
+    },
 ) {
   private val openReverses = ConcurrentHashMap<String, ReverseForwardStream>()
   private val openReversesLock = Mutex()

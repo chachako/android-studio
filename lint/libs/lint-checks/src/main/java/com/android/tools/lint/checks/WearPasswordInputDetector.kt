@@ -64,7 +64,7 @@ class WearPasswordInputDetector : WearDetector(), XmlScanner, SourceCodeScanner 
           category = Category.USABILITY,
           severity = Severity.ERROR,
           implementation = IMPLEMENTATION,
-          enabledByDefault = true
+          enabledByDefault = true,
         )
         .addMoreInfo("https://developer.android.com/training/wearables/apps/auth-wear#auth-methods")
 
@@ -75,7 +75,7 @@ class WearPasswordInputDetector : WearDetector(), XmlScanner, SourceCodeScanner 
         VALUE_NUMBER_PASSWORD,
         VALUE_TEXT_PASSWORD,
         VALUE_TEXT_VISIBLE_PASSWORD,
-        VALUE_TEXT_WEB_PASSWORD
+        VALUE_TEXT_WEB_PASSWORD,
       )
 
     private val TYPE_PASSWORD_INPUT_TYPES =
@@ -83,7 +83,7 @@ class WearPasswordInputDetector : WearDetector(), XmlScanner, SourceCodeScanner 
         REF_TYPE_TEXT_VARIATION_PASSWORD,
         REF_TYPE_NUMBER_VARIATION_PASSWORD,
         REF_TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
-        REF_TYPE_TEXT_VARIATION_WEB_PASSWORD
+        REF_TYPE_TEXT_VARIATION_WEB_PASSWORD,
       )
   }
 
@@ -96,7 +96,7 @@ class WearPasswordInputDetector : WearDetector(), XmlScanner, SourceCodeScanner 
   override fun visitReference(
     context: JavaContext,
     reference: UReferenceExpression,
-    referenced: PsiElement
+    referenced: PsiElement,
   ) {
     if (
       isWearProject && context.evaluator.isMemberInClass(referenced as? PsiField, FQCN_INPUT_TYPE)

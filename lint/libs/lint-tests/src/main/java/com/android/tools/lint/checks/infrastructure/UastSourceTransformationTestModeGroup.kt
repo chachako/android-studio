@@ -33,13 +33,13 @@ internal class UastSourceTransformationTestModeGroup(vararg modes: TestMode) :
   UastSourceTransformationTestMode(
     "Source code transformations",
     "TestMode.SOURCE_CODE_TRANSFORMATIONS",
-    "default"
+    "default",
   ) {
   override fun transform(
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
     // This should never be called since we override [processTestFiles]
     // to perform composite editing
@@ -74,7 +74,7 @@ internal class UastSourceTransformationTestModeGroup(vararg modes: TestMode) :
 
   private fun partition(
     testContext: TestModeContext,
-    contexts: List<JavaContext>
+    contexts: List<JavaContext>,
   ): List<SourceTransformationTestMode> {
     // We're assuming two test modes don't cancel each other out, e.g. we shouldn't
     // put both an "add unnecessary parentheses" and a "remove unnecessary parentheses" mode

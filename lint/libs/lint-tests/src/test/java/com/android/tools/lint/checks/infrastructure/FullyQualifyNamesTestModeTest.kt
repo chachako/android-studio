@@ -20,7 +20,7 @@
   "RemoveExplicitTypeArguments",
   "HasPlatformType",
   "ConstantConditions",
-  "MemberVisibilityCanBePrivate"
+  "MemberVisibilityCanBePrivate",
 )
 
 package com.android.tools.lint.checks.infrastructure
@@ -619,13 +619,13 @@ class FullyQualifyNamesTestModeTest {
       "This field should be annotated with ChecksSdkIntAtLeast(api=LOLLIPOP)",
       mode.transformMessage(
         "This field should be annotated with ChecksSdkIntAtLeast(api=android.os.Build.VERSION_CODES.LOLLIPOP)"
-      )
+      ),
     )
     assertEquals(
       "The id duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]",
       mode.transformMessage(
         "The id test.pkg.R.id.duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]"
-      )
+      ),
     )
     assertEquals(
       mode.transformMessage(
@@ -633,7 +633,7 @@ class FullyQualifyNamesTestModeTest {
       ),
       mode.transformMessage(
         "The id R.id.duplicated has already been looked up in this method; possible cut & paste error? [CutPasteId]"
-      )
+      ),
     )
   }
 

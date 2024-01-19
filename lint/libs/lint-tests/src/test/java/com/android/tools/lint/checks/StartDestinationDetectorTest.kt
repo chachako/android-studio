@@ -32,7 +32,7 @@ class StartDestinationDetectorTest : AbstractCheckTest() {
                              xmlns:android="http://schemas.android.com/apk/res/android"
                              app:startDestination="@id/foo">
                                <fragment android:id="@+id/foo"/>
-                           </navigation>"""
+                           </navigation>""",
           )
           .indented()
       )
@@ -51,7 +51,7 @@ class StartDestinationDetectorTest : AbstractCheckTest() {
                              xmlns:android="http://schemas.android.com/apk/res/android"
                              app:startDestination="@id/includedId">
                                <include app:graph="@navigation/foo"/>
-                           </navigation>"""
+                           </navigation>""",
           )
           .indented(),
         xml(
@@ -63,9 +63,9 @@ class StartDestinationDetectorTest : AbstractCheckTest() {
                              android:id='@+id/includedId'
                              app:startDestination="@id/foo2">
                                <fragment android:id="@+id/foo2"/>
-                           </navigation>"""
+                           </navigation>""",
           )
-          .indented()
+          .indented(),
       )
       .incremental("res/navigation/navigation.xml")
       .run()
@@ -83,7 +83,7 @@ class StartDestinationDetectorTest : AbstractCheckTest() {
                              xmlns:android="http://schemas.android.com/apk/res/android"
                              app:startDestination="@id/includedId">
                                <include app:graph="@navigation/foo"/>
-                           </navigation>"""
+                           </navigation>""",
           )
           .indented(),
         xml(
@@ -95,9 +95,9 @@ class StartDestinationDetectorTest : AbstractCheckTest() {
                              android:id='@+id/includedId2'
                              app:startDestination="@id/foo2">
                                <fragment android:id="@+id/foo2"/>
-                           </navigation>"""
+                           </navigation>""",
           )
-          .indented()
+          .indented(),
       )
       .incremental("res/navigation/navigation.xml")
       .run()
@@ -119,7 +119,7 @@ class StartDestinationDetectorTest : AbstractCheckTest() {
                            <navigation
                              xmlns:app="http://schemas.android.com/apk/res-auto"
                              xmlns:android="http://schemas.android.com/apk/res/android">
-                           </navigation>"""
+                           </navigation>""",
           )
           .indented()
       )
@@ -137,7 +137,7 @@ class StartDestinationDetectorTest : AbstractCheckTest() {
                              xmlns:app="http://schemas.android.com/apk/res-auto"
                              xmlns:android="http://schemas.android.com/apk/res/android">
                                <fragment android:id="@+id/foo"/>
-                           </navigation>"""
+                           </navigation>""",
           )
           .indented()
       )
@@ -162,7 +162,7 @@ class StartDestinationDetectorTest : AbstractCheckTest() {
                              xmlns:android="http://schemas.android.com/apk/res/android"
                              app:startDestination="@id/bar">
                                <fragment android:id="@+id/foo"/>
-                           </navigation>"""
+                           </navigation>""",
           )
           .indented()
       )

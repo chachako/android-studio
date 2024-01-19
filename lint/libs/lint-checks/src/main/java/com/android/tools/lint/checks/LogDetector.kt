@@ -78,7 +78,7 @@ class LogDetector : Detector(), SourceCodeScanner {
           priority = 5,
           severity = Severity.WARNING,
           androidSpecific = true,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .setEnabledByDefault(false)
 
@@ -98,7 +98,7 @@ class LogDetector : Detector(), SourceCodeScanner {
         priority = 5,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     /** Log tag is too long. */
@@ -114,7 +114,7 @@ class LogDetector : Detector(), SourceCodeScanner {
         priority = 5,
         severity = Severity.ERROR,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     private const val IS_LOGGABLE = "isLoggable"
@@ -148,7 +148,7 @@ class LogDetector : Detector(), SourceCodeScanner {
           "The log call Log.%1\$s(...) should be " +
             "conditional: surround with `if (Log.isLoggable(...))` or " +
             "`if (BuildConfig.DEBUG) { ... }`",
-          node.methodName
+          node.methodName,
         )
       val location = context.getLocation(node)
       context.report(CONDITIONAL, node, location, message)
@@ -239,7 +239,7 @@ class LogDetector : Detector(), SourceCodeScanner {
   private fun checkWithinConditional(
     context: JavaContext,
     start: UElement?,
-    logCall: UCallExpression
+    logCall: UCallExpression,
   ): Boolean {
     var curr = start
     while (curr != null) {
@@ -268,7 +268,7 @@ class LogDetector : Detector(), SourceCodeScanner {
   private fun checkLoggingCondition(
     expression: UExpression,
     context: JavaContext,
-    logCall: UCallExpression
+    logCall: UCallExpression,
   ): Boolean {
     val condition = expression.findSelector()
     if (condition is UCallExpression) {
@@ -289,7 +289,7 @@ class LogDetector : Detector(), SourceCodeScanner {
   private fun checkTagConsistent(
     context: JavaContext,
     logCall: UCallExpression,
-    isLoggableCall: UCallExpression
+    isLoggableCall: UCallExpression,
   ) {
     val isLoggableArguments = isLoggableCall.valueArguments
     val logArguments = logCall.valueArguments
@@ -329,7 +329,7 @@ class LogDetector : Detector(), SourceCodeScanner {
               "Mismatched tags: the `%1\$s()` and `isLoggable()` calls typically should pass the same tag: `%2\$s` versus `%3\$s`",
               logCallName,
               isLoggableDescription,
-              logCallDescription
+              logCallDescription,
             )
           context.report(WRONG_TAG, isLoggableCall, location, message)
         }
@@ -363,7 +363,7 @@ class LogDetector : Detector(), SourceCodeScanner {
             "corresponding log call should be `Log.%2\$s`, not `Log.%3\$s`",
           resolved.getName(),
           expectedCall,
-          logCallName
+          logCallName,
         )
       val location = context.getCallLocation(logCall, false, false)
       val alternate = context.getLocation(isLoggableLevel)

@@ -42,7 +42,7 @@ class ContextTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        gradle("")
+        gradle(""),
       )
       .issues(TEST_ISSUE)
       .run()
@@ -91,7 +91,7 @@ class ContextTest : AbstractCheckTest() {
                 }"""
           )
           .indented(),
-        gradle("")
+        gradle(""),
       )
       .issues(TEST_ISSUE)
       .run()
@@ -116,7 +116,7 @@ class ContextTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        gradle("")
+        gradle(""),
       )
       .issues(TEST_ISSUE)
       .run()
@@ -143,7 +143,7 @@ class ContextTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        gradle("")
+        gradle(""),
       )
       .issues(TEST_ISSUE)
       .run()
@@ -169,7 +169,7 @@ class ContextTest : AbstractCheckTest() {
                 """
           )
           .indented(),
-        gradle("")
+        gradle(""),
       )
       .issues(PSI_TEST_ISSUE)
       .run()
@@ -204,7 +204,7 @@ class ContextTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented(),
+          .indented()
       )
       .issues(ReportsArgumentDetector.ISSUE)
       .run()
@@ -330,7 +330,7 @@ class ContextTest : AbstractCheckTest() {
       parentParent: String?,
       propertyCookie: Any,
       valueCookie: Any,
-      statementCookie: Any
+      statementCookie: Any,
     ) {
       context.report(Incident(ISSUE, element!!, context.getLocation(valueCookie), "Bad"))
     }
@@ -346,7 +346,7 @@ class ContextTest : AbstractCheckTest() {
           Severity.WARNING,
           Implementation(
             ReportsUElementFromGradleContextDetector::class.java,
-            EnumSet.of(Scope.JAVA_FILE, Scope.GRADLE_FILE)
+            EnumSet.of(Scope.JAVA_FILE, Scope.GRADLE_FILE),
           ),
         )
     }
@@ -397,7 +397,7 @@ class ContextTest : AbstractCheckTest() {
         Category.MESSAGES,
         5,
         Severity.WARNING,
-        Implementation(NoLocationNodeDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        Implementation(NoLocationNodeDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
 
     val PSI_TEST_ISSUE =
@@ -408,7 +408,7 @@ class ContextTest : AbstractCheckTest() {
         Category.MESSAGES,
         5,
         Severity.WARNING,
-        Implementation(NoLocationNodeDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        Implementation(NoLocationNodeDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
   }
 }

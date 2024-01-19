@@ -49,7 +49,7 @@ class AdbDeviceServicesCommandDetector : Detector(), SourceCodeScanner {
         category = Category.CORRECTNESS,
         severity = Severity.ERROR,
         platforms = STUDIO_PLATFORMS,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 
@@ -69,7 +69,7 @@ class AdbDeviceServicesCommandDetector : Detector(), SourceCodeScanner {
       ISSUE,
       method,
       context.getLocation(node),
-      "Use of `$adbDeviceServicesClassName#${method.name}` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead"
+      "Use of `$adbDeviceServicesClassName#${method.name}` is discouraged. Consider using `AdbDeviceServices.shellCommand()` instead",
     )
   }
 }

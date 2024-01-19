@@ -59,7 +59,7 @@ protected constructor(
   /**
    * A location range associated with this fix, if different from the associated incident's range.
    */
-  open var range: Location? = null
+  open var range: Location? = null,
 ) {
   /** The display name, a short user-visible description of the fix */
   open fun getDisplayName(): String? = displayName
@@ -394,7 +394,7 @@ protected constructor(
       attribute: Attr,
       newNamespace: String? = attribute.namespaceURI.nullize(),
       newAttribute: String = attribute.localName ?: attribute.name,
-      newValue: String = attribute.value
+      newValue: String = attribute.value,
     ): GroupBuilder {
       val prefix =
         if (newNamespace != null)
@@ -407,7 +407,7 @@ protected constructor(
         newValue,
         newNamespace,
         newAttribute,
-        prefix
+        prefix,
       )
     }
 
@@ -425,7 +425,7 @@ protected constructor(
       newValue: String,
       newNamespace: String? = namespace,
       newAttribute: String = attribute,
-      newNamespacePrefix: String? = LintFixPerformer.suggestNamespacePrefix(newNamespace)
+      newNamespacePrefix: String? = LintFixPerformer.suggestNamespacePrefix(newNamespace),
     ): GroupBuilder {
       return composite()
         .name(
@@ -542,7 +542,7 @@ protected constructor(
     annotation: String,
     private val replace: Boolean,
     private val context: Context? = null,
-    private val element: PsiElement? = null
+    private val element: PsiElement? = null,
   ) {
     private val annotation: String = if (annotation.startsWith("@")) annotation else "@$annotation"
     private var range: Location? =
@@ -648,7 +648,7 @@ protected constructor(
   class GroupBuilder
   internal constructor(
     @field:Nls private var displayName: String?,
-    @field:Nls private var familyName: String?
+    @field:Nls private var familyName: String?,
   ) {
     private var type = GroupType.ALTERNATIVES
     private val list: MutableList<LintFix> = Lists.newArrayListWithExpectedSize(4)
@@ -790,7 +790,7 @@ protected constructor(
   class ReplaceStringBuilder
   internal constructor(
     @field:Nls private var displayName: String?,
-    @field:Nls private var familyName: String?
+    @field:Nls private var familyName: String?,
   ) {
     private var newText: String? = null
     private var oldText: String? = null
@@ -1083,7 +1083,7 @@ protected constructor(
         optional,
         robot,
         independent,
-        sortPriority
+        sortPriority,
       )
     }
   }
@@ -1092,7 +1092,7 @@ protected constructor(
   class CreateFileBuilder
   internal constructor(
     @field:Nls private var displayName: String?,
-    @field:Nls private var familyName: String?
+    @field:Nls private var familyName: String?,
   ) {
     private var selectPattern: String? = null
     private var delete: Boolean = false
@@ -1257,7 +1257,7 @@ protected constructor(
         text,
         reformat,
         robot,
-        independent
+        independent,
       )
     }
   }
@@ -1267,7 +1267,7 @@ protected constructor(
   internal constructor(
     @field:Nls private var displayName: String?,
     @field:Nls private var familyName: String?,
-    @field:NonNls private var url: String?
+    @field:NonNls private var url: String?,
   ) {
     fun url(@NonNls url: String): UrlBuilder {
       this.url = url
@@ -1283,7 +1283,7 @@ protected constructor(
   class SetAttributeBuilder
   internal constructor(
     @field:Nls private var displayName: String?,
-    @field:Nls private var familyName: String?
+    @field:Nls private var familyName: String?,
   ) {
     private var attribute: String? = null
     private var namespace: String? = null
@@ -1398,7 +1398,7 @@ protected constructor(
       namespace: String?,
       attribute: String,
       prefix: String? = null,
-      suffix: String? = null
+      suffix: String? = null,
     ): SetAttributeBuilder {
       namespace(namespace)
       attribute(attribute)
@@ -1543,7 +1543,7 @@ protected constructor(
         point,
         mark,
         robot,
-        independent
+        independent,
       )
     }
   }
@@ -1551,7 +1551,7 @@ protected constructor(
   class FixMapBuilder
   internal constructor(
     @field:Nls private val displayName: String?,
-    @field:Nls private val familyName: String?
+    @field:Nls private val familyName: String?,
   ) {
     /**
      * Values are limited to strings, files, list of strings, list of files, ints and booleans.
@@ -1735,7 +1735,7 @@ protected constructor(
     displayName: String,
     familyName: String?,
     val url: String,
-    val onUrlOpen: (() -> Unit)? = null
+    val onUrlOpen: (() -> Unit)? = null,
   ) : LintFix(displayName, familyName)
 
   /** An annotation to add to the element */
@@ -1756,7 +1756,7 @@ protected constructor(
      */
     range: Location?,
     robot: Boolean,
-    independent: Boolean
+    independent: Boolean,
   ) : LintFix(displayName, familyName, range) {
     init {
       this.robot = robot
@@ -1778,7 +1778,7 @@ protected constructor(
     /** A list of fixes */
     val fixes: List<LintFix>,
     robot: Boolean,
-    independent: Boolean
+    independent: Boolean,
   ) : LintFix(displayName, familyName) {
     init {
       this.robot = robot
@@ -1844,7 +1844,7 @@ protected constructor(
     /** The selection anchor, OR null if not set */
     val mark: Int?,
     robot: Boolean,
-    independent: Boolean
+    independent: Boolean,
   ) : LintFix(displayName, familyName, range) {
     init {
       this.robot = robot
@@ -2033,7 +2033,7 @@ protected constructor(
     val text: String?,
     val reformat: Boolean,
     robot: Boolean,
-    independent: Boolean
+    independent: Boolean,
   ) : LintFix(displayName, familyName, Location.create(file)) {
     init {
       this.robot = robot
@@ -2110,7 +2110,7 @@ protected constructor(
     fun getApiConstraint(
       fix: LintFix?,
       key: String,
-      defaultValue: ApiConstraint? = ApiConstraint.UNKNOWN
+      defaultValue: ApiConstraint? = ApiConstraint.UNKNOWN,
     ): ApiConstraint? {
       return if (fix is DataMap) {
         fix.getApiConstraint(key) ?: defaultValue
@@ -2150,7 +2150,7 @@ protected constructor(
         Location.create(
           range.file,
           DefaultPosition(-1, -1, start.offset),
-          DefaultPosition(-1, -1, end.offset)
+          DefaultPosition(-1, -1, end.offset),
         )
       } else {
         val pos = DefaultPosition(-1, -1, 0)

@@ -127,7 +127,7 @@ class ExternalAnnotationsDetectorTest {
                             }
                         }
                     """
-        )
+        ),
       )
       .issues(ExternalAnnotationsDetector.ISSUE)
       .run()

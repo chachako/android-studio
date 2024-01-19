@@ -55,7 +55,7 @@ private constructor(val exact: Long, val min: Long, val max: Long, val multiple:
     argument: UExpression? = null,
     unit: String? = null,
     actualValue: Long? = null,
-    skipPrefix: Boolean = false
+    skipPrefix: Boolean = false,
   ): String {
     val actualUnit =
       unit
@@ -132,7 +132,7 @@ private constructor(val exact: Long, val min: Long, val max: Long, val multiple:
   override fun describeDelta(
     actual: RangeConstraint,
     actualLabel: String,
-    allowedLabel: String
+    allowedLabel: String,
   ): String {
     if (actual !is SizeConstraint) {
       return describe()

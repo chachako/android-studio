@@ -111,7 +111,7 @@ class LanguageLevelTest : AbstractCheckTest() {
                     TEST_ISSUE,
                     recordHeader,
                     context.getLocation(recordHeader),
-                    "Java record found"
+                    "Java record found",
                   )
                 }
               }
@@ -131,7 +131,7 @@ class LanguageLevelTest : AbstractCheckTest() {
         Category.CORRECTNESS,
         5,
         Severity.WARNING,
-        Implementation(TestDetector::class.java, Scope.JAVA_FILE_SCOPE)
+        Implementation(TestDetector::class.java, Scope.JAVA_FILE_SCOPE),
       )
   }
 }

@@ -83,7 +83,7 @@ class PreferenceActivityDetector : Detector(), XmlScanner, SourceCodeScanner {
           val incident = Incident(ISSUE, element, location, message)
           context.report(
             incident,
-            map().put(KEY_OVERRIDES, overrides).put(KEY_IMPLICIT, implicitlyExportedPreS)
+            map().put(KEY_OVERRIDES, overrides).put(KEY_IMPLICIT, implicitlyExportedPreS),
           )
         }
       }
@@ -130,7 +130,7 @@ class PreferenceActivityDetector : Detector(), XmlScanner, SourceCodeScanner {
       val incident = Incident(ISSUE, declaration, location, message)
       context.report(
         incident,
-        map().put(KEY_OVERRIDES, overrides).put(KEY_IMPLICIT, implicitlyExportedPreS)
+        map().put(KEY_OVERRIDES, overrides).put(KEY_IMPLICIT, implicitlyExportedPreS),
       )
     }
   }
@@ -168,7 +168,7 @@ class PreferenceActivityDetector : Detector(), XmlScanner, SourceCodeScanner {
         PreferenceActivityDetector::class.java,
         EnumSet.of(Scope.MANIFEST, Scope.JAVA_FILE),
         Scope.MANIFEST_SCOPE,
-        Scope.JAVA_FILE_SCOPE
+        Scope.JAVA_FILE_SCOPE,
       )
 
     @JvmField
@@ -186,7 +186,7 @@ class PreferenceActivityDetector : Detector(), XmlScanner, SourceCodeScanner {
           category = Category.SECURITY,
           priority = 8,
           severity = Severity.WARNING,
-          implementation = IMPLEMENTATION
+          implementation = IMPLEMENTATION,
         )
         .addMoreInfo("https://goo.gle/ExportedPreferenceActivity")
 

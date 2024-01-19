@@ -67,7 +67,7 @@ object LintResourcePersistence {
     repository: LintResourceRepository,
     pathVariables: PathVariables,
     root: File?,
-    sort: Boolean = false
+    sort: Boolean = false,
   ): String {
     val typeToMap = repository.typeToMap
     if (typeToMap.isEmpty()) {
@@ -380,7 +380,7 @@ object LintResourcePersistence {
     pathVariables: PathVariables,
     root: File? = null,
     project: Project? = null,
-    allowMissingPathVariable: Boolean = false
+    allowMissingPathVariable: Boolean = false,
   ): LintResourceRepository {
     if (s.isEmpty()) {
       return LintResourceRepository.Companion.EmptyRepository
@@ -489,7 +489,7 @@ object LintResourcePersistence {
             rawSource,
             content,
             args,
-            libraryName
+            libraryName,
           )
         LintResourceRepository.recordItem(map, type, name, item)
         val list =
@@ -533,7 +533,7 @@ object LintResourcePersistence {
      * dimensions (and only usually when some other potentially triggering issue is there.)
      */
     private val arguments: String?,
-    private val library: String?
+    private val library: String?,
   ) : ResourceMergerItem(name, namespace, type, null, false, null) {
     override fun getConfiguration(): FolderConfiguration {
       return config

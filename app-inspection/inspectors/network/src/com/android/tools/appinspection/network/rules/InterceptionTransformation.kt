@@ -38,7 +38,7 @@ interface InterceptionTransformation {
 /** A transformation class that changes the status code from response headers. */
 internal class StatusCodeReplacedTransformation(
   private val statusCodeReplaced: StatusCodeReplaced,
-  private val logger: Logger = LoggerImpl()
+  private val logger: Logger = LoggerImpl(),
 ) : InterceptionTransformation {
 
   override fun transform(response: NetworkResponse): NetworkResponse {
@@ -57,7 +57,7 @@ internal class StatusCodeReplacedTransformation(
   private fun transformWithNullHeader(
     response: NetworkResponse,
     targetCodeProto: NetworkInspectorProtocol.MatchingText,
-    replacingCode: Int
+    replacingCode: Int,
   ): NetworkResponse? {
     val statusHeader = response.responseHeaders[null] ?: return null
     val statusLine = statusHeader.getOrNull(0) ?: return null
@@ -80,7 +80,7 @@ internal class StatusCodeReplacedTransformation(
           return response.copy(
             responseCode = replacingCode,
             responseHeaders = newHeaders,
-            interception = response.interception.copy(statusCode = true)
+            interception = response.interception.copy(statusCode = true),
           )
         }
       }
@@ -91,7 +91,7 @@ internal class StatusCodeReplacedTransformation(
   private fun transformWithStatusCodeHeader(
     response: NetworkResponse,
     targetCodeProto: NetworkInspectorProtocol.MatchingText,
-    replacingCode: Int
+    replacingCode: Int,
   ): NetworkResponse {
     val statusCodeHeaderValue = response.responseHeaders[FIELD_RESPONSE_STATUS_CODE]
     if (statusCodeHeaderValue?.isNotEmpty() == true) {
@@ -102,7 +102,7 @@ internal class StatusCodeReplacedTransformation(
         return response.copy(
           responseCode = replacingCode,
           responseHeaders = newHeaders,
-          interception = response.interception.copy(statusCode = true)
+          interception = response.interception.copy(statusCode = true),
         )
       }
     }
@@ -120,7 +120,7 @@ class HeaderAddedTransformation(private val headerAdded: HeaderAdded) : Intercep
     headers[headerAdded.name] = values
     return response.copy(
       responseHeaders = headers,
-      interception = response.interception.copy(headerAdded = true)
+      interception = response.interception.copy(headerAdded = true),
     )
   }
 }
@@ -167,7 +167,7 @@ class HeaderReplacedTransformation(private val headerReplaced: HeaderReplaced) :
     }
     return response.copy(
       responseHeaders = headers,
-      interception = response.interception.copy(headerReplaced = newHeaders.isNotEmpty())
+      interception = response.interception.copy(headerReplaced = newHeaders.isNotEmpty()),
     )
   }
 }
@@ -188,7 +188,7 @@ class BodyReplacedTransformation(private val bodyReplaced: BodyReplaced) :
         InterceptedResponseBody.SuccessfulResponseBody(
           if (isContentCompressed(response)) gzipBody else body
         ),
-      interception = response.interception.copy(bodyReplaced = true)
+      interception = response.interception.copy(bodyReplaced = true),
     )
   }
 }
@@ -214,7 +214,7 @@ class BodyModifiedTransformation(private val bodyModified: BodyModified) :
           InterceptedResponseBody.SuccessfulResponseBody(
             (if (isCompressed) newBodyBytes.gzip() else newBodyBytes).inputStream()
           ),
-        interception = response.interception.copy(bodyModified = isBodyModified)
+        interception = response.interception.copy(bodyModified = isBodyModified),
       )
     } catch (ignored: IOException) {
       // If we got here, it means we failed to unzip data that was supposedly zipped.

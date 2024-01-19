@@ -175,7 +175,7 @@ class AnnotationHandlerTest {
           )
           .indented(),
         javaAnnotation,
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .run()
       .expect(
@@ -255,7 +255,7 @@ class AnnotationHandlerTest {
           )
           .indented(),
         javaAnnotation,
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .run()
       .expect(
@@ -371,7 +371,7 @@ class AnnotationHandlerTest {
           )
           .indented(),
         javaAnnotation,
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .skipTestModes(TestMode.TYPE_ALIAS)
       .run()
@@ -626,7 +626,7 @@ class AnnotationHandlerTest {
           )
           .indented(),
         javaAnnotation,
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .run()
       .expect(
@@ -739,7 +739,7 @@ class AnnotationHandlerTest {
                 """
           )
           .indented(),
-        javaAnnotation
+        javaAnnotation,
       )
       .run()
       .expect(
@@ -795,7 +795,7 @@ class AnnotationHandlerTest {
                 """
           )
           .indented(),
-        javaAnnotation
+        javaAnnotation,
       )
       .run()
       .expect(
@@ -873,11 +873,11 @@ class AnnotationHandlerTest {
             package test.pkg
             import java.io.Closeable
             class Manager : Closeable
-          """
+          """,
           )
           .indented(),
         kotlinAnnotation,
-        javaAnnotation
+        javaAnnotation,
       )
       .run()
       .expect(
@@ -978,7 +978,7 @@ class AnnotationHandlerTest {
           )
           .indented(),
         kotlinAnnotation,
-        javaAnnotation
+        javaAnnotation,
       )
       .run()
       .expect(
@@ -1050,7 +1050,7 @@ class AnnotationHandlerTest {
                 """
           )
           .indented(),
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .run()
       .expect(
@@ -1104,7 +1104,7 @@ class AnnotationHandlerTest {
                 """
           )
           .indented(),
-        javaAnnotation
+        javaAnnotation,
       )
       .run()
       .expect(
@@ -1147,7 +1147,7 @@ class AnnotationHandlerTest {
                     @MyJavaAnnotation
                     package test.api;
                     import pkg.java.MyJavaAnnotation;
-                    """
+                    """,
             )
             .indented(),
           0x1373820f,
@@ -1157,7 +1157,7 @@ class AnnotationHandlerTest {
                 5OzE9FTdzLy0fL2sxLJERgbpoNK8kszcVM+8sszizKScVMe8vPySxJLM/Lxi
                 oKxPQXa6Pkilvm+lF5BCyFozMoiWpBaX6CcWZOojG8zIIADWkJOYl67vn5SV
                 mlwixsDAyMDEAAFMDMxgkoWBFUizAWXYGBgAA/vgtboAAAA=
-                """
+                """,
         ),
         java(
             """
@@ -1172,7 +1172,7 @@ class AnnotationHandlerTest {
                 """
           )
           .indented(),
-        javaAnnotation
+        javaAnnotation,
       )
       .run()
       .expect(
@@ -1251,7 +1251,7 @@ class AnnotationHandlerTest {
           )
           .indented(),
         javaAnnotation,
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .run()
       .expect(
@@ -1309,7 +1309,7 @@ class AnnotationHandlerTest {
           )
           .indented(),
         javaAnnotation,
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .run()
       .expect(
@@ -1370,7 +1370,7 @@ class AnnotationHandlerTest {
           )
           .indented(),
         javaAnnotation,
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .run()
       .expect(
@@ -1439,7 +1439,7 @@ class AnnotationHandlerTest {
           )
           .indented(),
         javaAnnotation,
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .run()
       .expect(
@@ -1522,7 +1522,7 @@ class AnnotationHandlerTest {
                 MGPRQ6qmn3M6Ed3OL5H9PiI8RVYLryVELA+EpwfCGhXxgE5o2UlzKJsIz5pD
                 4cQbcGK7hSr5A8o+pNZWzmG6WHWxRhaPXKxjw0UJj8/BIjzB5jmsCKkIcxEK
                 EeZjsBDb4j8xfuP2ggQAAA==
-                """
+                """,
         ),
         kotlin(
             """
@@ -1537,7 +1537,7 @@ class AnnotationHandlerTest {
                 """
           )
           .indented(),
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .run()
       .expect(
@@ -1631,7 +1631,7 @@ class AnnotationHandlerTest {
                 """
           )
           .indented(),
-        kotlinAnnotation
+        kotlinAnnotation,
       )
       .run()
       .expect(
@@ -1723,7 +1723,7 @@ class AnnotationHandlerTest {
           )
           .indented(),
         kotlinAnnotation,
-        experimentalKotlinAnnotation
+        experimentalKotlinAnnotation,
       )
       .run()
       .expect(
@@ -1760,7 +1760,7 @@ class AnnotationHandlerTest {
       context: JavaContext,
       element: UElement,
       annotationInfo: AnnotationInfo,
-      usageInfo: AnnotationUsageInfo
+      usageInfo: AnnotationUsageInfo,
     ) {
       if (annotationInfo.origin == AnnotationOrigin.PACKAGE) {
         val annotation = annotationInfo.annotation
@@ -1769,7 +1769,7 @@ class AnnotationHandlerTest {
         context.report(
           TEST_ISSUE,
           context.getLocation(annotation),
-          "Incident reported on package annotation"
+          "Incident reported on package annotation",
         )
       }
 
@@ -1794,7 +1794,7 @@ class AnnotationHandlerTest {
           category = TEST_CATEGORY,
           priority = 10,
           severity = Severity.ERROR,
-          implementation = Implementation(MyAnnotationDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          implementation = Implementation(MyAnnotationDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }

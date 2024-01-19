@@ -68,7 +68,7 @@ import org.jetbrains.uast.psi.UElementWithLocation
 @Suppress("RemoveRedundantQualifierName")
 open class DefaultUastParser(
   project: com.android.tools.lint.detector.api.Project?,
-  val ideaProject: com.intellij.openapi.project.Project
+  val ideaProject: com.intellij.openapi.project.Project,
 ) : UastParser() {
   private val javaEvaluator: JavaEvaluator
 
@@ -79,7 +79,7 @@ open class DefaultUastParser(
 
   protected open fun createEvaluator(
     project: Project?,
-    p: com.intellij.openapi.project.Project
+    p: com.intellij.openapi.project.Project,
   ): DefaultJavaEvaluator = DefaultJavaEvaluator(p, project!!)
 
   /**
@@ -130,7 +130,7 @@ open class DefaultUastParser(
         null,
         "Could not process " +
           context.project.getRelativePath(file) +
-          ": Kotlin not configured correctly"
+          ": Kotlin not configured correctly",
       )
       return null
     }
@@ -151,7 +151,7 @@ open class DefaultUastParser(
             "Source file too large for lint to process (${size}KB); the " +
               "current max size is ${max}KB. You can increase the limit by " +
               "setting this system property: " +
-              "`idea.max.intellisense.filesize=$sizeRoundedUp` (or even higher)"
+              "`idea.max.intellisense.filesize=$sizeRoundedUp` (or even higher)",
         )
       }
       return null
@@ -172,7 +172,7 @@ open class DefaultUastParser(
    */
   protected fun isAnnotatedWithSkipAnnotation(
     psiFile: PsiFile,
-    skipAnnotations: List<String>
+    skipAnnotations: List<String>,
   ): Boolean {
     if (psiFile is PsiJavaFile) {
       val topLevel = psiFile.classes.firstOrNull() ?: return false
@@ -182,7 +182,7 @@ open class DefaultUastParser(
       return containsAnnotation(skipAnnotations, psiFile.annotationEntries) ||
         containsAnnotation(
           skipAnnotations,
-          psiFile.declarations.firstOrNull()?.annotationEntries ?: emptyList()
+          psiFile.declarations.firstOrNull()?.annotationEntries ?: emptyList(),
         )
     }
     return false
@@ -193,7 +193,7 @@ open class DefaultUastParser(
    */
   protected fun containsAnnotation(
     names: List<String>,
-    annotations: List<KtAnnotationEntry>
+    annotations: List<KtAnnotationEntry>,
   ): Boolean {
     for (annotation in annotations) {
       if (names.any { it.endsWith(annotation.shortName?.identifier ?: "?") }) {
@@ -319,7 +319,7 @@ open class DefaultUastParser(
     context: JavaContext,
     call: UCallExpression,
     includeReceiver: Boolean,
-    includeArguments: Boolean
+    includeArguments: Boolean,
   ): Location {
     if (includeArguments) {
       call.valueArguments.lastOrNull()?.let { lastArgument ->
@@ -427,7 +427,7 @@ open class DefaultUastParser(
     from: PsiElement,
     fromDelta: Int,
     to: PsiElement,
-    toDelta: Int
+    toDelta: Int,
   ): Location {
     val contents = context.getContents()
     val fromRange = from.textRange
@@ -458,7 +458,7 @@ open class DefaultUastParser(
     from: UElement,
     fromDelta: Int,
     to: UElement,
-    toDelta: Int
+    toDelta: Int,
   ): Location {
     var contents = context.getContents()
     val fromRange = getTextRange(from)
@@ -527,14 +527,14 @@ open class DefaultUastParser(
     context: JavaContext,
     from: PsiElement,
     fromDelta: Int,
-    toDelta: Int
+    toDelta: Int,
   ): Location = getRangeLocation(context, from, fromDelta, from, -(from.textRange.length - toDelta))
 
   override fun getRangeLocation(
     context: JavaContext,
     from: UElement,
     fromDelta: Int,
-    toDelta: Int
+    toDelta: Int,
   ): Location {
     val fromRange = getTextRange(from)
     if (fromRange != null) {

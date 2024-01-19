@@ -93,7 +93,7 @@ class AddJavascriptInterfaceDetectorTest : AbstractCheckTest() {
                     webView.addJavascriptInterface(object, string);
                 }
             }
-        }"""
+        }""",
       )
       .indented()
 

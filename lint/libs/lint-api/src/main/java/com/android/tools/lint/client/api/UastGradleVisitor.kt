@@ -57,7 +57,7 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
   private fun handleBinaryExpression(
     node: UBinaryExpression,
     detectors: List<GradleScanner>,
-    context: GradleContext
+    context: GradleContext,
   ) {
     if (node.isAssignment()) {
       val hierarchy = getPropertyHierarchy(node.leftOperand)
@@ -75,7 +75,7 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
           parentParentName,
           node.leftOperand,
           node.rightOperand,
-          node
+          node,
         )
       }
     }
@@ -84,7 +84,7 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
   private fun handleMethodCall(
     node: UCallExpression,
     detectors: List<GradleScanner>,
-    context: GradleContext
+    context: GradleContext,
   ) {
     val valueArguments = node.valueArguments
     val propertyName = getMethodName(node)
@@ -102,7 +102,7 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
           parentParentName,
           mapOf(),
           unnamedArguments,
-          node
+          node,
         )
       }
       if (valueArguments.size == 1 && valueArguments[0] !is ULambdaExpression) {
@@ -119,7 +119,7 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
             parentParentName,
             node.methodIdentifier ?: node,
             valueArguments[0],
-            node
+            node,
           )
         }
       }

@@ -93,7 +93,7 @@ class DesugaredMethodLookup(private val methodDescriptors: Array<String>) {
       name: String,
       desc: String,
       sourceSetType: SourceSetType,
-      project: Project? = null
+      project: Project? = null,
     ): Boolean {
       return getLookup(project, sourceSetType).isDesugared(owner, name, desc)
     }
@@ -382,7 +382,7 @@ class DesugaredMethodLookup(private val methodDescriptors: Array<String>) {
         "java/util/Set#of(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/Set;",
         "java/util/Set#of(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/Set;",
         "java/util/Set#of(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/util/Set;",
-        "java/util/Set#of([Ljava/lang/Object;)Ljava/util/Set;"
+        "java/util/Set#of([Ljava/lang/Object;)Ljava/util/Set;",
       )
 
     /**

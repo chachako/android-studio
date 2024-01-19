@@ -35,21 +35,21 @@ class EventTest {
           4,
           1,
           Location(0, 1, 3, 4),
-          TaggedValue('L'.toByte(), 1)
+          TaggedValue('L'.toByte(), 1),
         ),
         CompositeCmd.EventMonitorContended(
           EventKind.MONITOR_CONTENDED_ENTER,
           5,
           1,
           TaggedObjectID(0, 1),
-          Location(0, 1, 2, 3)
+          Location(0, 1, 2, 3),
         ),
         CompositeCmd.EventMonitorContended(
           EventKind.MONITOR_CONTENDED_ENTERED,
           0,
           1,
           TaggedObjectID(1, 3),
-          Location(0, 1, 2, 3)
+          Location(0, 1, 2, 3),
         ),
         CompositeCmd.EventMonitorWait(
           EventKind.MONITOR_WAIT,
@@ -57,7 +57,7 @@ class EventTest {
           1,
           TaggedObjectID(0, 1),
           Location(0, 1, 2, 3),
-          0
+          0,
         ),
         CompositeCmd.EventMonitorWaited(
           EventKind.MONITOR_WAITED,
@@ -65,7 +65,7 @@ class EventTest {
           1,
           TaggedObjectID(0, 1),
           Location(0, 1, 2, 3),
-          true
+          true,
         ),
         CompositeCmd.EventException(
           EventKind.EXCEPTION,
@@ -73,7 +73,7 @@ class EventTest {
           1,
           Location(0, 1, 2, 3),
           TaggedObjectID(0, 1),
-          Location(0, 1, 2, 3)
+          Location(0, 1, 2, 3),
         ),
         CompositeCmd.EventLifeCycle(EventKind.VM_START, 8, 1),
         CompositeCmd.EventLifeCycle(EventKind.THREAD_START, 9, 1),
@@ -88,7 +88,7 @@ class EventTest {
           0,
           1,
           2,
-          TaggedObjectID(0, 1)
+          TaggedObjectID(0, 1),
         ),
         CompositeCmd.EventFieldModification(
           EventKind.FIELD_MODIFICATION,
@@ -99,8 +99,8 @@ class EventTest {
           1,
           2,
           TaggedObjectID(0, 1),
-          TaggedValue('L'.toByte(), 1)
-        )
+          TaggedValue('L'.toByte(), 1),
+        ),
       )
     val packet = CompositeCmd(Byte.MAX_VALUE, events)
     assertJDWPObjectAndWireEquals(packet, CompositeCmd::parse)

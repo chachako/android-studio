@@ -57,7 +57,7 @@ class XmlReporterTest {
             <Button xmlns:android="http://schemas.android.com/apk/res/android"
                     android:id="@+id/button1"
                     android:text="Fooo" />
-            """
+            """,
       )
       .indented()
 
@@ -160,7 +160,7 @@ class XmlReporterTest {
                 </issue>
 
             </issues>
-            """
+            """,
     )
   }
 
@@ -218,7 +218,7 @@ class XmlReporterTest {
                 </issue>
 
             </issues>
-            """
+            """,
     )
   }
 
@@ -251,7 +251,7 @@ class XmlReporterTest {
           assertEquals(xmlPrologue + expected.trimIndent() + "\n", xml.dos2unix())
         },
         fullPaths = true,
-        reportType = if (describeSuggestions) XmlFileType.REPORT_WITH_FIXES else XmlFileType.REPORT
+        reportType = if (describeSuggestions) XmlFileType.REPORT_WITH_FIXES else XmlFileType.REPORT,
       )
 
     PathUtils.deleteRecursivelyIfExists(tempDir)
@@ -296,7 +296,7 @@ class XmlReporterTest {
             "<resources>\n" +
             "    <string name=\"user_registration_name1_4\">Register 1/4</string>\n" +
             "</resources>\n" +
-            "\n"
+            "\n",
         )
       )
       .issues(TypographyDetector.FRACTIONS)
@@ -482,7 +482,7 @@ class XmlReporterTest {
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
             "<resources>\n" +
             "    <string name=\"message\">%d unsed resources</string>\n" +
-            "</resources>\n"
+            "</resources>\n",
         )
       )
       .issues(TypoDetector.ISSUE)
@@ -557,7 +557,7 @@ class XmlReporterTest {
             "        android:lines=\"1\"\n" +
             "        android:text=\"Really long text that needs to be ellipsized here - 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\" />\n" +
             "\n" +
-            "</RelativeLayout>\n"
+            "</RelativeLayout>\n",
         )
       )
       .issues(EllipsizeMaxLinesDetector.ISSUE)

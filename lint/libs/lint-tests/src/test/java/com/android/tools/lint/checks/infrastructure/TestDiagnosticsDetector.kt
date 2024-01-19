@@ -52,12 +52,12 @@ internal class TestDiagnosticsDetector : Detector(), SourceCodeScanner {
           assertEquals(
             1,
             diagnostics.size,
-            diagnostics.joinToString(separator = System.lineSeparator()) { it.defaultMessage }
+            diagnostics.joinToString(separator = System.lineSeparator()) { it.defaultMessage },
           )
           val diagnostic = diagnostics.single()
           assertTrue(
             diagnostic.defaultMessage.contains(NULLNESS_MESSAGE),
-            diagnostic.defaultMessage
+            diagnostic.defaultMessage,
           )
           context.report(ID, node, context.getLocation(diagnostic.psi), diagnostic.defaultMessage)
         }
@@ -78,12 +78,12 @@ internal class TestDiagnosticsDetector : Detector(), SourceCodeScanner {
           assertEquals(
             1,
             diagnostics.size,
-            diagnostics.joinToString(separator = System.lineSeparator()) { it.defaultMessage }
+            diagnostics.joinToString(separator = System.lineSeparator()) { it.defaultMessage },
           )
           val diagnostic = diagnostics.single()
           assertTrue(
             diagnostic.defaultMessage.contains(NULLNESS_MESSAGE),
-            diagnostic.defaultMessage
+            diagnostic.defaultMessage,
           )
         }
       }
@@ -103,7 +103,7 @@ internal class TestDiagnosticsDetector : Detector(), SourceCodeScanner {
         category = Category.LINT,
         priority = 5,
         severity = Severity.WARNING,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
 
     const val NULLNESS_MESSAGE =

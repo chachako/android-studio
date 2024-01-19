@@ -49,7 +49,7 @@ import org.xml.sax.SAXException
 class LintFixVerifier(
   private val task: TestLintTask,
   private val mode: TestMode,
-  state: TestResultState
+  state: TestResultState,
 ) {
   private val incidents: List<Incident> = state.incidents
   private val client: TestLintClient = state.client
@@ -151,7 +151,7 @@ class LintFixVerifier(
             expected,
             compatMode1 = true,
             compatMode2 = true,
-            transformer = transformer
+            transformer = transformer,
           )
         } catch (ignore: Throwable) {
           throw throwable
@@ -165,7 +165,7 @@ class LintFixVerifier(
     expected: String,
     compatMode1: Boolean,
     compatMode2: Boolean,
-    transformer: TestResultTransformer = TestResultTransformer { it }
+    transformer: TestResultTransformer = TestResultTransformer { it },
   ): LintFixVerifier {
     var expected = expected
     val diff = StringBuilder(100)
@@ -244,7 +244,7 @@ class LintFixVerifier(
     expectedFile: TestFile?,
     diffs: StringBuilder?,
     compatMode1: Boolean,
-    compatMode2: Boolean
+    compatMode2: Boolean,
   ) {
     assertTrue(expectedFile != null || diffs != null)
     val names: MutableList<String?> = Lists.newArrayList()
@@ -323,7 +323,7 @@ class LintFixVerifier(
             edited,
             diffs,
             compatMode1,
-            compatMode2
+            compatMode2,
           )
         }
         val name = lintFix.getDisplayName()
@@ -340,7 +340,7 @@ class LintFixVerifier(
 
   fun applyFixes(
     pickFix: (Incident, List<LintFix>) -> LintFix?,
-    apply: (Project?, File, ByteArray?) -> Unit
+    apply: (Project?, File, ByteArray?) -> Unit,
   ) {
     val project = incidents.firstNotNullOfOrNull { it.project } ?: return
     val performer =
@@ -362,7 +362,7 @@ class LintFixVerifier(
     lintFix: LintFix,
     before: MutableMap<String, String>,
     after: MutableMap<String, String>,
-    compatMode: Boolean
+    compatMode: Boolean,
   ): Boolean {
     if (isEditingFix(lintFix) || lintFix is LintFixGroup) {
       val edits = getLeafFixes(lintFix)
@@ -375,7 +375,7 @@ class LintFixVerifier(
             requireAutoFixable = false,
             includeMarkers = includeMarkers,
             updateImports = includeMarkers,
-            shortenAll = includeMarkers && !compatMode
+            shortenAll = includeMarkers && !compatMode,
           ) {
           override fun writeFile(file: File, contents: ByteArray?) {
             val project = incident.project
@@ -413,7 +413,7 @@ class LintFixVerifier(
     edited: MutableMap<String, String>,
     diffs: StringBuilder,
     compatMode1: Boolean,
-    compatMode2: Boolean
+    compatMode2: Boolean,
   ) {
     var first = true
 
@@ -657,7 +657,7 @@ class LintFixVerifier(
                     """
             .trimIndent(),
           expected,
-          actual
+          actual,
         )
       }
     }

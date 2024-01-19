@@ -30,7 +30,7 @@ class VersionChecks {
     @Deprecated(
       message = "Use com.android.tools.lint.detector.api.VersionChecks.codeNameToApi instead",
       replaceWith =
-        ReplaceWith("com.android.tools.lint.detector.api.VersionChecks.codeNameToApi(text)")
+        ReplaceWith("com.android.tools.lint.detector.api.VersionChecks.codeNameToApi(text)"),
     )
     @JvmStatic
     fun codeNameToApi(text: String): Int {
@@ -43,7 +43,7 @@ class VersionChecks {
       replaceWith =
         ReplaceWith(
           "com.android.tools.lint.detector.api.VersionChecks.isWithinVersionCheckConditional(context, element, api, lowerBound)"
-        )
+        ),
     )
     @JvmStatic
     @JvmOverloads
@@ -51,13 +51,13 @@ class VersionChecks {
       context: JavaContext,
       element: UElement,
       api: Int,
-      lowerBound: Boolean = true
+      lowerBound: Boolean = true,
     ): Boolean {
       return com.android.tools.lint.detector.api.VersionChecks.isWithinVersionCheckConditional(
         context,
         element,
         api,
-        lowerBound
+        lowerBound,
       )
     }
 
@@ -67,7 +67,7 @@ class VersionChecks {
       replaceWith =
         ReplaceWith(
           "com.android.tools.lint.detector.api.VersionChecks.isWithinVersionCheckConditional(client, evaluator, element, api, lowerBound)"
-        )
+        ),
     )
     @JvmStatic
     @JvmOverloads
@@ -76,14 +76,14 @@ class VersionChecks {
       evaluator: JavaEvaluator,
       element: UElement,
       api: Int,
-      lowerBound: Boolean = true
+      lowerBound: Boolean = true,
     ): Boolean {
       return com.android.tools.lint.detector.api.VersionChecks.isWithinVersionCheckConditional(
         client,
         evaluator,
         element,
         api,
-        lowerBound
+        lowerBound,
       )
     }
 
@@ -93,14 +93,14 @@ class VersionChecks {
       replaceWith =
         ReplaceWith(
           "com.android.tools.lint.detector.api.VersionChecks.isPrecededByVersionCheckExit(context, element, api)"
-        )
+        ),
     )
     @JvmStatic
     fun isPrecededByVersionCheckExit(context: JavaContext, element: UElement, api: Int): Boolean {
       return com.android.tools.lint.detector.api.VersionChecks.isPrecededByVersionCheckExit(
         context,
         element,
-        api
+        api,
       )
     }
 
@@ -110,7 +110,7 @@ class VersionChecks {
       replaceWith =
         ReplaceWith(
           "com.android.tools.lint.detector.api.VersionChecks.isPrecededByVersionCheckExit(client, evaluator, element, api, project)"
-        )
+        ),
     )
     @JvmStatic
     fun isPrecededByVersionCheckExit(
@@ -118,14 +118,14 @@ class VersionChecks {
       evaluator: JavaEvaluator,
       element: UElement,
       api: Int,
-      project: Project? = null
+      project: Project? = null,
     ): Boolean {
       return com.android.tools.lint.detector.api.VersionChecks.isPrecededByVersionCheckExit(
         client,
         evaluator,
         element,
         api,
-        project
+        project,
       )
     }
   }

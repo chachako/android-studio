@@ -24,7 +24,7 @@ open class LintTomlParser {
   fun parse(
     file: File,
     contents: CharSequence,
-    onProblem: ((Severity, Location, String) -> Unit)? = null
+    onProblem: ((Severity, Location, String) -> Unit)? = null,
   ): LintTomlDocument {
     return DefaultLintTomlParser(file, contents, onProblem).getDocument()
   }

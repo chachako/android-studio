@@ -38,7 +38,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                     <ImageView android:style="@style/bogus" android:id="@+id/android_logo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/android_button" android:focusable="false" android:clickable="false" android:layout_weight="1.0" />
                     <LinearLayout other:orientation="horizontal"/>
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -91,7 +91,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                     </foo.bar.LinearLayout>
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -126,7 +126,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                             android:layout_height="wrap_content"/>
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -206,7 +206,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                         app:exampleString="Hello, MyView" />
 
                 </FrameLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -237,7 +237,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                         android:text="Button" />
 
                 </android.support.v7.widget.GridLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -287,7 +287,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                         android:layout_height="match_parent" />
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -314,9 +314,9 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                         android:text="Button" />
 
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expect(
@@ -384,7 +384,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                             </GridLayout>
                         </android.support.v7.widget.CardView>    </LinearLayout>
                 </layout>
-                """
+                """,
           )
           .indented()
       )
@@ -412,7 +412,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                         app:srcCompat="@mipmap/ic_launcher" />
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -440,7 +440,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                         app:buttonTint="#ff00ff" />
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -450,7 +450,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                 <resources>
                     <attr name="buttonTint" />
                 </resources>
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -461,7 +461,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .sdkHome(TestUtils.getSdk().toFile())
       // The built-in AGP test repository does not model libraries correctly,
@@ -494,7 +494,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                         app:strokeColor="@android:color/holo_blue_light"
                         app:strokeWidth="2dp" />
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -507,7 +507,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                     <attr name="strokeColor" />
                     <attr name="strokeWidth" />
                 </resources>
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -518,7 +518,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       .sdkHome(TestUtils.getSdk().toFile())
       .skipTestModes(TestMode.RESOURCE_REPOSITORIES)
@@ -540,7 +540,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                         <color android:color="@color/colorAccent" />
                     </aapt:attr>
                 </inset>
-                """
+                """,
           )
           .indented()
       )
@@ -568,7 +568,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                         android:layout_toRightOf="@+id/replayBlock">
                     </RelativeLayout>
                 </RelativeLayout>
-                """
+                """,
           )
           .indented()
       )
@@ -618,7 +618,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                       app:layout_constraintTop_toBottomOf="@+id/separator_top"
                       tools:text="My Text" />
                 </foo.bar.Baz>
-                """
+                """,
           )
           .indented()
       )
@@ -644,9 +644,9 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
                 </LinearLayout>
-                """
+                """,
           )
-          .indented()
+          .indented(),
       )
       .run()
       .expectClean()
@@ -681,7 +681,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                          app:autoSizePresetSizes="@array/autosize_text_sizes" />
 
                 </LinearLayout>
-                """
+                """,
           )
           .indented(),
         xml(
@@ -702,7 +702,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                     <attr name="autoSizeMinTextSize" format="dimension" />
                     <attr name="autoSizeMaxTextSize" format="dimension" />
                 </resources>
-                """
+                """,
           )
           .indented(),
         gradle(
@@ -714,7 +714,7 @@ class MissingPrefixDetectorTest : AbstractCheckTest() {
                 }
                 """
           )
-          .indented()
+          .indented(),
       )
       // The built-in AGP test repository does not model libraries correctly,
       // though it could -- TODO

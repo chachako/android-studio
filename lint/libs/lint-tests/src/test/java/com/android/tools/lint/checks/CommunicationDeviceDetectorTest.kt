@@ -46,7 +46,7 @@ class CommunicationDeviceDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         audioManagerStub,
-        audioDeviceInfoStub
+        audioDeviceInfoStub,
       )
       .run()
       .expect(
@@ -96,7 +96,7 @@ class CommunicationDeviceDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         audioManagerStub,
-        audioDeviceInfoStub
+        audioDeviceInfoStub,
       )
       .run()
       .expect(
@@ -134,7 +134,7 @@ class CommunicationDeviceDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         audioManagerStub,
-        audioDeviceInfoStub
+        audioDeviceInfoStub,
       )
       .run()
       .expectClean()
@@ -161,7 +161,7 @@ class CommunicationDeviceDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         audioManagerStub,
-        audioDeviceInfoStub
+        audioDeviceInfoStub,
       )
       .run()
       .expectClean()
@@ -189,7 +189,7 @@ class CommunicationDeviceDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         audioManagerStub,
-        audioDeviceInfoStub
+        audioDeviceInfoStub,
       )
       .run()
       .expectClean()
@@ -232,7 +232,7 @@ class CommunicationDeviceDetectorTest : AbstractCheckTest() {
           )
           .indented(),
         audioManagerStub,
-        audioDeviceInfoStub
+        audioDeviceInfoStub,
       )
       .run()
       .expectClean()
@@ -258,7 +258,7 @@ class CommunicationDeviceDetectorTest : AbstractCheckTest() {
                 }
                 """
             )
-            .indented()
+            .indented(),
         )
         .dependsOn(mediaModuleStub)
 

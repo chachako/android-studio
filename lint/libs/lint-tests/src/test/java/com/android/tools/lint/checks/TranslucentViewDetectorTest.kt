@@ -84,7 +84,7 @@ class TranslucentViewDetectorTest : AbstractCheckTest() {
             "    </application>\n" +
             "</manifest>"
         ),
-        themeFile
+        themeFile,
       )
       .run()
       .expect(
@@ -121,7 +121,7 @@ class TranslucentViewDetectorTest : AbstractCheckTest() {
             "    </application>\n" +
             "</manifest>"
         ),
-        themeFile
+        themeFile,
       )
       .run()
       .expectClean()
@@ -151,7 +151,7 @@ class TranslucentViewDetectorTest : AbstractCheckTest() {
             "    }\n" +
             "}\n"
         ),
-        rClass("test.pkg", "@style/AppTheme", "@layout/activity_main")
+        rClass("test.pkg", "@style/AppTheme", "@layout/activity_main"),
       )
       .run()
       .expect(
@@ -185,7 +185,7 @@ class TranslucentViewDetectorTest : AbstractCheckTest() {
         "    <style name=\"SubTheme\" parent=\"AppTheme\">\n" +
         "    </style>\n" +
         "\n" +
-        "</resources>\n"
+        "</resources>\n",
     )
 
   private val manifestWithActivityThemeNoTargetSdk =

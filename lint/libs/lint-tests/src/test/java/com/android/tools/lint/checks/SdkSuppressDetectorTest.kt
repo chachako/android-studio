@@ -36,7 +36,7 @@ class SdkSuppressDetectorTest : AbstractCheckTest() {
             class UnitTestKotlin {
                 private val field1 = GridLayout(null) // OK via @RequiresApiSuppress
             }
-            """
+            """,
           )
           .indented(),
         gradle(
@@ -49,7 +49,7 @@ class SdkSuppressDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(
@@ -90,7 +90,7 @@ class SdkSuppressDetectorTest : AbstractCheckTest() {
                 @androidx.annotation.RequiresApi(api=31) // ERROR: don't use in tests, use @SdkSuppress instead
                 public void test() { }
             }
-            """
+            """,
           )
           .indented(),
         kotlin(
@@ -115,7 +115,7 @@ class SdkSuppressDetectorTest : AbstractCheckTest() {
                 @RequiresApi(api = 31) // OK because we only flag annotations on classes & methods
                 private val field2 = GridLayout(null)
             }
-            """
+            """,
           )
           .indented(),
         gradle(
@@ -147,7 +147,7 @@ class SdkSuppressDetectorTest : AbstractCheckTest() {
             """
           )
           .indented(),
-        SUPPORT_ANNOTATIONS_JAR
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(

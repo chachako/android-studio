@@ -93,7 +93,7 @@ class UastTest : TestCase() {
     library: Boolean = false,
     javaLanguageLevel: LanguageLevel? = null,
     kotlinLanguageLevel: LanguageVersionSettings? = null,
-    check: (UFile) -> Unit = {}
+    check: (UFile) -> Unit = {},
   ) {
     val pair =
       LintUtilsTest.parse(
@@ -101,7 +101,7 @@ class UastTest : TestCase() {
         javaLanguageLevel = javaLanguageLevel,
         kotlinLanguageLevel = kotlinLanguageLevel,
         android = android,
-        library = library
+        library = library,
       )
     val uastFile = pair.first.uastFile
     assertNotNull(uastFile)
@@ -140,7 +140,7 @@ class UastTest : TestCase() {
                         fun kotlinBar() {}
                     }
                     class SubKotlinFoo : KotlinFoo()
-                    """
+                    """,
           ),
           0xa46d4086,
           """
@@ -170,7 +170,7 @@ class UastTest : TestCase() {
                 7MqhN+55U5HohWl2ZTwd+h2RiPpNHCox8XsiEpyehaFUnhIyjNCCxltY9E+W
                 wlhjZacayB68Iv/CREOd0UhNA9uM1s8AVmCm+U6KW9hNP4mwypnVh+5gzcG6
                 gwKKTFFyUMZGHxShgirnEcwImxGMb1x6FCzhAQAA
-                """
+                """,
         ),
         kotlin(
           """
@@ -180,7 +180,7 @@ class UastTest : TestCase() {
                     instance.kotlinBar()
                 }
                 """
-        )
+        ),
       )
 
     check(*testFiles) { file ->
@@ -215,7 +215,7 @@ class UastTest : TestCase() {
                         fun foo() {}
                         fun String.bar(): Int = this.length
                     }
-                    """
+                    """,
           ),
           0xbd459443,
           """
@@ -241,7 +241,7 @@ class UastTest : TestCase() {
                 RTHSgXUpVHQZU3R+l2KDdScyceW4pdEkgYDfob0+xNXPmD5INjTcS2wB98lv
                 EDxPbd7YRcrBTQczDmYxRyHmHZrr1i5YjNtY3IUZw4phx9Bj9CZBNrH2X1tj
                 1gpGBAAA
-                """
+                """,
         ),
         kotlin(
           """
@@ -253,7 +253,7 @@ class UastTest : TestCase() {
                     "42".bar()
                 }
                 """
-        )
+        ),
       )
 
     val names = setOf("foo", "bar")
@@ -394,7 +394,7 @@ class UastTest : TestCase() {
                 4ch4//M12JutFiaJg44mJOp+764li67iV03XetxoV353A5cJk/sOsuyKGdbP
                 mo4Y7z3HXWR57SIK/niIS8whgTcM55uwJBawaMISkqb6nFrGigmrePsieIf3
                 +MD6VBMRB2kHaw7W8ZEhNhx8QqYJCrCJLVYH2A6w8wdjiabo/wIAAA==
-                """
+                """,
         ),
       )
 
@@ -471,7 +471,7 @@ class UastTest : TestCase() {
                 4PQT9jh0L/oYwitU+fYJKBb3P6HykRKOq4SlBVnFNcL6DwFVLsUmasTwxfDN
                 fJjvf/hl0v1pkueT1/Pu0sKl8R8utX+4cNxY4GVsUbxH7DLd0+vBCdAMsBLg
                 AlYpxcUAa7jUA8vQwnoPpQxuho3MJo0Mmxlq3wFRZP9W9wIAAA==
-                """
+                """,
         ),
         kotlin(
           """
@@ -491,7 +491,7 @@ class UastTest : TestCase() {
                      x.dec()
                  }
               """
-        )
+        ),
       )
 
     check(*testFiles) { file ->
@@ -718,7 +718,7 @@ class UastTest : TestCase() {
                 cPP/Yq2SVv3m32D2GXsN4ph5gzvPWJoE86+3HE9Rs1PYSppB3wvykye+ZuLx
                 AR7T/jXpvyDGe/tIWfjSwlcW6b6hI761cB+VfbAYVXy3j3QMPcZmjEyM/H+K
                 owqASwYAAA==
-                """
+                """,
         ),
         kotlin(
           """
@@ -744,7 +744,7 @@ class UastTest : TestCase() {
               consumeFlag(DEPENDENCY_TOP_LEVEL_VAL_FLAG)
             }
           """
-        )
+        ),
       )
 
     check(*testFiles) { file ->
@@ -798,7 +798,7 @@ class UastTest : TestCase() {
           "    public static final fun foo2(@org.jetbrains.annotations.NotNull function: kotlin.jvm.functions.Function0<java.lang.Integer>) : void {\n" +
           "    }\n" +
           "}",
-        file.asSourceString().dos2unix().trim()
+        file.asSourceString().dos2unix().trim(),
       )
     }
   }
@@ -866,7 +866,7 @@ class UastTest : TestCase() {
           "            UBlockExpression [{...}]\n" +
           "                UReturnExpression [return true]\n" +
           "                    ULiteralExpression (value = true) [true] : PsiType:boolean\n",
-        file.asLogTypes()
+        file.asLogTypes(),
       )
     }
   }
@@ -952,7 +952,7 @@ class UastTest : TestCase() {
 
                 """
           .trimIndent(),
-        file.asSourceString().dos2unix()
+        file.asSourceString().dos2unix(),
       )
 
       assertEquals(
@@ -996,7 +996,7 @@ class UastTest : TestCase() {
 
                 """
           .trimIndent(),
-        file.asLogTypes()
+        file.asLogTypes(),
       )
     }
   }
@@ -1169,7 +1169,7 @@ class UastTest : TestCase() {
 
                 """
           .trimIndent(),
-        file.asLogTypes()
+        file.asLogTypes(),
       )
     }
   }
@@ -1208,7 +1208,7 @@ class UastTest : TestCase() {
 
                 """
           .trimIndent(),
-        file.asSourceString().dos2unix()
+        file.asSourceString().dos2unix(),
       )
 
       assertEquals(
@@ -1232,7 +1232,7 @@ class UastTest : TestCase() {
 
                 """
           .trimIndent(),
-        file.asLogTypes()
+        file.asLogTypes(),
       )
     }
   }
@@ -1307,7 +1307,7 @@ class UastTest : TestCase() {
 
                 """
           .trimIndent(),
-        file.asSourceString().dos2unix()
+        file.asSourceString().dos2unix(),
       )
     }
   }
@@ -1378,7 +1378,7 @@ class UastTest : TestCase() {
 
       fun hasTypeParameterKeyword(
         element: PsiTypeParameter?,
-        keyword: KtModifierKeywordToken
+        keyword: KtModifierKeywordToken,
       ): Boolean {
         val ktOrigin =
           when (element) {
@@ -1572,7 +1572,7 @@ class UastTest : TestCase() {
                 """
           .trimIndent()
           .trim(),
-        sb.toString().trim()
+        sb.toString().trim(),
       )
     }
   }
@@ -1613,7 +1613,7 @@ class UastTest : TestCase() {
 
                 """
           .trimIndent(),
-        file.asSourceString().dos2unix()
+        file.asSourceString().dos2unix(),
       )
     }
   }
@@ -1664,7 +1664,7 @@ class UastTest : TestCase() {
                 """
           .trimIndent()
           .trim(),
-        file.asSourceString().dos2unix().trim().replace("\n        \n", "\n")
+        file.asSourceString().dos2unix().trim().replace("\n        \n", "\n"),
       )
     }
 
@@ -1709,7 +1709,7 @@ class UastTest : TestCase() {
                 """
           .trimIndent()
           .trim(),
-        file.asSourceString().dos2unix().trim().replace("\n        \n", "\n")
+        file.asSourceString().dos2unix().trim().replace("\n        \n", "\n"),
       )
     }
   }
@@ -1771,7 +1771,7 @@ class UastTest : TestCase() {
                                         ULiteralExpression (value = "hello") ["hello"] : PsiType:String
                 """
           .trimIndent(),
-        file.asLogTypes(indent = "  ").trim()
+        file.asLogTypes(indent = "  ").trim(),
       )
 
       try {
@@ -1790,7 +1790,7 @@ class UastTest : TestCase() {
       } catch (failure: IllegalStateException) {
         assertEquals(
           "Could not resolve this call: Runnable({ \n    return println(\"hello\")\n})",
-          failure.message
+          failure.message,
         )
       }
     }
@@ -1879,7 +1879,7 @@ class UastTest : TestCase() {
                                   UIdentifier (Identifier (getHello)) [UIdentifier (Identifier (getHello))]
                     """
             .trimIndent(),
-          file.asLogTypes(indent = "  ").trim()
+          file.asLogTypes(indent = "  ").trim(),
         )
 
         // Make sure that all calls correctly resolve
@@ -1892,7 +1892,7 @@ class UastTest : TestCase() {
             }
           }
         )
-      }
+      },
     )
   }
 
@@ -1933,9 +1933,9 @@ class UastTest : TestCase() {
                 }
                     """
             .trimIndent(),
-          file.asSourceString().dos2unix().trim()
+          file.asSourceString().dos2unix().trim(),
         )
-      }
+      },
     )
   }
 
@@ -1973,7 +1973,7 @@ class UastTest : TestCase() {
             }
           }
         )
-      }
+      },
     )
   }
 
@@ -2025,7 +2025,7 @@ class UastTest : TestCase() {
             }
           }
         )
-      }
+      },
     )
   }
 
@@ -2061,7 +2061,7 @@ class UastTest : TestCase() {
             }
           }
         )
-      }
+      },
     )
   }
 
@@ -2103,7 +2103,7 @@ class UastTest : TestCase() {
                     UAnnotationMethod (name = value) [public abstract fun value() : java.lang.String = UastEmptyExpression] : PsiType:String
                 """
           .trimIndent(),
-        file.asLogTypes(indent = "  ").trim()
+        file.asLogTypes(indent = "  ").trim(),
       )
     }
   }
@@ -2144,7 +2144,7 @@ class UastTest : TestCase() {
               val resolved = argument.resolve()
               assertNotNull(
                 "Couldn't resolve `${argument.sourcePsi?.text ?: argument.asSourceString()}`",
-                resolved
+                resolved,
               )
             }
 
@@ -2424,7 +2424,7 @@ class UastTest : TestCase() {
                 assertEquals("kotlin.ranges.IntProgression", exp.getExpressionType()?.canonicalText)
                 assertEquals(
                   "kotlin.ranges.IntRange",
-                  exp.leftOperand.getExpressionType()?.canonicalText
+                  exp.leftOperand.getExpressionType()?.canonicalText,
                 )
               }
             }
@@ -2548,7 +2548,7 @@ class UastTest : TestCase() {
                 }
               }
             }
-          """
+          """,
           )
           .indented(),
         kotlin(
@@ -2557,7 +2557,7 @@ class UastTest : TestCase() {
             package pkg.sub
             import java.io.Closeable
             class Manager : Closeable
-          """
+          """,
           )
           .indented(),
       )
@@ -2636,7 +2636,7 @@ class UastTest : TestCase() {
                 GcpXKiUqbxNtVSh7KlasfKF1ZIVVvBccwUEWyweVK1hDjvO7nD1jzPNgI9P8
                 iuI7ytJnbHxP34t7HHNMpo33GZeWeB2b2OLsYKnJ83mwRHdQW9rxn2HL7T4y
                 PnZ8XPOxi+s+buCmjz1U+qAYVez3kY2xFuNWjNsxcr8Ai+me74gCAAA=
-                """
+                """,
         ),
         kotlin(
           """
@@ -2651,7 +2651,7 @@ class UastTest : TestCase() {
                   return instance1 == instance2
                 }
                 """
-        )
+        ),
       )
 
     check(*testFiles) { file ->
@@ -2690,7 +2690,7 @@ class UastTest : TestCase() {
             ) : InternalDynamicFeatureExtension by publicExtensionImpl {
                 // fun sandbox(action: Action<Sandbox>) // delegate
             }
-          """
+          """,
         ),
         bytecode(
           "libs/lib1.jar",
@@ -2719,7 +2719,7 @@ class UastTest : TestCase() {
                 01YteUb37xvkEqRPsrmCoPBjHrsp7/Gxz0Q0l8cZvSCa284t96SoPUW+4FNn
                 wEM+8py27weCpWVhOgR5ZHfI56iQT0ZNKgodyi9TUM9iFXsyXsuMgqwxhlA6
                 WOtgvYMNFCXFZgcmSkOQEFvYHkILUQ5RCbETQs1wN4T2DWW/IWXjAQAA
-                """
+                """,
         ),
         bytecode(
           "libs/lib2.jar",
@@ -2729,7 +2729,7 @@ class UastTest : TestCase() {
               package my
 
               interface Sandbox
-            """
+            """,
             )
             .indented(),
           0x3dae47f7,
@@ -2745,7 +2745,7 @@ class UastTest : TestCase() {
                 GO93fSkmQoqE3ctkv5uLKYXjnDBc/r9nJBNkSLeuu6p8CG7zttJ3ptaEy8eN
                 9abRz6Y1Ra0X1jqvvHG27TENB/grgfNfPcMFzxkjD7l7OaIMcYZ+hgEkWxxl
                 GOI4B7U4wWkO0SJpMfoBSLYswx0BAAA=
-                """
+                """,
         ),
         // To reproduce b/314320270, remove this dependency such that
         // `DynamicFeatureExtension` as a super type of `InternalDynamicFeatureExtension`
@@ -2763,7 +2763,7 @@ class UastTest : TestCase() {
                 val sandbox: Sandbox
                 fun sandbox(action: Sandbox.() -> Unit)
               }
-            """
+            """,
             )
             .indented(),
           0x7e98aaf4,
@@ -2785,7 +2785,7 @@ class UastTest : TestCase() {
                 lEYOrqW49Wg4aMlK0Kec9XnOyT/aFo0E6Xg14GmGDCz690OK4tsGCHOQJc5m
                 zICLLbptdvFIQDGxD7BNd5XQWySx1ECqittVLFdxBx65WKkih9UGmMZd3GvA
                 1bivsabhaOQ1MhpWEq5rFDQ2fgNSA6T+SwMAAA==
-                """
+                """,
         ),
         kotlin(
           "src/main/test/InternalTestExtension.kt",
@@ -2793,7 +2793,7 @@ class UastTest : TestCase() {
             package main.test
 
             interface InternalTestExtension
-          """
+          """,
         ),
         kotlin(
           "src/main/impl/InternalDynamicFeatureExtension.kt",
@@ -2808,7 +2808,7 @@ class UastTest : TestCase() {
             interface InternalDynamicFeatureExtension : DynamicFeatureExtension, InternalTestExtension {
               fun sandbox(action: Action<Sandbox>)
             }
-          """
+          """,
         ),
         kotlin(
           "src/main/impl/DynamicFeatureExtensionImpl.kt",
@@ -2818,7 +2818,7 @@ class UastTest : TestCase() {
             abstract class DynamicFeatureExtensionImpl : InternalDynamicFeatureExtension {
               // fun sandbox(action: Action<Sandbox>) // abstract
             }
-          """
+          """,
         ),
       )
     check(*testFiles) { file ->
@@ -2946,7 +2946,7 @@ class UastTest : TestCase() {
               public interface ThrowingRunnable {
                 void run() throws Throwable;
               }
-            """
+            """,
           )
           .indented(),
       )

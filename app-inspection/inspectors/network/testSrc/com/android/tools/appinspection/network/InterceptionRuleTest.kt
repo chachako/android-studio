@@ -42,17 +42,7 @@ import studio.network.inspection.NetworkInspectorProtocol.Transformation.HeaderR
 import studio.network.inspection.NetworkInspectorProtocol.Transformation.StatusCodeReplaced
 
 private val METHODS =
-  listOf(
-    "GET",
-    "POST",
-    "HEAD",
-    "PUT",
-    "DELETE",
-    "TRACE",
-    "CONNECT",
-    "PATCH",
-    "OPTIONS",
-  )
+  listOf("GET", "POST", "HEAD", "PUT", "DELETE", "TRACE", "CONNECT", "PATCH", "OPTIONS")
 
 class InterceptionRuleTest {
 
@@ -185,7 +175,7 @@ class InterceptionRuleTest {
       NetworkResponse(
         200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "response-status-code" to listOf("200")),
-        "Body".byteInputStream()
+        "Body".byteInputStream(),
       )
     val proto =
       StatusCodeReplaced.newBuilder()
@@ -205,7 +195,7 @@ class InterceptionRuleTest {
       NetworkResponse(
         200,
         mapOf(null to listOf("HTTP/1.0 200"), "response-status-code" to listOf("200")),
-        "Body".byteInputStream()
+        "Body".byteInputStream(),
       )
     transformedResponse = StatusCodeReplacedTransformation(proto).transform(responseWithoutMessage)
     assertThat(transformedResponse.interception.statusCode).isTrue()
@@ -353,7 +343,7 @@ class InterceptionRuleTest {
       NetworkResponse(
         200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "content-type" to listOf("text/html")),
-        "BodyXBodyXBodyXBoody".byteInputStream()
+        "BodyXBodyXBodyXBoody".byteInputStream(),
       )
     val bodyModifiedProto =
       BodyModified.newBuilder()
@@ -374,7 +364,7 @@ class InterceptionRuleTest {
       NetworkResponse(
         200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "content-type" to listOf("application/json")),
-        "Body".byteInputStream()
+        "Body".byteInputStream(),
       )
     transformedResponse =
       BodyModifiedTransformation(bodyModifiedProto).transform(responseWithJsonContent)
@@ -388,7 +378,7 @@ class InterceptionRuleTest {
       NetworkResponse(
         200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "content-type" to listOf("text/html")),
-        "BodyXBodyXBodyXBoody".byteInputStream()
+        "BodyXBodyXBodyXBoody".byteInputStream(),
       )
     val bodyModifiedRegexProto =
       BodyModified.newBuilder()
@@ -416,9 +406,9 @@ class InterceptionRuleTest {
         mapOf(
           null to listOf("HTTP/1.0 200 OK"),
           "content-type" to listOf("text/html"),
-          "content-encoding" to listOf("gzip")
+          "content-encoding" to listOf("gzip"),
         ),
-        byteOutput.toByteArray().inputStream()
+        byteOutput.toByteArray().inputStream(),
       )
     val bodyModifiedProto =
       BodyModified.newBuilder()
@@ -448,9 +438,9 @@ class InterceptionRuleTest {
         mapOf(
           null to listOf("HTTP/1.0 200 OK"),
           "content-type" to listOf("text/html"),
-          "content-encoding" to listOf("gzip")
+          "content-encoding" to listOf("gzip"),
         ),
-        byteOutput.toByteArray().inputStream()
+        byteOutput.toByteArray().inputStream(),
       )
     val bodyReplaced =
       BodyReplaced.newBuilder().apply { body = ByteString.copyFrom("Test".toByteArray()) }.build()
@@ -467,13 +457,13 @@ class InterceptionRuleTest {
       NetworkResponse(
         200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "content-type" to listOf("text/html")),
-        "Body1".toByteArray().inputStream()
+        "Body1".toByteArray().inputStream(),
       )
     val response2 =
       NetworkResponse(
         200,
         mapOf(null to listOf("HTTP/1.0 200 OK"), "content-type" to listOf("text/html")),
-        "Body2".toByteArray().inputStream()
+        "Body2".toByteArray().inputStream(),
       )
     val bodyReplaced =
       BodyReplaced.newBuilder().apply { body = ByteString.copyFrom("Test".toByteArray()) }.build()

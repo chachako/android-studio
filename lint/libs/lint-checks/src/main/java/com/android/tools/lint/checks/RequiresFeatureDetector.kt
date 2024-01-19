@@ -72,7 +72,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
     context: JavaContext,
     element: UElement,
     annotationInfo: AnnotationInfo,
-    usageInfo: AnnotationUsageInfo
+    usageInfo: AnnotationUsageInfo,
   ) {
     val method = usageInfo.referenced as? PsiMethod ?: return
 
@@ -101,7 +101,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
         element,
         context.getLocation(element),
         "`${method.name}` should only be called if the feature `$name` is " +
-          "present; to check call `$reference`"
+          "present; to check call `$reference`",
       )
     }
   }
@@ -132,7 +132,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
      * javadoc-syntax reference to the checker method; the first string parameter should be the
      * feature name parameter
      */
-    enforcement: String
+    enforcement: String,
   ) {
     private val className: String?
     private val methodName: String
@@ -164,7 +164,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
           UExpression::class.java,
           true,
           UMethod::class.java,
-          UClass::class.java
+          UClass::class.java,
         )
 
       while (currentExpression != null) {
@@ -182,7 +182,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
             UExpression::class.java,
             true,
             UMethod::class.java,
-            UClass::class.java
+            UClass::class.java,
           )
       }
 
@@ -191,7 +191,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
 
     private class FeatureCheckExitFinder(
       private val enforcement: EnforcementChecker,
-      private val endElement: UElement
+      private val endElement: UElement,
     ) : AbstractUastVisitor() {
 
       private var found = false
@@ -263,7 +263,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
     fun isWithinNameCheckConditional(
       evaluator: JavaEvaluator,
       element: UElement,
-      nameLookup: NameLookup? = null
+      nameLookup: NameLookup? = null,
     ): Boolean {
       var current = skipParenthesizedExprUp(element.uastParent)
       var prev = element
@@ -350,7 +350,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
       element: UElement,
       and: Boolean,
       prev: UElement?,
-      nameLookup: NameLookup?
+      nameLookup: NameLookup?,
     ): Boolean? {
       if (element is UPolyadicExpression) {
         val tokenType = element.operator
@@ -400,7 +400,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
     private fun isValidFeatureCheckCall(
       and: Boolean,
       call: UCallExpression,
-      nameLookup: NameLookup?
+      nameLookup: NameLookup?,
     ): Boolean? {
       val method = call.resolve() ?: return null
       return isValidFeatureCheckCall(and, call, method, nameLookup)
@@ -410,7 +410,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
       and: Boolean,
       call: UElement,
       method: PsiMethod,
-      nameLookup: NameLookup?
+      nameLookup: NameLookup?,
     ): Boolean? {
       val name = method.name
 
@@ -586,7 +586,7 @@ class RequiresFeatureDetector : AbstractAnnotationDetector(), SourceCodeScanner 
         priority = 6,
         severity = Severity.WARNING,
         androidSpecific = true,
-        implementation = IMPLEMENTATION
+        implementation = IMPLEMENTATION,
       )
   }
 }

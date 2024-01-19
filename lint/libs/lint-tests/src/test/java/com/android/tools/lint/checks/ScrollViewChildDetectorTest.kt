@@ -40,7 +40,7 @@ class ScrollViewChildDetectorTest : AbstractCheckTest() {
                         android:layout_height="match_parent" />
 
                 </HorizontalScrollView>
-                """
+                """,
           )
           .indented()
       )
@@ -97,7 +97,7 @@ class ScrollViewChildDetectorTest : AbstractCheckTest() {
 
                 </ScrollView>
             </LinearLayout>
-            """
+            """,
           )
           .indented()
       )

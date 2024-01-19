@@ -151,7 +151,7 @@ class LintDetectorDetector : Detector(), UastScanner {
             USE_UAST,
             node,
             context.getLocation(node),
-            "Do not invoke `super.visitAnnotationUsage`"
+            "Do not invoke `super.visitAnnotationUsage`",
           )
         }
       }
@@ -215,7 +215,7 @@ class LintDetectorDetector : Detector(), UastScanner {
       context.getLocation(element),
       "Expected to also find a documentation example test (`testDocumentationExample`) which shows a " +
         "simple, typical scenario which triggers the test, and which will be extracted into lint's " +
-        "per-issue documentation pages"
+        "per-issue documentation pages",
     )
   }
 
@@ -241,7 +241,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         MISSING_VENDOR,
         declaration,
         context.getNameLocation(declaration),
-        "An `IssueRegistry` should override the `vendor` property"
+        "An `IssueRegistry` should override the `vendor` property",
       )
     }
   }
@@ -267,7 +267,7 @@ class LintDetectorDetector : Detector(), UastScanner {
           USE_KOTLIN,
           declaration,
           context.getNameLocation(declaration),
-          "New lint checks should be implemented in Kotlin to take advantage of a lot of Kotlin-specific mechanisms in the Lint API"
+          "New lint checks should be implemented in Kotlin to take advantage of a lot of Kotlin-specific mechanisms in the Lint API",
         )
       }
     }
@@ -283,7 +283,7 @@ class LintDetectorDetector : Detector(), UastScanner {
             node,
             CLASS_PSI_METHOD,
             "Don't call PsiMethod#getBody(); you must use UAST instead. " +
-              "If you don't have a UMethod call UastFacade.getMethodBody(method)"
+              "If you don't have a UMethod call UastFacade.getMethodBody(method)",
           )
         }
         "getParent" -> {
@@ -291,7 +291,7 @@ class LintDetectorDetector : Detector(), UastScanner {
             node,
             CLASS_PSI_ELEMENT,
             "Don't call `PsiElement#getParent()`; you should use UAST instead and call `getUastParent()`",
-            requireUastReceiver = true
+            requireUastReceiver = true,
           )
         }
         "getContainingClass" -> {
@@ -299,7 +299,7 @@ class LintDetectorDetector : Detector(), UastScanner {
             node,
             CLASS_PSI_MEMBER,
             "Don't call `PsiMember#getContainingClass()`; you should use UAST instead and call `getContainingUClass()`",
-            requireUastReceiver = true
+            requireUastReceiver = true,
           )
         }
         "getParentOfType" -> {
@@ -311,7 +311,7 @@ class LintDetectorDetector : Detector(), UastScanner {
             checkCall(
               node,
               CLASS_PSI_TREE_UTIL,
-              "Don't call `PsiTreeUtil#getParentOfType()`; you should use UAST instead and call `UElement.parentOfType`"
+              "Don't call `PsiTreeUtil#getParentOfType()`; you should use UAST instead and call `UElement.parentOfType`",
             )
           }
         }
@@ -320,7 +320,7 @@ class LintDetectorDetector : Detector(), UastScanner {
             node,
             CLASS_PSI_VARIABLE,
             "Don't call PsiField#getInitializer(); you must use UAST instead. " +
-              "If you don't have a UField call UastFacade.getInitializerBody(field)"
+              "If you don't have a UField call UastFacade.getInitializerBody(field)",
           )
         }
         "equals" -> {
@@ -355,7 +355,7 @@ class LintDetectorDetector : Detector(), UastScanner {
               TEXT_FORMAT,
               node,
               context.getLocation(node),
-              "Lint checks should not be printing to console; use `LintClient.log` instead"
+              "Lint checks should not be printing to console; use `LintClient.log` instead",
             )
           }
         }
@@ -416,7 +416,7 @@ class LintDetectorDetector : Detector(), UastScanner {
                 source,
                 location,
                 "In unit tests, use the fullwidth dollar sign, `＄`, instead of `\$`, to avoid having to use cumbersome escapes. Lint will treat a `＄` as a `\$`.",
-                fix
+                fix,
               )
               return
             }
@@ -475,7 +475,7 @@ class LintDetectorDetector : Detector(), UastScanner {
                   node,
                   context.getLocation(node),
                   "Use `Scope.${field.name}` instead",
-                  fix
+                  fix,
                 )
               }
             }
@@ -528,7 +528,7 @@ class LintDetectorDetector : Detector(), UastScanner {
               argument,
               location,
               "Single sentence error messages should not end with a period",
-              fix
+              fix,
             )
           }
         }
@@ -660,7 +660,7 @@ class LintDetectorDetector : Detector(), UastScanner {
           TEXT_FORMAT,
           argument,
           getStringLocation(argument, title),
-          "The issue summary should be shorter; typically just a 3-6 words; it's used as a topic header in HTML reports and in the IDE inspections window"
+          "The issue summary should be shorter; typically just a 3-6 words; it's used as a topic header in HTML reports and in the IDE inspections window",
         )
       } else {
         if (title[0].isLowerCase()) {
@@ -668,7 +668,7 @@ class LintDetectorDetector : Detector(), UastScanner {
             TEXT_FORMAT,
             argument,
             getStringLocation(argument, title),
-            "The issue summary should be capitalized"
+            "The issue summary should be capitalized",
           )
         }
         if (title.endsWith(".")) {
@@ -676,7 +676,7 @@ class LintDetectorDetector : Detector(), UastScanner {
             TEXT_FORMAT,
             argument,
             getStringLocation(argument, title),
-            "The issue summary should *not* end with a period (think of it as a headline)"
+            "The issue summary should *not* end with a period (think of it as a headline)",
           )
         }
       }
@@ -715,21 +715,21 @@ class LintDetectorDetector : Detector(), UastScanner {
           ID,
           idArgument,
           context.getLocation(idArgument),
-          "Lint issue IDs should use capitalized camel case, such as `MyIssueId`"
+          "Lint issue IDs should use capitalized camel case, such as `MyIssueId`",
         )
       } else if (id.contains(" ")) {
         context.report(
           ID,
           idArgument,
           context.getLocation(idArgument),
-          "Lint issue IDs should not contain spaces, such as `MyIssueId`"
+          "Lint issue IDs should not contain spaces, such as `MyIssueId`",
         )
       } else if (leaf.length >= 40) {
         context.report(
           ID,
           idArgument,
           context.getLocation(idArgument),
-          "Lint issue IDs should be reasonably short (< 40 chars); they're used in suppress annotations etc"
+          "Lint issue IDs should be reasonably short (< 40 chars); they're used in suppress annotations etc",
         )
       }
     }
@@ -765,7 +765,7 @@ class LintDetectorDetector : Detector(), UastScanner {
       // string context; for example, in the string "hello world", if we're looking
       // for the string "l" we might pick the very first "l" in "hello", but if we
       // pass in the window "wor|ld" it will find the "l" in "world" instead.
-      window: String = ""
+      window: String = "",
     ): Location {
       val start = location.start?.offset ?: return location
       val end = location.end?.offset ?: return location
@@ -839,7 +839,7 @@ class LintDetectorDetector : Detector(), UastScanner {
           argument,
           getStringLocation(argument, url),
           //noinspection LintImplUnexpectedDomain
-          "Don't point to old `http://b.android.com` links; should be using `https://issuetracker.google.com` instead"
+          "Don't point to old `http://b.android.com` links; should be using `https://issuetracker.google.com` instead",
         )
       } else if (url.startsWith("https://issuetracker.google.com/")) {
         val issueLength = url.length - (url.lastIndexOf('/') + 1)
@@ -849,7 +849,7 @@ class LintDetectorDetector : Detector(), UastScanner {
             CHECK_URL,
             argument,
             getStringLocation(argument, url),
-            "Suspicious issue tracker length; expected a $expectedLength digit issue id, but was $issueLength"
+            "Suspicious issue tracker length; expected a $expectedLength digit issue id, but was $issueLength",
           )
         }
       } else {
@@ -863,7 +863,7 @@ class LintDetectorDetector : Detector(), UastScanner {
               CHECK_URL,
               argument,
               getStringLocation(argument, url),
-              "Unexpected protocol `$protocol` in `$url`"
+              "Unexpected protocol `$protocol` in `$url`",
             )
           } else {
             val host = parsed.host
@@ -874,7 +874,7 @@ class LintDetectorDetector : Detector(), UastScanner {
                 UNEXPECTED_DOMAIN,
                 argument,
                 getStringLocation(argument, url),
-                "Don't use internal Google links (`$url`)"
+                "Don't use internal Google links (`$url`)",
               )
             } else if (
               host != null &&
@@ -902,7 +902,7 @@ class LintDetectorDetector : Detector(), UastScanner {
                 UNEXPECTED_DOMAIN,
                 argument,
                 getStringLocation(argument, url),
-                "Unexpected URL host `$host`; for the builtin Android Lint checks make sure to use an authoritative link (`$url`)"
+                "Unexpected URL host `$host`; for the builtin Android Lint checks make sure to use an authoritative link (`$url`)",
               )
             } else if (protocol == "http") {
               // Use https for our known domains, not http
@@ -910,7 +910,7 @@ class LintDetectorDetector : Detector(), UastScanner {
                 UNEXPECTED_DOMAIN,
                 argument,
                 getStringLocation(argument, url),
-                "Use https, not http, for more info links (`$url`)"
+                "Use https, not http, for more info links (`$url`)",
               )
             }
           }
@@ -919,7 +919,7 @@ class LintDetectorDetector : Detector(), UastScanner {
             CHECK_URL,
             argument,
             getStringLocation(argument, url),
-            "The URL `$url` cannot be parsed: $e"
+            "The URL `$url` cannot be parsed: $e",
           )
         }
       }
@@ -949,7 +949,7 @@ class LintDetectorDetector : Detector(), UastScanner {
                 "are already trimmed by indent by lint when displaying to users${
                                 if (isUnitTestFile) ". Instead, call `.indented()` on the surrounding `${(argument.uastParent as? UCallExpression)?.methodName}()` test file construction" else ""
                                 }",
-              fix
+              fix,
             )
           }
         }
@@ -1042,7 +1042,7 @@ class LintDetectorDetector : Detector(), UastScanner {
               TEXT_FORMAT,
               argument,
               location,
-              "Question marks should not be separated by a space"
+              "Question marks should not be separated by a space",
             )
           }
 
@@ -1091,7 +1091,7 @@ class LintDetectorDetector : Detector(), UastScanner {
               "Multi-line issue explanation strings will interpret line separators as hard breaks, and this " +
                 "looks like a continuation of the same paragraph. Consider using \\ at the end of the previous " +
                 "line to indicate that the lines should be joined, or add a blank line between unrelated " +
-                "sentences, or suppress this issue type here."
+                "sentences, or suppress this issue type here.",
             )
             return
           }
@@ -1157,7 +1157,7 @@ class LintDetectorDetector : Detector(), UastScanner {
       pattern: Regex,
       string: String,
       argument: UExpression,
-      typeString: String
+      typeString: String,
     ): Boolean {
       val xml = pattern.find(string)
       return if (xml != null) {
@@ -1173,7 +1173,7 @@ class LintDetectorDetector : Detector(), UastScanner {
           argument,
           location,
           "\"$s\" looks like $typeString; surround with backtics in string to display as symbol, e.g. \\`$s\\`",
-          fix
+          fix,
         )
         true
       } else {
@@ -1197,7 +1197,7 @@ class LintDetectorDetector : Detector(), UastScanner {
       argument: UExpression,
       text: String,
       begin: Int,
-      replacements: List<String>
+      replacements: List<String>,
     ) {
       if (replacements.size < 2) { // first is the typo itself
         return
@@ -1266,7 +1266,7 @@ class LintDetectorDetector : Detector(), UastScanner {
       call: UCallExpression,
       expectedContainer: String,
       message: String,
-      requireUastReceiver: Boolean = false
+      requireUastReceiver: Boolean = false,
     ) {
       if (requireUastReceiver) {
         call.receiverType?.let {
@@ -1336,7 +1336,7 @@ class LintDetectorDetector : Detector(), UastScanner {
     private val TEST_IMPLEMENTATION =
       Implementation(
         LintDetectorDetector::class.java,
-        EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES)
+        EnumSet.of(Scope.JAVA_FILE, Scope.TEST_SOURCES),
       )
 
     /** Expected lint id format. */
@@ -1371,7 +1371,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         priority = 6,
         severity = Severity.ERROR,
         implementation = IMPLEMENTATION,
-        platforms = JDK_SET
+        platforms = JDK_SET,
       )
 
     /** Bad URLs in issue registrations. */
@@ -1393,7 +1393,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         priority = 6,
         severity = Severity.ERROR,
         implementation = IMPLEMENTATION,
-        platforms = JDK_SET
+        platforms = JDK_SET,
       )
 
     /** Unexpected URL domain. */
@@ -1414,7 +1414,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         // such that it doesn't by default flag problems in third party lint checks
         enabledByDefault = false,
         implementation = IMPLEMENTATION,
-        platforms = JDK_SET
+        platforms = JDK_SET,
       )
 
     /** Suggestions around lint string formats. */
@@ -1443,7 +1443,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         priority = 6,
         severity = WARNING,
         implementation = IMPLEMENTATION,
-        platforms = JDK_SET
+        platforms = JDK_SET,
       )
 
     /** Should reuse existing constants. */
@@ -1460,7 +1460,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         priority = 6,
         severity = WARNING,
         implementation = IMPLEMENTATION,
-        platforms = JDK_SET
+        platforms = JDK_SET,
       )
 
     /** Calling PSI methods when you should be calling UAST methods. */
@@ -1490,7 +1490,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         priority = 4,
         severity = Severity.ERROR,
         implementation = IMPLEMENTATION,
-        platforms = JDK_SET
+        platforms = JDK_SET,
       )
 
     /** Comparing PSI elements with equals. */
@@ -1511,7 +1511,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         platforms = JDK_SET,
         // There are still exceptions to this rule; see for example the tests for
         // SamDetector if you try to change the example in that detector
-        enabledByDefault = false
+        enabledByDefault = false,
       )
 
     /** Still writing lint checks in Java. */
@@ -1533,7 +1533,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         priority = 4,
         severity = WARNING,
         implementation = IMPLEMENTATION,
-        platforms = JDK_SET
+        platforms = JDK_SET,
       )
 
     /** IssueRegistry not providing a vendor. */
@@ -1564,7 +1564,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         priority = 4,
         severity = WARNING,
         implementation = IMPLEMENTATION,
-        platforms = JDK_SET
+        platforms = JDK_SET,
       )
 
     /** Calling .trimIndent() on messages intended for lint. */
@@ -1596,7 +1596,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         priority = 4,
         severity = Severity.ERROR,
         implementation = TEST_IMPLEMENTATION,
-        platforms = JDK_SET
+        platforms = JDK_SET,
       )
 
     /** Using ${"$"} or ${'$'} in Kotlin string literals in lint unit tests. */
@@ -1626,7 +1626,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         priority = 4,
         severity = Severity.ERROR,
         implementation = TEST_IMPLEMENTATION,
-        platforms = JDK_SET
+        platforms = JDK_SET,
       )
 
     /** No documentation example in unit tests */
@@ -1654,7 +1654,7 @@ class LintDetectorDetector : Detector(), UastScanner {
         severity = WARNING,
         implementation = TEST_IMPLEMENTATION,
         platforms = JDK_SET,
-        enabledByDefault = false
+        enabledByDefault = false,
       )
   }
 }

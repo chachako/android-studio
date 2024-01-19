@@ -25,7 +25,7 @@ class KlibTestFile(
   to: String,
   val encoded: String?,
   val checksum: Int?,
-  vararg val files: TestFile
+  vararg val files: TestFile,
 ) : TestFile() {
   private val sourceLanguage: KLibLanguage =
     KLibLanguage.values().find { lang -> files.all { it::class in lang.sourceFileTypes } }

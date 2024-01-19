@@ -186,7 +186,7 @@ class LintFixTest : TestCase() {
           Category.MESSAGES,
           5,
           Severity.WARNING,
-          Implementation(SampleTestDetector::class.java, Scope.JAVA_FILE_SCOPE)
+          Implementation(SampleTestDetector::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }

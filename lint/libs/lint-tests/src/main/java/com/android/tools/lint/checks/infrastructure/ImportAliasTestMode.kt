@@ -43,7 +43,7 @@ class ImportAliasTestMode :
   UastSourceTransformationTestMode(
     description = "Import aliases",
     "TestMode.IMPORT_ALIAS",
-    "import-alias"
+    "import-alias",
   ) {
   override val diffExplanation: String =
     // first line shorter: expecting to prefix that line with
@@ -72,7 +72,7 @@ class ImportAliasTestMode :
     source: String,
     context: JavaContext,
     root: UFile,
-    clientData: MutableMap<String, Any>
+    clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
     if (!isKotlin(root.sourcePsi)) {
       return mutableListOf()
@@ -117,7 +117,7 @@ class ImportAliasTestMode :
           node: UElement,
           cls: PsiClass?,
           offset: Int,
-          type: PsiType
+          type: PsiType,
         ) {
           val typeText = node.sourcePsi?.text?.substringBefore('<') ?: return
           if (typeText.isBlank()) {
@@ -137,7 +137,7 @@ class ImportAliasTestMode :
                   range.startOffset,
                   min(range.endOffset, range.startOffset + typeText.length),
                   if (typeText.endsWith("?")) "$aliasName?"
-                  else if (typeText.endsWith("!!")) "$aliasName!!" else aliasName
+                  else if (typeText.endsWith("!!")) "$aliasName!!" else aliasName,
                 )
             }
           }
