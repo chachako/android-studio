@@ -19,8 +19,6 @@ package com.android.build.gradle.internal.dependency
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
-import com.android.build.gradle.internal.dexing.readDesugarGraph
-import com.android.build.gradle.internal.dexing.writeDesugarGraph
 import com.android.build.gradle.internal.errors.MessageReceiverImpl
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.scope.Java8LangSupport
@@ -39,6 +37,7 @@ import com.android.builder.dexing.isJarFile
 import com.android.builder.dexing.r8.ClassFileProviderFactory
 import com.android.builder.files.SerializableFileChanges
 import com.android.utils.FileUtils
+import com.google.common.annotations.VisibleForTesting
 import com.google.common.io.Closer
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.transform.CacheableTransform
@@ -65,6 +64,8 @@ import org.gradle.work.Incremental
 import org.gradle.work.InputChanges
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import javax.inject.Inject
 
 @CacheableTransform
@@ -295,52 +296,70 @@ abstract class BaseDexingTransform<T : BaseDexingTransform.Parameters> : Transfo
 /**
  * Desugaring graph used for incremental dexing. It contains class files and their dependencies.
  *
- * This graph handles files with absolute paths. To make it relocatable, it requires that all files
- * in the graph share one single root directory ([rootDir]) so that they can be converted to
- * relative paths.
+ * This graph handles files with absolute paths. To make it relocatable, this graph internally
+ * maintains a [relocatableDesugarGraph] which contains Unix-style relative paths of the files
+ * (the paths need to be *relative* and in *Unix style* so that they can be used across
+ * filesystems). When writing this graph to disk, we will write the [relocatableDesugarGraph].
  *
- * Internally, this graph maintains a [relocatableDesugarGraph] containing relative paths of the
- * files. When writing this graph to disk, we will write the [relocatableDesugarGraph].
+ * To make it easier to convert absolute paths to relative paths, we currently require that all
+ * files in the graph share one single root directory ([rootDir]).
  */
-private class DesugarGraph(
+@VisibleForTesting
+internal class DesugarGraph(
 
     /** The root directory that is shared among all files in the desugaring graph. */
     private val rootDir: File,
 
-    /** The relocatable desugaring graph, which contains relative paths of the files. */
-    private val relocatableDesugarGraph: MutableDependencyGraph<File> = MutableDependencyGraph()
+    /** The relocatable desugaring graph, which contains Unix-style relative paths of the files. */
+    private val relocatableDesugarGraph: MutableDependencyGraph<String> = MutableDependencyGraph()
 
 ) : DependencyGraphUpdater<File> {
 
     override fun addEdge(dependent: File, dependency: File) {
         relocatableDesugarGraph.addEdge(
-            dependent.relativeTo(rootDir),
-            dependency.relativeTo(rootDir)
+            dependent.toUnixStyleRelativePath(),
+            dependency.toUnixStyleRelativePath()
         )
     }
 
     fun removeNode(nodeToRemove: File) {
-        relocatableDesugarGraph.removeNode(nodeToRemove.relativeTo(rootDir))
+        relocatableDesugarGraph.removeNode(nodeToRemove.toUnixStyleRelativePath())
     }
 
     fun getAllDependents(nodes: Collection<File>): Set<File> {
-        val relativePaths = nodes.mapTo(mutableSetOf()) { it.relativeTo(rootDir) }
+        val relativePaths = nodes.mapTo(mutableSetOf()) { it.toUnixStyleRelativePath() }
 
         val dependents = relocatableDesugarGraph.getAllDependents(relativePaths)
 
         return dependents.mapTo(mutableSetOf()) { rootDir.resolve(it) }
     }
 
-    fun write(relocatableDesugarGraphFile: File) {
-        writeDesugarGraph(relocatableDesugarGraphFile, relocatableDesugarGraph)
+    private fun File.toUnixStyleRelativePath(): String {
+        val unixStyleRelativePath = relativeTo(rootDir).invariantSeparatorsPath
+
+        check(!unixStyleRelativePath.startsWith("..")) {
+            "The given file '$path' is located outside the root directory '${rootDir.path}'"
+        }
+
+        return unixStyleRelativePath
+    }
+
+    fun write(desugarGraphFile: File) {
+        ObjectOutputStream(desugarGraphFile.outputStream().buffered()).use {
+            it.writeObject(relocatableDesugarGraph)
+        }
     }
 
     companion object {
 
-        fun read(relocatableDesugarGraphFile: File, rootDir: File): DesugarGraph {
+        fun read(desugarGraphFile: File, rootDir: File): DesugarGraph {
             return DesugarGraph(
                 rootDir = rootDir,
-                relocatableDesugarGraph = readDesugarGraph(relocatableDesugarGraphFile)
+                relocatableDesugarGraph =
+                    ObjectInputStream(desugarGraphFile.inputStream().buffered()).use {
+                        @Suppress("UNCHECKED_CAST")
+                        it.readObject() as MutableDependencyGraph<String>
+                    }
             )
         }
     }
