@@ -31,6 +31,9 @@ dependencies {
     implementation libs.com.android.tools.composecli.serialize
     implementation libs.com.android.tools.common
     implementation libs.kxml
+    testImplementation libs.junit
+    testImplementation libs.truth
+    testImplementation libs.kotlin_test
 }
 
 sourceSets {
