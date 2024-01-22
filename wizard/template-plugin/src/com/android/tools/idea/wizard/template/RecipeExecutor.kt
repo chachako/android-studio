@@ -66,6 +66,17 @@ interface RecipeExecutor {
   fun applyPlugin(plugin: String, revision: AgpVersion)
 
   /**
+   * Add plugins according to the existing project setup. First it adds plugin to catalog if project
+   * has it. Then it add plugin project level declaration to first component that exists:
+   * settings plugins management block, root project plugins block (if exists),
+   * dependencies classpath if it's an old syntax. In case nothing was found
+   * - we force adding plugin alias to root project plugins block.
+   *
+   * Plugin version must be located in classpath parameter.
+   */
+  fun addPlugin(pluginId: String, classpath: String)
+
+  /**
    * Adds "plugins { id '`plugin`' }" statement to the [module] build.gradle[.kts] file and if
    * settings.gradle[.kts] has a `pluginManagement` block, it also adds "plugins { id '`plugin`'
    * version '`revision`'}" statement to the project top level build.gradle[.kts] file.
