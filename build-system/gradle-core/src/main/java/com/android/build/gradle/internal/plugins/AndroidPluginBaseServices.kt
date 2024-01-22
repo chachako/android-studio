@@ -21,6 +21,7 @@ import com.android.build.api.dsl.ExecutionProfile
 import com.android.build.api.dsl.SettingsExtension
 import com.android.build.gradle.internal.attribution.BuildAnalyzerConfiguratorService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerService
+import com.android.build.gradle.internal.configurationCacheActive
 import com.android.build.gradle.internal.core.DEFAULT_EXECUTION_PROFILE
 import com.android.build.gradle.internal.core.ExecutionProfileOptions
 import com.android.build.gradle.internal.core.SettingsOptions
@@ -33,6 +34,7 @@ import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.profile.AnalyticsUtil
 import com.android.build.gradle.internal.profile.NoOpAnalyticsConfiguratorService
 import com.android.build.gradle.internal.profile.NoOpAnalyticsService
+import com.android.build.gradle.internal.projectIsolationActive
 import com.android.build.gradle.internal.registerDependencyCheck
 import com.android.build.gradle.internal.res.Aapt2FromMaven.Companion.create
 import com.android.build.gradle.internal.scope.ProjectInfo
@@ -52,6 +54,7 @@ import com.google.wireless.android.sdk.stats.GradleBuildProfileSpan.ExecutionTyp
 import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.configuration.BuildFeatures
 import org.gradle.api.tasks.StopExecutionException
 import org.gradle.build.event.BuildEventsListenerRegistry
 import java.util.Locale
@@ -116,7 +119,7 @@ abstract class AndroidPluginBaseServices(
         }
     }
 
-    protected open fun basePluginApply(project: Project) {
+    protected open fun basePluginApply(project: Project, buildFeatures: BuildFeatures) {
         // We run by default in headless mode, so the JVM doesn't steal focus.
         System.setProperty("java.awt.headless", "true")
 
@@ -126,8 +129,13 @@ abstract class AndroidPluginBaseServices(
         checkMinJvmVersion()
         val projectOptions: ProjectOptions = projectServices.projectOptions
         if (projectOptions.isAnalyticsEnabled) {
-            AnalyticsService.RegistrationAction(project, configuratorService, listenerRegistry)
-                .execute()
+            AnalyticsService.RegistrationAction(
+                project,
+                configuratorService,
+                listenerRegistry,
+                buildFeatures.configurationCacheActive(),
+                buildFeatures.projectIsolationActive(),
+            ).execute()
         } else {
             NoOpAnalyticsService.RegistrationAction(project).execute()
         }

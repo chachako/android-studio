@@ -55,6 +55,8 @@ import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.attributes.Usage
 import org.gradle.api.component.SoftwareComponentFactory
+import org.gradle.api.configuration.BuildFeature
+import org.gradle.api.configuration.BuildFeatures
 import org.gradle.api.file.RegularFile
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
@@ -67,6 +69,7 @@ import javax.inject.Inject
 class FusedLibraryPlugin @Inject constructor(
         private val softwareComponentFactory: SoftwareComponentFactory,
         listenerRegistry: BuildEventsListenerRegistry,
+        private val buildFeatures: BuildFeatures
 ) : AndroidPluginBaseServices(listenerRegistry), Plugin<Project> {
 
     val dslServices: DslServices by lazy(LazyThreadSafetyMode.NONE) {
@@ -273,7 +276,7 @@ class FusedLibraryPlugin @Inject constructor(
             GradleBuildProject.PluginType.FUSED_LIBRARIES
 
     override fun apply(project: Project) {
-        super.basePluginApply(project)
+        super.basePluginApply(project, buildFeatures)
 
         if (!projectServices.projectOptions[BooleanOption.FUSED_LIBRARY_SUPPORT]) {
             throw GradleException(

@@ -66,7 +66,7 @@ import com.android.build.gradle.internal.ide.v2.GlobalSyncService
 import com.android.build.gradle.internal.ide.v2.NativeModelBuilder
 import com.android.build.gradle.internal.lint.LintFixBuildService
 import com.android.build.gradle.internal.profile.AnalyticsUtil
-import com.android.build.gradle.internal.projectIsolationRequested
+import com.android.build.gradle.internal.projectIsolationActive
 import com.android.build.gradle.internal.scope.DelayedActionsExecutor
 import com.android.build.gradle.internal.services.Aapt2DaemonBuildService
 import com.android.build.gradle.internal.services.Aapt2ThreadPoolBuildService
@@ -148,7 +148,8 @@ abstract class BasePlugin<
                 VariantT: Variant>(
     val registry: ToolingModelBuilderRegistry,
     val componentFactory: SoftwareComponentFactory,
-    listenerRegistry: BuildEventsListenerRegistry
+    listenerRegistry: BuildEventsListenerRegistry,
+    private val gradleBuildFeatures: org.gradle.api.configuration.BuildFeatures,
 ): AndroidPluginBaseServices(listenerRegistry), Plugin<Project> {
 
     init {
@@ -349,7 +350,7 @@ abstract class BasePlugin<
 
     override fun apply(project: Project) {
         runAction {
-            basePluginApply(project)
+            basePluginApply(project, gradleBuildFeatures)
             pluginSpecificApply(project)
             project.pluginManager.apply(AndroidBasePlugin::class.java)
         }
@@ -417,7 +418,7 @@ abstract class BasePlugin<
 
         // TODO(b/189990965) Re-enable checking minimum versions of certain plugins once
         // https://github.com/gradle/gradle/issues/23838 is fixed
-        if (!projectIsolationRequested(project.providers)) {
+        if (!gradleBuildFeatures.projectIsolationActive()) {
             enforceMinimumVersionsOfPlugins(project, issueReporter)
         }
 

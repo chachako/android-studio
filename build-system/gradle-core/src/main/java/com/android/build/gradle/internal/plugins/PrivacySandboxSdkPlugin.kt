@@ -63,6 +63,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.Usage
 import org.gradle.api.component.SoftwareComponentFactory
+import org.gradle.api.configuration.BuildFeatures
 import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.JvmEcosystemPlugin
 import org.gradle.build.event.BuildEventsListenerRegistry
@@ -71,6 +72,7 @@ import javax.inject.Inject
 class PrivacySandboxSdkPlugin @Inject constructor(
         val softwareComponentFactory: SoftwareComponentFactory,
         listenerRegistry: BuildEventsListenerRegistry,
+        private val buildFeatures: BuildFeatures,
 ) : AndroidPluginBaseServices(listenerRegistry), Plugin<Project> {
 
     val dslServices: DslServices by lazy(LazyThreadSafetyMode.NONE) {
@@ -137,7 +139,7 @@ class PrivacySandboxSdkPlugin @Inject constructor(
     }
 
     override fun apply(project: Project) {
-        super.basePluginApply(project)
+        super.basePluginApply(project, buildFeatures)
         if (projectServices.projectOptions.let {
                     !it[BooleanOption.PRIVACY_SANDBOX_SDK_PLUGIN_SUPPORT] && !it[BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT] }) {
             throw GradleException(

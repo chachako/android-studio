@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-@file:JvmName("ProjectIsolationUtils")
+@file:JvmName("BuildFeaturesUtils")
 
 package com.android.build.gradle.internal
 
-import org.gradle.api.provider.ProviderFactory
+import org.gradle.api.configuration.BuildFeatures
 
-// TODO switch to public API once https://github.com/gradle/gradle/issues/23840 is fixed
-fun projectIsolationRequested(providers: ProviderFactory): Boolean {
-    return providers.systemProperty(PROJECT_ISOLATION_PROPERTY).orNull.toBoolean()
-            || providers.gradleProperty(PROJECT_ISOLATION_PROPERTY).orNull.toBoolean()
+fun BuildFeatures.projectIsolationActive(): Boolean {
+    return this.isolatedProjects.active.get()
 }
 
-private const val PROJECT_ISOLATION_PROPERTY = "org.gradle.unsafe.isolated-projects"
+fun BuildFeatures.configurationCacheActive(): Boolean {
+    return this.configurationCache.active.get()
+}

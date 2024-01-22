@@ -98,6 +98,7 @@ import org.gradle.api.Incubating
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.configuration.BuildFeatures
 import org.gradle.api.provider.Provider
 import org.gradle.build.event.BuildEventsListenerRegistry
 import org.jetbrains.kotlin.gradle.ExternalKotlinTargetApi
@@ -106,7 +107,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.external.publishSources
 
 @Incubating
 class KotlinMultiplatformAndroidPlugin @Inject constructor(
-    listenerRegistry: BuildEventsListenerRegistry
+    listenerRegistry: BuildEventsListenerRegistry,
+    private val buildFeatures: BuildFeatures,
 ): AndroidPluginBaseServices(listenerRegistry), Plugin<Project> {
 
     private lateinit var global: GlobalTaskCreationConfig
@@ -146,7 +148,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
         GradleBuildProject.PluginType.KOTLIN_MULTIPLATFORM_ANDROID_LIBRARY
 
     override fun apply(project: Project) {
-        super.basePluginApply(project)
+        super.basePluginApply(project, buildFeatures)
     }
 
     override fun configureProject(project: Project) {
