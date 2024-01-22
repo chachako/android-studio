@@ -96,9 +96,11 @@ internal fun renderImpl(
 ) {
     // Warmup TimeZone.getDefault so that it works inside rendering not triggering security
     TimeZone.getDefault()
+    // No need to cache FrameworkResourceRepository on disk, so no cache path
+    val frameworkRepoManager = FrameworkResourceRepositoryManager { }
 
     StandaloneFramework(!isForTest).use { framework ->
-        framework.registerService(FrameworkResourceRepositoryManager::class.java, FrameworkResourceRepositoryManager())
+        framework.registerService(FrameworkResourceRepositoryManager::class.java, frameworkRepoManager)
 
         val resourceIdManager = ApkResourceIdManager()
         resourceApkPath?.let {
