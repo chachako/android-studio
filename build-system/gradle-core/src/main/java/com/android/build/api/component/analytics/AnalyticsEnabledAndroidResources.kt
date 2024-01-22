@@ -45,4 +45,18 @@ open class AnalyticsEnabledAndroidResources @Inject constructor(
                 VariantPropertiesMethodType.NO_COMPRESS_VALUE
             return delegate.noCompress
         }
+
+    override val dataBinding: Boolean
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.DATA_BINDING_VALUE
+            return delegate.dataBinding
+        }
+
+    override val viewBinding: Boolean
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.VIEW_BINDING_VALUE
+            return delegate.viewBinding
+        }
 }

@@ -98,6 +98,7 @@ open class ApplicationVariantImpl @Inject constructor(
     override val androidResources: ApplicationAndroidResourcesImpl by lazy {
         ApplicationAndroidResourcesImpl(
             getAndroidResources(dslInfo.androidResourcesDsl.androidResources),
+            buildFeatures,
             variantBuilder.androidResources.generateLocaleConfig,
         )
     }

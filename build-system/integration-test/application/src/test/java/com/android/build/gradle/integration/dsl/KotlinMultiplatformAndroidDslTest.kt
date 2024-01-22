@@ -94,7 +94,9 @@ class KotlinMultiplatformAndroidDslTest {
 
             // Not supported
             "public abstract java.lang.Object getExtension(java.lang.Class)",
-            "public abstract java.lang.String computeTaskName(java.lang.String,java.lang.String)"
+            "public abstract java.lang.String computeTaskName(java.lang.String,java.lang.String)",
+            "public abstract boolean getViewBinding()",
+            "public abstract boolean getDataBinding()"
         )
     }
 }

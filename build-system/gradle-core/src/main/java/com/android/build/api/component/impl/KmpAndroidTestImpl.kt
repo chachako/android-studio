@@ -221,7 +221,7 @@ open class KmpAndroidTestImpl @Inject constructor(
         get() = optimizationCreationConfig.proguardFiles
 
     override val androidResources: AndroidResourcesImpl =
-        initializeAaptOptionsFromDsl(dslInfo.androidResourcesDsl.androidResources, internalServices)
+        initializeAaptOptionsFromDsl(dslInfo.androidResourcesDsl.androidResources, buildFeatures, internalServices)
 
     override fun makeResValueKey(type: String, name: String): ResValue.Key =
         ResValueKeyImpl(type, name)

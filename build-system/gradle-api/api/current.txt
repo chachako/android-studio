@@ -2407,11 +2407,15 @@ package com.android.build.api.variant {
 
   public interface AndroidResources {
     method public org.gradle.api.provider.ListProperty<java.lang.String> getAaptAdditionalParameters();
+    method @org.gradle.api.Incubating public boolean getDataBinding();
     method public org.gradle.api.provider.ListProperty<java.lang.String> getIgnoreAssetsPatterns();
     method @org.gradle.api.Incubating public org.gradle.api.provider.ListProperty<java.lang.String> getNoCompress();
+    method @org.gradle.api.Incubating public boolean getViewBinding();
     property public abstract org.gradle.api.provider.ListProperty<java.lang.String> aaptAdditionalParameters;
+    property @org.gradle.api.Incubating public abstract boolean dataBinding;
     property public abstract org.gradle.api.provider.ListProperty<java.lang.String> ignoreAssetsPatterns;
     property @org.gradle.api.Incubating public abstract org.gradle.api.provider.ListProperty<java.lang.String> noCompress;
+    property @org.gradle.api.Incubating public abstract boolean viewBinding;
   }
 
   @org.gradle.api.Incubating public interface AndroidResourcesBuilder {

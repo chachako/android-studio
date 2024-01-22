@@ -135,7 +135,7 @@ open class KmpUnitTestImpl @Inject constructor(
 
     override val androidResources: AndroidResourcesImpl? =
         if (global.unitTestOptions.isIncludeAndroidResources) {
-            initializeAaptOptionsFromDsl(dslInfo.androidResourcesDsl!!.androidResources, internalServices)
+            initializeAaptOptionsFromDsl(dslInfo.androidResourcesDsl!!.androidResources, buildFeatures, internalServices)
         } else {
             null
         }

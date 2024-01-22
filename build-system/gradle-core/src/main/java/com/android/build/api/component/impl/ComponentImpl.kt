@@ -326,7 +326,7 @@ abstract class ComponentImpl<DslInfoT: ComponentDslInfo>(
     override val androidResources: AndroidResourcesImpl? = null
 
     internal fun getAndroidResources(androidResources: AndroidResources): AndroidResourcesImpl =
-        initializeAaptOptionsFromDsl(androidResources, internalServices)
+        initializeAaptOptionsFromDsl(androidResources, buildFeatures, internalServices,)
 
     override val privacySandboxCreationConfig: PrivacySandboxCreationConfig? by lazy(LazyThreadSafetyMode.PUBLICATION) {
         if (dslInfo.privacySandboxDsl.enable) {

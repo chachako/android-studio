@@ -82,4 +82,32 @@ class AnalyticsEnabledAndroidResourcesTest {
         Mockito.verify(delegate, Mockito.times(1))
             .noCompress
     }
+
+    @Test
+    fun testDataBindingComponents() {
+        Mockito.`when`(delegate.dataBinding).thenReturn(true)
+        Truth.assertThat(proxy.dataBinding).isEqualTo(true)
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.DATA_BINDING_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+            .dataBinding
+    }
+
+
+    @Test
+    fun testViewBindingComponents() {
+        Mockito.`when`(delegate.viewBinding).thenReturn(true)
+        Truth.assertThat(proxy.viewBinding).isEqualTo(true)
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.VIEW_BINDING_VALUE)
+        Mockito.verify(delegate, Mockito.times(1))
+            .viewBinding
+    }
+
 }
