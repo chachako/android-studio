@@ -1050,6 +1050,9 @@ constructor(
       key.startsWith("group=") -> {
         updateModuleMavenName { it.copy(groupId = getUnquotedValue(key)) }
       }
+      key.startsWith("version=") -> {
+        updateModuleMavenName { it.copy(version = getUnquotedValue(key)) }
+      }
       key.startsWith("android.buildToolsVersion ") -> {
         // Not used.
       }

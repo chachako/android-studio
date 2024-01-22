@@ -64,6 +64,22 @@ dependencies {
   }
 
   @Test
+  fun testLibraryName() {
+    val mocker =
+      createMocker(
+        """
+        apply plugin: 'com.android.library'
+        group=test.pkg.library
+        version=1.1
+        """
+      )
+    val module = mocker.getLintModule()
+
+    Truth.assertThat(module.mavenName?.toString())
+      .isEqualTo("test.pkg.library:test_project-build:1.1")
+  }
+
+  @Test
   fun testLibrariesInExtraArtifacts() {
     val mocker =
       createMocker(
