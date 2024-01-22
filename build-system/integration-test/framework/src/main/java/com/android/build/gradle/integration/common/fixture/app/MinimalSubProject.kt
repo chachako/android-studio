@@ -35,15 +35,23 @@ class MinimalSubProject private constructor(
     val addVersionCodeToBuildFile: Boolean = false,
     val addManifestFile: Boolean = false,
     val namespace: String?,
-    private val isMultiplatform: Boolean = false
+    private val isMultiplatform: Boolean = false,
+    val requiredPlugins: List<String> = listOf(),
 ) :
     GradleProject(path) {
 
     init {
         var buildScript = "apply plugin: '$plugin'\n"
+        requiredPlugins.forEach {
+            buildScript += "apply plugin: '$it'\n"
+        }
         if (addCompileAndSdkVersionToBuildFile) {
-            buildScript += "\nandroid.compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}" +
-                    "\nandroid.defaultConfig.minSdkVersion $SUPPORT_LIB_MIN_SDK\n"
+            buildScript += if (isMultiplatform) {
+                "kotlin.androidLibrary.compileSdk = ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}\n"
+            } else {
+                "\nandroid.compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}" +
+                        "\nandroid.defaultConfig.minSdkVersion $SUPPORT_LIB_MIN_SDK\n"
+            }
         }
         if (addVersionCodeToBuildFile) {
             buildScript += "\nandroid.defaultConfig.versionCode 1\n"
@@ -207,7 +215,8 @@ class MinimalSubProject private constructor(
             return MinimalSubProject(
                 path = null,
                 plugin = "com.android.kotlin.multiplatform.library",
-                addCompileAndSdkVersionToBuildFile = false,
+                requiredPlugins = listOf("org.jetbrains.kotlin.multiplatform"),
+                addCompileAndSdkVersionToBuildFile = true,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = false,
                 namespace = namespace,

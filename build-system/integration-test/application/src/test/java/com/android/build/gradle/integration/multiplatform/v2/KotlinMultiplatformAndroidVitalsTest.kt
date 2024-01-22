@@ -41,13 +41,6 @@ class KotlinMultiplatformAndroidVitalsTest {
      */
     @Test
     fun kotlinMultiplatformPluginIsAppliedFirst() {
-        val content = project.getSubproject(":shared").buildFile.readText()
-        FileUtils.writeToFile(
-            project.getSubproject(":shared").buildFile,
-            "apply plugin: 'org.jetbrains.kotlin.multiplatform'\n$content"
-        )
-
-        project.executor()
-            .run(":shared:androidPrebuild")
+        project.executor().run(":shared:androidPrebuild")
     }
 }
