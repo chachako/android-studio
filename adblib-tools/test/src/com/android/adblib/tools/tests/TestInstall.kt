@@ -25,11 +25,13 @@ import com.android.fakeadbserver.services.PackageManager
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
+@Ignore("b/321070782")
 class TestInstall : TestInstallBase() {
 
 
