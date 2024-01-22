@@ -20,16 +20,24 @@ echo "timeout is $emulator_boot_timeout"
 # Retention.
 emulator_grpc_port=8554
 
+if [ "$(uname)" = "Darwin" ]; then
+  OS_DIR_NAME=darwin
+elif [ "$(uname)" = "Linux" ]; then
+  OS_DIR_NAME=linux
+else
+  OS_DIR_NAME=windows
+fi
+
 # Set environment variables.
 export HOME=$(pwd)
 export ANDROID_PREFS_ROOT=$HOME
-export ANDROID_SDK_ROOT=$HOME/prebuilts/studio/sdk/linux
+export ANDROID_SDK_ROOT=$HOME/prebuilts/studio/sdk/$OS_DIR_NAME
 export ANDROID_EMULATOR_HOME=$HOME/.android
 export ANDROID_AVD_HOME=$ANDROID_EMULATOR_HOME/avd
 
 # Relevant binaries.
 emulator=$1
-adb=prebuilts/studio/sdk/linux/platform-tools/adb
+adb=prebuilts/studio/sdk/$OS_DIR_NAME/platform-tools/adb
 
 # Kill the emulator if requested. This is needed to kill the emulator for
 # local development.
@@ -72,6 +80,13 @@ if [ -z "$abi_type" ]; then
   exit 1
 fi
 
+if [ "$abi_type" = "arm64-v8a" ]; then
+    # On arm64 emulator, hw.cpu.arch is different from abi.type.
+    hw_cpu_arch="arm64"
+else
+    hw_cpu_arch="$abi_type"
+fi
+
 # Create an AVD named "emu" with hardware properties from pixel.
 echo "Creating AVD with API level $api_level and ABI type $abi_type"
 system_image_dir=$(pwd)/$(dirname "$source_properties_path")
@@ -89,7 +104,7 @@ avd.ini.encoding=UTF-8
 hw.accelerometer=yes
 hw.audioInput=yes
 hw.battery=yes
-hw.cpu.arch=$abi_type
+hw.cpu.arch=$hw_cpu_arch
 hw.dPad=no
 hw.device.hash2=MD5:524882cfa9f421413193056700a29392
 hw.device.manufacturer=Google

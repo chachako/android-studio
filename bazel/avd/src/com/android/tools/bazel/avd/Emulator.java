@@ -32,7 +32,11 @@ public final class Emulator extends ExternalResource {
      * @param port ADB port to start the emulator on.
      */
     public Emulator(String scriptPath, int port) {
-        this(scriptPath, "prebuilts/studio/sdk/linux/emulator/emulator", port);
+        this(scriptPath,
+                String.format("prebuilts/studio/sdk/%s/%s/emulator",
+                        getOsDirName(),
+                        getEmulatorDirName()),
+                port);
     }
 
     /**
@@ -71,6 +75,30 @@ public final class Emulator extends ExternalResource {
 
         if (exitCode != 0) {
             throw new Exception(String.format("Emulator script exited with code: %d", exitCode));
+        }
+    }
+
+    // Visible to be accessible by test.
+    public static String getOsDirName() {
+        String os = System.getProperty("os.name");
+        if (os.startsWith("Mac OS")) {
+            return "darwin";
+        } else if (os.startsWith("Windows")) {
+            return "windows";
+        } else if (os.startsWith("Linux")) {
+            return "linux";
+        } else {
+            throw new RuntimeException("Unsupported os.name: " + os);
+        }
+    }
+
+    private static String getEmulatorDirName() {
+        String os = System.getProperty("os.name");
+        String arch = System.getProperty("os.arch");
+        if (os.startsWith("Mac OS") && ("arm64".equals(arch) || "aarch64".equals(arch))) {
+            return "emulator-arm64";
+        } else {
+            return "emulator";
         }
     }
 }

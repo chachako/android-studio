@@ -25,7 +25,8 @@ import org.junit.Test;
 
 public class EmulatorTest {
 
-    private static final String ADB = "prebuilts/studio/sdk/linux/platform-tools/adb";
+    private static final String ADB =
+            String.format("prebuilts/studio/sdk/%s/platform-tools/adb", Emulator.getOsDirName());
 
     /**
      * Path to the executable that the avd rule generates.

@@ -30,6 +30,8 @@ def _avd_impl(ctx):
                                     ctx.files.image)
     return [DefaultInfo(runfiles = runfiles)]
 
+DEFAULT_AVD_IMAGE = "@system_image_android-33_aosp_atd_x86_64//:x86_64-android-33AospAtd-images"
+
 avd = rule(
     implementation = _avd_impl,
     attrs = {
@@ -44,7 +46,7 @@ avd = rule(
             default = "//prebuilts/studio/sdk:platform-tools",
         ),
         "image": attr.label(
-            default = "@system_image_android-33_aosp_atd_x86_64//:x86_64-android-33AospAtd-images",
+            default = DEFAULT_AVD_IMAGE,
         ),
         "platform": attr.label(
             default = "//prebuilts/studio/sdk:platforms/latest",
