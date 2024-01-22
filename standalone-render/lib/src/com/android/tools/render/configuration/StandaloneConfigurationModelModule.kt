@@ -44,5 +44,4 @@ internal class StandaloneConfigurationModelModule(
     override fun getCompatibilityTarget(target: IAndroidTarget): CompatibilityRenderTarget {
         return EmbeddedRenderTarget.getCompatibilityTarget(target) { layoutlibPath }
     }
-    override fun dispose() { }
 }
