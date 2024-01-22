@@ -24,6 +24,7 @@ import com.android.tools.analytics.crash.CrashReporter
 import com.android.tools.fonts.DownloadableFontCacheService
 import com.android.tools.idea.layoutlib.LayoutLibrary
 import com.android.tools.layoutlib.LayoutlibContext
+import com.android.tools.rendering.HtmlLinkManager
 import com.android.tools.rendering.IRenderLogger
 import com.android.tools.rendering.RenderProblem
 import com.android.tools.rendering.api.EnvironmentContext
@@ -50,8 +51,8 @@ internal class StandaloneEnvironmentContext(
         override fun register(layoutlib: LayoutLibrary) { }
     }
 
-    override val runnableFixFactory: RenderProblem.RunnableFixFactory =
-        RenderProblem.RunnableFixFactory { _, _ -> Runnable { } }
+    override val actionFixFactory: RenderProblem.ActionFixFactory =
+        RenderProblem.ActionFixFactory { _ -> HtmlLinkManager.Action { } }
 
     override fun reportMissingSdkDependency(logger: IRenderLogger) { }
 
