@@ -140,7 +140,6 @@ internal fun renderImpl(
             androidPlatform,
             moduleKey,
             moduleDependencies,
-            framework.project,
             packageName,
             environment.layoutlibContext,
             layoutlibPath,

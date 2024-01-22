@@ -27,7 +27,6 @@ import com.android.tools.res.ResourceRepositoryManager
 import com.android.tools.sdk.AndroidPlatform
 import com.android.tools.sdk.CompatibilityRenderTarget
 import com.android.tools.sdk.EmbeddedRenderTarget
-import com.intellij.openapi.project.Project
 
 /** [ConfigurationModelModule] for standalone rendering.*/
 internal class StandaloneConfigurationModelModule(
@@ -36,7 +35,6 @@ internal class StandaloneConfigurationModelModule(
     override val androidPlatform: AndroidPlatform,
     override val moduleKey: ModuleKey,
     override val dependencies: ModuleDependencies,
-    override val project: Project,
     override val resourcePackage: String,
     override val layoutlibContext: LayoutlibContext,
     private val layoutlibPath: String,
