@@ -343,6 +343,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           PermissionErrorDetector.PERMISSION_NAMING_CONVENTION,
           PermissionErrorDetector.RESERVED_SYSTEM_PERMISSION,
           PermissionErrorDetector.SYSTEM_PERMISSION_TYPO,
+          PictureInPictureDetector.ISSUE,
           SelectedPhotoAccessDetector.ISSUE,
           PluralsDetector.EXTRA,
           PluralsDetector.IMPLIED_QUANTITY,
