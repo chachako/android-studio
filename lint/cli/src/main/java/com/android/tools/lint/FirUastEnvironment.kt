@@ -150,7 +150,6 @@ private fun createAnalysisSession(
 ): StandaloneAnalysisAPISession {
   val analysisSession =
     buildStandaloneAnalysisAPISession(
-      applicationDisposable = parentDisposable,
       projectDisposable = parentDisposable,
       withPsiDeclarationFromBinaryModuleProvider = true,
       compilerConfiguration = config.kotlinCompilerConfig,
