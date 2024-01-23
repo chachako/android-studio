@@ -751,12 +751,12 @@ class UastTest : TestCase() {
       file.accept(
         object : AbstractUastVisitor() {
           override fun visitCallExpression(node: UCallExpression): Boolean {
-            val arg = node.valueArguments.singleOrNull()
-            if (arg?.sourcePsi?.text == "p") {
-              // Test call-sites of `consumeFlag`, not `consumeFlag` itself.
+            // Test call-sites of `consumeFlag`, not `consumeFlag` itself.
+            if (node.methodName != "consumeFlag") {
               return super.visitCallExpression(node)
             }
 
+            val arg = node.valueArguments.singleOrNull()
             val selector = arg?.findSelector() as? USimpleNameReferenceExpression
             val resolved = selector?.resolve()
             assertNotNull(resolved)
@@ -3028,7 +3028,7 @@ class UastTest : TestCase() {
             }
           """
           )
-          .indented()
+          .indented(),
       )
 
     val expectedTypes =
