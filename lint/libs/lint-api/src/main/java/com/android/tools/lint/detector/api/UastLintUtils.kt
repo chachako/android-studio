@@ -749,9 +749,10 @@ fun UElement.isIncorrectImplicitReturnInLambda(): Boolean {
       .let { returnType -> if (returnType is PsiWildcardType) returnType.bound else returnType }
       ?.canonicalText ?: return false
   // Only non-Unit returning lambda should have an implicit return at the end.
-  return lambdaReturnType.endsWith("Unit") ||
-    lambdaReturnType.endsWith("Nothing") ||
-    lambdaReturnType.endsWith("void")
+  return lambdaReturnType == "kotlin.Unit" ||
+    lambdaReturnType == "kotlin.Nothing" ||
+    lambdaReturnType == "java.lang.Void" ||
+    lambdaReturnType == "void"
 }
 
 // Copied from `...codeInspection.analysisUastUtil`

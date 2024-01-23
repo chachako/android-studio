@@ -2932,7 +2932,7 @@ class UastTest : TestCase() {
             assertThrows<RuntimeException>(
               RuntimeException::class.java,
               ThrowingRunnable {
-                CompletableDeferred<Any?>("later/ThrowingRunnable") // 10 // CompletableDeferred<Object>
+                CompletableDeferred<Any?>("later/ThrowingRunnable") // 10 // void
               }
             )
           }
@@ -2989,8 +2989,7 @@ class UastTest : TestCase() {
             val returnTypeText =
               lambdaReturnType.let { if (it is PsiWildcardType) it.bound else it }?.canonicalText
                 ?: "<null>"
-            val lambdaReturnsUnit =
-              returnTypeText.endsWith("Unit") || returnTypeText.endsWith("void")
+            val lambdaReturnsUnit = returnTypeText == "kotlin.Unit" || returnTypeText == "void"
             assertEquals(lambdaReturnsUnit, node.isIncorrectImplicitReturnInLambda())
             return super.visitReturnExpression(node)
           }
