@@ -169,7 +169,7 @@ class ModelBuilder<
     }
 
     /**
-     * Non-parameterized model query. Valid only for the VariantDependencies model
+     * Parameterized model query. Valid only for the VariantDependencies model
      */
     override fun buildAll(
         className: String,
