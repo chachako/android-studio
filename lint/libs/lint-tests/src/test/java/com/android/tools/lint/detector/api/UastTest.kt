@@ -30,6 +30,7 @@ import com.intellij.psi.LambdaUtil
 import com.intellij.psi.PsiAnnotation.TargetType
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiRecursiveElementVisitor
@@ -730,13 +731,11 @@ class UastTest : TestCase() {
             }
 
             fun test() {
-              // TODO(b/301453029): not resolved
-              // consumeFlag(Dependency.JVM_FIELD_FLAG)
+              consumeFlag(Dependency.JVM_FIELD_FLAG)
               consumeFlag(Dependency.JVM_STATIC_FLAG)
               consumeFlag(Dependency.VAL_FLAG)
               consumeFlag(Dependency.varFlag)
-              // TODO(b/301453029): not resolved
-              // consumeFlag(OtherDependency.JVM_FIELD_FLAG)
+              consumeFlag(OtherDependency.JVM_FIELD_FLAG)
               consumeFlag(OtherDependency.JVM_STATIC_FLAG)
               consumeFlag(OtherDependency.VAL_FLAG)
               consumeFlag(OtherDependency.varFlag)
@@ -753,10 +752,15 @@ class UastTest : TestCase() {
         object : AbstractUastVisitor() {
           override fun visitCallExpression(node: UCallExpression): Boolean {
             val arg = node.valueArguments.singleOrNull()
+            if (arg?.sourcePsi?.text == "p") {
+              // Test call-sites of `consumeFlag`, not `consumeFlag` itself.
+              return super.visitCallExpression(node)
+            }
+
             val selector = arg?.findSelector() as? USimpleNameReferenceExpression
             val resolved = selector?.resolve()
             assertNotNull(resolved)
-            // TODO(b/301453029): but, should be resolved to PsiField
+            assertTrue(resolved is PsiField)
 
             return super.visitCallExpression(node)
           }
