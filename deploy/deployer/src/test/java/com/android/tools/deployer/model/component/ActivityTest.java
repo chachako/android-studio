@@ -69,7 +69,6 @@ public class ActivityTest {
     @Test
     public void useCategoryFromManifest() throws Exception {
         IDevice device = Mockito.mock(IDevice.class);
-
         URL url =
                 TestUtils.resolveWorkspacePath(
                                 "tools/base/deploy/deployer/src/test/resource/manifestWithCategory/AndroidManifest.bxml")

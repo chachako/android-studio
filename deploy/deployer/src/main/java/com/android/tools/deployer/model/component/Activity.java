@@ -29,9 +29,10 @@ public class Activity extends AppComponent {
 
     private static final String DEFAULT_CATEGORY = "android.intent.category.LAUNCHER";
 
-    public Activity(@NonNull ManifestActivityInfo info,
-            @NonNull String appId,
-            @NonNull ILogger logger) {
+    private static final String DEFAULT_ACTION = "android.intent.action.MAIN";
+
+    public Activity(
+            @NonNull ManifestActivityInfo info, @NonNull String appId, @NonNull ILogger logger) {
         super(appId, info, logger);
     }
 
@@ -62,7 +63,8 @@ public class Activity extends AppComponent {
         return "am start"
                 + " -n "
                 + getFQEscapedName()
-                + " -a android.intent.action.MAIN"
+                + " -a "
+                + DEFAULT_ACTION
                 + " -c "
                 + getIntentCategory()
                 + (extraFlags.isEmpty() ? "" : " " + extraFlags);
@@ -72,6 +74,7 @@ public class Activity extends AppComponent {
     private String getIntentCategory() {
         final Optional<IntentFilter> filterWithCategory =
                 info.getIntentFilters().stream()
+                        .filter(filter -> filter.hasAction(DEFAULT_ACTION))
                         .filter(filter -> !filter.getCategories().isEmpty())
                         .findFirst();
         if (filterWithCategory.isPresent()) {

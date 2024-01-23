@@ -1,0 +1,5 @@
+To update the binary AndroidManifest.bxml used in this test,
+      1. Edit test manifest file: tools/base/deploy/deployer/src/test/resource/manifestWithCategory/AndroidManifest.xml
+      2. Generate Apk using aapt:<studio-main>/prebuilts/studio/sdk/<platform>/build-tools/<version>/aapt p -M <studio-main>/tools/base/deploy/deployer/src/test/resource/manifestWithCategory/AndroidManifest.xml -f -I ~/studio-main/prebuilts/studio/sdk/<platform>/platforms/android-<version>/android.jar -F MyApp.Apk
+      3. Extract AndroidManifest.xml from Myapp.apk(for ex. rename to Myapp.zip and extract).
+      4. Rename extracted AndroidManifest.xml to AndroidManifest.bxml and copy it to tools/base/deploy/deployer/src/test/resource/manifestWithCategory/
