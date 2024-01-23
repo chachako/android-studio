@@ -1872,12 +1872,18 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/maven/org.jline/jline-remote-telnet/
   META-INF/maven/org.jline/jline-remote-telnet/pom.properties
   META-INF/maven/org.jline/jline-remote-telnet/pom.xml
+  META-INF/maven/org.jline/jline-style/
+  META-INF/maven/org.jline/jline-style/pom.properties
+  META-INF/maven/org.jline/jline-style/pom.xml
   META-INF/maven/org.jline/jline-terminal-jansi/
   META-INF/maven/org.jline/jline-terminal-jansi/pom.properties
   META-INF/maven/org.jline/jline-terminal-jansi/pom.xml
   META-INF/maven/org.jline/jline-terminal-jna/
   META-INF/maven/org.jline/jline-terminal-jna/pom.properties
   META-INF/maven/org.jline/jline-terminal-jna/pom.xml
+  META-INF/maven/org.jline/jline-terminal-jni/
+  META-INF/maven/org.jline/jline-terminal-jni/pom.properties
+  META-INF/maven/org.jline/jline-terminal-jni/pom.xml
   META-INF/maven/org.jline/jline-terminal/
   META-INF/maven/org.jline/jline-terminal/pom.properties
   META-INF/maven/org.jline/jline-terminal/pom.xml
@@ -1886,6 +1892,24 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/maven/org.jline/jline/pom.xml
   META-INF/metadata.jvm.kotlin_module
   META-INF/metadata.kotlin_module
+  META-INF/native-image/
+  META-INF/native-image/org.jline/
+  META-INF/native-image/org.jline/jline-terminal-jansi/
+  META-INF/native-image/org.jline/jline-terminal-jansi/native-image.properties
+  META-INF/native-image/org.jline/jline-terminal-jansi/reflection-config.json
+  META-INF/native-image/org.jline/jline-terminal-jansi/resource-config.json
+  META-INF/native-image/org.jline/jline-terminal-jna/
+  META-INF/native-image/org.jline/jline-terminal-jna/native-image.properties
+  META-INF/native-image/org.jline/jline-terminal-jna/reflection-config.json
+  META-INF/native-image/org.jline/jline-terminal-jna/resource-config.json
+  META-INF/native-image/org.jline/jline-terminal-jni/
+  META-INF/native-image/org.jline/jline-terminal-jni/native-image.properties
+  META-INF/native-image/org.jline/jline-terminal-jni/reflection-config.json
+  META-INF/native-image/org.jline/jline-terminal-jni/resource-config.json
+  META-INF/native-image/org.jline/jline-terminal/
+  META-INF/native-image/org.jline/jline-terminal/native-image.properties
+  META-INF/native-image/org.jline/jline-terminal/reflection-config.json
+  META-INF/native-image/org.jline/jline-terminal/resource-config.json
   META-INF/native.kotlin_module
   META-INF/plugin-api.kotlin_module
   META-INF/plugin-utils.kotlin_module
@@ -1909,8 +1933,14 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/services/org.jetbrains.kotlin.resolve.ExternalOverridabilityCondition
   META-INF/services/org.jetbrains.kotlin.resolve.jvm.jvmSignature.KotlinToJvmSignatureMapper
   META-INF/services/org.jetbrains.kotlin.util.ModuleVisibilityHelper
-  META-INF/services/org.jline.terminal.spi.JansiSupport
-  META-INF/services/org.jline.terminal.spi.JnaSupport
+  META-INF/services/org/
+  META-INF/services/org/jline/
+  META-INF/services/org/jline/terminal/
+  META-INF/services/org/jline/terminal/provider/
+  META-INF/services/org/jline/terminal/provider/exec
+  META-INF/services/org/jline/terminal/provider/jansi
+  META-INF/services/org/jline/terminal/provider/jna
+  META-INF/services/org/jline/terminal/provider/jni
   META-INF/symbol-light-classes.kotlin_module
   META-INF/tree.kotlin_module
   META-INF/util.kotlin_module
@@ -2739,20 +2769,29 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/wasm/util/
   org/jline/
   org/jline/builtins/
+  org/jline/builtins/less-help.txt
   org/jline/builtins/nano-browser-help.txt
+  org/jline/builtins/nano-goto-help.txt
   org/jline/builtins/nano-main-help.txt
   org/jline/builtins/nano-read-help.txt
+  org/jline/builtins/nano-replace-help.txt
   org/jline/builtins/nano-search-help.txt
+  org/jline/builtins/nano-search-replace-help.txt
   org/jline/builtins/nano-write-help.txt
   org/jline/builtins/ssh/
   org/jline/builtins/telnet/
+  org/jline/console/
+  org/jline/console/impl/
   org/jline/keymap/
+  org/jline/nativ/
   org/jline/reader/
   org/jline/reader/impl/
   org/jline/reader/impl/completer/
   org/jline/reader/impl/history/
+  org/jline/style/
   org/jline/terminal/
   org/jline/terminal/impl/
+  org/jline/terminal/impl/exec/
   org/jline/terminal/impl/jansi/
   org/jline/terminal/impl/jansi/freebsd/
   org/jline/terminal/impl/jansi/linux/
@@ -2765,16 +2804,32 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jline/terminal/impl/jna/osx/
   org/jline/terminal/impl/jna/solaris/
   org/jline/terminal/impl/jna/win/
+  org/jline/terminal/impl/jni/
+  org/jline/terminal/impl/jni/freebsd/
+  org/jline/terminal/impl/jni/linux/
+  org/jline/terminal/impl/jni/osx/
+  org/jline/terminal/impl/jni/solaris/
+  org/jline/terminal/impl/jni/win/
   org/jline/terminal/spi/
   org/jline/utils/
   org/jline/utils/ansi.caps
   org/jline/utils/capabilities.txt
+  org/jline/utils/colors.txt
+  org/jline/utils/dumb-color.caps
   org/jline/utils/dumb.caps
+  org/jline/utils/rxvt-basic.caps
+  org/jline/utils/rxvt-unicode-256color.caps
+  org/jline/utils/rxvt-unicode.caps
+  org/jline/utils/rxvt.caps
   org/jline/utils/screen-256color.caps
   org/jline/utils/screen.caps
+  org/jline/utils/windows-256color.caps
+  org/jline/utils/windows-conemu.caps
+  org/jline/utils/windows-vtp.caps
   org/jline/utils/windows.caps
   org/jline/utils/xterm-256color.caps
   org/jline/utils/xterm.caps
+  org/jline/widget/
 
 com/android/tools/external/org-jetbrains/uast
   META-INF/
