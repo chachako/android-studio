@@ -8,6 +8,8 @@ kotlin_library(
         "src/**/*.kt",
     ]),
     lint_baseline = "lint_baseline.xml",
+    resource_strip_prefix = "tools/base/standalone-render/lib/resources",
+    resources = glob(["resources/**"]),
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/tools/common/lint-psi/intellij-core",

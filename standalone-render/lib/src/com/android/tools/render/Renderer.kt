@@ -32,7 +32,6 @@ import com.android.tools.rendering.RenderResult
 import com.android.tools.rendering.RenderService
 import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.rendering.parsers.RenderXmlFileSnapshot
-import com.android.tools.res.FrameworkResourceRepositoryManager
 import com.android.tools.res.LocalResourceRepository
 import com.android.tools.res.SingleRepoResourceRepositoryManager
 import com.android.tools.res.apk.ApkResourceRepository
@@ -96,12 +95,8 @@ internal fun renderImpl(
 ) {
     // Warmup TimeZone.getDefault so that it works inside rendering not triggering security
     TimeZone.getDefault()
-    // No need to cache FrameworkResourceRepository on disk, so no cache path
-    val frameworkRepoManager = FrameworkResourceRepositoryManager { }
 
     StandaloneFramework(!isForTest).use { framework ->
-        framework.registerService(FrameworkResourceRepositoryManager::class.java, frameworkRepoManager)
-
         val resourceIdManager = ApkResourceIdManager()
         resourceApkPath?.let {
             resourceIdManager.loadApkResources(it)
