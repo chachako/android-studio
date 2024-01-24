@@ -29,10 +29,9 @@ import com.android.testutils.TestInputsGenerator
 import com.android.testutils.TestUtils
 import com.android.testutils.apk.Dex
 import com.android.testutils.apk.Zip
+import com.android.testutils.truth.DexSubject.assertThat
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject.assertThat
-import com.android.testutils.truth.DexSubject.assertThat
-
 import com.android.utils.Pair
 import com.android.zipflinger.ZipArchive
 import com.google.common.truth.Truth.assertThat
@@ -705,7 +704,6 @@ class R8Test(private val r8OutputType: R8OutputType) {
             libConfiguration = libConfiguration,
             inputArtProfile = null,
             outputArtProfile = null,
-            enableDexStartupOptimization = false,
             inputProfileForDexStartupOptimization = null,
         )
     }

@@ -233,6 +233,7 @@ public final class DexArchiveTestUtil {
                 mainDexListRules,
                 null,
                 libraryFiles,
+                null,
                 null);
     }
 }

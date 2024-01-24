@@ -28,9 +28,18 @@ import com.android.tools.r8.D8;
 import com.android.tools.r8.D8Command;
 import com.android.tools.r8.Diagnostic;
 import com.android.tools.r8.OutputMode;
+import com.android.tools.r8.TextInputStream;
 import com.android.tools.r8.errors.DuplicateTypesDiagnostic;
 import com.android.tools.r8.origin.Origin;
+import com.android.tools.r8.origin.PathOrigin;
+import com.android.tools.r8.startup.StartupProfileBuilder;
+import com.android.tools.r8.startup.StartupProfileProvider;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -77,6 +86,7 @@ final class D8DexArchiveMerger implements DexArchiveMerger {
             @Nullable List<String> mainDexRules,
             @Nullable Path userMultidexKeepFile,
             @Nullable Collection<Path> libraryFiles,
+            @Nullable Path inputProfileForDexStartupOptimization,
             @Nullable Path mainDexListOutput)
             throws DexArchiveMergerException {
         if (LOGGER.isLoggable(Level.INFO)) {
@@ -151,6 +161,40 @@ final class D8DexArchiveMerger implements DexArchiveMerger {
                 builder.setMinApiLevel(21);
             } else {
                 builder.setMinApiLevel(minSdkVersion);
+            }
+
+            if (inputProfileForDexStartupOptimization != null
+                    && inputProfileForDexStartupOptimization.toFile().exists()) {
+                builder.addStartupProfileProviders(
+                        new StartupProfileProvider() {
+                            @Override
+                            public void getStartupProfile(
+                                    StartupProfileBuilder startupProfileBuilder) {
+                                startupProfileBuilder.addHumanReadableArtProfile(
+                                        new TextInputStream() {
+                                            @Override
+                                            public InputStream getInputStream() {
+                                                try {
+                                                    return Files.newInputStream(
+                                                            inputProfileForDexStartupOptimization);
+                                                } catch (IOException e) {
+                                                    throw new RuntimeException(e);
+                                                }
+                                            }
+
+                                            @Override
+                                            public Charset getCharset() {
+                                                return StandardCharsets.UTF_8;
+                                            }
+                                        },
+                                        humanReadableArtProfileParserBuilder -> {});
+                            }
+
+                            @Override
+                            public Origin getOrigin() {
+                                return new PathOrigin(inputProfileForDexStartupOptimization);
+                            }
+                        });
             }
 
             builder.setMode(compilationMode)

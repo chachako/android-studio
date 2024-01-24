@@ -31,7 +31,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
-class StartupProfileDexOptimizationTest(
+class R8StartupProfileDexOptimizationTest(
     // should the startup profile dex optimization be turned on ?
     private val startupProfileDexOptimization: Boolean,
     // should the startup profile file be created ?
@@ -137,7 +137,7 @@ class StartupProfileDexOptimizationTest(
         // be present
         val expectLog = startupProfileDexOptimization && !includeStartupProfile
         val buildResult =
-            project.executor().withLoggingLevel(LoggingLevel.DEBUG).run("assembleRelease")
+            project.executor().withLoggingLevel(LoggingLevel.INFO).run("assembleRelease")
         if (expectLog) {
             assertThat(buildResult.didWorkTasks).contains(":app:minifyReleaseWithR8")
             ScannerSubject.assertThat(buildResult.stdout).contains(

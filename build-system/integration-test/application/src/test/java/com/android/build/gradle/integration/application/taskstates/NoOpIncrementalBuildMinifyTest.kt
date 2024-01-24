@@ -100,6 +100,7 @@ class NoOpIncrementalBuildMinifyTest {
                 ":mergeReleaseJniLibFolders",
                 ":mergeReleaseResources",
                 ":mergeReleaseShaders",
+                ":mergeReleaseStartupProfile",
                 ":mapReleaseSourceSetPaths",
                 ":minifyReleaseWithR8",
                 ":optimizeReleaseResources",

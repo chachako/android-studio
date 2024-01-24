@@ -166,6 +166,7 @@ class DynamicFeaturesCacheabilityTest {
                     ":app:mergeDebugJavaResource", /* Bug 181142260 */
                     ":app:mergeDebugJniLibFolders",
                     ":app:mergeDebugShaders",
+                    ":app:mergeDebugStartupProfile", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.MergeStartupProfileTask]*/
                     ":app:packageDebug", /* Bug 74595859 */
                     ":app:preDebugBuild", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.AppPreBuildTask]*/
                     ":app:signingConfigWriterDebug", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.SigningConfigWriterTask]*/

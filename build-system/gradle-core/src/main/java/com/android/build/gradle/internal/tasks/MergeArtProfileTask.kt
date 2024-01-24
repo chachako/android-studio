@@ -81,7 +81,7 @@ abstract class MergeArtProfileTask: MergeFileTask() {
             it.inputFiles.from(
                 profileSourceDirectories.get().map { directory -> directory.asFileTree.files }
                     .flatten()
-                    .filter(BaselineProfiles::shouldBeMerged)
+                    .filter(BaselineProfiles::shouldBeMergedIntoArtProfile)
             )
             if (profileSource.get().asFile.isFile) {
                 it.inputFiles.from(profileSource)

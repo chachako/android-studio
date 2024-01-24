@@ -22,6 +22,7 @@ import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.component.ApkCreationConfig
+import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.crash.PluginCrashReporter
 import com.android.build.gradle.internal.dependency.AndroidAttributes
 import com.android.build.gradle.internal.dependency.DexingRegistration
@@ -192,6 +193,11 @@ abstract class DexMergingTask : NewIncrementalTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val duplicateClassesCheck: DirectoryProperty
 
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    @get:InputFiles
+    abstract val inputProfileForDexStartupOptimization: RegularFileProperty
+
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
 
@@ -231,7 +237,7 @@ abstract class DexMergingTask : NewIncrementalTask() {
             it.initialize(
                 sharedParams, numberOfBuckets.get(), dexDirsOrJars, globalSynthetics, outputDir,
                 inputChanges.isIncremental, fileChanges?.toSerializable(),
-                mainDexListOutput = mainDexListOutput
+                mainDexListOutput = mainDexListOutput, inputProfileForDexStartupOptimization
             )
         }
     }
@@ -346,6 +352,10 @@ abstract class DexMergingTask : NewIncrementalTask() {
                     task.duplicateClassesCheck
                 )
             }
+
+            task.inputProfileForDexStartupOptimization.set(
+                creationConfig.artifacts.get(InternalArtifactType.MERGED_STARTUP_PROFILE)
+            )
         }
 
         private fun getDexDirs(
@@ -568,6 +578,7 @@ abstract class DexMergingTaskDelegate : ProfileAwareWorkAction<DexMergingTaskDel
         abstract val dexDirsOrJars: ListProperty<File>
         abstract val globalSynthetics: ConfigurableFileCollection
         abstract val outputDir: DirectoryProperty
+        abstract val inputProfileForDexStartupOptimization: RegularFileProperty
         abstract val mainDexListOutput: RegularFileProperty
 
         abstract val incremental: Property<Boolean>
@@ -581,7 +592,8 @@ abstract class DexMergingTaskDelegate : ProfileAwareWorkAction<DexMergingTaskDel
             outputDir: DirectoryProperty,
             incremental: Boolean,
             fileChanges: SerializableFileChanges?,
-            mainDexListOutput: RegularFileProperty?
+            mainDexListOutput: RegularFileProperty?,
+            inputProfileForDexStartupOptimization: RegularFileProperty? = null
         ) {
             this.sharedParams.set(sharedParams)
             this.numberOfBuckets.set(numberOfBuckets)
@@ -591,6 +603,9 @@ abstract class DexMergingTaskDelegate : ProfileAwareWorkAction<DexMergingTaskDel
             this.incremental.set(incremental)
             this.fileChanges.set(fileChanges)
             mainDexListOutput?.let { this.mainDexListOutput.set(it) }
+            inputProfileForDexStartupOptimization?.let {
+                this.inputProfileForDexStartupOptimization.set(it)
+            }
         }
     }
 
@@ -633,7 +648,9 @@ abstract class DexMergingTaskDelegate : ProfileAwareWorkAction<DexMergingTaskDel
                         // is not supported where bucket number is always one
                         globalSynthetics,
                         outputDirForBucket = outputDirForBucket,
-                        mainDexListOutput = mainDexListOutput.asFile.orNull
+                        mainDexListOutput = mainDexListOutput.asFile.orNull,
+                        inputProfileForDexStartupOptimization =
+                            inputProfileForDexStartupOptimization.asFile.orNull
                     )
                 }
             }
@@ -789,6 +806,7 @@ abstract class DexMergingWorkAction : ProfileAwareWorkAction<DexMergingWorkActio
         abstract val dexEntryBucket: Property<DexEntryBucket>
         abstract val globalSynthetics: ConfigurableFileCollection
         abstract val outputDirForBucket: DirectoryProperty
+        abstract val inputProfileForDexStartupOptimization: RegularFileProperty
         abstract val mainDexListOutput: RegularFileProperty
 
         fun initialize(
@@ -797,7 +815,8 @@ abstract class DexMergingWorkAction : ProfileAwareWorkAction<DexMergingWorkActio
             dexEntryBucket: DexEntryBucket,
             globalSynthetics: ConfigurableFileCollection,
             outputDirForBucket: File,
-            mainDexListOutput: File?
+            mainDexListOutput: File?,
+            inputProfileForDexStartupOptimization: File?
         ) {
             this.sharedParams.set(sharedParams)
             this.useForkJoinPool.set(useForkJoinPool)
@@ -805,6 +824,7 @@ abstract class DexMergingWorkAction : ProfileAwareWorkAction<DexMergingWorkActio
             this.globalSynthetics.from(globalSynthetics)
             this.outputDirForBucket.set(outputDirForBucket)
             this.mainDexListOutput.set(mainDexListOutput)
+            this.inputProfileForDexStartupOptimization.set(inputProfileForDexStartupOptimization)
         }
     }
 
@@ -828,7 +848,8 @@ abstract class DexMergingWorkAction : ProfileAwareWorkAction<DexMergingWorkActio
                 dexArchiveEntries,
                 globalSynthetics,
                 parameters.outputDirForBucket.get().asFile,
-                parameters.mainDexListOutput.asFile.orNull?.toPath()
+                parameters.mainDexListOutput.asFile.orNull?.toPath(),
+                parameters.inputProfileForDexStartupOptimization.asFile.orNull?.toPath()
             )
         } finally {
             forkJoinPool?.shutdown()
@@ -842,7 +863,8 @@ abstract class DexMergingWorkAction : ProfileAwareWorkAction<DexMergingWorkActio
         dexArchiveEntries: List<DexArchiveEntry>,
         globalSynthetics: List<Path>,
         outputDir: File,
-        mainDexListOutput: Path?
+        mainDexListOutput: Path?,
+        inputProfileForDexStartupOptimization: Path?
     ) {
         val logger = LoggerWrapper.getLogger(DexMergingWorkAction::class.java)
         val messageReceiver = MessageReceiverImpl(
@@ -876,6 +898,7 @@ abstract class DexMergingWorkAction : ProfileAwareWorkAction<DexMergingWorkActio
                 sharedParams.mainDexListConfig.platformMultidexProguardRules.orNull,
                 sharedParams.mainDexListConfig.userMultidexKeepFile.orNull?.asFile?.toPath(),
                 sharedParams.mainDexListConfig.libraryClasses.map { it.toPath() },
+                inputProfileForDexStartupOptimization,
                 mainDexListOutput
             )
         } catch (e: Exception) {

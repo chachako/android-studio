@@ -146,6 +146,12 @@ sealed interface ModulePropertyKey<OutputT> {
          * If true - Run AOT compile forcibly after installation before running the app
          */
         FORCE_AOT_COMPILATION("android.experimental.force-aot-compilation", false),
+
+        /**
+         * If false - D8 will not attempt to optimize startup dex
+         * If true - D8 will optimize first dex for optimal startup performance.
+         */
+        D8_DEX_STARTUP_OPTIMIZATION("android.experimental.d8.dex-startup-optimization", false),
         ;
 
         override fun getValue(properties: Map<String, Any>): Boolean {

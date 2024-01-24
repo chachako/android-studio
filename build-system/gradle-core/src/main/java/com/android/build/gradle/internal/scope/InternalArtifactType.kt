@@ -623,7 +623,6 @@ InternalArtifactType<T : FileSystemLocation>(
     object SCREENSHOTS_RENDERED: InternalArtifactType<Directory>(DIRECTORY), Replaceable
 
     // This is the startup profile containing the profiles from all variant sources
-    // Currently, it is not consumed, and only used in R8Task
     object MERGED_STARTUP_PROFILE: InternalArtifactType<RegularFile>(
         FILE,
         fileName = BaselineProfiles.StartupProfileFileName

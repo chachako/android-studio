@@ -57,6 +57,7 @@ class CleanBuildTaskStatesTest {
                 ":app:mergeDebugJavaResource",
                 ":app:mergeDebugJniLibFolders",
                 ":app:mergeDebugResources",
+                ":app:mergeDebugStartupProfile",
                 ":app:mergeDebugShaders",
                 ":app:mergeDexDebug",
                 ":app:mergeExtDexDebug",

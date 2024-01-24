@@ -41,6 +41,7 @@ import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.work.ChangeType
 import org.gradle.work.InputChanges
@@ -400,6 +401,8 @@ class DexMergingTaskTest {
                             project.objects.property(AnalyticsService::class.java).also {
                                 it.set(FakeNoOpAnalyticsService())
                             }
+                    override val inputProfileForDexStartupOptimization: RegularFileProperty
+                        get() = FakeObjectFactory.factory.fileProperty()
                 }
             }
 

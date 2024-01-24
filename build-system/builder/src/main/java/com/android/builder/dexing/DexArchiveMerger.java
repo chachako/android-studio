@@ -57,6 +57,8 @@ public interface DexArchiveMerger {
      * @param libraryFiles classes that are used only to resolve types in the program classes, but
      *     are not packaged in the final binary e.g. android.jar, provided classes etc.
      * @param mainDexListOutput the output location of classes to be kept in the main dex file
+     * @param inputProfileForDexStartupOptimization the merged startup profile that is used to
+     *     optimize the dex in D8 when present
      */
     void mergeDexArchives(
             @NonNull List<DexArchiveEntry> dexArchiveEntries,
@@ -66,6 +68,7 @@ public interface DexArchiveMerger {
             @Nullable List<String> mainDexRules,
             @Nullable Path userMultidexKeepFile,
             @Nullable Collection<Path> libraryFiles,
+            @Nullable Path inputProfileForDexStartupOptimization,
             @Nullable Path mainDexListOutput)
             throws DexArchiveMergerException, IOException;
 }
