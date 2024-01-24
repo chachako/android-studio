@@ -40,8 +40,8 @@ class DolphinProbe(
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun data() = arrayOf(
-            //"setup-cmake-3.10.2.diff", build fails using this cmake version after update to ndk r26 - b/319653728
-            "setup-cmake-3.18.1.diff"
+            "setup-cmake-3.18.1.diff",
+            "setup-cmake-3.22.1.diff",
         )
     }
 
