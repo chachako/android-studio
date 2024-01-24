@@ -16,7 +16,6 @@
 package com.android.resources.aar;
 
 import com.android.resources.base.CommentTrackingXmlPullParser;
-import org.intellij.lang.annotations.Language;
 import org.junit.Test;
 
 import java.io.Reader;
@@ -33,7 +32,7 @@ import static org.xmlpull.v1.XmlPullParser.START_TAG;
  * Tests for {@link CommentTrackingXmlPullParser}.
  */
 public class CommentTrackingXmlPullParserTest {
-  @Language("XML")
+  // language=xml
   private static final String XML = "" +
       "<!--\n" +
       "  ~ Copyright comment\n" +
