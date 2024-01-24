@@ -31,7 +31,6 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.VerificationTask
 

@@ -498,8 +498,9 @@ gradle_integration_test(
     data = TEST_DATA,
     maven_repo_zips = [
         "//tools/base/build-system:android_gradle_plugin",
-        "//tools/base/preview/screenshot/preview-screenshot-gradle-plugin:maven_dependencies",
+        "//tools/base/preview/screenshot/preview-screenshot-gradle-plugin:maven_test_dependencies",
         "//tools/base/preview/screenshot/preview-screenshot-gradle-plugin:preview_screenshot-gradle-plugin",
+        "//tools/base/preview/screenshot/junit-engine:maven_repo",
     ],
     maven_repos = [
         "//tools/base/build-system:android_gradle_plugin_runtime_dependencies",

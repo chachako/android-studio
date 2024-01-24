@@ -16,18 +16,21 @@
 
 package com.android.build.gradle.integration.testing.screenshot
 
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.options.BooleanOption
+import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS
+import com.google.common.truth.Truth.assertThat
 import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS
-import com.google.common.truth.Truth.assertThat
+import kotlin.io.path.listDirectoryEntries
 
 class ScreenshotTest {
 
@@ -63,6 +66,9 @@ class ScreenshotTest {
                         }
                         kotlin {
                             jvmToolchain(17)
+                        }
+                        testOptions {
+                            unitTests.includeAndroidResources true
                         }
                     }
                 """.trimIndent()
@@ -119,13 +125,9 @@ class ScreenshotTest {
 
     @Test
     fun discoverPreviews() {
-        project.executor()
-            .with(BooleanOption.USE_ANDROID_X, true)
-            .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
-            .run("debugPreviewDiscovery")
-
-        val previewsDiscoveredFile  = project.file(project.buildDir.absolutePath + "/intermediates/preview/debug/previews_discovered.json")
-        assertThat(previewsDiscoveredFile).exists()
+        getExecutor().run("debugPreviewDiscovery")
+        val previewsDiscoveredFile  = project.buildDir.resolve("intermediates/preview/debug/previews_discovered.json")
+        assert(previewsDiscoveredFile.exists())
         assertThat(previewsDiscoveredFile.readText()).isEqualTo("""
             {
               "screenshots": [
@@ -141,4 +143,54 @@ class ScreenshotTest {
             }
         """.trimIndent())
     }
+
+    @Test
+    fun runPreviewScreenshotTest() {
+        // Generate screenshot to be tested against
+        getExecutor().run("previewScreenshotUpdateDebugAndroidTest")
+
+        val screenshot  = project.file("src/androidTest/screenshot/debug/pkg.name.ExampleTest.SimpleComposableTest_3d8b4969_da39a3ee_0.png")
+        assertThat(screenshot).exists()
+
+        // Validate preview matches screenshot
+        getExecutor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF) // TODO(322357154) Remove this when configuration caching issues are resolved
+            .run("previewScreenshotDebugAndroidTest")
+
+        // Verify that test engine generated HTML reports and test passes
+        val indexHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
+        val classHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/classes/pkg.name.ExampleTest.html")
+        val packageHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/packages/pkg.name.html")
+        assertThat(indexHtmlReport).exists()
+        assertThat(classHtmlReport).exists()
+        assertThat(classHtmlReport.readText()).doesNotContain("Failed tests")
+        assertThat(packageHtmlReport).exists()
+
+        // Assert that no diff images were generated because screenshot matched the reference image
+        val diffDir = project.buildDir.resolve("outputs/androidTest-results/preview/debug/diffs").toPath()
+        assert(diffDir.listDirectoryEntries().isEmpty())
+
+        // Update preview to be different from the reference
+        val testFile = project.projectDir.resolve("src/main/java/com/Example.kt")
+        TestFileUtils.searchAndReplace(testFile, "Hello World", "HelloWorld ")
+
+        // Rerun validation task - test should fail and diff is generated
+        getExecutor()
+            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF) // TODO(322357154) Remove this when configuration caching issues are resolved
+            .expectFailure()
+            .run("previewScreenshotDebugAndroidTest")
+
+        assertThat(indexHtmlReport).exists()
+        assertThat(classHtmlReport).exists()
+        assertThat(classHtmlReport.readText()).contains("Failed tests")
+        assertThat(packageHtmlReport).exists()
+
+        val diff = diffDir.resolve("pkg.name.ExampleTest.SimpleComposableTest_3d8b4969_da39a3ee_0.png")
+        assertThat(diff).exists()
+    }
+
+    private fun getExecutor(): GradleTaskExecutor =
+        project.executor()
+            .with(BooleanOption.USE_ANDROID_X, true)
+            .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
 }
