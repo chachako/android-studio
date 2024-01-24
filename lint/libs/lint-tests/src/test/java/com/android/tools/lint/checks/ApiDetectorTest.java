@@ -9355,6 +9355,22 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "2 errors, 0 warnings");
     }
 
+    public void testIgnoreFieldsInPermissions() {
+        lint().files(
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "import static android.Manifest.permission.POST_NOTIFICATIONS;\n" // API 33
+                                        + "import androidx.annotation.RequiresPermission;\n"
+                                        + "public class Test {\n"
+                                        + "    @RequiresPermission(POST_NOTIFICATIONS) // OK\n"
+                                        + "    private void test() {}\n"
+                                        + "}\n"),
+                        SUPPORT_ANNOTATIONS_JAR)
+                .run()
+                .expectClean();
+    }
+
     @Override
     protected TestLintClient createClient() {
         return super.createClient();

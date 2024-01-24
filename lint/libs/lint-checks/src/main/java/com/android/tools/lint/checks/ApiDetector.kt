@@ -72,7 +72,6 @@ import com.android.tools.lint.detector.api.AnnotationInfo
 import com.android.tools.lint.detector.api.AnnotationUsageInfo
 import com.android.tools.lint.detector.api.AnnotationUsageType
 import com.android.tools.lint.detector.api.ApiConstraint
-import com.android.tools.lint.detector.api.ApiConstraint.Companion.UNKNOWN
 import com.android.tools.lint.detector.api.ApiConstraint.Companion.max
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.ClassContext.Companion.getFqcn
@@ -838,7 +837,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
           val superClassQualifiedName = superClass.qualifiedName ?: continue
           if (superClassQualifiedName == JAVA_LANG_OBJECT) continue
           val versions = apiDatabase.getClassVersions(superClassQualifiedName)
-          if (versions == UNKNOWN) {
+          if (versions == ApiConstraint.UNKNOWN) {
             continue
           }
           max = max and versions
@@ -2552,6 +2551,12 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
               return
             }
           }
+        }
+
+        if (issue == INLINED && node.getParentOfType<UAnnotation>() != null) {
+          // Using static fields in annotations is safe -- for example,
+          // @RequiresPermission(anddroid.permission.SOME_NEW_PERMISSION)
+          return
         }
 
         // If the reference is a qualified expression, don't just highlight the
