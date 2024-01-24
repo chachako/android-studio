@@ -228,8 +228,8 @@ DATA = [
     "androidx.appcompat:appcompat:1.3.0-beta01",
     "androidx.appcompat:appcompat:1.4.1",
     "androidx.appcompat:appcompat:1.6.1",
-    "androidx.benchmark:benchmark-baseline-profile-gradle-plugin:1.2.2",
-    "androidx.benchmark:benchmark-gradle-plugin:1.2.2",
+    "androidx.benchmark:benchmark-baseline-profile-gradle-plugin:1.2.3",
+    "androidx.benchmark:benchmark-gradle-plugin:1.2.3",
     "androidx.compose.animation:animation:1.3.0",
     "androidx.compose.animation:animation:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.animation:animation-core-android:1.5.0-beta01",  # Necessary for Compose for TV.
