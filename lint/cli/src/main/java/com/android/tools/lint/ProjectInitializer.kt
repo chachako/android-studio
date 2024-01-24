@@ -1155,7 +1155,7 @@ private class ManualProject(
   dir: File,
   name: String,
   library: Boolean,
-  private var android: Boolean,
+  private val android: Boolean,
   partialResultsDir: File?,
   private val testFiles: List<File>,
   private val generatedFiles: List<File>,
