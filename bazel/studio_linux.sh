@@ -75,6 +75,7 @@ function copy_bazel_artifacts() {(
   cp -a ${bin_dir}/tools/base/gmaven/gmaven.zip ${artifacts_dir}/gmaven_repo.zip
   cp -a ${bin_dir}/tools/base/build-system/documentation.zip ${artifacts_dir}/android_gradle_plugin_reference_docs.zip
   cp -a ${bin_dir}/tools/base/firebase/testlab/testlab-gradle-plugin/testlab-gradle-plugin.zip ${artifacts_dir}
+  cp -a ${bin_dir}/tools/base/preview/screenshot/preview_screenshot_maven_repo.zip ${artifacts_dir}
 )}
 
 ####################################
@@ -171,6 +172,7 @@ function run_bazel_test() {
     //tools/adt/idea/native/installer:android-studio-bundle-data \
     //tools/base/profiler/native/trace_processor_daemon \
     //tools/base/deploy/deployer:deployer.runner_deploy.jar \
+    //tools/base/preview/screenshot:preview_screenshot_maven_repo.zip \
     //tools/adt/idea/studio:test_studio \
     //tools/vendor/google/game-tools/packaging:packaging-linux \
     //tools/vendor/google/game-tools/packaging:packaging-win \

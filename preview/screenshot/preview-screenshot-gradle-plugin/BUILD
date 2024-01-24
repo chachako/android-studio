@@ -75,7 +75,7 @@ gradle_build(
     tasks = [":zipPlugin"],
     visibility = [
         "//tools/base/build-system/integration-test:__subpackages__",
-        "//tools/base/gmaven:__pkg__",
+        "//tools/base/preview/screenshot:__pkg__",
     ],
 )
 

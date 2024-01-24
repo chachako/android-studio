@@ -37,6 +37,10 @@ maven_repository(
         "//tools/base/common:tools.common",
         "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",
     ],
+    visibility = [
+        "//tools/base/build-system/integration-test:__subpackages__",
+        "//tools/base/preview/screenshot:__pkg__",
+    ],
 )
 
 kotlin_test(
