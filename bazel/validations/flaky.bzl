@@ -7,24 +7,9 @@ the allowlisted targets below can set "flaky" to true.
 APPROVED_FLAKY_TESTS = [
     "//tools/base/build-system/integration-test/application:tests__GradlePluginMemoryLeakTest",  # b/153972155
     "//tools/base/build-system/integration-test/connected:UtpConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:TestWithSameDepAsAppConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:TestingSupportLibraryConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:LibraryAndroidTestWithViewTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:SigningConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:SeparateTestWithMinificationButNoObfuscationConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:SeparateTestWithAarDependencyConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:SeparateTestModuleWithMinifiedAppConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:SeparateTestModuleConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:SameNamedLibsConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:ResValueTypeConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:RenderscriptNdkConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:PkgOverrideConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:ParentLibsConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:Overlay3ConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:Overlay2ConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:Overlay1ConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:NoSplitNdkVariantsConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:NdkSanAngelesConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:NdkLibPrebuiltsConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:NdkJniLibConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:NdkConnectedCheckTest",  # b/148626301
@@ -58,7 +43,6 @@ APPROVED_FLAKY_TESTS = [
     "//tools/base/build-system/integration-test/connected:CustomTestedApksTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:CmakeJniLibConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:BasicConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:ApplibtestConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:AttrOrderConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:ApiConnectedTest",  # b/148626301
     "//tools/base/build-system/integration-test/connected:AnnotationProcessorConnectedTest",  # b/148626301
