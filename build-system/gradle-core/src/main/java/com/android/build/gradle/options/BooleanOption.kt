@@ -283,6 +283,13 @@ enum class BooleanOption(
         FeatureStage.Experimental
     ),
 
+    @Suppress("unused")
+    ENABLE_SCREENSHOT_TEST(
+        "android.experimental.enableScreenshotTest",
+        false,
+        FeatureStage.Experimental
+    ),
+
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */
@@ -792,14 +799,6 @@ enum class BooleanOption(
             "android.enableDesugar",
             false,
             FeatureStage.Removed(VERSION_7_0, "Desugar tool has been removed from AGP.")
-    ),
-
-    @Suppress("unused")
-    ENABLE_SCREENSHOT_TEST(
-        "android.experimental.enableScreenshotTest",
-        false,
-        FeatureStage.Removed(Version.VERSION_8_3,
-            "The android.experimental.enableScreenshotTest property has been removed from AGP")
     ),
 
     @Suppress("unused")
