@@ -1186,23 +1186,12 @@ private class ManualProject(
 
   override fun toString(): String = "Project [name=$name]"
 
-  override fun equals(other: Any?): Boolean {
+  override fun equals(other: Any?): Boolean =
     // Normally Project.equals checks directory equality, but we can't
     // do that here since we don't have guarantees that the directories
     // won't overlap (and furthermore we don't actually have the directory
     // locations of each module)
-    if (this === other) {
-      return true
-    }
-    if (other == null) {
-      return false
-    }
-    if (javaClass != other.javaClass) {
-      return false
-    }
-    val project = other as Project?
-    return name == project!!.name
-  }
+    this === other || other is ManualProject && name == other.name
 
   override fun hashCode(): Int = name.hashCode()
 
