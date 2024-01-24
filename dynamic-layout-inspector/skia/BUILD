@@ -1,7 +1,7 @@
-package(default_visibility = ["//visibility:public"])
-
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:utils.bzl", "flat_archive")
+
+package(default_visibility = ["//visibility:public"])
 
 kotlin_test(
     name = "skiaparser_tests",
@@ -68,6 +68,7 @@ cc_library(
         "src/main/native/*.h",
     ]) + ["src/main/native/server.cc"],
     copts = [
+        "-DSK_USER_CONFIG_HEADER=\\\"SkUserConfig.h\\\"",
         "-UFORTIFY_SOURCE",
         "-DATRACE_TAG=ATRACE_TAG_VIEW",
         "-DSKIA_IMPLEMENTATION=1",
@@ -99,7 +100,10 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/dynamic-layout-inspector/skia/proto:layout_inspector_skia_cc_proto",
-        "@skia_repo//:skia_public",
+        "@skia_repo//:core",
+        "@skia_repo//:fontmgr_empty_freetype",
+        "@skia_repo//:png_decode_codec",
+        "@skia_repo//:png_encode_codec",
     ],
     alwayslink = 1,
 )
@@ -118,6 +122,13 @@ cc_library(
     name = "skiaparser_test_support",
     srcs = ["src/test/native/testing/skia_parser_test_java_jni.cc"],
     copts = [
+        "-DSK_USER_CONFIG_HEADER=\\\"SkUserConfig.h\\\"",
+        "-UFORTIFY_SOURCE",
+        "-DSK_CODEC_DECODES_PNG=1",
+        "-DATRACE_TAG=ATRACE_TAG_VIEW",
+        "-DSKIA_IMPLEMENTATION=1",
+        "-DSK_PRINT_CODEC_MESSAGES",
+        "-D_FORTIFY_SOURCE=1",
         "-DGOOGLE_PROTOBUF_NO_RTTI=1",
         "-fno-rtti",
     ],
@@ -128,6 +139,8 @@ cc_library(
         "//tools/base/dynamic-layout-inspector/skia/proto:layout_inspector_skia_cc_proto",
         "@freetype_repo//:freetype",
         "@libpng_repo//:libpng",
+        "@skia_repo//:png_decode_codec",
+        "@skia_repo//:png_encode_codec",
     ],
     alwayslink = 1,
 )
