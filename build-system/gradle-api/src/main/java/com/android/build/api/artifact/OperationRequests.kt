@@ -320,7 +320,7 @@ interface CombiningOperationRequest<FileTypeT: FileSystemLocation> {
      *     }
      * ```
      *
-     * An [SingleArtifact] defined as follows :
+     * An [MultipleArtifact] defined as follows :
      *
      * ```kotlin
      *     sealed class ArtifactType<T: FileSystemLocation>(val kind: ArtifactKind) {
@@ -435,5 +435,6 @@ interface InAndOutDirectoryOperationRequest<TaskT : Task> {
      */
     fun <ArtifactTypeT> toTransformMany(type: ArtifactTypeT): ArtifactTransformationRequest<TaskT>
         where ArtifactTypeT: Artifact.Single<Directory>,
-              ArtifactTypeT: Artifact.ContainsMany
+              ArtifactTypeT: Artifact.ContainsMany,
+              ArtifactTypeT: Artifact.Transformable
 }

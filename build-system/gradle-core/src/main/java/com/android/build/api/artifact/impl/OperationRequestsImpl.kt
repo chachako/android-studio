@@ -175,7 +175,8 @@ class InAndOutDirectoryOperationRequestImpl<TaskT: Task>(
         type: ArtifactTypeT
     ): ArtifactTransformationRequest<TaskT>
             where ArtifactTypeT : Single<Directory>,
-                  ArtifactTypeT : Artifact.ContainsMany {
+                  ArtifactTypeT : Artifact.ContainsMany,
+                  ArtifactTypeT : Artifact.Transformable {
 
         closeRequest()
         val artifactContainer = artifacts.getArtifactContainer(type)

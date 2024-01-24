@@ -115,7 +115,7 @@ package com.android.build.api.artifact {
 
   public interface InAndOutDirectoryOperationRequest<TaskT extends org.gradle.api.Task> {
     method public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Single<org.gradle.api.file.Directory> & com.android.build.api.artifact.Artifact.Transformable> void toTransform(ArtifactTypeT type);
-    method public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Single<org.gradle.api.file.Directory> & com.android.build.api.artifact.Artifact.ContainsMany> com.android.build.api.artifact.ArtifactTransformationRequest<TaskT> toTransformMany(ArtifactTypeT type);
+    method public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Single<org.gradle.api.file.Directory> & com.android.build.api.artifact.Artifact.ContainsMany & com.android.build.api.artifact.Artifact.Transformable> com.android.build.api.artifact.ArtifactTransformationRequest<TaskT> toTransformMany(ArtifactTypeT type);
   }
 
   public interface InAndOutFileOperationRequest {
