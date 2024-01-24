@@ -566,6 +566,14 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
 
     val generatedSources = mutableListOf<File>()
     val testSources = mutableListOf<File>()
+
+    val model =
+      if (moduleElement.hasAttribute(ATTR_MODEL)) {
+        LintModelSerialization.readModule(getFile(moduleElement, dir, ATTR_MODEL, false))
+      } else {
+        null
+      }
+
     val module =
       ManualProject(
         client,
@@ -576,15 +584,9 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
         partialResultsDir,
         testSources,
         generatedSources,
+        model?.defaultVariant(),
       )
     modules[name] = module
-
-    val model =
-      if (moduleElement.hasAttribute(ATTR_MODEL)) {
-        LintModelSerialization.readModule(getFile(moduleElement, dir, ATTR_MODEL, false))
-      } else {
-        null
-      }
 
     val sources = mutableListOf<File>()
     val resources = mutableListOf<File>()
@@ -702,7 +704,6 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     this.lintChecks[module] = lintChecks
     this.mergedManifests[module] = mergedManifest
     this.baselines[module] = baseline
-    module.variant = model?.defaultVariant()
 
     client.registerProject(module.dir, module)
   }
@@ -1158,9 +1159,8 @@ private class ManualProject(
   partialResultsDir: File?,
   private val testFiles: List<File>,
   private val generatedFiles: List<File>,
+  private val variant: LintModelVariant? = null,
 ) : Project(client, dir, dir, partialResultsDir) {
-
-  var variant: LintModelVariant? = null
 
   init {
     setName(name)
