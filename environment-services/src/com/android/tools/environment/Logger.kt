@@ -37,6 +37,12 @@ interface Logger {
 
     fun debug(throwable: Throwable) = debug(throwable.message ?: "", throwable)
 
+    fun info(message: String, throwable: Throwable?)
+
+    fun info(message: String) = info(message, null)
+
+    fun info(throwable: Throwable) = info(throwable.message ?: "", throwable)
+
     val isDebugEnabled: Boolean
 
     /** Interface for the service providing functionality to construct a logger. */

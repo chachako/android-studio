@@ -17,6 +17,7 @@ kotlin_library(
         "//tools/adt/idea/render-resources:tools.render-resources",
         "//tools/adt/idea/rendering:tools.rendering",
         "//tools/analytics-library/crash:tools.analytics-crash",
+        "//tools/base/environment-services:tools.environment-services",
         "//tools/base/layoutlib-api:tools.layoutlib-api",
     ],
 )
