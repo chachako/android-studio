@@ -31,6 +31,7 @@ import com.android.utils.StdLogger;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -71,22 +72,22 @@ public class DeployerRunner {
     public static void main(String[] args) {
         Trace.start();
         Trace.begin("main");
-        // Only use adblib when DeployerRunner is invoked from CLI
-        System.setProperty(AdbClient.ALLOW_ADBLIB_PROP_KEY, AdbClient.ALLOW_ADBLIB_PROP_VALUE);
-        int errorCode = tracedMain(args);
-        Trace.end();
-        Trace.flush();
-        System.exit(errorCode);
-    }
 
-    public static int tracedMain(String[] args) {
         DeployerRunner runner =
                 new DeployerRunner(
                         MOBILE_INSTALL_DEFAULTS,
                         new File(DEPLOY_DB_PATH),
                         new File(DEX_DB_PATH),
                         new AlwaysYesService());
-        return runner.run(args);
+
+        // When used from CLI, we use adblib to install.
+        String[] parameters = Arrays.copyOf(args, args.length + 1);
+        parameters[args.length] = DeployRunnerParameters.PARAMETER_CREATE_ADBLIB_SESSION;
+
+        int errorCode = runner.run(parameters);
+        Trace.end();
+        Trace.flush();
+        System.exit(errorCode);
     }
 
     public DeployerRunner(File deployCacheFile, File databaseFile, UIService service) {
@@ -176,9 +177,10 @@ public class DeployerRunner {
 
         // Use an adblib connection. This is piggybagging on the adb server guaranteed to be
         // spawned by DDMLIB.
-        AdbSession session =
-                AdbLibSessionFactoryKt.createSocketConnectSession(
-                        AndroidDebugBridge::getSocketAddress);
+        AdbSession session = null;
+        if (parameters.getCreateAdblibSession()) {
+            AdbLibSessionFactoryKt.createSocketConnectSession(AndroidDebugBridge::getSocketAddress);
+        }
 
         AdbClient adb = new AdbClient(device, logger, session);
         Installer installer =

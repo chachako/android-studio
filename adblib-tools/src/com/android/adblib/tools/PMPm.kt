@@ -25,10 +25,12 @@ internal class PMPm(deviceServices: AdbDeviceServices) : PM(deviceServices) {
 
     val CMD = "pm"
 
-    override suspend fun createSession(device: DeviceSelector, options: List<String>) : Flow<String> {
-        val opts = options.joinToString(" ")
-        val cmd = "$CMD install-create $opts".trim()
-        return deviceService.shell(device, cmd, TextShellCollector())
+    override suspend fun createSession(device: DeviceSelector, options: List<String>, size: Long) : Flow<String> {
+        val cmd = mutableListOf(CMD, "install-create")
+        cmd += options
+        cmd += "-S"
+        cmd += size.toString()
+        return deviceService.shell(device, cmd.joinToString(" "), TextShellCollector())
     }
 
     override suspend fun streamApk(device: DeviceSelector, sessionID: String, apk: AdbInputChannel, filename: String, size: Long) : Flow<String>{

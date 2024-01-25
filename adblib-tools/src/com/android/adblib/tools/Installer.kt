@@ -42,8 +42,8 @@ suspend fun AdbDeviceServices.install(
     apks : List<Path>,
     options : List<String> = listOf(),
     timeout : Duration = Duration.ofMinutes(5),
-) {
-    withContext(session.host.ioDispatcher) { // Make sure we NEVER run on EDT
+) : InstallMetrics{
+    return withContext(session.host.ioDispatcher) { // Make sure we NEVER run on EDT
         session.host.timeProvider.withErrorTimeout(timeout) {
             val client = PMDriver(this@install, device)
             client.install(apks, options)

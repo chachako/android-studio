@@ -22,8 +22,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Duration
+import java.time.Instant
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import kotlin.io.path.fileSize
 
 // A summary of how install works based on the target device.
 // Three parameter are to be considered in order to decide of an install strategy.
@@ -73,16 +76,17 @@ internal class PMDriver(private val service : AdbDeviceServices, private val dev
     suspend fun install(
         apks: List<Path>,
         options: List<String> = listOf()
-    ) {
-        withContext(service.session.host.ioDispatcher){
-           installOnIODispatcher(apks, options)
+    ) : InstallMetrics {
+        return withContext(service.session.host.ioDispatcher){
+            installOnIODispatcher(apks, options)
         }
     }
 
     private suspend fun installOnIODispatcher(
         apks: List<Path>,
         options: List<String> = listOf()
-    ) {
+    ) : InstallMetrics {
+        val installStart = Instant.now()
 
         // Before we start, decide of an install strategy
         val features = service.session.hostServices.availableFeatures(device)
@@ -114,26 +118,26 @@ internal class PMDriver(private val service : AdbDeviceServices, private val dev
                 throw InstallException(InstallResult("Cannot install '$it' (directory)"))
             }
         }
+
         // Finally, installing!
+        val pushStart = Instant.now()
+        val apkSizes = apks.map { Files.size(it) }.toList()
+        val totalSize = apkSizes.sum()
 
         // 1/ Create session
-        val flow = pm.createSession(device, options)
-        val sessionID = parseSessionID(flow.first())
+        val flowCreate = pm.createSession(device, options, totalSize)
+        val sessionID = parseSessionID(flowCreate.first())
 
         try {
             // 2/ Write all apks
-            apks.forEach { apk ->
-                val size = Files.size(apk)
+            apks.forEachIndexed { index, apk ->
+                val size = apkSizes[index]
                 // Make sure we have a filename that won't mess with our command
                 service.session.channelFactory.openFile(apk).use {
                     val flow = pm.streamApk(device, sessionID, it, "${apk.fileName}", size)
                     parseInstallResult(flow.first())
                 }
             }
-
-            // 3/ Finalize
-            val flow = pm.commit(device, sessionID)
-            parseInstallResult(flow.first())
         } catch (t: Throwable) {
             runCatching {
                 val flow = pm.abandon(device, sessionID)
@@ -141,6 +145,14 @@ internal class PMDriver(private val service : AdbDeviceServices, private val dev
             }.onFailure { t.addSuppressed(it) }
             throw t
         }
+        val pushEnd = Instant.now()
+
+        // 3/ Finalize
+        val flow = pm.commit(device, sessionID)
+        parseInstallResult(flow.first())
+        val installEnd = Instant.now()
+
+        return InstallMetrics(installStart, Duration.between(installStart, installEnd), pushStart, Duration.between(pushStart, pushEnd))
     }
 
     companion object {

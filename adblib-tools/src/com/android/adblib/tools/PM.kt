@@ -36,9 +36,9 @@ internal abstract class PM(val deviceService : AdbDeviceServices) {
      *
      * @param [device] the [DeviceSelector] corresponding to the target device
      * @param [options] the install options. e.g.: {"-t", "-r"}.
-     * @param [timeout] the total amount of time allowed to install, including all sub-commands
+     * parame [size] the combined size of all files we will be pushing
      */
-    abstract suspend fun createSession(device: DeviceSelector, options: List<String>) : Flow<String>
+    abstract suspend fun createSession(device: DeviceSelector, options: List<String>, size: Long) : Flow<String>
 
     /**
      * Stream a split APK to the Package Manager.

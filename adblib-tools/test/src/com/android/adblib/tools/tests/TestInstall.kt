@@ -125,7 +125,7 @@ class TestInstall : TestInstallBase() {
         }
 
         Assert.assertEquals(2, fakeDevice.pmLogs.size)
-        Assert.assertEquals("install-create", fakeDevice.pmLogs[0])
+        Assert.assertEquals("install-create -S 0", fakeDevice.pmLogs[0])
         Assert.assertEquals("install-commit 1234", fakeDevice.pmLogs[1])
     }
 
@@ -140,7 +140,7 @@ class TestInstall : TestInstallBase() {
         }
 
         Assert.assertEquals(2, fakeDevice.cmdLogs.size)
-        Assert.assertEquals("package install-create", fakeDevice.cmdLogs[0])
+        Assert.assertEquals("package install-create -S 0", fakeDevice.cmdLogs[0])
         Assert.assertEquals("package install-commit 1234", fakeDevice.cmdLogs[1])
     }
 
@@ -155,7 +155,7 @@ class TestInstall : TestInstallBase() {
         }
 
         Assert.assertEquals(2, fakeDevice.cmdLogs.size)
-        Assert.assertEquals("package install-create", fakeDevice.cmdLogs[0])
+        Assert.assertEquals("package install-create -S 0", fakeDevice.cmdLogs[0])
         Assert.assertEquals("package install-commit 1234", fakeDevice.cmdLogs[1])
     }
 
@@ -170,7 +170,7 @@ class TestInstall : TestInstallBase() {
         }
 
         Assert.assertEquals(2, fakeDevice.abbLogs.size)
-        Assert.assertEquals("package\u0000install-create", fakeDevice.abbLogs[0])
+        Assert.assertEquals("package\u0000install-create\u0000-S\u00000", fakeDevice.abbLogs[0])
         Assert.assertEquals("package\u0000install-commit\u00001234", fakeDevice.abbLogs[1])
     }
 
@@ -188,7 +188,7 @@ class TestInstall : TestInstallBase() {
                 deviceServices.install(deviceSelector, apks, emptyList())
         }
         Assert.assertEquals(5, fakeDevice.abbLogs.size)
-        Assert.assertEquals("package\u0000install-create", fakeDevice.abbLogs[0])
+        Assert.assertEquals("package\u0000install-create\u0000-S\u00000", fakeDevice.abbLogs[0])
         Assert.assertTrue("", fakeDevice.abbLogs[1].startsWith("package\u0000install-write"))
         Assert.assertTrue("", fakeDevice.abbLogs[2].startsWith("package\u0000install-write"))
         Assert.assertTrue("", fakeDevice.abbLogs[3].startsWith("package\u0000install-write"))

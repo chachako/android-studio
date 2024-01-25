@@ -27,6 +27,8 @@ import java.util.Locale;
 
 public class DeployRunnerParameters {
 
+    static final String PARAMETER_CREATE_ADBLIB_SESSION = "--create_adblib_session";
+
     public enum Command {
         INSTALL,
         CODESWAP,
@@ -49,6 +51,8 @@ public class DeployRunnerParameters {
     private final List<String> targetDevices = new ArrayList<>();
     private final List<Path> apkPaths = new ArrayList<>();
     private Component componentToActivate = null;
+
+    private boolean createAdblibSession = false;
 
     private DeployRunnerParameters() {}
 
@@ -73,6 +77,8 @@ public class DeployRunnerParameters {
             useRootPushInstall = true;
         } else if (arg.startsWith("--no-jdwp-client-support")) {
             jdwpClientSupport = false;
+        } else if (arg.equals(PARAMETER_CREATE_ADBLIB_SESSION)) {
+            createAdblibSession = true;
         } else if (arg.startsWith("--log-level=")) {
             try {
                 logLevel = StdLogger.Level.valueOf(arg.substring("--log-level=".length()));
@@ -183,6 +189,10 @@ public class DeployRunnerParameters {
     @Nullable
     public Component getComponentToActivate() {
         return componentToActivate;
+    }
+
+    public boolean getCreateAdblibSession() {
+        return createAdblibSession;
     }
 
     static class Component {

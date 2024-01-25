@@ -47,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,8 +69,6 @@ public class AdbClient {
     private final IDevice device;
     private final ILogger logger;
 
-    public static final String ALLOW_ADBLIB_PROP_KEY = "com.android.tools.deployer.allow.adblib";
-    public static final String ALLOW_ADBLIB_PROP_VALUE = "true";
     private final Optional<AdbSession> adbSession;
 
     public AdbClient(IDevice device, ILogger logger) {
@@ -152,9 +151,6 @@ public class AdbClient {
     }
 
     public InstallResult install(@NonNull App app, List<String> options, boolean reinstall) {
-        String allowAdbLibProp = System.getProperty(ALLOW_ADBLIB_PROP_KEY);
-        boolean allowAdbLib = Boolean.parseBoolean(allowAdbLibProp);
-
         // If there are baseline profiles, let's add them to the list of files to install.
         List<Path> paths = new ArrayList<>();
         paths.addAll(
@@ -170,7 +166,7 @@ public class AdbClient {
         }
 
         InstallResult ir;
-        if (adbSession.isPresent() && allowAdbLib) {
+        if (adbSession.isPresent()) {
             logger.info("Installing with adblib");
             ir = installWithAdbLib(paths, options, reinstall);
         } else {
@@ -225,6 +221,10 @@ public class AdbClient {
         return new InstallResult(InstallStatus.UNKNOWN_ERROR, "Unknown Error");
     }
 
+    private static long toNanos(@NonNull Instant instant) {
+        return TimeUnit.MILLISECONDS.toNanos(instant.toEpochMilli()) + instant.getNano();
+    }
+
     private InstallResult installWithAdbLib(
             @NonNull List<Path> paths, List<String> options, boolean reinstall) {
         try {
@@ -235,12 +235,35 @@ public class AdbClient {
                     DeviceSelector.fromSerialNumber(device.getSerialNumber());
             Duration timeout = Duration.of(Timeouts.CMD_OINSTALL_MS, ChronoUnit.MILLIS);
             AdbDeviceServices deviceServices = adbSession.get().getDeviceServices();
-            JavaBridge.runBlocking(
-                    deviceServices.getSession(),
-                    c ->
-                            InstallerKt.install(
-                                    deviceServices, deviceSelector, paths, options, timeout, c));
-            return new InstallResult(InstallStatus.OK, null, device.getLastInstallMetrics());
+            long startNanos = System.nanoTime();
+            com.android.adblib.tools.InstallMetrics metrics =
+                    JavaBridge.runBlocking(
+                            deviceServices.getSession(),
+                            c ->
+                                    InstallerKt.install(
+                                            deviceServices,
+                                            deviceSelector,
+                                            paths,
+                                            options,
+                                            timeout,
+                                            c));
+
+            long installStartTimeNs = toNanos(metrics.getStartTime());
+            long installEndTimeNs = installStartTimeNs + metrics.getDuration().toNanos();
+            long pushStartTimeNs = toNanos(metrics.getUploadStartTime());
+            long pushEndTimeNs = pushStartTimeNs + metrics.getUploadDuration().toNanos();
+
+            // Change time origin from epoch to System.nanoTime
+            long timeDiff = startNanos - installStartTimeNs;
+            installStartTimeNs += timeDiff;
+            installEndTimeNs += timeDiff;
+            pushStartTimeNs += timeDiff;
+            pushEndTimeNs += timeDiff;
+
+            InstallMetrics ddmMetrics =
+                    new InstallMetrics(
+                            pushStartTimeNs, pushEndTimeNs, installStartTimeNs, installEndTimeNs);
+            return new InstallResult(InstallStatus.OK, null, ddmMetrics);
         } catch (com.android.adblib.tools.InstallException e) {
             String code = e.getErrorCode();
             String message = e.getMessage();

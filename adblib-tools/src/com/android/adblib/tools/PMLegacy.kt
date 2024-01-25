@@ -31,7 +31,7 @@ internal class PMLegacy(deviceServices: AdbDeviceServices) : PM(deviceServices) 
     var streamed : Boolean = false
     var options : String = ""
 
-    override suspend fun createSession(device: DeviceSelector, options: List<String>) : Flow<String> {
+    override suspend fun createSession(device: DeviceSelector, options: List<String>, size: Long) : Flow<String> {
         this.options = options.joinToString(" ").trim()
         return flow{
             emit("Success: created install session [1986]")
