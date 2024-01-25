@@ -85,11 +85,10 @@ public class VmTraceParser {
      * Reads a given number of bytes from the input stream and converts the result to an integer
      * represented in little-endian order.
      */
-    private static int doReadNumberLE(int numBytes, DataInputStream mInputStream)
-            throws IOException {
+    private static int doReadNumberLE(int numBytes, InputStream mInputStream) throws IOException {
         int leNumber = 0;
         for (int i = 0; i < numBytes; i++) {
-            leNumber += mInputStream.readUnsignedByte() << (i * 8);
+            leNumber += mInputStream.read() << (i * 8);
         }
         return leNumber;
     }
@@ -452,12 +451,12 @@ public class VmTraceParser {
         private static final int STREAMING_TRACE_VERSION_MASK = 0xF0;
 
         private File mTraceFile;
-        private DataInputStream mInputStream;
+        private InputStream mInputStream;
         private ByteArrayOutputStream mByteOutputStream;
 
         private StreamingTraceParser(File streamingTraceFile) throws IOException {
             mTraceFile = streamingTraceFile;
-            mInputStream = new DataInputStream(new FileInputStream(mTraceFile));
+            mInputStream = new BufferedInputStream(new FileInputStream(streamingTraceFile));
             mByteOutputStream = new ByteArrayOutputStream();
         }
 
@@ -515,7 +514,7 @@ public class VmTraceParser {
                         // Thread id equals to 0 indicate we should read a special code next.
                         // This code will indicate the action that should be made (e.g. parse a method)
                         if (threadId == 0) {
-                            int code = mInputStream.readUnsignedByte();
+                            int code = mInputStream.read();
                             if (code == PARSE_METHODS) {
                                 int methodLineLength = readNumberLE(2);
                                 parseMethod(readString(methodLineLength));
@@ -596,7 +595,7 @@ public class VmTraceParser {
         private String readString(int length) throws IOException {
             byte[] buffer = new byte[length];
             for (int i = 0; i < length; i++) {
-                buffer[i] = (byte) mInputStream.readUnsignedByte();
+                buffer[i] = (byte) mInputStream.read();
             }
             return new String(buffer, Charsets.UTF_8);
         }
