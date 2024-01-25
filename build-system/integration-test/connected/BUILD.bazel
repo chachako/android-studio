@@ -147,7 +147,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA,
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -158,7 +157,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd",
     data = TEST_DATA,
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -169,7 +167,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/api"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -180,7 +177,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/attrOrder"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -191,7 +187,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/basic"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -206,7 +201,6 @@ gradle_connected_test(
         "//prebuilts/studio/sdk:ndk",
         "//tools/base/build-system/integration-test:test-projects/ndkJniLib",
     ],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     lint_baseline = "lint_baseline.xml",
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
@@ -218,7 +212,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/composeHelloWorld"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS + [
         "//tools/base/build-system/integration-test:kotlin_gradle_plugin_for_compose_prebuilts",
@@ -248,7 +241,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA,
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     resources = glob(["src/test/resources/**"]),
@@ -271,7 +263,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/testing/",
     avd = ":avd",
     data = TEST_DATA,
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     resources = glob(["src/test/resources/**"]),
@@ -283,7 +274,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA,
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -297,7 +287,6 @@ gradle_connected_test(
         "//tools/data-binding:integration-test-projects",
         "//tools/data-binding:integration-test-projects-support",
     ],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS + [
         "//tools/data-binding:data_binding_runtime",
     ],
@@ -315,7 +304,6 @@ gradle_connected_test(
         "//tools/data-binding:integration-test-projects",
         "//tools/data-binding:integration-test-projects-support",
     ],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS + [
         "//tools/data-binding:data_binding_runtime",
     ],
@@ -330,7 +318,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/densitySplit"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -341,7 +328,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/dependencies"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -352,7 +338,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/feature/",
     avd = ":avd",
     data = TEST_DATA,
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -363,7 +348,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/flavored"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -374,7 +358,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/flavoredlib"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -385,7 +368,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/flavorlib"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -396,7 +378,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/flavors"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -407,7 +388,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA,
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -418,7 +398,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/assets"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     resources = glob(["src/test/resources/**"]),
@@ -430,7 +409,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/kotlinApp"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -441,7 +419,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/libMinifyJarDep"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -452,7 +429,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/libMinifyLibDep"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -463,7 +439,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/libsTest"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -474,7 +449,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/libTestDep"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -485,7 +459,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/migrated"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -496,7 +469,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/minify"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -507,7 +479,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/minifyLib"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -531,7 +502,6 @@ gradle_connected_test(
         "//prebuilts/tools/common/mlkit/testData",
         "//tools/base/build-system/integration-test:test-projects/mlModelBinding",
     ],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -542,7 +512,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/multiDex"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -553,7 +522,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/multiDexWithLib"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -564,7 +532,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/library/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/multiproject"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -575,7 +542,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/multires"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -589,7 +555,6 @@ gradle_connected_test(
         "//prebuilts/studio/sdk:cmake",
         "//prebuilts/studio/sdk:ndk",
     ],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -604,7 +569,6 @@ gradle_connected_test(
         "//prebuilts/studio/sdk:ndk",
         "//tools/base/build-system/integration-test:test-projects/ndkJniLib",
     ],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -619,7 +583,6 @@ gradle_connected_test(
         "//prebuilts/studio/sdk:ndk",
         "//tools/base/build-system/integration-test:test-projects/ndkLibPrebuilts",
     ],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -647,7 +610,6 @@ gradle_connected_test(
         "//prebuilts/studio/sdk:cmake",
         "//prebuilts/studio/sdk:ndk",
     ],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -658,7 +620,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/overlay3"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -669,7 +630,6 @@ gradle_connected_test(
     srcs = "src/test/java/com/android/build/gradle/integration/connected/application/",
     avd = ":avd_32",
     data = TEST_DATA + ["//tools/base/build-system/integration-test:test-projects/pkgOverride"],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     deps = TEST_DEPS,
@@ -774,7 +734,6 @@ gradle_connected_test(
         "//tools/adt/idea/utp:addGradleAndroidTestListener",
         "//tools/base/build-system/integration-test:test-projects/utp",
     ],
-    flaky = True,  # b/148626301 flaky emulator connectivity
     maven_repo_zips = MAVEN_REPO_ZIPS,
     maven_repos = TEST_MAVEN_REPOS,
     shard_count = 2,
@@ -862,8 +821,6 @@ maven_repository(
         "@maven//:androidx.lifecycle.lifecycle-common-java8_2.6.1",
         "@maven//:androidx.lifecycle.lifecycle-livedata-ktx_2.6.1",
         "@maven//:androidx.lifecycle.lifecycle-viewmodel-ktx_2.6.1",
-        "@maven//:androidx.privacysandbox.tools.tools-apipackager_1.0.0-alpha03",
-        "@maven//:androidx.privacysandbox.tools.tools_1.0.0-alpha03",
         "@maven//:androidx.test.core_1.4.0-alpha06",
         "@maven//:androidx.test.core_1.5.0",
         "@maven//:androidx.test.espresso.espresso-core_3.2.0",

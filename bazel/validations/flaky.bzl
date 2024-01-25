@@ -6,48 +6,6 @@ the allowlisted targets below can set "flaky" to true.
 
 APPROVED_FLAKY_TESTS = [
     "//tools/base/build-system/integration-test/application:tests__GradlePluginMemoryLeakTest",  # b/153972155
-    "//tools/base/build-system/integration-test/connected:UtpConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:PkgOverrideConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:Overlay3ConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:NoSplitNdkVariantsConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:NdkLibPrebuiltsConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:NdkJniLibConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:NdkConnectedCheckTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:MultiresConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:MultiProjectConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:MultiDexWithLibConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:MultiDexConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:MlModelBindingConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:MinifyLibConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:MinifyConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:MigratedConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:LibTestDepConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:LibsTestConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:LibMinifyLibDepConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:LibMinifyJarDepConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:KotlinAppConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:JarsInLibrariesConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:JacocoConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:FlavorsConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:FlavorlibConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:FlavoredlibConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:FlavoredConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:DynamicFeatureConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:DependenciesConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:DensitySplitConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:DataBindingIntegrationTestAppsConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:DataBindingExternalArtifactDependencyConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:D8DesugaringConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:CoreLibraryDesugarConversionConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:ComposeHelloWorldConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:CustomTestedApksTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:CmakeJniLibConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:BasicConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:AttrOrderConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:ApiConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:AnnotationProcessorConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:AndroidTestResourcesConnectedTest",  # b/148626301
-    "//tools/base/build-system/integration-test/connected:AdditionalTestOutputConnectedTest",  # b/148626301
     "//tools/adt/idea/adt-ui:intellij.android.adt.ui_tests",  # b/172521726
     "//tools/adt/idea/android-uitests:DeploymentTest",  # b/200082548
     "//tools/adt/idea/android-uitests:CreateCppKotlinProjectTest",  # b/185998794
