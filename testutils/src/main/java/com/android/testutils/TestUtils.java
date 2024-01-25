@@ -497,7 +497,7 @@ public class TestUtils {
                 throw new IllegalStateException(
                         "Java8 JDK not found for platform: " + OsType.getOsName());
         }
-        return resolveWorkspacePath("prebuilts/studio/jdk/" + hostDir);
+        return resolveWorkspacePath("prebuilts/studio/jdk/jdk8/" + hostDir);
     }
 
     @NonNull

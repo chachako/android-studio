@@ -20,8 +20,8 @@ register_toolchains(
 
 new_local_repository(
     name = "studio_jdk",
-    build_file = "prebuilts/studio/jdk/BUILD.studio_jdk",
-    path = "prebuilts/studio/jdk",
+    build_file = "prebuilts/studio/jdk/jdk8/BUILD.studio_jdk",
+    path = "prebuilts/studio/jdk/jdk8",
 )
 
 local_repository(
