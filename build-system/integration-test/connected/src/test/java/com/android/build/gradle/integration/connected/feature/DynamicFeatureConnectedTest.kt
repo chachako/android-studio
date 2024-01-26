@@ -35,7 +35,8 @@ class DynamicFeatureConnectedTest {
         val app = MinimalSubProject.app("com.example.app")
             .appendToBuild(
                 """android.dynamicFeatures = [':dynamicFeature']
-                            |android.defaultConfig.versionCode = 4""".trimMargin()
+                            |android.defaultConfig.versionCode = 4
+                            |android.defaultConfig.targetSdk = 23""".trimMargin()
             )
             .withFile(
                 "src/main/java/com/example/app/MyProductionClass.java",
@@ -151,4 +152,11 @@ class DynamicFeatureConnectedTest {
     fun runTestInDynamicFeature() {
         project.executor().run(":dynamicFeature:connectedAndroidTest")
     }
+
+    // Regression test for b/314731501
+    @Test
+    fun testInstallAppWithDynamicFeatureInstall() {
+        project.executor().run(":app:installDebug")
+    }
+
 }
