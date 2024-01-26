@@ -43,9 +43,10 @@ interface OutOperationRequest<FileTypeT: FileSystemLocation> {
      *
      * @param name file or directory name
      * @return itself
-\     */
+     */
     @Incubating
     fun withName(name: String): OutOperationRequest<FileTypeT>
+
     /**
      * Initiates an append request to a [Artifact.Multiple] artifact type.
      *
@@ -64,14 +65,12 @@ interface OutOperationRequest<FileTypeT: FileSystemLocation> {
      *     }
      * ```
      *
-     * and an ArtifactType defined as follows :
+     * and an ArtifactType defined as follows:
      *
      * ```kotlin
-     *     sealed class ArtifactType<T: FileSystemLocation>(
-     *          val kind: ArtifactKind
-     *     ): MultipleArtifactType {
+     *     sealed class ArtifactType<T: FileSystemLocation>(val kind: ArtifactKind) {
      *          object MULTIPLE_FILE_ARTIFACT:
-     *                  ArtifactType<RegularFile>(FILE), Appendable
+     *                  ArtifactType<RegularFile>(FILE), Multiple, Appendable
      *     }
      * ```
      *
@@ -116,7 +115,7 @@ interface OutOperationRequest<FileTypeT: FileSystemLocation> {
      *     }
      * ```
      *
-     * An [SingleArtifact] is defined as follows:
+     * A [SingleArtifact] is defined as follows:
      *
      * ```kotlin
      *     sealed class ArtifactType<T: FileSystemLocation>(val kind: ArtifactKind) {
@@ -267,7 +266,7 @@ interface InAndOutFileOperationRequest {
      *     }
      * ```
      *
-     * An ArtifactType defined as follows :
+     * An ArtifactType defined as follows:
      *
      * ```kotlin
      *     sealed class ArtifactType<T: FileSystemLocation>(val kind: ArtifactKind) {
@@ -320,7 +319,7 @@ interface CombiningOperationRequest<FileTypeT: FileSystemLocation> {
      *     }
      * ```
      *
-     * An [MultipleArtifact] defined as follows :
+     * A [MultipleArtifact] is defined as follows:
      *
      * ```kotlin
      *     sealed class ArtifactType<T: FileSystemLocation>(val kind: ArtifactKind) {
@@ -368,7 +367,7 @@ interface InAndOutDirectoryOperationRequest<TaskT : Task> {
      *     }
      * ```
      *
-     * An ArtifactType defined as follows :
+     * An ArtifactType defined as follows:
      *
      * ```kotlin
      *     sealed class ArtifactType<T: FileSystemLocation>(val kind: ArtifactKind) {
