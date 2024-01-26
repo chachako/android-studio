@@ -24,9 +24,3 @@ fun LintMap.getOrPutLintMap(key: String): LintMap {
   this.put(key, newMap)
   return newMap
 }
-
-/**
- * Returns a Sequence of Location, assuming the LintMap is being used as a list, where the keys do
- * not matter and the values are the entries of the list.
- */
-fun LintMap.toLocationSequence() = this.keys().map { index -> this.getLocation(index)!! }

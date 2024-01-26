@@ -160,20 +160,15 @@ class UnusedResourceDetector :
     for (resource in findUnused(context, model)) {
       val field = resource.field
       val message = "The resource `$field` appears to be unused"
-
-      // Each module (possibly) provides a list of locations (stored in a LintMap) for the resource.
       val locations =
-        // partialResults is essentially a list of LintMaps (one per module).
         partialResults
-          .maps()
-          .asSequence()
-          // For each module's LintMap, get the LintMap containing locations for field.
-          .mapNotNull { lintMap -> lintMap.getMap(field) }
-          // Each LintMap is now just storing a list of locations, so get as a Sequence<Location>.
-          .map { lintMap -> lintMap.toLocationSequence() }
-          .flatten()
-          .ifEmpty { sequenceOf(Location.create(context.project.dir)) }
-
+          .mapNotNull { (_, lintMap) -> lintMap.getLocation(field) }
+          .ifEmpty {
+            listOf(
+              resource.declarations?.first()?.toFile()?.let(Location::create)
+                ?: Location.create(context.project.dir)
+            )
+          }
       val fix = fix().data(KEY_RESOURCE_FIELD, field)
       for (location in locations) {
         context.report(Incident(getIssue(resource), location, message, fix))
@@ -209,93 +204,81 @@ class UnusedResourceDetector :
         }
       }
       2 -> {
-        if (model.unused.isEmpty()) return
+        // Report any resources that we (for some reason) could not find a declaration
+        // location for
+        if (model.unused.isNotEmpty()) {
+          // Final pass: we may have marked a few resource declarations with
+          // tools:ignore; we don't check that on every single element, only those
+          // first thought to be unused. We don't just remove the elements explicitly
+          // marked as unused, we revisit everything transitively such that resources
+          // referenced from the ignored/kept resource are also kept.
+          val unused = model.findUnused(model.unused.toList())
 
-        // Final pass: we may have marked a few resource declarations with tools:ignore; we don't
-        // check that on every single element, only those first thought to be unused. We don't just
-        // remove the elements explicitly marked as unused, we revisit everything transitively such
-        // that resources referenced from the ignored/kept resource are also kept.
-        var unused = model.findUnused(model.unused.toList()).filterIsInstance<LintResource>()
-
-        // For file based resources (such as R.layout) where we have no declaration locations, try
-        // to find the file based on the filename, and use this as the declaration location, as it
-        // has a simple mapping from the resource name (though the presence of qualifiers like -land
-        // etc. makes it a little tricky if there's no base file provided).
-        for (resource in unused) {
-          // Only consider resources without a location that are file-based.
-          if (
-            resource.locations.isNotEmpty() ||
-              resource.type == null ||
-              !isFileBasedResourceType(resource.type)
-          ) {
-            continue
-          }
-
-          val type = resource.type
-          val name = resource.name
-          // folders in alphabetical order such that we process
-          // base folders first: we want the locations in base folder order
-          val folders =
-            context.project.resourceFolders
-              .asSequence()
-              .flatMap { it.listFilesOrEmpty() }
-              .filter { it.name.startsWith(type.getName()) }
-              .sortedBy(File::getName)
-          val files =
-            folders
-              .flatMap { it.listFilesOrEmpty().sorted() }
-              .filter { it.name.startsWith(name) && it.name.startsWith(".", name.length) }
-
-          for (file in files) {
-            resource.recordLocation(Location.create(file))
-          }
-        }
-
-        // If we are in global analysis mode and one or more library modules were skipped then
-        // filter out resources with no declaration locations; the resource was very probably
-        // defined in one of the skipped library modules.
-        if (context.isGlobalAnalysis() && context.driver.projects.any { !it.reportIssues }) {
-          unused = unused.filter { it.locations.isNotEmpty() }
-        } else {
-          // Otherwise, for resources that still don't have a declaration location, set a default
-          // location.
-          for (resource in unused) {
-            if (resource.locations.isEmpty()) {
-              resource.locations.add(Location.create(context.project.dir))
+          // Fill in locations for files that we didn't encounter in other ways
+          unused
+            .asSequence()
+            .filterIsInstance<LintResource>()
+            .filter { it.locations == null && it.type != null && isFileBasedResourceType(it.type) }
+            // Try to figure out the file if it's a file based resource (such as R.layout);
+            // in that case we can figure out the filename since it has a simple mapping
+            // from the resource name (though the presence of qualifiers like -land etc
+            // makes it a little tricky if there's no base file provided)
+            .forEach { resource ->
+              val type = resource.type
+              val name = resource.name
+              // folders in alphabetical order such that we process
+              // based folders first: we want the locations in base folder order
+              val folders =
+                context.project.resourceFolders
+                  .asSequence()
+                  .flatMap { it.listFilesOrEmpty() }
+                  .filter { it.name.startsWith(type.getName()) }
+                  .sortedBy(File::getName)
+              val files =
+                folders
+                  .flatMap { it.listFilesOrEmpty().sorted() }
+                  .filter { it.name.startsWith(name) && it.name.startsWith(".", name.length) }
+              files.forEach { resource.recordLocation(Location.create(it)) }
             }
-          }
-        }
 
-        // TODO: Why does order matter here?
-        unused = unused.sorted()
-
-        if (context.isGlobalAnalysis()) {
-          // In global analysis mode, we have analyzed the root module and dependencies, so report
-          // the unused resources.
-          for (resource in unused) {
-            val field = resource.field
-            val message = "The resource `$field` appears to be unused"
-            // Lint fix data for the IDE which will start the resource removal
-            // refactoring with this resource field preselected
-            val fix = fix().data(KEY_RESOURCE_FIELD, field)
-            for (location in resource.locations) {
-              val incident = Incident(getIssue(resource), location, message, fix)
-              context.report(incident)
+          // TODO: IF we don't store locations along the way, there's no need to
+          // defer this for a second phase!
+          val record: (LintResource, Location) -> Any =
+            when {
+              !context.isGlobalAnalysis() ->
+                storeSerializedModel(context).let { lintMap ->
+                  { resource, location -> lintMap.put(resource.field, location) }
+                }
+              // Not exiting yet; instead of reporting directly, we'll
+              // inject incidents into the storage as well, such that we have
+              // locations etc
+              else -> { resource, location ->
+                  val field = resource.field
+                  val message = "The resource `$field` appears to be unused"
+                  // Lint fix data for the IDE which will start the resource removal
+                  // refactoring with this resource field preselected
+                  val fix = fix().data(KEY_RESOURCE_FIELD, field)
+                  val incident = Incident(getIssue(resource), location, message, fix)
+                  context.report(incident)
+                }
             }
+          val defaultLocation by lazy {
+            val skippedLibraries = context.driver.projects.any { !it.reportIssues }
+            if (skippedLibraries) null else Location.create(context.project.dir)
           }
-        } else {
-          // When doing partial analysis, we are just analyzing a module in isolation. Instead of
-          // reporting unused resources, just store the usage model for the current module, and the
-          // locations of each resource (from the current module) that appears to be unused (but is
-          // likely to end up being used by another module).
-          val lintMap = storeSerializedModel(context)
-          for (resource in unused) {
-            val locationsList = lintMap.getOrPutLintMap(resource.field)
-            assert(resource.locations.isNotEmpty())
-            for (location in resource.locations) {
-              locationsList.put("${locationsList.size}", location)
+          unused
+            .asSequence()
+            .sorted() // TODO: Why does order matter here?
+            .mapNotNull { resource ->
+              // Skip this resource if we don't have a location, and one or
+              // more library projects were skipped; the resource was very
+              // probably defined in that library project and only encountered
+              // in the main project's java R file
+              val location =
+                (resource as LintResource).locations?.let(Location::reverse) ?: defaultLocation
+              location?.let { resource to location }
             }
-          }
+            .forEach { (resource, location) -> record(resource, location) }
         }
       }
       else -> error("Phase ${context.phase} not expected")
@@ -530,14 +513,15 @@ class UnusedResourceDetector :
 
   private class LintResource(type: ResourceType?, name: String?, value: Int) :
     ResourceUsageModel.Resource(type, name, value) {
-
-    /** List of declaration locations */
-    val locations: MutableList<Location> = ArrayList()
+    /** Chained list of declaration locations */
+    var locations: Location? = null
 
     fun recordLocation(location: Location) {
-      if (!locations.contains(location)) {
-        locations.add(location)
+      val oldLocation = locations
+      if (oldLocation != null) {
+        location.secondary = oldLocation
       }
+      locations = location
     }
   }
 
