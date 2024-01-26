@@ -242,7 +242,7 @@ function collect_logs() {
 
 if [ $? -ne 0 ]; then
   echo "Coverage build configuration is broken; You may need to update\
- tools/adt/idea/bazel/coverage/BUILD"
+ tools/base/bazel/coverage/BUILD"
   exit 1
 fi
 
