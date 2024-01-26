@@ -24,6 +24,7 @@ import com.android.build.api.variant.Component
 import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.Renderscript
+import com.android.build.api.variant.TestedComponentPackaging
 import com.android.build.gradle.internal.component.LibraryCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.LibraryVariantDslInfo
@@ -117,6 +118,10 @@ open class LibraryVariantImpl @Inject constructor(
 
     override val androidResources: AndroidResourcesImpl =
         getAndroidResources(dslInfo.androidResourcesDsl.androidResources)
+
+    override val packaging: TestedComponentPackaging by lazy {
+        TestedComponentPackagingImpl(dslInfo.packaging, internalServices)
+    }
 
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API

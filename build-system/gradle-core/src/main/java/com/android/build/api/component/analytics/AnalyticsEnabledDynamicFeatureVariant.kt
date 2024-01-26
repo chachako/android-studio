@@ -19,12 +19,12 @@ package com.android.build.api.component.analytics
 import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.GeneratesApk
-import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.Dexing
 import com.android.build.api.variant.DynamicFeatureVariant
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.TestFixtures
+import com.android.build.api.variant.TestedApkPackaging
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.model.ObjectFactory
@@ -92,8 +92,20 @@ open class AnalyticsEnabledDynamicFeatureVariant @Inject constructor(
     override val renderscript: Renderscript?
         get() = generatesApk.renderscript
 
-    override val packaging: ApkPackaging
-        get() = generatesApk.packaging
+    private val userVisiblePackaging: TestedApkPackaging by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
+        objectFactory.newInstance(
+            AnalyticsEnabledTestedApkPackaging::class.java,
+            delegate.packaging,
+            stats
+        )
+    }
+
+    override val packaging: TestedApkPackaging
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.PACKAGING_OPTIONS_VALUE
+            return userVisiblePackaging
+        }
 
     override val targetSdk: AndroidVersion
         get() = generatesApk.targetSdk

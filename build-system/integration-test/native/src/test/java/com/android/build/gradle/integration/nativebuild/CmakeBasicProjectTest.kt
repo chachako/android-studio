@@ -212,6 +212,11 @@ class CmakeBasicProjectTest(
 
               // ------------------------------------------------------------------------
             }
+
+            dependencies {
+                androidTestImplementation "com.android.support.test:runner:${"$"}{project.testSupportLibVersion}"
+                androidTestImplementation "com.android.support.test:rules:${"$"}{project.testSupportLibVersion}"
+            }
         """.trimIndent()
     }
 
@@ -256,6 +261,11 @@ class CmakeBasicProjectTest(
                       experimentalProperties["ninja.cppFlags"] = ["-DTEST_CPP_FLAG"];
                   }
                 }
+            }
+
+            dependencies {
+                androidTestImplementation "com.android.support.test:runner:${"$"}{project.testSupportLibVersion}"
+                androidTestImplementation "com.android.support.test:rules:${"$"}{project.testSupportLibVersion}"
             }
         """.trimIndent()
     }
@@ -345,6 +355,11 @@ class CmakeBasicProjectTest(
                           ]
                   }
                 }
+            }
+
+            dependencies {
+                androidTestImplementation "com.android.support.test:runner:${"$"}{project.testSupportLibVersion}"
+                androidTestImplementation "com.android.support.test:rules:${"$"}{project.testSupportLibVersion}"
             }
         """.trimIndent()
     }
@@ -695,6 +710,42 @@ class CmakeBasicProjectTest(
 
         lib = ZipHelper.extractFile(apk, "lib/x86_64/libhello-jni.so")
         TruthHelper.assertThatNativeLib(lib).isStripped()
+    }
+
+    // Regression test for b/236913987
+    @Test
+    fun checkTestOnlyNativeLibraries() {
+        // First check that native libs are packaged in the main APK and not the android test APK by
+        // default.
+        project.execute("clean", "assembleDebug", "assembleDebugAndroidTest")
+        var apk = project.getApk(GradleTestProject.ApkType.DEBUG)
+        var androidTestApk = project.getApk(GradleTestProject.ApkType.ANDROIDTEST_DEBUG)
+        assertThatApk(apk).contains("lib/armeabi-v7a/libhello-jni.so")
+        assertThatApk(apk).contains("lib/x86_64/libhello-jni.so")
+        assertThatApk(androidTestApk).doesNotContain("lib/armeabi-v7a/libhello-jni.so")
+        assertThatApk(androidTestApk).doesNotContain("lib/x86_64/libhello-jni.so")
+
+        // Then check that we can exclude native libs from the main APK and instead package them in
+        // the test APK using the testOnly DSL
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+                android {
+                    packaging {
+                        jniLibs {
+                            testOnly += "**/libhello-jni.so"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+        project.execute("assembleDebug", "assembleDebugAndroidTest")
+        apk = project.getApk(GradleTestProject.ApkType.DEBUG)
+        androidTestApk = project.getApk(GradleTestProject.ApkType.ANDROIDTEST_DEBUG)
+        assertThatApk(apk).doesNotContain("lib/armeabi-v7a/libhello-jni.so")
+        assertThatApk(apk).doesNotContain("lib/x86_64/libhello-jni.so")
+        assertThatApk(androidTestApk).contains("lib/armeabi-v7a/libhello-jni.so")
+        assertThatApk(androidTestApk).contains("lib/x86_64/libhello-jni.so")
     }
 
     @Test

@@ -32,10 +32,8 @@ import com.android.build.api.variant.BuildConfigField
 import com.android.build.api.variant.CanMinifyAndroidResourcesBuilder
 import com.android.build.api.variant.CanMinifyCodeBuilder
 import com.android.build.api.variant.Component
-import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.ExternalNativeBuild
 import com.android.build.api.variant.HasDeviceTests
-import com.android.build.api.variant.Packaging
 import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.internal.DependencyConfigurator
@@ -135,11 +133,6 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
                 )
             )
     }
-
-    override val packaging: Packaging by lazy {
-        PackagingImpl(dslInfo.packaging, internalServices)
-    }
-
 
     override val externalNativeBuild: ExternalNativeBuild?
         get() = nativeBuildCreationConfig.externalNativeBuild

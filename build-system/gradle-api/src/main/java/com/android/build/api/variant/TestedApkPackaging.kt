@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.build.api.variant
 
 import org.gradle.api.Incubating
 
 /**
- * Model for dynamic feature components that only contains build-time properties.
- *
- * See [Component] and [Variant] for more information.
+ * Build-time properties for packaging inside a tested APK [Component].
  */
-@Suppress("DEPRECATION")
-interface DynamicFeatureVariant : Variant,
-    GeneratesApk,
-    HasDeviceTests,
-    HasAndroidTest,
-    HasUnitTest,
-    HasTestFixtures {
+@Incubating
+interface TestedApkPackaging : TestedComponentPackaging, ApkPackaging {
 
-    /**
-     * Variant's packagingOptions, initialized by the corresponding global DSL element.
-     */
-    @get:Incubating
-    override val packaging: TestedApkPackaging
+    override val jniLibs: JniLibsTestedApkPackaging
 }

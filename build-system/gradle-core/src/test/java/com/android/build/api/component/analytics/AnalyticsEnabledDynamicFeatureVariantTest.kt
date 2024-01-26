@@ -17,13 +17,13 @@
 package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.AndroidResources
-import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.DynamicFeatureVariant
-import com.android.build.api.variant.JniLibsApkPackaging
+import com.android.build.api.variant.JniLibsTestedApkPackaging
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.ResourcesPackaging
 import com.android.build.api.variant.TestFixtures
+import com.android.build.api.variant.TestedApkPackaging
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeObjectFactory
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
@@ -85,13 +85,13 @@ class AnalyticsEnabledDynamicFeatureVariantTest {
     }
 
     @Test
-    fun getApkPackaging() {
-        val apkPackaging = Mockito.mock(ApkPackaging::class.java)
-        val jniLibsApkPackagingOptions = Mockito.mock(JniLibsApkPackaging::class.java)
+    fun getPackaging() {
+        val packaging = Mockito.mock(TestedApkPackaging::class.java)
+        val jniLibsPackagingOptions = Mockito.mock(JniLibsTestedApkPackaging::class.java)
         val resourcesPackagingOptions = Mockito.mock(ResourcesPackaging::class.java)
-        Mockito.`when`(apkPackaging.jniLibs).thenReturn(jniLibsApkPackagingOptions)
-        Mockito.`when`(apkPackaging.resources).thenReturn(resourcesPackagingOptions)
-        Mockito.`when`(delegate.packaging).thenReturn(apkPackaging)
+        Mockito.`when`(packaging.jniLibs).thenReturn(jniLibsPackagingOptions)
+        Mockito.`when`(packaging.resources).thenReturn(resourcesPackagingOptions)
+        Mockito.`when`(delegate.packaging).thenReturn(packaging)
         // simulate a user configuring packaging options for jniLibs and resources
         proxy.packaging.jniLibs
         proxy.packaging.resources

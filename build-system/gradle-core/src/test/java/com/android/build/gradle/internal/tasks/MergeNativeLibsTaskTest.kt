@@ -46,7 +46,9 @@ class MergeNativeLibsTaskTest {
     private lateinit var profilerNativeLibs: File
     private lateinit var excludes: Set<String>
     private lateinit var pickFirsts: Set<String>
+    private lateinit var testOnly: Set<String>
     private lateinit var outputDir: File
+    private lateinit var testOnlyDir: File
     private lateinit var unfilteredProjectNativeLibs: List<File>
 
     private val abis = listOf("x86", "x86_64")
@@ -67,6 +69,7 @@ class MergeNativeLibsTaskTest {
         task.analyticsService.set(FakeNoOpAnalyticsService())
 
         outputDir = temporaryFolder.newFolder("out")
+        testOnlyDir = temporaryFolder.newFolder("testOnly")
 
         val projectNativeLib1 =
             temporaryFolder.newFolder("projectNativeLib1").also { dir ->
@@ -83,6 +86,10 @@ class MergeNativeLibsTaskTest {
                         it.parentFile.mkdirs()
                         it.writeText("exclude")
                     }
+                    dir.resolve("$abi/projectTestOnly.so").also {
+                        it.parentFile.mkdirs()
+                        it.writeText("projectTestOnly")
+                    }
                 }
             }
         val projectNativeLib2 =
@@ -96,12 +103,9 @@ class MergeNativeLibsTaskTest {
             }
         unfilteredProjectNativeLibs = listOf(projectNativeLib1, projectNativeLib2)
         projectNativeLibs =
-            mutableListOf<File>().also {
-                abis.forEach { abi ->
-                    it.add(projectNativeLib1.resolve("$abi/projectNativeLib1.so"))
-                    it.add(projectNativeLib2.resolve("$abi/projectNativeLib2.so"))
-                }
-            }.toList()
+            unfilteredProjectNativeLibs.flatMap { dir ->
+                dir.walk().filter { it.extension == "so" }
+            }
 
         val subProjectNativeLib1 =
             temporaryFolder.newFolder("subProjectNativeLib1").also { dir ->
@@ -117,6 +121,10 @@ class MergeNativeLibsTaskTest {
                     dir.resolve("$abi/pickFirst.so").also {
                         it.parentFile.mkdirs()
                         it.writeText("subProjectPickFirst")
+                    }
+                    dir.resolve("$abi/subProjectTestOnly.so").also {
+                        it.parentFile.mkdirs()
+                        it.writeText("subProjectTestOnly")
                     }
                 }
             }
@@ -145,6 +153,10 @@ class MergeNativeLibsTaskTest {
                     dir.resolve("$abi/pickFirst.so").also {
                         it.parentFile.mkdirs()
                         it.writeText("externalLibPickFirst")
+                    }
+                    dir.resolve("$abi/externalLibTestOnly.so").also {
+                        it.parentFile.mkdirs()
+                        it.writeText("externalLibTestOnly")
                     }
                 }
             }
@@ -183,6 +195,7 @@ class MergeNativeLibsTaskTest {
 
         excludes = setOf("**/exclude.so")
         pickFirsts = setOf("**/pickFirst.so")
+        testOnly = setOf("**/*TestOnly.so")
 
         task.projectNativeLibs.from(projectNativeLibs)
         task.subProjectNativeLibs.from(subProjectNativeLibs)
@@ -190,7 +203,9 @@ class MergeNativeLibsTaskTest {
         task.profilerNativeLibs.set(profilerNativeLibs)
         task.excludes.set(excludes)
         task.pickFirsts.set(pickFirsts)
+        task.testOnly.set(testOnly)
         task.outputDir.set(outputDir)
+        task.testOnlyDir.set(testOnlyDir)
         task.unfilteredProjectNativeLibs.from(unfilteredProjectNativeLibs)
     }
 
@@ -230,6 +245,19 @@ class MergeNativeLibsTaskTest {
             assertThat(outputDir.resolve("lib/$abi/pickFirst.so")).exists()
             assertThat(outputDir.resolve("lib/$abi/pickFirst.so"))
                 .hasContents("subProjectPickFirst")
+
+            assertThat(testOnlyDir.resolve("lib/$abi/projectTestOnly.so")).exists()
+            assertThat(testOnlyDir.resolve("lib/$abi/projectTestOnly.so")).hasContents(
+                "projectTestOnly"
+            )
+            assertThat(testOnlyDir.resolve("lib/$abi/subProjectTestOnly.so")).exists()
+            assertThat(testOnlyDir.resolve("lib/$abi/subProjectTestOnly.so")).hasContents(
+                "subProjectTestOnly"
+            )
+            assertThat(testOnlyDir.resolve("lib/$abi/externalLibTestOnly.so")).exists()
+            assertThat(testOnlyDir.resolve("lib/$abi/externalLibTestOnly.so")).hasContents(
+                "externalLibTestOnly"
+            )
         }
     }
 

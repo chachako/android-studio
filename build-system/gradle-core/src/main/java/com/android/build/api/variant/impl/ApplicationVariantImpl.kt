@@ -17,12 +17,10 @@ package com.android.build.api.variant.impl
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.analytics.AnalyticsEnabledApplicationVariant
-import com.android.build.api.component.impl.DeviceTestImpl
 import com.android.build.api.component.impl.TestFixturesImpl
 import com.android.build.api.component.impl.features.DexingImpl
 import com.android.build.api.component.impl.isTestApk
 import com.android.build.api.variant.AndroidVersion
-import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.DependenciesInfo
@@ -113,8 +111,8 @@ open class ApplicationVariantImpl @Inject constructor(
         )
     }
 
-    override val packaging: ApkPackaging by lazy {
-        ApkPackagingImpl(
+    override val packaging: TestedApkPackagingImpl by lazy {
+        TestedApkPackagingImpl(
             dslInfo.packaging,
             internalServices,
             minSdk.apiLevel

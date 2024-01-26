@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,16 @@
 package com.android.build.api.variant.impl
 
 import com.android.build.api.dsl.Packaging
-import com.android.build.api.variant.JniLibsApkPackaging
+import com.android.build.api.variant.JniLibsTestedApkPackaging
 import com.android.build.gradle.internal.services.VariantServices
-import com.android.sdklib.AndroidVersion.VersionCodes.M
 
-open class JniLibsApkPackagingImpl(
+class JniLibsTestedApkPackagingImpl(
     dslPackaging: Packaging,
     variantServices: VariantServices,
     minSdk: Int
-) : JniLibsPackagingImpl(dslPackaging, variantServices),
-    JniLibsApkPackaging {
+) : JniLibsApkPackagingImpl(dslPackaging, variantServices, minSdk),
+    JniLibsTestedApkPackaging {
 
-    override val useLegacyPackaging =
-        variantServices.propertyOf(
-            Boolean::class.java,
-            dslPackaging.jniLibs.useLegacyPackaging ?: (minSdk < M)
-        )
-
-    override val useLegacyPackagingFromBundle =
-        variantServices.propertyOf(
-            Boolean::class.java,
-            dslPackaging.jniLibs.useLegacyPackaging ?: false
-        )
+    override val testOnly =
+        variantServices.setPropertyOf(String::class.java) { dslPackaging.jniLibs.testOnly }
 }

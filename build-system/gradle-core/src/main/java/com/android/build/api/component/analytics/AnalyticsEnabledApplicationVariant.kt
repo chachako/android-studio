@@ -16,11 +16,9 @@
 
 package com.android.build.api.component.analytics
 
-import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidTest
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.GeneratesApk
-import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.ApplicationAndroidResources
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.BundleConfig
@@ -30,6 +28,7 @@ import com.android.build.api.variant.Dexing
 import com.android.build.api.variant.Renderscript
 import com.android.build.api.variant.SigningConfig
 import com.android.build.api.variant.TestFixtures
+import com.android.build.api.variant.TestedApkPackaging
 import com.android.build.api.variant.VariantOutput
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
@@ -132,8 +131,20 @@ open class AnalyticsEnabledApplicationVariant @Inject constructor(
     override val renderscript: Renderscript?
         get() = generatesApk.renderscript
 
-    override val packaging: ApkPackaging
-        get() = generatesApk.packaging
+    private val userVisiblePackaging: TestedApkPackaging by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
+        objectFactory.newInstance(
+            AnalyticsEnabledTestedApkPackaging::class.java,
+            delegate.packaging,
+            stats
+        )
+    }
+
+    override val packaging: TestedApkPackaging
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.PACKAGING_OPTIONS_VALUE
+            return userVisiblePackaging
+        }
 
     private val userVisibleBundleConfig: BundleConfig by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
         objectFactory.newInstance(

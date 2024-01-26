@@ -203,6 +203,17 @@ single_gradle_integration_test(
 )
 
 single_gradle_integration_test(
+    name = "JniLibsTestOnlyTest",
+    timeout = "long",
+    srcs = "src/test/java/com/android/build/gradle/integration/ndk/",
+    data = DATA + CMAKE + NDK,
+    maven_repo_zips = MAVEN_REPO_ZIPS,
+    maven_repos = MAVEN_REPOS,
+    resources = glob(["src/test/resources/**"]),
+    deps = DEPS,
+)
+
+single_gradle_integration_test(
     name = "KeepDebugSymbolsTest",
     timeout = "long",
     srcs = "src/test/java/com/android/build/gradle/integration/ndk/",

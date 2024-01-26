@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.build.api.variant
 
 import org.gradle.api.Incubating
+import org.gradle.api.provider.SetProperty
 
 /**
- * Model for dynamic feature components that only contains build-time properties.
+ * Build-time properties for packaging native libraries (.so) inside a tested [Component].
  *
- * See [Component] and [Variant] for more information.
+ * This is accessed via [TestedComponentPackaging.jniLibs]
  */
-@Suppress("DEPRECATION")
-interface DynamicFeatureVariant : Variant,
-    GeneratesApk,
-    HasDeviceTests,
-    HasAndroidTest,
-    HasUnitTest,
-    HasTestFixtures {
+@Incubating
+interface JniLibsTestedComponentPackaging : JniLibsPackaging {
 
     /**
-     * Variant's packagingOptions, initialized by the corresponding global DSL element.
+     * The set of test-only patterns. Native libraries matching any of these patterns do not get
+     * packaged in the main APK or AAR, but they are included in the test APK.
+     *
+     * Example: `packaging.jniLibs.testOnly.add("**`/`testOnly.so")`
      */
     @get:Incubating
-    override val packaging: TestedApkPackaging
+    val testOnly: SetProperty<String>
 }

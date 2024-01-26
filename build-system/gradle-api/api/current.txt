@@ -1188,11 +1188,13 @@ package com.android.build.api.dsl {
     method public java.util.Set<java.lang.String> getExcludes();
     method public java.util.Set<java.lang.String> getKeepDebugSymbols();
     method public java.util.Set<java.lang.String> getPickFirsts();
+    method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getTestOnly();
     method public Boolean? getUseLegacyPackaging();
     method public void setUseLegacyPackaging(Boolean?);
     property public abstract java.util.Set<java.lang.String> excludes;
     property public abstract java.util.Set<java.lang.String> keepDebugSymbols;
     property public abstract java.util.Set<java.lang.String> pickFirsts;
+    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> testOnly;
     property public abstract Boolean? useLegacyPackaging;
   }
 
@@ -2494,12 +2496,14 @@ package com.android.build.api.variant {
     method @org.gradle.api.Incubating public com.android.build.api.variant.BundleConfig getBundleConfig();
     method public com.android.build.api.variant.DependenciesInfo getDependenciesInfo();
     method public java.util.List<com.android.build.api.variant.VariantOutput> getOutputs();
+    method @org.gradle.api.Incubating public com.android.build.api.variant.TestedApkPackaging getPackaging();
     method public com.android.build.api.variant.SigningConfig getSigningConfig();
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.ApplicationAndroidResources androidResources;
     property public abstract org.gradle.api.provider.Property<java.lang.String> applicationId;
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.BundleConfig bundleConfig;
     property public abstract com.android.build.api.variant.DependenciesInfo dependenciesInfo;
     property public abstract java.util.List<com.android.build.api.variant.VariantOutput> outputs;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.TestedApkPackaging packaging;
     property public abstract com.android.build.api.variant.SigningConfig signingConfig;
   }
 
@@ -2724,6 +2728,8 @@ package com.android.build.api.variant {
   }
 
   public interface DynamicFeatureVariant extends com.android.build.api.variant.Variant com.android.build.api.variant.GeneratesApk com.android.build.api.variant.HasAndroidTest com.android.build.api.variant.HasDeviceTests com.android.build.api.variant.HasTestFixtures com.android.build.api.variant.HasUnitTest {
+    method @org.gradle.api.Incubating public com.android.build.api.variant.TestedApkPackaging getPackaging();
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.TestedApkPackaging packaging;
   }
 
   public interface DynamicFeatureVariantBuilder extends com.android.build.api.variant.VariantBuilder com.android.build.api.variant.GeneratesApkBuilder com.android.build.api.variant.HasAndroidTestBuilder com.android.build.api.variant.HasDeviceTestsBuilder com.android.build.api.variant.HasTestFixturesBuilder com.android.build.api.variant.HasUnitTestBuilder {
@@ -2817,7 +2823,9 @@ package com.android.build.api.variant {
 
   public interface HasAndroidTest {
     method public com.android.build.api.variant.AndroidTest? getAndroidTest();
+    method @org.gradle.api.Incubating public com.android.build.api.variant.TestedComponentPackaging getPackaging();
     property public abstract com.android.build.api.variant.AndroidTest? androidTest;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.TestedComponentPackaging packaging;
   }
 
   @Deprecated public interface HasAndroidTestBuilder {
@@ -2891,6 +2899,14 @@ package com.android.build.api.variant {
     property public abstract org.gradle.api.provider.SetProperty<java.lang.String> excludes;
     property public abstract org.gradle.api.provider.SetProperty<java.lang.String> keepDebugSymbols;
     property public abstract org.gradle.api.provider.SetProperty<java.lang.String> pickFirsts;
+  }
+
+  @org.gradle.api.Incubating public interface JniLibsTestedApkPackaging extends com.android.build.api.variant.JniLibsTestedComponentPackaging com.android.build.api.variant.JniLibsApkPackaging {
+  }
+
+  @org.gradle.api.Incubating public interface JniLibsTestedComponentPackaging extends com.android.build.api.variant.JniLibsPackaging {
+    method @org.gradle.api.Incubating public org.gradle.api.provider.SetProperty<java.lang.String> getTestOnly();
+    property @org.gradle.api.Incubating public abstract org.gradle.api.provider.SetProperty<java.lang.String> testOnly;
   }
 
   @org.gradle.api.Incubating public interface KotlinMultiplatformAndroidComponentsExtension extends com.android.build.api.variant.DslLifecycle<com.android.build.api.dsl.KotlinMultiplatformAndroidExtension> com.android.build.api.variant.AndroidComponents {
@@ -3086,6 +3102,16 @@ package com.android.build.api.variant {
   }
 
   public interface TestVariantBuilder extends com.android.build.api.variant.VariantBuilder com.android.build.api.variant.CanMinifyCodeBuilder com.android.build.api.variant.GeneratesApkBuilder {
+  }
+
+  @org.gradle.api.Incubating public interface TestedApkPackaging extends com.android.build.api.variant.TestedComponentPackaging com.android.build.api.variant.ApkPackaging {
+    method public com.android.build.api.variant.JniLibsTestedApkPackaging getJniLibs();
+    property public abstract com.android.build.api.variant.JniLibsTestedApkPackaging jniLibs;
+  }
+
+  @org.gradle.api.Incubating public interface TestedComponentPackaging extends com.android.build.api.variant.Packaging {
+    method @org.gradle.api.Incubating public com.android.build.api.variant.JniLibsTestedComponentPackaging getJniLibs();
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.JniLibsTestedComponentPackaging jniLibs;
   }
 
   public interface UnitTest extends com.android.build.api.variant.TestComponent {

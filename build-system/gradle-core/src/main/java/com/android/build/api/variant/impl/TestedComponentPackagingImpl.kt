@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,13 @@
 
 package com.android.build.api.variant.impl
 
-import com.android.build.api.variant.ApkPackaging
+import com.android.build.api.variant.TestedComponentPackaging
 import com.android.build.gradle.internal.services.VariantServices
 
-open class ApkPackagingImpl(
+class TestedComponentPackagingImpl(
     dslPackaging: com.android.build.api.dsl.Packaging,
-    variantServices: VariantServices,
-    minSdk: Int
-) : PackagingImpl(dslPackaging, variantServices), ApkPackaging {
+    variantServices: VariantServices
+) : PackagingImpl(dslPackaging, variantServices), TestedComponentPackaging {
 
-    override val dex =
-        DexPackagingOptionsImpl(dslPackaging, variantServices, minSdk)
-
-    override val jniLibs =
-        JniLibsApkPackagingImpl(dslPackaging, variantServices, minSdk)
-
-    override val resources =
-        ResourcesApkPackagingImpl(dslPackaging, variantServices)
+    override val jniLibs = JniLibsTestedComponentPackagingImpl(dslPackaging, variantServices)
 }

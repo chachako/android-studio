@@ -22,6 +22,7 @@ import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.Instrumentation
 import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
 import com.android.build.api.variant.LifecycleTasks
+import com.android.build.api.variant.TestedComponentPackaging
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.file.FileCollection
@@ -142,5 +143,20 @@ open class AnalyticsEnabledKotlinMultiplatformAndroidVariant @Inject constructor
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
                 VariantPropertiesMethodType.DEFAULT_DEVICE_TEST_VALUE
             return userVisibleDefaultDeviceTest
+        }
+
+    private val userVisiblePackaging: TestedComponentPackaging by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
+        objectFactory.newInstance(
+            AnalyticsEnabledTestedComponentPackaging::class.java,
+            delegate.packaging,
+            stats
+        )
+    }
+
+    override val packaging: TestedComponentPackaging
+        get() {
+            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
+                VariantPropertiesMethodType.PACKAGING_OPTIONS_VALUE
+            return userVisiblePackaging
         }
 }

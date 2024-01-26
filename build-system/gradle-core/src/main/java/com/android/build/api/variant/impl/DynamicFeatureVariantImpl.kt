@@ -23,7 +23,6 @@ import com.android.build.api.component.impl.features.DexingImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
 import com.android.build.api.component.impl.isTestApk
 import com.android.build.api.variant.AndroidVersion
-import com.android.build.api.variant.ApkPackaging
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.DeviceTest
 import com.android.build.api.variant.DynamicFeatureVariant
@@ -111,8 +110,8 @@ open class DynamicFeatureVariantImpl @Inject constructor(
         getAndroidResources(dslInfo.androidResourcesDsl.androidResources)
     }
 
-    override val packaging: ApkPackaging by lazy {
-        ApkPackagingImpl(
+    override val packaging: TestedApkPackagingImpl by lazy {
+        TestedApkPackagingImpl(
             dslInfo.packaging,
             internalServices,
             minSdk.apiLevel
