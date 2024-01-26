@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.SdkConstants.MAVEN_ARTIFACT_ID_PROPERTY
 import com.android.SdkConstants.MAVEN_GROUP_ID_PROPERTY
+import com.android.SdkConstants.MAVEN_VERSION_PROPERTY
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.android.testutils.truth.PathSubject.assertThat
@@ -65,16 +66,28 @@ class LintModelMetadataTaskTest {
         task.outputFile.set(outputFile)
         task.mavenArtifactId.set("foo")
         task.mavenGroupId.set("foo.bar")
+        task.mavenVersion.set("1.0.0")
         task.taskAction()
 
-        checkOutputFile(outputFile, mavenArtifactId = "foo", mavenGroupId = "foo.bar")
+        checkOutputFile(
+            outputFile,
+            mavenArtifactId = "foo",
+            mavenGroupId = "foo.bar",
+            mavenVersion = "1.0.0"
+        )
     }
 
-    private fun checkOutputFile(file: File, mavenArtifactId: String, mavenGroupId: String) {
+    private fun checkOutputFile(
+        file: File,
+        mavenArtifactId: String,
+        mavenGroupId: String,
+        mavenVersion: String
+    ) {
         assertThat(file).exists()
         val properties = Properties()
         file.inputStream().use { properties.load(it) }
         assertThat(properties.getProperty(MAVEN_ARTIFACT_ID_PROPERTY)).isEqualTo(mavenArtifactId)
         assertThat(properties.getProperty(MAVEN_GROUP_ID_PROPERTY)).isEqualTo(mavenGroupId)
+        assertThat(properties.getProperty(MAVEN_VERSION_PROPERTY)).isEqualTo(mavenVersion)
     }
 }

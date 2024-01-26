@@ -115,6 +115,9 @@ class LintModelIntegrationTest {
                         coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$DESUGAR_DEPENDENCY_VERSION"
                     }
                 }
+
+                // Test for b/321937600
+                version = "1.0"
             """.trimIndent()
         )
         TestFileUtils.searchAndReplace(

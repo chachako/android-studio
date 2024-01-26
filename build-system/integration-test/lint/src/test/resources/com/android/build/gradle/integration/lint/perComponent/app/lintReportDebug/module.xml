@@ -3,7 +3,7 @@
     dir="${projectDir}/app"
     name=":app"
     type="APP"
-    maven="lintKotlin:app:"
+    maven="lintKotlin:app:unspecified"
     agpVersion="$androidGradlePluginVersion"
     buildFolder="build"
     bootClassPath="${androidSdkDir}/platforms/android-${androidHighestKnownStableApi}/android.jar:${androidSdkDir}/build-tools/34.0.0/core-lambda-stubs.jar"

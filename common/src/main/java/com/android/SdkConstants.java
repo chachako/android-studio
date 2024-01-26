@@ -110,8 +110,8 @@ public final class SdkConstants {
 
     /** Properties in lint-model-metadata.properties file */
     public static final String MAVEN_GROUP_ID_PROPERTY = "mavenGroupId";
-
     public static final String MAVEN_ARTIFACT_ID_PROPERTY = "mavenArtifactId";
+    public static final String MAVEN_VERSION_PROPERTY = "mavenVersion";
 
     /**
      * The encoding we strive to use for all files we write.
