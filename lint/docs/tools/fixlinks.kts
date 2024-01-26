@@ -33,8 +33,8 @@ class FixLinks {
     source = source.replace("api-guide/../usage/", "usage/")
     source = source.replace("usage/../api-guide/", "api-guide/")
 
-    val absolutePathPattern = Pattern.compile("file:[^>]*tools/base/lint/docs/")
-    val linkPattern = Pattern.compile("\"([^\"]+)/([^>]+)\\.md\\.(html)\"")
+    val absolutePathPattern = Pattern.compile("file:[^> ]*tools/base/lint/docs/")
+    val linkPattern = Pattern.compile("\"([^ \"]+)/([^>]+)\\.md\\.(html)\"")
 
     var offset = 0
     while (true) {
