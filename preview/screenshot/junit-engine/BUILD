@@ -12,7 +12,7 @@ maven_library(
     resource_strip_prefix = "tools/base/preview/screenshot/junit-engine/src/main/resources/",
     resources = glob(["src/main/resources/**"]),
     version = select({
-        "//tools/base/bazel:release": TEST_ENGINE_VERSION + "-alpha01",
+        "//tools/base/bazel:release": TEST_ENGINE_VERSION + "-eap01",
         "//conditions:default": TEST_ENGINE_VERSION + "-dev",
     }),
     visibility = ["//visibility:public"],
