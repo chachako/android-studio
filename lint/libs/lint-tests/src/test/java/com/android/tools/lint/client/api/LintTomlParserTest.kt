@@ -21,6 +21,7 @@ import com.android.tools.lint.getErrorLines
 import java.io.File
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertNull
+import kotlin.test.assertContains
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 
@@ -283,7 +284,7 @@ class LintTomlParserTest {
             flt3 = -0.01
 
             # exponent
-            flt4 = 5e+22
+            # flt4 = 5e+22 extracted into separate test https://bugs.openjdk.org/browse/JDK-8202555
             flt5 = 1e06
             flt6 = -2E-2
 
@@ -334,7 +335,6 @@ class LintTomlParserTest {
                 flt1=+1.0, Double = 1.0
                 flt2=3.1415, Double = 3.1415
                 flt3=-0.01, Double = -0.01
-                flt4=5e+22, Double = 4.9999999999999996E22
                 flt5=1e06, Double = 1000000.0
                 flt6=-2E-2, Double = -0.02
                 flt7=6.626e-34, Double = 6.626E-34
@@ -357,6 +357,30 @@ class LintTomlParserTest {
                 lt2=00:32:00.999999, LocalTime = 00:32:00.999999
                 """
           .trimIndent(),
+        document.trim(),
+      )
+    }
+  }
+
+  /**
+   * In Java 19 there was change to Double.toString(double) implementation This test case is
+   * extracted from testNumbersAndDates and allows either "old" or "new" behaviour
+   *
+   * TODO(2025-01-01) remove this and uncomment `flt4` line in testNumbersAndDates after JDK21
+   *   migration completed
+   */
+  @Test
+  fun testExponent_JDK_8202555() {
+    val source =
+      // language=toml
+      """
+            flt4 = 5e+22
+            """
+        .trimIndent()
+    checkToml(source) {
+      val document = it.describe(includeSources = false)
+      assertContains(
+        arrayOf("flt4=5e+22, Double = 4.9999999999999996E22", "flt4=5e+22, Double = 5.0E22"),
         document.trim(),
       )
     }
