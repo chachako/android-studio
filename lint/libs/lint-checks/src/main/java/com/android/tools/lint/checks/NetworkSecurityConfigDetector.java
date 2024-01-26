@@ -16,14 +16,9 @@
 
 package com.android.tools.lint.checks;
 
-import static com.android.tools.lint.client.api.ResourceRepositoryScope.LOCAL_DEPENDENCIES;
-
 import com.android.annotations.NonNull;
-import com.android.ide.common.rendering.api.ResourceNamespace;
-import com.android.ide.common.resources.ResourceRepository;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceUrl;
-import com.android.tools.lint.client.api.LintClient;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Context;
 import com.android.tools.lint.detector.api.Implementation;
@@ -32,7 +27,6 @@ import com.android.tools.lint.detector.api.Lint;
 import com.android.tools.lint.detector.api.LintFix;
 import com.android.tools.lint.detector.api.Location;
 import com.android.tools.lint.detector.api.LocationType;
-import com.android.tools.lint.detector.api.Project;
 import com.android.tools.lint.detector.api.ResourceXmlDetector;
 import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
@@ -517,21 +511,6 @@ public class NetworkSecurityConfigDetector extends ResourceXmlDetector {
                     Attr sourceIdAttr = child.getAttributeNode(ATTR_SRC);
                     String sourceId = sourceIdAttr.getValue();
                     ResourceUrl resourceUrl = ResourceUrl.parse(sourceId);
-                    LintClient client = context.getClient();
-                    if (resourceUrl != null && !resourceUrl.isFramework()) {
-                        // ensure that this is a valid resource
-                        Project project = context.getProject();
-                        ResourceRepository resources =
-                                client.getResources(project, LOCAL_DEPENDENCIES);
-                        if (!resources.hasResources(
-                                ResourceNamespace.TODO(), resourceUrl.type, resourceUrl.name)) {
-                            context.report(
-                                    ISSUE,
-                                    sourceIdAttr,
-                                    context.getValueLocation(sourceIdAttr),
-                                    "Missing `src` resource");
-                        }
-                    }
                     // The value should be either "system", "user" or a resource Id
                     if (resourceUrl == null
                             && !"user".equals(sourceId)

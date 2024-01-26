@@ -443,4 +443,14 @@ private constructor(
         scope.contains(Scope.ALL_RESOURCE_FILES)
     }
   }
+
+  /** Interface implemented by classes which can provide a list of ignored id's. */
+  interface IgnoredIdProvider {
+    /**
+     * Returns a comma separated list of issue id's to be ignored. This string list can be specified
+     * in a number of places, such as in `tools:ignore` XML attributes, in `//noinspection` comments
+     * in source files that use // as line comments, etc.
+     */
+    fun getIgnoredIds(): String
+  }
 }

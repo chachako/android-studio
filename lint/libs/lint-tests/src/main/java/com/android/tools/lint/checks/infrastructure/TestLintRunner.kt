@@ -190,7 +190,7 @@ class TestLintRunner(private val task: TestLintTask) {
     val root = File(rootDir, folderName)
     var files = projectMap[folderName]
     if (files == null) {
-      files = this@TestLintRunner.createProjects(root)
+      files = this@TestLintRunner.createProjects(root, mode)
       if (TestLintTask.duplicateFinder != null && task.testName != null) {
         TestLintTask.duplicateFinder.recordTestProject(task.testName, task, mode, files)
       }
@@ -559,11 +559,15 @@ class TestLintRunner(private val task: TestLintTask) {
   }
 
   /** Constructs the actual lint projects on disk. */
-  fun createProjects(rootDir: File): List<File> {
+  @JvmOverloads
+  fun createProjects(rootDir: File, testMode: TestMode? = null): List<File> {
     val projectDirs: MutableList<File> = Lists.newArrayList()
     with(task) {
       dirToProjectDescription.clear()
       projectMocks.clear()
+
+      val projects = getProjectList(testMode)
+
       projects.assignProjectNames()
       projects.expandProjects(defaultType)
 
@@ -668,6 +672,25 @@ class TestLintRunner(private val task: TestLintTask) {
       }
     }
     return projectDirs
+  }
+
+  private fun TestLintTask.getProjectList(testMode: TestMode?): ProjectDescriptionList {
+    if (testMode != null) {
+      val currentList = projects.projects
+      // Allow test mode to change project description
+      val newList = testMode.configureProjects(currentList)
+      if (newList !== currentList) {
+        val reportFrom =
+          when {
+            projects.reportFrom == null -> null
+            newList.contains(projects.reportFrom) -> projects.reportFrom
+            else -> newList.lastOrNull()
+          }
+        return ProjectDescriptionList(newList.toMutableList(), reportFrom)
+      }
+    }
+
+    return projects
   }
 
   private fun TestLintTask.validateInputs() {

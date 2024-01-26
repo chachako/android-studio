@@ -307,9 +307,12 @@ public class WrongIdDetector extends LayoutDetector {
             XmlPullParser parser = client.createXmlPullParser(source);
             if (parser != null) {
                 addIncludedIds(parser, ids);
+            } else {
+                return false;
             }
         } catch (XmlPullParserException | IOException e) {
             // Users might be editing these files in the IDE; don't flag
+            return false;
         }
         return true;
     }

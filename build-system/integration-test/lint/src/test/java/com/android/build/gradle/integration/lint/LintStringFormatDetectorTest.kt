@@ -91,7 +91,7 @@ class LintStringFormatDetectorTest {
         )
         val expectedPath = FileUtils.toSystemDependentPath("lib/src/main/res/values/strings.xml")
         PathSubject.assertThat(file).contains(
-            "$expectedPath: Conflicting argument declaration here"
+            "$expectedPath:3: Conflicting argument declaration here"
         )
         PathSubject.assertThat(file).contains("1 error")
     }

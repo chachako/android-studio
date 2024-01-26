@@ -155,7 +155,7 @@ abstract class Detector {
    */
   open fun beforeCheckEachProject(context: Context) {
     // preserve old semantics of afterCheckLibraryProject
-    if (context.project !== context.mainProject) {
+    if (!context.isMainProject()) {
       @Suppress("DEPRECATION") beforeCheckLibraryProject(context)
     }
   }
@@ -189,7 +189,7 @@ abstract class Detector {
    */
   open fun afterCheckEachProject(context: Context) {
     // preserve old semantics of afterCheckLibraryProject
-    if (context.project != context.mainProject) {
+    if (!context.isMainProject()) {
       @Suppress("DEPRECATION") afterCheckLibraryProject(context)
     }
   }

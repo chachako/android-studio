@@ -33,7 +33,8 @@ import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
 import com.android.tools.lint.checks.ViewTypeDetector.Companion.findViewForTag
 import com.android.tools.lint.client.api.JavaEvaluator
-import com.android.tools.lint.client.api.ResourceRepositoryScope
+import com.android.tools.lint.client.api.ResourceRepositoryScope.LOCAL_DEPENDENCIES
+import com.android.tools.lint.client.api.ResourceRepositoryScope.PROJECT_ONLY
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Implementation
@@ -156,10 +157,10 @@ class ViewBindingTypeDetector : LayoutDetector(), XmlScanner {
     evaluator: JavaEvaluator,
     element: Element,
   ) {
-    val full = context.isGlobalAnalysis()
     val client = context.client
-    val project = if (full) context.mainProject else context.project
-    val resources = client.getResources(project, ResourceRepositoryScope.LOCAL_DEPENDENCIES)
+    val resources =
+      if (context.isGlobalAnalysis()) client.getResources(context.mainProject, LOCAL_DEPENDENCIES)
+      else client.getResources(context.project, PROJECT_ONLY)
     val resourceUrl = ResourceUrl.parse(idAttribute.value)
     if (resourceUrl != null && resourceUrl.type == ResourceType.ID && !resourceUrl.isFramework) {
       val id = resourceUrl.name

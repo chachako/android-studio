@@ -15,10 +15,10 @@
  */
 package com.android.tools.lint.checks;
 
-import static com.android.tools.lint.checks.AbstractCheckTest.SUPPORT_ANNOTATIONS_JAR;
 import static com.android.tools.lint.checks.infrastructure.TestFiles.rClass;
 
 import com.android.annotations.NonNull;
+import com.android.tools.lint.checks.infrastructure.ProjectDescription;
 import com.android.tools.lint.checks.infrastructure.TestFile;
 import com.android.tools.lint.detector.api.Detector;
 import java.io.IOException;
@@ -128,6 +128,37 @@ public class LayoutInflationDetectorTest extends AbstractCheckTest {
                 .expect(expected);
     }
 
+    public void testIncremental() {
+        String expected =
+                ""
+                        + "src/test/pkg/LayoutInflationTest.java:13: Warning: Avoid passing null as the view root (needed to resolve layout parameters on the inflated layout's root element) [InflateParams]\n"
+                        + "        convertView = mInflater.inflate(R.layout.your_layout, null);\n"
+                        + "                                                              ~~~~\n"
+                        + "src/test/pkg/LayoutInflationTest.java:14: Warning: Avoid passing null as the view root (needed to resolve layout parameters on the inflated layout's root element) [InflateParams]\n"
+                        + "        convertView = mInflater.inflate(R.layout.your_layout, null, true);\n"
+                        + "                                                              ~~~~\n"
+                        + "0 errors, 2 warnings\n";
+        lint().files(
+                        mLayoutInflationTest,
+                        xml(
+                                "res/layout/your_layout.xml",
+                                "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                                        + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                                        + "    android:id=\"@+id/LinearLayout1\"\n"
+                                        + "    android:layout_width=\"match_parent\"\n"
+                                        + "    android:layout_height=\"match_parent\"\n"
+                                        + "    android:orientation=\"vertical\" />\n"),
+                        xml(
+                                "res/layout-port/your_layout.xml",
+                                ""
+                                        + "<TextView xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                                        + "    android:id=\"@id/text1\"\n"
+                                        + "    style=\"?android:attr/listSeparatorTextViewStyle\" />\n"))
+                .incremental("src/test/pkg/LayoutInflationTest.java")
+                .run()
+                .expect(expected);
+    }
+
     public void testNoLayoutParams() {
         lint().files(
                         mLayoutInflationTest,
@@ -139,6 +170,23 @@ public class LayoutInflationDetectorTest extends AbstractCheckTest {
                                         + "    style=\"?android:attr/listSeparatorTextViewStyle\" />\n"))
                 .run()
                 .expectClean();
+    }
+
+    public void testSplitAcrossModules() {
+        // Like testNoLayoutParams, but resources in a different project
+        ProjectDescription lib =
+                project()
+                        .files(
+                                xml(
+                                        "res/layout/your_layout.xml",
+                                        ""
+                                                + "<TextView xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                                                + "    android:id=\"@id/text1\"\n"
+                                                + "    style=\"?android:attr/listSeparatorTextViewStyle\" />\n"))
+                        .name("lib");
+
+        ProjectDescription app = project().files(mLayoutInflationTest).dependsOn(lib).name("app");
+        lint().projects(app, lib).run().expectClean();
     }
 
     public void testHasLayoutParams() throws IOException, XmlPullParserException {

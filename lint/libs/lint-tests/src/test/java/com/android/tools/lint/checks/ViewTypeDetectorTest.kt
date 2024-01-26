@@ -17,6 +17,7 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.checks.infrastructure.TestFiles
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class ViewTypeDetectorTest : AbstractCheckTest() {
@@ -975,6 +976,38 @@ class ViewTypeDetectorTest : AbstractCheckTest() {
           "        Fragment1 fragment1d = (Fragment1) findFragmentByTag(\"other_tag\"); // ERROR\n" +
           "                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
           "2 errors, 0 warnings"
+      )
+  }
+
+  fun testSplitAcrossModules() {
+    // Test where the casat and the layout are in a different modules (same
+    // as testBasic1.)
+    val lib = project(casts)
+    val main = project(wrongCastActivity, rClass).dependsOn(lib)
+
+    lint()
+      .projects(lib, main)
+      .testModes(TestMode.DEFAULT, TestMode.PARTIAL)
+      .expectIdenticalTestModeOutput(false)
+      .run()
+      .expect(
+        """
+        src/test/pkg/WrongCastActivity.java:13: Error: Unexpected cast to ToggleButton: layout tag was Button [WrongViewCast]
+                ToggleButton toggleButton = (ToggleButton) findViewById(R.id.button);
+                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            src/test/pkg/WrongCastActivity.java:13: Id bound to a Button in casts.xml
+                ToggleButton toggleButton = (ToggleButton) findViewById(R.id.button);
+                                                                        ~~~~~~~~~~~
+        1 errors, 0 warnings
+        """,
+        testMode = TestMode.DEFAULT,
+      )
+      .expect(
+        // Supporting this test mode across module boundaries is going to require more effort (and
+        // overhead). This is testing that we gracefully don't crash when the resource isn't found
+        // locally.
+        "No warnings.",
+        testMode = TestMode.PARTIAL,
       )
   }
 }

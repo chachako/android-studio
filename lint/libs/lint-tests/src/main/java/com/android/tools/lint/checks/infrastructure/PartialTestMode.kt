@@ -21,8 +21,8 @@ import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.ATTR_MIN_SDK_VERSION
 import com.android.SdkConstants.ATTR_TARGET_SDK_VERSION
 import com.android.SdkConstants.TAG_USES_SDK
+import com.android.sdklib.SdkVersionInfo
 import com.android.sdklib.SdkVersionInfo.getApiByBuildCode
-import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.client.api.LintListener.EventType
 import com.android.utils.XmlUtils
@@ -35,14 +35,12 @@ import org.w3c.dom.Element
 
 internal class PartialTestMode :
   TestMode(description = "Automatic Partial Analysis and Merging", "TestMode.PARTIAL") {
-  private class State(
-    val manifestFile: File?,
-    val originalManifest: String?,
-    val overrides: Configuration?,
-  )
+  private class State(val manifestFile: File?, val originalManifest: String?)
 
   override val folderName: String = "partial"
   override val modifiesSources: Boolean = true
+
+  override fun usePartialAnalysis(): Boolean = true
 
   override fun applies(context: TestModeContext): Boolean {
     return context.task.incrementalFileName == null
@@ -55,7 +53,6 @@ internal class PartialTestMode :
 
     var manifest: File? = null
     var contents: String? = null
-    val overrides = task.runner.createClient().configurations.overrides
 
     if (projects.size == 1) {
       // restored by event listener between the analysis and merging phases.
@@ -67,10 +64,10 @@ internal class PartialTestMode :
       // keeping targetSdkVersion up to date (see
       // https://developer.android.com/distribute/play-policies and GradleDetector).
       manifest = findManifest(projectFolders.first())
-      manifest?.let { contents = replaceManifestVersions(it, 1, 28) }
+      manifest?.let { contents = replaceManifestVersions(it, 1, SdkVersionInfo.HIGHEST_KNOWN_API) }
     }
 
-    return State(manifest, contents, overrides)
+    return State(manifest, contents)
   }
 
   override val eventListener: ((TestModeContext, EventType, Any?) -> Unit) = { context, type, s ->
@@ -78,7 +75,6 @@ internal class PartialTestMode :
     // This is done as a merge hook rather than using the after hook,
     // because we want to insert ourselves in the middle of the
     // lint check
-    @Suppress("UNCHECKED_CAST")
     if (type == EventType.MERGING) {
       val state = s as State
       if (state.manifestFile != null && state.originalManifest != null) {

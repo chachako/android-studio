@@ -25,7 +25,8 @@ import com.android.resources.ResourceFolderType
 import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
 import com.android.tools.lint.client.api.LintClient
-import com.android.tools.lint.client.api.ResourceRepositoryScope
+import com.android.tools.lint.client.api.ResourceRepositoryScope.LOCAL_DEPENDENCIES
+import com.android.tools.lint.client.api.ResourceRepositoryScope.PROJECT_ONLY
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
@@ -60,8 +61,9 @@ class LocaleConfigDetector : Detector(), XmlScanner, ResourceFolderScanner {
     if (url.type != ResourceType.XML || url.isFramework || url.isTheme) return
 
     val client = context.client
-    val project = if (context.isGlobalAnalysis()) context.mainProject else context.project
-    val resources = client.getResources(project, ResourceRepositoryScope.LOCAL_DEPENDENCIES)
+    val resources =
+      if (context.isGlobalAnalysis()) client.getResources(context.mainProject, LOCAL_DEPENDENCIES)
+      else client.getResources(context.project, PROJECT_ONLY)
     val namespace = context.project.resourceNamespace
     val configs: List<ResourceItem> = resources.getResources(namespace, url.type, url.name)
     for (config in configs) {

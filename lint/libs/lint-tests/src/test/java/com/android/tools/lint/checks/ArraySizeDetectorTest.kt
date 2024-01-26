@@ -51,6 +51,41 @@ class ArraySizeDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testArraySizesIncremental() {
+    // Like testArraySizes, but while incrementally editing res/values/arrays.xml
+    lint()
+      .files(mArrays, mArrays2, mArrays3, mArrays4, mStrings)
+      .incremental(mArrays.targetPath)
+      .run()
+      .expect(
+        """
+        res/values/arrays.xml:3: Warning: Array security_questions has an inconsistent number of items (4 in values/arrays.xml, 3 in values-nl-rNL/arrays.xml) [InconsistentArrays]
+            <string-array name="security_questions">
+            ^
+        res/values/arrays.xml:10: Warning: Array signal_strength has an inconsistent number of items (5 in values/arrays.xml, 6 in values-land/arrays.xml) [InconsistentArrays]
+            <array name="signal_strength">
+            ^
+        0 errors, 2 warnings
+        """
+      )
+  }
+
+  fun testArraySizesIncremental2() {
+    // Like testArraySizes, but while incrementally editing res/values-nl-rNL/arrays.xml
+    lint()
+      .files(mArrays, mArrays2, mArrays3, mArrays4, mStrings)
+      .incremental(mArrays4.targetPath)
+      .run()
+      .expect(
+        """
+        res/values-nl-rNL/arrays.xml:3: Warning: Array security_questions has an inconsistent number of items (3 in values-nl-rNL/arrays.xml, 4 in values/arrays.xml) [InconsistentArrays]
+          <string-array name="security_questions">
+          ^
+        0 errors, 1 warnings
+        """
+      )
+  }
+
   fun testMultipleArrays() {
     lint()
       .files(

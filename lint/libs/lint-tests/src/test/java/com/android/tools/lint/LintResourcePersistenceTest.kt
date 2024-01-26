@@ -23,6 +23,7 @@ import com.android.tools.lint.LintResourceRepository.Companion.get
 import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
 import com.android.tools.lint.checks.infrastructure.TestLintClient
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
+import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.ResourceRepositoryScope
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.model.PathVariables
@@ -30,6 +31,7 @@ import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -37,6 +39,11 @@ import org.junit.rules.TemporaryFolder
 /** Persistence is also tested a bit in [LintResourcePersistenceTest] */
 class LintResourcePersistenceTest {
   @get:Rule var temporaryFolder = TemporaryFolder()
+
+  @Before
+  fun setUp() {
+    LintClient.clientName = LintClient.CLIENT_UNIT_TESTS
+  }
 
   private fun getPathVariables(): PathVariables {
     val pathVariables = PathVariables()
@@ -49,7 +56,7 @@ class LintResourcePersistenceTest {
     val expected =
       "" +
         "http://schemas.android.com/apk/res-auto;;app/res/values-b\\+sr\\+Latn/values.xml," +
-        "+styleable:ContentFrame,0,V-content:reference:-contentId:reference:" +
+        "+styleable:ContentFrame,0,V42,50,;-content:reference:-contentId:reference:" +
         "-windowSoftInputMode:flags:stateUnspecified:0,stateUnchanged:1," +
         "-fastScrollOverlayPosition:enum:floating:0,atThumb:1,aboveThumb:2,;"
 

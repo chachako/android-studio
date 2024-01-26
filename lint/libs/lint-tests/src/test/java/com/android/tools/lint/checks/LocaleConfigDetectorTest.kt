@@ -16,6 +16,7 @@
 
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class LocaleConfigDetectorTest : AbstractCheckTest() {
@@ -207,5 +208,110 @@ class LocaleConfigDetectorTest : AbstractCheckTest() {
               </locale-config>
             """
       )
+  }
+
+  fun testSplitAcrossModules() {
+    // Test where the locale-config is in a different module (same
+    // as testDocumentationExample but with manifest in its own downstream
+    // module.) We don't check locales across module boundaries in this case.
+    val lib =
+      project(
+        xml(
+            "res/xml/locale_config.xml",
+            """
+            <locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+                <locale android:name="en-us"/>
+                <locale android:name="nor-NOR"/>
+                <locale android:name="pt"/>
+            </locale-config>
+            """,
+          )
+          .indented(),
+        xml(
+            "res/values-en/strings.xml",
+            """
+            <resources>
+                <string name="hello">Hello</string>
+            </resources>
+            """,
+          )
+          .indented(),
+        xml(
+            "res/values-ar/strings.xml",
+            """
+            <resources>
+                <string name="hello">أهلا</string>
+            </resources>
+            """,
+          )
+          .indented(),
+        xml(
+            "res/values-nb/strings.xml",
+            """
+            <resources>
+                <string name="hello">Hallo</string>
+            </resources>
+            """,
+          )
+          .indented(),
+        xml(
+            "res/values-b+es+419/strings.xml",
+            """
+            <resources>
+                <string name="hello">Hola</string>
+            </resources>
+            """,
+          )
+          .indented(),
+        xml(
+            "res/values-b+zh+Hans+SG/strings.xml",
+            """
+            <resources>
+                <string name="hello">你好</string>
+            </resources>
+            """,
+          )
+          .indented(),
+      )
+
+    val main =
+      project(
+          manifest(
+              """
+              <manifest
+                  xmlns:android="http://schemas.android.com/apk/res/android"
+                  package="test.pkg">
+                  <application android:localeConfig="@xml/locale_config"/>
+              </manifest>
+              """
+            )
+            .indented()
+        )
+        .dependsOn(lib)
+
+    lint()
+      .projects(lib, main)
+      .testModes(TestMode.DEFAULT, TestMode.PARTIAL)
+      .expectIdenticalTestModeOutput(false)
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:4: Warning: The language ar (Arabic) is present in this project, but not declared in the localeConfig resource [UnusedTranslation]
+            <application android:localeConfig="@xml/locale_config"/>
+                                               ~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:4: Warning: The language es (Spanish) is present in this project, but not declared in the localeConfig resource [UnusedTranslation]
+            <application android:localeConfig="@xml/locale_config"/>
+                                               ~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:4: Warning: The language nb (Norwegian Bokmål) is present in this project, but not declared in the localeConfig resource [UnusedTranslation]
+            <application android:localeConfig="@xml/locale_config"/>
+                                               ~~~~~~~~~~~~~~~~~~
+        AndroidManifest.xml:4: Warning: The language zh (Chinese) is present in this project, but not declared in the localeConfig resource [UnusedTranslation]
+            <application android:localeConfig="@xml/locale_config"/>
+                                               ~~~~~~~~~~~~~~~~~~
+        0 errors, 4 warnings
+        """,
+        testMode = TestMode.DEFAULT,
+      )
+      .expect("No warnings.", testMode = TestMode.PARTIAL)
   }
 }

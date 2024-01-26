@@ -16,6 +16,7 @@
 
 package com.android.tools.lint
 
+import com.android.ide.common.blame.SourcePosition
 import com.android.ide.common.rendering.api.ArrayResourceValue
 import com.android.ide.common.rendering.api.ArrayResourceValueImpl
 import com.android.ide.common.rendering.api.AttrResourceValueImpl
@@ -40,6 +41,11 @@ import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.util.PathString
 import com.android.resources.Density
 import com.android.resources.ResourceType
+import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.detector.api.DefaultPosition
+import com.android.tools.lint.detector.api.Issue.IgnoredIdProvider
+import com.android.tools.lint.detector.api.Location
+import com.android.tools.lint.detector.api.Location.LocationAware
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.model.PathVariables
 import com.google.common.collect.BiMap
@@ -131,6 +137,48 @@ object LintResourcePersistence {
           writer.write('F')
         } else {
           writer.write('V')
+          if (item is LintResourceItem) {
+            val position = item.position ?: SourcePosition.UNKNOWN
+            writer.writeHex(
+              encodeLineColumnOffset(position.startLine, position.startColumn, position.startOffset)
+            )
+            writer.write(',')
+            writer.writeHex(
+              encodeLineColumnOffset(position.endLine, position.endColumn, position.endOffset)
+            )
+            writer.write(',')
+            val ignoredIds = item.getIgnoredIds()
+            if (ignoredIds.isNotEmpty()) {
+              writer.write(ignoredIds)
+            }
+          } else if (item is LocationAware) {
+            if (!LintClient.isUnitTest) {
+              // This path is only used from tests (where we serialize a deserialized repository;
+              // we don't do that in the product, but in the tests we do it to very efficiently
+              // compare all aspects of the repository being identical
+              throw IllegalStateException()
+            }
+            val location = item.getLocation()
+            val start = location.start
+            val end = location.end
+            writer.writeHex(
+              encodeLineColumnOffset(start?.line ?: -1, start?.column ?: -1, start?.offset ?: -1)
+            )
+            writer.write(',')
+            writer.writeHex(
+              encodeLineColumnOffset(end?.line ?: -1, end?.column ?: -1, end?.offset ?: -1)
+            )
+            writer.write(',')
+            if (item is IgnoredIdProvider) {
+              val ignoredIds = item.getIgnoredIds()
+              if (ignoredIds.isNotEmpty()) {
+                writer.write(ignoredIds)
+              }
+            }
+          } else {
+            writer.write("-,-,")
+          }
+          writer.write(';')
         }
         item.resourceValue?.let { resourceValue ->
           when {
@@ -224,6 +272,27 @@ object LintResourcePersistence {
     return stringBuilder.toString()
   }
 
+  /** Encodes a line, column and offset into a single long for persistence. */
+  private fun encodeLineColumnOffset(line: Int, column: Int, offset: Int): Long {
+    // Use 16 bits for offset. Use 16 bits for line, and then column at the top.
+    return (column.toLong() shl 32) or (line.toLong() shl 16) or offset.toLong()
+  }
+
+  /** From a value encoded via [encodeLineColumnOffset], extract the original line. */
+  private fun decodeLine(bits: Long): Int {
+    return ((bits shr 16) and 0xFFFFL).toInt()
+  }
+
+  /** From a value encoded via [encodeLineColumnOffset], extract the original column. */
+  private fun decodeColumn(bits: Long): Int {
+    return ((bits shr 32) and 0xFFFFL).toInt()
+  }
+
+  /** From a value encoded via [encodeLineColumnOffset], extract the original offset. */
+  private fun decodeOffset(bits: Long): Int {
+    return (bits and 0xFFFFL).toInt()
+  }
+
   /**
    * Writes characters and strings into a string builder, escaping characters which allows later
    * usages of the [DeserializationReader] to pick out substrings while still allowing all kinds of
@@ -237,6 +306,11 @@ object LintResourcePersistence {
 
     fun write(string: String): SerializationWriter {
       sb.append(string)
+      return this
+    }
+
+    fun writeHex(long: Long): SerializationWriter {
+      sb.append(long.toString(16))
       return this
     }
 
@@ -446,6 +520,29 @@ object LintResourcePersistence {
       val fileBased = reader.next() == 'F'
       var args: String? = null
       var rawSource: String? = null
+      var start = -1L
+      var end = -1L
+      var ignore = ""
+      if (!fileBased) {
+        // Read offsets
+        val startString = reader.readString(',')
+        val endString = reader.readString(',')
+        try {
+          if (startString != "-") {
+            start = startString.toLong(16)
+          }
+          if (endString != "-") {
+            end = endString.toLong(16)
+          } else {
+            end = start
+          }
+        } catch (ignore: Throwable) {
+          // Leave offsets as -1
+        }
+
+        ignore = reader.readString(';')
+      }
+
       val peek = reader.peek()
       val content =
         when {
@@ -472,7 +569,19 @@ object LintResourcePersistence {
       val config = folderConfigMap[file]!!
       if (fileBased) {
         val item =
-          LintResourceItem(file, name, namespace, type, null, false, libraryName, config, true)
+          LintResourceItem(
+            file,
+            name,
+            namespace,
+            type,
+            null,
+            false,
+            libraryName,
+            config,
+            true,
+            ignore,
+            null,
+          )
         LintResourceRepository.recordItem(map, type, name, item)
 
         // As a side effect sets item.sourceFile
@@ -490,6 +599,9 @@ object LintResourcePersistence {
             content,
             args,
             libraryName,
+            ignore,
+            start,
+            end,
           )
         LintResourceRepository.recordItem(map, type, name, item)
         val list =
@@ -534,7 +646,11 @@ object LintResourcePersistence {
      */
     private val arguments: String?,
     private val library: String?,
-  ) : ResourceMergerItem(name, namespace, type, null, false, null) {
+    private val ignoredIds: String,
+    private val start: Long,
+    private val end: Long,
+  ) :
+    ResourceMergerItem(name, namespace, type, null, false, null), LocationAware, IgnoredIdProvider {
     override fun getConfiguration(): FolderConfiguration {
       return config
     }
@@ -694,6 +810,22 @@ object LintResourcePersistence {
       } else {
         super.toString()
       }
+    }
+
+    override fun getLocation(): Location {
+      if (start != -1L && end != -1L) {
+        return Location.create(
+          file,
+          DefaultPosition(decodeLine(start), decodeColumn(start), decodeOffset(start)),
+          DefaultPosition(decodeLine(end), decodeColumn(end), decodeOffset(end)),
+        )
+      } else {
+        return Location.create(file)
+      }
+    }
+
+    override fun getIgnoredIds(): String {
+      return ignoredIds
     }
   }
 }

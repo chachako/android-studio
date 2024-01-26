@@ -1365,39 +1365,6 @@ class ManifestDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
-  fun testFullBackupContentMissing() {
-    val expected =
-      """
-            AndroidManifest.xml:6: Warning: Missing <full-backup-content> resource [DataExtractionRules]
-                    android:fullBackupContent="@xml/backup"
-                                               ~~~~~~~~~~~
-            0 errors, 1 warnings
-            """
-    lint()
-      .files(
-        manifest(
-            """
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                    package="com.example.helloworld" >
-
-                    <application
-                        android:allowBackup="true"
-                        android:fullBackupContent="@xml/backup"
-                        android:label="@string/app_name"
-                        android:theme="@style/AppTheme" >
-                    </application>
-
-                </manifest>
-                """
-          )
-          .indented()
-      )
-      .issues(ManifestDetector.DATA_EXTRACTION_RULES)
-      .incremental()
-      .run()
-      .expect(expected)
-  }
-
   fun testFullBackupContentMissingInLibrary() {
     lint()
       .files(
@@ -2349,32 +2316,6 @@ class ManifestDetectorTest : AbstractCheckTest() {
                   android:fullBackupContent="@xml/full_backup_content"
                                              ~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 2 warnings
-            """
-      )
-  }
-
-  fun testDataExtractionInvalidXmlReference() {
-    lint()
-      .files(
-        manifest(
-            """
-                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-                    package="test.pkg">
-                  <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="35" />
-                  <application android:dataExtractionRules="@xml/data_extraction_rules" />
-                </manifest>
-                """
-          )
-          .indented()
-      )
-      .issues(ManifestDetector.DATA_EXTRACTION_RULES)
-      .run()
-      .expect(
-        """
-            AndroidManifest.xml:4: Warning: Missing data-extraction-rules resource [DataExtractionRules]
-              <application android:dataExtractionRules="@xml/data_extraction_rules" />
-                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~
-            0 errors, 1 warnings
             """
       )
   }

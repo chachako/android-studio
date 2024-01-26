@@ -19,16 +19,22 @@ import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.ATTR_ID
 import com.android.SdkConstants.VIEW_INCLUDE
 import com.android.ide.common.rendering.api.ResourceNamespace
+import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.util.PathString
+import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
 import com.android.tools.lint.checks.ViewTypeDetector.Companion.FIND_VIEW_BY_ID
 import com.android.tools.lint.checks.ViewTypeDetector.Companion.REQUIRE_VIEW_BY_ID
 import com.android.tools.lint.client.api.ResourceRepositoryScope.LOCAL_DEPENDENCIES
+import com.android.tools.lint.client.api.ResourceRepositoryScope.PROJECT_ONLY
 import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
+import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.LintMap
 import com.android.tools.lint.detector.api.ResourceEvaluator
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
@@ -63,20 +69,72 @@ class MissingInflatedIdDetector : Detector(), SourceCodeScanner {
     listOf(FIND_VIEW_BY_ID, REQUIRE_VIEW_BY_ID)
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
-    val layoutUrl = findLayout(context, node) ?: return
-    val idUrl = getFirstArgAsResource(node, context) ?: return
+    val layout = findLayout(context, node)?.name ?: return
+    val id = getFirstArgAsResource(node, context)?.name ?: return
 
-    val full = context.isGlobalAnalysis()
-    val project = if (full) context.mainProject else context.project
-    val resources = context.client.getResources(project, LOCAL_DEPENDENCIES)
-    val items = resources.getResources(ResourceNamespace.TODO(), layoutUrl.type, layoutUrl.name)
-    if (items.isEmpty()) return
-    val id = idUrl.name
-    if (items.none { definesId(context, it.source, id) }) {
-      val message = "`$layoutUrl` does not contain a declaration with id `$id`"
-      val idArgument = node.valueArguments.first()
-      context.report(ISSUE, idArgument, context.getLocation(idArgument), message)
+    val globalAnalysis = context.isGlobalAnalysis()
+    val resources =
+      if (globalAnalysis) context.client.getResources(context.mainProject, LOCAL_DEPENDENCIES)
+      else context.client.getResources(context.project, PROJECT_ONLY)
+    val items = resources.getResources(ResourceNamespace.TODO(), ResourceType.LAYOUT, layout)
+
+    if (items.isNotEmpty()) {
+      if (layoutMissingId(context, items, id)) {
+        val incident = createIncident(context, node, layout, id)
+        context.report(incident)
+      }
+      return
     }
+
+    // Didn't find the resource
+    if (globalAnalysis) {
+      return
+    }
+
+    // We're in partial analysis, so the resource is most likely defined in a library;
+    // this means we have to defer the work.
+
+    // In partial analysis mode, we must handle suppression now, manually.
+    if (context.driver.isSuppressed(context, ISSUE, node)) {
+      return
+    }
+
+    val map =
+      map().apply {
+        put(KEY_LAYOUT, layout)
+        put(KEY_ID, id)
+      }
+    context.report(createIncident(context, node, layout, id), map)
+  }
+
+  /**
+   * Checks whether **all** the [layouts] are missing the given [id]. (It's okay for some of the
+   * layouts to miss it; e.g. a portrait orientation layout could intentionally be skipping a
+   * widget.)
+   */
+  private fun layoutMissingId(context: Context, layouts: List<ResourceItem>, id: String): Boolean {
+    return layouts.isNotEmpty() && layouts.none { definesId(context, it.source, id) }
+  }
+
+  override fun filterIncident(context: Context, incident: Incident, map: LintMap): Boolean {
+    val layout = map[KEY_LAYOUT] ?: return false
+    val id = map[KEY_ID] ?: return false
+
+    val resources = context.client.getResources(context.mainProject, LOCAL_DEPENDENCIES)
+    val items = resources.getResources(ResourceNamespace.TODO(), ResourceType.LAYOUT, layout)
+    return layoutMissingId(context, items, id)
+  }
+
+  private fun createIncident(
+    context: JavaContext,
+    node: UCallExpression,
+    layout: String,
+    id: String,
+  ): Incident {
+    val message = "`@layout/$layout` does not contain a declaration with id `$id`"
+    val idArgument = node.valueArguments.first()
+    val incident = Incident(ISSUE, idArgument, context.getLocation(idArgument), message)
+    return incident
   }
 
   /**
@@ -123,11 +181,11 @@ class MissingInflatedIdDetector : Detector(), SourceCodeScanner {
    * Returns true if the given layout [file] contains a definition of the given [targetId], **and**
    * does not contain an `<include>` tag.
    */
-  private fun definesId(context: JavaContext, file: PathString?, targetId: String): Boolean {
-    file ?: return false
+  private fun definesId(context: Context, file: PathString?, targetId: String): Boolean {
+    file ?: return true
     val parser =
       try {
-        context.client.createXmlPullParser(file) ?: return false
+        context.client.createXmlPullParser(file) ?: return true
       } catch (ignore: IOException) {
         return true
       }
@@ -163,10 +221,10 @@ class MissingInflatedIdDetector : Detector(), SourceCodeScanner {
         briefDescription = "ID not found in inflated resource",
         explanation =
           """
-                Checks calls to layout inflation and makes sure that the referenced ids \
-                are found in the corresponding layout (or at least one of them, if the \
-                layout has multiple configurations.)
-                """,
+          Checks calls to layout inflation and makes sure that the referenced ids \
+          are found in the corresponding layout (or at least one of them, if the \
+          layout has multiple configurations.)
+          """,
         category = Category.CORRECTNESS,
         priority = 5,
         severity = Severity.ERROR,
@@ -178,5 +236,8 @@ class MissingInflatedIdDetector : Detector(), SourceCodeScanner {
             Scope.JAVA_FILE_SCOPE,
           ),
       )
+
+    private const val KEY_LAYOUT = "layout"
+    private const val KEY_ID = "id"
   }
 }

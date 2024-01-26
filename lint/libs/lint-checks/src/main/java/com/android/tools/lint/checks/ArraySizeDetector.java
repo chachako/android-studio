@@ -28,6 +28,7 @@ import com.android.ide.common.rendering.api.ResourceNamespace;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.resources.ResourceItem;
 import com.android.ide.common.resources.ResourceRepository;
+import com.android.ide.common.resources.configuration.Configurable;
 import com.android.ide.common.util.PathString;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceType;
@@ -52,11 +53,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -161,8 +165,13 @@ public class ArraySizeDetector extends ResourceXmlDetector {
                         String otherName = Lint.getFileNameWithParent(client, otherFile);
                         String message =
                                 String.format(
+                                        Locale.ROOT,
                                         "Array `%1$s` has an inconsistent number of items (%2$d in `%3$s`, %4$d in `%5$s`)",
-                                        name, count, thisName, current, otherName);
+                                        name,
+                                        count,
+                                        thisName,
+                                        current,
+                                        otherName);
                         mDescriptions.put(name, message);
                     }
                 }
@@ -268,6 +277,7 @@ public class ArraySizeDetector extends ResourceXmlDetector {
                     location.setData(element);
                     location.setMessage(
                             String.format(
+                                    Locale.ROOT,
                                     "Declaration with array size (%1$d)",
                                     Lint.getChildCount(element)));
                     location.setSecondary(mLocations.get(name));
@@ -283,8 +293,9 @@ public class ArraySizeDetector extends ResourceXmlDetector {
             @NonNull String name,
             int childCount) {
         LintClient client = context.getClient();
-        boolean full = context.isGlobalAnalysis();
-        Project project = full ? context.getMainProject() : context.getProject();
+        // This method should never be called in partial analysis mode
+        assert context.isGlobalAnalysis();
+        Project project = context.getMainProject();
         ResourceRepository resources = client.getResources(project, LOCAL_DEPENDENCIES);
         List<ResourceItem> items =
                 resources.getResources(ResourceNamespace.TODO(), ResourceType.ARRAY, name);
@@ -297,15 +308,38 @@ public class ArraySizeDetector extends ResourceXmlDetector {
             if (rv instanceof ArrayResourceValue) {
                 ArrayResourceValue arv = (ArrayResourceValue) rv;
                 if (childCount != arv.getElementCount()) {
+                    // We found an item with a different child count than the current one.
+                    // That's an error. But resource repositories aren't all sorted, so
+                    // let's sort first to make sure we have a stable/predictable result:
+                    for (ResourceItem res :
+                            items.stream()
+                                    .sorted(Comparator.comparing(Configurable::getConfiguration))
+                                    .collect(Collectors.toList())) {
+                        ResourceValue resValue = res.getResourceValue();
+                        if (resValue instanceof ArrayResourceValue) {
+                            ArrayResourceValue arrayResourceValue = (ArrayResourceValue) resValue;
+                            if (childCount != arrayResourceValue.getElementCount()) {
+                                arv = arrayResourceValue;
+                                source = res.getSource();
+                                break;
+                            }
+                        }
+                    }
                     String thisName = Lint.getFileNameWithParent(client, context.file);
                     assert source != null;
                     String otherName = Lint.getFileNameWithParent(client, source);
                     String message =
                             String.format(
+                                    Locale.ROOT,
                                     "Array `%1$s` has an inconsistent number of items (%2$d in `%3$s`, %4$d in `%5$s`)",
-                                    name, childCount, thisName, arv.getElementCount(), otherName);
+                                    name,
+                                    childCount,
+                                    thisName,
+                                    arv.getElementCount(),
+                                    otherName);
 
                     context.report(INCONSISTENT, element, context.getLocation(element), message);
+                    break;
                 }
             }
         }

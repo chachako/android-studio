@@ -17,8 +17,11 @@
 package com.android.tools.lint
 
 import com.android.SdkConstants
+import com.android.SdkConstants.ATTR_IGNORE
 import com.android.SdkConstants.ATTR_NAME
 import com.android.SdkConstants.NEW_ID_PREFIX
+import com.android.SdkConstants.TOOLS_URI
+import com.android.ide.common.blame.SourcePosition
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.resources.AbstractResourceRepository
 import com.android.ide.common.resources.ResourceFile
@@ -37,17 +40,24 @@ import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.client.api.ResourceRepositoryScope
+import com.android.tools.lint.detector.api.Context
+import com.android.tools.lint.detector.api.DefaultPosition
+import com.android.tools.lint.detector.api.Issue.IgnoredIdProvider
+import com.android.tools.lint.detector.api.Location
+import com.android.tools.lint.detector.api.Location.LocationAware
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.getBaseName
 import com.android.tools.lint.detector.api.isXmlFile
 import com.android.tools.lint.model.LintModelAndroidLibrary
 import com.android.tools.lint.model.PathVariables
+import com.android.utils.PositionXmlParser
 import com.android.utils.iterator
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ImmutableListMultimap
 import com.google.common.collect.ListMultimap
 import java.io.File
 import java.util.EnumMap
+import org.jetbrains.annotations.TestOnly
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
@@ -61,8 +71,7 @@ import org.w3c.dom.Node
  * For lint internal use only. It does not support all operations that the general resource
  * repository does, such as namespaces or public resources, only those relevant to lint analysis.
  */
-open class LintResourceRepository
-constructor(
+open class LintResourceRepository(
   private val project: Project?,
   internal val typeToMap: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>,
   private val namespace: ResourceNamespace,
@@ -321,6 +330,71 @@ constructor(
 
   companion object {
     private val skipHidden: (File) -> Boolean = { file -> !file.name.startsWith('.') }
+
+    /**
+     * In partial analysis mode, you cannot look at the resource files from **other** modules. To
+     * make sure detectors don't do this, the testing infrastructure calls this method to strip
+     * resource access (rewriting ResourceItems to have invalid paths).
+     */
+    @TestOnly
+    fun removeFileAccess(project: Project, repository: ResourceRepository): ResourceRepository {
+      if (repository is MergedResourceRepository) {
+        for (leaf in repository.leafResourceRepositories) {
+          if (leaf !is LintResourceRepository || leaf.project == project) {
+            // accessing the local/same project is fine
+            continue
+          }
+
+          val map = leaf.typeToMap
+          val original = map.toMap()
+          map.clear()
+
+          for ((type, multiMap) in original) {
+            for ((name, item) in multiMap.entries()) {
+              val withoutSource =
+                if (item is LintResourceItem) {
+                  object : LintResourceItem(item, true) {
+                    private fun reportPathAccess(method: String) {
+                      if (LintClient.isUnitTest) {
+                        if (
+                          !Context.checkForbidden(
+                            "ResourceItem.$method()",
+                            item.file,
+                            null,
+                            "You can only call this on resources in the current module, not library resources.",
+                          )
+                        ) {
+                          // This only happens if checkForbidden can't find the relevant detector
+                          error("Cannot access resources from libraries in analysis mode")
+                        }
+                      }
+                    }
+
+                    override fun getSource(): PathString {
+                      reportPathAccess("getSource")
+                      return item.source
+                    }
+
+                    override fun getSourceFile(): ResourceFile? {
+                      reportPathAccess("getSourceFile")
+                      return item.sourceFile
+                    }
+
+                    override fun getFile(): File {
+                      reportPathAccess("getFile")
+                      return item.file
+                    }
+                  }
+                } else {
+                  item
+                }
+              recordItem(map, type, name, withoutSource)
+            }
+          }
+        }
+      }
+      return repository
+    }
 
     /**
      * An empty repository which is only used if you request the resource repository for a
@@ -707,18 +781,33 @@ constructor(
       // See ResourceMergerItem.doParseXmlToResourceValue:
       val resources = client.getXmlDocument(file)?.documentElement ?: return
       val items = ArrayList<LintResourceItem>()
+
+      val rootIgnored = "".appendIgnore(resources)
+
       for (element in resources) {
         val type = ResourceType.fromXmlTag(element) ?: continue
         if (type.isSynthetic) continue // e.g. boolean
         val name = element.getAttribute(ATTR_NAME)
+        val ignoredIds = rootIgnored.appendIgnore(element)
         if (name.isEmpty()) {
           if (type == ResourceType.PUBLIC) {
-            addItems(file, "", type, element, config, libraryName, namespace, map, items)
+            addItems(
+              file,
+              "",
+              type,
+              element,
+              config,
+              libraryName,
+              namespace,
+              map,
+              items,
+              ignoredIds,
+            )
           }
           // erroneous source
           continue
         }
-        addItems(file, name, type, element, config, libraryName, namespace, map, items)
+        addItems(file, name, type, element, config, libraryName, namespace, map, items, ignoredIds)
       }
 
       // Side effect: sets sourceFile on all the items
@@ -735,8 +824,10 @@ constructor(
       namespace: ResourceNamespace,
       map: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>,
       added: MutableList<LintResourceItem>?,
+      ignoredIds: String,
     ) {
       // See ValueResourceParser2
+      val position = PositionXmlParser.getPosition(element)
       val item =
         LintResourceItem(
           file,
@@ -748,13 +839,15 @@ constructor(
           libraryName,
           config,
           false,
+          ignoredIds,
+          position,
         )
       recordItem(map, type, name, item)
       added?.add(item)
 
       if (type == ResourceType.STYLEABLE) {
         // Need to also create ATTR items for its children
-        addStyleableItems(file, element, namespace, map, config, added)
+        addStyleableItems(file, element, namespace, map, config, added, ignoredIds)
       }
     }
 
@@ -765,6 +858,7 @@ constructor(
       map: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>,
       config: FolderConfiguration,
       added: MutableList<LintResourceItem>?,
+      elementIgnoredIds: String,
     ) {
       assert(styleableNode.nodeName == SdkConstants.TAG_DECLARE_STYLEABLE)
       for (element in styleableNode) {
@@ -772,7 +866,8 @@ constructor(
         if (name.isEmpty()) continue
         val type = ResourceType.fromXmlTag(element) ?: continue
         assert(type == ResourceType.ATTR)
-
+        val ignoredIds = elementIgnoredIds.appendIgnore(element)
+        val position = PositionXmlParser.getPosition(element)
         val attr =
           LintResourceItem(
             file,
@@ -784,13 +879,27 @@ constructor(
             libraryName = null,
             config = config,
             fileBased = false,
+            ignoredIds = ignoredIds,
+            position = position,
           )
         recordItem(map, type, name, attr)
         added?.add(attr)
       }
     }
 
+    private fun String.appendIgnore(element: Element): String {
+      val ignored = element.getAttributeNodeNS(TOOLS_URI, ATTR_IGNORE)?.value ?: return this
+      // Fix up " Foo, Bar " to be "Foo,Bar"
+      val cleaned = if (ignored.contains(' ')) ignored.replace(" ", "") else ignored
+      return if (this.isEmpty()) {
+        cleaned
+      } else {
+        "$this,$cleaned"
+      }
+    }
+
     private fun addIds(
+      client: LintClient,
       element: Element,
       map: MutableMap<ResourceType, ListMultimap<String, ResourceItem>>,
       folderType: ResourceFolderType,
@@ -816,6 +925,13 @@ constructor(
               libraryName = null,
               config = config,
               fileBased = true,
+              ignoredIds = "",
+              // We could pass in PositionXmlParser.getPosition(attribute) here,
+              // but position information is not cached by the parser, it's
+              // computed lazily, and it's semi expensive (searching through
+              // the source code). Let's just use the less accurate surrounding
+              // element position for this
+              position = PositionXmlParser.getPosition(element),
             )
           recordItem(map, ResourceType.ID, name, item)
           added.add(item)
@@ -823,7 +939,7 @@ constructor(
       }
 
       for (child in element) {
-        addIds(child, map, folderType, config, file, namespace, added)
+        addIds(client, child, map, folderType, config, file, namespace, added)
       }
     }
 
@@ -843,7 +959,7 @@ constructor(
           // TODO: As an optimization, maybe only do this if a quick document
           // string search for @+id/ shows there are occurrences in the document.
           val items = mutableListOf<ResourceMergerItem>()
-          addIds(it, map, folderType, config, file, namespace, items)
+          addIds(client, it, map, folderType, config, file, namespace, items)
           if (items.isNotEmpty()) {
             // Side effect: sets item source file
             ResourceFile(file, items, config)
@@ -864,6 +980,9 @@ constructor(
           libraryName = libraryName,
           config = config,
           fileBased = true,
+          ignoredIds = "",
+          // No offsets for file based resources (such as @layout/main)
+          position = null,
         )
       recordItem(map, type, name, item)
       // Side effect: sets item source file
@@ -889,7 +1008,7 @@ constructor(
   }
 }
 
-internal class LintResourceItem(
+internal open class LintResourceItem(
   private val sourceFile: File,
   name: String,
   namespace: ResourceNamespace,
@@ -899,10 +1018,36 @@ internal class LintResourceItem(
   libraryName: String?,
   private val config: FolderConfiguration,
   private val fileBased: Boolean,
-) : ResourceMergerItem(name, namespace, type, value, isFromDependency, libraryName) {
+  private val ignoredIds: String,
+  val position: SourcePosition?,
+) :
+  ResourceMergerItem(name, namespace, type, value, isFromDependency, libraryName),
+  LocationAware,
+  IgnoredIdProvider {
+
+  constructor(
+    item: LintResourceItem,
+    fromDependency: Boolean,
+  ) : this(
+    item.sourceFile,
+    item.name,
+    item.namespace,
+    item.type,
+    item.value,
+    fromDependency,
+    item.libraryName,
+    item.config,
+    item.fileBased,
+    item.ignoredIds,
+    item.position,
+  )
 
   override fun getConfiguration(): FolderConfiguration {
     return config
+  }
+
+  override fun getIgnoredIds(): String {
+    return ignoredIds
   }
 
   override fun getFile(): File {
@@ -915,6 +1060,18 @@ internal class LintResourceItem(
 
   override fun isFileBased(): Boolean {
     return fileBased
+  }
+
+  override fun getLocation(): Location {
+    return if (position != null) {
+      Location.create(
+        sourceFile,
+        DefaultPosition(position.startLine, position.startColumn, position.startOffset),
+        DefaultPosition(position.endLine, position.endColumn, position.endOffset),
+      )
+    } else {
+      Location.create(sourceFile)
+    }
   }
 
   override fun toString(): String {

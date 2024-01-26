@@ -440,4 +440,53 @@ class ViewBindingTypeDetectorTest : AbstractCheckTest() {
             """
       )
   }
+
+  fun testSplitAcrossModules() {
+    // Test where the bindings are is different modules (same
+    // as testViewBindingTypeHappyPath.)
+    val lib =
+      project(
+        xml(
+            "res/layout/vb.xml",
+            """
+            <LinearLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                tools:keep="@layout/vb">
+                <EditText android:id="@+id/text_view" tools:viewBindingType="TextView" />
+                <EditText android:id="@+id/text_view2" tools:viewBindingType="TextView" />
+                <view android:id="@+id/text_view3" class="EditText" tools:viewBindingType="TextView" />
+                <view android:id="@+id/text_view4" class="EditText" tools:viewBindingType="TextView" />
+                <!-- Redundant definitions but legal -->
+                <TextView android:id="@+id/text_view5" tools:viewBindingType="TextView" />
+                <view android:id="@+id/text_view6" class="TextView" tools:viewBindingType="TextView" />
+                <TextView android:id="@+id/text_view7" tools:viewBindingType="android.widget.TextView" />
+            </LinearLayout>
+            """,
+          )
+          .indented()
+      )
+
+    val main =
+      project(
+          xml(
+              "res/layout-land/vb.xml",
+              """
+              <LinearLayout
+                  xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:tools="http://schemas.android.com/tools"
+                  tools:keep="@layout/vb">
+                  <CheckedTextView android:id="@+id/text_view" tools:viewBindingType="TextView" />
+                  <TextView android:id="@+id/text_view2" />
+                  <view android:id="@+id/text_view2" class="CheckedTextView" tools:viewBindingType="TextView" />
+                  <view android:id="@+id/text_view2" class="TextView"/>
+              </LinearLayout>
+              """,
+            )
+            .indented()
+        )
+        .dependsOn(lib)
+
+    lint().projects(lib, main).run().expectClean()
+  }
 }

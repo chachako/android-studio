@@ -255,6 +255,56 @@ class MissingInflatedIdDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun testSplitAcrossModules() {
+    // Test where layout is not in the same project as the findViewById call
+    val lib =
+      project(
+        xml(
+            "res/layout/activity_main.xml",
+            """
+            <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent" android:layout_height="match_parent">
+                <EditText
+                    android:id="@+id/text_field"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                />
+            </FrameLayout>
+            """,
+          )
+          .indented()
+      )
+
+    val main =
+      project(
+          manifest().minSdk(1),
+          kotlin(
+              """
+              package test.pkg
+
+              import android.app.Activity
+              import android.graphics.ColorFilter
+              import android.os.Bundle
+              import android.view.View
+              import android.widget.EditText
+              import android.widget.ImageView
+
+              class MyActivity : Activity() {
+                  override fun onCreate(savedInstanceState: Bundle?) {
+                      super.onCreate(savedInstanceState)
+                      setContentView(R.layout.activity_main)
+                      requireViewById<EditText>(R.id.text_field).isEnabled = false // OK
+                  }
+              }
+              """
+            )
+            .indented(),
+        )
+        .dependsOn(lib)
+
+    lint().projects(lib, main).run().expectClean()
+  }
+
   fun testIncludes() {
     // If there are <include> tags in the layout, don't draw any conclusions about which id's are
     // present

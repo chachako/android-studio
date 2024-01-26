@@ -21,6 +21,7 @@ import com.android.resources.ResourceType
 import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.client.api.ResourceReference.Companion.get
 import com.android.tools.lint.client.api.ResourceRepositoryScope.LOCAL_DEPENDENCIES
+import com.android.tools.lint.client.api.ResourceRepositoryScope.PROJECT_ONLY
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Implementation
@@ -146,14 +147,14 @@ class LayoutInflationDetector : LayoutDetector(), SourceCodeScanner {
 
   private fun hasLayoutParams(context: JavaContext, name: String): Boolean {
     val client = context.client
-    if (!context.isGlobalAnalysis()) {
-      return true // not certain
-    }
     val project = context.project
-    val resources = client.getResources(project, LOCAL_DEPENDENCIES)
+    val scope = if (context.isGlobalAnalysis()) LOCAL_DEPENDENCIES else PROJECT_ONLY
+    val resources = client.getResources(project, scope)
     val items = resources.getResources(ResourceNamespace.TODO(), ResourceType.LAYOUT, name)
     if (items.isEmpty()) {
-      // Couldn't find layout: uncertain
+      // Couldn't find layout: uncertain.
+      // (In partial analysis, we only look at the local project dependencies; if the
+      // layout is in a different module, we won't find it, so we'll just stay uncertain.)
       return true
     }
     for (item in items) {
@@ -296,7 +297,7 @@ class LayoutInflationDetector : LayoutDetector(), SourceCodeScanner {
               val prefix = parser.getAttributePrefix(i)
               if (
                 prefix != null &&
-                  !prefix.isEmpty() &&
+                  prefix.isNotEmpty() &&
                   SdkConstants.ANDROID_URI == parser.getNamespace(prefix)
               ) {
                 return true

@@ -102,9 +102,11 @@ import com.android.tools.lint.checks.WrongCallDetector
 import com.android.tools.lint.checks.WrongCaseDetector
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.detector.api.DefaultPosition
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.Location
+import com.android.tools.lint.detector.api.Position
 import com.android.tools.lint.detector.api.TextFormat
 import com.android.utils.SdkUtils
 import java.io.File
@@ -113,6 +115,7 @@ import java.io.UnsupportedEncodingException
 import java.io.Writer
 import java.net.MalformedURLException
 import java.net.URLEncoder
+import kotlin.math.min
 
 /** A reporter is an output generator for lint warnings */
 abstract class Reporter
@@ -592,9 +595,26 @@ fun Location.getErrorLines(textProvider: (File) -> CharSequence?): String? {
         return sb.toString()
       }
     }
+  } else if (startPosition != null && startPosition.offset >= 0 && startPosition.line == -1) {
+    // Some positions are created lazily by only initializing the offset (because line numbers
+    // are usually not needed, and they are expensive to compute). Look it up lazily now.
+    val source = textProvider(file)
+    if (source != null) {
+      val start = getPosition(source, startPosition.offset)
+      val end = getPosition(source, location.end?.offset ?: startPosition.offset)
+      val locationWithLineNumbers = Location.create(file, start, end)
+      return locationWithLineNumbers.getErrorLines(textProvider)
+    }
   }
 
   return null
+}
+
+private fun getPosition(source: CharSequence, offset: Int): Position {
+  val line = source.getLineNumber(offset, startLineNumber = 0)
+  val lineStart = source.lastIndexOf('\n', offset) + 1
+  val column = offset - lineStart
+  return DefaultPosition(line, column, offset)
 }
 
 /** Look up the contents of the given line. */
@@ -616,6 +636,24 @@ private fun CharSequence.getLineOfOffset(offset: Int): String {
     end--
   }
   return this.subSequence(offset, if (end != -1) end else this.length).toString()
+}
+
+/**
+ * Returns a (by default 1-based line number, or 0-based if you pass 0 into [startLineNumber]) line
+ * number.
+ */
+private fun CharSequence.getLineNumber(
+  offset: Int,
+  startOffset: Int = 0,
+  startLineNumber: Int = 1,
+): Int {
+  var lineNumber = startLineNumber
+  for (i in startOffset until min(offset, length)) {
+    if (this[i] == '\n') {
+      lineNumber++
+    }
+  }
+  return lineNumber
 }
 
 /** Returns the offset of the given line number. */

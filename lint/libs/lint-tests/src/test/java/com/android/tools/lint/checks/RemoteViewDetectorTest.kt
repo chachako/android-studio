@@ -37,7 +37,7 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
       )
       .indented()
 
-  fun testBasic() {
+  fun testDocumentationExample() {
     lint()
       .files(
         kotlinSample,
@@ -159,7 +159,6 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
             """
                 <android.widget.RelativeLayout
                     xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:theme="@style/Theme.MaterialComponents.DayNight">
@@ -176,5 +175,60 @@ class RemoteViewDetectorTest : AbstractCheckTest() {
       )
       .run()
       .expectClean()
+  }
+
+  fun testSplitAcrossModules() {
+    // Test where the remote layout is in a different module (same
+    // as testDocumentationExample but with code reference in its own downstream
+    // module.)
+    val lib =
+      project(
+        xml(
+            "res/layout/test.xml",
+            """
+            <merge>
+                <Button />
+                <AdapterViewFlipper />
+                <FrameLayout />
+                <GridLayout />
+                <GridView />
+                <LinearLayout />
+                <ListView />
+                <RelativeLayout />
+                <StackView />
+                <ViewFlipper />
+                <AnalogClock />
+                <Button />
+                <Chronometer />
+                <ImageButton />
+                <ImageView />
+                <ProgressBar />
+                <TextClock />
+                <TextView />
+                <DatePicker />
+                <CheckBox />
+                <Switch />
+                <RadioButton />
+                <RadioGroup />
+                <androidx.appcompat.widget.AppCompatTextView />
+            </merge>
+            """,
+          )
+          .indented()
+      )
+
+    val main = project(kotlinSample, rClass("test.pkg", "@layout/test")).dependsOn(lib)
+
+    lint()
+      .projects(lib, main)
+      .run()
+      .expect(
+        """
+        src/test/pkg/test.kt:5: Error: @layout/test includes views not allowed in a RemoteView: CheckBox, DatePicker, RadioButton, RadioGroup, Switch, androidx.appcompat.widget.AppCompatTextView [RemoteViewLayout]
+            val remoteView = RemoteViews(packageName, R.layout.test)
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+        """
+      )
   }
 }

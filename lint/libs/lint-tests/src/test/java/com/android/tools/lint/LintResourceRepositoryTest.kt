@@ -48,6 +48,7 @@ import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Issue
+import com.android.tools.lint.detector.api.Issue.IgnoredIdProvider
 import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
@@ -253,16 +254,16 @@ class LintResourceRepositoryTest {
             "${"$"}ROOT/app/res/layout/activity_main.xml\n" +
             "${"$"}ROOT/app/res/values/test.xml\n" +
             "${"$"}ROOT/app/res/values/styles.xml\n" +
-            "+array:typography,0,V\\\"Ages 1\\, 3-5\\\",Age\\: 5 1/2\\+,;\n" +
-            "+attr:content,0,Vreference:;contentId,0,Vreference:;fastScrollOverlayPosition,0,Venum:floating:0,atThumb:1,aboveThumb:2,;windowSoftInputMode,0,Vflags:stateUnspecified:0,stateUnchanged:1,;\n" +
-            "+dimen:activity_horizontal_margin,0,V\"16dp\";activity_horizontal_margin,1,V\"16dp\";negative,0,V\"-16dp\";positive,0,V\"16dp\";\n" +
+            "+array:typography,0,V40011027d,13001402f7,;\\\"Ages 1\\, 3-5\\\",Age\\: 5 1/2\\+,;\n" +
+            "+attr:content,0,V80017033f,3200170369,;reference:;contentId,0,V800180372,340018039e,;reference:;fastScrollOverlayPosition,0,V8001f04b0,f00230575,;enum:floating:0,atThumb:1,aboveThumb:2,;windowSoftInputMode,0,V8001903a7,f001e04a7,;flags:stateUnspecified:0,stateUnchanged:1,;\n" +
+            "+dimen:activity_horizontal_margin,0,V400020033,3900020068,;\"16dp\";activity_horizontal_margin,1,V400010010,3900010045,;\"16dp\";negative,0,V400040095,28000400b9,;\"-16dp\";positive,0,V40003006d,2700030090,;\"16dp\";\n" +
             "+drawable:ic_launcher,3,F;ic_launcher2,2,F;\n" +
-            "+id:name,0,V\"\";\n" +
+            "+id:name,0,V400010010,220001002e,;\"\";\n" +
             "+layout:activity_main,4,F;\n" +
-            "+plurals:my_plural,0,Vone:@string/hello1,few:@string/hello2,other:@string/hello3,;\n" +
-            "+string:js_dialog_title,5,V\"På siden på \\\"\${TITLE}\\\" står der\\:\"\\\"På siden på \\\\\\\"<xliff\\:g id=\\\"TITLE\\\">%s</xliff\\:g>\\\\\\\" står der\\:\\\";string1,5,V\"String 1\";string2,5,V\"String 2\";\n" +
-            "+style:MyStyle,0,VDandroid\\:Theme.Holo.Light.DarkActionBar,android\\:layout_margin:5dp,android\\:layout_marginLeft:@dimen/positive,android\\:layout_marginTop:@dimen/negative,android\\:layout_marginBottom:-5dp,;MyStyle.Another,0,VNandroid\\:layout_margin:5dp,;Notification.Header,6,VEpaddingTop:@dimen/notification_header_padding_top,paddingBottom:@dimen/notification_header_padding_bottom,gravity:top,;\n" +
-            "+styleable:ContentFrame,0,V-content:reference:-contentId:reference:-windowSoftInputMode:flags:stateUnspecified:0,stateUnchanged:1,-fastScrollOverlayPosition:enum:floating:0,atThumb:1,aboveThumb:2,;\n"
+            "+plurals:my_plural,0,V400250593,e00290657,;one:@string/hello1,few:@string/hello2,other:@string/hello3,;\n" +
+            "+string:js_dialog_title,5,V40003009e,840003011e,;\"På siden på \\\"\${TITLE}\\\" står der\\:\"\\\"På siden på \\\\\\\"<xliff\\:g id=\\\"TITLE\\\">%s</xliff\\:g>\\\\\\\" står der\\:\\\";string1,5,V400010044,2c0001006c,;\"String 1\";string2,5,V400020071,2c00020099,;\"String 2\";\n" +
+            "+style:MyStyle,0,V4000600bf,c000b0210,;Dandroid\\:Theme.Holo.Light.DarkActionBar,android\\:layout_margin:5dp,android\\:layout_marginLeft:@dimen/positive,android\\:layout_marginTop:@dimen/negative,android\\:layout_marginBottom:-5dp,;MyStyle.Another,0,V4000d0216,c000f0277,;Nandroid\\:layout_margin:5dp,;Notification.Header,6,V1400020031,1c00060174,;EpaddingTop:@dimen/notification_header_padding_top,paddingBottom:@dimen/notification_header_padding_bottom,gravity:top,;\n" +
+            "+styleable:ContentFrame,0,V40016030f,180024058e,;-content:reference:-contentId:reference:-windowSoftInputMode:flags:stateUnspecified:0,stateUnchanged:1,-fastScrollOverlayPosition:enum:floating:0,atThumb:1,aboveThumb:2,;\n"
         val actual = serialize(repository)
         assertEquals(expected, format(actual))
         val reserialized = serialize(deserialize(actual) as LintResourceRepository)
@@ -356,6 +357,8 @@ class LintResourceRepositoryTest {
     val stringValue = string.resourceValue as TextResourceValue
     assertEquals("String 1", stringValue.value)
     assertEquals("String 1", stringValue.rawXmlValue)
+
+    assertEquals("values/test.xml", TestLintClient().getDisplayPath(string))
   }
 
   private fun checkAttrs(repository: ResourceRepository, namespace: ResourceNamespace) {
@@ -540,6 +543,76 @@ class LintResourceRepositoryTest {
   }
 
   @Test
+  fun testLocation() {
+    checkRepository(
+      xml(
+          "res/values/test.xml",
+          """
+        <resources>
+            <!-- PREFIX --><string name="string1">String 1</string><!-- SUFFIX -->
+        </resources>
+        """,
+        )
+        .indented(),
+      includeAgpRepository = false,
+    ) { _, repository, root ->
+      assertEquals(
+        "namespace:apk/res-auto\n" +
+          "  @string/string1 (value) config=default source=/app/res/values/test.xml;  String 1\n",
+        repository.prettyPrint(root).dos2unix(),
+      )
+
+      if (repository is LintResourceRepository) {
+        val client = LintCliClient(LintClient.CLIENT_UNIT_TESTS)
+        val parser = client.xmlParser
+        val item =
+          repository.getResources(ResourceNamespace.TODO(), ResourceType.STRING, "string1").single()
+
+        val location = parser.getLocation(client, item)
+        location!!
+        val codeWithLocation = location.getErrorLines(textProvider = { client.getSourceText(it) })!!
+        assertEquals(
+          """
+          <!-- PREFIX --><string name="string1">String 1</string><!-- SUFFIX -->
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          """
+            .trimIndent(),
+          codeWithLocation.trimIndent(),
+        )
+      }
+    }
+  }
+
+  @Test
+  fun testIgnore() {
+    checkRepository(
+      xml(
+          "res/values/test.xml",
+          """
+        <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="SdCardPath, DuplicateResources">
+            <string name="string1" tools:ignore="DuplicateString">String 1</string>
+            <string name="string2">String 2</string>
+        </resources>
+        """,
+        )
+        .indented(),
+      includeAgpRepository = false,
+    ) { _, repository, root ->
+      assertEquals(
+        """
+        namespace:apk/res-auto
+          @string/string1 (value) config=default source=/app/res/values/test.xml;  String 1
+            (ignores: SdCardPath,DuplicateResources,DuplicateString)
+          @string/string2 (value) config=default source=/app/res/values/test.xml;  String 2
+            (ignores: SdCardPath,DuplicateResources)
+        """
+          .trimIndent(),
+        repository.prettyPrint(root).dos2unix().trim(),
+      )
+    }
+  }
+
+  @Test
   fun testCheckRecovery() {
     lint()
       .sdkHome(TestUtils.getSdk().toFile())
@@ -632,7 +705,7 @@ class LintResourceRepositoryTest {
             "serialized file that was created with an older version of lint or with a different\n" +
             "set of path variable names. Attempting to gracefully recover.\n" +
             "The serialized content was:\n" +
-            "http://schemas.android.com/apk/res-auto;;＄TEST_ROOT/default/app/res/values/bools.xml,＄TEST_ROOT/default/app/res/xml-mcc/backup.xml,+bool:enable_wearable_location_service,0,V\"true\";enable_wearable_location_service,1,V\"false\";+string:location_process,2,V\"Location Process\";location_process,3,V\"Location Process (English)\";+xml:backup,4,F;backup,5,F;\n" +
+            "http://schemas.android.com/apk/res-auto;;＄TEST_ROOT/default/app/res/values/bools.xml,＄TEST_ROOT/default/app/res/xml-mcc/backup.xml,+bool:enable_wearable_location_service,0,V0,10,;\"true\";enable_wearable_location_service,1,V10,20,;\"false\";+string:location_process,2,V10,20,Unused;\"Location Process\";location_process,3,V-,-,;\"Location Process (English)\";+xml:backup,4,F;backup,5,F;\n" +
             "Stack: java.lang.IndexOutOfBoundsException: Index 2 out of bounds for length 2:Preconditions.outOfBounds("
         ) + ".*\\) \\[LintWarning]\n" + "0 errors, 1 warnings"
       )
@@ -664,8 +737,8 @@ class LintResourceRepositoryTest {
           // "\$TEST_ROOT/default/app/res/values-en-rUS/values.xml," +
           // "\$TEST_ROOT/default/app/res/xml/backup.xml," +
           "\$TEST_ROOT/default/app/res/xml-mcc/backup.xml," +
-          "+bool:enable_wearable_location_service,0,V\"true\";enable_wearable_location_service,1,V\"false\";" +
-          "+string:location_process,2,V\"Location Process\";location_process,3,V\"Location Process (English)\";" +
+          "+bool:enable_wearable_location_service,0,V0,10,;\"true\";enable_wearable_location_service,1,V10,20,;\"false\";" +
+          "+string:location_process,2,V10,20,Unused;\"Location Process\";location_process,3,V-,-,;\"Location Process (English)\";" +
           "+xml:backup,4,F;backup,5,F;"
 
       val file = client.getSerializationFile(project, XmlFileType.RESOURCE_REPOSITORY)
@@ -730,12 +803,17 @@ fun ResourceRepository.prettyPrint(sb: StringBuilder, root: File? = null): Strin
     for (item in
       items.sortedWith(compareBy({ it.name }, { it.configuration.toShortDisplayString() }))) {
       if (!seenLibrary) {
-        item.libraryName?.let { sb.append("library: ").append(it).append("\n") }
+        item.libraryName?.let { sb.append("  library: ").append(it).append("\n") }
         seenLibrary = true
       }
 
       item.prettyPrint(sb, root)
       sb.append("\n")
+
+      val ignoredIds = if (item is IgnoredIdProvider) item.getIgnoredIds() else ""
+      if (ignoredIds.isNotEmpty()) {
+        sb.append("    (ignores: ").append(ignoredIds).append(")\n")
+      }
     }
   }
 

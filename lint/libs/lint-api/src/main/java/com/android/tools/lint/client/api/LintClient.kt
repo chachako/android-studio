@@ -39,9 +39,11 @@ import com.android.ide.common.repository.AgpVersion
 import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.resources.ResourceRepository
+import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.util.PathString
 import com.android.manifmerger.Actions
 import com.android.prefs.AndroidLocationsSingleton
+import com.android.resources.FolderTypeRelationship
 import com.android.sdklib.IAndroidTarget
 import com.android.sdklib.SdkVersionInfo
 import com.android.tools.lint.detector.api.Constraint
@@ -59,6 +61,7 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.TextFormat
 import com.android.tools.lint.detector.api.endsWith
 import com.android.tools.lint.detector.api.getCommonParent
+import com.android.tools.lint.detector.api.getFileNameWithParent
 import com.android.tools.lint.detector.api.getLanguageLevel
 import com.android.tools.lint.detector.api.isManifestFolder
 import com.android.tools.lint.model.LintModelAndroidLibrary
@@ -1607,6 +1610,29 @@ abstract class LintClient {
     }
 
     return TextFormat.TEXT.convertTo(file.path, format)
+  }
+
+  /**
+   * Returns the display path of a given resource item. This is just the path relative to the
+   * resource folder; not to the project. This is typically used in error messages to for example
+   * reference other variations (as in "also seen in values-fr/strings.xml"). Note that like
+   * [getFileNameWithParent] we deliberately use Unix file separators.
+   */
+  open fun getDisplayPath(item: ResourceItem, format: TextFormat = TextFormat.TEXT): String {
+    if (item is Location.LocationAware) {
+      return getFileNameWithParent(this, item.getLocation().file)
+    } else {
+      val source = item.originalSource ?: item.source
+      if (source != null) {
+        return getFileNameWithParent(this, source)
+      } else {
+        val configuration: FolderConfiguration = item.configuration
+        val folder =
+          FolderTypeRelationship.getRelatedFolders(item.type).firstOrNull()?.getName() ?: return ""
+        val folderName = if (configuration.isDefault) folder else "$folder-$configuration"
+        return folderName + '/' + item.type.getName() + "s" + DOT_XML
+      }
+    }
   }
 
   fun getDisplayPath(project: Project?, file: File, fullPath: Boolean): String {

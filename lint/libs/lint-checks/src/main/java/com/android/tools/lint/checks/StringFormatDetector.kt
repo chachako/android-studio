@@ -27,7 +27,7 @@ import com.android.resources.ResourceUrl
 import com.android.tools.lint.checks.StringFormatDetector.StringFormatType.FORMATTED
 import com.android.tools.lint.checks.StringFormatDetector.StringFormatType.IGNORE
 import com.android.tools.lint.checks.StringFormatDetector.StringFormatType.NOT_FORMATTED
-import com.android.tools.lint.client.api.ResourceRepositoryScope
+import com.android.tools.lint.client.api.ResourceRepositoryScope.LOCAL_DEPENDENCIES
 import com.android.tools.lint.client.api.TYPE_BOOLEAN_WRAPPER
 import com.android.tools.lint.client.api.TYPE_BYTE_WRAPPER
 import com.android.tools.lint.client.api.TYPE_CHARACTER_WRAPPER
@@ -371,7 +371,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
     if (mStringsFromPsiCache[name] == null) {
       val full = context.isGlobalAnalysis()
       val project = if (full) context.mainProject else context.project
-      val resources = client.getResources(project, ResourceRepositoryScope.LOCAL_DEPENDENCIES)
+      val resources = client.getResources(project, LOCAL_DEPENDENCIES)
       val items = resources.getResources(ResourceNamespace.TODO(), ResourceType.STRING, name)
       val formatStrings =
         items
@@ -530,7 +530,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
                 }
                 suggestion =
                   if (suggestion != null) {
-                    (" (Did you mean formatting character " + suggestion + "?)")
+                    " (Did you mean formatting character $suggestion?)"
                   } else {
                     ""
                   }
@@ -593,7 +593,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
           break
         }
         val l = resources.getResources(ResourceNamespace.TODO(), url.type, url.name)
-        if (!l.isEmpty()) {
+        if (l.isNotEmpty()) {
           v = l[0].resourceValue
           if (v != null) {
             value = v.value
@@ -1009,7 +1009,7 @@ This will ensure that in other languages the right set of translations are provi
         if (c == '%') {
           // Also make sure this String isn't an unformatted String
           val formatted = element.getAttribute("formatted")
-          if (!formatted.isEmpty() && !java.lang.Boolean.parseBoolean(formatted)) {
+          if (formatted.isNotEmpty() && !java.lang.Boolean.parseBoolean(formatted)) {
             return NOT_FORMATTED
           }
 
@@ -1145,7 +1145,7 @@ This will ensure that in other languages the right set of translations are provi
 
     private fun isSuppressed(context: Context, issue: Issue, handle: Location.Handle?): Boolean {
       val source = handle!!.clientData
-      return isSuppressed(context, issue, source) || isSuppressed(context, issue, handle.resolve())
+      return isSuppressed(context, issue, source) || handle.isSuppressed(context.driver, issue)
     }
 
     private fun checkTypes(

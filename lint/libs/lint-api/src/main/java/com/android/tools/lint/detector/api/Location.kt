@@ -19,7 +19,9 @@ package com.android.tools.lint.detector.api
 import com.android.ide.common.blame.SourcePosition
 import com.android.ide.common.resources.ResourceItem
 import com.android.tools.lint.client.api.LintClient
+import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.client.api.UastParser
+import com.android.tools.lint.detector.api.Issue.IgnoredIdProvider
 import com.android.utils.CharSequences.indexOf
 import com.android.utils.CharSequences.lastIndexOf
 import com.android.utils.CharSequences.startsWith
@@ -28,6 +30,7 @@ import kotlin.math.max
 import kotlin.math.min
 import org.jetbrains.uast.UIdentifier
 import org.jetbrains.uast.UMethod
+import org.w3c.dom.Node
 
 /** Location information for a warning */
 open class Location
@@ -262,6 +265,15 @@ protected constructor(
     fun resolve(): Location
 
     /**
+     * Checks whether there is a suppress directive (`tools:ignore`) for the given resource item.
+     */
+    fun isSuppressed(driver: LintDriver, issue: Issue): Boolean {
+      val location = resolve()
+      val source = location.source as? Node
+      return driver.isSuppressed(null, issue, source)
+    }
+
+    /**
      * The client data associated with this location - an optional field which can be used by the
      * creator of the [Location] to store temporary state associated with the location.
      */
@@ -292,6 +304,17 @@ protected constructor(
     protected val valueOnly: Boolean,
   ) : Handle {
     override fun resolve(): Location {
+      if (item is LocationAware) {
+        val location = item.getLocation()
+        if ((nameOnly || valueOnly) && location.file.isFile) {
+          // Normally the resource item location includes the whole element range. If
+          // we've specifically requested the name or value parts, AND we have access
+          // to the file, then try to compute it as in the normal (non-partial analysis)
+          // case. (Fall through.)
+        } else {
+          return location
+        }
+      }
       val parser = client.xmlParser
       val location =
         when {
@@ -299,7 +322,25 @@ protected constructor(
           nameOnly -> parser.getNameLocation(client, item)
           else -> parser.getLocation(client, item)
         }
-      return location ?: error(item)
+      return location ?: (item as? LocationAware)?.getLocation() ?: error(item)
+    }
+
+    /** Does this comma separated list contain the given id? */
+    private fun String.containsId(id: String): Boolean {
+      return this.contains(id) && this.split(",").any { it.trim() == id }
+    }
+
+    override fun isSuppressed(driver: LintDriver, issue: Issue): Boolean {
+      if (item is IgnoredIdProvider) {
+        val ignored = item.getIgnoredIds()
+        val id = issue.id
+        val aliases = issue.getAliases()
+        if (aliases != null && aliases.any { ignored.containsId(it) }) {
+          return true
+        }
+        return ignored.containsId(id)
+      }
+      return super.isSuppressed(driver, issue)
     }
 
     override var clientData: Any?
@@ -898,5 +939,10 @@ protected constructor(
 
       return line
     }
+  }
+
+  /** Interface implemented by classes that can provide a related location. */
+  interface LocationAware {
+    fun getLocation(): Location
   }
 }

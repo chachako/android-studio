@@ -328,7 +328,8 @@ public class Project {
             // project; accessing this here means the detector is not correctly handling
             // libraries
             if (LintClient.isUnitTest()
-                    && Context.Companion.checkForbidden("project.getMergedManifest()", dir, null)) {
+                    && Context.Companion.checkForbidden(
+                            "project.getMergedManifest()", dir, null, "")) {
                 return null;
             }
             mergedManifest = client.getMergedManifest(this);

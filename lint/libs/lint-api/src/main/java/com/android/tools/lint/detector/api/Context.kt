@@ -23,6 +23,7 @@ import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.SUPPRESS_ALL
 import com.android.SdkConstants.TAG_APPLICATION
 import com.android.SdkConstants.TAG_MANIFEST
+import com.android.annotations.TestOnly
 import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient
@@ -106,6 +107,9 @@ open class Context(
       }
       return main ?: project
     }
+
+  /** Whether this context's project is the main project */
+  fun isMainProject(): Boolean = project === main
 
   /** The lint client requesting the lint check. */
   val client: LintClient
@@ -673,13 +677,23 @@ open class Context(
 
     private var detectorsWarned: MutableSet<String>? = null
 
+    @TestOnly
+    fun clearDetectorWarnings() {
+      detectorsWarned?.clear()
+    }
+
     /**
      * Check forbidden access and report issue if necessary.
      *
      * Warning: setting [driver] to null may lead to spurious errors when using multiple
      * [LintDriver]s in the same process.
      */
-    fun checkForbidden(methodName: String, file: File, driver: LintDriver?): Boolean {
+    fun checkForbidden(
+      methodName: String,
+      file: File,
+      driver: LintDriver?,
+      extraMessage: String = "",
+    ): Boolean {
       // LintDriver.currentDrivers.firstOrNull() is not guaranteed to return the desired
       // driver when there are multiple drivers. When driver is null, this method can produce
       // a false positive LintError (or a false negative).
@@ -718,22 +732,22 @@ open class Context(
 
           val message =
             """
-                        The lint detector
-                            `$detector`
-                        called `$methodName` during module analysis.
+            The lint detector
+                `$detector`
+            called `$methodName` during module analysis.
 
-                        This does not work correctly when running in ${driver?.client?.getClientDisplayName() ?: LintClient.clientName}.
+            This does not work correctly when running in ${driver?.client?.getClientDisplayName() ?: LintClient.clientName}.
+            ${if (extraMessage.isNotBlank()) extraMessage + "\n" else ""}
+            In particular, there may be false positives or false negatives because
+            the lint check may be using the minSdkVersion or manifest information
+            from the library instead of any consuming app module.
 
-                        In particular, there may be false positives or false negatives because
-                        the lint check may be using the minSdkVersion or manifest information
-                        from the library instead of any consuming app module.
+            Contact the vendor of the lint issue to get it fixed/updated (if
+            known, listed below), and in the meantime you can try to work around
+            this by disabling the following issues:
 
-                        Contact the vendor of the lint issue to get it fixed/updated (if
-                        known, listed below), and in the meantime you can try to work around
-                        this by disabling the following issues:
-
-                        ${issues.joinToString(separator = ",") { "\"$it\"" }}
-                        """
+            ${issues.joinToString(separator = ",") { "\"$it\"" }}
+            """
               .trimIndent() + "\n" + vendorString + "Call stack: $stack"
           LintClient.report(
             client = currentDriver.client,
@@ -753,18 +767,6 @@ open class Context(
     fun findCallingDetector(driver: LintDriver): Pair<String, List<Issue>>? {
       val throwable = Throwable().fillInStackTrace()
       val frames = throwable.stackTrace
-
-      // Special allowed case:
-      if (frames.size >= 4) {
-        val callerCaller = frames[3]
-        if (
-          callerCaller.methodName == "beforeCheckEachProject" ||
-            callerCaller.methodName == "afterCheckEachProject"
-        ) {
-          // Built in compatibility check in Detector; these ones are okay
-          return null
-        }
-      }
 
       val result = LintDriver.getAssociatedDetector(throwable, driver)
       if (result != null) {

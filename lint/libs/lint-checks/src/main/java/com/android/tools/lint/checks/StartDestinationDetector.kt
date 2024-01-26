@@ -27,6 +27,7 @@ import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.resources.ResourceFolderType
 import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
+import com.android.tools.lint.client.api.ResourceRepositoryScope
 import com.android.tools.lint.client.api.ResourceRepositoryScope.LOCAL_DEPENDENCIES
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Implementation
@@ -101,10 +102,16 @@ class StartDestinationDetector : ResourceXmlDetector() {
           val includedGraph = child.getAttributeNS(AUTO_URI, ATTR_GRAPH)
           val includedUrl = ResourceUrl.parse(includedGraph) ?: continue
           val client = context.client
-          val project = context.project
-          val repository = client.getResources(project, LOCAL_DEPENDENCIES)
+          val repository =
+            if (context.isGlobalAnalysis())
+              client.getResources(context.mainProject, LOCAL_DEPENDENCIES)
+            else client.getResources(context.project, ResourceRepositoryScope.PROJECT_ONLY)
           val items =
             repository.getResources(ResourceNamespace.TODO(), includedUrl.type, includedUrl.name)
+          if (items.isEmpty() && !context.isGlobalAnalysis()) {
+            // The included layout is in another module; in that case, we can't check it.
+            return
+          }
           for (item in items) {
             val source = item.source ?: continue
             try {

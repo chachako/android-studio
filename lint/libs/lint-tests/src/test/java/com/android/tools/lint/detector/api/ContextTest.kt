@@ -16,7 +16,11 @@
 
 package com.android.tools.lint.detector.api
 
+import com.android.ide.common.rendering.api.ResourceNamespace
+import com.android.resources.ResourceType
 import com.android.tools.lint.checks.AbstractCheckTest
+import com.android.tools.lint.checks.infrastructure.TestMode
+import com.android.tools.lint.client.api.ResourceRepositoryScope
 import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.Context.Companion.isSuppressedWithComment
 import com.intellij.psi.PsiMethod
@@ -370,6 +374,113 @@ class ContextTest : AbstractCheckTest() {
       )
   }
 
+  fun testAccessLibraryResource() {
+    // Makes sure we complain about accessing library resources in partial analysis mode
+    val lib =
+      project(
+        xml(
+            "res/values/string.xml",
+            """
+            <resources>
+              <string name="lib">Library Resource</string>
+            </resources>
+            """,
+          )
+          .indented()
+      )
+
+    val main =
+      project(
+          xml(
+              "res/values/string.xml",
+              """
+              <resources>
+                <string name="local">Local Resource</string>
+              </resources>
+              """,
+            )
+            .indented(),
+          kotlin(
+              """
+              private const val s = "testAccessLibraryResource"// Triggers detector to look up resources
+              """
+            )
+            .indented(),
+        )
+        .dependsOn(lib)
+
+    lint()
+      .issues(TEST_ISSUE)
+      .projects(lib, main)
+      // We only care about partial mode where accessing library resources
+      // should trigger an error in the analysis phase
+      .testModes(TestMode.PARTIAL)
+      .run()
+      .expectContains(
+        """
+        ../lib/res/values/string.xml: Error: The lint detector
+            com.android.tools.lint.detector.api.ContextTest＄NoLocationNodeDetector
+        called ResourceItem.getSource() during module analysis.
+
+        This does not work correctly when running in test.
+        You can only call this on resources in the current module, not library resources.
+
+        In particular, there may be false positives or false negatives because
+        the lint check may be using the minSdkVersion or manifest information
+        from the library instead of any consuming app module.
+
+        Contact the vendor of the lint issue to get it fixed/updated (if
+        known, listed below), and in the meantime you can try to work around
+        this by disabling the following issues:
+
+        "_TestIssueId"
+
+        Issue Vendors:
+        Call stack: LintResourceRepository＄Companion＄removeFileAccess＄withoutSource＄1.reportPathAccess(LintResourceRepository.kt
+        """
+      )
+  }
+
+  fun testAccessMainProject() {
+    // Makes sure we complain about accessing the main project in analysis mode
+    lint()
+      .files(
+        kotlin(
+            """
+            private const val s = "testAccessMainProject"// Triggers detector to access the main project
+            """
+          )
+          .indented()
+      )
+      .issues(TEST_ISSUE)
+      // We only care about partial mode where accessing library resources
+      // should trigger an error in the analysis phase
+      .testModes(TestMode.PARTIAL)
+      .run()
+      .expectContains(
+        """
+        src/test.kt: Error: The lint detector
+            com.android.tools.lint.detector.api.ContextTest＄NoLocationNodeDetector
+        called context.getMainProject() during module analysis.
+
+        This does not work correctly when running in Lint Unit Tests.
+
+        In particular, there may be false positives or false negatives because
+        the lint check may be using the minSdkVersion or manifest information
+        from the library instead of any consuming app module.
+
+        Contact the vendor of the lint issue to get it fixed/updated (if
+        known, listed below), and in the meantime you can try to work around
+        this by disabling the following issues:
+
+        "_TestIssueId"
+
+        Issue Vendors:
+        Call stack: Context＄Companion.checkForbidden＄default(Context.kt:
+        """
+      )
+  }
+
   class ReportsUElementFromGradleContextDetector : Detector(), SourceCodeScanner, GradleScanner {
     // See testSuppressKotlinViaGradleContext.
 
@@ -442,6 +553,18 @@ class ContextTest : AbstractCheckTest() {
             // and LintDriver.isSuppressed(context: JavaContext?, issue: Issue, scope:
             // PsiElement?)
             context.report(PSI_TEST_ISSUE, scope = node.sourcePsi, location, message)
+          } else if (s == "testAccessLibraryResource") {
+            // Trigger scenario in testAccessLibraryResource()
+            val resources =
+              context.client.getResources(
+                context.project,
+                ResourceRepositoryScope.LOCAL_DEPENDENCIES,
+              )
+            resources.getResources(ResourceNamespace.RES_AUTO, ResourceType.STRING, "local")
+            val lib = resources.getResources(ResourceNamespace.RES_AUTO, ResourceType.STRING, "lib")
+            lib.first().source // Trigger error
+          } else if (s == "testAccessMainProject") {
+            context.mainProject
           }
         }
       }

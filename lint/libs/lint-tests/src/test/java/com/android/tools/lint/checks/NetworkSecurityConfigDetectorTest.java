@@ -329,40 +329,6 @@ public class NetworkSecurityConfigDetectorTest extends AbstractCheckTest {
                 .expect(expected);
     }
 
-    public void testTrustAnchorsWithMissingCAResource() {
-        String expected =
-                ""
-                        + "res/xml/network_config.xml:6: Error: Missing src resource [NetworkSecurityConfig]\n"
-                        + "            <certificates src=\"@raw/my_ca\"/>\n"
-                        + "                               ~~~~~~~~~~\n"
-                        + "res/xml/network_config.xml:11: Error: Missing src resource [NetworkSecurityConfig]\n"
-                        + "            <certificates src=\"@raw/debug_cas\"/>\n"
-                        + "                               ~~~~~~~~~~~~~~\n"
-                        + "2 errors, 0 warnings\n";
-        //noinspection all // Sample code
-        lint().files(
-                        xml(
-                                "res/xml/network_config.xml",
-                                ""
-                                        + "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-                                        + "<network-security-config>\n"
-                                        + "    <domain-config>\n"
-                                        + "        <domain includeSubdomains=\"true\">example.com</domain>\n"
-                                        + "        <trust-anchors>\n"
-                                        + "            <certificates src=\"@raw/my_ca\"/>\n"
-                                        + "        </trust-anchors>\n"
-                                        + "    </domain-config>\n"
-                                        + "    <debug-overrides>\n"
-                                        + "        <trust-anchors>\n"
-                                        + "            <certificates src=\"@raw/debug_cas\"/>\n"
-                                        + "        </trust-anchors>\n"
-                                        + "    </debug-overrides>\n"
-                                        + "</network-security-config>"))
-                .incremental("res/xml/network_config.xml")
-                .run()
-                .expect(expected);
-    }
-
     public void testTrustAnchorsWithValidCAResource() {
         //noinspection all // Sample code
         lint().files(

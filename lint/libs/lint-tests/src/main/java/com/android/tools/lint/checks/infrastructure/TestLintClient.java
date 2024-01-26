@@ -295,6 +295,7 @@ public class TestLintClient extends LintCliClient {
             @NonNull List<Issue> issues,
             @NonNull TestMode mode)
             throws Exception {
+        Context.Companion.clearDetectorWarnings();
         String incrementalFileName = task.incrementalFileName;
         if (incrementalFileName != null) {
             boolean found = false;
@@ -332,7 +333,7 @@ public class TestLintClient extends LintCliClient {
         }
 
         String result =
-                mode == TestMode.PARTIAL
+                mode.usePartialAnalysis()
                         ? analyzeAndReportProvisionally(rootDir, files, issues)
                         : analyze(rootDir, files, issues);
 
@@ -579,6 +580,13 @@ public class TestLintClient extends LintCliClient {
     public String getDisplayPath(
             @NonNull File file, @Nullable Project project, @NonNull TextFormat format) {
         String path = super.getDisplayPath(file, project, format);
+        return path.replace(separatorChar, '/'); // stable tests
+    }
+
+    @NonNull
+    @Override
+    public String getDisplayPath(@NonNull ResourceItem item, @NonNull TextFormat format) {
+        String path = super.getDisplayPath(item, format);
         return path.replace(separatorChar, '/'); // stable tests
     }
 
@@ -1072,7 +1080,7 @@ public class TestLintClient extends LintCliClient {
                                     + "than once";
 
                     if (mode != TestMode.DEFAULT) {
-                        prologue += "in test mode " + field;
+                        prologue += " in test mode " + field;
                     }
 
                     prologue +=
@@ -1641,7 +1649,13 @@ public class TestLintClient extends LintCliClient {
             // correct serialization
             super.getResources(project, scope);
             LintResourceRepository.Companion.clearCaches(this, project);
-            return super.getResources(project, scope);
+            ResourceRepository resources = super.getResources(project, scope);
+            if (driver.getMode() == LintDriver.DriverMode.ANALYSIS_ONLY
+                    && scope != ResourceRepositoryScope.PROJECT_ONLY) {
+                return LintResourceRepository.Companion.removeFileAccess(project, resources);
+            } else {
+                return resources;
+            }
         }
 
         ResourceNamespace namespace = project.getResourceNamespace();

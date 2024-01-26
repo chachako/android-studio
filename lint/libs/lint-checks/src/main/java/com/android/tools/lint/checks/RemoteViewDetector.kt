@@ -23,20 +23,26 @@ import com.android.SdkConstants.VIEW_MERGE
 import com.android.SdkConstants.VIEW_PKG_PREFIX
 import com.android.SdkConstants.WIDGET_PKG_PREFIX
 import com.android.ide.common.rendering.api.ResourceNamespace.TODO
+import com.android.ide.common.resources.ResourceItem
 import com.android.resources.ResourceType.LAYOUT
 import com.android.tools.lint.checks.RtlDetector.getFolderVersion
 import com.android.tools.lint.client.api.ResourceReference
 import com.android.tools.lint.client.api.ResourceRepositoryScope.LOCAL_DEPENDENCIES
+import com.android.tools.lint.client.api.ResourceRepositoryScope.PROJECT_ONLY
 import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
+import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.LintMap
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.intellij.psi.PsiMethod
 import java.io.IOException
+import java.util.SortedSet
 import kotlin.math.max
 import org.jetbrains.uast.UCallExpression
 import org.xmlpull.v1.XmlPullParser
@@ -65,6 +71,8 @@ class RemoteViewDetector : Detector(), SourceCodeScanner {
         androidSpecific = true,
         implementation = IMPLEMENTATION,
       )
+
+    private const val KEY_LAYOUT = "layout"
   }
 
   override fun getApplicableConstructorTypes(): List<String> {
@@ -85,19 +93,53 @@ class RemoteViewDetector : Detector(), SourceCodeScanner {
     }
 
     val client = context.client
-    val full = context.isGlobalAnalysis()
-    val project = if (full) context.mainProject else context.project
-    val resources = context.client.getResources(project, LOCAL_DEPENDENCIES)
+    val globalAnalysis = context.isGlobalAnalysis()
+    val resources =
+      if (globalAnalysis) client.getResources(context.mainProject, LOCAL_DEPENDENCIES)
+      else client.getResources(context.project, PROJECT_ONLY)
 
     // See if the associated resource references propertyValuesHolder, and if so
     // suggest switching to AnimatorInflaterCompat.loadAnimator.
-    val items = resources.getResources(TODO(), resource.type, resource.name)
+    val layout = resource.name
+    val items = resources.getResources(TODO(), LAYOUT, layout)
+    if (items.isNotEmpty()) {
+      checkLayouts(context, layout, items, node, null)
+    } else if (!globalAnalysis) {
+      // didn't find the layout locally; that means it might be sitting in a module
+      // dependency. Enqueue this check for the reporting phase.
+      if (!context.driver.isSuppressed(context, ISSUE, node)) {
+        context.report(createIncident(context, node, ""), map().apply { put(KEY_LAYOUT, layout) })
+      }
+    }
+  }
+
+  override fun filterIncident(context: Context, incident: Incident, map: LintMap): Boolean {
+    val layout = map[KEY_LAYOUT] ?: return false
+    val client = context.client
+    val resources = client.getResources(context.project, LOCAL_DEPENDENCIES)
+    val items = resources.getResources(TODO(), LAYOUT, layout)
+    return items.isNotEmpty() && checkLayouts(context, layout, items, null, incident)
+  }
+
+  /**
+   * Checks the [layouts] that are known to be used with a `RemoteView` to make sure they only
+   * reference views safe with remote views. Reports true if a problem is reported. If [node] is not
+   * null, the error will be reported on that AST call expression, otherwise it will be applied to
+   * the [incident] (used for partial analysis).
+   */
+  private fun checkLayouts(
+    context: Context,
+    layoutName: String,
+    layouts: List<ResourceItem>,
+    node: UCallExpression?,
+    incident: Incident?,
+  ): Boolean {
     var tags: MutableSet<String>? = null
-    val paths = items.asSequence().mapNotNull { it.source }.toSet()
+    val paths = layouts.asSequence().mapNotNull { it.source }.toSet()
     for (path in paths) {
       val min = max(context.project.minSdk, getFolderVersion(path.rawPath))
       try {
-        val parser = client.createXmlPullParser(path) ?: continue
+        val parser = context.client.createXmlPullParser(path) ?: continue
         while (true) {
           val event = parser.next()
           if (event == XmlPullParser.START_TAG) {
@@ -115,16 +157,24 @@ class RemoteViewDetector : Detector(), SourceCodeScanner {
         // Users might be editing these files in the IDE; don't flag
       }
     }
-    tags?.let { set ->
-      val sorted = set.toSortedSet()
-      context.report(
-        ISSUE,
-        node,
-        context.getLocation(node),
-        "`@layout/${resource.name}` includes views not allowed in a `RemoteView`: ${sorted.joinToString()}",
-      )
+    val sorted = tags?.toSortedSet()
+    if (sorted != null) {
+      if (incident != null) {
+        incident.message = createErrorMessage(layoutName, sorted)
+      } else if (node != null) {
+        val message = createErrorMessage(layoutName, sorted)
+        context.report(createIncident(context, node, message))
+      }
+      return true
     }
+    return false
   }
+
+  private fun createIncident(context: Context, node: UCallExpression, message: String) =
+    Incident(ISSUE, node, context.getLocation(node), message)
+
+  private fun createErrorMessage(layoutName: String, sorted: SortedSet<String>) =
+    "`@layout/${layoutName}` includes views not allowed in a `RemoteView`: ${sorted.joinToString()}"
 
   private fun isSupportedTag(tag: String, min: Int): Boolean {
     if (tag.startsWith(VIEW_PKG_PREFIX) || tag.startsWith(WIDGET_PKG_PREFIX)) {

@@ -466,10 +466,6 @@ class ManifestDetector : Detector(), XmlScanner {
     /** Permission name of mock location permission */
     const val MOCK_LOCATION_PERMISSION = "android.permission.ACCESS_MOCK_LOCATION"
 
-    // Error message used by quick fix
-    const val MISSING_FULL_BACKUP_CONTENT_RESOURCE = "Missing `<full-backup-content>` resource"
-    const val MISSING_EXTRACTION_RESOURCE = "Missing `data-extraction-rules` resource"
-
     private val MIN_WEARABLE_GMS_VERSION = Version.parse("8.2.0")
     private const val PLAY_SERVICES_WEARABLE =
       GradleDetector.GMS_GROUP_ID + ":play-services-wearable"
@@ -664,14 +660,6 @@ class ManifestDetector : Detector(), XmlScanner {
         }
     }
      */
-
-    checkXmlResourceExists(
-      context,
-      fullBackupNode,
-      application,
-      MISSING_FULL_BACKUP_CONTENT_RESOURCE,
-    )
-    checkXmlResourceExists(context, dataExtractionRules, application, MISSING_EXTRACTION_RESOURCE)
   }
 
   private fun getExtraction(client: LintClient, xmlFile: File): String? {
@@ -825,31 +813,6 @@ class ManifestDetector : Detector(), XmlScanner {
     val createFix = fix().newFile(file, descriptor).select(select).build()
     val setAttributeFix = fix().set(ANDROID_URI, ATTR_DATA_EXTRACTION_RULES, "@xml/$name").build()
     return fix().name("Create $name.xml").composite(createFix, setAttributeFix)
-  }
-
-  private fun checkXmlResourceExists(
-    context: Context,
-    node: Attr?,
-    application: Element,
-    message: String,
-  ) {
-    if (node == null || !node.value.startsWith(PREFIX_RESOURCE_REF)) {
-      return
-    }
-    val full = context.isGlobalAnalysis()
-    val project = if (full) context.mainProject else context.project
-    val resources = context.client.getResources(project, ResourceRepositoryScope.LOCAL_DEPENDENCIES)
-    val url = ResourceUrl.parse(node.value)
-    if (
-      url != null &&
-        !url.isFramework &&
-        !resources.hasResources(ResourceNamespace.TODO(), url.type, url.name)
-    ) {
-      // defined in this file, not merged from other file. Prefer it, since
-      // we have better source offsets than from manifest merges.
-      val locationNode = application.getAttributeNodeNS(ANDROID_URI, node.name) ?: node
-      reportFromManifest(context, DATA_EXTRACTION_RULES, locationNode, message, LocationType.VALUE)
-    }
   }
 
   private fun checkIcon(application: Element, context: Context) {

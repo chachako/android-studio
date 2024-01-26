@@ -175,4 +175,45 @@ class StartDestinationDetectorTest : AbstractCheckTest() {
           "0 errors, 1 warnings"
       )
   }
+
+  fun testSplitAcrossModules() {
+    // Test where the navigation id is in a different module (same
+    // as testIncludeOk but with manifest in its own downstream
+    // module.)
+    val lib =
+      project(
+        xml(
+            "res/navigation/foo.xml",
+            """
+            <navigation
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id='@+id/includedId'
+              app:startDestination="@id/foo2">
+              <fragment android:id="@+id/foo2"/>
+            </navigation>
+            """,
+          )
+          .indented()
+      )
+
+    val main =
+      project(
+          xml(
+              "res/navigation/navigation.xml",
+              """
+              <navigation
+                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                 xmlns:android="http://schemas.android.com/apk/res/android"
+                 app:startDestination="@id/includedId">
+                   <include app:graph="@navigation/foo"/>
+              </navigation>
+              """,
+            )
+            .indented()
+        )
+        .dependsOn(lib)
+
+    lint().projects(lib, main).run().expectClean()
+  }
 }

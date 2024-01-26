@@ -260,12 +260,29 @@ abstract class XmlParser {
     return getLocation(client, item, false, false)
   }
 
-  private fun getLocation(
+  open fun getLocation(
     client: LintClient,
     item: ResourceItem,
     nameOnly: Boolean = false,
     valueOnly: Boolean = false,
   ): Location? {
+    if (item is Location.LocationAware) {
+      val location = item.getLocation()
+      // Normally the resource item location includes the whole element range.
+      // If we've specifically requested the name or value parts, AND we have
+      // access to the file, then try to compute it as in the normal (non-partial
+      // analysis) case.
+      if ((nameOnly || valueOnly) && location.file.isFile) {
+        val adjustedLocation =
+          createLocation(client, location.file, item.name, item.type, nameOnly, valueOnly)
+        if (adjustedLocation != null) {
+          return adjustedLocation
+        }
+      }
+
+      return location
+    }
+
     val file = item.getFile() ?: return null
     if (item.isFileBased) {
       // Just point to the file -- that's easy
@@ -278,10 +295,19 @@ abstract class XmlParser {
       return Location.create(file)
     }
 
+    return createLocation(client, file, item.name, item.type, nameOnly, valueOnly)
+  }
+
+  private fun createLocation(
+    client: LintClient,
+    file: File,
+    name: String,
+    type: ResourceType,
+    nameOnly: Boolean,
+    valueOnly: Boolean,
+  ): Location? {
     // For elements and attributes we have to work harder
     val text = client.readFile(file)
-    val name = item.name
-    val type = item.type
 
     // Id's in non-values files are different
     if (type == ResourceType.ID && text.contains(NEW_ID_PREFIX)) {

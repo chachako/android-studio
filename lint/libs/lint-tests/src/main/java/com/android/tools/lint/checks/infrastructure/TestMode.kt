@@ -97,6 +97,9 @@ open class TestMode(
     QUICKFIXES
   }
 
+  /** Whether the project should be analyzed using partial analysis */
+  open fun usePartialAnalysis() = false
+
   /**
    * Method to check that the output for this test mode is as expected; normally this is just
    * equality but some test modes may modify conditions such that the actual output is different,
@@ -309,6 +312,18 @@ open class TestMode(
                 resource repository. This is a bug in lint. Please report it.
                 """
             .trimIndent()
+
+        override fun sameOutput(expected: String, actual: String, type: OutputKind): Boolean {
+          // Allow differences in locations on the same line (e.g. one repository may point to
+          // the whole element, the other a specific attribute
+          return super.sameOutput(transformOutput(expected), transformOutput(actual), type)
+        }
+
+        fun transformOutput(s: String): String = s.replace("~", "").trimLines()
+
+        private fun String.trimLines(): String {
+          return this.lineSequence().map { it.trimEnd() }.joinToString("\n")
+        }
       }
 
     /**
@@ -326,6 +341,8 @@ open class TestMode(
      * analysis-only on all the modules, then merge on the main module.
      */
     @JvmField val PARTIAL: TestMode = PartialTestMode()
+
+    @JvmField val MODULE_RESOURCES: TestMode = ModuleResourcesTestMode()
 
     @JvmField val SUPPRESSIBLE: TestMode = SuppressibleTestMode()
 
@@ -368,6 +385,7 @@ open class TestMode(
         UI_INJECTION_HOST,
         RESOURCE_REPOSITORIES,
         PARTIAL,
+        MODULE_RESOURCES,
         BYTECODE_ONLY,
         SOURCE_ONLY,
         CDATA,
@@ -377,6 +395,13 @@ open class TestMode(
   }
 
   open fun partition(context: TestModeContext): List<TestMode> = listOf(this)
+
+  /**
+   * Allow the test mode to change the project layout by returning a different project layout than
+   * the current one which is passed in
+   */
+  open fun configureProjects(projects: List<ProjectDescription>): List<ProjectDescription> =
+    projects
 
   /**
    * State passed to test modes. This is encapsulated in a separate object such that it can vary

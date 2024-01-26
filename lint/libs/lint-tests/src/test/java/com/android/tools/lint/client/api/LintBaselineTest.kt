@@ -334,6 +334,8 @@ class LintBaselineTest {
         s.tokenPrecededBy("before ", i)
       }
     )
+    assertTrue(stringsEquivalent("foo/bar/Baz.java", "foo\\bar\\Baz.java"))
+    assertTrue(stringsEquivalent("foo\\bar\\Baz.java", "foo/bar/Baz.java"))
   }
 
   @Test

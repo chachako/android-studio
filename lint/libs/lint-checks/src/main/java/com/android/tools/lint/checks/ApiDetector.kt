@@ -67,6 +67,7 @@ import com.android.tools.lint.checks.RtlDetector.ATTR_SUPPORTS_RTL
 import com.android.tools.lint.client.api.JavaEvaluator
 import com.android.tools.lint.client.api.ResourceReference
 import com.android.tools.lint.client.api.ResourceRepositoryScope.LOCAL_DEPENDENCIES
+import com.android.tools.lint.client.api.ResourceRepositoryScope.PROJECT_ONLY
 import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.AnnotationInfo
 import com.android.tools.lint.detector.api.AnnotationUsageInfo
@@ -2107,9 +2108,9 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       // See if the associated resource references propertyValuesHolder, and if so
       // suggest switching to AnimatorInflaterCompat.loadAnimator.
       val client = context.client
-      val full = context.isGlobalAnalysis()
-      val project = if (full) context.mainProject else context.project
-      val resources = client.getResources(project, LOCAL_DEPENDENCIES)
+      val resources =
+        if (context.isGlobalAnalysis()) client.getResources(context.mainProject, LOCAL_DEPENDENCIES)
+        else client.getResources(context.project, PROJECT_ONLY)
       val items = resources.getResources(ResourceNamespace.TODO(), resource.type, resource.name)
       val paths = items.asSequence().mapNotNull { it.source }.toSet()
       for (path in paths) {
