@@ -16,7 +16,7 @@
 package com.android.tools.lint
 
 import com.android.tools.lint.UastEnvironment.Companion.getKlibPaths
-import com.android.tools.lint.UastEnvironment.Module.Variant
+import com.android.tools.lint.UastEnvironment.Module.Variant.Companion.toTargetPlatform
 import com.android.tools.lint.detector.api.GraphUtils
 import com.android.tools.lint.detector.api.Project
 import com.intellij.core.CoreApplicationEnvironment
@@ -53,12 +53,10 @@ import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
-import org.jetbrains.kotlin.platform.CommonPlatforms
-import org.jetbrains.kotlin.platform.js.JsPlatforms
+import org.jetbrains.kotlin.platform.has
+import org.jetbrains.kotlin.platform.jvm.JvmPlatform
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.platform.jvm.isJvm
-import org.jetbrains.kotlin.platform.konan.NativePlatforms
-import org.jetbrains.kotlin.platform.wasm.WasmPlatforms
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingK2CompilerPluginRegistrar
 import org.jetbrains.uast.UastLanguagePlugin
@@ -89,6 +87,11 @@ private constructor(
 
     val modules = mutableListOf<UastEnvironment.Module>()
     val classPaths = mutableSetOf<File>()
+
+    val isKMP: Boolean
+      get() {
+        return modules.mapTo(mutableSetOf()) { it.variant }.size > 1
+      }
 
     override fun addModules(
       modules: List<UastEnvironment.Module>,
@@ -148,6 +151,7 @@ private fun createAnalysisSession(
   parentDisposable: Disposable,
   config: FirUastEnvironment.Configuration,
 ): StandaloneAnalysisAPISession {
+  val isKMP = config.isKMP
   val analysisSession =
     buildStandaloneAnalysisAPISession(
       projectDisposable = parentDisposable,
@@ -204,41 +208,38 @@ private fun createAnalysisSession(
 
         uastEnvModuleOrder.forEach { name ->
           val m = uastEnvModuleByName[name]!!
-
-          val mPlatform =
-            when (m.variant) {
-              Variant.COMMON -> CommonPlatforms.defaultCommonPlatform
-              Variant.NATIVE -> NativePlatforms.unspecifiedNativePlatform
-              Variant.JS -> JsPlatforms.defaultJsPlatform
-              Variant.WASM -> WasmPlatforms.Default
-              else -> JvmPlatforms.defaultJvmPlatform
-            }
+          val mPlatform = m.variant.toTargetPlatform()
 
           fun KtModuleBuilder.addModuleDependencies(moduleName: String) {
-            addRegularDependency(
-              buildKtLibraryModule {
-                platform = mPlatform
-                val classPaths =
-                  if (mPlatform.isJvm()) {
-                    // Include boot classpath in [config.classPaths]
-                    m.classpathRoots + config.classPaths
-                  } else {
-                    m.classpathRoots
-                  }
-                addBinaryRoots(classPaths.map(File::toPath))
-                libraryName = "Library for $moduleName"
+            val classPaths =
+              if (mPlatform.isJvm()) {
+                // Include boot classpath in [config.classPaths]
+                m.classpathRoots + config.classPaths
+              } else {
+                m.classpathRoots
               }
-            )
-
-            m.jdkHome?.let { jdkHome ->
-              val jdkHomePath = jdkHome.toPath()
+            if (classPaths.isNotEmpty()) {
               addRegularDependency(
-                buildKtSdkModule {
+                buildKtLibraryModule {
                   platform = mPlatform
-                  addBinaryRoots(LibraryUtils.findClassesFromJdkHome(jdkHomePath, isJre = true))
-                  sdkName = "JDK for $moduleName"
+                  addBinaryRoots(classPaths.map(File::toPath))
+                  libraryName = "Library for $moduleName"
                 }
               )
+            }
+
+            // Not necessary to set up JDK dependency for non-JVM modules
+            if (mPlatform.has<JvmPlatform>()) {
+              m.jdkHome?.let { jdkHome ->
+                val jdkHomePath = jdkHome.toPath()
+                addRegularDependency(
+                  buildKtSdkModule {
+                    platform = mPlatform
+                    addBinaryRoots(LibraryUtils.findClassesFromJdkHome(jdkHomePath, isJre = true))
+                    sdkName = "JDK for $moduleName"
+                  }
+                )
+              }
             }
 
             val (moduleKlibPathsRegular, moduleKlibPathsDependsOn) =
@@ -308,7 +309,8 @@ private fun createAnalysisSession(
           */
 
           val ktModule = buildKtSourceModule {
-            languageVersionSettings = m.kotlinLanguageLevel
+            languageVersionSettings =
+              if (isKMP) m.kotlinLanguageLevel.withKMPEnabled() else m.kotlinLanguageLevel
             addModuleDependencies(m.name)
             platform = mPlatform
             moduleName = m.name

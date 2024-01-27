@@ -40,6 +40,12 @@ import org.jetbrains.kotlin.config.languageVersionSettings
 import org.jetbrains.kotlin.konan.library.KLIB_INTEROP_IR_PROVIDER_IDENTIFIER
 import org.jetbrains.kotlin.library.CompilerSingleFileKlibResolveAllowingIrProvidersStrategy
 import org.jetbrains.kotlin.library.KotlinLibrary
+import org.jetbrains.kotlin.platform.CommonPlatforms
+import org.jetbrains.kotlin.platform.TargetPlatform
+import org.jetbrains.kotlin.platform.js.JsPlatforms
+import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
+import org.jetbrains.kotlin.platform.konan.NativePlatforms
+import org.jetbrains.kotlin.platform.wasm.WasmPlatforms
 import org.jetbrains.kotlin.util.Logger
 import org.jetbrains.uast.UastFacade
 
@@ -246,6 +252,16 @@ interface UastEnvironment {
             else -> UNKNOWN
           }
         }
+
+        fun Variant.toTargetPlatform(): TargetPlatform {
+          return when (this) {
+            COMMON -> CommonPlatforms.defaultCommonPlatform
+            NATIVE -> NativePlatforms.unspecifiedNativePlatform
+            JS -> JsPlatforms.defaultJsPlatform
+            WASM -> WasmPlatforms.Default
+            else -> JvmPlatforms.defaultJvmPlatform
+          }
+        }
       }
     }
 
@@ -254,7 +270,10 @@ interface UastEnvironment {
         if (project.isAndroidProject) {
           Variant.ANDROID
         } else {
-          project.buildVariant?.name?.toModuleVariant() ?: Variant.UNKNOWN
+          // From AGP model's build variant
+          project.buildVariant?.name?.toModuleVariant()
+            // From the module name in project.xml
+            ?: project.name.toModuleVariant()
         }
 
     val sourceRoots: Set<File> =

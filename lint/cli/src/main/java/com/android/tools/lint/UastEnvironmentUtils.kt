@@ -49,6 +49,9 @@ import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
+import org.jetbrains.kotlin.config.LanguageFeature
+import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
 import org.jetbrains.uast.UastContext
 import org.jetbrains.uast.UastLanguagePlugin
@@ -89,6 +92,16 @@ internal fun createCommonKotlinCompilerConfig(): CompilerConfiguration {
   System.setProperty(PathManager.PROPERTY_HOME_PATH, bin.pathString)
 
   return config
+}
+
+/** Returns a new [LanguageVersionSettings] with KMP enabled. */
+fun LanguageVersionSettings.withKMPEnabled(): LanguageVersionSettings {
+  return LanguageVersionSettingsImpl(
+    this.languageVersion,
+    this.apiVersion,
+    emptyMap(),
+    mapOf(LanguageFeature.MultiPlatformProjects to LanguageFeature.State.ENABLED),
+  )
 }
 
 internal fun configureProjectEnvironment(
