@@ -216,6 +216,9 @@ class LintDetectorDetectorTest {
                                     explanation = ""${'"'}
                                         Some description here.
                                         Here's a call: foo.bar.baz(args).
+                                        This line continuation is okay. \
+                                        But this one is missing a space.\
+                                        Okay?
                                         ""${'"'}.trimIndent(),
                                     category = Category.INTEROPERABILITY_KOTLIN,
                                     moreInfo = "https://code.google.com/p/android/issues/detail?id=65351", // OBSOLETE
@@ -363,10 +366,10 @@ class LintDetectorDetectorTest {
                 src/test/pkg/MyJavaLintDetector.java:35: Error: Unexpected protocol file in file://explanation.doc [LintImplBadUrl]
                                     .addMoreInfo("file://explanation.doc")
                                                   ~~~~~~~~~~~~~~~~~~~~~~
-                src/test/pkg/MyKotlinLintDetector.kt:67: Error: Don't point to old http://b.android.com links; should be using https://issuetracker.google.com instead [LintImplBadUrl]
+                src/test/pkg/MyKotlinLintDetector.kt:70: Error: Don't point to old http://b.android.com links; should be using https://issuetracker.google.com instead [LintImplBadUrl]
                                 moreInfo = "https://code.google.com/p/android/issues/detail?id=65351", // OBSOLETE
                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                src/test/pkg/MyKotlinLintDetector.kt:72: Error: Suspicious issue tracker length; expected a 9 digit issue id, but was 7 [LintImplBadUrl]
+                src/test/pkg/MyKotlinLintDetector.kt:75: Error: Suspicious issue tracker length; expected a 9 digit issue id, but was 7 [LintImplBadUrl]
                             .addMoreInfo("https://issuetracker.google.com/issues/3733548") // ERROR - missing digit
                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 src/test/pkg/MyKotlinLintDetector.kt:60: Error: Lint issue IDs should use capitalized camel case, such as MyIssueId [LintImplIdFormat]
@@ -402,19 +405,22 @@ class LintDetectorDetectorTest {
                 src/test/pkg/MyKotlinLintDetector.kt:64: Warning: "foo.bar.baz(args)" looks like a call; surround with backtics in string to display as symbol, e.g. `foo.bar.baz(args)` [LintImplTextFormat]
                                     Here's a call: foo.bar.baz(args).
                                                    ~~~~~~~~~~~~~~~~~
-                src/test/pkg/MyKotlinLintDetector.kt:90: Warning: Lint checks should not be printing to console; use LintClient.log instead [LintImplTextFormat]
+                src/test/pkg/MyKotlinLintDetector.kt:66: Warning: This line continuation (\) should probably be preceded by a space character, otherwise this will render as a single word "spaceOkay", not "space Okay" [LintImplTextFormat]
+                                    But this one is missing a space.\
+                                                                   ~~
+                src/test/pkg/MyKotlinLintDetector.kt:93: Warning: Lint checks should not be printing to console; use LintClient.log instead [LintImplTextFormat]
                         System.out.print("Debugging")
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                src/test/pkg/MyKotlinLintDetector.kt:91: Warning: Lint checks should not be printing to console; use LintClient.log instead [LintImplTextFormat]
+                src/test/pkg/MyKotlinLintDetector.kt:94: Warning: Lint checks should not be printing to console; use LintClient.log instead [LintImplTextFormat]
                         println("Debugging code")
                         ~~~~~~~~~~~~~~~~~~~~~~~~~
                 src/test/pkg/MyJavaLintDetector.java:36: Error: Unexpected URL host my.personal.blogger.com; for the builtin Android Lint checks make sure to use an authoritative link (http://my.personal.blogger.com/aboutme.htm) [LintImplUnexpectedDomain]
                                     .addMoreInfo("http://my.personal.blogger.com/aboutme.htm")
                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                src/test/pkg/MyKotlinLintDetector.kt:74: Error: Use https, not http, for more info links (http://issuetracker.google.com/issues/37335487) [LintImplUnexpectedDomain]
+                src/test/pkg/MyKotlinLintDetector.kt:77: Error: Use https, not http, for more info links (http://issuetracker.google.com/issues/37335487) [LintImplUnexpectedDomain]
                             .addMoreInfo("http://issuetracker.google.com/issues/37335487") // ERROR - http instead of https
                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                src/test/pkg/MyKotlinLintDetector.kt:75: Error: Don't use internal Google links (https://b.corp.google.com/issues/139153781) [LintImplUnexpectedDomain]
+                src/test/pkg/MyKotlinLintDetector.kt:78: Error: Don't use internal Google links (https://b.corp.google.com/issues/139153781) [LintImplUnexpectedDomain]
                             .addMoreInfo("https://b.corp.google.com/issues/139153781") // ERROR - don't point to buganizer with internal link
                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 src/test/pkg/MyJavaLintDetector.java:34: Warning: Use Scope.JAVA_AND_RESOURCE_FILES instead [LintImplUseExistingConstants]
@@ -441,7 +447,7 @@ class LintDetectorDetectorTest {
                 src/test/pkg/MyKotlinLintDetector.kt:27: Error: Don't compare PsiElements with equals, use isEquivalentTo(PsiElement) instead [LintImplPsiEquals]
                         if (element1 != element2) { }
                             ~~~~~~~~~~~~~~~~~~~~
-                src/test/pkg/MyKotlinLintDetector.kt:65: Error: No need to call .trimIndent() in issue registration strings; they are already trimmed by indent by lint when displaying to users [LintImplTrimIndent]
+                src/test/pkg/MyKotlinLintDetector.kt:68: Error: No need to call .trimIndent() in issue registration strings; they are already trimmed by indent by lint when displaying to users [LintImplTrimIndent]
                                     ""${'"'}.trimIndent(),
                                         ~~~~~~~~~~~~
                 src/test/pkg/MyKotlinLintDetectorTest.kt:46: Error: No need to call .trimIndent() in issue registration strings; they are already trimmed by indent by lint when displaying to users. Instead, call .indented() on the surrounding java() test file construction [LintImplTrimIndent]
@@ -480,13 +486,13 @@ class LintDetectorDetectorTest {
                 src/test/pkg/MyKotlinLintDetector.kt:37: Error: Don't call PsiField#getInitializer(); you must use UAST instead. If you don't have a UField call UastFacade.getInitializerBody(field) [LintImplUseUast]
                         field.initializer // ERROR - must use UAST
                         ~~~~~~~~~~~~~~~~~
-                src/test/pkg/MyKotlinLintDetector.kt:86: Error: Do not invoke super.visitAnnotationUsage [LintImplUseUast]
+                src/test/pkg/MyKotlinLintDetector.kt:89: Error: Do not invoke super.visitAnnotationUsage [LintImplUseUast]
                         super.visitAnnotationUsage(context, element, annotationInfo, usageInfo)
                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 src/test/pkg/MyIssueRegistry.kt:3: Warning: An IssueRegistry should override the vendor property [MissingVendor]
                 class MyIssueRegistry : IssueRegistry() {
                       ~~~~~~~~~~~~~~~
-                28 errors, 16 warnings
+                28 errors, 17 warnings
                 """
       )
       .expectFixDiffs(
@@ -511,6 +517,10 @@ class LintDetectorDetectorTest {
                 @@ -64 +64
                 -                     Here's a call: foo.bar.baz(args).
                 +                     Here's a call: `foo.bar.baz(args)`.
+                Fix for src/test/pkg/MyKotlinLintDetector.kt line 66: Insert space:
+                @@ -66 +66
+                -                     But this one is missing a space.\
+                +                     But this one is missing a space. \
                 Autofix for src/test/pkg/MyJavaLintDetector.java line 34: Replace with Scope.JAVA_AND_RESOURCE_FILES:
                 @@ -34 +34
                 -                     new Implementation(MyJavaLintDetector.class, EnumSet.of(Scope.RESOURCE_FILE, Scope.JAVA_FILE)))
@@ -519,8 +529,8 @@ class LintDetectorDetectorTest {
                 @@ -22 +22
                 -                     println("Value=＄{"＄"}")
                 +                     println("Value=＄")
-                Fix for src/test/pkg/MyKotlinLintDetector.kt line 65: Delete:
-                @@ -65 +65
+                Fix for src/test/pkg/MyKotlinLintDetector.kt line 68: Delete:
+                @@ -68 +68
                 -                     ""${'"'}.trimIndent(),
                 +                     ""${'"'}.,
                 """

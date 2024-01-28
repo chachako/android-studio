@@ -1151,6 +1151,49 @@ class LintDetectorDetector : Detector(), UastScanner {
       checkForCodeFragments(XML_PATTERN, string, argument, "an XML reference") ||
         checkForCodeFragments(CALL_PATTERN, string, argument, "a call") ||
         checkForCodeFragments(CAMELCASE_PATTERN, string, argument, "a code reference")
+
+      // Look for string continuations that probably should be preceded by a space character
+      checkConcatenations(argument, string)
+    }
+
+    private fun checkConcatenations(argument: UExpression, string: String) {
+      var offset = 0
+      val s = string.trimIndent()
+      while (true) {
+        offset = s.indexOf("\\\n", offset)
+        if (offset == -1) {
+          return
+        }
+        if (offset > 0 && !s[offset - 1].isWhitespace()) {
+          val begin = s.lastIndexOf('\n', offset) + 1
+          val location =
+            getStringLocation(
+              argument,
+              s.substring(offset - 1, offset + 1),
+              window = s.substring(begin, offset - 1) + "|",
+            )
+          var wordBegin = offset - 1
+          while (wordBegin > 0 && !s[wordBegin - 1].isWhitespace()) {
+            wordBegin--
+          }
+          var nextWordEnd = offset + 2
+          while (nextWordEnd < s.length - 1 && !s[nextWordEnd].isWhitespace()) {
+            nextWordEnd++
+          }
+          val prevWord = s.substring(wordBegin, offset - 1)
+          val nextWord = s.substring(offset + 2, nextWordEnd)
+          context.report(
+            TEXT_FORMAT,
+            argument,
+            location,
+            "This line continuation (**\\**) should probably be preceded by a space character, " +
+              "otherwise this will render as a single word \"$prevWord$nextWord\", not \"$prevWord $nextWord\"",
+            LintFix.create().name("Insert space").replace().text("\\").with(" \\").build(),
+          )
+        }
+
+        offset += 2
+      }
     }
 
     private fun checkForCodeFragments(
