@@ -15,6 +15,7 @@
  */
 package com.android.tools.appinspection.network.httpurl
 
+import androidx.annotation.VisibleForTesting
 import com.android.tools.appinspection.network.HttpTrackerFactory
 import com.android.tools.appinspection.network.rules.InterceptionRuleService
 import com.android.tools.appinspection.network.rules.NetworkConnection
@@ -46,7 +47,7 @@ class TrackedHttpURLConnection(
   private val connectionTracker: HttpConnectionTracker =
     trackerFactory.trackConnection(wrapped.url.toString(), callstack)
   private var connectTracked = false
-  private var responseTracked = false
+  @VisibleForTesting var responseTracked = false
 
   /**
    * The streams are wrappers around the actual output/input streams, so they need to be cleaned up
@@ -83,8 +84,8 @@ class TrackedHttpURLConnection(
    * affect the site calling this method.
    *
    * Calling connect ourselves is useful in case the user calls a HttpURLConnection method which
-   * would otherwise have caused a connect to happen as a side-effect. In that case, we preemptively
-   * do it ourselves, to make sure that our tracking state machine stays valid.
+   * would otherwise have caused a `connect` to happen as a side effect. In that case, we
+   * preemptively do it ourselves, to make sure that our tracking state machine stays valid.
    */
   private fun tryConnect() {
     if (!connectTracked) {
@@ -92,18 +93,19 @@ class TrackedHttpURLConnection(
         connect()
       } catch (ignored: Exception) {
         // Swallowed, so callers can call this method without worrying about dealing with
-        // exceptions that shouldn't happen normally anywa.
+        // exceptions that shouldn't happen normally anyway.
       }
     }
   }
 
   /**
-   * Calls [HttpConnectionTracker.trackResponse] only if it hasn't been called before. This should
-   * be called to indicate that we received a response and can now start to read its contents.
+   * Calls [HttpConnectionTracker.trackResponseInterception] only if it hasn't been called before.
+   * This should be called to indicate that we received a response and can now start to read its
+   * contents.
    *
-   * IMPORTANT: This method, as a side-effect, will cause the request to get sent if it hasn't been
+   * IMPORTANT: This method, as a side effect, will cause the request to get sent if it hasn't been
    * sent already. Therefore, if this method is called too early, it can cause problems if the user
-   * then tries to modify the request afterwards, e.g. by updating its body via [getOutputStream].
+   * then tries to modify the request afterward, e.g. by updating its body via `getOutputStream`.
    */
   private fun trackResponse() {
     if (!responseTracked) {
@@ -138,11 +140,11 @@ class TrackedHttpURLConnection(
   /**
    * Like [trackResponse] but swallows the exception. This is useful because there are many methods
    * in [HttpURLConnection] that a user can call which indicate that a request has been completed
-   * (for example, [HttpURLConnection.getResponseCode] which don't, itself, throw an exception.
+   * (for example, [HttpURLConnection.getResponseCode] which don't, itself, throw an exception).
    *
-   * IMPORTANT: This method, as a side-effect, will cause the request to get sent if it hasn't been
+   * IMPORTANT: This method, as a side effect, will cause the request to get sent if it hasn't been
    * sent already. Therefore, if this method is called too early, it can cause problems if the user
-   * then tries to modify the request afterwards, e.g. by updating its body via [getOutputStream].
+   * then tries to modify the request afterward, e.g. by updating its body via `getOutputStream`.
    */
   private fun tryTrackResponse() {
     try {
@@ -167,7 +169,7 @@ class TrackedHttpURLConnection(
     trackPreConnect()
     try {
       wrapped.connect()
-      // Note: Just because the user "connect"ed doesn't mean the request was sent out yet.
+      // Note: Just because the user connected doesn't mean the request was sent out yet.
       // A user can still modify it further, for example updating the request body, before
       // actually sending the request out. Therefore, we don't call trackResponse here.
     } catch (e: IOException) {
@@ -200,7 +202,10 @@ class TrackedHttpURLConnection(
   }
 
   val contentEncoding: String?
-    get() = wrapped.contentEncoding
+    get() {
+      tryTrackResponse()
+      return wrapped.contentEncoding
+    }
 
   var instanceFollowRedirects: Boolean
     get() = wrapped.instanceFollowRedirects

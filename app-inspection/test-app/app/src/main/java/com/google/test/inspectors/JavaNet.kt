@@ -21,17 +21,20 @@ internal object JavaNet : AbstractHttpClient<HttpURLConnection>() {
 
   override suspend fun doRequest(
     url: String,
-    configure: HttpURLConnection.() -> HttpURLConnection
+    configure: HttpURLConnection.() -> HttpURLConnection,
   ): Result {
     return withContext(Dispatchers.IO) {
       val connection = URL(url).openConnection() as HttpURLConnection
       connection.setRequestProperty("Accept-Encoding", "gzip")
       connection.configure()
 
+      Log.i("NetworkApp", "Content Encoding: ${connection.contentEncoding}")
+      val content = connection.inputStream.reader().use { it.readText() }
+
       val rc = connection.responseCode
       Log.i("NetworkApp", "Response: $rc")
 
-      return@withContext Result(rc, connection.inputStream.reader().use { it.readText() })
+      return@withContext Result(rc, content)
     }
   }
 }

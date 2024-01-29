@@ -20,7 +20,7 @@ import com.android.tools.appinspection.network.trackers.ConnectionTracker
 import com.android.tools.appinspection.network.trackers.HttpConnectionTracker
 
 /** This is the factory for the [HttpConnectionTracker] instances. */
-interface HttpTrackerFactory {
+fun interface HttpTrackerFactory {
 
   /**
    * Starts tracking an HTTP request based on the provided url.
