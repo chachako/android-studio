@@ -188,7 +188,28 @@ class ModelBuilder<
     }
 
     private fun buildModelVersions(): Versions {
+        /**
+         * This is currently unused, but could be used in the future to allow for softer breaking
+         * changes, where some models are unavailable, but the project can still be imported.
+         */
         val v2Version = VersionImpl(0,1)
+        /**
+         * The version of the model-producing code (i.e. the model builders in AGP)
+         *
+         * The minor version is increased every time an addition is made to the model interfaces,
+         * or other semantic change that the code injected by studio should react to, such as
+         * instructing studio to stop calling a method that returns a collection that is no longer
+         * populated.
+         *
+         * The major version is increased, and the minor version reset to 0 every time AGP is
+         * branched to allow for changes in that branch to be modelled.
+         *
+         * Changes made to the model must always be compatible with the MINIMUM_MODEL_CONSUMER
+         * version of Android Studio. To make a breaking change, such as removing an older model
+         * method not called by current versions of Studio, the MINIMUM_MODEL_CONSUMER version must
+         * be increased to exclude all older versions of Studio that called that method.
+         */
+        val modelProducer = VersionImpl(8, 9, humanReadable = "Android Gradle Plugin 8.4")
         /**
          * The minimum required model consumer version, to allow AGP to control support for older
          * versions of Android Studio.
@@ -208,6 +229,7 @@ class ModelBuilder<
                 Versions.ANDROID_DSL to v2Version,
                 Versions.VARIANT_DEPENDENCIES to v2Version,
                 Versions.NATIVE_MODULE to v2Version,
+                Versions.MODEL_PRODUCER to modelProducer,
                 Versions.MINIMUM_MODEL_CONSUMER to minimumModelConsumerVersion
             )
         )
