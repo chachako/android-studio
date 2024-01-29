@@ -402,6 +402,7 @@ private class DslScriptGenerator(
             "public abstract void com.android.build.api.dsl.ApplicationVariantDimension.setSigningConfig(com.android.build.api.dsl.ApkSigningConfig)",
             "public abstract void com.android.build.api.dsl.LibraryVariantDimension.setSigningConfig(com.android.build.api.dsl.ApkSigningConfig)",
             "public abstract void com.android.build.api.dsl.BuildType.setShrinkResources(boolean)",
+            "public abstract void com.android.build.api.dsl.BuildFeatures.setRenderScript(java.lang.Boolean)",
 
             // Ignored for configuration time checks
 
