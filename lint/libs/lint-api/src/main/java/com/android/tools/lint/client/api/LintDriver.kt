@@ -2786,6 +2786,13 @@ class LintDriver(
             ?: (originalSource as? PsiElement)?.let { context.getLocation(it, LocationType.ALL) }
         range?.let { setMissingFixRange(fix, range) }
       }
+
+      // Adjust message formatting (such that you can leave multiline strings in the
+      // source along with line continuations (\) similar to what is already supported
+      // for explanations.)
+      if (message.contains('\n')) {
+        message = message.trimIndent().replace("\\\n", "")
+      }
     }
 
     /**

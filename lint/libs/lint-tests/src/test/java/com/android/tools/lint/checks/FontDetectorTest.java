@@ -813,8 +813,7 @@ public class FontDetectorTest extends AbstractCheckTest {
                                         + "</issues>"));
         MainTest.checkDriver(
                 ""
-                        + "baseline.xml: Information: 1 error and 1 warning were filtered out because they are listed in the baseline file, baseline.xml\n"
-                        + " [LintBaseline]\n"
+                        + "baseline.xml: Information: 1 error and 1 warning were filtered out because they are listed in the baseline file, baseline.xml [LintBaseline]\n"
                         + "res/font/font3.xml:6: Error: Unexpected keyword: size expected one of: width, weight, italic, besteffort [FontValidation]\n"
                         + "    app:fontProviderQuery=\"name=Monserrat&amp;size=15\">\n"
                         + "                           ~~~~~~~~~~~~~~~~~~~~~~~~~~\n"

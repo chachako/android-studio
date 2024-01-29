@@ -358,8 +358,7 @@ class ProjectInitializerTest {
 
     MainTest.checkDriver(
       """
-            baseline.xml: Information: 1 error was filtered out because it is listed in the baseline file, baseline.xml
-             [LintBaseline]
+            baseline.xml: Information: 1 error was filtered out because it is listed in the baseline file, baseline.xml [LintBaseline]
             project.xml:5: Error: test.jar (relative to ROOT) does not exist [LintError]
             <classpath jar="test.jar" />
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

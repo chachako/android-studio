@@ -752,11 +752,10 @@ class LintBaseline(
     fun describeBaselineFilter(errors: Int, warnings: Int, baselineDisplayPath: String): String {
       val counts = describeCounts(errors, warnings, comma = false, capitalize = true)
       val escapedPath = TextFormat.TEXT.convertTo(baselineDisplayPath, TextFormat.RAW)
-      // Keep in sync with isFilteredMessage() below
       return if (errors + warnings == 1) {
-        "$counts was filtered out because it is listed in the baseline file, $escapedPath\n"
+        "$counts was filtered out because it is listed in the baseline file, $escapedPath"
       } else {
-        "$counts were filtered out because they are listed in the baseline file, $escapedPath\n"
+        "$counts were filtered out because they are listed in the baseline file, $escapedPath"
       }
     }
 

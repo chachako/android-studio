@@ -176,6 +176,65 @@ class ContextTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun testMultilineReporter() {
+    // Test to make sure that when the argument to string is indented and/or has line continuations
+    // (\) the
+    // message is properly processed.
+    lint()
+      .files(
+        kotlin(
+            """
+            fun method() {
+               method() // ERROR
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(MultiLineReporter.ISSUE)
+      .run()
+      .expect(
+        """
+        src/test.kt:2: Warning: Error message indented and split across multiple lines. [_MultilineReporter]
+           method() // ERROR
+           ~~~~~~~~
+        0 errors, 1 warnings
+        """
+      )
+  }
+
+  class MultiLineReporter : Detector(), SourceCodeScanner {
+
+    override fun getApplicableMethodNames() = listOf("method")
+
+    override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+      context.report(
+        Incident(
+          ISSUE,
+          node,
+          context.getLocation(node),
+          """
+          Error message indented and split across \
+          multiple lines.
+          """,
+        )
+      )
+    }
+
+    companion object {
+      val ISSUE =
+        Issue.create(
+          "_MultilineReporter",
+          "Not applicable",
+          "Not applicable",
+          Category.MESSAGES,
+          5,
+          Severity.WARNING,
+          Implementation(MultiLineReporter::class.java, Scope.JAVA_FILE_SCOPE),
+        )
+    }
+  }
+
   // TODO(b/293581088): UAST of Kotlin strings (PSI: KtStringTemplateExpression) with 1 child is
   //  somewhat broken until "kotlin.uast.force.uinjectionhost" defaults to true.
   fun ignoreTestLocationOfKotlinString() {
