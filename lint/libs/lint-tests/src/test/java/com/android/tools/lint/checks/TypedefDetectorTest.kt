@@ -1394,6 +1394,60 @@ class TypedefDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun testIntDefValuesFromCompanionObject() {
+    // Ensure that we handle finding typedef constants defined in Kotlin
+    // Similar to https://youtrack.jetbrains.com/issue/KT-61497
+    // but from simplified code snippet from one of androidx modules (b/322837849)
+    lint()
+      .files(
+        kotlin(
+            """
+                package test.pkg
+
+                import androidx.annotation.IntDef
+
+                class TableInfo {
+
+                    @Retention(AnnotationRetention.SOURCE)
+                    @IntDef(value = [CREATED_FROM_UNKNOWN, CREATED_FROM_ENTITY, CREATED_FROM_DATABASE])
+                    internal annotation class CreatedFrom()
+
+                    companion object {
+                        const val CREATED_FROM_UNKNOWN = 0
+                        const val CREATED_FROM_ENTITY = 1
+                        const val CREATED_FROM_DATABASE = 2
+                    }
+
+                    class Column(
+                        val name: String,
+                        @CreatedFrom
+                        val createdFrom: Int,
+                    ) {
+                        constructor(name: String) : this(CREATED_FROM_UNKNOWN)
+                    }
+                }
+
+                private fun readColumns(
+                    tableName: String,
+                ): Map<String, TableInfo.Column> {
+                    return buildMap {
+                        while(true) {
+                            put(
+                                key = tableName,
+                                value = TableInfo.Column(tableName, TableInfo.CREATED_FROM_DATABASE)
+                            )
+                        }
+                    }
+                }
+                """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expectClean()
+  }
+
   fun test119753493() {
     // Regression test for
     // 119753493: False positive for WrongConstant after AndroidX Migration
