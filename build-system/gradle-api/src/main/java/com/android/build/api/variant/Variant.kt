@@ -137,6 +137,9 @@ interface Variant : Component, HasAndroidResources {
      * Additional per variant experimental properties.
      *
      * Initialized from [com.android.build.api.dsl.CommonExtension.experimentalProperties]
+     *
+     * Values provided should not be based on a Task execution result, as most of these properties
+     * are read during configuration.
      */
     @get:Incubating
     val experimentalProperties: MapProperty<String, Any>
