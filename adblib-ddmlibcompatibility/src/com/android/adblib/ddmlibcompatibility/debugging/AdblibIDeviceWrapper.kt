@@ -110,7 +110,18 @@ internal class AdblibIDeviceWrapper(
 
     /** Name and path of the AVD  */
     private val mAvdData = connectedDevice.scope.async { createAvdData() }
-
+    private var mAvdName: String? = null
+    private var mAvdPath: String? = null
+    init {
+        mAvdData.invokeOnCompletion { throwable ->
+            if (throwable == null) {
+                mAvdName = mAvdData.getCompleted()?.name
+                mAvdPath = mAvdData.getCompleted()?.path
+            } else if (throwable !is CancellationException) {
+                logger.warn(throwable, "`createAvdData` completed exceptionally")
+            }
+        }
+    }
     private val mUserDataMap = UserDataMapImpl()
 
     override fun getName(): String {
@@ -217,13 +228,13 @@ internal class AdblibIDeviceWrapper(
     @Deprecated("")
     override fun getAvdName(): String? =
         logUsage(IDeviceUsageTracker.Method.GET_AVD_NAME) {
-            if (mAvdData.isCompleted) mAvdData.getCompleted()?.name else null
+            return mAvdName
         }
 
     @Deprecated("")
     override fun getAvdPath(): String? =
         logUsage(IDeviceUsageTracker.Method.GET_AVD_PATH) {
-            if (mAvdData.isCompleted) mAvdData.getCompleted()?.path else null
+            return mAvdPath
         }
 
     override fun getAvdData(): ListenableFuture<AvdData?> =
