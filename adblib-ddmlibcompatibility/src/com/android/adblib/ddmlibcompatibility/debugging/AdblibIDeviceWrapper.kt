@@ -690,12 +690,12 @@ internal class AdblibIDeviceWrapper(
         }
     }
 
-    override fun uninstallPackage(packageName: String): String =
+    override fun uninstallPackage(packageName: String): String? =
         logUsage(IDeviceUsageTracker.Method.UNINSTALL_PACKAGE) {
             uninstallApp(packageName)
         }
 
-    override fun uninstallApp(applicationID: String, vararg extraArgs: String): String =
+    override fun uninstallApp(applicationID: String, vararg extraArgs: String): String? =
         logUsage(IDeviceUsageTracker.Method.UNINSTALL_APP) {
             iDeviceSharedImpl.uninstallApp(applicationID, *extraArgs)
         }

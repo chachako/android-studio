@@ -563,6 +563,23 @@ class AdblibIDeviceWrapperTest {
     }
 
     @Test
+    fun uninstall() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, _) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+        // Act
+        // Note that `com.android.fakeadbserver.services.PackageManager` that we rely on will
+        // consider this as an installed package and will successfully uninstall it.
+        val result = adblibIDeviceWrapper.uninstallPackage("somepackage.apk")
+
+        // Assert
+        assertNull(result)
+    }
+
+    @Test
     fun pullFile() = runBlockingWithTimeout {
         // Prepare
         val (connectedDevice, deviceState) = createConnectedDevice(
