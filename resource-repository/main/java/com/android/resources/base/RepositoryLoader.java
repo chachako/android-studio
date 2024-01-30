@@ -114,7 +114,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -533,11 +532,10 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
         }
       } while (event != XmlPullParser.END_DOCUMENT);
     }
-    catch (CancellationException e) {
-      throw e;
-    }
     // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
     catch (IOException | XmlPullParserException | XmlSyntaxException | RuntimeException e) {
+      // However if this is cancellation we rethrow.
+      ProgressManagerAdapter.throwIfCancellation(e);
       handleParsingError(file, e);
     }
 
@@ -596,11 +594,10 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
         }
       } while (event != XmlPullParser.END_DOCUMENT);
     }
-    catch (CancellationException e) {
-      throw e;
-    }
     // KXmlParser throws RuntimeException for an undefined prefix and an illegal attribute name.
     catch (IOException | XmlPullParserException | RuntimeException e) {
+      // However if this is cancellation we rethrow.
+      ProgressManagerAdapter.throwIfCancellation(e);
       handleParsingError(file, e);
     }
 
