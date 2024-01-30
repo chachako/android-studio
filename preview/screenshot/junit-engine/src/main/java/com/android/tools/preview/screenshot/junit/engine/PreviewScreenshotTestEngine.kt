@@ -76,6 +76,7 @@ class PreviewScreenshotTestEngine : TestEngine {
             var classTestResult = TestExecutionResult.successful()
             for (methodDescriptor in classDescriptor.getChildren()) {
                 listener.executionStarted(methodDescriptor)
+                val methodResults = mutableListOf<PreviewResult>()
                 val className: String = (methodDescriptor as TestMethodDescriptor).className
                 val methodName: String = methodDescriptor.methodName
                 val screenshots =
@@ -84,9 +85,9 @@ class PreviewScreenshotTestEngine : TestEngine {
                     }
                 for (screenshot in screenshots) {
                     val imageComparison = compareImages(screenshot!!)
-                    resultsToSave.add(imageComparison)
+                    methodResults.add(imageComparison)
                 }
-                val failedComparisons = resultsToSave.filter { it.responseCode != 0 }
+                val failedComparisons = methodResults.filter { it.responseCode != 0 }
                 val testResult = if (failedComparisons.size != 0) {
                     val reportUrl = File(File(getParam("reportUrlPath")), "index.html").toURI().toASCIIString()
                     classTestResult =
@@ -96,6 +97,7 @@ class PreviewScreenshotTestEngine : TestEngine {
                     TestExecutionResult.successful()
                 }
                 listener.executionFinished(methodDescriptor, testResult)
+                resultsToSave.addAll(methodResults)
             }
             listener.executionFinished(classDescriptor, classTestResult)
         }
