@@ -72,7 +72,6 @@ class PreviewScreenshotTestEngine : TestEngine {
         val screenshotResults = composeRenderingResult.screenshotResults
         for (classDescriptor in request.rootTestDescriptor.children) {
             listener.executionStarted(classDescriptor)
-            var classTestResult = TestExecutionResult.successful()
             for (methodDescriptor in classDescriptor.children) {
                 val methodResults = mutableListOf<PreviewResult>()
                 val className: String = (methodDescriptor as TestMethodDescriptor).className
@@ -95,7 +94,7 @@ class PreviewScreenshotTestEngine : TestEngine {
                 }
                 resultsToSave.addAll(methodResults)
             }
-            listener.executionFinished(classDescriptor, classTestResult)
+            listener.executionFinished(classDescriptor, TestExecutionResult.successful())
         }
         if (resultsToSave.isNotEmpty()) {
             saveResults(resultsToSave, getParam("resultsFilePath"))
