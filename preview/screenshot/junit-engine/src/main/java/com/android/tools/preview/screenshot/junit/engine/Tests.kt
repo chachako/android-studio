@@ -23,6 +23,6 @@ internal class Tests(val testMethods: Map<String, MutableSet<String>>) {
 
     fun getMethods(className: String): MutableSet<String> {
         val methods = testMethods[className]
-        return methods ?: mutableSetOf<String>()
+        return methods ?: mutableSetOf()
     }
 }

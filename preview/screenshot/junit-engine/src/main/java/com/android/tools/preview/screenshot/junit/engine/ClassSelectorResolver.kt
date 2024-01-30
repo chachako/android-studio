@@ -37,13 +37,13 @@ internal class ClassSelectorResolver(
 ) : SelectorResolver {
 
     override fun resolve(selector: ClassSelector, context: Context): Resolution {
-        return resolve(selector.getClassName(), context)
+        return resolve(selector.className, context)
     }
 
     override fun resolve(selector: UniqueIdSelector, context: Context): Resolution {
-        val lastSegment: UniqueId.Segment = selector.getUniqueId().getLastSegment()
-        if (SEGMENT_TYPE == lastSegment.getType()) {
-            val className: String = lastSegment.getValue()
+        val lastSegment: UniqueId.Segment = selector.uniqueId.lastSegment
+        if (SEGMENT_TYPE == lastSegment.type) {
+            val className: String = lastSegment.value
             return resolve(className, context)
         }
         return Resolution.unresolved()
@@ -52,7 +52,7 @@ internal class ClassSelectorResolver(
     private fun resolve(className: String, context: Context): Resolution {
         return if (tests.classes.contains(className)) {
             context.addToParent { parent -> createTestClassDescriptor(className, parent) }
-                .map { it ->
+                .map {
                     Match.exact(it) {
                         getMethodSelectors(
                             className

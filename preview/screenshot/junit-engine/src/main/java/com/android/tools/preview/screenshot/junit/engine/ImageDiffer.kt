@@ -117,7 +117,7 @@ fun interface ImageDiffer {
             }
         }
 
-        internal fun calculateSSIM(
+        private fun calculateSSIM(
             ideal: IntArray,
             given: IntArray,
             width: Int,
@@ -312,7 +312,7 @@ fun interface ImageDiffer {
          * Return the red component of a color int. This is the same as saying
          * (color >> 16) & 0xFF
          */
-        fun red(color: Int): Int {
+        private fun red(color: Int): Int {
             return color shr 16 and 0xFF
         }
 
@@ -320,7 +320,7 @@ fun interface ImageDiffer {
          * Return the green component of a color int. This is the same as saying
          * (color >> 8) & 0xFF
          */
-        fun green(color: Int): Int {
+        private fun green(color: Int): Int {
             return color shr 8 and 0xFF
         }
 
@@ -328,7 +328,7 @@ fun interface ImageDiffer {
          * Return the blue component of a color int. This is the same as saying
          * color & 0xFF
          */
-        fun blue(color: Int): Int {
+        private fun blue(color: Int): Int {
             return color and 0xFF
         }
 

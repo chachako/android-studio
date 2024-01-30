@@ -34,14 +34,14 @@ internal class MethodSelectorResolver(private val tests: Tests) : SelectorResolv
     }
 
     override fun resolve(selector: UniqueIdSelector, context: Context): Resolution {
-        val lastSegment: UniqueId.Segment = selector.getUniqueId().getLastSegment()
-        if (SEGMENT_TYPE == lastSegment.getType() && selector.getUniqueId()
-                .getSegments()
+        val lastSegment: UniqueId.Segment = selector.uniqueId.lastSegment
+        if (SEGMENT_TYPE == lastSegment.type && selector.uniqueId
+                .segments
                 .size >= 2
         ) {
             val className: String =
-                selector.getUniqueId().removeLastSegment().getLastSegment().getValue()
-            val methodName: String = lastSegment.getValue()
+                selector.uniqueId.removeLastSegment().lastSegment.value
+            val methodName: String = lastSegment.value
             return resolve(className, methodName, context)
         }
         return Resolution.unresolved()
@@ -67,7 +67,7 @@ internal class MethodSelectorResolver(private val tests: Tests) : SelectorResolv
         methodName: String,
         parent: TestDescriptor
     ): Optional<TestMethodDescriptor> {
-        val uniqueId: UniqueId = parent.getUniqueId().append(SEGMENT_TYPE, methodName)
+        val uniqueId: UniqueId = parent.uniqueId.append(SEGMENT_TYPE, methodName)
         return Optional.of<TestMethodDescriptor>(
             TestMethodDescriptor(
                 uniqueId,
