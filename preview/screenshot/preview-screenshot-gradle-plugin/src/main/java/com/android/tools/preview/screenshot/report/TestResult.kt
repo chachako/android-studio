@@ -25,7 +25,7 @@ class TestResult(
     val name: String,
     override val duration: Long,
     val project: String,
-    val flavor: String,
+    private val flavor: String,
     var screenshotImages: ScreenshotTestImages?,
     val classResults: ClassTestResults) : TestResultModel(), Comparable<TestResult> {
 
@@ -44,9 +44,6 @@ class TestResult(
         }
         return if (failures.isEmpty()) ResultType.SUCCESS else ResultType.FAILURE
     }
-
-    val screenshotshotImages: ScreenshotTestImages?
-        get() = screenshotImages
 
     override fun getFormattedDuration(): String {
         return if (ignored) "-" else super.getFormattedDuration()

@@ -55,7 +55,7 @@ internal class ScreenshotClassPageRenderer: PageRenderer<ClassTestResults>() {
                 .characters(testName)
                 .endElement()
             if (test.screenshotImages != null) {
-                imagePanelRenderer.render(test.screenshotshotImages!!, htmlWriter)
+                imagePanelRenderer.render(test.screenshotImages!!, htmlWriter)
             }
             htmlWriter.endElement()
         }
@@ -75,7 +75,7 @@ internal class ScreenshotClassPageRenderer: PageRenderer<ClassTestResults>() {
                 .characters(test.name)
                 .endElement()
             if (test.screenshotImages != null) {
-                imagePanelRenderer.render(test.screenshotshotImages!!, htmlWriter)
+                imagePanelRenderer.render(test.screenshotImages!!, htmlWriter)
             }
             htmlWriter.endElement()
         }
