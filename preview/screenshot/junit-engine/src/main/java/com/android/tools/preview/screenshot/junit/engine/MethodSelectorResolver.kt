@@ -30,7 +30,7 @@ import org.junit.platform.engine.support.discovery.SelectorResolver.Match
 internal class MethodSelectorResolver(private val tests: Tests) : SelectorResolver {
 
     override fun resolve(selector: MethodSelector, context: Context): Resolution {
-        return resolve(selector.getClassName(), selector.getMethodName(), context)
+        return resolve(selector.className, selector.methodName, context)
     }
 
     override fun resolve(selector: UniqueIdSelector, context: Context): Resolution {

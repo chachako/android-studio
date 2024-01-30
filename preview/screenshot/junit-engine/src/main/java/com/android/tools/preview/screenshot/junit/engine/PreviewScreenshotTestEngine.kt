@@ -24,6 +24,7 @@ import java.io.File
 import javax.imageio.ImageIO
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
 import org.junit.platform.engine.EngineDiscoveryRequest
+import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.ExecutionRequest
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestEngine
@@ -73,7 +74,6 @@ class PreviewScreenshotTestEngine : TestEngine {
             listener.executionStarted(classDescriptor)
             var classTestResult = TestExecutionResult.successful()
             for (methodDescriptor in classDescriptor.children) {
-                listener.executionStarted(methodDescriptor)
                 val methodResults = mutableListOf<PreviewResult>()
                 val className: String = (methodDescriptor as TestMethodDescriptor).className
                 val methodName: String = methodDescriptor.methodName
@@ -81,20 +81,18 @@ class PreviewScreenshotTestEngine : TestEngine {
                     screenshotResults.filter {
                         it.resultId.contains(className) && it.resultId.contains(methodName)
                     }
-                for (screenshot in screenshots) {
-                    val imageComparison = compareImages(screenshot)
-                    methodResults.add(imageComparison)
-                }
-                val failedComparisons = methodResults.filter { it.responseCode != 0 }
-                val testResult = if (failedComparisons.isNotEmpty()) {
-                    val reportUrl = File(File(getParam("reportUrlPath")), "index.html").toURI().toASCIIString()
-                    classTestResult =
-                        TestExecutionResult.failed(AssertionError("There were failing tests. Creating test report at $reportUrl"))
-                    TestExecutionResult.failed(AssertionError(failedComparisons.first().message))
+                if (screenshots.size == 1) {
+                    methodResults.add(reportResult(listener, screenshots.first(), methodDescriptor))
                 } else {
-                    TestExecutionResult.successful()
+                    for ((run, screenshot) in screenshots.withIndex()) {
+                        // TODO(323000624): Gather preview parameters here instead of using a hash for the test suffix
+                        val suffix = screenshot.resultId.split(methodName).last()
+                        val previewTestDescriptor = PreviewTestDescriptor(methodDescriptor, methodName, run, suffix)
+                        methodDescriptor.addChild(previewTestDescriptor)
+                        listener.dynamicTestRegistered(previewTestDescriptor)
+                        methodResults.add(reportResult(listener, screenshot, previewTestDescriptor))
+                    }
                 }
-                listener.executionFinished(methodDescriptor, testResult)
                 resultsToSave.addAll(methodResults)
             }
             listener.executionFinished(classDescriptor, classTestResult)
@@ -170,5 +168,15 @@ class PreviewScreenshotTestEngine : TestEngine {
 
     private fun getParam(key: String): String {
         return System.getProperty("com.android.tools.preview.screenshot.junit.engine.${key}")
+    }
+
+    private fun reportResult(listener: EngineExecutionListener, screenshot: ComposeScreenshotResult, testDescriptor: TestDescriptor): PreviewResult  {
+        listener.executionStarted(testDescriptor)
+        val imageComparison = compareImages(screenshot)
+        val result = if (imageComparison.responseCode != 0) {
+            TestExecutionResult.failed(AssertionError(imageComparison.message))
+        } else TestExecutionResult.successful()
+        listener.executionFinished(testDescriptor, result)
+        return imageComparison
     }
 }
