@@ -52,6 +52,7 @@ import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
+import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.platform.has
 import org.jetbrains.kotlin.platform.jvm.JvmPlatform
@@ -59,6 +60,7 @@ import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingK2CompilerPluginRegistrar
+import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.UastLanguagePlugin
 import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.FirKotlinUastLanguagePlugin
@@ -361,6 +363,11 @@ private fun configureFirProjectEnvironment(
 
 private fun configureFirApplicationEnvironment(appEnv: CoreApplicationEnvironment) {
   configureApplicationEnvironment(appEnv) {
+    // TODO: once the migration is done, we don't need to worry about sticky plugin cache anymore.
+    val cachedPlugin = UastFacade.findPlugin(KotlinLanguage.INSTANCE)
+    if (cachedPlugin !is FirKotlinUastLanguagePlugin) {
+      UastFacade.clearCachedPlugin()
+    }
     it.addExtension(UastLanguagePlugin.extensionPointName, FirKotlinUastLanguagePlugin())
 
     it.application.registerService(

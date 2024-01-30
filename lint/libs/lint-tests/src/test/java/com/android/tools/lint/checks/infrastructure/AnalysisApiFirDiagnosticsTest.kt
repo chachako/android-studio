@@ -20,7 +20,6 @@ import com.android.tools.lint.UastEnvironment
 import com.android.tools.lint.checks.AbstractCheckTest
 import com.android.tools.lint.checks.infrastructure.TestDiagnosticsDetector.Companion.NULLNESS_MESSAGE
 import com.android.tools.lint.detector.api.Detector
-import org.jetbrains.uast.UastFacade
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Test
@@ -37,7 +36,6 @@ class AnalysisApiFirDiagnosticsTest : AbstractCheckTest(), AnalysisApiDiagnostic
     fun setup() {
       lastKey = System.getProperty(FIR_UAST_KEY, "false")
       System.setProperty(FIR_UAST_KEY, "true")
-      UastFacade.clearCachedPlugin()
     }
 
     @AfterClass

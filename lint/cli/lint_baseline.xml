@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="6" by="lint 8.3.0-alpha13" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-alpha13">
+<issues format="6" by="lint 8.4.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.4.0-dev">
 
     <issue
         id="SimpleDateFormat"
@@ -8,7 +8,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/LintIssueDocGenerator.kt"
-            line="3034"
+            line="3035"
             column="13"/>
     </issue>
 
@@ -19,7 +19,7 @@
         errorLine2="                   ~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/LintCliClient.kt"
-            line="557"
+            line="556"
             column="20"/>
     </issue>
 
@@ -30,7 +30,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="92"
+            line="95"
             column="1"/>
     </issue>
 
@@ -41,29 +41,29 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="93"
+            line="96"
             column="1"/>
     </issue>
 
     <issue
         id="UastImplementation"
         message="org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `KotlinUastResolveProviderService`, `BaseKotlinUastResolveProviderService`"
-        errorLine1="    CliKotlinUastResolveProviderService::class.java"
+        errorLine1="    CliKotlinUastResolveProviderService::class.java,"
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="310"
+            line="314"
             column="5"/>
     </issue>
 
     <issue
         id="UastImplementation"
         message="org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `KotlinUastResolveProviderService`, `BaseKotlinUastResolveProviderService`"
-        errorLine1="      CliKotlinUastResolveProviderService::class.java"
+        errorLine1="      CliKotlinUastResolveProviderService::class.java,"
         errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
-            line="388"
+            line="395"
             column="7"/>
     </issue>
 
@@ -74,7 +74,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="62"
+            line="66"
             column="1"/>
     </issue>
 
@@ -85,7 +85,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="63"
+            line="67"
             column="1"/>
     </issue>
 
@@ -96,40 +96,51 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="64"
+            line="68"
             column="1"/>
     </issue>
 
     <issue
         id="UastImplementation"
-        message="org.jetbrains.uast.kotlin.FirKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `BaseKotlinUastResolveProviderService`"
-        errorLine1="    FirKotlinUastResolveProviderService::class.java,"
-        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        message="org.jetbrains.uast.kotlin.FirKotlinUastLanguagePlugin is UAST implementation. Consider using one of its corresponding UAST interfaces: `UastLanguagePlugin`"
+        errorLine1="    if (cachedPlugin !is FirKotlinUastLanguagePlugin) {"
+        errorLine2="                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="378"
-            column="5"/>
+            line="368"
+            column="26"/>
     </issue>
 
     <issue
         id="UastImplementation"
         message="org.jetbrains.uast.kotlin.internal.FirCliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `BaseKotlinUastResolveProviderService`"
-        errorLine1="    FirCliKotlinUastResolveProviderService::class.java"
-        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="379"
-            column="5"/>
-    </issue>
-
-    <issue
-        id="UastImplementation"
-        message="org.jetbrains.uast.kotlin.internal.FirCliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `BaseKotlinUastResolveProviderService`"
-        errorLine1="      FirCliKotlinUastResolveProviderService::class.java"
+        errorLine1="      FirCliKotlinUastResolveProviderService::class.java,"
         errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
-            line="391"
+            line="375"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="UastImplementation"
+        message="org.jetbrains.uast.kotlin.FirKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `BaseKotlinUastResolveProviderService`"
+        errorLine1="      FirKotlinUastResolveProviderService::class.java,"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
+            line="378"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="UastImplementation"
+        message="org.jetbrains.uast.kotlin.internal.FirCliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `BaseKotlinUastResolveProviderService`"
+        errorLine1="      FirCliKotlinUastResolveProviderService::class.java,"
+        errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/FirUastEnvironment.kt"
+            line="379"
             column="7"/>
     </issue>
 
@@ -140,7 +151,7 @@
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/tools/lint/UastEnvironmentUtils.kt"
-            line="57"
+            line="60"
             column="1"/>
     </issue>
 
