@@ -23,12 +23,10 @@ import com.android.adblib.deviceProperties
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.tools.EmulatorConsole
-import com.android.adblib.tools.defaultAuthTokenPath
 import com.android.adblib.tools.localConsoleAddress
 import com.android.adblib.tools.openEmulatorConsole
 import com.android.adblib.utils.createChildScope
 import com.android.annotations.concurrency.GuardedBy
-import com.android.prefs.AndroidLocationsSingleton
 import com.android.sdklib.SdkVersionInfo
 import com.android.sdklib.SystemImageTags
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
@@ -42,7 +40,6 @@ import com.intellij.icons.AllIcons
 import java.io.IOException
 import java.nio.file.Path
 import java.time.Duration
-import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CompletableDeferred
@@ -187,17 +184,10 @@ class LocalEmulatorProvisionerPlugin(
     val result = LOCAL_EMULATOR_REGEX.matchEntire(device.serialNumber) ?: return null
     val port = result.groupValues[1].toIntOrNull() ?: return null
 
-    // Note that the emulator has different logic for finding the home directory than
-    // userHomeLocation; see android::base::System::getHomeDirectory().
-    val authTokenPath =
-      AndroidLocationsSingleton.userHomeLocation.resolve(".emulator_console_auth_token").takeIf {
-        it.exists()
-      } ?: defaultAuthTokenPath()
     logger.debug { "Opening emulator console to $port" }
     val emulatorConsole =
-      withTimeoutOrNull(5.seconds) {
-        adbSession.openEmulatorConsole(localConsoleAddress(port), authTokenPath)
-      } ?: return null
+      withTimeoutOrNull(5.seconds) { adbSession.openEmulatorConsole(localConsoleAddress(port)) }
+        ?: return null
 
     // This will fail on emulator versions prior to 30.0.18.
     val pathResult = kotlin.runCatching { emulatorConsole.avdPath() }
@@ -749,8 +739,8 @@ class LocalEmulatorProperties(
         density = avdInfo.density
         resolution = avdInfo.resolution
         isDebuggable = !avdInfo.hasPlayStore()
-        preferredAbi = avdInfo.parseUserSettingsFile(null)
-          ?.get(AvdManager.USER_SETTINGS_INI_PREFERRED_ABI)
+        preferredAbi =
+          avdInfo.parseUserSettingsFile(null)?.get(AvdManager.USER_SETTINGS_INI_PREFERRED_ABI)
       }
   }
 

@@ -34,7 +34,6 @@ import com.android.adblib.syncRecv
 import com.android.adblib.syncSend
 import com.android.adblib.syncStat
 import com.android.adblib.tools.EmulatorCommandException
-import com.android.adblib.tools.defaultAuthTokenPath
 import com.android.adblib.tools.localConsoleAddress
 import com.android.adblib.tools.openEmulatorConsole
 import com.android.adblib.withErrorTimeout
@@ -250,10 +249,7 @@ internal class AdblibIDeviceWrapper(
         val port = emulatorMatchResult.groupValues[1].toIntOrNull() ?: return null
 
         return try {
-            connectedDevice.session.openEmulatorConsole(
-                localConsoleAddress(port),
-                defaultAuthTokenPath()
-            ).use {
+            connectedDevice.session.openEmulatorConsole(localConsoleAddress(port)).use {
                 val avdName = kotlin.runCatching { it.avdName() }.getOrNull()
                 val path = kotlin.runCatching { it.avdPath() }.getOrNull()
 

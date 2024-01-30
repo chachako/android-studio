@@ -37,9 +37,11 @@ import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.ServerSocket
 import java.net.Socket
+import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.io.path.absolutePathString
 
 class EmulatorConsoleTest {
 
@@ -102,9 +104,7 @@ class EmulatorConsoleTest {
         fakeEmulator.outputQueue.put("Hello\r\nOK\r\n")
 
         return runBlockingWithTimeout {
-            FakeAdbSession().openEmulatorConsole(
-                localConsoleAddress(fakeEmulator.port),
-                { "" })
+            FakeAdbSession().openEmulatorConsole(localConsoleAddress(fakeEmulator.port))
         }
     }
 
@@ -187,13 +187,14 @@ class EmulatorConsoleTest {
 
     @Test
     fun connectAuth() {
+        val authTokenPath = folder.root.toPath().resolve(".emulator_console_auth_token")
+        Files.writeString(authTokenPath, "my secret token")
+
         fakeEmulator.start()
-        fakeEmulator.outputQueue.put("Android Console: Authentication required\r\nOK\r\n")
+        fakeEmulator.outputQueue.put(authPrompt(authTokenPath.absolutePathString()))
 
         val consoleAsync = scope.async {
-            FakeAdbSession().openEmulatorConsole(
-                localConsoleAddress(fakeEmulator.port),
-                { "my secret token" })
+            FakeAdbSession().openEmulatorConsole(localConsoleAddress(fakeEmulator.port))
         }
 
         assertEquals("auth my secret token", fakeEmulator.inputQueue.take())
@@ -206,15 +207,12 @@ class EmulatorConsoleTest {
     fun openEmulatorConsoleThrows_whenAuthTokenFileIsNotFound() = runBlockingWithTimeout {
         // Prepare
         fakeEmulator.start()
-        fakeEmulator.outputQueue.put("Android Console: Authentication required\r\nOK\r\n")
-        exceptionRule.expect(EmulatorCommandException::class.java)
-        exceptionRule.expectMessage("Cannot read emulator console auth token")
+        val nonExistentPath = folder.root.toPath().resolve("this_file_does_not_exist.txt")
+        fakeEmulator.outputQueue.put(authPrompt(nonExistentPath.absolutePathString()))
+        exceptionRule.expect(IOException::class.java)
 
         // Act
-        FakeAdbSession().openEmulatorConsole(
-            localConsoleAddress(fakeEmulator.port),
-            folder.root.toPath().resolve("this_file_does_not_exist.txt")
-        )
+        FakeAdbSession().openEmulatorConsole(localConsoleAddress(fakeEmulator.port))
 
         // Assert
         fail("Should not reach")
@@ -227,3 +225,9 @@ class EmulatorConsoleTest {
             }
         }
 }
+
+private fun authPrompt(authTokenPath: String) =
+    "Android Console: Authentication required\r\n" +
+        "Android Console: you can find your <auth_token> in \r\n" +
+        "'$authTokenPath'\r\n" +
+        "OK\r\n"
