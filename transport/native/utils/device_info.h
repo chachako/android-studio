@@ -40,6 +40,7 @@ class DeviceInfo {
   static const bool is_64_bit_abi() { return Instance()->is_64_bit_abi_; }
 
   // Special Android API levels that the profiler cares about.
+  static constexpr int M = 23;
   static constexpr int O = 26;  // First API where JVMTI is supported.
   static constexpr int O_MR1 = 27;
   static constexpr int P = 28;

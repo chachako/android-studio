@@ -41,13 +41,10 @@ class MockActivityManager final : public ActivityManager {
                           std::string *error_string));
 };
 
-// Test that:
-// 1. A heap dump can start successfully if none is in progress
-// 2. Another heap dump cannot be started in between
-// 3. Upon the dump file finished being written to, the heap dump thread ends.
-TEST(HeapDumpManager, DumpOnODevice) {
-  // Fake a O device and real file system so we can test the O retry workflow.
-  DeviceInfoHelper::SetDeviceInfo(DeviceInfo::O);
+void testHeapDumpManagerForDevice(int32_t deviceVersion) {
+  // Fake a deviceVersion device and real file system so we can test the retry
+  // workflow.
+  DeviceInfoHelper::SetDeviceInfo(deviceVersion);
   profiler::FileCache file_cache(getenv("TEST_TMPDIR"));
   int64_t dump_id = 1;
   std::stringstream ss;
@@ -93,6 +90,22 @@ TEST(HeapDumpManager, DumpOnODevice) {
   });
   EXPECT_TRUE(result);
   latch2.Await();
+}
+
+// Test for O-Device:
+// 1. A heap dump can start successfully if none is in progress
+// 2. Another heap dump cannot be started in between
+// 3. Upon the dump file finished being written to, the heap dump thread ends.
+TEST(HeapDumpManager, DumpOnDeviceO) {
+  testHeapDumpManagerForDevice(DeviceInfo::O);
+}
+
+// Test for pre-O Device:
+// 1. A heap dump can start successfully if none is in progress
+// 2. Another heap dump cannot be started in between
+// 3. Upon the dump file finished being written to, the heap dump thread ends.
+TEST(HeapDumpManager, DumpOnDeviceM) {
+  testHeapDumpManagerForDevice(DeviceInfo::M);
 }
 
 }  // namespace profiler

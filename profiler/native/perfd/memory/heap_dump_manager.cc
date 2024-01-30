@@ -46,7 +46,10 @@ const int64_t kHprofReadRetryIntervalUs = profiler::Clock::ms_to_us(250);
 // event finishes. As a workaround, we wait for the file size to stablize
 // AND check the last 9 bytes of the dump file to validate the  file ends
 // with a HEAP DUMP END segment.
-bool WaitForHeapDumpFinishInOPlus(std::string file_path) {
+// Same issue has been seen in the Pre O devices, where HeapDump file not
+// getting closed until GC for few runs. So this method is used for all api.
+// For more information, refer(b/252676490).
+bool WaitForHeapDumpFinish(std::string file_path) {
   bool finished = false;
   std::ifstream stream(file_path, std::ifstream::binary | std::ifstream::ate);
   if (stream.fail()) {
@@ -136,19 +139,7 @@ void HeapDumpManager::HeapDumpMain(int32_t pid, std::shared_ptr<File> file,
   std::string unused;
   bool result = activity_manager_->TriggerHeapDump(pid, file->path(), &unused);
   if (result) {
-    if (DeviceInfo::feature_level() >= DeviceInfo::O) {
-      result = WaitForHeapDumpFinishInOPlus(file->path());
-    } else {
-      // Monitoring the file to catch close event when the heap dump is complete
-      FileSystemNotifier notifier(file->path(), FileSystemNotifier::CLOSE);
-      if (!notifier.IsReadyToNotify() || !notifier.WaitUntilEventOccurs(-1)) {
-        Log::V(Log::Tag::PROFILER,
-               "Unable to monitor heap dump file (pid=%d, path=%s) for "
-               "completion",
-               pid, file->path().c_str());
-        result = false;
-      }
-    }
+    result = WaitForHeapDumpFinish(file->path());
   }
 
   callback(result);

@@ -44,7 +44,7 @@ cc_test(
     name = "perfd_memory_tests",
     srcs = [
         "commands/heap_dump_test.cc",
-        "heap_dump_manager.cc",
+        "heap_dump_manager_test.cc",
         "memory_cache_test.cc",
         "memory_usage_reader_impl_test.cc",
     ],
