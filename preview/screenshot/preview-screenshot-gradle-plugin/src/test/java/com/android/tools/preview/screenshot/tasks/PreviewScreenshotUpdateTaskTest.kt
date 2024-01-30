@@ -16,15 +16,19 @@
 
 package com.android.tools.preview.screenshot.tasks
 
+import com.android.testutils.MockitoKt.mock
+import com.android.tools.preview.screenshot.services.AnalyticsService
 import com.android.tools.render.compose.ComposeRenderingResult
 import com.android.tools.render.compose.ComposeScreenshotResult
 import com.android.tools.render.compose.writeComposeRenderingResult
-import com.google.gson.Gson
+import org.gradle.api.services.BuildServiceRegistry
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.mockito.Answers
+import org.mockito.Mockito.withSettings
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -58,6 +62,11 @@ class PreviewScreenshotUpdateTaskTest {
         Files.createFile(path3)
         task.referenceImageDir.set(referenceImageDir)
         task.renderTaskOutputDir.set(renderTaskOutputDir)
+        task.analyticsService.set(object: AnalyticsService() {
+            override val buildServiceRegistry: BuildServiceRegistry = mock(
+                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override fun getParameters(): Params = mock()
+        })
 
         task.run()
         assert(referenceImageDir.listFiles().isNotEmpty())

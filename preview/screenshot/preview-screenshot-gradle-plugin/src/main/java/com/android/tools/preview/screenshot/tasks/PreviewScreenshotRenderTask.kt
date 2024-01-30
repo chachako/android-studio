@@ -18,34 +18,35 @@ package com.android.tools.preview.screenshot.tasks
 
 import com.android.SdkConstants
 import com.android.tools.preview.screenshot.configureInput
+import com.android.tools.preview.screenshot.services.AnalyticsService
 import com.android.tools.render.compose.readComposeRenderingResultJson
 import com.android.tools.render.compose.readComposeScreenshotsJson
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.VerificationTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.OutputFile
 import org.gradle.api.DefaultTask
-import org.gradle.api.JavaVersion
 import org.gradle.api.GradleException
+import org.gradle.api.JavaVersion
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Classpath
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.VerificationTask
 import org.gradle.jvm.toolchain.JavaLauncher
 
 /**
@@ -103,10 +104,13 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     @get:Nested
     abstract val javaLauncher: Property<JavaLauncher>
 
+    @get:Internal
+    abstract val analyticsService: Property<AnalyticsService>
+
     @TaskAction
-    fun run() {
+    fun run() = analyticsService.get().recordTaskAction(path) {
         if (readComposeScreenshotsJson(previewsDiscovered.get().asFile.reader()).isEmpty()) {
-            return // No previews discovered to render
+            return@recordTaskAction // No previews discovered to render
         }
 
         val resourcesApk = getResourcesApk()

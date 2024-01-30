@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.testing.screenshot
 
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
+import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
@@ -25,8 +26,11 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS
-import com.google.common.truth.Truth.assertThat
 import com.android.testutils.truth.PathSubject.assertThat
+import com.android.tools.build.gradle.internal.profile.GradleTaskExecutionType
+import com.google.common.collect.Iterables
+import com.google.common.truth.Truth.assertThat
+import com.google.wireless.android.sdk.stats.GradleBuildProfileSpan.ExecutionType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -136,6 +140,7 @@ class ScreenshotTest {
     }
             .withKotlinGradlePlugin(true)
             .withKotlinVersion(KOTLIN_VERSION_FOR_COMPOSE_TESTS)
+            .enableProfileOutput()
             .create()
 
     @Before
@@ -152,6 +157,11 @@ class ScreenshotTest {
             """.trimIndent()
         )
     }
+
+    private fun getExecutor(): GradleTaskExecutor =
+        project.executor()
+            .with(BooleanOption.USE_ANDROID_X, true)
+            .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
 
     @Test
     fun discoverPreviews() {
@@ -275,8 +285,21 @@ class ScreenshotTest {
         )
     }
 
-    private fun getExecutor(): GradleTaskExecutor =
-        project.executor()
-            .with(BooleanOption.USE_ANDROID_X, true)
-            .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
+    @Test
+    fun analytics() {
+        val capturer = ProfileCapturer(project)
+
+        val profiles = capturer.capture {
+            getExecutor().run("debugPreviewDiscovery")
+        }
+
+        val spanList = Iterables.getOnlyElement(profiles).spanList
+        val taskSpan = spanList.first {
+            it.task.type == GradleTaskExecutionType.PREVIEW_DISCOVERY_VALUE
+        }
+        val executionSpan = spanList.first {
+            it.parentId == taskSpan.id && it.type == ExecutionType.TASK_EXECUTION_ALL_PHASES
+        }
+        assertThat(executionSpan.durationInMs).isGreaterThan(0L)
+    }
 }

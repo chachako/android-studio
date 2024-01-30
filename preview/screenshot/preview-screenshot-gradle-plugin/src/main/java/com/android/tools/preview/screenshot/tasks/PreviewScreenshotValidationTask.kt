@@ -31,8 +31,8 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.VerificationTask
+import org.gradle.api.tasks.testing.Test
 
 /**
  * Runs screenshot tests of a variant.
@@ -64,12 +64,11 @@ abstract class PreviewScreenshotValidationTask : Test(), VerificationTask {
     abstract val analyticsService: Property<AnalyticsService>
 
     @TaskAction
-    fun run() {
+    fun run() = analyticsService.get().recordTaskAction(path) {
         val screenshots = readComposeScreenshotsJson(previewFile.get().asFile.reader())
         if (screenshots.isNotEmpty()) {
             analyticsService.get().recordPreviewScreenshotTestRun(
                 totalTestCount = screenshots.size,
-                project.gradle.sharedServices
             )
         }
     }

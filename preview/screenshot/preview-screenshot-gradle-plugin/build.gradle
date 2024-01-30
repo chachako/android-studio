@@ -60,6 +60,8 @@ dependencies {
     testImplementation libs.com.android.tools.testutils
     testImplementation project(':base:gradle-api')
     testImplementation project(':base:builder-test-api')
+    testImplementation libs.com.android.tools.analyticsLibrary.protos
+    testImplementation libs.com.android.tools.analyticsLibrary.shared
 }
 
 sourceSets {

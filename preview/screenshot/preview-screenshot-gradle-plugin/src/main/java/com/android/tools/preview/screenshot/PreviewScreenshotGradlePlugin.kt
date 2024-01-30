@@ -120,6 +120,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                             task.previewsOutputFile.disallowChanges()
                             task.resultsDir.set(resultsDir)
                             task.referenceImageDir.set(referenceImageDir)
+                            task.analyticsService.set(analyticsServiceProvider)
+                            task.usesService(analyticsServiceProvider)
                         }
                     variant.androidTest?.artifacts
                         ?.forScope(ScopedArtifacts.Scope.ALL)
@@ -190,6 +192,9 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         val toolchain = project.extensions.getByType(JavaPluginExtension::class.java).toolchain
                         val service = project.extensions.getByType(JavaToolchainService::class.java)
                         task.javaLauncher.set(service.launcherFor(toolchain))
+
+                        task.analyticsService.set(analyticsServiceProvider)
+                        task.usesService(analyticsServiceProvider)
                     }
 
                     variant.artifacts
@@ -218,6 +223,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
                         task.description = "Update screenshots for the $variantName build."
                         task.group = JavaBasePlugin.VERIFICATION_GROUP
+                        task.analyticsService.set(analyticsServiceProvider)
+                        task.usesService(analyticsServiceProvider)
                     }.get()
                     updateAllTask.dependsOn(updateTask)
 
@@ -255,6 +262,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     ) { task ->
                         task.outputDir.set(reportsDir)
                         task.resultsDir.set(testResultsDir)
+                        task.analyticsService.set(analyticsServiceProvider)
+                        task.usesService(analyticsServiceProvider)
                         task.onlyIf {previewScreenshotValidationTask.didWork }
                     }
                     previewScreenshotValidationTask.finalizedBy(screenshotHtmlTask)

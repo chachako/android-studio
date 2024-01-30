@@ -16,11 +16,16 @@
 
 package com.android.tools.preview.screenshot.tasks
 
+import com.android.testutils.MockitoKt.mock
+import com.android.tools.preview.screenshot.services.AnalyticsService
+import org.gradle.api.services.BuildServiceRegistry
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.mockito.Answers
+import org.mockito.Mockito.withSettings
 
 class PreviewDiscoveryTaskTest {
     @get:Rule
@@ -41,6 +46,11 @@ class PreviewDiscoveryTaskTest {
         task.resultsDir.set(resultsDir)
         task.referenceImageDir.set(referenceImageDir)
         task.previewsOutputFile.set(tempDirRule.newFile("previews_discovered.json"))
+        task.analyticsService.set(object: AnalyticsService() {
+            override val buildServiceRegistry: BuildServiceRegistry = mock(
+                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override fun getParameters(): Params = mock()
+        })
 
         task.run()
 

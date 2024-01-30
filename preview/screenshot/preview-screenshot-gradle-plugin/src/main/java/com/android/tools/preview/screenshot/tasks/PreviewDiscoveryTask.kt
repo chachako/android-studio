@@ -17,15 +17,18 @@
 package com.android.tools.preview.screenshot.tasks
 
 import com.android.tools.preview.screenshot.findPreviewsAndSerialize
+import com.android.tools.preview.screenshot.services.AnalyticsService
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.Directory
+import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.file.RegularFile
-import org.gradle.api.tasks.Classpath
-import org.gradle.api.tasks.OutputDirectory
 import java.nio.file.Files
 
 abstract class PreviewDiscoveryTask: DefaultTask() {
@@ -63,8 +66,11 @@ abstract class PreviewDiscoveryTask: DefaultTask() {
     @get:OutputDirectory
     abstract val referenceImageDir: RegularFileProperty
 
+    @get:Internal
+    abstract val analyticsService: Property<AnalyticsService>
+
     @TaskAction
-    fun run() {
+    fun run() = analyticsService.get().recordTaskAction(path) {
         Files.createDirectories(resultsDir.asFile.get().toPath())
         Files.createDirectories(referenceImageDir.asFile.get().toPath())
 

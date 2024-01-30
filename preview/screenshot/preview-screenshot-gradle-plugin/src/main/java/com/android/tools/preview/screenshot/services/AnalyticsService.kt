@@ -19,12 +19,17 @@ package com.android.tools.preview.screenshot.services
 import com.android.tools.analytics.CommonMetricsData
 import com.android.tools.preview.screenshot.services.AnalyticsService.Params
 import com.google.wireless.android.sdk.stats.AndroidStudioEvent
+import com.google.wireless.android.sdk.stats.GradleBuildProfileSpan
 import com.google.wireless.android.sdk.stats.ProductDetails
 import com.google.wireless.android.sdk.stats.TestRun
 import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.api.services.BuildServiceRegistry
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import javax.inject.Inject
 
 /**
  * A build service to record analytics data for preview screenshot tests.
@@ -33,7 +38,7 @@ import org.gradle.api.services.BuildServiceRegistry
  * the Android Gradle plugin's internal class, by using reflection.
  *
  * This class can be deleted once the preview screenshot plugin is merged
- * into the Android Gradle plugin.
+ * into the Android Gradle plugin. b/323040484.
  */
 abstract class AnalyticsService : BuildService<Params> {
 
@@ -41,31 +46,54 @@ abstract class AnalyticsService : BuildService<Params> {
         val androidGradlePluginVersion: Property<String>
     }
 
+    @get:Inject
+    abstract val buildServiceRegistry: BuildServiceRegistry
+
     companion object {
         private const val ANALYTICS_CLASS_NAME = "com.android.build.gradle.internal.profile.AnalyticsService"
+        private val clock: Clock = Clock.systemDefaultZone()
+    }
 
-        private fun getRecordEventFunc(registry: BuildServiceRegistry): (AndroidStudioEvent.Builder) -> Unit {
-            for (registration in registry.registrations) {
-                if (registration.name.startsWith(ANALYTICS_CLASS_NAME)) {
-                    val service = registration.service.get()
-                    val analyticsServiceClass = service.javaClass.classLoader.loadClass(
-                            ANALYTICS_CLASS_NAME)
-                    if (analyticsServiceClass.isInstance(service)) {
-                        val recordEventMethod = analyticsServiceClass
-                                .getMethod("recordEvent", AndroidStudioEvent.Builder::class.java)
-                        return { event ->
-                            recordEventMethod(service, event)
-                        }
+    private val recordEventFunc: (AndroidStudioEvent.Builder) -> Unit by lazy {
+        for (registration in buildServiceRegistry.registrations) {
+            if (registration.name.startsWith(ANALYTICS_CLASS_NAME)) {
+                val service = registration.service.get()
+                val analyticsServiceClass = service.javaClass.classLoader.loadClass(
+                        ANALYTICS_CLASS_NAME)
+                if (analyticsServiceClass.isInstance(service)) {
+                    val recordEventMethod = analyticsServiceClass
+                            .getMethod("recordEvent", AndroidStudioEvent.Builder::class.java)
+                    return@lazy { event ->
+                        recordEventMethod(service, event)
                     }
                 }
             }
-            return {}
         }
+        {}
     }
 
-    fun recordPreviewScreenshotTestRun(
-            totalTestCount: Int,
-            registry: BuildServiceRegistry) {
+    private val registerSpanFunc: (String, GradleBuildProfileSpan.Builder) -> Unit by lazy {
+        for (registration in buildServiceRegistry.registrations) {
+            if (registration.name.startsWith(ANALYTICS_CLASS_NAME)) {
+                val service = registration.service.get()
+                val analyticsServiceClass = service.javaClass.classLoader.loadClass(
+                        ANALYTICS_CLASS_NAME)
+                if (analyticsServiceClass.isInstance(service)) {
+                    val registerSpanMethod = analyticsServiceClass
+                            .getMethod(
+                                    "registerSpan",
+                                    String::class.java,
+                                    GradleBuildProfileSpan.Builder::class.java)
+                    return@lazy { taskPath, span ->
+                        registerSpanMethod(service, taskPath, span)
+                    }
+                }
+            }
+        }
+        { _, _ -> }
+    }
+
+    fun recordPreviewScreenshotTestRun(totalTestCount: Int) {
         val event = AndroidStudioEvent.newBuilder().apply {
             category = AndroidStudioEvent.EventCategory.TESTS
             kind = AndroidStudioEvent.EventKind.TEST_RUN
@@ -84,6 +112,20 @@ abstract class AnalyticsService : BuildService<Params> {
                 numberOfTestsExecuted = totalTestCount
             }
         }
-        getRecordEventFunc(registry)(event)
+        recordEventFunc(event)
+    }
+
+    fun recordTaskAction(taskPath: String, block: () -> Unit) {
+        val before: Instant = clock.instant()
+        block()
+        val after: Instant = clock.instant()
+
+        registerSpanFunc(
+                taskPath,
+                GradleBuildProfileSpan.newBuilder()
+                        .setType(GradleBuildProfileSpan.ExecutionType.TASK_EXECUTION_ALL_PHASES)
+                        .setThreadId(Thread.currentThread().id)
+                        .setStartTimeInMs(before.toEpochMilli())
+                        .setDurationInMs(Duration.between(before, after).toMillis()))
     }
 }

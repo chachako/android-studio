@@ -16,16 +16,20 @@
 
 package com.android.tools.preview.screenshot.tasks
 
-import com.android.testutils.MockitoKt.any
 import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
 import com.android.tools.preview.screenshot.services.AnalyticsService
+import org.gradle.api.services.BuildServiceRegistry
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.mockito.Answers
+import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.withSettings
 
 class PreviewScreenshotValidationTaskTest {
     @get:Rule
@@ -74,11 +78,18 @@ class PreviewScreenshotValidationTaskTest {
         task.renderTaskOutputDir.set(renderOutputDir)
         task.resultsFile.set(resultsFile)
 
-        val analyticsService = mock<AnalyticsService>()
+        val analyticsService = spy(object: AnalyticsService() {
+            override val buildServiceRegistry: BuildServiceRegistry = mock(
+                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override fun getParameters(): Params = mock<Params>(
+                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS)).apply {
+                    `when`(androidGradlePluginVersion.get()).thenReturn("")
+            }
+        })
         task.analyticsService.set(analyticsService)
 
         task.run()
 
-        verify(analyticsService).recordPreviewScreenshotTestRun(eq(1), any())
+        verify(analyticsService).recordPreviewScreenshotTestRun(eq(1))
     }
 }

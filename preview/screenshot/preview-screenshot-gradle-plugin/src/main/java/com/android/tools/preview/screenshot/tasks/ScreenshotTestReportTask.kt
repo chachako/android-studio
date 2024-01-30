@@ -17,9 +17,12 @@
 package com.android.tools.preview.screenshot.tasks
 
 import com.android.tools.preview.screenshot.report.TestReport
+import com.android.tools.preview.screenshot.services.AnalyticsService
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -34,8 +37,11 @@ abstract class ScreenshotTestReportTask: DefaultTask() {
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
 
+    @get:Internal
+    abstract val analyticsService: Property<AnalyticsService>
+
     @TaskAction
-    fun run() {
+    fun run() = analyticsService.get().recordTaskAction(path) {
         val reportDir = outputDir.get().asFile
         val resultsDir = resultsDir.get().asFile
         val report = TestReport(
