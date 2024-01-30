@@ -22,10 +22,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -35,9 +39,102 @@ import org.junit.Test
 class SerializedSharedFlowTest : AdbLibToolsTestBase() {
 
     @Test
+    fun testOnSubscriptionAllowsMultipleEmits(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val flow = MutableSerializedSharedFlow<Int>().onSubscription {
+            emit(5)
+            emit(6)
+            emit(7)
+        }
+
+        // Act
+        val values = mutableListOf<Int>()
+        flow.takeWhile { value ->
+            values.add(value)
+            value != 7
+        }.collect()
+
+        // Assert
+        Assert.assertEquals(listOf(5, 6, 7), values)
+    }
+
+    @Test
+    fun testOnSubscriptionAllowsMultipleEmitsWithMutableValues() : Unit = runBlockingWithTimeout {
+        val flow = MutableSerializedSharedFlow<StringBuilder>().onSubscription {
+            val sb = StringBuilder()
+
+            sb.clear().append("Foo")
+            emit(sb)
+
+            sb.clear().append("Bar")
+            emit(sb)
+
+            sb.clear()
+            emit(sb)
+        }
+
+        // Act
+        val values = mutableListOf<String>()
+        flow.takeWhile { sb ->
+            values.add(sb.toString())
+            sb.isNotEmpty()
+        }.collect()
+
+        // Assert
+        Assert.assertEquals(listOf("Foo", "Bar", ""), values)
+    }
+
+    @Test
+    fun testOnSubscriptionAllowsNestedSubscriptions(): Unit = runBlockingWithTimeout {
+        // Prepare
+        val flow = MutableSerializedSharedFlow<Int>().onSubscription {
+            emit(5)
+            emit(6)
+            emit(7)
+        }
+        val nestedFlow = flow.onSubscription {
+            emit(8)
+            emit(9)
+            emit(10)
+        }
+        val nestedFlow2 = flow.onSubscription {
+            emit(11)
+            emit(12)
+            emit(13)
+        }
+
+        // Act
+        val values = mutableListOf<Int>() // 5,6,7
+        flow.takeWhile { value ->
+            values.add(value)
+            value != 7
+        }.collect()
+
+        val nestedFlowValues = mutableListOf<Int>() // 5,6,7,8,9,10
+        nestedFlow.takeWhile { value ->
+            nestedFlowValues.add(value)
+            value != 10
+        }.collect()
+
+        val nestedFlow2Values = mutableListOf<Int>() // 5,6,7,11,12,13
+        nestedFlow2.takeWhile { value ->
+            nestedFlow2Values.add(value)
+            value != 13
+        }.collect()
+
+        // Assert
+        Assert.assertEquals(listOf(5, 6, 7), values)
+        Assert.assertEquals(listOf(5, 6, 7, 8, 9, 10), nestedFlowValues)
+        Assert.assertEquals(listOf(5, 6, 7, 11, 12, 13), nestedFlow2Values)
+    }
+
+    @Test
     fun testEmitWorksForOneCollector() = runBlockingWithTimeout {
         // Prepare
-        val flow = MutableSerializedSharedFlow<Int>()
+        val collectorCount = MutableStateFlow(0)
+        val flow = MutableSerializedSharedFlow<Int>().onSubscription {
+            collectorCount.update { it + 1 }
+        }
 
         // Act
         val asyncValues = async(Dispatchers.Default) {
@@ -45,7 +142,7 @@ class SerializedSharedFlowTest : AdbLibToolsTestBase() {
         }
         val asyncEmit = async(Dispatchers.Default) {
             // Wait until collector has started, then emit values
-            flow.subscriptionCount.first { it == 1}
+            collectorCount.first { it == 1 }
             flow.emit(5)
             flow.emit(6)
         }
@@ -59,17 +156,21 @@ class SerializedSharedFlowTest : AdbLibToolsTestBase() {
     @Test
     fun testEmitWorksForManyCollectors() = runBlockingWithTimeout {
         // Prepare
-        val flow = MutableSerializedSharedFlow<Int>()
+        val collectorCountState = MutableStateFlow(0)
+        val flow = MutableSerializedSharedFlow<Int>().onSubscription {
+            collectorCountState.update { it + 1 }
+        }
+        val collectorCount = 500
 
         // Act
-        val asyncValues = (1..500).map {
+        val asyncValues = (1..collectorCount).map {
             async(Dispatchers.Default) {
                 flow.take(2).toList()
             }
         }
         val asyncEmit = async(Dispatchers.Default) {
             // Wait until all collectors have started, then emit values
-            flow.subscriptionCount.first { it == 500 }
+            collectorCountState.first { it == collectorCount }
             flow.emit(5)
             flow.emit(6)
         }
@@ -77,7 +178,7 @@ class SerializedSharedFlowTest : AdbLibToolsTestBase() {
         asyncEmit.await()
 
         // Assert
-        Assert.assertEquals(500, listOfValueList.size)
+        Assert.assertEquals(collectorCount, listOfValueList.size)
         listOfValueList.forEach { values ->
             Assert.assertEquals(listOf(5, 6), values)
         }
@@ -113,14 +214,17 @@ class SerializedSharedFlowTest : AdbLibToolsTestBase() {
     @Test
     fun testEmitWaitsForCollectorsToComplete() = runBlockingWithTimeout {
         // Prepare
-        val flow = MutableSerializedSharedFlow<MixedIntWrapper>()
+        val collectorCountState = MutableStateFlow(0)
+        val flow = MutableSerializedSharedFlow<MixedIntWrapper>().onSubscription {
+            collectorCountState.update { it + 1 }
+        }
         val emitCount = 500
         val collectorCount = 50
 
         // Act
         val asyncEmit = async(Dispatchers.Default) {
             // Wait until all collectors have started
-            flow.subscriptionCount.first { it == collectorCount }
+            collectorCountState.first { it == collectorCount }
 
             // We emit an object with an immutable "Int" field and a mutable one.
             // If "flow.emit" calls were not serialized correctly, it is very likely
@@ -156,30 +260,6 @@ class SerializedSharedFlowTest : AdbLibToolsTestBase() {
                     it.first , it.second)
             }
         }
-    }
-
-    @Test
-    fun testReplayCacheWorks() = runBlockingWithTimeout {
-        // Prepare
-        val flow = MutableSerializedSharedFlow<Int>(2)
-
-        // Act
-        val asyncValues = async(Dispatchers.Default) {
-            flow.take(2).toList()
-        }
-        val asyncEmit = async(Dispatchers.Default) {
-            // Wait until collector has started, then emit values
-            flow.subscriptionCount.first { it == 1}
-            flow.emit(5)
-            flow.emit(6)
-        }
-        asyncValues.await()
-        asyncEmit.await()
-
-        val replayCache = flow.take(2).toList()
-
-        // Assert
-        Assert.assertEquals(listOf(5, 6), replayCache)
     }
 
     @Test

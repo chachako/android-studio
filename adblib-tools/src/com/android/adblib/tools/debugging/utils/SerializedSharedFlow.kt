@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.CoroutineContext
@@ -36,14 +37,7 @@ import kotlin.coroutines.CoroutineContext
  *
  * Like [SharedFlow.collect], [SerializedSharedFlow.collect] never completes.
  */
-internal interface SerializedSharedFlow<T> : Flow<T> {
-
-    /**
-     * A snapshot of the replay cache
-     *
-     * @see SharedFlow.replayCache
-     */
-    val replayCache: List<T>
+internal interface SerializedSharedFlow<T>: Flow<T> {
 
     /**
      * Accepts the given [collector] and [emits][FlowCollector.emit] values into it.
@@ -55,6 +49,24 @@ internal interface SerializedSharedFlow<T> : Flow<T> {
      * completes normally.
      */
     override suspend fun collect(collector: FlowCollector<T>): Nothing
+
+    /**
+     * Returns a flow that invokes the given [action] **after** this shared flow starts to
+     * be collected (after the subscription is registered).
+     *
+     * The [action] is called before any value is emitted from the upstream flow to this
+     * subscription but after the subscription is established. It is guaranteed that all emissions
+     * to the upstream flow that happen inside or immediately after this `onSubscription` action
+     * will be collected by this subscription.
+     *
+     * The receiver of the [action] is [FlowCollector], so `onSubscription` can emit
+     * additional elements.
+     *
+     * Note: [source](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/on-subscription.html)
+     *
+     * @see SharedFlow.onSubscription
+     */
+    fun onSubscription(action: suspend FlowCollector<T>.() -> Unit): SerializedSharedFlow<T>
 }
 
 /**
@@ -78,9 +90,21 @@ internal interface MutableSerializedSharedFlow<T> : SerializedSharedFlow<T>,
      */
     val subscriptionCount: StateFlow<Int>
 
+    override fun onSubscription(action: suspend FlowCollector<T>.() -> Unit): MutableSerializedSharedFlow<T>
+
     /**
-     * Emits a [value] to this shared flow, invoke all active collectors sequentially
-     * and returns when all active collectors are done collecting the [value].
+     * Emits [value] to this shared flow, waiting for all active collectors to be done
+     * collecting it. This method should be used, for example, if [value] is mutable
+     * between calls to [emit].
+     *
+     * In the example below, it is safe to call `sb.toString()` when collecting the flow:
+     *
+     *     val flow = MutableSerializedSharedFlow<StringBuilder>()
+     *     val sb = StringBuilder()
+     *     sb.append("Foo")
+     *     flow.emit(sb)
+     *     sb.clear().append("Bar")
+     *     flow.emit(sb)
      *
      * Note: This is different from [MutableSharedFlow.emit], where all collectors are
      * invoke concurrently where the [MutableSharedFlow.emit] may complete before all
@@ -96,31 +120,30 @@ internal interface MutableSerializedSharedFlow<T> : SerializedSharedFlow<T>,
 }
 
 /**
- * Creates a [MutableSerializedSharedFlow] given the maximum number of [replay] packets.
+ * Creates a [MutableSerializedSharedFlow] instance
  */
-internal fun <T> MutableSerializedSharedFlow(replay: Int = 0): MutableSerializedSharedFlow<T> {
-    return MutableSerializedSharedFlowImpl(replay)
+internal fun <T> MutableSerializedSharedFlow(): MutableSerializedSharedFlow<T> {
+    return MutableSerializedSharedFlowImpl()
 }
 
 /**
- * Creates a [MutableSerializedSharedFlow] given the maximum number of [replay] packets, calling
- * [onEmit] during each [MutableSerializedSharedFlow.emit] invocation.
+ * Creates a [MutableSerializedSharedFlow] instance, calling [onEmit] during each
+ * [MutableSerializedSharedFlow.emit] invocation.
  *
  * **Note: This class and the [onEmit] callback use are intended for testing purpose only.
  * Use [MutableSerializedSharedFlow] in production code.**
  */
+@Suppress("FunctionName") // Mirroring coroutines API: Functions as constructors
 internal fun <T> MutableSerializedSharedFlowForTesting(
-    replay: Int = 0,
     onEmit: (suspend (T) -> Unit)? = null
 ): MutableSerializedSharedFlow<T> {
-    return MutableSerializedSharedFlowImpl(replay, onEmit)
+    return MutableSerializedSharedFlowImpl(onEmit)
 }
 
 /**
  * Implementation of [MutableSerializedSharedFlow]
  */
 private class MutableSerializedSharedFlowImpl<T>(
-    replay: Int,
     private val onEmit: (suspend (T) -> Unit)? = null
 ) : MutableSerializedSharedFlow<T>, AutoCloseable {
 
@@ -140,26 +163,24 @@ private class MutableSerializedSharedFlowImpl<T>(
      * The underlying [MutableSharedFlow], used to emit `['value:T', SKIP]` sequences for each
      * `'value:T'` emitted to this flow.
      */
-    private val sharedFlow = MutableSharedFlow<Any?>(replay = replay * 2)
+    private val sharedFlow = MutableSharedFlow<Any?>()
 
     /**
      * [Mutex] to ensure [emit] is atomic
      */
     private val emitMutex = Mutex()
 
-    override val replayCache: List<T>
-        get() {
-            return sharedFlow.replayCache
-                .mapNotNull {
-                    @Suppress("UNCHECKED_CAST")
-                    it as? T
-                }.toList()
-        }
-
     override val subscriptionCount: StateFlow<Int>
         get() = sharedFlow.subscriptionCount
 
     override suspend fun collect(collector: FlowCollector<T>): Nothing {
+        collectSharedFlow(collector, sharedFlow)
+    }
+
+    private suspend fun collectSharedFlow(
+        collector: FlowCollector<T>,
+        sharedFlow: SharedFlow<Any?>
+    ): Nothing {
         val context = currentCoroutineContext()
         synchronized(lock) {
             cancelIfClosed()
@@ -212,6 +233,39 @@ private class MutableSerializedSharedFlowImpl<T>(
         toClose.forEach {
             it.cancel(closedException())
         }
+    }
+
+    override fun onSubscription(action: suspend FlowCollector<T>.() -> Unit): MutableSerializedSharedFlow<T> {
+        return SubscribedSerializedSharedFlow(this, sharedFlow.onSubscription(action))
+    }
+
+    private class SubscribedSerializedSharedFlow<T>(
+        private val serializedSharedFlow: MutableSerializedSharedFlowImpl<T>,
+        private val sharedFlowWithSubscription: SharedFlow<Any?>
+    ) : MutableSerializedSharedFlow<T> {
+
+        override val subscriptionCount: StateFlow<Int>
+            get() = serializedSharedFlow.subscriptionCount
+
+        override suspend fun collect(collector: FlowCollector<T>): Nothing {
+            serializedSharedFlow.collectSharedFlow(collector, sharedFlowWithSubscription)
+        }
+
+        override fun onSubscription(action: suspend FlowCollector<T>.() -> Unit): MutableSerializedSharedFlow<T> {
+            return SubscribedSerializedSharedFlow(
+                serializedSharedFlow,
+                sharedFlowWithSubscription.onSubscription(action)
+            )
+        }
+
+        override suspend fun emit(value: T) {
+            serializedSharedFlow.emit(value)
+        }
+
+        override fun close() {
+            serializedSharedFlow.close()
+        }
+
     }
 
     private fun cancelIfClosed() {

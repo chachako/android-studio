@@ -44,7 +44,7 @@ internal class NoDdmsPacketFilter(session: SharedJdwpSession) : SharedJdwpSessio
      */
     override suspend fun beforeSendPacket(packet: JdwpPacketView) {
         if (packet.isDdmsCommand) {
-            logger.verbose { "Adding packet id=${packet.id}" }
+            logger.verbose { "Adding packet id=${intToHex(packet.id)} because it is a DDMS command to the device" }
             activeDdmsCommands.add(packet.id)
         }
     }
@@ -53,7 +53,7 @@ internal class NoDdmsPacketFilter(session: SharedJdwpSession) : SharedJdwpSessio
         if (packet.isReply && activeDdmsCommands.isNotEmpty()) {
             activeDdmsCommands.remove(packet.id).also { removed ->
                 if (removed) {
-                    logger.verbose { "Removing packet id=${packet.id}" }
+                    logger.verbose { "Removing packet id=${intToHex(packet.id)} because it is a reply to a previously seen DDMS command" }
                 }
             }
         }
@@ -62,17 +62,22 @@ internal class NoDdmsPacketFilter(session: SharedJdwpSession) : SharedJdwpSessio
     override suspend fun filter(packet: JdwpPacketView): Boolean {
         if (packet.isReply && activeDdmsCommands.isNotEmpty()) {
             if (activeDdmsCommands.contains(packet.id)) {
-                logger.verbose { "Skipping packet id=${packet.id} because it is the reply to a DDMS command" }
+                logger.verbose { "Skipping packet id=${intToHex(packet.id)} because it is the reply to a DDMS command" }
                 return false // exclude
             }
         }
 
         if (packet.isDdmsCommand) {
-            logger.verbose { "Skipping packet id=${packet.id} because it is a DDMS command from the device" }
+            logger.verbose { "Skipping packet id=${intToHex(packet.id)} because it is a DDMS command from the device" }
             return false // exclude
         }
 
+        logger.verbose { "Keeping packet id=${intToHex(packet.id)} because it is not a DDMS command" }
         return true // keep
+    }
+
+    private fun intToHex(value: Int): String {
+        return "0x%X".format(value)
     }
 
     override fun close() {
