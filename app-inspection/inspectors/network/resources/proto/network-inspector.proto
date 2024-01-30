@@ -289,7 +289,17 @@ message Response {
 message StartInspectionResponse {
     // This timestamp in nanoseconds represents the baseline for the clock the app
     // is running on. This helps Studio in rendering the inspector timeline.
-    int64 timestamp = 1;
+    optional int64 timestamp = 1;
+    // TRUE if agent was able to start speed data collection
+    optional bool speedCollectionStarted = 2;
+    // TRUE if agent was able to instrument Java Net code
+    optional bool javaNetHooksRegistered = 3;
+    // TRUE if agent was able to instrument OK HTTP code
+    optional bool okhttpHooksRegistered = 4;
+    // TRUE if agent was able to instrument gRPC code
+    optional bool grpcHooksRegistered = 5;
+    // TRUE if inspector was already started
+    optional bool alreadyStarted = 6;
 }
 
 message InterceptResponse {

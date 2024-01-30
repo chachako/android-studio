@@ -22,6 +22,7 @@ import com.android.tools.appinspection.network.utils.TestLogger
 import java.util.concurrent.Executor
 import org.junit.rules.ExternalResource
 import studio.network.inspection.NetworkInspectorProtocol
+import studio.network.inspection.NetworkInspectorProtocol.Response
 
 internal class NetworkInspectorRule(val autoStart: Boolean = true) : ExternalResource() {
 
@@ -44,7 +45,8 @@ internal class NetworkInspectorRule(val autoStart: Boolean = true) : ExternalRes
     }
   }
 
-  fun start() {
+  fun start(): Response {
+    var response: Response = Response.getDefaultInstance()
     inspector.onReceiveCommand(
       NetworkInspectorProtocol.Command.newBuilder()
         .setStartInspectionCommand(
@@ -53,11 +55,14 @@ internal class NetworkInspectorRule(val autoStart: Boolean = true) : ExternalRes
         .build()
         .toByteArray(),
       object : Inspector.CommandCallback {
-        override fun reply(response: ByteArray) {}
+        override fun reply(bytes: ByteArray) {
+          response = Response.parseFrom(bytes)
+        }
 
         override fun addCancellationListener(executor: Executor, runnable: Runnable) {}
       },
     )
+    return response
   }
 
   override fun after() {

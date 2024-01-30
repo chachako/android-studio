@@ -75,9 +75,10 @@ internal class NetworkInspectorTest {
       Stat(30, 30),
       Stat(30, 30),
     )
-    inspectorRule.start()
+    val response = inspectorRule.start()
     delay(1000)
 
+    assertThat(response.startInspectionResponse.speedCollectionStarted).isTrue()
     assertThat(inspectorRule.connection.speedData.map { it.toDebugString() })
       .containsExactly(
         speedEvent(20, 20),
@@ -96,7 +97,7 @@ internal class NetworkInspectorTest {
   fun registerHooks_logs() {
     val networkInspector = NetworkInspector(FakeConnection(), FakeEnvironment(), logger = logger)
 
-    networkInspector.registerHooks()
+    val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
     // Note that `AndroidChannelBuilder` is not hooked. This is because we didn't add a build
     // dependency on `grpc-android`. The test still verifies that we attempt to hook it.
@@ -108,6 +109,9 @@ internal class NetworkInspectorTest {
         "DEBUG: studio.inspectors: Instrumented io.grpc.ManagedChannelBuilder",
         "DEBUG: studio.inspectors: Could not load class io.grpc.android.AndroidChannelBuilder",
       )
+    assertThat(javaNet).isTrue()
+    assertThat(okhttp).isTrue()
+    assertThat(grpc).isTrue()
   }
 
   @Test
@@ -115,12 +119,15 @@ internal class NetworkInspectorTest {
     val environment = TestInspectorEnvironment("OkHttpClient")
     val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
 
-    networkInspector.registerHooks()
+    val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
     assertThat(logger.messages.filter { !it.contains("studio.inspectors") })
       .containsExactly(
         "DEBUG: Network Inspector: Did not instrument OkHttpClient. App does not use OKHttp or class is omitted by app reduce"
       )
+    assertThat(javaNet).isTrue()
+    assertThat(okhttp).isFalse()
+    assertThat(grpc).isTrue()
   }
 
   @Test
@@ -128,9 +135,12 @@ internal class NetworkInspectorTest {
     val environment = TestInspectorEnvironment("com.squareup.okhttp.OkHttpClient")
     val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
 
-    networkInspector.registerHooks()
+    val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
     assertThat(logger.messages.filter { !it.contains("studio.inspectors") }).isEmpty()
+    assertThat(javaNet).isTrue()
+    assertThat(okhttp).isTrue()
+    assertThat(grpc).isTrue()
   }
 
   @Test
@@ -138,9 +148,12 @@ internal class NetworkInspectorTest {
     val environment = TestInspectorEnvironment("okhttp3.OkHttpClient")
     val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
 
-    networkInspector.registerHooks()
+    val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
     assertThat(logger.messages.filter { !it.contains("studio.inspectors") }).isEmpty()
+    assertThat(javaNet).isTrue()
+    assertThat(okhttp).isTrue()
+    assertThat(grpc).isTrue()
   }
 
   @Test
@@ -148,12 +161,15 @@ internal class NetworkInspectorTest {
     val environment = TestInspectorEnvironment("ManagedChannelBuilder")
     val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
 
-    networkInspector.registerHooks()
+    val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
     assertThat(logger.messages.filter { !it.contains("studio.inspectors") })
       .containsExactly(
         "DEBUG: Network Inspector: Did not instrument 'ManagedChannelBuilder'. App does not use gRPC or class is omitted by app reduce"
       )
+    assertThat(javaNet).isTrue()
+    assertThat(okhttp).isTrue()
+    assertThat(grpc).isFalse()
   }
 
   private inner class TestInspectorEnvironment(private val rejectClassName: String) :
@@ -161,6 +177,13 @@ internal class NetworkInspectorTest {
 
     override fun artTooling(): ArtTooling {
       return object : ArtTooling by inspectorRule.environment.artTooling() {
+        override fun <T : Any?> findInstances(clazz: Class<T>): List<T> {
+          return when {
+            clazz.name.endsWith(rejectClassName) -> emptyList()
+            else -> inspectorRule.environment.artTooling().findInstances(clazz)
+          }
+        }
+
         override fun <T : Any?> registerExitHook(
           originClass: Class<*>,
           originMethod: String,

@@ -106,24 +106,35 @@ internal class NetworkInspector(
     val command = NetworkInspectorProtocol.Command.parseFrom(data)
     when {
       command.hasStartInspectionCommand() -> {
+        if (isStarted) {
+          logger.error("Inspector already started")
+          callback.reply(
+            NetworkInspectorProtocol.Response.newBuilder()
+              .setStartInspectionResponse(
+                NetworkInspectorProtocol.StartInspectionResponse.newBuilder()
+                  .setAlreadyStarted(true)
+              )
+              .build()
+              .toByteArray()
+          )
+          return
+        }
+        val speedCollectionStarted = startSpeedCollection()
+        val (javaNet, okhttp, grpc) = registerHooks()
+
         callback.reply(
           NetworkInspectorProtocol.Response.newBuilder()
             .setStartInspectionResponse(
               NetworkInspectorProtocol.StartInspectionResponse.newBuilder()
                 .setTimestamp(System.nanoTime())
+                .setSpeedCollectionStarted(speedCollectionStarted)
+                .setJavaNetHooksRegistered(javaNet)
+                .setOkhttpHooksRegistered(okhttp)
+                .setGrpcHooksRegistered(grpc)
             )
             .build()
             .toByteArray()
         )
-
-        // Studio should only ever send one start command, but it's harmless to
-        // reply with a response. We just need to make sure that we don't collect
-        // information twice.
-        if (!isStarted) {
-          startSpeedCollection()
-          registerHooks()
-          isStarted = true
-        }
       }
       command.hasInterceptCommand() -> {
         val interceptCommand = command.interceptCommand
@@ -153,20 +164,25 @@ internal class NetworkInspector(
     }
   }
 
-  private fun startSpeedCollection() =
-    scope.launch {
-      // The app can have multiple Application instances. In that case, we use the first non-null
-      // uid, which is most likely from the Application created by Android.
-      val uid =
-        environment.artTooling().findInstances(Application::class.java).firstNotNullOfOrNull {
-          runCatching { it.applicationInfo?.uid }.getOrNull()
-        }
-      if (uid == null) {
-        logger.error(
-          "Failed to find application instance. Collection of network speed is not available."
-        )
-        return@launch
+  /**
+   * Starts collection of Speed Data.
+   *
+   * Returns true if collection started successfully, false if not.
+   */
+  private fun startSpeedCollection(): Boolean {
+    // The app can have multiple Application instances. In that case, we use the first non-null
+    // uid, which is most likely from the Application created by Android.
+    val uid =
+      environment.artTooling().findInstances(Application::class.java).firstNotNullOfOrNull {
+        runCatching { it.applicationInfo?.uid }.getOrNull()
       }
+    if (uid == null) {
+      logger.error(
+        "Failed to find application instance. Collection of network speed is not available."
+      )
+      return false
+    }
+    scope.launch {
       var prevRxBytes = trafficStatsProvider.getUidRxBytes(uid)
       var prevTxBytes = trafficStatsProvider.getUidTxBytes(uid)
       var prevZero = false
@@ -200,6 +216,8 @@ internal class NetworkInspector(
         prevZero = zero
       }
     }
+    return true
+  }
 
   private fun sendSpeedEvent(timestamp: Long, rxSpeed: Long, txSpeed: Long) {
     connection.sendEvent(
@@ -214,7 +232,11 @@ internal class NetworkInspector(
   }
 
   @VisibleForTesting
-  internal fun registerHooks() {
+  internal fun registerHooks(): Triple<Boolean, Boolean, Boolean> {
+    return Triple(registerJavaNetHooks(), registerOkHttpHooks(), registerGrpcHooks())
+  }
+
+  private fun registerJavaNetHooks(): Boolean {
     environment
       .artTooling()
       .registerExitHook(
@@ -225,8 +247,11 @@ internal class NetworkInspector(
         },
       )
     logger.debugHidden("Instrumented ${URL::class.qualifiedName}")
+    return true
+  }
 
-    var okHttpInstrumented = false
+  private fun registerOkHttpHooks(): Boolean {
+    var instrumented = false
     try {
       /*
        * Modifies a list of okhttp2 Interceptor in place, adding our own
@@ -253,7 +278,7 @@ internal class NetworkInspector(
           },
         )
       logger.debugHidden("Instrumented ${OkHttpClient::class.qualifiedName}")
-      okHttpInstrumented = true
+      instrumented = true
     } catch (e: NoClassDefFoundError) {
       // Ignore. App may not depend on OkHttp.
     }
@@ -272,26 +297,31 @@ internal class NetworkInspector(
           },
         )
       logger.debugHidden("Instrumented ${okhttp3.OkHttpClient::class.qualifiedName}")
-      okHttpInstrumented = true
+      instrumented = true
     } catch (e: NoClassDefFoundError) {
       // Ignore. App may not depend on OkHttp.
     }
-    if (!okHttpInstrumented) {
+    if (!instrumented) {
       // Only log if both OkHttp 2 and 3 were not detected
       logger.debug(
         "Did not instrument OkHttpClient. App does not use OKHttp or class is omitted by app reduce"
       )
     }
+    return instrumented
+  }
 
+  private fun registerGrpcHooks(): Boolean {
     try {
       val grpcInterceptor = GrpcInterceptor { GrpcTracker(connection) }
       instrumentExistingGrpcChannels(grpcInterceptor)
       instrumentGrpcChannelBuilder(grpcInterceptor)
       logger.debugHidden("Instrumented ${ManagedChannelBuilder::class.qualifiedName}")
+      return true
     } catch (e: NoClassDefFoundError) {
       logger.debug(
         "Did not instrument 'ManagedChannelBuilder'. App does not use gRPC or class is omitted by app reduce"
       )
+      return false
     }
   }
 
@@ -368,4 +398,15 @@ internal class NetworkInspector(
   }
 
   private class GrpcHook(val className: String, val method: String)
+
+  private data class InspectorState(
+    val speedDataCollectionStarted: Boolean,
+    val instrumentationState: InstrumentationState,
+  )
+
+  @VisibleForTesting
+  internal data class InstrumentationState(
+    val okhttpHooksRegistered: Boolean,
+    val grpcHooksRegistered: Boolean,
+  )
 }
