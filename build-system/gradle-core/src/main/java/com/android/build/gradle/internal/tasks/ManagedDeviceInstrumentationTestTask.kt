@@ -23,6 +23,7 @@ import com.android.build.gradle.internal.AvdComponentsBuildService
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.computeManagedDeviceEmulatorMode
 import com.android.build.gradle.internal.dsl.EmulatorControl
@@ -102,6 +103,9 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
         abstract val executionEnum: Property<TestOptions.Execution>
 
         @get: Input
+        abstract val forceCompilation: Property<Boolean>
+
+        @get: Input
         abstract val emulatorControlConfig: Property<EmulatorControlConfig>
 
         @get: Input
@@ -167,6 +171,7 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                 emulatorControlConfig.get(),
                 retentionConfig.get(),
                 useOrchestrator,
+                forceCompilation.get(),
                 numShards,
                 emulatorGpuFlag.get(),
                 showEmulatorKernelLoggingFlag.get(),
@@ -454,6 +459,9 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
 
             val executionEnum = globalConfig.testOptionExecutionEnum
             task.testRunnerFactory.executionEnum.setDisallowChanges(executionEnum)
+
+            task.testRunnerFactory.forceCompilation.setDisallowChanges(
+                creationConfig.isForceAotCompilation)
 
             if (!projectOptions.get(BooleanOption.ANDROID_TEST_USES_UNIFIED_TEST_PLATFORM)) {
                 LoggerWrapper.getLogger(CreationAction::class.java).warning(

@@ -34,6 +34,7 @@ import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
+import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.profile.ProfilingMode
 import com.android.build.gradle.internal.publishing.VariantPublishingInfo
 import com.android.build.gradle.internal.scope.BuildFeatureValues
@@ -285,4 +286,9 @@ open class ApplicationVariantImpl @Inject constructor(
 
     override val includeVcsInfo: Boolean?
         get() = dslInfo.includeVcsInfo
+
+    override val isForceAotCompilation: Boolean
+        get() = experimentalProperties.map {
+            ModulePropertyKey.BooleanWithDefault.FORCE_AOT_COMPILATION.getValue(it)
+        }.getOrElse(false)
 }

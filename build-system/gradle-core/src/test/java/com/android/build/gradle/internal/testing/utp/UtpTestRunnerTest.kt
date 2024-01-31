@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.testing.utp
 import com.android.build.api.variant.impl.AndroidVersionImpl
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.testing.StaticTestData
+import com.android.builder.model.TestOptions
 import com.android.builder.testing.api.DeviceConnector
 import com.android.ide.common.process.ProcessExecutor
 import com.android.ide.common.workers.ExecutorServiceAdapter
@@ -105,6 +106,7 @@ class UtpTestRunnerTest {
                 any(),
                 any(),
                 anyBoolean(),
+                any(),
                 nullable(File::class.java),
                 anyInt(),
                 any(),
@@ -133,6 +135,7 @@ class UtpTestRunnerTest {
             mockemulatorControlConfig,
             mockRetentionConfig,
             useOrchestrator = false,
+            forceCompilation = false,
             uninstallIncompatibleApks = false,
             mockTestResultListener,
             Level.WARNING,

@@ -255,6 +255,8 @@ class ManagedDeviceInstrumentationTestTaskTest {
 
         `when`(factory.executionEnum)
             .thenReturn(FakeGradleProperty(TestOptions.Execution.ANDROIDX_TEST_ORCHESTRATOR))
+        `when`(factory.forceCompilation)
+            .thenReturn(FakeGradleProperty(false))
         `when`(factory.retentionConfig)
             .thenReturn(FakeGradleProperty(mock(RetentionConfig::class.java)))
         `when`(factory.emulatorControlConfig)

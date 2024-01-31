@@ -22,6 +22,7 @@ import com.android.build.gradle.internal.ManagedVirtualDeviceLockManager
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
 import com.android.build.gradle.internal.testing.StaticTestData
+import com.android.builder.model.TestOptions
 import com.android.testutils.MockitoKt.any
 import com.android.testutils.SystemPropertyOverrides
 import com.android.testutils.truth.PathSubject.assertThat
@@ -124,6 +125,7 @@ class ManagedDeviceTestRunnerTest {
                 any(),
                 any(),
                 any(),
+                any(),
                 nullable(Int::class.java),
                 any(),
                 any(),
@@ -189,6 +191,7 @@ class ManagedDeviceTestRunnerTest {
                 mockemulatorControlConfig,
                 mockRetentionConfig,
                 useOrchestrator = false,
+                forceCompilation = false,
                 numShards,
                 "auto-no-window",
                 showEmulatorKernelLogging = false,

@@ -291,6 +291,7 @@ class AndroidTestApkInstallerPlugin(
                 } else {
                     when (installableApk.installOptions.forceCompilation) {
                         ForceCompilation.FULL_COMPILATION -> {
+                            logger.info("Running force AOT compilation for $packageName")
                             deviceController.execute(
                                 listOf("shell",
                                        "cmd",
@@ -303,6 +304,7 @@ class AndroidTestApkInstallerPlugin(
                         }
 
                         ForceCompilation.PROFILE_BASED_COMPILATION -> {
+                            logger.info("Running profile based AOT compilation for $packageName")
                             deviceController.execute(
                                 listOf("shell",
                                        "cmd",

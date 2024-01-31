@@ -225,7 +225,7 @@ private fun runUtpTestSuite(
     }
     val loggingPropertiesFile = createUtpTempFile("logging", "properties").also { file ->
         Files.asCharSink(file, Charsets.UTF_8).write("""
-                .level=${config.utpLoggingLevel.name}
+                .level=INFO
                 .handlers=java.util.logging.ConsoleHandler,java.util.logging.FileHandler
                 java.util.logging.ConsoleHandler.level=${config.utpLoggingLevel.name}
                 java.util.logging.SimpleFormatter.format=%4${'$'}s: %5${'$'}s%n

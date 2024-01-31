@@ -20,6 +20,7 @@ import com.android.tools.utp.plugins.deviceprovider.ddmlib.proto.AndroidDevicePr
 import com.android.tools.utp.plugins.deviceprovider.gradle.proto.GradleManagedAndroidDeviceProviderProto
 import com.android.tools.utp.plugins.host.additionaltestoutput.proto.AndroidAdditionalTestOutputConfigProto
 import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto
+import com.android.tools.utp.plugins.host.apkinstaller.proto.AndroidApkInstallerConfigProto.InstallableApk.InstallOption.ForceCompilation
 import com.android.tools.utp.plugins.host.coverage.proto.AndroidTestCoverageConfigProto
 import com.android.tools.utp.plugins.host.emulatorcontrol.proto.EmulatorControlPluginProto
 import com.android.tools.utp.plugins.host.icebox.proto.IceboxPluginProto
@@ -60,6 +61,7 @@ fun assertRunnerConfigProto(
     runnerConfig: RunnerConfigProto.RunnerConfig,
     deviceId: String = "mockDeviceSerialNumber",
     useOrchestrator: Boolean = false,
+    forceCompilation: Boolean = false,
     useTestStorageService: Boolean = false,
     noWindowAnimation: Boolean = false,
     instrumentationArgs: Map<String, String> = mapOf(),
@@ -228,6 +230,11 @@ fun assertRunnerConfigProto(
     }
 
     val installApkTimeoutString = if (installApkTimeout != null) "install_apk_timeout: ${installApkTimeout}" else ""
+    val forceCompilationString = if (forceCompilation) {
+        "force_compilation: ${ForceCompilation.FULL_COMPILATION.name}"
+    } else {
+        ""
+    }
     val uninstallAfterTest = if (isUninstallAfterTest) "uninstall_after_test: true" else ""
     val installAsSplitApk = if (isSplitApk) "install_as_split_apk: true" else ""
     val dependencyApkPath = if (isDependencyApkSplit) """
@@ -256,6 +263,7 @@ fun assertRunnerConfigProto(
                   command_line_parameter: "-additional_install_option"
                   ${if (isDependencyApkSplit) "install_as_split_apk: true" else ""}
                   $installApkTimeoutString
+                  $forceCompilationString
                 }
                 $uninstallAfterTest
                 $forceReinstallBeforeTest
@@ -267,6 +275,7 @@ fun assertRunnerConfigProto(
                   command_line_parameter: "-additional_install_option"
                   $installAsSplitApk
                   $installApkTimeoutString
+                  $forceCompilationString
                 }
                 $uninstallAfterTest
                 apks_package_name: "com.example.application"
@@ -279,6 +288,7 @@ fun assertRunnerConfigProto(
                   command_line_parameter: "-additional_install_option"
                   $installApkTimeoutString
                   install_as_test_service: true
+                  $forceCompilationString
                 }
                 $uninstallAfterTest
                 $forceReinstallBeforeTest
@@ -288,6 +298,7 @@ fun assertRunnerConfigProto(
                 install_options {
                   command_line_parameter: "-additional_install_option"
                   $installApkTimeoutString
+                  $forceCompilationString
                 }
                 $uninstallAfterTest
                 $forceReinstallBeforeTest

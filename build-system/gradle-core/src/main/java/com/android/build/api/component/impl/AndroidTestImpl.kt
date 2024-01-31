@@ -52,6 +52,7 @@ import com.android.build.gradle.internal.component.features.ShadersCreationConfi
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.AndroidTestComponentDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
+import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.scope.BuildFeatureValues
 import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.TaskCreationServices
@@ -335,5 +336,10 @@ open class AndroidTestImpl @Inject constructor(
         super.finalizeAndLock()
         dexing.finalizeAndLock()
     }
+
+    override val isForceAotCompilation: Boolean
+        get() = mainVariant.experimentalProperties.map {
+            ModulePropertyKey.BooleanWithDefault.FORCE_AOT_COMPILATION.getValue(it)
+        }.getOrElse(false)
 }
 

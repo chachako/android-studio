@@ -33,6 +33,7 @@ import com.android.build.gradle.internal.component.features.DexingCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
 import com.android.build.gradle.internal.core.dsl.DynamicFeatureVariantDslInfo
 import com.android.build.gradle.internal.dependency.VariantDependencies
+import com.android.build.gradle.internal.dsl.ModulePropertyKey
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType
@@ -300,4 +301,9 @@ open class DynamicFeatureVariantImpl @Inject constructor(
         super.finalizeAndLock()
         dexing.finalizeAndLock()
     }
+
+    override val isForceAotCompilation: Boolean
+        get() = experimentalProperties.map {
+            ModulePropertyKey.BooleanWithDefault.FORCE_AOT_COMPILATION.getValue(it)
+        }.getOrElse(false)
 }

@@ -173,6 +173,7 @@ class UtpConfigFactoryTest {
     private fun createForLocalDevice(
             testData: StaticTestData = this.testData,
             useOrchestrator: Boolean = false,
+            forceCompilation: Boolean = false,
             uninstallIncompatibleApks: Boolean = false,
             additionalTestOutputDir: File? = null,
             installApkTimeout: Int? = null,
@@ -196,6 +197,7 @@ class UtpConfigFactoryTest {
                 mockRetentionConfig,
                 mockCoverageOutputDir,
                 useOrchestrator,
+                forceCompilation,
                 additionalTestOutputDir,
                 1234,
                 mockResultListenerClientCert,
@@ -211,6 +213,7 @@ class UtpConfigFactoryTest {
     private fun createForManagedDevice(
             testData: StaticTestData = this.testData,
             useOrchestrator: Boolean = false,
+            forceCompilation: Boolean = false,
             additionalTestOutputDir: File? = null,
             shardConfig: ShardConfig? = null,
             emulatorGpuFlag: String = "auto-no-window",
@@ -243,6 +246,7 @@ class UtpConfigFactoryTest {
                 mockCoverageOutputDir,
                 additionalTestOutputDir,
                 useOrchestrator,
+                forceCompilation,
                 testResultListenerServerMetadata,
                 emulatorGpuFlag,
                 showEmulatorKernelLogging,
@@ -282,6 +286,22 @@ class UtpConfigFactoryTest {
     fun createRunnerConfigProtoForLocalDeviceInstallApkTimeout() {
         val runnerConfigProto = createForLocalDevice(installApkTimeout = 5)
         assertRunnerConfigProto(runnerConfigProto, installApkTimeout = 5)
+    }
+
+    @Test
+    fun createRunnerConfigProtoForLocalDeviceInstallApkWithFullForceCompilation() {
+        val runnerConfigProto = createForLocalDevice(forceCompilation = true)
+        assertRunnerConfigProto(runnerConfigProto, forceCompilation = true)
+    }
+
+    @Test
+    fun createRunnerConfigProtoForManagedDeviceInstallApkWithFullForceCompilation() {
+        val runnerConfigProto = createForManagedDevice(forceCompilation = true)
+        assertRunnerConfigProto(runnerConfigProto,
+            forceCompilation = true,
+            deviceId = ":app:deviceNameDebugAndroidTest",
+            useGradleManagedDeviceProvider = true
+        )
     }
 
     @Test

@@ -155,6 +155,9 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
         public abstract Property<Execution> getExecutionEnum();
 
         @Input
+        public abstract Property<Boolean> getForceCompilation();
+
+        @Input
         public abstract Property<EmulatorControlConfig> getEmulatorControlConfig();
 
         @Input
@@ -232,6 +235,7 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                     getEmulatorControlConfig().get(),
                     getRetentionConfig().get(),
                     useOrchestrator,
+                    getForceCompilation().get(),
                     getUninstallIncompatibleApks().get(),
                     utpTestResultListener,
                     utpLoggingLevel(),
@@ -849,6 +853,10 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             task.getTestRunnerFactory()
                     .getExecutionEnum()
                     .set(this.creationConfig.getGlobal().getTestOptionExecutionEnum());
+
+            task.getTestRunnerFactory()
+                    .getForceCompilation()
+                    .set(creationConfig.isForceAotCompilation());
 
             task.getTestRunnerFactory()
                     .getJvmExecutable()

@@ -80,6 +80,15 @@ abstract class UtpTestBase {
             """.trimIndent())
     }
 
+    private fun enableForceCompilation(subProjectName: String) {
+        val subProject = project.getSubproject(subProjectName)
+        TestFileUtils.appendToFile(
+            subProject.buildFile,
+            """
+            android.experimentalProperties["android.experimental.force-aot-compilation"] = true
+            """.trimIndent())
+    }
+
     private fun enableCodeCoverage(subProjectName: String) {
         val subProject = project.getSubproject(subProjectName)
         TestFileUtils.appendToFile(
@@ -391,6 +400,22 @@ abstract class UtpTestBase {
             .contains("output message4")
         assertThat(project.file("${testAdditionalOutputPath}/subdir/white space/myTestStorageOutputFile5"))
             .contains("output message5")
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun androidTestWithForceCompilation() {
+        selectModule("app")
+        enableForceCompilation("app")
+
+        executor.run(testTaskName)
+
+        assertThat(project.file(testReportPath)).exists()
+        assertThat(project.file(testResultPbPath)).exists()
+        assertThat(File(project.file(testResultPbPath).parentFile, "utp.0.log")).contains(
+            "INFO: Running force AOT compilation for com.example.android.kotlin")
+        assertThat(File(project.file(testResultPbPath).parentFile, "utp.0.log")).contains(
+            "INFO: Running force AOT compilation for com.example.android.kotlin.test")
     }
 
     /**

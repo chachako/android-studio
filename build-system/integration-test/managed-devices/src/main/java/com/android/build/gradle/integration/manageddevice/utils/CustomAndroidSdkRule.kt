@@ -109,6 +109,8 @@ class CustomAndroidSdkRule : ExternalResource() {
         FileUtils.mkdirs(customSdkDir)
         SdkHelper.findSdkDir().copyRecursively(customSdkDir)
         Path.of(customSdkDir.absolutePath, "platform-tools", "adb").toFile().setExecutable(true)
+        Path.of(customSdkDir.absolutePath, "build-tools",
+            GradleTestProject.DEFAULT_BUILD_TOOL_VERSION, "aapt").toFile().setExecutable(true)
         setupLicenses()
     }
 
