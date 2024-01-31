@@ -25,7 +25,29 @@
 
     <issue
         id="UastImplementation"
-        message="org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `KotlinUastResolveProviderService`, `BaseKotlinUastResolveProviderService`"
+        message="org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin is UAST implementation. Consider using one of its corresponding UAST interfaces: `UastLanguagePlugin`"
+        errorLine1="import org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
+            line="93"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UastImplementation"
+        message="org.jetbrains.uast.kotlin.KotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `BaseKotlinUastResolveProviderService`"
+        errorLine1="import org.jetbrains.uast.kotlin.KotlinUastResolveProviderService"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
+            line="94"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UastImplementation"
+        message="org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `BaseKotlinUastResolveProviderService`"
         errorLine1="import org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -47,7 +69,18 @@
 
     <issue
         id="UastImplementation"
-        message="org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `KotlinUastResolveProviderService`, `BaseKotlinUastResolveProviderService`"
+        message="org.jetbrains.uast.kotlin.KotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `BaseKotlinUastResolveProviderService`"
+        errorLine1="    KotlinUastResolveProviderService::class.java,"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
+            line="313"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="UastImplementation"
+        message="org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `BaseKotlinUastResolveProviderService`"
         errorLine1="    CliKotlinUastResolveProviderService::class.java,"
         errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -58,7 +91,18 @@
 
     <issue
         id="UastImplementation"
-        message="org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `KotlinUastResolveProviderService`, `BaseKotlinUastResolveProviderService`"
+        message="org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin is UAST implementation. Consider using one of its corresponding UAST interfaces: `UastLanguagePlugin`"
+        errorLine1="    if (cachedPlugin !is KotlinUastLanguagePlugin) {"
+        errorLine2="                         ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/tools/lint/Fe10UastEnvironment.kt"
+            line="388"
+            column="26"/>
+    </issue>
+
+    <issue
+        id="UastImplementation"
+        message="org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService is UAST implementation. Consider using one of its corresponding UAST interfaces: `BaseKotlinUastResolveProviderService`"
         errorLine1="      CliKotlinUastResolveProviderService::class.java,"
         errorLine2="      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location

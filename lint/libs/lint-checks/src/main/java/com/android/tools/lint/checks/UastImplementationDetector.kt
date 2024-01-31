@@ -84,9 +84,6 @@ class UastImplementationDetector : Detector(), SourceCodeScanner {
         "org.jetbrains.uast.kotlin.KotlinBinaryOperators", // no API to retrieve lang-specific op
         "org.jetbrains.uast.kotlin.KotlinPostfixOperators", // we need a consolidated place :\
         "org.jetbrains.uast.kotlin.KotlinQualifiedExpressionAccessTypes", // again
-        "org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin", // plugin
-        // TODO(b/229742431, b/251847039): remove FE1.0-specific uses
-        "org.jetbrains.uast.kotlin.KotlinUastResolveProviderService", // FE1.0 service
         "org.jetbrains.uast.kotlin.kinds.KotlinSpecialExpressionKinds" // and again
         -> true
         else -> false
