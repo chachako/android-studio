@@ -45,17 +45,17 @@ import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
 import org.jetbrains.kotlin.analysis.api.KtStarTypeProjection
 import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.renderer.types.impl.KtTypeRendererForSource
+import org.jetbrains.kotlin.analysis.api.renderer.types.renderers.KtFlexibleTypeRenderer
 import org.jetbrains.kotlin.analysis.api.types.KtDynamicType
 import org.jetbrains.kotlin.analysis.api.types.KtFlexibleType
 import org.jetbrains.kotlin.analysis.api.types.KtNonErrorClassType
 import org.jetbrains.kotlin.analysis.api.types.KtType
+import org.jetbrains.kotlin.analysis.utils.printer.prettyPrint
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtFunction
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
-import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.types.isDynamic
-import org.jetbrains.kotlin.types.isFlexible
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnonymousClass
 import org.jetbrains.uast.UClass
@@ -68,7 +68,6 @@ import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.getContainingUClass
 import org.jetbrains.uast.getContainingUMethod
 import org.jetbrains.uast.getParentOfType
-import org.jetbrains.uast.kotlin.KotlinUastResolveProviderService
 
 /**
  * Checks for issues around creating APIs that make it harder to interoperate between Java and
@@ -291,44 +290,30 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
             is KtFunction -> declaration.bodyExpression ?: declaration.bodyBlockExpression ?: return
             else -> return
           }
-        val service = declaration.project.getService(KotlinUastResolveProviderService::class.java)
-        val bindingContext = service?.getBindingContext(declaration)
-        if (bindingContext != null) { // FE1.0
-          val type = bindingContext.getType(expression) ?: return
-          if (type.isDynamic()) return
-
+        analyze(expression) {
+          val ktType = expression.getKtType() ?: return
+          if (ktType is KtDynamicType) return
           // We're considering flexible types as platform types since Kotlin doesn't support union
           // types yet. In the future this may need to be refined.
-          if (!type.isFlexibleRecursive()) return
-          val typeString = if (type.isFlexible()) null else type.toString().replace("..", " or ")
+          if (!ktType.isFlexibleRecursive()) return
+          // NB: The return type of the declaration isn't flexible type.
+          // Rather, type arguments could be flexible, e.g., Lazy<(String..String?)>
+          val typeString =
+            if (ktType is KtFlexibleType) null
+            else
+              prettyPrint {
+                KtTypeRendererForSource.WITH_SHORT_NAMES.with {
+                    // By default, nullability flexible type is rendered with ! at the end,
+                    // e.g., Lazy<String!>
+                    flexibleTypeRenderer = KtFlexibleTypeRenderer.AS_RANGE
+                  }
+                  .renderType(ktType, this@prettyPrint)
+              }
           reportMissingExplicitType(node, typeString)
-        } else { // Analysis API
-          analyze(expression) {
-            val ktType = expression.getKtType() ?: return
-            if (ktType is KtDynamicType) return
-
-            if (!ktType.isFlexibleRecursive()) return
-            // NB: The return type of the declaration isn't flexible type.
-            // Rather, type arguments could be flexible, e.g., Lazy<(String..String?)>
-            // Since we don't allow context receiver (yet),
-            // we can't use [KtFlexibleTypeRenderer.AS_RANGE].
-            // By default, nullability flexible type is rendered with ! at the end,
-            // e.g., Lazy<String!>, so it's not needed to replace ".." with " or " at the moment.
-            // In the future, we may be able to configure type renderers in a more flexible fashion.
-            val typeString = if (ktType is KtFlexibleType) null else ktType.toString()
-            reportMissingExplicitType(node, typeString)
-          }
         }
       }
     }
 
-    // FE1.0
-    private fun KotlinType.isFlexibleRecursive(): Boolean {
-      if (isFlexible()) return true
-      return arguments.any { !it.isStarProjection && it.type.isFlexibleRecursive() }
-    }
-
-    // Analysis API
     private fun KtType.isFlexibleRecursive(): Boolean {
       if (this is KtFlexibleType) return true
       val arguments = (this as? KtNonErrorClassType)?.ownTypeArguments ?: return false

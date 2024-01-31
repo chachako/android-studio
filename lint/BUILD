@@ -178,6 +178,10 @@ maven_library(
     ]),
     coordinates = "com.android.tools.lint:lint-checks",
     description = "Checks for Android Lint",
+    kotlinc_opts = [
+        # Needed to use the Kotlin K2 analysis API (b/308454624)
+        "-Xcontext-receivers",
+    ],
     lint_baseline = "libs/lint-checks/lint_baseline.xml",
     module_name = "lint-checks",
     notice = "libs/lint-checks/src/main/resources/NOTICE",
