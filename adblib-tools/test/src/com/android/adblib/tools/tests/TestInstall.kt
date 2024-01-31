@@ -31,7 +31,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
-@Ignore("b/321070782")
 class TestInstall : TestInstallBase() {
 
 
