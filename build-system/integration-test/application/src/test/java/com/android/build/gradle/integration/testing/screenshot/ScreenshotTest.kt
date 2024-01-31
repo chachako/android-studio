@@ -96,7 +96,14 @@ class ScreenshotTest {
                 class ExampleTest {
                     @Preview(showBackground = true)
                     @Composable
-                    fun SimpleComposableTest() {
+                    fun simpleComposableTest() {
+                        SimpleComposable()
+                    }
+
+                    @Preview(showBackground = true)
+                    @Preview(showBackground = false)
+                    @Composable
+                    fun multiPreviewTest() {
                         SimpleComposable()
                     }
                 }
@@ -132,12 +139,28 @@ class ScreenshotTest {
             {
               "screenshots": [
                 {
-                  "methodFQN": "pkg.name.ExampleTest.SimpleComposableTest",
+                  "methodFQN": "pkg.name.ExampleTest.simpleComposableTest",
                   "methodParams": [],
                   "previewParams": {
                     "showBackground": "true"
                   },
-                  "imageName": "pkg.name.ExampleTest.SimpleComposableTest_3d8b4969_da39a3ee"
+                  "imageName": "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee"
+                },
+                {
+                  "methodFQN": "pkg.name.ExampleTest.multiPreviewTest",
+                  "methodParams": [],
+                  "previewParams": {
+                    "showBackground": "true"
+                  },
+                  "imageName": "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee"
+                },
+                {
+                  "methodFQN": "pkg.name.ExampleTest.multiPreviewTest",
+                  "methodParams": [],
+                  "previewParams": {
+                    "showBackground": "false"
+                  },
+                  "imageName": "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee"
                 }
               ]
             }
@@ -146,35 +169,49 @@ class ScreenshotTest {
 
     @Test
     fun runPreviewScreenshotTest() {
-        // Generate screenshot to be tested against
+        // Generate screenshots to be tested against
         getExecutor().run("previewScreenshotUpdateDebugAndroidTest")
 
-        val screenshot  = project.file("src/androidTest/screenshot/debug/pkg.name.ExampleTest.SimpleComposableTest_3d8b4969_da39a3ee_0.png")
-        assertThat(screenshot).exists()
+        val simpleComposableTestScreenshot  = project.file("src/androidTest/screenshot/debug/pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee_0.png")
+        val multipreviewTestScreenshot1  = project.file("src/androidTest/screenshot/debug/pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee_0.png")
+        val multipreviewTestScreenshot2  = project.file("src/androidTest/screenshot/debug/pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee_0.png")
+        assertThat(simpleComposableTestScreenshot).exists()
+        assertThat(multipreviewTestScreenshot1).exists()
+        assertThat(multipreviewTestScreenshot2).exists()
 
-        // Validate preview matches screenshot
+        // Validate previews matches screenshots
         getExecutor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF) // TODO(322357154) Remove this when configuration caching issues are resolved
             .run("previewScreenshotDebugAndroidTest")
 
-        // Verify that test engine generated HTML reports and test passes
+        // Verify that test engine generated HTML reports and all tests pass
         val indexHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
         val classHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/classes/pkg.name.ExampleTest.html")
         val packageHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/packages/pkg.name.html")
         assertThat(indexHtmlReport).exists()
         assertThat(classHtmlReport).exists()
-        assertThat(classHtmlReport.readText()).doesNotContain("Failed tests")
+        var classHtmlText = classHtmlReport.readText()
+        assertThat(classHtmlText).doesNotContain("Failed tests")
+        assertThat(classHtmlText).contains(
+            """<td class="success">simpleComposableTest</td>"""
+        )
+        assertThat(classHtmlText).contains(
+            """<td class="success">multiPreviewTest_3d8b4969_da39a3ee_0</td>"""
+        )
+        assertThat(classHtmlText).contains(
+            """<td class="success">multiPreviewTest_a45d2556_da39a3ee_0</td>"""
+        )
         assertThat(packageHtmlReport).exists()
 
         // Assert that no diff images were generated because screenshot matched the reference image
         val diffDir = project.buildDir.resolve("outputs/androidTest-results/preview/debug/diffs").toPath()
         assert(diffDir.listDirectoryEntries().isEmpty())
 
-        // Update preview to be different from the reference
+        // Update previews to be different from the references
         val testFile = project.projectDir.resolve("src/main/java/com/Example.kt")
         TestFileUtils.searchAndReplace(testFile, "Hello World", "HelloWorld ")
 
-        // Rerun validation task - test should fail and diff is generated
+        // Rerun validation task - tests should fail and diffs are generated
         getExecutor()
             .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF) // TODO(322357154) Remove this when configuration caching issues are resolved
             .expectFailure()
@@ -182,11 +219,25 @@ class ScreenshotTest {
 
         assertThat(indexHtmlReport).exists()
         assertThat(classHtmlReport).exists()
-        assertThat(classHtmlReport.readText()).contains("Failed tests")
+        classHtmlText = classHtmlReport.readText()
+        assertThat(classHtmlText).contains("Failed tests")
+        assertThat(classHtmlText).contains(
+            """<td class="failures">simpleComposableTest</td>"""
+        )
+        assertThat(classHtmlText).contains(
+            """<td class="failures">multiPreviewTest_3d8b4969_da39a3ee_0</td>"""
+        )
+        assertThat(classHtmlText).contains(
+            """<td class="failures">multiPreviewTest_a45d2556_da39a3ee_0</td>"""
+        )
         assertThat(packageHtmlReport).exists()
 
-        val diff = diffDir.resolve("pkg.name.ExampleTest.SimpleComposableTest_3d8b4969_da39a3ee_0.png")
-        assertThat(diff).exists()
+        val simpleComposableTestDiff = diffDir.resolve("pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee_0.png")
+        val multipreviewTestDiff1 = diffDir.resolve("pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee_0.png")
+        val multipreviewTestDiff2 = diffDir.resolve("pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee_0.png")
+        assertThat(simpleComposableTestDiff).exists()
+        assertThat(multipreviewTestDiff1).exists()
+        assertThat(multipreviewTestDiff2).exists()
     }
 
     private fun getExecutor(): GradleTaskExecutor =
