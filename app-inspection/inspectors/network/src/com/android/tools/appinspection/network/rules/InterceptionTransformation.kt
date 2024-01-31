@@ -193,6 +193,8 @@ class BodyReplacedTransformation(private val bodyReplaced: BodyReplaced) :
   }
 }
 
+private val TEXT_TYPES = setOf("csv", "html", "json", "xml")
+
 /** A transformation class that replaces the target text segments from response body. */
 class BodyModifiedTransformation(private val bodyModified: BodyModified) :
   InterceptionTransformation {
@@ -232,17 +234,16 @@ class BodyModifiedTransformation(private val bodyModified: BodyModified) :
     if (typeAndSubType.isEmpty()) {
       return false
     }
-    val type = typeAndSubType[0]
-    if (type.equals("text", ignoreCase = true)) {
+    if (typeAndSubType[0].equals("text", ignoreCase = true)) {
       return true
     }
     if (typeAndSubType.size == 2) {
       // Without suffix: json, xml, html, etc.
       // With suffix: vnd.api+json, svg+xml, etc.
+      // With charset: json; charset=utf-8 etc.
       // See also: https://en.wikipedia.org/wiki/Media_type#Suffix
-      val subtypeAndSuffix = typeAndSubType[1].split(Pattern.compile("\\+"), 2)
-      val suffix = subtypeAndSuffix.last()
-      return listOf("csv", "html", "json", "xml").any { it.equals(suffix, ignoreCase = true) }
+      val type = typeAndSubType[1].substringAfter('+').substringBefore(';')
+      return TEXT_TYPES.contains(type)
     }
     return false
   }
