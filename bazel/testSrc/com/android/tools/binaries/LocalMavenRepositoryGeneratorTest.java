@@ -56,7 +56,8 @@ public class LocalMavenRepositoryGeneratorTest {
                         "com.google.example:p:1",
                         "com.google.example:u:1",
                         "com.google.example:x:1",
-                        "com.google.example:y:pom:1");
+                        "com.google.example:y:pom:1",
+                        "com.google.example2:a:1");
         List<String> data = Arrays.asList("com.google.example:a:2");
         String outputBuildFile = "generated.BUILD";
         LocalMavenRepositoryGenerator generator =

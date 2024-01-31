@@ -2,6 +2,27 @@ load("@//tools/base/bazel:maven.bzl", "maven_artifact", "maven_import")
 
 # Bazel rules auto-generated from maven repo.
 maven_artifact(
+    name = "com.google.example2.a_1",
+    pom = "repository/com/google/example2/a/1/a-1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/example2/a/1",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.google.example2.a",
+    classifiers = [],
+    jars = [
+        "repository/com/google/example2/a/1/a-1.jar"
+    ],
+    original_deps = [],
+    pom = "repository/com/google/example2/a/1/a-1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/example2/a/1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.example.a_1",
     pom = "repository/com/google/example/a/1/a-1.pom",
     repo_root_path = "repository",

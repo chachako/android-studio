@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <!-- This artifact does not have modelVersion field.
+  It mimics com.google.oboe:oboe:1.6.1 behavior
+  -->
+  <!--
+  <modelVersion>4.0.0</modelVersion>
+  -->
+  <groupId>com.google.example2</groupId>
+  <artifactId>a</artifactId>
+  <version>1</version>
+  <packaging>jar</packaging>
+  <name>A library</name>
+</project>

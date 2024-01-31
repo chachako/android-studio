@@ -65,9 +65,16 @@ public class AetherUtils {
                                     org.apache.maven.model.Model m,
                                     ModelBuildingRequest request,
                                     ModelProblemCollector problems) {
-                                // Some artifacts have models that cannot be processed by the
-                                // maven-model-builder library. Specifically,
-                                // We get the following validation errors:
+                                // Some artifacts have models that cannot be validated by the
+                                // maven-model-builder library. Here, we skip validation of those.
+                                if (m.getModelVersion() == null) {
+                                    // Some Maven artifacts (e.g., com.google.oboe:oboe:1.6.1) do
+                                    // not put ModelVersion into their POM. The default model
+                                    // validator requires it to be set to 4.0.0.
+                                    return;  // Skip validation for this artifact
+                                }
+
+                                // Some artifacts have issues with the systemPath:
                                 // Caused by:
                                 // org.apache.maven.model.building.ModelBuildingException: ...
                                 // problems were encountered while building the
@@ -81,7 +88,7 @@ public class AetherUtils {
                                         String systemPath = dependency.getSystemPath();
                                         if (systemPath != null
                                                 && systemPath.equals("${tools.jar}")) {
-                                            return; // Ignore this artifact.
+                                            return; // Skip validation this artifact.
                                         }
                                     }
                                 }
