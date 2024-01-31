@@ -75,13 +75,19 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
     @Mock
     private lateinit var sdkService: SdkComponentsBuildService
 
+    @Mock
+    private lateinit var emulatorProvider: Provider<Directory>
+
     private lateinit var project: Project
 
     @Before
     fun setup() {
         Environment.initialize()
 
-        mockVersionedSdkLoader = mock(VersionedSdkLoader::class.java)
+        mockVersionedSdkLoader = mock(
+            VersionedSdkLoader::class.java,
+            RETURNS_DEEP_STUBS)
+        `when`(mockVersionedSdkLoader.emulatorDirectoryProvider).thenReturn(emulatorProvider)
         `when`(mockVersionedSdkLoader.offlineMode).thenReturn(false)
 
         project = ProjectBuilder.builder().withProjectDir(temporaryFolderRule.newFolder()).build()
@@ -155,9 +161,11 @@ class ManagedDeviceInstrumentationTestSetupTaskTest {
 
         task.taskAction()
 
+        verify(mockVersionedSdkLoader).emulatorDirectoryProvider
         verify(mockVersionedSdkLoader)
             .sdkImageDirectoryProvider("system-images;android-29;default;x86_64")
         verifyNoMoreInteractions(mockVersionedSdkLoader)
+        verify(emulatorProvider).get()
 
         verify(avdService)
             .avdProvider(
