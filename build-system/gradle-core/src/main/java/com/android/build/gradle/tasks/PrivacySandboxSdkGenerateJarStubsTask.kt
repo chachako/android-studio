@@ -135,7 +135,7 @@ abstract class PrivacySandboxSdkGenerateJarStubsTask : DefaultTask() {
                             ?: (creationConfig.services.projectOptions
                                     .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER)
                                     ?.split(",")
-                                    ?: listOf(MavenCoordinates.ANDROIDX_PRIVACYSANDBOX_TOOLS_TOOLS_API_PACKAGER_1_0_0_ALPHA_03.toString())).map {
+                                    ?: listOf(MavenCoordinates.ANDROIDX_PRIVACYSANDBOX_TOOLS_TOOLS_API_PACKAGER.toString())).map {
                                 creationConfig.services.dependencies.create(it)
                             }
             val apiPackager = creationConfig.services.configurations.detachedConfiguration()

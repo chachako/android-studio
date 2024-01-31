@@ -19,26 +19,28 @@ package com.android.build.gradle.internal
 /**
  * Enums representing Maven coordinates that have usages
  */
-enum class MavenCoordinates (val group: String, val artifact: String, val version: String) {
-    ANDROIDX_PRIVACY_SANDBOX_SDK_API_GENERATOR_1_0_0_ALPHA03(
+enum class MavenCoordinates (val group: String, val artifact: String,  val defaultVersion: String) {
+    ANDROIDX_PRIVACY_SANDBOX_SDK_API_GENERATOR(
         "androidx.privacysandbox.tools",
         "tools-apigenerator",
         "1.0.0-alpha03"
     ),
-    ANDROIDX_PRIVACYSANDBOX_TOOLS_TOOLS_API_PACKAGER_1_0_0_ALPHA_03(
+    ANDROIDX_PRIVACYSANDBOX_TOOLS_TOOLS_API_PACKAGER(
         "androidx.privacysandbox.tools",
         "tools-apipackager",
         "1.0.0-alpha03"
     ),
-    ORG_JETBRAINS_KOTLINX_KOTLINX_COROUTINES_ANDROID_1_6_4(
+    ORG_JETBRAINS_KOTLINX_KOTLINX_COROUTINES_ANDROID(
         "org.jetbrains.kotlinx",
         "kotlinx-coroutines-android",
         "1.6.4"
     ),
-    KOTLIN_COMPILER_1_7_10(
+    KOTLIN_COMPILER(
         "org.jetbrains.kotlin",
         "kotlin-compiler-embeddable",
         "1.7.10");
 
-    override fun toString(): String = "$group:$artifact:$version"
+    fun withVersion(newVersion: String): String = "$group:$artifact:$newVersion"
+    override fun toString(): String = "$group:$artifact:$defaultVersion"
+
 }

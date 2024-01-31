@@ -490,7 +490,7 @@ class DependencyConfigurator(
                                 experimentalPropertiesApiGenerator
                                         ?: project.dependencies.create(
                                                 projectServices.projectOptions.get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR)
-                                                        ?: MavenCoordinates.ANDROIDX_PRIVACY_SANDBOX_SDK_API_GENERATOR_1_0_0_ALPHA03.toString()
+                                                        ?: MavenCoordinates.ANDROIDX_PRIVACY_SANDBOX_SDK_API_GENERATOR.toString()
                                         ) as Dependency
 
                         val experimentalPropertiesRuntimeApigeneratorDependencies =
@@ -500,7 +500,7 @@ class DependencyConfigurator(
                                         ?: (projectServices.projectOptions
                                                 .get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES)
                                                 ?.split(",")
-                                                ?: listOf(MavenCoordinates.ORG_JETBRAINS_KOTLINX_KOTLINX_COROUTINES_ANDROID_1_6_4.toString())).map {
+                                                ?: listOf(MavenCoordinates.ORG_JETBRAINS_KOTLINX_KOTLINX_COROUTINES_ANDROID.toString())).map {
                                             project.dependencies.create(it)
                                         }
 
@@ -519,7 +519,7 @@ class DependencyConfigurator(
                         params.bootstrapClasspath.from(bootstrapCreationConfig.fullBootClasspath)
 
                         val kotlinCompiler = project.configurations.detachedConfiguration(
-                                project.dependencies.create(MavenCoordinates.KOTLIN_COMPILER_1_7_10.toString())
+                                project.dependencies.create(MavenCoordinates.KOTLIN_COMPILER.toString())
                         )
                         kotlinCompiler.isCanBeConsumed = false
                         kotlinCompiler.isCanBeResolved = true

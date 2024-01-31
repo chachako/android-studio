@@ -22,10 +22,19 @@ import org.junit.Test
 class MavenCoordinatesTest {
 
     @Test
-    fun MavenCoordinateFormatsCorrectlyAsAString() {
+    fun mavenCoordinateFormatsCorrectlyAsAString() {
         assertEquals(
-            MavenCoordinates.ANDROIDX_PRIVACY_SANDBOX_SDK_API_GENERATOR_1_0_0_ALPHA03.toString(),
+            MavenCoordinates.ANDROIDX_PRIVACY_SANDBOX_SDK_API_GENERATOR.toString(),
             "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha03"
         )
     }
+
+    @Test
+    fun mavenCoordinateFormatsCorrectlyWithVersioning() {
+        assertEquals(
+            MavenCoordinates.ANDROIDX_PRIVACY_SANDBOX_SDK_API_GENERATOR.withVersion("1.0.0-alpha10"),
+            "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha10"
+        )
+    }
+
 }
