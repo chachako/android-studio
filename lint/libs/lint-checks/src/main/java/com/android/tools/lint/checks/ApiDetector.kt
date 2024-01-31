@@ -2935,6 +2935,10 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         "foregroundServiceType",
         "autofilledHighlight",
         "requestLegacyExternalStorage",
+        // This attribute is only used by Android 12 and above, and is safely ignored by Android 11
+        // and below. ManifestDetector reports a warning if "fullBackupContent" is also missing
+        // (used for Android 11 and below).
+        "dataExtractionRules",
 
         // The following attributes are benign because aapt2 will rewrite them
         // into the safe alternatives; e.g. paddingHorizontal gets rewritten as

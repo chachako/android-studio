@@ -862,13 +862,15 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    <application\n"
                                         + "        android:supportsRtl='true'\n"
 
-                                        // Ditto for the fullBackupContent attribute. If you're
-                                        // targeting
-                                        // 23, you'll want to use it, but it's not an error that
-                                        // older
-                                        // platforms aren't looking at it.
+                                        // Ditto for:
+                                        // - fullBackupContent
+                                        // - dataExtractionRules
+                                        // If you're targeting certain API levels, you'll want to
+                                        // use these, but it's not an error that older platforms
+                                        // aren't looking at it.
 
                                         + "        android:fullBackupContent='false'\n"
+                                        + "        android:dataExtractionRules=\"\"\n"
                                         + "        android:icon=\"@drawable/ic_launcher\"\n"
                                         + "        android:label=\"@string/app_name\" >\n"
                                         + "    </application>\n"
