@@ -633,7 +633,7 @@ class LintResourceRepositoryTest {
             "set of path variable names. Attempting to gracefully recover.\n" +
             "The serialized content was:\n" +
             "http://schemas.android.com/apk/res-auto;;＄TEST_ROOT/default/app/res/values/bools.xml,＄TEST_ROOT/default/app/res/xml-mcc/backup.xml,+bool:enable_wearable_location_service,0,V\"true\";enable_wearable_location_service,1,V\"false\";+string:location_process,2,V\"Location Process\";location_process,3,V\"Location Process (English)\";+xml:backup,4,F;backup,5,F;\n" +
-            "Stack: java.lang.IndexOutOfBoundsException: Index 2 out of bounds for length 2:Preconditions.outOfBounds(Preconditions.java:"
+            "Stack: java.lang.IndexOutOfBoundsException: Index 2 out of bounds for length 2:Preconditions.outOfBounds("
         ) + ".*\\) \\[LintWarning]\n" + "0 errors, 1 warnings"
       )
   }

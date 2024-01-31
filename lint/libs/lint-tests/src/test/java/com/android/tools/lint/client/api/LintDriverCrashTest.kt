@@ -330,8 +330,8 @@ class LintDriverCrashTest : AbstractCheckTest() {
             "Unexpected failure during lint analysis (this is a bug in lint or one of the libraries it depends on)"
           )
         assertThat(message)
-          .contains(
-            "Stack: InvocationTargetException:NativeConstructorAccessorImpl.newInstance0(NativeConstructorAccessorImpl.java:"
+          .containsMatch(
+            "Stack: InvocationTargetException:(NativeConstructorAccessorImpl.newInstance0|DirectConstructorHandleAccessor.newInstance)"
           )
 
         // It's not easy to set environment variables from Java once the process is running,
@@ -446,8 +446,8 @@ class LintDriverCrashTest : AbstractCheckTest() {
           assertThat(message)
             .contains("app/lint.jar: Error: Could not load custom lint check jar file.")
           assertThat(message)
-            .contains(
-              "The issue registry class is test.pkg.MyIssueRegistry. The initialization problem is NativeConstructorAccessorImpl.newInstance0(NativeConstructorAccessorImpl.java"
+            .containsMatch(
+              "The issue registry class is test.pkg.MyIssueRegistry. The initialization problem is (NativeConstructorAccessorImpl.newInstance0|DirectConstructorHandleAccessor.newInstance)"
             )
           assertThat(message).contains("[LintError]")
           assertThat(message).contains("1 errors, 0 warnings")
