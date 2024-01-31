@@ -280,10 +280,7 @@ class FusedLibraryPlugin @Inject constructor(
 
         if (!projectServices.projectOptions[BooleanOption.FUSED_LIBRARY_SUPPORT]) {
             throw GradleException(
-                    "Fused Library Plugin is in development and is not yet supported.\n" +
-                            "To enable support for internal testing only, add\n" +
-                            "    ${BooleanOption.FUSED_LIBRARY_SUPPORT.propertyName}=true\n" +
-                            "to your project's gradle.properties file."
+                "The fused library plugin does not work yet."
             )
         }
 

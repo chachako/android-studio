@@ -1154,15 +1154,6 @@ package com.android.build.api.dsl {
     property @Deprecated public abstract int maxSnapshots;
   }
 
-  @org.gradle.api.Incubating public interface FusedLibraryExtension {
-    method @org.gradle.api.Incubating public Integer? getMinSdk();
-    method @org.gradle.api.Incubating public String? getNamespace();
-    method @org.gradle.api.Incubating public void setMinSdk(Integer?);
-    method @org.gradle.api.Incubating public void setNamespace(String?);
-    property @org.gradle.api.Incubating public abstract Integer? minSdk;
-    property @org.gradle.api.Incubating public abstract String? namespace;
-  }
-
   public interface HasConfigurableValue<T> {
     method public void configure(kotlin.jvm.functions.Function1<? super T,kotlin.Unit> action);
   }
@@ -3212,11 +3203,6 @@ package com.android.build.gradle.api {
 
   public final class AndroidBasePlugin implements org.gradle.api.Plugin<org.gradle.api.Project> {
     ctor public AndroidBasePlugin();
-    method public void apply(org.gradle.api.Project project);
-  }
-
-  @org.gradle.api.Incubating public final class FusedLibraryPlugin implements org.gradle.api.Plugin<org.gradle.api.Project> {
-    ctor public FusedLibraryPlugin();
     method public void apply(org.gradle.api.Project project);
   }
 
