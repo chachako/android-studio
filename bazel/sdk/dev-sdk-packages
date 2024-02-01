@@ -18,7 +18,6 @@ build-tools;26.0.2
 build-tools;26.0.0
 
 # Platforms.
-platforms;android-TiramisuPrivacySandbox
 platforms;android-34
 platforms;android-33
 platforms;android-32

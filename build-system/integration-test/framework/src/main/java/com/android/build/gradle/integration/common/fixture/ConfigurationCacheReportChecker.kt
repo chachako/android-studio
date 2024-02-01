@@ -257,10 +257,6 @@ class ConfigurationCacheReportChecker {
             ),
             Error.fileSystemEntry(
                 location = "com.android.build.gradle.integration.bundle.AssetPackBundleTest",
-                name = "android-TiramisuPrivacySandbox"
-            ),
-            Error.fileSystemEntry(
-                location = "com.android.build.gradle.integration.bundle.AssetPackBundleTest",
                 name = "addon-google_apis-google-24"
             ),
 

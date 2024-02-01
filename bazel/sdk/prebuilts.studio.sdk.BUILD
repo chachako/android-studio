@@ -236,15 +236,6 @@ java_import(
 )
 
 platform_filegroup(
-    name = "platforms/android-TiramisuPrivacySandbox",
-    visibility = [
-        "//prebuilts/studio/buildbenchmarks:__pkg__",
-        "//tools/adt/idea/project-system-gradle:__subpackages__",
-        "//tools/base/build-system/integration-test:__subpackages__",
-    ],
-)
-
-platform_filegroup(
     name = "platforms/android-34",
     visibility = ["//visibility:public"],
 )

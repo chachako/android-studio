@@ -158,14 +158,6 @@ http_archive(
     url = "https://dl.google.com/android/repository/sys-img/google_apis_playstore/x86_64-33_r07.zip",
 )
 
-http_archive(
-    name = "system_image_android-TiramisuPrivacySandbox_default_x86_64",
-    build_file = "//tools/base/bazel/avd:system_images.BUILD",
-    sha256 = "cebb267230c4a77cbf3ab984876d9715f11d9e870ebaead486bb58d2a0b28bf1",
-    strip_prefix = "x86_64",
-    url = "https://dl.google.com/android/repository/sys-img/google_apis_playstore/x86_64-TiramisuPrivacySandbox_r06.zip",
-)
-
 # Sdk components when needed by Gradle Managed Devices
 http_file(
     name = "emulator_zip",
