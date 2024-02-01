@@ -409,6 +409,13 @@ config_setting(
 )
 
 config_setting(
+    name = "macos",
+    constraint_values = [
+        "@platforms//os:macos",
+    ],
+)
+
+config_setting(
     name = "windows",
     values = {"cpu": "x64_windows"},
     visibility = ["//visibility:public"],
