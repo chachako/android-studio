@@ -1383,6 +1383,71 @@ maven_import(
 )
 
 maven_artifact(
+    name = "com.google.flogger.flogger-system-backend_0.8",
+    pom = "repository/com/google/flogger/flogger-system-backend/0.8/flogger-system-backend-0.8.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/flogger/flogger-system-backend/0.8",
+    parent = "org.sonatype.oss.oss-parent_7",
+    deps = [
+        "com.google.flogger.flogger_0.8",
+        "org.checkerframework.checker-compat-qual_2.5.3",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.google.flogger.flogger-system-backend",
+    classifiers = [],
+    parent = "org.sonatype.oss.oss-parent_7",
+    jars = [
+        "repository/com/google/flogger/flogger-system-backend/0.8/flogger-system-backend-0.8.jar"
+    ],
+    exports = [
+        "com.google.flogger.flogger",
+        "org.checkerframework.checker-compat-qual",
+    ],
+    original_deps = [
+        "com.google.flogger.flogger_0.8",
+        "org.checkerframework.checker-compat-qual_2.5.3",
+    ],
+    pom = "repository/com/google/flogger/flogger-system-backend/0.8/flogger-system-backend-0.8.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/flogger/flogger-system-backend/0.8",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.flogger.flogger_0.8",
+    pom = "repository/com/google/flogger/flogger/0.8/flogger-0.8.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/flogger/flogger/0.8",
+    parent = "org.sonatype.oss.oss-parent_7",
+    deps = [
+        "org.checkerframework.checker-compat-qual_2.5.3",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.google.flogger.flogger",
+    classifiers = [],
+    parent = "org.sonatype.oss.oss-parent_7",
+    jars = [
+        "repository/com/google/flogger/flogger/0.8/flogger-0.8.jar"
+    ],
+    exports = [
+        "org.checkerframework.checker-compat-qual",
+    ],
+    original_deps = [
+        "org.checkerframework.checker-compat-qual_2.5.3",
+    ],
+    pom = "repository/com/google/flogger/flogger/0.8/flogger-0.8.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/flogger/flogger/0.8",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.gradle.osdetector-gradle-plugin_1.7.3",
     pom = "repository/com/google/gradle/osdetector-gradle-plugin/1.7.3/osdetector-gradle-plugin-1.7.3.pom",
     repo_root_path = "repository",
