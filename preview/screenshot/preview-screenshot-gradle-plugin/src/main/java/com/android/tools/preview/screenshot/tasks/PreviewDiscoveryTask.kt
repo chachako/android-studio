@@ -21,6 +21,7 @@ import com.android.tools.preview.screenshot.services.AnalyticsService
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -61,10 +62,10 @@ abstract class PreviewDiscoveryTask: DefaultTask() {
     abstract val mainJars: ListProperty<RegularFile>
 
     @get:OutputDirectory
-    abstract val resultsDir: RegularFileProperty
+    abstract val resultsDir: DirectoryProperty
 
     @get:OutputDirectory
-    abstract val referenceImageDir: RegularFileProperty
+    abstract val referenceImageDir: DirectoryProperty
 
     @get:Internal
     abstract val analyticsService: Property<AnalyticsService>

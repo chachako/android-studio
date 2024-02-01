@@ -26,6 +26,7 @@ import com.android.build.api.variant.HasAndroidTest
 import com.android.build.api.variant.HasUnitTest
 import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.ScopedArtifacts
+import com.android.build.api.variant.Variant
 import com.android.build.gradle.api.AndroidBasePlugin
 import com.android.tools.preview.screenshot.layoutlibExtractor.LayoutlibFromMaven
 import com.android.tools.preview.screenshot.services.AnalyticsService
@@ -34,7 +35,6 @@ import com.android.tools.preview.screenshot.tasks.PreviewScreenshotRenderTask
 import com.android.tools.preview.screenshot.tasks.PreviewScreenshotUpdateTask
 import com.android.tools.preview.screenshot.tasks.PreviewScreenshotValidationTask
 import com.android.tools.preview.screenshot.tasks.ScreenshotTestReportTask
-import java.io.File
 import java.lang.StringBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -81,7 +81,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             ) { task ->
                 task.description = "Update screenshots for all variants."
                 task.group = JavaBasePlugin.VERIFICATION_GROUP
-            }.get()
+            }
 
             val validateAllTask = project.tasks.register(
                 "previewScreenshotAndroidTest",
@@ -89,37 +89,33 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             ) { task ->
                 task.description = "Run screenshot tests for all variants."
                 task.group = JavaBasePlugin.VERIFICATION_GROUP
-            }.get()
+            }
+
+            val buildDir = project.layout.buildDirectory
+
+            // this will be provided by AGP at some point.
+            fun Variant.computePathSegments(): String {
+                return buildType?.let { bt ->
+                    flavorName?.let { fn ->
+                        "$bt/$fn"
+                    } ?: bt
+                } ?: flavorName ?: ""
+            }
 
             componentsExtension.onVariants { variant ->
                 if (variant is HasAndroidTest) {
                     val variantName = variant.name
-                    val flavor: String? = variant.flavorName
-                    val buildTarget: String = variant.buildType ?: variantName
-                    val flavorDir = if (flavor.isNullOrEmpty()) "" else "flavors/$flavor"
-                    val buildDir = project.layout.buildDirectory
-                    val testOutputDir = "outputs/androidTest-results/preview/$buildTarget/$flavorDir"
-                    val intermediatesDir = "intermediates/preview/$buildTarget/$flavorDir"
-                    val resultsDir = buildDir.file(testOutputDir)
-                    val referenceImageDir =
-                        File("${project.projectDir.absolutePath}/src/androidTest/screenshot/$buildTarget/$flavorDir")
-                    val renderedDir = buildDir.dir("$testOutputDir/rendered")
-                    val diffImageDir = buildDir.dir("$testOutputDir/diffs")
-                    val previewOut = buildDir.file("$intermediatesDir/previews_discovered.json")
-                    val cliInput = buildDir.file("$intermediatesDir/cli_tool_input.json")
-                    val testResultsDir = buildDir.dir("$testOutputDir/results")
-                    val testResultsFile = buildDir.file("$testOutputDir/results/TEST-results.xml")
-                    val reportsDir = buildDir.dir("reports/androidTests/preview/$buildTarget/$flavorDir")
 
                     val discoveryTaskProvider =
                         project.tasks.register(
                             "${variantName}PreviewDiscovery",
                             PreviewDiscoveryTask::class.java
                         ) { task ->
-                            task.previewsOutputFile.set(previewOut)
+                            val variantSegments = variant.computePathSegments()
+                            task.previewsOutputFile.set(buildDir.file("$PREVIEW_INTERMEDIATES/$variantSegments/previews_discovered.json"))
                             task.previewsOutputFile.disallowChanges()
-                            task.resultsDir.set(resultsDir)
-                            task.referenceImageDir.set(referenceImageDir)
+                            task.resultsDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments"))
+                            task.referenceImageDir.set(project.layout.projectDirectory.dir("src/androidTest/screenshot/$variantSegments"))
                             task.analyticsService.set(analyticsServiceProvider)
                             task.usesService(analyticsServiceProvider)
                         }
@@ -177,8 +173,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         "${variantName}PreviewScreenshotRender",
                         PreviewScreenshotRenderTask::class.java
                     ) { task ->
-
-                        task.outputDir.set(renderedDir)
+                        val variantSegments = variant.computePathSegments()
+                        task.outputDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/rendered"))
                         task.sdk.set(sdkDirectory)
                         task.previewsDiscovered.set(discoveryTaskProvider.flatMap { it.previewsOutputFile })
                         task.screenshotCliJar.from(task.project.configurations.getByName(previewlibCliToolConfigurationName))
@@ -187,7 +183,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         resourceFileProvider?.let { task.resourceFile.set(it) }
 
                         task.packageName.set(variant.namespace)
-                        task.cliToolInput.set(cliInput)
+                        task.cliToolInput.set(buildDir.file("$PREVIEW_INTERMEDIATES/$variantSegments/cli_tool_input.json"))
 
                         val toolchain = project.extensions.getByType(JavaPluginExtension::class.java).toolchain
                         val service = project.extensions.getByType(JavaToolchainService::class.java)
@@ -219,27 +215,29 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         "previewScreenshotUpdate${variantName.capitalized()}AndroidTest",
                         PreviewScreenshotUpdateTask::class.java
                     ) { task ->
-                        task.referenceImageDir.set(referenceImageDir)
+                        val variantSegments = variant.computePathSegments()
+                        task.referenceImageDir.set(project.layout.projectDirectory.dir("src/androidTest/screenshot/$variantSegments"))
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
                         task.description = "Update screenshots for the $variantName build."
                         task.group = JavaBasePlugin.VERIFICATION_GROUP
                         task.analyticsService.set(analyticsServiceProvider)
                         task.usesService(analyticsServiceProvider)
                     }.get()
-                    updateAllTask.dependsOn(updateTask)
+                    updateAllTask.configure { it.dependsOn(updateTask) }
 
                     val previewScreenshotValidationTask = project.tasks.register(
                         "previewScreenshot${variantName.capitalized()}AndroidTest",
                         PreviewScreenshotValidationTask::class.java
                     ) { task ->
-                        task.referenceImageDir.set(referenceImageDir)
+                        val variantSegments = variant.computePathSegments()
+                        task.referenceImageDir.set(project.layout.projectDirectory.dir("src/androidTest/screenshot/$variantSegments"))
                         task.referenceImageDir.disallowChanges()
-                        task.previewFile.set(previewOut)
+                        task.previewFile.set(buildDir.file("$PREVIEW_INTERMEDIATES/$variantSegments/previews_discovered.json"))
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
-                        task.resultsFile.set(testResultsFile)
-                        task.diffImageDir.set(diffImageDir)
+                        task.resultsFile.set(buildDir.file("$PREVIEW_OUTPUT/$variantSegments/results/TEST-results.xml"))
+                        task.diffImageDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/diffs"))
                         task.diffImageDir.disallowChanges()
-                        task.reportFilePath.set(reportsDir)
+                        task.reportFilePath.set(buildDir.dir("$PREVIEW_REPORTS/$variantSegments"))
                         task.reportFilePath.disallowChanges()
                         task.analyticsService.set(analyticsServiceProvider)
                         task.usesService(analyticsServiceProvider)
@@ -260,14 +258,15 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         "${variantName}ScreenshotReport",
                         ScreenshotTestReportTask::class.java
                     ) { task ->
-                        task.outputDir.set(reportsDir)
-                        task.resultsDir.set(testResultsDir)
+                        val variantSegments = variant.computePathSegments()
+                        task.outputDir.set(buildDir.dir("$PREVIEW_REPORTS/$variantSegments"))
+                        task.resultsDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/results"))
                         task.analyticsService.set(analyticsServiceProvider)
                         task.usesService(analyticsServiceProvider)
                         task.onlyIf {previewScreenshotValidationTask.didWork }
                     }
                     previewScreenshotValidationTask.finalizedBy(screenshotHtmlTask)
-                    validateAllTask.dependsOn(previewScreenshotValidationTask)
+                    validateAllTask.configure { it.dependsOn(previewScreenshotValidationTask) }
                 }
             }
         }
@@ -323,13 +322,15 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
         }
         return builder.toString()
     }
-
-    companion object {
-        const val previewlibCliToolConfigurationName = "_internal-screenshot-test-task-previewlib-cli"
-        const val previewScreenshotTestEngineConfigurationName =
-            "_internal-preview-screenshot-test-engine"
-        private const val ARTIFACT_IMPL = "com.android.build.api.artifact.impl.ArtifactsImpl"
-        private const val ANALYTICS_ENABLED_ARTIFACTS = "com.android.build.api.component.analytics.AnalyticsEnabledArtifacts"
-        private const val INTERNAL_ARTIFACT_TYPE = "com.android.build.gradle.internal.scope.InternalArtifactType"
-    }
 }
+
+private const val previewlibCliToolConfigurationName = "_internal-screenshot-test-task-previewlib-cli"
+private const val previewScreenshotTestEngineConfigurationName = "_internal-preview-screenshot-test-engine"
+private const val ARTIFACT_IMPL = "com.android.build.api.artifact.impl.ArtifactsImpl"
+private const val ANALYTICS_ENABLED_ARTIFACTS = "com.android.build.api.component.analytics.AnalyticsEnabledArtifacts"
+private const val INTERNAL_ARTIFACT_TYPE = "com.android.build.gradle.internal.scope.InternalArtifactType"
+
+private const val PREVIEW_OUTPUT = "outputs/androidTest-results/preview"
+private const val PREVIEW_INTERMEDIATES = "intermediates/preview"
+private const val PREVIEW_REPORTS = "reports/androidTests/preview"
+
