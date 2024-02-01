@@ -160,6 +160,7 @@ import com.android.build.gradle.tasks.ProcessPackagedManifestTask
 import com.android.build.gradle.tasks.ProcessTestManifest
 import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ShaderCompile
+import com.android.build.gradle.tasks.SimplifiedMergedManifestsProducerTask
 import com.android.build.gradle.tasks.TransformClassesWithAsmTask
 import com.android.build.gradle.tasks.VerifyLibraryResourcesTask
 import com.android.buildanalyzer.common.TaskCategoryIssue
@@ -416,7 +417,7 @@ abstract class TaskManager(
         return if (creationConfig is ApplicationCreationConfig) {
             taskFactory.register(ProcessMultiApkApplicationManifest.CreationAction(creationConfig))
         } else {
-            null
+            taskFactory.register(SimplifiedMergedManifestsProducerTask.CreationAction(creationConfig))
         }
     }
 
