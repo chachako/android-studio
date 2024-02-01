@@ -48,7 +48,7 @@ class InstallProfilesPerDeviceApiConnectedTest {
             """
                 android {
                     defaultConfig {
-                        minSdkVersion = 28
+                        minSdkVersion = 27
                         targetSdkVersion = 28
                     }
 
@@ -256,5 +256,24 @@ class InstallProfilesPerDeviceApiConnectedTest {
         project.execute("clean")
         project.execute("assembleRelease")
         Truth.assertThat(dexMetadataProperties.exists()).isFalse()
+    }
+
+    // This test is disabled and should only be run locally with an API level lower than 28
+    //@Test
+    fun apiLevelNotSupportedForBaselineProfile() {
+        val oldBaselineProfileFileContent =
+            """
+                HSPLcom/google/Foo;->mainMethod(II)I
+                HSPLcom/google/Foo;->mainMethod-name-with-hyphens(II)I
+            """.trimIndent()
+        FileUtils.createFile(
+            project.file("src/main/baseline-prof.txt"),
+            oldBaselineProfileFileContent
+        )
+        project.executor().run("assembleRelease", "installRelease")
+
+        ScannerSubject.assertThat(project.buildResult.stdout).contains(
+            "Baseline Profile not found for API level "
+        )
     }
 }

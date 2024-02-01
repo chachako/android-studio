@@ -28,6 +28,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.io.IOException
+import kotlin.test.assertFailsWith
 
 /**
  * Tests for [BuiltArtifactsLoaderImpl]
@@ -226,6 +228,26 @@ class BuiltArtifactsLoaderImplTest {
         assertThat(baselineProfileFile4).isEqualTo(profileTwoDmFile1)
     }
 
+    @Test
+    fun testLoadingWithBaselineProfilesMaxApiNotPresent() {
+        val minApiString = "\"minApi\": 28,"
+        createBaselineProfileMetadataMissingApi(minApiString)
+        val failure = assertFailsWith<IOException> {
+            BuiltArtifactsLoaderImpl().load(FakeGradleDirectory(tmpFolder.root))
+        }
+        assertThat(failure.cause).hasMessageThat().contains("maxApi is required")
+    }
+
+    @Test
+    fun testLoadingWithBaselineProfilesMinApiNotPresent() {
+        val maxApiString = "\"maxApi\": 30,"
+        createBaselineProfileMetadataMissingApi(maxApiString)
+        val failure = assertFailsWith<IOException> {
+            BuiltArtifactsLoaderImpl().load(FakeGradleDirectory(tmpFolder.root))
+        }
+        assertThat(failure.cause).hasMessageThat().contains("minApi is required")
+    }
+
     private fun createSimpleMetadataFile() {
         tmpFolder.newFile("file1.xml").writeText("some manifest")
         tmpFolder.newFile(BuiltArtifactsImpl.METADATA_FILE_NAME).writeText(
@@ -293,6 +315,43 @@ class BuiltArtifactsLoaderImplTest {
                             "maxApi": 35,
                             "baselineProfiles": [
                                 "2/app-release-unsigned.dm"
+                            ]
+                        }
+                    ]
+                }
+            """,
+            Charsets.UTF_8
+        )
+    }
+
+    private fun createBaselineProfileMetadataMissingApi(presentApiString: String) {
+        tmpFolder.newFile(BuiltArtifactsImpl.METADATA_FILE_NAME).writeText(
+            """
+                {
+                    "version": 3,
+                    "artifactType": {
+                        "type": "APK",
+                        "kind": "Directory"
+                    },
+                    "applicationId": "com.example.app",
+                    "variantName": "release",
+                    "elements": [
+                        {
+                            "type": "SINGLE",
+                            "filters": [],
+                            "attributes": [],
+                            "versionCode": 1,
+                            "versionName": "1.0",
+                            "outputFile": "app-release-unsigned.apk"
+                        }
+                    ],
+                    "elementType": "File",
+                    "baselineProfiles": [
+                        {
+                            $presentApiString
+                            "baselineProfiles": [
+                                "1/app-release-unsigned-1.dm",
+                                "1/app-release-unsigned-2.dm"
                             ]
                         }
                     ]
