@@ -78,7 +78,7 @@ class PrivacySandboxSdkVariantScopeImpl(
     override val minSdkVersion: ApiVersion by lazy {
         extension.minSdkPreview?.let { DefaultApiVersion(it) } ?:
         extension.minSdk?.let { DefaultApiVersion(it) } ?:
-        DefaultApiVersion("TiramisuPrivacySandbox")
+        DefaultApiVersion(34)
     }
     override val bootClasspath: Provider<List<RegularFile>>
             get() = bootClasspathConfigProvider.invoke().bootClasspath

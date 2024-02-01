@@ -26,7 +26,8 @@ import com.android.testutils.TestInputsGenerator
 import com.android.testutils.generateAarWithContent
 import com.google.common.collect.ImmutableList
 
-fun createGradleProjectWithPrivacySandboxLibrary(action: TestProjectBuilder.() -> Unit) = createGradleProjectBuilder {
+fun createGradleProjectWithPrivacySandboxLibrary(action: TestProjectBuilder.() -> Unit) =
+        createGradleProjectBuilder {
     subProject(":privacy-sandbox-sdk") {
         plugins.add(PluginType.PRIVACY_SANDBOX_SDK)
         android {
@@ -74,7 +75,7 @@ private val mavenRepo = MavenRepoGenerator(
                                 // language=xml
                                 manifest = """
                                          <manifest package="com.externaldex.externalaar" xmlns:android="http://schemas.android.com/apk/res/android">
-                                             <uses-sdk android:targetSdkVersion="23" android:minSdkVersion="14" />
+                                             <uses-sdk android:targetSdkVersion="34" android:minSdkVersion="21" />
                                              <!-- Permission that needs to be removed before ASB packaging -->
                                              <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
                                          </manifest>
@@ -87,7 +88,7 @@ fun privacySandboxSampleProject(): GradleTestProject {
     return createGradleProjectBuilder {
         privacySandboxSdkProject(":privacy-sandbox-sdk") {
             android {
-                minSdk = 14
+                minSdk = 23
             }
             appendToBuildFile {
                 """
@@ -111,7 +112,7 @@ fun privacySandboxSampleProject(): GradleTestProject {
         privacySandboxSdkLibraryProject(":android-lib2") {
             android {
                 namespace = "com.example.androidlib2"
-                minSdk = 14
+                minSdk = 23
             }
             addFile(
                     "src/main/java/com/example/androidlib2/Example.java",
@@ -139,7 +140,7 @@ fun privacySandboxSampleProject(): GradleTestProject {
         privacySandboxSdkLibraryProject(":android-lib1") {
             android {
                 namespace = "com.example.androidlib1"
-                minSdk = 14
+                minSdk = 23
             }
             dependencies {
                 implementation("androidx.privacysandbox.tools:tools-apipackager:$androidxPrivacySandboxVersion")
@@ -180,10 +181,8 @@ fun privacySandboxSampleProject(): GradleTestProject {
             plugins.add(PluginType.ANDROID_APP)
             android {
                 defaultCompileSdk()
-                minSdk = 14
+                minSdk = 23
                 namespace = "com.example.privacysandboxsdk.consumer"
-                compileSdkPreview = "TiramisuPrivacySandbox"
-
             }
             dependencies {
                 implementation(project(":privacy-sandbox-sdk"))

@@ -31,7 +31,6 @@ fun TestProjectBuilder.privacySandboxSdkProject(path: String, action: SubProject
         plugins.add(PluginType.PRIVACY_SANDBOX_SDK)
         android {
             defaultCompileSdk()
-            compileSdkPreview = "TiramisuPrivacySandbox"
         }
         action()
     }
@@ -45,7 +44,6 @@ fun TestProjectBuilder.privacySandboxSdkLibraryProject(path: String, action: Sub
         plugins.add(PluginType.KSP)
         android {
             defaultCompileSdk()
-            compileSdkPreview = "TiramisuPrivacySandbox"
         }
         dependencies {
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")

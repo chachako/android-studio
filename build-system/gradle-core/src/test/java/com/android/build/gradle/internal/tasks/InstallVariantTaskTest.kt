@@ -55,7 +55,7 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
         fun parameters() = listOf(
             AndroidVersion(19),
             AndroidVersion(21),
-            AndroidVersion(33, "TiramisuPrivacySandbox", 4, false)
+            AndroidVersion(34)
         )
     }
 
@@ -83,7 +83,7 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
     fun setUp() {
         deviceState = fakeAdb.connectAndWaitForDevice()
         deviceState.setActivityManager(PackageManager())
-        if (deviceVersion.apiLevel >= 33 && deviceVersion.codename.contains("PrivacySandbox")) {
+        if (deviceVersion.apiLevel >= 34) {
             deviceState.serviceManager.setService("sdk_sandbox") { _, _ -> }
         }
         val device = AndroidDebugBridge.getBridge()!!.devices.single()

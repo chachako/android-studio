@@ -77,7 +77,7 @@ class AarMetadataTaskTest {
         task.minCompileSdk.set(28)
         task.minCompileSdkExtension.set(1)
         task.minAgpVersion.set("7.0.0")
-        task.forceCompileSdkPreview.set("TiramisuPrivacySandbox")
+        task.forceCompileSdkPreview.set("Tiramisu")
         task.coreLibraryDesugaringEnabled.set(true)
         task.taskAction()
 
@@ -88,7 +88,7 @@ class AarMetadataTaskTest {
             minCompileSdk = "28",
             minCompileSdkExtension = "1",
             minAgpVersion = "7.0.0",
-            compileSdkPreview = "TiramisuPrivacySandbox",
+            compileSdkPreview = "Tiramisu",
             coreLibraryDesugaringEnabled = "true"
         )
     }

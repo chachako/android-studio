@@ -18,12 +18,14 @@ package com.android.build.gradle.integration.connected.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.fixture.executeShellCommand
+import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSampleProject
 import com.android.build.gradle.integration.common.fixture.uninstallPackage
 import com.android.build.gradle.integration.connected.utils.getEmulator
-import com.android.ddmlib.MultiLineReceiver
+import com.android.build.gradle.options.BooleanOption
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.ClassRule
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -37,33 +39,41 @@ private const val TEST_PACKAGE_NAME = "com.example.rubidumconsumer.test"
 class PrivacySandboxSdkConnectedTest {
 
     @get:Rule var project = builder()
-        .fromTestProject("privacySandboxSdk/libraryAndConsumer")
-        .create()
+            .fromTestProject("privacySandboxSdk/libraryAndConsumer")
+            .create()
 
     @Before
     fun setUp() {
         // fail fast if no response
         project.addAdbTimeout();
-
-        println("Uninstalling packages")
         uninstallIfExists(APP_PACKAGE_NAME)
         uninstallIfExists(TEST_PACKAGE_NAME)
         uninstallIfExists(SDK_PACKAGE_NAME, isLibrary = true)
     }
 
+    private fun executor() = project.executor()
+            .with(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT, true)
+            .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
+
     @Test
     fun `connectedAndroidTest task for application`() {
-        project.execute(":app:connectedAndroidTest")
+        executor()
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
+                .run(":app:connectedAndroidTest")
     }
 
     @Test
     fun `connectedAndroidTest task for application with dynamic feature`() {
-        project.execute(":app-with-dynamic-feature:connectedAndroidTest")
+        executor()
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
+                .run(":app-with-dynamic-feature:connectedAndroidTest")
     }
 
     @Test
     fun `install and uninstall works for both SDK and APK for application`() {
-        project.execute(":app:installDebug")
+        executor()
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
+                .run(":app:installDebug")
         assertThat(packageExists(APP_PACKAGE_NAME)).isTrue()
         assertThat(packageExists(SDK_PACKAGE_NAME, isLibrary = true)).isTrue()
 
@@ -73,7 +83,9 @@ class PrivacySandboxSdkConnectedTest {
 
     @Test
     fun `install and uninstall works for both SDK and APK for application with dynamic feature`() {
-        project.execute(":app-with-dynamic-feature:installDebug")
+        executor()
+                .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
+                .run(":app-with-dynamic-feature:installDebug")
         assertThat(packageExists(APP_PACKAGE_NAME)).isTrue()
         assertThat(packageExists(SDK_PACKAGE_NAME, isLibrary = true)).isTrue()
 

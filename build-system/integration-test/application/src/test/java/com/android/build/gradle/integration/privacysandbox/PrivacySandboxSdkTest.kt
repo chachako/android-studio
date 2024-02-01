@@ -128,8 +128,8 @@ class PrivacySandboxSdkTest {
                 package="com.example.privacysandboxsdk" >
 
                 <uses-sdk
-                    android:minSdkVersion="14"
-                    android:targetSdkVersion="23" />
+                    android:minSdkVersion="23"
+                    android:targetSdkVersion="34" />
 
                 <uses-permission android:name="android.permission.INTERNET" />
 
@@ -241,7 +241,7 @@ class PrivacySandboxSdkTest {
             assertThat(rPackageDex.classes.keys).containsExactly("Lcom/example/privacysandboxsdk/RPackage;")
         }
 
-        // Check building the bundle to deploy to TiramisuPrivacySandbox
+        // Check building the bundle to deploy to UpsideDownCake
         val apkSelectConfig = project.file("apkSelectConfig.json")
         apkSelectConfig.writeText(
                 """{"sdk_version":34,"sdk_runtime":{"supported":"true"},"screen_density":420,"supported_abis":["x86_64","arm64-v8a"],"supported_locales":["en"]}""")
@@ -483,7 +483,7 @@ class PrivacySandboxSdkTest {
                             "        A: http://schemas.android.com/apk/res/android:hasCode(0x0101000c)=false",
                             "        A: http://schemas.android.com/apk/res/android:appComponentFactory(0x0101057a)=\"androidx.core.app.CoreComponentFactory\" (Raw: \"androidx.core.app.CoreComponentFactory\")",
                             "      E: uses-sdk (line=0)",
-                            "        A: http://schemas.android.com/apk/res/android:minSdkVersion(0x0101020c)=14",
+                            "        A: http://schemas.android.com/apk/res/android:minSdkVersion(0x0101020c)=23",
                             "      E: http://schemas.android.com/apk/distribution:module (line=0)",
                             "          E: http://schemas.android.com/apk/distribution:delivery (line=0)",
                             "              E: http://schemas.android.com/apk/distribution:install-time (line=0)",
@@ -514,11 +514,11 @@ class PrivacySandboxSdkTest {
                     "  E: manifest (line=2)",
                     "    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=4",
                     "    A: http://schemas.android.com/apk/res/android:isFeatureSplit(0x0101055b)=true",
-                    "    A: http://schemas.android.com/apk/res/android:compileSdkVersion(0x01010572)=33",
-                    "    A: http://schemas.android.com/apk/res/android:compileSdkVersionCodename(0x01010573)=\"TiramisuPrivacySandbox\" (Raw: \"TiramisuPrivacySandbox\")",
+                    "    A: http://schemas.android.com/apk/res/android:compileSdkVersion(0x01010572)=34",
+                    "    A: http://schemas.android.com/apk/res/android:compileSdkVersionCodename(0x01010573)=\"14\" (Raw: \"14\")",
                     "    A: package=\"com.example.privacysandboxsdk.consumer\" (Raw: \"com.example.privacysandboxsdk.consumer\")",
-                    "    A: platformBuildVersionCode=33",
-                    "    A: platformBuildVersionName=\"TiramisuPrivacySandbox\" (Raw: \"TiramisuPrivacySandbox\")",
+                    "    A: platformBuildVersionCode=34",
+                    "    A: platformBuildVersionName=14",
                     "    A: split=\"exampleappdebuginjectedprivacysandboxcompat\" (Raw: \"exampleappdebuginjectedprivacysandboxcompat\")",
                     "      E: application (line=9)",
                     "        A: http://schemas.android.com/apk/res/android:hasCode(0x0101000c)=false",

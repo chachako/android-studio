@@ -42,7 +42,7 @@ class PrivacySandboxAsarConsumptionSmokeTest {
                 defaultCompileSdk()
                 minSdk = 14
                 namespace = "com.example.privacysandboxsdk.consumer"
-                compileSdkPreview = "TiramisuPrivacySandbox"
+                compileSdk = 34
 
             }
             dependencies {

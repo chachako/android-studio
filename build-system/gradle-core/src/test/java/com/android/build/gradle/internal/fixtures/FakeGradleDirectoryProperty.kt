@@ -29,6 +29,8 @@ import java.util.function.BiFunction
 
 class FakeGradleDirectoryProperty(private val directory: Directory?) : DirectoryProperty {
 
+    var isSet = false
+
     override fun get(): Directory = directory!!
 
     override fun getOrNull(): Directory? = directory
@@ -48,7 +50,7 @@ class FakeGradleDirectoryProperty(private val directory: Directory?) : Directory
     }
 
     override fun isPresent(): Boolean {
-        TODO("Not yet implemented")
+        return isSet
     }
 
     override fun orElse(value: Directory): Provider<Directory> {
@@ -84,15 +86,15 @@ class FakeGradleDirectoryProperty(private val directory: Directory?) : Directory
     }
 
     override fun set(file: File?) {
-        TODO("Not yet implemented")
+        isSet = true
     }
 
     override fun set(value: Directory?) {
-        TODO("Not yet implemented")
+        isSet = true
     }
 
     override fun set(provider: Provider<out Directory>) {
-        TODO("Not yet implemented")
+        isSet = true
     }
 
     override fun value(value: Directory?): DirectoryProperty {

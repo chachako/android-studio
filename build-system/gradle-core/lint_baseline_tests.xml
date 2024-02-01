@@ -316,7 +316,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="39"
+            line="41"
             column="9"/>
     </issue>
 
@@ -327,7 +327,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="43"
+            line="45"
             column="9"/>
     </issue>
 
@@ -338,7 +338,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="47"
+            line="49"
             column="9"/>
     </issue>
 
@@ -349,7 +349,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="51"
+            line="57"
             column="9"/>
     </issue>
 
@@ -360,7 +360,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="55"
+            line="61"
             column="9"/>
     </issue>
 
@@ -371,7 +371,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="59"
+            line="65"
             column="9"/>
     </issue>
 
@@ -382,7 +382,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="63"
+            line="69"
             column="9"/>
     </issue>
 
@@ -393,7 +393,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="67"
+            line="73"
             column="9"/>
     </issue>
 
@@ -404,7 +404,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="71"
+            line="77"
             column="9"/>
     </issue>
 
@@ -415,7 +415,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="75"
+            line="81"
             column="9"/>
     </issue>
 
@@ -426,7 +426,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="79"
+            line="85"
             column="9"/>
     </issue>
 
@@ -437,7 +437,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="83"
+            line="101"
             column="9"/>
     </issue>
 
@@ -448,7 +448,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="87"
+            line="105"
             column="9"/>
     </issue>
 
@@ -459,7 +459,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="91"
+            line="109"
             column="9"/>
     </issue>
 
@@ -470,7 +470,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="95"
+            line="113"
             column="9"/>
     </issue>
 
@@ -481,7 +481,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="99"
+            line="117"
             column="9"/>
     </issue>
 
@@ -492,7 +492,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="103"
+            line="121"
             column="9"/>
     </issue>
 
@@ -503,7 +503,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="107"
+            line="125"
             column="9"/>
     </issue>
 
@@ -514,7 +514,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="111"
+            line="129"
             column="9"/>
     </issue>
 
@@ -525,7 +525,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="115"
+            line="133"
             column="9"/>
     </issue>
 
@@ -536,7 +536,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="119"
+            line="137"
             column="9"/>
     </issue>
 
@@ -547,7 +547,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="123"
+            line="141"
             column="9"/>
     </issue>
 
@@ -558,7 +558,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="127"
+            line="145"
             column="9"/>
     </issue>
 
@@ -569,7 +569,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="131"
+            line="149"
             column="9"/>
     </issue>
 
@@ -580,7 +580,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="135"
+            line="153"
             column="9"/>
     </issue>
 
@@ -591,51 +591,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="139"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="StopShip"
-        message="`TODO` call found; points to code which must be fixed prior to release"
-        errorLine1="        TODO(&quot;Not yet implemented&quot;)"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="143"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="StopShip"
-        message="`TODO` call found; points to code which must be fixed prior to release"
-        errorLine1="        TODO(&quot;Not yet implemented&quot;)"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="147"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="StopShip"
-        message="`TODO` call found; points to code which must be fixed prior to release"
-        errorLine1="        TODO(&quot;Not yet implemented&quot;)"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="151"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="StopShip"
-        message="`TODO` call found; points to code which must be fixed prior to release"
-        errorLine1="        TODO(&quot;Not yet implemented&quot;)"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="155"
+            line="157"
             column="9"/>
     </issue>
 

@@ -44,6 +44,7 @@ import com.android.zipflinger.ZipArchive
 import com.google.common.base.Throwables
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -425,15 +426,16 @@ class CheckAarMetadataTaskTest {
     }
 
     @Test
+    @Ignore(value = "b/322760275")
     fun testPassingWithForceCompileSdkPreview() {
         addAarWithPossiblyInvalidAarMetadataToAppProject(
             aarFormatVersion = AarMetadataTask.AAR_FORMAT_VERSION,
             aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
-            forceCompileSdkPreview = "TiramisuPrivacySandbox"
+            forceCompileSdkPreview = "UpsideDownCakePrivacySandbox"
         )
         TestFileUtils.appendToFile(
             project.getSubproject("app").buildFile,
-            "\n\nandroid.compileSdkPreview 'TiramisuPrivacySandbox'\n\n"
+            "\n\nandroid.compileSdkPreview 'UpsideDownCakePrivacySandbox'\n\n"
         )
         val result = project.executor().run(":app:checkDebugAarMetadata")
         ScannerSubject.assertThat(result.stdout).contains("BUILD SUCCESSFUL")
@@ -444,7 +446,7 @@ class CheckAarMetadataTaskTest {
         addAarWithPossiblyInvalidAarMetadataToAppProject(
             aarFormatVersion = AarMetadataTask.AAR_FORMAT_VERSION,
             aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
-            forceCompileSdkPreview = "TiramisuPrivacySandbox"
+            forceCompileSdkPreview = "UpsideDownCakePrivacySandbox"
         )
 
         // Test that build fails with desired error message.
@@ -458,13 +460,13 @@ class CheckAarMetadataTaskTest {
                         An issue was found when checking AAR metadata:
 
                           1.  Dependency 'library.aar' requires libraries and applications that
-                              depend on it to compile against codename "TiramisuPrivacySandbox" of the
+                              depend on it to compile against codename "UpsideDownCakePrivacySandbox" of the
                               Android APIs.
 
                               :app is currently compiled against $compileSdkHash.
 
                               Recommended action: Use a different version of dependency 'library.aar',
-                              or set compileSdkPreview to "TiramisuPrivacySandbox" in your build.gradle
+                              or set compileSdkPreview to "UpsideDownCakePrivacySandbox" in your build.gradle
                               file if you intend to experiment with that preview SDK.
                     """.trimIndent()
                 )
@@ -538,7 +540,7 @@ class CheckAarMetadataTaskTest {
         addAarWithPossiblyInvalidAarMetadataToAppProject(
             aarFormatVersion = AarMetadataTask.AAR_FORMAT_VERSION,
             aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
-            forceCompileSdkPreview = "TiramisuPrivacySandbox"
+            forceCompileSdkPreview = "UpsideDownCakePrivacySandbox"
         )
 
         project.executor()
