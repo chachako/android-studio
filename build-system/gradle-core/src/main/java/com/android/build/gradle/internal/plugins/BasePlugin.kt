@@ -684,8 +684,10 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
         if (projectBuilder != null) {
             projectBuilder
                 .setCompileSdk(extension.compileSdkVersion)
-                .setBuildToolsVersion(extension.buildToolsRevision.toString()).splits =
-                AnalyticsUtil.toProto(extension.splits)
+                .setBuildToolsVersion(extension.buildToolsRevision.toString())
+                .setSplits(AnalyticsUtil.toProto(extension.splits))
+                .setNdkVersion(newExtension.ndkVersion)
+
             getKotlinAndroidPluginVersion(project)?.let {
                 projectBuilder.kotlinPluginVersion = it
             }
