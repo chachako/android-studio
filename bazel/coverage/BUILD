@@ -655,24 +655,6 @@ coverage_report(
     ],
 )
 
-# Coverage report for Android Test Retention
-coverage_report(
-    name = "retention",
-    srcpath_include = [
-        "tools/adt/idea/android-test-retention",
-        "tools/adt/idea/android/src/com/android/tools/idea/testartifacts/instrumented/retention",
-        "tools/adt/idea/android/src/com/android/tools/idea/testartifacts/instrumented/testsuite/view/RetentionView.kt",
-        "tools/base/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/testing/utp/icebox",
-        "tools/base/utp/android-test-plugin-host-retention/src",
-    ],
-    tests = [
-        "//tools/adt/idea/android:intellij.android.core.tests_tests",
-        "//tools/adt/idea/android-test-retention:intellij.android.testRetention.tests_tests",
-        "//tools/base/build-system/gradle-core:tests.test",
-        "//tools/base/utp/android-test-plugin-host-retention:tests.test",
-    ],
-)
-
 coverage_report(
     name = "simpleperf-collapse-ui",
     srcpath_include = [
@@ -981,7 +963,6 @@ combine_report_definitions(
         "projectsystem",
         "r8-editing",
         "resources-ui",
-        "retention",
         "simpleperf-collapse-ui",
         "spliteditor",
         "streaming",
@@ -1017,7 +998,6 @@ coverage_report(
         "//tools/adt/idea/android-npw:intellij.android.newProjectWizard.tests_tests",
         "//tools/adt/idea/android-templates:intellij.android.templates.tests_tests",
         "//tools/adt/idea/android-test-framework:intellij.android.testFramework_tests",
-        "//tools/adt/idea/android-test-retention:intellij.android.testRetention.tests_tests",
         "//tools/adt/idea/android-transport:intellij.android.transport_tests",
         "//tools/adt/idea/android/actions:intellij.android.core.actions_tests",
         "//tools/adt/idea/android/apk:intellij.android.core.apk_tests",
