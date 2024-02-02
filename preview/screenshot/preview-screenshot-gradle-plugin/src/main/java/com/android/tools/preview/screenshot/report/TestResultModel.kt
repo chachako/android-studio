@@ -37,7 +37,7 @@ abstract class TestResultModel {
     }
 
     fun getFormattedResultType(): String {
-        return return when (getResultType()) {
+        return when (getResultType()) {
             ResultType.SUCCESS -> "passed"
             ResultType.FAILURE -> "failed"
             ResultType.SKIPPED -> "ignored"

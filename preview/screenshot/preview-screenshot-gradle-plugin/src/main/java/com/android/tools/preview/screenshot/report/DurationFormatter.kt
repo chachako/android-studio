@@ -17,44 +17,42 @@
 package com.android.tools.preview.screenshot.report
 
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 class DurationFormatter {
 
     fun format(duration: Long): String {
-        var duration = duration
         if (duration == 0L) {
             return "0s"
         }
+        var formattedDuration = duration
         val result = StringBuilder()
         val days: Long =
-            duration / MILLIS_PER_DAY
-        duration =
-            duration % MILLIS_PER_DAY
+            formattedDuration / MILLIS_PER_DAY
+        formattedDuration %= MILLIS_PER_DAY
         if (days > 0) {
             result.append(days)
             result.append("d")
         }
         val hours: Long =
             duration / MILLIS_PER_HOUR
-        duration =
-            duration % MILLIS_PER_HOUR
-        if (hours > 0 || result.length > 0) {
+        formattedDuration %= MILLIS_PER_HOUR
+        if (hours > 0 || result.isNotEmpty()) {
             result.append(hours)
             result.append("h")
         }
         val minutes: Long =
-            duration / MILLIS_PER_MINUTE
-        duration =
-            duration % MILLIS_PER_MINUTE
-        if (minutes > 0 || result.length > 0) {
+            formattedDuration / MILLIS_PER_MINUTE
+        formattedDuration %= MILLIS_PER_MINUTE
+        if (minutes > 0 || result.isNotEmpty()) {
             result.append(minutes)
             result.append("m")
         }
-        val secondsScale = if (result.length > 0) 2 else 3
+        val secondsScale = if (result.isNotEmpty()) 2 else 3
         result.append(
-            BigDecimal.valueOf(duration)
+            BigDecimal.valueOf(formattedDuration)
                 .divide(MILLIS_PER_SECOND.toBigDecimal())
-                .setScale(secondsScale, BigDecimal.ROUND_HALF_UP)
+                .setScale(secondsScale, RoundingMode.HALF_UP)
         )
         result.append("s")
         return result.toString()

@@ -25,7 +25,7 @@ import java.io.IOException
 abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRenderer<T>() {
 
     protected lateinit var results: T
-    private val tabsRenderer: TabsRenderer<T> = TabsRenderer<T>()
+    private val tabsRenderer: TabsRenderer<T> = TabsRenderer()
 
     protected abstract fun renderBreadcrumbs(htmlWriter: SimpleHtmlWriter)
     protected abstract fun registerTabs()

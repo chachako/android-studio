@@ -77,7 +77,9 @@ class HtmlReportRenderer {
                                     outputStream = BufferedOutputStream(
                                         FileOutputStream(destFile)
                                     )
-                                    ByteStreams.copy(inputStream, outputStream)
+                                    if (inputStream != null) {
+                                        ByteStreams.copy(inputStream, outputStream)
+                                    }
                                 } finally {
                                     outputStream?.close()
                                 }
@@ -103,8 +105,8 @@ class HtmlReportRenderer {
         }
 
         @Throws(Exception::class)
-        public override fun writeTo(model: T, writer: Writer) {
-            val htmlWriter = SimpleHtmlWriter(writer, "")
+        public override fun writeTo(model: T, out: Writer) {
+            val htmlWriter = SimpleHtmlWriter(out, "")
             htmlWriter.startElement("html")
             delegate.render(model, htmlWriter)
             htmlWriter.endElement()

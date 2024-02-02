@@ -55,7 +55,6 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask(), VerificationTask {
         //throw exception at the first encountered error
         val resultFile = renderTaskOutputDir.file("results.json").get().asFile
         val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
-        val screenshotResults = composeRenderingResult.screenshotResults
         for (result in composeRenderingResult.screenshotResults) {
             saveReferenceImage(result)
         }

@@ -76,8 +76,7 @@ class TestReport(resultDir: File, reportDir: File) {
         var inputStream: InputStream? = null
         try {
             inputStream = FileInputStream(file)
-            val document: Document
-            document = try {
+            val document: Document = try {
                 DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
                     InputSource(inputStream)
                 )
@@ -112,31 +111,30 @@ class TestReport(resultDir: File, reportDir: File) {
                     var referenceImage: Image? = null
                     var actualImage: Image? = null
                     var diffImage: Image? = null
-                    val goldens = image.getElementsByTagName("reference")
+                    val references = image.getElementsByTagName("reference")
                     val actuals = image.getElementsByTagName("actual")
                     val diffs = image.getElementsByTagName("diff")
-                    for (k in 0 until goldens.length) {
-                        val golden = goldens.item(k) as Element
-                        val path = golden.getAttribute("path")
-                        val message = golden.getAttribute("message")
+                    for (k in 0 until references.length) {
+                        val reference = references.item(k) as Element
+                        val path = reference.getAttribute("path")
+                        val message = reference.getAttribute("message")
                         referenceImage = Image(path, message)
                     }
                     for (k in 0 until actuals.length) {
-                        val golden = actuals.item(k) as Element
-                        val path = golden.getAttribute("path")
-                        val message = golden.getAttribute("message")
+                        val reference = actuals.item(k) as Element
+                        val path = reference.getAttribute("path")
+                        val message = reference.getAttribute("message")
                         actualImage = Image(path, message)
                     }
                     for (k in 0 until diffs.length) {
-                        val golden = diffs.item(k) as Element
-                        val path = golden.getAttribute("path")
-                        val message = golden.getAttribute("message")
+                        val reference = diffs.item(k) as Element
+                        val path = reference.getAttribute("path")
+                        val message = reference.getAttribute("message")
                         diffImage = Image(path, message)
                     }
                     ssImages = ScreenshotTestImages(referenceImage, actualImage, diffImage)
                 }
-                var testResult: TestResult
-                testResult = model.addTest(
+                var testResult: TestResult = model.addTest(
                     className, testName, duration.toLong(),
                     projectName!!, flavorName!!, ssImages
                 )
@@ -160,9 +158,8 @@ class TestReport(resultDir: File, reportDir: File) {
                     .ignored(projectName, flavorName)
             }
             val suiteClassName = document.documentElement.getAttribute("name")
-            if (!suiteClassName.isBlank()) {
-                val suiteResults: ClassTestResults =
-                    model.addTestClass(suiteClassName)
+            if (suiteClassName.isNotBlank()) {
+                model.addTestClass(suiteClassName)
                 // TODO handle tool failures
             }
         } catch (e: Exception) {

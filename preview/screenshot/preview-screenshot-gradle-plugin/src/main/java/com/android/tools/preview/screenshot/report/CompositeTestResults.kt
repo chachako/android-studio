@@ -18,9 +18,9 @@ package com.android.tools.preview.screenshot.report
 
 import org.gradle.api.tasks.testing.TestResult.ResultType
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.TreeMap
 import java.util.TreeSet
-import java.util.function.BiFunction
 
 /**
  * Custom CompositeTestResults based on Gradle's CompositeTestResults
@@ -33,8 +33,6 @@ abstract class CompositeTestResults protected constructor(private val parent: Co
     var skipCount = 0
     override var duration: Long = 0
     private val variants: MutableMap<String, VariantTestResults?> = TreeMap<String, VariantTestResults?>()
-    private val standardOutput: MutableMap<String, java.lang.StringBuilder> = TreeMap()
-    private val standardError: MutableMap<String, java.lang.StringBuilder> = TreeMap()
 
     fun getFilename(): String? {
         return name
@@ -65,7 +63,7 @@ abstract class CompositeTestResults protected constructor(private val parent: Co
             val successful = BigDecimal.valueOf((testCount - failureCount - skipCount).toLong())
             return successful.divide(
                 tests, 2,
-                BigDecimal.ROUND_DOWN
+                RoundingMode.DOWN
             ).multiply(BigDecimal.valueOf(100)).toInt()
         }
 
@@ -75,34 +73,24 @@ abstract class CompositeTestResults protected constructor(private val parent: Co
         flavorName: String
     ) {
         failures.add(failedTest)
-        if (parent != null) {
-            parent.failed(failedTest, projectName, flavorName)
-        }
+        parent?.failed(failedTest, projectName, flavorName)
         val key: String =
             getVariantKey(
                 projectName,
                 flavorName
             )
-        val variantResults: VariantTestResults? = variants[key]
-        if (variantResults != null) {
-            variantResults.failed(failedTest, projectName, flavorName)
-        }
+        variants[key]?.failed(failedTest, projectName, flavorName)
     }
 
     fun skipped(projectName: String, flavorName: String) {
         skipCount++
-        if (parent != null) {
-            parent.skipped(projectName, flavorName)
-        }
+        parent?.skipped(projectName, flavorName)
         val key: String =
             getVariantKey(
                 projectName,
                 flavorName
             )
-        val variantResults: VariantTestResults? = variants[key]
-        if (variantResults != null) {
-            variantResults.skipped(projectName, flavorName)
-        }
+        variants[key]?.skipped(projectName, flavorName)
     }
 
     protected fun addTest(test: TestResult): TestResult {

@@ -37,8 +37,8 @@ abstract class TextReportRenderer<T> {
     open fun writeTo(model: T, file: File) {
         IoActions.writeTextFile(file, "utf-8", object : ErroringAction<Writer>() {
             @Throws(Exception::class)
-            override fun doExecute(writer: Writer) {
-                writeTo(model, writer)
+            override fun doExecute(objectToExecute: Writer) {
+                writeTo(model, objectToExecute)
             }
         })
     }
