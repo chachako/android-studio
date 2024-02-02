@@ -181,6 +181,9 @@
       - baseline                  = (null)
       - targetSdk                 = (null)
    < lintOptions
+   - installation:
+      - timeOutInMs    = 0
+      - installOptions = ["-d", "-t"]
    - dependenciesInfo:
       - includeInApk    = true
       - includeInBundle = true

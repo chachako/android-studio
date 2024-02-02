@@ -146,5 +146,8 @@
       - baseline                  = (null)
       - targetSdk                 = (null)
    < lintOptions
+   - installation:
+      - timeOutInMs    = 0
+      - installOptions = []
    - dependenciesInfo  = (null)
 < AndroidDsl

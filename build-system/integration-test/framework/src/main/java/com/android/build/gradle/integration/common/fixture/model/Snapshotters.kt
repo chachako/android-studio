@@ -33,6 +33,7 @@ import com.android.builder.model.v2.ide.AndroidLibraryData
 import com.android.builder.model.v2.ide.ApiVersion
 import com.android.builder.model.v2.ide.ArtifactDependencies
 import com.android.builder.model.v2.ide.AbstractArtifact
+import com.android.builder.model.v2.ide.Installation
 import com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags
 import com.android.builder.model.v2.ide.BasicArtifact
 import com.android.builder.model.v2.ide.BasicVariant
@@ -210,6 +211,10 @@ internal fun ModelSnapshotter<AndroidDsl>.snapshotAndroidDsl() {
     }
     dataObject("lintOptions", AndroidDsl::lintOptions) {
         snapshotLintOptions()
+    }
+    dataObject("installation", AndroidDsl::installation) {
+        item("timeOutInMs", Installation::timeOutInMs)
+        list("installOptions", Installation::installOptions)
     }
     dataObject("dependenciesInfo", AndroidDsl::dependenciesInfo) {
         item("includeInApk", DependenciesInfo::includeInApk)

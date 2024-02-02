@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-086c9a1044dbc5ce3188bbd4367e9993b7f58d488391466a3aecd44a503cd7ac
+05f1e4772e13e1bca8676091baea0fc068fce376225cb9f10de1e4fe1ad46d32
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -572,9 +572,6 @@ com.android.builder.model.v2.ide.AbstractArtifact.getGeneratedClassPaths: java.u
 com.android.builder.model.v2.ide.AbstractArtifact.getGeneratedSourceFolders: java.util.Collection<java.io.File> ()
 com.android.builder.model.v2.ide.AbstractArtifact.getIdeSetupTaskNames: java.util.Set<java.lang.String> ()
 com.android.builder.model.v2.ide.AbstractArtifact.getModelSyncFiles: java.util.Collection<java.lang.Void> ()
-com.android.builder.model.v2.ide.AdbOptions implements com.android.builder.model.v2.AndroidModel
-com.android.builder.model.v2.ide.AdbOptions.getInstallOptions: java.util.Collection<java.lang.String> ()
-com.android.builder.model.v2.ide.AdbOptions.getTimeOutInMs: int ()
 com.android.builder.model.v2.ide.AndroidArtifact implements com.android.builder.model.v2.ide.AbstractArtifact, com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.ide.AndroidArtifact.getAbiFilters: java.util.Set<java.lang.String> ()
 com.android.builder.model.v2.ide.AndroidArtifact.getApplicationId: java.lang.String ()
@@ -664,6 +661,9 @@ com.android.builder.model.v2.ide.GraphItem implements com.android.builder.model.
 com.android.builder.model.v2.ide.GraphItem.getDependencies: java.util.List<com.android.builder.model.v2.ide.GraphItem> ()
 com.android.builder.model.v2.ide.GraphItem.getKey: java.lang.String ()
 com.android.builder.model.v2.ide.GraphItem.getRequestedCoordinates: java.lang.String ()
+com.android.builder.model.v2.ide.Installation implements com.android.builder.model.v2.AndroidModel
+com.android.builder.model.v2.ide.Installation.getInstallOptions: java.util.Collection<java.lang.String> ()
+com.android.builder.model.v2.ide.Installation.getTimeOutInMs: int ()
 com.android.builder.model.v2.ide.JavaArtifact implements com.android.builder.model.v2.ide.AbstractArtifact, com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.ide.JavaArtifact.getMockablePlatformJar: java.io.File ()
 com.android.builder.model.v2.ide.JavaArtifact.getRuntimeResourceFolder: java.io.File ()
@@ -809,6 +809,7 @@ com.android.builder.model.v2.models.AndroidDsl.getDefaultConfig: com.android.bui
 com.android.builder.model.v2.models.AndroidDsl.getDependenciesInfo: com.android.builder.model.v2.dsl.DependenciesInfo ()
 com.android.builder.model.v2.models.AndroidDsl.getFlavorDimensions: java.util.Collection<java.lang.String> ()
 com.android.builder.model.v2.models.AndroidDsl.getGroupId: java.lang.String ()
+com.android.builder.model.v2.models.AndroidDsl.getInstallation: com.android.builder.model.v2.ide.Installation ()
 com.android.builder.model.v2.models.AndroidDsl.getLintOptions: com.android.builder.model.v2.ide.LintOptions ()
 com.android.builder.model.v2.models.AndroidDsl.getProductFlavors: java.util.List<com.android.builder.model.v2.dsl.ProductFlavor> ()
 com.android.builder.model.v2.models.AndroidDsl.getSigningConfigs: java.util.Collection<com.android.builder.model.v2.dsl.SigningConfig> ()

@@ -506,19 +506,16 @@ class ModelBuilder<
 
         return AndroidDslImpl(
             buildToolsVersion = extension.buildToolsVersion,
-
             groupId = project.group.toString(),
             compileTarget = compileSdkVersion,
-
             defaultConfig = defaultConfig,
             buildTypes = buildTypes,
             flavorDimensions = ImmutableList.copyOf(extension.flavorDimensions),
             productFlavors = productFlavors,
-
             signingConfigs = extension.signingConfigs.map { it.convert() },
             aaptOptions = extension.androidResources.convert(),
             lintOptions = extension.lint.convert(),
-
+            installation = extension.installation.convert(),
             dependenciesInfo = dependenciesInfo,
             )
     }

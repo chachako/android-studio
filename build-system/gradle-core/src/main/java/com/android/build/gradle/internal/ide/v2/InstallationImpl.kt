@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.builder.model.v2.ide
+package com.android.build.gradle.internal.ide.v2
 
-import com.android.builder.model.v2.AndroidModel
-
+import com.android.builder.model.v2.ide.Installation
+import java.io.Serializable
 /**
- * Options for adb.
- *
- * @since 4.2
+ * Implementation of [Installation] for serialization via the Tooling API
  */
-interface AdbOptions: AndroidModel {
-
-    /** The time out used for all adb operations. */
-    val timeOutInMs: Int
-
-    /** The list of APK installation options. */
-    val installOptions: Collection<String>?
+data class InstallationImpl(
+    override val timeOutInMs: Int,
+    override val installOptions: Collection<String>
+): Installation, Serializable {
+    companion object {
+        @JvmStatic
+        private val serialVersionUID: Long = 1L
+    }
 }
