@@ -60,7 +60,6 @@ fun createProjectServices(
         projectOptions,
         project.gradle.sharedServices,
         lintFromMaven = LintFromMaven(objectFactory.fileCollection(), "invalid lint"),
-        layoutlibFromMaven = null,
         aapt2FromMaven = Aapt2FromMaven(objectFactory.fileCollection().from(TestUtils.getAapt2().parent), "test-aapt2"),
         maxWorkerCount = 1,
         ProjectInfo(project),

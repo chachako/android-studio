@@ -102,7 +102,6 @@ abstract class AssetPackBundlePlugin : Plugin<Project> {
             projectOptions,
             project.gradle.sharedServices,
             LintFromMaven.from(project, projectOptions, syncIssueHandler),
-            null,
             create(project, projectOptions::get),
             project.gradle.startParameter.maxWorkerCount,
             ProjectInfo(project),
