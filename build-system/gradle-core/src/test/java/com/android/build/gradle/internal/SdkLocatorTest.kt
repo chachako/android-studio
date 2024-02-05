@@ -342,7 +342,7 @@ class SdkLocatorTest {
 
         val localProperties = Properties()
         localSdkDir?.let { localProperties.setProperty(SdkConstants.SDK_DIR_PROPERTY, it) }
-        localAndroidDir?.let { localProperties.setProperty(SdkLocator.ANDROID_DIR_PROPERTY, it) }
+        localAndroidDir?.let { localProperties.setProperty(SdkConstants.ANDROID_DIR_PROPERTY, it) }
 
         val envProperties = Properties()
         envAndroidHome?.let{ envProperties.setProperty(SdkConstants.ANDROID_HOME_ENV, it) }

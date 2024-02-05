@@ -73,8 +73,6 @@ object SdkLocator {
     var sdkTestDirectory: File? = null
 
     @VisibleForTesting
-    const val ANDROID_DIR_PROPERTY = "android.dir"
-    @VisibleForTesting
     const val ANDROID_HOME_SYSTEM_PROPERTY = "android.home"
 
     // Order defines the preference for matching an SDK directory.
@@ -95,7 +93,7 @@ object SdkLocator {
 
         }, LOCAL_ANDROID_DIR(SdkType.PLATFORM) { // TODO: Check if this is still used.
             override fun getSdkPathProperty(sourceSet: SdkLocationSourceSet): File? {
-                return sourceSet.localProperties.getProperty(ANDROID_DIR_PROPERTY)?.let {
+                return sourceSet.localProperties.getProperty(SdkConstants.ANDROID_DIR_PROPERTY)?.let {
                     validateSdkPath(it, sourceSet.projectRoot)
                 }
             }

@@ -17,6 +17,7 @@
 package com.android.build.gradle.tasks
 
 import com.android.SdkConstants.FD_MAIN
+import com.android.SdkConstants.FN_RESOURCES_PROPERTIES
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
@@ -75,7 +76,7 @@ abstract class ExtractSupportedLocalesTask : NonIncrementalTask() {
 
         if (fromAppModule.get()) {
             // Find resources.properties file
-            val propFiles = mainResSet.files.map { File(it, "resources.properties") }.filter { it.exists() }
+            val propFiles = mainResSet.files.map { File(it, FN_RESOURCES_PROPERTIES) }.filter { it.exists() }
             val noResourcesPropertiesMessage = "No resources.properties file found. " +
                 "See https://developer.android.com/r/studio-ui/build/automatic-per-app-languages"
             if (propFiles.isEmpty() && resources.isNotEmpty()) { // Mandate a resource property file
