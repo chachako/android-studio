@@ -52,6 +52,7 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask(), VerificationTask {
 
     @TaskAction
     fun run() = analyticsService.get().recordTaskAction(path) {
+        FileUtils.cleanOutputDir(referenceImageDir.get().asFile)
         //throw exception at the first encountered error
         val resultFile = renderTaskOutputDir.file("results.json").get().asFile
         val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
