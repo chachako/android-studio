@@ -26,7 +26,6 @@ import com.android.tools.lint.useFirUast
 import com.intellij.codeInsight.AnnotationTargetUtil
 import com.intellij.openapi.util.Disposer
 import com.intellij.pom.java.LanguageLevel
-import com.intellij.psi.LambdaUtil
 import com.intellij.psi.PsiAnnotation.TargetType
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
@@ -36,7 +35,6 @@ import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiRecursiveElementVisitor
 import com.intellij.psi.PsiType
 import com.intellij.psi.PsiTypeParameter
-import com.intellij.psi.PsiWildcardType
 import junit.framework.TestCase
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.kotlin.analysis.api.analyze
@@ -2895,10 +2893,14 @@ class UastTest : TestCase() {
             """
           import android.content.Context
           import android.widget.Toast
-          import kotlinx.coroutines.CompletableDeferred
-          import kotlinx.coroutines.async
-          import kotlinx.coroutines.coroutineScope
-          import org.junit.Assert.assertThrows
+          //import kotlinx.coroutines.CompletableDeferred
+          import my.coroutines.CompletableDeferred
+          //import kotlinx.coroutines.async
+          import my.coroutines.async
+          //import kotlinx.coroutines.coroutineScope
+          import my.coroutines.coroutineScope
+          //import org.junit.Assert.assertThrows
+          import my.junit.Assert.assertThrows
           //import org.junit.function.ThrowingRunnable
           import my.junit.function.ThrowingRunnable
 
@@ -2927,7 +2929,7 @@ class UastTest : TestCase() {
 
           fun testThrowing() {
             assertThrows<RuntimeException>(RuntimeException::class.java) {
-              CompletableDeferred<Any?>("later/assertThrows") // 9 // CompletableDeferred<Object>
+              CompletableDeferred<Any?>("later/assertThrows") // 9 // void
             }
             assertThrows<RuntimeException>(
               RuntimeException::class.java,
@@ -2937,10 +2939,36 @@ class UastTest : TestCase() {
             )
           }
 
-          suspend fun testLaunchSuggestionWithUnusedAsync(): Unit = coroutineScope { // 11 // Object
-            async { "Deferred value" } // 12 // Object
+          suspend fun testLaunchSuggestionWithUnusedAsync(): Unit = coroutineScope { // 11 // Object, suspend lambda
+            async { "Deferred value" } // 12 // Object, suspend lambda
           }
         """
+          )
+          .indented(),
+        kotlin(
+            "my/coroutines/CompletableDeferred.kt",
+            """
+            package my.coroutines
+            interface CompletableDeferred<T> : Deferred<T> {}
+          """,
+          )
+          .indented(),
+        kotlin(
+            "my/coroutines/Deferred.kt",
+            """
+            package my.coroutines
+            interface Deferred<T> {}
+          """,
+          )
+          .indented(),
+        kotlin(
+            "my/coroutines/CoroutineScope.kt",
+            """
+            package my.coroutines
+            interface CoroutineScope {}
+            suspend fun <R> coroutineScope(block: suspend CoroutineScope.() -> R): R = TODO()
+            fun <T> CoroutineScope.async(block: suspend CoroutineScope.() -> T): Deferred<T> = TODO()
+          """,
           )
           .indented(),
         java(
@@ -2954,9 +2982,40 @@ class UastTest : TestCase() {
             """,
           )
           .indented(),
+        java(
+            "my/junit/Assert.java",
+            """
+            package my.junit;
+
+            import my.junit.function.ThrowingRunnable;
+
+            public class Assert {
+              public static <T extends Throwable> T assertThrows(Class<T> expectedThrowable, ThrowingRunnable runnable) {
+                throw new AssertionError();
+              }
+            }
+          """,
+          )
+          .indented(),
       )
 
-    val expectedCount = 12
+    val expectedReturnValues =
+      listOf(
+        true, // 1 // Unit
+        true, // 2 // Unit
+        true, // 3 // Unit
+        false, // 4 // Toast
+        false, // 5 // Toast
+        false, // 6 // Toast
+        true, // 7 // Unit
+        true, // 8 // Unit
+        true, // 9 // void
+        true, // 10 // void
+        true, // 11 // Object, suspend lambda
+        true, // 12 // Object, suspend lambda
+      )
+
+    val expectedCount = expectedReturnValues.size
     check(*testFiles) { file ->
       var lambdaCount = 0
       var returnCount = 0
@@ -2984,13 +3043,12 @@ class UastTest : TestCase() {
             )
               return super.visitReturnExpression(node)
 
+            assertEquals(
+              "Comparison[${returnCount+1}]: ${node.returnExpression?.sourcePsi?.text}",
+              expectedReturnValues[returnCount],
+              node.isIncorrectImplicitReturnInLambda(),
+            )
             returnCount++
-            val lambdaReturnType = LambdaUtil.getFunctionalInterfaceReturnType(lambdaType)
-            val returnTypeText =
-              lambdaReturnType.let { if (it is PsiWildcardType) it.bound else it }?.canonicalText
-                ?: "<null>"
-            val lambdaReturnsUnit = returnTypeText == "kotlin.Unit" || returnTypeText == "void"
-            assertEquals(lambdaReturnsUnit, node.isIncorrectImplicitReturnInLambda())
             return super.visitReturnExpression(node)
           }
         }

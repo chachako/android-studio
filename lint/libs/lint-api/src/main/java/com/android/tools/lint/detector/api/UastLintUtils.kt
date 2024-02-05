@@ -40,6 +40,7 @@ import com.intellij.psi.PsiWildcardType
 import com.intellij.psi.util.InheritanceUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.getNonStrictParentOfType
+import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.asJava.elements.FakeFileForLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.kotlin.asJava.elements.KtLightParameter
@@ -49,6 +50,7 @@ import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtLambdaExpression
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtProperty
@@ -746,13 +748,20 @@ fun UElement.isIncorrectImplicitReturnInLambda(): Boolean {
   val lambdaReturnType =
     lambda
       .getReturnType()
-      .let { returnType -> if (returnType is PsiWildcardType) returnType.bound else returnType }
+      ?.let { returnType -> if (returnType is PsiWildcardType) returnType.bound else returnType }
       ?.canonicalText ?: return false
   // Only non-Unit returning lambda should have an implicit return at the end.
-  return lambdaReturnType == "kotlin.Unit" ||
-    lambdaReturnType == "kotlin.Nothing" ||
-    lambdaReturnType == "java.lang.Void" ||
-    lambdaReturnType == "void"
+  if (
+    lambdaReturnType == "kotlin.Unit" ||
+      lambdaReturnType == "kotlin.Nothing" ||
+      lambdaReturnType == "java.lang.Void" ||
+      lambdaReturnType == "void"
+  )
+    return true
+  // `suspend` lambda's return type is modeled as `Any?`, i.e., nullable `Object`.
+  if (lambdaReturnType != "java.lang.Object") return false
+  val ktLambda = lambda.sourcePsi as? KtLambdaExpression ?: return false
+  return analyze(ktLambda) { ktLambda.getExpectedType()?.isSuspendFunctionType ?: false }
 }
 
 // Copied from `...codeInspection.analysisUastUtil`
