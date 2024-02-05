@@ -33,6 +33,8 @@ import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import javax.management.ObjectName;
+
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
@@ -163,8 +165,10 @@ public class JarTestSuiteRunner extends Suite {
         return excludeClassNames;
     }
 
-    // On Windows, Bazel test timeouts trigger "exited with error code 142" with no further info.
-    // To ease debugging, we trigger a thread dump just before the target is expected to time out.
+    // On Windows, Bazel sends SIGKILL without sending SIGTERM to the test runner, so we won't
+    // get a thread dump (see https://github.com/bazelbuild/bazel/issues/12684,
+    // https://github.com/bazelbuild/bazel/issues/14298, etc.). To ease debugging, we trigger a
+    // thread dump just before the target is expected to time out.
     private static void scheduleThreadDumpOnWindows() {
         if (!OsType.getHostOs().equals(OsType.WINDOWS)) {
             return;
@@ -186,15 +190,12 @@ public class JarTestSuiteRunner extends Suite {
 
         Runnable dumpThreads = () -> {
             try {
-                var threadDump = new StringBuilder();
-                threadDump.append("Approaching Bazel test timeout; dumping all threads.\n======\n");
-                var allThreadInfo = ManagementFactory.getThreadMXBean()
-                        .dumpAllThreads(/*monitors*/ true, /*synchronizers*/ true, /*depth*/ 256);
-                for (var threadInfo : allThreadInfo) {
-                    threadDump.append(threadInfo);
-                }
-                threadDump.append("======");
-                System.out.println(threadDump);
+                System.out.println("Approaching Bazel test timeout; dumping all threads.");
+                System.out.println(ManagementFactory.getPlatformMBeanServer().invoke(
+                        ObjectName.getInstance("com.sun.management:type=DiagnosticCommand"),
+                        "threadPrint",
+                        new Object[]{new String[]{/* locks */ "-l", /* extended */ "-e"}},
+                        new String[]{String[].class.getName()}));
             }
             catch (Throwable e) {
                 // Catch exceptions here, otherwise the ExecutorService will swallow them.
