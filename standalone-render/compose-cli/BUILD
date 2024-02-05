@@ -69,12 +69,6 @@ maven_library(
     coordinates = "com.android.tools:standalone-render.compose-cli",
     description = "Screenshot render tools",
     module_name = "standalone-render.compose-cli",
-    resource_strip_prefix = "tools/base/standalone-render/compose-cli",
-    resources = [
-        "//prebuilts/studio/layoutlib:build.prop",
-        "//prebuilts/studio/layoutlib/data",
-        "//prebuilts/studio/layoutlib/data:native_libs_all_platforms",
-    ],
     version = select({
         "//tools/base/bazel:release": COMPOSE_CLI_VERSION + "-alpha01",
         "//conditions:default": COMPOSE_CLI_VERSION + "-dev",
