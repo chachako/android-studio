@@ -48,6 +48,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=$BAZEL_GOOGLE_APPLICATION_CREDENTIALS
         "${conditional_flags[@]}" \
         -- \
         //tools/... \
+        -//tools/vendor/google3/aswb/third_party/... \
         //tools/base/profiler/native/trace_processor_daemon
 
 readonly bazel_status=$?
