@@ -1,0 +1,33 @@
+def artifactType = Attribute.of("artifactType", String.class)
+
+allprojects {
+    afterEvaluate { p ->
+        p.plugins.withId("com.android.application") {
+            p.androidComponents {
+                onVariants(selector().all(), { v ->
+                    p.tasks.register("${v.name}ExtractClasspath") {
+                        def runtimeClasses = v.runtimeConfiguration.incoming.artifactView { av ->
+                            av.attributes {
+                                attribute(artifactType, "android-classes-jar")
+                            }
+                        }.files
+
+                        it.inputs.files(runtimeClasses)
+
+                        doFirst {
+
+                            try (def deps = new FileOutputStream(new File("deps.txt"))) {
+
+                                deps.write("${buildDir}/intermediates/compile_app_classes_jar/${v.name}/classes.jar\n".getBytes())
+                                def fileNames = runtimeClasses.files.collect { "${it}".toString() }
+                                fileNames.forEach {
+                                    deps.write("${it}\n".getBytes())
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+        }
+    }
+}
