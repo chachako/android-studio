@@ -106,8 +106,11 @@ public class ProguardAarPackagingTest {
                 libraryInJarProject.getBuildFile(),
                 "\n"
                         + "apply plugin: 'java'\n"
-                        + "java.sourceCompatibility = JavaVersion.VERSION_1_8\n"
-                        + "java.targetCompatibility = JavaVersion.VERSION_1_8\n");
+                        + "java {\n"
+                        + "    toolchain {\n"
+                        + "        languageVersion.set(JavaLanguageVersion.of(17))\n"
+                        + "    }\n"
+                        + "}\n");
         libraryInJarProject.execute("assemble");
 
         // Copy the generated jar into the android project.

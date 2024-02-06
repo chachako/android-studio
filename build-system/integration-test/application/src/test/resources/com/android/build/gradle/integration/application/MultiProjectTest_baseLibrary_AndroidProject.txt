@@ -137,8 +137,8 @@
    < variants
    - javaCompileOptions:
       - encoding                       = "UTF-8"
-      - sourceCompatibility            = "1.8"
-      - targetCompatibility            = "1.8"
+      - sourceCompatibility            = "17"
+      - targetCompatibility            = "17"
       - isCoreLibraryDesugaringEnabled = false
    - viewBindingOptions:
       - isEnabled = false

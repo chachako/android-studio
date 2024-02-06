@@ -549,9 +549,14 @@ open class GradleTestProject @JvmOverloads constructor(
                 // plugin block should go here
                 apply from: "${File(projectParentDir, "commonHeader.gradle").toURI()}"
 
-                // Treat javac warnings as errors
                 tasks.withType(JavaCompile) {
+                    // Treat javac warnings as errors
                     options.compilerArgs << "-Werror"
+
+                    // Configure common java toolchain
+                    javaCompiler = javaToolchains.compilerFor {
+                        languageVersion = JavaLanguageVersion.of(17)
+                    }
                 }
 
                 """.trimIndent()

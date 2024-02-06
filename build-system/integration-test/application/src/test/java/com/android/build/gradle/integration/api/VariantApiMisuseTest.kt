@@ -43,7 +43,7 @@ apply plugin: 'com.android.application'
 
 android {
     defaultConfig.minSdkVersion 14
-    compileSdkVersion 29
+    compileSdkVersion 30
 }
 
 abstract class SomeTask extends DefaultTask {
@@ -84,7 +84,7 @@ apply plugin: 'com.android.application'
 
 android {
     defaultConfig.minSdkVersion 14
-    compileSdkVersion 29
+    compileSdkVersion 30
 }
 
 abstract class SomeTask extends DefaultTask {
@@ -124,7 +124,7 @@ apply plugin: 'com.android.application'
 
 android {
     defaultConfig.minSdkVersion 14
-    compileSdkVersion 29
+    compileSdkVersion 30
 }
 
 abstract class SomeTask extends DefaultTask {
@@ -166,7 +166,7 @@ apply plugin: 'com.android.application'
 
 android {
     defaultConfig.minSdkVersion 14
-    compileSdkVersion 29
+    compileSdkVersion 30
 }
 
 abstract class SomeTask extends DefaultTask {
@@ -208,7 +208,7 @@ apply plugin: 'com.android.application'
 
 android {
     defaultConfig.minSdkVersion 14
-    compileSdkVersion 29
+    compileSdkVersion 30
 }
 
 abstract class SomeTask extends DefaultTask {
@@ -250,7 +250,7 @@ apply plugin: 'com.android.application'
 
 android {
     defaultConfig.minSdkVersion 14
-    compileSdkVersion 29
+    compileSdkVersion 30
 }
 
 android {
@@ -281,7 +281,7 @@ apply plugin: 'com.android.application'
 
 android {
     defaultConfig.minSdkVersion 14
-    compileSdkVersion 29
+    compileSdkVersion 30
 }
 
 android {

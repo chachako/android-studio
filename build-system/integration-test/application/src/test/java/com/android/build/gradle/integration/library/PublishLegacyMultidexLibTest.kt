@@ -72,9 +72,7 @@ class PublishLegacyMultidexLibTest {
                 }
             }
         }
-    """.trimIndent()
-            )
-    ).create()
+    """.trimIndent())).create()
 
     @Test
     fun testMultidexSupportNotAddedToPom() {
