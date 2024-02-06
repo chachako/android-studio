@@ -41,7 +41,7 @@ std::unique_ptr<TraceProcessor> LoadTrace(std::string trace_path) {
   Config config;
   config.ingest_ftrace_in_raw_table = false;
   auto tp = TraceProcessor::CreateInstance(config);
-  auto read_status = ReadTrace(tp.get(), trace_path.c_str(), {});
+  auto read_status = ReadTrace(tp.get(), trace_path.c_str(), [](uint64_t) {});
   EXPECT_TRUE(read_status.ok());
   return tp;
 }
@@ -56,8 +56,8 @@ TEST(TraceMetadataRequestHandlerTest, PopulateMetadataAllData) {
   TraceMetadataResult result;
   handler.PopulateTraceMetadata(params, &result);
 
-  // tank.trace has 8 rows of metadata
-  EXPECT_EQ(result.metadata_row_size(), 8);
+  // Equialent to "SELECT COUNT(*) FROM metadata"
+  EXPECT_EQ(result.metadata_row_size(), 10);
 }
 
 TEST(TraceMetadataRequestHandlerTest, PopulateMetadataByName) {

@@ -147,16 +147,22 @@ _archives = [
         "build_file": "@perfetto//bazel:linenoise.BUILD",
     },
     {
-        "name": "perfetto-sqlite-amalgamation-3250300",
-        "archive": "//prebuilts/tools/common/external-src-archives/sqlite-amalgamation/3250300:sqlite-amalgamation-3250300.zip",
-        "strip_prefix": "sqlite-amalgamation-3250300",
+        "name": "perfetto-sqlite-amalgamation-3450300",
+        "archive": "//prebuilts/tools/common/external-src-archives/sqlite-amalgamation/3450300:sqlite-amalgamation-3450300.zip",
+        "strip_prefix": "sqlite-amalgamation-3450300",
         "build_file": "@perfetto//bazel:sqlite.BUILD",
     },
     {
-        "name": "perfetto-sqlite-src-3250300",
-        "archive": "//prebuilts/tools/common/external-src-archives/sqlite-src/3250300:sqlite-src-3250300.zip",
-        "strip_prefix": "sqlite-src-3250300",
+        "name": "perfetto-sqlite-src-3450300",
+        "archive": "//prebuilts/tools/common/external-src-archives/sqlite-src/3450300:sqlite-src-3450300.zip",
+        "strip_prefix": "sqlite-src-3450300",
         "build_file": "@perfetto//bazel:sqlite.BUILD",
+    },
+    {
+        "name": "perfetto-llvm-project-3b4c59c156919902c785ce3cbae0eee2ee53064d",
+        "archive": "//prebuilts/tools/common/external-src-archives/perfetto-llvm/3b4c59c156919902c785ce3cbae0eee2ee53064d:llvm-3b4c59c156919902c785ce3cbae0eee2ee53064d.tgz",
+        "strip_prefix": "llvm-project",
+        "build_file": "@perfetto//bazel:llvm_demangle.BUILD",
     },
     # End Perfetto Dependencies.
 ]

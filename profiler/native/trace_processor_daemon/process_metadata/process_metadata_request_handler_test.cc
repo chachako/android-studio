@@ -43,7 +43,7 @@ std::unique_ptr<TraceProcessor> LoadTrace(std::string trace_path) {
   Config config;
   config.ingest_ftrace_in_raw_table = false;
   auto tp = TraceProcessor::CreateInstance(config);
-  auto read_status = ReadTrace(tp.get(), trace_path.c_str(), {});
+  auto read_status = ReadTrace(tp.get(), trace_path.c_str(), [](uint64_t) {});
   EXPECT_TRUE(read_status.ok());
   return tp;
 }
@@ -63,7 +63,8 @@ TEST(ProcessMetadataRequestHandlerTest, PopulateMetadataByProcessId) {
 
   auto tank_process = result.process(0);
   EXPECT_EQ(tank_process.id(), TANK_PROCESS_PID);
-  EXPECT_EQ(tank_process.internal_id(), 182);
+  // Equialent to "SELECT upid, process.name FROM process WHERE pid = 9796"
+  EXPECT_EQ(tank_process.internal_id(), 732);
   EXPECT_EQ(tank_process.name(), "com.google.android.tanks");
   EXPECT_EQ(tank_process.thread_size(), 63);
 }
@@ -77,9 +78,10 @@ TEST(ProcessMetadataRequestHandlerTest, PopulateMetadataAllData) {
   ProcessMetadataResult result;
   handler.PopulateMetadata(params_proto, &result);
 
-  // tank.trace has 240 process, but we discard the process with pid = 0.
-  EXPECT_EQ(result.process_size(), 239);
-  EXPECT_EQ(result.dangling_thread_size(), 743);
+  // Equialent to "SELECT COUNT(DISTINCT(upid)) FROM process"
+  EXPECT_EQ(result.process_size(), 799);
+  // Equialent to "SELECT  COUNT(DISTINCT(tid)) FROM thread WHERE upid is NULL"
+  EXPECT_EQ(result.dangling_thread_size(), 742);
 }
 
 }  // namespace

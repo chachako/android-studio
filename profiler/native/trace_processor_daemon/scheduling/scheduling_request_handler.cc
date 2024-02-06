@@ -93,6 +93,9 @@ void SchedulingRequestHandler::PopulateEvents(SchedulingEventsParameters params,
     sched_proto->set_timestamp_nanoseconds(ts_nanos);
 
     auto dur_nanos = it_sched.Get(4).long_value;
+    // Occasionally a row may have a `dur` being -1. Mark it as 1 as
+    // downstreaming logic may have non-zero assumptions on the duration.
+    if (dur_nanos == -1) dur_nanos = 1;
     sched_proto->set_duration_nanoseconds(dur_nanos);
 
     auto priority = it_sched.Get(6).long_value;

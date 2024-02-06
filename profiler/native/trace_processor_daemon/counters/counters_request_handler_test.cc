@@ -59,7 +59,7 @@ std::unique_ptr<TraceProcessor> LoadTrace(std::string trace_path) {
   Config config;
   config.ingest_ftrace_in_raw_table = false;
   auto tp = TraceProcessor::CreateInstance(config);
-  auto read_status = ReadTrace(tp.get(), trace_path.c_str(), {});
+  auto read_status = ReadTrace(tp.get(), trace_path.c_str(), [](uint64_t) {});
   EXPECT_TRUE(read_status.ok());
   return tp;
 }
@@ -154,8 +154,7 @@ TEST(CountersRequestHandlerTest, PopulatePowerCounterTracks) {
   }
 
   std::pair<std::string, counter_accumulator> track_expected_data[] = {
-      // sql string value: power.rails.tpu
-      std::make_pair("power.S10M_VDD_TPU_uws",
+      std::make_pair("power.rails.tpu",
                      counter_accumulator{6, 8920933000000, 8925528000000,
                                          45010544.000000, 45050919.000000}),
       std::make_pair("power.rails.modem",
@@ -207,8 +206,7 @@ TEST(CountersRequestHandlerTest, PopulatePowerCounterTracks) {
       std::make_pair("power.rails.gpu",
                      counter_accumulator{6, 8920934000000, 8925530000000,
                                          20970895.000000, 20988306.000000}),
-      // sql string value: power.rails.display
-      std::make_pair("power.VSYS_PWR_DISPLAY_uws",
+      std::make_pair("power.rails.display",
                      counter_accumulator{6, 8920934000000, 8925530000000,
                                          59750307.000000, 61007557.000000}),
       std::make_pair("batt.charge_uah",

@@ -49,7 +49,7 @@ std::unique_ptr<TraceProcessor> LoadTrace(std::string trace_path) {
   Config config;
   config.ingest_ftrace_in_raw_table = false;
   auto tp = TraceProcessor::CreateInstance(config);
-  auto read_status = ReadTrace(tp.get(), trace_path.c_str(), {});
+  auto read_status = ReadTrace(tp.get(), trace_path.c_str(), [](uint64_t) {});
   EXPECT_TRUE(read_status.ok());
   return tp;
 }
@@ -89,8 +89,14 @@ TEST(SchedulingRequestHandlerTest, PopulateEventsByProcessId) {
     states_count[event.end_state()]++;
   }
 
-  EXPECT_EQ(states_count[SchedulingEvent::UNKNOWN], 0);
-  EXPECT_EQ(states_count[SchedulingEvent::RUNNABLE], 1556);
+  // Equialent to
+  //    "SELECT COUNT(*), end_state
+  //    FROM sched INNER JOIN thread using(utid)
+  //               LEFT JOIN process using(upid)
+  //    WHERE pid = 9796 AND NOT (thread.name = 'swapper' AND utid = 0)
+  //    GROUP BY end_state
+  EXPECT_EQ(states_count[SchedulingEvent::UNKNOWN], 4);
+  EXPECT_EQ(states_count[SchedulingEvent::RUNNABLE], 1552);
   EXPECT_EQ(states_count[SchedulingEvent::RUNNABLE_PREEMPTED], 5020);
   EXPECT_EQ(states_count[SchedulingEvent::SLEEPING], 89828);
   EXPECT_EQ(states_count[SchedulingEvent::SLEEPING_UNINTERRUPTIBLE], 5822);
@@ -135,8 +141,13 @@ TEST(SchedulingRequestHandlerTest, PopulateEventsByThreadId) {
     states_count[event.end_state()]++;
   }
 
-  EXPECT_EQ(states_count[SchedulingEvent::UNKNOWN], 0);
-  EXPECT_EQ(states_count[SchedulingEvent::RUNNABLE], 599);
+  // Equialent to
+  //    "SELECT COUNT(*), end_state
+  //    FROM sched INNER JOIN thread using(utid)
+  //    WHERE tid = 9834
+  //    GROUP BY end_state"
+  EXPECT_EQ(states_count[SchedulingEvent::UNKNOWN], 1);
+  EXPECT_EQ(states_count[SchedulingEvent::RUNNABLE], 598);
   EXPECT_EQ(states_count[SchedulingEvent::RUNNABLE_PREEMPTED], 3665);
   EXPECT_EQ(states_count[SchedulingEvent::SLEEPING], 3510);
   EXPECT_EQ(states_count[SchedulingEvent::SLEEPING_UNINTERRUPTIBLE], 3231);

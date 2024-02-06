@@ -51,7 +51,7 @@ std::unique_ptr<TraceProcessor> LoadTrace(std::string trace_path) {
   Config config;
   config.ingest_ftrace_in_raw_table = false;
   auto tp = TraceProcessor::CreateInstance(config);
-  auto read_status = ReadTrace(tp.get(), trace_path.c_str(), {});
+  auto read_status = ReadTrace(tp.get(), trace_path.c_str(), [](uint64_t) {});
   EXPECT_TRUE(read_status.ok());
   return tp;
 }
@@ -74,9 +74,7 @@ TEST(ThreadStateRequestHandlerTest, PopulateEventsByProcessId) {
   ThreadStatesResult result;
   handler.PopulateEvents(params_proto, &result);
 
-  // TODO(b/324640108): Update the expected value after upgrading Perfetto
-  // version, The expected value should be 204456.
-  EXPECT_EQ(300079, result.state_event_size());
+  EXPECT_EQ(204456, result.state_event_size());
 
   std::unordered_map<int, long> states_count = {
       {SchedulingEvent::UNKNOWN, 0},
@@ -98,9 +96,7 @@ TEST(ThreadStateRequestHandlerTest, PopulateEventsByProcessId) {
   }
 
   EXPECT_EQ(states_count[SchedulingEvent::UNKNOWN], 0);
-  // TODO(b/324640108): Update the expected value after upgrading Perfetto
-  // version, The expected value should be 1552.
-  EXPECT_EQ(states_count[SchedulingEvent::RUNNABLE], 97175);
+  EXPECT_EQ(states_count[SchedulingEvent::RUNNABLE], 1552);
   EXPECT_EQ(states_count[SchedulingEvent::RUNNABLE_PREEMPTED], 5020);
   EXPECT_EQ(states_count[SchedulingEvent::SLEEPING], 89828);
   EXPECT_EQ(states_count[SchedulingEvent::SLEEPING_UNINTERRUPTIBLE], 5822);

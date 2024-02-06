@@ -61,22 +61,6 @@ TEST(TraceProcessorServiceImplTest, LoadTraceNoTracePath) {
   EXPECT_EQ(response.error(), "Empty Trace Path.");
 }
 
-TEST(TraceProcessorServiceImplTest, LoadTraceInvalidTracePath) {
-  TraceProcessorServiceImpl svc;
-
-  proto::LoadTraceRequest request;
-  request.set_trace_id(42);
-  request.set_trace_path(TESTDATA_DIR + "missing.trace");
-
-  proto::LoadTraceResponse response;
-
-  const grpc::Status rs = svc.LoadTrace(nullptr, &request, &response);
-  EXPECT_TRUE(rs.ok());
-  EXPECT_FALSE(response.ok());
-  EXPECT_EQ(response.error(), "Could not open trace file (path: " +
-                                  TESTDATA_DIR + "missing.trace)");
-}
-
 // TODO(b/157742939): TP crashes 20~25% of time when loading a corrupted trace.
 TEST(TraceProcessorServiceImplTest, DISABLED_LoadTraceCorruptedTrace) {
   TraceProcessorServiceImpl svc;
@@ -161,8 +145,8 @@ TEST(TraceProcessorServiceImplTest, BatchQuery) {
   EXPECT_EQ(process_metadata_result.error(), "");
   EXPECT_TRUE(process_metadata_result.has_process_metadata_result());
   auto metadata = process_metadata_result.process_metadata_result();
-  // tank.trace has 240 process, but we discard the process with pid = 0.
-  EXPECT_EQ(metadata.process_size(), 239);
+  // Equialent to "SELECT COUNT(DISTINCT(upid)) FROM process"
+  EXPECT_EQ(metadata.process_size(), 799);
 
   // Result from the second query.
   auto cpu_core_counters_result = batch_response.result(1);

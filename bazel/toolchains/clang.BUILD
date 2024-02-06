@@ -105,10 +105,12 @@ cc_toolchain_config(
         "/usr/include/x86_64-linux-gnu/c++/8.0.1",
         "/usr/include/c++/8.0.1/backward",
     ],
-    cxx_flags = ["-std=c++17"],
+    cxx_flags = ["-std=c++17", "-stdlib=libc++"],
     dbg_compile_flags = ["-g"],
     host_system_name = "local",
     link_flags = [
+        "-l:libc++.a",
+        "-l:libc++abi.a",
         "-Wl,-no-as-needed",
         "-Wl,-z,relro,-z,now",
         "-lstdc++",

@@ -23,12 +23,12 @@
 
 #include "counters/counters_request_handler.h"
 #include "memory/memory_request_handler.h"
+#include "perfetto/ext/base/file_utils.h"
 #include "perfetto/trace_processor/basic_types.h"
 #include "perfetto/trace_processor/read_trace.h"
 #include "perfetto/trace_processor/trace_processor.h"
 #include "process_metadata/process_metadata_request_handler.h"
 #include "scheduling/scheduling_request_handler.h"
-#include "src/profiling/symbolizer/filesystem.h"
 #include "src/profiling/symbolizer/local_symbolizer.h"
 #include "src/profiling/symbolizer/symbolize_database.h"
 #include "src/profiling/symbolizer/symbolizer.h"
@@ -93,7 +93,7 @@ grpc::Status TraceProcessorServiceImpl::LoadTrace(
   std::cout << "Loading trace (" << trace_id << ") from: " << trace_path
             << std::endl;
 
-  auto read_status = ReadTrace(tp_.get(), trace_path.c_str(), {});
+  auto read_status = ReadTrace(tp_.get(), trace_path.c_str(), [](uint64_t) {});
 
   response->set_ok(read_status.ok());
   if (!read_status.ok()) {
@@ -111,7 +111,7 @@ grpc::Status TraceProcessorServiceImpl::LoadTrace(
     symbol_paths.emplace_back(path);
   }
   if (!symbol_paths.empty() && !llvm_path_.empty() &&
-      ::perfetto::profiling::GetFileSize(llvm_path_) != 0) {
+      ::perfetto::base::GetFileSize(llvm_path_) != 0) {
     FILE* output_file_fd = nullptr;
     if (!request->symbolized_output_path().empty()) {
       output_file_fd = fopen(request->symbolized_output_path().c_str(), "wb+");
