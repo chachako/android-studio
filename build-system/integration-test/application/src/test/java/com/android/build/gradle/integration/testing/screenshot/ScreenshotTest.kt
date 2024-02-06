@@ -237,10 +237,10 @@ class ScreenshotTest {
         assertThat(classHtmlReport).exists()
         val expectedOutput = listOf(
             """<td class="success">simpleComposableTest</td>""",
-            """<td class="success">multiPreviewTest_3d8b4969_da39a3ee_0</td>""",
-            """<td class="success">multiPreviewTest_a45d2556_da39a3ee_0</td>""",
-            """<td class="success">parameterProviderTest_da39a3ee_77e30523_0</td>""",
-            """<td class="success">parameterProviderTest_da39a3ee_77e30523_1</td>"""
+            """<td class="success">multiPreviewTest_{showBackground=true}</td>""",
+            """<td class="success">multiPreviewTest_{showBackground=false}</td>""",
+            """<td class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</td>""",
+            """<td class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</td>"""
         )
         var classHtmlReportText = classHtmlReport.readText()
         expectedOutput.forEach { assertThat(classHtmlReportText).contains(it) }
@@ -267,10 +267,10 @@ class ScreenshotTest {
         val expectedOutputAfterChangingPreviews = listOf(
             "Failed tests",
             """<td class="failures">simpleComposableTest</td>""",
-            """<td class="failures">multiPreviewTest_3d8b4969_da39a3ee_0</td>""",
-            """<td class="failures">multiPreviewTest_a45d2556_da39a3ee_0</td>""",
-            """<td class="failures">parameterProviderTest_da39a3ee_77e30523_0</td>""",
-            """<td class="success">parameterProviderTest_da39a3ee_77e30523_1</td>"""
+            """<td class="failures">multiPreviewTest_{showBackground=true}</td>""",
+            """<td class="failures">multiPreviewTest_{showBackground=false}</td>""",
+            """<td class="failures">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</td>""",
+            """<td class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</td>"""
         )
         classHtmlReportText = classHtmlReport.readText()
         expectedOutputAfterChangingPreviews.forEach { assertThat(classHtmlReportText).contains(it) }

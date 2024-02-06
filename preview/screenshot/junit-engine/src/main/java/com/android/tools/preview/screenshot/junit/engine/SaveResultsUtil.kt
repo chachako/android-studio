@@ -74,7 +74,7 @@ private fun printTestResults(
 ) {
     serializer.startTag(NAMESPACE, TESTSUITE)
     val runName = previewResults.first().previewName
-    val name = runName.substring(0, runName.lastIndexOf(PERIOD))
+    val name = getTestNameWithoutSuffix(runName).substringBeforeLast(PERIOD)
     if (name.isNotEmpty()) {
         serializer.attribute(NAMESPACE, NAME, name)
     }
@@ -103,9 +103,11 @@ private fun printTestResults(
 @Throws(IOException::class)
 private fun printTest(serializer: KXmlSerializer, result: PreviewResult) {
     serializer.startTag(NAMESPACE, TESTCASE)
-    val lastPeriod = result.previewName.lastIndexOf(".")
+    val testWithoutSuffix = getTestNameWithoutSuffix(result.previewName)
+
+    val lastPeriod = testWithoutSuffix.lastIndexOf(".")
     serializer.attribute(NAMESPACE, NAME, result.previewName.substring(lastPeriod+ 1))
-    serializer.attribute(NAMESPACE, CLASSNAME, result.previewName.substring(0, lastPeriod))
+    serializer.attribute(NAMESPACE, CLASSNAME, testWithoutSuffix.substringBeforeLast(PERIOD))
     when (result.responseCode) {
         0 -> printImages(serializer, SUCCESS, result.message!!, result)
         1 -> printImages(serializer, FAILURE, result.message!!, result)
@@ -164,5 +166,9 @@ private fun getPropertiesAttributes(xmlProperties: List<String>?): Map<String, S
 private fun createOutputResultStream(reportFilePath: String): OutputStream {
     val reportFile = File(reportFilePath)
     return BufferedOutputStream(FileOutputStream(reportFile))
+}
+
+private fun getTestNameWithoutSuffix(testName: String): String {
+    return testName.substringBefore("_")
 }
 
