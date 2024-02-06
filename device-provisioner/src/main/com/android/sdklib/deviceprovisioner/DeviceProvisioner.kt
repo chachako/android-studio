@@ -21,6 +21,7 @@ import com.android.adblib.DeviceSelector
 import com.android.adblib.DeviceState
 import com.android.adblib.adbLogger
 import com.android.adblib.connectedDevicesTracker
+import com.android.adblib.isKnownDevice
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.sdklib.deviceprovisioner.SetChange.Add
@@ -29,7 +30,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -128,7 +128,7 @@ private constructor(
       // If it's not present in the ConnectedDevicesTracker, make a call to ADB to be sure.
       val isPresent =
         connectedDevices.value.any { it.serialNumber == serialNumber } ||
-          adbSession.hostServices.devices().any { it.serialNumber == serialNumber }
+          adbSession.hostServices.isKnownDevice(serialNumber)
       when {
         isPresent ->
           // ADB is aware of this serial number; wait for it to appear in the provisioner.

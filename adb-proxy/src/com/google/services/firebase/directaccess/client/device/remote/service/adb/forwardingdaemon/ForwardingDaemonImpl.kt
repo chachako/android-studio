@@ -24,6 +24,7 @@ import com.android.adblib.AdbSession
 import com.android.adblib.DeviceAddress
 import com.android.adblib.DeviceSelector
 import com.android.adblib.connectedDevicesTracker
+import com.android.adblib.isKnownDevice
 import com.android.adblib.isOnline
 import com.android.adblib.serialNumber
 import com.android.adblib.shellCommand
@@ -270,7 +271,7 @@ internal class ForwardingDaemonImpl(
         }
       } finally {
         runBlocking {
-          if (adbSession.hostServices.devices().any { it.serialNumber == serialNumber }) {
+          if (adbSession.hostServices.isKnownDevice(serialNumber)) {
             adbSession.hostServices.disconnect(DeviceAddress(serialNumber))
           }
         }
