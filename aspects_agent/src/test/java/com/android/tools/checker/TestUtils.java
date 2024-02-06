@@ -17,26 +17,17 @@
 package com.android.tools.checker;
 
 public class TestUtils {
-    private static final String JAVA_REFLECT_PACKAGE = findJavaReflectPackage();
 
-    public static String getReflectInvokeMethod() {
-        return String.format("%s.invoke0", getReflectMethodAccessorClass());
-    }
-
-    public static String getReflectMethodAccessorClass() {
-        return String.format("%s.NativeMethodAccessorImpl", JAVA_REFLECT_PACKAGE);
-    }
-
-    private static String findJavaReflectPackage() {
-        try {
-            if (Float.parseFloat(System.getProperty("java.specification.version")) >= 11) {
-                // After bumping our JDK to 11, we started using jdk.internal.reflect.
-                return "jdk.internal.reflect";
-            }
-        } catch (Exception ex) {
-            // If java.specification.version is not provided or has an unexpected format,
-            // assume "sun.reflect".
-        }
-        return "sun.reflect";
-    }
+    private static final String JAVA_REFLECT_PACKAGE =
+            Runtime.version().feature() >= 11 ? "jdk.internal.reflect" : "sun.reflect";
+    public static final String REFLECT_INVOKE_METHOD =
+            Runtime.version().feature() >= 21 ? "invoke" : "invoke0";
+    public static final String REFLECT_METHOD_ACCESSOR_CLASS =
+            Runtime.version().feature() >= 21
+                    ? "DirectMethodHandleAccessor"
+                    : "NativeMethodAccessorImpl";
+    public static final String REFLECT_METHOD_ACCESSOR_CLASS_FQN =
+            String.format("%s.%s", JAVA_REFLECT_PACKAGE, REFLECT_METHOD_ACCESSOR_CLASS);
+    public static final String REFLECT_INVOKE_METHOD_FQN =
+            String.format("%s.%s", REFLECT_METHOD_ACCESSOR_CLASS_FQN, REFLECT_INVOKE_METHOD);
 }

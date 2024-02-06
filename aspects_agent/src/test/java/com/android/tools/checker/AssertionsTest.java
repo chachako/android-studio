@@ -61,7 +61,7 @@ public class AssertionsTest {
                         "@com.android.tools.checker.BlockingTest",
                         "com.android.tools.checker.Assertions#assertIsEdt");
         Object instance = loadAndTransform("Test2", matcher, notFound::add).newInstance();
-        String baseline = "Test2.blockingMethod|" + TestUtils.getReflectInvokeMethod();
+        String baseline = "Test2.blockingMethod|" + TestUtils.REFLECT_INVOKE_METHOD_FQN;
         Baseline.getInstance(true).parse(new ByteArrayInputStream(baseline.getBytes()));
 
         try {
@@ -90,8 +90,8 @@ public class AssertionsTest {
                     stackTraceBuilder(
                             "Test2",
                             "blockingMethod",
-                            TestUtils.getReflectMethodAccessorClass(),
-                            "invoke0");
+                            TestUtils.REFLECT_METHOD_ACCESSOR_CLASS_FQN,
+                            TestUtils.REFLECT_INVOKE_METHOD);
             assertTrue(baseline.isIgnored(stackTrace));
             System.clearProperty("aspects.baseline.export.path");
         } catch (Exception ignore) {

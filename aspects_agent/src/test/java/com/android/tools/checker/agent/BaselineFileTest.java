@@ -71,8 +71,8 @@ public class BaselineFileTest {
                 stackTraceBuilder(
                         "Test2",
                         "blockingMethod",
-                        TestUtils.getReflectMethodAccessorClass(),
-                        "invoke0");
+                        TestUtils.REFLECT_METHOD_ACCESSOR_CLASS_FQN,
+                        TestUtils.REFLECT_INVOKE_METHOD);
         boolean isIgnored = baseline.isIgnored(stackTrace);
         assertFalse(isIgnored);
         List<String> content = Files.readAllLines(log.toPath());
@@ -86,7 +86,7 @@ public class BaselineFileTest {
         content = Files.readAllLines(log.toPath());
         // Method is logged as an active baseline entry
         assertEquals(1, content.size());
-        assertEquals("Test2.blockingMethod|" + TestUtils.getReflectInvokeMethod(), content.get(0));
+        assertEquals("Test2.blockingMethod|" + TestUtils.REFLECT_INVOKE_METHOD_FQN, content.get(0));
 
         // Check again if the method is ignored. It shouldn't be logged again.
         isIgnored = baseline.isIgnored(stackTrace);
@@ -94,15 +94,15 @@ public class BaselineFileTest {
         content = Files.readAllLines(log.toPath());
         // Method is logged as an active baseline entry
         assertEquals(1, content.size());
-        assertEquals("Test2.blockingMethod|" + TestUtils.getReflectInvokeMethod(), content.get(0));
+        assertEquals("Test2.blockingMethod|" + TestUtils.REFLECT_INVOKE_METHOD_FQN, content.get(0));
 
         // Add another method to the baseline but don't check if it's ignored yet.
         stackTrace =
                 stackTraceBuilder(
                         "Test2",
                         "blockingMethod2",
-                        TestUtils.getReflectMethodAccessorClass(),
-                        "invoke0");
+                        TestUtils.REFLECT_METHOD_ACCESSOR_CLASS_FQN,
+                        TestUtils.REFLECT_INVOKE_METHOD);
         baseline.ignoreStackTrace(stackTrace);
         content = Files.readAllLines(log.toPath());
         // Baseline has changed, but the newly added method was not yet logged.
@@ -113,7 +113,8 @@ public class BaselineFileTest {
         assertTrue(isIgnored);
         content = Files.readAllLines(log.toPath());
         assertEquals(2, content.size());
-        assertEquals("Test2.blockingMethod|" + TestUtils.getReflectInvokeMethod(), content.get(0));
-        assertEquals("Test2.blockingMethod2|" + TestUtils.getReflectInvokeMethod(), content.get(1));
+        assertEquals("Test2.blockingMethod|" + TestUtils.REFLECT_INVOKE_METHOD_FQN, content.get(0));
+        assertEquals(
+                "Test2.blockingMethod2|" + TestUtils.REFLECT_INVOKE_METHOD_FQN, content.get(1));
     }
 }
