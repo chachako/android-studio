@@ -39,8 +39,6 @@ KGP_1_9_20 = [
     "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
     "@maven//:org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.20",
     "@maven//:org.jetbrains.kotlin.kotlin-stdlib-common_1.9.20",
-    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.10",  # needed for AGP 8.3
-    "@maven//:org.jetbrains.kotlin.kotlin-stdlib_1.9.10",  # needed for AGP 8.3
 ]
 
 KGP_1_8_10 = [
@@ -51,7 +49,6 @@ KGP_1_8_10 = [
     "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin-api_1.8.10",
     "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_1.8.10",
     "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.8.10",
-    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.8.20",  # needed for AGP 8.2 even though it mostly depend on KGP 1.8.10
     "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.8.10",
     "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.10",
     "@maven//:org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.8.10",
