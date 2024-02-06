@@ -3,7 +3,7 @@
    - mainArtifact:
       - compileDependencies    = []
       - runtimeDependencies:
-         - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified:
+         - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>8, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
       - unresolvedDependencies = []
@@ -23,10 +23,10 @@
          - :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|projectWithModules:app:unspecified:
             - requestedCoordinates = (null)
             - dependencies:
-               - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified:
+               - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>8, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified:
                   - requestedCoordinates = (null)
                   - dependencies         = []
-         - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified:
+         - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>8, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified:
             - dependencies = "*visited*"
       - unresolvedDependencies = []
    < unitTestArtifact
@@ -72,7 +72,7 @@
          - lintJar            = (null)
          - androidLibraryData = (null)
       < :|:app|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-runtime|projectWithModules:app:unspecified
-      > :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified:
+      > :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>8, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified:
          - type               = PROJECT
          - artifact           = {PROJECT}/jar/build/libs/jar.jar{!}
          > projectInfo:
@@ -84,7 +84,7 @@
             - attributes:
                * "org.gradle.category -> library"
                * "org.gradle.dependency.bundling -> external"
-               * "org.gradle.jvm.version -> 7"
+               * "org.gradle.jvm.version -> 8"
                * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-runtime"
             - capabilities:
@@ -93,6 +93,6 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified
+      < :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>8, org.gradle.libraryelements>jar, org.gradle.usage>java-runtime|projectWithModules:jar:unspecified
    < libraries
 < VariantDependencies

@@ -2,7 +2,7 @@
    - name                 = "debug"
    - mainArtifact:
       - compileDependencies:
-         - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:jar:unspecified:
+         - :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>8, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:jar:unspecified:
             - requestedCoordinates = (null)
             - dependencies         = []
       - runtimeDependencies    = []
@@ -31,7 +31,7 @@
    < unitTestArtifact
    - testFixturesArtifact = (null)
    > libraries:
-      > :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:jar:unspecified:
+      > :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>8, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:jar:unspecified:
          - type               = PROJECT
          - artifact           = {PROJECT}/jar/build/libs/jar.jar{!}
          > projectInfo:
@@ -43,7 +43,7 @@
             - attributes:
                * "org.gradle.category -> library"
                * "org.gradle.dependency.bundling -> external"
-               * "org.gradle.jvm.version -> 7"
+               * "org.gradle.jvm.version -> 8"
                * "org.gradle.libraryelements -> jar"
                * "org.gradle.usage -> java-api"
             - capabilities:
@@ -52,7 +52,7 @@
          - libraryInfo        = (null)
          - lintJar            = (null)
          - androidLibraryData = (null)
-      < :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>7, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:jar:unspecified
+      < :|:jar|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>8, org.gradle.libraryelements>jar, org.gradle.usage>java-api|projectWithModules:jar:unspecified
       > :|:library|debug|com.android.build.api.attributes.AgpVersionAttr>{AGP_Version}, com.android.build.gradle.internal.attributes.VariantAttr>debug, org.gradle.usage>java-api|projectWithModules:library:unspecified:
          - type               = PROJECT
          - artifact           = (null)
