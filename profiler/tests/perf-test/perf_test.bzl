@@ -1,5 +1,5 @@
-load("//tools/base/transport/test-framework:transport_test.bzl", "transport_test")
 load("//tools/base/bazel:android.bzl", "dex_library")
+load("//tools/base/transport/test-framework:transport_test.bzl", "transport_test")
 
 # Run an integration test that verifies profiler APIs.
 #
@@ -29,7 +29,7 @@ def perf_test(
             "//conditions:default": "$(location //tools/base/profiler/tests/profiler-transform-main:profilers-transform-main) ./$< ./$@",
         }),
         executable = 1,
-        exec_tools = select({
+        tools = select({
             "//tools/base/bazel:darwin": [],
             "//tools/base/bazel:windows": [],
             "//conditions:default": [
