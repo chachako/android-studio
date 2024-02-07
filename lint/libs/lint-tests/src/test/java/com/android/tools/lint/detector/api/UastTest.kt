@@ -3133,4 +3133,257 @@ class UastTest : TestCase() {
     }
     assertEquals(expectedTypes.size, count)
   }
+
+  fun testResolutionToFunWithValueClass() {
+    // Regression test from b/324087645
+    val testFiles =
+      arrayOf(
+        kotlin(
+            """
+              package com.example.myapp
+
+              import com.example.graphics.Color
+              import com.example.unit.ColorProvider
+
+              fun test() {
+                val color = ColorProvider(color = Color.Blue)
+              }
+          """
+          )
+          .indented(),
+        bytecode(
+          "libs/lib1.jar",
+          kotlin(
+              """
+            package com.example.graphics
+
+              @JvmInline
+              value class Color(val value: Int) {
+                companion object {
+                  val Blue = Color(42)
+                }
+              }
+          """
+            )
+            .indented(),
+          0xce342cff,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgkuYSTM7P1UutSMwtyEnVy61MLCgQ
+                YgtJLS7xLuGS5RJAlizNyywR4nTOzytJrQBKKzFoMQAAHqJ9pVQAAAA=
+                """,
+          """
+                com/example/graphics/Color＄Companion.class:
+                H4sIAAAAAAAA/5VSzU8TURD/vbfbdlkqLR8irYiiFQGFLcSLwZhIjUmTogma
+                GsPBPLYPWLofzb5XwrHx4P+hZy+cJB5MU2/+UcbZdiXGRKOHnY/fvN/M7Mx8
+                +/75C4D7WGOouFHgyFMRdHzpHMaic+S5yqlFfhRXalHQEaEXhTkwhuKxOBGO
+                L8JD5/n+sXR1DgZD9qEXevoRg7G80swjg6wNEzkGUx95imGp8S8FthgKh1Jv
+                +125dvDqwenrZnWYsc5Q/jM/h0sMk8J1pVKVlF5xO3kUkLcxgSLDxnKjHWnf
+                C53jk8DxQi3jUPjOE3kgur6uRaHScdfVUbwj4raMt1aaNnjS/jQN5iL4JhhG
+                Gdb/Lxt195OwI7VoCS0I48GJQeNniRhLBBhYm/BTL/Hoz3lrg6HV783YfI7b
+                vNjv2dziI8cyrME7Y67f2+RVtp2z+OBDlhf57nzRKPOq+fWc9XskGH1JyCZ6
+                rmxamWJ28JYXiF+yM9bg/UKVkb2Y1NpkSQdmMj2G+b/si3pntJGxi7UxWMPA
+                eltTglrUogSFhhfKZ91gX8Yvxb5PyFQjcoXfFLGX+CmYr4ehjGu+UErSmdgv
+                om7syqdeEivtdkPtBbLpKY8ePw7DSAtN9RQ2aDtmMjIYZNG1Ued3yHOSGZLO
+                rH6CdUYGxzLJ7AjECsl8ao/BJj2J8SGSkNdTsnmOyY+/cbO/cM0Rl84qg6mU
+                u0aap4Wnz4a7TAizIzAtllgzuEwxA6vk2UPSBG6jhLvDgku4R7pG+Cy9vbIH
+                o465Okp1lHGVTMzXcQ0Le2AK13FjD5aCrbCokFW4qXBLYVwhr1D5AUXv1Mbd
+                AwAA
+                """,
+          """
+                com/example/graphics/Color.class:
+                H4sIAAAAAAAA/31V3VMbVRT/3c3XZrPQJaWUBLRf2IaPNhRrrdJiS2rt0kAV
+                Kkrx6xK2YWGzG3c3mT4yvuhf4IMvOr740gdrFZh2xsH2zb/JcTx3d0kw0M5k
+                9tx77vn4nd859+bvf5/+CeASHIZ8xakVjYe8VreMYtXl9TWz4hVLjuW4KTAG
+                bZ03edHidrV4d2XdqPgpxBjkquEvcqthMMQKwzpDohnumK4iBTkNCWmGuL9m
+                egyD5ZcnmWTo8p0F3zXt6nmTDBiOFfThcjtteEZ2xzt10w3TWjUI5xGG5FXT
+                Nv2pAM+iih5kFWg4yqAGaQoBvmsyjpEpr9cNe5XhfOFgmoOZoyyTKo6jXwTN
+                UUWHQdxvOCAMB4Vh6dWGrwvDE8ToHgkMvYVDyldxCqeF7RmilbvVcRVd6FaI
+                57PE4Br31krOqhExGCd41JSedhTd9o2qoGqEUu1ZqxjDsIJRnFdRECsJRYaM
+                8XWDW14Uqq+glztHYHL4PoPSsFech4GVijeRFN6XaBAcf81wGbIHvYj5MLRo
+                8WFBVVzEhIjzbljCooK4aKFWcWzPdxsV33EjWPJeboYTohevGDAxDFdF1Bs0
+                nk0aiH31jRPggq6LeqT6RfGZINp4pWJ43hDN+DQNzVClTnDESoUejvYMAbha
+                saKJG3p58qGSU6tz23TsFGYZLhbKG45PfsX1Zq1oUk9cm1vFm8YD3rD8UrvK
+                We5u0ICEk3xXwRw+ZEi3gjGcfUXF7aRU+zwWBOJ7KqbCDi8ynCk7brW4bvgr
+                Ljdtr8ht2/G5Tw5ecc7x5xqWRc3q2491plnTbdoYdNCzdzBr+HyV+5x0Uq0Z
+                oyeFiU9afEBkb5D+oSl2xLO0Svw+3d08rUj9kiJpu5sK/SRNViQ5QTJDMkmy
+                m2RMfv7t9f7dzZNHJ6Rx9i47Op3NJjUpL43HXuyw3c3nPyfjclxLzOQ1mZTp
+                CVlT8vF+Ns5uv/g+FpxmNHVG07qEC+lYoOsmD007QjqtpevRsvM9YWjay4Qp
+                H5eTWur5d0wKc30jxQlSTlRAw0F1yQHLFzZ8hoH5hu2bNUO3m6ZnrljGjTaV
+                NDTikjEcKRNvc43aiuHe42QjLodT4dYid02xj5RdCz6vbMzyerRXdds23JLF
+                Pc+gYMqC03Arxi1TnOWivIsHstIVkujWADHkRPMJb5V2SZKfksyK15lkXowy
+                yW6ar0Rwuka7ougaycTI71Ae0UKCGTmDgq7TVw0NkKEVtVo8QpHz22QtznLP
+                oC1tozfbt4V8fguvacNbOLmFoV+DqWgHyeGNAAMTT1sU5GyEQBYIdnCu00du
+                JaYHK/I5s4c6v4MLjzocEq0kY60yO5KMd/q0k9B7FPncperEJOdH/4L0AxKx
+                R6O7kLbw1rX84I9iGw/52qBvClL6H3SHIftIKfgOYYjVZaJKALiCd6LgomfC
+                Ki0Aje5gso0odE9HiMQqcNck8apF7lORuzKyjWsjA39AeXxo78JYSiuWEgwD
+                PSzibYhinYy4kfKdrEjh6Gg5vIfrkfU54kScpZ9BWspvY7qzX2mUAqce8RfR
+                2a+9KWOHTFYON/F+R32Z/MBPSMV/QTzWJjtBZF/fz1UGtyKqM/hA1EeIb7eS
+                DwZZiJHfcCfM3WYpRtZluiKh5VjQb6D3GeaW2DY+eoKPtZEdfPIEdx7/zzND
+                3xisgFFGb7VEFy+HWgDxAWySG7RaInmf4C4vI6bjMx2f6/gCX9ISX+ngWFkG
+                81DB6jJ6PageDA+p4DvlYdhDwkPSw5VAc5nuuYcJD2MeCh5OBcouD90e5v8D
+                n7znY94JAAA=
+                """,
+        ),
+        bytecode(
+          "libs/lib2.jar",
+          kotlin(
+              """
+            package com.example.unit
+
+              import com.example.graphics.Color
+
+              interface Context
+
+              interface ColorProvider {
+                fun getColor(context: Context): Color
+              }
+
+              fun ColorProvider(color: Color): ColorProvider {
+                  return FixedColorProvider(color)
+              }
+
+              fun ColorProvider(resId: Int): ColorProvider {
+                  return ResourceColorProvider(resId)
+              }
+
+              data class FixedColorProvider(val color: Color) : ColorProvider {
+                  override fun getColor(context: Context) = color
+              }
+
+              data class ResourceColorProvider(val resId: Int) : ColorProvider {
+                  override fun getColor(context: Context): Color = Color(resId)
+              }
+          """
+            )
+            .indented(),
+          0x94484c75,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijgkuYSTM7P1UutSMwtyEnVy61MLCgQ
+                YgtJLS7xLuGS5RJAlizNyywR4nTOzytJrQBKKzFoMQAAHqJ9pVQAAAA=
+                """,
+          """
+                com/example/unit/ColorProvider.class:
+                H4sIAAAAAAAA/3VQTW/TQBB9s0ls13zU5TMJbdUKhOAATlNuPaFKCKNQKpC4
+                5LR2lrCJY0feTZRjxD+BX4E4oCjc+FGIcRJEkYq0O/Nm9N7uzPv569t3AM+w
+                R9hP8lGoZnI0TlU4ybQNT/M0L86LfKp7qnBBhGAgpzJMZdYP38QDlVgXFe72
+                lV1xn8THY3V8ZAh7jzqXPJdZNbMnjyPC/U5e9MOBsnEhdWZCmWW5lVbnjM9y
+                ezZJ0xPCTmeY21Rn4WtlZU9ayT0xmlZ4ZCrDVhlAoCH3Z7qsWox6R4R4Ma/7
+                oi58ESzmPp8Sb5LwhPehvpi3RYteHQSiKVqVthNUOddePvzxlRZzDsRXLL84
+                Vc8J3OUnsc26Q7/mLT/vt4hxo/ypTTi4bNMLxvHMPKL3xyPC7j+CfiHHH3Vi
+                1iImu8naJ0Lz/x4S/A18OmTmg7eTzOqRirKpNjpO1bks5EhZVTz/ayxr3uWT
+                IlEvdKoIjY3m/VpxgejwZqhi5W2VUIPDCzS5ctlquAwE7q1iA7ucT8v9mLbV
+                RSWCH+FKhKu4xhDXI2wj6IIMdnCjC8/gpsEtg9sGdwzuGtQNagbObyI3xySK
+                AgAA
+                """,
+          """
+                com/example/unit/Context.class:
+                H4sIAAAAAAAA/3VOTUvDQBB9s9F+xK9ULUR/hNsWb55EEAIVQcFLTtt0lW02
+                u2I2Jcf+Lg/Ssz9KnKhXZ+DNe2/gzXx+vX8AuMSYkBa+krpV1avVsnEmyBvv
+                gm5DH0RIVmqtpFXuRd4vVrpgNyKM5qUP1jh5p4NaqqCuCKJaR5xJHQw7AIFK
+                9lvTqQmz5ZQw3m4GsUhFLBJmz+l2MxMT6pYzwvn8v2f4AOfFf+qiDCweffNW
+                6FtjNeHsoXHBVPrJ1GZh9bVzPqhgvKt7nI0d/JbAyQ8e45TnlCN3uXs5ogz9
+                DIMMQ8RMsZdhHwc5qMYhjnKIGkmN0TfcwIZuOQEAAA==
+                """,
+          """
+                com/example/unit/ContextKt.class:
+                H4sIAAAAAAAA/4VSXU8TQRQ9s/1kKbAgKF0QURRBhQU0GqMxMTXEjQUNGhKC
+                L9N2rNNud3Fn2vSx8Z/oL/ANI4lp8M0fZby7FAFL9OWemXPPnLn3zvz89e07
+                gHtwGOxy0HBEmzf2POE0famdQuBr0dYvdAaMwarxFnc87ledl6WaKBObYJgo
+                BF4QvgqDlqyIcOn5h9pd/bDKMLfgLhbPcTwlfkSqYhBWnZrQpZBLXznc9wPN
+                tQxovRnozabnRao+n3XZFpUzZhlkGdKPJWWfMKwtuMV6oD3pO7VWw5HUR+hz
+                z3km3vGmp6kxpcNmWQfhBg/rVMridg4mBk0MIMcw8+/CMxhmSJUjioG5DENn
+                0gzzfee3hAqaYVn85XOBIUmDii+fMDGOi2QcCuVWGEaPO9gQmle45jQJo9FK
+                0HuxKAxEAVRAPVoYlGzLaLVCq8oqw9tuZ9zsdkxj0jgGI5swDStrT1ndjm2s
+                sLW0ZRAmfnxl3Q4Fdvg5ncwmrZQ9fKJIE2YOPxqDZip7+GlmhZFNPrpjjWH2
+                /088fUZSDfnee1lWRzJKUwNm758t1zWNoxBUBMNIUfpis9koifANL3nEjBWD
+                Mve2eSijfY+c2mr6WjaE67ekkkQ9PflAZPw6nvm6jKT5nnS7T4hVGEhGwyTM
+                I4U04SLtHhBLFWLoAAM7NtvHUBcjX2LZLYrpOJnD7TjGQlgYJbzTy2YI8xj7
+                Y3gfiaMzBxjfsfdx6Rw/65RfDpN9fgaW4riAZcICsVHJ9i4SLqZcTLu4jBkX
+                VzDr4iqu7YIpzOH6LrIKYwo3FCyFeYWUQlphUuHmb+Hl9oAFBAAA
+                """,
+          """
+                com/example/unit/FixedColorProvider.class:
+                H4sIAAAAAAAA/5VW3VMTVxT/3c3XkgRZwveHgoISghAIttXiRxVrWQpoxWKR
+                trokK1mS7Ma9GwZfOk4f/BM60761D33yQWdacOpMh+Jb/6ZOp+fuLgGT6NiH
+                3Hvuuefjd8/53bv5+98//gRwDhbDUNYqpfVtrVQu6umKaTjpG8a2npu1ipZ9
+                y7a2jJxuR8AYlE1tS0sXNXMjfXN9U886EQQYTtS513iGGMIXDdq4zBBMqqMr
+                DIHk6EocETRFEUSUIZQVLgxMjSOO5iZIOEbGTt7gDKcX3gPgDMHb0B1XN/7w
+                7oXt1ZVJN496dGN9uqxPT1HM48n6oLOW6ejbzoxwGVqw7I30pu6s25ph8rRm
+                mpajOYZF8pLlLFWKRcoYyXouMrqoDgXLKRpmenOrlDZIbZtaMa2ajk3+RpZH
+                0MPQkc3r2YIf4JZmayWdDBlGkgu1tZ05olkWQTZmRM360B9FL44z9L79BAwJ
+                2itbpm46U4fViGet8uPxuUeb086FDYYk9eI9S5tJqguNjnddf6hVilRckzt2
+                JetY9qJmF8jFa+9QlBo5zNB+NPFwznNieNCgCQ3Sq2p9cd4PeBwncUpgSDLI
+                juWVkeAkR+uLy9BVq7tWMYoug89GMS5o2lOfI+ky95KMNLFcK5d1M8cwnmzQ
+                vDqVH55QTiEjMkxTU48ea8PWynmijnehIviAofngFOMGmRChRA/rcsXxEc5H
+                8SEu1GCpVu9dWGYElosM/cnZdxteFoZX4khhTEhXqch5jednrZxOSA9EH6m4
+                +XS7r+NTAewGVUt/VNGKXJyhAcJ7DMPvuoN0f7T1ok5ti3tx3DRE8lBSVUfv
+                xfE5FkSiRdJYTl5cskR9GkFSWRDkC4a24ewhje+XXB4zTPw/3jO0Hjgs6o6W
+                0xyNdFJpK0CvLRNDkxhAT12B9NuGWBFqKTfF2MTek0xU6pbc394TT5SjUUmJ
+                uUtFDLLk6wOkkD39MXn/qdxN3tIku6YkworUK00GXr9ke0/2fwlLSnC+R5GF
+                au71U6GW6McOtoNykxKeH1SiZEAhZFny3MmWvWkXU+LzbUozbR7LyEpLb7Cb
+                TSpzr38IkHercMmElQTNbXOd9UnalY75JqWTtrvIhZHcTXKPkG/3HwHse0nk
+                JE4e6Q3KISW8/73UQmfuiYbk/Z9PTDKST4qqZRgGG72Dbz5f/Qtvv1a0HT18
+                LImn4q1iokPywWeDLPyXdaJAz1bQI3jLgmHqS5XSum7fEVQUBLOyWnFFsw2x
+                9pXDtyumY5R01dwyuEGq6rN/9ZDPDH21Zm/sNi87WrawqJX9oNFlq2Jn9RuG
+                WPT4rit1jnRHJfrA0l2jX0J8WYltgu7EetJs0OoyrSShTe0ilur7HS0vaCUh
+                T6PwAtpg0NjpWUFBq+AvSSIa0Z3itvmx0oLWNIdSv6HlWcMwcc/AD0NPMTrI
+                Sjhf8YHExhLdL3GiPkSYjA+RxKpIYujCAO1vkhwRADpJaMVgFdZQLSzWAEqr
+                +FT4UDJUM/e0ryCt9rFdnH5e9XpbHQo+SkquNOEMRvzkZ9wOUPz+4Hc/QhYQ
+                Lqb6djDqhSzSGACLkUivqJ//Es0C28ArjK/uYiIxuYNzwvMlPt7BJWV0B5/s
+                4NrzmqMM+KCOQKFxtlqHM34dZC/UZ7WlkKtdmYPqQ7lPs3iiRlJjvyIUfDb2
+                F6SfEAo8G9uDtCgCnXWDLbnKoNexoluXQET+B+0RWh/WbaRatxHcxK2jXZun
+                wjHxn8FHe97PHE717eL2iyrWQU9bDRT2GyCkZdxxWVRyYTyESfNj2vuS2ryy
+                hoCKuyq+UrGKeyRiTcXX+GYNjONb3F9DL0crxwOOOIfGMcSR4GjjaOZY5xjk
+                yHKc5DjFMceR47jpjjpHF8cARztHB8esq0zR+B8Bv/VrZAsAAA==
+                """,
+          """
+                com/example/unit/ResourceColorProvider.class:
+                H4sIAAAAAAAA/5VVW1MURxT+evY2Oywwu8hFQKNxxQXUWdDcRE2ERBmyoAFD
+                ophLs4wwsDuzmZ6lzEuKyoM/warkJZU85IkHU5WgFatSBN/ye/KYSuX0zNSK
+                y2qZh+k+ffqc73x9zumev/79/Q8A57HCMFR2q4Z1j1drFcuoO7ZvzFvCrXtl
+                a8qtuN4Nz920VywvBcagr/NNblS4s2pcX163yn4KMYajBxCaPBMMyYs2bVxm
+                iBfM4UWGWGF4MYMU0hri0BgSniVMYsPMDDJoT0NBBxn7a7ZgKJRejeMEg7pq
+                +fMhFIUwiTIpAqMzy+dq1rkxgjvSAm/KdXzrnj8hXU6UXG/VWLf8ZY/bjjC4
+                47g+922X5DnXn6tXKhQpVQ5dVPRSCjZcv2I7xvpm1bBJ7Tm8YpiO75G/XRYp
+                HGboLq9Z5Y0I4Ab3eNUiQ4ZThVJzWif2aRYkyOqETNcABjX04whD//4DrHq8
+                tkZRwrSn8BqdmsgJ36uXfTq4TVZh4im5x/G6hmM4QRgvzgKDRns117Ecf4xc
+                y27ta4ZRQnjVSsjaqhpVcZghI93zK9ZdXq/4DHdfuZymeTAz/4PBKRQkgzPU
+                Fb4bppHhUGH4YHIZept1k3W7EjTvmIZx2aGDLcMUgr69pOI89Tiv1SyHOu9M
+                oUX9DqiiCET0Tbwlg7xNQWSKX2Z4QRpOSMOplxtekoaXMzBQlNJ7lIQ1Ltam
+                3BWLIfvMk5rUWpXnnMpgUvbG+/iAjmJ9VecVuivdLZpz+DZD/mV3hPqbL1cs
+                oplw/TXZ47mDKMSiFN2aWcvnK9znpFOqmzF6mZgc0nIAvQkbpL9ny1WRpBXq
+                yL93t4qa0qcE3+6WpuiqpqhJmtvCJQ1yjnaloRondYe6d1/t290aV4pssj2X
+                1JV+pRjb+ymp6PGZtJ6Sq+mn92MzXbpKMhmqqhIakZqROk2yNq7qbf3xPlbM
+                TD99EJs5preTtmM8qXfSrE/3PH3MdrdoYPQphB5Xs3qO8LtCoAeM5EMkd0t5
+                PttgoRLb/ria0JN73yqdxPm4llD3fjxaZCQflmcfZzjW6t4+/woifAgDNfVK
+                6cWvhbzq0a0/u0GXMx42SGfJdqy5enXZ8m7KUsoKumVeWeSeLdeRMj9fd3y7
+                apnOpi1sUjWetSvP+oFhoNnsud32BZ+XN2Z5LQLVFoJrdtWWi8OR6+IBR4zR
+                3Y7TSZP05eRPQ7YMyfTw0HiHVpfJQqFZG3mEtpGB39D5C60UfEaj9AJ68TmN
+                PaEVdGRlx5Ek0ahBCbcrwjJkI9KcGPkVndstYTKhQQRDTw26yUo6T0ZEOkZz
+                fY9xVEI8Rv55lCT69pHpaJDpIPSTtP8FySnJoYeELIYazE40M2Mt2GTlaxix
+                GUMsiJF+AuXWwCOMPGw4hcHTjeDpKBNfRiQptp7GKE5HsYeCGhD8YPyb76BK
+                BhdHBnZwNoTkNMbA2kikdygKf4FmSW3wCcZvPcK53Bs7eEd67uCiPryDd3dw
+                5WHTMQYjRvt40DjZyMFQlAM1TO3V5jSojaJcw3TE4w7N8k3Jj4z+jER8e/RP
+                KN8jEdse3YUyK4FO0/eD1MTDUvGgN2Ip9R9kU7R+lrF8I2N5zODD/eUyA9fl
+                YFxCmeYqaUtUmdklxEzMmbhu4gY+IhHzJhZwcwlM4GMsLqFHICvwiUBG4FMB
+                VSAn0CUwJHBK4FqgnAnGWwK3BXoFTgocEugWmBQwaOs/dAGm7ewJAAA=
+                """,
+        ),
+      )
+
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+            assertEquals("color", resolved!!.parameterList.parameters[0].name)
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
 }
