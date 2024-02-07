@@ -54,8 +54,8 @@ abstract class PreviewScreenshotValidationTask : Test(), VerificationTask {
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val previewFile: RegularFileProperty
 
-    @get:OutputFile
-    abstract val resultsFile: RegularFileProperty
+    @get:OutputDirectory
+    abstract val resultsDir: DirectoryProperty
 
     @get:Internal
     abstract val reportFilePath: DirectoryProperty
@@ -78,8 +78,7 @@ abstract class PreviewScreenshotValidationTask : Test(), VerificationTask {
         setTestEngineParam("referenceImageDirPath", referenceImageDir.get().asFile.absolutePath)
         setTestEngineParam("diffImageDirPath", diffImageDir.get().asFile.absolutePath)
         setTestEngineParam("renderTaskOutputDirPath", renderTaskOutputDir.get().asFile.absolutePath)
-        setTestEngineParam("resultsFilePath", resultsFile.get().asFile.absolutePath)
-        setTestEngineParam("reportUrlPath", reportFilePath.get().asFile.absolutePath)
+        setTestEngineParam("resultsDirPath", resultsDir.get().asFile.absolutePath)
         return super.createTestExecutionSpec()
     }
 }

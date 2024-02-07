@@ -46,7 +46,7 @@ class PreviewScreenshotValidationTaskTest {
     @Test
     fun testReportAnalyticsData() {
         val diffDir = tempDirRule.newFolder("diffs")
-        val resultsFile = tempDirRule.newFile("results")
+        val resultsDir = tempDirRule.newFile("results")
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderOutputDir = tempDirRule.newFolder("rendered")
         val previewsFile = tempDirRule.newFile("previews_discovered.json")
@@ -76,7 +76,7 @@ class PreviewScreenshotValidationTaskTest {
         task.referenceImageDir.set(referenceImageDir)
         task.diffImageDir.set(diffDir)
         task.renderTaskOutputDir.set(renderOutputDir)
-        task.resultsFile.set(resultsFile)
+        task.resultsDir.set(resultsDir)
 
         val analyticsService = spy(object: AnalyticsService() {
             override val buildServiceRegistry: BuildServiceRegistry = mock(

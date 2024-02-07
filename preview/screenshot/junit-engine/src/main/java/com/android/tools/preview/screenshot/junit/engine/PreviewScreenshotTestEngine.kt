@@ -67,6 +67,7 @@ class PreviewScreenshotTestEngine : TestEngine {
     override fun execute(request: ExecutionRequest) {
         val listener = request.engineExecutionListener
         val resultsToSave = mutableListOf<PreviewResult>()
+        if (request.rootTestDescriptor.children.isEmpty()) return
         val resultFile = File(getParam("renderTaskOutputDirPath")).toPath().resolve("results.json").toFile()
         val screenshotResults = readComposeRenderingResultJson(resultFile.reader()).screenshotResults
         val composeScreenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")).reader())
@@ -107,7 +108,7 @@ class PreviewScreenshotTestEngine : TestEngine {
             listener.executionFinished(classDescriptor, TestExecutionResult.successful())
         }
         if (resultsToSave.isNotEmpty()) {
-            saveResults(resultsToSave, getParam("resultsFilePath"))
+            saveResults(resultsToSave, "${getParam("resultsDirPath")}/TEST-results.xml")
         }
     }
 

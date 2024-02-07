@@ -17,7 +17,6 @@
 package com.android.tools.preview.screenshot.tasks
 
 import com.android.testutils.MockitoKt.mock
-import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.preview.screenshot.services.AnalyticsService
 import com.google.common.io.Files
 import org.gradle.api.services.BuildServiceRegistry
@@ -29,6 +28,9 @@ import org.junit.rules.TemporaryFolder
 import org.mockito.Answers
 import org.mockito.Mockito.withSettings
 import java.io.File
+import com.google.common.truth.Truth.assertThat
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 
 class ScreenshotTestReportTaskTest {
     @get:Rule
@@ -43,7 +45,7 @@ class ScreenshotTestReportTaskTest {
     }
 
     @Test
-    fun testPreviewDiscovery() {
+    fun createTestReport() {
         val outputDir = tempDirRule.newFolder()
         val resultsDir = tempDirRule.newFolder("results")
         val reportXml = File(resultsDir, "TEST-valid.xml")
@@ -97,13 +99,34 @@ class ScreenshotTestReportTaskTest {
 
         task.run()
 
-        val indexHtml = File(outputDir, "index.html")
-        assertThat(indexHtml).exists()
+        assertThat(outputDir.toPath().listDirectoryEntries()
+            .filter { it.name.endsWith("html") }
+            .map { it.name })
+            .containsExactly(
+            "index.html",
+            "com.example.myapplication.html",
+            "com.example.myapplication.ExampleInstrumentedTest.html"
+            )
+    }
 
-        val moduleHtml = File(outputDir, "com.example.myapplication.html")
-        assertThat(moduleHtml).exists()
+    @Test
+    fun createEmptyTestReport() {
+        val outputDir = tempDirRule.newFolder()
+        val resultsDir = tempDirRule.newFolder("results")
+        task.outputDir.set(outputDir)
+        task.resultsDir.set(resultsDir)
+        task.analyticsService.set(object: AnalyticsService() {
+            override val buildServiceRegistry: BuildServiceRegistry = mock(
+                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override fun getParameters(): Params = mock()
+        })
 
-        val classHtml = File(outputDir, "com.example.myapplication.ExampleInstrumentedTest.html")
-        assertThat(classHtml).exists()
+        task.run()
+
+        assertThat(outputDir.toPath().listDirectoryEntries()
+            .filter { it.name.endsWith("html") }
+            .map { it.name }).containsExactly(
+            "index.html"
+        )
     }
 }

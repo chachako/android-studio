@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.testing.screenshot
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
@@ -106,6 +105,7 @@ class ScreenshotTest {
             )
             addFile(
                     "src/androidTest/java/com/ExampleTest.kt", """
+
                 package pkg.name
 
                 import androidx.compose.ui.tooling.preview.Preview
@@ -134,6 +134,7 @@ class ScreenshotTest {
                        SimpleComposable(data)
                     }
                 }
+
             """.trimIndent()
             )
         }
@@ -225,9 +226,7 @@ class ScreenshotTest {
         )
 
         // Validate previews matches screenshots
-        getExecutor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF) // TODO(322357154) Remove this when configuration caching issues are resolved
-            .run("previewScreenshotDebugAndroidTest")
+        getExecutor().run("previewScreenshotDebugAndroidTest")
 
         // Verify that test engine generated HTML reports and all tests pass
         val indexHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
@@ -257,10 +256,7 @@ class ScreenshotTest {
         TestFileUtils.searchAndReplace(previewParameterProviderFile, "Primary text", " Primarytext")
 
         // Rerun validation task - modified tests should fail and diffs are generated
-        getExecutor()
-            .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF) // TODO(322357154) Remove this when configuration caching issues are resolved
-            .expectFailure()
-            .run("previewScreenshotDebugAndroidTest")
+        getExecutor().expectFailure().run("previewScreenshotDebugAndroidTest")
 
         assertThat(indexHtmlReport).exists()
         assertThat(classHtmlReport).exists()
@@ -301,5 +297,26 @@ class ScreenshotTest {
             it.parentId == taskSpan.id && it.type == ExecutionType.TASK_EXECUTION_ALL_PHASES
         }
         assertThat(executionSpan.durationInMs).isGreaterThan(0L)
+    }
+
+    @Test
+    fun runPreviewScreenshotTestWithNoPreviewsToTest() {
+        // Comment out preview tests
+        val testFile = project.projectDir.resolve("src/androidTest/java/com/ExampleTest.kt")
+        TestFileUtils.replaceLine(testFile, 1, "/*")
+        TestFileUtils.replaceLine(testFile, testFile.readLines().size, "*/")
+
+        // Updating reference images should fail when there are no preview tests
+        getExecutor().expectFailure().run("previewScreenshotUpdateDebugAndroidTest")
+
+        getExecutor().run("previewScreenshotDebugAndroidTest")
+
+        val indexHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
+        assertThat(indexHtmlReport).exists()
+        assertThat(indexHtmlReport.readText()).contains("""<div class="counter">0</div>""")
+
+        // Uncomment preview tests
+        TestFileUtils.replaceLine(testFile, 1, "")
+        TestFileUtils.replaceLine(testFile, testFile.readLines().size, "")
     }
 }
