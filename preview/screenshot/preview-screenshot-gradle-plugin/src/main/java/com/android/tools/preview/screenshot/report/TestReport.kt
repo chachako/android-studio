@@ -43,9 +43,9 @@ class TestReport(resultDir: File, reportDir: File) {
     init {
         this.resultDir = resultDir
         this.reportDir = reportDir
-        htmlRenderer.requireResource(javaClass.getResource("report.js"))
-        htmlRenderer.requireResource(javaClass.getResource("base-style.css"))
-        htmlRenderer.requireResource(javaClass.getResource("style.css"))
+        htmlRenderer.requireResource(javaClass.getResource("report.js")!!)
+        htmlRenderer.requireResource(javaClass.getResource("base-style.css")!!)
+        htmlRenderer.requireResource(javaClass.getResource("style.css")!!)
     }
 
     fun generateScreenshotTestReport(): CompositeTestResults {
@@ -99,7 +99,7 @@ class TestReport(resultDir: File, reportDir: File) {
                 val testName = testCase.getAttribute("name")
                 val timeString = testCase.getAttribute("time")
                 var duration =
-                    if (!timeString.isBlank()) parse(timeString) else BigDecimal.valueOf(0)
+                    if (timeString.isNotBlank()) parse(timeString) else BigDecimal.valueOf(0)
                 duration = duration.multiply(BigDecimal.valueOf(1000))
                 val failures = testCase.getElementsByTagName("failure")
 
@@ -134,7 +134,7 @@ class TestReport(resultDir: File, reportDir: File) {
                     }
                     ssImages = ScreenshotTestImages(referenceImage, actualImage, diffImage)
                 }
-                var testResult: TestResult = model.addTest(
+                val testResult: TestResult = model.addTest(
                     className, testName, duration.toLong(),
                     projectName!!, flavorName!!, ssImages
                 )

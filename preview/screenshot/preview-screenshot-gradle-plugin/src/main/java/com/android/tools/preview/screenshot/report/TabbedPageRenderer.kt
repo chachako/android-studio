@@ -33,7 +33,7 @@ abstract class TabbedPageRenderer<T> : ReportRenderer<T, SimpleHtmlWriter>() {
     protected abstract fun getTitle(): String
     protected abstract val headerRenderer: ReportRenderer<T, SimpleHtmlWriter>
     protected abstract val contentRenderer: ReportRenderer<T, SimpleHtmlWriter>
-    protected fun getPageTitle(): String {
+    private fun getPageTitle(): String {
         return "Test results - " + getTitle()
     }
 

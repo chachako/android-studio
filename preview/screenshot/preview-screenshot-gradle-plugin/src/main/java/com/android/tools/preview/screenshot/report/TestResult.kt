@@ -67,24 +67,24 @@ class TestResult(
         classResults.skipped(projectName, flavorName)
     }
 
-    override fun compareTo(testResult: TestResult): Int {
-        var diff: Int = classResults.name.compareTo(testResult.classResults.name)
+    override fun compareTo(other: TestResult): Int {
+        var diff: Int = classResults.name.compareTo(other.classResults.name)
         if (diff != 0) {
             return diff
         }
-        diff = name.compareTo(testResult.name)
+        diff = name.compareTo(other.name)
         if (diff != 0) {
             return diff
         }
-        diff = flavor.compareTo(testResult.flavor)
+        diff = flavor.compareTo(other.flavor)
         if (diff != 0) {
             return diff
         }
         val thisIdentity = System.identityHashCode(this)
-        val otherIdentity = System.identityHashCode(testResult)
+        val otherIdentity = System.identityHashCode(other)
         return thisIdentity.compareTo(otherIdentity)
     }
 
-    class TestFailure(val message: String, val stackTrace: String?, val exceptionType: String?)
+    data class TestFailure(val message: String, val stackTrace: String?, val exceptionType: String?)
 
 }
