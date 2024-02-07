@@ -258,6 +258,37 @@ class InstallProfilesPerDeviceApiConnectedTest {
         Truth.assertThat(dexMetadataProperties.exists()).isFalse()
     }
 
+    @Test
+    fun validateConfigurationCacheUsed() {
+        // Run twice to verify configuration cache compatibility
+        project.executor().run("clean", "assembleRelease")
+        val result = project.executor().run("clean", "assembleRelease")
+        ScannerSubject.assertThat(result.stdout).contains("Configuration cache entry reused.")
+
+        // Validate that renamed baseline profile file is present
+        val renamedBaselineProfile = FileUtils.join(
+            project.buildDir,
+            SdkConstants.FD_OUTPUTS,
+            SdkConstants.EXT_ANDROID_PACKAGE,
+            "release",
+            "baselineProfiles",
+            "0",
+            "basic-release.dm"
+        )
+        Truth.assertThat(renamedBaselineProfile.exists()).isTrue()
+
+        // Validate that baseline profile is in app metadata file
+        val appMetadataJson = FileUtils.join(
+            project.buildDir,
+            SdkConstants.FD_OUTPUTS,
+            SdkConstants.EXT_ANDROID_PACKAGE,
+            "release",
+            BuiltArtifactsImpl.METADATA_FILE_NAME
+        )
+        Truth.assertThat(appMetadataJson.readText()).contains("baselineProfiles")
+        Truth.assertThat(appMetadataJson.readText()).contains("basic-release.dm")
+    }
+
     // This test is disabled and should only be run locally with an API level lower than 28
     //@Test
     fun apiLevelNotSupportedForBaselineProfile() {
