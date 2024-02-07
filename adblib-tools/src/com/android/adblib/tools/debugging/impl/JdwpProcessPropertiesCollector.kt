@@ -140,8 +140,7 @@ internal class JdwpProcessPropertiesCollector(
 
                     else -> {
                         logger.info(throwable) {
-                            "Exception while collecting process properties" +
-                                    " (processName: '${stateFlow.value.processName}')"
+                            "Exception while collecting process properties (${stateFlow.value.summaryForLogging()})"
                         }
                         throwable // Record any other unexpected exception
                     }
@@ -151,9 +150,8 @@ internal class JdwpProcessPropertiesCollector(
                     // Delay and retry if we did not collect all properties we want
                     delay(session.property(PROCESS_PROPERTIES_RETRY_DURATION).toMillis())
                     logger.info {
-                        "Retrying JDWP process '${stateFlow.value.processName}' properties " +
-                                "collection, because previous attempt failed " +
-                                "with an error ('${throwable.message}')"
+                        "Retrying JDWP process properties collection (${stateFlow.value.summaryForLogging()}), " +
+                                "because previous attempt failed with an error ('${throwable.message}')"
                     }
                 } else {
                     collectState.propertiesFlow.update {
@@ -516,6 +514,9 @@ internal class JdwpProcessPropertiesCollector(
     private suspend fun <T> StateFlow<T>.waitWhile(predicate: T.() -> Boolean) {
         takeWhile { it.predicate() }.collect()
     }
+
+    private fun JdwpProcessProperties.summaryForLogging() =
+        "processName=${processName ?: "<not yet received>"}, waitCommandReceived=${waitCommandReceived}"
 
     /**
      * List of DDMS requests sent to the Android VM.
