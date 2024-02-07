@@ -19,7 +19,6 @@ import com.android.adblib.ConnectedDevice
 import com.android.adblib.adbLogger
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.utils.ReferenceCountedFactory
-import com.android.adblib.useShutdown
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.flow.StateFlow
 
@@ -40,6 +39,7 @@ internal class SharedJdwpSessionProviderImpl(
     override suspend fun <R> withSharedJdwpSession(block: suspend (SharedJdwpSession) -> R): R {
         return withSharedJdwpSessionTracker.track {
             logger.verbose { "withSharedJdwpSession(): enter" }
+            // TODO(b/324474436): Handle `retain()` called concurrently with `session.shutdown()`
             val session = sharedJdwpSessionRef.retain()
             try {
                 session.openIfNeeded()
@@ -48,8 +48,7 @@ internal class SharedJdwpSessionProviderImpl(
                 logger.verbose { "withSharedJdwpSession(): exit" }
                 if (sharedJdwpSessionRef.releaseNoClose() == 0) {
                     logger.debug { "withSharedJdwpSession(): shutting down shared JDWP session" }
-                    // Call "shutdown" then "close"
-                    session.useShutdown { }
+                    session.use { it.shutdown() }
                 }
             }
         }
