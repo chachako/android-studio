@@ -1503,6 +1503,9 @@ class LintDriver(
           // we're making sure we only process these files once as part of one
           // of the projects, but we do need the values for resolution from all
           // the projects.
+          //
+          // TODO(b/324224651): getRootDir() is not the right place for looking up the
+          //  version catalog in the case of a module from an included build.
           ?: client.getRootDir()?.let { root ->
             val tomlFile = File(root, "$FD_GRADLE/$FN_VERSION_CATALOG")
             if (tomlFile.exists()) {
