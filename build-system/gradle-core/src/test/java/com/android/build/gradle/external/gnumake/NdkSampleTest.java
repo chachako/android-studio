@@ -26,6 +26,7 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.build.gradle.internal.cxx.json.NativeBuildConfigValue;
 import com.android.build.gradle.internal.cxx.json.NativeSourceFileValue;
+import com.android.build.gradle.internal.cxx.json.PlainFileGsonTypeAdaptor;
 import com.android.build.gradle.truth.NativeBuildConfigValueSubject;
 import com.android.testutils.TestUtils;
 import com.android.utils.FileUtils;
@@ -35,7 +36,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.io.IOException;
@@ -254,11 +254,12 @@ public class NdkSampleTest {
             actualConfig.configs.add(builder.build());
         }
 
-
-        String actualResult = new GsonBuilder()
-                .setPrettyPrinting()
-                .create()
-                .toJson(actualConfig);
+        String actualResult =
+                new GsonBuilder()
+                        .registerTypeAdapter(File.class, new PlainFileGsonTypeAdaptor())
+                        .setPrettyPrinting()
+                        .create()
+                        .toJson(actualConfig);
         checkOutputsHaveAllowedExtensions(actualConfig.configs);
         checkOutputsHaveAllowedAbis(actualConfig.configs);
 
@@ -268,7 +269,11 @@ public class NdkSampleTest {
         // {testPath} we must follow the JSon escaping rule.
         testPathString = testPathString.replace("\\", "\\\\");
         actualResult = actualResult.replace(testPathString, "{testPath}");
-        actualConfig = new Gson().fromJson(actualResult, NativeBuildConfigValues.class);
+        actualConfig =
+                new GsonBuilder()
+                        .registerTypeAdapter(File.class, new PlainFileGsonTypeAdaptor())
+                        .create()
+                        .fromJson(actualResult, NativeBuildConfigValues.class);
 
         if (!baselineJsonFile.exists() || REGENERATE_TEST_JSON_FROM_TEXT) {
             Files.asCharSink(baselineJsonFile, Charsets.UTF_8).write(actualResult);
@@ -279,7 +284,10 @@ public class NdkSampleTest {
                 .join(Files.readLines(baselineJsonFile, Charsets.UTF_8));
 
         NativeBuildConfigValues baselineConfig =
-                new Gson().fromJson(baselineResult, NativeBuildConfigValues.class);
+                new GsonBuilder()
+                        .registerTypeAdapter(File.class, new PlainFileGsonTypeAdaptor())
+                        .create()
+                        .fromJson(baselineResult, NativeBuildConfigValues.class);
         assertThat(actualConfig.configs.size()).isEqualTo(baselineConfig.configs.size());
         for (int i = 0; i < actualConfig.configs.size(); ++i) {
             NativeBuildConfigValue config = actualConfig.configs.get(i);

@@ -2,9 +2,7 @@
   "configs": [
     {
       "buildFiles": [
-        {
-          "path": "{testPath}"
-        }
+        "{testPath}"
       ],
       "cleanCommandsComponents": [
         [
@@ -32,15 +30,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-exceptions -fno-rtti -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -fPIE -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/arm64-v8a/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/arm64-v8a/test-libstl"
         },
         "test-libstl-debug-x86_64": {
           "buildCommandComponents": [
@@ -54,15 +48,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-exceptions -fno-rtti -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -fPIE -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/x86_64/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/x86_64/test-libstl"
         },
         "test-libstl-debug-armeabi": {
           "buildCommandComponents": [
@@ -76,15 +66,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -fno-exceptions -fno-rtti -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/armeabi/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/armeabi/test-libstl"
         },
         "test-libstl-debug-mips64": {
           "buildCommandComponents": [
@@ -98,15 +84,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -fno-exceptions -fno-rtti -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -fPIE -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/mips64/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/mips64/test-libstl"
         },
         "test-libstl-debug-x86": {
           "buildCommandComponents": [
@@ -120,15 +102,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -fno-exceptions -fno-rtti -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/x86/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/x86/test-libstl"
         },
         "test-libstl-debug-mips": {
           "buildCommandComponents": [
@@ -142,15 +120,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -fno-exceptions -fno-rtti -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/mips/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/mips/test-libstl"
         },
         "test-libstl-debug-armeabi-v7a": {
           "buildCommandComponents": [
@@ -164,52 +138,34 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -fno-exceptions -fno-rtti -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/armeabi-v7a/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/armeabi-v7a/test-libstl"
         }
       },
       "toolchains": {
         "toolchain-armeabi": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-g++"
         },
         "toolchain-mips64": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-g++"
         },
         "toolchain-mips": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-g++"
         },
         "toolchain-arm64-v8a": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-g++"
         },
         "toolchain-x86_64": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-g++"
         },
         "toolchain-armeabi-v7a": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-g++"
         },
         "toolchain-x86": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-g++"
         }
       },
       "cFileExtensions": [],
@@ -219,9 +175,7 @@
     },
     {
       "buildFiles": [
-        {
-          "path": "{testPath}"
-        }
+        "{testPath}"
       ],
       "cleanCommandsComponents": [
         [
@@ -249,15 +203,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-exceptions -fno-rtti -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -fPIE -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/x86_64/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/x86_64/test-libstl"
         },
         "test-libstl-release-x86": {
           "buildCommandComponents": [
@@ -271,15 +221,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -fno-exceptions -fno-rtti -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/x86/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/x86/test-libstl"
         },
         "test-libstl-release-arm64-v8a": {
           "buildCommandComponents": [
@@ -293,15 +239,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-exceptions -fno-rtti -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -fPIE -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/arm64-v8a/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/arm64-v8a/test-libstl"
         },
         "test-libstl-release-armeabi-v7a": {
           "buildCommandComponents": [
@@ -315,15 +257,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -fno-exceptions -fno-rtti -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/armeabi-v7a/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/armeabi-v7a/test-libstl"
         },
         "test-libstl-release-armeabi": {
           "buildCommandComponents": [
@@ -337,15 +275,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -fno-exceptions -fno-rtti -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/armeabi/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/armeabi/test-libstl"
         },
         "test-libstl-release-mips": {
           "buildCommandComponents": [
@@ -359,15 +293,11 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -fno-exceptions -fno-rtti -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/mips/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/mips/test-libstl"
         },
         "test-libstl-release-mips64": {
           "buildCommandComponents": [
@@ -381,52 +311,34 @@
           "artifactName": "test-libstl",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp"
-              },
+              "src": "/{ndkPath}/samples/test-libstdc++/jni/test-libstl.cpp",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -fno-exceptions -fno-rtti -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/sources/cxx-stl/system/include -I/{ndkPath}/samples/test-libstdc++/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -fPIE -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/test-libstdc++/obj/local/mips64/test-libstl"
-          }
+          "output": "/{ndkPath}/samples/test-libstdc++/obj/local/mips64/test-libstl"
         }
       },
       "toolchains": {
         "toolchain-armeabi": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-g++"
         },
         "toolchain-mips64": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-g++"
         },
         "toolchain-mips": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-g++"
         },
         "toolchain-arm64-v8a": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-g++"
         },
         "toolchain-x86_64": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-g++"
         },
         "toolchain-armeabi-v7a": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-g++"
         },
         "toolchain-x86": {
-          "cppCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-g++"
-          }
+          "cppCompilerExecutable": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-g++"
         }
       },
       "cFileExtensions": [],

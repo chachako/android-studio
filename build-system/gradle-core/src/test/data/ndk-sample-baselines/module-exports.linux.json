@@ -2,9 +2,7 @@
   "configs": [
     {
       "buildFiles": [
-        {
-          "path": "{testPath}"
-        }
+        "{testPath}"
       ],
       "cleanCommandsComponents": [
         [
@@ -32,21 +30,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libbar.so"
         },
         "zoo-debug-mips64": {
           "buildCommandComponents": [
@@ -60,27 +52,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips64/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips64/libzoo.so"
         },
         "zoo-debug-mips": {
           "buildCommandComponents": [
@@ -94,27 +78,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips/libzoo.so"
         },
         "bar-debug-mips64": {
           "buildCommandComponents": [
@@ -128,21 +104,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips64/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips64/libbar.so"
         },
         "zoo-debug-x86": {
           "buildCommandComponents": [
@@ -156,27 +126,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86/libzoo.so"
         },
         "zoo-debug-arm64-v8a": {
           "buildCommandComponents": [
@@ -190,27 +152,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libzoo.so"
         },
         "foo-debug-armeabi-v7a": {
           "buildCommandComponents": [
@@ -224,15 +178,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libfoo.a"
         },
         "zoo-debug-armeabi-v7a": {
           "buildCommandComponents": [
@@ -246,27 +196,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libzoo.so"
         },
         "bar-debug-x86": {
           "buildCommandComponents": [
@@ -280,21 +222,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86/libbar.so"
         },
         "bar-debug-x86_64": {
           "buildCommandComponents": [
@@ -308,21 +244,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libbar.so"
         },
         "foo-debug-arm64-v8a": {
           "buildCommandComponents": [
@@ -336,15 +266,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libfoo.a"
         },
         "foo-debug-mips": {
           "buildCommandComponents": [
@@ -358,15 +284,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips/libfoo.a"
         },
         "zoo-debug-armeabi": {
           "buildCommandComponents": [
@@ -380,27 +302,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libzoo.so"
         },
         "foo-debug-x86_64": {
           "buildCommandComponents": [
@@ -414,15 +328,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libfoo.a"
         },
         "zoo-debug-x86_64": {
           "buildCommandComponents": [
@@ -436,27 +346,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libzoo.so"
         },
         "bar-debug-armeabi": {
           "buildCommandComponents": [
@@ -470,21 +372,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libbar.so"
         },
         "bar-debug-armeabi-v7a": {
           "buildCommandComponents": [
@@ -498,21 +394,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libbar.so"
         },
         "bar-debug-mips": {
           "buildCommandComponents": [
@@ -526,21 +416,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips/libbar.so"
         },
         "foo-debug-mips64": {
           "buildCommandComponents": [
@@ -554,15 +438,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips64/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips64/libfoo.a"
         },
         "foo-debug-armeabi": {
           "buildCommandComponents": [
@@ -576,15 +456,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libfoo.a"
         },
         "foo-debug-x86": {
           "buildCommandComponents": [
@@ -598,52 +474,34 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86/libfoo.a"
         }
       },
       "toolchains": {
         "toolchain-armeabi": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
         },
         "toolchain-mips64": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-gcc"
         },
         "toolchain-mips": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-gcc"
         },
         "toolchain-arm64-v8a": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-gcc"
         },
         "toolchain-x86_64": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-gcc"
         },
         "toolchain-armeabi-v7a": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
         },
         "toolchain-x86": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-gcc"
         }
       },
       "cFileExtensions": [
@@ -653,9 +511,7 @@
     },
     {
       "buildFiles": [
-        {
-          "path": "{testPath}"
-        }
+        "{testPath}"
       ],
       "cleanCommandsComponents": [
         [
@@ -683,21 +539,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips/libbar.so"
         },
         "foo-release-armeabi": {
           "buildCommandComponents": [
@@ -711,15 +561,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libfoo.a"
         },
         "bar-release-mips64": {
           "buildCommandComponents": [
@@ -733,21 +579,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips64/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips64/libbar.so"
         },
         "foo-release-armeabi-v7a": {
           "buildCommandComponents": [
@@ -761,15 +601,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libfoo.a"
         },
         "zoo-release-armeabi": {
           "buildCommandComponents": [
@@ -783,27 +619,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libzoo.so"
         },
         "foo-release-mips": {
           "buildCommandComponents": [
@@ -817,15 +645,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips/libfoo.a"
         },
         "zoo-release-mips": {
           "buildCommandComponents": [
@@ -839,27 +663,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips/libzoo.so"
         },
         "bar-release-armeabi-v7a": {
           "buildCommandComponents": [
@@ -873,21 +689,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libbar.so"
         },
         "zoo-release-mips64": {
           "buildCommandComponents": [
@@ -901,27 +711,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips64/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips64/libzoo.so"
         },
         "foo-release-x86": {
           "buildCommandComponents": [
@@ -935,15 +737,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86/libfoo.a"
         },
         "foo-release-arm64-v8a": {
           "buildCommandComponents": [
@@ -957,15 +755,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libfoo.a"
         },
         "zoo-release-arm64-v8a": {
           "buildCommandComponents": [
@@ -979,27 +773,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libzoo.so"
         },
         "bar-release-x86_64": {
           "buildCommandComponents": [
@@ -1013,21 +799,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libbar.so"
         },
         "bar-release-armeabi": {
           "buildCommandComponents": [
@@ -1041,21 +821,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi/libbar.so"
         },
         "zoo-release-x86_64": {
           "buildCommandComponents": [
@@ -1069,27 +843,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libzoo.so"
         },
         "bar-release-x86": {
           "buildCommandComponents": [
@@ -1103,21 +869,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86/libbar.so"
         },
         "zoo-release-x86": {
           "buildCommandComponents": [
@@ -1131,27 +891,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86/libzoo.so"
         },
         "zoo-release-armeabi-v7a": {
           "buildCommandComponents": [
@@ -1165,27 +917,19 @@
           "artifactName": "zoo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/zoo/zoo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/module-exports/jni/bar -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libzoo.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/armeabi-v7a/libzoo.so"
         },
         "foo-release-x86_64": {
           "buildCommandComponents": [
@@ -1199,15 +943,11 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/x86_64/libfoo.a"
         },
         "bar-release-arm64-v8a": {
           "buildCommandComponents": [
@@ -1221,21 +961,15 @@
           "artifactName": "bar",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/bar/bar.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/bar/bar.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni/foo -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d1 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libbar.so"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/arm64-v8a/libbar.so"
         },
         "foo-release-mips64": {
           "buildCommandComponents": [
@@ -1249,52 +983,34 @@
           "artifactName": "foo",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/module-exports/jni/foo/foo.c"
-              },
+              "src": "/{ndkPath}/samples/module-exports/jni/foo/foo.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/module-exports/jni -DANDROID -DFOO\u003d2 -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/module-exports/obj/local/mips64/libfoo.a"
-          }
+          "output": "/{ndkPath}/samples/module-exports/obj/local/mips64/libfoo.a"
         }
       },
       "toolchains": {
         "toolchain-armeabi": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
         },
         "toolchain-mips64": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-gcc"
         },
         "toolchain-mips": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-gcc"
         },
         "toolchain-arm64-v8a": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-gcc"
         },
         "toolchain-x86_64": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-gcc"
         },
         "toolchain-armeabi-v7a": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
         },
         "toolchain-x86": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-gcc"
         }
       },
       "cFileExtensions": [

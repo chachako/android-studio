@@ -32,10 +32,11 @@ package com.android.build.gradle.external.gnumake
 
 import com.android.SdkConstants
 import com.android.build.gradle.internal.cxx.json.NativeBuildConfigValue
+import com.android.build.gradle.internal.cxx.json.PlainFileGsonTypeAdaptor
 import com.android.build.gradle.truth.NativeBuildConfigValueSubject
 import com.android.utils.cxx.streamCompileCommands
 import com.google.common.truth.Truth
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -66,9 +67,7 @@ class NativeBuildConfigValueBuilderTest {
             """
             {
               "buildFiles": [
-                {
-                  "path": "/projects/MyProject/jni/Android.mk"
-                }
+                "/projects/MyProject/jni/Android.mk"
               ],
               "cleanCommandsComponents": [
                 ["echo", "clean", "command"]
@@ -82,15 +81,11 @@ class NativeBuildConfigValueBuilderTest {
                   "toolchain": "toolchain-x86_64",
                   "files": [
                     {
-                      "src": {
-                        "path": "/projects/MyProject/jni/a.c"
-                      },
+                      "src": "/projects/MyProject/jni/a.c",
                       "flags": ""
                     }
                   ],
-                  "output": {
-                    "path": "x86_64/a.so"
-                  }
+                  "output": "x86_64/a.so"
                 },
                 "a-debug-x86": {
                   "abi" : "x86",
@@ -99,27 +94,19 @@ class NativeBuildConfigValueBuilderTest {
                   "toolchain": "toolchain-x86",
                   "files": [
                     {
-                      "src": {
-                        "path": "/projects/MyProject/jni/a.c"
-                      },
+                      "src": "/projects/MyProject/jni/a.c",
                       "flags": ""
                     }
                   ],
-                  "output": {
-                    "path": "x86/a.so"
-                  }
+                  "output": "x86/a.so"
                 }
               },
               "toolchains": {
                 "toolchain-x86": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 },
                 "toolchain-x86_64": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 }
               },
               "cFileExtensions": [
@@ -140,9 +127,7 @@ class NativeBuildConfigValueBuilderTest {
             """.trimIndent(),
             """{
               "buildFiles": [
-                {
-                  "path": "/projects/MyProject/jni/Android.mk"
-                }
+                "/projects/MyProject/jni/Android.mk"
               ],
               "cleanCommandsComponents": [
                 ["echo", "clean", "command"]
@@ -155,22 +140,16 @@ class NativeBuildConfigValueBuilderTest {
                   "abi": "x",
                   "artifactName" : "aa",      "files": [
                     {
-                      "src": {
-                        "path": "/path/to/custom/dir/a.c"
-                      },
+                      "src": "/path/to/custom/dir/a.c",
                       "flags": "-Isome-include-path"
                     }
                   ],
-                  "output": {
-                    "path": "x/aa.o"
-                  }
+                  "output": "x/aa.o"
                 }
               },
               "toolchains": {
                 "toolchain-x": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 }
               },
               "cFileExtensions": [
@@ -189,9 +168,7 @@ class NativeBuildConfigValueBuilderTest {
             "g++ -c a.c -o x/aa.o -Isome-include-path\n",
             """{
               "buildFiles": [
-                {
-                  "path": "/projects/MyProject/jni/Android.mk"
-                }
+                "/projects/MyProject/jni/Android.mk"
               ],
               "cleanCommandsComponents": [
                 ["echo", "clean", "command"]
@@ -204,22 +181,16 @@ class NativeBuildConfigValueBuilderTest {
                   "abi": "x",
                   "artifactName" : "aa",      "files": [
                     {
-                      "src": {
-                        "path": "/projects/MyProject/jni/a.c"
-                      },
+                      "src": "/projects/MyProject/jni/a.c",
                       "flags": "-Isome-include-path"
                     }
                   ],
-                  "output": {
-                    "path": "x/aa.o"
-                  }
+                  "output": "x/aa.o"
                 }
               },
               "toolchains": {
                 "toolchain-x": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 }
               },
               "cFileExtensions": [
@@ -241,9 +212,7 @@ class NativeBuildConfigValueBuilderTest {
                 """.trimIndent(),
             """{
               "buildFiles": [
-                {
-                  "path": "/projects/MyProject/jni/Android.mk"
-                }
+                "/projects/MyProject/jni/Android.mk"
               ],
               "cleanCommandsComponents": [
                 ["echo", "clean", "command"]
@@ -257,28 +226,20 @@ class NativeBuildConfigValueBuilderTest {
                   "toolchain": "toolchain-x86",
                   "files": [
                     {
-                      "src": {
-                        "path": "/projects/MyProject/jni/a.S"
-                      },
+                      "src": "/projects/MyProject/jni/a.S",
                       "flags": ""
                     },
                     {
-                      "src": {
-                        "path": "/projects/MyProject/jni/a.c"
-                      },
+                      "src": "/projects/MyProject/jni/a.c",
                       "flags": ""
                     }
                   ],
-                  "output": {
-                    "path": "x86/a.so"
-                  }
+                  "output": "x86/a.so"
                 }
               },
               "toolchains": {
                 "toolchain-x86": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 }
               },
               "cFileExtensions": [
@@ -301,9 +262,7 @@ class NativeBuildConfigValueBuilderTest {
                 """.trimIndent(),
             """{
               "buildFiles": [
-                {
-                  "path": "/projects/MyProject/jni/Android.mk"
-                }
+                "/projects/MyProject/jni/Android.mk"
               ],
               "cleanCommandsComponents": [
                 ["echo", "clean", "command"]
@@ -317,28 +276,20 @@ class NativeBuildConfigValueBuilderTest {
                   "toolchain": "toolchain-x86",
                   "files": [
                     {
-                      "src": {
-                        "path": "/projects/MyProject/jni/a.S"
-                      },
+                      "src": "/projects/MyProject/jni/a.S",
                       "flags": ""
                     },
                     {
-                      "src": {
-                        "path": "/projects/MyProject/jni/a.c"
-                      },
+                      "src": "/projects/MyProject/jni/a.c",
                       "flags": ""
                     }
                   ],
-                  "output": {
-                    "path": "x86/a.so"
-                  }
+                  "output": "x86/a.so"
                 }
               },
               "toolchains": {
                 "toolchain-x86": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 }
               },
               "cFileExtensions": [
@@ -363,9 +314,7 @@ class NativeBuildConfigValueBuilderTest {
             """
             {
               "buildFiles": [
-                {
-                  "path": "/projects/MyProject/jni/Android.mk"
-                }
+                "/projects/MyProject/jni/Android.mk"
               ],
               "cleanCommandsComponents": [
                 ["echo", "clean", "command"]
@@ -377,30 +326,22 @@ class NativeBuildConfigValueBuilderTest {
                   "artifactName" : "a",
                   "buildCommandComponents": ["echo", "build", "command", "x86_64/a.so"],
                   "toolchain": "toolchain-x86_64",
-                  "output": {
-                    "path": "x86_64/a.so"
-                  }
+                  "output": "x86_64/a.so"
                 },
                 "a-debug-x86": {
                   "abi" : "x86",
                   "artifactName" : "a",
                   "buildCommandComponents": ["echo", "build", "command", "x86/a.so"],
                   "toolchain": "toolchain-x86",
-                  "output": {
-                    "path": "x86/a.so"
-                  }
+                  "output": "x86/a.so"
                 }
               },
               "toolchains": {
                 "toolchain-x86": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 },
                 "toolchain-x86_64": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 }
               },
               "cFileExtensions": [
@@ -437,9 +378,7 @@ class NativeBuildConfigValueBuilderTest {
             "g++ -c a.c -o x/aa.o -Isome-include-path\n",
             """{
               "buildFiles": [
-                {
-                  "path": "/projects/MyProject/jni/Android.mk"
-                }
+                "/projects/MyProject/jni/Android.mk"
               ],
               "cleanCommandsComponents": [
                 ["echo", "clean", "command"]
@@ -451,16 +390,12 @@ class NativeBuildConfigValueBuilderTest {
                   "toolchain": "toolchain-x",
                   "abi": "x",
                   "artifactName" : "aa",
-                  "output": {
-                    "path": "x/aa.o"
-                  }
+                  "output": "x/aa.o"
                 }
               },
               "toolchains": {
                 "toolchain-x": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 }
               },
               "cFileExtensions": [
@@ -495,9 +430,7 @@ class NativeBuildConfigValueBuilderTest {
                 """.trimIndent(),
             """{
               "buildFiles": [
-                {
-                  "path": "/projects/MyProject/jni/Android.mk"
-                }
+                "/projects/MyProject/jni/Android.mk"
               ],
               "cleanCommandsComponents": [
                 ["echo", "clean", "command"]
@@ -509,16 +442,12 @@ class NativeBuildConfigValueBuilderTest {
                   "artifactName" : "a",
                   "buildCommandComponents": ["echo", "build", "command", "x86/a.so"],
                   "toolchain": "toolchain-x86",
-                  "output": {
-                    "path": "x86/a.so"
-                  }
+                  "output": "x86/a.so"
                 }
               },
               "toolchains": {
                 "toolchain-x86": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 }
               },
               "cFileExtensions": [
@@ -560,9 +489,7 @@ class NativeBuildConfigValueBuilderTest {
                 """.trimIndent(),
             """{
               "buildFiles": [
-                {
-                  "path": "/projects/MyProject/jni/Android.mk"
-                }
+                "/projects/MyProject/jni/Android.mk"
               ],
               "cleanCommandsComponents": [
                 ["echo", "clean", "command"]
@@ -574,16 +501,12 @@ class NativeBuildConfigValueBuilderTest {
                   "artifactName" : "a",
                   "buildCommandComponents": ["echo", "build", "command", "x86/a.so"],
                   "toolchain": "toolchain-x86",
-                  "output": {
-                    "path": "x86/a.so"
-                  }
+                  "output": "x86/a.so"
                 }
               },
               "toolchains": {
                 "toolchain-x86": {
-                  "cCompilerExecutable": {
-                    "path": "g++"
-                  }
+                  "cCompilerExecutable": "g++"
                 }
               },
               "cFileExtensions": [
@@ -648,8 +571,11 @@ class NativeBuildConfigValueBuilderTest {
             if (SdkConstants.currentPlatform() == SdkConstants.PLATFORM_WINDOWS) {
                 expected = expected.replace("/", "\\\\")
             }
-            val expectedValue = Gson()
-                .fromJson(expected, NativeBuildConfigValue::class.java)
+            val expectedValue =
+                GsonBuilder()
+                    .registerTypeAdapter(File::class.java, PlainFileGsonTypeAdaptor())
+                    .create()
+                    .fromJson(expected, NativeBuildConfigValue::class.java)
             Truth.assertAbout(
                 NativeBuildConfigValueSubject.nativebuildConfigValues()
             )

@@ -2,9 +2,7 @@
   "configs": [
     {
       "buildFiles": [
-        {
-          "path": "{testPath}"
-        }
+        "{testPath}"
       ],
       "cleanCommandsComponents": [
         [
@@ -32,21 +30,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/x86_64/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/x86_64/libtwolib-second.so"
         },
         "twolib-first-debug-armeabi-v7a": {
           "buildCommandComponents": [
@@ -60,15 +52,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/armeabi-v7a/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/armeabi-v7a/libtwolib-first.a"
         },
         "twolib-first-debug-mips": {
           "buildCommandComponents": [
@@ -82,15 +70,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/mips/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/mips/libtwolib-first.a"
         },
         "twolib-second-debug-x86": {
           "buildCommandComponents": [
@@ -104,21 +88,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/x86/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/x86/libtwolib-second.so"
         },
         "twolib-second-debug-mips": {
           "buildCommandComponents": [
@@ -132,21 +110,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/mips/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/mips/libtwolib-second.so"
         },
         "twolib-first-debug-arm64-v8a": {
           "buildCommandComponents": [
@@ -160,15 +132,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/arm64-v8a/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/arm64-v8a/libtwolib-first.a"
         },
         "twolib-second-debug-mips64": {
           "buildCommandComponents": [
@@ -182,21 +150,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/mips64/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/mips64/libtwolib-second.so"
         },
         "twolib-first-debug-armeabi": {
           "buildCommandComponents": [
@@ -210,15 +172,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/armeabi/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/armeabi/libtwolib-first.a"
         },
         "twolib-second-debug-armeabi": {
           "buildCommandComponents": [
@@ -232,21 +190,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/armeabi/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/armeabi/libtwolib-second.so"
         },
         "twolib-first-debug-x86": {
           "buildCommandComponents": [
@@ -260,15 +212,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/x86/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/x86/libtwolib-first.a"
         },
         "twolib-first-debug-x86_64": {
           "buildCommandComponents": [
@@ -282,15 +230,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/x86_64/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/x86_64/libtwolib-first.a"
         },
         "twolib-first-debug-mips64": {
           "buildCommandComponents": [
@@ -304,15 +248,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O0 -g -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/mips64/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/mips64/libtwolib-first.a"
         },
         "twolib-second-debug-arm64-v8a": {
           "buildCommandComponents": [
@@ -326,21 +266,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -O0 -UNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/arm64-v8a/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/arm64-v8a/libtwolib-second.so"
         },
         "twolib-second-debug-armeabi-v7a": {
           "buildCommandComponents": [
@@ -354,58 +288,38 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -O0 -UNDEBUG -marm -fno-omit-frame-pointer -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/armeabi-v7a/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/armeabi-v7a/libtwolib-second.so"
         }
       },
       "toolchains": {
         "toolchain-armeabi": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
         },
         "toolchain-mips64": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-gcc"
         },
         "toolchain-mips": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-gcc"
         },
         "toolchain-arm64-v8a": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-gcc"
         },
         "toolchain-x86_64": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-gcc"
         },
         "toolchain-armeabi-v7a": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
         },
         "toolchain-x86": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-gcc"
         }
       },
       "cFileExtensions": [
@@ -415,9 +329,7 @@
     },
     {
       "buildFiles": [
-        {
-          "path": "{testPath}"
-        }
+        "{testPath}"
       ],
       "cleanCommandsComponents": [
         [
@@ -445,15 +357,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/x86/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/x86/libtwolib-first.a"
         },
         "twolib-first-release-arm64-v8a": {
           "buildCommandComponents": [
@@ -467,15 +375,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/arm64-v8a/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/arm64-v8a/libtwolib-first.a"
         },
         "twolib-first-release-mips64": {
           "buildCommandComponents": [
@@ -489,15 +393,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/mips64/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/mips64/libtwolib-first.a"
         },
         "twolib-second-release-mips64": {
           "buildCommandComponents": [
@@ -511,21 +411,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-mips64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/mips64/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/mips64/libtwolib-second.so"
         },
         "twolib-first-release-mips": {
           "buildCommandComponents": [
@@ -539,15 +433,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/mips/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/mips/libtwolib-first.a"
         },
         "twolib-second-release-x86": {
           "buildCommandComponents": [
@@ -561,21 +451,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-ffunction-sections -funwind-tables -no-canonical-prefixes -fstack-protector -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-x86/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/x86/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/x86/libtwolib-second.so"
         },
         "twolib-second-release-x86_64": {
           "buildCommandComponents": [
@@ -589,21 +473,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/x86_64/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/x86_64/libtwolib-second.so"
         },
         "twolib-second-release-armeabi": {
           "buildCommandComponents": [
@@ -617,21 +495,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/armeabi/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/armeabi/libtwolib-second.so"
         },
         "twolib-first-release-armeabi-v7a": {
           "buildCommandComponents": [
@@ -645,15 +517,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/armeabi-v7a/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/armeabi-v7a/libtwolib-first.a"
         },
         "twolib-first-release-armeabi": {
           "buildCommandComponents": [
@@ -667,15 +535,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv5te -mtune\u003dxscale -msoft-float -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/armeabi/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/armeabi/libtwolib-first.a"
         },
         "twolib-first-release-x86_64": {
           "buildCommandComponents": [
@@ -689,15 +553,11 @@
           "artifactName": "twolib-first",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-x86_64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/x86_64/libtwolib-first.a"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/x86_64/libtwolib-first.a"
         },
         "twolib-second-release-armeabi-v7a": {
           "buildCommandComponents": [
@@ -711,21 +571,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector -no-canonical-prefixes -march\u003darmv7-a -mfpu\u003dvfpv3-d16 -mfloat-abi\u003dsoftfp -mthumb -Os -g -DNDEBUG -fomit-frame-pointer -fno-strict-aliasing -finline-limit\u003d64 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-3/arch-arm/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/armeabi-v7a/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/armeabi-v7a/libtwolib-second.so"
         },
         "twolib-second-release-arm64-v8a": {
           "buildCommandComponents": [
@@ -739,21 +593,15 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-21/arch-arm64/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/arm64-v8a/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/arm64-v8a/libtwolib-second.so"
         },
         "twolib-second-release-mips": {
           "buildCommandComponents": [
@@ -767,58 +615,38 @@
           "artifactName": "twolib-second",
           "files": [
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/first.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/first.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             },
             {
-              "src": {
-                "path": "/{ndkPath}/samples/two-libs/jni/second.c"
-              },
+              "src": "/{ndkPath}/samples/two-libs/jni/second.c",
               "flags": "-fpic -fno-strict-aliasing -finline-functions -ffunction-sections -funwind-tables -fmessage-length\u003d0 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -no-canonical-prefixes -O2 -g -DNDEBUG -fomit-frame-pointer -funswitch-loops -finline-limit\u003d300 -I/{ndkPath}/samples/two-libs/jni -DANDROID -Wa,--noexecstack -Wformat -Werror\u003dformat-security -I/{ndkPath}/platforms/android-9/arch-mips/usr/include"
             }
           ],
-          "output": {
-            "path": "/{ndkPath}/samples/two-libs/obj/local/mips/libtwolib-second.so"
-          }
+          "output": "/{ndkPath}/samples/two-libs/obj/local/mips/libtwolib-second.so"
         }
       },
       "toolchains": {
         "toolchain-armeabi": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
         },
         "toolchain-mips64": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/mips64el-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/mips64el-{platform}-android-gcc"
         },
         "toolchain-mips": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/mipsel-{platform}-android-4.8/prebuilt/{platform}-x86_64/bin/mipsel-{platform}-android-gcc"
         },
         "toolchain-arm64-v8a": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/aarch64-{platform}-android-4.9/prebuilt/{platform}-x86_64/bin/aarch64-{platform}-android-gcc"
         },
         "toolchain-x86_64": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/x86_64-4.9/prebuilt/{platform}-x86_64/bin/x86_64-{platform}-android-gcc"
         },
         "toolchain-armeabi-v7a": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/arm-{platform}-androideabi-4.8/prebuilt/{platform}-x86_64/bin/arm-{platform}-androideabi-gcc"
         },
         "toolchain-x86": {
-          "cCompilerExecutable": {
-            "path": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-gcc"
-          }
+          "cCompilerExecutable": "/{ndkPath}/toolchains/x86-4.8/prebuilt/{platform}-x86_64/bin/i686-{platform}-android-gcc"
         }
       },
       "cFileExtensions": [
