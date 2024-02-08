@@ -46222,237 +46222,241 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.animation.animation-core-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/animation/animation-core-desktop/1.5.11/animation-core-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.animation.animation-core-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/animation/animation-core-desktop/1.6.0-dev1369/animation-core-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/animation/animation-core-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/animation/animation-core-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-unit-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.4",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-unit-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
+        "org.jetbrains.kotlinx.atomicfu-jvm_0.23.1",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.8.0-RC2",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.animation.animation-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/animation/animation-desktop/1.5.11/animation-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.animation.animation-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/animation/animation-desktop/1.6.0-dev1369/animation-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/animation/animation-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/animation/animation-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.compose.animation.animation-core-desktop_1.5.11",
-        "org.jetbrains.compose.foundation.foundation-layout-desktop_1.5.11",
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-geometry-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
+        "org.jetbrains.compose.animation.animation-core-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.foundation.foundation-layout-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-geometry-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.foundation.foundation-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/foundation/foundation-desktop/1.5.11/foundation-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.foundation.foundation-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/foundation/foundation-desktop/1.6.0-dev1369/foundation-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/foundation/foundation-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/foundation/foundation-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.compose.animation.animation-desktop_1.5.11",
-        "org.jetbrains.compose.foundation.foundation-layout-desktop_1.5.11",
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-text-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
-        "org.jetbrains.skiko.skiko-awt_0.7.85.4",
+        "org.jetbrains.compose.animation.animation-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.foundation.foundation-layout-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-text-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
+        "org.jetbrains.kotlinx.atomicfu-jvm_0.23.1",
+        "org.jetbrains.skiko.skiko-awt_0.7.90",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.foundation.foundation-layout-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/foundation/foundation-layout-desktop/1.5.11/foundation-layout-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.foundation.foundation-layout-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/foundation/foundation-layout-desktop/1.6.0-dev1369/foundation-layout-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/foundation/foundation-layout-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/foundation/foundation-layout-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/runtime/runtime-desktop/1.5.11/runtime-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/runtime/runtime-desktop/1.6.0-dev1369/runtime-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/runtime/runtime-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/runtime/runtime-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
-        "org.jetbrains.kotlinx.atomicfu-jvm_0.17.0",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.4",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
+        "org.jetbrains.kotlinx.atomicfu-jvm_0.23.1",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.8.0-RC2",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.runtime.runtime-saveable-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/runtime/runtime-saveable-desktop/1.5.11/runtime-saveable-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.runtime.runtime-saveable-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/runtime/runtime-saveable-desktop/1.6.0-dev1369/runtime-saveable-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/runtime/runtime-saveable-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/runtime/runtime-saveable-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.ui.ui-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/ui/ui-desktop/1.5.11/ui-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.ui.ui-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/ui/ui-desktop/1.6.0-dev1369/ui-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/ui/ui-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/ui/ui-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.compose.runtime.runtime-saveable-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-geometry-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-graphics-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-text-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-unit-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.21",
-        "org.jetbrains.kotlinx.atomicfu-jvm_0.17.0",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.4",
-        "org.jetbrains.skiko.skiko-awt_0.7.85.4",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.runtime.runtime-saveable-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-geometry-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-graphics-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-text-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-unit-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.21",
+        "org.jetbrains.kotlinx.atomicfu-jvm_0.23.1",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.8.0-RC2",
+        "org.jetbrains.skiko.skiko-awt_0.7.90",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.ui.ui-geometry-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/ui/ui-geometry-desktop/1.5.11/ui-geometry-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.ui.ui-geometry-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/ui/ui-geometry-desktop/1.6.0-dev1369/ui-geometry-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/ui/ui-geometry-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/ui/ui-geometry-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.ui.ui-graphics-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/ui/ui-graphics-desktop/1.5.11/ui-graphics-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.ui.ui-graphics-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/ui/ui-graphics-desktop/1.6.0-dev1369/ui-graphics-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/ui/ui-graphics-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/ui/ui-graphics-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-unit-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.21",
-        "org.jetbrains.skiko.skiko-awt_0.7.85.4",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-geometry-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-unit-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.21",
+        "org.jetbrains.skiko.skiko-awt_0.7.90",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.ui.ui-test-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/ui/ui-test-desktop/1.5.11/ui-test-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.ui.ui-test-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/ui/ui-test-desktop/1.6.0-dev1369/ui-test-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/ui/ui-test-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/ui/ui-test-desktop/1.6.0-dev1369",
     deps = [
         "com.google.truth.truth_1.0.1",
         "junit.junit_4.13.2",
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-text-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-unit-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.4",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-test-jvm_1.6.4",
-        "org.jetbrains.skiko.skiko-awt_0.7.85.4",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-text-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-unit-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.8.0-RC2",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-test-jvm_1.8.0-RC2",
+        "org.jetbrains.skiko.skiko-awt_0.7.90",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.ui.ui-test-junit4-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/ui/ui-test-junit4-desktop/1.5.11/ui-test-junit4-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.ui.ui-test-junit4-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/ui/ui-test-junit4-desktop/1.6.0-dev1369/ui-test-junit4-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/ui/ui-test-junit4-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/ui/ui-test-junit4-desktop/1.6.0-dev1369",
     deps = [
         "com.google.truth.truth_1.0.1",
         "junit.junit_4.13.2",
-        "org.jetbrains.compose.ui.ui-test-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.4",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-test-jvm_1.6.4",
-        "org.jetbrains.skiko.skiko-awt_0.7.85.4",
+        "org.jetbrains.compose.ui.ui-test-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.8.0-RC2",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-test-jvm_1.8.0-RC2",
+        "org.jetbrains.skiko.skiko-awt_0.7.90",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.ui.ui-text-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/ui/ui-text-desktop/1.5.11/ui-text-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.ui.ui-text-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/ui/ui-text-desktop/1.6.0-dev1369/ui-text-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/ui/ui-text-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/ui/ui-text-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.compose.runtime.runtime-saveable-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-graphics-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-unit-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
-        "org.jetbrains.kotlinx.atomicfu-jvm_0.17.0",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.4",
-        "org.jetbrains.skiko.skiko-awt_0.7.85.4",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.runtime.runtime-saveable-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-geometry-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-graphics-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-unit-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
+        "org.jetbrains.kotlinx.atomicfu-jvm_0.23.1",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.8.0-RC2",
+        "org.jetbrains.skiko.skiko-awt_0.7.90",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.ui.ui-unit-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/ui/ui-unit-desktop/1.5.11/ui-unit-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.ui.ui-unit-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/ui/ui-unit-desktop/1.6.0-dev1369/ui-unit-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/ui/ui-unit-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/ui/ui-unit-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.compose.runtime.runtime-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-geometry-desktop_1.5.11",
-        "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
+        "org.jetbrains.compose.runtime.runtime-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-geometry-desktop_1.6.0-dev1369",
+        "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.compose.ui.ui-util-desktop_1.5.11",
-    pom = "repository/org/jetbrains/compose/ui/ui-util-desktop/1.5.11/ui-util-desktop-1.5.11.pom",
+    name = "org.jetbrains.compose.ui.ui-util-desktop_1.6.0-dev1369",
+    pom = "repository/org/jetbrains/compose/ui/ui-util-desktop/1.6.0-dev1369/ui-util-desktop-1.6.0-dev1369.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/compose/ui/ui-util-desktop/1.5.11",
+    repo_path = "org/jetbrains/compose/ui/ui-util-desktop/1.6.0-dev1369",
     deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.8.21",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
     ],
     visibility = ["//visibility:public"],
 )
@@ -46545,57 +46549,57 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-foundation_0.12.0",
-    pom = "repository/org/jetbrains/jewel/jewel-foundation/0.12.0/jewel-foundation-0.12.0.pom",
+    name = "org.jetbrains.jewel.jewel-foundation_0.13.2",
+    pom = "repository/org/jetbrains/jewel/jewel-foundation/0.13.2/jewel-foundation-0.13.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-foundation/0.12.0",
+    repo_path = "org/jetbrains/jewel/jewel-foundation/0.13.2",
     deps = [
-        "org.jetbrains.compose.foundation.foundation-desktop_1.5.11",
+        "org.jetbrains.compose.foundation.foundation-desktop_1.6.0-dev1369",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-ide-laf-bridge-platform-specific_0.12.0-ij-233",
-    pom = "repository/org/jetbrains/jewel/jewel-ide-laf-bridge-platform-specific/0.12.0-ij-233/jewel-ide-laf-bridge-platform-specific-0.12.0-ij-233.pom",
+    name = "org.jetbrains.jewel.jewel-ide-laf-bridge-platform-specific_0.13.2-ij-233",
+    pom = "repository/org/jetbrains/jewel/jewel-ide-laf-bridge-platform-specific/0.13.2-ij-233/jewel-ide-laf-bridge-platform-specific-0.13.2-ij-233.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-ide-laf-bridge-platform-specific/0.12.0-ij-233",
+    repo_path = "org/jetbrains/jewel/jewel-ide-laf-bridge-platform-specific/0.13.2-ij-233",
     deps = [
-        "org.jetbrains.jewel.jewel-ui_0.12.0",
+        "org.jetbrains.jewel.jewel-ui_0.13.2",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-ide-laf-bridge_0.12.0-ij-233",
-    pom = "repository/org/jetbrains/jewel/jewel-ide-laf-bridge/0.12.0-ij-233/jewel-ide-laf-bridge-0.12.0-ij-233.pom",
+    name = "org.jetbrains.jewel.jewel-ide-laf-bridge_0.13.2-ij-233",
+    pom = "repository/org/jetbrains/jewel/jewel-ide-laf-bridge/0.13.2-ij-233/jewel-ide-laf-bridge-0.13.2-ij-233.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-ide-laf-bridge/0.12.0-ij-233",
+    repo_path = "org/jetbrains/jewel/jewel-ide-laf-bridge/0.13.2-ij-233",
     deps = [
-        "org.jetbrains.jewel.jewel-ui_0.12.0",
-        "org.jetbrains.jewel.jewel-ide-laf-bridge-platform-specific_0.12.0-ij-233",
+        "org.jetbrains.jewel.jewel-ui_0.13.2",
+        "org.jetbrains.jewel.jewel-ide-laf-bridge-platform-specific_0.13.2-ij-233",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-int-ui-standalone_0.12.0",
-    pom = "repository/org/jetbrains/jewel/jewel-int-ui-standalone/0.12.0/jewel-int-ui-standalone-0.12.0.pom",
+    name = "org.jetbrains.jewel.jewel-int-ui-standalone_0.13.2",
+    pom = "repository/org/jetbrains/jewel/jewel-int-ui-standalone/0.13.2/jewel-int-ui-standalone-0.13.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-int-ui-standalone/0.12.0",
+    repo_path = "org/jetbrains/jewel/jewel-int-ui-standalone/0.13.2",
     deps = [
-        "org.jetbrains.jewel.jewel-ui_0.12.0",
+        "org.jetbrains.jewel.jewel-ui_0.13.2",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.jetbrains.jewel.jewel-ui_0.12.0",
-    pom = "repository/org/jetbrains/jewel/jewel-ui/0.12.0/jewel-ui-0.12.0.pom",
+    name = "org.jetbrains.jewel.jewel-ui_0.13.2",
+    pom = "repository/org/jetbrains/jewel/jewel-ui/0.13.2/jewel-ui-0.13.2.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/jewel/jewel-ui/0.12.0",
+    repo_path = "org/jetbrains/jewel/jewel-ui/0.13.2",
     deps = [
-        "org.jetbrains.jewel.jewel-foundation_0.12.0",
+        "org.jetbrains.jewel.jewel-foundation_0.13.2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -51372,6 +51376,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.9.21/kotlin-stdlib-common-1.9.21.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-common/1.9.21",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlin.kotlin-stdlib-common_2.0.0-Beta1",
     pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-common/2.0.0-Beta1/kotlin-stdlib-common-2.0.0-Beta1.pom",
     repo_root_path = "repository",
@@ -53205,6 +53217,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlinx.atomicfu-jvm_0.23.1",
+    pom = "repository/org/jetbrains/kotlinx/atomicfu-jvm/0.23.1/atomicfu-jvm-0.23.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlinx/atomicfu-jvm/0.23.1",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlinx.atomicfu_0.17.0",
     pom = "repository/org/jetbrains/kotlinx/atomicfu/0.17.0/atomicfu-0.17.0.pom",
     repo_root_path = "repository",
@@ -53370,6 +53394,22 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlinx.kotlinx-coroutines-bom_1.8.0-RC",
+    pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.8.0-RC/kotlinx-coroutines-bom-1.8.0-RC.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.8.0-RC",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlinx.kotlinx-coroutines-bom_1.8.0-RC2",
+    pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.8.0-RC2/kotlinx-coroutines-bom-1.8.0-RC2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.8.0-RC2",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlinx.kotlinx-coroutines-core-common_1.0.1",
     pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-core-common/1.0.1/kotlinx-coroutines-core-common-1.0.1.pom",
     repo_root_path = "repository",
@@ -53476,6 +53516,32 @@ maven_artifact(
         "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.20",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.20",
         "org.jetbrains.kotlinx.kotlinx-coroutines-bom_1.7.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.8.0-RC",
+    pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.8.0-RC/kotlinx-coroutines-core-jvm-1.8.0-RC.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.8.0-RC",
+    deps = [
+        "org.jetbrains.annotations_23.0.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-bom_1.8.0-RC",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.8.0-RC2",
+    pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.8.0-RC2/kotlinx-coroutines-core-jvm-1.8.0-RC2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.8.0-RC2",
+    deps = [
+        "org.jetbrains.annotations_23.0.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-bom_1.8.0-RC2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -53639,6 +53705,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.8.0-RC2",
+    pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.8.0-RC2/kotlinx-coroutines-core-1.8.0-RC2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-core/1.8.0-RC2",
+    deps = [
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.8.0-RC2",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-bom_1.8.0-RC2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlinx.kotlinx-coroutines-guava_1.7.1",
     pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-guava/1.7.1/kotlinx-coroutines-guava-1.7.1.pom",
     repo_root_path = "repository",
@@ -53764,6 +53842,20 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlinx.kotlinx-coroutines-test-jvm_1.8.0-RC2",
+    pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-test-jvm/1.8.0-RC2/kotlinx-coroutines-test-jvm-1.8.0-RC2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-test-jvm/1.8.0-RC2",
+    deps = [
+        "org.jetbrains.annotations_23.0.0",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.8.0-RC2",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-bom_1.8.0-RC2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlinx.kotlinx-coroutines-test_1.6.1",
     pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-test/1.6.1/kotlinx-coroutines-test-1.6.1.pom",
     repo_root_path = "repository",
@@ -53807,6 +53899,18 @@ maven_artifact(
     deps = [
         "org.jetbrains.kotlinx.kotlinx-coroutines-test-jvm_1.7.3",
         "org.jetbrains.kotlinx.kotlinx-coroutines-bom_1.7.3",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlinx.kotlinx-coroutines-test_1.8.0-RC2",
+    pom = "repository/org/jetbrains/kotlinx/kotlinx-coroutines-test/1.8.0-RC2/kotlinx-coroutines-test-1.8.0-RC2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlinx/kotlinx-coroutines-test/1.8.0-RC2",
+    deps = [
+        "org.jetbrains.kotlinx.kotlinx-coroutines-test-jvm_1.8.0-RC2",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-bom_1.8.0-RC2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -54061,6 +54165,18 @@ maven_artifact(
     pom = "repository/org/jetbrains/skiko/skiko-awt-runtime-windows-x64/0.7.16/skiko-awt-runtime-windows-x64-0.7.16.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/skiko/skiko-awt-runtime-windows-x64/0.7.16",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.skiko.skiko-awt_0.7.90",
+    pom = "repository/org/jetbrains/skiko/skiko-awt/0.7.90/skiko-awt-0.7.90.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/skiko/skiko-awt/0.7.90",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.8.0-RC",
+    ],
     visibility = ["//visibility:public"],
 )
 

@@ -18,36 +18,51 @@ package com.android.sdklib.deviceprovisioner
 import com.google.common.truth.Truth.assertThat
 import java.time.Duration
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 
 class PeriodicActionTest {
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun run() = runBlockingTest {
     var i = 0
     val action = PeriodicAction(this, Duration.ofHours(1)) { i++ }
-    advanceTimeBy(Duration.ofHours(5).toMillis() + 1000)
+    testScheduler.apply {
+      advanceTimeBy(Duration.ofHours(5).toMillis() + 1000)
+      runCurrent()
+    }
     assertThat(i).isEqualTo(5)
     action.cancel()
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun runNow() = runBlockingTest {
     var i = 0
     val action = PeriodicAction(this, Duration.ofHours(1)) { i++ }
-    advanceTimeBy(Duration.ofMinutes(59).toMillis())
+    testScheduler.apply {
+      advanceTimeBy(Duration.ofMinutes(59).toMillis())
+      runCurrent()
+    }
     action.runNow()
     assertThat(i).isEqualTo(1)
-    advanceTimeBy(Duration.ofMinutes(3).toMillis())
+    testScheduler.apply {
+      advanceTimeBy(Duration.ofMinutes(3).toMillis())
+      runCurrent()
+    }
     assertThat(i).isEqualTo(1)
-    advanceTimeBy(Duration.ofMinutes(59).toMillis())
+    testScheduler.apply {
+      advanceTimeBy(Duration.ofMinutes(59).toMillis())
+      runCurrent()
+    }
     assertThat(i).isEqualTo(2)
     action.cancel()
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun runNowCancellation() = runBlockingTest {
     var i = 0
@@ -57,25 +72,41 @@ class PeriodicActionTest {
         i++
       }
     action.runNow()
-    advanceTimeBy(Duration.ofMinutes(59).toMillis())
+    testScheduler.apply {
+      advanceTimeBy(Duration.ofMinutes(59).toMillis())
+      runCurrent()
+    }
     action.runNow()
-    advanceTimeBy(Duration.ofMinutes(59).toMillis())
+    testScheduler.apply {
+      advanceTimeBy(Duration.ofMinutes(59).toMillis())
+      runCurrent()
+    }
     action.runNow()
     // Cancellations prevent the action from completing.
     assertThat(i).isEqualTo(0)
 
-    advanceTimeBy(Duration.ofMinutes(61).toMillis())
+    testScheduler.apply {
+      advanceTimeBy(Duration.ofMinutes(61).toMillis())
+      runCurrent()
+    }
     assertThat(i).isEqualTo(1)
 
     val job = action.runNow()
-    advanceTimeBy(Duration.ofMinutes(40).toMillis())
+    testScheduler.apply {
+      advanceTimeBy(Duration.ofMinutes(40).toMillis())
+      runCurrent()
+    }
     job.cancel()
-    advanceTimeBy(Duration.ofMinutes(40).toMillis())
+    testScheduler.apply {
+      advanceTimeBy(Duration.ofMinutes(40).toMillis())
+      runCurrent()
+    }
     assertThat(i).isEqualTo(1)
 
     action.cancel()
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun actionThrows() = runBlockingTest {
     var i = 0
@@ -88,7 +119,10 @@ class PeriodicActionTest {
         }
         i++
       }
-    advanceTimeBy(Duration.ofHours(5).toMillis() + 1000)
+    testScheduler.apply {
+      advanceTimeBy(Duration.ofHours(5).toMillis() + 1000)
+      runCurrent()
+    }
     assertThat(i).isEqualTo(1)
     assertThat(exceptions).isEqualTo(1)
     action.cancel()
