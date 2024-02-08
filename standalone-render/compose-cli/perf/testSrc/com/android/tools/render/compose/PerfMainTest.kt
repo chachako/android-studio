@@ -215,14 +215,15 @@ private val ALLOWED_ERRORS = listOf(
 )
 
 private fun runComposeCliRender(settingsFile: File): String {
+    val javaHome = System.getProperty("java.home")
     val composeCliRenderFolder = TestUtils.resolveWorkspacePath("tools/base/standalone-render/compose-cli")
-    val command = listOf("java", "-cp", "standalone-render.compose-cli.jar", "com.android.tools.render.compose.MainKt", settingsFile.absolutePath)
+    val command = listOf("$javaHome/bin/java", "-cp", "standalone-render.compose-cli.jar", "com.android.tools.render.compose.MainKt", settingsFile.absolutePath)
     val procBuilder = ProcessBuilder(command)
         .directory(composeCliRenderFolder.toFile())
         .redirectOutput(ProcessBuilder.Redirect.PIPE)
         .redirectError(ProcessBuilder.Redirect.PIPE)
     // We have to specify JAVA_HOME
-    procBuilder.environment()["JAVA_HOME"] = System.getProperty("java.home")
+    procBuilder.environment()["JAVA_HOME"] = javaHome
     val proc = procBuilder.start()
     proc.waitFor(5, TimeUnit.MINUTES)
     val error = proc
