@@ -16,19 +16,19 @@
 
 package com.android.build.api.artifact.impl
 
-import com.android.build.api.artifact.ArtifactKind
 import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.Artifact.Category.INTERMEDIATES
 import com.android.build.api.artifact.Artifact.Multiple
 import com.android.build.api.artifact.Artifact.Single
-import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.artifact.ArtifactKind
 import com.android.build.api.artifact.Artifacts
 import com.android.build.api.artifact.MultipleArtifact
-import com.android.build.api.variant.BuiltArtifactsLoader
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.variant.BuiltArtifactsLoader
 import com.android.build.api.variant.ScopedArtifacts
-import com.android.build.api.variant.impl.DeferredActionManager
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
+import com.android.build.api.variant.impl.DeferredActionManager
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getIntermediateOutputPath
 import com.android.build.gradle.internal.scope.getOutputPath
@@ -40,12 +40,12 @@ import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.file.FileSystemLocationProperty
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import java.io.File
 import java.util.Collections
-import  org.gradle.api.model.ObjectFactory
 
 /**
  * Implementation of the [Artifacts] Variant API interface.
@@ -58,7 +58,8 @@ import  org.gradle.api.model.ObjectFactory
  */
 class ArtifactsImpl(
     project: Project,
-    private val identifier: String
+    private val identifier: String,
+    private val mappingScopePolicy: (ScopedArtifacts.Scope) -> ScopedArtifacts.Scope = { it }
 ): Artifacts {
 
     private val storageProvider = StorageProviderImpl()
@@ -77,7 +78,8 @@ class ArtifactsImpl(
     private val internalScopedArtifacts : Map<InternalScopedArtifacts.InternalScope, ScopedArtifactsImpl>
 
     init {
-        publicScopedArtifacts = ScopedArtifacts.Scope.values().associateWith {
+        val scopeValues = ScopedArtifacts.Scope.values().toSet().map { mappingScopePolicy(it) }
+        publicScopedArtifacts = scopeValues.associateWith {
             ScopedArtifactsImpl(
                 it.name,
                 identifier,
@@ -105,7 +107,7 @@ class ArtifactsImpl(
     }
 
     override fun forScope(scope: ScopedArtifacts.Scope): ScopedArtifactsImpl =
-        publicScopedArtifacts[scope] ?:
+        publicScopedArtifacts[mappingScopePolicy(scope)] ?:
             throw IllegalArgumentException("${scope.name} is not implemented yet !")
 
     /**
@@ -231,7 +233,7 @@ class ArtifactsImpl(
         fileName ?: getArtifactContainer(type).namingContext?.getFilename() ?: calculateFileName(type)
 
 
-    private fun calculateFileName(type: Single<*>, ): String {
+    private fun calculateFileName(type: Single<*>): String {
         if (type.kind is ArtifactKind.FILE) {
             return if (type.getFileSystemLocationName().isNotEmpty())
                 type.getFileSystemLocationName()

@@ -23,11 +23,15 @@ import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
 /**
- * Test adding a new class to the component using the PROJECT scoped class access.
+ * Test adding a new class to the component using the PROJECT/ALL scoped class access.
+ * PROJECT and ALL scopes are the same for libraries.
  */
-class LibraryAllClassesAccessTest {
+@RunWith(Parameterized::class)
+class LibraryAllClassesAccessTest(val scope: ScopedArtifacts.Scope) {
 
     @get: Rule
     val project =
@@ -35,8 +39,14 @@ class LibraryAllClassesAccessTest {
             .fromTestApp(KotlinHelloWorldApp.forPlugin("com.android.library"))
             .create()
 
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "scope={0}")
+        fun scopes() = ScopedArtifacts.Scope.values().toList().toTypedArray()
+    }
+
     @Test
-    fun `ensure tasks can be transformed with PROJECT scope`() {
+    fun `ensure tasks can be transformed with `() {
         project.buildFile.appendText(
             """
         buildscript {
@@ -52,21 +62,21 @@ class LibraryAllClassesAccessTest {
 
         androidComponents {
             onVariants(selector().all(), { variant ->
-                ${registerCustomizationTask(ScopedArtifacts.Scope.PROJECT)}
+                ${registerCustomizationTask(scope)}
             })
         }
         """.trimIndent())
 
         val result = project.executor().run("assembleDebug")
-        Truth.assertThat(result.didWorkTasks).contains(":debugModifyPROJECTClasses")
+        Truth.assertThat(result.didWorkTasks).contains(":debugModify${scope.name}Classes")
         // check resulting APK that new classes is present in the dex.
 
-        val apk = project.getAar("debug") {
+        project.getAar("debug") {
             // check that both interfaces and original code is present in the APK.
             TruthHelper.assertThatAar(it)
                 .containsClass("Lcom/example/helloworld/HelloWorld;");
             TruthHelper.assertThatAar(it)
-                .containsClass("Lcom/android/api/tests/PROJECTInterface;");
+                .containsClass("Lcom/android/api/tests/${scope.name}Interface;");
         }
     }
 

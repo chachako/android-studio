@@ -29,6 +29,7 @@ import com.android.build.api.variant.HasDeviceTests
 import com.android.build.api.variant.HasDeviceTestsBuilder
 import com.android.build.api.variant.HasTestFixturesBuilder
 import com.android.build.api.variant.HasUnitTestBuilder
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.Variant
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.VariantExtensionConfig
@@ -364,7 +365,15 @@ class VariantManager<
                 variantDslInfo,
                 dslServices
             )
-        val artifacts = ArtifactsImpl(project, componentIdentity.name)
+
+        val mappingScopePolicy: (ScopedArtifacts.Scope) -> ScopedArtifacts.Scope =
+            if (componentType.isAar) {
+                // Scope.ALL does not make a lot of sense or libraries, so we treat it like
+                // it's a Scope.Project
+                { scope -> if (scope == ScopedArtifacts.Scope.ALL) ScopedArtifacts.Scope.PROJECT else scope }
+            } else { x -> x }
+
+        val artifacts = ArtifactsImpl(project, componentIdentity.name, mappingScopePolicy)
         val taskContainer = MutableTaskContainer()
 
         // and the obsolete variant data
