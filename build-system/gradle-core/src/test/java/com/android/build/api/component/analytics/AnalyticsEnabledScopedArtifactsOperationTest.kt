@@ -79,7 +79,7 @@ internal class AnalyticsEnabledScopedArtifactsOperationTest {
     }
 
     @Test
-    fun testToApAlpend() {
+    fun testToAppend() {
 
         proxy.toAppend(
             ScopedArtifact.CLASSES,

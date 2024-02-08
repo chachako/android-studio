@@ -423,10 +423,10 @@ interface InAndOutDirectoryOperationRequest<TaskT : Task> {
      * ```kotlin
      *     val taskProvider= projects.tasks.register(MyTask::class.java, "combineTask")
      *     val transformationRequest = artifacts.use(taskProvider)
-     *       .wiredWith(
+     *       .wiredWithDirectories(
      *          MyTask::inputFolder,
      *          MyTask::outputFolder)
-     *       .toTransformMany(ArtifactType.APK)
+     *       .toTransformMany(SingleArtifact.APK)
      *     taskProvider.configure { task ->
      *          task.getTransformationRequest().set(transformationRequest)
      *     }

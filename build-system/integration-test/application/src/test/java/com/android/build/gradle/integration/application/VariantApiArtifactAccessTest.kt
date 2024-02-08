@@ -84,7 +84,7 @@ androidComponents {
 
     /**
      * Test that exercise the [artifacts.get()] API to wire a [Task] that will consume the
-     * ArtifactType.APK and list the files into an output text file.
+     * SingleArtifact.APK and list the files into an output text file.
      */
     @Test
     fun listApk() {
