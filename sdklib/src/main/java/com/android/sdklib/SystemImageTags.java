@@ -48,6 +48,11 @@ public class SystemImageTags {
     public static final IdDisplay AUTOMOTIVE_PLAY_STORE_TAG =
             IdDisplay.create("android-automotive-playstore", "Android Automotive with Google Play");
 
+    /** Tag to apply to system images for Android Automotive Distant Display. */
+    public static final IdDisplay AUTOMOTIVE_DISTANT_DISPLAY_TAG =
+            IdDisplay.create(
+                    "android-automotive-distantdisplay", "Android Automotive Distant Display");
+
     /** Tag to apply to system images for Chrome OS device. */
     public static final IdDisplay CHROMEOS_TAG = IdDisplay.create("chromeos", "Chrome OS Device");
 
@@ -86,7 +91,8 @@ public class SystemImageTags {
                     DESKTOP_TAG,
                     CHROMEOS_TAG,
                     AUTOMOTIVE_TAG,
-                    AUTOMOTIVE_PLAY_STORE_TAG);
+                    AUTOMOTIVE_PLAY_STORE_TAG,
+                    AUTOMOTIVE_DISTANT_DISPLAY_TAG);
 
     private static final Set<IdDisplay> TV_TAGS = ImmutableSet.of(ANDROID_TV_TAG, GOOGLE_TV_TAG);
 
@@ -110,7 +116,9 @@ public class SystemImageTags {
     }
 
     public static boolean isAutomotiveImage(Collection<IdDisplay> tags) {
-        return tags.contains(AUTOMOTIVE_TAG) || tags.contains(AUTOMOTIVE_PLAY_STORE_TAG);
+        return tags.contains(AUTOMOTIVE_TAG)
+                || tags.contains(AUTOMOTIVE_PLAY_STORE_TAG)
+                || tags.contains(AUTOMOTIVE_DISTANT_DISPLAY_TAG);
     }
 
     public static ImmutableList<IdDisplay> getTags(RepoPackage pkg) {

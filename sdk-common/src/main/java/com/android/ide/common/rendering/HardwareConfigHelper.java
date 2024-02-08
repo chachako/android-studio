@@ -331,7 +331,8 @@ public class HardwareConfigHelper {
     public static boolean isAutomotive(@Nullable Device device) {
         return device != null
                 && ("android-automotive".equals(device.getTagId())
-                        || "android-automotive-playstore".equals(device.getTagId()));
+                        || "android-automotive-playstore".equals(device.getTagId())
+                        || "android-automotive-distantdisplay".equals(device.getTagId()));
     }
 
     /** Whether the given device is a PC device */
