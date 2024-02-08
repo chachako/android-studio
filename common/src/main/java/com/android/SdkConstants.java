@@ -3031,4 +3031,7 @@ public final class SdkConstants {
 
     /** Url protocol of a file. */
     public static final String FILE_PROTOCOL = "file";
+
+    /** Sdk downloadable fonts folder. */
+    public static final String SDK_DL_FONTS_FOLDER = "fonts";
 }
