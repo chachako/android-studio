@@ -543,6 +543,27 @@ public class TestUtils {
     }
 
     @NonNull
+    public static Path getJava21Jdk() {
+        OsType osType = OsType.getHostOs();
+        String hostDir;
+        switch (osType) {
+            case LINUX:
+                hostDir = "linux";
+                break;
+            case DARWIN:
+                hostDir = "mac/Contents/Home";
+                break;
+            case WINDOWS:
+                hostDir = "win";
+                break;
+            default:
+                throw new IllegalStateException(
+                        "Java21 JDK not found for platform: " + OsType.getOsName());
+        }
+        return resolveWorkspacePath("prebuilts/studio/jdk/jbr-next/" + hostDir);
+    }
+
+    @NonNull
     public static String getLatestAndroidPlatform() {
         return getLatestAndroidPlatform(TestType.OTHER);
     }

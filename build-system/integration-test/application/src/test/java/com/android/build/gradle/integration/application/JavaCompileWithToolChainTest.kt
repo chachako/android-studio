@@ -142,35 +142,16 @@ class JavaCompileWithToolChainTest {
     }
 
     companion object {
-        enum class JdkVersion {
-            LATEST_JDK,
-            JDK8
-        }
-
-        private fun getPlatformSpecificJdkLocationSuffix(jdkVersion: JdkVersion): String {
-            return when(OsType.getHostOs()) {
-                OsType.LINUX -> "linux"
-                OsType.WINDOWS ->
-                    when(jdkVersion) {
-                        JdkVersion.JDK8 -> "win64"
-                        JdkVersion.LATEST_JDK -> "win"
-                    }
-                OsType.DARWIN -> "mac/Contents/Home"
-                else -> throw IllegalStateException("Unsupported operating system")
-            }
-        }
-
-        private val jdk8Location =
-            TestUtils.resolveWorkspacePath(
-                "prebuilts/studio/jdk/${getPlatformSpecificJdkLocationSuffix(JdkVersion.JDK8)}")
-                .toString()
+        private val jdk8Location = TestUtils.getJava8Jdk().toString()
 
         private val latestJdkVersion = Runtime.version().feature()
-
         private val latestJdkLocation =
-            TestUtils.resolveWorkspacePath(
-                "prebuilts/studio/jdk/jdk$latestJdkVersion/${getPlatformSpecificJdkLocationSuffix(JdkVersion.LATEST_JDK)}")
-                .toString()
+            when(latestJdkVersion) {
+                17 -> TestUtils.getJava17Jdk()
+                21 -> TestUtils.getJava21Jdk()
+                else -> throw Exception(
+                    "Finding the jdk path of jdk $latestJdkVersion is not supported")
+            }.toString()
 
         val jdk8LocationInGradleFile = jdk8Location.replace("\\", "/")
         val latestJdkLocationInGradleFile = latestJdkLocation.replace("\\", "/")
