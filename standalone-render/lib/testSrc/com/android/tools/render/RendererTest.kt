@@ -20,13 +20,11 @@ import com.android.testutils.TestUtils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.awt.image.BufferedImage
-import java.io.File
 import javax.imageio.ImageIO
 import kotlin.io.path.absolutePathString
 import kotlin.math.abs
@@ -34,6 +32,7 @@ import kotlin.math.max
 import com.android.ide.common.rendering.api.Result
 import com.android.tools.rendering.RenderResult
 import com.android.tools.rendering.RenderService
+import com.android.tools.sdk.AndroidTargetData
 import com.android.tools.sdk.EmbeddedRenderTarget
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.junit.AfterClass
@@ -63,6 +62,7 @@ class RendererTest {
     fun setUp() {
         EmbeddedRenderTarget.resetRenderTarget()
         RenderService.initializeRenderExecutor()
+        AndroidTargetData.clearCache()
     }
 
     @Test
@@ -89,13 +89,11 @@ class RendererTest {
 
         val request = RenderRequest({}) { sequenceOf(layout) }
 
-        val fakeSdkFolder = prepareFakeSdkFolder()
-
         val layoutlibPath = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib")
 
         var outputImage: BufferedImage? = null
         renderForTest(
-            fakeSdkFolder.absolutePath,
+            null,
             null,
             "",
             emptyList(),
@@ -127,25 +125,10 @@ class RendererTest {
     }
 
     @Test
-    fun testIncorrectSdkPath() {
-        assertThrows(InvalidSdkException::class.java) {
-            renderForTest(
-                "/path/does/not/exist",
-                null,
-                "",
-                emptyList(),
-                "",
-                sequenceOf(),
-            ) { _, _, _ -> }
-        }
-    }
-
-    @Test
     fun testIncorrectLayoutlibPath() {
-        val fakeSdk = prepareFakeSdkFolder()
         val renderResults = mutableListOf<RenderResult>()
         renderForTest(
-            fakeSdk.absolutePath,
+            null,
             null,
             "",
             emptyList(),
@@ -178,13 +161,11 @@ class RendererTest {
             </LinearLayout>
         """.trimIndent()
 
-        val fakeSdk = prepareFakeSdkFolder()
-
         val layoutlibPath = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib")
 
         val renderResults = mutableListOf<RenderResult>()
         renderForTest(
-            fakeSdk.absolutePath,
+            null,
             null,
             "",
             emptyList(),
@@ -200,12 +181,5 @@ class RendererTest {
         val messages = renderResult.logger.messages
         assertEquals(1, messages.size)
         assertEquals("Couldn't resolve resource @string/hello", messages[0].html)
-    }
-
-    private fun prepareFakeSdkFolder(): File {
-        val fakeSdkFolder = tmpFolder.newFolder()
-        val platforms = fakeSdkFolder.resolve("platforms")
-        platforms.mkdirs()
-        return fakeSdkFolder
     }
 }

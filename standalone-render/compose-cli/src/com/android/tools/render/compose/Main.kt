@@ -44,7 +44,7 @@ fun main(args: Array<String>) {
         }.toMap()
 
         render(
-            composeRendering.sdkPath,
+            null,
             composeRendering.resourceApkPath,
             composeRendering.packageName,
             composeRendering.classPath,

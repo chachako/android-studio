@@ -16,10 +16,15 @@
 
 package com.android.tools.render
 
+import com.android.ide.common.fonts.FontsFolderProvider
 import com.android.tools.fonts.DownloadableFontCacheServiceImpl
 import com.android.tools.fonts.FontDownloader
 import java.io.File
 
 /** [DownloadableFontCacheService] that can't download the fonts but can fetch them from the sdk. */
-internal class StandaloneFontCacheService(sdkPath: String) :
-    DownloadableFontCacheServiceImpl(FontDownloader.NOOP_FONT_DOWNLOADER, { File(sdkPath) })
+internal class StandaloneFontCacheService(fontPath: String?) :
+    DownloadableFontCacheServiceImpl(
+        FontDownloader.NOOP_FONT_DOWNLOADER,
+        object : FontsFolderProvider {
+            override val fontsFolder: File? = fontPath?.let { File(it) }
+        })

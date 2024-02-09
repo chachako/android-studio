@@ -39,13 +39,14 @@ import com.android.tools.res.ids.apk.ApkResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
 import com.android.tools.sdk.AndroidSdkData
 import com.google.common.annotations.VisibleForTesting
+import java.io.File
 import java.nio.file.Path
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 /** The main entry point to invoke rendering. */
 fun render(
-    sdkPath: String,
+    fontsPath: String?,
     resourceApkPath: String?,
     packageName: String,
     classPath: List<String>,
@@ -53,7 +54,7 @@ fun render(
     renderRequests: Sequence<RenderRequest>,
     onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
 ) = renderImpl(
-    sdkPath,
+    fontsPath,
     resourceApkPath,
     packageName,
     classPath,
@@ -65,7 +66,7 @@ fun render(
 
 @VisibleForTesting
 fun renderForTest(
-    sdkPath: String,
+    fontsPath: String?,
     resourceApkPath: String?,
     packageName: String,
     classPath: List<String>,
@@ -73,7 +74,7 @@ fun renderForTest(
     renderRequests: Sequence<RenderRequest>,
     onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
 ) = renderImpl(
-    sdkPath,
+    fontsPath,
     resourceApkPath,
     packageName,
     classPath,
@@ -84,7 +85,7 @@ fun renderForTest(
 )
 
 internal fun renderImpl(
-    sdkPath: String,
+    fontsPath: String?,
     resourceApkPath: String?,
     packageName: String,
     classPath: List<String>,
@@ -112,7 +113,7 @@ internal fun renderImpl(
         val androidTarget = StandaloneAndroidTarget(androidVersion)
         val androidModuleInfo = StandaloneModuleInfo(packageName, androidVersion)
 
-        val androidSdkData = AndroidSdkData.getSdkData(sdkPath) ?: throw InvalidSdkException(sdkPath)
+        val androidSdkData = AndroidSdkData.getSdkDataWithoutValidityCheck(File(""))
 
         val androidPlatform = AndroidPlatform(androidSdkData, androidTarget)
 
@@ -126,7 +127,7 @@ internal fun renderImpl(
             StandaloneEnvironmentContext(
                 framework.project,
                 moduleClassLoaderManager,
-                StandaloneFontCacheService(sdkPath)
+                StandaloneFontCacheService(fontsPath)
             )
         val moduleDependencies = StandaloneModuleDependencies()
         val moduleKey = ModuleKey()
