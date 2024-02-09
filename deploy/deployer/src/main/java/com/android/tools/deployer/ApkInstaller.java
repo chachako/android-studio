@@ -143,7 +143,8 @@ public class ApkInstaller {
             case STREAM_APK_NOT_SUPPORTED:
             case BASELINE_PROFILE_NOT_SUPPORTED:
                 {
-                    logger.info(deltaInstallResult.status.name());
+                    logger.info("Deltapush failed: " + deltaInstallResult.status.name());
+                    logger.info("Falling back to standard full install");
                     // Delta install could not be attempted (app not install or delta above limit or API
                     // not supported),
                     DeployMetric deltaNotPatchableMetric =
