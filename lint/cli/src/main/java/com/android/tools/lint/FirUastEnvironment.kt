@@ -54,6 +54,7 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
+import org.jetbrains.kotlin.platform.CommonPlatforms
 import org.jetbrains.kotlin.platform.has
 import org.jetbrains.kotlin.platform.jvm.JvmPlatform
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
@@ -197,8 +198,9 @@ private fun createAnalysisSession(
       }
 
       buildKtModuleProvider {
-        // TODO(b/283271025): what is the platform of module provider for KMP?
-        platform = JvmPlatforms.defaultJvmPlatform
+        // The platform of the module provider, not individual modules
+        platform =
+          if (isKMP) CommonPlatforms.defaultCommonPlatform else JvmPlatforms.defaultJvmPlatform
 
         val uastEnvModuleByName = config.modules.associateBy(UastEnvironment.Module::name)
         val uastEnvModuleOrder = // We need to start from the leaves of the dependency
