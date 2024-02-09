@@ -83,7 +83,7 @@ class TestFixturesProjectLintModelIntegrationTest(private val lintAnalysisPerCom
                     methodWithUnavailablePermission();
             """.trimIndent()
         )
-        FileUtils.createFile(project.file("gradle.properties"), "android.useAndroidX=true")
+        TestFileUtils.appendToFile(project.file("gradle.properties"), "android.useAndroidX=true")
 
         if (publishJavaLib) {
             TestFileUtils.searchAndReplace(

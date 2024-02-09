@@ -54,8 +54,6 @@ import com.android.build.gradle.integration.common.utils.ZipHelper
 import com.android.build.gradle.internal.core.Abi
 import com.android.build.gradle.internal.cxx.attribution.decodeBuildTaskAttributions
 import com.android.build.gradle.internal.cxx.configure.CMakeVersion
-import com.android.build.gradle.internal.cxx.configure.CreateCxxModel
-import com.android.build.gradle.internal.cxx.configure.decodeCreateCxxModel
 import com.android.build.gradle.internal.cxx.configure.shouldConfigure
 import com.android.build.gradle.internal.cxx.hashing.sha256Of
 import com.android.build.gradle.internal.cxx.io.SynchronizeFile.Outcome.CREATED_HARD_LINK_FROM_SOURCE_TO_DESTINATION
@@ -66,12 +64,10 @@ import com.android.build.gradle.internal.cxx.model.compileCommandsJsonBinFile
 import com.android.build.gradle.internal.cxx.model.cxxBuildHashKeyFile
 import com.android.build.gradle.internal.cxx.model.jsonGenerationLoggingRecordFile
 import com.android.build.gradle.internal.cxx.model.miniConfigFile
-import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.model.ndkMinPlatform
 import com.android.build.gradle.internal.cxx.model.ninjaBuildFile
 import com.android.build.gradle.internal.cxx.model.ninjaDepsFile
 import com.android.build.gradle.internal.cxx.model.predictableRepublishFolder
-import com.android.utils.cxx.os.bat
 import com.android.build.gradle.internal.cxx.process.decodeExecuteProcess
 import com.android.build.gradle.internal.cxx.settings.Macro.ENV_THIS_FILE_DIR
 import com.android.build.gradle.internal.cxx.settings.Macro.NDK_ABI
@@ -92,6 +88,7 @@ import com.android.builder.model.v2.ide.SyncIssue
 import com.android.builder.model.v2.models.ndk.NativeModule
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils.join
+import com.android.utils.cxx.os.bat
 import com.android.utils.cxx.streamCompileCommands
 import com.google.common.truth.Truth
 import org.junit.Assume
@@ -103,8 +100,8 @@ import org.junit.runners.Parameterized
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStreamReader
-import kotlin.random.Random
 import java.util.zip.GZIPInputStream
+import kotlin.random.Random
 
 /** Assemble tests for Cmake.  */
 @RunWith(Parameterized::class)

@@ -47,6 +47,7 @@ class TestFixturesTest {
             )
         }
 
+
         if (publishAndroidLib) {
             TestFileUtils.searchAndReplace(
                 project.getSubproject(":app").buildFile,
@@ -483,6 +484,6 @@ class TestFixturesTest {
     }
 
     private fun useAndroidX() {
-        FileUtils.createFile(project.file("gradle.properties"), "android.useAndroidX=true")
+        TestFileUtils.appendToFile(project.file("gradle.properties"), "android.useAndroidX=true")
     }
 }

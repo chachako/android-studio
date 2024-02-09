@@ -51,7 +51,13 @@ public class GradleTestProjectBuilder {
     @Nullable private String targetGradleVersion = null;
     @Nullable private File targetGradleInstallation = null;
     @Nullable private String compileSdkVersion;
-    @NonNull private List<String> gradleProperties = Lists.newArrayList();
+
+    @NonNull
+    private List<String> gradleProperties =
+            Lists.newArrayList(
+                    "org.gradle.java.installations.paths="
+                            + TestUtils.getJava17Jdk().toString().replace("\\", "/"));
+
     @Nullable private String heapSize;
     @Nullable private String metaspace;
     @Nullable private Path profileDirectory;

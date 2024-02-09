@@ -43,6 +43,7 @@ OLD_SDKS = [
 
 #keep sorted
 TEST_DATA = [
+    "//prebuilts/studio/jdk/jdk17:jdk17_runtime_files",
     "//prebuilts/studio/sdk:add-ons/addon-google_apis-google-latest",
     "//prebuilts/studio/sdk:build-tools/latest",
     "//prebuilts/studio/sdk:platform-tools",
