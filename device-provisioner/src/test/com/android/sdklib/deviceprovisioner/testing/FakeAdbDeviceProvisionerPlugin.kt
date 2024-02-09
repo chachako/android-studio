@@ -71,6 +71,8 @@ class FakeAdbDeviceProvisionerPlugin(
     return handle
   }
 
+  override val templates = MutableStateFlow<List<DeviceTemplate>>(emptyList())
+
   override val devices = MutableStateFlow(emptyList<FakeDeviceHandle>())
 
   /**
@@ -105,6 +107,16 @@ class FakeAdbDeviceProvisionerPlugin(
   fun removeDevice(device: FakeDeviceHandle) {
     devices.update { it - device }
     device.scope.cancel()
+  }
+
+  /** Makes the template known to the plugin */
+  fun addTemplate(template: DeviceTemplate) {
+    templates.update { it + template }
+  }
+
+  /** Makes the template unknown to the plugin */
+  fun removeTemplate(template: DeviceTemplate) {
+    templates.update { it - template }
   }
 
   private var serialNumber = 1
