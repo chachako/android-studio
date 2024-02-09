@@ -302,9 +302,11 @@ package com.android.build.api.dsl {
   }
 
   public interface AndroidSourceDirectorySet extends org.gradle.api.Named {
+    method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getDirectories();
     method public Object setSrcDirs(Iterable<?> srcDirs);
     method public Object srcDir(Object srcDir);
     method public Object srcDirs(java.lang.Object... srcDirs);
+    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> directories;
   }
 
   public interface AndroidSourceFile extends org.gradle.api.Named {
