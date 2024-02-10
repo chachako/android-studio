@@ -21,7 +21,6 @@ import com.android.build.api.artifact.ArtifactKind
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.file.RegularFile
-import org.gradle.api.file.RegularFileProperty
 
 @Suppress("ClassName")
 sealed class
@@ -62,5 +61,4 @@ PrivacySandboxSdkInternalArtifactType<T : FileSystemLocation>(
     object GLOBAL_SYNTHETICS_ARCHIVE: PrivacySandboxSdkInternalArtifactType<Directory>(ArtifactKind.DIRECTORY), Replaceable
 
     object DEX: PrivacySandboxSdkInternalArtifactType<Directory>(ArtifactKind.DIRECTORY), Replaceable
-    object R_PACKAGE_DEX: PrivacySandboxSdkInternalArtifactType<Directory>(ArtifactKind.DIRECTORY), Replaceable
 }

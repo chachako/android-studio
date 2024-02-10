@@ -19,8 +19,6 @@ package com.android.build.gradle.integration.privacysandbox
 import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
-import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
-import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSampleProject
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
@@ -33,17 +31,13 @@ import com.android.build.gradle.options.StringOption
 import com.android.builder.model.v2.ide.SyncIssue
 import com.android.ide.common.build.GenericBuiltArtifactsLoader
 import com.android.ide.common.signing.KeystoreHelper
-import com.android.testutils.MavenRepoGenerator
-import com.android.testutils.TestInputsGenerator
 import com.android.testutils.apk.Apk
 import com.android.testutils.apk.Dex
 import com.android.testutils.apk.Zip
-import com.android.testutils.generateAarWithContent
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject
 import com.android.utils.FileUtils
 import com.android.utils.StdLogger
-import com.google.common.collect.ImmutableList
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.TextFormat
 import com.google.wireless.android.sdk.stats.GradleBuildProject
@@ -237,8 +231,10 @@ class PrivacySandboxSdkTest {
             assertThat(it).containsClass(ANDROID_LIB1_CLASS)
             assertThat(it).containsClass("Lcom/example/androidlib2/Example;")
             assertThat(it).containsClass("Lcom/externaldep/externaljar/ExternalClass;")
-            val rPackageDex = it.secondaryDexFiles.last()
-            assertThat(rPackageDex.classes.keys).containsExactly("Lcom/example/privacysandboxsdk/RPackage;")
+            assertThat(it).containsClass("Lcom/example/androidlib1/R\$string;")
+            assertThat(it).containsClass("Lcom/example/androidlib1/R;")
+            assertThat(it).containsClass("Lcom/example/androidlib2/R;")
+            assertThat(it).containsClass("Lcom/example/privacysandboxsdk/RPackage;")
         }
 
         // Check building the bundle to deploy to UpsideDownCake

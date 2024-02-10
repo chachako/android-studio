@@ -48,7 +48,6 @@ import com.android.build.gradle.tasks.FusedLibraryMergeClasses
 import com.android.build.gradle.tasks.GeneratePrivacySandboxAsar
 import com.android.build.gradle.tasks.PackagePrivacySandboxSdkBundle
 import com.android.build.gradle.tasks.PrivacySandboxSdkDexTask
-import com.android.build.gradle.tasks.PrivacySandboxSdkGenerateRPackageDexTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkGenerateJarStubsTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkGenerateRClassTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkManifestGeneratorTask
@@ -340,7 +339,6 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                         PrivacySandboxSdkLinkAndroidResourcesTask.CreationAction(variantScope),
                         PrivacySandboxSdkDexTask.CreationAction(variantScope),
                         PrivacySandboxSdkMergeDexTask.CreationAction(variantScope),
-                        PrivacySandboxSdkGenerateRPackageDexTask.CreationAction(variantScope),
                         PrivacySandboxSdkGenerateRClassTask.CreationAction(variantScope),
                         PerModuleBundleTask.PrivacySandboxSdkCreationAction(variantScope),
                         PackagePrivacySandboxSdkBundle.CreationAction(variantScope),
