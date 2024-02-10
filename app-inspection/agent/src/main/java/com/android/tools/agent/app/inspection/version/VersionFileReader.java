@@ -16,7 +16,6 @@
 
 package com.android.tools.agent.app.inspection.version;
 
-import com.android.tools.agent.app.inspection.ClassLoaderUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +28,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>This class caches the version strings by their file names.
  */
 class VersionFileReader {
+
+    private final ClassLoader classLoader;
+
+    public VersionFileReader(ClassLoader classLoader) {
+
+        this.classLoader = classLoader;
+    }
 
     /** Result object representing the outcome of the read. */
     static class Result {
@@ -62,12 +68,11 @@ class VersionFileReader {
      * @param versionFile the full name of the version file
      * @return input stream of the version file
      */
-    private static InputStream loadVersionFile(String versionFile) {
-        ClassLoader mainClassLoader = ClassLoaderUtils.mainThreadClassLoader();
-        if (mainClassLoader == null) {
-            throw new RuntimeException("main class loader not found");
+    private InputStream loadVersionFile(String versionFile) {
+        if (classLoader == null) {
+            throw new RuntimeException("Application classloader not found");
         }
-        return mainClassLoader.getResourceAsStream("META-INF/" + versionFile);
+        return classLoader.getResourceAsStream("META-INF/" + versionFile);
     }
 
     /**

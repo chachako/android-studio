@@ -17,6 +17,7 @@
 package android.app;
 
 import android.os.Bundle;
+import android.os.Looper;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,6 +42,10 @@ public class Application {
         void onActivitySaveInstanceState(Activity activity, Bundle outState);
 
         void onActivityDestroyed(Activity activity);
+    }
+
+    public ClassLoader getClassLoader() {
+        return Looper.getMainLooper().getThread().getContextClassLoader();
     }
 
     public void registerActivityLifecycleCallbacks(ActivityLifecycleCallbacks callback) {

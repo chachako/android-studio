@@ -69,15 +69,19 @@ final class InspectorContext {
 
     private final Consumer<Throwable> mCrashConsumer;
 
+    private final ClassLoader mClassLoader;
+
     InspectorContext(
             @NonNull String inspectorId,
             @NonNull String project,
             @NonNull InspectorExecutors executors,
-            Consumer<Throwable> crashConsumer) {
+            Consumer<Throwable> crashConsumer,
+            ClassLoader classLoader) {
         mInspectorId = inspectorId;
         mProjectName = project;
         mExecutors = executors;
         mCrashConsumer = crashConsumer;
+        mClassLoader = classLoader;
     }
 
     public String getProject() {
@@ -101,13 +105,13 @@ final class InspectorContext {
     // TODO: shouldn't know nativePtr
     @SuppressWarnings("rawtypes")
     public String initializeInspector(String dexPath, long nativePtr) {
-        ClassLoader mainClassLoader = ClassLoaderUtils.mainThreadClassLoader();
-        if (mainClassLoader == null) {
+        if (mClassLoader == null) {
             return "Failed to find a main thread";
         }
         try {
             ClassLoader classLoader =
-                    sCachedClassLoaders.computeIfAbsent(dexPath, s -> createClassloader(dexPath));
+                    sCachedClassLoaders.computeIfAbsent(
+                            dexPath, s -> createClassloader(dexPath, mClassLoader));
             ServiceLoader<InspectorFactory> loader =
                     ServiceLoader.load(InspectorFactory.class, classLoader);
             Iterator<InspectorFactory> iterator = loader.iterator();
@@ -134,12 +138,11 @@ final class InspectorContext {
         }
     }
 
-    private static ClassLoader createClassloader(String dexPath) {
-        ClassLoader mainClassLoader = ClassLoaderUtils.mainThreadClassLoader();
-        String optimizedDir = ClassLoaderUtils.optimizedDirectory;
+    private static ClassLoader createClassloader(String dexPath, ClassLoader classLoader) {
+        String optimizedDir = System.getProperty("java.io.tmpdir");
         try {
             String nativePath = prepareNativeLibraries(dexPath, Build.SUPPORTED_ABIS[0]);
-            return new DexClassLoader(dexPath, optimizedDir, nativePath, mainClassLoader);
+            return new DexClassLoader(dexPath, optimizedDir, nativePath, classLoader);
         } catch (IOException e) {
             // can't recover from this IOException so promote it to runtime exception
             throw new RuntimeException("Failed to create classloader", e);

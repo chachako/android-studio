@@ -19,6 +19,8 @@ package com.android.tools.agent.app.inspection;
 import static com.android.tools.agent.app.inspection.InspectorContext.CrashListener;
 import static com.android.tools.agent.app.inspection.NativeTransport.*;
 
+import android.app.Application;
+import android.os.Looper;
 import android.util.Log;
 import androidx.inspection.ArtTooling;
 import androidx.inspection.ArtTooling.EntryHook;
@@ -69,7 +71,8 @@ public class AppInspectionService {
 
     private final CrashListener mCrashListener = this::doDispose;
 
-    private final CompatibilityChecker mCompatibilityChecker = new CompatibilityChecker();
+    private final ClassLoader mClassLoader;
+    private final CompatibilityChecker mCompatibilityChecker;
 
     /**
      * Construct an instance referencing some native (JVMTI) resources.
@@ -79,6 +82,8 @@ public class AppInspectionService {
      */
     AppInspectionService(long nativePtr) {
         mNativePtr = nativePtr;
+        mClassLoader = findClassLoader();
+        mCompatibilityChecker = new CompatibilityChecker(mClassLoader);
     }
 
     /**
@@ -131,7 +136,8 @@ public class AppInspectionService {
             return;
         }
 
-        InspectorBridge bridge = InspectorBridge.create(inspectorId, projectName, mCrashListener);
+        InspectorBridge bridge =
+                InspectorBridge.create(inspectorId, projectName, mCrashListener, mClassLoader);
         mInspectorBridges.put(inspectorId, bridge);
         bridge.initializeInspector(
                 dexPath,
@@ -406,6 +412,17 @@ public class AppInspectionService {
                 }
             }
         }
+    }
+
+    private ClassLoader findClassLoader() {
+        ArtToolingImpl artTooling = new ArtToolingImpl(mNativePtr, "inspector");
+        List<Application> applications = artTooling.findInstances(Application.class);
+        ClassLoader looperClassLoader = Looper.getMainLooper().getThread().getContextClassLoader();
+        if (applications.isEmpty()) {
+            return looperClassLoader;
+        }
+        ClassLoader classLoader = applications.get(0).getClassLoader();
+        return classLoader == null ? looperClassLoader : classLoader;
     }
 
     private static native AppInspectionService createAppInspectionService();

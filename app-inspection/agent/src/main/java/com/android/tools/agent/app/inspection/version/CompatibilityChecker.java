@@ -16,8 +16,6 @@
 
 package com.android.tools.agent.app.inspection.version;
 
-import com.android.tools.agent.app.inspection.ClassLoaderUtils;
-
 /**
  * Checks inspector compatibility: the minVersion provided by Android Studio against the version
  * file embedded in the app's APK META-INF; that app wasn't proguarded.
@@ -30,7 +28,13 @@ public final class CompatibilityChecker {
 
     private static final String ANDROIDX_PREFIX = "androidx.";
 
-    private final VersionFileReader reader = new VersionFileReader();
+    private final VersionFileReader reader;
+    private final ClassLoader classLoader;
+
+    public CompatibilityChecker(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+        reader = new VersionFileReader(classLoader);
+    }
 
     /**
      * Compares the version of the library against the provided min_version string.
@@ -41,6 +45,13 @@ public final class CompatibilityChecker {
      * @return a VersionChecker.Result object containing the result of the check and any errors.
      */
     public CompatibilityCheckerResult checkCompatibility(LibraryCompatibility coordinate) {
+        if (classLoader == null) {
+            return new CompatibilityCheckerResult(
+                    CompatibilityCheckerResult.Status.ERROR,
+                    "Application classloader not found",
+                    coordinate.artifact,
+                    null);
+        }
         String versionFile = coordinate.toVersionFileName();
         String minVersionString = coordinate.artifact.version;
         VersionFileReader.Result readResult = reader.readVersionFile(versionFile);
@@ -119,7 +130,7 @@ public final class CompatibilityChecker {
                 readResult.versionString);
     }
 
-    private static boolean isProguarded(ArtifactCoordinate coordinate) {
+    private boolean isProguarded(ArtifactCoordinate coordinate) {
         String groupId = coordinate.groupId;
 
         // Produce package name for `ProguardDetection` class, e.g. for following params:
@@ -135,7 +146,7 @@ public final class CompatibilityChecker {
         String className = packageName + "." + PROGUARD_DETECTOR_CLASS;
 
         try {
-            ClassLoaderUtils.mainThreadClassLoader().loadClass(className);
+            classLoader.loadClass(className);
             return false;
         } catch (ClassNotFoundException e) {
             return true;
@@ -177,12 +188,11 @@ public final class CompatibilityChecker {
      * @param expectedLibraryClassNames classes expected to be in a certain library.
      * @return true if any of the classes are present or no classes were specified.
      */
-    private static boolean anyExpectedClassesExists(String[] expectedLibraryClassNames) {
+    private boolean anyExpectedClassesExists(String[] expectedLibraryClassNames) {
         if (expectedLibraryClassNames == null || expectedLibraryClassNames.length == 0) {
             // If no expected class names are specified, we would not know if the library is missing
             return true;
         }
-        ClassLoader classLoader = ClassLoaderUtils.mainThreadClassLoader();
         for (String className : expectedLibraryClassNames) {
             try {
                 classLoader.loadClass(className);

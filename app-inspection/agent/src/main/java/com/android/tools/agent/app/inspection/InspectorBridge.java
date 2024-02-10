@@ -79,7 +79,8 @@ public final class InspectorBridge {
     public static InspectorBridge create(
             @NonNull String inspectorId,
             @NonNull String project,
-            @NonNull CrashListener crashListener) {
+            @NonNull CrashListener crashListener,
+            ClassLoader classLoader) {
         Consumer<Throwable> crashConsumer =
                 new Consumer<Throwable>() {
                     private final AtomicBoolean mCrashed = new AtomicBoolean();
@@ -109,7 +110,8 @@ public final class InspectorBridge {
                         inspectorId,
                         project,
                         new InspectorExecutorsImpl(primaryExecutor, ioExecutor),
-                        crashConsumer);
+                        crashConsumer,
+                        classLoader);
 
         return new InspectorBridge(primaryExecutor, context);
     }
