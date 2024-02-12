@@ -20,7 +20,7 @@ package com.android.tools.render.compose
  * Information required to run standalone rendering for compose previews defined in [screenshots].
  */
 data class ComposeRendering(
-    val sdkPath: String,
+    val fontsPath: String?,
     val layoutlibPath: String,
     val outputFolder: String,
     val classPath: List<String>,

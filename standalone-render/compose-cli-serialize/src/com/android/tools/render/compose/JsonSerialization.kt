@@ -21,7 +21,7 @@ import com.google.gson.stream.JsonWriter
 import java.io.Reader
 import java.io.Writer
 
-private const val SDK_PATH = "sdkPath"
+private const val FONTS_PATH = "fontsPath"
 private const val LAYOUTLIB_PATH = "layoutlibPath"
 private const val OUTPUT_FOLDER = "outputFolder"
 private const val CLASS_PATH = "classPath"
@@ -50,7 +50,7 @@ private const val MISSING_CLASSES = "missingClasses"
 
 /** Reads JSON text from [jsonReader] containing serialized [ComposeRendering]. */
 fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
-    var sdkPath: String? = null
+    var fontsPath: String? = null
     var layoutlibPath: String? = null
     var outputFolder: String? = null
     val classPath = mutableListOf<String>()
@@ -62,7 +62,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
         reader.beginObject()
         while (reader.hasNext()) {
             when (val fieldName = reader.nextName()) {
-                SDK_PATH -> { sdkPath = reader.nextString() }
+                FONTS_PATH -> { fontsPath = reader.nextString() }
                 LAYOUTLIB_PATH -> { layoutlibPath = reader.nextString() }
                 OUTPUT_FOLDER -> { outputFolder = reader.nextString() }
                 CLASS_PATH -> {
@@ -91,7 +91,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
     }
 
     return ComposeRendering(
-        sdkPath ?: throw IllegalArgumentException("SDK path is missing"),
+        fontsPath,
         layoutlibPath ?: throw IllegalArgumentException("Layoutlib path is missing"),
         outputFolder ?: throw IllegalArgumentException("Output folder path is missing"),
         classPath,
@@ -175,7 +175,7 @@ fun writeComposeRenderingToJson(
     JsonWriter(jsonWriter).use { writer ->
         writer.setIndent("  ")
         writer.beginObject()
-        writer.name(SDK_PATH).value(composeRendering.sdkPath)
+        composeRendering.fontsPath?.let { writer.name(FONTS_PATH).value(it) }
         writer.name(LAYOUTLIB_PATH).value(composeRendering.layoutlibPath)
         writer.name(OUTPUT_FOLDER).value(composeRendering.outputFolder)
         writer.name(CLASS_PATH)

@@ -26,7 +26,7 @@ class JsonSerializationTest {
         // language=json
         val jsonString = """
             {
-              "sdkPath": "/path/to/sdk",
+              "fontsPath": "/path/to/fonts",
               "layoutlibPath": "/path/to/layout/lib",
               "outputFolder": "/path/to/output/folder",
               "classPath": [
@@ -51,7 +51,7 @@ class JsonSerializationTest {
         val composeRendering = readComposeRenderingJson(jsonString.reader())
 
         val expectedComposeRendering = ComposeRendering(
-            "/path/to/sdk",
+            "/path/to/fonts",
             "/path/to/layout/lib",
             "/path/to/output/folder",
             listOf("/path/to/lib1.jar", "/path/to/lib2.jar", "/path/to/classes"),
@@ -150,7 +150,7 @@ class JsonSerializationTest {
             "/path/to/image/pattern/name",
         )
         val composeRendering = ComposeRendering(
-            "/path/to/sdk",
+            "/path/to/fonts",
             "/path/to/layout/lib",
             "/path/to/output/folder",
             listOf("/path/to/lib1.jar", "/path/to/lib2.jar", "/path/to/classes"),

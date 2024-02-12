@@ -44,7 +44,7 @@ fun main(args: Array<String>) {
         }.toMap()
 
         render(
-            null,
+            composeRendering.fontsPath,
             composeRendering.resourceApkPath,
             composeRendering.packageName,
             composeRendering.classPath,

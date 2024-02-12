@@ -60,16 +60,16 @@ class PreviewFinderTest {
             }
         """.trimIndent())
         configureInput(classpath,
-            "sdkpath",
+            "fontsPath",
             "layoutlibpath",
             "outputFolder",
             "packageName",
             "resourceApkPath",
             cliToolInputFile,
             previewsFile)
-        assertEquals(cliToolInputFile.readText(), """
+        assertEquals("""
             {
-              "sdkPath": "sdkpath",
+              "fontsPath": "fontsPath",
               "layoutlibPath": "layoutlibpath",
               "outputFolder": "outputFolder",
               "classPath": [
@@ -90,6 +90,7 @@ class PreviewFinderTest {
               ],
               "resultsFileName": "results.json"
             }
-        """.trimIndent())
+        """.trimIndent(),
+                cliToolInputFile.readText())
     }
 }

@@ -16,6 +16,7 @@
 
 package com.android.tools.preview.screenshot
 
+import com.android.SdkConstants
 import com.android.tools.preview.multipreview.BaseAnnotationRepresentation
 import com.android.tools.preview.multipreview.MethodRepresentation
 import com.android.tools.preview.multipreview.MultipreviewSettings
@@ -35,7 +36,7 @@ import org.objectweb.asm.Type
 
 fun configureInput (
     classPath: List<String>,
-    sdkPath: String,
+    fontsPath: String?,
     layoutlibPath: String,
     outputFolder: String,
     packageName: String,
@@ -47,7 +48,15 @@ fun configureInput (
         Files.createDirectories(Path.of(outputFolder))
     }
     val previews = readComposeScreenshotsJson(previewsFile.reader())
-    val composeRendering = ComposeRendering(sdkPath, layoutlibPath, outputFolder, classPath, packageName, resourceApkPath, previews)
+    val composeRendering = ComposeRendering(
+        fontsPath,
+        layoutlibPath,
+        outputFolder,
+        classPath,
+        packageName,
+        resourceApkPath,
+        previews
+    )
     writeComposeRenderingToJson(cliToolInputFilePath.writer(), composeRendering)
 }
 
