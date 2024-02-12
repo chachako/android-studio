@@ -152,8 +152,4 @@ class FakeGradleDirectoryProperty(private val directory: Directory?) : Directory
     override fun files(vararg paths: Any?): FileCollection {
         TODO("Not yet implemented")
     }
-
-    override fun update(transform: Transformer<out Provider<out Directory>?, in Provider<Directory>>) {
-        TODO("Not yet implemented")
-    }
 }

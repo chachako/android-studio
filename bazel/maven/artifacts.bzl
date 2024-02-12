@@ -151,7 +151,7 @@ ARTIFACTS = [
     "com.github.rising3:semver:0.3.1",
     "org.glassfish.jaxb:jaxb-runtime:2.3.2",
     "org.glassfish.jaxb:jaxb-xjc:2.3.2",
-    "org.gradle:gradle-tooling-api:8.6-rc-1",
+    "org.gradle:gradle-tooling-api:8.6",
     "org.hamcrest:hamcrest-core:1.3",
     "org.hamcrest:hamcrest-library:1.3",
     "org.hdrhistogram:HdrHistogram:2.1.12",

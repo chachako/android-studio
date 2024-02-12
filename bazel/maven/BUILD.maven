@@ -8114,10 +8114,10 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.gradle.gradle-tooling-api_8.6-rc-1",
-    pom = "repository/org/gradle/gradle-tooling-api/8.6-rc-1/gradle-tooling-api-8.6-rc-1.pom",
+    name = "org.gradle.gradle-tooling-api_8.6",
+    pom = "repository/org/gradle/gradle-tooling-api/8.6/gradle-tooling-api-8.6.pom",
     repo_root_path = "repository",
-    repo_path = "org/gradle/gradle-tooling-api/8.6-rc-1",
+    repo_path = "org/gradle/gradle-tooling-api/8.6",
     deps = [
         "org.slf4j.slf4j-api_1.7.30",
     ],
@@ -8128,7 +8128,7 @@ maven_import(
     name = "org.gradle.gradle-tooling-api",
     classifiers = [],
     jars = [
-        "repository/org/gradle/gradle-tooling-api/8.6-rc-1/gradle-tooling-api-8.6-rc-1.jar"
+        "repository/org/gradle/gradle-tooling-api/8.6/gradle-tooling-api-8.6.jar"
     ],
     exports = [
         "org.slf4j.slf4j-api",
@@ -8136,9 +8136,9 @@ maven_import(
     original_deps = [
         "org.slf4j.slf4j-api_1.7.30",
     ],
-    pom = "repository/org/gradle/gradle-tooling-api/8.6-rc-1/gradle-tooling-api-8.6-rc-1.pom",
+    pom = "repository/org/gradle/gradle-tooling-api/8.6/gradle-tooling-api-8.6.pom",
     repo_root_path = "repository",
-    repo_path = "org/gradle/gradle-tooling-api/8.6-rc-1",
+    repo_path = "org/gradle/gradle-tooling-api/8.6",
     visibility = ["//visibility:public"],
 )
 

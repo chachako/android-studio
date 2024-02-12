@@ -92,17 +92,6 @@
     <issue
         id="StopShip"
         message="`TODO` call found; points to code which must be fixed prior to release"
-        errorLine1="        TODO(&quot;Not yet implemented&quot;)"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/build/gradle/internal/fixtures/FakeConfigurableFileCollection.kt"
-            line="82"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="StopShip"
-        message="`TODO` call found; points to code which must be fixed prior to release"
         errorLine1="        TODO(&quot;not implemented&quot;)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -590,17 +579,6 @@
         errorLine1="        TODO(&quot;Not yet implemented&quot;)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleDirectoryProperty.kt"
-            line="157"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="StopShip"
-        message="`TODO` call found; points to code which must be fixed prior to release"
-        errorLine1="        TODO(&quot;Not yet implemented&quot;)"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleExecOperations.kt"
             line="45"
             column="9"/>
@@ -856,17 +834,6 @@
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleProperty.kt"
             line="109"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="StopShip"
-        message="`TODO` call found; points to code which must be fixed prior to release"
-        errorLine1="        TODO(&quot;Not yet implemented&quot;)"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/build/gradle/internal/fixtures/FakeGradleProperty.kt"
-            line="113"
             column="9"/>
     </issue>
 
@@ -1159,17 +1126,6 @@
     <issue
         id="StopShip"
         message="`TODO` call found; points to code which must be fixed prior to release"
-        errorLine1="        TODO(&quot;Not yet implemented&quot;)"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/build/gradle/internal/fixtures/FakeListProperty.kt"
-            line="136"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="StopShip"
-        message="`TODO` call found; points to code which must be fixed prior to release"
         errorLine1="        TODO(&quot;not implemented&quot;)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -1439,17 +1395,6 @@
         <location
             file="src/test/java/com/android/build/gradle/internal/fixtures/FakeMapProperty.kt"
             line="137"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="StopShip"
-        message="`TODO` call found; points to code which must be fixed prior to release"
-        errorLine1="        TODO(&quot;Not yet implemented&quot;)"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/build/gradle/internal/fixtures/FakeMapProperty.kt"
-            line="141"
             column="9"/>
     </issue>
 

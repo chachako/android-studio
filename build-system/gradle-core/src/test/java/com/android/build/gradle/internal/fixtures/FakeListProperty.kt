@@ -131,8 +131,4 @@ class FakeListProperty<T>(
     override fun convention(p0: Provider<out MutableIterable<T>>): ListProperty<T> {
         TODO("Not yet implemented")
     }
-
-    override fun update(transform: Transformer<out Provider<out MutableIterable<T>>?, in Provider<MutableList<T>>>) {
-        TODO("Not yet implemented")
-    }
 }

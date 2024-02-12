@@ -108,8 +108,4 @@ class FakeGradleProperty<T>(private var value: T? = null): Property<T> {
     ): Provider<R> {
         TODO("Not yet implemented")
     }
-
-    override fun update(transform: Transformer<out Provider<out T>?, in Provider<T>>) {
-        TODO("Not yet implemented")
-    }
 }

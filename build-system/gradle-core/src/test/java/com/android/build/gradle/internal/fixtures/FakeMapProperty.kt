@@ -136,8 +136,4 @@ class FakeMapProperty<K, V>(
     override fun convention(p0: Provider<out MutableMap<out K, out V>>): MapProperty<K, V> {
         TODO("Not yet implemented")
     }
-
-    override fun update(transform: Transformer<out Provider<out MutableMap<out K, out V>>?, in Provider<MutableMap<K, V>>>) {
-        TODO("Not yet implemented")
-    }
 }
