@@ -72,4 +72,20 @@ class PreviewScreenshotUpdateTaskTest {
         assert(referenceImageDir.listFiles().isNotEmpty())
         assert(referenceImageDir.listFiles().size == 3)
     }
+
+    @Test
+    fun testPreviewScreenshotUpdateWithNoPreviews() {
+        val referenceImageDir = tempDirRule.newFolder("references")
+        val renderTaskOutputDir = tempDirRule.newFolder("rendered")
+        task.referenceImageDir.set(referenceImageDir)
+        task.renderTaskOutputDir.set(renderTaskOutputDir)
+        task.analyticsService.set(object: AnalyticsService() {
+            override val buildServiceRegistry: BuildServiceRegistry = mock(
+                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override fun getParameters(): Params = mock()
+        })
+
+        task.run()
+        assert(referenceImageDir.listFiles().isEmpty())
+    }
 }

@@ -306,8 +306,10 @@ class ScreenshotTest {
         TestFileUtils.replaceLine(testFile, 1, "/*")
         TestFileUtils.replaceLine(testFile, testFile.readLines().size, "*/")
 
-        // Updating reference images should fail when there are no preview tests
-        getExecutor().expectFailure().run("previewScreenshotUpdateDebugAndroidTest")
+        getExecutor().run("previewScreenshotUpdateDebugAndroidTest")
+
+        val referenceScreenshotDir = project.projectDir.resolve("src/androidTest/screenshot/debug/").toPath()
+        assertThat(referenceScreenshotDir.listDirectoryEntries()).isEmpty()
 
         getExecutor().run("previewScreenshotDebugAndroidTest")
 

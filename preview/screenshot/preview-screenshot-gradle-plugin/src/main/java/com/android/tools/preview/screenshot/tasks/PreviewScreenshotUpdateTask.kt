@@ -55,9 +55,13 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask(), VerificationTask {
         FileUtils.cleanOutputDir(referenceImageDir.get().asFile)
         //throw exception at the first encountered error
         val resultFile = renderTaskOutputDir.file("results.json").get().asFile
-        val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
-        for (result in composeRenderingResult.screenshotResults) {
-            saveReferenceImage(result)
+        if (resultFile.exists()) {
+            val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
+            for (result in composeRenderingResult.screenshotResults) {
+                saveReferenceImage(result)
+            }
+        } else {
+            this.logger.lifecycle("No reference images were updated because no previews were found.")
         }
     }
 
