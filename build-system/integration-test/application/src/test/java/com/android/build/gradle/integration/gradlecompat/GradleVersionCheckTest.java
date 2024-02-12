@@ -21,7 +21,6 @@ import static com.google.common.truth.Truth.assertThat;
 import com.android.SdkConstants;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp;
-import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.google.common.base.Throwables;
 import java.io.IOException;
 import org.junit.Rule;
@@ -33,10 +32,10 @@ public class GradleVersionCheckTest {
     /**
      * An old version of Gradle to use in this test.
      *
-     * <p>(This can't be lower than 7.3 as those Gradle versions do not support JDK 17, see bug
+     * <p>(This can't be lower than 8.4 as those Gradle versions do not support JDK 21, see bug
      * 243592738.)
      */
-    private static final String OLD_GRADLE_VERSION = "7.3.3";
+    private static final String OLD_GRADLE_VERSION = "8.4";
 
     @Rule
     public GradleTestProject project =
@@ -47,12 +46,6 @@ public class GradleVersionCheckTest {
 
     @Test
     public void testGradleVersionCheck() throws IOException {
-        TestFileUtils.replaceLine(
-                project.getSettingsFile(),
-                1,
-                "enableFeaturePreview('VERSION_CATALOGS')"
-        );
-
         // Run the build twice, it should fail with the same message
         // (regression test for bug 265296706)
         for (int i = 1; i <= 2; i++) {
