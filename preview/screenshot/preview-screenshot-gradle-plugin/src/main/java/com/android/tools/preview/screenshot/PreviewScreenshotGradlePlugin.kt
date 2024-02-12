@@ -222,7 +222,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.group = JavaBasePlugin.VERIFICATION_GROUP
                         task.analyticsService.set(analyticsServiceProvider)
                         task.usesService(analyticsServiceProvider)
-                    }.get()
+                    }
                     updateAllTask.configure { it.dependsOn(updateTask) }
 
                     val previewScreenshotValidationTask = project.tasks.register(
