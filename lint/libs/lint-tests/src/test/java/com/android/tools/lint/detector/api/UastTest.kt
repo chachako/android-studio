@@ -836,6 +836,8 @@ class UastTest : TestCase() {
         )
         .indented()
 
+    val expType = if (useFirUast()) " : PsiType:ScheduledFuture<Boolean>" else ""
+
     check(source) { file ->
       assertEquals(
         "" +
@@ -855,9 +857,13 @@ class UastTest : TestCase() {
           "                            UIdentifier (Identifier (newSingleThreadScheduledExecutor)) [UIdentifier (Identifier (newSingleThreadScheduledExecutor))]\n" +
           "        UMethod (name = foo) [public fun foo() : void {...}] : PsiType:void\n" +
           "            UBlockExpression [{...}]\n" +
-          "                UQualifiedReferenceExpression [mExecutorService.schedule(this::initBar, 10, TimeUnit.SECONDS)]\n" +
+          "                UQualifiedReferenceExpression [mExecutorService.schedule(this::initBar, 10, TimeUnit.SECONDS)]" +
+          expType +
+          "\n" +
           "                    USimpleNameReferenceExpression (identifier = mExecutorService) [mExecutorService] : PsiType:ScheduledExecutorService\n" +
-          "                    UCallExpression (kind = UastCallKind(name='method_call'), argCount = 3)) [schedule(this::initBar, 10, TimeUnit.SECONDS)]\n" +
+          "                    UCallExpression (kind = UastCallKind(name='method_call'), argCount = 3)) [schedule(this::initBar, 10, TimeUnit.SECONDS)]" +
+          expType +
+          "\n" +
           "                        UIdentifier (Identifier (schedule)) [UIdentifier (Identifier (schedule))]\n" +
           "                        UCallableReferenceExpression (name = initBar) [this::initBar] : PsiType:<method reference>\n" +
           "                            UThisExpression (label = null) [this] : PsiType:MyTestCase\n" +
@@ -1044,6 +1050,9 @@ class UastTest : TestCase() {
                 // Inline classes
                 inline class Name(val s: String)
 
+                @JvmInline
+                value class Name2(val n: String)
+
                 // Unsigned
                 // You can define unsigned types using literal suffixes
                 val uint = 42u
@@ -1063,6 +1072,24 @@ class UastTest : TestCase() {
     ) { file ->
       // val ubyte: UByte = 255u
       val uByteValue = if (useFirUast()) 255 else -1
+      val enumEntriesBeforeMember =
+        if (useFirUast()) ""
+        else
+          """
+                            UMethod (name = Direction) [private fun Direction() = UastEmptyExpression]
+                            UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.FooAnnotation.Direction> = UastEmptyExpression] : PsiType:EnumEntries<Direction>"""
+      val enumEntriesAfterMember =
+        if (useFirUast())
+          """
+                            UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.FooAnnotation.Direction> = UastEmptyExpression] : PsiType:EnumEntries<Direction>
+                            UMethod (name = Direction) [private fun Direction() = UastEmptyExpression]"""
+        else ""
+      val inlineClassDelegateField =
+        if (useFirUast())
+          """
+                        UField (name = s) [@org.jetbrains.annotations.NotNull private final var s: java.lang.String] : PsiType:String
+                            UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]"""
+        else ""
       assertEquals(
         """
                 UFile (package = test.pkg) [package test.pkg...]
@@ -1144,12 +1171,10 @@ class UastTest : TestCase() {
                                 USimpleNameReferenceExpression (identifier = Direction) [Direction]
                             UEnumConstant (name = RIGHT) [@null RIGHT]
                                 UAnnotation (fqName = null) [@null]
-                                USimpleNameReferenceExpression (identifier = Direction) [Direction]
-                            UMethod (name = Direction) [private fun Direction() = UastEmptyExpression]
-                            UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.FooAnnotation.Direction> = UastEmptyExpression] : PsiType:EnumEntries<Direction>
+                                USimpleNameReferenceExpression (identifier = Direction) [Direction]$enumEntriesBeforeMember
                             UMethod (name = values) [public static fun values() : test.pkg.FooAnnotation.Direction[] = UastEmptyExpression] : PsiType:Direction[]
                             UMethod (name = valueOf) [public static fun valueOf(value: java.lang.String) : test.pkg.FooAnnotation.Direction = UastEmptyExpression] : PsiType:Direction
-                                UParameter (name = value) [var value: java.lang.String] : PsiType:String
+                                UParameter (name = value) [var value: java.lang.String] : PsiType:String$enumEntriesAfterMember
                         UClass (name = Bar) [public static abstract annotation Bar {...}]
                         UClass (name = Companion) [public static final class Companion {...}]
                             UField (name = bar) [@org.jetbrains.annotations.NotNull private static final var bar: int = 42] : PsiType:int
@@ -1161,8 +1186,16 @@ class UastTest : TestCase() {
                                         ULiteralExpression (value = 42) [42] : PsiType:int
                             UMethod (name = getBar) [public final fun getBar() : int = UastEmptyExpression] : PsiType:int
                             UMethod (name = Companion) [private fun Companion() = UastEmptyExpression]
-                    UClass (name = Name) [public final class Name {...}]
+                    UClass (name = Name) [public final class Name {...}]$inlineClassDelegateField
                         UMethod (name = getS) [public final fun getS() : java.lang.String = UastEmptyExpression] : PsiType:String
+                    UClass (name = Name2) [public final class Name2 {...}]
+                        UAnnotation (fqName = kotlin.jvm.JvmInline) [@kotlin.jvm.JvmInline]
+                        UField (name = n) [@org.jetbrains.annotations.NotNull private final var n: java.lang.String] : PsiType:String
+                            UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
+                        UMethod (name = getN) [public final fun getN() : java.lang.String = UastEmptyExpression] : PsiType:String
+                        UMethod (name = Name2) [public fun Name2(@org.jetbrains.annotations.NotNull n: java.lang.String) = UastEmptyExpression]
+                            UParameter (name = n) [@org.jetbrains.annotations.NotNull var n: java.lang.String] : PsiType:String
+                                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
                     UClass (name = FooInterface2) [public abstract interface FooInterface2 {...}]
                         UMethod (name = foo) [@kotlin.jvm.JvmDefault...}] : PsiType:int
                             UAnnotation (fqName = kotlin.jvm.JvmDefault) [@kotlin.jvm.JvmDefault]
@@ -1319,6 +1352,7 @@ class UastTest : TestCase() {
     // Regression test for
     // https://youtrack.jetbrains.com/issue/KT-35610:
     // UAST: Some reified methods nave null returnType
+    val moduleName = if (useFirUast()) "app" else "lint_module"
     val source =
       kotlin(
           """
@@ -1564,7 +1598,7 @@ class UastTest : TestCase() {
                     method isOpen(): open
                     method me(): tailrec
                     method multiarg(vararg arg):
-                    method myInternal＄lint_module(): internal
+                    method myInternal＄$moduleName(): internal
                     method notInlined(): noinline
                     method randomUUID(): actual
                     method randomUUID(): expect
@@ -1598,12 +1632,17 @@ class UastTest : TestCase() {
         )
         .indented()
 
+    val inlineClassDelegateField =
+      if (useFirUast())
+        """
+                    @org.jetbrains.annotations.NotNull private final var set: java.util.Set<test.pkg.GraphVariable<?>>"""
+      else ""
     check(source) { file ->
       assertEquals(
         """
                 package test.pkg
 
-                public final class GraphVariables {
+                public final class GraphVariables {$inlineClassDelegateField
                     public final fun getSet() : java.util.Set<test.pkg.GraphVariable<?>> = UastEmptyExpression
                     public fun variable(@org.jetbrains.annotations.NotNull name: java.lang.String, @org.jetbrains.annotations.NotNull graphType: java.lang.String, value: T) : void {
                         this.set.add(<init>(name, graphType, value))
@@ -1736,6 +1775,10 @@ class UastTest : TestCase() {
         )
         .indented()
 
+    // [Unit] as a function return type should be mapped to void.
+    // Otherwise, e.g., lambda return, can be still [Unit].
+    val lambdaBlockReturnType = if (useFirUast()) " : PsiType:Unit" else ""
+
     check(source) { file ->
       assertEquals(
         """
@@ -1749,7 +1792,7 @@ class UastTest : TestCase() {
                               UIdentifier (Identifier (Thread)) [UIdentifier (Identifier (Thread))]
                               USimpleNameReferenceExpression (identifier = <init>, resolvesTo = PsiClass: Thread) [<init>] : PsiType:Thread
                               ULambdaExpression [{ ...}] : PsiType:Function0<? extends Unit>
-                                UBlockExpression [{...}]
+                                UBlockExpression [{...}]$lambdaBlockReturnType
                                   UReturnExpression [return println("hello")]
                                     UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("hello")] : PsiType:Unit
                                       UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
@@ -1766,7 +1809,7 @@ class UastTest : TestCase() {
                                 UIdentifier (Identifier (Runnable)) [UIdentifier (Identifier (Runnable))]
                                 USimpleNameReferenceExpression (identifier = Runnable, resolvesTo = PsiClass: Runnable) [Runnable] : PsiType:Runnable
                                 ULambdaExpression [{ ...}] : PsiType:Function0<? extends Unit>
-                                  UBlockExpression [{...}]
+                                  UBlockExpression [{...}]$lambdaBlockReturnType
                                     UReturnExpression [return println("hello")]
                                       UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("hello")] : PsiType:Unit
                                         UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
