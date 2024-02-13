@@ -49,7 +49,7 @@ class TraceSectionDetectorTest : AbstractCheckTest() {
                 val foobar = foo + bar
                 Trace.endSection()
             }
-            fun safeBlockingCall(str: String) { str.length }
+
             suspend fun wrong1() {
                 Trace.beginSection("Wrong-1")
                 suspendingCall()
@@ -90,6 +90,65 @@ class TraceSectionDetectorTest : AbstractCheckTest() {
           0 errors, 2 warnings
           """
       )
+  }
+
+  fun testGuardedTrace() {
+    lint()
+      .files(
+        classpath(),
+        manifest().minSdk(29),
+        kotlin(
+            """
+            package test.pkg
+
+            import android.os.Trace
+
+            fun okay1() {
+                if (Trace.isEnabled()) {
+                  Trace.beginSection("OK-1")
+                }
+                safeBlockingCall()
+                Trace.endSection()
+            }
+            fun okay2() {
+                Trace.beginSection("OK-2.1")
+                if (Trace.isTagEnabled(Trace.TRACE_TAG_APP)) {
+                  Trace.beginSection("OK-2.2")
+                } else {
+                  return
+                }
+                safeBlockingCall()
+                Trace.endSection()
+                Trace.endSection()
+            }
+            fun okay3() {
+                Trace.beginSection("OK-3")
+                safeBlockingCall()
+                if (Trace.isEnabled()) {
+                  Trace.endSection()
+                }
+            }
+            fun okay4(name: String) {
+                if (Trace.isEnabled()) {
+                  Trace.beginSection("OK-$name")
+                }
+                try {
+                  unsafeBlockingCall()
+                } finally {
+                  if (Trace.isEnabled()) {
+                    Trace.endSection()
+                  }
+                }
+            }
+            fun safeBlockingCall() { }
+            fun unsafeBlockingCall() { error() }
+            """
+          )
+          .indented(),
+        traceApiStub,
+      )
+      .run()
+      .expectClean()
   }
 
   fun testNonStrictKotlin() {
@@ -1291,6 +1350,8 @@ src/test/pkg/test.kt:30: Warning: The beginSection() call is not always closed w
         package android.os;
         public final class Trace {
             public static final long TRACE_TAG_APP = 1L << 12;
+            public static boolean isEnabled() {}
+            public static boolean isTagEnabled(long traceTag) {}
             public static void beginSection(String sectionName) {}
             public static void endSection() {}
             public static void traceBegin(long traceTag, String methodName) {}

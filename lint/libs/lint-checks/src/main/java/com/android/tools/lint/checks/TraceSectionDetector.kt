@@ -30,9 +30,11 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.android.tools.lint.detector.api.findSelector
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.UElement
+import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.getParentOfType
 
@@ -167,6 +169,9 @@ class TraceSectionDetector : Detector(), SourceCodeScanner {
     private const val PLATFORM_TRACE_FQN = "android.os.Trace"
     private const val ANDROIDX_TRACE_FQN = "androidx.tracing.Trace"
 
+    private const val TRACE_IS_ENABLED = "isEnabled"
+    private const val TRACE_IS_TAG_ENABLED = "isTagEnabled"
+
     // Public platform and AndroidX APIs (called on PLATFORM_TRACE_FQN or ANDROIDX_TRACE_FQN):
     private const val BEGIN_SECTION = "beginSection"
     private const val END_SECTION = "endSection"
@@ -221,7 +226,9 @@ class TraceSectionDetector : Detector(), SourceCodeScanner {
                 // android.os.Trace.beginSection() will throw an IllegalArgumentException if passed
                 // a string longer than 127 characters, but that's a separate issue.
                 if (
-                  name == BEGIN_SECTION ||
+                  name == TRACE_IS_ENABLED ||
+                    name == TRACE_IS_TAG_ENABLED ||
+                    name == BEGIN_SECTION ||
                     name == END_SECTION ||
                     name == TRACE_BEGIN ||
                     name == TRACE_END
@@ -233,6 +240,28 @@ class TraceSectionDetector : Detector(), SourceCodeScanner {
                 }
 
                 return super.canThrow(reference, method)
+              }
+
+              override fun checkBranchPaths(
+                conditional: UExpression
+              ): ControlFlowGraph.FollowBranch {
+                val selector = conditional.findSelector()
+                if (selector is UCallExpression) {
+                  val resolved = selector.resolve()
+                  val methodName = resolved?.name
+                  val classFqn = resolved?.containingClass?.qualifiedName
+                  val isAndroidXCall = classFqn == ANDROIDX_TRACE_FQN
+                  val isPlatformCall = classFqn == PLATFORM_TRACE_FQN
+                  if (
+                    ((isAndroidXCall || isPlatformCall) && methodName == TRACE_IS_ENABLED) ||
+                      (isPlatformCall && methodName == TRACE_IS_TAG_ENABLED)
+                  ) {
+                    // For the purpose of this lint check, assume Trace.isEnabled() and
+                    // Trace.isTagEnabled() are always true
+                    return ControlFlowGraph.FollowBranch.THEN
+                  }
+                }
+                return super.checkBranchPaths(conditional)
               }
             },
         )
