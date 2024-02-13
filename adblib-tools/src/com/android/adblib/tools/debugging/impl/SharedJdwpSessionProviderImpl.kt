@@ -38,18 +38,15 @@ internal class SharedJdwpSessionProviderImpl(
 
     override suspend fun <R> withSharedJdwpSession(block: suspend (SharedJdwpSession) -> R): R {
         return withSharedJdwpSessionTracker.track {
+
             logger.verbose { "withSharedJdwpSession(): enter" }
-            // TODO(b/324474436): Handle `retain()` called concurrently with `session.shutdown()`
-            val session = sharedJdwpSessionRef.retain()
             try {
-                session.openIfNeeded()
-                block(session)
+                sharedJdwpSessionRef.withResource { session ->
+                    session.openIfNeeded()
+                    block(session)
+                }
             } finally {
                 logger.verbose { "withSharedJdwpSession(): exit" }
-                if (sharedJdwpSessionRef.releaseNoClose() == 0) {
-                    logger.debug { "withSharedJdwpSession(): shutting down shared JDWP session" }
-                    session.use { it.shutdown() }
-                }
             }
         }
     }
