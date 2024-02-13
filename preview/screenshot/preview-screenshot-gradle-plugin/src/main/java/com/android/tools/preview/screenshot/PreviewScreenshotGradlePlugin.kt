@@ -241,7 +241,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.reportFilePath.disallowChanges()
                         task.analyticsService.set(analyticsServiceProvider)
                         task.usesService(analyticsServiceProvider)
-                        task.description = "Run screenshot tests for the " + variantName + " build."
+                        task.description = "Run screenshot tests for the $variantName build."
                         task.group = JavaBasePlugin.VERIFICATION_GROUP
                         maybeCreateScreenshotTestConfiguration(project)
                         task.useJUnitPlatform {
