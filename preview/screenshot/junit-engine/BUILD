@@ -1,5 +1,5 @@
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
-load("//tools/base/bazel:maven.bzl", "maven_library", "maven_repository")
+load("//tools/base/bazel:maven.bzl", "maven_library")
 
 TEST_ENGINE_VERSION = "0.0.1"
 
@@ -23,23 +23,6 @@ maven_library(
         "@maven//:net.sf.kxml.kxml2",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.junit.platform.junit-platform-engine",
-    ],
-)
-
-maven_repository(
-    name = "maven_repo",
-    artifacts = [
-        ":junit-engine",
-        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
-        "@maven//:org.junit.platform.junit-platform-engine",
-        "@maven//:net.sf.kxml.kxml2",
-        "//tools/base/multipreview-asm",
-        "//tools/base/common:tools.common",
-        "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",
-    ],
-    visibility = [
-        "//tools/base/build-system/integration-test:__subpackages__",
-        "//tools/base/preview/screenshot:__pkg__",
     ],
 )
 
