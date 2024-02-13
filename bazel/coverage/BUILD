@@ -369,6 +369,16 @@ coverage_report(
 )
 
 coverage_report(
+    name = "login",
+    srcpath_include = [
+        "tools/studio/google/cloud/tools/google-login-plugin/src",
+    ],
+    tests = [
+        "//tools/studio/google/cloud/tools/google-login-plugin:google-login-as_tests",
+    ],
+)
+
+coverage_report(
     name = "fullscreen-heapdump-ui",
     srcpath_include = [
         "tools/adt/idea/profilers/src/com/android/tools/profilers/memory",
@@ -1224,6 +1234,7 @@ coverage_report(
         "//tools/data-binding:tools.compilerCommon_tests.test",
         "//tools/studio/google/cloud/testing/directaccess:directaccess_tests",
         "//tools/studio/google/cloud/testing/test-recorder:test-recorder_tests",
+        "//tools/studio/google/cloud/tools/google-login-plugin:google-login-as_tests",
         "//tools/vendor/google/android-apk:android-apk.tests_tests",
         "//tools/vendor/google/android-ndk:android-ndk.tests_tests",
         "//tools/vendor/google/directaccess-client:directaccess-client_tests",
