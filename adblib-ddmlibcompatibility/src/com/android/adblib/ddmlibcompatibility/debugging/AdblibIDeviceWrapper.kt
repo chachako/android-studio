@@ -264,10 +264,9 @@ internal class AdblibIDeviceWrapper(
         }
     }
 
-    override fun getState(): DeviceState? =
-        logUsage(IDeviceUsageTracker.Method.GET_STATE) {
-            DeviceState.getState(connectedDevice.deviceInfo.deviceState.state)
-        }
+    override fun getState(): DeviceState? {
+        return DeviceState.getState(connectedDevice.deviceInfo.deviceState.state)
+    }
 
     @Deprecated("")
     override fun getProperties(): MutableMap<String, String> =
@@ -781,10 +780,9 @@ internal class AdblibIDeviceWrapper(
         unsupportedMethod()
     }
 
-    override fun getVersion(): AndroidVersion =
-        logUsage(IDeviceUsageTracker.Method.GET_VERSION) {
-            iDeviceSharedImpl.version
-        }
+    override fun getVersion(): AndroidVersion {
+        return iDeviceSharedImpl.version
+    }
 
     override fun executeRemoteCommand(
         command: String,
