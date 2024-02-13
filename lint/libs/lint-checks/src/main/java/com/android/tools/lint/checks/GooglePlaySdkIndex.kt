@@ -374,7 +374,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     buildFile: File?,
   ): LintFix? {
     val url = getSdkUrl(groupId, artifactId)
-    return if (url != null) LintFix.ShowUrl(VIEW_DETAILS_MESSAGE, null, url) else null
+    return if (url.isNullOrBlank()) null else LintFix.ShowUrl(VIEW_DETAILS_MESSAGE, null, url)
   }
 
   /** Generate a message for a library that has blocking policy issues */
