@@ -21,14 +21,11 @@ iml_module(
     ],
     jvm_target = "8",
     lint_baseline = "lint_baseline.xml",
-    test_resources = ["src/test/resources"],
-    test_srcs = ["src/test/java"],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
-        "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
     ],
 )
 
@@ -89,5 +86,21 @@ filegroup(
         "//tools/base/build-system:__pkg__",
         "//tools/base/firebase/testlab/testlab-gradle-plugin:__pkg__",
         "//tools/base/preview/screenshot/preview-screenshot-gradle-plugin:__pkg__",
+    ],
+)
+
+# managed by go/iml_to_build
+iml_module(
+    name = "studio.android.sdktools.builder-model.tests",
+    iml_files = ["android.sdktools.builder-model.tests.iml"],
+    test_resources = ["src/test/resources"],
+    test_srcs = ["src/test/java"],
+    visibility = ["//visibility:public"],
+    # do not sort: must match IML order
+    deps = [
+        "//prebuilts/studio/intellij-sdk:studio-sdk[test]",
+        "//tools/base/annotations:studio.android.sdktools.android-annotations[module, test]",
+        "//tools/base/build-system/builder-model:studio.android.sdktools.builder-model[module, test]",
+        "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
     ],
 )
