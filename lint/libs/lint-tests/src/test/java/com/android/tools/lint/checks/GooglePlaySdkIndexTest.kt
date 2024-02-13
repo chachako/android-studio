@@ -340,6 +340,25 @@ class GooglePlaySdkIndexTest {
                 .addVersions(
                   LibraryVersion.newBuilder().setVersionString("2.0.0").setIsLatestVersion(true)
                 )
+                // Policy issues
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("1.0.3")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
+                            )
+                        )
+                    )
+                )
+                // Ok, no issues
+                .addVersions(
+                  LibraryVersion.newBuilder().setVersionString("1.0.2").setIsLatestVersion(false)
+                )
                 // Ok, no issues
                 .addVersions(
                   LibraryVersion.newBuilder().setVersionString("1.0.1").setIsLatestVersion(false)
@@ -351,7 +370,19 @@ class GooglePlaySdkIndexTest {
                     .setIsLatestVersion(false)
                     .setVersionLabels(
                       LibraryVersionLabels.newBuilder()
-                        .setOutdatedIssueInfo(LibraryVersionLabels.OutdatedIssueInfo.newBuilder())
+                        .setOutdatedIssueInfo(
+                          LibraryVersionLabels.OutdatedIssueInfo.newBuilder()
+                            // A closed range
+                            .addRecommendedVersions(
+                              LibraryVersionRange.newBuilder()
+                                .setLowerBound("1.0.1")
+                                .setUpperBound("1.0.2")
+                            )
+                            // An open range
+                            .addRecommendedVersions(
+                              LibraryVersionRange.newBuilder().setLowerBound("2.0.0")
+                            )
+                        )
                     )
                 )
             )
@@ -388,7 +419,7 @@ class GooglePlaySdkIndexTest {
   @Test
   fun `policy issues shown if showPolicyIssues is enabled`() {
     index.showPolicyIssues = true
-    assertThat(countPolicyIssues()).isEqualTo(13)
+    assertThat(countPolicyIssues()).isEqualTo(14)
   }
 
   @Test
@@ -399,7 +430,7 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `errors and warnings shown correctly`() {
-    assertThat(countHasErrorOrWarning()).isEqualTo(15)
+    assertThat(countHasErrorOrWarning()).isEqualTo(16)
   }
 
   @Test

@@ -37,7 +37,7 @@ message Sdk {
   // Fully qualified URL pointing to the SDK Index page for this SDK.
   // Example:
   // https://play.google.com/sdks/details/com-google-android-gms-play-services-ads
-  // Required.
+  // Might be empty if for example, the SDK is not published in the SDK Index.
   string index_url = 2;
 
   // The name of the SDK.
@@ -47,6 +47,7 @@ message Sdk {
   string developer_name = 4;
 
   // The URL of the SDK's icon.
+  // May be empty.
   string icon_url = 5;
 
   // URL with data safety information for this SDK.
@@ -123,13 +124,21 @@ message LibraryVersionLabels {
   }
   Severity severity = 4;
 
-  message CriticalIssueInfo {}
+  message CriticalIssueInfo {
+    // Developer message describing the issue.
+    // Not guaranteed to be present.
+    optional string description = 1;
+  }
 
-  message OutdatedIssueInfo {}
+  message OutdatedIssueInfo {
+    // Recommended alternative versions, since this one is outdated.
+    // Not guaranteed to be set.
+    repeated LibraryVersionRange recommended_versions = 1;
+  }
 
   message PolicyIssuesInfo {
-    // A type of Google policy. Each violation maps to one
-    // of policies. The list of policies and the mapping can be found in
+    // A type of Google policy. Each violation maps to a single policy. The list
+    // of policies and the mapping can be found in
     // http://google3/play/sdk/catalog/api/proto/sdk_violation_type.proto.
     enum SdkPolicy {
       SDK_POLICY_UNKNOWN = 0;
@@ -145,4 +154,14 @@ message LibraryVersionLabels {
     // Always set.
     repeated SdkPolicy violated_sdk_policies = 1;
   }
+}
+
+message LibraryVersionRange {
+  // Lowest library version allowed in this range.
+  // Always set.
+  string lower_bound = 1;
+  // The biggest library version allowed in this range.
+  // Can be the same as lower_bound if no other library versions are allowed.
+  // Can be empty. If missing this range should be interpreted as open range.
+  string upper_bound = 2;
 }
