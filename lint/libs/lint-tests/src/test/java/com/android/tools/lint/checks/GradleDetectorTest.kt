@@ -4941,19 +4941,19 @@ class GradleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-          build.gradle:7: Error: log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console [RiskyLibrary]
+          build.gradle:7: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console [RiskyLibrary]
               compile 'log4j:log4j:1.2.13' // Critical BLOCKING
                       ~~~~~~~~~~~~~~~~~~~~
-          build.gradle:15: Error: com.example.ads.third.party:example version 7.1.1 has Device and Network Abuse policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+          build.gradle:15: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.1 has Device and Network Abuse policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
               compile 'com.example.ads.third.party:example:7.1.1' // Policy (Device and Network Abuse), blocking
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          build.gradle:18: Error: com.example.ads.third.party:example version 7.1.4 has Permissions policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+          build.gradle:18: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.4 has Permissions policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
               compile 'com.example.ads.third.party:example:7.1.4' // Policy (Permissions), blocking
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          build.gradle:22: Error: com.example.ads.third.party:example version 7.1.8 has Malware policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+          build.gradle:22: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.8 has Malware policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
               compile 'com.example.ads.third.party:example:7.1.8' // Policy (multiple types), blocking
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          build.gradle:22: Error: com.example.ads.third.party:example version 7.1.8 has User Data policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+          build.gradle:22: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.8 has User Data policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
               compile 'com.example.ads.third.party:example:7.1.8' // Policy (multiple types), blocking
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           build.gradle:6: Warning: log4j:log4j version 1.2.14 has policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
@@ -4992,13 +4992,13 @@ class GradleDetectorTest : AbstractCheckTest() {
           build.gradle:23: Warning: com.example.ads.third.party:example version 7.1.9 has Permissions policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
               compile 'com.example.ads.third.party:example:7.1.9' // Policy (multiple types), no severity
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          build.gradle:8: Error: log4j:log4j version 1.2.12 has been marked as outdated by its author and will block publishing of your app to Play Console [OutdatedLibrary]
+          build.gradle:8: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.12 has been reported as outdated by its author and will block publishing of your app to Play Console [OutdatedLibrary]
               compile 'log4j:log4j:1.2.12' // OUTDATED BLOCKING
                       ~~~~~~~~~~~~~~~~~~~~
-          build.gradle:5: Warning: log4j:log4j version 1.2.15 has been marked as outdated by its author [OutdatedLibrary]
+          build.gradle:5: Warning: log4j:log4j version 1.2.15 has been reported as outdated by its author [OutdatedLibrary]
               compile 'log4j:log4j:1.2.15' // Outdated NON_BLOCKING
                       ~~~~~~~~~~~~~~~~~~~~
-          build.gradle:13: Warning: com.example.ads.third.party:example version 7.2.0 has been marked as outdated by its author [OutdatedLibrary]
+          build.gradle:13: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
               compile 'com.example.ads.third.party:example:7.2.0' // Outdated + Critical + Policy (multiple issues), no severity
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           6 errors, 14 warnings
@@ -5062,19 +5062,19 @@ class GradleDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-                ../gradle/libs.versions.toml:4: Error: log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console [RiskyLibrary]
+                ../gradle/libs.versions.toml:4: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console [RiskyLibrary]
                                 log4CriticalBlock = "1.2.13"    # Critical BLOCKING
                                                     ~~~~~~~~
-                ../gradle/libs.versions.toml:11: Error: com.example.ads.third.party:example version 7.1.1 has Device and Network Abuse policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+                ../gradle/libs.versions.toml:11: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.1 has Device and Network Abuse policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
                                 exPolicyDevNetBlock = "7.1.1"   # Policy (Device and Network Abuse), blocking
                                                       ~~~~~~~
-                ../gradle/libs.versions.toml:14: Error: com.example.ads.third.party:example version 7.1.4 has Permissions policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+                ../gradle/libs.versions.toml:14: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.4 has Permissions policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
                                 exPolicyPermBlock = "7.1.4"     # Policy (Permissions), blocking
                                                     ~~~~~~~
-                ../gradle/libs.versions.toml:18: Error: com.example.ads.third.party:example version 7.1.8 has Malware policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+                ../gradle/libs.versions.toml:18: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.8 has Malware policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
                                 exPolicyMultiBlock = "7.1.8"    # Policy (multiple types), blocking
                                                      ~~~~~~~
-                ../gradle/libs.versions.toml:18: Error: com.example.ads.third.party:example version 7.1.8 has User Data policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+                ../gradle/libs.versions.toml:18: Error: [Prevents app release in Google Play Console] com.example.ads.third.party:example version 7.1.8 has User Data policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
                                 exPolicyMultiBlock = "7.1.8"    # Policy (multiple types), blocking
                                                      ~~~~~~~
                 ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
@@ -5110,10 +5110,10 @@ class GradleDetectorTest : AbstractCheckTest() {
                 ../gradle/libs.versions.toml:19: Warning: com.example.ads.third.party:example version 7.1.9 has Permissions policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
                                 exPolicyMulti = "7.1.9"         # Policy (multiple types), no severity
                                                 ~~~~~~~
-                ../gradle/libs.versions.toml:5: Error: log4j:log4j version 1.2.12 has been marked as outdated by its author and will block publishing of your app to Play Console [OutdatedLibrary]
+                ../gradle/libs.versions.toml:5: Error: [Prevents app release in Google Play Console] log4j:log4j version 1.2.12 has been reported as outdated by its author and will block publishing of your app to Play Console [OutdatedLibrary]
                                 log4Outdated = "1.2.12"         # Outdated NON_BLOCKING
                                                ~~~~~~~~
-                ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 has been marked as outdated by its author [OutdatedLibrary]
+                ../gradle/libs.versions.toml:9: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
                                 exMultipleIssues = "7.2.0"      # Critical + Outdated + Policy, no severity
                                                    ~~~~~~~
                 6 errors, 12 warnings
@@ -5201,7 +5201,7 @@ class GradleDetectorTest : AbstractCheckTest() {
           build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has User Data policy issues that will block publishing of your app to Play Console in the future [PlaySdkIndexNonCompliant]
               compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has been marked as outdated by its author [OutdatedLibrary]
+          build.gradle:2: Warning: com.example.ads.third.party:example version 7.2.0 has been reported as outdated by its author [OutdatedLibrary]
               compile 'com.example.ads.third.party:example:7.2.0' // Only SDK Index issue should be shown (not NewerVersionAvailable)
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           0 errors, 4 warnings
@@ -5337,10 +5337,10 @@ class GradleDetectorTest : AbstractCheckTest() {
           build.gradle:4: Warning: A newer version of com.google.android.gms:play-services-maps than 18.2.0 is available: 18.3.0 [GradleDependency]
               compile 'com.google.android.gms:play-services-maps:18.2.0' // There is a custom message but no issues
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          build.gradle:2: Error: androidx.slidingpanelayout:slidingpanelayout version 1.1.0 has Permissions policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
+          build.gradle:2: Error: [Prevents app release in Google Play Console] androidx.slidingpanelayout:slidingpanelayout version 1.1.0 has Permissions policy issues that will block publishing of your app to Play Console [PlaySdkIndexNonCompliant]
               compile 'androidx.slidingpanelayout:slidingpanelayout:1.1.0' // Current has issues but there is a custom message
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          build.gradle:3: Warning: com.google.android.gms:play-services-maps version 18.1.0 has been marked as outdated by its author [OutdatedLibrary]
+          build.gradle:3: Warning: com.google.android.gms:play-services-maps version 18.1.0 has been reported as outdated by its author [OutdatedLibrary]
               compile 'com.google.android.gms:play-services-maps:18.1.0' // Current has issues but there is a custom message
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           1 errors, 4 warnings

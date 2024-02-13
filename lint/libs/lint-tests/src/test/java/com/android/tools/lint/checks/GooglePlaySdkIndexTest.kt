@@ -617,7 +617,7 @@ class GooglePlaySdkIndexTest {
     index.showPolicyIssues = true
     val expectedBlockingMessages =
       policyTypes.map { policyType ->
-        "com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console"
+        "[Prevents app release in Google Play Console] com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console"
       }
     assertThat(
         index.generateBlockingPolicyMessages("com.example.ads.third.party", "example", version)
