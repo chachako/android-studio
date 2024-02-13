@@ -34,7 +34,7 @@ readonly config_options="--config=release --config=ants --config=rcache"
         --build_metadata=ab_target=studio-mac-arm \
         --build_metadata=ab_build_id=${build_number} \
         --build_tag_filters=-no_mac \
-        --test_tag_filters=-no_mac,-no_test_mac,-ui_test,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate \
+        --test_tag_filters="ci:studio-mac-arm" \
         --tool_tag=${script_name} \
         --worker_quit_after_build \
         "${conditional_flags[@]}" \
@@ -55,10 +55,6 @@ if [[ -d "${dist_dir}" ]]; then
   cp -a ${bin_dir}/tools/adt/idea/android/src/com/android/tools/idea/diagnostics/heap/native/libjni_object_tagger.dylib ${dist_dir}
   #echo "<head><meta http-equiv=\"refresh\" content=\"0; URL='https://fusion2.corp.google.com/invocations/${invocation_id}'\" /></head>" > "${dist_dir}"/sponge_test_results.html
 fi
-
-# TODO(b/267533769) Once we can upload test results, remove early exit
-# and conditionally exit based on test status
-exit $bazel_status
 
 BAZEL_EXITCODE_TEST_FAILURES=3
 

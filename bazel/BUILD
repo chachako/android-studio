@@ -105,6 +105,7 @@ java_test(
     srcs = ["testSrc/com/android/tools/binaries/ModifyJarManifestTest.java"],
     tags = [
         "ci:studio-mac",
+        "ci:studio-mac-arm",
         "cpu:1",
     ],
     test_class = "com.android.tools.binaries.ModifyJarManifestTest",
