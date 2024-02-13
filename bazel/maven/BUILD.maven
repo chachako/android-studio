@@ -9280,6 +9280,7 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-stdlib/1.9.20/kotlin-stdlib-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-stdlib/1.9.20",
+    srcjar = "repository/org/jetbrains/kotlin/kotlin-stdlib/1.9.20/kotlin-stdlib-1.9.20-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -9341,6 +9342,7 @@ maven_import(
     pom = "repository/org/jetbrains/kotlin/kotlin-test/1.9.20/kotlin-test-1.9.20.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-test/1.9.20",
+    srcjar = "repository/org/jetbrains/kotlin/kotlin-test/1.9.20/kotlin-test-1.9.20-sources.jar",
     visibility = ["//visibility:public"],
 )
 

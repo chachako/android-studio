@@ -902,6 +902,10 @@ DATA = [
     "org.jetbrains.jewel:jewel-ide-laf-bridge-platform-specific:jar:sources:0.13.2-ij-233",
     "org.jetbrains.jewel:jewel-int-ui-standalone:jar:sources:0.13.2",
     "org.jetbrains.jewel:jewel-ui:jar:sources:0.13.2",
+    "org.jetbrains.kotlin:kotlin-stdlib:jar:sources:1.9.20",
+    "org.jetbrains.kotlin:kotlin-test:jar:sources:1.9.20",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:jar:sources:1.6.4",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:jar:sources:1.6.4",
 ]
 
 REMOTE_REPOS = {
