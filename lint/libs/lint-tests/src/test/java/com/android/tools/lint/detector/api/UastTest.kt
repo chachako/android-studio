@@ -1072,13 +1072,17 @@ class UastTest : TestCase() {
     ) { file ->
       // val ubyte: UByte = 255u
       val uByteValue = if (useFirUast()) 255 else -1
-      val enumEntriesBeforeMember =
+      // K2/SLC puts synthetic members---values, valueOf, and entries---together,
+      // followed by enum constructor.
+      // It seems K1/ULC puts [entries] at the end in an ad-hoc manner:
+      //  values, valueOf, members, constructor, and then entries.
+      val enumEntriesBeforeValues =
         if (useFirUast()) ""
         else
           """
                             UMethod (name = Direction) [private fun Direction() = UastEmptyExpression]
                             UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.FooAnnotation.Direction> = UastEmptyExpression] : PsiType:EnumEntries<Direction>"""
-      val enumEntriesAfterMember =
+      val enumEntriesAfterValueOf =
         if (useFirUast())
           """
                             UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.FooAnnotation.Direction> = UastEmptyExpression] : PsiType:EnumEntries<Direction>
@@ -1171,10 +1175,10 @@ class UastTest : TestCase() {
                                 USimpleNameReferenceExpression (identifier = Direction) [Direction]
                             UEnumConstant (name = RIGHT) [@null RIGHT]
                                 UAnnotation (fqName = null) [@null]
-                                USimpleNameReferenceExpression (identifier = Direction) [Direction]$enumEntriesBeforeMember
+                                USimpleNameReferenceExpression (identifier = Direction) [Direction]$enumEntriesBeforeValues
                             UMethod (name = values) [public static fun values() : test.pkg.FooAnnotation.Direction[] = UastEmptyExpression] : PsiType:Direction[]
                             UMethod (name = valueOf) [public static fun valueOf(value: java.lang.String) : test.pkg.FooAnnotation.Direction = UastEmptyExpression] : PsiType:Direction
-                                UParameter (name = value) [var value: java.lang.String] : PsiType:String$enumEntriesAfterMember
+                                UParameter (name = value) [var value: java.lang.String] : PsiType:String$enumEntriesAfterValueOf
                         UClass (name = Bar) [public static abstract annotation Bar {...}]
                         UClass (name = Companion) [public static final class Companion {...}]
                             UField (name = bar) [@org.jetbrains.annotations.NotNull private static final var bar: int = 42] : PsiType:int

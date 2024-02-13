@@ -16,6 +16,7 @@
 
 package com.android.tools.lint.detector.api
 
+import com.android.tools.lint.useFirUast
 import com.intellij.openapi.util.Disposer
 import java.io.File
 import junit.framework.TestCase
@@ -370,6 +371,27 @@ class TypesTest : TestCase() {
 
     val file = pair.first.uastFile
 
+    // K2/SLC puts synthetic members---values, valueOf, and entries---together,
+    // followed by enum constructor.
+    // It seems K1/ULC puts [entries] at the end in an ad-hoc manner:
+    //  values, valueOf, members, constructor, and then entries.
+    val enumEntriesBeforeValues =
+      if (useFirUast()) ""
+      else
+        "        UMethod (name = getResId) [public final fun getResId() : int = UastEmptyExpression] : PsiType:int\n" +
+          "        UMethod (name = KotlinEnum) [private fun KotlinEnum(@org.jetbrains.annotations.NotNull resId: int) = UastEmptyExpression]\n" +
+          "            UParameter (name = resId) [@org.jetbrains.annotations.NotNull var resId: int] : PsiType:int\n" +
+          "                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n" +
+          "        UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.KotlinEnum> = UastEmptyExpression] : PsiType:EnumEntries<KotlinEnum>\n"
+    val enumEntriesAfterValueOf =
+      if (useFirUast())
+        "        UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.KotlinEnum> = UastEmptyExpression] : PsiType:EnumEntries<KotlinEnum>\n" +
+          "        UMethod (name = getResId) [public final fun getResId() : int = UastEmptyExpression] : PsiType:int\n" +
+          "        UMethod (name = KotlinEnum) [private fun KotlinEnum(@org.jetbrains.annotations.NotNull resId: int) = UastEmptyExpression]\n" +
+          "            UParameter (name = resId) [@org.jetbrains.annotations.NotNull var resId: int] : PsiType:int\n" +
+          "                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n"
+      else ""
+
     assertEquals(
       "" +
         "UFile (package = test.pkg) [package test.pkg...]\n" +
@@ -388,14 +410,11 @@ class TypesTest : TestCase() {
         "            UAnnotation (fqName = null) [@null]\n" +
         "            USimpleNameReferenceExpression (identifier = KotlinEnum) [KotlinEnum]\n" +
         "            ULiteralExpression (value = 3) [3] : PsiType:int\n" +
-        "        UMethod (name = getResId) [public final fun getResId() : int = UastEmptyExpression] : PsiType:int\n" +
-        "        UMethod (name = KotlinEnum) [private fun KotlinEnum(@org.jetbrains.annotations.NotNull resId: int) = UastEmptyExpression]\n" +
-        "            UParameter (name = resId) [@org.jetbrains.annotations.NotNull var resId: int] : PsiType:int\n" +
-        "                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n" +
-        "        UMethod (name = getEntries) [public static fun getEntries() : kotlin.enums.EnumEntries<test.pkg.KotlinEnum> = UastEmptyExpression] : PsiType:EnumEntries<KotlinEnum>\n" +
+        enumEntriesBeforeValues +
         "        UMethod (name = values) [public static fun values() : test.pkg.KotlinEnum[] = UastEmptyExpression] : PsiType:KotlinEnum[]\n" +
         "        UMethod (name = valueOf) [public static fun valueOf(value: java.lang.String) : test.pkg.KotlinEnum = UastEmptyExpression] : PsiType:KotlinEnum\n" +
-        "            UParameter (name = value) [var value: java.lang.String] : PsiType:String\n",
+        "            UParameter (name = value) [var value: java.lang.String] : PsiType:String\n" +
+        enumEntriesAfterValueOf,
       file?.asLogTypes(),
     )
     Disposer.dispose(pair.second)
