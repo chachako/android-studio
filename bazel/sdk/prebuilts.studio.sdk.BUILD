@@ -396,6 +396,16 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+# NDK r27 is used for AGP tests that need Ndk with Riscv support.
+filegroup(
+    name = "ndk-27",
+    srcs = sdk_glob(
+        include = ["ndk/27.0.11246959/**"],
+        exclude = ["ndk/27.0.11246959/sources/third_party/googletest/test/BUILD.bazel"],
+    ),
+    visibility = ["//visibility:public"],
+)
+
 filegroup(
     name = "cmake",
     srcs = sdk_glob(
