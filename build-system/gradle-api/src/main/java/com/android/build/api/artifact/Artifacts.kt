@@ -18,6 +18,7 @@ package com.android.build.api.artifact
 
 import com.android.build.api.variant.BuiltArtifactsLoader
 import com.android.build.api.variant.ScopedArtifacts
+import org.gradle.api.Incubating
 import org.gradle.api.Task
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileSystemLocation
@@ -78,11 +79,12 @@ interface Artifacts {
      * @param type type of the multiple artifact.
      * @param inputLocation is an existing static file
      */
+    @Incubating
     fun <MultipleArtifactT> addStaticDirectory(
         type: MultipleArtifactT,
         inputLocation: Directory
     ) where MultipleArtifactT: MultipleArtifact<Directory>,
-            MultipleArtifactT: Appendable
+            MultipleArtifactT: Artifact.Appendable
 
     /**
      * Access [Task] based operations.

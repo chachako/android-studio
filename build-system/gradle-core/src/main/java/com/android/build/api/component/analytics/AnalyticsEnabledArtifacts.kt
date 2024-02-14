@@ -16,9 +16,10 @@
 
 package com.android.build.api.component.analytics
 
-import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.Artifacts
 import com.android.build.api.artifact.MultipleArtifact
+import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.TaskBasedOperation
 import com.android.build.api.variant.BuiltArtifactsLoader
 import com.android.build.api.variant.ScopedArtifacts
@@ -77,7 +78,7 @@ open class AnalyticsEnabledArtifacts @Inject constructor(
     override fun <MultipleArtifactT : MultipleArtifact<Directory>> addStaticDirectory(
         type: MultipleArtifactT,
         inputLocation: Directory
-    ) where MultipleArtifactT : Appendable {
+    ) where MultipleArtifactT : Artifact.Appendable {
         stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
             VariantPropertiesMethodType.ADD_STATIC_DIRECTORY_VALUE
         delegate.addStaticDirectory(type, inputLocation)

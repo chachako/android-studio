@@ -101,7 +101,7 @@ package com.android.build.api.artifact {
 
   public interface Artifacts {
     method @Deprecated public <FileTypeT extends org.gradle.api.file.FileSystemLocation> void add(com.android.build.api.artifact.MultipleArtifact<FileTypeT> type, FileTypeT artifact);
-    method public <MultipleArtifactT extends com.android.build.api.artifact.MultipleArtifact<org.gradle.api.file.Directory> & java.lang.Appendable> void addStaticDirectory(MultipleArtifactT type, org.gradle.api.file.Directory inputLocation);
+    method @org.gradle.api.Incubating public <MultipleArtifactT extends com.android.build.api.artifact.MultipleArtifact<org.gradle.api.file.Directory> & com.android.build.api.artifact.Artifact.Appendable> void addStaticDirectory(MultipleArtifactT type, org.gradle.api.file.Directory inputLocation);
     method public com.android.build.api.variant.ScopedArtifacts forScope(com.android.build.api.variant.ScopedArtifacts.Scope scope);
     method public <FileTypeT extends org.gradle.api.file.FileSystemLocation> org.gradle.api.provider.Provider<FileTypeT> get(com.android.build.api.artifact.SingleArtifact<FileTypeT> type);
     method public <FileTypeT extends org.gradle.api.file.FileSystemLocation> org.gradle.api.provider.Provider<java.util.List<FileTypeT>> getAll(com.android.build.api.artifact.MultipleArtifact<FileTypeT> type);

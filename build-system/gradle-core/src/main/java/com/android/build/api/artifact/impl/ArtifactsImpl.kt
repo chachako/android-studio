@@ -158,7 +158,7 @@ class ArtifactsImpl(
         type: MultipleArtifactT,
         inputLocation: Directory
     ) where MultipleArtifactT: MultipleArtifact<Directory>,
-            MultipleArtifactT: Appendable {
+            MultipleArtifactT: Artifact.Appendable {
         addStaticProvider(getArtifactContainer(type), type, inputLocation)
     }
 
