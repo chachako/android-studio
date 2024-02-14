@@ -20,7 +20,7 @@ import com.android.build.gradle.options.SyncOptions
 import com.android.builder.internal.aapt.v2.Aapt2Exception
 import com.android.ide.common.blame.Message
 import com.android.ide.common.blame.MessageJsonSerializer
-import com.android.ide.common.blame.parser.JsonEncodedGradleMessageParser.STDOUT_ERROR_TAG
+import com.android.ide.common.blame.MessageJsonSerializer.STDOUT_ERROR_TAG
 import com.android.ide.common.blame.parser.aapt.AbstractAaptOutputParser.AAPT_TOOL_NAME
 import com.android.ide.common.resources.CompileResourceRequest
 import com.google.common.truth.Truth.assertThat
