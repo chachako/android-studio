@@ -20,7 +20,7 @@ import androidx.inspection.Connection;
 
 class ConnectionImpl extends Connection {
 
-    private String mInspectorId;
+    private final String mInspectorId;
 
     private final int mChunkSize;
 

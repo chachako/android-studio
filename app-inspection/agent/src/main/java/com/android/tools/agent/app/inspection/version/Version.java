@@ -16,6 +16,7 @@
 
 package com.android.tools.agent.app.inspection.version;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,39 +63,6 @@ class Version implements Comparable<Version> {
                         : null);
     }
 
-    public boolean isPatch() {
-        return patch != 0;
-    }
-
-    public boolean isSnapshot() {
-        return "-SNAPSHOT".equals(extra);
-    }
-
-    private boolean extraStartsWith(String pattern) {
-        if (extra == null) return false;
-        return extra.toLowerCase().startsWith(pattern);
-    }
-
-    public boolean isAlpha() {
-        return extraStartsWith("-alpha");
-    }
-
-    public boolean isBeta() {
-        return extraStartsWith("-beta");
-    }
-
-    public boolean isDev() {
-        return extraStartsWith("-dev");
-    }
-
-    public boolean isRC() {
-        return extraStartsWith("-rc");
-    }
-
-    public boolean isStable() {
-        return extra == null;
-    }
-
     @Override
     public int compareTo(Version o) {
         if (major != o.major) {
@@ -103,7 +71,7 @@ class Version implements Comparable<Version> {
             return minor - o.minor;
         } else if (patch != o.patch) {
             return patch - o.patch;
-        } else if (extra != o.extra) {
+        } else if (!Objects.equals(extra, o.extra)) {
             if (extra == null || o.extra == null) {
                 // The version containing the "extra" should precede the version that does not sport
                 // a suffix. For example: 2.0.0-rc comes before 2.0.0
@@ -116,7 +84,8 @@ class Version implements Comparable<Version> {
         return 0;
     }
 
-    private static Pattern VERSION_REGEX = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(-.+)?$");
+    private static final Pattern VERSION_REGEX =
+            Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(-.+)?$");
 
     public static Version parseOrNull(String versionString) {
         Matcher matcher = VERSION_REGEX.matcher(versionString);

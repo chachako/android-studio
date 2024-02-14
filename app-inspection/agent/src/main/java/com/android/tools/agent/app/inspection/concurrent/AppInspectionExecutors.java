@@ -52,7 +52,7 @@ public class AppInspectionExecutors {
             String inspectorId, Consumer<Throwable> crashListener) {
         // Thread name is prepared in the special way,
         // because the native level name is cut to first 15 characters.
-        // Thus STUDIO_PREFIX and shortened inspector id are squeezed in first 15 characters.
+        // Thus, STUDIO_PREFIX and shortened inspector id are squeezed in first 15 characters.
         // On java level full thread name is preserved, so full information about
         // inspector added at the end for better readability in tools relying on java thread name.
         String name =

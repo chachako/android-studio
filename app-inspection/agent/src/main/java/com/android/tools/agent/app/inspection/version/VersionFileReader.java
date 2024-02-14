@@ -43,7 +43,7 @@ class VersionFileReader {
 
         public Status status;
 
-        /** The version string if the read was successful. Otherwise null. */
+        /** The version string if the read was successful. Otherwise, null. */
         public String versionString;
 
         public Result(Status status, String versionString) {
@@ -74,8 +74,8 @@ class VersionFileReader {
      * Reads the first line of the provided input stream of the version file.
      *
      * <p>This assumes the first and only line of the file is the version string. Format is the same
-     * as what Gradle uses, e.g. 1.2.3-alpha04 See also:
-     * https://docs.gradle.org/current/userguide/single_versions.html
+     * as what Gradle uses, e.g. 1.2.3-alpha04 <a
+     * href="https://docs.gradle.org/current/userguide/single_versions.html">(See here)</a>
      *
      * @param inputStream the stream of the version file
      * @return the first line read. null if IOException was encountered.

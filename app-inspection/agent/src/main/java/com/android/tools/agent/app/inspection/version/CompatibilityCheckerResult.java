@@ -34,7 +34,7 @@ public final class CompatibilityCheckerResult {
         /** The version file of the library and none of the expected classes were found. */
         LIBRARY_NOT_FOUND,
         /**
-         * We detected the app was proguarded, which means classes may have been stripped and we
+         * We detected the app was proguarded, which means classes may have been stripped, and we
          * should probably abort inspection.
          */
         PROGUARDED,

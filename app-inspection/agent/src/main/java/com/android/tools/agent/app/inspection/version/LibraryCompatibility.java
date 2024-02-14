@@ -17,7 +17,7 @@
 package com.android.tools.agent.app.inspection.version;
 
 /**
- * Contains all of the information required to perform version check.
+ * Contains all the information required to perform version check.
  *
  * <p>Note: This data structure is also initialized and used in the JNI layer. Changes to this may
  * require updating app_inspection_agent_command.cc.

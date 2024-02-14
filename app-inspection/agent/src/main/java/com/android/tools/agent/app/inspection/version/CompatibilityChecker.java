@@ -122,33 +122,15 @@ public final class CompatibilityChecker {
     private static boolean isProguarded(ArtifactCoordinate coordinate) {
         String groupId = coordinate.groupId;
 
-        // Produce package name for `ProguardDetection` class, e.g for following params:
+        // Produce package name for `ProguardDetection` class, e.g. for following params:
         // mavenGroup = androidx.work, mavenArtifact = work-runtime, result will be:
         // androidx.inspection.work.runtime.
 
-        // does group start with "androidx." ? if yes, we gonna cut it
+        // does group start with "androidx." ? if yes, we remove it
         int prefixCount = groupId.startsWith(ANDROIDX_PREFIX) ? ANDROIDX_PREFIX.length() : 0;
         groupId = groupId.substring(prefixCount);
 
-        // get first token in artifactId, e.g work-runtime => work.
-        // There may not always be a hyphen in the artifact, e.g. "compose.ui:ui" => "ui"
-        String artifactPrefix = coordinate.artifactId.split("-")[0];
-
-        // remove clashing term in the beginning of artifact and the end of group, e.g.:
-        // groupId=work and artifactId=work-runtime => artifactId = "-runtime"
-        String artifactId =
-                groupId.endsWith(artifactPrefix)
-                        ? coordinate.artifactId.substring(artifactPrefix.length())
-                        : coordinate.artifactId;
-        // remove "-" if artifactId now starts with it
-        artifactId = artifactId.startsWith("-") ? artifactId.substring(1) : artifactId;
-        // e.g "foundation-layout" => "foundation.layout"
-        artifactId = artifactId.replace('-', '.');
-
-        String packageName =
-                INSPECTION_PACKAGE
-                        + ("." + groupId)
-                        + (!artifactId.equals("") ? "." + artifactId : "");
+        String packageName = getPackageName(coordinate, groupId);
 
         String className = packageName + "." + PROGUARD_DETECTOR_CLASS;
 
@@ -160,6 +142,32 @@ public final class CompatibilityChecker {
         }
     }
 
+    private static String getPackageName(ArtifactCoordinate coordinate, String groupId) {
+        String artifactId = getArtifactId(coordinate, groupId);
+        String packageName = INSPECTION_PACKAGE + "." + groupId;
+
+        return artifactId.isEmpty() ? packageName : packageName + "." + artifactId;
+    }
+
+    private static String getArtifactId(ArtifactCoordinate coordinate, String groupId) {
+        // get first token in artifactId, e.g. work-runtime => work.
+        // There may not always be a hyphen in the artifact, e.g. "compose.ui:ui" => "ui"
+        String artifactPrefix = coordinate.artifactId.split("-")[0];
+
+        // remove clashing term in the beginning of artifact and the end of group, e.g.:
+        // groupId=work and artifactId=work-runtime => artifactId = "-runtime"
+        String artifactId =
+                groupId.endsWith(artifactPrefix)
+                        ? coordinate.artifactId.substring(artifactPrefix.length())
+                        : coordinate.artifactId;
+
+        // remove "-" if artifactId now starts with it
+        artifactId = artifactId.startsWith("-") ? artifactId.substring(1) : artifactId;
+
+        // e.g. "foundation-layout" => "foundation.layout"
+        return artifactId.replace('-', '.');
+    }
+
     /**
      * Check if any of the specified classes exist in the app.
      *
@@ -167,7 +175,7 @@ public final class CompatibilityChecker {
      * name. If any of those classes are present we assume the library is included in the app.
      *
      * @param expectedLibraryClassNames classes expected to be in a certain library.
-     * @return true of any of the classes are present or no classes were specified.
+     * @return true if any of the classes are present or no classes were specified.
      */
     private static boolean anyExpectedClassesExists(String[] expectedLibraryClassNames) {
         if (expectedLibraryClassNames == null || expectedLibraryClassNames.length == 0) {

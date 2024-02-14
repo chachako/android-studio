@@ -82,7 +82,7 @@ public final class InspectorBridge {
             @NonNull CrashListener crashListener) {
         Consumer<Throwable> crashConsumer =
                 new Consumer<Throwable>() {
-                    private AtomicBoolean mCrashed = new AtomicBoolean();
+                    private final AtomicBoolean mCrashed = new AtomicBoolean();
 
                     @Override
                     public void accept(Throwable throwable) {

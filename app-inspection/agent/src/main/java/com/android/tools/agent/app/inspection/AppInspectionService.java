@@ -39,7 +39,7 @@ import java.util.function.Function;
 /** This service controls all app inspectors */
 // Suppress Convert2Lambda: Lambdas may incur penalty hit on older Android devices
 // Suppress unused: Methods invoked via jni
-// Suppress rawtypes: Service doesn't care about specific types, works with Objects
+// Suppress raw types: Service doesn't care about specific types, works with Objects
 @SuppressWarnings({"Convert2Lambda", "unused", "rawtypes"})
 public class AppInspectionService {
 
@@ -54,7 +54,8 @@ public class AppInspectionService {
 
     // will be passed to jni method to call methods on the instance
     @SuppressWarnings("FieldCanBeLocal")
-    // currently AppInspectionService is singleton and it is never destroyed, so we don't clean this reference.
+    // currently AppInspectionService is singleton, and it is never destroyed, so we don't clean
+    // this reference.
     private final long mNativePtr;
 
     private final Map<String, InspectorBridge> mInspectorBridges = new ConcurrentHashMap<>();
@@ -356,16 +357,18 @@ public class AppInspectionService {
      * </ol>
      *
      * <p>For example, the function {@code Client#sendMessage(Receiver r, String message)} will
-     * receive the array: ["(Lcom/example/Receiver;Ljava/lang/String;)Lcom/example/Client;", this,
-     * r, message]
+     * receive the array:
+     *
+     * <pre>
+     * ["(Lcom/example/Receiver;Ljava/lang/String;)Lcom/example/Client;", this, r, message]
+     * </pre>
      */
     public static void onEntry(Object[] signatureThisParams) {
         // Should always at least contain signature and "this"
         assert (signatureThisParams.length >= 2);
         String signature = (String) signatureThisParams[0];
-        String label = signature;
         List<HookInfo<EntryHook>> hooks =
-                AppInspectionService.instance().mEntryTransforms.get(label);
+                AppInspectionService.instance().mEntryTransforms.get(signature);
 
         if (hooks == null) {
             return;

@@ -30,19 +30,25 @@ class ArtToolingImpl implements ArtTooling {
         this.inspectorId = inspectorId;
     }
 
+    @NonNull
     @Override
-    public <T> List<T> findInstances(Class<T> clazz) {
+    public <T> List<T> findInstances(@NonNull Class<T> clazz) {
         return Arrays.asList(nativeFindInstances(mAppInspectionServicePtr, clazz));
     }
 
     @Override
-    public void registerEntryHook(Class<?> originClass, String originMethod, EntryHook entryHook) {
+    public void registerEntryHook(
+            @NonNull Class<?> originClass,
+            @NonNull String originMethod,
+            @NonNull EntryHook entryHook) {
         AppInspectionService.addEntryHook(inspectorId, originClass, originMethod, entryHook);
     }
 
     @Override
     public <T> void registerExitHook(
-            Class<?> originClass, String originMethod, ExitHook<T> exitHook) {
+            @NonNull Class<?> originClass,
+            @NonNull String originMethod,
+            @NonNull ExitHook<T> exitHook) {
         AppInspectionService.addExitHook(inspectorId, originClass, originMethod, exitHook);
     }
 

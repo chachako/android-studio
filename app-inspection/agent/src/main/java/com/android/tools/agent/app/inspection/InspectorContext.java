@@ -17,6 +17,7 @@
 package com.android.tools.agent.app.inspection;
 
 import android.os.Build;
+import android.util.Log;
 import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.inspection.Inspector;
@@ -127,8 +128,9 @@ final class InspectorContext {
             mInspector = inspector;
             return null;
         } catch (Throwable e) {
-            e.printStackTrace();
-            return "Failed during instantiating inspector with id " + mInspectorId;
+            String msg = "Failed during instantiating inspector with id " + mInspectorId;
+            Log.e("AppInspection", msg, e);
+            return msg;
         }
     }
 
