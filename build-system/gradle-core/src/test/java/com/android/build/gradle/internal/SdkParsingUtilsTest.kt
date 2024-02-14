@@ -24,31 +24,10 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.PrintStream
 import java.util.regex.Pattern
 
 class SdkParsingUtilsTest {
-
-    private val BUILD_TOOL_28_0_2_XML = """
-        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-        <ns2:repository
-            xmlns:ns2="http://schemas.android.com/repository/android/common/01"
-            xmlns:ns3="http://schemas.android.com/repository/android/generic/01"
-            xmlns:ns4="http://schemas.android.com/sdk/android/repo/addon2/01"
-            xmlns:ns5="http://schemas.android.com/sdk/android/repo/repository2/01"
-            xmlns:ns6="http://schemas.android.com/sdk/android/repo/sys-img2/01">
-
-            <license id="android-sdk-license" type="text">Very valid license</license>
-            <localPackage path="build-tools;28.0.2" obsolete="false">
-                <type-details xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ns3:genericDetailsType"/>
-                <revision><major>28</major><minor>0</minor><micro>2</micro></revision>
-                <display-name>Android SDK Build-Tools 28.0.2</display-name>
-                <uses-license ref="android-sdk-license"/>
-            </localPackage>
-        </ns2:repository>
-    """.trimIndent()
 
     private val BUILD_TOOL_28_0_3_XML = """
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -63,26 +42,6 @@ class SdkParsingUtilsTest {
             <localPackage path="build-tools;28.0.3" obsolete="false">
                 <type-details xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ns3:genericDetailsType"/>
                 <revision><major>28</major><minor>0</minor><micro>3</micro></revision>
-                <display-name>Android SDK Build-Tools 28.0.3</display-name>
-                <uses-license ref="android-sdk-license"/>
-            </localPackage>
-        </ns2:repository>
-    """.trimIndent()
-
-    private val BUILD_TOOL_FUTURE_88_0_0_XML = """
-        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-        <ns2:repository
-            xmlns:ns2="http://schemas.android.com/repository/android/common/01"
-            xmlns:ns3="http://schemas.android.com/repository/android/generic/01"
-            xmlns:ns4="http://schemas.android.com/sdk/android/repo/addon2/01"
-            xmlns:ns5="http://schemas.android.com/sdk/android/repo/repository2/01"
-            xmlns:ns6="http://schemas.android.com/sdk/android/repo/sys-img2/01">
-
-            <license id="android-sdk-license" type="text">Very valid license</license>
-            <localPackage path="build-tools;88.0.0" obsolete="false">
-                <type-details xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ns3:genericDetailsType"/>
-                <new-tag>new-value</new-tag>
-                <revision><major>88</major><minor>0</minor><micro>0</micro></revision>
                 <display-name>Android SDK Build-Tools 28.0.3</display-name>
                 <uses-license ref="android-sdk-license"/>
             </localPackage>
@@ -221,21 +180,6 @@ class SdkParsingUtilsTest {
 
         val buildTool = buildBuildTools(sdkDir, revision)
         assertThat(buildTool).isNull()
-    }
-
-    private fun verifyErrorOutput(
-        f: () -> Unit,
-        verifyOutput: (err: ByteArrayOutputStream) -> Unit
-    ) {
-        val originalErr = System.err;
-        val errContent = ByteArrayOutputStream()
-        try {
-            System.setErr(PrintStream(errContent))
-            f.invoke()
-        } finally {
-            System.setErr(originalErr)
-        }
-        verifyOutput(errContent)
     }
 
     @Test
@@ -415,12 +359,9 @@ class SdkParsingUtilsTest {
         )
         assertThat(issueReporter.messages).containsExactly(
             """
-            We recommend using a newer Android Gradle plugin to use compileSdkPreview = "S"
+            compileSdkPreview = "S" has not been tested with this version of the Android Gradle plugin.
 
             This Android Gradle plugin (7.0.0-beta01) was tested up to compileSdk = 30.
-
-            You are strongly encouraged to update your project to use a newer
-            (stable or preview) Android Gradle plugin that has been tested with compileSdkPreview = "S".
 
             If you are already using the latest preview version of the Android Gradle plugin,
             you may need to wait until a newer version with support for compileSdkPreview = "S" is available.
