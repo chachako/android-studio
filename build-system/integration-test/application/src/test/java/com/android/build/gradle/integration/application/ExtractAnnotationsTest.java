@@ -21,9 +21,12 @@ import static com.android.testutils.truth.PathSubject.assertThat;
 import static com.android.testutils.truth.ZipFileSubject.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
+import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
+import com.android.build.gradle.integration.common.runner.FilterableParameterized;
 import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.testutils.apk.Zip;
 import com.google.common.truth.Truth;
 import java.io.File;
@@ -36,6 +39,8 @@ import java.util.Objects;
 import java.util.Scanner;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Integration test for extracting annotations.
@@ -47,7 +52,16 @@ import org.junit.Test;
  *     $ ./gradlew :base:build-system:integration-test:application:test -D:base:build-system:integration-test:application:test.single=ExtractAnnotationTest
  * </pre>
  */
+@RunWith(FilterableParameterized.class)
 public class ExtractAnnotationsTest {
+
+    @Parameterized.Parameters(name = "useK2Uast = {0}")
+    public static Object[] getParameters() {
+        return new Object[] {true, false};
+    }
+
+    @Parameterized.Parameter(0)
+    public boolean useK2Uast;
 
     @Rule
     public GradleTestProject project =
@@ -57,7 +71,7 @@ public class ExtractAnnotationsTest {
 
     @Test
     public void checkExtractAnnotation() throws Exception {
-        project.execute("clean", "assembleDebug");
+        getExecutor().run("clean", "assembleDebug");
 
         try (Scanner stderr = project.getBuildResult().getStderr()) {
             ScannerSubject.assertThat(stderr).doesNotContain("Unknown flag");
@@ -168,7 +182,7 @@ public class ExtractAnnotationsTest {
                     }
                 });
 
-        GradleBuildResult result = project.executor().run("assembleDebug");
+        GradleBuildResult result = getExecutor().run("assembleDebug");
 
         Truth.assertThat(result.getDidWorkTasks()).isEmpty();
 
@@ -208,7 +222,7 @@ public class ExtractAnnotationsTest {
                         + "        project.files('/does/not/exist')\n"
                         + "    )\n"
                         + "}\n");
-        project.execute("clean", "assembleDebug");
+        getExecutor().run("clean", "assembleDebug");
     }
 
     /** Regression test for b/228751486 */
@@ -224,12 +238,16 @@ public class ExtractAnnotationsTest {
                 intDefFile, "android.support.annotation.IntDef", "android.support.annotation.*");
         assertThat(extractTestFile.delete()).isTrue();
 
-        project.execute("clean", "assembleDebug");
+        getExecutor().run("clean", "assembleDebug");
         project.getAar(
                 "debug",
                 debugAar -> {
                     Zip annotationZip = debugAar.getEntryAsZip("annotations.zip");
                     assertThat(annotationZip).isNotNull();
                 });
+    }
+
+    private GradleTaskExecutor getExecutor() {
+        return project.executor().with(BooleanOption.LINT_USE_K2_UAST, useK2Uast);
     }
 }
