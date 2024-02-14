@@ -9,6 +9,7 @@ gradle_integration_test(
         "src/test/java/**/*.kt",
     ]),
     data = [
+        "//prebuilts/studio/jdk/jdk17:jdk17_runtime_files",
         "//prebuilts/studio/sdk:build-tools/latest",
         "//tools/base/build-system:gradle-distrib",
         "//tools/base/build-system/integration-test:android_platform_for_tests",

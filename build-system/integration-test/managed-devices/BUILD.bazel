@@ -42,6 +42,7 @@ TEST_DATA = downloaded_sdk + [
     "//tools/base/build-system:gradle-distrib",
     "//tools/base/build-system/aapt2:aapt2_for_tests",
     "//tools/base/build-system/integration-test:android_platform_for_tests",
+    "//prebuilts/studio/jdk/jdk17:jdk17_runtime_files",
 ]
 
 #keep sorted

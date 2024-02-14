@@ -15,6 +15,7 @@ gradle_integration_test(
     name = "DaggerHiltFlavoredTest",
     srcs = ["DaggerHiltFlavoredTest.kt"],
     data = [
+        "//prebuilts/studio/jdk/jdk17:jdk17_runtime_files",
         "//prebuilts/studio/sdk:build-tools/latest",
         "//prebuilts/studio/sdk:platform-tools",
         "//tools/base/build-system:gradle-distrib",
