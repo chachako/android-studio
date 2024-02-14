@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,225 +13,186 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.app.inspection
 
-package com.android.tools.app.inspection;
-
-import static com.google.common.truth.Truth.assertThat;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.android.tools.app.inspection.AppInspection.AppInspectionCommand;
-import com.android.tools.app.inspection.AppInspection.AppInspectionEvent;
-import com.android.tools.fakeandroid.ProcessRunner;
-import com.android.tools.profiler.proto.Commands;
-import com.android.tools.profiler.proto.Common;
-import com.android.tools.profiler.proto.Transport.ExecuteRequest;
-import com.android.tools.profiler.proto.Transport.GetEventsRequest;
-import com.android.tools.profiler.proto.TransportServiceGrpc;
-import com.android.tools.profiler.proto.TransportServiceGrpc.TransportServiceBlockingStub;
-import com.android.tools.transport.TransportRule;
-import com.android.tools.transport.device.SdkLevel;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.rules.ExternalResource;
-import org.junit.rules.RuleChain;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
+import com.android.tools.app.inspection.AppInspection.*
+import com.android.tools.fakeandroid.ProcessRunner.Companion.getProcessPath
+import com.android.tools.profiler.proto.Commands
+import com.android.tools.profiler.proto.Common
+import com.android.tools.profiler.proto.Common.CommonConfig
+import com.android.tools.profiler.proto.Transport.ExecuteRequest
+import com.android.tools.profiler.proto.Transport.GetEventsRequest
+import com.android.tools.profiler.proto.TransportServiceGrpc
+import com.android.tools.profiler.proto.TransportServiceGrpc.TransportServiceBlockingStub
+import com.android.tools.transport.TransportRule
+import com.android.tools.transport.device.SdkLevel
+import com.google.common.truth.Truth.assertThat
+import java.io.File
+import java.util.concurrent.*
+import java.util.concurrent.atomic.AtomicInteger
+import org.junit.rules.ExternalResource
+import org.junit.rules.RuleChain
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 /**
  * A JUnit rule for wrapping useful app-inspection gRPC operations, spinning up a separate thread to
  * manage host / device communication.
  *
- * <p>While running, it polls the transport framework for events, which should be received after
- * calls to {@link #sendCommand(AppInspectionCommand)}. You can fetch those events using {@link
- * #sendCommandAndGetResponse(AppInspectionCommand)} instead, or by calling {@link
- * #consumeCollectedEvent()}.
+ * While running, it polls the transport framework for events, which should be received after calls
+ * to [.sendCommand]. You can fetch those events using [ ][.sendCommandAndGetResponse] instead, or
+ * by calling [ ][.consumeCollectedEvent].
  *
- * <p>The thread will be spun down when the rule itself tears down.
+ * The thread will be spun down when the rule itself tears down.
  */
-public final class AppInspectionRule extends ExternalResource implements Runnable {
+class AppInspectionRule(activityClass: String, sdkLevel: SdkLevel) : ExternalResource(), Runnable {
+  val transportRule: TransportRule =
+    TransportRule(
+      activityClass,
+      sdkLevel,
+      object : TransportRule.Config() {
+        override fun initDaemonConfig(daemonConfig: CommonConfig.Builder) {
+          daemonConfig.setProfilerUnifiedPipeline(true)
+        }
+      },
+    )
+
+  private lateinit var transportStub: TransportServiceBlockingStub
+
+  private val executor: ExecutorService = Executors.newSingleThreadExecutor()
+  private var pid = 0
+
+  private val nextCommandId = AtomicInteger(1)
+  private val unexpectedResponses: MutableList<Common.Event> = ArrayList()
+  private val commandIdToFuture = ConcurrentHashMap<Int, CompletableFuture<Common.Event>>()
+  private val events = LinkedBlockingQueue<Common.Event>()
+  private val payloads: MutableMap<Long, MutableList<Byte>> = ConcurrentHashMap()
+
+  override fun apply(base: Statement, description: Description): Statement {
+    return RuleChain.outerRule(transportRule).apply(super.apply(base, description), description)
+  }
+
+  fun hasEventToCollect(): Boolean {
+    return events.size > 0
+  }
+
+  /** Pulls one event off the event queue, asserting if there are no events. */
+  fun consumeCollectedEvent(): AppInspectionEvent {
+    val event = events.take()
+    assertThat(event).isNotNull()
+    assertThat(event.pid).isEqualTo(pid)
+    assertThat(event.hasAppInspectionEvent()).isTrue()
+    return event.appInspectionEvent
+  }
+
+  /** Sends the inspection command and returns a non-null response. */
+  fun sendCommandAndGetResponse(appInspectionCommand: AppInspectionCommand): AppInspectionResponse {
+    val local = commandIdToFuture[sendCommand(appInspectionCommand)]!!
+    val response = local[TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS]
+    assertThat(response).isNotNull()
+    assertThat(response.hasAppInspectionResponse()).isTrue()
+    assertThat(response.pid).isEqualTo(pid)
+    return response.appInspectionResponse
+  }
+
+  /** Sends the inspection command and returns its generated id. */
+  fun sendCommand(appInspectionCommand: AppInspectionCommand): Int {
+    val commandId = nextCommandId.getAndIncrement()
+    val idAppInspectionCommand = appInspectionCommand.toBuilder().setCommandId(commandId).build()
+    val command =
+      Commands.Command.newBuilder()
+        .setType(Commands.Command.CommandType.APP_INSPECTION)
+        .setAppInspectionCommand(idAppInspectionCommand)
+        .setStreamId(1234)
+        .setPid(pid)
+        .build()
+
+    val local = CompletableFuture<Common.Event>()
+    commandIdToFuture[commandId] = local
+    val executeRequest = ExecuteRequest.newBuilder().setCommand(command).build()
+
+    // Ignore execute response because the stub is blocking anyway
+    transportStub.execute(executeRequest)
+
+    return commandId
+  }
+
+  /**
+   * Assert that the expected text is logged to the console.
+   *
+   * It's preferred using this over
+   * [ ][com.android.tools.fakeandroid.FakeAndroidDriver.waitForInput] because this method also
+   * includes a timeout for early aborting if things went wrong.
+   */
+  fun assertInput(expected: String) {
+    assertThat(transportRule.androidDriver.waitForInput(expected, TIMEOUT_MS.toLong())).isTrue()
+  }
+
+  override fun run() {
+    transportStub.getEvents(GetEventsRequest.getDefaultInstance()).forEach { event ->
+      when {
+        event.hasAppInspectionEvent() -> events.offer(event)
+        event.hasAppInspectionResponse() -> handleResponse(event)
+        event.hasAppInspectionPayload() -> handlePayload(event)
+      }
+    }
+  }
+
+  fun removePayload(payloadId: Long): List<Byte>? {
+    return payloads.remove(payloadId)
+  }
+
+  override fun before() {
+    this.transportStub = TransportServiceGrpc.newBlockingStub(transportRule.grpc.channel)
+    this.pid = transportRule.pid
+
+    executor.submit(this)
+  }
+
+  override fun after() {
+    executor.shutdownNow()
+    try {
+      executor.awaitTermination(TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS)
+    } catch (e: InterruptedException) {
+      throw RuntimeException(e)
+    }
+    assertThat(unexpectedResponses).isEmpty()
+    assertThat(events).isEmpty()
+  }
+
+  private fun handleResponse(event: Common.Event) {
+    val response = event.appInspectionResponse
+    val commandId = response.commandId
+    assertThat(commandId).isNotEqualTo(0)
+    val localCommandCompleter = commandIdToFuture[commandId]
+    localCommandCompleter?.complete(event) ?: unexpectedResponses.add(event)
+  }
+
+  private fun handlePayload(event: Common.Event) {
+    val payloadId = event.groupId
+    val payload = event.appInspectionPayload
+    val bytes = payloads.computeIfAbsent(payloadId) { mutableListOf() }
+    for (b in payload.chunk.toByteArray()) {
+      bytes.add(b)
+    }
+  }
+
+  companion object {
     /**
-     * All asynchronous operations are expected to only take subseconds, so we choose a relatively
+     * All asynchronous operations are expected to only take sub seconds, so we choose a relatively
      * small but still generous timeout. If a callback doesn't complete during it, we fail the test.
      */
-    private static final int TIMEOUT_MS = 10 * 1000;
-
-    public final TransportRule transportRule;
-
-    private TransportServiceBlockingStub transportStub;
-    private final ExecutorService executor;
-    private int pid;
-
-    private AtomicInteger nextCommandId = new AtomicInteger(1);
-    private List<Common.Event> unexpectedResponses = new ArrayList<>();
-    private ConcurrentHashMap<Integer, CompletableFuture<Common.Event>> commandIdToFuture =
-            new ConcurrentHashMap<>();
-    private LinkedBlockingQueue<Common.Event> events = new LinkedBlockingQueue<>();
-    private Map<Long, List<Byte>> payloads = new ConcurrentHashMap<>();
-
-    public AppInspectionRule(@NonNull String activityClass, @NonNull SdkLevel sdkLevel) {
-        this.transportRule =
-                new TransportRule(
-                        activityClass,
-                        sdkLevel,
-                        new TransportRule.Config() {
-                            @Override
-                            public void initDaemonConfig(
-                                    @NonNull Common.CommonConfig.Builder daemonConfig) {
-                                daemonConfig.setProfilerUnifiedPipeline(true);
-                            }
-                        });
-
-        this.executor = Executors.newSingleThreadExecutor();
-    }
-
-    @Override
-    public Statement apply(Statement base, Description description) {
-        return RuleChain.outerRule(transportRule)
-                .apply(super.apply(base, description), description);
-    }
+    private const val TIMEOUT_MS = 10 * 1000
 
     /** Returns "on-device" path to the inspector's dex and checks its validity.k */
-    @NonNull
-    public static String injectInspectorDex() {
-        File onHostinspector =
-                new File(ProcessRunner.getProcessPath("test.inspector.dex.location"));
-        assertThat(onHostinspector.exists()).isTrue();
-        File onDeviceInspector = new File(onHostinspector.getName());
-        // Should have already been copied over by the underlying transport test framework
-        assertThat(onDeviceInspector.exists()).isTrue();
-        return onDeviceInspector.getAbsolutePath();
+    @JvmStatic
+    fun injectInspectorDex(): String {
+      val onHostInspector = File(getProcessPath("test.inspector.dex.location"))
+      assertThat(onHostInspector.exists()).isTrue()
+      val onDeviceInspector = File(onHostInspector.name)
+      // Should have already been copied over by the underlying transport test framework
+      assertThat(onDeviceInspector.exists()).isTrue()
+      return onDeviceInspector.absolutePath
     }
-
-    boolean hasEventToCollect() {
-        return events.size() > 0;
-    }
-
-    /** Pulls one event off the event queue, asserting if there are no events. */
-    @NonNull
-    AppInspectionEvent consumeCollectedEvent() throws Exception {
-        Common.Event event = events.take();
-        assertThat(event).isNotNull();
-        assertThat(event.getPid()).isEqualTo(pid);
-        assertThat(event.hasAppInspectionEvent()).isTrue();
-        return event.getAppInspectionEvent();
-    }
-
-    /** Sends the inspection command and returns a non-null response. */
-    @NonNull
-    AppInspection.AppInspectionResponse sendCommandAndGetResponse(
-            @NonNull AppInspectionCommand appInspectionCommand) throws Exception {
-        CompletableFuture<Common.Event> local =
-                commandIdToFuture.get(sendCommand(appInspectionCommand));
-        Common.Event response = local.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        assertThat(response).isNotNull();
-        assertThat(response.hasAppInspectionResponse()).isTrue();
-        assertThat(response.getPid()).isEqualTo(pid);
-        return response.getAppInspectionResponse();
-    }
-
-    /** Sends the inspection command and returns its generated id. */
-    int sendCommand(@NonNull AppInspectionCommand appInspectionCommand) {
-        int commandId = nextCommandId.getAndIncrement();
-        AppInspectionCommand idAppInspectionCommand =
-                appInspectionCommand.toBuilder().setCommandId(commandId).build();
-        Commands.Command command =
-                Commands.Command.newBuilder()
-                        .setType(Commands.Command.CommandType.APP_INSPECTION)
-                        .setAppInspectionCommand(idAppInspectionCommand)
-                        .setStreamId(1234)
-                        .setPid(pid)
-                        .build();
-
-        CompletableFuture<Common.Event> local = new CompletableFuture<>();
-        commandIdToFuture.put(commandId, local);
-        ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setCommand(command).build();
-
-        // Ignore execute response because the stub is blocking anyway
-        //noinspection ResultOfMethodCallIgnored
-        transportStub.execute(executeRequest);
-
-        return commandId;
-    }
-
-    /**
-     * Assert that the expected text is logged to the console.
-     *
-     * <p>It's preferred using this over {@link
-     * com.android.tools.fakeandroid.FakeAndroidDriver#waitForInput(String)} because this method
-     * also includes a timeout for early aborting if things went wrong.
-     */
-    public void assertInput(@NonNull String expected) {
-        assertThat(transportRule.getAndroidDriver().waitForInput(expected, TIMEOUT_MS)).isTrue();
-    }
-
-    @Override
-    public void run() {
-        Iterator<Common.Event> iterator =
-                transportStub.getEvents(GetEventsRequest.getDefaultInstance());
-        while (iterator.hasNext()) {
-            Common.Event event = iterator.next();
-            if (event.hasAppInspectionEvent()) {
-                events.offer(event);
-            } else if (event.hasAppInspectionResponse()) {
-                AppInspection.AppInspectionResponse inspectionResponse =
-                        event.getAppInspectionResponse();
-                int commandId = inspectionResponse.getCommandId();
-                assertThat(commandId).isNotEqualTo(0);
-                handleCommandResponse(commandId, event);
-            } else if (event.hasAppInspectionPayload()) {
-                long payloadId = event.getGroupId();
-                AppInspection.AppInspectionPayload payload = event.getAppInspectionPayload();
-                List<Byte> bytes = payloads.computeIfAbsent(payloadId, id -> new ArrayList<>());
-                for (byte b : payload.getChunk().toByteArray()) {
-                    bytes.add(b);
-                }
-            }
-        }
-    }
-
-    @Nullable
-    public List<Byte> removePayload(long payloadId) {
-        return payloads.remove(payloadId);
-    }
-
-    private void handleCommandResponse(int commandId, @NonNull Common.Event response) {
-        CompletableFuture<Common.Event> localCommandCompleter = commandIdToFuture.get(commandId);
-        if (localCommandCompleter == null) {
-            unexpectedResponses.add(response);
-        } else {
-            localCommandCompleter.complete(response);
-        }
-    }
-
-    @Override
-    protected void before() {
-        this.transportStub =
-                TransportServiceGrpc.newBlockingStub(transportRule.getGrpc().getChannel());
-        this.pid = transportRule.getPid();
-
-        executor.submit(this);
-    }
-
-    @Override
-    protected void after() {
-        executor.shutdownNow();
-        try {
-            executor.awaitTermination(TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        assertThat(unexpectedResponses).isEmpty();
-        assertThat(events).isEmpty();
-    }
+  }
 }

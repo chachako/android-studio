@@ -156,7 +156,7 @@ class TransportRule @JvmOverloads constructor(
         // Load our mock application, and launch our test activity.
         androidDriver.launchActivity(activity)
         // Retrieve the app's pid
-        pid = androidDriver.waitForInput(Pattern.compile("(.*)(PID=)(?<result>.*)")).toInt()
+        pid = androidDriver.waitForInput(Regex("(.*)(PID=)(?<result>.*)"))?.toInt() ?: -1
     }
 
     private fun copyFilesForJvmti() {

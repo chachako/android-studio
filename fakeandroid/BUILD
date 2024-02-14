@@ -1,11 +1,17 @@
 load("//tools/base/bazel:android.bzl", "dex_library")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
 
-java_library(
+kotlin_library(
     name = "fakeandroid",
-    srcs = glob(["srcs/com/android/tools/fakeandroid/**/*.java"]),
+    srcs = glob([
+        "srcs/com/android/tools/fakeandroid/**/*.java",
+        "srcs/com/android/tools/fakeandroid/**/*.kt",
+    ]),
     visibility = ["//visibility:public"],
     deps = [
         "@maven//:junit.junit",
+        "@maven//:org.jetbrains.kotlin.kotlin-test",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
     ],
 )
 

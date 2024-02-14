@@ -1,177 +1,156 @@
-package com.android.tools.fakeandroid;
+/*
+ * Copyright (C) 2024 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+package com.android.tools.fakeandroid
 
-public class ProcessRunner {
+import java.io.File
+import java.io.IOException
+import java.io.InputStream
+import java.util.regex.Pattern
+import kotlinx.coroutines.*
 
-    public static final long LONG_TIMEOUT_MS = 100000;
-    public static final long SHORT_TIMEOUT_MS = 10000;
-    protected String[] myProcessArgs;
-    protected String[] myProcessEnv;
-    private final List<String> myInput = new ArrayList<>();
-    private final List<String> myError = new ArrayList<>();
-    private Process myProcess;
-    private Thread myErrorListener;
-    private Thread myInputListener;
+private const val SLEEP_TIME_MS: Long = 100
 
+open class ProcessRunner
+protected constructor(
+  private val processArgs: Array<String>,
+  private val processEnv: Array<String>,
+) {
+  private val processName = processArgs[0].substringAfterLast("/")
+  private val input = mutableListOf<String>()
+  private val error = mutableListOf<String>()
+  private lateinit var process: Process
+  private val job = SupervisorJob()
+  private val scope = CoroutineScope(job + Dispatchers.IO)
 
-    protected ProcessRunner(String... processArgs) {
-        this(processArgs, null);
-    }
+  protected constructor(vararg processArgs: String) : this(arrayOf(*processArgs), emptyArray())
 
-    protected ProcessRunner(String[] processArgs, String[] processEnv) {
-        myProcessArgs = processArgs;
-        myProcessEnv = processEnv;
-    }
+  open fun start() {
+    process = Runtime.getRuntime().exec(processArgs, processEnv)
+    scope.launch { listen("Input", process.inputStream, input) }
+    scope.launch { listen("Error", process.errorStream, error) }
+  }
 
-    public static String getProcessPathRoot() {
-        return System.getProperty("user.dir") + File.separator;
-    }
+  /** @return true if the process is created and alive. */
+  val isAlive: Boolean
+    get() = ::process.isInitialized && process.isAlive
 
-    public static String getProcessPath(String property) {
-         return getProcessPathRoot() + System.getProperty(property);
-    }
+  protected fun exitValue() = process.exitValue()
 
-    public void start() throws IOException {
-        myProcess = Runtime.getRuntime().exec(myProcessArgs, myProcessEnv);
-
-        // Thread to capture the process output.
-        myInputListener =
-            new Thread(
-                () -> {
-                    listen("Input", myProcess.getInputStream(), myInput);
-                });
-        myInputListener.start();
-        myErrorListener =
-            new Thread(
-                () -> {
-                    listen("Error", myProcess.getErrorStream(), myError);
-                });
-        myErrorListener.start();
-    }
-
-    /**
-     * @return true if the process is created and alive.
-     */
-    public boolean isAlive() {
-        return myProcess != null && myProcess.isAlive();
-    }
-
-    protected int exitValue() {
-        return myProcess.exitValue();
-    }
-
-    private void listen(String streamName, InputStream stream, List<String> storage) {
-        try {
-            InputStreamReader isr = new InputStreamReader(stream);
-            BufferedReader br = new BufferedReader(isr);
-            String line = null;
-            String procname = myProcessArgs[0].substring(myProcessArgs[0].lastIndexOf("/") + 1);
-
-            while (!br.ready()) {
-                Thread.yield();
-            }
-
-            while ((line = br.readLine()) != null) {
-                String output = String.format("[%s-%s]: %s", procname, streamName, line);
-                synchronized (storage) {
-                    storage.add(output);
-                }
-                System.out.println(output);
-            }
-        } catch (IOException ex) {
-            // Will get stream closed exception upon completion of test.
+  private suspend fun listen(
+    streamName: String,
+    stream: InputStream,
+    storage: MutableList<String>,
+  ) {
+    try {
+      stream.bufferedReader().use { reader ->
+        while (!reader.ready()) {
+          yield()
         }
-    }
 
-    /**
-     * Wait for a specific string to be retrieved from the server. This function waits forever if
-     * given string statement has not been found.
-     */
-    public boolean waitForInput(String statement) {
-        return containsStatement(myInput, statement, LONG_TIMEOUT_MS);
-    }
-
-    public boolean waitForInput(String statement, long timeoutMs) {
-        return containsStatement(myInput, statement, timeoutMs);
-    }
-
-    public boolean waitForError(String statement, long timeoutMs) {
-        return containsStatement(myError, statement, timeoutMs);
-    }
-
-    /**
-     * @param statement that defines a pattern to match in the output. The pattern should define a
-     *     group named [result] as the returned element from the input. <br>
-     *     Input: transport.service.address=127.0.0.1:34801 <br>
-     *     Pattern: (.*)(transport.service.address=)(?<result>.*) <br>
-     *     Return: 127.0.0.1:34801
-     * @return The value found in the result named group, or null if no value found.
-     */
-    public String waitForInput(Pattern statement) {
-        return containsStatement(myInput, statement, LONG_TIMEOUT_MS);
-    }
-
-    public String waitForInput(Pattern statement, long timeoutMs) {
-        return containsStatement(myInput, statement, timeoutMs);
-    }
-
-    private boolean containsStatement(List<String> storage, String statement, long timeoutMs) {
-        return containsStatement(
-                        storage,
-                        Pattern.compile("(.*)(?<result>" + Pattern.quote(statement) + ")(.*)"),
-                        timeoutMs)
-                != null;
-    }
-
-    private String containsStatement(List<String> storage, Pattern statement, long timeoutMs) {
-        boolean notFound = true;
-        final long SLEEP_TIME_MS = 100;
-        long time = System.currentTimeMillis();
-        try {
-            while (notFound) {
-                synchronized (storage) {
-                    for (int i = storage.size() - 1; i >= 0; i--) {
-                        Matcher matcher = statement.matcher(storage.get(i));
-                        if (matcher.matches()) {
-                            return matcher.group("result");
-                        }
-                    }
-                }
-                if (System.currentTimeMillis() - time > timeoutMs + SLEEP_TIME_MS) {
-                    break;
-                }
-                Thread.sleep(SLEEP_TIME_MS);
-            }
-
-        } catch (InterruptedException ex) {
+        reader.lineSequence().forEach {
+          val output = "[$processName-$streamName]: $it"
+          synchronized(storage) { storage.add(output) }
+          println(output)
         }
-        System.out.println(
-                "Wait Time: "
-                        + (System.currentTimeMillis() - time)
-                        + "ms. Pattern: "
-                        + statement.pattern());
-        return null;
+      }
+    } catch (ex: IOException) {
+      // Will get stream closed exception upon completion of test.
     }
+  }
 
-    public void stop() {
-        try {
-            myProcess.destroy();
-            myProcess.waitFor();
-            myInputListener.join(100);
-            myInputListener.interrupt();
-            myErrorListener.join(100);
-            myErrorListener.interrupt();
-        } catch (InterruptedException ex) {
-            // Do nothing.
+  /**
+   * Wait for a specific string to be retrieved from the server. This function waits forever if
+   * given string statement has not been found.
+   */
+  @JvmOverloads
+  fun waitForInput(statement: String, timeoutMs: Long = LONG_TIMEOUT_MS): Boolean =
+    containsStatement(input, statement, timeoutMs)
+
+  @JvmOverloads
+  fun waitForError(statement: String, timeoutMs: Long = LONG_TIMEOUT_MS): Boolean =
+    containsStatement(error, statement, timeoutMs)
+
+  @JvmOverloads
+  fun waitForInput(pattern: Pattern, timeoutMs: Long = LONG_TIMEOUT_MS): String? =
+    waitForInput(pattern.toRegex(), timeoutMs)
+
+  /**
+   * @param regex that defines a pattern to match in the output. The pattern should define a group
+   *   named `result` as the returned element from the input. <br></br> Input:
+   *   transport.service.address=127.0.0.1:34801 <br></br> Pattern:
+   *   (.*)(transport.service.address=)(?<result>.*) <br></br> Return: 127.0.0.1:34801
+   * @return The value found in the result named group, or null if no value found. </result>
+   */
+  @JvmOverloads
+  fun waitForInput(regex: Regex, timeoutMs: Long = LONG_TIMEOUT_MS): String? =
+    containsStatement(input, regex, timeoutMs)
+
+  private fun containsStatement(
+    storage: List<String>,
+    statement: String,
+    timeoutMs: Long,
+  ): Boolean {
+    val regex = Regex("(.*)(?<result>" + Regex.escape(statement) + ")(.*)")
+    return (containsStatement(storage, regex, timeoutMs) != null)
+  }
+
+  private fun containsStatement(storage: List<String>, regex: Regex, timeoutMs: Long): String? {
+    val time = System.currentTimeMillis()
+    try {
+      while (true) {
+        synchronized(storage) {
+          storage.reversed().forEach {
+            val matcher = regex.matchEntire(it) ?: return@forEach
+            return matcher.groups["result"]?.value
+          }
         }
+        val elapsed = System.currentTimeMillis() - time
+        if (elapsed > timeoutMs + SLEEP_TIME_MS) {
+          println("Wait Time: ${elapsed}ms. Pattern: ${regex.pattern}")
+          return null
+        }
+        Thread.sleep(SLEEP_TIME_MS)
+      }
+    } catch (ex: InterruptedException) {
+      // ignore
     }
+    return null
+  }
+
+  fun stop() {
+    try {
+      process.destroy()
+      process.waitFor()
+      job.cancel()
+    } catch (ex: InterruptedException) {
+      // Do nothing.
+    }
+  }
+
+  companion object {
+
+    const val LONG_TIMEOUT_MS: Long = 100000
+    const val SHORT_TIMEOUT_MS: Long = 10000
+
+    @JvmStatic fun getProcessPathRoot(): String = System.getProperty("user.dir") + File.separator
+
+    @JvmStatic
+    fun getProcessPath(property: String): String {
+      return getProcessPathRoot() + System.getProperty(property)
+    }
+  }
 }

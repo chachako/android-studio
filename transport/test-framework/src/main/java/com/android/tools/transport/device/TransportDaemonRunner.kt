@@ -18,39 +18,35 @@ package com.android.tools.transport.device
 import com.android.tools.fakeandroid.ProcessRunner
 import com.android.tools.transport.SystemProperties
 import org.junit.Assert.fail
-import java.util.regex.Pattern
 
 private val DAEMON_PATH = ProcessRunner.getProcessPath(SystemProperties.TRANSPORT_DAEMON_LOCATION)
-private val SERVER_LISTENING = Pattern.compile("(.*)(Server listening on.*port:)(?<result>.*)")
+private val SERVER_LISTENING = Regex("(.*)(Server listening on.*port:)(?<result>.*)")
 
 /**
- * Class responsible for starting up (and waiting for) the transport daemon that runs on the
- * device.
+ * Class responsible for starting up (and waiting for) the transport daemon that runs on the device.
  */
-class TransportDaemonRunner(
-        configFilePath: String,
-        vararg processArgs: String)
-    : ProcessRunner(DAEMON_PATH, "--config_file=$configFilePath", *processArgs) {
+class TransportDaemonRunner(configFilePath: String, vararg processArgs: String) :
+  ProcessRunner(DAEMON_PATH, "--config_file=$configFilePath", *processArgs) {
 
-    var port = 0
-        private set
+  var port = 0
+    private set
 
-    override fun start() {
-        port = 0
-        super.start()
-        if (!isAlive) {
-            fail("Failed to start daemon. Exit code: ${exitValue()}")
-        }
-
-        val portStr = waitForInput(SERVER_LISTENING, SHORT_TIMEOUT_MS)
-        if (portStr == null || portStr.isEmpty()) {
-            fail("Failed to start daemon.${if (isAlive) "" else "Exit code: ${exitValue()}"}")
-        }
-        this.port = portStr!!.toInt()
-
-        if (this.port == 0) {
-            stop()
-            fail("Failed to bind daemon to port.")
-        }
+  override fun start() {
+    port = 0
+    super.start()
+    if (!isAlive) {
+      fail("Failed to start daemon. Exit code: ${exitValue()}")
     }
+
+    val portStr = waitForInput(SERVER_LISTENING, SHORT_TIMEOUT_MS)
+    if (portStr.isNullOrEmpty()) {
+      fail("Failed to start daemon.${if (isAlive) "" else "Exit code: ${exitValue()}"}")
+    }
+    this.port = portStr!!.toInt()
+
+    if (this.port == 0) {
+      stop()
+      fail("Failed to bind daemon to port.")
+    }
+  }
 }

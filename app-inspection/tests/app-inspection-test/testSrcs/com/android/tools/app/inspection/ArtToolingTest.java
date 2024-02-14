@@ -58,7 +58,7 @@ public class ArtToolingTest {
 
     @Before
     public void setUp() {
-        androidDriver = appInspectionRule.transportRule.getAndroidDriver();
+        androidDriver = appInspectionRule.getTransportRule().getAndroidDriver();
     }
 
     @Test
