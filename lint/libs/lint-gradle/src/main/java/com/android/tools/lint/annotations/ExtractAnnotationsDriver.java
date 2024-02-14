@@ -66,7 +66,7 @@ public class ExtractAnnotationsDriver {
     private static void usage(PrintStream output) {
         output.println("Usage: " + ExtractAnnotationsDriver.class.getSimpleName() + " <flags>");
         output.println(
-                " --sources <paths>       : Source directories or files to extract annotations from. ");
+                " --sources <paths>       : Source directories or files to extract annotations from.");
         output.println(
                 "                           Separate paths with "
                         + pathSeparator
@@ -98,10 +98,10 @@ public class ExtractAnnotationsDriver {
         output.println(
                 "--typedef-file <path>    : Write a packaging recipe description to the given file");
         output.println(
-                "--source-roots <paths>   : Source directories to find classes."
+                "--source-roots <paths>   : Source directories to find classes.\n"
                         + "                           If not specified the roots are derived from the sources above");
         output.println(
-                "--no-sort                : Do not sort the output alphabetically, output the "
+                "--no-sort                : Do not sort the output alphabetically, output the\n"
                         + "                           extracted annotations in the order they are visited");
         output.println(
                 "--strict-typedef-retention : Fail if encountering a typedef with incorrect retention");
@@ -122,6 +122,7 @@ public class ExtractAnnotationsDriver {
         boolean strictTypedefRetention = false;
         boolean sortAnnotations = true;
         List<File> sourceRoots = null;
+        boolean useK2Uast = false;
 
         File output = null;
         File proguard = null;
@@ -158,6 +159,10 @@ public class ExtractAnnotationsDriver {
                     continue;
                 case "--strict-typedef-retention":
                     strictTypedefRetention = true;
+                    continue;
+                case "--XuseK2Uast":
+                    // Same CLI flag as Lint
+                    useK2Uast = true;
                     continue;
             }
             if (i == n - 1) {
@@ -306,7 +311,9 @@ public class ExtractAnnotationsDriver {
                         sortAnnotations);
         extractor.setListIgnored(listFiltered);
 
-        UastEnvironment.Configuration config = UastEnvironment.Configuration.create(false);
+        UastEnvironment.Configuration config =
+                UastEnvironment.Configuration.create(
+                        /* enableKotlinScripting */ false, /* useFirUast */ useK2Uast);
         if (sourceRoots == null) {
             sourceRoots = findSourceRoots(sources);
             if (sourceRoots == null) {
