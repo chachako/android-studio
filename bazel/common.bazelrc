@@ -12,6 +12,9 @@ startup --host_jvm_args=-Dbazel.DigestFunction=SHA256
 # See: https://github.com/bazelbuild/bazel/commit/03246077f948f2790a83520e7dccc2625650e6df
 build --nobuild_runfile_links
 
+# An always true definition, to be able to force config_setting rules
+build --define=always_true=true
+
 # Enforces UTF-8 encoding in bazel tests.
 test --test_env='LC_ALL=en_US.UTF-8'
 test --jvmopt='-Dsun.jnu.encoding=UTF-8'
