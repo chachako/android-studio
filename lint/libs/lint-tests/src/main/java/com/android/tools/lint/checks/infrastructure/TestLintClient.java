@@ -613,6 +613,7 @@ public class TestLintClient extends LintCliClient {
             // We don't want to share client instances between the analysis of each module
             // and the final report generation.
             TestLintClient client = task.runner.createClient();
+            client.setLintTask(this.task);
             client.incrementalCheck = incrementalCheck;
             client.analyze(
                     rootDir, Collections.singletonList(dir), issues, LintDriver::analyzeOnly);
