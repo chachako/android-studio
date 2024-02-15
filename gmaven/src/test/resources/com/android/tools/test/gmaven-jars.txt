@@ -2205,6 +2205,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/backend/common/actualizer/
   org/jetbrains/kotlin/backend/common/actualizer/checker/
   org/jetbrains/kotlin/backend/common/bridges/
+  org/jetbrains/kotlin/backend/common/diagnostics/
   org/jetbrains/kotlin/backend/common/linkage/
   org/jetbrains/kotlin/backend/common/linkage/issues/
   org/jetbrains/kotlin/backend/common/linkage/partial/
@@ -2229,6 +2230,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/backend/jvm/lower/indy/
   org/jetbrains/kotlin/backend/jvm/mapping/
   org/jetbrains/kotlin/backend/jvm/metadata/
+  org/jetbrains/kotlin/backend/jvm/overrides/
   org/jetbrains/kotlin/build/
   org/jetbrains/kotlin/build/report/
   org/jetbrains/kotlin/build/report/metrics/
