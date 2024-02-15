@@ -16,6 +16,7 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbSession
+import com.android.adblib.AdbUsageTracker
 import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.adbLogger
@@ -160,6 +161,14 @@ internal class JdwpProcessPropertiesCollector(
                             exception = exceptionToRecord
                         )
                     }
+                    session.host.usageTracker.logUsage(
+                        AdbUsageTracker.Event(
+                            device = device,
+                            jdwpProcessPropertiesCollector = AdbUsageTracker.JdwpProcessPropertiesCollectorEvent(
+                                isSuccess = true
+                            )
+                        )
+                    )
                     logger.debug { "Successfully retrieved JDWP process properties: ${stateFlow.value}" }
                     break
                 }
