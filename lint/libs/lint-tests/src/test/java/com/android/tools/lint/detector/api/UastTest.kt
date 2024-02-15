@@ -2933,6 +2933,77 @@ class UastTest : TestCase() {
     }
   }
 
+  fun testFunctionalInterfaceTypeForInterfaceWithoutFun() {
+    // Regression test from b/325123657
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            package test.pkg
+
+            class Test {
+              fun f(): A = {}
+              fun g(): B = {}
+            }
+          """
+        ),
+        kotlin(
+          """
+            package test.pkg
+
+            interface A {
+              fun f()
+            }
+          """
+        ),
+        kotlin(
+          """
+            package test.pkg
+
+            fun interface B {
+              fun g()
+            }
+          """
+        ),
+      )
+
+    // function name -> (K1, K2)
+    val expectedTypes =
+      mapOf(
+        "f" to ("test.pkg.A" to "kotlin.jvm.functions.Function0<? extends kotlin.Unit>"),
+        "g" to ("test.pkg.B" to "test.pkg.B"),
+      )
+
+    var count = 0
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          var method: UMethod? = null
+
+          override fun visitMethod(node: UMethod): Boolean {
+            method = node
+            return super.visitMethod(node)
+          }
+
+          override fun afterVisitMethod(node: UMethod) {
+            method = null
+            super.afterVisitMethod(node)
+          }
+
+          override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
+            count++
+            val type = node.functionalInterfaceType ?: node.getExpressionType()
+            val expectedType =
+              expectedTypes[method!!.name]?.let { if (useFirUast()) it.second else it.first }
+            assertEquals(expectedType, type?.canonicalText)
+            return super.visitLambdaExpression(node)
+          }
+        }
+      )
+    }
+    assertEquals(2, count)
+  }
+
   fun testIncorrectImplicitReturnInLambda() {
     val testFiles =
       arrayOf(
