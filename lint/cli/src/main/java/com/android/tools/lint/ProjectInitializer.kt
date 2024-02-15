@@ -608,13 +608,10 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
         }
         TAG_SRC -> {
           val file = getFile(child, dir)
-          when (child.getAttribute(ATTR_GENERATED) == VALUE_TRUE) {
-            true -> generatedSources.add(file)
-            false ->
-              when (child.getAttribute(ATTR_TEST) == VALUE_TRUE) {
-                false -> sources.add(file)
-                true -> testSources.add(file)
-              }
+          when {
+            child.getAttribute(ATTR_GENERATED) == VALUE_TRUE -> generatedSources.add(file)
+            child.getAttribute(ATTR_TEST) == VALUE_TRUE -> testSources.add(file)
+            else -> sources.add(file)
           }
         }
         TAG_RESOURCE -> {
