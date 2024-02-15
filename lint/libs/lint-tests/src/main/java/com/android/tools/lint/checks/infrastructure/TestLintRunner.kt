@@ -42,7 +42,6 @@ import com.android.utils.XmlUtils
 import com.google.common.collect.Lists
 import com.google.common.collect.ObjectArrays
 import com.google.common.io.Files
-import com.google.errorprone.annotations.CheckReturnValue
 import com.google.gson.JsonParseException
 import com.google.gson.JsonParser
 import java.io.File
@@ -52,6 +51,7 @@ import java.util.zip.GZIPInputStream
 import kotlin.math.ceil
 import kotlin.math.log10
 import kotlin.math.max
+import org.jetbrains.annotations.CheckReturnValue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.xml.sax.SAXException
