@@ -91,6 +91,9 @@ public class UnitTestingAndroidResourcesTest {
             TestFileUtils.searchAndReplace(
                     project.getBuildFile(), "com.android.application", "com.android.library");
         }
+        TestFileUtils.appendToFile(
+                project.getBuildFile(),
+                "\njava.toolchain.languageVersion = JavaLanguageVersion.of(17)\n");
     }
 
     /**
