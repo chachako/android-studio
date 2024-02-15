@@ -28,6 +28,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiAnnotation.TargetType
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
@@ -70,6 +71,7 @@ import org.jetbrains.uast.ULocalVariable
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UPostfixExpression
 import org.jetbrains.uast.UPrefixExpression
+import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
@@ -3250,6 +3252,72 @@ class UastTest : TestCase() {
       )
     }
     assertEquals(expectedTypes.size, count)
+  }
+
+  fun testReferenceQualifierTypeForDispatchers() {
+    // Regression test from b/325107804
+    val testFiles =
+      arrayOf(
+        kotlin(
+            """
+        package test.pkg
+
+        //import kotlinx.coroutines.Dispatchers
+        import my.coroutines.Dispatchers
+
+        fun example() {
+          Dispatchers.IO
+          Dispatchers.Default
+          Dispatchers.Unconfined
+          Dispatchers.Main
+          Dispatchers::IO
+          Dispatchers::Default
+          Dispatchers::Unconfined
+          Dispatchers::Main
+        }
+      """
+          )
+          .indented(),
+        kotlin(
+            """
+            package my.coroutines
+
+            object Dispatchers {
+              val IO = "IO"
+              val Default = "Default"
+              val Unconfined = "Unconfined"
+              val Main = "Main"
+            }
+          """
+          )
+          .indented(),
+      )
+    var count = 0
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitQualifiedReferenceExpression(
+            node: UQualifiedReferenceExpression
+          ): Boolean {
+            count++
+            val expressionType =
+              node.receiver.getExpressionType() as? PsiClassType
+                ?: return super.visitQualifiedReferenceExpression(node)
+            assertEquals("my.coroutines.Dispatchers", expressionType.resolve()?.qualifiedName)
+            return super.visitQualifiedReferenceExpression(node)
+          }
+
+          override fun visitCallableReferenceExpression(
+            node: UCallableReferenceExpression
+          ): Boolean {
+            count++
+            assertEquals("my.coroutines.Dispatchers", node.qualifierType?.canonicalText)
+            return super.visitCallableReferenceExpression(node)
+          }
+        }
+      )
+    }
+    assertEquals(8, count)
   }
 
   fun testResolutionToFunWithValueClass() {
