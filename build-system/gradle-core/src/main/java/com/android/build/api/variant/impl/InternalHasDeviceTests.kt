@@ -16,7 +16,6 @@
 
 package com.android.build.api.variant.impl
 
-import com.android.build.api.component.impl.ComponentImpl
 import com.android.build.api.component.impl.DeviceTestImpl
 import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.variant.AndroidTest
@@ -28,9 +27,8 @@ import com.android.builder.core.ComponentTypeImpl
  * Internal marker interface for [VariantImpl] that potentially has associated device tests,
  * e.g. the androidTest component.
  *
- * Encapsulates access to the deprecated [HasAndroidTest] interface.
+ * Encapsulates access to the deprecated [com.android.build.api.variant.HasAndroidTest] interface.
  */
-@Suppress("DEPRECATION")
 interface InternalHasDeviceTests: HasDeviceTests, com.android.build.api.variant.HasAndroidTest {
 
     //
@@ -38,7 +36,10 @@ interface InternalHasDeviceTests: HasDeviceTests, com.android.build.api.variant.
     //
     override val deviceTests: MutableList<DeviceTest>
 
-    override val defaultDeviceTest: DeviceTest?
+    //
+    // Private APIs
+    //
+    val defaultDeviceTest: DeviceTest?
         get() = deviceTests.find {
             if (it is DeviceTestImpl) {
                 return@find it.componentType == ComponentTypeImpl.ANDROID_TEST

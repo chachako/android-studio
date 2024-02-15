@@ -46,5 +46,5 @@ interface AndroidTestBuilder: DeviceTestBuilder {
         level = DeprecationLevel.ERROR
     )
     @set:Deprecated("replaced with DeviceTestBuilder.enableMultiDex")
-    var enableMultiDex: Boolean?
+    override var enableMultiDex: Boolean?
 }

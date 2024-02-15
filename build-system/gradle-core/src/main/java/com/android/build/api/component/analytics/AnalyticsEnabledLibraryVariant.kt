@@ -35,7 +35,7 @@ open class AnalyticsEnabledLibraryVariant @Inject constructor(
     delegate, stats, objectFactory
 ), LibraryVariant {
 
-    private val userVisibleAndroidTest: AnalyticsEnabledAndroidTest? by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
+    private val userVisibleAndroidTest: AnalyticsEnabledAndroidTest? by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         delegate.androidTest?.let {
             objectFactory.newInstance(
                 AnalyticsEnabledAndroidTest::class.java,
@@ -53,7 +53,7 @@ open class AnalyticsEnabledLibraryVariant @Inject constructor(
             return userVisibleAndroidTest
         }
 
-    private val userVisibleTestFixtures: TestFixtures? by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
+    private val userVisibleTestFixtures: TestFixtures? by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         delegate.testFixtures?.let {
             objectFactory.newInstance(
                 AnalyticsEnabledTestFixtures::class.java,
@@ -70,7 +70,7 @@ open class AnalyticsEnabledLibraryVariant @Inject constructor(
             return userVisibleTestFixtures
         }
 
-    private val userVisibleRenderscript: Renderscript by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
+    private val userVisibleRenderscript: Renderscript by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         objectFactory.newInstance(
             AnalyticsEnabledRenderscript::class.java,
             delegate.renderscript,
@@ -87,7 +87,7 @@ open class AnalyticsEnabledLibraryVariant @Inject constructor(
             } else null
         }
 
-    private val userVisibleAarMetadata: AarMetadata by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
+    private val userVisibleAarMetadata: AarMetadata by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         objectFactory.newInstance(
             AnalyticsEnabledAarMetadata::class.java,
             delegate.aarMetadata,
@@ -109,12 +109,12 @@ open class AnalyticsEnabledLibraryVariant @Inject constructor(
         }
 
     override val deviceTests: List<DeviceTest>
-        get()  {
+        get() {
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
                 VariantPropertiesMethodType.DEVICE_TESTS_VALUE
             // return a new list everytime as items may eventually be added through future APIs.
             // we may consider returning a live list instead.
-            return  delegate.deviceTests.map {
+            return delegate.deviceTests.map {
                 @Suppress("DEPRECATION")
                 if (it is com.android.build.api.variant.AndroidTest) {
                     AnalyticsEnabledAndroidTest(it, stats, objectFactory)
@@ -122,22 +122,6 @@ open class AnalyticsEnabledLibraryVariant @Inject constructor(
                     AnalyticsEnabledDeviceTest(it, stats, objectFactory)
                 }
             }
-        }
-
-    private val userVisibleDefaultDeviceTest: AnalyticsEnabledDeviceTest? by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
-        delegate.defaultDeviceTest?.let {
-            objectFactory.newInstance(
-                AnalyticsEnabledDeviceTest::class.java,
-                it,
-                stats
-            )
-        }
-    }
-    override val defaultDeviceTest: DeviceTest?
-        get() {
-            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
-                VariantPropertiesMethodType.DEFAULT_DEVICE_TEST_VALUE
-            return userVisibleDefaultDeviceTest
         }
 
     private val userVisiblePackaging: TestedComponentPackaging by lazy(LazyThreadSafetyMode.SYNCHRONIZED){

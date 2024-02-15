@@ -23,12 +23,15 @@ import com.android.build.gradle.options.BooleanOption
 
 class DeviceTestBuilderImpl(
     variantBuilderServices: VariantBuilderServices,
-    internal var enableMultiDex: Boolean?
+    enableMultiDex: Boolean?
 ):DeviceTestBuilder {
 
     override var enable = !variantBuilderServices.projectOptions[BooleanOption.ENABLE_NEW_TEST_DSL]
 
-    override fun setEnableMultiDex(value: Boolean) {
-        enableMultiDex = value
-    }
+    internal var _enableMultiDex: Boolean? = enableMultiDex
+    override var enableMultiDex: Boolean?
+        get() =  throw PropertyAccessNotAllowedException("enableMultiDex", "DeviceTestBuilder")
+        set(value) {
+           _enableMultiDex = value
+        }
 }

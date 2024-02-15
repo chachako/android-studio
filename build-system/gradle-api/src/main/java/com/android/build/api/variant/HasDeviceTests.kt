@@ -30,11 +30,4 @@ interface HasDeviceTests {
      */
     @get:Incubating
     val deviceTests: List<DeviceTest>
-
-    /**
-     * Returns the default [DeviceTest] for this variant, which is generally referenced as
-     * `Android tests` in documentation.
-     */
-    @get:Incubating
-    val defaultDeviceTest: DeviceTest?
 }

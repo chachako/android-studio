@@ -125,20 +125,4 @@ open class AnalyticsEnabledDynamicFeatureVariant @Inject constructor(
                 }
             }
         }
-
-    private val userVisibleDefaultDeviceTest: AnalyticsEnabledDeviceTest? by lazy(LazyThreadSafetyMode.SYNCHRONIZED){
-        delegate.defaultDeviceTest?.let {
-            objectFactory.newInstance(
-                AnalyticsEnabledDeviceTest::class.java,
-                it,
-                stats
-            )
-        }
-    }
-    override val defaultDeviceTest: DeviceTest?
-        get() {
-            stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
-                VariantPropertiesMethodType.DEFAULT_DEVICE_TEST_VALUE
-            return userVisibleDefaultDeviceTest
-        }
 }

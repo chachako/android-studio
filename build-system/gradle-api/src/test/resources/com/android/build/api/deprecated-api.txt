@@ -11,6 +11,7 @@ Deprecated from AGP 8.4.0
   * com.android.build.api.variant.AndroidTestBuilder.getEnable: boolean ()
   * com.android.build.api.variant.AndroidTestBuilder.setEnable: void (boolean)
   * com.android.build.api.variant.AndroidTestBuilder.setEnableMultiDex: void (java.lang.Boolean)
+  * com.android.build.api.variant.DeviceTestBuilder.getEnableMultiDex: java.lang.Boolean ()
   * com.android.build.api.variant.HasAndroidTestBuilder
   * com.android.build.api.variant.HasAndroidTestBuilder.getAndroidTest: com.android.build.api.variant.AndroidTestBuilder ()
 Deprecated from AGP UNKNOWN_VERSION

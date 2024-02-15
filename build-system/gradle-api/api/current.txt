@@ -2447,8 +2447,6 @@ package com.android.build.api.variant {
   }
 
   @Deprecated public interface AndroidTestBuilder extends com.android.build.api.variant.DeviceTestBuilder {
-    method @Deprecated public Boolean? getEnableMultiDex();
-    method @Deprecated public void setEnableMultiDex(Boolean?);
     property @Deprecated public abstract boolean enable;
     property @Deprecated public abstract Boolean? enableMultiDex;
   }
@@ -2681,9 +2679,11 @@ package com.android.build.api.variant {
 
   @org.gradle.api.Incubating public interface DeviceTestBuilder {
     method @org.gradle.api.Incubating public boolean getEnable();
+    method @Deprecated public Boolean? getEnableMultiDex();
     method @org.gradle.api.Incubating public void setEnable(boolean);
-    method @org.gradle.api.Incubating public void setEnableMultiDex(boolean value);
+    method @Deprecated @org.gradle.api.Incubating public void setEnableMultiDex(Boolean?);
     property @org.gradle.api.Incubating public abstract boolean enable;
+    property @Deprecated public abstract Boolean? enableMultiDex;
   }
 
   public interface DexPackagingOptions {
@@ -2840,9 +2840,7 @@ package com.android.build.api.variant {
   }
 
   @org.gradle.api.Incubating public interface HasDeviceTests {
-    method @org.gradle.api.Incubating public com.android.build.api.variant.DeviceTest? getDefaultDeviceTest();
     method @org.gradle.api.Incubating public java.util.List<com.android.build.api.variant.DeviceTest> getDeviceTests();
-    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.DeviceTest? defaultDeviceTest;
     property @org.gradle.api.Incubating public abstract java.util.List<com.android.build.api.variant.DeviceTest> deviceTests;
   }
 

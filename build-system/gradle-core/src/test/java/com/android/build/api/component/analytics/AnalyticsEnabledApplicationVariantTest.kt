@@ -108,34 +108,6 @@ class AnalyticsEnabledApplicationVariantTest {
         Mockito.verify(delegate, Mockito.times(1))
             .androidResources
     }
-    @Test
-    fun getDeviceTests_for_default_device_test() {
-        val deviceTest = Mockito.mock(DeviceTest::class.java)
-        Mockito.`when`(delegate.deviceTests).thenReturn(listOf(deviceTest))
-        Mockito.`when`(delegate.defaultDeviceTest).thenReturn(deviceTest)
-        val deviceTestsProxy = proxy.deviceTests
-
-        Truth.assertThat(deviceTestsProxy.size).isEqualTo(1)
-        var deviceTestProxy = deviceTestsProxy.single()
-        Truth.assertThat(deviceTestProxy is AnalyticsEnabledDeviceTest).isTrue()
-        Truth.assertThat((deviceTestProxy as AnalyticsEnabledDeviceTest).delegate).isEqualTo(deviceTest)
-
-        deviceTestProxy = proxy.defaultDeviceTest ?: fail("deviceTest method returned null")
-        Truth.assertThat(deviceTestProxy is AnalyticsEnabledDeviceTest).isTrue()
-        Truth.assertThat((deviceTestProxy as AnalyticsEnabledDeviceTest).delegate).isEqualTo(deviceTest)
-
-        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(2)
-        Truth.assertThat(
-            stats.variantApiAccess.variantPropertiesAccessList.first().type
-        ).isEqualTo(VariantPropertiesMethodType.DEVICE_TESTS_VALUE)
-        Truth.assertThat(
-            stats.variantApiAccess.variantPropertiesAccessList.last().type
-        ).isEqualTo(VariantPropertiesMethodType.DEFAULT_DEVICE_TEST_VALUE)
-        Mockito.verify(delegate, Mockito.times(1))
-            .deviceTests
-        Mockito.verify(delegate, Mockito.times(1))
-            .defaultDeviceTest
-    }
 
     @Test
     fun getDeviceTests_for_android_test() {
@@ -243,28 +215,6 @@ class AnalyticsEnabledApplicationVariantTest {
             )
         )
         Mockito.verify(delegate, Mockito.times(1)).androidTest
-    }
-
-    @Test
-    fun deviceTest() {
-        val deviceTest = Mockito.mock(DeviceTest::class.java)
-        Mockito.`when`(deviceTest.applicationId).thenReturn(FakeGradleProperty("appId"))
-        Mockito.`when`(delegate.defaultDeviceTest).thenReturn(deviceTest)
-
-        proxy.defaultDeviceTest.let {
-            Truth.assertThat(it?.applicationId?.get()).isEqualTo("appId")
-        }
-
-        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(2)
-        Truth.assertThat(
-            stats.variantApiAccess.variantPropertiesAccessList.map { it.type }
-        ).containsExactlyElementsIn(
-            listOf(
-                VariantPropertiesMethodType.DEFAULT_DEVICE_TEST_VALUE,
-                VariantPropertiesMethodType.APPLICATION_ID_VALUE,
-            )
-        )
-        Mockito.verify(delegate, Mockito.times(1)).defaultDeviceTest
     }
 
     @Test

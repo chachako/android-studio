@@ -29,9 +29,6 @@ class AndroidTestBuilderImpl(
         set(value) {
             deviceTestBuilder.enable = value
         }
-    override fun setEnableMultiDex(value: Boolean) {
-        deviceTestBuilder.enableMultiDex = value
-    }
 
     @Deprecated("replaced with DeviceTestBuilder.setEnableMultiDex")
     override var enableMultiDex: Boolean?

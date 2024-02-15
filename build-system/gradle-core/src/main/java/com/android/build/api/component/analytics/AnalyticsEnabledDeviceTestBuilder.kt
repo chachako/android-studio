@@ -34,9 +34,12 @@ open class AnalyticsEnabledDeviceTestBuilder(
             delegate.enable = value
         }
 
-    override fun setEnableMultiDex(value: Boolean) {
-        stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
-            VariantMethodType.ENABLE_MULTI_DEX_VALUE
-        delegate.setEnableMultiDex(value)
-    }
+    override var enableMultiDex: Boolean?
+        get() = throw PropertyAccessNotAllowedException("enableMultiDex", "DeviceTestBuilder")
+        set(value) {
+            stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
+                VariantMethodType.ENABLE_MULTI_DEX_VALUE
+            delegate.enableMultiDex = value
+        }
+
 }

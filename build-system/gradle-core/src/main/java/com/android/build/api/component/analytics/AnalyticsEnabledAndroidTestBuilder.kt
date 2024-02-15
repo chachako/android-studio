@@ -35,12 +35,6 @@ open class AnalyticsEnabledAndroidTestBuilder(
             delegate.enable = value
         }
 
-    override fun setEnableMultiDex(value: Boolean) {
-        stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
-            VariantMethodType.ENABLE_MULTI_DEX_VALUE
-        delegate.setEnableMultiDex(value)
-    }
-
     @Deprecated("replaced with DeviceTestBuilder.setEnableMultiDex")
     override var enableMultiDex: Boolean?
         get() =  throw PropertyAccessNotAllowedException("enableMultiDex", "AndroidTestBuilder")

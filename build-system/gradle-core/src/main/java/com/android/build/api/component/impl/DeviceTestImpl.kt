@@ -212,7 +212,7 @@ open class DeviceTestImpl @Inject constructor(
     override val dexing: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
         DexingImpl(
             this,
-            defaultDeviceTestBuilder.enableMultiDex,
+            defaultDeviceTestBuilder._enableMultiDex,
             dslInfo.dexingDslInfo.multiDexKeepProguard,
             dslInfo.dexingDslInfo.multiDexKeepFile,
             internalServices,

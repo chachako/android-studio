@@ -54,12 +54,12 @@ class AnalyticsEnabledDeviceTestBuilderTest {
 
     @Test
     fun testEnableMultiDex() {
-        proxy.setEnableMultiDex(true)
+        proxy.enableMultiDex = true
 
         Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantAccessList.first().type
         ).isEqualTo(VariantMethodType.ENABLE_MULTI_DEX_VALUE)
-        Mockito.verify(delegate, Mockito.times(1)).setEnableMultiDex(true)
+        Mockito.verify(delegate, Mockito.times(1)).enableMultiDex = true
     }
 }
