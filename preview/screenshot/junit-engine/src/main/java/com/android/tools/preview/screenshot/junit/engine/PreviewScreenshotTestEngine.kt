@@ -71,10 +71,13 @@ class PreviewScreenshotTestEngine : TestEngine {
         val resultFile = File(getParam("renderTaskOutputDirPath")).toPath().resolve("results.json").toFile()
         val screenshotResults = readComposeRenderingResultJson(resultFile.reader()).screenshotResults
         val composeScreenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")).reader())
+
+        // Method descriptors are created as type CONTAINER_AND_TEST. For single method tests,
+        // replace the method descriptor with one of type TEST.
         for (classDescriptor in request.rootTestDescriptor.children) {
-            listener.executionStarted(classDescriptor)
+            val methodsToRemove = mutableListOf<TestMethodDescriptor>()
+            val methodsToAdd = mutableListOf<TestMethodTestDescriptor>()
             for (methodDescriptor in classDescriptor.children) {
-                val methodResults = mutableListOf<PreviewResult>()
                 val className: String = (methodDescriptor as TestMethodDescriptor).className
                 val methodName: String = methodDescriptor.methodName
                 val screenshots =
@@ -82,8 +85,38 @@ class PreviewScreenshotTestEngine : TestEngine {
                         getResultIdWithoutSuffix(it.resultId) == "$className.${methodName}"
                     }
                 if (screenshots.size == 1) {
+                    val testMethodDescriptor = TestMethodTestDescriptor(methodDescriptor.uniqueId, methodName, className)
+                    methodsToAdd.add(testMethodDescriptor)
+                    methodsToRemove.add(methodDescriptor)
+                }
+            }
+            methodsToAdd.forEach {
+                classDescriptor.addChild(it)
+                listener.dynamicTestRegistered(it)
+            }
+            methodsToRemove.forEach { classDescriptor.removeChild(it) }
+        }
+
+        for (classDescriptor in request.rootTestDescriptor.children) {
+            listener.executionStarted(classDescriptor)
+            for (methodDescriptor in classDescriptor.children) {
+                val methodResults = mutableListOf<PreviewResult>()
+                if (methodDescriptor is TestMethodTestDescriptor) {
+                    val className: String = methodDescriptor.className
+                    val methodName: String = methodDescriptor.methodName
+                    val screenshots =
+                        screenshotResults.filter {
+                            getResultIdWithoutSuffix(it.resultId) == "$className.${methodName}"
+                        }
                     methodResults.add(reportResult(listener, screenshots.single(), methodDescriptor, "${className}.${methodName}"))
-                } else {
+                } else if (methodDescriptor is TestMethodDescriptor) {
+                    listener.executionStarted(methodDescriptor)
+                    val className: String = methodDescriptor.className
+                    val methodName: String = methodDescriptor.methodName
+                    val screenshots =
+                        screenshotResults.filter {
+                            getResultIdWithoutSuffix(it.resultId) == "$className.${methodName}"
+                        }
                     for ((run, screenshot) in screenshots.withIndex()) {
                         val currentComposePreview = composeScreenshots.single() {
                             it.methodFQN == "$className.$methodName" && screenshot.imagePath!!.contains(it.imageName)
@@ -100,8 +133,10 @@ class PreviewScreenshotTestEngine : TestEngine {
                         val previewTestDescriptor = PreviewTestDescriptor(methodDescriptor, methodName, run, suffix)
                         methodDescriptor.addChild(previewTestDescriptor)
                         listener.dynamicTestRegistered(previewTestDescriptor)
+                        listener.executionStarted(previewTestDescriptor)
                         methodResults.add(reportResult(listener, screenshot, previewTestDescriptor,"${className}.${methodName}$suffix"))
                     }
+                    listener.executionFinished(methodDescriptor, TestExecutionResult.successful())
                 }
                 resultsToSave.addAll(methodResults)
             }

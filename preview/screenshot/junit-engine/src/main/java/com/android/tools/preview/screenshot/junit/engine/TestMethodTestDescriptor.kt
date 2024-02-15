@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,12 @@ package com.android.tools.preview.screenshot.junit.engine
 
 import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
-import org.junit.platform.engine.support.descriptor.MethodSource
 import org.junit.platform.engine.TestDescriptor.Type
+import org.junit.platform.engine.support.descriptor.MethodSource
 
-internal class TestMethodDescriptor(uniqueId: UniqueId, val methodName: String, val className: String) :
+internal class TestMethodTestDescriptor(uniqueId: UniqueId, val methodName: String, val className: String) :
     AbstractTestDescriptor(uniqueId, methodName, MethodSource.from(className, methodName)) {
 
-    override fun getType(): Type = Type.CONTAINER_AND_TEST
+    override fun getType(): Type = Type.TEST
 }
+
