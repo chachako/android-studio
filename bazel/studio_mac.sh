@@ -46,7 +46,7 @@ readonly config_options="--config=local --config=rcache --config=release --confi
         "${conditional_flags[@]}" \
         -- \
         //tools/... \
-        -//tools/vendor/google3/aswb/third_party/... \
+        -//tools/vendor/google3/aswb/... \
         //tools/base/profiler/native/trace_processor_daemon
 
 readonly bazel_status=$?
