@@ -813,7 +813,8 @@ private val AvdInfo.resolution
 private val AvdInfo.deviceError
   get() = errorMessage?.let { AvdDeviceError(status, it) }
 
-private class AvdDeviceError(val status: AvdStatus, override val message: String) : DeviceError {
+private data class AvdDeviceError(val status: AvdStatus, override val message: String) :
+  DeviceError {
   override val severity
     get() =
       when (status) {
