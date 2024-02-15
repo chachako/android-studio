@@ -259,6 +259,7 @@ single_gradle_integration_test_per_source(
             "src/test/java/com/android/build/gradle/integration/application/AgpVersionConsistencyTest.kt",
             "src/test/java/com/android/build/gradle/integration/application/JavaCompileWithToolChainTest.kt",
             "src/test/java/com/android/build/gradle/integration/application/ComposeHelloWorldTest.kt",
+            "src/test/java/com/android/build/gradle/integration/compose/ComposePluginOptionsTest.kt",
             "src/test/java/com/android/build/gradle/integration/multiplatform/KotlinMultiplatformComposeTest.kt",
         ],
     ),
@@ -337,6 +338,7 @@ gradle_integration_test(
 
 COMPOSE_TESTS = [
     "src/test/java/com/android/build/gradle/integration/application/ComposeHelloWorldTest.kt",
+    "src/test/java/com/android/build/gradle/integration/compose/ComposePluginOptionsTest.kt",
     "src/test/java/com/android/build/gradle/integration/multiplatform/KotlinMultiplatformComposeTest.kt",
 ]
 
@@ -694,9 +696,7 @@ maven_repository(
         "@maven//:androidx.appcompat.appcompat_1.1.0",
         "@maven//:androidx.appcompat.appcompat_1.3.0",
         "@maven//:androidx.compose.compiler.compiler_1.3.2",
-        "@maven//:androidx.compose.compiler.compiler_1.5.1",  # Used by ComposePluginOptionsTest
         "@maven//:androidx.compose.material.material_1.3.0",
-        "@maven//:androidx.compose.runtime.runtime-livedata_1.3.0",  # Used by ComposePluginOptionsTest
         "@maven//:androidx.compose.ui.ui-tooling_1.3.0",
         "@maven//:androidx.fragment.fragment_1.3.0",
         "@maven//:androidx.fragment.fragment_1.4.1",

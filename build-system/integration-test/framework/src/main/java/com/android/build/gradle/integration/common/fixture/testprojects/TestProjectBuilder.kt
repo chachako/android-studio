@@ -59,6 +59,7 @@ fun createGradleProjectBuilder(
         .apply { name?.let { withName(it) } }
         .fromTestApp(builder)
         .withKotlinGradlePlugin(builder.withKotlinPlugin)
+        .withKotlinVersion(builder.kotlinVersion)
         .withAdditionalMavenRepo(builder.mavenRepoGenerator)
 }
 
@@ -72,6 +73,8 @@ interface TestProjectBuilder {
     var buildFileType: BuildFileType
 
     var withKotlinPlugin: Boolean
+
+    var kotlinVersion: String?
 
     fun settings(action: SettingsBuilder.() -> Unit)
 

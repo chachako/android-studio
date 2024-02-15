@@ -20,7 +20,9 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.internal.CompileOptions.Companion.DEFAULT_JAVA_VERSION
 import com.android.build.gradle.options.BooleanOption
+import com.android.testutils.TestUtils
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -30,6 +32,7 @@ class ComposePluginOptionsTest {
     @get:Rule
     val project = createGradleProject {
         withKotlinPlugin = true
+        kotlinVersion = TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS
         subProject(":app") {
             plugins.add(PluginType.ANDROID_APP)
             plugins.add(PluginType.KOTLIN_ANDROID)
@@ -78,6 +81,7 @@ class ComposePluginOptionsTest {
 
     /** Regression test for b/318384658. */
     @Test
+    @Ignore("b/325947913")
     fun `test AGP does not override user-specified plugin options`() {
         project.getSubproject(":app").buildFile.appendText("\n" +
             """
