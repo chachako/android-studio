@@ -16,18 +16,24 @@
 package com.android.sdklib.deviceprovisioner
 
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
+import com.android.adblib.utils.createChildScope
 import com.google.common.truth.Truth.assertThat
+import com.jetbrains.rd.util.AtomicInteger
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import org.junit.Test
 
 class FlowUtilTest {
 
-  class Device {
+  class Device(val name: String = "Device") {
     val state = MutableStateFlow("A")
   }
 
@@ -94,6 +100,55 @@ class FlowUtilTest {
     assertThat(channel.receive()).isEmpty()
 
     job.cancel()
+  }
+
+  @Test
+  fun mapChangedState(): Unit = runTest {
+    val childScope = createChildScope()
+    val flow = MutableStateFlow<List<Device>>(emptyList())
+    val invocations = AtomicInteger()
+    val results =
+      flow
+        .pairWithNestedState { it.state }
+        .mapChangedState { device, state ->
+          invocations.incrementAndGet()
+          "${device.name} $state"
+        }
+        .stateIn(childScope)
+
+    val device1 = Device("1")
+    val device2 = Device("2")
+    flow.value = listOf(device1.apply { state.value = "A" })
+
+    advanceUntilIdle()
+    assertThat(results.value).containsExactly("1 A")
+    assertThat(invocations.get()).isEqualTo(1)
+
+    flow.value = listOf(device1.apply { state.value = "B" }, device2.apply { state.value = "C" })
+
+    advanceUntilIdle()
+    assertThat(results.value).containsExactly("1 B", "2 C")
+    assertThat(invocations.get()).isEqualTo(3)
+
+    flow.value = listOf(device1.apply { state.value = "B" }, device2.apply { state.value = "D" })
+
+    advanceUntilIdle()
+    assertThat(results.value).containsExactly("1 B", "2 D")
+    assertThat(invocations.get()).isEqualTo(4)
+
+    flow.value = listOf(device2.apply { state.value = "D" })
+
+    advanceUntilIdle()
+    assertThat(results.value).containsExactly("2 D")
+    assertThat(invocations.get()).isEqualTo(4)
+
+    flow.value = emptyList()
+
+    advanceUntilIdle()
+    assertThat(results.value).isEmpty()
+    assertThat(invocations.get()).isEqualTo(4)
+
+    childScope.cancel()
   }
 
   suspend fun Channel<List<Pair<Device, String>>>.expectDeviceInState(vararg state: String) {

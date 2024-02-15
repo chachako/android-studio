@@ -15,10 +15,12 @@
  */
 package com.android.sdklib.deviceprovisioner
 
+import com.google.common.collect.HashBasedTable
 import com.intellij.util.containers.orNull
 import java.util.Optional
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -60,6 +62,27 @@ fun <T> Flow<Set<T>>.trackSetChanges(): Flow<SetChange<T>> = flow {
 fun <T, S> Flow<Iterable<T>>.pairWithNestedState(
   innerState: (T) -> Flow<S>
 ): Flow<List<Pair<T, S>>> = mapNestedStateNotNull(innerState, ::Pair)
+
+/**
+ * Given a Flow<List<Pair<T, S>>>, perhaps from [pairWithNestedState], transforms it to a
+ * Flow<List<V>> using the supplied operation on any input list element that changes. An addition or
+ * deletion from the list will not cause recomputation of elements whose state has not changed.
+ */
+fun <T : Any, S : Any, V : Any> Flow<List<Pair<T, S>>>.mapChangedState(
+  op: suspend (T, S) -> V
+): Flow<ImmutableList<V>> = flow {
+  val table = HashBasedTable.create<T, S, V>()
+  collect { pairs ->
+    table.rowMap().keys.retainAll(pairs.map { it.first }.toSet())
+    for ((t, s) in pairs) {
+      if (!table.contains(t, s)) {
+        table.rowMap().remove(t)
+        table.put(t, s, op(t, s))
+      }
+    }
+    emit(table.values().toImmutableList())
+  }
+}
 
 /**
  * Transforms the [devices] flow, applying a transform to each handle and its current state, and
