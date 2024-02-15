@@ -23,7 +23,6 @@ def main():
       # external
       'tools/base/zipflinger',
       'tools/idea',
-      'tools/studio',
       'tools/swing-testing',
       'tools/vendor/adt_infra_internal',
       'tools/vendor/google/asfp',
