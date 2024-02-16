@@ -158,9 +158,7 @@ class PendingIntentHandlerImpl(private val alarmHandler: AlarmHandler) : Pending
 
   override fun onIntentReceived(intent: Intent) {
     val pendingIntent = intentMap[intent.wrap()] ?: return
-    if (intent.getIntExtra(Intent.EXTRA_ALARM_COUNT, 0) != 0) {
-      alarmHandler.onAlarmFired(pendingIntent)
-    }
+    alarmHandler.onAlarmFired(pendingIntent)
   }
 
   override fun onReceiverDataCreated(data: Any) {

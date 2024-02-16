@@ -80,7 +80,6 @@ class AlarmHandlerTest {
     val alarmHandler = inspectorRule.inspector.alarmHandler
     val pendingIntentHandler = inspectorRule.inspector.pendingIntentHandler
     val intent = Intent()
-    intent.setIntExtra(1)
     val operation = PendingIntent(5, "package")
 
     pendingIntentHandler.onIntentCapturedEntry(intent)
