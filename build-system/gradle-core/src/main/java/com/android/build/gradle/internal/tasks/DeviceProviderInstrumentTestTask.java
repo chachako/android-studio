@@ -785,6 +785,7 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                     creationConfig.getTaskContainer().getProviderTestTaskList().add(taskProvider);
                 }
             }
+            UtpDependencyUtilsKt.maybeCreateUtpConfigurations(creationConfig);
         }
 
         @Override
@@ -879,7 +880,6 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                                         + "useUnifiedTestPlatform=false "
                                         + "from your gradle.properties file.");
             }
-            UtpDependencyUtilsKt.maybeCreateUtpConfigurations(project);
             UtpDependencyUtilsKt.resolveDependencies(
                     task.getTestRunnerFactory().getUtpDependencies(),
                     task.getProject().getConfigurations());

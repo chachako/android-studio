@@ -392,6 +392,8 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                     .atLocation(additionalTestOutputDir.absolutePath)
                     .on(InternalArtifactType.MANAGED_DEVICE_ANDROID_TEST_ADDITIONAL_OUTPUT)
             }
+
+            maybeCreateUtpConfigurations(creationConfig)
         }
 
         override fun configure(task: ManagedDeviceInstrumentationTestTask) {
@@ -471,7 +473,6 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
                             "to your gradle command to suppress this warning."
                 )
             }
-            maybeCreateUtpConfigurations(task.project)
             task.testRunnerFactory.utpDependencies
                     .resolveDependencies(task.project.configurations)
             task.testRunnerFactory.getTargetIsSplitApk.setDisallowChanges(
