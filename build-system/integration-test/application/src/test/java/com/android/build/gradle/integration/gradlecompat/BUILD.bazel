@@ -17,6 +17,7 @@ OLD_GRADLE_VERSION_FOR_TESTING = "8.4"
 
 TEST_DATA = [
     "//prebuilts/studio/sdk:platform-tools",  #something from the SDK to make the test framework happy.
+    "//prebuilts/studio/jdk/jdk17:jdk17_runtime_files",
     "//tools/base/build-system:gradle-distrib-" + OLD_GRADLE_VERSION_FOR_TESTING,
 ]
 
