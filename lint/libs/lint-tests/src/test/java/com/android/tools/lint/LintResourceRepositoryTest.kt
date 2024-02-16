@@ -45,11 +45,13 @@ import com.android.tools.lint.checks.infrastructure.dos2unix
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.ResourceRepositoryScope
 import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.Issue.IgnoredIdProvider
 import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.PartialResult
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.model.PathVariables
@@ -696,7 +698,7 @@ class LintResourceRepositoryTest {
       .allowAbsolutePathsInMessages(true)
       // This behavior does not apply to the AGP resource repository so would fail
       // TestMode.RESOURCE_REPOSITORIES
-      .testModes(TestMode.DEFAULT)
+      .testModes(TestMode.PARTIAL)
       .run()
       .expectMatches(
         Pattern.quote(
@@ -705,8 +707,8 @@ class LintResourceRepositoryTest {
             "serialized file that was created with an older version of lint or with a different\n" +
             "set of path variable names. Attempting to gracefully recover.\n" +
             "The serialized content was:\n" +
-            "http://schemas.android.com/apk/res-auto;;＄TEST_ROOT/default/app/res/values/bools.xml,＄TEST_ROOT/default/app/res/xml-mcc/backup.xml,+bool:enable_wearable_location_service,0,V0,10,;\"true\";enable_wearable_location_service,1,V10,20,;\"false\";+string:location_process,2,V10,20,Unused;\"Location Process\";location_process,3,V-,-,;\"Location Process (English)\";+xml:backup,4,F;backup,5,F;\n" +
-            "Stack: java.lang.IndexOutOfBoundsException: Index 2 out of bounds for length 2:Preconditions.outOfBounds("
+            "mangled2\n" +
+            "Stack: java.lang.StringIndexOutOfBoundsException: String index out of range: 8:StringLatin1.charAt("
         ) + ".*\\) \\[LintWarning]\n" + "0 errors, 1 warnings"
       )
   }
@@ -719,32 +721,64 @@ class LintResourceRepositoryTest {
     }
 
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+      // Put something in the partial results map so that checkPartialResults is called in the MERGE
+      // phase.
+      context.getPartialResults(ISSUE).map().put("K", "V")
+
       val project = context.project
       val client = context.project.client as LintCliClient
 
-      // Write out a corrupt version of the resource repository to the cache file. Since this
-      // test is run in isolation we know that the resource repository hasn't been initialized
-      // yet, so it will try to read and deserialize this file first, and if that fails,
-      // it will log an error (which we'll verify from the unit test which uses this detector)
-      // and then it will recover by reading the files manually (which we'll verify by pretty
-      // printing
-      // the resource repository and checking its contents with assertEquals below.)
-      val mangled =
-        "http://schemas.android.com/apk/res-auto;;" +
-          "\$TEST_ROOT/default/app/res/values/bools.xml," +
-          // "\$TEST_ROOT/default/app/res/values-watch/bools.xml," +
-          // "\$TEST_ROOT/default/app/res/values/values.xml," +
-          // "\$TEST_ROOT/default/app/res/values-en-rUS/values.xml," +
-          // "\$TEST_ROOT/default/app/res/xml/backup.xml," +
-          "\$TEST_ROOT/default/app/res/xml-mcc/backup.xml," +
-          "+bool:enable_wearable_location_service,0,V0,10,;\"true\";enable_wearable_location_service,1,V10,20,;\"false\";" +
-          "+string:location_process,2,V10,20,Unused;\"Location Process\";location_process,3,V-,-,;\"Location Process (English)\";" +
-          "+xml:backup,4,F;backup,5,F;"
-
+      // Write out a corrupt version of the resource repository.
+      val mangled = "mangled1"
       val file = client.getSerializationFile(project, XmlFileType.RESOURCE_REPOSITORY)
       file.parentFile?.mkdirs()
       file.writeText(mangled)
 
+      // Get the resource repository. This will NOT read the corrupt file because we are in
+      // ANALYZE_ONLY mode, and the resource repository is an output file from this mode. Instead,
+      // the resource repository will be created, and the file will be overwritten.
+      val repository: ResourceRepository =
+        client.getResources(project, ResourceRepositoryScope.PROJECT_ONLY)
+
+      // Check that the resource repository has indeed been overwritten.
+      assert(file.readText().length > 100) { "Expected a larger resource repository file" }
+
+      // While we are here, check that the resource repository contents is correct.
+      val resources = repository.prettyPrint(project.dir)
+      assertEquals(
+        """
+                namespace:apk/res-auto
+                  @bool/enable_wearable_location_service (value) config=Watch,API 20 source=/res/values-watch/bools.xml;  false
+                  @bool/enable_wearable_location_service (value) config=default source=/res/values/bools.xml;  true
+                  @string/location_process (value) config=default source=/res/values/values.xml;  Location Process
+                  @string/location_process (value) config=en,US source=/res/values-en-rUS/values.xml;  Location Process (English)
+                  @xml/backup (file) config=default source=/res/xml/backup.xml;  /res/xml/backup.xml
+                  @xml/backup (file) config=mcc source=/res/xml-mcc/backup.xml;  /res/xml-mcc/backup.xml
+
+                """
+          .trimIndent(),
+        resources.dos2unix(),
+      )
+    }
+
+    override fun checkPartialResults(context: Context, partialResults: PartialResult) {
+      val project = context.project
+      val client = context.project.client as LintCliClient
+
+      val file = client.getSerializationFile(project, XmlFileType.RESOURCE_REPOSITORY)
+
+      // The resource repository should still exist.
+      assert(file.readText().length > 100) { "Expected a larger resource repository file" }
+
+      // Write out a corrupt version of the resource repository.
+      val mangled = "mangled2"
+      file.parentFile?.mkdirs()
+      file.writeText(mangled)
+
+      // Try to deserialize the (corrupt) resource repository. This will log an error (which we'll
+      // verify from testCheckRecovery) and then recreate the resource repository (which we'll
+      // verify by pretty printing the resource repository and checking its contents with
+      // assertEquals below.)
       val repository: ResourceRepository =
         client.getResources(project, ResourceRepositoryScope.PROJECT_ONLY)
       val resources = repository.prettyPrint(project.dir)
@@ -776,10 +810,7 @@ class LintResourceRepositoryTest {
           priority = 10,
           severity = Severity.WARNING,
           implementation =
-            Implementation(
-              RepositoryRecoveryDetector::class.java,
-              EnumSet.of(Scope.JAVA_FILE, Scope.RESOURCE_FILE),
-            ),
+            Implementation(RepositoryRecoveryDetector::class.java, EnumSet.of(Scope.JAVA_FILE)),
         )
     }
   }

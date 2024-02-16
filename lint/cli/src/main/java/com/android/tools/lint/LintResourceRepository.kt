@@ -39,6 +39,8 @@ import com.android.sdklib.IAndroidTarget
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintDriver
+import com.android.tools.lint.client.api.LintDriver.DriverMode.ANALYSIS_ONLY
+import com.android.tools.lint.client.api.LintDriver.DriverMode.MERGE
 import com.android.tools.lint.client.api.ResourceRepositoryScope
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.DefaultPosition
@@ -467,7 +469,7 @@ open class LintResourceRepository(
         return EmptyRepository
       }
 
-      val projectRepository = getForProjectOnly(client, project, isModuleDependency = false)
+      val projectRepository = getForProjectOnly(client, project)
       if (scope == ResourceRepositoryScope.PROJECT_ONLY) {
         return projectRepository
       }
@@ -476,11 +478,9 @@ open class LintResourceRepository(
       repositories += projectRepository
 
       if (scope.includesDependencies()) {
-        // All dependencies, not just libraries -- we want the leaf repository
-        // list to only include leaves, not nested ones
         project.allLibraries
           .filter { !it.isExternalLibrary }
-          .map { getForProjectOnly(client, it, isModuleDependency = true) }
+          .map { getForProjectOnly(client, it) }
           .forEach { repositories += it }
 
         // If we're only computing local dependencies, not library and
@@ -521,16 +521,38 @@ open class LintResourceRepository(
     /** Whether we've already flagged a persisence problem */
     private var warned = false
 
+    /**
+     * Gets or creates the resource repository for [project], the Android framework, or an AAR
+     * library.
+     *
+     * Note that [project] will be null when requesting the resource repository for the Android
+     * framework or an AAR library.
+     */
     private fun getOrCreateRepository(
       serializedFile: File,
-      client: LintClient,
+      client: LintCliClient,
       root: File?,
       project: Project?,
-      isModuleDependency: Boolean,
       factory: () -> LintResourceRepository,
     ): LintResourceRepository {
-      // For leaf repositories, try to load from storage
-      if (serializedFile.isFile) {
+      // For the framework or AAR case, resource repositories act like a cache, so we read/write
+      // resource repositories.
+      val isFrameworkOrAar = project == null
+
+      // For the module case, the resource repositories are output files from ANALYSIS_ONLY mode,
+      // which we can deserialize.
+      val readPartialResults =
+        // Lint must have information (partial-results-dir) about the module, so project must not be
+        // null.
+        project != null &&
+          // We only read analysis results from modules in ANALYSIS_ONLY or MERGE modes. In
+          // ANALYSIS_ONLY mode, we do not try to read analysis results for the current module being
+          // analyzed.
+          ((client.driver.mode == ANALYSIS_ONLY && project != client.driver.projectRoots.first()) ||
+            client.driver.mode == MERGE)
+
+      // Deserialize existing resource repository.
+      if ((isFrameworkOrAar || readPartialResults) && serializedFile.isFile) {
         val serialized = serializedFile.readText()
         try {
           return LintResourcePersistence.deserialize(
@@ -538,12 +560,16 @@ open class LintResourceRepository(
             client.pathVariables,
             root,
             project,
-            allowMissingPathVariable = isModuleDependency,
+            // Path variables might be missing, but only in ANALYSIS_ONLY mode and only for
+            // dependencies.
+            allowMissingPathVariable =
+              project != null &&
+                client.driver.mode == ANALYSIS_ONLY &&
+                project != client.driver.projectRoots.first(),
           )
         } catch (e: Throwable) {
           // Some sort of problem deserializing the lint resource repository. Try to gracefully
-          // recover
-          // and also generate a warning for this. See issues b/204437054 and b/204437195
+          // recover and also generate a warning for this. See issues b/204437054 and b/204437195
           if (!warned) {
             warned = true
             val sb = StringBuilder()
@@ -578,8 +604,15 @@ open class LintResourceRepository(
       // Must construct from files now and cache for future use
       val repository = factory()
 
-      // Write for future usage unless repository is for a module dependency
-      if (!isModuleDependency) {
+      // For the module case, we only serialize the resource repository in ANALYSIS_ONLY mode and
+      // only for the current module being analyzed.
+      val writePartialResults =
+        project != null &&
+          client.driver.mode == ANALYSIS_ONLY &&
+          project == client.driver.projectRoots.first()
+
+      // Serialize resource repository.
+      if (isFrameworkOrAar || writePartialResults) {
         serializedFile.parentFile?.mkdirs()
         val serialized =
           LintResourcePersistence.serialize(repository, client.pathVariables, project?.dir)
@@ -589,18 +622,13 @@ open class LintResourceRepository(
     }
 
     /** Returns the resource repository for the given [project], *not* including dependencies. */
-    private fun getForProjectOnly(
-      client: LintCliClient,
-      project: Project,
-      isModuleDependency: Boolean,
-    ): LintResourceRepository {
+    private fun getForProjectOnly(client: LintCliClient, project: Project): LintResourceRepository {
       return project.getClientProperty<LintResourceRepository>(ResourceRepositoryScope.PROJECT_ONLY)
         ?: getOrCreateRepository(
             client.getSerializationFile(project, XmlFileType.RESOURCE_REPOSITORY),
             client,
             project.dir,
             project,
-            isModuleDependency,
           ) {
             createFromFolder(client, project, ResourceNamespace.TODO())
           }
@@ -679,7 +707,6 @@ open class LintResourceRepository(
             client,
             root = null,
             project = null,
-            isModuleDependency = false,
           ) {
             createFromFolder(client, sequenceOf(res), null, null, ResourceNamespace.ANDROID)
           }
@@ -699,7 +726,6 @@ open class LintResourceRepository(
             client,
             root = null,
             project = null,
-            isModuleDependency = false,
           ) {
             LintLibraryRepository(client, library, ResourceNamespace.TODO())
           }
