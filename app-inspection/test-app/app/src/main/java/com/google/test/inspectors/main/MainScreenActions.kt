@@ -18,4 +18,6 @@ internal interface MainScreenActions {
   fun doXmlGrpc(name: String) {}
 
   fun doCustomGrpc(name: String) {}
+
+  fun doSetAlarm() {}
 }

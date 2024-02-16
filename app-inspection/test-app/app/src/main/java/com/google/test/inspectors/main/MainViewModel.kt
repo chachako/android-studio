@@ -1,10 +1,15 @@
 package com.google.test.inspectors.main
 
+import android.app.AlarmManager
 import android.app.Application
+import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import androidx.core.app.AlarmManagerCompat
+import androidx.core.content.getSystemService
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
@@ -12,6 +17,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.google.test.inspectors.AlarmReceiver
 import com.google.test.inspectors.AppJobService
 import com.google.test.inspectors.AppWorker
 import com.google.test.inspectors.HttpClient
@@ -25,6 +31,7 @@ import com.google.test.inspectors.grpc.xml.XmlRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,10 +58,8 @@ private val WhileUiSubscribed: SharingStarted = SharingStarted.WhileSubscribed(S
 @HiltViewModel
 internal class MainViewModel
 @Inject
-constructor(
-  private val application: Application,
-  private val settingsDao: SettingsDao,
-) : ViewModel(), MainScreenActions {
+constructor(private val application: Application, private val settingsDao: SettingsDao) :
+  ViewModel(), MainScreenActions {
 
   private val snackFlow: MutableStateFlow<String?> = MutableStateFlow(null)
   val snackState: StateFlow<String?> = snackFlow.stateIn(viewModelScope, WhileUiSubscribed, null)
@@ -142,5 +147,20 @@ constructor(
         snackState.value -> "$text (repeated)"
         else -> text
       }
+  }
+
+  override fun doSetAlarm() {
+    val alarmManager = application.getSystemService<AlarmManager>() ?: throw IllegalStateException()
+    AlarmManagerCompat.setExactAndAllowWhileIdle(
+      alarmManager,
+      AlarmManager.RTC,
+      System.currentTimeMillis() + 3.seconds.inWholeMilliseconds,
+      PendingIntent.getBroadcast(
+        application,
+        1,
+        Intent(application, AlarmReceiver::class.java).setAction("Alarm"),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+      ),
+    )
   }
 }

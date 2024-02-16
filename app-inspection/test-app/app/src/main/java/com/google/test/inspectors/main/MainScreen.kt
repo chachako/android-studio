@@ -62,9 +62,7 @@ fun MainScreen() {
     Box(modifier = Modifier.padding(it)) {
       MainScreen(viewModel)
       if (showSettingsDialog) {
-        SettingsDialog(
-          onDismiss = { showSettingsDialog = false },
-        )
+        SettingsDialog(onDismiss = { showSettingsDialog = false })
       }
       message?.let {
         LaunchedEffect(message) {
@@ -90,7 +88,7 @@ private fun TopBar(onClickSettings: () -> Unit) {
           tint = MaterialTheme.colorScheme.onSurface,
         )
       }
-    }
+    },
   )
 }
 
@@ -99,7 +97,7 @@ private fun MainScreen(actions: MainScreenActions) {
   LazyVerticalGrid(
     columns = GridCells.Fixed(2),
     horizontalArrangement = Arrangement.spacedBy(8.dp),
-    modifier = Modifier.padding(8.dp)
+    modifier = Modifier.padding(8.dp),
   ) {
     button("Start Job") { actions.startJob() }
     button("Start Work") { actions.startWork() }
@@ -113,6 +111,7 @@ private fun MainScreen(actions: MainScreenActions) {
     button("gRPC Json") { actions.doJsonGrpc("Json") }
     button("gRPC XML") { actions.doXmlGrpc("XML") }
     button("gRPC Custom") { actions.doCustomGrpc("Custom") }
+    button("Set Alarm") { actions.doSetAlarm() }
   }
 }
 
