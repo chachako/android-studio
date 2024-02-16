@@ -19,8 +19,11 @@ package com.android.tools.appinspection
 import android.app.AlarmManager
 import android.app.AlarmManager.OnAlarmListener
 import android.app.PendingIntent
+import android.util.Log
 import androidx.inspection.Connection
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol
+import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmListener
+import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmSet
 import com.android.tools.appinspection.BackgroundTaskUtil.sendBackgroundTaskEvent
 import com.android.tools.appinspection.common.getStackTrace
 import java.util.concurrent.ConcurrentHashMap
@@ -61,37 +64,29 @@ class AlarmHandlerImpl(private val connection: Connection) : AlarmHandler {
     listener: OnAlarmListener?,
     listenerTag: String?,
   ) {
-    if (type != AlarmManager.RTC_WAKEUP && type != AlarmManager.ELAPSED_REALTIME_WAKEUP) {
-      // Only instrument wakeup alarms.
-      return
-    }
-    var taskId = -1L
-    val builder =
-      BackgroundTaskInspectorProtocol.AlarmSet.newBuilder().apply {
-        this.type =
-          if (type == AlarmManager.RTC_WAKEUP)
-            BackgroundTaskInspectorProtocol.AlarmSet.Type.RTC_WAKEUP
-          else BackgroundTaskInspectorProtocol.AlarmSet.Type.ELAPSED_REALTIME_WAKEUP
-        this.triggerMs = triggerMs
-        this.windowMs = windowMs
-        this.intervalMs = intervalMs
-        when {
-          operation != null -> {
-            taskId = operationIdMap.getOrPut(operation) { BackgroundTaskUtil.nextId() }
-            this.operation =
-              BackgroundTaskInspectorProtocol.PendingIntent.newBuilder()
-                .setCreatorPackage(operation.creatorPackage)
-                .setCreatorUid(operation.creatorUid)
-                .build()
-          }
-          listener != null -> {
-            taskId = listenerIdMap.getOrPut(listener) { BackgroundTaskUtil.nextId() }
-            this.listener =
-              BackgroundTaskInspectorProtocol.AlarmListener.newBuilder().setTag(listenerTag).build()
-          }
-          else ->
-            throw IllegalStateException("Invalid alarm: neither operation or listener is set.")
+    val alarmType =
+      when (type) {
+        AlarmManager.RTC_WAKEUP -> AlarmSet.Type.RTC_WAKEUP
+        AlarmManager.RTC -> AlarmSet.Type.RTC
+        AlarmManager.ELAPSED_REALTIME_WAKEUP -> AlarmSet.Type.ELAPSED_REALTIME_WAKEUP
+        AlarmManager.ELAPSED_REALTIME -> AlarmSet.Type.ELAPSED_REALTIME
+        else -> {
+          Log.w("BackgroundInspector", "Invalid Alarm type: $type")
+          return
         }
+      }
+    val builder =
+      AlarmSet.newBuilder()
+        .setType(alarmType)
+        .setTriggerMs(triggerMs)
+        .setWindowMs(windowMs)
+        .setIntervalMs(intervalMs)
+
+    val taskId =
+      when {
+        operation != null -> builder.setOperation(operation)
+        listener != null -> builder.setListener(listener, listenerTag)
+        else -> throw IllegalStateException("Invalid alarm: neither operation or listener is set.")
       }
 
     connection.sendBackgroundTaskEvent(taskId) {
@@ -128,5 +123,19 @@ class AlarmHandlerImpl(private val connection: Connection) : AlarmHandler {
     connection.sendBackgroundTaskEvent(taskId) {
       alarmFired = BackgroundTaskInspectorProtocol.AlarmFired.getDefaultInstance()
     }
+  }
+
+  private fun AlarmSet.Builder.setOperation(operation: PendingIntent): Long {
+    setOperation(
+      BackgroundTaskInspectorProtocol.PendingIntent.newBuilder()
+        .setCreatorPackage(operation.creatorPackage)
+        .setCreatorUid(operation.creatorUid)
+    )
+    return operationIdMap.getOrPut(operation) { BackgroundTaskUtil.nextId() }
+  }
+
+  private fun AlarmSet.Builder.setListener(listener: OnAlarmListener, listenerTag: String?): Long {
+    setListener(AlarmListener.newBuilder().setTag(listenerTag))
+    return listenerIdMap.getOrPut(listener) { BackgroundTaskUtil.nextId() }
   }
 }

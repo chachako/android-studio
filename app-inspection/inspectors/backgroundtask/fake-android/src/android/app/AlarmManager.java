@@ -17,8 +17,10 @@
 package android.app;
 
 public class AlarmManager {
-    public static int ELAPSED_REALTIME_WAKEUP = 2;
-    public static int RTC_WAKEUP = 0;
+    public static final int RTC_WAKEUP = 0;
+    public static final int RTC = 1;
+    public static final int ELAPSED_REALTIME_WAKEUP = 2;
+    public static final int ELAPSED_REALTIME = 3;
 
     public interface OnAlarmListener {}
 }

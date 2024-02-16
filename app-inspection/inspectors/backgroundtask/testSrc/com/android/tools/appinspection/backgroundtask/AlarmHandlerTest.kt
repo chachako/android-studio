@@ -51,6 +51,22 @@ class AlarmHandlerTest {
   }
 
   @Test
+  fun alarmSet_allTypes() {
+    val alarmHandler = inspectorRule.inspector.alarmHandler
+    val operation = PendingIntent(5, "package")
+    listOf(
+        AlarmManager.RTC_WAKEUP to AlarmSet.Type.RTC_WAKEUP,
+        AlarmManager.RTC to AlarmSet.Type.RTC,
+        AlarmManager.ELAPSED_REALTIME_WAKEUP to AlarmSet.Type.ELAPSED_REALTIME_WAKEUP,
+        AlarmManager.ELAPSED_REALTIME to AlarmSet.Type.ELAPSED_REALTIME,
+      )
+      .forEach { (type, protoType) ->
+        alarmHandler.onAlarmSet(type, 2, 3, 4, operation, null, null)
+        inspectorRule.connection.consume { assertThat(alarmSet.type).isEqualTo(protoType) }
+      }
+  }
+
+  @Test
   fun alarmCancelledWithIntent() {
     val alarmHandler = inspectorRule.inspector.alarmHandler
     val operation = PendingIntent(5, "package")
