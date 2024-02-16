@@ -79,7 +79,7 @@ class PreviewScreenshotTestEngine : TestEngine {
                 val methodName: String = methodDescriptor.methodName
                 val screenshots =
                     screenshotResults.filter {
-                        it.resultId.contains(className) && it.resultId.contains(methodName)
+                        getResultIdWithoutSuffix(it.resultId) == "$className.${methodName}"
                     }
                 if (screenshots.size == 1) {
                     methodResults.add(reportResult(listener, screenshots.single(), methodDescriptor, "${className}.${methodName}"))
@@ -188,5 +188,9 @@ class PreviewScreenshotTestEngine : TestEngine {
         } else TestExecutionResult.successful()
         listener.executionFinished(testDescriptor, result)
         return imageComparison
+    }
+
+    private fun getResultIdWithoutSuffix(resultId: String): String {
+        return resultId.substringBeforeLast('_').substringBeforeLast('_').substringBeforeLast('_')
     }
 }

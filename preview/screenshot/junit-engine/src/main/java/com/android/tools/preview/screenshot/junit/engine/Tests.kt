@@ -16,7 +16,7 @@
 
 package com.android.tools.preview.screenshot.junit.engine
 
-internal class Tests(val testMethods: Map<String, MutableSet<String>>) {
+internal class Tests(private val testMethods: Map<String, MutableSet<String>>) {
 
     val classes: Set<String>
         get() = testMethods.keys
