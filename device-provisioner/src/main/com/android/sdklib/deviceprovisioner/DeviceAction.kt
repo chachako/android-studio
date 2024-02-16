@@ -31,7 +31,12 @@ import kotlinx.coroutines.flow.StateFlow
 interface DeviceAction {
   val presentation: StateFlow<Presentation>
 
-  data class Presentation(val label: String, val icon: Icon, val enabled: Boolean)
+  data class Presentation(
+    val label: String,
+    val icon: Icon,
+    val enabled: Boolean,
+    val detail: String? = null,
+  )
 
   /** Returns the appropriate element of DefaultPresentation for this class. */
   fun DefaultPresentation.fromContext(): Presentation
