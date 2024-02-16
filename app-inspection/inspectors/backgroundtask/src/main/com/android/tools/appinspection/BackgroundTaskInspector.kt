@@ -53,13 +53,15 @@ class BackgroundTaskInspector(
   private val environment: InspectorEnvironment,
 ) : Inspector(connection) {
 
-  @VisibleForTesting lateinit var alarmHandler: AlarmHandler
+  @VisibleForTesting val alarmHandler = AlarmHandlerImpl(connection)
 
-  @VisibleForTesting lateinit var pendingIntentHandler: PendingIntentHandler
+  private val intentRegistry = IntentRegistry()
+  @VisibleForTesting
+  val pendingIntentHandler = PendingIntentHandlerImpl(alarmHandler, intentRegistry)
 
-  @VisibleForTesting lateinit var wakeLockHandler: WakeLockHandler
+  @VisibleForTesting val wakeLockHandler = WakeLockHandlerImpl(connection)
 
-  @VisibleForTesting lateinit var jobHandler: JobHandler
+  @VisibleForTesting val jobHandler = JobHandlerImpl(connection)
 
   override fun onReceiveCommand(data: ByteArray, callback: CommandCallback) {
     val command = Command.parseFrom(data)
@@ -90,7 +92,6 @@ class BackgroundTaskInspector(
   }
 
   private fun registerAlarmHooks() {
-    alarmHandler = AlarmHandlerImpl(connection)
     environment.artTooling().registerEntryHook(
       AlarmManager::class.java,
       "setImpl" +
@@ -132,7 +133,6 @@ class BackgroundTaskInspector(
   }
 
   private fun registerPendingIntentHooks() {
-    pendingIntentHandler = PendingIntentHandlerImpl(alarmHandler)
     listOf(GET_ACTIVITY_METHOD_NAME, GET_SERVICES_METHOD_NAME, GET_BROADCAST_METHOD_NAME).forEach {
       methodName ->
       environment.artTooling().registerEntryHook(PendingIntent::class.java, methodName) { _, args ->
@@ -181,8 +181,6 @@ class BackgroundTaskInspector(
   }
 
   private fun registerWakeLockHooks() {
-    wakeLockHandler = WakeLockHandlerImpl(connection)
-
     environment.artTooling().registerEntryHook(
       PowerManager::class.java,
       "newWakeLock" + "(ILjava/lang/String;)Landroid/os/PowerManager\$WakeLock;",
@@ -217,7 +215,6 @@ class BackgroundTaskInspector(
   }
 
   private fun registerJobHooks() {
-    jobHandler = JobHandlerImpl(connection)
     environment.artTooling().registerEntryHook(
       JobSchedulerImpl::class.java,
       "schedule(Landroid/app/job/JobInfo;)I",

@@ -20,8 +20,6 @@ import android.app.Activity
 import android.app.ActivityThread
 import android.app.PendingIntent
 import android.content.Intent
-import com.android.tools.appinspection.PendingIntentHandlerImpl.IntentWrapper.Companion.wrap
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Method name for [PendingIntent.getActivity(Context, int, Intent, int, Bundle)] to capture the
@@ -88,7 +86,7 @@ const val HANDLE_RECEIVER_METHOD_NAME =
 
 /**
  * Method name for [android.content.BroadcastReceiver.setPendingResult(PendingResult)]. If the
- * [PendingResult] is same with the ReceiverData captured from method [HANDLE_RECEIVER_METHOD_NAME],
+ * `PendingResult` is same with the ReceiverData captured from method [HANDLE_RECEIVER_METHOD_NAME],
  * it is safe to say that the method is called from [ActivityThread] and we can extract the [Intent]
  * properly.
  */
@@ -109,34 +107,10 @@ interface PendingIntentHandler {
   fun onReceiverDataResult(data: Any)
 }
 
-class PendingIntentHandlerImpl(private val alarmHandler: AlarmHandler) : PendingIntentHandler {
-
-  /**
-   * Wraps an [Intent] and overrides its `equals` and `hashCode` methods so we can use it as a
-   * HashMap key. Two intents are considered equal iff [Intent.filterEquals] returns true.
-   */
-  private class IntentWrapper private constructor(private val mIntent: Intent) {
-
-    override fun equals(other: Any?): Boolean {
-      return (other is IntentWrapper && mIntent.filterEquals(other.mIntent))
-    }
-
-    override fun hashCode() = mIntent.filterHashCode()
-
-    companion object {
-
-      fun Intent.wrap() = IntentWrapper(this)
-    }
-  }
-
-  /**
-   * A mapping from [Intent] to [PendingIntent] so when an Intent is sent we can trace back to its
-   * PendingIntent (if any) for event tracking.
-   */
-  private val intentMap = ConcurrentHashMap<IntentWrapper, PendingIntent>()
-
-  /* Intent shared between an entry hook and an exit hook for the same method. */
-  private val intentData = ThreadLocal<Intent>()
+class PendingIntentHandlerImpl(
+  private val alarmHandler: AlarmHandler,
+  private val intentRegistry: IntentRegistry,
+) : PendingIntentHandler {
 
   /**
    * ReceiverData captured from handleReceiver to find the correct calling of method
@@ -148,16 +122,16 @@ class PendingIntentHandlerImpl(private val alarmHandler: AlarmHandler) : Pending
   private val receiverData = ThreadLocal<Any>()
 
   override fun onIntentCapturedEntry(intent: Intent) {
-    intentData.set(intent)
+    intentRegistry.setIntentData(intent)
   }
 
   override fun onIntentCapturedExit(pendingIntent: PendingIntent): PendingIntent {
-    intentMap[intentData.get().wrap()] = pendingIntent
+    intentRegistry.setPendingIntentForActiveIntent(pendingIntent)
     return pendingIntent
   }
 
   override fun onIntentReceived(intent: Intent) {
-    val pendingIntent = intentMap[intent.wrap()] ?: return
+    val pendingIntent = intentRegistry.getPendingIntent(intent) ?: return
     alarmHandler.onAlarmFired(pendingIntent)
   }
 
