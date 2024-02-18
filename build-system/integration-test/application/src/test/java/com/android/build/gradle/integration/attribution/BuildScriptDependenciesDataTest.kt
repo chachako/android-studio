@@ -96,6 +96,11 @@ apply from: "../commonVersions.gradle", to: rootProject.ext
 // Treat javac warnings as errors
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Werror"
+
+    // Configure common java toolchain
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 android {

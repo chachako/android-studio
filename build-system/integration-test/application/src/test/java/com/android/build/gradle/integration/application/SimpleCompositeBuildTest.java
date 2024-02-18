@@ -45,7 +45,14 @@ public class SimpleCompositeBuildTest {
                 = modelInfo.getVariantDependencies().getMainArtifact().getCompileDependencies();
 
         Truth.assertThat(dependencies).hasSize(1);
-        Truth.assertThat(dependencies.get(0).getKey())
-                .isEqualTo(":string-utils|:|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>17, org.gradle.libraryelements>jar, org.gradle.usage>java-api|org.sample:string-utils:1.0");
+        Truth.assertThat(
+                        dependencies
+                                .get(0)
+                                .getKey()
+                                .replace(
+                                        "org.gradle.jvm.version>" + Runtime.version().feature(),
+                                        "org.gradle.jvm.version>{Java_Version}"))
+                .isEqualTo(
+                        ":string-utils|:|org.gradle.category>library, org.gradle.dependency.bundling>external, org.gradle.jvm.version>{Java_Version}, org.gradle.libraryelements>jar, org.gradle.usage>java-api|org.sample:string-utils:1.0");
     }
 }

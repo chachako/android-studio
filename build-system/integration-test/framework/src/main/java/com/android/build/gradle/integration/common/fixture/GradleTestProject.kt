@@ -293,6 +293,11 @@ open class GradleTestProject @JvmOverloads constructor(
                 // Treat javac warnings as errors
                 tasks.withType(JavaCompile) {
                     options.compilerArgs << "-Werror"
+
+                    // Configure common java toolchain
+                    javaCompiler = javaToolchains.compilerFor {
+                        languageVersion = JavaLanguageVersion.of(17)
+                    }
                 }
                 """.trimIndent()
 

@@ -268,7 +268,7 @@ class JetifierTest(private val withKotlin: Boolean) {
 
         // todo re-enable config caching b/247126887
         val configCacheOption =
-            if (Runtime.version().feature() == 17)
+            if (Runtime.version().feature() >= 17)
                 BaseGradleExecutor.ConfigurationCaching.OFF
             else
                 BaseGradleExecutor.ConfigurationCaching.ON

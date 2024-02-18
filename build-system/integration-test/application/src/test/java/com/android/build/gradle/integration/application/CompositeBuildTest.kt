@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.createGr
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.testutils.TestUtils
 import com.android.testutils.truth.ZipFileSubject
 import org.junit.Before
 import org.junit.Ignore
@@ -53,6 +54,10 @@ class CompositeBuildTest {
                 group = "com.example"
                 version = "1.0"
                 plugins.add(PluginType.JAVA_LIBRARY)
+                addFile("gradle.properties",
+                    """
+                        org.gradle.java.installations.paths=${TestUtils.getJava17Jdk().toString().replace("\\", "/")}
+                    """.trimIndent())
             }
         }
         includedBuild("androidLib") {
