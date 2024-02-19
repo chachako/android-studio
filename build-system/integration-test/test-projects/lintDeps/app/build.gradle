@@ -28,7 +28,7 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support.constraint:constraint-layout:' + libs.versions.constraintLayoutVersion.get()
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation project(':androidlib')
     implementation project(':javalib')
     implementation project(':javalib2')

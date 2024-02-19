@@ -31,6 +31,7 @@ import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestPr
 import com.android.build.gradle.integration.common.runner.FilterableParameterized
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
@@ -100,8 +101,11 @@ class IncrementalJavaCompileWithAPsTest(
 
     @get:Rule
     val project = GradleTestProject.builder().fromTestApp(setUpTestProject())
-        .withKotlinGradlePlugin(withKapt)
-        .create()
+            .withKotlinGradlePlugin(withKapt)
+            // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+            .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+            .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+            .create()
 
     private fun setUpTestProject(): TestProject {
         return MultiModuleTestProject.builder()
@@ -140,7 +144,7 @@ class IncrementalJavaCompileWithAPsTest(
                 minSdkVersion = "23"
                 namespace = NAMESPACE
                 addDependency(
-                    dependency = "'com.android.support:appcompat-v7:$SUPPORT_LIB_VERSION'"
+                    dependency = "'androidx.appcompat:appcompat:1.6.1'"
                 )
                 addDependency(
                     dependency = "'com.android.support.constraint:constraint-layout:" +
@@ -180,7 +184,7 @@ class IncrementalJavaCompileWithAPsTest(
         app.withFile(
             "src/main/java/$packagePath/$MAIN_ACTIVITY.java",
             with(JavaSourceFileBuilder(NAMESPACE)) {
-                addImports("android.support.v7.app.AppCompatActivity", "android.os.Bundle")
+                addImports("androidx.appcompat.app.AppCompatActivity", "android.os.Bundle")
                 addClass(
                     """
                     public class $MAIN_ACTIVITY extends AppCompatActivity {

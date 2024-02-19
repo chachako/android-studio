@@ -35,13 +35,15 @@ class LintDynamicFeatureTest {
     val project: GradleTestProject =
         GradleTestProject.builder()
             .fromTestProject("dynamicApp")
+            // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+            .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
             .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=false")
             .create()
 
     private val app =
-        MinimalSubProject.app("com.example.test")
+        MinimalSubProject.app("com.example.test.app")
             .appendToBuild("android.dynamicFeatures = [':feature']")
-    private val feature = MinimalSubProject.dynamicFeature("com.example.test")
+    private val feature = MinimalSubProject.dynamicFeature("com.example.test.feature")
     private val lib1 = MinimalSubProject.lib("com.example.lib1")
     private val lib2 = MinimalSubProject.lib("com.example.lib2")
 

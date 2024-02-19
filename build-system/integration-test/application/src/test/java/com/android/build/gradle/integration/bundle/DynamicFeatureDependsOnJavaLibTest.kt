@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.bundle
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.options.BooleanOption
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -28,9 +29,9 @@ class DynamicFeatureDependsOnJavaLibTest {
     @Rule
     val tmp = TemporaryFolder()
 
-    val app = MinimalSubProject.app("com.example.test")
+    val app = MinimalSubProject.app("com.example.test.app")
         .appendToBuild("android.dynamicFeatures = [':feature']")
-    val feature = MinimalSubProject.dynamicFeature("com.example.test")
+    val feature = MinimalSubProject.dynamicFeature("com.example.test.feature")
     val javaLib = MinimalSubProject.javaLibrary()
 
     @JvmField
@@ -44,7 +45,10 @@ class DynamicFeatureDependsOnJavaLibTest {
                 .dependency(feature, app)
                 .dependency(feature, javaLib)
                 .build()
-        ).create()
+        )
+        // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+        .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+        .create()
 
     /** Regression test for b/79660649. */
     @Test()

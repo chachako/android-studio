@@ -53,8 +53,10 @@ public class LintDependencyModelTest {
     public final GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("lintDeps")
-                    .addGradleProperties(
-                            BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
+                    // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+                    .addGradleProperties(BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.getPropertyName() + "=true")
+                    .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
+                    .addGradleProperties(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
                     .create();
 
     @Test

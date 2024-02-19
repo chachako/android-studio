@@ -255,6 +255,7 @@ DATA = [
     "androidx.appcompat:appcompat:1.6.1",
     "androidx.benchmark:benchmark-baseline-profile-gradle-plugin:1.2.3",
     "androidx.benchmark:benchmark-gradle-plugin:1.2.3",
+    "androidx.cardview:cardview:1.0.0",
     "androidx.compose.animation:animation-core-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.animation:animation-core-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.animation:animation:1.3.0",
@@ -386,7 +387,9 @@ DATA = [
     "androidx.lifecycle:lifecycle-viewmodel:2.6.2",
     "androidx.media:media:1.5.0",
     "androidx.media:media:1.6.0",
+    "androidx.multidex:multidex:2.0.0",
     "androidx.multidex:multidex:2.0.1",
+    "androidx.multidex:multidex-instrumentation:2.0.0",
     "androidx.navigation:navigation-fragment-ktx:2.3.5",
     "androidx.navigation:navigation-fragment-ktx:2.4.1",
     "androidx.navigation:navigation-fragment-ktx:2.5.2",

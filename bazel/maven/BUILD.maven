@@ -21243,6 +21243,25 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.multidex.multidex-instrumentation_2.0.0",
+    pom = "repository/androidx/multidex/multidex-instrumentation/2.0.0/multidex-instrumentation-2.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/multidex/multidex-instrumentation/2.0.0",
+    deps = [
+        "androidx.multidex.multidex_2.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.multidex.multidex_2.0.0",
+    pom = "repository/androidx/multidex/multidex/2.0.0/multidex-2.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/multidex/multidex/2.0.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.multidex.multidex_2.0.1",
     pom = "repository/androidx/multidex/multidex/2.0.1/multidex-2.0.1.pom",
     repo_root_path = "repository",

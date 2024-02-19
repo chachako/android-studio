@@ -39,6 +39,9 @@ class MergeResourcesTest {
     @get:Rule
     val project = GradleTestProject.builder()
         .fromTestProject("projectWithModules")
+        .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+        // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+        .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
         .create()
 
     @Test
@@ -405,7 +408,7 @@ class MergeResourcesTest {
                     }
                 }
                 dependencies {
-                    implementation 'com.android.support:appcompat-v7:$SUPPORT_LIB_VERSION'
+                    implementation 'androidx.appcompat:appcompat:1.6.1'
                 }
             """)
         )

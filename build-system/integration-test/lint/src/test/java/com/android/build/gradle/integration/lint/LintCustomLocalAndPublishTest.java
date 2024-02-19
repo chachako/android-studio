@@ -22,6 +22,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.builder.model.v2.ide.UnresolvedDependency;
 import com.android.builder.model.v2.models.AndroidProject;
 import com.android.utils.FileUtils;
@@ -39,6 +40,9 @@ public class LintCustomLocalAndPublishTest {
     @Rule public final GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("lintCustomLocalAndPublishRules")
+                    // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+                    .addGradleProperties(BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.getPropertyName() + "=true")
+                    .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
                     .create();
 
     @Test

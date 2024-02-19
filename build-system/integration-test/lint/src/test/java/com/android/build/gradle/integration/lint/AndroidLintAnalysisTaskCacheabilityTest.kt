@@ -27,6 +27,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.ANDROID_TEST
 import com.android.build.gradle.internal.scope.InternalArtifactType.LINT_PARTIAL_RESULTS
 import com.android.build.gradle.internal.scope.InternalArtifactType.TEST_FIXTURES_LINT_PARTIAL_RESULTS
 import com.android.build.gradle.internal.scope.InternalArtifactType.UNIT_TEST_LINT_PARTIAL_RESULTS
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
@@ -500,7 +501,7 @@ class AndroidLintAnalysisTaskCacheabilityTest {
  */
 fun createGradleTestProject(name: String, heapSize: String = "2048M"): GradleTestProject {
     val app =
-        MinimalSubProject.app("com.example.test")
+        MinimalSubProject.app("com.example.test.app")
             .addLintIssues()
             .appendToBuild(
                 """
@@ -529,7 +530,7 @@ fun createGradleTestProject(name: String, heapSize: String = "2048M"): GradleTes
                 """.trimIndent()
             )
     val feature =
-        MinimalSubProject.dynamicFeature("com.example.test")
+        MinimalSubProject.dynamicFeature("com.example.test.feature")
             .addLintIssues()
             .appendToBuild(
                 """
@@ -611,6 +612,8 @@ fun createGradleTestProject(name: String, heapSize: String = "2048M"): GradleTes
                 .dependency("lintPublish", lib, javaLib)
                 .build()
         )
+        // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+        .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
         .withHeap(heapSize)
         .create()
 }

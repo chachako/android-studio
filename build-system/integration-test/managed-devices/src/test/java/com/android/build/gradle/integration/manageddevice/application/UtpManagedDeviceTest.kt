@@ -38,26 +38,34 @@ class UtpManagedDeviceTest : UtpTestBase() {
         private const val TEST_RESULTS = "$OUTPUTS/androidTest-results/managedDevice/debug"
         private const val TEST_RESULT_XML = "$TEST_RESULTS/$DSL_DEVICE_NAME/TEST-$DSL_DEVICE_NAME-_"
         private const val LOGCAT = "$TEST_RESULTS/$DSL_DEVICE_NAME/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
+        private const val LOGCAT_FOR_DYNAMIC_FEATURE = "$TEST_RESULTS/$DSL_DEVICE_NAME/logcat-com.example.android.kotlin.feature.ExampleInstrumentedTest-useAppContext.txt"
         private const val TEST_RESULT_PB = "$TEST_RESULTS/$DSL_DEVICE_NAME/test-result.pb"
         private const val AGGREGATED_TEST_RESULT_PB = "$TEST_RESULTS/test-result.pb"
 
         private const val REPORTS = "build/reports"
         private const val TEST_REPORT = "$REPORTS/androidTests/managedDevice/debug/$DSL_DEVICE_NAME/com.example.android.kotlin.html"
+        private const val TEST_REPORT_FOR_DYNAMIC_FEATURE =
+                "$REPORTS/androidTests/managedDevice/debug/$DSL_DEVICE_NAME/com.example.android.kotlin.feature.html"
         private const val TEST_COV_XML = "$REPORTS/coverage/androidTest/debug/managedDevice/report.xml"
     }
 
     override val executor: GradleTaskExecutor
         get() = customAndroidSdkRule.run { project.executorWithCustomAndroidSdk() }
 
-    override fun selectModule(moduleName: String) {
+    override fun selectModule(moduleName: String, isDynamicFeature: Boolean) {
         project.getSubproject(moduleName).addManagedDevice(DSL_DEVICE_NAME)
         testTaskName = ":${moduleName}:allDevicesCheck"
         testResultXmlPath = "${moduleName}/$TEST_RESULT_XML$moduleName-.xml"
-        testReportPath = "${moduleName}/$TEST_REPORT"
+        if (isDynamicFeature) {
+            testReportPath = "${moduleName}/$TEST_REPORT_FOR_DYNAMIC_FEATURE"
+            testLogcatPath = "${moduleName}/$LOGCAT_FOR_DYNAMIC_FEATURE"
+        } else {
+            testReportPath = "${moduleName}/$TEST_REPORT"
+            testLogcatPath = "${moduleName}/$LOGCAT"
+        }
         testResultPbPath = "${moduleName}/$TEST_RESULT_PB"
         aggTestResultPbPath = "${moduleName}/$AGGREGATED_TEST_RESULT_PB"
         testCoverageXmlPath = "${moduleName}/$TEST_COV_XML"
-        testLogcatPath = "${moduleName}/$LOGCAT"
         testAdditionalOutputPath = "${moduleName}/${TEST_ADDITIONAL_OUTPUT}"
     }
 }

@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.model.ModelComparator
 import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.apk.Apk
 import org.junit.Before
 import org.junit.Rule
@@ -32,6 +33,9 @@ class SeparateTestWithAarDependencyTest : ModelComparator() {
     @get:Rule
     val project = GradleTestProject.builder()
         .fromTestProject("separateTestModule")
+        // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+        .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+        .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
         .create()
 
     @Before
@@ -47,9 +51,9 @@ class SeparateTestWithAarDependencyTest : ModelComparator() {
                          minSdkVersion $SUPPORT_LIB_MIN_SDK
                     }
                     dependencies {
-                        api 'com.android.support:appcompat-v7:$SUPPORT_LIB_VERSION'
-                        api 'com.android.support:support-v4:$SUPPORT_LIB_VERSION'
-                        api 'com.android.support:support-media-compat:$SUPPORT_LIB_VERSION'
+                        api 'androidx.appcompat:appcompat:1.6.1'
+                        api 'androidx.legacy:legacy-support-v4:1.0.0'
+                        api 'androidx.media:media:1.6.0'
                     }
                 }
             """.trimIndent())

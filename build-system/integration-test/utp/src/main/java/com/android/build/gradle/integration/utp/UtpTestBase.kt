@@ -53,7 +53,7 @@ abstract class UtpTestBase {
     open val executor: GradleTaskExecutor
         get() = project.executor()
 
-    abstract fun selectModule(moduleName: String)
+    abstract fun selectModule(moduleName: String, isDynamicFeature: Boolean)
 
     companion object {
         const val ANDROIDX_TEST_VERSION = "1.5.0-alpha02"
@@ -145,7 +145,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun androidTestWithCodeCoverage() {
-        selectModule("app")
+        selectModule("app", false)
         enableCodeCoverage("app")
 
         executor.run(testTaskName)
@@ -163,7 +163,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun androidTestWithTestFailures() {
-        selectModule("appWithTestFailures")
+        selectModule("appWithTestFailures", false)
 
         executor.expectFailure().run(testTaskName)
         assertThat(project.file(testReportPath)).exists()
@@ -173,7 +173,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun androidTestWithOrchestrator() {
-        selectModule("app")
+        selectModule("app", false)
         enableAndroidTestOrchestrator("app")
 
         executor.run(testTaskName)
@@ -185,7 +185,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun androidTestWithOrchestratorAndCodeCoverage() {
-        selectModule("app")
+        selectModule("app", false)
         enableAndroidTestOrchestrator("app")
         enableCodeCoverage("app")
 
@@ -204,7 +204,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun connectedAndroidTestWithLogcat() {
-        selectModule("app")
+        selectModule("app", false)
 
         executor.run(testTaskName)
 
@@ -218,7 +218,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun connectedAndroidTestFromTestOnlyModule() {
-        selectModule("testOnlyModule")
+        selectModule("testOnlyModule", false)
 
         executor.run(testTaskName)
 
@@ -229,7 +229,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun connectedAndroidTestWithAdditionalTestOutputUsingTestStorageService() {
-        selectModule("app")
+        selectModule("app", false)
         enableTestStorageService("app")
 
         val testSrc = """
@@ -285,7 +285,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun androidTestWithDynamicFeature() {
-        selectModule("dynamicfeature1")
+        selectModule("dynamicfeature1", true)
         enableDynamicFeature("dynamicfeature1")
 
         executor.run(testTaskName)
@@ -319,11 +319,12 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun androidTestWithOrchestratorWithDynamicFeature() {
-        selectModule("dynamicfeature1")
+        selectModule("dynamicfeature1", true)
         enableDynamicFeature("dynamicfeature1")
         enableAndroidTestOrchestrator("dynamicfeature1")
 
         executor.run(testTaskName)
+
 
         assertThat(project.file(testReportPath)).exists()
         assertThat(project.file(testResultPbPath)).exists()
@@ -333,22 +334,22 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun connectedAndroidTestWithLogcatWithDynamicFeature() {
-        selectModule("dynamicfeature1")
+        selectModule("dynamicfeature1", true)
         enableDynamicFeature("dynamicfeature1")
 
         executor.run(testTaskName)
 
         assertThat(project.file(testLogcatPath)).exists()
         val logcatText = project.file(testLogcatPath).readText()
-        assertThat(logcatText).contains("TestRunner: started: useAppContext(com.example.android.kotlin.ExampleInstrumentedTest)")
+        assertThat(logcatText).contains("TestRunner: started: useAppContext(com.example.android.kotlin.feature.ExampleInstrumentedTest)")
         assertThat(logcatText).contains("TestLogger: test logs")
-        assertThat(logcatText).contains("TestRunner: finished: useAppContext(com.example.android.kotlin.ExampleInstrumentedTest)")
+        assertThat(logcatText).contains("TestRunner: finished: useAppContext(com.example.android.kotlin.feature.ExampleInstrumentedTest)")
     }
 
     @Test
     @Throws(Exception::class)
     fun connectedAndroidTestWithAdditionalTestOutputUsingTestStorageServiceWithDynamicFeature() {
-        selectModule("dynamicfeature1")
+        selectModule("dynamicfeature1", true)
         enableDynamicFeature("dynamicfeature1")
         enableTestStorageService("dynamicfeature1")
 
@@ -405,7 +406,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun androidTestWithForceCompilation() {
-        selectModule("app")
+        selectModule("app", false)
         enableForceCompilation("app")
 
         executor.run(testTaskName)
@@ -425,7 +426,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun androidTestWithOrchestratorAndCodeCoverageWithDynamicFeature() {
-        selectModule("dynamicfeature1")
+        selectModule("dynamicfeature1", true)
         enableAndroidTestOrchestrator("app")
         enableCodeCoverage("app")
         enableAndroidTestOrchestrator("dynamicfeature1")
@@ -450,7 +451,7 @@ abstract class UtpTestBase {
     @Test
     @Throws(Exception::class)
     fun androidTestWithCodeCoverageWithDynamicFeature() {
-        selectModule("dynamicfeature1")
+        selectModule("dynamicfeature1", true)
         enableDynamicFeature("dynamicfeature1")
         enableCodeCoverage("app")
 

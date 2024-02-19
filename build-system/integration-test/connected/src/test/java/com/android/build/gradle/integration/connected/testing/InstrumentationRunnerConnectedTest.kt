@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Com
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.connected.utils.getEmulator
+import com.android.build.gradle.options.BooleanOption
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Rule
@@ -35,7 +36,12 @@ class InstrumentationRunnerConnectedTest {
     }
 
     @get:Rule
-    val project = builder().fromTestProject("separateTestModule").create()
+    val project = builder()
+            .fromTestProject("separateTestModule")
+            // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+            .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+            .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+            .create()
 
     @Before
     fun setUp() {

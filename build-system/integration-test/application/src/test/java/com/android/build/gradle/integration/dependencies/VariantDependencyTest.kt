@@ -25,6 +25,7 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.common.utils.getSingleOutputFile
 import com.android.build.gradle.integration.common.utils.getVariantByName
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.options.BooleanOption
 import com.android.builder.model.v2.ide.Variant
 import com.android.builder.model.v2.models.AndroidProject
 import com.android.testutils.truth.PathSubject
@@ -40,6 +41,9 @@ class VariantDependencyTest : ModelComparator() {
     @get:Rule
     val project = GradleTestProject.builder()
         .fromTestApp(HelloWorldApp.noBuildFile())
+        // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+        .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+        .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
         .create()
 
      lateinit var androidProject: AndroidProject
@@ -77,8 +81,8 @@ class VariantDependencyTest : ModelComparator() {
                     }
                 }
                 dependencies {
-                    freeLollipopDebugImplementation "com.android.support:leanback-v17:${SUPPORT_LIB_VERSION}"
-                    paidIcsImplementation "com.android.support:appcompat-v7:${SUPPORT_LIB_VERSION}"
+                    freeLollipopDebugImplementation "androidx.leanback:leanback:1.0.0"
+                    paidIcsImplementation "androidx.appcompat:appcompat:1.6.1"
                 }
             """.trimIndent())
 

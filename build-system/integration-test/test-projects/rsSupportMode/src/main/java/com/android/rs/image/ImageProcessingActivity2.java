@@ -21,7 +21,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v8.renderscript.*;
+import androidx.renderscript.*;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;

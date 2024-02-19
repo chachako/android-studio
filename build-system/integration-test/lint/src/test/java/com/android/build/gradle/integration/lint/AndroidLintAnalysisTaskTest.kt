@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.lint
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
@@ -31,6 +32,7 @@ class AndroidLintAnalysisTaskTest {
     val lintKotlinProject: GradleTestProject =
         GradleTestProject.builder()
             .fromTestProject("lintKotlin")
+            .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
             .create()
 
     @Test

@@ -20,9 +20,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v8.renderscript.Allocation;
-import android.support.v8.renderscript.RenderScript;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.renderscript.Allocation;
+import androidx.renderscript.RenderScript;
 import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity {

@@ -23,6 +23,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.options.BooleanOption
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.file.Directory
 import org.junit.Assert.fail
@@ -42,8 +43,11 @@ class SplitHandlingTest {
 
     @get:Rule
     val project = GradleTestProject.builder()
-                .fromTestProject("combinedDensityAndLanguageSplits")
-                .create()
+            .fromTestProject("combinedDensityAndLanguageSplits")
+            // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+            .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+            .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+            .create()
 
     /**
      * It is not allowed to have density based splits and resConfig(s) with a density restriction.
@@ -68,10 +72,10 @@ class SplitHandlingTest {
                + "}\n"
                + "\n"
                + "dependencies {\n"
-               + "    api 'com.android.support:appcompat-v7:" + SUPPORT_LIB_VERSION
-               + "'\n"
-               + "    api 'com.android.support:support-v4:" + SUPPORT_LIB_VERSION
-               + "'\n"
+               + "    api 'androidx.appcompat:appcompat:1.6.1'"
+               + "\n"
+               + "    api 'androidx.legacy:legacy-support-v4:1.0.0'"
+               + "\n"
                + "}\n")
         val failure = project.executeExpectingFailure("clean", "assembleDebug")
         val cause = getCause(failure?.cause)
@@ -101,10 +105,8 @@ class SplitHandlingTest {
                         + "}\n"
                         + "\n"
                         + "dependencies {\n"
-                        + "    api 'com.android.support:appcompat-v7:" + SUPPORT_LIB_VERSION
-                        + "'\n"
-                        + "    api 'com.android.support:support-v4:" + SUPPORT_LIB_VERSION
-                        + "'\n"
+                        + "    api 'androidx.appcompat:appcompat:1.6.1'\n"
+                        + "    api 'androidx.legacy:legacy-support-v4:1.0.0'\n"
                         + "}\n")
 
         project.execute("clean", "assembleDebug")
@@ -145,10 +147,8 @@ class SplitHandlingTest {
                         + "}\n"
                         + "\n"
                         + "dependencies {\n"
-                        + "    api 'com.android.support:appcompat-v7:" + SUPPORT_LIB_VERSION
-                        + "'\n"
-                        + "    api 'com.android.support:support-v4:" + SUPPORT_LIB_VERSION
-                        + "'\n"
+                        + "    api 'androidx.appcompat:appcompat:1.6.1'\n"
+                        + "    api 'androidx.legacy:legacy-support-v4:1.0.0'\n"
                         + "}\n")
         project.execute("clean", "assembleDebug")
 
@@ -181,10 +181,8 @@ class SplitHandlingTest {
                         + "}\n"
                         + "\n"
                         + "dependencies {\n"
-                        + "    api 'com.android.support:appcompat-v7:" + SUPPORT_LIB_VERSION
-                        + "'\n"
-                        + "    api 'com.android.support:support-v4:" + SUPPORT_LIB_VERSION
-                        + "'\n"
+                        + "    api 'androidx.appcompat:appcompat:1.6.1'\n"
+                        + "    api 'androidx.legacy:legacy-support-v4:1.0.0'\n"
                         + "}\n")
         project.execute("clean", "assembleDebug")
 

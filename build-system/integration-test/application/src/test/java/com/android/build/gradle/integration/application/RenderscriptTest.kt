@@ -17,15 +17,21 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.options.BooleanOption
 import org.junit.Rule
 import org.junit.Test
 
 /** Assemble tests for renderscript with NDK mode enabled. */
 class RenderscriptTest {
+
     @get:Rule
     var project = GradleTestProject.builder()
-        .fromTestProject("BasicRenderScript")
-        .create()
+            .fromTestProject("BasicRenderScript")
+            // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+            .addGradleProperties(
+                    "${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+            .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+            .create()
 
     @Test
     fun build() {

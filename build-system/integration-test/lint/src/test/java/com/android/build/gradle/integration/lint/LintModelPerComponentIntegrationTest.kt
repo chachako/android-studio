@@ -36,6 +36,9 @@ class LintModelPerComponentIntegrationTest {
     val project: GradleTestProject =
         GradleTestProject.builder()
             .fromTestProject("lintKotlin")
+            // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+            .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+            .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
             .dontOutputLogOnFailure()
             .create()
 

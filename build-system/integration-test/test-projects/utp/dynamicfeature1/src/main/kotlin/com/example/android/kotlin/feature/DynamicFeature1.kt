@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.kotlin
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-
-import org.junit.Test
-import org.junit.runner.RunWith
+package com.example.android.kotlin.feature
 
 import java.util.logging.Logger.getLogger
 
-@RunWith(AndroidJUnit4::class)
-class ExampleInstrumentedTest {
-    private val logger = getLogger("TestLogger")
-
-    @Test
-    fun useAppContext() {
-        logger.info("test logs")
-        DynamicFeature1.stubDynamicFeature1FuncForTestingCodeCoverage()
+class DynamicFeature1 () {
+    companion object {
+        fun stubDynamicFeature1FuncForTestingCodeCoverage() {
+            getLogger("DynamicFeature1").info("stubDynamicFeature1FuncForTestingCodeCoverage()")
+        }
     }
 }

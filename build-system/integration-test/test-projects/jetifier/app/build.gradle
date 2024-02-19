@@ -55,7 +55,7 @@ afterEvaluate {
                 }  else if (groupAndName == 'android.arch.lifecycle:common') {
                     useVersion '2.0.0'
                 } else if (groupAndName == 'com.android.support:appcompat-v7') {
-                    useTarget 'androidx.appcompat:appcompat:1.0.0'
+                    useTarget 'androidx.appcompat:appcompat:1.6.1'
                 } else if (groupAndName == 'com.android.support:support-annotations') {
                     useTarget 'androidx.annotation:annotation:1.0.0'
                 } else if (groupAndName == 'android.arch.persistence.room:runtime') {

@@ -16,7 +16,7 @@
 
 package com.android.rs.image2;
 
-import android.support.v8.renderscript.*;
+import androidx.renderscript.*;
 
 public class Convolve3x3 extends TestBase {
     private ScriptC_ip2_convolve3x3 mScript;

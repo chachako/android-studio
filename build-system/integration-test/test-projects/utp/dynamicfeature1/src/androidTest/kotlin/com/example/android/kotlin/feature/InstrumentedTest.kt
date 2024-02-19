@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.example.android.kotlin.feature
 
-package com.android.rs.image2;
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
-import androidx.renderscript.*;
+import org.junit.Test
+import org.junit.runner.RunWith
 
-public class Exposure extends TestBase {
-    private ScriptC_exposure mScript;
+import java.util.logging.Logger.getLogger
 
-    public void createTest(android.content.res.Resources res) {
-        mScript = new ScriptC_exposure(mRS);
+@RunWith(AndroidJUnit4::class)
+class ExampleInstrumentedTest {
+    private val logger = getLogger("TestLogger")
+
+    @Test
+    fun useAppContext() {
+        logger.info("test logs")
+        DynamicFeature1.stubDynamicFeature1FuncForTestingCodeCoverage()
     }
-
-    public void runTest() {
-        mScript.invoke_setBright(50.f);
-        mScript.forEach_exposure(mInPixelsAllocation, mOutPixelsAllocation);
-    }
-
 }

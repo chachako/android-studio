@@ -22,6 +22,7 @@ import static com.android.testutils.truth.PathSubject.assertThat;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.utils.FileUtils;
 import com.google.common.truth.Truth;
 import java.io.File;
@@ -38,6 +39,7 @@ public class LintFixTest {
     public final GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("lintKotlin")
+                    .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
                     .create();
 
     @Test

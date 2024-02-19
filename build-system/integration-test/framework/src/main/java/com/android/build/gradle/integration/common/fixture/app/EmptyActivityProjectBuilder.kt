@@ -49,7 +49,6 @@ class EmptyActivityProjectBuilder {
      * The following are additional settings to further customize the project
      */
     var withUnitTest: Boolean = false
-    var useAndroidX: Boolean = true
     var useGradleBuildCache: Boolean = false
     var gradleBuildCacheDir: File? = null
     var withConfigurationCaching: BaseGradleExecutor.ConfigurationCaching =
@@ -94,11 +93,9 @@ class EmptyActivityProjectBuilder {
 
         rootProjectBuilder.withKotlinGradlePlugin(useKotlin || kotlinUsedInLibrarySubprojects)
 
-        if (useAndroidX) {
-            rootProjectBuilder
-                .addGradleProperties(BooleanOption.USE_ANDROID_X.propertyName + "=true")
-                .addGradleProperties(BooleanOption.ENABLE_JETIFIER.propertyName + "=true")
-        }
+        rootProjectBuilder
+            .addGradleProperties(BooleanOption.USE_ANDROID_X.propertyName + "=true")
+            .addGradleProperties(BooleanOption.ENABLE_JETIFIER.propertyName + "=true")
 
         if (useGradleBuildCache) {
             rootProjectBuilder.withGradleBuildCacheDirectory(gradleBuildCacheDir!!)
@@ -128,23 +125,13 @@ class EmptyActivityProjectBuilder {
                 appDependencies.forEach {
                     addDependency(dependency = "project(\"${it.path}\")")
                 }
-                if (useAndroidX) {
-                    addDependency(
-                        dependency = "'androidx.appcompat:appcompat:$ANDROIDX_VERSION'"
-                    )
-                    addDependency(
-                        dependency = "'androidx.constraintlayout:constraintlayout:" +
-                                "$ANDROIDX_CONSTRAINT_LAYOUT_VERSION'"
-                    )
-                } else {
-                    addDependency(
-                        dependency = "'com.android.support:appcompat-v7:$SUPPORT_LIB_VERSION'"
-                    )
-                    addDependency(
-                        dependency = "'com.android.support.constraint:constraint-layout:" +
-                                "$SUPPORT_LIB_CONSTRAINT_LAYOUT_VERSION'"
-                    )
-                }
+                addDependency(
+                    dependency = "'androidx.appcompat:appcompat:1.6.1'"
+                )
+                addDependency(
+                    dependency = "'androidx.constraintlayout:constraintlayout:" +
+                            "$ANDROIDX_CONSTRAINT_LAYOUT_VERSION'"
+                )
                 if (withUnitTest) {
                     addDependency(
                         configuration = "testImplementation",
@@ -164,11 +151,7 @@ class EmptyActivityProjectBuilder {
             })
 
         // 3. Create source files
-        val appCompatActivityClass = if (useAndroidX) {
-            "androidx.appcompat.app.AppCompatActivity"
-        } else {
-            "android.support.v7.app.AppCompatActivity"
-        }
+        val appCompatActivityClass = "androidx.appcompat.app.AppCompatActivity"
         if (useKotlin) {
             app.addFile(
                 "src/main/java/$packagePath/MainActivity.kt",
@@ -215,7 +198,7 @@ class EmptyActivityProjectBuilder {
         app.addFile(
             "src/main/res/layout/activity_main.xml",
             with(LayoutFileBuilder()) {
-                this.useAndroidX = (this@EmptyActivityProjectBuilder).useAndroidX
+                this.useAndroidX = true
                 addTextView("helloTextId", "Hello World!")
                 build()
             }

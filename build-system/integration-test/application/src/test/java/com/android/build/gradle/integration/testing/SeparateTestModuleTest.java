@@ -12,6 +12,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.builder.model.v2.ide.TestedTargetVariant;
 import com.android.builder.model.v2.ide.Variant;
 import com.android.testutils.apk.Apk;
@@ -32,7 +33,12 @@ public class SeparateTestModuleTest {
 
     @Rule
     public GradleTestProject project =
-            GradleTestProject.builder().fromTestProject("separateTestModule").create();
+            GradleTestProject.builder().fromTestProject("separateTestModule")
+                    // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+                    .addGradleProperties(
+                            BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.getPropertyName() + "=true")
+                    .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
+                    .create();
 
     @Before
     public void setUp() throws IOException {

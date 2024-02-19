@@ -8,10 +8,10 @@ buildscript {
 apply plugin: 'com.android.application'
 
 dependencies {
-    implementation "com.android.support:support-v4:${libs.versions.supportLibVersion.get()}"
-    implementation "com.android.support:support-v13:${libs.versions.supportLibVersion.get()}"
-    implementation "com.android.support:cardview-v7:${libs.versions.supportLibVersion.get()}"
-    implementation "com.android.support:appcompat-v7:${libs.versions.supportLibVersion.get()}"
+    implementation "androidx.legacy:legacy-support-v4:1.0.0"
+    implementation "androidx.legacy:legacy-support-v13:1.0.0"
+    implementation "androidx.cardview:cardview:1.0.0"
+    implementation "androidx.appcompat:appcompat:1.6.1"
 }
 
 // The sample build uses multiple directories to
@@ -35,7 +35,7 @@ android {
 
         renderscriptTargetApi 28
         renderscriptSupportModeEnabled true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures {

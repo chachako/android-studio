@@ -25,6 +25,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder;
 import com.android.build.gradle.integration.common.fixture.TestProjectPaths;
 import com.android.build.gradle.integration.common.runner.FilterableParameterized;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.testutils.AssumeUtil;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -85,7 +86,9 @@ public class CheckAll {
 
     public CheckAll(String projectName) {
         GradleTestProjectBuilder builder = GradleTestProject.builder().fromTestProject(projectName);
-        this.project = builder.withConfigurationCaching(ConfigurationCaching.ON).create();
+        this.project = builder.withConfigurationCaching(ConfigurationCaching.ON)
+                .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
+                .create();
     }
 
     @Test

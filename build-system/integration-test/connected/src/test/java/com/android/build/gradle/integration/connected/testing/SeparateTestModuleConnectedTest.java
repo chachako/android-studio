@@ -21,6 +21,8 @@ import com.android.build.gradle.integration.common.fixture.TestVersions;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import java.io.IOException;
+
+import com.android.build.gradle.options.BooleanOption;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -28,10 +30,15 @@ import org.junit.Test;
 import org.junit.rules.ExternalResource;
 
 public class SeparateTestModuleConnectedTest {
+
     @Rule
     public GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("separateTestModule")
+                    // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+                    .addGradleProperties(BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.getPropertyName()
+                            + "=true")
+                    .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
                     .create();
 
     @ClassRule public static final ExternalResource EMULATOR = EmulatorUtils.getEmulator();
@@ -43,12 +50,10 @@ public class SeparateTestModuleConnectedTest {
                 "\n"
                         + "android {\n"
                         + "  defaultConfig {\n"
-                        + "    testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'\n"
+                        + "    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'\n"
                         + "  }\n"
                         + "  dependencies {\n"
-                        + "    implementation ('com.android.support.test:runner:"
-                        + TestVersions.TEST_SUPPORT_LIB_VERSION
-                        + "', {\n"
+                        + "    implementation ('androidx.test:runner:1.4.0-alpha06', {\n"
                         + "      exclude group: 'com.android.support', module: 'support-annotations'\n"
                         + "    })\n"
                         + "  }\n"

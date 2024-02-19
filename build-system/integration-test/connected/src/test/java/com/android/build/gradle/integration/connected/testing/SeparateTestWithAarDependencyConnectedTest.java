@@ -21,6 +21,8 @@ import com.android.build.gradle.integration.common.fixture.TestVersions;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.integration.connected.utils.EmulatorUtils;
 import java.io.IOException;
+
+import com.android.build.gradle.options.BooleanOption;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -32,6 +34,7 @@ public class SeparateTestWithAarDependencyConnectedTest {
     public GradleTestProject project =
             GradleTestProject.builder()
                     .fromTestProject("separateTestModule")
+                    .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
                     .create();
 
     @ClassRule public static final ExternalResource EMULATOR = EmulatorUtils.getEmulator();

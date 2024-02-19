@@ -1,9 +1,9 @@
 package com.android.rs.support;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
-import android.support.v8.renderscript.RenderScript;
+import androidx.test.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
+import androidx.renderscript.RenderScript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

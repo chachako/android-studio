@@ -39,7 +39,9 @@ class UtpConnectedTest : UtpTestBase() {
 
         private const val TEST_RESULT_XML = "build/outputs/androidTest-results/connected/debug/TEST-emulator-5554 - 13-_"
         private const val LOGCAT = "build/outputs/androidTest-results/connected/debug/emulator-5554 - 13/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
+        private const val LOGCAT_FOR_DYNAMIC_FEATURE = "build/outputs/androidTest-results/connected/debug/emulator-5554 - 13/logcat-com.example.android.kotlin.feature.ExampleInstrumentedTest-useAppContext.txt"
         private const val TEST_REPORT = "build/reports/androidTests/connected/debug/com.example.android.kotlin.html"
+        private const val TEST_REPORT_FOR_DYNAMIC_FEATURE = "build/reports/androidTests/connected/debug/com.example.android.kotlin.feature.html"
         private const val TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/emulator-5554 - 13/test-result.pb"
         private const val AGGREGATED_TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/test-result.pb"
         private const val TEST_COV_XML = "build/reports/coverage/androidTest/debug/connected/report.xml"
@@ -57,14 +59,19 @@ class UtpConnectedTest : UtpTestBase() {
         project.execute("uninstallAll")
     }
 
-    override fun selectModule(moduleName: String) {
+    override fun selectModule(moduleName: String, isDynamicFeature: Boolean) {
         testTaskName = ":${moduleName}:connectedAndroidTest"
         testResultXmlPath = "${moduleName}/$TEST_RESULT_XML${moduleName}-.xml"
-        testReportPath = "${moduleName}/$TEST_REPORT"
+        if (isDynamicFeature) {
+            testReportPath = "${moduleName}/$TEST_REPORT_FOR_DYNAMIC_FEATURE"
+            testLogcatPath = "${moduleName}/$LOGCAT_FOR_DYNAMIC_FEATURE"
+        } else {
+            testReportPath = "${moduleName}/$TEST_REPORT"
+            testLogcatPath = "${moduleName}/$LOGCAT"
+        }
         testResultPbPath = "${moduleName}/$TEST_RESULT_PB"
         aggTestResultPbPath = "${moduleName}/$AGGREGATED_TEST_RESULT_PB"
         testCoverageXmlPath = "${moduleName}/$TEST_COV_XML"
-        testLogcatPath = "${moduleName}/$LOGCAT"
         testAdditionalOutputPath = "${moduleName}/${TEST_ADDITIONAL_OUTPUT}"
     }
 
@@ -73,7 +80,7 @@ class UtpConnectedTest : UtpTestBase() {
     fun connectedAndroidTestWithUtpTestResultListener() {
         val benchmark: Benchmark = Benchmark.Builder("connectedAndroidTestWithUtpTestResultListener").setProject("Android Studio Gradle").build()
         val startTime: Long = java.lang.System.currentTimeMillis()
-        selectModule("app")
+        selectModule("app", false)
         val initScriptPath = TestUtils.resolveWorkspacePath(
                 "tools/adt/idea/utp/addGradleAndroidTestListener.gradle")
 
@@ -124,7 +131,7 @@ class UtpConnectedTest : UtpTestBase() {
     fun connectedAndroidTestWithUtpTestResultListenerAndTestReportingDisabled() {
         val benchmark: Benchmark = Benchmark.Builder("connectedAndroidTestWithUtpTestResultListenerAndTestReportingDisabled").setProject("Android Studio Gradle").build()
         val startTime: Long = java.lang.System.currentTimeMillis()
-        selectModule("app")
+        selectModule("app", false)
         val initScriptPath = TestUtils.resolveWorkspacePath(
                 "tools/adt/idea/utp/addGradleAndroidTestListener.gradle")
 

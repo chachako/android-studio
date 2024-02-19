@@ -17,12 +17,12 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_CONSTRAINT_LAYOUT_VERSION
 import com.android.build.gradle.integration.common.fixture.app.LayoutFileBuilder
 import com.android.build.gradle.integration.common.fixture.app.ManifestFileBuilder
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -34,7 +34,7 @@ private const val ANNOTATION_PACKAGE = "com.example.proguardannotation"
 private const val ANNOTATION = "AddProguardRule"
 private const val ANNOTATION_PROCESSOR = "${ANNOTATION}Processor"
 
-private const val ANNOTAION_MODULE = ":annotation_proguard"
+private const val ANNOTATION_MODULE = ":annotation_proguard"
 
 private const val NAMESPACE = "com.example.app"
 private const val MAIN_ACTIVITY = "MainActivity"
@@ -82,7 +82,7 @@ class MergeGeneratedProguardFilesTest(
                 "src/main/java/$mainPackagePath/$MAIN_ACTIVITY.java",
                 """
                 package $NAMESPACE;
-                import android.support.v7.app.AppCompatActivity;
+                import androidx.appcompat.app.AppCompatActivity;
                 import android.os.Bundle;
                 import $LIB_PACKAGE.Dummy;
 
@@ -118,11 +118,11 @@ class MergeGeneratedProguardFilesTest(
                 }
 
                 dependencies {
-                    implementation 'com.android.support:appcompat-v7:$SUPPORT_LIB_VERSION'
+                    implementation 'androidx.appcompat:appcompat:1.6.1'
                     implementation 'com.android.support.constraint:constraint-layout:$SUPPORT_LIB_CONSTRAINT_LAYOUT_VERSION'
                     implementation project(':lib')
-                    ${if(annotateMainActivity) "compileOnly project('$ANNOTAION_MODULE')" else ""}
-                    ${if(annotateMainActivity) "annotationProcessor project('$ANNOTAION_MODULE')" else ""}
+                    ${if(annotateMainActivity) "compileOnly project('$ANNOTATION_MODULE')" else ""}
+                    ${if(annotateMainActivity) "annotationProcessor project('$ANNOTATION_MODULE')" else ""}
                 }
                 """.trimIndent())
     private val proguardRuleGenerator =
@@ -207,21 +207,25 @@ class MergeGeneratedProguardFilesTest(
             .appendToBuild(
                 """
                 dependencies {
-                    ${if(annotateDependency) "compileOnly project('$ANNOTAION_MODULE')" else ""}
-                    ${if(annotateDependency) "annotationProcessor project('$ANNOTAION_MODULE')" else ""}
+                    ${if(annotateDependency) "compileOnly project('$ANNOTATION_MODULE')" else ""}
+                    ${if(annotateDependency) "annotationProcessor project('$ANNOTATION_MODULE')" else ""}
                 }
                 """)
 
     @Rule
     @JvmField
     val project =
-        GradleTestProject.builder().fromTestApp(
-            MultiModuleTestProject.builder()
-                .subproject(":app", app)
-                .subproject(ANNOTAION_MODULE, proguardRuleGenerator)
-                .subproject(":lib", lib)
-                .build()
-        ).create()
+            GradleTestProject.builder().fromTestApp(
+                    MultiModuleTestProject.builder()
+                            .subproject(":app", app)
+                            .subproject(ANNOTATION_MODULE, proguardRuleGenerator)
+                            .subproject(":lib", lib)
+                            .build()
+            )
+                    // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+                    .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+                    .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+                    .create()
 
     @get:Rule
     val tmp = TemporaryFolder()

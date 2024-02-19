@@ -151,7 +151,8 @@ android.defaultConfig.minSdkVersion 21
             .dependency(lib, "com.android.support:design:$SUPPORT_LIB_VERSION")
             .build()
 
-    @get:Rule val project = GradleTestProject.builder().fromTestApp(testApp).create()
+    @get:Rule
+    val project = GradleTestProject.builder().fromTestApp(testApp).create()
 
     @Test
     fun smokeTest() {

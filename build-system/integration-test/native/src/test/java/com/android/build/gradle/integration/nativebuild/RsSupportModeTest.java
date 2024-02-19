@@ -40,6 +40,9 @@ public class RsSupportModeTest {
                     .setWithCmakeDirInLocalProp(true)
                     .setSideBySideNdkVersion(DEFAULT_NDK_SIDE_BY_SIDE_VERSION)
                     .addGradleProperties(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.getPropertyName() + "=false")
+                    .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
+                    // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+                    .addGradleProperties(BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.getPropertyName() + "=true")
                     .create();
 
     @Test
@@ -61,7 +64,7 @@ public class RsSupportModeTest {
         for (Library lib : libraries.values()) {
             File file = lib.getArtifact();
             if (file == null) continue;
-            if (SdkConstants.FN_RENDERSCRIPT_V8_JAR.equals(file.getName())) {
+            if (SdkConstants.FN_ANDROIDX_RS_JAR.equals(file.getName())) {
                 foundSupportJar = true;
                 break;
             }
@@ -69,6 +72,6 @@ public class RsSupportModeTest {
 
         assertThat(foundSupportJar).isTrue();
         assertThat(project.getApk(GradleTestProject.ApkType.DEBUG, "x86"))
-                .containsClass("Landroid/support/v8/renderscript/RenderScript;");
+                .containsClass("Landroidx/renderscript/RenderScript;");
     }
 }
