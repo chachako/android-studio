@@ -2448,8 +2448,11 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         val repository =
           object : GoogleMavenRepository(cacheDir?.toPath()) {
 
-            public override fun readUrlData(url: String, timeout: Int): ByteArray? =
-              readUrlData(client, url, timeout)
+            public override fun readUrlData(
+              url: String,
+              timeout: Int,
+              lastModified: Long,
+            ): ReadUrlDataResult = readUrlData(client, url, timeout, lastModified)
 
             public override fun error(throwable: Throwable, message: String?) =
               client.log(throwable, message)
@@ -3924,8 +3927,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       { path: Path?, client: LintClient ->
         val index =
           object : GooglePlaySdkIndex(path) {
-            public override fun readUrlData(url: String, timeout: Int) =
-              readUrlData(client, url, timeout)
+            public override fun readUrlData(url: String, timeout: Int, lastModified: Long) =
+              readUrlData(client, url, timeout, lastModified)
 
             override fun error(throwable: Throwable, message: String?) {
               client.log(throwable, message)

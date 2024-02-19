@@ -390,10 +390,8 @@ class GooglePlaySdkIndexTest {
         .build()
     index =
       object : GooglePlaySdkIndex() {
-        override fun readUrlData(url: String, timeout: Int): ByteArray? {
-          fail("Trying to read proto from the network!")
-          return null
-        }
+        override fun readUrlData(url: String, timeout: Int, lastModified: Long) =
+          ReadUrlDataResult(null, true).also { fail("Trying to read proto from the network!") }
 
         override fun readDefaultData(relative: String): InputStream? {
           fail("Trying to read default proto!")
@@ -462,9 +460,8 @@ class GooglePlaySdkIndexTest {
   fun `offline snapshot can be used correctly`() {
     val offlineIndex =
       object : GooglePlaySdkIndex() {
-        override fun readUrlData(url: String, timeout: Int): ByteArray? {
-          return null
-        }
+        override fun readUrlData(url: String, timeout: Int, lastModified: Long) =
+          ReadUrlDataResult(null, true)
 
         override fun error(throwable: Throwable, message: String?) {}
       }

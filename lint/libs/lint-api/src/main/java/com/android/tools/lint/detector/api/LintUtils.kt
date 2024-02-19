@@ -49,6 +49,7 @@ import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.ResourceValue
 import com.android.ide.common.rendering.api.ResourceValueImpl
 import com.android.ide.common.rendering.api.StyleResourceValue
+import com.android.ide.common.repository.NetworkCache.ReadUrlDataResult
 import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.resources.configuration.FolderConfiguration.QUALIFIER_SPLITTER
 import com.android.ide.common.resources.configuration.LocaleQualifier
@@ -116,6 +117,7 @@ import com.intellij.psi.util.PsiUtil
 import java.io.File
 import java.io.IOException
 import java.io.UnsupportedEncodingException
+import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.ByteBuffer
 import java.util.ArrayDeque
@@ -1883,7 +1885,7 @@ fun isKotlinHardKeyword(keyword: String): Boolean {
   return false
 }
 
-/** Reads the data from the given URL, with an optional timeout (in milliseconds) */
+/** Reads the data from the given URL with a timeout (in milliseconds) */
 fun readUrlData(client: LintClient, query: String, timeout: Int): ByteArray? {
   val url = URL(query)
 
@@ -1891,6 +1893,34 @@ fun readUrlData(client: LintClient, query: String, timeout: Int): ByteArray? {
   return try {
     val `is` = connection.getInputStream() ?: return null
     ByteStreams.toByteArray(`is`)
+  } finally {
+    client.closeConnection(connection)
+  }
+}
+
+/**
+ * Reads the data from the given URL with a timeout (in milliseconds) and last-modified timestamp
+ * (in milliseconds).
+ */
+fun readUrlData(
+  client: LintClient,
+  query: String,
+  timeout: Int,
+  lastModified: Long,
+): ReadUrlDataResult {
+  val url = URL(query)
+
+  val failure = ReadUrlDataResult(null, true)
+  val cached = ReadUrlDataResult(null, false)
+  val connection = client.openConnection(url, timeout) ?: return failure
+  connection.ifModifiedSince = lastModified
+  return try {
+    connection.connect()
+    when (connection) {
+      is HttpURLConnection -> if (connection.responseCode == 304) return cached
+    }
+    val `is` = connection.getInputStream() ?: return failure
+    ReadUrlDataResult(ByteStreams.toByteArray(`is`), true)
   } finally {
     client.closeConnection(connection)
   }

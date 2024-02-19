@@ -2921,8 +2921,8 @@ class LintIssueDocGenerator(
 
       val repository: GoogleMavenRepository =
         object : GoogleMavenRepository(cacheDir.toPath()) {
-          public override fun readUrlData(url: String, timeout: Int): ByteArray? =
-            readUrlData(client, url, timeout)
+          public override fun readUrlData(url: String, timeout: Int, lastModified: Long) =
+            readUrlData(client, url, timeout, lastModified)
 
           public override fun error(throwable: Throwable, message: String?) =
             client.log(throwable, message)
