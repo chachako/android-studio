@@ -8,6 +8,8 @@ import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.content.getSystemService
 import androidx.lifecycle.LiveData
@@ -151,6 +153,22 @@ constructor(private val application: Application, private val settingsDao: Setti
 
   override fun doSetAlarm() {
     val alarmManager = application.getSystemService<AlarmManager>() ?: throw IllegalStateException()
+    val intent =
+      Intent(application, AlarmReceiver::class.java)
+        .setAction("Alarm")
+        .setDataAndType(Uri.parse("http://google.com"), "Some type")
+        .addCategory("category1")
+        .addCategory("category2")
+        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        .putExtra("INT_EXTRA", 1)
+        .putExtra("STRING_EXTRA", "Foo")
+        .putExtra(
+          "BUNDLE_EXTRA",
+          Bundle().apply {
+            putInt("INNER_INT_EXTRA", 1)
+            putString("INNER_STRING_EXTRA", "Foo")
+          },
+        )
     AlarmManagerCompat.setExactAndAllowWhileIdle(
       alarmManager,
       AlarmManager.RTC,
@@ -158,7 +176,7 @@ constructor(private val application: Application, private val settingsDao: Setti
       PendingIntent.getBroadcast(
         application,
         1,
-        Intent(application, AlarmReceiver::class.java).setAction("Alarm"),
+        intent,
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
       ),
     )

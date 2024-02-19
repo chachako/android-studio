@@ -17,13 +17,21 @@
 package android.content;
 
 public class ComponentName {
+
+    private final String packageName;
+
     private final String mClassName;
 
-    public ComponentName(String className) {
+    public ComponentName(String packageName, String className) {
+        this.packageName = packageName;
         mClassName = className;
     }
 
     public String getClassName() {
         return mClassName;
+    }
+
+    public String getPackageName() {
+        return packageName;
     }
 }

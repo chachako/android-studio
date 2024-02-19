@@ -18,12 +18,25 @@ package com.android.tools.appinspection.backgroundtask
 
 import android.app.ActivityThread
 import android.app.AlarmManager
+import android.app.AlarmManager.RTC_WAKEUP
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmSet
+import backgroundtask.inspection.BackgroundTaskInspectorProtocol.PendingIntent.Type.ACTIVITY
+import com.android.tools.appinspection.ComponentNameProto
+import com.android.tools.appinspection.IntentProto
+import com.android.tools.appinspection.PendingIntentProto
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
+
+private const val PENDING_INTENT_CREATOR_ID = 50
+private const val PENDING_INTENT_PACKAGE = "package"
+private const val PENDING_INTENT_REQUEST_CODE = 3
+private const val PENDING_INTENT_FLAGS = 0x1234
 
 class AlarmHandlerTest {
 
@@ -31,31 +44,150 @@ class AlarmHandlerTest {
 
   private class TestListener : AlarmManager.OnAlarmListener
 
+  private val pendingIntentHandler
+    get() = inspectorRule.inspector.pendingIntentHandler
+
   @Test
   fun alarmSetWithIntent() {
     val alarmHandler = inspectorRule.inspector.alarmHandler
-    val operation = PendingIntent(5, "package")
-    alarmHandler.onAlarmSet(AlarmManager.RTC_WAKEUP, 2, 3, 4, operation, null, null)
+    val intent =
+      Intent(
+        action = "action",
+        data = Uri(),
+        type = "type",
+        identifier = "identifier",
+        `package` = "package",
+        component = ComponentName("package", "classname"),
+        categories = setOf("c1", "c2"),
+        flags = 0x321,
+        extras =
+          Bundle()
+            .put("INT_EXTRA", 1)
+            .put("STRING_EXTRA", "Foo")
+            .put("BUNDLE_EXTRA", Bundle().put("INNER_EXTRA", "inner")),
+      )
+    val pendingIntent = PendingIntent(PENDING_INTENT_CREATOR_ID, PENDING_INTENT_PACKAGE)
+    pendingIntentHandler.onIntentCapturedEntry(
+      ACTIVITY,
+      PENDING_INTENT_REQUEST_CODE,
+      intent,
+      PENDING_INTENT_FLAGS,
+    )
+    pendingIntentHandler.onIntentCapturedExit(pendingIntent)
+    alarmHandler.onAlarmSet(
+      RTC_WAKEUP,
+      triggerMs = 2,
+      windowMs = 3,
+      intervalMs = 4,
+      operation = pendingIntent,
+      listener = null,
+      listenerTag = null,
+    )
     inspectorRule.connection.consume {
-      with(alarmSet) {
-        assertThat(type).isEqualTo(AlarmSet.Type.RTC_WAKEUP)
-        assertThat(triggerMs).isEqualTo(2)
-        assertThat(windowMs).isEqualTo(3)
-        assertThat(intervalMs).isEqualTo(4)
-        with(operation) {
-          assertThat(creatorPackage).isEqualTo("package")
-          assertThat(creatorUid).isEqualTo(5)
-        }
-      }
+      assertThat(alarmSet)
+        .isEqualTo(
+          AlarmSet.newBuilder()
+            .setType(AlarmSet.Type.RTC_WAKEUP)
+            .setTriggerMs(2)
+            .setWindowMs(3)
+            .setIntervalMs(4)
+            .setOperation(
+              PendingIntentProto.newBuilder()
+                .setCreatorPackage(PENDING_INTENT_PACKAGE)
+                .setCreatorUid(PENDING_INTENT_CREATOR_ID)
+                .setType(ACTIVITY)
+                .setRequestCode(PENDING_INTENT_REQUEST_CODE)
+                .setIntent(
+                  IntentProto.newBuilder()
+                    .setAction("action")
+                    .setData("uri")
+                    .setType("type")
+                    .setIdentifier("identifier")
+                    .setPackage("package")
+                    .setComponentName(
+                      ComponentNameProto.newBuilder()
+                        .setPackageName("package")
+                        .setClassName("classname")
+                    )
+                    .addAllCategories(listOf("c1", "c2"))
+                    .setFlags(0x321)
+                    .setExtras(
+                      """
+                      BUNDLE_EXTRA:
+                          INNER_EXTRA: inner
+                      INT_EXTRA: 1
+                      STRING_EXTRA: Foo
+                    """
+                        .trimIndent()
+                    )
+                )
+                .setFlags(PENDING_INTENT_FLAGS)
+            )
+            .build()
+        )
+    }
+  }
+
+  @Test
+  fun alarmSetWithIntent_nullValues() {
+    val alarmHandler = inspectorRule.inspector.alarmHandler
+    val intent =
+      Intent(
+        action = null,
+        data = null,
+        type = null,
+        identifier = null,
+        `package` = null,
+        component = null,
+        categories = null,
+        flags = 0,
+        extras = null,
+      )
+    val pendingIntent = PendingIntent(PENDING_INTENT_CREATOR_ID, PENDING_INTENT_PACKAGE)
+    pendingIntentHandler.onIntentCapturedEntry(
+      ACTIVITY,
+      PENDING_INTENT_REQUEST_CODE,
+      intent,
+      PENDING_INTENT_FLAGS,
+    )
+    pendingIntentHandler.onIntentCapturedExit(pendingIntent)
+    alarmHandler.onAlarmSet(
+      RTC_WAKEUP,
+      triggerMs = 2,
+      windowMs = 3,
+      intervalMs = 4,
+      operation = pendingIntent,
+      listener = null,
+      listenerTag = null,
+    )
+    inspectorRule.connection.consume {
+      assertThat(alarmSet)
+        .isEqualTo(
+          AlarmSet.newBuilder()
+            .setType(AlarmSet.Type.RTC_WAKEUP)
+            .setTriggerMs(2)
+            .setWindowMs(3)
+            .setIntervalMs(4)
+            .setOperation(
+              PendingIntentProto.newBuilder()
+                .setCreatorPackage(PENDING_INTENT_PACKAGE)
+                .setCreatorUid(PENDING_INTENT_CREATOR_ID)
+                .setType(ACTIVITY)
+                .setRequestCode(PENDING_INTENT_REQUEST_CODE)
+                .setIntent(IntentProto.newBuilder())
+                .setFlags(PENDING_INTENT_FLAGS)
+            )
+            .build()
+        )
     }
   }
 
   @Test
   fun alarmSet_allTypes() {
     val alarmHandler = inspectorRule.inspector.alarmHandler
-    val operation = PendingIntent(5, "package")
+    val operation = PendingIntent(PENDING_INTENT_CREATOR_ID, PENDING_INTENT_PACKAGE)
     listOf(
-        AlarmManager.RTC_WAKEUP to AlarmSet.Type.RTC_WAKEUP,
+        RTC_WAKEUP to AlarmSet.Type.RTC_WAKEUP,
         AlarmManager.RTC to AlarmSet.Type.RTC,
         AlarmManager.ELAPSED_REALTIME_WAKEUP to AlarmSet.Type.ELAPSED_REALTIME_WAKEUP,
         AlarmManager.ELAPSED_REALTIME to AlarmSet.Type.ELAPSED_REALTIME,
@@ -69,8 +201,8 @@ class AlarmHandlerTest {
   @Test
   fun alarmCancelledWithIntent() {
     val alarmHandler = inspectorRule.inspector.alarmHandler
-    val operation = PendingIntent(5, "package")
-    alarmHandler.onAlarmSet(AlarmManager.RTC_WAKEUP, 2, 3, 4, operation, null, null)
+    val operation = PendingIntent(PENDING_INTENT_CREATOR_ID, PENDING_INTENT_PACKAGE)
+    alarmHandler.onAlarmSet(RTC_WAKEUP, 2, 3, 4, operation, null, null)
     alarmHandler.onAlarmCancelled(operation)
     inspectorRule.connection.consume { assertThat(hasAlarmCancelled()).isTrue() }
   }
@@ -78,14 +210,18 @@ class AlarmHandlerTest {
   @Test
   fun alarmFiredWithIntent() {
     val alarmHandler = inspectorRule.inspector.alarmHandler
-    val pendingIntentHandler = inspectorRule.inspector.pendingIntentHandler
     val intent = Intent()
-    val operation = PendingIntent(5, "package")
+    val operation = PendingIntent(PENDING_INTENT_CREATOR_ID, PENDING_INTENT_PACKAGE)
 
-    pendingIntentHandler.onIntentCapturedEntry(intent)
+    pendingIntentHandler.onIntentCapturedEntry(
+      ACTIVITY,
+      PENDING_INTENT_REQUEST_CODE,
+      intent,
+      PENDING_INTENT_FLAGS,
+    )
     pendingIntentHandler.onIntentCapturedExit(operation)
 
-    alarmHandler.onAlarmSet(AlarmManager.RTC_WAKEUP, 2, 3, 4, operation, null, null)
+    alarmHandler.onAlarmSet(RTC_WAKEUP, 2, 3, 4, operation, null, null)
     val data = ActivityThread().newReceiverData()
     pendingIntentHandler.onReceiverDataCreated(data)
     data.setIntent(intent)

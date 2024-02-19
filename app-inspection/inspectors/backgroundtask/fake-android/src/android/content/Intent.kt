@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package android.content
 
-package android.content;
+import android.net.Uri
+import android.os.Bundle
 
-@SuppressWarnings("MethodMayBeStatic")
-public class Intent {
+class Intent(
+  val action: String? = "action",
+  val data: Uri? = Uri(),
+  val type: String? = "type",
+  val identifier: String? = "identifier",
+  val `package`: String? = "package",
+  val component: ComponentName? = ComponentName("package", "classname"),
+  val categories: Set<String>? = setOf("cat1", "cat2"),
+  val flags: Int = 0x121,
+  val extras: Bundle? = Bundle(),
+) {
 
-    public boolean filterEquals(Intent other) {
-        return equals(other);
-    }
+  fun filterEquals(other: Intent?): Boolean {
+    return equals(other)
+  }
 
-    public int filterHashCode() {
-        return hashCode();
-    }
+  fun filterHashCode(): Int {
+    return hashCode()
+  }
 }

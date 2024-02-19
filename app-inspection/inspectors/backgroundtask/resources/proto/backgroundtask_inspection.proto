@@ -22,61 +22,61 @@ option optimize_for = LITE_RUNTIME;
 // ======= MESSAGES =======
 
 message Command {
-    oneof specialized {
-        TrackBackgroundTaskCommand track_background_task = 1;
-    }
+  oneof specialized {
+    TrackBackgroundTaskCommand track_background_task = 1;
+  }
 }
 
 message TrackBackgroundTaskCommand {}
 
 message Response {
-    oneof specialized {
-        TrackBackgroundTaskResponse track_background_task = 1;
-    }
+  oneof specialized {
+    TrackBackgroundTaskResponse track_background_task = 1;
+  }
 }
 
 message TrackBackgroundTaskResponse {}
 
 message Event {
-    // Timestamp of the event in milliseconds.
-    int64 timestamp = 1;
-    oneof specialized {
-        BackgroundTaskEvent background_task_event = 2;
-        DebugEvent debug = 3;
-    }
+  // Timestamp of the event in milliseconds.
+  int64 timestamp = 1;
+  oneof specialized {
+    BackgroundTaskEvent background_task_event = 2;
+    DebugEvent debug = 3;
+  }
 }
 
 message BackgroundTaskEvent {
-    int64 task_id = 1;
-    // Only applies to WakeLockAcquired, WakeLockReleased, JobScheduled, JobFinished,
-    // AlarmScheduled, AlarmCancelled events.
-    string stacktrace = 2;
-    oneof metadata {
-        // A wake lock was acquired, forcing the device to stay awake.
-        WakeLockAcquired wake_lock_acquired = 101;
-        // A wake lock was released, indicating it's not needed anymore.
-        WakeLockReleased wake_lock_released = 102;
-        // An alarm was set.
-        AlarmSet alarm_set = 103;
-        // An alarm was cancelled.
-        AlarmCancelled alarm_cancelled = 104;
-        // An alarm goes off.
-        AlarmFired alarm_fired = 105;
-        JobScheduled job_scheduled = 106;
-        // JobService.onStartJob is called.
-        JobStarted job_started = 107;
-        // JobService.onStopJob is called. This is called if the system has
-        // determined that the application must stop execution of this job even
-        // before it has had a chance to call jobFinished(JobParameters, boolean).
-        // For example, JobScheduler.cancel() will trigger this event. This will
-        // also happen if the constraints specified at schedule time (e.g. requires
-        // charging) are no longer met.
-        JobStopped job_stopped = 108;
-        // JobService.jobFinished is called. Application must call this to inform
-        // the JobScheduler the application has finished executing. When the system
-        // receives this message it will release the wakelock being held.
-        JobFinished job_finished = 109;
-    }
+  int64 task_id = 1;
+  // Only applies to WakeLockAcquired, WakeLockReleased, JobScheduled, JobFinished,
+  // AlarmScheduled, AlarmCancelled events.
+  string stacktrace = 2;
+  oneof metadata {
+    // A wake lock was acquired, forcing the device to stay awake.
+    WakeLockAcquired wake_lock_acquired = 101;
+    // A wake lock was released, indicating it's not needed anymore.
+    WakeLockReleased wake_lock_released = 102;
+    // An alarm was set.
+    AlarmSet alarm_set = 103;
+    // An alarm was cancelled.
+    AlarmCancelled alarm_cancelled = 104;
+    // An alarm goes off.
+    AlarmFired alarm_fired = 105;
+    JobScheduled job_scheduled = 106;
+    // JobService.onStartJob is called.
+    JobStarted job_started = 107;
+    // JobService.onStopJob is called. This is called if the system has
+    // determined that the application must stop execution of this job even
+    // before it has had a chance to call jobFinished(JobParameters, boolean).
+    // For example, JobScheduler.cancel() will trigger this event. This will
+    // also happen if the constraints specified at schedule time (e.g. requires
+    // charging) are no longer met.
+    JobStopped job_stopped = 108;
+    // JobService.jobFinished is called. Application must call this to inform
+    // the JobScheduler the application has finished executing. When the system
+    // receives this message it will release the wakelock being held.
+    JobFinished job_finished = 109;
+  }
 }
 
 // ======= ALARM EVENT =======
@@ -117,12 +117,45 @@ message AlarmCancelled {}
 
 message AlarmFired {}
 
+message ComponentName {
+  string package_name = 1;
+  string class_name = 2;
+}
+
+message Intent {
+  optional string action = 1;
+  optional string data = 2;
+  optional string type = 3;
+  optional string identifier = 4;
+  optional string package = 5;
+  optional ComponentName componentName = 6;
+  repeated string categories = 7;
+  int32 flags = 8;
+  // Handle extras as a string for simplicity. Conversion to a string is handled by the agent.
+  optional string extras = 9;
+}
+
 message PendingIntent {
+  enum Type {
+    UNKNOWN = 0;
+    ACTIVITY = 1;
+    BROADCAST = 2;
+    SERVICE = 3;
+  }
+
   // The package name of the PendingIntent, or empty if there is none
   // associated with it.
   string creator_package = 1;
   // The uid of the PendingIntent, or -1 if there is none associated with it.
   int32 creator_uid = 2;
+  // The type of the PendingIntent
+  optional Type type = 3;
+  // The requestCode of the PendingIntent
+  optional int32 requestCode = 4;
+  // The requestCode of the PendingIntent
+  optional Intent intent = 5;
+  // The requestCode of the PendingIntent
+  int32 flags = 6;
 }
 
 message AlarmListener {
@@ -314,5 +347,5 @@ message JobParameters {
 // ======= DEBUG EVENT =======
 
 message DebugEvent {
-    string message = 1;
+  string message = 1;
 }

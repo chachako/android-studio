@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,13 @@
  * limitations under the License.
  */
 
-package android.app;
+package com.android.tools.appinspection
 
-public class PendingIntent {
+import android.content.Intent
 
-    private final String myCreatorPackage;
-
-    private final int myCreatorUid;
-
-    public PendingIntent(int userId, String packageName) {
-        myCreatorPackage = packageName;
-        myCreatorUid = userId;
-    }
-
-    public String getCreatorPackage() {
-        return myCreatorPackage;
-    }
-
-    public int getCreatorUid() {
-        return myCreatorUid;
-    }
-}
+class PendingIntentInfo(
+  val type: PendingIntentType,
+  val requestCode: Int,
+  val intent: Intent,
+  val flags: Int,
+)

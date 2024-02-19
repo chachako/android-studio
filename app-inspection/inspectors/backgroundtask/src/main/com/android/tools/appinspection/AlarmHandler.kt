@@ -19,14 +19,29 @@ package com.android.tools.appinspection
 import android.app.AlarmManager
 import android.app.AlarmManager.OnAlarmListener
 import android.app.PendingIntent
+import android.content.ComponentName
+import android.content.Intent
+import android.os.Bundle
 import android.util.Log
 import androidx.inspection.Connection
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol
+import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmCancelled
+import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmFired
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmListener
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmSet
 import com.android.tools.appinspection.BackgroundTaskUtil.sendBackgroundTaskEvent
 import com.android.tools.appinspection.common.getStackTrace
 import java.util.concurrent.ConcurrentHashMap
+
+typealias PendingIntentProto = BackgroundTaskInspectorProtocol.PendingIntent
+
+typealias IntentProto = BackgroundTaskInspectorProtocol.Intent
+
+typealias IntentProtoBuilder = BackgroundTaskInspectorProtocol.Intent.Builder
+
+typealias ComponentNameProto = BackgroundTaskInspectorProtocol.ComponentName
+
+typealias ComponentNameProtoBuilder = BackgroundTaskInspectorProtocol.ComponentName.Builder
 
 /** A handler class that adds necessary hooks to track alarm related events. */
 interface AlarmHandler {
@@ -50,7 +65,12 @@ interface AlarmHandler {
   fun onAlarmFired(operation: PendingIntent)
 }
 
-class AlarmHandlerImpl(private val connection: Connection) : AlarmHandler {
+private const val TAG = "BackgroundInspector"
+
+class AlarmHandlerImpl(
+  private val connection: Connection,
+  private val intentRegistry: IntentRegistry,
+) : AlarmHandler {
 
   private val operationIdMap = ConcurrentHashMap<PendingIntent, Long>()
   private val listenerIdMap = ConcurrentHashMap<OnAlarmListener, Long>()
@@ -64,34 +84,39 @@ class AlarmHandlerImpl(private val connection: Connection) : AlarmHandler {
     listener: OnAlarmListener?,
     listenerTag: String?,
   ) {
-    val alarmType =
-      when (type) {
-        AlarmManager.RTC_WAKEUP -> AlarmSet.Type.RTC_WAKEUP
-        AlarmManager.RTC -> AlarmSet.Type.RTC
-        AlarmManager.ELAPSED_REALTIME_WAKEUP -> AlarmSet.Type.ELAPSED_REALTIME_WAKEUP
-        AlarmManager.ELAPSED_REALTIME -> AlarmSet.Type.ELAPSED_REALTIME
-        else -> {
-          Log.w("BackgroundInspector", "Invalid Alarm type: $type")
-          return
+    try {
+      val alarmType =
+        when (type) {
+          AlarmManager.RTC_WAKEUP -> AlarmSet.Type.RTC_WAKEUP
+          AlarmManager.RTC -> AlarmSet.Type.RTC
+          AlarmManager.ELAPSED_REALTIME_WAKEUP -> AlarmSet.Type.ELAPSED_REALTIME_WAKEUP
+          AlarmManager.ELAPSED_REALTIME -> AlarmSet.Type.ELAPSED_REALTIME
+          else -> {
+            Log.w(TAG, "Invalid Alarm type: $type")
+            return
+          }
         }
-      }
-    val builder =
-      AlarmSet.newBuilder()
-        .setType(alarmType)
-        .setTriggerMs(triggerMs)
-        .setWindowMs(windowMs)
-        .setIntervalMs(intervalMs)
+      val builder =
+        AlarmSet.newBuilder()
+          .setType(alarmType)
+          .setTriggerMs(triggerMs)
+          .setWindowMs(windowMs)
+          .setIntervalMs(intervalMs)
 
-    val taskId =
-      when {
-        operation != null -> builder.setOperation(operation)
-        listener != null -> builder.setListener(listener, listenerTag)
-        else -> throw IllegalStateException("Invalid alarm: neither operation or listener is set.")
-      }
+      val taskId =
+        when {
+          operation != null -> builder.setPendingIntent(operation)
+          listener != null -> builder.setListener(listener, listenerTag)
+          else ->
+            throw IllegalStateException("Invalid alarm: neither operation or listener is set.")
+        }
 
-    connection.sendBackgroundTaskEvent(taskId) {
-      stacktrace = getStackTrace(1)
-      alarmSet = builder.build()
+      connection.sendBackgroundTaskEvent(taskId) {
+        stacktrace = getStackTrace(1)
+        alarmSet = builder.build()
+      }
+    } catch (t: Throwable) {
+      Log.w(TAG, "Error handling Alarm", t)
     }
   }
 
@@ -99,7 +124,7 @@ class AlarmHandlerImpl(private val connection: Connection) : AlarmHandler {
     val taskId = operationIdMap[operation] ?: return
     connection.sendBackgroundTaskEvent(taskId) {
       stacktrace = getStackTrace(1)
-      alarmCancelled = BackgroundTaskInspectorProtocol.AlarmCancelled.getDefaultInstance()
+      alarmCancelled = AlarmCancelled.getDefaultInstance()
     }
   }
 
@@ -107,31 +132,35 @@ class AlarmHandlerImpl(private val connection: Connection) : AlarmHandler {
     val taskId = listenerIdMap[listener] ?: return
     connection.sendBackgroundTaskEvent(taskId) {
       stacktrace = getStackTrace(1)
-      alarmCancelled = BackgroundTaskInspectorProtocol.AlarmCancelled.getDefaultInstance()
+      alarmCancelled = AlarmCancelled.getDefaultInstance()
     }
   }
 
   override fun onAlarmFired(listener: OnAlarmListener) {
     val taskId = listenerIdMap[listener] ?: return
-    connection.sendBackgroundTaskEvent(taskId) {
-      alarmFired = BackgroundTaskInspectorProtocol.AlarmFired.getDefaultInstance()
-    }
+    connection.sendBackgroundTaskEvent(taskId) { alarmFired = AlarmFired.getDefaultInstance() }
   }
 
   override fun onAlarmFired(operation: PendingIntent) {
     val taskId = operationIdMap[operation] ?: return
-    connection.sendBackgroundTaskEvent(taskId) {
-      alarmFired = BackgroundTaskInspectorProtocol.AlarmFired.getDefaultInstance()
-    }
+    connection.sendBackgroundTaskEvent(taskId) { alarmFired = AlarmFired.getDefaultInstance() }
   }
 
-  private fun AlarmSet.Builder.setOperation(operation: PendingIntent): Long {
-    setOperation(
-      BackgroundTaskInspectorProtocol.PendingIntent.newBuilder()
-        .setCreatorPackage(operation.creatorPackage)
-        .setCreatorUid(operation.creatorUid)
-    )
-    return operationIdMap.getOrPut(operation) { BackgroundTaskUtil.nextId() }
+  private fun AlarmSet.Builder.setPendingIntent(pendingIntent: PendingIntent): Long {
+    val builder =
+      PendingIntentProto.newBuilder()
+        .setCreatorPackage(pendingIntent.creatorPackage)
+        .setCreatorUid(pendingIntent.creatorUid)
+    val info = intentRegistry.getPendingIntentInfo(pendingIntent)
+    if (info != null) {
+      builder
+        .setType(info.type)
+        .setRequestCode(info.requestCode)
+        .setIntent(info.intent.toProto())
+        .setFlags(info.flags)
+    }
+    setOperation(builder)
+    return operationIdMap.getOrPut(pendingIntent) { BackgroundTaskUtil.nextId() }
   }
 
   private fun AlarmSet.Builder.setListener(listener: OnAlarmListener, listenerTag: String?): Long {
@@ -139,3 +168,34 @@ class AlarmHandlerImpl(private val connection: Connection) : AlarmHandler {
     return listenerIdMap.getOrPut(listener) { BackgroundTaskUtil.nextId() }
   }
 }
+
+private fun Intent.toProto(): IntentProtoBuilder {
+  val builder = IntentProto.newBuilder().setFlags(flags).addAllCategories(categories ?: emptySet())
+  action?.let { builder.setAction(it) }
+  component?.let { builder.setComponentName(it.toProto()) }
+  data?.let { builder.setData(it.toString()) }
+  identifier?.let { builder.setIdentifier(it) }
+  `package`?.let { builder.setPackage(it) }
+  type?.let { builder.setType(it) }
+  extras?.let { builder.setExtras(it.toDisplayString()) }
+  return builder
+}
+
+private fun Bundle.toDisplayString(indentLevel: Int = 0): String {
+  return buildString {
+      keySet().sorted().forEach { key ->
+        @Suppress("DEPRECATION")
+        val line =
+          when (val value = this@toDisplayString.get(key)) {
+            is Bundle -> "$key:\n${value.toDisplayString(indentLevel + 1)}\n"
+            else -> "$key: $value\n"
+          }
+        append(line)
+      }
+    }
+    .trimEnd()
+    .prependIndent(" ".repeat(indentLevel * 4))
+}
+
+private fun ComponentName.toProto(): ComponentNameProtoBuilder =
+  ComponentNameProto.newBuilder().setPackageName(packageName).setClassName(className)

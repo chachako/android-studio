@@ -28,34 +28,42 @@ class IntentRegistry {
    * A mapping from [Intent] to [PendingIntent] so when an Intent is sent we can trace back to its
    * PendingIntent (if any) for event tracking.
    */
-  private val intentMap = ConcurrentHashMap<IntentWrapper, PendingIntent>()
+  private val intentToPendingIntentMap = ConcurrentHashMap<IntentWrapper, PendingIntent>()
+
+  private val pendingIntentToInfoMap = ConcurrentHashMap<PendingIntent, PendingIntentInfo>()
 
   /* Intent shared between an entry hook and an exit hook for the same method. */
-  private val activeIntent = ThreadLocal<Intent>()
+  private val currentInfo = ThreadLocal<PendingIntentInfo>()
 
-  fun setIntentData(intent: Intent) {
-    activeIntent.set(intent)
+  fun setCurrentInfo(type: PendingIntentType, requestCode: Int, intent: Intent, flags: Int) {
+    currentInfo.set(PendingIntentInfo(type, requestCode, intent, flags))
   }
 
   fun setPendingIntentForActiveIntent(pendingIntent: PendingIntent) {
-    intentMap[activeIntent.get().wrap()] = pendingIntent
+    val info = currentInfo.get()
+    intentToPendingIntentMap[info.intent.wrap()] = pendingIntent
+    pendingIntentToInfoMap[pendingIntent] = info
   }
 
   fun getPendingIntent(intent: Intent): PendingIntent? {
-    return intentMap[intent.wrap()]
+    return intentToPendingIntentMap[intent.wrap()]
+  }
+
+  fun getPendingIntentInfo(pendingIntent: PendingIntent): PendingIntentInfo? {
+    return pendingIntentToInfoMap[pendingIntent]
   }
 
   /**
    * Wraps an [Intent] and overrides its `equals` and `hashCode` methods, so we can use it as a
    * HashMap key. Two intents are considered equal iff [Intent.filterEquals] returns true.
    */
-  private class IntentWrapper private constructor(private val mIntent: Intent) {
+  class IntentWrapper private constructor(private val intent: Intent) {
 
     override fun equals(other: Any?): Boolean {
-      return (other is IntentWrapper && mIntent.filterEquals(other.mIntent))
+      return (other is IntentWrapper && intent.filterEquals(other.intent))
     }
 
-    override fun hashCode() = mIntent.filterHashCode()
+    override fun hashCode() = intent.filterHashCode()
 
     companion object {
 

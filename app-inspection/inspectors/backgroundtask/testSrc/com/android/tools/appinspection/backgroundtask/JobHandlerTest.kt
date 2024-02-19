@@ -46,7 +46,7 @@ class JobHandlerTest {
   fun jobScheduled() {
     val jobHandler = inspectorRule.inspector.jobHandler
     val job =
-      JobInfo.Builder(1, ComponentName("TestClass"))
+      JobInfo.Builder(1, ComponentName("com.package.name", "TestClass"))
         .setBackoffCriteria(100, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
         .setPeriodic(101, 102)
         .setMinimumLatency(103)

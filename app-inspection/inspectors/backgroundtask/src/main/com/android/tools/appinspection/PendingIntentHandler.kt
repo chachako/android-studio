@@ -34,7 +34,7 @@ const val GET_ACTIVITY_METHOD_NAME =
  * Method name for [PendingIntent#getService(Context, int, Intent, int)] to capture the [Intent]
  * used to create a [PendingIntent] that starts an [android.app.Service].
  */
-const val GET_SERVICES_METHOD_NAME =
+const val GET_SERVICE_METHOD_NAME =
   "getService" +
     "(Landroid/content/Context;ILandroid/content/Intent;I)" +
     "Landroid/app/PendingIntent;"
@@ -96,7 +96,7 @@ const val SET_PENDING_RESULT_METHOD_NAME =
 /** A handler class that adds necessary hooks to track [Intent] and its related [PendingIntent]. */
 interface PendingIntentHandler {
 
-  fun onIntentCapturedEntry(intent: Intent)
+  fun onIntentCapturedEntry(type: PendingIntentType, requestCode: Int, intent: Intent, flags: Int)
 
   fun onIntentCapturedExit(pendingIntent: PendingIntent): PendingIntent
 
@@ -121,8 +121,13 @@ class PendingIntentHandlerImpl(
    */
   private val receiverData = ThreadLocal<Any>()
 
-  override fun onIntentCapturedEntry(intent: Intent) {
-    intentRegistry.setIntentData(intent)
+  override fun onIntentCapturedEntry(
+    type: PendingIntentType,
+    requestCode: Int,
+    intent: Intent,
+    flags: Int,
+  ) {
+    intentRegistry.setCurrentInfo(type, requestCode, intent, flags)
   }
 
   override fun onIntentCapturedExit(pendingIntent: PendingIntent): PendingIntent {
