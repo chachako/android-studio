@@ -202,11 +202,22 @@ public final class HardwareConfigHelperTest {
 
     @Test
     public void automotiveGeneric() {
-        List<String> device = ImmutableList.of("automotive_1024p_landscape", "automotive_portrait");
+        List<String> device =
+                ImmutableList.of(
+                        "automotive_1024p_landscape",
+                        "automotive_1080p_landscape",
+                        "automotive_portrait",
+                        "automotive_distant_display",
+                        "automotive_ultrawide",
+                        "automotive_large_portrait");
         List<String> label =
                 ImmutableList.of(
                         "Automotive (1024p landscape) (1024 × 768, mdpi)",
-                        "Automotive Portrait (800 × 1280, ldpi)");
+                        "Automotive (1080p landscape) (1080 × 600, ldpi)",
+                        "Automotive Portrait (800 × 1280, ldpi)",
+                        "Automotive Distant Display (1080 × 600, ldpi)",
+                        "Automotive Ultrawide (3904 × 1320, ldpi)",
+                        "Automotive Large Portrait (1280 × 1606, ldpi)");
 
         DeviceManager deviceManager = getDeviceManager();
         for (int i = 0; i < device.size(); i++) {
