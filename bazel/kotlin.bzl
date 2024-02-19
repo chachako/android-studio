@@ -434,3 +434,7 @@ _kotlin_library = rule(
     },
     implementation = _kotlin_library_impl,
 )
+
+# ASwB compatibility
+def kt_jvm_library(**kwargs):
+    kotlin_library(**kwargs)

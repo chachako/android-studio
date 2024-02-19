@@ -9861,6 +9861,27 @@ maven_import(
 )
 
 maven_artifact(
+    name = "org.jspecify.jspecify_0.3.0",
+    pom = "repository/org/jspecify/jspecify/0.3.0/jspecify-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jspecify/jspecify/0.3.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.jspecify.jspecify",
+    classifiers = [],
+    jars = [
+        "repository/org/jspecify/jspecify/0.3.0/jspecify-0.3.0.jar"
+    ],
+    original_deps = [],
+    pom = "repository/org/jspecify/jspecify/0.3.0/jspecify-0.3.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jspecify/jspecify/0.3.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.junit.jupiter.junit-jupiter-api_5.9.2",
     pom = "repository/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.pom",
     repo_root_path = "repository",
