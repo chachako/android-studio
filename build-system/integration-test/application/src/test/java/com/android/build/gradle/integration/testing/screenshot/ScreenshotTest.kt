@@ -441,11 +441,78 @@ class ScreenshotTest {
 
     @Test
     fun runPreviewScreenshotTestsWithMissingUiToolingDep() {
-        val uiToolingDep = "implementation 'androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}'"
-        val uiToolingPreviewDep = "implementation 'androidx.compose.ui:ui-tooling-preview:${TaskManager.COMPOSE_UI_VERSION}'"
+        val uiToolingDep =
+            "implementation 'androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}'"
+        val uiToolingPreviewDep =
+            "implementation 'androidx.compose.ui:ui-tooling-preview:${TaskManager.COMPOSE_UI_VERSION}'"
         TestFileUtils.searchAndReplace(appProject.buildFile, uiToolingDep, uiToolingPreviewDep)
 
-        val result = getExecutor().expectFailure().run(":app:previewScreenshotUpdateDebugAndroidTest")
+        val result =
+            getExecutor().expectFailure().run(":app:previewScreenshotUpdateDebugAndroidTest")
         result.assertErrorContains("Missing required runtime dependency. Please add androidx.compose.ui:ui-tooling to your testing module's dependencies.")
+    }
+
+    @Test
+    fun runPreviewScreenshotTestsOnMultipleFlavors() {
+        TestFileUtils.appendToFile(
+            appProject.buildFile,
+            """
+            android {
+                flavorDimensions "new"
+                productFlavors {
+                    create("flavor1") {
+                        dimension "new"
+                    }
+                     create("flavor2") {
+                        dimension "new"
+                    }
+                }
+            }
+            """.trimIndent()
+        )
+
+        // Comment out the previews in ExampleTest to limit this test to running on the preview in TopLevelPreviewTest
+        val testFile1 = appProject.projectDir.resolve("src/androidTest/java/com/ExampleTest.kt")
+        TestFileUtils.replaceLine(testFile1, 1, "/*")
+        TestFileUtils.replaceLine(testFile1, testFile1.readLines().size, "*/")
+
+        getExecutor().run(":app:previewScreenshotUpdateAndroidTest")
+
+        // Verify that reference images are created for both flavors
+        val flavor1ReferenceScreenshotDir = appProject.projectDir.resolve("src/androidTest/screenshot/debug/flavor1").toPath()
+        val flavor2ReferenceScreenshotDir = appProject.projectDir.resolve("src/androidTest/screenshot/debug/flavor2").toPath()
+        assertThat(flavor1ReferenceScreenshotDir.listDirectoryEntries().single().name)
+            .isEqualTo("pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee_0.png")
+        assertThat(flavor2ReferenceScreenshotDir.listDirectoryEntries().single().name)
+            .isEqualTo("pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee_0.png")
+
+        getExecutor().run(":app:previewScreenshotAndroidTest")
+
+        // Verify that test engine generated HTML reports for each flavor and all tests pass
+        val flavor1IndexHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor1DebugAndroidTest/index.html")
+        val flavor2IndexHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor2DebugAndroidTest/index.html")
+        val flavor1ClassHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor1DebugAndroidTest/classes/pkg.name.TopLevelPreviewTestKt.html")
+        val flavor2ClassHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor2DebugAndroidTest/classes/pkg.name.TopLevelPreviewTestKt.html")
+        val flavor1PackageHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor1DebugAndroidTest/packages/pkg.name.html")
+        val flavor2PackageHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor2DebugAndroidTest/packages/pkg.name.html")
+        assertThat(flavor1IndexHtmlReport).exists()
+        assertThat(flavor2IndexHtmlReport).exists()
+        assertThat(flavor1ClassHtmlReport).exists()
+        assertThat(flavor2ClassHtmlReport).exists()
+        val expectedOutput = listOf(
+            """<td class="success">simpleComposableTest_3</td>""",
+        )
+        expectedOutput.forEach {
+            assertThat(flavor1ClassHtmlReport.readText()).contains(it)
+            assertThat(flavor2ClassHtmlReport.readText()).contains(it)
+        }
+        assertThat(flavor1PackageHtmlReport).exists()
+        assertThat(flavor2PackageHtmlReport).exists()
+
+        // Assert that no diff images were generated because screenshots matched the reference images
+        val diffDir1 = appProject.buildDir.resolve("outputs/androidTest-results/preview/debug/flavor1/diffs").toPath()
+        val diffDir2 = appProject.buildDir.resolve("outputs/androidTest-results/preview/debug/flavor2/diffs").toPath()
+        assert(diffDir1.listDirectoryEntries().isEmpty())
+        assert(diffDir2.listDirectoryEntries().isEmpty())
     }
 }
