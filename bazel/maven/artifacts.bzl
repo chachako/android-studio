@@ -185,7 +185,7 @@ ARTIFACTS = [
     "org.jetbrains.skiko:skiko-awt-runtime-macos-arm64:0.7.85.4",
     "org.jetbrains.skiko:skiko-awt-runtime-macos-x64:0.7.85.4",
     "org.jetbrains.skiko:skiko-awt-runtime-windows-x64:0.7.85.4",
-    "org.jspecify:jspecify:0.3.0",
+    "org.jspecify:jspecify:0.2.0",
     "org.mockito:mockito-core:5.6.0",
     "org.mortbay.jetty:jetty:6.1.26",
     "org.ow2.asm:asm:9.6",

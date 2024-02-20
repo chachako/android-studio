@@ -9861,10 +9861,10 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.jspecify.jspecify_0.3.0",
-    pom = "repository/org/jspecify/jspecify/0.3.0/jspecify-0.3.0.pom",
+    name = "org.jspecify.jspecify_0.2.0",
+    pom = "repository/org/jspecify/jspecify/0.2.0/jspecify-0.2.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/jspecify/jspecify/0.3.0",
+    repo_path = "org/jspecify/jspecify/0.2.0",
     visibility = ["//visibility:public"],
 )
 
@@ -9872,12 +9872,12 @@ maven_import(
     name = "org.jspecify.jspecify",
     classifiers = [],
     jars = [
-        "repository/org/jspecify/jspecify/0.3.0/jspecify-0.3.0.jar"
+        "repository/org/jspecify/jspecify/0.2.0/jspecify-0.2.0.jar"
     ],
     original_deps = [],
-    pom = "repository/org/jspecify/jspecify/0.3.0/jspecify-0.3.0.pom",
+    pom = "repository/org/jspecify/jspecify/0.2.0/jspecify-0.2.0.pom",
     repo_root_path = "repository",
-    repo_path = "org/jspecify/jspecify/0.3.0",
+    repo_path = "org/jspecify/jspecify/0.2.0",
     visibility = ["//visibility:public"],
 )
 
