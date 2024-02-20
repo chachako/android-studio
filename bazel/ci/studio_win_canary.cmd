@@ -33,7 +33,7 @@ call %BASEDIR%\tools\base\bazel\bazel.cmd ^
   --define=meta_android_build_number=%BUILD_NUMBER% ^
   --tool_tag=studio-win-canary ^
   -- ^
- //tools/...
+ //tools/... ^
  -//tools/vendor/google3/aswb/...
 
 set /a EXITCODE=%ERRORLEVEL%
