@@ -20,7 +20,9 @@ import com.android.Version
 import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
+import com.android.testutils.TestUtils
 import com.google.common.truth.Truth
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -133,6 +135,16 @@ class SourceSetsTest {
                     )
                 }
             }
+        }
+    }
+
+    @Before
+    fun copyJdkPathToIncludedBuild() {
+        project.projectDir.resolve("build-logic/gradle.properties").let { file ->
+            file.parentFile.mkdirs()
+            file.writeText(project.gradlePropertiesFile.readLines().first {
+                it.contains("org.gradle.java.installations.paths") }
+            )
         }
     }
 

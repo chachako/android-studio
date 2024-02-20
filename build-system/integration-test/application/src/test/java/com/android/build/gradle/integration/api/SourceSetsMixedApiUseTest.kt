@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -190,6 +191,16 @@ class SourceSetsMixedApiUseTest {
 
 
             }
+        }
+    }
+
+    @Before
+    fun copyJdkPathToIncludedBuild() {
+        project.projectDir.resolve("build-logic/gradle.properties").let { file ->
+            file.parentFile.mkdirs()
+            file.writeText(project.gradlePropertiesFile.readLines().first {
+                it.contains("org.gradle.java.installations.paths") }
+            )
         }
     }
 
