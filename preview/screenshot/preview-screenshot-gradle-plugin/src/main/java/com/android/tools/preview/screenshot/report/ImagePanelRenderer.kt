@@ -17,6 +17,8 @@
 package com.android.tools.preview.screenshot.report
 
 import org.gradle.reporting.ReportRenderer
+import java.io.File
+import java.util.Base64
 
 class ImagePanelRenderer: ReportRenderer<ScreenshotTestImages, SimpleHtmlWriter>() {
 
@@ -53,12 +55,14 @@ class ImagePanelRenderer: ReportRenderer<ScreenshotTestImages, SimpleHtmlWriter>
     }
 
     private fun renderImage(htmlWriter: SimpleHtmlWriter, imagePath: String?, text: String) {
-        if (!imagePath.isNullOrEmpty())
+        if (!imagePath.isNullOrEmpty() && File(imagePath).exists()) {
+            val base64String = Base64.getEncoder().encodeToString(File(imagePath).readBytes())
             htmlWriter.startElement("td")
-                .startElement("img").attribute("src", imagePath).attribute("alt", text).endElement()
+                .startElement("img").attribute("src", "data:image/png;base64, $base64String").attribute("alt", text).endElement()
                 .endElement()
-        else
+        } else {
             htmlWriter.startElement(("td")).characters(text).endElement()
+        }
     }
 
     private fun getTexts(ssImages: ScreenshotTestImages): ImageTexts {

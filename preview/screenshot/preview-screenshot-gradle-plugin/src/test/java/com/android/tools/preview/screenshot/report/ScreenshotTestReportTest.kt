@@ -28,6 +28,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.awt.Color
 import java.awt.image.BufferedImage
+import java.util.Base64
 import javax.imageio.ImageIO
 
 @RunWith(JUnit4::class)
@@ -83,6 +84,9 @@ class ScreenshotTestReportTest {
             .replace("referencePath", reference.absolutePath)
             .replace("actualPath", actual.absolutePath)
             .replace("diffPath", diff.absolutePath)
+            .replace("base64Reference", getBase64SrcFromPath(reference.absolutePath))
+            .replace("base64Actual", getBase64SrcFromPath(actual.absolutePath))
+            .replace("base64Diff", getBase64SrcFromPath(diff.absolutePath))
         val classHtml = File(reportOutDir, "com.example.myapplication.ExampleInstrumentedTest.html")
         assertThat(classHtml).exists()
         run checkClassHtml@{
@@ -110,8 +114,7 @@ class ScreenshotTestReportTest {
         val expectedClassFileContentExcludingFooter = javaClass.getResourceAsStream("classError.txt")!!
             .readBytes().toString(Charsets.UTF_8)
             .replace("referencePath", reference.absolutePath)
-            .replace("actualPath", actual.absolutePath)
-            .replace("diffPath", diff.absolutePath)
+            .replace("base64Reference", getBase64SrcFromPath(reference.absolutePath))
         val classHtml = File(reportOutDir, "com.example.myapplication.ExampleInstrumentedTest.html")
         run checkClassHtml@{
             classHtml.readLines().forEachIndexed { index, line ->
@@ -230,5 +233,10 @@ class ScreenshotTestReportTest {
               </testcase>
             </testsuite>
         """.trimIndent())
+    }
+
+    private fun getBase64SrcFromPath(path: String): String {
+        val base64String = Base64.getEncoder().encodeToString(File(path).readBytes())
+        return "data:image/png;base64, $base64String"
     }
 }
