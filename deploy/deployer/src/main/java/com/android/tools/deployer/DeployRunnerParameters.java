@@ -120,6 +120,7 @@ public class DeployRunnerParameters {
         DeployRunnerParameters drp = new DeployRunnerParameters();
         drp.parseCommand(args[0]);
         for (int i = 1; i < args.length; i++) {
+            System.out.printf("arg[% 2d] = %s%n", i, args[i]);
             if (args[i].startsWith("--")) {
                 drp.parseFlag(args[i]);
             } else if (drp.applicationId == null) {
