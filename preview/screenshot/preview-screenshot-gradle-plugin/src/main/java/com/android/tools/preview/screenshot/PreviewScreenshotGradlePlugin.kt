@@ -103,7 +103,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             }
 
             componentsExtension.onVariants { variant ->
-                if (variant is HasDeviceTests) {
+                if (variant is HasDeviceTests && variant.debuggable) {
                     val variantName = variant.name
 
                     val discoveryTaskProvider =
