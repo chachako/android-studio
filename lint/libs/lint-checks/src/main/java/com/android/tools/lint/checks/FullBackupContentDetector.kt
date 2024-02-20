@@ -219,6 +219,10 @@ class FullBackupContentDetector : ResourceXmlDetector() {
     private const val DOMAIN_FILE = "file"
     private const val DOMAIN_DATABASE = "database"
     private const val DOMAIN_EXTERNAL = "external"
+    private const val DOMAIN_DEVICE_FILE = "device_file"
+    private const val DOMAIN_DEVICE_DATABASE = "device_database"
+    private const val DOMAIN_DEVICE_SHAREDPREF = "device_sharedpref"
+    private const val DOMAIN_DEVICE_ROOT = "device_root"
     private const val TAG_EXCLUDE = "exclude"
     private const val TAG_INCLUDE = "include"
     private const val TAG_FULL_BACKUP_CONTENT = "full-backup-content"
@@ -228,6 +232,16 @@ class FullBackupContentDetector : ResourceXmlDetector() {
 
     /** Valid domains; see FullBackup#getTokenForXmlDomain for authoritative list. */
     private val VALID_DOMAINS =
-      arrayOf(DOMAIN_ROOT, DOMAIN_FILE, DOMAIN_DATABASE, DOMAIN_SHARED_PREF, DOMAIN_EXTERNAL)
+      arrayOf(
+        DOMAIN_FILE,
+        DOMAIN_DATABASE,
+        DOMAIN_SHARED_PREF,
+        DOMAIN_EXTERNAL,
+        DOMAIN_ROOT,
+        DOMAIN_DEVICE_FILE,
+        DOMAIN_DEVICE_DATABASE,
+        DOMAIN_DEVICE_SHAREDPREF,
+        DOMAIN_DEVICE_ROOT,
+      )
   }
 }

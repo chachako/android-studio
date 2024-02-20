@@ -261,13 +261,13 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
                 res/xml/backup.xml:9: Unnecessary/conflicting <include>
                  <include domain="external" path="dd"/>
                                             ~~~~~~~~~
-            res/xml/backup.xml:11: Error: Unexpected domain unknown-domain, expected one of root, file, database, sharedpref, external [FullBackupContent]
+            res/xml/backup.xml:11: Error: Unexpected domain unknown-domain, expected one of file, database, sharedpref, external, root, device_file, device_database, device_sharedpref, device_root [FullBackupContent]
                  <exclude domain="unknown-domain" path="dd"/>
                                   ~~~~~~~~~~~~~~
             res/xml/backup.xml:11: Error: dd is not in an included path [FullBackupContent]
                  <exclude domain="unknown-domain" path="dd"/>
                                                         ~~
-            res/xml/backup.xml:12: Error: Missing domain attribute, expected one of root, file, database, sharedpref, external [FullBackupContent]
+            res/xml/backup.xml:12: Error: Missing domain attribute, expected one of file, database, sharedpref, external, root, device_file, device_database, device_sharedpref, device_root [FullBackupContent]
                  <include path="dd"/>
                  ~~~~~~~~~~~~~~~~~~~~
             res/xml/backup.xml:14: Error: Unexpected element <wrongtag> [FullBackupContent]
@@ -301,5 +301,23 @@ class FullBackupContentDetectorTest : AbstractCheckTest() {
       )
       .run()
       .expect(expected)
+  }
+
+  fun test325564564() {
+    lint()
+      .files(
+        xml(
+            "res/xml/full_backup_content.xml",
+            """
+            <full-backup-content>
+                <include domain="device_database" path="app.db" />
+                <include domain="device_sharedpref" path="be.mygod.vpnhotspot_preferences.xml" />
+            </full-backup-content>
+            """,
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
   }
 }
