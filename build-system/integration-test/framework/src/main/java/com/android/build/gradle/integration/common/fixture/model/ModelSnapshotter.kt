@@ -367,12 +367,14 @@ fun String.normalizeVersionsOfCommonDependencies(): String {
         .replace(ANDROID_GRADLE_PLUGIN_VERSION, "{AGP_Version}")
         .replace(KOTLIN_VERSION_FOR_TESTS, "{KOTLIN_VERSION_FOR_TESTS}")
         .replace(GRADLE_TEST_VERSION, "{GRADLE_VERSION}")
+        // Use 17 instead of Runtime.version().feature() because the java version to run the test
+        // is different from the version to build the project
         .replace(
-            "org.gradle.jvm.version>${Runtime.version().feature()}",
+            "org.gradle.jvm.version>17",
             "org.gradle.jvm.version>{Java_Version}"
         )
         .replace(
-            "org.gradle.jvm.version -> ${Runtime.version().feature()}",
+            "org.gradle.jvm.version -> 17",
             "org.gradle.jvm.version -> {Java_Version}"
         )
 }
