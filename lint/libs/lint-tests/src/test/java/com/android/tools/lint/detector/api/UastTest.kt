@@ -3572,4 +3572,119 @@ class UastTest : TestCase() {
       )
     }
   }
+
+  fun testResolutionToJavaMock_source() {
+    // Regression from b/325564559
+    val testFiles =
+      arrayOf(
+        java(
+            "Test.java",
+            """
+            import static my.mockito.Mockito.mock;
+
+            class Foo {}
+
+            public class Test {
+                private Foo fooMock;
+                public void foo() {
+                    fooMock = mock(Foo.class);
+                }
+            }
+          """,
+          )
+          .indented(),
+        java(
+            """
+            package my.mockito;
+
+            public final class Mockito {
+                @SafeVarargs
+                public static <T> T mock(T... reified) {
+                    return null;
+                }
+                public static <T> T mock(Class<T> clazz) {
+                    return null;
+                }
+            }
+          """
+          )
+          .indented(),
+      )
+    check(*testFiles) { file -> checkJavaMock(file) }
+  }
+
+  fun testResolutionToJavaMock_fromBytecode() {
+    // Regression from b/325564559
+    val testFiles =
+      arrayOf(
+        java(
+            "Test.java",
+            """
+            import static my.mockito.Mockito.mock;
+
+            class Foo {}
+
+            public class Test {
+                private Foo fooMock;
+                public void foo() {
+                    fooMock = mock(Foo.class);
+                }
+            }
+          """,
+          )
+          .indented(),
+        bytecode(
+          "libs/lib1.jar",
+          java(
+              """
+            package my.mockito;
+
+            public final class Mockito {
+                @SafeVarargs
+                public static <T> T mock(T... reified) {
+                    return null;
+                }
+                public static <T> T mock(Class<T> clazz) {
+                    return null;
+                }
+            }
+          """
+            )
+            .indented(),
+          0x8ae22c11,
+          """
+                my/mockito/Mockito.class:
+                H4sIAAAAAAAA/31QwU7CQBB9Q6FYREHUGE2MJ2PhYMNVkMSQeEJNpOHCacGV
+                LNJt0m5N/AT/Rk8mHvwAP8o4xR4IqJvsvtm3783MzufX+weAc+yWkINVRL6M
+                AmxCdSoehTcTeuLdjKZybAh2W2llOgTLrQ+KWCPUgicvCMcPyoTe1Q8S8t3w
+                ThIqPaXldRKMZOSL0YyZfColnLjD3nLyVn2VIjh9NdHCJBGbj9r+2aqm4w59
+                v1XnTdi/TbRRgRyoWHG9C61DI4wKdUzYW7D2xb0ciEhEk5hdx+7CU3cm4vj3
+                Xpp/1F92t7mXTtZRqR8m0VheqvT35WxAp6kBTRR53umyQOnE+XT4dshIjIXG
+                G+iVA87Cpz0nLTxjHWXGVHqQSXP0sqSzsZHy2EQl46qMDnu3mP3f62TeGt+2
+                59HON0mxyb0kAgAA
+                """,
+        ),
+      )
+
+    check(*testFiles) { file -> checkJavaMock(file) }
+  }
+
+  private fun checkJavaMock(file: UFile) {
+    var count = 0
+    file.accept(
+      object : AbstractUastVisitor() {
+        override fun visitCallExpression(node: UCallExpression): Boolean {
+          count++
+          val resolved = node.resolve()
+          assertNotNull(resolved)
+          val params = resolved!!.parameterList.parameters
+          assertEquals(1, params.size)
+          assertEquals("java.lang.Class<T>", params.single().type.canonicalText)
+          assertEquals("Foo", node.getExpressionType()?.canonicalText)
+          return super.visitCallExpression(node)
+        }
+      }
+    )
+    assertEquals(1, count)
+  }
 }
