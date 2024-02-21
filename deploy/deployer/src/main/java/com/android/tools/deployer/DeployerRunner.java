@@ -181,7 +181,8 @@ public class DeployerRunner {
         if (parameters.getCreateAdblibSession()) {
             session =
                     AdbLibSessionFactoryKt.createSocketConnectSession(
-                            AndroidDebugBridge::getSocketAddress);
+                            AndroidDebugBridge::getSocketAddress,
+                            new DeployerRunnerLoggerFactory(parameters.getLogLevel()));
         }
 
         AdbClient adb = new AdbClient(device, logger, session);
