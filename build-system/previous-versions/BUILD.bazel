@@ -306,30 +306,3 @@ gradle_build(
     ],
     tasks = ["listDependencies"],
 )
-
-maven_repository(
-    name = "2.3.2",
-    # keep sorted
-    artifacts = [
-        "@maven//:com.android.tools.build.gradle_2.3.2",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_repository(
-    name = "2.2.0",
-    # keep sorted
-    artifacts = [
-        "@maven//:com.android.tools.build.gradle_2.2.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_repository(
-    name = "1.5.0",
-    # keep sorted
-    artifacts = [
-        "@maven//:com.android.tools.build.gradle_1.5.0",
-    ],
-    visibility = ["//visibility:public"],
-)
