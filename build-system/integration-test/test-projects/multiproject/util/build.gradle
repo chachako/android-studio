@@ -3,9 +3,3 @@ apply plugin: 'java-library'
 dependencies {
     api 'com.google.guava:guava:19.0'
 }
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
