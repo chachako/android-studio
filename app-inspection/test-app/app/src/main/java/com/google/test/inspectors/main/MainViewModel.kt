@@ -19,11 +19,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import androidx.work.Worker
 import com.google.test.inspectors.AlarmReceiver
 import com.google.test.inspectors.AppJobService
-import com.google.test.inspectors.AppWorker
 import com.google.test.inspectors.HttpClient
+import com.google.test.inspectors.InjectedWorker
 import com.google.test.inspectors.Logger
+import com.google.test.inspectors.ManualWorker
 import com.google.test.inspectors.db.SettingsDao
 import com.google.test.inspectors.grpc.GrpcClient
 import com.google.test.inspectors.grpc.custom.CustomRequest
@@ -83,7 +85,12 @@ constructor(private val application: Application, private val settingsDao: Setti
   }
 
   override fun startWork() {
-    val request = OneTimeWorkRequest.Builder(AppWorker::class.java).build()
+    startWork(InjectedWorker::class.java)
+    startWork(ManualWorker::class.java)
+  }
+
+  private fun startWork(worker: Class<out Worker>) {
+    val request = OneTimeWorkRequest.Builder(worker).build()
     val workManager = WorkManager.getInstance(application)
     val work: LiveData<WorkInfo> = workManager.getWorkInfoByIdLiveData(request.id)
 
@@ -91,7 +98,7 @@ constructor(private val application: Application, private val settingsDao: Setti
       work.asFlow().collect {
         Logger.info("State of ${request.id}: ${it.state}")
         if (it.state == WorkInfo.State.SUCCEEDED) {
-          setSnack(it.outputData.getString(AppWorker.MESSAGE_KEY) ?: "no-message")
+          setSnack(it.outputData.getString(InjectedWorker.MESSAGE_KEY) ?: "no-message")
         }
       }
     }

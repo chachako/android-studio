@@ -40,6 +40,7 @@ dependencies {
   implementation(project(":shared"))
   implementation(libs.activity.compose)
   implementation(libs.androidx.hilt.navigation.compose)
+  implementation(libs.androidx.hilt.work)
   implementation(libs.androidx.lifecycle.livedata.ktx)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -64,6 +65,7 @@ dependencies {
   implementation(platform(libs.compose.bom))
 
   kapt(libs.hilt.compiler)
+  kapt(libs.androidx.hilt.compiler)
   ksp(libs.androidx.room.compiler)
   debugImplementation(libs.androidx.ui.tooling)
 }
