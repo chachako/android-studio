@@ -26,6 +26,7 @@ import com.android.build.gradle.options.BooleanOption.LINT_USE_K2_UAST
 import com.android.build.gradle.options.StringOption.LINT_RESERVED_MEMORY_PER_TASK
 import com.android.testutils.truth.PathSubject
 import com.android.utils.FileUtils
+import com.android.utils.usLocaleCapitalize
 import com.google.common.truth.Truth
 import org.junit.Assume
 import org.junit.Before
@@ -326,6 +327,20 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
             .contains("Foo.kt:5: Error: Found byte-order-mark in the middle of a file [ByteOrderMark]")
         PathSubject.assertThat(reportFile)
             .contains("KmpJvmOnlyLibClass.kt:9: Error: Found byte-order-mark in the middle of a file [ByteOrderMark]")
+
+        // Regression test for b/325650375
+        for (jvmTargetName in listOf("jvm", "desktop")) {
+            val testArtifactDependenciesFile =
+                FileUtils.join(
+                    project.getSubproject("kmpJvmOnly").intermediatesDir,
+                    "lintAnalyze${jvmTargetName.usLocaleCapitalize()}Test",
+                    "android-lint-model",
+                    "${jvmTargetName}-artifact-dependencies.xml"
+                )
+            PathSubject.assertThat(testArtifactDependenciesFile).exists()
+            PathSubject.assertThat(testArtifactDependenciesFile)
+                .contains("kmpJvmOnly-${jvmTargetName}.jar")
+        }
     }
 
     @Test
