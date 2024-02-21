@@ -51,72 +51,82 @@ run from integration tests:
 
 ### Using locally built plugin in a project
 
-To test your own Gradle projects, using your modified Android Gradle plugin,
-modify the `settings.gradle` file to point to your local repository
-(where the above publishLocal target installed your build).
-
-For example, if you ran the repo init command above in `/my/aosp/work`, then
+To test your own Gradle projects using your modified Android Gradle plugin,
+modify the `settings.gradle{.kts}` file to point to your local repository
+(where the above `:publishLocal` task installed your build).
+For example, if you ran the repo init command above in `/my/aosp/work` then
 the repository will be in `/my/aosp/work/out/repo`.
 
-You may need to change the version of the plugin as the version number used in
-the development branch is typically different from what was released.  You can
-find the version number of the current build in
-`tools/buildSrc/base/version.properties.`
+You will also need to change the AGP version referenced.
+You can find the version number of your locally built AGP by looking at
+the directory that was created in
+`/my/aosp/work/out/repo/com/android/tools/build/gradle/` when you ran
+the `:publishLocal` task.
+The version number will end in `-dev` (e.g. `8.4.0-dev`), unless you run
+gradle with `-Prelease=true`, in which case it will use the release
+suffix (e.g. `8.4.0-alpha01`).
 
-For example:
-
-|||---|||
-#### Before
-```
+```Groovy
+// settings.gradle (Groovy DSL)
 pluginManagement {
     repositories {
+        // Begin change: Add local Maven repo.
+        maven { url '/my/aosp/work/out/repo' }
+        // End change.
         gradlePluginPortal()
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.0'
+        // Begin change: update AGP version.
+        classpath 'com.android.tools.build:gradle:8.4.0-dev'
+        // End change.
     }
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()
-        mavenCentral()
-    }
-}
-```
-
-#### After
-
-```
-pluginManagement {
-    repositories {
+        // Begin change: Add local Maven repo.
         maven { url '/my/aosp/work/out/repo' }
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.0-dev'
-    }
-}
-
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        maven { url '/my/aosp/work/out/repo' }
+        // End change.
         google()
         mavenCentral()
     }
 }
 ```
-|||---|||
 
 If your project does not have a `pluginManagement` or `dependencyResolutionManagement`
 block in `settings.gradle`, look in `build.gradle` for a `buildscript` or `allProjects` block,
 respectively, and make the changes there instead.
+
+```Kotlin
+// settings.gradle.kts (Kotlin DSL)
+pluginManagement {
+    repositories {
+        // Begin change: Add local Maven repo.
+        maven(url = "/my/aosp/work/out/repo")
+        // End change.
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        // Begin change: Add local Maven repo.
+        maven(url = "/my/aosp/work/out/repo")
+        // End change.
+        google()
+        mavenCentral()
+    }
+}
+```
+
+In recent projects, the AGP version will usually be in
+`gradle/libs.versions.toml`, but it could also be in the root
+`build.gradle.kts`.
 
 ### Debugging
 
