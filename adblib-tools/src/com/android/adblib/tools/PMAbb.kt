@@ -27,10 +27,10 @@ internal class PMAbb(deviceServices: AdbDeviceServices) : PM(deviceServices) {
 
     private val CMD = "package"
 
-    // Adb client reference implementation uses abb_exec but we should move to abb service which
-    // has fewer edge cases. But the tests are failing with it. For now, keep using abb.
-    // TODO: b/321070782
-    private val useAbbExecService = false
+    // Adb client reference implementation uses abb_exec. We use the same service even though
+    // it has edge cases (like necessity to shutdownOutput=false).
+    // TODO: Investigate moving to `abb` service instead of `abb_exec`.
+    private val useAbbExecService = true
 
     override suspend fun createSession(device: DeviceSelector, options: List<String>, size: Long) : Flow<String> {
         val cmd = mutableListOf(CMD, "install-create")
