@@ -16,6 +16,20 @@ maven_repository(
     visibility = ["//visibility:public"],
 )
 
+AGP_8_2_2_ARTIFACTS = [
+    "@maven//:com.android.application.com.android.application.gradle.plugin_8.2.2",
+    "@maven//:com.android.library.com.android.library.gradle.plugin_8.2.2",
+    "@maven//:com.android.tools.build.aapt2_8.2.2-10154469",
+    "@maven//:com.android.tools.build.gradle_8.2.2",
+    "@maven//:com.android.tools.lint.lint-gradle_31.2.2",
+]
+
+maven_repository(
+    name = "8.2.2",
+    artifacts = AGP_8_2_2_ARTIFACTS,
+    visibility = ["//visibility:public"],
+)
+
 AGP_8_2_0_ARTIFACTS = [
     "@maven//:com.android.application.com.android.application.gradle.plugin_8.2.0",
     "@maven//:com.android.library.com.android.library.gradle.plugin_8.2.0",
