@@ -16,6 +16,7 @@
 
 package com.android.builder.internal.aapt.v2
 
+import com.android.annotations.NonNull
 import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.internal.aapt.AaptConvertConfig
 import com.android.builder.internal.aapt.AaptOptions
@@ -30,6 +31,7 @@ import com.android.testutils.MockLog
 import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject.assertThat
+import com.google.common.collect.ImmutableCollection
 import com.google.common.collect.ImmutableList
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
@@ -65,6 +67,41 @@ class Aapt2DaemonImplTest {
         createDaemon().shutDown()
     }
 
+    //This is a regression test.  b/169602190
+    @Test
+    fun testAaptDoesNotRunWhenLinkCommandInvalid() {
+        val daemon = createDaemon()
+
+        val manifest = resourceFile(
+            "src",
+            "AndroidManifest.xml",
+            """<?xml version="1.0" encoding="utf-8"?>
+                    |<manifest
+                    |        xmlns:android="http://schemas.android.com/apk/res/android"
+                    |        package="com.example.aapt2daemon.test">
+                    |</manifest>""".trimMargin()
+        )
+
+        val outputFile = File(temporaryFolder.newFolder(), "lib.apk")
+        val emptyTestFile = File(temporaryFolder.newFolder(), "test")
+
+        val request = AaptPackageConfig(
+            androidJarPath = target.getPath(IAndroidTarget.ANDROID_JAR).toString(),
+            dependentFeatures = ImmutableList.of(emptyTestFile),
+            packageId = null,
+            manifestFile = manifest,
+            resourceOutputApk = outputFile,
+            resourceDirs = ImmutableList.of(),
+            options = AaptOptions(),
+            componentType = ComponentTypeImpl.BASE_APK
+        )
+       val exception = assertFailsWith(Aapt2Exception::class) {
+            daemon.link(request.copy(intermediateDir = temporaryFolder.newFolder()), logger)
+        }
+        assertThat(exception.message).contains("Unable to make AAPT link command")
+        assertThat(exception.cause?.message).contains("Dependent features configured but no package ID was set.")
+
+    }
     @Test
     fun testCompileMultipleCalls() {
         val outDir = temporaryFolder.newFolder()
