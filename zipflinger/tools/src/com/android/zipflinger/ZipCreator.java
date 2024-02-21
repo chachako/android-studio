@@ -19,27 +19,52 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ZipCreator {
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {
-            System.out.println("Usage: Zip dest [files_to_zip]");
+            System.out.println("Usage: zip [-flags] dest [files_to_zip]");
             return;
         }
 
-        Path dst = Paths.get(args[0]);
+        boolean recurse = false;
+        boolean move = false;
+        int argsIndex = 0;
+        if (args[argsIndex].startsWith("-")) {
+            for (int i = 1; i < args[argsIndex].length(); i++) {
+                char flag = args[argsIndex].charAt(i);
+                if (flag == 'r') recurse = true;
+                if (flag == 'm') move = true;
+            }
+            argsIndex += 1;
+        }
+        Path dst = Paths.get(args[argsIndex]);
+        argsIndex += 1;
         Files.deleteIfExists(dst);
-
+        List<Path> files = new ArrayList<>();
         try (ZipArchive archive = new ZipArchive(dst)) {
-            for (int i = 1; i < args.length; i++) {
+            for (int i = argsIndex; i < args.length; i++) {
                 Path src = Paths.get(args[i]);
-                Source source;
                 if (args[i].endsWith("/")) {
-                    source = Sources.dir(src.toString());
+                    archive.add(Sources.dir(src.toString()));
                 } else {
-                    source = new BytesSource(src, src.getFileName().toString(), 0);
+                    List<Path> toAdd = List.of(src);
+                    if (recurse && Files.isDirectory(src)) {
+                        toAdd = Files.walk(src).filter(Files::isRegularFile).collect(Collectors.toList());
+                    }
+                    for (Path path : toAdd) {
+                        archive.add(new BytesSource(path, path.getFileName().toString(), 0));
+                    }
+                    files.addAll(toAdd);
                 }
-                archive.add(source);
+            }
+        }
+        if (move) {
+            for (Path file : files) {
+                Files.deleteIfExists(file);
             }
         }
     }

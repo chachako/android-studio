@@ -27,6 +27,7 @@ java_binary(
         "src/com/android/zipflinger/ZipCreator.java",
     ],
     main_class = "com.android.zipflinger.ZipCreator",
+    visibility = ["//visibility:public"],
     deps = [
         "//tools/base/zipflinger",
     ],
