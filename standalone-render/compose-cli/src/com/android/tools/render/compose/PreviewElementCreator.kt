@@ -24,11 +24,9 @@ import com.android.tools.preview.PreviewParameter
 import com.android.tools.preview.SingleComposePreviewElementInstance
 import com.android.tools.preview.previewAnnotationToPreviewElement
 import com.android.tools.render.StandaloneRenderContext
-import com.intellij.psi.PsiElement
-import com.intellij.psi.SmartPsiElementPointer
 
 /** Creates [ComposePreviewElement] from [ComposeScreenshot] data. */
-internal fun ComposeScreenshot.toPreviewElement(): ComposePreviewElement? {
+internal fun ComposeScreenshot.toPreviewElement(): ComposePreviewElement<Unit>? {
     val attrProvider = DeserializedAnnotationAttributesProvider(this.previewParams)
     return previewAnnotationToPreviewElement(
         attrProvider,
@@ -39,9 +37,9 @@ internal fun ComposeScreenshot.toPreviewElement(): ComposePreviewElement? {
 }
 
 private fun parameterizedElementConstructor(
-    basePreviewElement: SingleComposePreviewElementInstance,
+    basePreviewElement: SingleComposePreviewElementInstance<Unit>,
     parameters: Collection<PreviewParameter>
-): ComposePreviewElement {
+): ComposePreviewElement<Unit> {
     return ParametrizedComposePreviewElementTemplate(basePreviewElement, parameters) {
         StandaloneRenderContext()
     }
@@ -54,10 +52,10 @@ private fun parameterizedElementConstructor(
 private class DeserializedAnnotatedMethod(
     methodFqn: String,
     methodParams: List<Map<String, String>>,
-) : AnnotatedMethod {
+) : AnnotatedMethod<Unit> {
     override val name: String = methodFqn.substringAfterLast(".")
     override val qualifiedName: String = methodFqn
-    override val methodBody: SmartPsiElementPointer<PsiElement>? = null
+    override val methodBody: Unit? = null
     override val parameterAnnotations: List<Pair<String, AnnotationAttributesProvider>> =
         methodParams.mapIndexed { i, param -> ("param$i" to DeserializedAnnotationAttributesProvider(param)) }
 }
