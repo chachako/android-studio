@@ -33,33 +33,32 @@ public class ZipCreator {
         boolean recurse = false;
         boolean move = false;
         int argsIndex = 0;
-        if (args[argsIndex].startsWith("-")) {
-            for (int i = 1; i < args[argsIndex].length(); i++) {
-                char flag = args[argsIndex].charAt(i);
-                if (flag == 'r') recurse = true;
-                if (flag == 'm') move = true;
+        if (args[0].startsWith("-")) {
+            for (int i = 1; i < args[0].length(); i++) {
+                char flag = args[0].charAt(i);
+                if (flag == 'r') {
+                    recurse = true;
+                }
+                if (flag == 'm') {
+                    move = true;
+                }
             }
-            argsIndex += 1;
+            argsIndex = 1;
         }
-        Path dst = Paths.get(args[argsIndex]);
-        argsIndex += 1;
+        Path dst = Paths.get(args[argsIndex++]);
         Files.deleteIfExists(dst);
         List<Path> files = new ArrayList<>();
         try (ZipArchive archive = new ZipArchive(dst)) {
             for (int i = argsIndex; i < args.length; i++) {
                 Path src = Paths.get(args[i]);
-                if (args[i].endsWith("/")) {
-                    archive.add(Sources.dir(src.toString()));
-                } else {
-                    List<Path> toAdd = List.of(src);
-                    if (recurse && Files.isDirectory(src)) {
-                        toAdd = Files.walk(src).filter(Files::isRegularFile).collect(Collectors.toList());
-                    }
-                    for (Path path : toAdd) {
-                        archive.add(new BytesSource(path, path.getFileName().toString(), 0));
-                    }
-                    files.addAll(toAdd);
+                List<Path> toAdd = List.of(src);
+                if (recurse && Files.isDirectory(src)) {
+                    toAdd = Files.walk(src).filter(Files::isRegularFile).collect(Collectors.toList());
                 }
+                for (Path path : toAdd) {
+                    archive.add(new BytesSource(path, path.getFileName().toString(), 0));
+                }
+                files.addAll(toAdd);
             }
         }
         if (move) {
