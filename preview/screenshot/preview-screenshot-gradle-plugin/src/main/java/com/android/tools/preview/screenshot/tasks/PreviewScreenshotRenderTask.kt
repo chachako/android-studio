@@ -49,8 +49,6 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.VerificationTask
 import org.gradle.jvm.toolchain.JavaLauncher
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.exists
 
 /**
  * Invoke Render CLI tool
@@ -101,8 +99,9 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     abstract val screenshotCliJar: ConfigurableFileCollection
 
     @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val sdk: DirectoryProperty
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:Optional
+    abstract val sdkFontsDir: DirectoryProperty
 
     @get:Nested
     abstract val javaLauncher: Property<JavaLauncher>
@@ -124,10 +123,10 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
         classpathJars.addAll(mainClasspath.get().map{it.asFile }.toList().map { it.absolutePath })
         classpathJars.addAll(testClasspath.get().map{it.asFile }.toList().map { it.absolutePath })
 
-        val fontsPath = sdk.get().asFile.toPath().resolve(SdkConstants.SDK_DL_FONTS_FOLDER)
+        val fontsDir = sdkFontsDir.orNull?.asFile?.absolutePath
         configureInput(
             classpathJars,
-            if (fontsPath.exists()) fontsPath.absolutePathString() else null,
+            fontsDir,
             layoutlibDir.singleFile.absolutePath + "/layoutlib/",
             outputDir.get().asFile.absolutePath,
             packageName.get(),

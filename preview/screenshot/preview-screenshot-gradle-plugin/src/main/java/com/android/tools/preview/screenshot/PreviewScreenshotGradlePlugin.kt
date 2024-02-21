@@ -16,6 +16,7 @@
 
 package com.android.tools.preview.screenshot
 
+import com.android.SdkConstants
 import com.android.Version
 import com.android.build.api.AndroidPluginVersion
 import com.android.build.api.artifact.Artifact
@@ -175,7 +176,12 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     ) { task ->
                         val variantSegments = variant.computePathSegments()
                         task.outputDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/rendered"))
-                        task.sdk.set(sdkDirectory)
+
+                        // need to use project.providers as a workaround to gradle issue: https://github.com/gradle/gradle/issues/12388
+                        task.sdkFontsDir.set(project.providers.provider {
+                            val subDir = sdkDirectory.get().asFile.resolve(SdkConstants.SDK_DL_FONTS_FOLDER)
+                            if (subDir.exists()) sdkDirectory.get().dir(SdkConstants.SDK_DL_FONTS_FOLDER) else null
+                        })
                         task.previewsDiscovered.set(discoveryTaskProvider.flatMap { it.previewsOutputFile })
                         task.screenshotCliJar.from(task.project.configurations.getByName(previewlibCliToolConfigurationName))
                         task.layoutlibDir.setFrom(layoutlibFromMaven.layoutlibDirectory)
