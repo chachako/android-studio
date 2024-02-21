@@ -218,13 +218,13 @@ public class ApkInstaller {
         if (result.status == SKIPPED_INSTALL) {
             installed = false;
         } else if (result.status != OK) {
-            StringBuilder messageBuilder = new StringBuilder("\nList of apks:\n");
+            StringBuilder messageBuilder = new StringBuilder(message);
+            messageBuilder.append("\nList of apks:\n");
             for (int i = 0; i < app.getApks().size(); i++) {
                 String apkPath = app.getApks().get(i).path;
                 String line = String.format("[%d] '%s'\n", i, apkPath);
                 messageBuilder.append(line);
             }
-            messageBuilder.append(message);
             throw DeployerException.installFailed(result.status, messageBuilder.toString());
         }
         return installed;
