@@ -57,7 +57,7 @@ private class DeserializedAnnotatedMethod(
 ) : AnnotatedMethod {
     override val name: String = methodFqn.substringAfterLast(".")
     override val qualifiedName: String = methodFqn
-    override val psiPointer: SmartPsiElementPointer<PsiElement>? = null
+    override val methodBody: SmartPsiElementPointer<PsiElement>? = null
     override val parameterAnnotations: List<Pair<String, AnnotationAttributesProvider>> =
         methodParams.mapIndexed { i, param -> ("param$i" to DeserializedAnnotationAttributesProvider(param)) }
 }
