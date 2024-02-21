@@ -167,7 +167,7 @@ maven_repository(
 maven_repository(
     name = "prefab_repo",
     artifacts = [
-        "@maven//:com.google.prefab.cli_2.0.0",
+        "@maven//:com.google.prefab.cli_2.1.0",
     ],
     visibility = [":__subpackages__"],
 )

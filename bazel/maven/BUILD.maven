@@ -42127,10 +42127,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.google.prefab.cli_2.0.0",
-    pom = "repository/com/google/prefab/cli/2.0.0/cli-2.0.0.pom",
+    name = "com.google.prefab.cli_2.1.0",
+    pom = "repository/com/google/prefab/cli/2.1.0/cli-2.1.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/prefab/cli/2.0.0",
+    repo_path = "com/google/prefab/cli/2.1.0",
     visibility = ["//visibility:public"],
 )
 

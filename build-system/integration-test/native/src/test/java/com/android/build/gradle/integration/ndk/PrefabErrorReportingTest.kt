@@ -210,7 +210,7 @@ class PrefabErrorReportingTest {
     @Test
     fun `CXX1220-Miscellaneous Fatal Errors`() {
         baseline.copy(stl = "trash-stl")
-            .assertHasError(Regex(".*CXX1220.* Invalid value for .*"))
+            .assertHasError(Regex(".*CXX1220.* invalid value for .*"))
 
         baseline.copy(moduleLibraryAbiStl = "trash-stl")
             .assertHasError("[CXX1220] Unknown STL: trash-stl")
@@ -302,7 +302,7 @@ class PrefabErrorReportingTest {
 
     private val baseline by lazy { Permutation(testRootFolder) }
 
-    private val prefabs = listOf("1.1.3", "2.0.0", DEFAULT_PREFAB_VERSION).distinct().toTypedArray()
+    private val prefabs = listOf("1.1.3", "2.1.0", DEFAULT_PREFAB_VERSION).distinct().toTypedArray()
     private val prefabSchemaVersions = arrayOf(1, 2, 100)
     private val buildSystems = arrayOf("cmake", "ndk-build")
     private val abis = (Abi.values().map { it.tag } + "trash-abi").toTypedArray()
@@ -314,7 +314,7 @@ class PrefabErrorReportingTest {
     private val moduleLibraryAbiMinSdkVersions = (1 until 35).map { it }.toTypedArray()
     private val moduleLibraryAbiNdkMajorVersions = (1 until 25).map { it }.toTypedArray()
     private val moduleLibraryAbiStatics = arrayOf(true, false, null)
-    private val prefabPackageVersions = arrayOf("1.0.0", "2.0.0", "trash-version", "1", "2")
+    private val prefabPackageVersions = arrayOf("1.0.0", "2.1.0", "trash-version", "1", "2")
 
     private val testRootFolder by lazy {
         tempFolder.newFolder().parentFile.parentFile.resolve("prefab-error")
@@ -361,7 +361,7 @@ class PrefabErrorReportingTest {
 
     data class Permutation(
         val testRootFolder: File,
-        val prefabVersion: String = "2.0.0",
+        val prefabVersion: String = "2.1.0",
         val buildSystem : String = "cmake",
         val abi : String = "arm64-v8a",
         val osVersion : Int = 20,
@@ -380,7 +380,7 @@ class PrefabErrorReportingTest {
         val moduleLibraryTargetPlatform : String = "android",
         val hasLibrary2 : Boolean = false,
         val prefabSchemaVersion2 : Int = 2,
-        val prefabPackageVersion2 : String = "2.0.0",
+        val prefabPackageVersion2 : String = "2.1.0",
         val prefabPackageName2 : String = "pkg2",
         val moduleLibraryName2 : String = "lib2",
         val moduleLibraryAbi2 : String = abi,
