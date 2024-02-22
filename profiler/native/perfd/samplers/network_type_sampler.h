@@ -21,20 +21,23 @@
 #include "perfd/network/network_type_provider.h"
 #include "perfd/samplers/sampler.h"
 #include "perfd/sessions/session.h"
+#include "utils/clock.h"
 
 namespace profiler {
 
 // Wrapper for NetworkTypeProvider in the unified data pipeline.
 class NetworkTypeSampler final : public Sampler {
  public:
-  NetworkTypeSampler(const profiler::Session& session, EventBuffer* buffer)
-      : NetworkTypeSampler(session, buffer,
+  NetworkTypeSampler(const profiler::Session& session, Clock* clock,
+                     EventBuffer* buffer)
+      : NetworkTypeSampler(session, clock, buffer,
                            std::make_shared<IoNetworkTypeProvider>()) {}
 
   // Visible for Testing
-  NetworkTypeSampler(const profiler::Session& session, EventBuffer* buffer,
+  NetworkTypeSampler(const profiler::Session& session, Clock* clock,
+                     EventBuffer* buffer,
                      std::shared_ptr<NetworkTypeProvider> network_type_provider)
-      : Sampler(session, buffer, kSampleRateMs),
+      : Sampler(session, clock, buffer, kSampleRateMs),
         network_type_provider_(network_type_provider) {}
 
   virtual void Sample() override;

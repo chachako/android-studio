@@ -56,7 +56,7 @@ TEST(CpuUsageDataSampler, TestSampleCpuUsage) {
   Daemon daemon(&clock, &config, &file_cache, &event_buffer);
   int32_t pid = 321;
   Session session(0, pid, 0, &daemon);
-  CpuUsageDataSampler sampler(session, &event_buffer,
+  CpuUsageDataSampler sampler(session, &clock, &event_buffer,
                               new FakeCpuUsageSampler(&clock));
 
   sampler.Sample();

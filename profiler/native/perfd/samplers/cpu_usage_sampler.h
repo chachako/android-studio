@@ -30,14 +30,14 @@ class CpuUsageDataSampler final : public Sampler {
   CpuUsageDataSampler(const profiler::Session& session, Clock* clock,
                       EventBuffer* buffer)
       : CpuUsageDataSampler(
-            session, buffer,
+            session, clock, buffer,
             // We don't use CpuCache in the new pipeline so passing in null.
             new CpuUsageSampler(clock, nullptr)) {}
 
   // Constructor used by tests to mock the wrapped CpuUsageSampler.
-  CpuUsageDataSampler(const profiler::Session& session, EventBuffer* buffer,
-                      CpuUsageSampler* usage_sampler)
-      : Sampler(session, buffer, kSampleRateMs),
+  CpuUsageDataSampler(const profiler::Session& session, Clock* clock,
+                      EventBuffer* buffer, CpuUsageSampler* usage_sampler)
+      : Sampler(session, clock, buffer, kSampleRateMs),
         usage_sampler_(usage_sampler) {}
 
   virtual void Sample() override;

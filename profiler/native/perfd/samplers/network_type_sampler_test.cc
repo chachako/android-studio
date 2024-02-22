@@ -41,7 +41,8 @@ TEST(NetworkTypeSamplerTest, NetworkTypeFromProvider) {
   Session session(0, pid, 0, &daemon);
   auto network_type_mobile =
       std::make_shared<FakeNetworkTypeProvider>(NetworkTypeData::MOBILE);
-  NetworkTypeSampler sampler(session, &event_buffer, network_type_mobile);
+  NetworkTypeSampler sampler(session, &clock, &event_buffer,
+                             network_type_mobile);
 
   sampler.Sample();
   auto groups = event_buffer.Get(Event::NETWORK_TYPE, 0, LLONG_MAX);

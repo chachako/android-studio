@@ -17,6 +17,7 @@
 #define UTILS_FAKE_CLOCK_H_
 
 #include <cstdint>
+#include <mutex>
 
 #include "utils/clock.h"
 
@@ -27,14 +28,24 @@ class FakeClock final : public Clock {
  public:
   explicit FakeClock(int64_t fakeTime = 0) : fakeTime_(fakeTime) {}
 
-  virtual int64_t GetCurrentTime() const override { return fakeTime_; }
+  virtual int64_t GetCurrentTime() const override {
+    std::lock_guard<std::mutex> lock(mu_);
+    return fakeTime_;
+  }
 
-  void SetCurrentTime(int64_t time) { fakeTime_ = time; }
+  void SetCurrentTime(int64_t time) {
+    std::lock_guard<std::mutex> lock(mu_);
+    fakeTime_ = time;
+  }
 
-  void Elapse(int64_t elapsed) { fakeTime_ += elapsed; }
+  void Elapse(int64_t elapsed) {
+    std::lock_guard<std::mutex> lock(mu_);
+    fakeTime_ += elapsed;
+  }
 
  private:
-  int64_t fakeTime_;
+  int64_t fakeTime_;  // guarded by mu_
+  mutable std::mutex mu_;
 };
 
 }  // namespace profiler

@@ -40,28 +40,24 @@ Session::Session(int64_t stream_id, int32_t pid, int64_t start_timestamp,
   info_.set_start_timestamp(start_timestamp);
   info_.set_end_timestamp(LLONG_MAX);
 
-  // These samplers do not have clock injected into them, so it's difficult to
-  // test them. Some test disable them instead.
-  if (!daemon->GetDisableSessionSamplers()) {
-    samplers_.push_back(std::unique_ptr<Sampler>(
-        new profiler::NetworkConnectionCountSampler(*this, daemon->buffer())));
-    samplers_.push_back(std::unique_ptr<Sampler>(
-        new profiler::NetworkTypeSampler(*this, daemon->buffer())));
-    samplers_.push_back(
-        std::unique_ptr<Sampler>(new profiler::CpuUsageDataSampler(
-            *this, daemon->clock(), daemon->buffer())));
-    samplers_.push_back(std::unique_ptr<Sampler>(new profiler::CpuThreadSampler(
-        *this, daemon->clock(), daemon->buffer())));
-    samplers_.push_back(
-        std::unique_ptr<Sampler>(new profiler::MemoryUsageSampler(
-            *this, daemon->clock(), daemon->buffer())));
+  samplers_.push_back(
+      std::unique_ptr<Sampler>(new profiler::NetworkConnectionCountSampler(
+          *this, daemon->clock(), daemon->buffer())));
+  samplers_.push_back(std::unique_ptr<Sampler>(new profiler::NetworkTypeSampler(
+      *this, daemon->clock(), daemon->buffer())));
+  samplers_.push_back(
+      std::unique_ptr<Sampler>(new profiler::CpuUsageDataSampler(
+          *this, daemon->clock(), daemon->buffer())));
+  samplers_.push_back(std::unique_ptr<Sampler>(new profiler::CpuThreadSampler(
+      *this, daemon->clock(), daemon->buffer())));
+  samplers_.push_back(std::unique_ptr<Sampler>(new profiler::MemoryUsageSampler(
+      *this, daemon->clock(), daemon->buffer())));
 
-    // On Q+ devices, we use statsd to collect network speed.
-    if (DeviceInfo::feature_level() < DeviceInfo::Q) {
-      samplers_.push_back(
-          std::unique_ptr<Sampler>(new profiler::NetworkSpeedSampler(
-              *this, daemon->clock(), daemon->buffer())));
-    }
+  // On Q+ devices, we use statsd to collect network speed.
+  if (DeviceInfo::feature_level() < DeviceInfo::Q) {
+    samplers_.push_back(
+        std::unique_ptr<Sampler>(new profiler::NetworkSpeedSampler(
+            *this, daemon->clock(), daemon->buffer())));
   }
 
   // statsd is supported on Q+ devices.

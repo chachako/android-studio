@@ -145,14 +145,6 @@ class Daemon {
     agent_status_changed_callbacks_.push_back(callback);
   }
 
-  // Do not use. Only tests that need to control sampling behavior should
-  // use this to disable the samplers.
-  void SetDisableSessionSamplers(bool disable) {
-    disable_session_samplers_ = disable;
-  }
-
-  bool GetDisableSessionSamplers() { return disable_session_samplers_; }
-
  private:
   static constexpr int64_t kHeartbeatThresholdNs = Clock::ms_to_ns(500);
 
@@ -197,9 +189,6 @@ class Daemon {
   std::thread agent_status_thread_;
   // Lists of callbacks for handling agent status changes.
   std::list<AgentStatusChanged> agent_status_changed_callbacks_;
-
-  // Do not use. Available only for testing.
-  bool disable_session_samplers_ = false;
 };
 
 }  // namespace profiler

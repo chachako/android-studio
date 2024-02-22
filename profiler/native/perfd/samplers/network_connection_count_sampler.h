@@ -20,6 +20,7 @@
 #include "perfd/network/network_constants.h"
 #include "perfd/samplers/sampler.h"
 #include "perfd/sessions/session.h"
+#include "utils/clock.h"
 #include "utils/uid_fetcher.h"
 
 namespace profiler {
@@ -27,9 +28,9 @@ namespace profiler {
 // Wrapper for ConnectionCountSampler in the unified data pipeline.
 class NetworkConnectionCountSampler final : public Sampler {
  public:
-  NetworkConnectionCountSampler(const profiler::Session& session,
+  NetworkConnectionCountSampler(const profiler::Session& session, Clock* clock,
                                 EventBuffer* buffer)
-      : Sampler(session, buffer, kSampleRateMs),
+      : Sampler(session, clock, buffer, kSampleRateMs),
         uid_(UidFetcher::GetUid(session.info().pid())),
         sampler_(NetworkConstants::GetConnectionFilePaths()) {}
 

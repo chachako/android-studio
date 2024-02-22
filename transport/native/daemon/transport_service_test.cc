@@ -55,11 +55,6 @@ class TransportServiceTest : public ::testing::Test {
     stub_ = proto::TransportService::NewStub(channel);
     // Create a new thread to read events on.
     events_thread_ = std::thread(&TransportServiceTest::GetEvents, this);
-
-    // Samplers in session.h do not have clock_ injected. They produce lots of
-    // events as we run this test. We disable them for the moment.
-    // TODO: Inject fake clock to all samplers.
-    daemon_.SetDisableSessionSamplers(true);
   }
 
   void GetEvents() {
@@ -133,6 +128,18 @@ TEST_F(TransportServiceTest, TestBeginSessionCommand) {
   EXPECT_TRUE(event->has_session());
   EXPECT_TRUE(event->session().has_session_started());
 
+  // There are this many samplers registered by default,
+  // see the constructor of Session for details.
+  const int NUM_SAMPLERS = 6;
+
+  // Each sampler will fire once.
+  for (int i = 0; i < NUM_SAMPLERS; i++) {
+    event = PopEvent();
+    EXPECT_NE(nullptr, event);
+    EXPECT_NE(proto::Event::SESSION, event->kind());
+  }
+  EXPECT_EQ(nullptr, PopEvent());  // and exactly once.
+
   clock_.SetCurrentTime(4);
   grpc::ClientContext context2;
   command->set_stream_id(100);
@@ -149,5 +156,13 @@ TEST_F(TransportServiceTest, TestBeginSessionCommand) {
   EXPECT_FALSE(event->is_ended());
   EXPECT_TRUE(event->has_session());
   EXPECT_TRUE(event->session().has_session_started());
+
+  // Each sampler will fire once.
+  for (int i = 0; i < NUM_SAMPLERS; i++) {
+    event = PopEvent();
+    EXPECT_NE(nullptr, event);
+    EXPECT_NE(proto::Event::SESSION, event->kind());
+  }
+  EXPECT_EQ(nullptr, PopEvent());  // and exactly once.
 }
 }  // namespace profiler

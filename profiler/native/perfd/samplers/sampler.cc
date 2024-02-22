@@ -20,15 +20,15 @@
 #include <thread>
 
 #include "utils/clock.h"
-#include "utils/stopwatch.h"
 #include "utils/thread_name.h"
 #include "utils/trace.h"
 
 namespace profiler {
 
-Sampler::Sampler(const profiler::Session& session, EventBuffer* buffer,
-                 int64_t sample_interval_ms)
+Sampler::Sampler(const profiler::Session& session, Clock* clock,
+                 EventBuffer* buffer, int64_t sample_interval_ms)
     : session_(session),
+      clock_(clock),
       buffer_(buffer),
       sample_interval_ns_(Clock::ms_to_ns(sample_interval_ms)),
       is_running_(false) {}
@@ -53,15 +53,25 @@ void Sampler::Stop() {
 void Sampler::SamplingThread() {
   SetThreadName(name());
   while (is_running_.load()) {
-    Stopwatch stopwatch;
-    int64_t start_ns = stopwatch.GetElapsed();
+    int64_t start_ns = clock_->GetCurrentTime();
     Trace::Begin(name());
     Sample();
     Trace::End();
-    int64_t elapsed_ns = stopwatch.GetElapsed() - start_ns;
+    SleepUntilNextSample(start_ns);
+  }
+}
+
+void Sampler::SleepUntilNextSample(int64_t start_ns) {
+  // We run this in a loop so that we can enable tests use FakeClock with a real
+  // usleep. If Clock provided a Sleep API (that FakeClock could override), then
+  // we wouldn't need this.
+  while (is_running_.load()) {
+    int64_t elapsed_ns = clock_->GetCurrentTime() - start_ns;
     if (sample_interval_ns_ > elapsed_ns) {
       int64_t sleep_us = Clock::ns_to_us(sample_interval_ns_ - elapsed_ns);
       usleep(static_cast<uint64_t>(sleep_us));
+    } else {
+      break;
     }
   }
 }

@@ -36,8 +36,7 @@ class CpuThreadSampler final : public Sampler {
   // ctor used by tests with a mocked ProcFiles.
   CpuThreadSampler(const profiler::Session& session, Clock* clock,
                    EventBuffer* buffer, ProcfsFiles* procfs)
-      : Sampler(session, buffer, kSampleRateMs),
-        procfs_(procfs) {}
+      : Sampler(session, clock, buffer, kSampleRateMs), procfs_(procfs) {}
 
   virtual void Sample() override;
 

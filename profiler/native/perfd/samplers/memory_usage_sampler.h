@@ -32,7 +32,7 @@ class MemoryUsageSampler final : public Sampler {
   // Allow for injection of MemoryUsageReader for testing.
   MemoryUsageSampler(const profiler::Session& session, Clock* clock,
                      EventBuffer* buffer, MemoryUsageReader* reader)
-      : Sampler(session, buffer, kSampleRateMs),
+      : Sampler(session, clock, buffer, kSampleRateMs),
         pid_(session.info().pid()),
         reader_(reader) {}
 

@@ -37,9 +37,11 @@ namespace profiler {
 namespace {
 class MockSampler final : public Sampler {
  public:
-  MockSampler(const profiler::Session& session, EventBuffer* buffer,
-              int64_t sample_interval_ms)
-      : Sampler(session, buffer, sample_interval_ms) {}
+  MockSampler(const profiler::Session& session, Clock* clock,
+              EventBuffer* buffer, int64_t sample_interval_ms)
+      : Sampler(session, clock, buffer, sample_interval_ms) {}
+
+  virtual void Sample() override {}
 
   // Recommended approach to mock destructors from
   // https://github.com/abseil/googletest/blob/master/googlemock/docs/CookBook.md#mocking-destructors
@@ -82,7 +84,7 @@ TEST(Session, SamplerDeallocatedWhenSessionDies) {
   EXPECT_EQ(session2.samplers().size(), 6);
 
   // Create a new instance of sampler that's mocked to monitor the destructor.
-  auto* sampler = new MockSampler(session2, &event_buffer, 1000);
+  auto* sampler = new MockSampler(session2, &clock, &event_buffer, 1000);
   // The test will fail if commenting the following line with reset().
   session2.samplers()[0].reset(sampler);
   // When session2 is out of scope, its samplers are expected to be

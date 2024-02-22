@@ -29,7 +29,7 @@ class NetworkSpeedSampler final : public Sampler {
  public:
   NetworkSpeedSampler(const profiler::Session& session, Clock* clock,
                       EventBuffer* buffer)
-      : Sampler(session, buffer, kSampleRateMs),
+      : Sampler(session, clock, buffer, kSampleRateMs),
         uid_(UidFetcher::GetUid(session.info().pid())),
         speed_sampler_(clock, NetworkConstants::GetTrafficBytesFilePath()) {}
 
