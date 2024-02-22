@@ -79,20 +79,22 @@ class ScreenshotTestReportTest {
             }
         }
 
-        val expectedClassFileContentExcludingFooter = javaClass.getResourceAsStream("class.txt")!!
+        val classFileContentExcludingFooter = javaClass.getResourceAsStream("class.txt")!!
             .readBytes().toString(Charsets.UTF_8)
-            .replace("referencePath", reference.absolutePath)
-            .replace("actualPath", actual.absolutePath)
-            .replace("diffPath", diff.absolutePath)
-            .replace("base64Reference", getBase64SrcFromPath(reference.absolutePath))
-            .replace("base64Actual", getBase64SrcFromPath(actual.absolutePath))
-            .replace("base64Diff", getBase64SrcFromPath(diff.absolutePath))
+        val expected = String.format(classFileContentExcludingFooter,
+            getBase64SrcFromPath(reference.absolutePath),
+            reference.absolutePath,
+            getBase64SrcFromPath(actual.absolutePath),
+            actual.absolutePath,
+            getBase64SrcFromPath(diff.absolutePath),
+            diff.absolutePath
+        )
         val classHtml = File(reportOutDir, "com.example.myapplication.ExampleInstrumentedTest.html")
         assertThat(classHtml).exists()
         run checkClassHtml@{
             classHtml.readLines().forEachIndexed { index, line ->
                 if (line.contains("footer")) return@checkClassHtml  // Ignore the footer from the generated report
-                assertThat(line.trim()).isEqualTo(expectedClassFileContentExcludingFooter.lines()[index])
+                assertThat(line.trim()).isEqualTo(expected.lines()[index])
             }
         }
     }
@@ -111,15 +113,14 @@ class ScreenshotTestReportTest {
                 assertThat(line.trim()).isEqualTo(expectedIndexFileContentExcludingFooter.lines()[index]) }
         }
 
-        val expectedClassFileContentExcludingFooter = javaClass.getResourceAsStream("classError.txt")!!
+        val classFileContentExcludingFooter = javaClass.getResourceAsStream("classError.txt")!!
             .readBytes().toString(Charsets.UTF_8)
-            .replace("referencePath", reference.absolutePath)
-            .replace("base64Reference", getBase64SrcFromPath(reference.absolutePath))
+        val expected = String.format(classFileContentExcludingFooter, getBase64SrcFromPath(reference.absolutePath), reference.absolutePath)
         val classHtml = File(reportOutDir, "com.example.myapplication.ExampleInstrumentedTest.html")
         run checkClassHtml@{
             classHtml.readLines().forEachIndexed { index, line ->
                 if (line.contains("footer")) return@checkClassHtml  // Ignore the footer from the generated report
-                assertThat(line.trim()).isEqualTo(expectedClassFileContentExcludingFooter.lines()[index])
+                assertThat(line.trim()).isEqualTo(expected.lines()[index])
             }
         }
     }

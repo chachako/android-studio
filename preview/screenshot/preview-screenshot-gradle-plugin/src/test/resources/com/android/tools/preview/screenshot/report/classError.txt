@@ -50,7 +50,7 @@
 </td>
 <td>
 <div class="infoBox failures" id="successRate">
-<div class="percent">0%</div>
+<div class="percent">0%%</div>
 <p>successful</p>
 </div>
 </td>
@@ -83,7 +83,7 @@
 <tbody class="grid">
 <tr>
 <td>
-<img src="base64Reference" alt="Error displaying image at referencePath"/>
+<img src="%1$s" alt="Error displaying image at %2$s"/>
 </td>
 <td>Render failure: ClassNotFoundException: com.xxx.example.Class</td>
 <td>No diff</td>
@@ -132,7 +132,7 @@
 <tbody class="grid">
 <tr>
 <td>
-<img src="base64Reference" alt="Error displaying image at referencePath"/>
+<img src="%1$s" alt="Error displaying image at %2$s"/>
 </td>
 <td>Render failure: ClassNotFoundException: com.xxx.example.Class</td>
 <td>No diff</td>

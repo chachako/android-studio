@@ -50,7 +50,7 @@
 </td>
 <td>
 <div class="infoBox failures" id="successRate">
-<div class="percent">25%</div>
+<div class="percent">25%%</div>
 <p>successful</p>
 </div>
 </td>
@@ -83,13 +83,13 @@
 <tbody class="grid">
 <tr>
 <td>
-<img src="base64Reference" alt="Error displaying image at referencePath"/>
+<img src="%1$s" alt="Error displaying image at %2$s"/>
 </td>
 <td>
-<img src="base64Actual" alt="Error displaying image at actualPath"/>
+<img src="%3$s" alt="Error displaying image at %4$s"/>
 </td>
 <td>
-<img src="base64Diff" alt="Error displaying image at diffPath"/>
+<img src="%5$s" alt="Error displaying image at %6$s"/>
 </td>
 </tr>
 </tbody>
@@ -111,10 +111,10 @@
 <tbody class="grid">
 <tr>
 <td>
-<img src="base64Reference" alt="Error displaying image at referencePath"/>
+<img src="%1$s" alt="Error displaying image at %2$s"/>
 </td>
 <td>
-<img src="base64Actual" alt="Error displaying image at actualPath"/>
+<img src="%3$s" alt="Error displaying image at %4$s"/>
 </td>
 <td>Size Mismatch. Reference image: 5x5 Actual image: 4x5</td>
 </tr>
@@ -138,7 +138,7 @@
 <tr>
 <td>Reference image does not exist</td>
 <td>
-<img src="base64Actual" alt="Error displaying image at actualPath"/>
+<img src="%3$s" alt="Error displaying image at %4$s"/>
 </td>
 <td>No diff</td>
 </tr>
@@ -164,10 +164,10 @@
 <tbody class="grid">
 <tr>
 <td>
-<img src="base64Reference" alt="Error displaying image at referencePath"/>
+<img src="%1$s" alt="Error displaying image at %2$s"/>
 </td>
 <td>
-<img src="base64Actual" alt="Error displaying image at actualPath"/>
+<img src="%3$s" alt="Error displaying image at %4$s"/>
 </td>
 <td>Images match</td>
 </tr>
@@ -190,13 +190,13 @@
 <tbody class="grid">
 <tr>
 <td>
-<img src="base64Reference" alt="Error displaying image at referencePath"/>
+<img src="%1$s" alt="Error displaying image at %2$s"/>
 </td>
 <td>
-<img src="base64Actual" alt="Error displaying image at actualPath"/>
+<img src="%3$s" alt="Error displaying image at %4$s"/>
 </td>
 <td>
-<img src="base64Diff" alt="Error displaying image at diffPath"/>
+<img src="%5$s" alt="Error displaying image at %6$s"/>
 </td>
 </tr>
 </tbody>
@@ -218,10 +218,10 @@
 <tbody class="grid">
 <tr>
 <td>
-<img src="base64Reference" alt="Error displaying image at referencePath"/>
+<img src="%1$s" alt="Error displaying image at %2$s"/>
 </td>
 <td>
-<img src="base64Actual" alt="Error displaying image at actualPath"/>
+<img src="%3$s" alt="Error displaying image at %4$s"/>
 </td>
 <td>Size Mismatch. Reference image: 5x5 Actual image: 4x5</td>
 </tr>
@@ -245,7 +245,7 @@
 <tr>
 <td>Reference image does not exist</td>
 <td>
-<img src="base64Actual" alt="Error displaying image at actualPath"/>
+<img src="%3$s" alt="Error displaying image at %4$s"/>
 </td>
 <td>No diff</td>
 </tr>
