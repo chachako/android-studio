@@ -88,13 +88,13 @@ class LibraryCompileAndRuntimeClasspathTest {
             |\--- com.example:package:{strictly 5.0-testRuntimeOnly} FAILED
         """)
 
-        // This fails because the main runtimeClasspath is aligned to androidTest runtimeClasspath.
+        // This won't fails because the androidTest runtimeClasspath is no longer aligned to main
+        // runtimeClasspath.
         assertDependenciesOutput("debugAndroidTestRuntimeClasspath", """
             |debugAndroidTestRuntimeClasspath - Resolved configuration for runtime for variant: debugAndroidTest
-            |+--- com.example:package:3.0-androidTestRuntimeOnly FAILED
+            |+--- com.example:package:3.0-androidTestRuntimeOnly
             |+--- project : (*)
-            |+--- com.example:package:{strictly 1.0-runtimeOnly} FAILED
-            |\--- com.example:package:1.0-runtimeOnly FAILED
+            |\--- com.example:package:1.0-runtimeOnly -> 3.0-androidTestRuntimeOnly
         """)
     }
 
