@@ -171,7 +171,7 @@ class VersionCatalogNamingUtilTest {
         pluginName("baselineprofile", "androidx.baselineprofile")
         pluginName("plugin-id", "plugin-id", "foo")
         pluginName("plugin-id", "plugin_id", "foo")
-        pluginName("pluginId", "pluginId", "foo")
+        pluginName("pluginid", "pluginId", "foo") // camelCase input is downcased for safety
         pluginName(
             "org-android-application",
             "org.android.application",
@@ -201,7 +201,7 @@ class VersionCatalogNamingUtilTest {
         pluginName("androidApplication", "org.android.application", "aFoo")
         pluginName("baselineprofile", "androidx.baselineprofile")
         pluginName("pluginId", "plugin-id", "aFoo")
-        pluginName("pluginId", "pluginId", "aFoo")
+        pluginName("pluginid", "pluginId", "aFoo") // camelCase input is downcased for safety
         pluginName(
             "orgAndroidApplication",
             "org.android.application",
@@ -419,7 +419,38 @@ class VersionCatalogNamingUtilTest {
 
     @Test
     fun testToSafeKey() {
-        assertEquals("org-company_all","org.company+all".toSafeKey())
+        assertEquals("empty", "".toSafeKey())
+        assertEquals("ax", "a".toSafeKey())
+        assertEquals("ax", "A".toSafeKey())
+        assertEquals("xx", "1".toSafeKey())
+        assertEquals("xx", ".".toSafeKey())
+        assertEquals("xx", "-".toSafeKey())
+        assertEquals("xx", "_".toSafeKey())
+        assertEquals("xx", "%".toSafeKey())
+        assertEquals("a-z", "a-".toSafeKey())
+        assertEquals("b-z", "B-".toSafeKey())
+        assertEquals("x-z", "--".toSafeKey())
+        assertEquals("a-z", "a.".toSafeKey())
+        assertEquals("b-z", "b.".toSafeKey())
+        assertEquals("x-z", "1.".toSafeKey())
+        assertEquals("x_z", "1%%%%".toSafeKey())
+        assertEquals("b_z", "b%%%%".toSafeKey())
+        assertEquals("a_z", "A%%%%".toSafeKey())
+        assertEquals("gradle", "gradle".toSafeKey())
+        assertEquals("gradle", "Gradle".toSafeKey())
+        assertEquals("xradle", "1radle".toSafeKey())
+        assertEquals("gradle-z", "gradle-".toSafeKey())
+        assertEquals("gradle-z", "Gradle-".toSafeKey())
+        assertEquals("xradle-z", "1radle-".toSafeKey())
+        assertEquals("gradle_z", "gradle+".toSafeKey())
+        assertEquals("gradle_z", "Gradle+".toSafeKey())
+        assertEquals("xradle_z", "1radle+".toSafeKey())
+        assertEquals("gradle-z", "gradle.".toSafeKey())
+        assertEquals("gradle-z", "Gradle.".toSafeKey())
+        assertEquals("xradle-z", "1radle.".toSafeKey())
+        assertEquals("org-company_all", "org-company_all".toSafeKey())
+        assertEquals("org-company_all", "org.company+all".toSafeKey())
+        assertEquals("mpandroidchart", "MPAndroidChart".toSafeKey())
     }
 
     // Test fixtures below

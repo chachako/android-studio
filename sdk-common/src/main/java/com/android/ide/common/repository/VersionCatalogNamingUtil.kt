@@ -49,10 +49,12 @@ fun pickLibraryVariableName(
 
     val transform = getMaybeTransformToCamelCase(reserved)
 
-    val versionSuffix =
-        if (includeVersionInKey) "-v" + (dependency.version?.toIdentifier()
-            ?.replace("[^A-Za-z0-9]".toRegex(), "")
-            ?.toSafeKey() ?: "") else ""
+    val versionIdentifier = dependency.version?.toIdentifier()
+    val versionSuffix = when {
+        versionIdentifier == null -> ""
+        !includeVersionInKey -> ""
+        else -> "-" + "v${versionIdentifier.replace("[^A-Za-z0-9]".toRegex(), "")}".toSafeKey()
+    }
 
     if (dependency.isAndroidX() && (reserved.isEmpty() || reserved.any { it.startsWith("androidx-") })) {
         val key = transform("androidx-${dependency.name.toSafeKey()}$versionSuffix")
@@ -169,16 +171,29 @@ private fun maybeLowCamelTransform(name: String):String =
 
 @VisibleForTesting
 internal fun String.toSafeKey(): String {
-    // Should filter to set of valid characters in an unquoted key; see `unquoted-key-char` in
-    // https://github.com/toml-lang/toml/blob/main/toml.abnf .
-    // In practice this seems close enough to Java's isLetterOrDigit definition.
-    if (all { it.isLetterOrDigit() || it == '-' || it == '_' }) {
-        return this
+    fun Char.isSafe() = isLowerCase() || isDigit()
+    fun Char.isSeparator() = this == '_' || this == '-'
+    // Handle edge cases and actually safe keys
+    when {
+        isEmpty() -> return "empty"
+        length == 1 && this[0].lowercaseChar().isLowerCase() -> return "${this[0].lowercaseChar()}x"
+        length == 1 -> return "xx"
+        this[0].isLowerCase() && all { it.isSafe() } -> return this
     }
+
+    // Construct a safe key
     val sb = StringBuilder()
-    for (c in this) {
-        sb.append(if (c.isLetterOrDigit() || c == '-') c else if (c == '.') '-' else '_')
+    this[0].lowercaseChar().let { c -> sb.append(if (c.isLowerCase()) c else 'x') }
+    for (c in this.substring(1)) {
+        when {
+            c.isSafe() -> sb.append(c)
+            c.lowercaseChar().isSafe() -> sb.append(c.lowercaseChar())
+            c.isSeparator() -> if (!sb[sb.length-1].isSeparator()) sb.append(c)
+            c == '.' -> if (!sb[sb.length-1].isSeparator()) sb.append('-')
+            else -> if (!sb[sb.length-1].isSeparator()) sb.append('_')
+        }
     }
+    if (sb.length == 1 || sb[sb.length-1].isSeparator()) sb.append('z')
     return sb.toString()
 }
 
