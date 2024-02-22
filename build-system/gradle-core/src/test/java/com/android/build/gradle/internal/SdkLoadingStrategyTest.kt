@@ -755,7 +755,8 @@ class SdkLoadingStrategyTest {
             Revision.parseRevision(buildTools),
             true,
             FakeSyncIssueReporter(),
-            null
+            null,
+            FakeProviderFactory.factory
         )
     }
 

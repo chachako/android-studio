@@ -212,18 +212,6 @@ class ConfigurationCacheReportChecker {
                 name = "core-lambda-stubs.jar"
             ),
             Error.fileSystemEntry(
-                location = "com.android.build.gradle.internal.PlatformToolsComponents\$Companion",
-                name = "package.xml"
-            ),
-            Error.fileSystemEntry(
-                location = "com.android.build.gradle.internal.SupportToolsComponents\$Companion",
-                name = "package.xml"
-            ),
-            Error.fileSystemEntry(
-                location = "com.android.build.gradle.internal.EmulatorComponents\$Companion",
-                name = "package.xml"
-            ),
-            Error.fileSystemEntry(
                 location = "com.android.build.gradle.integration.bundle.AssetPackBundleTest",
                 name = "build.prop"
             ),
