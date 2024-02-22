@@ -194,7 +194,7 @@ class PerfMainTest {
             screenshots.forEach { screenshot ->
                 val img = ImageIO.read(outputFolder.resolve("${screenshot.imageName}_0.png"))
                 ImageDiffUtil.assertImageSimilar(
-                    TestUtils.resolveWorkspacePath("tools/base/standalone-render/compose-cli/testData/goldens/$goldenName.png"),
+                    TestUtils.resolveWorkspacePathUnchecked("tools/base/standalone-render/compose-cli/testData/goldens/$goldenName.png"),
                     img
                 )
             }
