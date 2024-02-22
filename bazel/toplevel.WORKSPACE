@@ -17,6 +17,7 @@ register_toolchains(
     "//prebuilts/studio/jdk/jdk17:java11_compile_toolchain_definition",
     "//prebuilts/studio/jdk/jdk17:java17_compile_toolchain_definition",
     "//prebuilts/studio/jdk/jbr-next:jetbrains_java_runtime_toolchain",
+    "//prebuilts/studio/jdk/jbr-next:bootstrap_runtime_toolchain_type",
 )
 
 new_local_repository(
