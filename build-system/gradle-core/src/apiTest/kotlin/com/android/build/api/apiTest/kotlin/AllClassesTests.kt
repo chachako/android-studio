@@ -21,9 +21,9 @@ import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.gradle.options.BooleanOption
 import com.android.tools.apk.analyzer.AaptInvoker
 import com.android.tools.apk.analyzer.ApkAnalyzerImpl
+import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.common.truth.Truth
 import com.google.wireless.android.sdk.stats.ArtifactAccess
-import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.wireless.android.sdk.stats.VariantPropertiesAccess
 import org.junit.Test
 import org.mockito.Mockito
@@ -423,7 +423,7 @@ project classes :
         .use(taskProvider)
         .toReplace(
             ScopedArtifact.CLASSES,
-            ModifyClassesTask::output
+            ReplaceClassesTask::output
         )
 `
 
