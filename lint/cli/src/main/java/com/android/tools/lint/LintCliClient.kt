@@ -1367,7 +1367,11 @@ open class LintCliClient : LintClient {
   public override fun initializeProjects(driver: LintDriver?, knownProjects: Collection<Project>) {
     if (driver?.mode == LintDriver.DriverMode.MERGE) {
       // The costly parsing environment is not required (or supported!) when merging
-      val config = UastEnvironment.Configuration.create(enableKotlinScripting = false)
+      val config =
+        UastEnvironment.Configuration.create(
+          enableKotlinScripting = false,
+          useFirUast = flags.useK2Uast() || useFirUast(),
+        )
       val env = UastEnvironment.create(config)
       uastEnvironment = env
       return
