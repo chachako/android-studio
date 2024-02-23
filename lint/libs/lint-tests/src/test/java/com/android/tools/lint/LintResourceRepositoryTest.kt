@@ -711,7 +711,7 @@ class LintResourceRepositoryTest {
             "set of path variable names. Attempting to gracefully recover.\n" +
             "The serialized content was:\n" +
             "mangled2\n" +
-            "Stack: java.lang.StringIndexOutOfBoundsException: String index out of range: 8:StringLatin1.charAt("
+            "Stack: java.lang.StringIndexOutOfBoundsException: Index 8 out of bounds for length"
         ) + ".*\\) \\[LintWarning]\n" + "0 errors, 1 warnings"
       )
   }
