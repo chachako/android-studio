@@ -16,13 +16,11 @@
 
 package com.android.build.gradle.internal.plugins
 
-import com.android.build.api.artifact.Artifact
-import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.dsl.PrivacySandboxSdkExtension
 import com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension
 import com.android.build.gradle.internal.dsl.PrivacySandboxSdkExtensionImpl
-import com.android.build.gradle.internal.fusedlibrary.SegregatingConstraintHandler
+import com.android.build.gradle.internal.fusedlibrary.configureElements
 import com.android.build.gradle.internal.fusedlibrary.configureTransforms
 import com.android.build.gradle.internal.fusedlibrary.createTasks
 import com.android.build.gradle.internal.fusedlibrary.getDslServices
@@ -51,12 +49,10 @@ import com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask
 import com.android.build.gradle.tasks.FusedLibraryMergeClasses
 import com.android.build.gradle.tasks.GeneratePrivacySandboxAsar
 import com.android.build.gradle.tasks.PackagePrivacySandboxSdkBundle
-import com.android.build.gradle.tasks.PrivacySandboxSdkDexTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkGenerateJarStubsTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkGenerateRClassTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkManifestGeneratorTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkManifestMergerTask
-import com.android.build.gradle.tasks.PrivacySandboxSdkMergeDexTask
 import com.android.build.gradle.tasks.PrivacySandboxSdkMergeResourcesTask
 import com.android.repository.Revision
 import com.google.wireless.android.sdk.stats.GradleBuildProject
@@ -67,7 +63,6 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.Usage
 import org.gradle.api.component.SoftwareComponentFactory
 import org.gradle.api.configuration.BuildFeatures
-import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.JvmEcosystemPlugin
 import org.gradle.build.event.BuildEventsListenerRegistry
 import javax.inject.Inject
@@ -158,13 +153,17 @@ class PrivacySandboxSdkPlugin @Inject constructor(
             )
         }
 
+        applyPrivacySandboxConfigurations(project)
+    }
+
+    private fun applyPrivacySandboxConfigurations(project: Project) {
         // so far by default, we consume and publish only 'debug' variant
+        val buildType: BuildTypeAttr = project.objects.named(BuildTypeAttr::class.java, "debug")
 
         // 'include' is the configuration that users will use to indicate which dependencies should
         // be fused.
         val includeConfigurations = project.configurations.create("include").also {
             it.isCanBeConsumed = false
-            val buildType: BuildTypeAttr = project.objects.named(BuildTypeAttr::class.java, "debug")
             it.attributes.attribute(
                     BuildTypeAttr.ATTRIBUTE,
                     buildType,
@@ -179,26 +178,11 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                     Usage.USAGE_ATTRIBUTE,
                     project.objects.named(Usage::class.java, Usage.JAVA_API)
             )
-            val buildType: BuildTypeAttr = project.objects.named(BuildTypeAttr::class.java, "debug")
             it.attributes.attribute(
                     BuildTypeAttr.ATTRIBUTE,
                     buildType,
             )
             it.extendsFrom(includeConfigurations)
-        }
-        // This is the configuration that will contain all the JAVA_API dependencies that are not
-        // fused in the resulting aar library.
-        val includedApiUnmerged = project.configurations.create("includeApiUnmerged").also {
-            it.isCanBeConsumed = false
-            it.isCanBeResolved = true
-            it.incoming.beforeResolve(
-                    SegregatingConstraintHandler(
-                            includeApiClasspath,
-                            it,
-                            variantScope.mergeSpec,
-                            project,
-                    )
-            )
         }
         // This is the internal configuration that will be used to feed tasks that require access
         // to the resolved 'include' dependency. It is for JAVA_RUNTIME usage which mean all transitive
@@ -212,8 +196,6 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                             Usage.USAGE_ATTRIBUTE,
                             project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME)
                     )
-                    val buildType: BuildTypeAttr =
-                            project.objects.named(BuildTypeAttr::class.java, "debug")
                     it.attributes.attribute(
                             BuildTypeAttr.ATTRIBUTE,
                             buildType,
@@ -221,88 +203,28 @@ class PrivacySandboxSdkPlugin @Inject constructor(
 
                     it.extendsFrom(includeConfigurations)
                 }
-        // This is the configuration that will contain all the JAVA_RUNTIME dependencies that are
-        // not fused in the resulting aar library.
-        val includeRuntimeUnmerged = project.configurations.create("includeRuntimeUnmerged").also {
-            it.isCanBeConsumed = false
-            it.isCanBeResolved = true
-            it.incoming.beforeResolve(
-                    SegregatingConstraintHandler(
-                            includeConfigurations,
-                            it,
-                            variantScope.mergeSpec,
-                            project,
+
+        fun configurePrivacySandboxElements(configuration: Configuration, usage: String) {
+            configureElements(
+                    project,
+                    configuration,
+                    usage,
+                    variantScope.artifacts,
+                    mapOf(
+                            PrivacySandboxSdkInternalArtifactType.ASAR to
+                                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
+                            PrivacySandboxSdkInternalArtifactType.STUB_JAR to
+                                    AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR,
                     )
             )
         }
-        // this is the outgoing configuration for JAVA_API scoped declarations, it will contain
-        // this module and all transitive non merged dependencies
-        fun configureElements(
-                elements: Configuration,
-                usage: String,
-                artifacts: ArtifactsImpl,
-                publications: List<Pair<Artifact.Single<RegularFile>, AndroidArtifacts.ArtifactType>>
-        ) {
-
-            elements.attributes.attribute(
-                    Usage.USAGE_ATTRIBUTE,
-                    project.objects.named(Usage::class.java, usage)
-            )
-            elements.isCanBeResolved = false
-            elements.isCanBeConsumed = true
-            elements.isTransitive = true
-
-            elements.outgoing.variants { variants ->
-                for (publication in publications) {
-                    // we are only interested in the last provider in the chain of transformers for this bundle.
-                    // Obviously, this is theoretical at this point since there is no variant API to replace
-                    // artifacts, there is always only one.
-                    val bundleTaskProvider = publication.first.let {
-                        artifacts
-                            .getArtifactContainer(it)
-                            .getTaskProviders()
-                            .last()
-                    }
-                    variants.create(publication.second.type) { variant ->
-                        variant.artifact(bundleTaskProvider) { artifact ->
-                            artifact.type = publication.second.type
-                        }
-                    }
-                }
-
-            }
-        }
+        // this is the outgoing configuration for JAVA_API scoped declarations
         project.configurations.create("apiElements") { apiElements ->
-            configureElements(
-                    apiElements,
-                    Usage.JAVA_API,
-                    variantScope.artifacts,
-                    listOf(
-                        PrivacySandboxSdkInternalArtifactType.ASAR to
-                                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
-                        PrivacySandboxSdkInternalArtifactType.STUB_JAR to
-                                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR,
-                    )
-            )
-
-            apiElements.extendsFrom(includedApiUnmerged)
+            configurePrivacySandboxElements(apiElements, Usage.JAVA_API)
         }
-        // this is the outgoing configuration for JAVA_RUNTIME scoped declarations, it will contain
-        // this module and all transitive non merged dependencies
+        // this is the outgoing configuration for JAVA_RUNTIME scoped declarations
         project.configurations.create("runtimeElements") { runtimeElements ->
-            configureElements(
-                    runtimeElements,
-                    Usage.JAVA_RUNTIME,
-                    variantScope.artifacts,
-                    listOf(
-                        PrivacySandboxSdkInternalArtifactType.ASAR to
-                                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_ARCHIVE,
-                        PrivacySandboxSdkInternalArtifactType.STUB_JAR to
-                                AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_INTERFACE_DESCRIPTOR,
-                    )
-            )
-
-            runtimeElements.extendsFrom(includeRuntimeUnmerged)
+            configurePrivacySandboxElements(runtimeElements, Usage.JAVA_RUNTIME)
         }
         val configurationsToAdd = listOf(includeApiClasspath, includeRuntimeClasspath)
         configurationsToAdd.forEach { configuration ->
