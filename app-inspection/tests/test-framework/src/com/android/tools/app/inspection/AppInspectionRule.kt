@@ -19,7 +19,6 @@ import com.android.tools.app.inspection.AppInspection.*
 import com.android.tools.fakeandroid.ProcessRunner.Companion.getProcessPath
 import com.android.tools.profiler.proto.Commands
 import com.android.tools.profiler.proto.Common
-import com.android.tools.profiler.proto.Common.CommonConfig
 import com.android.tools.profiler.proto.Transport.ExecuteRequest
 import com.android.tools.profiler.proto.Transport.GetEventsRequest
 import com.android.tools.profiler.proto.TransportServiceGrpc
@@ -46,16 +45,7 @@ import org.junit.runners.model.Statement
  * The thread will be spun down when the rule itself tears down.
  */
 class AppInspectionRule(activityClass: String, sdkLevel: SdkLevel) : ExternalResource(), Runnable {
-  val transportRule: TransportRule =
-    TransportRule(
-      activityClass,
-      sdkLevel,
-      object : TransportRule.Config() {
-        override fun initDaemonConfig(daemonConfig: CommonConfig.Builder) {
-          daemonConfig.setProfilerUnifiedPipeline(true)
-        }
-      },
-    )
+  val transportRule: TransportRule = TransportRule(activityClass, sdkLevel)
 
   private lateinit var transportStub: TransportServiceBlockingStub
 

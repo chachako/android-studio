@@ -33,6 +33,9 @@ class Session;
 // intervals as specified in |sample_interval_ms|. Subclasses are expected to
 // implement the sampling logic based on the |session| that is currently being
 // profiled, and to insert the data into the event buffer.
+//
+// TODO: Inject clock and use it when taking samples. Otherwise, tests cannot
+// inject a fake clock, and it becomes impossible to craft expectations.
 class Sampler {
  public:
   Sampler(const profiler::Session& session, EventBuffer* buffer,

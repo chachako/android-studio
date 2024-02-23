@@ -25,16 +25,15 @@ import com.android.tools.transport.TransportRule
  * Additional profiler configurations that can be passed into a [TransportRule].
  */
 open class ProfilerConfig : TransportRule.Config() {
-    open fun usesUnifiedPipeline() = false
     open val liveAllocSampleRate = 1
 
     final override fun initDaemonConfig(daemonConfig: Common.CommonConfig.Builder) {
-        daemonConfig.profilerUnifiedPipeline = usesUnifiedPipeline()
         daemonConfig.energyProfilerEnabled = true
         // The production is disabling keyboard events by default, which can be
         // overridden by the server flag. But we still test the functionality as it's
         // enabled to avoid accidental breakage. See b/211154220.
         daemonConfig.profilerKeyboardEvent = true
+        daemonConfig.profilerUnifiedPipeline = true
     }
 
     final override fun initAgentConfig(agentConfig: AgentConfig.Builder) {

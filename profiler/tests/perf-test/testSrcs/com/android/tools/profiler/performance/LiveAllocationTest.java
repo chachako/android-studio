@@ -79,11 +79,6 @@ public final class LiveAllocationTest {
         // We currently only test O+ test scenarios.
         myMemoryRule = new MemoryRule(ACTIVITY_CLASS, SdkLevel.O, new ProfilerConfig() {
             @Override
-            public boolean usesUnifiedPipeline() {
-                return true;
-            }
-
-            @Override
             public int getLiveAllocSampleRate() {
                 return samplingRate;
             }

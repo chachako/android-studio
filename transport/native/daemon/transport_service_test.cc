@@ -55,6 +55,11 @@ class TransportServiceTest : public ::testing::Test {
     stub_ = proto::TransportService::NewStub(channel);
     // Create a new thread to read events on.
     events_thread_ = std::thread(&TransportServiceTest::GetEvents, this);
+
+    // Samplers in session.h do not have clock_ injected. They produce lots of
+    // events as we run this test. We disable them for the moment.
+    // TODO: Inject fake clock to all samplers.
+    daemon_.SetDisableSessionSamplers(true);
   }
 
   void GetEvents() {

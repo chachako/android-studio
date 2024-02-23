@@ -55,16 +55,7 @@ public class UnifiedPipelineOkHttpTest {
     private Grpc myGrpc;
 
     public UnifiedPipelineOkHttpTest(SdkLevel sdkLevel) {
-        myProfilerRule =
-                new ProfilerRule(
-                        ACTIVITY_CLASS,
-                        sdkLevel,
-                        new ProfilerConfig() {
-                            @Override
-                            public boolean usesUnifiedPipeline() {
-                                return true;
-                            }
-                        });
+        myProfilerRule = new ProfilerRule(ACTIVITY_CLASS, sdkLevel, new ProfilerConfig());
     }
 
     @Before

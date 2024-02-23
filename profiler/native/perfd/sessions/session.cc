@@ -40,9 +40,9 @@ Session::Session(int64_t stream_id, int32_t pid, int64_t start_timestamp,
   info_.set_start_timestamp(start_timestamp);
   info_.set_end_timestamp(LLONG_MAX);
 
-  bool profiler_unified_pipeline =
-      daemon->config()->GetConfig().common().profiler_unified_pipeline();
-  if (profiler_unified_pipeline) {
+  // These samplers do not have clock injected into them, so it's difficult to
+  // test them. Some test disable them instead.
+  if (!daemon->GetDisableSessionSamplers()) {
     samplers_.push_back(std::unique_ptr<Sampler>(
         new profiler::NetworkConnectionCountSampler(*this, daemon->buffer())));
     samplers_.push_back(std::unique_ptr<Sampler>(
@@ -66,8 +66,7 @@ Session::Session(int64_t stream_id, int32_t pid, int64_t start_timestamp,
 
   // statsd is supported on Q+ devices.
   if (DeviceInfo::feature_level() >= DeviceInfo::Q) {
-    // For legacy pipeline we initiate the network buffer on StartProfiling.
-    auto buffer = profiler_unified_pipeline ? daemon->buffer() : nullptr;
+    auto buffer = daemon->buffer();
     int32_t uid = UidFetcher::GetUid(pid);
     Log::V(Log::Tag::PROFILER, "Subscribe to statsd atoms for pid %d (uid: %d)",
            pid, uid);

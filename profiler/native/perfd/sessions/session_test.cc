@@ -48,7 +48,7 @@ class MockSampler final : public Sampler {
 };
 }  // namespace
 
-TEST(Session, SamplersAddedForNewPipeline) {
+TEST(Session, SamplersAdded) {
   FakeClock clock;
   EventBuffer event_buffer(&clock);
   FileCache file_cache(std::unique_ptr<FileSystem>(new MemoryFileSystem()),
@@ -57,13 +57,12 @@ TEST(Session, SamplersAddedForNewPipeline) {
   DaemonConfig config1(daemon_config);
   Daemon daemon1(&clock, &config1, &file_cache, &event_buffer);
   Session session1(0, 0, 0, &daemon1);
-  EXPECT_EQ(session1.samplers().size(), 0);
+  EXPECT_EQ(session1.samplers().size(), 6);
 
-  daemon_config.mutable_common()->set_profiler_unified_pipeline(true);
   DaemonConfig config2(daemon_config);
   Daemon daemon2(&clock, &config2, &file_cache, &event_buffer);
   Session session2(0, 0, 0, &daemon2);
-  EXPECT_GT(session2.samplers().size(), 0);
+  EXPECT_EQ(session2.samplers().size(), 6);
 }
 
 TEST(Session, SamplerDeallocatedWhenSessionDies) {
@@ -75,13 +74,12 @@ TEST(Session, SamplerDeallocatedWhenSessionDies) {
   DaemonConfig config1(daemon_config);
   Daemon daemon1(&clock, &config1, &file_cache, &event_buffer);
   Session session1(0, 0, 0, &daemon1);
-  EXPECT_EQ(session1.samplers().size(), 0);
+  EXPECT_EQ(session1.samplers().size(), 6);
 
-  daemon_config.mutable_common()->set_profiler_unified_pipeline(true);
   DaemonConfig config2(daemon_config);
   Daemon daemon2(&clock, &config2, &file_cache, &event_buffer);
   Session session2(0, 0, 0, &daemon2);
-  EXPECT_GT(session2.samplers().size(), 0);
+  EXPECT_EQ(session2.samplers().size(), 6);
 
   // Create a new instance of sampler that's mocked to monitor the destructor.
   auto* sampler = new MockSampler(session2, &event_buffer, 1000);

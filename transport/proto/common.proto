@@ -474,7 +474,7 @@ message CommonConfig {
   string service_socket_name = 3;
   // equivalent to StudioFlags.PROFILER_ENERGY_PROFILER_ENABLED.
   bool energy_profiler_enabled = 4;
-  // equivalent to StudioFlags.PROFILER_UNIFIED_PIPELINE
+  // Deprecated. Do not use.
   bool profiler_unified_pipeline = 5;
   // equivalent to StudioFlags.PROFILER_CUSTOM_EVENT_VISUALIZATION
   bool profiler_custom_event_visualization = 6;

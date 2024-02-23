@@ -99,27 +99,15 @@ void SendKeyboardEvent(JStringWrapper& text, int64_t event_down_time) {
   int64_t timestamp = GetClock().GetCurrentTime();
   int32_t pid = getpid();
 
-  if (Agent::Instance().agent_config().common().profiler_unified_pipeline()) {
-    Agent::Instance().SubmitAgentTasks(
-        {[pid, text, timestamp, event_down_time](AgentService::Stub& stub,
-                                                 ClientContext& ctx) mutable {
-          InteractionData data;
-          data.set_type(InteractionData::KEY);
-          data.set_event_data(text.get());
-          return SendSystemEvent(stub, ctx, &data, pid, timestamp,
-                                 event_down_time, true);
-        }});
-  } else {
-    Agent::Instance().SubmitEventTasks(
-        {[pid, text, timestamp, event_down_time](
-             InternalEventService::Stub& stub, ClientContext& ctx) {
-          SystemData event;
-          event.set_type(InteractionData::KEY);
-          event.set_event_data(text.get());
-          return SendLegacySystemEvent(stub, ctx, &event, pid, timestamp,
-                                       event_down_time);
-        }});
-  }
+  Agent::Instance().SubmitAgentTasks(
+      {[pid, text, timestamp, event_down_time](AgentService::Stub& stub,
+                                               ClientContext& ctx) mutable {
+        InteractionData data;
+        data.set_type(InteractionData::KEY);
+        data.set_event_data(text.get());
+        return SendSystemEvent(stub, ctx, &data, pid, timestamp,
+                               event_down_time, true);
+      }});
 }
 
 void EnqueueActivityEvent(JNIEnv* env, const jstring& name,
@@ -128,49 +116,32 @@ void EnqueueActivityEvent(JNIEnv* env, const jstring& name,
   JStringWrapper activity_name(env, name);
   int64_t timestamp = GetClock().GetCurrentTime();
   int32_t pid = getpid();
-  if (Agent::Instance().agent_config().common().profiler_unified_pipeline()) {
-    bool is_end_state;
-    switch (state) {
-      case ViewData::PAUSED:
-      case ViewData::STOPPED:
-      case ViewData::DESTROYED:
-      case ViewData::SAVED:
-      case ViewData::REMOVED:
-        is_end_state = true;
-        break;
-      default:
-        is_end_state = false;
-        break;
-    }
-
-    Agent::Instance().SubmitAgentTasks(
-        {[pid, timestamp, activity_name, state, hash, parent_activity_hash,
-          is_end_state](AgentService::Stub& stub, ClientContext& ctx) mutable {
-          ViewData data;
-          data.set_name(activity_name.get());
-          data.set_state(state);
-          if (parent_activity_hash != 0) {
-            data.set_parent_activity_id(parent_activity_hash ^ pid);
-          }
-          return SendViewEvent(stub, ctx, &data, pid, timestamp, (hash ^ pid),
-                               is_end_state);
-        }});
-  } else {
-    SendActivityDataRequest request;
-    request.set_pid(pid);
-
-    auto* data = request.mutable_data();
-    data->set_name(activity_name.get());
-    data->set_hash(hash ^ pid);
-    if (parent_activity_hash != 0) {
-      data->set_activity_context_hash(parent_activity_hash ^ pid);
-    }
-
-    ActivityStateData* state_data = data->add_state_changes();
-    state_data->set_state(state);
-    state_data->set_timestamp(timestamp);
-    EventManager::Instance().CacheAndEnqueueActivityEvent(request);
+  bool is_end_state;
+  switch (state) {
+    case ViewData::PAUSED:
+    case ViewData::STOPPED:
+    case ViewData::DESTROYED:
+    case ViewData::SAVED:
+    case ViewData::REMOVED:
+      is_end_state = true;
+      break;
+    default:
+      is_end_state = false;
+      break;
   }
+
+  Agent::Instance().SubmitAgentTasks(
+      {[pid, timestamp, activity_name, state, hash, parent_activity_hash,
+        is_end_state](AgentService::Stub& stub, ClientContext& ctx) mutable {
+        ViewData data;
+        data.set_name(activity_name.get());
+        data.set_state(state);
+        if (parent_activity_hash != 0) {
+          data.set_parent_activity_id(parent_activity_hash ^ pid);
+        }
+        return SendViewEvent(stub, ctx, &data, pid, timestamp, (hash ^ pid),
+                             is_end_state);
+      }});
 }
 }  // namespace
 
@@ -191,27 +162,15 @@ Java_com_android_tools_profiler_support_event_WindowProfilerCallback_sendTouchEv
   int64_t timestamp = GetClock().GetCurrentTime();
   int32_t pid = getpid();
 
-  if (Agent::Instance().agent_config().common().profiler_unified_pipeline()) {
-    Agent::Instance().SubmitAgentTasks(
-        {[jdownTime, jstate, pid, timestamp, jis_up_event](
-             AgentService::Stub& stub, ClientContext& ctx) mutable {
-          InteractionData data;
-          data.set_type(InteractionData::TOUCH);
-          data.set_action_id(jstate);
-          return SendSystemEvent(stub, ctx, &data, pid, timestamp, jdownTime,
-                                 jis_up_event);
-        }});
-  } else {
-    Agent::Instance().SubmitEventTasks(
-        {[jdownTime, jstate, pid, timestamp](InternalEventService::Stub& stub,
-                                             ClientContext& ctx) {
-          SystemData event;
-          event.set_type(InteractionData::TOUCH);
-          event.set_action_id(jstate);
-          return SendLegacySystemEvent(stub, ctx, &event, pid, timestamp,
-                                       jdownTime);
-        }});
-  }
+  Agent::Instance().SubmitAgentTasks(
+      {[jdownTime, jstate, pid, timestamp, jis_up_event](
+           AgentService::Stub& stub, ClientContext& ctx) mutable {
+        InteractionData data;
+        data.set_type(InteractionData::TOUCH);
+        data.set_action_id(jstate);
+        return SendSystemEvent(stub, ctx, &data, pid, timestamp, jdownTime,
+                               jis_up_event);
+      }});
 }
 
 JNIEXPORT void JNICALL
@@ -281,26 +240,13 @@ Java_com_android_tools_profiler_support_profilers_EventProfiler_sendRotationEven
   int64_t timestamp = GetClock().GetCurrentTime();
   int32_t pid = getpid();
 
-  if (Agent::Instance().agent_config().common().profiler_unified_pipeline()) {
-    Agent::Instance().SubmitAgentTasks({[jstate, pid, timestamp](
-                                            AgentService::Stub& stub,
-                                            ClientContext& ctx) mutable {
-      InteractionData data;
-      data.set_type(InteractionData::ROTATION);
-      data.set_action_id(jstate);
-      return SendSystemEvent(stub, ctx, &data, pid, timestamp, timestamp, true);
-    }});
-  } else {
-    Agent::Instance().SubmitEventTasks(
-        {[jstate, pid, timestamp](InternalEventService::Stub& stub,
-                                  ClientContext& ctx) {
-          SystemData event;
-          event.set_type(InteractionData::ROTATION);
-          event.set_action_id(jstate);
-          // Give rotation events a unique id.
-          return SendLegacySystemEvent(stub, ctx, &event, pid, timestamp,
-                                       timestamp);
-        }});
-  }
+  Agent::Instance().SubmitAgentTasks({[jstate, pid, timestamp](
+                                          AgentService::Stub& stub,
+                                          ClientContext& ctx) mutable {
+    InteractionData data;
+    data.set_type(InteractionData::ROTATION);
+    data.set_action_id(jstate);
+    return SendSystemEvent(stub, ctx, &data, pid, timestamp, timestamp, true);
+  }});
 }
 };

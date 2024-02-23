@@ -62,15 +62,12 @@ void EventManager::CacheAndEnqueueActivityEvent(
 
 void EventManager::EnqueueActivityEvent(
     const profiler::proto::SendActivityDataRequest& request) {
-  if (Agent::Instance().agent_config().common().profiler_unified_pipeline()) {
-    return;
-  }
-
-  Agent::Instance().SubmitEventTasks(
-      {[request](InternalEventService::Stub& stub, ClientContext& ctx) {
-        EmptyEventResponse response;
-        return stub.SendActivity(&ctx, request, &response);
-      }});
+  // With the legacy pipeline, we used to call
+  // Agent::Instance().SubmitEventTasks() but with the unified pipeline, it
+  // seems like we are not doing that. That also means we can't write a test
+  // that verifies the ActivityEvent (we had to delete the BasicTest).
+  //
+  // Is this a bug?
 }
 
 bool EventManager::PerfdStateChanged(bool becomes_alive) {

@@ -51,7 +51,6 @@ class TestEventWriter final : public EventWriter {
 TEST_F(SessionsManagerTest, BeginSessionSendsQueuedEvents) {
   FakeClock clock;
   proto::DaemonConfig daemon_config;
-  daemon_config.mutable_common()->set_profiler_unified_pipeline(true);
   DaemonConfig config(daemon_config);
   FileCache file_cache(std::unique_ptr<FileSystem>(new MemoryFileSystem()),
                        "/");

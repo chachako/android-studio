@@ -45,13 +45,7 @@ public final class UnifiedPipelineMemoryTest {
     private Common.Session mySession;
 
     public UnifiedPipelineMemoryTest() {
-        ProfilerConfig ruleConfig = new ProfilerConfig() {
-            @Override
-            public boolean usesUnifiedPipeline() {
-                return true;
-            }
-        };
-        myMemoryRule = new MemoryRule(ACTIVITY_CLASS, SdkLevel.O, ruleConfig);
+        myMemoryRule = new MemoryRule(ACTIVITY_CLASS, SdkLevel.O, new ProfilerConfig());
     }
 
     @Before

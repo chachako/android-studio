@@ -41,25 +41,17 @@ void SessionsManager::BeginSession(Daemon* daemon, int64_t stream_id,
     DoEndSession(daemon, sessions_.back().get(), now);
   }
 
-  bool unified_pipeline =
-      daemon->config()->GetConfig().common().profiler_unified_pipeline();
-  if (unified_pipeline) {
-    std::string app_name = ProcessManager::GetCmdlineForPid(pid);
-    // Drains and sends the queued events.
-    auto itr = app_events_queue_.find(app_name);
-    if (itr != app_events_queue_.end()) {
-      auto queue = itr->second.Drain();
-      while (!queue.empty()) {
-        auto& event = queue.front();
-        event.set_pid(pid);
-        daemon->buffer()->Add(event);
-        now = std::min(now, event.timestamp());
-        queue.pop_front();
-      }
-    }
-  } else {
-    for (const auto& component : daemon->GetProfilerComponents()) {
-      now = std::min(now, component->GetEarliestDataTime(pid));
+  std::string app_name = ProcessManager::GetCmdlineForPid(pid);
+  // Drains and sends the queued events.
+  auto itr = app_events_queue_.find(app_name);
+  if (itr != app_events_queue_.end()) {
+    auto queue = itr->second.Drain();
+    while (!queue.empty()) {
+      auto& event = queue.front();
+      event.set_pid(pid);
+      daemon->buffer()->Add(event);
+      now = std::min(now, event.timestamp());
+      queue.pop_front();
     }
   }
 

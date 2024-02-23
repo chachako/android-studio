@@ -154,41 +154,15 @@ void TraceMonitor::SubmitStartEvent(int32_t tid, const string& fixed_path) {
   api_initiated_trace_in_progress_ = true;
   confirmed_trace_path_ = fixed_path;
 
-  if (Agent::Instance().agent_config().common().profiler_unified_pipeline()) {
-    Agent::Instance().SubmitAgentTasks(
-        {[this, timestamp](AgentService::Stub& stub, ClientContext& ctx) {
-          SendCommandRequest request;
-          auto* command = request.mutable_command();
-          profiler::BuildApiStartTraceCommand(getpid(), timestamp, app_name_,
-                                              command);
-          EmptyResponse response;
-          return stub.SendCommand(&ctx, request, &response);
-        }});
-  } else {
-    Agent::Instance().SubmitCpuTasks(
-        {[this, timestamp](InternalCpuService::Stub& stub, ClientContext& ctx) {
-          int pid = getpid();
-          CpuTraceOperationRequest request;
-          request.CopyFrom(ongoing_start_request_);
-          request.set_pid(pid);
-          request.set_timestamp(timestamp);
-          CpuTraceOperationResponse response;
-          Status status = stub.SendTraceEvent(&ctx, request, &response);
-          if (status.ok()) {
-            if (!response.start_operation_allowed()) {
-              // This start operation isn't allowed. Ignore it.
-              Reset();
-              Log::W(Log::Tag::PROFILER,
-                     "Debug.startMethodTracing(String) called while tracing is "
-                     "already in progress; the call is ignored.");
-            }
-          } else {
-            // Not receiving a response from daemon. This task will be retried
-            // so no-op here.
-          }
-          return status;
-        }});
-  }
+  Agent::Instance().SubmitAgentTasks(
+      {[this, timestamp](AgentService::Stub& stub, ClientContext& ctx) {
+        SendCommandRequest request;
+        auto* command = request.mutable_command();
+        profiler::BuildApiStartTraceCommand(getpid(), timestamp, app_name_,
+                                            command);
+        EmptyResponse response;
+        return stub.SendCommand(&ctx, request, &response);
+      }});
 }
 
 bool TraceMonitor::ReadTraceContent(const string& trace_path,
@@ -217,37 +191,23 @@ void TraceMonitor::SubmitStopEvent(int tid) {
   // proceeds as normal while the tasks below run asynchonrously.
   Reset();
 
-  if (Agent::Instance().agent_config().common().profiler_unified_pipeline()) {
-    // First, send the content of the trace file.
-    std::ostringstream oss;
-    oss << timestamp << kTraceFileSuffix;
-    std::string payload_name{oss.str()};
-    Agent::Instance().SubmitAgentTasks(
-        profiler::CreateTasksToSendPayload(payload_name, trace_content, true));
-    // Second, send the command to signal the recording is complete.
-    Agent::Instance().SubmitAgentTasks(
-        {[this, pid, timestamp, payload_name](AgentService::Stub& stub,
-                                              ClientContext& ctx) mutable {
-          SendCommandRequest request;
-          auto* command = request.mutable_command();
-          profiler::BuildApiStopTraceCommand(pid, timestamp, app_name_,
-                                             payload_name, command);
-          EmptyResponse response;
-          return stub.SendCommand(&ctx, request, &response);
-        }});
-  } else {
-    Agent::Instance().SubmitCpuTasks(
-        {[pid, tid, timestamp, trace_content](InternalCpuService::Stub& stub,
-                                              ClientContext& ctx) {
-          CpuTraceOperationRequest request;
-          request.set_pid(pid);
-          request.set_thread_id(tid);
-          request.set_timestamp(timestamp);
-          request.mutable_stop()->set_trace_content(trace_content);
-          CpuTraceOperationResponse response;
-          return stub.SendTraceEvent(&ctx, request, &response);
-        }});
-  }
+  // First, send the content of the trace file.
+  std::ostringstream oss;
+  oss << timestamp << kTraceFileSuffix;
+  std::string payload_name{oss.str()};
+  Agent::Instance().SubmitAgentTasks(
+      profiler::CreateTasksToSendPayload(payload_name, trace_content, true));
+  // Second, send the command to signal the recording is complete.
+  Agent::Instance().SubmitAgentTasks(
+      {[this, pid, timestamp, payload_name](AgentService::Stub& stub,
+                                            ClientContext& ctx) mutable {
+        SendCommandRequest request;
+        auto* command = request.mutable_command();
+        profiler::BuildApiStopTraceCommand(pid, timestamp, app_name_,
+                                           payload_name, command);
+        EmptyResponse response;
+        return stub.SendCommand(&ctx, request, &response);
+      }});
 }
 
 }  // namespace

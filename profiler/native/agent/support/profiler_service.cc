@@ -37,8 +37,6 @@ Java_com_android_tools_profiler_support_ProfilerService_initializeNative(
   JStringWrapper text(env, jtext);
   AgentConfig agent_config;
   agent_config.mutable_common()->set_service_address(text.get());
-  agent_config.mutable_common()->set_profiler_unified_pipeline(
-      unified_pipeline);
   Agent::Instance(true, agent_config);
 }
 }

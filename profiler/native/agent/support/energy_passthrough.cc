@@ -113,27 +113,16 @@ const SteadyClock& GetClock() {
 // Enqueue and submit the target |energy_event|. All fields and
 // appropriate metadata must be set by the caller.
 void SubmitEnergyEvent(const Event& energy_event) {
-  if (Agent::Instance().agent_config().common().profiler_unified_pipeline()) {
-    Agent::Instance().SubmitAgentTasks(
-        {[energy_event](AgentService::Stub& stub, ClientContext& ctx) {
-          SendEventRequest request;
-          auto* event = request.mutable_event();
-          event->CopyFrom(energy_event);
-          event->set_kind(Event::ENERGY_EVENT);
+  Agent::Instance().SubmitAgentTasks(
+      {[energy_event](AgentService::Stub& stub, ClientContext& ctx) {
+        SendEventRequest request;
+        auto* event = request.mutable_event();
+        event->CopyFrom(energy_event);
+        event->set_kind(Event::ENERGY_EVENT);
 
-          EmptyResponse response;
-          return stub.SendEvent(&ctx, request, &response);
-        }});
-  } else {
-    Agent::Instance().SubmitEnergyTasks(
-        {[energy_event](InternalEnergyService::Stub& stub, ClientContext& ctx) {
-          AddEnergyEventRequest request;
-          request.mutable_energy_event()->CopyFrom(energy_event);
-
-          EmptyEnergyReply response;
-          return stub.AddEnergyEvent(&ctx, request, &response);
-        }});
-  }
+        EmptyResponse response;
+        return stub.SendEvent(&ctx, request, &response);
+      }});
 }
 
 AlarmSet::Type ParseAlarmType(jint type) {
