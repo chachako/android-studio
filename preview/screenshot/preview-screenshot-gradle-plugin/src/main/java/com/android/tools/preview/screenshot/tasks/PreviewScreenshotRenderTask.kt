@@ -81,21 +81,20 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     abstract val packageName: Property<String>
 
     @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val previewsDiscovered: RegularFileProperty
 
     @get:InputFile
     @get:Optional
-    @get:PathSensitive(PathSensitivity.NONE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val resourceFile: RegularFileProperty
 
     @get:InputDirectory
     @get:Optional
-    @get:PathSensitive(PathSensitivity.NONE)
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val resourcesDir: DirectoryProperty
 
-    @get:InputFiles
-    @get:PathSensitive(PathSensitivity.NONE)
+    @get:Classpath
     abstract val screenshotCliJar: ConfigurableFileCollection
 
     @get:InputDirectory

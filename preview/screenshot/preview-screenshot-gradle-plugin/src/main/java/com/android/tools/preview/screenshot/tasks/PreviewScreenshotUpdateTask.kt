@@ -44,7 +44,7 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask(), VerificationTask {
     abstract val referenceImageDir: DirectoryProperty
 
     @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.NONE)
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val renderTaskOutputDir: DirectoryProperty
 
     @get:Internal

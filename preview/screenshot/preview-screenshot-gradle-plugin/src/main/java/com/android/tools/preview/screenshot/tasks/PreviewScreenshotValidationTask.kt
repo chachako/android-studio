@@ -40,18 +40,18 @@ import org.gradle.api.tasks.testing.Test
 @CacheableTask
 abstract class PreviewScreenshotValidationTask : Test(), VerificationTask {
     @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.NONE)
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val referenceImageDir: DirectoryProperty
 
     @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.NONE)
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val renderTaskOutputDir: DirectoryProperty
 
     @get:OutputDirectory
     abstract val diffImageDir: DirectoryProperty
 
     @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val previewFile: RegularFileProperty
 
     @get:OutputDirectory
