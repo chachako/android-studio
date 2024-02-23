@@ -59,12 +59,12 @@ TEST(Session, SamplersAdded) {
   DaemonConfig config1(daemon_config);
   Daemon daemon1(&clock, &config1, &file_cache, &event_buffer);
   Session session1(0, 0, 0, &daemon1);
-  EXPECT_EQ(session1.samplers().size(), 6);
+  EXPECT_EQ(session1.samplers().size(), 3);
 
   DaemonConfig config2(daemon_config);
   Daemon daemon2(&clock, &config2, &file_cache, &event_buffer);
   Session session2(0, 0, 0, &daemon2);
-  EXPECT_EQ(session2.samplers().size(), 6);
+  EXPECT_EQ(session2.samplers().size(), 3);
 }
 
 TEST(Session, SamplerDeallocatedWhenSessionDies) {
@@ -76,12 +76,12 @@ TEST(Session, SamplerDeallocatedWhenSessionDies) {
   DaemonConfig config1(daemon_config);
   Daemon daemon1(&clock, &config1, &file_cache, &event_buffer);
   Session session1(0, 0, 0, &daemon1);
-  EXPECT_EQ(session1.samplers().size(), 6);
+  EXPECT_EQ(session1.samplers().size(), 3);
 
   DaemonConfig config2(daemon_config);
   Daemon daemon2(&clock, &config2, &file_cache, &event_buffer);
   Session session2(0, 0, 0, &daemon2);
-  EXPECT_EQ(session2.samplers().size(), 6);
+  EXPECT_EQ(session2.samplers().size(), 3);
 
   // Create a new instance of sampler that's mocked to monitor the destructor.
   auto* sampler = new MockSampler(session2, &clock, &event_buffer, 1000);

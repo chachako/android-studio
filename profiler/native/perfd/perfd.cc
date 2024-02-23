@@ -34,7 +34,6 @@
 #include "perfd/memory/commands/heap_dump.h"
 #include "perfd/memory/heap_dump_manager.h"
 #include "perfd/memory/memory_profiler_component.h"
-#include "perfd/network/network_profiler_component.h"
 #include "perfd/sessions/sessions_manager.h"
 #include "utils/current_process.h"
 #include "utils/daemon_config.h"
@@ -73,10 +72,6 @@ int Perfd::Initialize(Daemon* daemon) {
       std::bind(&EventProfilerComponent::AgentStatusChangedCallback,
                 event_component.get(), std::placeholders::_1));
   daemon->RegisterProfilerComponent(std::move(event_component));
-
-  daemon->RegisterProfilerComponent(
-      std::unique_ptr<NetworkProfilerComponent>(new NetworkProfilerComponent(
-          *(daemon->config()), daemon->clock(), daemon->file_cache())));
 
   if (daemon_config.common().energy_profiler_enabled()) {
     daemon->RegisterProfilerComponent(std::unique_ptr<EnergyProfilerComponent>(

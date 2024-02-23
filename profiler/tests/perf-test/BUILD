@@ -12,17 +12,6 @@ dex_library(
 )
 
 perf_test(
-    name = "NetworkTest",
-    size = "large",
-    srcs = [
-        "testSrcs/com/android/tools/profiler/network/UnifiedPipelineHttpUrlTest.java",
-        "testSrcs/com/android/tools/profiler/network/UnifiedPipelineOkHttpTest.java",
-    ],
-    test_app = "//tools/base/profiler/tests/test-app:test-app",
-    deps = ["@maven//:com.google.truth.truth"],
-)
-
-perf_test(
     name = "MemoryTest",
     size = "medium",
     srcs = [

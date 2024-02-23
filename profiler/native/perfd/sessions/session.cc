@@ -19,9 +19,6 @@
 #include "perfd/samplers/cpu_thread_sampler.h"
 #include "perfd/samplers/cpu_usage_sampler.h"
 #include "perfd/samplers/memory_usage_sampler.h"
-#include "perfd/samplers/network_connection_count_sampler.h"
-#include "perfd/samplers/network_speed_sampler.h"
-#include "perfd/samplers/network_type_sampler.h"
 #include "perfd/statsd/pulled_atoms/mobile_bytes_transfer.h"
 #include "perfd/statsd/pulled_atoms/wifi_bytes_transfer.h"
 #include "perfd/statsd/statsd_subscriber.h"
@@ -41,24 +38,12 @@ Session::Session(int64_t stream_id, int32_t pid, int64_t start_timestamp,
   info_.set_end_timestamp(LLONG_MAX);
 
   samplers_.push_back(
-      std::unique_ptr<Sampler>(new profiler::NetworkConnectionCountSampler(
-          *this, daemon->clock(), daemon->buffer())));
-  samplers_.push_back(std::unique_ptr<Sampler>(new profiler::NetworkTypeSampler(
-      *this, daemon->clock(), daemon->buffer())));
-  samplers_.push_back(
       std::unique_ptr<Sampler>(new profiler::CpuUsageDataSampler(
           *this, daemon->clock(), daemon->buffer())));
   samplers_.push_back(std::unique_ptr<Sampler>(new profiler::CpuThreadSampler(
       *this, daemon->clock(), daemon->buffer())));
   samplers_.push_back(std::unique_ptr<Sampler>(new profiler::MemoryUsageSampler(
       *this, daemon->clock(), daemon->buffer())));
-
-  // On Q+ devices, we use statsd to collect network speed.
-  if (DeviceInfo::feature_level() < DeviceInfo::Q) {
-    samplers_.push_back(
-        std::unique_ptr<Sampler>(new profiler::NetworkSpeedSampler(
-            *this, daemon->clock(), daemon->buffer())));
-  }
 
   // statsd is supported on Q+ devices.
   if (DeviceInfo::feature_level() >= DeviceInfo::Q) {
