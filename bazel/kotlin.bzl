@@ -440,5 +440,5 @@ _kotlin_library = rule(
 )
 
 # ASwB compatibility
-def kt_jvm_library(**kwargs):
-    kotlin_library(**kwargs)
+def kt_jvm_library(coverage_baseline_enabled = False, **kwargs):
+    kotlin_library(coverage_baseline_enabled = coverage_baseline_enabled, **kwargs)
