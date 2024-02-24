@@ -43,6 +43,7 @@ import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.USuperExpression
 import org.jetbrains.uast.USwitchClauseExpression
 import org.jetbrains.uast.UThisExpression
+import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.UastPrefixOperator
 import org.jetbrains.uast.util.isArrayInitializer
 
@@ -100,6 +101,12 @@ class ParenthesisTestMode(private val includeUnlikely: Boolean = false) :
     root.acceptSourceFile(
       object : EditVisitor() {
         override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
+          if (node.operator == UastBinaryOperator.ASSIGN) {
+            // Assignment is not allowed within parenthesis.
+            //   var x: Int? = null
+            //   (x = 42) // compiler error
+            return super.visitBinaryExpression(node)
+          }
           parenthesize(node)
           return super.visitBinaryExpression(node)
         }
