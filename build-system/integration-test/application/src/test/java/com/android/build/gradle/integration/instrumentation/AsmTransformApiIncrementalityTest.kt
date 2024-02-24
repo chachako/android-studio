@@ -300,6 +300,24 @@ class AsmTransformApiIncrementalityTest {
         assertThat(classData.classAnnotations).isEmpty()
     }
 
+    @Test
+    fun loadClassFailure() {
+        configureExtensionForAnnotationAddingVisitor(project)
+        configureExtensionForInterfaceAddingVisitor(project)
+
+        TestFileUtils.searchAndReplace(
+            project.getSubproject(":buildSrc")
+                .file("src/main/java/com/example/buildsrc/instrumentation/AnnotationAddingClassVisitorFactory.kt"),
+            "return AnnotationAddingClassVisitor(",
+            "classContext.loadClassData(\"com/example/myapplication/ClassImplementsI\")" +
+                    System.lineSeparator() +
+                    "return AnnotationAddingClassVisitor("
+        )
+
+        val result = project.executor().expectFailure().run(":app:transformDebugClassesWithAsm")
+        assertThat(result.failureMessage).contains("Fully qualified name must be provided to loadClassData.")
+    }
+
     private fun getClassFilesModifiedTimeMap(outputDir: File): Map<String, Long> {
         return FileUtils.getAllFiles(outputDir).filter { it!!.name.endsWith(SdkConstants.DOT_CLASS) }.map {
             it.name to it.lastModified()
