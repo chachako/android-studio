@@ -1,6 +1,6 @@
 load("//tools/adt/idea/studio:studio.bzl", "studio_data")
 load("//tools/base/app-inspection:app_inspection.bzl", "app_inspection_jar")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:proto.bzl", "android_java_proto_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -8,6 +8,26 @@ package(default_visibility = ["//visibility:public"])
 android_java_proto_library(
     name = "database_inspector_java_proto",
     srcs = ["resources/proto/database-inspector.proto"],
+)
+
+agent_deps = [
+    ":database_inspector_java_proto",
+    "//prebuilts/studio/sdk:platforms/latest_jar",
+    "//prebuilts/tools/common/m2:androidx.inspection.inspection.1.0.0",
+    "//tools/base/app-inspection/inspectors/common:app-inspection.inspectors.common",
+    "//tools/base/bazel:studio-proto",
+    "@maven//:androidx.annotation.annotation",
+]
+
+kotlin_library(
+    name = "agent-jar",
+    srcs = glob([
+        "src/**/*.java",
+        "src/**/*.kt",
+    ]),
+    resource_strip_prefix = "tools/base/app-inspection/inspectors/database/resources",
+    resources = glob(["resources/META-INF/**"]),
+    deps = agent_deps,
 )
 
 app_inspection_jar(
@@ -27,13 +47,28 @@ app_inspection_jar(
     inspection_resource_strip_prefix = "tools/base/app-inspection/inspectors/database/resources",
     inspection_resources = glob(["resources/META-INF/**"]),
     proto = ":database_inspector_java_proto",
+    deps = agent_deps,
+)
+
+kotlin_test(
+    name = "agent_tests",
+    srcs = glob(["testSrc/**/*.kt"]),
+    jvm_flags = [
+        "-Dtest.suite.jar=agent_tests.jar",
+    ],
+    test_class = "com.android.testutils.JarTestSuite",
+    runtime_deps = [
+        "//prebuilts/studio/sdk:platforms/latest_runtime_jar",
+    ],
     deps = [
-        ":database_inspector_java_proto",
-        "//prebuilts/studio/sdk:platforms/latest_jar",
-        "//prebuilts/tools/common/m2:androidx.inspection.inspection.1.0.0",
-        "//tools/base/app-inspection/inspectors/common:app-inspection.inspectors.common",
-        "//tools/base/bazel:studio-proto",
-        "@maven//:androidx.annotation.annotation",
+        ":agent-jar",
+        "//tools/base/app-inspection/inspectors/database/fake-android:fake_android",
+        "//tools/base/app-inspection/inspectors/lib:inspection-testing",
+        "//tools/base/testutils:tools.testutils",
+        "@maven//:com.google.guava.guava",
+        "@maven//:com.google.truth.truth",
+        "@maven//:junit.junit",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
     ],
 )
 
