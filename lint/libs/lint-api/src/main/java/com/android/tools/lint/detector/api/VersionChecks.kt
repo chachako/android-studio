@@ -1190,6 +1190,28 @@ class VersionChecks(
         if (validFromAnnotation != null) {
           return validFromAnnotation
         }
+        // Unless use-site is specified, an annotation on a constructor parameter
+        // should be associated with the corresponding field, not that parameter.
+        // K1/ULC puts annotations on the parameter, without considering use-site,
+        // and we may hit the annotation at the above lookup.
+        // In contrast, K2/SLC does accurate use-site filtering, and won't see
+        // any annotations on the parameter. So, we need to find the corresponding field
+        // in the containing class, and attempt to look up annotations one more time.
+        val paramList = resolved.parent
+        val containingMethod = paramList.parent
+        if (containingMethod is PsiMethod && containingMethod.isConstructor) {
+          val constructorProperty =
+            containingMethod.containingClass?.findFieldByName(
+              resolved.name,
+              /* checkBases = */ false,
+            )
+          if (constructorProperty != null) {
+            val validFromAnnotationOnField = getValidFromAnnotation(constructorProperty)
+            if (validFromAnnotationOnField != null) {
+              return validFromAnnotationOnField
+            }
+          }
+        }
       } else if (resolved is PsiLocalVariable) {
         // Technically we should only use the initializer if the variable is final,
         // but it's possible/likely people don't bother with this for local
