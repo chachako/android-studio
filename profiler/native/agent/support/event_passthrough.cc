@@ -19,13 +19,11 @@
 
 #include "agent/agent.h"
 #include "agent/jni_wrappers.h"
-#include "event_manager.h"
 #include "utils/clock.h"
 
 using grpc::ClientContext;
 using grpc::Status;
 using profiler::Agent;
-using profiler::EventManager;
 using profiler::SteadyClock;
 using profiler::proto::ActivityStateData;
 using profiler::proto::AgentService;

@@ -18,8 +18,6 @@ cc_library(
     srcs = [
         "support/cpu_trace.cc",
         "support/energy_passthrough.cc",
-        "support/event_manager.cc",
-        "support/event_manager.h",
         "support/event_passthrough.cc",
         "support/http_tracker.cc",
         "support/memory_stats_logger.cc",

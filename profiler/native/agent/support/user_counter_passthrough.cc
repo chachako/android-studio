@@ -19,7 +19,6 @@
 
 #include "agent/agent.h"
 #include "agent/jni_wrappers.h"
-#include "event_manager.h"
 #include "utils/clock.h"
 
 using grpc::ClientContext;
