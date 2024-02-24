@@ -85,8 +85,18 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 // Misc tests to verify type handling in the Kotlin UAST initialization.
 class UastTest : TestCase() {
-  private fun check(source: TestFile, check: (UFile) -> Unit) {
-    check(sources = arrayOf(source), check = check)
+  private fun check(
+    source: TestFile,
+    javaLanguageLevel: LanguageLevel? = null,
+    kotlinLanguageLevel: LanguageVersionSettings? = null,
+    check: (UFile) -> Unit,
+  ) {
+    check(
+      sources = arrayOf(source),
+      javaLanguageLevel = javaLanguageLevel,
+      kotlinLanguageLevel = kotlinLanguageLevel,
+      check = check,
+    )
   }
 
   private fun check(
@@ -3686,5 +3696,45 @@ class UastTest : TestCase() {
       }
     )
     assertEquals(1, count)
+  }
+
+  fun testJavaAnonymousClassImportSTR() {
+    // Regression test from b/322179541
+    val source =
+      java(
+        "Test.java",
+        """
+        class Test {
+          void enclosingMethod() {
+            new Object() {
+              Object anonymousClassMethod() {
+                return new Object();
+              }
+
+              void test() {
+                anonymousClassMethod();
+              }
+            };
+          }
+        }
+      """,
+      )
+
+    var count = 0
+    check(source, javaLanguageLevel = LanguageLevel.JDK_21) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitClass(node: UClass): Boolean {
+            count++
+            val superTypes = node.superTypes
+            assertEquals(1, superTypes.size)
+            assertEquals("java.lang.Object", superTypes.single().canonicalText)
+            return super.visitClass(node)
+          }
+        }
+      )
+    }
+    // Test and anonymous Object
+    assertEquals(2, count)
   }
 }
