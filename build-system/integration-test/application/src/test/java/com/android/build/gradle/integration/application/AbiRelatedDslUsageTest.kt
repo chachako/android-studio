@@ -16,6 +16,7 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.NDK_WITH_RISCV_ABI
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.truth.checkSingleIssue
 import com.android.build.gradle.integration.common.utils.TestFileUtils
@@ -28,11 +29,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class AbiRelatedDslUsageTest {
-    // Using NDK r27 instead of a default version because Riscv is only supported on r27 and newer versions.
-    companion object {
-        private const val NDK_WITH_RISCV_ABI = "27.0.11246959"
-    }
-
     @get:Rule
     var project = GradleTestProject.builder()
             .fromTestApp(HelloWorldApp.noBuildFile())
