@@ -244,8 +244,8 @@ com.android.tools:sdk-common
     com.google.protobuf:protobuf-java (runtime)
     javax.inject:javax.inject (runtime)
     net.sf.kxml:kxml2 (runtime)
-    org.bouncycastle:bcpkix-jdk15on (runtime)
-    org.bouncycastle:bcprov-jdk15on (runtime)
+    org.bouncycastle:bcpkix-jdk18on (runtime)
+    org.bouncycastle:bcprov-jdk18on (runtime)
     org.glassfish.jaxb:jaxb-runtime (runtime)
     org.jetbrains.intellij.deps:trove4j (runtime)
     org.jetbrains.kotlin:kotlin-reflect (runtime)
@@ -409,8 +409,8 @@ com.android.tools.build:apkzlib
     com.android.tools.build:apksig (runtime)
     com.google.code.findbugs:jsr305 (runtime)
     com.google.guava:guava (runtime)
-    org.bouncycastle:bcpkix-jdk15on (runtime)
-    org.bouncycastle:bcprov-jdk15on (runtime)
+    org.bouncycastle:bcpkix-jdk18on (runtime)
+    org.bouncycastle:bcprov-jdk18on (runtime)
 
 com.android.tools.build:builder
   pomName=com.android.tools.build.builder
@@ -432,9 +432,9 @@ com.android.tools.build:builder
     com.android.tools.analytics-library:tracker (runtime)
     com.android.tools.layoutlib:layoutlib-api (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
-    org.bouncycastle:bcpkix-jdk15on (runtime)
+    org.bouncycastle:bcpkix-jdk18on (runtime)
     commons-codec:commons-codec (runtime)
-    org.bouncycastle:bcprov-jdk15on (runtime)
+    org.bouncycastle:bcprov-jdk18on (runtime)
     javax.inject:javax.inject (runtime)
     org.ow2.asm:asm-commons (runtime)
 
@@ -494,7 +494,7 @@ com.android.tools.build:gradle
     org.ow2.asm:asm-analysis (runtime)
     org.ow2.asm:asm-commons (runtime)
     org.ow2.asm:asm-util (runtime)
-    org.bouncycastle:bcpkix-jdk15on (runtime)
+    org.bouncycastle:bcpkix-jdk18on (runtime)
     org.glassfish.jaxb:jaxb-runtime (runtime)
     net.sf.jopt-simple:jopt-simple (runtime)
     com.android.tools.build:bundletool (runtime)

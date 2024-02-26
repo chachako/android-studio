@@ -113,7 +113,7 @@ kotlin_library(
         "@maven//:net.sf.jopt-simple.jopt-simple",
         "@maven//:net.sf.kxml.kxml2",
         "@maven//:org.apache.httpcomponents.httpmime",
-        "@maven//:org.bouncycastle.bcpkix-jdk15on",
+        "@maven//:org.bouncycastle.bcpkix-jdk18on",
         "@maven//:org.codehaus.groovy.groovy-all",  # TODO: Not in the pom, but required to compile (?)
         "@maven//:org.glassfish.jaxb.jaxb-runtime",
         "@maven//:org.jetbrains.dokka.dokka-core",

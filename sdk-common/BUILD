@@ -85,8 +85,8 @@ maven_library(
         "@maven//:com.google.protobuf.protobuf-java",
         "@maven//:javax.inject.javax.inject",
         "@maven//:net.sf.kxml.kxml2",
-        "@maven//:org.bouncycastle.bcpkix-jdk15on",
-        "@maven//:org.bouncycastle.bcprov-jdk15on",
+        "@maven//:org.bouncycastle.bcpkix-jdk18on",
+        "@maven//:org.bouncycastle.bcprov-jdk18on",
         "@maven//:org.glassfish.jaxb.jaxb-runtime",
         "@maven//:org.jetbrains.intellij.deps.trove4j",
         "@maven//:org.jetbrains.kotlin.kotlin-reflect",
@@ -115,7 +115,7 @@ kotlin_test(
     test_class = "com.android.testutils.JarTestSuite",
     visibility = ["//visibility:public"],
     runtime_deps = [
-        "@maven//:org.bouncycastle.bcpkix-jdk15on",
+        "@maven//:org.bouncycastle.bcpkix-jdk18on",
     ],
     deps = [
         ":tools.sdk-common",

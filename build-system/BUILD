@@ -455,7 +455,7 @@ maven_repository(
         "@maven//:org.apache.commons.commons-compress",
         "@maven//:org.apache.httpcomponents.httpmime",
         "@maven//:org.apache.maven.maven-aether-provider",
-        "@maven//:org.bouncycastle.bcpkix-jdk15on",
+        "@maven//:org.bouncycastle.bcpkix-jdk18on",
         "@maven//:org.codehaus.groovy.groovy-all",
         "@maven//:org.eclipse.aether.aether-connector-basic",
         "@maven//:org.eclipse.aether.aether-transport-file",
