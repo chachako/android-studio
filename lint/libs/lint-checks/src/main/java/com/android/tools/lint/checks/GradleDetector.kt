@@ -1452,14 +1452,16 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       getArtifactCacheHome().toPath().resolve(group + File.separator + dependency.name)
     val f =
       when {
-        dependency.group == "commons-io" && dependency.name == "commons-io" -> {
+        dependency.group?.startsWith("commons-") == true &&
+          dependency.name?.startsWith("commons-") == true &&
+          dependency.name == dependency.group -> {
           // For a (long) while, users could get this spurious recommendation of an "upgrade" to
-          // commons-io to this very old version (with a very high version number).  This
-          // recommendation is no longer given as of mid-2023, except if a user has previously
-          // installed it and the version is lurking in their Gradle cache.
-          val spuriousVersion = Version.parse("20030203.000550")
-          val commonsIoFilter: Predicate<Version> = Predicate { v -> v != spuriousVersion }
-          filter?.and(commonsIoFilter) ?: commonsIoFilter
+          // commons-io, commons-codec etc to this very old version (with a very high version
+          // number). This recommendation is no longer given as of mid-2023, except if a
+          // user has previously installed it and the version is lurking in their Gradle cache.
+          // We need filter out all versions that has 8 digits in major version like: 20030203
+          val commonsFilter: Predicate<Version> = Predicate { v -> !v.isOldApacheCommonsVersion() }
+          filter?.and(commonsFilter) ?: commonsFilter
         }
         else -> filter
       }
@@ -1478,6 +1480,8 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       MavenRepositories.getHighestVersion(versionDir, noSnapshotFilter, allowPreview)
     } else null
   }
+
+  private fun Version.isOldApacheCommonsVersion() = major?.toString()?.length == 8
 
   // Important: This is called without the PSI read lock, since it may make network requests.
   // Any interaction with PSI or issue reporting should be wrapped in a read action.

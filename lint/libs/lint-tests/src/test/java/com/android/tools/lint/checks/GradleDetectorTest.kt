@@ -7206,23 +7206,6 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
-  fun testCachedFilterCommonsIo() {
-    // regression test for b/218605730
-    lint()
-      .files(
-        gradle(
-          """
-          dependencies {
-            implementation 'commons-io:commons-io:2.12.0'
-          }
-        """
-        )
-      )
-      .issues(DEPENDENCY)
-      .run()
-      .expectClean()
-  }
-
   fun testCachedFilterGuava() {
     // regression test for b/315310898
     lint()
@@ -7278,6 +7261,75 @@ class GradleDetectorTest : AbstractCheckTest() {
           +   implementation 'com.google.guava:spurious:18.0-android'
         """
       )
+  }
+
+  // regression for b/148020924 and b/218605730
+  fun testCachedFilterApacheCommons() {
+    lint()
+      .files(
+        gradle(
+            """
+            dependencies {
+              implementation "commons-beanutils:commons-beanutils:0.9"
+              implementation "commons-io:commons-io:1.0"
+              implementation "commons-codec:commons-codec:1.0"
+            }
+          """
+          )
+          .indented()
+      )
+      .issues(DEPENDENCY)
+      .run()
+      .expect(
+        """
+         build.gradle:2: Warning: A newer version of commons-beanutils:commons-beanutils than 0.9 is available: 1.9 [GradleDependency]
+           implementation "commons-beanutils:commons-beanutils:0.9"
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         build.gradle:3: Warning: A newer version of commons-io:commons-io than 1.0 is available: 2.13 [GradleDependency]
+           implementation "commons-io:commons-io:1.0"
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         build.gradle:4: Warning: A newer version of commons-codec:commons-codec than 1.0 is available: 1.13 [GradleDependency]
+           implementation "commons-codec:commons-codec:1.0"
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         0 errors, 3 warnings
+         """
+      )
+      .expectFixDiffs(
+        """
+      Fix for build.gradle line 2: Change to 1.9:
+      @@ -2 +2
+      -   implementation "commons-beanutils:commons-beanutils:0.9"
+      +   implementation "commons-beanutils:commons-beanutils:1.9"
+      Fix for build.gradle line 3: Change to 2.13:
+      @@ -3 +3
+      -   implementation "commons-io:commons-io:1.0"
+      +   implementation "commons-io:commons-io:2.13"
+      Fix for build.gradle line 4: Change to 1.13:
+      @@ -4 +4
+      -   implementation "commons-codec:commons-codec:1.0"
+      +   implementation "commons-codec:commons-codec:1.13"
+      """
+      )
+  }
+
+  // regression b/148020924 and b/218605730
+  fun testCachedFilterApacheCommons_UpToDate() {
+    lint()
+      .files(
+        gradle(
+            """
+            dependencies {
+              implementation "commons-beanutils:commons-beanutils:1.9"
+              implementation "commons-io:commons-io:2.13"
+              implementation "commons-codec:commons-codec:1.13"
+            }
+          """
+          )
+          .indented()
+      )
+      .issues(DEPENDENCY)
+      .run()
+      .expectClean()
   }
 
   fun testExpiredTargetSdkInManifest() {
@@ -7683,6 +7735,11 @@ class GradleDetectorTest : AbstractCheckTest() {
             "caches/modules-2/files-2.1/com.google.guava/spurious/18.0-android/sample",
             "caches/modules-2/files-2.1/com.google.guava/spurious/18.0-jre/sample",
             "caches/modules-2/files-2.1/commons-io/commons-io/20030203.000550/sample",
+            "caches/modules-2/files-2.1/commons-io/commons-io/2.13/sample",
+            "caches/modules-2/files-2.1/commons-codec/commons-codec/20041127.091804/sample",
+            "caches/modules-2/files-2.1/commons-codec/commons-codec/1.13/sample",
+            "caches/modules-2/files-2.1/commons-beanutils/commons-beanutils/20030211.134440/sample",
+            "caches/modules-2/files-2.1/commons-beanutils/commons-beanutils/1.9/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.1/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.2.1/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.2.5/sample",
