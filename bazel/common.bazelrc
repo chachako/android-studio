@@ -54,6 +54,9 @@ build --jvmopt='--add-exports=jdk.attach/sun.tools.attach=ALL-UNNAMED'
 build --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED'
 build --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED'
 
+# TODO(b/26372639): Remove this after updating to IntelliJ 2024.1.
+test --jvmopt='-Dstudio.internal.enable.new.kotlin.code.style=true'
+
 # JetBrainsRuntime version to bundle into Android Studio
 # and java runtime for running tests
 build:jbr-next --//prebuilts/studio/jdk:jdk_bundle_version=next
