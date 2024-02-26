@@ -51,7 +51,7 @@ class JobHandlerTest {
         .setPeriodic(101, 102)
         .setMinimumLatency(103)
         .setOverrideDeadline(104)
-        .setRequiresNetworkType(JobInfo.NETWORK_TYPE_METERED)
+        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_METERED)
         .setTriggerContentMaxDelay(105)
         .setTriggerContentUpdateDelay(106)
         .setPersisted(true)

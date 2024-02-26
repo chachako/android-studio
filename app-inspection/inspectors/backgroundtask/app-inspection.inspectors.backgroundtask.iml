@@ -9,7 +9,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="app-inspection.inspectors.backgroundtask.fake-android" scope="PROVIDED" />
+    <orderEntry type="module" module-name="app-inspection.inspectors.fake-android" />
     <orderEntry type="library" scope="PROVIDED" name="android" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="androidx-inspection" level="project" />
     <orderEntry type="library" name="kotlin-stdlib-jdk8" level="project" />

@@ -32,7 +32,7 @@ class WakeLockHandlerTest {
   fun wakeLockAcquired() {
     val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
     wakeLockHandler.onNewWakeLockEntry(1, "tag")
-    val wakeLock = PowerManager().newWakeLock(3, "tag2")
+    val wakeLock = PowerManager.WakeLock(3, "tag2")
     wakeLockHandler.onNewWakeLockExit(wakeLock)
     wakeLockHandler.onWakeLockAcquired(wakeLock, 10)
 
@@ -47,7 +47,7 @@ class WakeLockHandlerTest {
   @Test
   fun wakeLockAcquiredWithoutParameter() {
     val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
-    val wakeLock = PowerManager().newWakeLock(1, "tag")
+    val wakeLock = PowerManager.WakeLock(1, "tag")
     wakeLockHandler.onWakeLockAcquired(wakeLock, 10)
 
     inspectorRule.connection.consume {
@@ -61,7 +61,7 @@ class WakeLockHandlerTest {
   @Test
   fun wakeLockReleased() {
     val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
-    val wakeLock = PowerManager().newWakeLock(1, "tag")
+    val wakeLock = PowerManager.WakeLock(1, "tag")
     wakeLock.isHeld = true
     wakeLockHandler.onWakeLockReleasedEntry(wakeLock, RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY)
     wakeLockHandler.onWakeLockReleasedExit()

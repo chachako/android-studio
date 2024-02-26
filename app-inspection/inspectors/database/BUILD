@@ -62,7 +62,7 @@ kotlin_test(
     ],
     deps = [
         ":agent-jar",
-        "//tools/base/app-inspection/inspectors/database/fake-android:fake_android",
+        "//tools/base/app-inspection/inspectors/fake-android:fake_android",
         "//tools/base/app-inspection/inspectors/lib:inspection-testing",
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.guava.guava",

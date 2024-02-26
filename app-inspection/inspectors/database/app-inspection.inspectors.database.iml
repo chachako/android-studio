@@ -9,7 +9,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="app-inspection.inspectors.database.fake-android" scope="TEST" />
+    <orderEntry type="module" module-name="app-inspection.inspectors.fake-android" />
     <orderEntry type="library" name="android" level="project" />
     <orderEntry type="library" name="androidx-inspection" level="project" />
     <orderEntry type="library" name="database_inspector_java_proto" level="project" />

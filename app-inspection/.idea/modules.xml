@@ -4,12 +4,10 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app-inspection.iml" filepath="$PROJECT_DIR$/app-inspection.iml" />
       <module fileurl="file://$PROJECT_DIR$/inspectors/backgroundtask/app-inspection.inspectors.backgroundtask.iml" filepath="$PROJECT_DIR$/inspectors/backgroundtask/app-inspection.inspectors.backgroundtask.iml" />
-      <module fileurl="file://$PROJECT_DIR$/inspectors/backgroundtask/fake-android/app-inspection.inspectors.backgroundtask.fake-android.iml" filepath="$PROJECT_DIR$/inspectors/backgroundtask/fake-android/app-inspection.inspectors.backgroundtask.fake-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/inspectors/common/app-inspection.inspectors.common.iml" filepath="$PROJECT_DIR$/inspectors/common/app-inspection.inspectors.common.iml" />
       <module fileurl="file://$PROJECT_DIR$/inspectors/database/app-inspection.inspectors.database.iml" filepath="$PROJECT_DIR$/inspectors/database/app-inspection.inspectors.database.iml" />
-      <module fileurl="file://$PROJECT_DIR$/inspectors/database/fake-android/app-inspection.inspectors.database.fake-android.iml" filepath="$PROJECT_DIR$/inspectors/database/fake-android/app-inspection.inspectors.database.fake-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/inspectors/fake-android/app-inspection.inspectors.fake-android.iml" filepath="$PROJECT_DIR$/inspectors/fake-android/app-inspection.inspectors.fake-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/inspectors/network/app-inspection.inspectors.network.iml" filepath="$PROJECT_DIR$/inspectors/network/app-inspection.inspectors.network.iml" />
-      <module fileurl="file://$PROJECT_DIR$/inspectors/network/fake-android/app-inspection.inspectors.network.fake-android.iml" filepath="$PROJECT_DIR$/inspectors/network/fake-android/app-inspection.inspectors.network.fake-android.iml" />
     </modules>
   </component>
 </project>

@@ -129,7 +129,7 @@ class WrappedUrlConnectionTest {
 
         override fun getContentEncoding() = null
 
-        override fun getContent(classes: Array<out Class<Any>>?) = null
+        override fun getContent(classes: Array<out Class<*>>?): Any? = null
       }
     val httpsWrapper = HttpsURLConnectionWrapper(httpsConnection, "", factory, interceptionService)
     assertThat(httpsWrapper.localCertificates).isNull()
@@ -170,7 +170,7 @@ class WrappedUrlConnectionTest {
 
         override fun getContentEncoding() = null
 
-        override fun getContent(classes: Array<out Class<Any>>?) = null
+        override fun getContent(classes: Array<out Class<*>>?) = null
       }
     val httpWrapper = HttpURLConnectionWrapper(httpConnection, "", factory, interceptionService)
     assertNullableApi(httpWrapper)
@@ -245,7 +245,7 @@ class WrappedUrlConnectionTest {
 
         override fun getContentEncoding() = null
 
-        override fun getContent(classes: Array<out Class<Any>>?) = null
+        override fun getContent(classes: Array<out Class<*>>?) = null
       }
     val httpsWrapper = HttpsURLConnectionWrapper(httpsConnection, "", factory, interceptionService)
     assertThat(httpsWrapper.headerFields.size).isEqualTo(6)

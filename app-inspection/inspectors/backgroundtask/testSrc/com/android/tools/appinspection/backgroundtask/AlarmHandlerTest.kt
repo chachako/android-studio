@@ -42,7 +42,10 @@ class AlarmHandlerTest {
 
   @get:Rule val inspectorRule = BackgroundTaskInspectorRule()
 
-  private class TestListener : AlarmManager.OnAlarmListener
+  private class TestListener : AlarmManager.OnAlarmListener {
+
+    override fun onAlarm() {}
+  }
 
   private val pendingIntentHandler
     get() = inspectorRule.inspector.pendingIntentHandler
@@ -222,9 +225,8 @@ class AlarmHandlerTest {
     pendingIntentHandler.onIntentCapturedExit(operation)
 
     alarmHandler.onAlarmSet(RTC_WAKEUP, 2, 3, 4, operation, null, null)
-    val data = ActivityThread().newReceiverData()
+    val data = ActivityThread().newReceiverData(intent)
     pendingIntentHandler.onReceiverDataCreated(data)
-    data.setIntent(intent)
     pendingIntentHandler.onReceiverDataResult(data)
 
     inspectorRule.connection.consume { assertThat(hasAlarmFired()).isTrue() }

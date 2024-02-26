@@ -30,8 +30,10 @@ app_inspection_jar(
     inspection_resource_strip_prefix = "tools/base/app-inspection/inspectors/network/resources",
     inspection_resources = glob(["resources/META-INF/**"]),
     proto = ":network_inspector_java_proto",
+    # do not sort: fake_android must come before latest_jar in the classpath to override small pieces of it
     deps = [
         ":network_inspector_java_proto",
+        "//tools/base/app-inspection/inspectors/fake-android:fake_android",
         "//prebuilts/studio/sdk:platforms/latest_jar",
         "//prebuilts/tools/common/m2:androidx.inspection.inspection.1.0.0",
         "//prebuilts/tools/common/m2:io.grpc.grpc-api.1.57.0",
@@ -70,7 +72,7 @@ kotlin_test(
     deps = [
         ":agent-sources_undexed",
         ":test_server_java_proto",
-        "//tools/base/app-inspection/inspectors/network/fake-android:fake_android",
+        "//tools/base/app-inspection/inspectors/fake-android:fake_android",
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.truth.truth",

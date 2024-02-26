@@ -1,9 +1,9 @@
-package(default_visibility = ["//visibility:public"])
-
 load("//tools/adt/idea/studio:studio.bzl", "studio_data")
 load("//tools/base/app-inspection:app_inspection.bzl", "app_inspection_jar")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:proto.bzl", "android_java_proto_library")
+
+package(default_visibility = ["//visibility:public"])
 
 android_java_proto_library(
     name = "backgroundtask_inspector_java_proto",
@@ -29,7 +29,7 @@ app_inspection_jar(
     # do not sort: fake_android must come before latest_jar in the classpath to override small pieces of it
     deps = [
         ":backgroundtask_inspector_java_proto",
-        "//tools/base/app-inspection/inspectors/backgroundtask/fake-android:fake_android",
+        "//tools/base/app-inspection/inspectors/fake-android:fake_android",
         "//prebuilts/studio/sdk:platforms/latest_jar",
         "//prebuilts/tools/common/m2:androidx.inspection.inspection.1.0.0",
         "//tools/base/app-inspection/inspectors/common:app-inspection.inspectors.common",
@@ -53,7 +53,7 @@ kotlin_test(
     ],
     deps = [
         ":agent-sources_undexed",
-        "//tools/base/app-inspection/inspectors/backgroundtask/fake-android:fake_android",
+        "//tools/base/app-inspection/inspectors/fake-android:fake_android",
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.truth.truth",

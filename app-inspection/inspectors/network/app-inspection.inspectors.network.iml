@@ -9,7 +9,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="app-inspection.inspectors.network.fake-android" scope="TEST" />
+    <orderEntry type="module" module-name="app-inspection.inspectors.fake-android" />
     <orderEntry type="library" scope="PROVIDED" name="android" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="androidx-inspection" level="project" />
     <orderEntry type="library" name="kotlin-stdlib-jdk8" level="project" />
@@ -27,14 +27,14 @@
           <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/io/grpc/grpc-api/1.57.0/grpc-api-1.57.0.jar!/" />
           <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/io/grpc/grpc-core/1.57.0/grpc-core-1.57.0.jar!/" />
         </CLASSES>
+        <JAVADOC />
         <SOURCES>
           <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/io/grpc/grpc-core/1.57.0/grpc-api-1.57.0-sources.jar!/" />
           <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/io/grpc/grpc-core/1.57.0/grpc-core-1.57.0-sources.jar!/" />
         </SOURCES>
-        <JAVADOC />
       </library>
     </orderEntry>
-    <orderEntry type="module-library" scope="TEST" >
+    <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../../../../../bazel-bin/tools/base/app-inspection/inspectors/network/libtest_server_java_proto.jar!/" />
@@ -44,13 +44,13 @@
           <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/io/grpc/grpc-protobuf-lite/1.57.0/grpc-protobuf-lite-1.57.0.jar!/" />
           <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/io/perfmark/perfmark-api/0.26.0/perfmark-api-0.26.0.jar!/" />
         </CLASSES>
+        <JAVADOC />
         <SOURCES>
           <root url="jar://$MODULE_DIR$/../../../../../bazel-bin/tools/base/app-inspection/inspectors/network/test_server_java_proto_srcs.srcjar!/" />
           <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/io/grpc/grpc-stub/1.57.0/grpc-stub-1.57.0-sources.jar!/" />
           <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/io/grpc/grpc-protobuf/1.57.0/grpc-protobuf-1.57.0-sources.jar!/" />
           <root url="jar://$MODULE_DIR$/../../../../../prebuilts/tools/common/m2/repository/io/grpc/grpc-protobuf-lite/1.57.0/grpc-protobuf-lite-1.57.0-sources.jar!/" />
         </SOURCES>
-        <JAVADOC />
       </library>
     </orderEntry>
   </component>
