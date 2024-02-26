@@ -1070,7 +1070,6 @@ coverage_report(
         "//tools/adt/idea/device-explorer:intellij.android.device-explorer.tests_tests",
         "//tools/adt/idea/device-explorer-files:intellij.android.device-explorer-files.tests_tests",
         "//tools/adt/idea/device-explorer-monitor:intellij.android.device-explorer-monitor.tests_tests",
-        "//tools/adt/idea/device-file-explorer-toolwindow:intellij.android.device-file-explorer-toolwindow.tests_tests",
         "//tools/adt/idea/device-manager:intellij.android.device-manager.tests_tests",
         "//tools/adt/idea/device-manager-v2:intellij.android.device-manager-v2_tests",
         "//tools/adt/idea/gmd-code-completion:intellij.android.gmd-code-completion_tests",
