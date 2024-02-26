@@ -657,6 +657,7 @@ com/android/tools/common
   com/android/tools/
   com/android/tools/proguard/
   com/android/utils/
+  com/android/utils/cache/
   com/android/utils/concurrency/
   com/android/utils/cxx/
   com/android/utils/cxx/collections/
