@@ -502,65 +502,40 @@ public class TestUtils {
 
     @NonNull
     public static Path getJava11Jdk() {
-        OsType osType = OsType.getHostOs();
-        String hostDir;
-        switch (osType) {
-            case LINUX:
-                hostDir = "linux";
-                break;
-            case DARWIN:
-                hostDir = "mac/Contents/Home";
-                break;
-            case WINDOWS:
-                hostDir = "win";
-                break;
-            default:
-                throw new IllegalStateException(
-                        "Java11 JDK not found for platform: " + OsType.getOsName());
-        }
+        String hostDir = getJdkHostDir();
         return resolveWorkspacePath("prebuilts/studio/jdk/jdk11/" + hostDir);
     }
 
     @NonNull
     public static Path getJava17Jdk() {
-        OsType osType = OsType.getHostOs();
-        String hostDir;
-        switch (osType) {
-            case LINUX:
-                hostDir = "linux";
-                break;
-            case DARWIN:
-                hostDir = "mac/Contents/Home";
-                break;
-            case WINDOWS:
-                hostDir = "win";
-                break;
-            default:
-                throw new IllegalStateException(
-                        "Java17 JDK not found for platform: " + OsType.getOsName());
-        }
+        String hostDir = getJdkHostDir();
         return resolveWorkspacePath("prebuilts/studio/jdk/jdk17/" + hostDir);
     }
 
     @NonNull
     public static Path getJava21Jdk() {
+        String hostDir = getJdkHostDir();
+        return resolveWorkspacePath("prebuilts/studio/jdk/jbr-next/" + hostDir);
+    }
+
+    @NonNull
+    private static String getJdkHostDir() {
         OsType osType = OsType.getHostOs();
-        String hostDir;
         switch (osType) {
             case LINUX:
-                hostDir = "linux";
-                break;
+                return "linux";
             case DARWIN:
-                hostDir = "mac/Contents/Home";
-                break;
+                if ("aarch64".equals(System.getProperty("os.arch"))) {
+                    return "mac-arm64/Contents/Home";
+                } else {
+                    return "mac/Contents/Home";
+                }
             case WINDOWS:
-                hostDir = "win";
-                break;
+                return "win";
             default:
                 throw new IllegalStateException(
-                        "Java21 JDK not found for platform: " + OsType.getOsName());
+                        "JDK not found for platform: " + OsType.getOsName());
         }
-        return resolveWorkspacePath("prebuilts/studio/jdk/jbr-next/" + hostDir);
     }
 
     @NonNull
