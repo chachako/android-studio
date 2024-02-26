@@ -51,8 +51,7 @@ import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.ArtifactView
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
-import org.gradle.api.artifacts.ProjectDependency
-import org.gradle.api.artifacts.SelfResolvingDependency
+import org.gradle.api.artifacts.FileCollectionDependency
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
@@ -355,8 +354,10 @@ class VariantDependencies internal constructor(
         val dependencies = Callable {
             runtimeClasspath
                 .allDependencies
-                .filterIsInstance<SelfResolvingDependency>()
-                .filter { it !is ProjectDependency }
+                .filterIsInstance<FileCollectionDependency>()
+                // Extract the wrapped FileCollection because FileCollectionDependency will
+                // no longer implement Buildable in 9.0
+                .map { it.files }
         }
 
         // Create a file collection builtBy the dependencies.  The files are resolved later.
@@ -376,7 +377,7 @@ class VariantDependencies internal constructor(
                             .flatMapTo(HashSet()) { it.asFile.readLines(Charsets.UTF_8).asSequence() }
 
                         dependencies.call()
-                            .flatMap { it.resolve() }
+                            .flatMap { it.files }
                             .filter {
                                 filePredicate.test(it) &&
                                         !excludedDirectoriesContent.contains(it.absolutePath)
@@ -386,7 +387,7 @@ class VariantDependencies internal constructor(
         } else {
             services.fileCollection(Callable {
                 dependencies.call()
-                    .flatMap { it.resolve() }
+                    .flatMap { it.files }
                     .filter { filePredicate.test(it) }
             }).builtBy(dependencies)
         }
