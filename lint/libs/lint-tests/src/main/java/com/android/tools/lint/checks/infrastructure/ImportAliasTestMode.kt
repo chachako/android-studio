@@ -25,9 +25,11 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiEllipsisType
 import com.intellij.psi.PsiType
+import com.intellij.psi.PsiTypeParameter
 import java.util.Locale
 import kotlin.math.min
 import org.jetbrains.kotlin.psi.KtImportDirective
+import org.jetbrains.uast.UClassLiteralExpression
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.UImportStatement
@@ -159,6 +161,15 @@ class ImportAliasTestMode :
             editMap[start] = insert(start, "\n$aliases")
           }
           super.afterVisitFile(node)
+        }
+
+        override fun visitClassLiteralExpression(node: UClassLiteralExpression): Boolean {
+          val cls = context.evaluator.getTypeClass(node.type)
+          if (cls is PsiTypeParameter) {
+            // Do not alter T::class.java
+            return true
+          }
+          return super.visitClassLiteralExpression(node)
         }
       }
     )
