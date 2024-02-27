@@ -50,6 +50,7 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
         fun parameters() = listOf(DexType.MONO, DexType.LEGACY, DexType.NATIVE)
 
         const val exceptionGlobalTriggerClass = "IllformedLocaleExceptionUsage"
+        const val recordClass = "Person"
         const val exceptionGlobalDex = "Landroid/icu/util/IllformedLocaleException;"
         const val recordGlobalDex = "Lcom/android/tools/r8/RecordTag;"
     }
@@ -138,6 +139,38 @@ class GlobalSyntheticsTest(private val dexType: DexType) {
         }
 
         checkPackagedGlobal(exceptionGlobalDex)
+        checkPackagedGlobal(recordGlobalDex)
+    }
+
+    @Test
+    fun testGlobalFromAppProgramClass() {
+        val recordClass = app.mainSrcDir.resolve("com/example/app/$recordClass.java").also {
+            it.parentFile.mkdirs()
+        }
+        TestFileUtils.appendToFile(
+            recordClass,
+            """
+                package com.example.app;
+
+                public record Person (String name, String address) {}
+            """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
+            app.buildFile,
+            """
+                android {
+                    // sdk 34 contains support for JDK17 features, including java.lang.Record
+                    compileSdk = 34
+                    compileOptions {
+                        sourceCompatibility JavaVersion.VERSION_17
+                        targetCompatibility JavaVersion.VERSION_17
+                    }
+                }
+            """.trimIndent()
+        )
+
+        executor().run("assembleDebug")
+
         checkPackagedGlobal(recordGlobalDex)
     }
 
