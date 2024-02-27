@@ -20,11 +20,57 @@ import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 internal class SdkUtilsKtTest {
 
     @get:Rule
     val exceptionRule : ExpectedException = ExpectedException.none()
+
+    @Test
+    fun `invalid namespace - not identifier`() {
+        val expected =
+            """
+                Namespace 'com.example.foo-bar' is not a valid Java package name as 'foo-bar' is not a valid Java identifier.
+            """.trimIndent()
+
+        assertEquals(validateNamespaceValue("com.example.foo-bar"), expected)
+    }
+
+    @Test
+    fun `invalid namespace - keyword`() {
+        val expected =
+            """
+                Namespace 'invalid.package.name' is not a valid Java package name as 'package' is a Java keyword.
+            """.trimIndent()
+        assertEquals(validateNamespaceValue("invalid.package.name"), expected)
+    }
+
+    @Test
+    fun `invalid namespace - multiple dots`() {
+        val expected =
+            """
+                Namespace 'com..example.foobar' is not a valid Java package name as '' is not a valid Java identifier.
+            """.trimIndent()
+        assertEquals(validateNamespaceValue("com..example.foobar"), expected)
+    }
+
+    @Test
+    fun `invalid namespace wildcard`() {
+        val expected =
+            """
+                Namespace 'com.example.*' is not a valid Java package name as '*' is not a valid Java identifier.
+            """.trimIndent()
+        assertEquals(validateNamespaceValue("com.example.*"), expected)
+    }
+
+    @Test
+    fun `valid namespace`() {
+        assertNull(validateNamespaceValue("com.example.foo_bar"))
+        assertNull(validateNamespaceValue("com.example.foobar"))
+        assertNull(validateNamespaceValue("com.example.foobar1"))
+    }
 
     @Test
     fun `api level target`() {

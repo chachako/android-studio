@@ -274,6 +274,7 @@ private class DslScriptGenerator(
                     Truth.assertThat(method.parameters).hasLength(1)
 
                     getAllValues(
+                        method.toString(),
                         method.parameterTypes.first() as Class<*>,
                         "$callChain.${mapSetterToProperty(method.name)} ="
                     )
@@ -334,9 +335,15 @@ private class DslScriptGenerator(
     }
 
     private fun getAllValues(
+        methodName: String,
         valueType: Class<*>,
         callChain: String
     ) {
+        if (methodsWithReturnValue[methodName] != null) {
+            allDslValues.add(listOf("$callChain \"${methodsWithReturnValue[methodName]}\""))
+            return
+        }
+
         allDslValues.add(
             getPossibleValues(valueType).map {
                 "$callChain $it"
@@ -383,6 +390,10 @@ private class DslScriptGenerator(
             ExtensionContainer::class.java,
             CommandLineArgumentProvider::class.java,
             DirectoryProperty::class.java
+        )
+
+        private val methodsWithReturnValue = mapOf(
+            "public abstract void com.android.build.api.dsl.CommonExtension.setNamespace(java.lang.String)" to "com.example.foo"
         )
 
         private val methodsToIgnore = setOf(
