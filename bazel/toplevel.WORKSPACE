@@ -199,3 +199,25 @@ local_repository(
    name = "absl-py",
    path = "external/python/absl-py",
 )
+
+# In Android Studio, we cannot bundle the standard Compose compiler because it might not be
+# compatible with the particular Kotlin compiler bundled inside the Kotlin IDE plugin
+# (often it is a dev/snapshot build). So instead we download the Compose sources here,
+# add a few patches on top, and compile directly against the Kotlin IDE plugin.
+# The following 'http_archive' is consumed in //tools/adt/idea/compose-ide-plugin/compose-compiler.
+# See b/265493659 for more background and discussion.
+http_archive(
+    name = "compose-compiler-sources",
+    build_file = "@//tools/adt/idea/compose-ide-plugin/compose-compiler:compose-compiler-sources.BUILD",
+    # To create a new patch file: download the linked sources zip; unpack into
+    # an empty git project; commit the baseline; make your changes; then run
+    # `git diff --no-prefix --output=/path/to/file.patch`.
+    patches = [
+        "@//tools/adt/idea/compose-ide-plugin/compose-compiler:suppress-kotlinc-version-check.patch",
+        "@//tools/adt/idea/compose-ide-plugin/compose-compiler:support-k2-registrar.patch",
+        "@//tools/adt/idea/compose-ide-plugin/compose-compiler:intellij-233.patch",
+    ],
+    sha256 = "278c85ac3e3b5908ca527c9a6a2cfe9db2184b95c755b790e7e39b71f286177a",
+    # The following URL comes from https://androidx.dev/storage/compose-compiler/repository.
+    url = "https://androidx.dev/storage/compose-compiler/repository/androidx/compose/compiler/compiler-hosted/1.5.8-dev-k1.9.22-42b6ec2b037/compiler-hosted-1.5.8-dev-k1.9.22-42b6ec2b037-sources.jar",
+)
