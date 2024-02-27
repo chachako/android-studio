@@ -252,15 +252,12 @@ class JetifierTest(private val withKotlin: Boolean) {
         assumeFalse(withKotlin)
 
         prepareProjectForAndroidX()
-        // Add android.arch dependencies
+        // Add an invalid android.arch dependency
         TestFileUtils.appendToFile(
                 project.getSubproject(":app").buildFile,
                 """
                 dependencies {
-                    // Invalid dependency
                     annotationProcessor 'android.arch.persistence.room:compiler:2.0.0'
-                    // Valid dependency
-                    annotationProcessor 'android.arch.persistence.room:common:$ANDROID_ARCH_VERSION'
                 }
                 """.trimIndent()
         )
@@ -271,13 +268,8 @@ class JetifierTest(private val withKotlin: Boolean) {
                 .expectFailure()
                 .run("assembleDebug")
 
-        // Check that an error was thrown for the invalid dependency, but not for the valid
-        // dependency
-        result.stderr.use {
-            assertThat(it).contains("Could not find android.arch.persistence.room:compiler:2.0.0")
-            // b/327054690
-            // assertThat(it).doesNotContain("Could not find android.arch.persistence.room:common:$ANDROID_ARCH_VERSION")
-        }
+        // Check that the invalid dependency was not substituted and an error was thrown for it
+        result.assertErrorContains("Could not find android.arch.persistence.room:compiler:2.0.0")
     }
 
     /**
