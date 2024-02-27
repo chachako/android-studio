@@ -100,6 +100,26 @@ class SdkLocatorTest {
     }
 
     @Test
+    fun propertiesSetToEmptyString() {
+        val sourceSet = getLocationSourceSet(
+            localSdkDir = "",
+            localAndroidDir = "",
+            envAndroidHome = "",
+            envSdkRoot = "",
+            systemAndroidHome = ""
+        )
+        val sdkLocation = SdkLocator.getSdkLocation(sourceSet, issueReporter)
+        assertThat(issueReporter.messages).hasSize(2)
+        assertThat(issueReporter.messages[0]).contains("Where: sdk.dir property in local.properties file. Problem: Set with empty value")
+        assertThat(issueReporter.messages[0]).contains("Where: Fallback android.dir property in local.properties file. Problem: Set with empty value")
+
+        assertThat(issueReporter.errors).hasSize(1)
+        assertThat(issueReporter.errors[0]).contains("SDK location not found")
+        assertThat(sdkLocation.directory).isNull()
+        assertThat(sdkLocation.type).isEquivalentAccordingToCompareTo(SdkType.MISSING)
+    }
+
+    @Test
     fun localPropertiesSdkDir_relative() {
         val sourceSet = getLocationSourceSet(localSdkDir = validSdkDirectory.relativeTo(projectRootDir).path)
         val sdkLocation = SdkLocator.getSdkLocation(sourceSet, issueReporter)
@@ -247,7 +267,9 @@ class SdkLocatorTest {
             localSdkDir = missingSdkDirectory.absolutePath,
             localAndroidDir = validSdkDirectory.absolutePath)
         val sdkLocation = SdkLocator.getSdkLocation(sourceSet, issueReporter)
-        assertThat(issueReporter.messages).isEmpty()
+        assertThat(issueReporter.messages).hasSize(1)
+        assertThat(issueReporter.messages[0])
+            .contains("Where: sdk.dir property in local.properties file. Problem: Directory does not exist")
         assertThat(sdkLocation.directory).isEqualTo(validSdkDirectory)
         assertThat(sdkLocation.type).isEquivalentAccordingToCompareTo(SdkType.PLATFORM)
     }
@@ -258,7 +280,8 @@ class SdkLocatorTest {
             envAndroidHome = missingSdkDirectory.absolutePath,
             envSdkRoot = validSdkDirectory.absolutePath)
         val sdkLocation = SdkLocator.getSdkLocation(sourceSet, issueReporter)
-        assertThat(issueReporter.messages).isEmpty()
+        assertThat(issueReporter.errors).isEmpty()
+        assertThat(issueReporter.messages).hasSize(1)
         assertThat(sdkLocation.directory).isEqualTo(validSdkDirectory)
         assertThat(sdkLocation.type).isEquivalentAccordingToCompareTo(SdkType.REGULAR)
     }
