@@ -932,6 +932,7 @@ DATA = [
     "org.jetbrains.compose.ui:ui-text-desktop:jar:sources:1.6.0-dev1369",
     "org.jetbrains.compose.ui:ui-unit-desktop:jar:sources:1.6.0-dev1369",
     "org.jetbrains.compose.ui:ui-util-desktop:jar:sources:1.6.0-dev1369",
+    "org.jetbrains.jewel:jewel-ide-laf-bridge:jar:sources:0.13.2-ij-233",
     "org.jetbrains.jewel:jewel-ide-laf-bridge-platform-specific:jar:sources:0.13.2-ij-233",
     "org.jetbrains.jewel:jewel-int-ui-standalone:jar:sources:0.13.2",
     "org.jetbrains.jewel:jewel-ui:jar:sources:0.13.2",
