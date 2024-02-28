@@ -67,6 +67,15 @@ class VersionTest {
         assertThat(vNoDots.hashCode()).isEqualTo(vDots.hashCode())
     }
 
+    // regression b/109956042: GradleDependency false positive when having weird version scheming
+    @Test
+    fun testCompareVersionsRegression() {
+        val first = Version.parse("1.0.0.RC7")
+        val second = Version.parse("1.0.0.RC7-2")
+        assertThat(first).isLessThan(second)
+        assertThat(second).isGreaterThan(first)
+    }
+
     @Test
     fun testVersionOrderingSeparatorIndifference() {
         listOf("1.a.1", "1-a+1", "1.a-1", "1a1").let { vss ->
