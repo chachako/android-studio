@@ -43,9 +43,6 @@
 #include "transform/android_user_counter_transform.h"
 #include "transform/androidx_fragment_transform.h"
 #include "transform/gms_fusedlocationproviderclient_transform.h"
-#include "transform/java_url_transform.h"
-#include "transform/okhttp3_okhttpclient_transform.h"
-#include "transform/okhttp_okhttpclient_transform.h"
 #include "transform/transform.h"
 #include "utils/device_info.h"
 #include "utils/log.h"
@@ -142,10 +139,6 @@ void JNICALL OnClassFileLoaded(jvmtiEnv* jvmti_env, JNIEnv* jni_env,
 void RegisterTransforms(
     const AgentConfig& config,
     std::unordered_map<std::string, Transform*>* transforms) {
-  transforms->insert({"Ljava/net/URL;", new JavaUrlTransform()});
-  transforms->insert({"Lokhttp3/OkHttpClient;", new Okhttp3ClientTransform()});
-  transforms->insert(
-      {"Lcom/squareup/okhttp/OkHttpClient;", new OkhttpClientTransform()});
   if (config.cpu_api_tracing_enabled()) {
     transforms->insert({"Landroid/os/Debug;", new AndroidDebugTransform()});
   }
