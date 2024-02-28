@@ -138,10 +138,6 @@ open class GradleTestProject @JvmOverloads constructor(
         @JvmField
         val DEFAULT_MIN_SDK_VERSION: String = "21"
         const val DEFAULT_NDK_SIDE_BY_SIDE_VERSION: String = NDK_DEFAULT_VERSION
-
-        // NDK r27 is used for some tests instead of default version because Riscv is only supported on r27 and newer versions.
-        const val NDK_WITH_RISCV_ABI: String = "27.0.11246959"
-
         @JvmField
         val APPLY_DEVICEPOOL_PLUGIN = System.getenv("APPLY_DEVICEPOOL_PLUGIN")?.toBoolean() ?: false
         val USE_LATEST_NIGHTLY_GRADLE_VERSION = System.getenv("USE_GRADLE_NIGHTLY")?.toBoolean() ?: false

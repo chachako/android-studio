@@ -19,8 +19,6 @@ package com.android.build.gradle.integration.ndk
 import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_COMPILE_SDK_VERSION
-import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.DEFAULT_NDK_SIDE_BY_SIDE_VERSION
-import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.NDK_WITH_RISCV_ABI
 import com.android.build.gradle.integration.common.fixture.ModelBuilderV2
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
@@ -45,7 +43,6 @@ import com.android.build.gradle.internal.cxx.logging.text
 import com.android.build.gradle.internal.cxx.model.name
 import com.android.build.gradle.internal.cxx.prefab.ModuleMetadataV1
 import com.android.builder.model.v2.ide.SyncIssue
-import com.android.testutils.AssumeUtil
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assume
 import org.junit.Before
@@ -68,8 +65,7 @@ class ModuleToModuleDepsTest(
     appStlTag: String,
     libStlTag: String,
     private val outputStructureType: OutputStructureType,
-    private val headerType: HeaderType,
-    private val abi: String
+    private val headerType: HeaderType
 ) {
     private val appUsesPrefab = appUsesPrefabTag == ""
     private val libUsesPrefabPublish = libUsesPrefabPublishTag == ""
@@ -77,8 +73,7 @@ class ModuleToModuleDepsTest(
     private val libStl = libStlTag.substringAfter(":")
     private val effectiveAppStl = effectiveStl(appStl, appBuildSystem)
     private val effectiveLibStl = effectiveStl(libStl, libBuildSystem)
-    private val config = "$appBuildSystem:$appStl $libBuildSystem:$libStl:$libExtension $abi"
-    private val isAbiRiscv64 = abi.contains(SdkConstants.ABI_RISCV64)
+    private val config = "$appBuildSystem:$appStl $libBuildSystem:$libStl:$libExtension"
 
     sealed class BuildSystemConfig {
         abstract val build : String
@@ -140,12 +135,12 @@ class ModuleToModuleDepsTest(
     val project =
         GradleTestProject.builder()
             .fromTestApp(multiModule)
-            .setSideBySideNdkVersion(if (isAbiRiscv64) NDK_WITH_RISCV_ABI else DEFAULT_NDK_SIDE_BY_SIDE_VERSION)
+            .setSideBySideNdkVersion(GradleTestProject.DEFAULT_NDK_SIDE_BY_SIDE_VERSION)
             .create()
 
     companion object {
         @Parameterized.Parameters(
-            name = "app.so={0}{2}{5} lib{4}={1}{3}{6}{7}{8} {9}")
+            name = "app.so={0}{2}{5} lib{4}={1}{3}{6}{7}{8}")
         @JvmStatic
         fun data() : Array<Array<Any?>> {
             val tests = cartesianOf(
@@ -157,8 +152,7 @@ class ModuleToModuleDepsTest(
                     arrayOf("", ":c++_static", ":c++_shared"),
                     arrayOf("", ":c++_static", ":c++_shared"),
                     arrayOf(OutputStructureType.Normal, OutputStructureType.OutOfTreeBuild),
-                    arrayOf(HeaderType.Normal, HeaderType.DirectoryButNoFile, HeaderType.None),
-                    arrayOf("arm64-v8a", "riscv64"),
+                    arrayOf(HeaderType.Normal, HeaderType.DirectoryButNoFile, HeaderType.None)
                 )
                 .minimizeUsingTupleCoverage(4)
 
@@ -231,12 +225,11 @@ class ModuleToModuleDepsTest(
 
             android {
                 compileSdkVersion $DEFAULT_COMPILE_SDK_VERSION
-                ndkVersion "${if (isAbiRiscv64) NDK_WITH_RISCV_ABI else DEFAULT_NDK_SIDE_BY_SIDE_VERSION}"
                 ndkPath "${project.ndkPath}"
                 defaultConfig {
                     minSdk ${GradleTestProject.DEFAULT_MIN_SDK_VERSION}
                     ndk {
-                        abiFilters "$abi"
+                        abiFilters "arm64-v8a"
                     }
                 }
 
@@ -280,18 +273,8 @@ class ModuleToModuleDepsTest(
         project.getSubproject(":lib").buildFile.appendText(
             """
             android {
-                ndkVersion "${if (isAbiRiscv64) NDK_WITH_RISCV_ABI else DEFAULT_NDK_SIDE_BY_SIDE_VERSION}"
-                ndkPath "${project.ndkPath}"
-
                 defaultConfig {
                     minSdk ${GradleTestProject.DEFAULT_MIN_SDK_VERSION}
-                    ${if (isAbiRiscv64)
-                    """
-                    ndk {
-                        abiFilters "x86", "arm64-v8a", "armeabi-v7a", "riscv64", "x86_64"
-                    }
-                    """.trimIndent() else ""
-                    }
                 }
                 buildFeatures {
                     prefabPublishing $libUsesPrefabPublish
@@ -482,18 +465,8 @@ class ModuleToModuleDepsTest(
     private fun expectNdkBuildProducesNoLibrary() =
         libBuildSystem == NdkBuild && effectiveLibStl == "c++_shared" && libExtension == ".a"
 
-    /**
-     * Abi riscv64 is only supported in NDK version r27 or newer. All tests that use riscv64 abi
-     * should only run on Linux until we update the default NDK to r27 or newer. Currently, we use
-     * NDK dev build which is only available in prebuilts for linux platform.
-     */
-    private fun assumeLinuxForRiscv() = if (isAbiRiscv64) {
-        AssumeUtil.assumeIsLinux()
-    } else {}
-
     @Test
     fun `app configure`() {
-        assumeLinuxForRiscv()
         println(config) // Print identifier for this configuration
         val executor = project.executor()
 
@@ -502,7 +475,7 @@ class ModuleToModuleDepsTest(
             executor.expectFailure()
         }
 
-        executor.run(":app:configure${appBuildSystem.build}Debug[$abi]")
+        executor.run(":app:configure${appBuildSystem.build}Debug[arm64-v8a]")
 
         // Check for expected Gradle error message (if any)
         if (expectGradleConfigureError()) {
@@ -537,12 +510,11 @@ class ModuleToModuleDepsTest(
 
     @Test
     fun `app second configure should be nop`() {
-        assumeLinuxForRiscv()
         Assume.assumeFalse(expectGradleConfigureError())
         val executor = project.executor()
-        executor.run(":app:configure${appBuildSystem.build}Debug[$abi]")
+        executor.run(":app:configure${appBuildSystem.build}Debug[arm64-v8a]")
         deleteExistingStructuredLogs(project)
-        executor.run(":app:configure${appBuildSystem.build}Debug[$abi]")
+        executor.run(":app:configure${appBuildSystem.build}Debug[arm64-v8a]")
         val secondConfigure = project.readStructuredLogs(::decodeConfigureInvalidationState)
             .filter { it.inputFilesList.any { it.contains("prefab_publication.json" ) } }
         assertThat(secondConfigure).hasSize(1)
@@ -551,7 +523,6 @@ class ModuleToModuleDepsTest(
 
     @Test
     fun `app build`() {
-        assumeLinuxForRiscv()
         println(config) // Print identifier for this configuration
 
         // There is no point in testing build in the cases where configuration is expected to fail.
@@ -560,7 +531,7 @@ class ModuleToModuleDepsTest(
 
         val executor = project.executor()
 
-        executor.run(":app:build${appBuildSystem.build}Debug[$abi]")
+        executor.run(":app:build${appBuildSystem.build}Debug[arm64-v8a]")
     }
 
     // Calculating task graph as configuration cache cannot be reused because the file system entry
@@ -568,7 +539,6 @@ class ModuleToModuleDepsTest(
     // created.
     @Test
     fun `check configuration caching`() {
-        assumeLinuxForRiscv()
         Assume.assumeFalse(expectGradleConfigureError())
         Assume.assumeFalse(expectGradleBuildError())
         project.execute("assembleRelease")
@@ -578,12 +548,11 @@ class ModuleToModuleDepsTest(
 
     @Test
     fun `check single STL violation CXX1211`() {
-        assumeLinuxForRiscv()
         Assume.assumeTrue(prefabConfiguredCorrectly)
         Assume.assumeTrue(expectErrorCXX1211()) // Only run the CXX1211 cases
         val executor = project.executor()
         executor.expectFailure()
-        executor.run(":app:configure${appBuildSystem.build}Debug[$abi]")
+        executor.run(":app:configure${appBuildSystem.build}Debug[arm64-v8a]")
         val errors = project.readStructuredLogs(::decodeLoggingMessage)
             .filter { it.level == LoggingMessage.LoggingLevel.ERROR}
         val error = errors.map { it.diagnosticCode }.single()
@@ -594,12 +563,11 @@ class ModuleToModuleDepsTest(
 
     @Test
     fun `check single STL violation CXX1212`() {
-        assumeLinuxForRiscv()
         Assume.assumeTrue(prefabConfiguredCorrectly)
         Assume.assumeTrue(expectErrorCXX1212()) // Only run the CXX1212 cases
         val executor = project.executor()
         executor.expectFailure()
-        executor.run(":app:configure${appBuildSystem.build}Debug[$abi]")
+        executor.run(":app:configure${appBuildSystem.build}Debug[arm64-v8a]")
         val errors = project.readStructuredLogs(::decodeLoggingMessage)
             .filter { it.level == LoggingMessage.LoggingLevel.ERROR }
         val error = errors.map { it.diagnosticCode }.single()
@@ -610,7 +578,6 @@ class ModuleToModuleDepsTest(
 
     @Test
     fun `test sync`() {
-        assumeLinuxForRiscv()
         Assume.assumeFalse(expectGradleConfigureError())
         // Simulate an IDE sync
         project.modelV2()
@@ -620,13 +587,12 @@ class ModuleToModuleDepsTest(
 
     @Test
     fun `changing a cpp file causes a rebuild`() {
-        assumeLinuxForRiscv()
         Assume.assumeFalse(expectGradleConfigureError())
         Assume.assumeFalse(expectGradleBuildError())
 
         val executor = project.executor()
 
-        val buildTask = ":app:build${appBuildSystem.build}Debug[$abi]"
+        val buildTask = ":app:build${appBuildSystem.build}Debug[arm64-v8a]"
 
         executor.run(buildTask)
         executor.run(buildTask)
