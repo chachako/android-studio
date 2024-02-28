@@ -183,6 +183,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           GradleDetector.KTX_EXTENSION_AVAILABLE,
           GradleDetector.LIFECYCLE_ANNOTATION_PROCESSOR_WITH_JAVA8,
           GradleDetector.MIN_SDK_TOO_LOW,
+          GradleDetector.MULTIPLE_VERSIONS_DEPENDENCY,
           GradleDetector.NOT_INTERPOLATED,
           GradleDetector.PATH,
           GradleDetector.PLAY_SDK_INDEX_NON_COMPLIANT,

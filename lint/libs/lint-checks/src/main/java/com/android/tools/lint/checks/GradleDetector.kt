@@ -1340,6 +1340,28 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     }
   }
 
+  private fun checkDuplication(
+    context: Context,
+    dependencies: Map<LintTomlValue, Dependency>,
+    extractor: (Dependency) -> String, // we can compare libraries by group:name and plugins by group
+  ) {
+    dependencies.entries
+      .toList()
+      .groupBy { entry -> extractor(entry.value) }
+      .filter { entry -> entry.value.size > 1 }
+      .forEach { entry ->
+        entry.value.forEach { tuple ->
+          val tomlValue = tuple.key
+          report(
+            context,
+            tomlValue,
+            MULTIPLE_VERSIONS_DEPENDENCY,
+            "There are multiple dependencies ${entry.key} but with different version",
+          )
+        }
+      }
+  }
+
   private fun getGooglePlaySdkIndexFilter(
     context: Context,
     groupId: String,
@@ -1825,31 +1847,39 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
     val libraries = document.getValue(VC_LIBRARIES) as? LintTomlMapValue
     if (libraries != null) {
       val versions = document.getValue(VC_VERSIONS) as? LintTomlMapValue
+      val dependencyToElement = mutableMapOf<LintTomlValue, Dependency>()
       for ((_, library) in libraries.getMappedValues()) {
         val (coordinate, versionNode) = getLibraryFromTomlEntry(versions, library) ?: continue
-        val dependency = Dependency.parse(coordinate) ?: return
+        val dependency = Dependency.parse(coordinate)
+        dependencyToElement[library] = dependency
         // Check dependencies without the PSI read lock, because we
         // may need to make network requests to retrieve version info.
         context.driver.runLaterOutsideReadAction {
           checkDependency(context, dependency, false, versionNode, library)
         }
       }
+      checkDuplication(context, dependencyToElement) { dep: Dependency ->
+        dep.group + ":" + dep.name
+      }
     }
 
     val plugins = document.getValue(VC_PLUGINS) as? LintTomlMapValue
     if (plugins != null) {
       val versions = document.getValue(VC_VERSIONS) as? LintTomlMapValue
+      val dependencyToElement = mutableMapOf<LintTomlValue, Dependency>()
       for ((_, plugin) in plugins.getMappedValues()) {
         val (coordinate, versionNode) = getPluginFromTomlEntry(versions, plugin) ?: continue
         val group = coordinate.substringBefore(':')
         val gradleCoordinate = "$group:$group.gradle.plugin:${coordinate.substringAfterLast(':')}"
         val dependency = Dependency.parse(gradleCoordinate)
+        dependencyToElement[plugin] = dependency
         // Check dependencies without the PSI read lock, because we
         // may need to make network requests to retrieve version info.
         context.driver.runLaterOutsideReadAction {
           checkDependency(context, dependency, false, versionNode, plugin)
         }
       }
+      checkDuplication(context, dependencyToElement) { dep: Dependency -> dep.group ?: "" }
     }
   }
 
@@ -2524,6 +2554,25 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         category = Category.CORRECTNESS,
         priority = 4,
         severity = Severity.WARNING,
+        implementation = IMPLEMENTATION_WITH_TOML,
+      )
+
+    /** Project imports a dependency with different versions. */
+    @JvmField
+    val MULTIPLE_VERSIONS_DEPENDENCY =
+      Issue.create(
+        id = "SimilarGradleDependency",
+        briefDescription = "Multiple Versions Gradle Dependency",
+        explanation =
+          """
+                This detector looks for usages of libraries when name and group are the same \
+                but versions are different. Using multiple versions in big project is fine, \
+                and there are cases where you deliberately want to stick with such approach. \
+                However, you may simply not be aware that this situation happens, and that is \
+                what this lint check helps find.""",
+        category = Category.CORRECTNESS,
+        priority = 4,
+        severity = Severity.INFORMATIONAL,
         implementation = IMPLEMENTATION_WITH_TOML,
       )
 
