@@ -20,11 +20,25 @@ object Log {
 
   @JvmOverloads @JvmStatic fun v(tag: String, msg: String, tr: Throwable? = null) = 0
 
-  @JvmOverloads @JvmStatic fun d(tag: String, msg: String, tr: Throwable? = null) = 0
+  @JvmOverloads
+  @JvmStatic
+  fun d(tag: String, msg: String, tr: Throwable? = null) = log(tag, msg, tr)
 
-  @JvmOverloads @JvmStatic fun i(tag: String, msg: String, tr: Throwable? = null) = 0
+  @JvmOverloads
+  @JvmStatic
+  fun i(tag: String, msg: String, tr: Throwable? = null) = log(tag, msg, tr)
 
-  @JvmOverloads @JvmStatic fun w(tag: String, msg: String, tr: Throwable? = null) = 0
+  @JvmOverloads
+  @JvmStatic
+  fun w(tag: String, msg: String, tr: Throwable? = null) = log(tag, msg, tr)
 
-  @JvmOverloads @JvmStatic fun e(tag: String, msg: String, tr: Throwable? = null) = 0
+  @JvmOverloads
+  @JvmStatic
+  fun e(tag: String, msg: String, tr: Throwable? = null) = log(tag, msg, tr)
+
+  private fun log(tag: String, msg: String, tr: Throwable? = null): Int {
+    println("Logcat: $tag: $msg")
+    tr?.printStackTrace(System.out)
+    return 0
+  }
 }

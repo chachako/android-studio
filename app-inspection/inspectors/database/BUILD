@@ -56,6 +56,10 @@ kotlin_test(
     jvm_flags = [
         "-Dtest.suite.jar=agent_tests.jar",
     ],
+    tags = [
+        "no_mac",
+        "no_windows",
+    ],
     test_class = "com.android.testutils.JarTestSuite",
     runtime_deps = [
         "//prebuilts/studio/sdk:platforms/latest_runtime_jar",

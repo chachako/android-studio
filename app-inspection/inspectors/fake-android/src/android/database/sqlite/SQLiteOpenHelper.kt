@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
-package android.app
+package android.database.sqlite
 
-import android.content.pm.ApplicationInfo
-import java.io.File
+import android.content.Context
 
-class Application {
-  @Suppress("RedundantNullableReturnType")
-  val applicationInfo: ApplicationInfo?
-    get() = ApplicationInfo()
+abstract class SQLiteOpenHelper
+@Suppress("UNUSED_PARAMETER")
+constructor(
+  context: Context?,
+  private val name: String,
+  factory: SQLiteDatabase.CursorFactory?,
+  version: Int,
+) {
 
-  fun databaseList() = arrayOf("app.db")
+  abstract fun onCreate(db: SQLiteDatabase)
 
-  fun getDatabasePath(name: String): File = File(name)
+  abstract fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int)
+
+  @Suppress("UNUSED_PARAMETER") fun setWriteAheadLoggingEnabled(enabled: Boolean) {}
+
+  val readableDatabase
+    get() = SQLiteDatabase(name)
 }

@@ -14,25 +14,7 @@
  * limitations under the License.
  */
 
-package android.os
+package android.database.sqlite
 
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit.MILLISECONDS
-
-open class Handler() {
-  private val executor = Executors.newSingleThreadScheduledExecutor()
-
-  constructor(looper: Looper) : this()
-
-  constructor(runnable: Runnable) : this()
-
-  fun postDelayed(runnable: Runnable, delayMillis: Long): Boolean {
-    executor.schedule(runnable, delayMillis, MILLISECONDS)
-    return true
-  }
-
-  fun post(runnable: Runnable): Boolean {
-    executor.execute(runnable)
-    return true
-  }
-}
+class SQLiteException(message: String? = null, cause: Throwable? = null) :
+  RuntimeException(message, cause)

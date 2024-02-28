@@ -20,5 +20,6 @@
     <orderEntry type="library" name="kotlin-stdlib-jdk8" level="project" />
     <orderEntry type="library" scope="TEST" name="inspection-testing" level="project" />
     <orderEntry type="library" name="Guava" level="project" />
+    <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
   </component>
 </module>

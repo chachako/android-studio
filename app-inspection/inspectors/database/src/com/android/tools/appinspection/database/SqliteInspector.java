@@ -237,7 +237,7 @@ final class SqliteInspector extends Inspector {
                                             ERROR_UNRECOGNISED_COMMAND)
                                     .toByteArray());
             }
-        } catch (Exception exception) {
+        } catch (Throwable exception) {
             callback.reply(
                     createErrorOccurredResponse(
                                     "Unhandled Exception while processing the command: "
@@ -317,7 +317,7 @@ final class SqliteInspector extends Inspector {
                             lockId =
                                     mDatabaseLockRegistry.acquireLock(
                                             databaseId, connection.mDatabase);
-                        } catch (Exception e) {
+                        } catch (Throwable e) {
                             processLockingException(callback, e, true);
                             return;
                         }
@@ -344,7 +344,7 @@ final class SqliteInspector extends Inspector {
                     public void run() {
                         try {
                             mDatabaseLockRegistry.releaseLock(command.getLockId());
-                        } catch (Exception e) {
+                        } catch (Throwable e) {
                             processLockingException(callback, e, false);
                             return;
                         }
@@ -360,7 +360,7 @@ final class SqliteInspector extends Inspector {
 
     /** @param isLockingStage provide true for acquiring a lock; false for releasing a lock */
     private void processLockingException(
-            CommandCallback callback, Exception exception, boolean isLockingStage) {
+            CommandCallback callback, Throwable exception, boolean isLockingStage) {
         ErrorCode errorCode =
                 ((exception instanceof IllegalStateException)
                                 && isAttemptAtUsingClosedDatabase(
@@ -418,7 +418,7 @@ final class SqliteInspector extends Inspector {
                     public SQLiteDatabase onExit(SQLiteDatabase database) {
                         try {
                             onDatabaseOpened(database);
-                        } catch (Exception exception) {
+                        } catch (Throwable exception) {
                             getConnection()
                                     .sendEvent(
                                             createErrorOccurredEvent(
@@ -739,7 +739,7 @@ final class SqliteInspector extends Inspector {
                                                 createErrorOccurredResponse(e, null, ERROR_UNKNOWN)
                                                         .toByteArray());
                                     }
-                                } catch (Exception e) {
+                                } catch (Throwable e) {
                                     callback.reply(
                                             createErrorOccurredResponse(e, null, ERROR_UNKNOWN)
                                                     .toByteArray());
@@ -978,7 +978,7 @@ final class SqliteInspector extends Inspector {
             } else {
                 return createErrorOccurredResponse(e, null, ERROR_UNKNOWN);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return createErrorOccurredResponse(e, null, ERROR_UNKNOWN);
         } finally {
             if (cursor != null) {
@@ -1035,14 +1035,14 @@ final class SqliteInspector extends Inspector {
     }
 
     private static Response createErrorOccurredResponse(
-            @NonNull Exception exception, Boolean isRecoverable, ErrorCode errorCode) {
+            @NonNull Throwable exception, Boolean isRecoverable, ErrorCode errorCode) {
         return createErrorOccurredResponse("", isRecoverable, exception, errorCode);
     }
 
     private static Response createErrorOccurredResponse(
             @NonNull String messagePrefix,
             Boolean isRecoverable,
-            @NonNull Exception exception,
+            @NonNull Throwable exception,
             ErrorCode errorCode) {
         String message = exception.getMessage();
         if (message == null) message = exception.toString();
@@ -1068,7 +1068,7 @@ final class SqliteInspector extends Inspector {
     }
 
     @NonNull
-    private static String stackTraceFromException(Exception exception) {
+    private static String stackTraceFromException(Throwable exception) {
         StringWriter writer = new StringWriter();
         exception.printStackTrace(new PrintWriter(writer));
         return writer.toString();

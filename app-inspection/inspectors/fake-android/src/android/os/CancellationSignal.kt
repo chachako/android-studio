@@ -16,23 +16,7 @@
 
 package android.os
 
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit.MILLISECONDS
+class CancellationSignal {
 
-open class Handler() {
-  private val executor = Executors.newSingleThreadScheduledExecutor()
-
-  constructor(looper: Looper) : this()
-
-  constructor(runnable: Runnable) : this()
-
-  fun postDelayed(runnable: Runnable, delayMillis: Long): Boolean {
-    executor.schedule(runnable, delayMillis, MILLISECONDS)
-    return true
-  }
-
-  fun post(runnable: Runnable): Boolean {
-    executor.execute(runnable)
-    return true
-  }
+  fun cancel() {}
 }

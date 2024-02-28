@@ -29,6 +29,7 @@ import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.
 import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Response
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Executor
+import kotlin.test.fail
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
@@ -107,8 +108,13 @@ suspend fun SqliteInspectorTestEnvironment.issueQuery(
   databaseId: Int,
   command: String,
   queryParams: List<String?>? = null,
-): DatabaseInspectorProtocol.QueryResponse =
-  sendCommand(MessageFactory.createQueryCommand(databaseId, command, queryParams)).query
+): DatabaseInspectorProtocol.QueryResponse {
+  val response = sendCommand(MessageFactory.createQueryCommand(databaseId, command, queryParams))
+  if (response.hasErrorOccurred()) {
+    fail("Unexpected error: $${response.errorOccurred.content.stackTrace}")
+  }
+  return response.query
+}
 
 suspend fun SqliteInspectorTestEnvironment.inspectDatabase(databaseInstance: SQLiteDatabase): Int {
   registerAlreadyOpenDatabases(listOf(databaseInstance))

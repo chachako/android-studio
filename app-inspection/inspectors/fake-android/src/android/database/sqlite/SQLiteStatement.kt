@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,17 @@
  * limitations under the License.
  */
 
-package android.os
+package android.database.sqlite
 
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit.MILLISECONDS
+import java.sql.PreparedStatement
 
-open class Handler() {
-  private val executor = Executors.newSingleThreadScheduledExecutor()
+class SQLiteStatement(private val preparedStatement: PreparedStatement) {
 
-  constructor(looper: Looper) : this()
-
-  constructor(runnable: Runnable) : this()
-
-  fun postDelayed(runnable: Runnable, delayMillis: Long): Boolean {
-    executor.schedule(runnable, delayMillis, MILLISECONDS)
-    return true
+  fun bindBlob(index: Int, value: ByteArray) {
+    preparedStatement.setBytes(index, value)
   }
 
-  fun post(runnable: Runnable): Boolean {
-    executor.execute(runnable)
-    return true
+  fun executeInsert(): Long {
+    return preparedStatement.executeUpdate().toLong()
   }
 }

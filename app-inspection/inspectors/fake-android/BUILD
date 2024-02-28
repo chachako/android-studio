@@ -7,5 +7,6 @@ kotlin_library(
     srcs = glob(["src/**/*.kt"]),
     deps = [
         "//prebuilts/studio/sdk:platforms/latest_jar",
+        "@maven//:org.xerial.sqlite-jdbc",
     ],
 )
