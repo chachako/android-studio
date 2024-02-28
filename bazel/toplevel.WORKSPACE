@@ -206,11 +206,10 @@ http_archive(
     patches = [
         "@//tools/adt/idea/compose-ide-plugin/compose-compiler:suppress-kotlinc-version-check.patch",
         "@//tools/adt/idea/compose-ide-plugin/compose-compiler:support-k2-registrar.patch",
-        "@//tools/adt/idea/compose-ide-plugin/compose-compiler:intellij-233.patch",
     ],
-    sha256 = "278c85ac3e3b5908ca527c9a6a2cfe9db2184b95c755b790e7e39b71f286177a",
+    sha256 = "5b04a71825eff8fbcf6a02807167681837d7af8ca4f1ec6408ba1509ffa5c518",
     # The following URL comes from https://androidx.dev/storage/compose-compiler/repository.
-    url = "https://androidx.dev/storage/compose-compiler/repository/androidx/compose/compiler/compiler-hosted/1.5.8-dev-k1.9.22-42b6ec2b037/compiler-hosted-1.5.8-dev-k1.9.22-42b6ec2b037-sources.jar",
+    url = "https://androidx.dev/storage/compose-compiler/repository/androidx/compose/compiler/compiler-hosted/1.5.11-dev-k2.0.0-Beta4-21f5e479a96/compiler-hosted-1.5.11-dev-k2.0.0-Beta4-21f5e479a96-sources.jar",
 )
 
 http_archive(
