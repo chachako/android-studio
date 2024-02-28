@@ -20,7 +20,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 open class Handler() {
-  private val executor = Executors.newSingleThreadScheduledExecutor()
+  private val executor = Executors.newScheduledThreadPool(5)
 
   constructor(looper: Looper) : this()
 

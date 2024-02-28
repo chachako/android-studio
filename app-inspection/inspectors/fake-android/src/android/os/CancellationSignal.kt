@@ -18,5 +18,13 @@ package android.os
 
 class CancellationSignal {
 
-  fun cancel() {}
+  private var onCanceledListener: (() -> Unit)? = null
+
+  fun cancel() {
+    onCanceledListener?.invoke()
+  }
+
+  fun setListener(listener: () -> Unit) {
+    onCanceledListener = listener
+  }
 }

@@ -30,7 +30,8 @@ import java.sql.PreparedStatement
  * For example, `select-table <table>` generates a cursor that represents table named `table`.
  */
 class SQLiteDatabase(val path: String) {
-  private val connection = DriverManager.getConnection("jdbc:sqlite::memory:")
+  private val connection =
+    DriverManager.getConnection("jdbc:sqlite::memory:").apply { autoCommit = false }
 
   @Suppress("UNUSED_PARAMETER")
   @JvmOverloads
@@ -45,7 +46,7 @@ class SQLiteDatabase(val path: String) {
     selectionArgs: Array<String>?,
     cancellationSignal: CancellationSignal? = null,
   ): Cursor {
-    return SQLiteCursor(null, null, SQLiteQuery(prepareStatement(sql)))
+    return SQLiteCursor(null, null, SQLiteQuery(prepareStatement(sql, cancellationSignal)))
   }
 
   fun compileStatement(sql: String): SQLiteStatement {
@@ -60,7 +61,8 @@ class SQLiteDatabase(val path: String) {
     editTable: String?,
     cancellationSignal: CancellationSignal?,
   ): Cursor {
-    return cursorFactory.newCursor(this, null, editTable, SQLiteQuery(prepareStatement(sql)))
+    val preparedStatement = prepareStatement(sql, cancellationSignal)
+    return cursorFactory.newCursor(this, null, editTable, SQLiteQuery(preparedStatement))
   }
 
   fun isOpen() = true
@@ -83,13 +85,17 @@ class SQLiteDatabase(val path: String) {
     ): Cursor
   }
 
-  private fun prepareStatement(sql: String): PreparedStatement {
-    val prepareStatement =
+  private fun prepareStatement(
+    sql: String,
+    cancellationSignal: CancellationSignal? = null,
+  ): PreparedStatement {
+    val statement =
       try {
         connection.prepareStatement(sql)
       } catch (e: Throwable) {
         throw SQLiteException(e.message, e.cause)
       }
-    return prepareStatement
+    cancellationSignal?.setListener { statement.cancel() }
+    return statement
   }
 }
