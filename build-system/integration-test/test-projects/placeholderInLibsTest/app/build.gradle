@@ -8,7 +8,10 @@ android {
 
     defaultConfig {
         applicationId "com.example.manifest_merger_example"
-        manifestPlaceholders = [ localApplicationId:"com.example.manifest_merger_example"]
+        manifestPlaceholders = [
+                "localApplicationId": "com.example.manifest_merger_example",
+                "myPath": "/default"
+        ]
         minSdkVersion 15
         //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion
         targetSdkVersion 21
@@ -20,7 +23,10 @@ android {
     productFlavors {
         flavor {
             applicationId "com.example.manifest_merger_example.flavor"
-            manifestPlaceholders = [ localApplicationId:"com.example.manifest_merger_example.flavor"]
+            manifestPlaceholders = [
+                    "localApplicationId": "com.example.manifest_merger_example.flavor",
+                    "myPath": "/flavor"
+            ]
             minSdkVersion 15
             //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion
             targetSdkVersion 21

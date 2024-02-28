@@ -43,6 +43,38 @@ public class PlaceHolderEncoderTest {
                 "prefixdollar_openBracket_applicationId_closeBracketsuffix");
     }
 
+    @Test
+    public void testPathPlaceHolderEncoding()
+            throws ParserConfigurationException, SAXException, IOException {
+        String xml =
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                        + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n"
+                        + "\n"
+                        + "    <application>\n"
+                        + "        <activity android:name=\".HelloWorld\"\n"
+                        + "                  android:label=\"@string/app_name\">\n"
+                        + "            <intent-filter>\n"
+                        + "                <action android:name=\"android.intent.action.VIEW\"/>\n"
+                        + "                <category android:name=\"android.intent.category.DEFAULT\"/>\n"
+                        + "                <category android:name=\"android.intent.category.BROWSABLE\"/>\n"
+                        + "                <data android:scheme=\"https\"\n"
+                        + "                      android:host=\"example.com\"\n"
+                        + "                      android:path=\"${myPath}\"/>\n"
+                        + "            </intent-filter>\n"
+                        + "        </activity>\n"
+                        + "    </application>\n"
+                        + "\n"
+                        + "</manifest>";
+        Document document = PositionXmlParser.parse(xml);
+
+        visit(document.getDocumentElement());
+        NodeList dataNodes = document.getElementsByTagName("data");
+        assertThat(dataNodes.getLength()).isEqualTo(1);
+        Node data = dataNodes.item(0);
+        Node path = data.getAttributes().getNamedItem("android:path");
+        assertThat(path.getNodeValue()).isEqualTo("/dollar_openBracket_myPath_closeBracket");
+    }
+
     private void test(String originalValue, String expectedValue)
             throws ParserConfigurationException, SAXException, IOException {
         String xml =

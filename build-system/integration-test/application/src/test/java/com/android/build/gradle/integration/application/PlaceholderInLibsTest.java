@@ -19,43 +19,33 @@ package com.android.build.gradle.integration.application;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.truth.ApkSubject;
 import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
 import com.android.build.gradle.integration.common.utils.ProjectBuildOutputUtilsV2;
+import com.android.builder.model.v2.ide.Variant;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import com.android.builder.model.v2.ide.Variant;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /** Test for unresolved placeholders in libraries. */
 public class PlaceholderInLibsTest {
 
-    @ClassRule
-    public static GradleTestProject project = GradleTestProject.builder().fromTestProject("placeholderInLibsTest").create();
+    @Rule
+    public GradleTestProject project =
+            GradleTestProject.builder().fromTestProject("placeholderInLibsTest").create();
 
-    @BeforeClass
-    public static void setup() throws IOException, InterruptedException {
+    @Test
+    public void testLibraryPlaceholderSubstitutionInFinalApk() {
         project.execute(
                 "clean",
                 ":examplelibrary:generateDebugAndroidTestSources",
                 "app:assembleDebug"
         );
-    }
-
-    @AfterClass
-    public static void cleanUp() {
-        project = null;
-    }
-
-    @Test
-    public void testLibraryPlaceholderSubstitutionInFinalApk() {
         com.android.builder.model.v2.models.AndroidProject androidProject = project.modelV2()
                 .fetchModels()
                 .getContainer()
@@ -85,5 +75,11 @@ public class PlaceholderInLibsTest {
             }
         }
         Assert.fail("failed to find the permission with the right placeholder substitution.");
+    }
+
+    // Regression test for b/316057932
+    @Test
+    public void testVerifyResourcesWithLibraryManifestPlaceholders() {
+        project.execute("examplelibrary:verifyReleaseResources");
     }
 }
