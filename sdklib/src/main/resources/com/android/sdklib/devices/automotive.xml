@@ -248,14 +248,14 @@
             <d:screen>
                 <d:screen-size>normal</d:screen-size>
                 <d:diagonal-length>8.4</d:diagonal-length>
-                <d:pixel-density>ldpi</d:pixel-density>
+                <d:pixel-density>hdpi</d:pixel-density>
                 <d:screen-ratio>notlong</d:screen-ratio>
                 <d:dimensions>
                     <d:x-dimension>3904</d:x-dimension>
                     <d:y-dimension>1320</d:y-dimension>
                 </d:dimensions>
-                <d:xdpi>120</d:xdpi>
-                <d:ydpi>120</d:ydpi>
+                <d:xdpi>200</d:xdpi>
+                <d:ydpi>200</d:ydpi>
                 <d:touch>
                     <d:multitouch>basic</d:multitouch>
                     <d:mechanism>finger</d:mechanism>
@@ -302,14 +302,14 @@
             <d:screen>
                 <d:screen-size>normal</d:screen-size>
                 <d:diagonal-length>8.4</d:diagonal-length>
-                <d:pixel-density>ldpi</d:pixel-density>
+                <d:pixel-density>mdpi</d:pixel-density>
                 <d:screen-ratio>notlong</d:screen-ratio>
                 <d:dimensions>
                     <d:x-dimension>1280</d:x-dimension>
                     <d:y-dimension>1606</d:y-dimension>
                 </d:dimensions>
-                <d:xdpi>120</d:xdpi>
-                <d:ydpi>120</d:ydpi>
+                <d:xdpi>160</d:xdpi>
+                <d:ydpi>160</d:ydpi>
                 <d:touch>
                     <d:multitouch>basic</d:multitouch>
                     <d:mechanism>finger</d:mechanism>

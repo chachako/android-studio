@@ -216,8 +216,8 @@ public final class HardwareConfigHelperTest {
                         "Automotive (1080p landscape) (1080 × 600, ldpi)",
                         "Automotive Portrait (800 × 1280, ldpi)",
                         "Automotive Distant Display (1080 × 600, ldpi)",
-                        "Automotive Ultrawide (3904 × 1320, ldpi)",
-                        "Automotive Large Portrait (1280 × 1606, ldpi)");
+                        "Automotive Ultrawide (3904 × 1320, hdpi)",
+                        "Automotive Large Portrait (1280 × 1606, mdpi)");
 
         DeviceManager deviceManager = getDeviceManager();
         for (int i = 0; i < device.size(); i++) {
