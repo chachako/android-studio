@@ -32,19 +32,6 @@ perf_test(
 )
 
 perf_test(
-    name = "EnergyTest",
-    size = "large",
-    srcs = [
-        "testSrcs/com/android/tools/profiler/energy/AlarmTest.java",
-        "testSrcs/com/android/tools/profiler/energy/JobTest.java",
-        "testSrcs/com/android/tools/profiler/energy/LocationTest.java",
-        "testSrcs/com/android/tools/profiler/energy/WakeLockTest.java",
-    ],
-    test_app = "//tools/base/profiler/tests/test-app:test-app",
-    deps = ["@maven//:com.google.truth.truth"],
-)
-
-perf_test(
     name = "PerformanceTest",
     size = "large",
     srcs = ["testSrcs/com/android/tools/profiler/performance/LiveAllocationTest.java"],

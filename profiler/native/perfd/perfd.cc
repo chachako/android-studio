@@ -28,7 +28,6 @@
 #include "perfd/common/trace_manager.h"
 #include "perfd/common_profiler_component.h"
 #include "perfd/cpu/cpu_profiler_component.h"
-#include "perfd/energy/energy_profiler_component.h"
 #include "perfd/event/event_profiler_component.h"
 #include "perfd/graphics/graphics_profiler_component.h"
 #include "perfd/memory/commands/heap_dump.h"
@@ -72,11 +71,6 @@ int Perfd::Initialize(Daemon* daemon) {
       std::bind(&EventProfilerComponent::AgentStatusChangedCallback,
                 event_component.get(), std::placeholders::_1));
   daemon->RegisterProfilerComponent(std::move(event_component));
-
-  if (daemon_config.common().energy_profiler_enabled()) {
-    daemon->RegisterProfilerComponent(std::unique_ptr<EnergyProfilerComponent>(
-        new EnergyProfilerComponent()));
-  }
 
   daemon->RegisterProfilerComponent(std::unique_ptr<GraphicsProfilerComponent>(
       new GraphicsProfilerComponent(daemon->clock())));

@@ -25,24 +25,10 @@
 #include "proto/transport.grpc.pb.h"
 #include "slicer/reader.h"
 #include "slicer/writer.h"
-#include "transform/android_activitythread_transform.h"
-#include "transform/android_alarmmanager_listenerwrapper_transform.h"
-#include "transform/android_alarmmanager_transform.h"
 #include "transform/android_debug_transform.h"
 #include "transform/android_fragment_transform.h"
-#include "transform/android_instrumentation_transform.h"
-#include "transform/android_intentservice_transform.h"
-#include "transform/android_jobschedulerimpl_transform.h"
-#include "transform/android_jobservice_transform.h"
-#include "transform/android_jobserviceengine_jobhandler_transform.h"
-#include "transform/android_locationmanager_listenertransport_transform.h"
-#include "transform/android_locationmanager_transform.h"
-#include "transform/android_pendingintent_transform.h"
-#include "transform/android_powermanager_transform.h"
-#include "transform/android_powermanager_wakelock_transform.h"
 #include "transform/android_user_counter_transform.h"
 #include "transform/androidx_fragment_transform.h"
-#include "transform/gms_fusedlocationproviderclient_transform.h"
 #include "transform/transform.h"
 #include "utils/device_info.h"
 #include "utils/log.h"
@@ -146,39 +132,6 @@ void RegisterTransforms(
       {"Landroid/support/v4/app/Fragment;", new AndroidFragmentTransform()});
   transforms->insert(
       {"Landroidx/fragment/app/Fragment;", new AndroidXFragmentTransform()});
-
-  if (config.common().energy_profiler_enabled()) {
-    transforms->insert({"Landroid/app/Instrumentation;",
-                        new AndroidInstrumentationTransform()});
-    transforms->insert(
-        {"Landroid/app/ActivityThread;", new AndroidActivityThreadTransform()});
-    transforms->insert(
-        {"Landroid/app/AlarmManager;", new AndroidAlarmManagerTransform()});
-    transforms->insert({"Landroid/app/AlarmManager$ListenerWrapper;",
-                        new AndroidAlarmManagerListenerWrapperTransform()});
-    transforms->insert(
-        {"Landroid/app/IntentService;", new AndroidIntentServiceTransform()});
-    transforms->insert({"Landroid/app/JobSchedulerImpl;",
-                        new AndroidJobSchedulerImplTransform()});
-    transforms->insert(
-        {"Landroid/app/job/JobService;", new AndroidJobServiceTransform()});
-    transforms->insert({"Landroid/app/job/JobServiceEngine$JobHandler;",
-                        new AndroidJobServiceEngineJobHandlerTransform()});
-    transforms->insert(
-        {"Landroid/app/PendingIntent;", new AndroidPendingIntentTransform()});
-    transforms->insert({"Landroid/location/LocationManager;",
-                        new AndroidLocationManagerTransform()});
-    transforms->insert(
-        {"Landroid/location/LocationManager$ListenerTransport;",
-         new AndroidLocationManagerListenerTransportTransform()});
-    transforms->insert(
-        {"Landroid/os/PowerManager;", new AndroidPowerManagerTransform()});
-    transforms->insert({"Landroid/os/PowerManager$WakeLock;",
-                        new AndroidPowerManagerWakeLockTransform()});
-    transforms->insert(
-        {"Lcom/google/android/gms/location/FusedLocationProviderClient;",
-         new GmsFusedLocationProviderClientTransform()});
-  }
 
   if (config.common().profiler_custom_event_visualization()) {
     transforms->insert({"Lcom/google/android/profiler/EventProfiler;",
