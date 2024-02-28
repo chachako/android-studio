@@ -81,7 +81,6 @@ cc_library(
         "//tools/base/profiler/native/perfd/graphics:profiler_graphics",
         "//tools/base/profiler/native/perfd/memory:profiler_memory",
         "//tools/base/profiler/native/perfd/profileable:profileable_detector",
-        "//tools/base/profiler/native/perfd/statsd",
         "//tools/base/transport/native/daemon",
         "//tools/base/transport/proto:cc_proto",
     ],
