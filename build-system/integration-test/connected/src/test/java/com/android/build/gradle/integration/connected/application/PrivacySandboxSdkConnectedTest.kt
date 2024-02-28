@@ -33,9 +33,7 @@ private const val APP_PACKAGE_NAME = "com.example.rubidumconsumer"
 private const val SDK_PACKAGE_NAME = "com.myrbsdk_10000"
 private const val TEST_PACKAGE_NAME = "com.example.rubidumconsumer.test"
 
-/**
- * Connected tests using UTP test executor.
- */
+@Ignore("b/327130317")
 class PrivacySandboxSdkConnectedTest {
 
     @get:Rule var project = builder()

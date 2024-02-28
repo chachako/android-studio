@@ -10,6 +10,7 @@ android {
     bundle {
         packageName = "com.myrbsdk"
         sdkProviderClassName = "com.myrbsdk.MyAdsSdkEntryPoint"
+        compatSdkProviderClassName = "com.myrbsdk.MyAdsSdkEntryPoint"
         setVersion(1, 0, 0)
     }
 }
