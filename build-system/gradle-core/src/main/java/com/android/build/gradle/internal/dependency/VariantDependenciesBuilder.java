@@ -713,7 +713,8 @@ public class VariantDependenciesBuilder {
                 projectOptions.get(BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS);
         boolean isAarTest =
                 (componentType == ComponentTypeImpl.ANDROID_TEST
-                                || componentType == ComponentTypeImpl.UNIT_TEST)
+                                || componentType == ComponentTypeImpl.UNIT_TEST
+                                || componentType == ComponentTypeImpl.SCREENSHOT_TEST)
                         && testedVariant.getComponentType().isAar();
 
         if (excludeLibraryComponents && (componentType.isAar() || isAarTest)) {

@@ -961,7 +961,8 @@ class ModelBuilder<
             classesFolders.addAll(it.variantData.allPostJavacGeneratedBytecode.files)
         }
         // The separately compile R class, if applicable.
-        if (extension.testOptions.unitTests.isIncludeAndroidResources) {
+        if (extension.testOptions.unitTests.isIncludeAndroidResources ||
+            component.componentType.isForScreenshotPreview) {
             classesFolders.add(component.artifacts.get(UNIT_TEST_CONFIG_DIRECTORY).get().asFile)
         }
         // TODO(b/111168382): When namespaced resources is on, then the provider returns null, so let's skip for now and revisit later

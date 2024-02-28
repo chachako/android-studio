@@ -36,5 +36,4 @@ class HostTestBuildFeaturesValuesImpl(
     // a library variant and the user specifies to includeAndroidResources. Otherwise, the tested
     // resources and assets are just copied as the unit test resources and assets output.
     override val androidResources: Boolean = includeAndroidResources
-
 }

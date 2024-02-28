@@ -1944,6 +1944,9 @@ abstract class TaskManager(
                 BuilderConstants.CONNECTED + ComponentType.ANDROID_TEST_SUFFIX
         const val ASSEMBLE_ANDROID_TEST = "assembleAndroidTest"
         const val ASSEMBLE_UNIT_TEST = "assembleUnitTest"
+        const val ASSEMBLE_SCREENSHOT_TEST = "assembleScreenshotTest"
+        const val SCREENSHOT_TEST_EXECUTION_TASK_NAME = "previewScreenshot"
+
 
         // Temporary static variables for Kotlin+Compose configuration
         const val COMPOSE_KOTLIN_COMPILER_EXTENSION_VERSION = "1.3.2"
@@ -2003,6 +2006,14 @@ abstract class TaskManager(
             ) { assembleUnitTestTask: Task ->
                 assembleUnitTestTask.group = BasePlugin.BUILD_GROUP
                 assembleUnitTestTask.description = "Assembles all the unit test applications."
+            }
+            if (globalConfig.services.projectOptions[BooleanOption.ENABLE_SCREENSHOT_TEST]) {
+                taskFactory.register(
+                    ASSEMBLE_SCREENSHOT_TEST
+                ) { assembleScreenshotTestTask: Task ->
+                    assembleScreenshotTestTask.group = BasePlugin.BUILD_GROUP
+                    assembleScreenshotTestTask.description = "Assembles all the screenshot test applications."
+                }
             }
             taskFactory.register(LintCompile.CreationAction(globalConfig))
             // Don't register global lint or lintFix tasks for dynamic features because dynamic

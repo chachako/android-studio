@@ -93,6 +93,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
     private val lintTaskManager = LintTaskManager(globalConfig, taskFactory, project)
 
     private val unitTestTaskManager = UnitTestTaskManager(project, globalConfig)
+    private val screenshotTestTaskManager = ScreenshotTestTaskManager(project, globalConfig)
     private val androidTestTaskManager = AndroidTestTaskManager(project, globalConfig)
     private val testFixturesTaskManager = TestFixturesTaskManager(project, globalConfig, localConfig)
 
@@ -118,6 +119,10 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
         // Create top level test tasks.
         unitTestTaskManager.createTopLevelTasks()
         androidTestTaskManager.createTopLevelTasks()
+        // For Screenshot tests, only create tasks if we have the screenshot test component
+        if (testComponents.any { it.componentType.isForScreenshotPreview }) {
+            screenshotTestTaskManager.createTopLevelTasks()
+        }
 
         // Create tasks for all variants (main, testFixtures and tests)
         for (variant in variants) {
@@ -319,6 +324,9 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
                         multiDexInstrumentationDep)
             }
             androidTestTaskManager.createTasks(testVariant as AndroidTestCreationConfig)
+        } else if (testVariant.componentType.isForScreenshotPreview) {
+            // SCREENSHOT_TEST
+            screenshotTestTaskManager.createTasks(testVariant as HostTestCreationConfig)
         } else {
             // UNIT_TEST
             unitTestTaskManager.createTasks(testVariant as HostTestCreationConfig)

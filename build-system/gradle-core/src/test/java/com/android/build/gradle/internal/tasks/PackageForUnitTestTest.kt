@@ -34,15 +34,15 @@ import java.io.File
 import kotlin.test.fail
 
 /**
- * Tests for [PackageForUnitTest]
+ * Tests for [PackageForHostTest]
  */
-class PackageForUnitTestTest {
+class PackageForHostTestTest {
 
     @Rule
     @JvmField
     val tmpDir: TemporaryFolder = TemporaryFolder()
 
-    lateinit var task: PackageForUnitTest
+    lateinit var task: PackageForHostTest
     lateinit var directoryProperty: DirectoryProperty
 
     @Before
@@ -50,7 +50,7 @@ class PackageForUnitTestTest {
         val project = ProjectBuilder.builder().withProjectDir(
             tmpDir.newFolder()).build()
 
-        task = project.tasks.create("test", PackageForUnitTest::class.java)
+        task = project.tasks.create("test", PackageForHostTest::class.java)
         directoryProperty = project.objects.directoryProperty()
         directoryProperty.set(tmpDir.newFolder())
     }

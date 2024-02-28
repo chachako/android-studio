@@ -65,12 +65,16 @@ open class ScreenshotTestImpl @Inject constructor(
     global
 ), UnitTest, HostTestCreationConfig {
 
+    private val testTaskConfigActions = mutableListOf<(Test) -> Unit>()
+
     override fun configureTestTask(action: (Test) -> Unit) {
-        throw RuntimeException("Screenshot testing variants do not have a Test task")
+        testTaskConfigActions.add(action)
     }
 
     override fun runTestTaskConfigurationActions(testTask: TaskProvider<out Test>) {
-        // nothing to do until we have a Test task.
+        testTaskConfigActions.forEach {
+            testTask.configure { testTask -> it(testTask) }
+        }
     }
 
     override val isCoverageEnabled: Boolean

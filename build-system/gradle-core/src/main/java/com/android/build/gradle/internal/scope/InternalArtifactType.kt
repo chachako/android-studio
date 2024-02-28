@@ -133,6 +133,8 @@ InternalArtifactType<T : FileSystemLocation>(
     object CODE_COVERAGE: InternalArtifactType<Directory>(DIRECTORY, Category.OUTPUTS), Replaceable
     // The jacoco code coverage from unit tests
     object UNIT_TEST_CODE_COVERAGE: InternalArtifactType<RegularFile>(FILE, Category.OUTPUTS), Replaceable
+    // The jacoco code coverage from screenshot tests
+    object SCREENSHOT_TEST_CODE_COVERAGE: InternalArtifactType<RegularFile>(FILE, Category.OUTPUTS), Replaceable
     // The jacoco code coverage from the device provider tasks.
     object DEVICE_PROVIDER_CODE_COVERAGE: InternalArtifactType<Directory>(DIRECTORY, Category.OUTPUTS)
     // The jacoco code coverage from the managed device instrumentation test tasks.

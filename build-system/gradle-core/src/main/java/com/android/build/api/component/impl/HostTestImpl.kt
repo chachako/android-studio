@@ -17,11 +17,9 @@
 package com.android.build.api.component.impl
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
-import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.gradle.internal.component.VariantCreationConfig
-import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
@@ -101,10 +99,6 @@ open class HostTestImpl @Inject constructor(
 
     override val manifestPlaceholders: MapProperty<String, String>
         get() = manifestPlaceholdersCreationConfig.placeholders
-
-
-    // TODO: We will need R.jar for Screenshot tests too.
-    override val androidResourcesCreationConfig: AndroidResourcesCreationConfig? = null
 
     override val manifestPlaceholdersCreationConfig: ManifestPlaceholdersCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
         createManifestPlaceholdersCreationConfig(
