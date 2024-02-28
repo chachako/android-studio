@@ -257,8 +257,6 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
                 task.description = "Displays the signing info for the base and test modules"
                 task.setComponents(signingReportComponents)
                 task.group = ANDROID_GROUP
-                task.notCompatibleWithConfigurationCache(
-                    "SigningReportTask is not compatible with config caching")
             }
         }
         createDependencyAnalyzerTask()

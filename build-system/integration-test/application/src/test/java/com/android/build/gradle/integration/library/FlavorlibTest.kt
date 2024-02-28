@@ -69,6 +69,8 @@ class FlavorlibTest : ModelComparator() {
     @Test
     fun report() {
         project.executor().run("androidDependencies", "signingReport")
+        // run twice to verify config cached run works
+        project.executor().run("signingReport")
     }
 
     @Test
