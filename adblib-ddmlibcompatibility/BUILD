@@ -38,7 +38,7 @@ kotlin_library(
     deps = [
         "//tools/adt/idea/.idea/libraries:kotlinx-coroutines-guava",
         "//tools/adt/idea/.idea/libraries:studio-analytics-proto",
-        "//tools/analytics-library/tracker:analytics-tracker",
+        "//tools/analytics-library/tracker:tools.analytics-tracker",
         "//tools/base/adblib",
         "//tools/base/adblib-tools:adblib.tools",
         "//tools/base/ddmlib:ddmlib-base",
