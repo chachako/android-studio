@@ -92,21 +92,31 @@ public class GroovyGradleVisitor extends GradleVisitor {
         GroovyCodeVisitor visitor =
                 new CodeVisitorSupport() {
                     private final List<MethodCallExpression> mMethodCallStack = new ArrayList<>();
+                    private final List<MethodCallExpression> mReceiverStack = new ArrayList<>();
 
                     @Override
                     public void visitMethodCallExpression(MethodCallExpression expression) {
                         ASTNode receiver = expression.getReceiver();
-                        boolean addToStack =
+                        boolean addToMethodCallStack =
                                 receiver instanceof VariableExpression
                                         || receiver instanceof PropertyExpression;
-                        if (addToStack) {
+                        boolean addToReceiverStack = receiver instanceof MethodCallExpression;
+                        if (addToMethodCallStack) {
                             mMethodCallStack.add(expression);
                         }
+                        if (addToReceiverStack) {
+                            mReceiverStack.add(expression);
+                        }
                         super.visitMethodCallExpression(expression);
-                        if (addToStack) {
+                        if (addToMethodCallStack) {
                             assert !mMethodCallStack.isEmpty();
                             assert mMethodCallStack.get(mMethodCallStack.size() - 1) == expression;
                             mMethodCallStack.remove(mMethodCallStack.size() - 1);
+                        }
+                        if (addToReceiverStack) {
+                            assert !mReceiverStack.isEmpty();
+                            assert mReceiverStack.get(mReceiverStack.size() - 1) == expression;
+                            mReceiverStack.remove(mReceiverStack.size() - 1);
                         }
                     }
 
@@ -200,9 +210,55 @@ public class GroovyGradleVisitor extends GradleVisitor {
                                             namedArguments,
                                             call);
                                 }
+                                if (!mReceiverStack.isEmpty()) {
+                                    if ("plugins".equals(parentParent)
+                                            && "id".equals(call.getMethod().getText())) {
+                                        Expression callArguments = call.getArguments();
+                                        if (callArguments instanceof TupleExpression) {
+                                            TupleExpression callTuple =
+                                                    (TupleExpression) callArguments;
+                                            if (!callTuple.getExpressions().isEmpty()
+                                                    && !unnamedArguments.isEmpty()) {
+                                                String idArgument = unnamedArguments.get(0);
+                                                Expression idExpression =
+                                                        callTuple.getExpression(0);
+                                                String id =
+                                                        GradleContext.Companion
+                                                                .getStringLiteralValue(
+                                                                        idArgument, idExpression);
+                                                if (id != null) {
+                                                    mReceiverStack.forEach(
+                                                            (e) -> {
+                                                                Expression arguments =
+                                                                        e.getArguments();
+                                                                if (arguments
+                                                                        instanceof
+                                                                        TupleExpression) {
+                                                                    TupleExpression tuple =
+                                                                            (TupleExpression)
+                                                                                    arguments;
+                                                                    unnamedArguments.clear();
+                                                                    namedArguments.clear();
+                                                                    extractMethodCallArguments(
+                                                                            tuple,
+                                                                            unnamedArguments,
+                                                                            namedArguments);
+                                                                    maybeCheckDslProperty(
+                                                                            e.getMethodAsString(),
+                                                                            id,
+                                                                            "plugins",
+                                                                            unnamedArguments,
+                                                                            namedArguments,
+                                                                            e);
+                                                                }
+                                                            });
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
-
                         super.visitTupleExpression(tupleExpression);
                     }
 

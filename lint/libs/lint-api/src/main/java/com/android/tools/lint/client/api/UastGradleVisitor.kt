@@ -78,6 +78,39 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
           node,
         )
       }
+    } else if (listOf("version", "apply").contains(node.operatorIdentifier?.name)) {
+      // TODO(xof): the above condition is not really right, and this should actually work by
+      // knowing that we have a parent
+      //  plugins { id .. } call.  However, this is enough to maintain parity with the Groovy
+      // visitor for practical purposes.
+      val property = node.operatorIdentifier?.name!!
+      var call: UExpression = node
+      while (call is UBinaryExpression) {
+        call = call.leftOperand
+      }
+      if (
+        call is UCallExpression &&
+          getMethodName(call) == "id" &&
+          call.valueArgumentCount == 1 &&
+          getParent(node) == "plugins"
+      ) {
+        val idExpression = call.valueArguments[0]
+        GradleContext.getStringLiteralValue(idExpression.getSource(), idExpression)?.let { id ->
+          val value = node.rightOperand.getSource()
+          for (scanner in detectors) {
+            scanner.checkDslPropertyAssignment(
+              context,
+              property,
+              value,
+              id,
+              "plugins",
+              node.operator,
+              node.rightOperand,
+              node,
+            )
+          }
+        }
+      }
     }
   }
 

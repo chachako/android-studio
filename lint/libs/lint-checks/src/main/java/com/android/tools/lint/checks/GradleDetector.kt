@@ -488,6 +488,17 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           report(context, valueCookie, DEPRECATED, message, fix)
         }
       }
+    } else if (parentParent == "plugins" && property == "version") {
+      val version = getStringLiteralValue(value, valueCookie)
+      if (version != null) {
+        val gradleCoordinate = "$parent:$parent.gradle.plugin:$version"
+        val dependency = Dependency.parse(gradleCoordinate)
+        // Check dependencies without the PSI read lock, because we
+        // may need to make network requests to retrieve version info.
+        context.driver.runLaterOutsideReadAction {
+          checkDependency(context, dependency, false, valueCookie, statementCookie)
+        }
+      }
     } else if (parent == "dependencies") {
       if (value.startsWith("files") && value.matches("^files\\(['\"].*[\"']\\)$".toRegex())) {
         val path = value.substring("files('".length, value.length - 2)

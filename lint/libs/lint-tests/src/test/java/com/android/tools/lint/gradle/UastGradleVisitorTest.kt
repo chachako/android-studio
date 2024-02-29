@@ -168,6 +168,8 @@ class UastGradleVisitorTest {
       """,
       """
       checkDslPropertyAssignment(property="id", value=""android"", parent="plugins")
+      checkDslPropertyAssignment(property="apply", value="true", parent="android", parentParent="plugins")
+      checkDslPropertyAssignment(property="version", value=""2.2.3"", parent="android", parentParent="plugins")
       checkMethodCall(statement="id", parent="plugins", unnamedArguments=""android"")
       checkMethodCall(statement="plugins", unnamedArguments="{ id("android") version "2.2.3" apply true }")
       """,
