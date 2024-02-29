@@ -1051,10 +1051,10 @@ maven_import(
 )
 
 maven_artifact(
-    name = "com.google.apis.google-api-services-testing_v1-rev20230411-2.0.0",
-    pom = "repository/com/google/apis/google-api-services-testing/v1-rev20230411-2.0.0/google-api-services-testing-v1-rev20230411-2.0.0.pom",
+    name = "com.google.apis.google-api-services-testing_v1-rev20240213-2.0.0",
+    pom = "repository/com/google/apis/google-api-services-testing/v1-rev20240213-2.0.0/google-api-services-testing-v1-rev20240213-2.0.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/apis/google-api-services-testing/v1-rev20230411-2.0.0",
+    repo_path = "com/google/apis/google-api-services-testing/v1-rev20240213-2.0.0",
     parent = "org.sonatype.oss.oss-parent_7",
     deps = [
         "com.google.api-client.google-api-client_2.2.0",
@@ -1067,7 +1067,7 @@ maven_import(
     classifiers = [],
     parent = "org.sonatype.oss.oss-parent_7",
     jars = [
-        "repository/com/google/apis/google-api-services-testing/v1-rev20230411-2.0.0/google-api-services-testing-v1-rev20230411-2.0.0.jar"
+        "repository/com/google/apis/google-api-services-testing/v1-rev20240213-2.0.0/google-api-services-testing-v1-rev20240213-2.0.0.jar"
     ],
     exports = [
         "com.google.api-client.google-api-client",
@@ -1075,9 +1075,9 @@ maven_import(
     original_deps = [
         "com.google.api-client.google-api-client_2.2.0",
     ],
-    pom = "repository/com/google/apis/google-api-services-testing/v1-rev20230411-2.0.0/google-api-services-testing-v1-rev20230411-2.0.0.pom",
+    pom = "repository/com/google/apis/google-api-services-testing/v1-rev20240213-2.0.0/google-api-services-testing-v1-rev20240213-2.0.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/apis/google-api-services-testing/v1-rev20230411-2.0.0",
+    repo_path = "com/google/apis/google-api-services-testing/v1-rev20240213-2.0.0",
     visibility = ["//visibility:public"],
 )
 
