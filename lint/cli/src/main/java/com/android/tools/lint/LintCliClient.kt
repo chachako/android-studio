@@ -1642,7 +1642,7 @@ open class LintCliClient : LintClient {
       val blameFile = File.createTempFile("manifest-blame", ".txt")
       blameFile.deleteOnExit()
       val mergeReport =
-        ManifestMerger2.newMerger(mainManifest, logger, type)
+        ManifestMerger2.newMerger(mainManifest!!, logger, type)
           .withFeatures(
             // TODO: How do we get the *opposite* of EXTRACT_FQCNS:
             // ensure that all names are made fully qualified?

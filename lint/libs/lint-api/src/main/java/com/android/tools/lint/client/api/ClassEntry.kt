@@ -17,7 +17,6 @@ package com.android.tools.lint.client.api
 
 import com.android.SdkConstants.DOT_CLASS
 import com.android.SdkConstants.DOT_JAR
-import com.android.SdkConstants.DOT_SRCJAR
 import com.android.tools.lint.helpers.readAllBytes
 import com.google.common.collect.Maps
 import java.io.File
@@ -196,7 +195,7 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
               client.log(e, null)
             }
           }
-        } else if (!name.endsWith(DOT_SRCJAR)) {
+        } else {
           client.log(null, "Ignoring class path entry %1\$s", classPathEntry)
         }
       }
@@ -248,7 +247,7 @@ class ClassEntry(val file: File, val jarFile: File?, val binDir: File, val bytes
                 client.log(e, null)
               }
             }
-          } else if (!path.endsWith(DOT_SRCJAR)) {
+          } else {
             client.log(null, "Ignoring class path entry %1\$s", classPathEntry)
           }
         }

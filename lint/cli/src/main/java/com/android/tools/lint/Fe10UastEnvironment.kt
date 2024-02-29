@@ -15,9 +15,6 @@
  */
 package com.android.tools.lint
 
-import com.android.SdkConstants.DOT_KT
-import com.android.SdkConstants.DOT_KTS
-import com.android.SdkConstants.DOT_SRCJAR
 import com.android.tools.lint.UastEnvironment.Companion.getKlibPaths
 import com.android.tools.lint.UastEnvironment.Companion.kotlinLibrary
 import com.intellij.core.CoreApplicationEnvironment
@@ -25,7 +22,6 @@ import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.StandardFileSystems
-import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFileSetFactory
 import com.intellij.openapi.vfs.impl.jar.CoreJarFileSystem
 import com.intellij.pom.java.InternalPersistentJavaLanguageLevelReaderService
@@ -33,7 +29,6 @@ import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameHelper
 import com.intellij.psi.impl.PsiNameHelperImpl
-import com.intellij.util.io.URLUtil.JAR_SEPARATOR
 import java.io.File
 import kotlin.concurrent.withLock
 import org.jetbrains.kotlin.analysis.api.descriptors.CliFe10AnalysisFacade
@@ -67,7 +62,6 @@ import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles.JVM_CONFIG_F
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreProjectEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
-import org.jetbrains.kotlin.cli.jvm.config.JavaSourceRoot
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
@@ -182,13 +176,6 @@ private constructor(
       ktPsiFiles.add(ktPsiFile)
     }
 
-    // TODO: This is a hack to get resolve working for Kotlin declarations in srcjars,
-    //  which has historically been needed in google3. We should investigate whether this is
-    //  still needed. In particular, we should ensure we do not add srcjars from dependencies,
-    //  because that could lead to a lot of extra work for the compiler.
-    //  Note: srcjars are tested by ApiDetectorTest.testSourceJars() and testSourceJarsKotlin().
-    addKtFilesFromSrcJars(ktPsiFiles)
-
     // TODO: This is a hack needed because TopDownAnalyzerFacadeForJVM calls
     //  KotlinCoreEnvironment.createPackagePartProvider(), which permanently adds additional
     //  PackagePartProviders to the environment. This significantly slows down resolve over
@@ -215,30 +202,6 @@ private constructor(
     )
 
     perfManager?.notifyAnalysisFinished()
-  }
-
-  private fun addKtFilesFromSrcJars(out: MutableList<KtFile>) {
-    val jarFs = StandardFileSystems.jar()
-    val psiManager = PsiManager.getInstance(ideaProject)
-    val roots = kotlinCompilerConfig.getList(CLIConfigurationKeys.CONTENT_ROOTS)
-
-    for (root in roots) {
-      // Check if this is a srcjar.
-      if (root !is JavaSourceRoot) continue
-      if (!root.file.name.endsWith(DOT_SRCJAR)) continue
-      val jarRoot = jarFs.findFileByPath(root.file.path + JAR_SEPARATOR) ?: continue
-
-      // Collect Kotlin files.
-      VfsUtilCore.iterateChildrenRecursively(jarRoot, null) { file ->
-        if (file.name.endsWith(DOT_KT) || file.name.endsWith(DOT_KTS)) {
-          val psiFile = psiManager.findFile(file)
-          if (psiFile is KtFile) {
-            out.add(psiFile)
-          }
-        }
-        true // Continues the traversal.
-      }
-    }
   }
 
   private fun resetPackagePartProviders() {

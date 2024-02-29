@@ -112,9 +112,7 @@ private constructor(
   }
 
   /** In FIR UAST, even Kotlin files are analyzed lazily. */
-  override fun analyzeFiles(ktFiles: List<File>) {
-    // TODO: addKtFilesFromSrcJars ?
-  }
+  override fun analyzeFiles(ktFiles: List<File>) {}
 
   companion object {
     @JvmStatic

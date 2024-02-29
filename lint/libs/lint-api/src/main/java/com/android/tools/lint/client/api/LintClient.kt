@@ -22,7 +22,6 @@ import com.android.SdkConstants.CURRENT_PLATFORM
 import com.android.SdkConstants.DOT_AAR
 import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_KLIB
-import com.android.SdkConstants.DOT_SRCJAR
 import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.FD_ASSETS
 import com.android.SdkConstants.FD_DATA
@@ -799,8 +798,6 @@ abstract class LintClient {
           for (jar in jars) {
             if (endsWith(jar.path, DOT_JAR) && !libraries.contains(jar)) {
               libraries.add(jar)
-            } else if (endsWith(jar.path, DOT_SRCJAR) && !sources.contains(jar)) {
-              sources.add(jar)
             } else if (endsWith(jar.path, DOT_KLIB) && !klibs.contains(jar)) {
               klibs.add(jar)
             }

@@ -16,9 +16,11 @@
 package com.android.tools.lint.checks.infrastructure
 
 import com.android.SdkConstants.ANDROID_MANIFEST_XML
+import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_XML
+import com.android.SdkConstants.DOT_ZIP
 import com.android.SdkConstants.FD_GRADLE
 import com.android.SdkConstants.FN_BUILD_GRADLE
 import com.android.SdkConstants.FN_VERSION_CATALOG
@@ -576,8 +578,9 @@ object TestFiles {
 
   @JvmStatic
   fun jar(to: String, vararg files: TestFile): JarTestFile {
-    // don't insist on .jar since we're also supporting .srcjar etc
-    require(to.endsWith("jar") || to.endsWith("zip")) { "Expected .jar suffix for jar test file" }
+    require(to.endsWith(DOT_JAR) || to.endsWith(DOT_ZIP)) {
+      "Expected .jar/.zip suffix for jar test file"
+    }
     val jar = JarTestFile(to)
     jar.files(*files)
     return jar

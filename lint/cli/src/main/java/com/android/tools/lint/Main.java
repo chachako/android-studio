@@ -76,13 +76,11 @@ import com.android.tools.lint.model.PathVariables;
 import com.android.utils.SdkUtils;
 import com.android.utils.XmlUtils;
 import com.google.common.base.Charsets;
-import com.google.common.io.ByteStreams;
 import com.intellij.pom.java.LanguageLevel;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -99,9 +97,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 import kotlin.io.FilesKt;
 import kotlin.text.StringsKt;
 import org.jetbrains.annotations.NotNull;
@@ -604,59 +599,6 @@ public class Main {
             }
 
             return super.getConfiguration(project, driver);
-        }
-
-        private byte[] readSrcJar(@NonNull File file) {
-            String path = file.getPath();
-            //noinspection SpellCheckingInspection
-            int srcJarIndex = path.indexOf("srcjar!");
-            if (srcJarIndex != -1) {
-                File jarFile = new File(path.substring(0, srcJarIndex + 6));
-                if (jarFile.exists()) {
-                    try (ZipFile zipFile = new ZipFile(jarFile)) {
-                        String name =
-                                path.substring(srcJarIndex + 8).replace(File.separatorChar, '/');
-                        ZipEntry entry = zipFile.getEntry(name);
-                        if (entry != null) {
-                            try (InputStream is = zipFile.getInputStream(entry)) {
-                                return ByteStreams.toByteArray(is);
-                            } catch (Exception e) {
-                                log(e, null);
-                            }
-                        }
-                    } catch (ZipException e) {
-                        Main.this.log(e, "Could not unzip %1$s", jarFile);
-                    } catch (IOException e) {
-                        Main.this.log(e, "Could not read %1$s", jarFile);
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        @NonNull
-        @Override
-        public CharSequence readFile(@NonNull File file) {
-            // .srcjar file handle?
-            byte[] srcJarBytes = readSrcJar(file);
-            if (srcJarBytes != null) {
-                return new String(srcJarBytes, Charsets.UTF_8);
-            }
-
-            return super.readFile(file);
-        }
-
-        @NonNull
-        @Override
-        public byte[] readBytes(@NonNull File file) throws IOException {
-            // .srcjar file handle?
-            byte[] srcJarBytes = readSrcJar(file);
-            if (srcJarBytes != null) {
-                return srcJarBytes;
-            }
-
-            return super.readBytes(file);
         }
 
         private ProjectMetadata metadata;

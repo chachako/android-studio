@@ -19,11 +19,9 @@ package com.android.tools.lint
 import com.android.SdkConstants
 import com.android.SdkConstants.ANDROID_MANIFEST_XML
 import com.android.SdkConstants.ATTR_PATH
-import com.android.SdkConstants.DOT_CLASS
 import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
-import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.FD_JARS
 import com.android.SdkConstants.FD_RES
 import com.android.SdkConstants.FN_PUBLIC_TXT
@@ -58,7 +56,6 @@ import com.google.common.collect.Multimap
 import com.google.common.io.ByteStreams
 import com.google.common.io.Files
 import com.intellij.pom.java.LanguageLevel
-import com.intellij.util.io.URLUtil
 import java.io.File
 import java.io.File.pathSeparatorChar
 import java.io.File.separator
@@ -117,7 +114,6 @@ private const val ATTR_KOTLIN_LEVEL = "kotlinLanguage"
 private const val ATTR_MODEL = "model"
 private const val ATTR_PARTIAL_RESULTS_DIR = "partial-results-dir"
 private const val ATTR_KIND = "kind"
-private const val DOT_SRCJAR = ".srcjar"
 
 /**
  * Compute a list of lint [Project] instances from the given XML descriptor files. Each descriptor
@@ -683,8 +679,6 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
       }
     }
 
-    handleSrcJars(sources, resources, manifests, classes, sourceRoots)
-
     module.setManifests(manifests)
     module.setResources(resourceRoots, resources)
     module.setTestSources(testSourceRoots, testSources)
@@ -703,50 +697,6 @@ private class ProjectInitializer(val client: LintClient, val file: File, var roo
     this.baselines[module] = baseline
 
     client.registerProject(module.dir, module)
-  }
-
-  private fun handleSrcJars(
-    sources: MutableList<File>,
-    resources: MutableList<File>,
-    manifests: MutableList<File>,
-    classes: MutableList<File>,
-    sourceRoots: MutableList<File>,
-  ) {
-    // * Remove any .srcjar files in `source`
-    // * Distribute its unzipped content to the right targets
-    //   (e.g. sources, manifest, bytecode, etc.),
-    // * Add the original .srcjar to `sourceRoots`
-    fun unzipSrcJarsFrom(source: MutableList<File>) {
-      val sourceIterator = source.listIterator()
-      // Avoid ConcurrentModificationException
-      fun MutableList<File>.guardedAdd(file: File): Any =
-        if (this === source) sourceIterator.add(file) else add(file)
-
-      while (sourceIterator.hasNext()) {
-        val file = sourceIterator.next()
-        if (file.path.endsWith(DOT_SRCJAR)) {
-          sourceIterator.remove()
-          sourceRoots.add(file)
-
-          // Expand into child content
-          forEachZippedFile(file) { _, zipEntry ->
-            val path = file.path + URLUtil.JAR_SEPARATOR + zipEntry.name
-            val newFile = File(path)
-            when {
-              path.endsWith(ANDROID_MANIFEST_XML) -> manifests.guardedAdd(newFile)
-              path.endsWith(DOT_XML) -> resources.guardedAdd(newFile)
-              path.endsWith(DOT_JAVA) || path.endsWith(DOT_KT) -> sources.guardedAdd(newFile)
-              path.endsWith(DOT_CLASS) -> classes.guardedAdd(newFile)
-            }
-          }
-        }
-      }
-    }
-
-    unzipSrcJarsFrom(sources)
-    unzipSrcJarsFrom(resources)
-    unzipSrcJarsFrom(manifests)
-    unzipSrcJarsFrom(classes)
   }
 
   private fun parseAar(element: Element, dir: File): String? {

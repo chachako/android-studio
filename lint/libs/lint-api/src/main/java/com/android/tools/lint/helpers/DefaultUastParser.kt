@@ -108,19 +108,8 @@ open class DefaultUastParser(
     }
 
     val file = context.file
-    val path = file.path.replace(File.separatorChar, '/')
-    val srcJarIndex = path.indexOf("srcjar!/")
-    val virtualFile =
-      if (srcJarIndex != -1) {
-        val jarFile = path.substring(0, srcJarIndex + 8)
-        val name = path.substring(srcJarIndex + 8)
-        val root = StandardFileSystems.jar().findFileByPath(jarFile) ?: return null
-        root.findFileByRelativePath(name) ?: return null
-      } else {
-        val absPath = file.absolutePath.replace(File.separatorChar, '/')
-        StandardFileSystems.local().findFileByPath(absPath) ?: return null
-      }
-
+    val absPath = file.absolutePath.replace(File.separatorChar, '/')
+    val virtualFile = StandardFileSystems.local().findFileByPath(absPath) ?: return null
     val psiFile = PsiManager.getInstance(ideaProject).findFile(virtualFile) ?: return null
 
     if (psiFile.language == Language.ANY && file.path.endsWith(DOT_KT)) {
