@@ -132,6 +132,18 @@ class AnalyticsEnabledSourcesTest {
         )
     }
 
+    @Test
+    fun testNullableApis() {
+        Truth.assertThat(proxy.res).isNull()
+        Truth.assertThat(proxy.assets).isNull()
+        Truth.assertThat(proxy.mlModels).isNull()
+        Truth.assertThat(proxy.aidl).isNull()
+        Truth.assertThat(proxy.baselineProfiles).isNull()
+        Truth.assertThat(proxy.jniLibs).isNull()
+        Truth.assertThat(proxy.shaders).isNull()
+        Truth.assertThat(proxy.renderscript).isNull()
+    }
+
     private fun <T: SourceDirectories> testAnalytics(
         type: Class<T>,
         accessor: (sources: Sources) -> T?,
