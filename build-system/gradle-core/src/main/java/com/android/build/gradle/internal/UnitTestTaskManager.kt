@@ -16,8 +16,10 @@
 
 package com.android.build.gradle.internal
 
+import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.coverage.JacocoConfigurations
@@ -156,9 +158,6 @@ class UnitTestTaskManager(
                 )
             }
 
-            taskFactory.configure(ASSEMBLE_UNIT_TEST) { assembleTest: Task ->
-                assembleTest.dependsOn(unitTestCreationConfig.taskContainer.assembleTask.name)
-            }
         } else {
             if (testedVariant.componentType.isAar && testedVariant.buildFeatures.androidResources) {
                 // With compile classpath R classes, we need to generate a dummy R class for unit
@@ -170,6 +169,21 @@ class UnitTestTaskManager(
                     )
                 )
             }
+        }
+
+        // Whether we have android resources or not, we must always depend on the
+        // CLASSES so we run compilation, etc...
+        taskContainer.assembleTask.configure { task: Task ->
+            task.dependsOn(
+                unitTestCreationConfig
+                    .artifacts
+                    .forScope(ScopedArtifacts.Scope.PROJECT)
+                    .getFinalArtifacts(ScopedArtifact.CLASSES),
+            )
+        }
+
+        taskFactory.configure(ASSEMBLE_UNIT_TEST) { assembleTest: Task ->
+            assembleTest.dependsOn(unitTestCreationConfig.taskContainer.assembleTask.name)
         }
 
         // TODO(b/276758294): Remove such checks

@@ -17,10 +17,12 @@
 package com.android.build.gradle.integration.testing.unit
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
+import com.android.build.gradle.integration.common.fixture.app.KotlinHelloWorldApp
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 
 class UnitTestingAssembleTest {
 
@@ -30,9 +32,10 @@ class UnitTestingAssembleTest {
 
     @Test
     fun testAssembleTasks() {
-        // Should not run any tasks when includeAndroidResources is false
+        // android resources related tasks should not run but the rest should.
         var result = project.executor().run("assembleUnitTest")
-        Truth.assertThat(result.didWorkTasks).isEmpty()
+        Truth.assertThat(result.didWorkTasks.contains("compileDebugUnitTest"))
+        Truth.assertThat(result.didWorkTasks).doesNotContain(":packageDebugUnitTestForUnitTest")
 
         TestFileUtils.appendToFile(project.buildFile,
             """
@@ -42,10 +45,21 @@ class UnitTestingAssembleTest {
 
         result = project.executor().run("assembleUnitTest")
         // This is skipped because it only has other task dependencies (doesn't do any actual work)
-        Truth.assertThat(result.skippedTasks).contains("assembleDebugUnitTest")
-        Truth.assertThat(result.didWorkTasks).contains("packageDebugUnitTestForUnitTest")
+        Truth.assertThat(result.skippedTasks).contains(":assembleDebugUnitTest")
+        Truth.assertThat(result.didWorkTasks).contains(":packageDebugUnitTestForUnitTest")
 
-        result = project.executor().run("assembleDebugUnitTest")
-        Truth.assertThat(result.didWorkTasks).contains("packageDebugUnitTestForUnitTest")
+        project.executor().run("assembleDebugUnitTest")
+    }
+
+    @Test
+    fun testAssembleTaskRequiresCompilation() {
+        TestFileUtils.appendToFile(
+            File(File(project.mainTestDir, "java"), "SomeBuggyClass.kt"),
+            """"
+                public GARBAGE { }
+            """)
+        val result = project.executor().expectFailure().run("assembleUnitTest")
+        Truth.assertThat(result.failedTasks).isNotEmpty()
+        Truth.assertThat(result.failedTasks).containsExactly(":compileDebugUnitTestKotlin", ":compileReleaseUnitTestKotlin")
     }
 }
