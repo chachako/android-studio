@@ -3,11 +3,11 @@ load("//tools/base/bazel:gradle.bzl", "gradle_build")
 
 #keep sorted
 AGP_8_3_0_ARTIFACTS = [
-    "@maven//:com.android.application.com.android.application.gradle.plugin_8.3.0-beta01",
-    "@maven//:com.android.library.com.android.library.gradle.plugin_8.3.0-beta01",
-    "@maven//:com.android.tools.build.aapt2_8.3.0-beta01-10880808",
-    "@maven//:com.android.tools.build.gradle_8.3.0-beta01",
-    "@maven//:com.android.tools.lint.lint-gradle_31.3.0-beta01",
+    "@maven//:com.android.application.com.android.application.gradle.plugin_8.3.0",
+    "@maven//:com.android.library.com.android.library.gradle.plugin_8.3.0",
+    "@maven//:com.android.tools.build.aapt2_8.3.0-10880808",
+    "@maven//:com.android.tools.build.gradle_8.3.0",
+    "@maven//:com.android.tools.lint.lint-gradle_31.3.0",
 ]
 
 maven_repository(
