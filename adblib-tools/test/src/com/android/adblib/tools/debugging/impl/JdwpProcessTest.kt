@@ -16,6 +16,8 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.AdbSession
+import com.android.adblib.AdbUsageTracker
+import com.android.adblib.AdbUsageTracker.JdwpProcessPropertiesCollectorEvent
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.connectedDevicesTracker
@@ -23,6 +25,7 @@ import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.testingutils.FakeAdbServerProvider
+import com.android.adblib.testingutils.TestingAdbUsageTracker
 import com.android.adblib.tools.AdbLibToolsProperties
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessProperties
@@ -726,6 +729,77 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
         // Assert
         assertTrue(activeBefore)
         assertFalse(activeAfter)
+    }
+
+    @Test
+    fun startProcessMonitoringLogsUsageStats() = runBlockingWithTimeout {
+        // Prepare
+        val (_, _, firstProcess) = createJdwpProcess(waitForDebugger = false)
+        setHostPropertyValue(
+            firstProcess.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            Duration.ofMillis(100_000L)
+        )
+
+        // Act
+        firstProcess.startMonitoring() // collect properties for a very long time (100 seconds)
+        yieldUntil { firstProcess.properties.processName != null }
+
+        // Prepare/Act: Create a second `JdwpProcessImpl` to monitor the same process. Set the
+        // timeouts in a such a way that it will quickly timeout the first time and will retry
+        // only after we close `firstProcess` below
+        setHostPropertyValue(
+            firstProcess.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
+            Duration.ofMillis(500)
+        )
+        setHostPropertyValue(
+            firstProcess.device.session.host,
+            AdbLibToolsProperties.PROCESS_PROPERTIES_RETRY_DURATION,
+            Duration.ofMillis(1000)
+        )
+        val process =
+            registerCloseable(
+                JdwpProcessImpl(
+                    firstProcess.device,
+                    firstProcess.pid,
+                    onClosed = { }
+                )
+            )
+
+        // This will time out and retry because there is another process collecting properties
+        process.startMonitoring()
+        yieldUntil {
+            ((session.host.usageTracker as? TestingAdbUsageTracker)?.loggedEvents?.size ?: 0) > 0
+        }
+
+        // Close the other process so that it frees up the JDWP session
+        launch {
+            firstProcess.close()
+        }
+
+        yieldUntil { process.properties.completed }
+
+        // Assert: We should have logged 2 adb usage events from the `process`. Note that
+        // we have closed `firstProcess` before it could have logged any adb usage events.
+        val loggedEvents = (session.host.usageTracker as? TestingAdbUsageTracker)?.loggedEvents
+        assertEquals(2, loggedEvents?.size)
+        assertEquals(
+            JdwpProcessPropertiesCollectorEvent(
+                isSuccess = false,
+                failureType = AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.NO_RESPONSE,
+                previouslyFailedCount = 0,
+                previousFailureType = null
+            ), loggedEvents!![0].jdwpProcessPropertiesCollector
+        )
+        assertEquals(
+            JdwpProcessPropertiesCollectorEvent(
+                isSuccess = true,
+                failureType = null,
+                previouslyFailedCount = 1,
+                previousFailureType = AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.NO_RESPONSE
+            ), loggedEvents[1].jdwpProcessPropertiesCollector
+        )
     }
 
     private suspend fun createJdwpProcess(

@@ -15,6 +15,7 @@
  */
 package com.android.adblib.tools.debugging.impl
 
+import com.android.adblib.AdbFailResponseException
 import com.android.adblib.AdbSession
 import com.android.adblib.AdbUsageTracker
 import com.android.adblib.ByteBufferAdbOutputChannel
@@ -67,6 +68,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import java.io.EOFException
 import java.nio.ByteBuffer
+import java.nio.channels.ClosedChannelException
 
 /**
  * Reads [JdwpProcessProperties] from a JDWP connection.
@@ -103,6 +105,8 @@ internal class JdwpProcessPropertiesCollector(
         // Opens a JDWP session to the process, and collect as many properties as we
         // can for a short period of time, then close the session and try again
         // later if needed.
+        var previouslyFailedCollectingCount = 0
+        var previouslyFailedThrowable: Throwable? = null
         while (true) {
 
             val collectState = CollectState(stateFlow)
@@ -148,6 +152,12 @@ internal class JdwpProcessPropertiesCollector(
                 }
 
                 if (collectState.shouldRetryCollecting) {
+                    logUsage(isSuccess = false,
+                             throwable = throwable,
+                             previouslyFailedCount = previouslyFailedCollectingCount++,
+                             previouslyFailedThrowable = previouslyFailedThrowable)
+                    previouslyFailedThrowable = throwable
+
                     // Delay and retry if we did not collect all properties we want
                     delay(session.property(PROCESS_PROPERTIES_RETRY_DURATION).toMillis())
                     logger.info {
@@ -155,20 +165,16 @@ internal class JdwpProcessPropertiesCollector(
                                 "because previous attempt failed with an error ('${throwable.message}')"
                     }
                 } else {
+                    logUsage(isSuccess = true,
+                             throwable = null, // Do not record a throwable since property collection was successful
+                             previouslyFailedCount = previouslyFailedCollectingCount,
+                             previouslyFailedThrowable = previouslyFailedThrowable)
                     collectState.propertiesFlow.update {
                         it.copy(
                             completed = true,
                             exception = exceptionToRecord
                         )
                     }
-                    session.host.usageTracker.logUsage(
-                        AdbUsageTracker.Event(
-                            device = device,
-                            jdwpProcessPropertiesCollector = AdbUsageTracker.JdwpProcessPropertiesCollectorEvent(
-                                isSuccess = true
-                            )
-                        )
-                    )
                     logger.debug { "Successfully retrieved JDWP process properties: ${stateFlow.value}" }
                     break
                 }
@@ -177,6 +183,25 @@ internal class JdwpProcessPropertiesCollector(
         assert(stateFlow.value.completed) {
             "Properties flow should have been set to `completed`"
         }
+    }
+
+    private fun logUsage(
+        isSuccess: Boolean,
+        throwable: Throwable?,
+        previouslyFailedCount: Int,
+        previouslyFailedThrowable: Throwable?
+    ) {
+        session.host.usageTracker.logUsage(
+            AdbUsageTracker.Event(
+                device = device,
+                jdwpProcessPropertiesCollector = AdbUsageTracker.JdwpProcessPropertiesCollectorEvent(
+                    isSuccess = isSuccess,
+                    failureType = throwable?.toAdbUsageTrackerFailureType(),
+                    previouslyFailedCount = previouslyFailedCount,
+                    previousFailureType = previouslyFailedThrowable?.toAdbUsageTrackerFailureType(),
+                )
+            )
+        )
     }
 
     /**
@@ -584,6 +609,25 @@ internal class JdwpProcessPropertiesCollector(
          * Note that sometimes the process name (or package name) can also be empty.
          */
         private val EARLY_PROCESS_NAMES = arrayOf("<pre-initialized>", "")
+    }
+}
+
+private fun Throwable.toAdbUsageTrackerFailureType(): AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType {
+    // This regex matches errors like `'closed' error on device serial #emulator-5554 executing service 'jdwp:2900'`
+    // which are mentioned in b/311788428 and b/322467516
+    val closedFailResponseExecutingService = Regex("'closed' error on .* executing service .*")
+
+    return when {
+        this is TimeoutCancellationException ->
+            AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.NO_RESPONSE
+
+        this is ClosedChannelException ->
+            AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.CLOSED_CHANNEL_EXCEPTION
+
+        this is AdbFailResponseException && closedFailResponseExecutingService.matches(message) ->
+            AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.CONNECTION_CLOSED_ERROR
+
+        else -> AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.OTHER_ERROR
     }
 }
 
