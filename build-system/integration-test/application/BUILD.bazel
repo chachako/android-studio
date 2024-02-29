@@ -297,6 +297,7 @@ gradle_integration_test(
         include = JAVA_COMPILE_TESTS,
     ),
     data = TEST_DATA + [
+        "//prebuilts/studio/jdk:jdk21",
         "//prebuilts/studio/jdk:jdk_1_8",
         "//prebuilts/studio/jdk/jdk11",
     ],

@@ -141,6 +141,50 @@ class JavaCompileWithToolChainTest {
             }
     }
 
+    @Test
+    fun testDeprecatedSourceAndTarget() {
+        TestFileUtils.appendToFile(
+            project.gradlePropertiesFile,
+            """
+            org.gradle.java.installations.auto-detect=false
+            org.gradle.java.installations.paths=${TestUtils.getJava21Jdk().toString().replace("\\", "/")}
+            """.trimIndent()
+        )
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+            android {
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_1_7
+                    targetCompatibility = JavaVersion.VERSION_1_7
+                }
+            }
+            java {
+                toolchain {
+                    languageVersion = JavaLanguageVersion.of(21)
+                }
+            }
+            // Remove the default settings in GradleTestProject.computeGradleBuildscript
+            tasks.withType(JavaCompile).configureEach {
+                options.compilerArgs.remove("-Werror")
+                javaCompiler = null
+            }
+            """.trimIndent()
+        )
+        // Run JavaCompile targeting Java 7, expect failure
+        val resultWithError = project.executor().expectFailure().run("compileDebugJavaWithJavac")
+        resultWithError.assertErrorContains("Java compiler version 21 has removed support for compiling with source/target version 7.")
+
+        // Run JavaCompile targeting Java 8, expect a warning
+        TestFileUtils.searchAndReplace(
+            project.buildFile,
+            "JavaVersion.VERSION_1_7",
+            "JavaVersion.VERSION_1_8",
+        )
+        val resultWithWarning = project.executor().run("compileDebugJavaWithJavac")
+        resultWithWarning.assertOutputContains("Java compiler version 21 has deprecated support for compiling with source/target version 8.")
+    }
+
     companion object {
         private val jdk8Location = TestUtils.getJava8Jdk().toString()
 
