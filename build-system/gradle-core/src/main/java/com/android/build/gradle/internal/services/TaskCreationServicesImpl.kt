@@ -19,7 +19,6 @@ package com.android.build.gradle.internal.services
 import com.android.build.gradle.internal.lint.LintFromMaven
 import org.gradle.api.Action
 import org.gradle.api.Named
-import org.gradle.api.Task
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.file.ConfigurableFileCollection
@@ -28,6 +27,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
@@ -49,6 +49,9 @@ class TaskCreationServicesImpl(projectServices: ProjectServices) : BaseServicesI
 
     override fun <T> listProperty(type: Class<T>): ListProperty<T> =
         projectServices.objectFactory.listProperty(type)
+
+    override fun <K, V> mapProperty(keyType: Class<K>, valueType: Class<V>): MapProperty<K, V> =
+        projectServices.objectFactory.mapProperty(keyType, valueType)
 
     override fun fileCollection(): ConfigurableFileCollection =
         projectServices.objectFactory.fileCollection()
