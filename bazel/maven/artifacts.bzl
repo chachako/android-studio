@@ -37,6 +37,7 @@ ARTIFACTS = [
     "com.google.crypto.tink:tink:1.7.0",
     "com.google.flogger:flogger:0.8",
     "com.google.flogger:flogger-system-backend:0.8",
+    "com.google.re2j:re2j:1.7",
     "com.fasterxml:aalto-xml:1.3.0",
     "com.fasterxml.jackson.core:jackson-annotations:2.11.1",
     "com.fasterxml.jackson.core:jackson-core:2.11.1",
