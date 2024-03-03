@@ -18,6 +18,8 @@ package com.android.fakeadbserver.hostcommandhandlers
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.FakeAdbServer
 import java.net.Socket
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 /** host:features returns list of features supported by both the device and the HOST.  */
 class FeaturesCommandHandler : SimpleHostCommandHandler("features") {
@@ -28,6 +30,11 @@ class FeaturesCommandHandler : SimpleHostCommandHandler("features") {
         device: DeviceState?,
         args: String
     ): Boolean {
+        device?.delayStdout?.let {
+            if (it != Duration.ZERO) {
+                Thread.sleep(it.toLong(DurationUnit.MILLISECONDS))
+            }
+        }
         if (device == null) {
             writeFailMissingDevice(responseSocket.getOutputStream(), command)
             return false

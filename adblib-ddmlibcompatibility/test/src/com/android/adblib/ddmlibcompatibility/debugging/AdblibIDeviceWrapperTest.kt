@@ -33,11 +33,15 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
 import org.junit.rules.TemporaryFolder
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.attribute.FileTime
 import java.nio.file.attribute.PosixFilePermission.OWNER_READ
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.io.path.readBytes
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class AdblibIDeviceWrapperTest {
 
@@ -170,6 +174,33 @@ class AdblibIDeviceWrapperTest {
         // Echo command outputs an additional newline
         assertEquals(2, listReceiver.lines.size)
         assertEquals("a\\nb", listReceiver.lines[0])
+    }
+
+    @Test
+    fun executeShellCommand_throwsIOException_whenInterrupted() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.BOOTLOADER
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val listReceiver = ListReceiver()
+        // Introduce a delay to give a thread a chance to get interrupted
+        deviceState.delayStdout = 2.toDuration(DurationUnit.SECONDS)
+
+        // Act
+        val thread = Thread {
+            adblibIDeviceWrapper.executeShellCommand("echo a\\nb", listReceiver)
+        }
+        val uncaughtException = AtomicReference<Throwable>()
+        thread.setUncaughtExceptionHandler { _, throwable -> uncaughtException.set(throwable) }
+        thread.start()
+        thread.interrupt()
+        thread.join()
+
+        // Assert
+        assertNotNull(uncaughtException.get())
+        assertTrue(uncaughtException.get() is IOException)
+        assertEquals("Operation interrupted", uncaughtException.get()?.message)
     }
 
     @Test
@@ -347,6 +378,30 @@ class AdblibIDeviceWrapperTest {
 
         // Assert
         assertTrue(supportsShellV2)
+    }
+
+    @Test
+    fun supportsFeature_doesNotThrow_whenInterrupted() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice("device1", DeviceState.DeviceStatus.ONLINE)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        // Introduce a delay to give a thread a chance to get interrupted
+        deviceState.delayStdout = 2.toDuration(DurationUnit.SECONDS)
+
+        // Act
+        val supportsShellV2 = AtomicReference<Boolean>()
+        val thread = Thread {
+            supportsShellV2.set(adblibIDeviceWrapper.supportsFeature(IDevice.Feature.SHELL_V2))
+        }
+        val uncaughtException = AtomicReference<Throwable>()
+        thread.setUncaughtExceptionHandler { _, throwable -> uncaughtException.set(throwable) }
+        thread.start()
+        thread.interrupt()
+        thread.join()
+
+        // Assert
+        assertNull(uncaughtException.get())
+        assertFalse(supportsShellV2.get())
     }
 
     @Test
@@ -636,6 +691,33 @@ class AdblibIDeviceWrapperTest {
         assertEquals(1, deviceState.allPortForwarders.size)
         val portForwarder = deviceState.allPortForwarders.values.asList()[0]
         assertEquals(4000, portForwarder?.destination?.port)
+    }
+
+    @Test
+    fun testForward_throwsIOException_whenInterrupted() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.ONLINE
+        )
+        assertEquals(0, deviceState.allPortForwarders.size)
+        // Introduce a delay to give a thread a chance to get interrupted
+        deviceState.delayStdout = 2.toDuration(DurationUnit.SECONDS)
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+        // Act
+        val thread = Thread {
+            adblibIDeviceWrapper.createForward(0, 4000)
+        }
+        val uncaughtException = AtomicReference<Throwable>()
+        thread.setUncaughtExceptionHandler { _, throwable -> uncaughtException.set(throwable) }
+        thread.start()
+        thread.interrupt()
+        thread.join()
+
+        // Assert
+        assertNotNull(uncaughtException.get())
+        assertTrue(uncaughtException.get() is IOException)
+        assertEquals("Operation interrupted", uncaughtException.get()?.message)
     }
 
     @Test

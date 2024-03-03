@@ -20,8 +20,9 @@ import com.android.fakeadbserver.FakeAdbServer
 import com.android.fakeadbserver.PortForwarder
 import com.android.fakeadbserver.devicecommandhandlers.ForwardArgs.Companion.parse
 import java.io.IOException
-import java.io.OutputStream
 import java.net.Socket
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 /**
  * host-prefix:forward ADB command adds a port forward to the connected device. This implementation
@@ -36,8 +37,7 @@ class ForwardCommandHandler : SimpleHostCommandHandler("forward") {
         args: String
     ): Boolean {
         assert(device != null)
-        val stream: OutputStream
-        stream = try {
+        val stream = try {
             responseSocket.getOutputStream()
         } catch (ignored: IOException) {
             return false
@@ -45,6 +45,11 @@ class ForwardCommandHandler : SimpleHostCommandHandler("forward") {
         val (norebind, hostTransport, fromTransportArg, deviceTransport, toTransportArg) = parse(
             args
         )
+        device?.delayStdout?.let {
+            if (it != Duration.ZERO) {
+                Thread.sleep(it.toLong(DurationUnit.MILLISECONDS))
+            }
+        }
         when (hostTransport) {
             "tcp" -> {}
             "local" -> {

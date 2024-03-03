@@ -316,12 +316,20 @@ internal class AdblibIDeviceWrapper(
     override fun supportsFeature(feature: IDevice.Feature): Boolean {
         // NOTE: Calling `logUsage` here would log too many events, so let's not log these events
         val availableFeatures: List<String> =
-            runBlockingLegacy {
-                connectedDevice.session.hostServices.availableFeatures(
-                    DeviceSelector.fromSerialNumber(
-                        serialNumber
+            try {
+                runBlockingLegacy {
+                    connectedDevice.session.hostServices.availableFeatures(
+                        DeviceSelector.fromSerialNumber(
+                            serialNumber
+                        )
                     )
-                )
+                }
+            } catch (e: IOException) {
+                // ignore to match the behavior in the `DeviceImpl`
+                listOf()
+            } catch (e: TimeoutException) {
+                // ignore to match the behavior in the `DeviceImpl`
+                listOf()
             }
 
         return iDeviceSharedImpl.supportsFeature(feature, availableFeatures.toSet())
@@ -378,7 +386,7 @@ internal class AdblibIDeviceWrapper(
         return deviceClientManager.profileableClients.toTypedArray()
     }
 
-    override fun getSyncService(): SyncService = runBlockingLegacy {
+    override fun getSyncService(): SyncService {
         unsupportedMethod()
     }
 
@@ -954,15 +962,23 @@ internal class AdblibIDeviceWrapper(
      * Similar to [runBlocking] but with a custom [timeout]
      *
      * @throws TimeoutException if [block] take more than [timeout] to execute
+     * @throws IOException that wraps `InterruptedException`, if encountered, in order to observe
+     *  `IDevice` interface checked exceptions which don't include throwing `InterruptedException`
      */
     private fun <R> runBlockingLegacy(
         timeout: Duration = Duration.ofMillis(DdmPreferences.getTimeOut().toLong()),
         block: suspend CoroutineScope.() -> R
     ): R {
-        return runBlocking {
-            connectedDevice.session.withErrorTimeout(timeout) {
-                block()
+        try {
+            return runBlocking {
+                connectedDevice.session.withErrorTimeout(timeout) {
+                    block()
+                }
             }
+        } catch (e: InterruptedException) {
+            // We wrap `InterruptedException` in `IOException` to maintain the contract
+            // defined by `IDevice` interface where no `InterruptedException` is ever thrown
+            throw IOException("Operation interrupted", e)
         }
     }
 

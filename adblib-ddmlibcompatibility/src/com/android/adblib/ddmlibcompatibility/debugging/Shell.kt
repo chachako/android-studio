@@ -93,8 +93,8 @@ internal fun executeShellCommand(
     }
 
     shellCommand.withLegacyCollector(stdoutCollector)
-    runBlocking {
-        mapToDdmlibException {
+    mapToDdmlibException {
+        runBlocking {
             // Note: We know there is only one item in the flow (Unit), because our
             //       ShellCollector implementation forwards buffers directly to
             //       the IShellOutputReceiver
@@ -159,8 +159,8 @@ internal fun executeAbbCommand(
 
     val stdoutCollector = ShellCollectorToIShellOutputReceiver(receiver)
     abbCommand.withLegacyCollector(stdoutCollector)
-    runBlocking {
-        mapToDdmlibException {
+    mapToDdmlibException {
+        runBlocking {
             // Note: We know there is only one item in the flow (Unit), because our
             //       ShellCollector implementation forwards buffers directly to
             //       the IShellOutputReceiver
@@ -212,5 +212,9 @@ private inline fun <R> mapToDdmlibException(block: () -> R): R {
   }
   catch (e: AdbFailResponseException) {
     throw AdbCommandRejectedException.create(e.failMessage)
+  } catch (e: InterruptedException) {
+      // We wrap `InterruptedException` in `IOException` to maintain the contract
+      // defined by `IDevice` interface where no `InterruptedException` is ever thrown
+      throw IOException("Operation interrupted", e)
   }
 }
