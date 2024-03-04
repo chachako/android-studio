@@ -107,6 +107,7 @@ import com.google.wireless.android.sdk.stats.ApiVersion
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.Project
 import org.gradle.api.attributes.Attribute
+import org.gradle.api.internal.GeneratedSubclass
 import java.io.File
 import java.util.Locale
 import java.util.stream.Collectors
@@ -940,13 +941,10 @@ class VariantManager<
 
                 variantApiOperationsRegistrar.dslExtensions.forEach { registeredExtension ->
                     registeredExtension.configurator.invoke(variantExtensionConfig).let {
-                        var extensionClass: Class<*>? = it.javaClass
-                        while (extensionClass != null && extensionClass.isSynthetic) {
-                            extensionClass = it.javaClass.superclass
-                        }
-                        if (extensionClass != null) {
-                            variantBuilder.registerExtension(extensionClass, it)
-                        }
+                        variantBuilder.registerExtension(
+                            if (it is GeneratedSubclass) it.publicType() else it.javaClass,
+                            it
+                        )
                     }
                 }
 
