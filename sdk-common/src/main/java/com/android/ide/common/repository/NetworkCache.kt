@@ -60,20 +60,13 @@ abstract class NetworkCache constructor(
         val modifiedSince: Boolean
     )
 
-    @Slow
-    @Deprecated("use method with lastModified")
-    protected open fun readUrlData(url: String, timeout: Int): ByteArray? {
-        error("Must override one readUrlData method")
-    }
-
     /**
      * Reads the given query URL in, with the given time out, and returns the bytes found.  The
      * second element of the pair is false if the remote source reported an unmodified resource
      * and true otherwise.
      */
     @Slow
-    protected open fun readUrlData(url: String, timeout: Int, lastModified: Long) =
-        ReadUrlDataResult(readUrlData(url, timeout), true)
+    protected abstract fun readUrlData(url: String, timeout: Int, lastModified: Long): ReadUrlDataResult
 
     /** Provides the data from offline/local storage, if possible. */
     protected abstract fun readDefaultData(relative: String): InputStream?

@@ -117,11 +117,8 @@ class NetworkCacheTest {
     @Test
     fun testNetworkDisabledDeprecatedOverride() {
         val cache = object : TestCache(networkEnabled = false) {
-            @Deprecated("use method with lastModified")
-            override fun readUrlData(url: String, timeout: Int): ByteArray? {
-                fail("No network calls expected")
-                return null
-            }
+            override fun readUrlData(url: String, timeout: Int, lastModified: Long) =
+                ReadUrlDataResult(null, true).also { fail("No network calls expected") }
         }
 
         cache.loadArtifact()
@@ -131,11 +128,8 @@ class NetworkCacheTest {
     fun testNetworkEnabledDeprecatedOverride() {
         var networkCalls = 0
         val networkEnabledCache = object : TestCache(networkEnabled = true) {
-            @Deprecated("use method with lastModified")
-            override fun readUrlData(url: String, timeout: Int): ByteArray? {
-                networkCalls++
-                return null
-            }
+            override fun readUrlData(url: String, timeout: Int, lastModified: Long) =
+                ReadUrlDataResult(null, true).also { networkCalls++ }
         }
 
         networkEnabledCache.loadArtifact()
@@ -152,9 +146,8 @@ class NetworkCacheTest {
                 Files.write(artifactPath, ByteArray(5) { i -> i.toByte() })
             }
 
-            @Deprecated("use method with lastModified")
-            override fun readUrlData(url: String, timeout: Int) =
-                null.also { fail("No network calls expected") }
+            override fun readUrlData(url: String, timeout: Int, lastModified: Long) =
+                ReadUrlDataResult(null, true).also { fail("No network calls expected") }
 
         }
         val data = networkEnabledCache.loadArtifact()!!
@@ -171,8 +164,8 @@ class NetworkCacheTest {
                 Files.setLastModifiedTime(artifactPath, FileTime.fromMillis(42))
             }
 
-            @Deprecated("use method with lastModified")
-            override fun readUrlData(url: String, timeout: Int) = ByteArray(5) { i -> i.toByte() }
+            override fun readUrlData(url: String, timeout: Int, lastModified: Long) =
+                ReadUrlDataResult(ByteArray(5) { i -> i.toByte() }, true)
         }
 
         val data = networkEnabledCacheWithMiss.loadArtifact()!!
