@@ -4,7 +4,10 @@ package(default_visibility = ["//visibility:public"])
 
 kotlin_library(
     name = "fake_android",
-    srcs = glob(["src/**/*.kt"]),
+    srcs = glob([
+        "src/**/*.kt",
+        "src/**/*.java",
+    ]),
     deps = [
         "//prebuilts/studio/sdk:platforms/latest_jar",
         "@maven//:org.xerial.sqlite-jdbc",

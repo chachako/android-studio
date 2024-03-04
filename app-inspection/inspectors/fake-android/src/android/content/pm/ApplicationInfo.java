@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package android.content.pm
+package android.content.pm;
 
-class ApplicationInfo {
-  val uid: Int = 0
+public class ApplicationInfo {
+    public int uid = 0;
 }

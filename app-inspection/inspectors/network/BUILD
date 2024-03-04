@@ -33,7 +33,6 @@ app_inspection_jar(
     # do not sort: fake_android must come before latest_jar in the classpath to override small pieces of it
     deps = [
         ":network_inspector_java_proto",
-        "//tools/base/app-inspection/inspectors/fake-android:fake_android",
         "//prebuilts/studio/sdk:platforms/latest_jar",
         "//prebuilts/tools/common/m2:androidx.inspection.inspection.1.0.0",
         "//prebuilts/tools/common/m2:io.grpc.grpc-api.1.57.0",
