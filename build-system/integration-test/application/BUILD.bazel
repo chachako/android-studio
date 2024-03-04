@@ -493,6 +493,7 @@ gradle_integration_test(
 
 gradle_integration_test(
     name = "screenshot-tests",
+    timeout = "long",
     srcs = [
         "src/test/java/com/android/build/gradle/integration/testing/screenshot/ScreenshotTest.kt",
     ],
