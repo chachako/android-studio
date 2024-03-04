@@ -16,14 +16,15 @@
 package com.android.ide.common.resources.localeGen
 
 import com.android.ide.common.resources.configuration.FolderConfiguration
-import com.android.ide.common.resources.generateFolderLocaleSet
 import com.android.ide.common.resources.writeLocaleConfig
 import com.android.ide.common.resources.generateLocaleConfigManifestAttribute
+import com.android.ide.common.resources.generateLocaleList
 import com.android.ide.common.resources.generateLocaleString
+import com.android.ide.common.resources.mergeLocaleLists
 import com.android.ide.common.resources.validateLocale
-import com.android.ide.common.resources.readSupportedLocales
 import com.android.ide.common.resources.writeSupportedLocales
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
+import junit.framework.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -44,18 +45,16 @@ class LocaleGenerationTest {
     }
     @Test
     fun `Test that manifest attribute is correctly generated`() {
-        Truth.assertThat(generateLocaleConfigManifestAttribute("_gradle_res_locale_config"))
-            .isEqualTo("@xml/_gradle_res_locale_config")
+        assertEquals("@xml/_gradle_res_locale_config",
+            generateLocaleConfigManifestAttribute("_gradle_res_locale_config"))
     }
 
     @Test
     fun `Test that locale string is correctly generated`() {
-        Truth.assertThat(generateLocaleString(
-            FolderConfiguration.getConfig("values-en-rUS".split("-"))!!.localeQualifier)
-        ).isEqualTo("en-US")
-        Truth.assertThat(generateLocaleString(
-            FolderConfiguration.getConfig("values-b+zh+Hans+SG".split("-"))!!.localeQualifier)
-        ).isEqualTo("zh-Hans-SG")
+        assertEquals("en-US", generateLocaleString(
+            FolderConfiguration.getConfig("values-en-rUS".split("-")).localeQualifier))
+        assertEquals("zh-Hans-SG", generateLocaleString(
+            FolderConfiguration.getConfig("values-b+zh+Hans+SG".split("-")).localeQualifier))
     }
 
     @Test
@@ -69,8 +68,8 @@ class LocaleGenerationTest {
         val res3 = temporaryFolder.newFolder("res3")
         addResFolder(res3, "values-b+zh+Hans+SG", false)
 
-        Truth.assertThat(generateFolderLocaleSet(listOf(res1, res2, res3)))
-            .isEqualTo(setOf("b+es+ES", "en-rUS", "ru-rRU", "pt-rBR", "b+zh+Hans+SG"))
+        assertThat(generateLocaleList(listOf(res1, res2, res3)))
+            .isEqualTo(listOf("es-ES", "en-US", "ru-RU", "pt-BR", "zh-Hans-SG"))
     }
 
     @Test
@@ -79,7 +78,7 @@ class LocaleGenerationTest {
         addResFolder(res1, "values-en-rUS", false)
         addResFolder(res1, "values-ru-rRU", true)
 
-        Truth.assertThat(generateFolderLocaleSet(listOf(res1))).isEqualTo(setOf("en-rUS"))
+        assertThat(generateLocaleList(listOf(res1))).isEqualTo(listOf("en-US"))
     }
 
     @Test
@@ -89,7 +88,7 @@ class LocaleGenerationTest {
             output = outfile,
             locales = setOf("en-US", "ru-RU", "es-ES", "pt-BR", "zh-Hans-SG", "en-GB")
         )
-        Truth.assertThat(
+        assertThat(
             listOf(
                 """<locale-config xmlns:android="http://schemas.android.com/apk/res/android">""",
                 """    <locale android:name="en-US"/>""",
@@ -102,11 +101,24 @@ class LocaleGenerationTest {
     }
 
     @Test
+    fun `Test that locale lists are correctly merged`() {
+        assertThat(listOf("en-US", "en-GB", "es-ES", "pt-BR")).containsExactlyElementsIn(
+            mergeLocaleLists(
+                listOf(
+                    listOf("en-US", "en-GB", "en-GB"),
+                    listOf("es-ES", "pt-BR"),
+                    listOf()
+                )
+            )
+        ).inOrder()
+    }
+
+    @Test
     fun `Test supported locales read and write`() {
         val jsonFile = temporaryFolder.newFile("locales.txt")
-        val locales = listOf("*en-US", "es-ES", "pt-BR", "ru-RU", "zh-Hans-SG")
+        val locales = listOf("en-US", "es-ES", "pt-BR", "ru-RU", "zh-Hans-SG")
         // Write file to json and read it back to make sure it results in the same list
-        Truth.assertThat(locales).isEqualTo(
+        assertThat(locales).isEqualTo(
             run {
                 writeSupportedLocales(jsonFile, locales.drop(1), defaultLocale = "en-US")
                 jsonFile.readLines()
@@ -117,30 +129,12 @@ class LocaleGenerationTest {
     @Test
     fun `Test locale validation`() {
         // Make sure invalid locales are not accepted
-        Truth.assertThat(validateLocale("invalid-locale")).isNull()
+        assertEquals(null, validateLocale("invalid-locale"))
         // Only locales in the same format as the locales config file are accepted
         // (en-US, and not b+en+US, for instance)
-        Truth.assertThat(validateLocale("b+pt+BR")).isNull()
-        // Make sure valid locales are supported
-        Truth.assertThat(validateLocale("en-US")).isEqualTo("en-US")
-    }
+        assertEquals(null, validateLocale("b+pt+BR"))
 
-    @Test
-    fun `Test read supported locales`() {
-        val supportedLocales = temporaryFolder.newFile("supported_locales.txt")
-        supportedLocales.writeText(
-            """
-                *chr
-                zh
-                es-rES
-                pt-rBR
-                b+zh+Hant
-                b+zh+Hant+TW
-            """.trimIndent()
-        )
-        val supportedLocalesObject = readSupportedLocales(supportedLocales)
-        Truth.assertThat(supportedLocalesObject.defaultLocale).isEqualTo("chr")
-        Truth.assertThat(supportedLocalesObject.folderLocales)
-            .containsExactly("zh", "es-rES", "pt-rBR", "b+zh+Hant", "b+zh+Hant+TW")
+        // Make sure valid locales are supported
+        assertEquals("en-US", validateLocale("en-US"))
     }
 }

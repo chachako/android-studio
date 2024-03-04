@@ -2089,8 +2089,8 @@ public final class SdkConstants {
     public static final String VALUE_DELIMITER_PIPE = "|";
 
     // Pseudolocale Values
-    public static final String EN_XA = "en-rXA";
-    public static final String AR_XB = "ar-rXB";
+    public static final String EN_XA = "en-XA";
+    public static final String AR_XB = "ar-XB";
 
     // Menus
     public static final String ATTR_CHECKABLE = "checkable";

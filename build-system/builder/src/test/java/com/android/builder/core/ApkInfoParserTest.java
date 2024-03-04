@@ -17,9 +17,7 @@
 package com.android.builder.core;
 
 import com.google.common.io.Resources;
-import com.google.common.truth.Truth;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 import junit.framework.TestCase;
 
@@ -50,18 +48,5 @@ public class ApkInfoParserTest extends TestCase {
         assertEquals("com.android.tests.basic.debug", apkInfo.getPackageName());
         assertEquals(Integer.valueOf(12), apkInfo.getVersionCode());
         assertEquals("2.0", apkInfo.getVersionName());
-    }
-
-    public void testGetLocales() throws Exception {
-        List<String> lines =
-                Resources.readLines(
-                        Resources.getResource("testData/core/aaptWithLocales.txt"),
-                        StandardCharsets.UTF_8);
-        ApkInfoParser.ApkInfo apkInfo = ApkInfoParser.getApkInfo(lines);
-        List<String> locales = ApkInfoParser.getLocalesFromApkContents(lines);
-
-        assertNotNull(apkInfo);
-        List<String> expectedLocales = Arrays.asList("en", "fr", "--_--", "zh-Hant", "de-DE");
-        Truth.assertThat(locales).containsExactlyElementsIn(expectedLocales);
     }
 }
