@@ -126,12 +126,6 @@ class ScreenshotTest {
                     }
 
                     @Preview(showBackground = true)
-                    @Composable
-                    fun simpleComposableTest_3() {
-                        SimpleComposable()
-                    }
-
-                    @Preview(showBackground = true)
                     @Preview(showBackground = false)
                     @Composable
                     fun multiPreviewTest() {
@@ -145,6 +139,23 @@ class ScreenshotTest {
                     ) {
                        SimpleComposable(data)
                     }
+                }
+
+            """.trimIndent()
+            )
+            addFile(
+                "src/androidTest/java/com/TopLevelPreviewTest.kt", """
+
+                package pkg.name
+
+                import androidx.compose.ui.tooling.preview.Preview
+                import androidx.compose.ui.tooling.preview.PreviewParameter
+                import androidx.compose.runtime.Composable
+
+                @Preview(showBackground = true)
+                @Composable
+                fun simpleComposableTest_3() {
+                    SimpleComposable()
                 }
 
             """.trimIndent()
@@ -201,14 +212,6 @@ class ScreenshotTest {
                   "imageName": "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee"
                 },
                 {
-                  "methodFQN": "pkg.name.ExampleTest.simpleComposableTest_3",
-                  "methodParams": [],
-                  "previewParams": {
-                    "showBackground": "true"
-                  },
-                  "imageName": "pkg.name.ExampleTest.simpleComposableTest_3_3d8b4969_da39a3ee"
-                },
-                {
                   "methodFQN": "pkg.name.ExampleTest.multiPreviewTest",
                   "methodParams": [],
                   "previewParams": {
@@ -233,6 +236,14 @@ class ScreenshotTest {
                   ],
                   "previewParams": {},
                   "imageName": "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523"
+                },
+                {
+                  "methodFQN": "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3",
+                  "methodParams": [],
+                  "previewParams": {
+                    "showBackground": "true"
+                  },
+                  "imageName": "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee"
                 }
               ]
             }
@@ -248,11 +259,11 @@ class ScreenshotTest {
         assertThat(referenceScreenshotDir.listDirectoryEntries().map { it.name }).containsExactly(
             "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee_0.png",
             "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee_0.png",
-            "pkg.name.ExampleTest.simpleComposableTest_3_3d8b4969_da39a3ee_0.png",
             "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee_0.png",
             "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee_0.png",
             "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_0.png",
-            "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_1.png"
+            "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_1.png",
+            "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee_0.png"
         )
 
         // Validate previews matches screenshots
@@ -261,13 +272,13 @@ class ScreenshotTest {
         // Verify that test engine generated HTML reports and all tests pass
         val indexHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
         val classHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/classes/pkg.name.ExampleTest.html")
+        val class2HtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/classes/pkg.name.TopLevelPreviewTestKt.html")
         val packageHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/packages/pkg.name.html")
         assertThat(indexHtmlReport).exists()
         assertThat(classHtmlReport).exists()
         val expectedOutput = listOf(
             """<td class="success">simpleComposableTest</td>""",
             """<td class="success">simpleComposableTest2</td>""",
-            """<td class="success">simpleComposableTest_3</td>""",
             """<td class="success">multiPreviewTest_{showBackground=true}</td>""",
             """<td class="success">multiPreviewTest_{showBackground=false}</td>""",
             """<td class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</td>""",
@@ -275,6 +286,7 @@ class ScreenshotTest {
         )
         var classHtmlReportText = classHtmlReport.readText()
         expectedOutput.forEach { assertThat(classHtmlReportText).contains(it) }
+        assertThat(class2HtmlReport.readText()).contains("""<td class="success">simpleComposableTest_3</td>""")
         assertThat(packageHtmlReport).exists()
 
         // Assert that no diff images were generated because screenshot matched the reference image
@@ -296,7 +308,6 @@ class ScreenshotTest {
             "Failed tests",
             """<td class="failures">simpleComposableTest</td>""",
             """<td class="failures">simpleComposableTest2</td>""",
-            """<td class="failures">simpleComposableTest_3</td>""",
             """<td class="failures">multiPreviewTest_{showBackground=true}</td>""",
             """<td class="failures">multiPreviewTest_{showBackground=false}</td>""",
             """<td class="failures">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</td>""",
@@ -304,16 +315,17 @@ class ScreenshotTest {
         )
         classHtmlReportText = classHtmlReport.readText()
         expectedOutputAfterChangingPreviews.forEach { assertThat(classHtmlReportText).contains(it) }
+        assertThat(class2HtmlReport.readText()).contains("""<td class="failures">simpleComposableTest_3</td>""")
         assertThat(packageHtmlReport).exists()
 
         assertThat(diffDir).exists()
         assertThat(diffDir.listDirectoryEntries().map { it.name }).containsExactly(
             "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee_0.png",
             "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee_0.png",
-            "pkg.name.ExampleTest.simpleComposableTest_3_3d8b4969_da39a3ee_0.png",
             "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee_0.png",
             "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee_0.png",
-            "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_0.png"
+            "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_0.png",
+            "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee_0.png"
         )
     }
 
@@ -338,9 +350,12 @@ class ScreenshotTest {
     @Test
     fun runPreviewScreenshotTestWithNoPreviewsToTest() {
         // Comment out preview tests
-        val testFile = project.projectDir.resolve("src/androidTest/java/com/ExampleTest.kt")
-        TestFileUtils.replaceLine(testFile, 1, "/*")
-        TestFileUtils.replaceLine(testFile, testFile.readLines().size, "*/")
+        val testFile1 = project.projectDir.resolve("src/androidTest/java/com/ExampleTest.kt")
+        TestFileUtils.replaceLine(testFile1, 1, "/*")
+        TestFileUtils.replaceLine(testFile1, testFile1.readLines().size, "*/")
+        val testFile2 = project.projectDir.resolve("src/androidTest/java/com/TopLevelPreviewTest.kt")
+        TestFileUtils.replaceLine(testFile2, 1, "/*")
+        TestFileUtils.replaceLine(testFile2, testFile2.readLines().size, "*/")
 
         getExecutor().run("previewScreenshotUpdateDebugAndroidTest")
 
@@ -354,7 +369,9 @@ class ScreenshotTest {
         assertThat(indexHtmlReport.readText()).contains("""<div class="counter">0</div>""")
 
         // Uncomment preview tests
-        TestFileUtils.replaceLine(testFile, 1, "")
-        TestFileUtils.replaceLine(testFile, testFile.readLines().size, "")
+        TestFileUtils.replaceLine(testFile1, 1, "")
+        TestFileUtils.replaceLine(testFile1, testFile1.readLines().size, "")
+        TestFileUtils.replaceLine(testFile2, 1, "")
+        TestFileUtils.replaceLine(testFile2, testFile2.readLines().size, "")
     }
 }

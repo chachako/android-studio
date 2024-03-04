@@ -65,7 +65,8 @@ fun findPreviewsAndSerialize(classPath: List<String>, outputFile: Path) {
         "androidx.compose.ui.tooling.preview.PreviewParameter"
     )
     val multipreview = buildMultipreview(settings, classPath) {
-        getClassName(it).endsWith("Test")
+        val className = getClassName(it)
+        className.endsWith("Test") || className.endsWith("TestKt")
     }
     val previews =  multipreview.methods.flatMap { method ->
         multipreview.getAnnotations(method).map { baseAnnotation ->
