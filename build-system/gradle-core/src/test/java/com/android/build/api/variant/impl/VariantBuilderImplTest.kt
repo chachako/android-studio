@@ -18,7 +18,9 @@ package com.android.build.api.variant.impl
 
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.VariantBuilder
+import com.android.build.gradle.internal.core.PostProcessingOptions
 import com.android.build.gradle.internal.core.dsl.VariantDslInfo
+import com.android.build.gradle.internal.core.dsl.features.OptimizationDslInfo
 import com.android.build.gradle.internal.fixtures.FakeProviderFactory
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.VariantBuilderServices
@@ -70,6 +72,11 @@ internal class VariantBuilderImplTest {
         Mockito.`when`(variantBuilderServices.projectOptions).thenReturn(
             ProjectOptions(ImmutableMap.of(), FakeProviderFactory.factory)
         )
+        val optimizationDslInfo = Mockito.mock(OptimizationDslInfo::class.java)
+        val postProcessingOptions = Mockito.mock(PostProcessingOptions::class.java)
+        Mockito.`when`(optimizationDslInfo.postProcessingOptions).thenReturn(postProcessingOptions)
+        Mockito.`when`(postProcessingOptions.hasPostProcessingConfiguration()).thenReturn(false)
+        Mockito.`when`(variantDslInfo.optimizationDslInfo).thenReturn(optimizationDslInfo)
         Mockito.`when`(variantDslInfo.minSdkVersion).thenReturn(MutableAndroidVersion(12, null))
         Mockito.`when`(variantDslInfo.targetSdkVersion).thenReturn(null)
     }
