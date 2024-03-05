@@ -19,18 +19,14 @@ package com.android.tools.preview.screenshot.tasks
 import com.android.SdkConstants
 import com.android.tools.preview.screenshot.configureInput
 import com.android.tools.preview.screenshot.services.AnalyticsService
-import com.android.tools.render.compose.readComposeRenderingResultJson
 import com.android.tools.render.compose.readComposeScreenshotsJson
 import com.android.utils.FileUtils
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
-import org.gradle.api.JavaVersion
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
@@ -38,7 +34,6 @@ import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
@@ -49,6 +44,8 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.VerificationTask
 import org.gradle.jvm.toolchain.JavaLauncher
+import org.gradle.workers.WorkerExecutor
+import javax.inject.Inject
 
 /**
  * Invoke Render CLI tool
@@ -108,6 +105,9 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     @get:Internal
     abstract val analyticsService: Property<AnalyticsService>
 
+    @get:Inject
+    abstract val workerExecutor: WorkerExecutor
+
     @TaskAction
     fun run() = analyticsService.get().recordTaskAction(path) {
         FileUtils.cleanOutputDir(outputDir.get().asFile)
@@ -134,48 +134,14 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             previewsDiscovered.get().asFile
         )
 
-        val javaRuntimeVersion =
-            JavaVersion.toVersion(javaLauncher.get().metadata.javaRuntimeVersion)
-        val params = listOfNotNull(
-            javaLauncher.get().executablePath.asFile.absolutePath,
-            if (javaRuntimeVersion.isCompatibleWith(JavaVersion.VERSION_17))
-                "-Djava.security.manager=allow"
-            else
-                null,
-            "-cp",
-            screenshotCliJar.singleFile.absolutePath,
-            "com.android.tools.render.compose.MainKt",
-            cliToolInput.get().asFile.absolutePath
-        )
-        if (logger.isEnabled(LogLevel.INFO)) {
-            logger.info("Render CLI command: ${params.joinToString(" ")}")
-        }
         // invoke CLI tool
-        val process = ProcessBuilder(params).apply {
-            redirectInput()
-            environment().remove("TEST_WORKSPACE")
-            redirectErrorStream(true)
-            redirectOutput(ProcessBuilder.Redirect.PIPE)
-        }.start()
-        process.waitFor()
-        val resultFile = outputDir.file("results.json").get().asFile
-        if (!resultFile.exists()) {
-            val output = process.inputStream.bufferedReader().readText()
-            throw GradleException("There was an error with the rendering process. Process output: $output")
+        val workerQueue = workerExecutor.processIsolation()
+        workerQueue.submit(PreviewRenderWorkAction::class.java) { parameters ->
+            parameters.cliToolInput.set(cliToolInput)
+            parameters.toolJarPath.setFrom(screenshotCliJar)
+            parameters.outputDir.set(outputDir)
         }
-        val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
-        val renderingErrors =
-            composeRenderingResult.screenshotResults.count { it.imagePath == null && it.error != null && it.error!!.status != "SUCCESS" }
-        if (composeRenderingResult.globalError != null || renderingErrors > 0) {
-            throw GradleException("Rendering failed for one or more previews. For more details, check ${resultFile.absolutePath}")
-        }
-        val renderWarnings = composeRenderingResult.screenshotResults.count { it.error != null }
-        if (renderWarnings > 0) {
-            logger.log(
-                LogLevel.WARN,
-                "There were some issues with rendering one or more previews. For more details, check ${resultFile.absolutePath}"
-            )
-        }
+
     }
 
     private fun getResourcesApk(): String {
@@ -188,3 +154,4 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             throw RuntimeException("Resources file missing")
     }
 }
+
