@@ -37,7 +37,7 @@
                 <d:sub-type>1</d:sub-type>
                 <d:ranges>0-180</d:ranges>
                 <d:defaults>180</d:defaults>
-                <d:areas>1840-0-0-1840</d:areas>
+                <d:areas>1080-0-0-1840</d:areas>
                 <d:posture-list>1, 2, 3</d:posture-list>
                 <d:hinge-angles-posture-definitions>0-30, 30-150, 150-180</d:hinge-angles-posture-definitions>
             </d:hinge>
