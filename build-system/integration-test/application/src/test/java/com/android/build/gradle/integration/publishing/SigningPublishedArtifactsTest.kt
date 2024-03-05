@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.integration.publishing
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
@@ -80,8 +79,8 @@ class SigningPublishedArtifactsTest {
                     signing.password=Testing123
                     signing.secretKeyRingFile=./../secring.gpg
                 """.trimIndent())
-        } //https://github.com/gradle/gradle/issues/20275
-    }.withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF).create()
+        }
+    }.create()
 
     @Before
     fun setUp() {

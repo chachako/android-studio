@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
@@ -265,9 +264,7 @@ public class SdkAutoDownloadTest {
         File platformTools = FileUtils.join(mSdkHome, SdkConstants.FD_PLATFORM_TOOLS);
 
         // Run one build to setup the SDK with it auto-downloaded
-        getExecutor()
-                .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.OFF)
-                .run("assembleDebug");
+        getExecutor().run("assembleDebug");
         assertThat(platformTools).isDirectory();
 
         PathUtils.deleteRecursivelyIfExists(platformTools.toPath());
