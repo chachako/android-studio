@@ -38,7 +38,7 @@ import java.lang.ref.WeakReference
 /** [RenderModelModule] for standalone rendering. */
 internal class StandaloneRenderModelModule(
     override val resourceRepositoryManager: ResourceRepositoryManager,
-    override val info: AndroidModuleInfo,
+    override val info: AndroidModuleInfo?,
     override val androidPlatform: AndroidPlatform,
     override val moduleKey: ModuleKey,
     override val dependencies: ModuleDependencies,
