@@ -833,6 +833,8 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-gradle-plugin:jar:gradle76:1.8.0",
     "org.jetbrains.kotlin:kotlin-gradle-plugin:jar:gradle76:1.8.10",
     "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable:1.8.21",
+    "org.jetbrains.kotlin:kotlin-parcelize-compiler:1.7.20",
+    "org.jetbrains.kotlin:kotlin-parcelize-runtime:1.7.20",
     "org.jetbrains.kotlin:kotlin-reflect:1.4.31",
     "org.jetbrains.kotlin:kotlin-reflect:1.5.21",
     "org.jetbrains.kotlin:kotlin-reflect:1.6.10",
