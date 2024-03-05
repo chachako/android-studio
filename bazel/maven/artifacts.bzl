@@ -190,6 +190,7 @@ ARTIFACTS = [
     "org.jspecify:jspecify:0.2.0",
     "org.mockito:mockito-core:5.6.0",
     "org.mortbay.jetty:jetty:6.1.26",
+    "org.robolectric:robolectric:4.8.2",
     "org.ow2.asm:asm:9.6",
     "org.ow2.asm:asm-analysis:9.6",
     "org.ow2.asm:asm-commons:9.6",
@@ -437,6 +438,7 @@ DATA = [
     "androidx.test:core:1.3.0",  # TODO: To be removed once dependent tests pass b/273872043
     "androidx.test:core:1.4.0-alpha06",
     "androidx.test:core:1.5.0",
+    "androidx.test:monitor:1.6.1",
     "androidx.test:orchestrator:1.5.0-alpha02",
     "androidx.test:rules:1.1.0",
     "androidx.test:rules:1.3.0",
@@ -902,7 +904,8 @@ DATA = [
     "org.junit:junit-bom:pom:5.9.2",
     "org.junit:junit-bom:pom:5.9.3",
     "org.mockito:mockito-core:5.6.0",
-    "org.robolectric:android-all-instrumented:7.0.0_r1-robolectric-r1-i4",
+    "org.robolectric:android-all-instrumented:7.0.0_r1-robolectric-r1-i4",  # Runtime for Android N
+    "org.robolectric:android-all-instrumented:9-robolectric-4913185-2-i4",  # Runtime for Android P
     "org.robolectric:robolectric:4.8.2",
     "org.tensorflow:tensorflow-lite-metadata:0.1.0",
     "org.tensorflow:tensorflow-lite-support:0.1.0",
@@ -942,6 +945,8 @@ DATA = [
     "org.jetbrains.kotlin:kotlin-test:jar:sources:1.9.20",
     "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:jar:sources:1.6.4",
     "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:jar:sources:1.6.4",
+    "org.robolectric:robolectric:jar:sources:4.8.2",
+    "org.robolectric:plugins-maven-dependency-resolver:jar:sources:4.8.2",
 ]
 
 REMOTE_REPOS = {
