@@ -109,18 +109,20 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
         // Some sort of DSL property?
         // Parent should be block, its parent lambda, its parent a call -
         // the name is the parent
-        val value = unnamedArguments[0]
-        for (scanner in detectors) {
-          scanner.checkDslPropertyAssignment(
-            context,
-            propertyName,
-            value,
-            parentName ?: "",
-            parentParentName,
-            node.methodIdentifier ?: node,
-            valueArguments[0],
-            node,
-          )
+        if (isMethodCallInClosure(node)) {
+          val value = unnamedArguments[0]
+          for (scanner in detectors) {
+            scanner.checkDslPropertyAssignment(
+              context,
+              propertyName,
+              value,
+              parentName ?: "",
+              parentParentName,
+              node.methodIdentifier ?: node,
+              valueArguments[0],
+              node,
+            )
+          }
         }
       }
     }
@@ -173,7 +175,7 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
 
   private fun getSurroundingNamedBlock(node: UElement): UCallExpression? {
     var parent = node.uastParent
-    while (parent is UBinaryExpression) {
+    while (parent is UBinaryExpression || parent is UCallExpression) {
       parent = parent.uastParent
     }
     if (parent is UReturnExpression) {
@@ -203,6 +205,15 @@ class UastGradleVisitor(override val javaContext: JavaContext) : GradleVisitor()
   }
 
   private fun getParent(node: UElement) = getParentN(node, 1)
+
+  private fun isMethodCallInClosure(node: UElement): Boolean =
+    getSurroundingNamedBlock(node)?.let { block ->
+      when (val parent = node.uastParent) {
+        is UReturnExpression -> block == parent.uastParent?.uastParent?.uastParent
+        is UBinaryExpression -> isMethodCallInClosure(parent)
+        else -> block == parent?.uastParent?.uastParent
+      }
+    } ?: false
 
   override fun createLocation(context: GradleContext, cookie: Any): Location {
     return if (cookie is UElement) {

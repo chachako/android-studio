@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,103 +16,49 @@
 package com.android.tools.lint.gradle
 
 import com.android.testutils.TestUtils
-import com.android.tools.lint.checks.infrastructure.TestFiles.gradle
-import com.android.tools.lint.checks.infrastructure.TestFiles.java
+import com.android.tools.lint.checks.infrastructure.TestFiles
 import com.android.tools.lint.checks.infrastructure.parse
+import com.android.tools.lint.client.api.UastGradleVisitor
 import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.GradleContext
 import com.android.tools.lint.detector.api.GradleScanner
+import com.android.tools.lint.detector.api.JavaContext
 import com.intellij.openapi.util.Disposer
 import java.io.File
 import org.intellij.lang.annotations.Language
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
-@Suppress("LintDocExample")
-class GroovyGradleVisitorTest {
+// Tests in this class should reflect, as though a somwhat distorted
+// mirror, the tests in GroovyGradleVisitorTest and
+// LintIdeGradleVisitorTest.  The correspondence cannot be exact, as
+// the syntactic and semantic differences are too big for compatibility
+// to be layered on top: but test additions here should almost certainly
+// be added also to the Groovy tests, and new Groovy tests should at least
+// cause consideration of adding an analogue here.
+class UastGradleVisitorTest {
   @get:Rule var temporaryFolder = TemporaryFolder()
 
-  // Keep this test in sync with LintIdeGradleVisitorTest#testBasic!
-  // (and in general, all the tests here)
-  // Also keep this test, and other applicable ones, in sync with
-  // UastGradleVisitorTest#testBasic (with adaptations for the
-  // differences between Kotlin and Groovy).
   @Test
   fun testBasic() {
     check(
       """
       dependencies {
           implementation(platform(libs.compose.bom))
-          implementation platform("androidx.compose:compose-bom:2022.12.00")
+          implementation(platform("androidx.compose:compose-bom:2022.12.00"))
       }
       """,
       """
-      checkMethodCall(statement="dependencies", unnamedArguments="{ implementation(platform(libs.compose.bom)) implementation platform("androidx.compose:compose-bom:2022.12.00") }")
+      checkMethodCall(statement="dependencies", unnamedArguments="{ implementation(platform(libs.compose.bom)) implementation(platform("androidx.compose:compose-bom:2022.12.00")) }")
       checkMethodCall(statement="implementation", parent="dependencies", unnamedArguments="platform(libs.compose.bom)")
       checkDslPropertyAssignment(property="implementation", value="platform(libs.compose.bom)", parent="dependencies")
       checkMethodCall(statement="platform", parent="dependencies", unnamedArguments="libs.compose.bom")
       checkMethodCall(statement="implementation", parent="dependencies", unnamedArguments="platform("androidx.compose:compose-bom:2022.12.00")")
       checkDslPropertyAssignment(property="implementation", value="platform("androidx.compose:compose-bom:2022.12.00")", parent="dependencies")
       checkMethodCall(statement="platform", parent="dependencies", unnamedArguments=""androidx.compose:compose-bom:2022.12.00"")
-      """,
-    )
-  }
-
-  @Test
-  fun testNamedDependency() {
-    check(
-      """
-      apply plugin: 'com.android.application'
-      dependencies {
-          implementation group: 'com.android.support', name: 'support-v4', version: '19.0'
-      }
-      """,
-      """
-      checkMethodCall(statement="apply", namedArguments="plugin=com.android.application")
-      checkMethodCall(statement="dependencies", unnamedArguments="{ implementation group: 'com.android.support', name: 'support-v4', version: '19.0' }")
-      checkMethodCall(statement="implementation", parent="dependencies", namedArguments="group=com.android.support, name=support-v4, version=19.0")
-      checkDslPropertyAssignment(property="implementation", value="group: 'com.android.support', name: 'support-v4', version: '19.0'", parent="dependencies")
-      """,
-    )
-  }
-
-  @Test
-  fun testFunctionsAndVariables() {
-    @Suppress("GroovyUnusedAssignment", "GrMethodMayBeStatic")
-    check(
-      """
-      apply plugin: 'com.android.application'
-      android {
-          compileSdkVersion 30
-          def foo = 'foo'
-          defaultConfig {
-              def bar = 'bar'
-          }
-      }
-      final GPS_VERSION = '5.0.77'
-      def getVersionName() {
-          "1.0"
-      }
-      dependencies {
-          compile "com.google.android.gms:play-services-wearable:${"$"}{GPS_VERSION}"
-      }
-      """,
-      """
-      checkDslPropertyAssignment(property="GPS_VERSION", value="'5.0.77'", parent="")
-      checkDslPropertyAssignment(property="bar", value="'bar'", parent="defaultConfig", parentParent="android")
-      checkDslPropertyAssignment(property="compile", value=""com.google.android.gms:play-services-wearable:${"$"}{GPS_VERSION}"", parent="dependencies")
-      checkDslPropertyAssignment(property="compileSdkVersion", value="30", parent="android")
-      checkDslPropertyAssignment(property="foo", value="'foo'", parent="android")
-      checkMethodCall(statement="android", unnamedArguments="{ compileSdkVersion 30 def foo = 'foo' defaultConfig { def bar = 'bar' } }")
-      checkMethodCall(statement="apply", namedArguments="plugin=com.android.application")
-      checkMethodCall(statement="compile", parent="dependencies", unnamedArguments=""com.google.android.gms:play-services-wearable:${"$"}{GPS_VERSION}"")
-      checkMethodCall(statement="compileSdkVersion", parent="android", unnamedArguments="30")
-      checkMethodCall(statement="defaultConfig", parent="android", unnamedArguments="{ def bar = 'bar' }")
-      checkMethodCall(statement="dependencies", unnamedArguments="{ compile "com.google.android.gms:play-services-wearable:${"$"}{GPS_VERSION}" }")
       """,
     )
   }
@@ -127,13 +73,13 @@ class GroovyGradleVisitorTest {
           x(y(z(a(b(c("hello world"))))))
           x {
              y {
-                z "hello world"
+                z("hello world")
              }
           }
       }
       """,
       """
-      checkMethodCall(statement="dependencies", unnamedArguments="{ x(y(z(a(b(c("hello world")))))) x { y { z "hello world" } } }")
+      checkMethodCall(statement="dependencies", unnamedArguments="{ x(y(z(a(b(c("hello world")))))) x { y { z("hello world") } } }")
       checkMethodCall(statement="x", parent="dependencies", unnamedArguments="y(z(a(b(c("hello world")))))")
       checkDslPropertyAssignment(property="x", value="y(z(a(b(c("hello world")))))", parent="dependencies")
       checkMethodCall(statement="y", parent="dependencies", unnamedArguments="z(a(b(c("hello world"))))")
@@ -141,8 +87,8 @@ class GroovyGradleVisitorTest {
       checkMethodCall(statement="a", parent="dependencies", unnamedArguments="b(c("hello world"))")
       checkMethodCall(statement="b", parent="dependencies", unnamedArguments="c("hello world")")
       checkMethodCall(statement="c", parent="dependencies", unnamedArguments=""hello world"")
-      checkMethodCall(statement="x", parent="dependencies", unnamedArguments="{ y { z "hello world" } }")
-      checkMethodCall(statement="y", parent="x", parentParent="dependencies", unnamedArguments="{ z "hello world" }")
+      checkMethodCall(statement="x", parent="dependencies", unnamedArguments="{ y { z("hello world") } }")
+      checkMethodCall(statement="y", parent="x", parentParent="dependencies", unnamedArguments="{ z("hello world") }")
       checkMethodCall(statement="z", parent="y", parentParent="x", unnamedArguments=""hello world"")
       checkDslPropertyAssignment(property="z", value=""hello world"", parent="y", parentParent="x")
       """,
@@ -156,16 +102,15 @@ class GroovyGradleVisitorTest {
       android {
           buildTypes {
               debug {
-                  packageNameSuffix ".debug"
+                  packageNameSuffix = ".debug"
               }
           }
       }
       """,
       """
-      checkMethodCall(statement="android", unnamedArguments="{ buildTypes { debug { packageNameSuffix ".debug" } } }")
-      checkMethodCall(statement="buildTypes", parent="android", unnamedArguments="{ debug { packageNameSuffix ".debug" } }")
-      checkMethodCall(statement="debug", parent="buildTypes", parentParent="android", unnamedArguments="{ packageNameSuffix ".debug" }")
-      checkMethodCall(statement="packageNameSuffix", parent="debug", parentParent="buildTypes", unnamedArguments="".debug"")
+      checkMethodCall(statement="android", unnamedArguments="{ buildTypes { debug { packageNameSuffix = ".debug" } } }")
+      checkMethodCall(statement="buildTypes", parent="android", unnamedArguments="{ debug { packageNameSuffix = ".debug" } }")
+      checkMethodCall(statement="debug", parent="buildTypes", parentParent="android", unnamedArguments="{ packageNameSuffix = ".debug" }")
       checkDslPropertyAssignment(property="packageNameSuffix", value="".debug"", parent="debug", parentParent="buildTypes")
       """,
     )
@@ -176,24 +121,20 @@ class GroovyGradleVisitorTest {
     check(
       """
       plugins {
-          id 'java'
+          id("java")
       }
-      java.sourceCompatibility JavaVersion.VERSION_1_8
-      java.targetCompatibility JavaVersion.VERSION_1_8
-      android.compileOptions.sourceCompatibility JavaVersion.VERSION_1_8
-      android.defaultConfig.vectorDrawables.useSupportLibrary true
+      java.sourceCompatibility = JavaVersion.VERSION_1_8
+      java.targetCompatibility = JavaVersion.VERSION_1_8
+      android.compileOptions.sourceCompatibility = JavaVersion.VERSION_1_8
+      android.defaultConfig.vectorDrawables.useSupportLibrary = true
       """,
       """
-      checkMethodCall(statement="plugins", unnamedArguments="{ id 'java' }")
-      checkMethodCall(statement="id", parent="plugins", unnamedArguments="'java'")
-      checkDslPropertyAssignment(property="id", value="'java'", parent="plugins")
-      checkMethodCall(statement="sourceCompatibility", parent="java", unnamedArguments="JavaVersion.VERSION_1_8")
+      checkMethodCall(statement="plugins", unnamedArguments="{ id("java") }")
+      checkMethodCall(statement="id", parent="plugins", unnamedArguments=""java"")
+      checkDslPropertyAssignment(property="id", value=""java"", parent="plugins")
       checkDslPropertyAssignment(property="sourceCompatibility", value="JavaVersion.VERSION_1_8", parent="java")
-      checkMethodCall(statement="targetCompatibility", parent="java", unnamedArguments="JavaVersion.VERSION_1_8")
       checkDslPropertyAssignment(property="targetCompatibility", value="JavaVersion.VERSION_1_8", parent="java")
-      checkMethodCall(statement="sourceCompatibility", parent="compileOptions", parentParent="android", unnamedArguments="JavaVersion.VERSION_1_8")
       checkDslPropertyAssignment(property="sourceCompatibility", value="JavaVersion.VERSION_1_8", parent="compileOptions", parentParent="android")
-      checkMethodCall(statement="useSupportLibrary", parent="vectorDrawables", parentParent="defaultConfig", unnamedArguments="true")
       checkDslPropertyAssignment(property="useSupportLibrary", value="true", parent="vectorDrawables", parentParent="defaultConfig")
       """,
     )
@@ -218,52 +159,31 @@ class GroovyGradleVisitorTest {
   }
 
   @Test
-  fun testPropertyExpression() {
-    check(
-      """
-      buildscript {
-        ext.androidGradleVersion = '0.11.0'
-        dependencies {
-          classpath "com.android.tools.build:gradle:${"$"}androidGradleVersion"
-        }
-      }
-      """,
-      """
-      checkDslPropertyAssignment(property="androidGradleVersion", value="'0.11.0'", parent="ext", parentParent="buildscript")
-      checkDslPropertyAssignment(property="classpath", value=""com.android.tools.build:gradle:${"$"}androidGradleVersion"", parent="dependencies", parentParent="buildscript")
-      checkMethodCall(statement="buildscript", unnamedArguments="{ ext.androidGradleVersion = '0.11.0' dependencies { classpath "com.android.tools.build:gradle:${"$"}androidGradleVersion" } }")
-      checkMethodCall(statement="classpath", parent="dependencies", parentParent="buildscript", unnamedArguments=""com.android.tools.build:gradle:${"$"}androidGradleVersion"")
-      checkMethodCall(statement="dependencies", parent="buildscript", unnamedArguments="{ classpath "com.android.tools.build:gradle:${"$"}androidGradleVersion" }")
-      """,
-    )
-  }
-
-  @Test
   fun testPluginsDsl() {
     check(
       """
       plugins {
-        id 'android' version '2.2.3' apply true
+        id("android") version "2.2.3" apply true
       }
       """,
       """
-      checkDslPropertyAssignment(property="id", value="'android'", parent="plugins")
-      checkMethodCall(statement="id", parent="plugins", unnamedArguments="'android'")
-      checkMethodCall(statement="plugins", unnamedArguments="{ id 'android' version '2.2.3' apply true }")
+      checkDslPropertyAssignment(property="id", value=""android"", parent="plugins")
+      checkMethodCall(statement="id", parent="plugins", unnamedArguments=""android"")
+      checkMethodCall(statement="plugins", unnamedArguments="{ id("android") version "2.2.3" apply true }")
       """,
     )
   }
 
   // Test infrastructure only below
 
-  private fun check(@Language("groovy") gradleSource: String, expected: String) {
+  private fun check(@Language("kotlin-script") gradleSource: String, expected: String) {
     val (contexts, disposable) =
       parse(
         temporaryFolder = temporaryFolder,
         sdkHome = TestUtils.getSdk().toFile(),
         testFiles =
           arrayOf(
-            java(
+            TestFiles.java(
                 // just here to give us a way to construct contexts and projects using the test
                 // infrastructure
                 """
@@ -273,16 +193,21 @@ class GroovyGradleVisitorTest {
                 """
               )
               .indented(),
-            gradle(gradleSource).indented(),
+            TestFiles.kotlin("build.gradle.kts", gradleSource).indented(),
           ),
       )
 
     val javaContext = contexts.first()
-    val visitor = GroovyGradleVisitor()
     val project = javaContext.project
     val driver = javaContext.driver
-    val gradleFile = File(project.dir, "build.gradle")
-    assertTrue(gradleFile.isFile)
+    val gradleFile = File(project.dir, "build.gradle.kts")
+    Assert.assertTrue(gradleFile.isFile)
+    val gradleJavaContext = JavaContext(driver, project, null, gradleFile)
+    gradleJavaContext.uastParser = project.client.getUastParser(project)
+    val uFile = gradleJavaContext.uastParser.parse(gradleJavaContext)!!
+    gradleJavaContext.setJavaFile(uFile.sourcePsi)
+    gradleJavaContext.uastFile = uFile
+    val visitor = UastGradleVisitor(gradleJavaContext)
     val context = GradleContext(visitor, driver, project, null, gradleFile)
     val detector = LoggingGradleDetector()
     visitor.visitBuildScript(context, listOf(detector))
@@ -290,7 +215,7 @@ class GroovyGradleVisitorTest {
     // The order may vary slightly due to differences in the way we're handling
     // the ASTs (e.g. do we get a property callback or a method callback
     // first?), but the order should not matter to detectors
-    assertEquals(
+    Assert.assertEquals(
       expected.trimIndent().trim().lines().sorted().joinToString("\n"),
       detector.toString().trim().lines().sorted().joinToString("\n"),
     )
