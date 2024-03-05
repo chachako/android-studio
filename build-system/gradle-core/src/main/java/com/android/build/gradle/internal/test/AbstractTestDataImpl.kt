@@ -65,10 +65,9 @@ abstract class AbstractTestDataImpl(
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NONE)
     @get:Optional
-    val additionalSdkSupportedSplitApks: Provider<Directory>?
+    val additionalSdkSupportedSplitApks: Provider<Directory>?,
+    extraInstrumentationTestRunnerArgs: Map<String, String>
 ) : TestData {
-
-    private var extraInstrumentationTestRunnerArgs: Map<String, String> = mutableMapOf()
 
     @get:Internal
     val privacyInstallBundlesFinder: ApkBundlesFinder
@@ -111,15 +110,6 @@ abstract class AbstractTestDataImpl(
             .putAll(creationConfig.instrumentationRunnerArguments.get())
             .putAll(extraInstrumentationTestRunnerArgs)
             .build()
-    }
-
-    fun setExtraInstrumentationTestRunnerArgs(
-            extraInstrumentationTestRunnerArgs: Map<String, String>
-    ) {
-        this.extraInstrumentationTestRunnerArgs =
-            ImmutableMap.copyOf(
-                    extraInstrumentationTestRunnerArgs
-            )
     }
 
     override var animationsDisabled = creationConfig.services.provider { false }
