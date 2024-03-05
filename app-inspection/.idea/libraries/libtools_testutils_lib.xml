@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="libtools.testutils.lib">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../../bazel-bin/tools/base/testutils/tools.testutils.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

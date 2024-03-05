@@ -53,8 +53,17 @@ app_inspection_jar(
 kotlin_test(
     name = "agent_tests",
     srcs = glob(["testSrc/**/*.kt"]),
+    data = [
+        "@maven//:org.robolectric.android-all-instrumented_9-robolectric-4913185-2-i4",
+    ],
     jvm_flags = [
         "-Dtest.suite.jar=agent_tests.jar",
+        # The following properties configure Robolectric to use a local Maven repo. The `user.home`
+        # is required because Robolectric creates a lock file there but when running from the
+        # sandbox, there is no home dir set.
+        "-Duser.home=.",
+        "-Drobolectric.dependency.repo.id=local",
+        "-Drobolectric.dependency.repo.url=file:external/maven/repository",
     ],
     tags = [
         "no_mac",
@@ -66,13 +75,13 @@ kotlin_test(
     ],
     deps = [
         ":agent-jar",
-        "//tools/base/app-inspection/inspectors/fake-android:fake_android",
+        "//tools/base/app-inspection/inspectors/lib:androidx-test-monitor",
         "//tools/base/app-inspection/inspectors/lib:inspection-testing",
         "//tools/base/testutils:tools.testutils",
-        "@maven//:com.google.guava.guava",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
+        "@maven//:org.robolectric.robolectric",
     ],
 )
 

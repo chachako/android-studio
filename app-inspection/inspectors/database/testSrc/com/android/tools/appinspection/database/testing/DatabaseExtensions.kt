@@ -20,7 +20,11 @@ package com.android.tools.appinspection.database.testing
 // import androidx.test.core.app.ApplicationProvider
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.android.testutils.CloseablesRule
 import com.google.common.truth.Truth.assertThat
+import java.io.File
+import org.junit.rules.TemporaryFolder
+import org.robolectric.RuntimeEnvironment
 
 // import org.junit.rules.TemporaryFolder
 
@@ -37,18 +41,29 @@ fun SQLiteDatabase.insertValues(table: Table, vararg values: String) {
   execSQL(values.joinToString(prefix = "INSERT INTO ${table.name} VALUES(", postfix = ");") { it })
 }
 
-fun Database.createInstance(writeAheadLoggingEnabled: Boolean? = null): SQLiteDatabase {
-  val path = "/$name"
+fun Database.createInstance(
+  closeablesRule: CloseablesRule,
+  temporaryFolder: TemporaryFolder,
+  writeAheadLoggingEnabled: Boolean? = null,
+): SQLiteDatabase {
+  val path =
+    if (name == null) null
+    else
+      File(temporaryFolder.root, name)
+        .also { it.createNewFile() } // can handle an existing file
+        .absolutePath
 
+  val context = RuntimeEnvironment.getApplication()
   val openHelper =
-    object : SQLiteOpenHelper(null, path, null, 1) {
-      override fun onCreate(db: SQLiteDatabase) = Unit
+    object : SQLiteOpenHelper(context, path, null, 1) {
+      override fun onCreate(db: SQLiteDatabase?) = Unit
 
-      override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+      override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) = Unit
     }
 
   writeAheadLoggingEnabled?.let { openHelper.setWriteAheadLoggingEnabled(it) }
   val db = openHelper.readableDatabase
+  closeablesRule.register(db)
   tables.forEach { t -> db.addTable(t) }
   return db
 }

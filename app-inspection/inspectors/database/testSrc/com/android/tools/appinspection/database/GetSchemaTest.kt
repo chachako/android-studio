@@ -17,6 +17,8 @@
 package com.android.tools.appinspection.database
 
 import android.database.sqlite.SQLiteDatabase
+import android.os.Build
+import com.android.testutils.CloseablesRule
 import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.ErrorContent.ErrorCode.ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE
 import com.android.tools.appinspection.database.testing.Column
 import com.android.tools.appinspection.database.testing.Database
@@ -31,12 +33,24 @@ import kotlin.test.fail
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.SQLiteMode
 
-@RunWith(JUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE, sdk = [Build.VERSION_CODES.P])
+@SQLiteMode(SQLiteMode.Mode.NATIVE)
 class GetSchemaTest {
-  @get:Rule val testEnvironment = SqliteInspectorTestEnvironment()
+  private val testEnvironment = SqliteInspectorTestEnvironment()
+  private val temporaryFolder = TemporaryFolder()
+  private val closeablesRule = CloseablesRule()
+
+  @get:Rule
+  val rule: RuleChain =
+    RuleChain.outerRule(testEnvironment).around(temporaryFolder).around(closeablesRule)
 
   @Test
   fun test_get_schema_complex_tables() {
@@ -139,7 +153,7 @@ class GetSchemaTest {
   fun test_get_schema_auto_increment() = runBlocking {
     val databaseId =
       testEnvironment.inspectDatabase(
-        Database("db1").createInstance().also {
+        Database("db1").createInstance(closeablesRule, temporaryFolder).also {
           it.execSQL("CREATE TABLE t1 (c2 INTEGER PRIMARY KEY AUTOINCREMENT)")
           it.execSQL("INSERT INTO t1 VALUES(3)")
         }
@@ -171,7 +185,9 @@ class GetSchemaTest {
     assertThat(alreadyOpenDatabases).isNotEmpty() // sanity check
 
     testEnvironment.registerAlreadyOpenDatabases(
-      alreadyOpenDatabases.map { it.createInstance().also { db -> onDatabaseCreated(db) } }
+      alreadyOpenDatabases.map {
+        it.createInstance(closeablesRule, temporaryFolder).also { db -> onDatabaseCreated(db) }
+      }
     )
     testEnvironment.sendCommand(createTrackDatabasesCommand())
     val databaseConnections =

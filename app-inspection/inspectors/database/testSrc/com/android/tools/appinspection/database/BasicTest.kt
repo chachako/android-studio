@@ -16,26 +16,24 @@
 
 package com.android.tools.appinspection.database
 
-import androidx.inspection.InspectorFactory
+import android.os.Build
 import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Command
 import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.ErrorContent.ErrorCode.ERROR_UNRECOGNISED_COMMAND_VALUE
 import com.android.tools.appinspection.database.testing.MessageFactory
 import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
 import com.google.common.truth.Truth.assertThat
-import java.util.ServiceLoader
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.SQLiteMode
 
-@RunWith(JUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE, sdk = [Build.VERSION_CODES.P])
+@SQLiteMode(SQLiteMode.Mode.NATIVE)
 class BasicTest {
-  init {
-    val factories = ServiceLoader.load(InspectorFactory::class.java).toList()
-    println("Found ${factories.size} factories")
-  }
-
   @get:Rule val testEnvironment = SqliteInspectorTestEnvironment()
 
   @Test

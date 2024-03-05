@@ -18,6 +18,8 @@ package com.android.tools.appinspection.database
 
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.os.Build
+import com.android.testutils.CloseablesRule
 import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.CellValue
 import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.ErrorContent.ErrorCode.ERROR_ISSUE_WITH_PROCESSING_QUERY_VALUE
 import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.ErrorContent.ErrorCode.ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE
@@ -44,13 +46,25 @@ import org.junit.Assert.fail
 import org.junit.ComparisonFailure
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.SQLiteMode
 
-@RunWith(JUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE, sdk = [Build.VERSION_CODES.P])
+@SQLiteMode(SQLiteMode.Mode.NATIVE)
 // TODO: add tests for invalid queries: union of unequal number of columns, syntax error, etc.
 class QueryTest {
-  @get:Rule val testEnvironment = SqliteInspectorTestEnvironment()
+  private val testEnvironment = SqliteInspectorTestEnvironment()
+  private val temporaryFolder = TemporaryFolder()
+  private val closeablesRule = CloseablesRule()
+
+  @get:Rule
+  val rule: RuleChain =
+    RuleChain.outerRule(testEnvironment).around(temporaryFolder).around(closeablesRule)
 
   private val table1: Table =
     Table(
@@ -135,15 +149,18 @@ class QueryTest {
 
   @Test
   fun test_error_invalid_query() = runBlocking {
-    val databaseId = inspectDatabase(Database("db", table2).createInstance())
+    val databaseId =
+      inspectDatabase(Database("db", table2).createInstance(closeablesRule, temporaryFolder))
     val mistypedSelect = "selecttt"
     val command = "$mistypedSelect * from sqlite_master"
     val queryParams = null
     val response = testEnvironment.sendCommand(createQueryCommand(databaseId, command, queryParams))
     assertThat(response.hasErrorOccurred()).isEqualTo(true)
     val error = response.errorOccurred.content
-    assertThat(error.message)
-      .isEqualTo("""[SQLITE_ERROR] SQL error or missing database (near "selecttt": syntax error)""")
+    assertThat(error.message).contains("syntax error")
+    assertThat(error.message).contains("near \"$mistypedSelect\"")
+    assertThat(error.message).contains("while compiling: $command")
+    assertThat(error.stackTrace).contains("SQLiteConnection.nativePrepareStatement")
     assertThat(error.stackTrace).contains("SQLiteDatabase.rawQueryWithFactory")
     assertThat(error.recoverability.isRecoverable).isEqualTo(true)
     assertThat(error.errorCodeValue).isEqualTo(ERROR_ISSUE_WITH_PROCESSING_QUERY_VALUE)
@@ -151,14 +168,19 @@ class QueryTest {
 
   @Test
   fun test_error_wrong_param_count() = runBlocking {
-    val databaseId = inspectDatabase(Database("db", table2).createInstance())
+    val databaseId =
+      inspectDatabase(Database("db", table2).createInstance(closeablesRule, temporaryFolder))
     val command = "select * from sqlite_master where name=?"
     val queryParams = listOf("'a'", "'b'") // one too many param
     val response = testEnvironment.sendCommand(createQueryCommand(databaseId, command, queryParams))
     assertThat(response.hasErrorOccurred()).isEqualTo(true)
     val error = response.errorOccurred.content
-    assertThat(error.message).isEqualTo("Index 1 out of bounds for length 1")
+    assertThat(error.message).contains("Cannot bind argument")
+    assertThat(error.message).contains("index is out of range")
+    assertThat(error.message).contains("The statement has 1 parameters")
     assertThat(error.stackTrace).contains("SQLiteDatabase.rawQueryWithFactory")
+    assertThat(error.stackTrace).contains("SQLiteDirectCursorDriver.query")
+    assertThat(error.stackTrace).contains("SQLiteProgram.bind")
     assertThat(error.recoverability.isRecoverable).isEqualTo(true)
     assertThat(error.errorCodeValue).isEqualTo(ERROR_ISSUE_WITH_PROCESSING_QUERY_VALUE)
   }
@@ -300,7 +322,8 @@ class QueryTest {
       )
 
     // when
-    val databaseId = inspectDatabase(Database("db", table2).createInstance())
+    val databaseId =
+      inspectDatabase(Database("db", table2).createInstance(closeablesRule, temporaryFolder))
     insertValues.forEach { params -> issueQuery(databaseId, insertCommand, params) }
 
     // then
@@ -358,7 +381,7 @@ class QueryTest {
     // create a database
     val db =
       Database("db_large_val", Table("table1", Column("c1", "blob")))
-        .createInstance(writeAheadLoggingEnabled = true)
+        .createInstance(closeablesRule, temporaryFolder, writeAheadLoggingEnabled = true)
 
     // populate the database
     val records = mutableListOf<ByteArray>()
@@ -447,7 +470,7 @@ class QueryTest {
     queryParams: List<String>? = null,
   ) = runBlocking {
     // given
-    val databaseInstance = database.createInstance()
+    val databaseInstance = database.createInstance(closeablesRule, temporaryFolder)
     values.forEach { (table, values) -> databaseInstance.insertValues(table, *values) }
     val databaseId = inspectDatabase(databaseInstance)
 
@@ -471,7 +494,7 @@ class QueryTest {
   fun test_create_table() = runBlocking {
     // given
     val database = Database("db1", table1, table2)
-    val databaseId = inspectDatabase(database.createInstance())
+    val databaseId = inspectDatabase(database.createInstance(closeablesRule, temporaryFolder))
     val initialTotalChanges = queryTotalChanges(databaseId)
 
     // when
@@ -489,7 +512,7 @@ class QueryTest {
     val database = Database("db1", table1, table2)
     val databaseId =
       inspectDatabase(
-        database.createInstance().also {
+        database.createInstance(closeablesRule, temporaryFolder).also {
           it.insertValues(table2, "1", "'1'")
           it.insertValues(table2, "2", "'2'")
         }
@@ -509,7 +532,8 @@ class QueryTest {
   fun test_alter_table() = runBlocking {
     // given
     val table = table2
-    val databaseId = inspectDatabase(Database("db", table).createInstance())
+    val databaseId =
+      inspectDatabase(Database("db", table).createInstance(closeablesRule, temporaryFolder))
     val initialTotalChanges = queryTotalChanges(databaseId)
     val newColumn = Column("num", "NUM")
 
@@ -526,8 +550,9 @@ class QueryTest {
   fun test_insert_update_delete_changes() = runBlocking {
     // given
     val table = table2
-    val databaseId = inspectDatabase(Database("db", table).createInstance())
-    var expectedTotalChanges = 0 // On a real Android Sqlite Engine, this is going to be '1'
+    val databaseId =
+      inspectDatabase(Database("db", table).createInstance(closeablesRule, temporaryFolder))
+    var expectedTotalChanges = 1 // TODO: investigate why 1 and not 0
 
     val newValue = listOf("1", "a")
     val insertQuery = "insert into ${table.name} values (${newValue.joinToString { "'$it'" }})"
@@ -583,7 +608,9 @@ class QueryTest {
     fromCursor: (Cursor) -> T,
     fromCellValue: (CellValue) -> T,
   ) = runBlocking {
-    val db = Database("db1", Table("t1", Column("c1", "INT"))).createInstance()
+    val db =
+      Database("db1", Table("t1", Column("c1", "INT")))
+        .createInstance(closeablesRule, temporaryFolder)
     testEnvironment.registerAlreadyOpenDatabases(listOf(db))
     testEnvironment.sendCommand(createTrackDatabasesCommand())
     val id = testEnvironment.receiveEvent().databaseOpened.databaseId
@@ -611,9 +638,10 @@ class QueryTest {
   private suspend fun inspectDatabase(databaseInstance: SQLiteDatabase): Int {
     testEnvironment.registerAlreadyOpenDatabases(
       listOf(
-        Database("ignored_1").createInstance(), // extra testing value
+        Database("ignored_1")
+          .createInstance(closeablesRule, temporaryFolder), // extra testing value
         databaseInstance,
-        Database("ignored_2").createInstance(), // extra testing value
+        Database("ignored_2").createInstance(closeablesRule, temporaryFolder), // extra testing value
       )
     )
     testEnvironment.sendCommand(createTrackDatabasesCommand())
