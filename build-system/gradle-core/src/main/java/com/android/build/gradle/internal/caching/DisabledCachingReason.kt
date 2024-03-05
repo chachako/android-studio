@@ -43,4 +43,6 @@ object DisabledCachingReason {
 
     /** Tasks that execute quickly usually do not benefit from caching. */
     const val FAST_TASK = "Fast task"
+
+    const val FAST_TRANSFORM = "This transform's work is likely faster to execute than retrieving from a remote cache"
 }

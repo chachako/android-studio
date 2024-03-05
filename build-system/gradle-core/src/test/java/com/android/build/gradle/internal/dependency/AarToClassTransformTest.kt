@@ -24,6 +24,7 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.net.URLClassLoader
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -120,6 +121,52 @@ class AarToClassTransformTest {
                 assertThat(entry.compressedSize).isAtLeast(entry.size)
             }
         }
+    }
+
+    @Test
+    fun testRClassGeneration() {
+        val aar = temporaryFolder.newFile("example.aar")
+
+        ZipOutputStream(aar.outputStream().buffered()).use { zos ->
+            zos.putNextEntry(ZipEntry("classes.jar"))
+            zos.write(jarWithClasses(listOf(CompressibleClass::class.java)))
+            zos.putNextEntry(ZipEntry("libs/myclasses.jar"))
+            zos.write(jarWithEmptyClasses((1..500).map { "com/example/MyClass$it" }))
+            zos.putNextEntry(ZipEntry("R.txt"))
+            zos.write(this::class.java.getResource("large_R.txt")!!.readText().toByteArray())
+            zos.putNextEntry(ZipEntry("AndroidManifest.xml"))
+            zos.write(this::class.java.getResource("large_AndroidManifest.xml")!!.readText().toByteArray())
+        }
+
+        val outputJar = temporaryFolder.newFolder().toPath().resolve("output.jar")
+
+        ZipFile(aar).use { inputAar ->
+            AarToClassTransform.mergeJars(
+                outputJar = outputJar,
+                inputAar = inputAar,
+                forCompileUse = true,
+                generateRClassJar = true
+            )
+        }
+        // Check classes and R classes copied
+        ZipFile(outputJar.toFile()).use { zip ->
+            val entries = zip.entries()
+            var count = 0
+            while (entries.hasMoreElements()) {
+                val entry = entries.nextElement()
+                assertThat(entry.compressedSize).isAtLeast(entry.size)
+                count++
+            }
+            val e = zip.getEntry("p1/p2/R.class")
+            assertThat(e.size).isGreaterThan(0)
+            assertThat(count).isEqualTo(514)
+        }
+        // Check a generated R class subclass is loadable
+        URLClassLoader(arrayOf(outputJar.toUri().toURL())).use { classloader ->
+            val strings = classloader.loadClass("p1.p2.R${'$'}string")
+            assertThat(strings.fields).hasLength(33)
+        }
+
     }
 }
 
