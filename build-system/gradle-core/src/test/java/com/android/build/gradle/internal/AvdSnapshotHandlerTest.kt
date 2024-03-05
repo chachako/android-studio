@@ -19,11 +19,12 @@ package com.android.build.gradle.internal
 import com.android.build.gradle.internal.AvdSnapshotHandler.EmulatorSnapshotCannotCreatedException
 import com.android.build.gradle.internal.testing.AdbHelper
 import com.android.build.gradle.internal.testing.EmulatorVersionMetadata
+import com.android.build.gradle.internal.testing.QemuExecutor
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdManager
 import com.android.testutils.MockitoKt.any
+import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
-import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.FileUtils
 import com.android.utils.ILogger
 import com.google.common.truth.Truth.assertThat
@@ -74,10 +75,11 @@ class AvdSnapshotHandlerTest {
     @Mock
     lateinit var emulatorDir: Directory
 
+    @Mock
+    lateinit var qemuExecutor: QemuExecutor
+
     private val emulatorDirectory: File by lazy(LazyThreadSafetyMode.NONE) { tmpFolder.newFolder() }
     private val avdDirectory: File by lazy(LazyThreadSafetyMode.NONE) { tmpFolder.newFolder() }
-
-    private lateinit var defaultSnapshot: File
 
     @Before
     fun setupMocks() {
@@ -89,8 +91,6 @@ class AvdSnapshotHandlerTest {
         `when`(mockAvdManager.getAvd(any(), anyBoolean())).thenReturn(mockAvdInfo)
         val dataFolder = tmpFolder.newFolder()
         `when`(mockAvdInfo.dataFolderPath).thenReturn(dataFolder.toPath())
-        defaultSnapshot = FileUtils.mkdirs(FileUtils.join(dataFolder, "snapshots", "default_boot"))
-        assertThat(defaultSnapshot).exists()
     }
 
     private fun createMockProcessBuilder(
@@ -115,6 +115,7 @@ class AvdSnapshotHandlerTest {
                 deviceBootAndSnapshotCheckTimeoutSec = 1234,
                 mockAdbHelper,
                 emulatorDirectoryProvider,
+                qemuExecutor,
                 extraWaitAfterBootCompleteMs = 0L,
                 MoreExecutors.directExecutor(),
                 { _ -> EmulatorVersionMetadata(true) }
@@ -143,6 +144,7 @@ class AvdSnapshotHandlerTest {
                 deviceBootAndSnapshotCheckTimeoutSec = 1234,
                 mockAdbHelper,
                 emulatorDirectoryProvider,
+                qemuExecutor,
                 extraWaitAfterBootCompleteMs = 0L,
                 MoreExecutors.directExecutor(),
                 { _ -> EmulatorVersionMetadata(true) }
@@ -162,6 +164,12 @@ class AvdSnapshotHandlerTest {
             "but the snapshot failed to be created.")
         verify(mockLogger)
             .warning(contains("Deleting unbootable snapshot for device: myTestAvdName"))
-        assertThat(defaultSnapshot).doesNotExist()
+        verify(qemuExecutor).deleteSnapshot(
+            eq("myTestAvdName"),
+            any(),
+            eq("default_boot"),
+            any()
+        )
+
     }
 }
