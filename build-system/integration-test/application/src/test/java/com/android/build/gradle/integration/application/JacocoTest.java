@@ -18,7 +18,6 @@ package com.android.build.gradle.integration.application;
 
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThat;
 
-import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
@@ -241,10 +240,7 @@ public class JacocoTest {
                 project.getBuildFile(),
                 "android.buildTypes.debug.enableAndroidTestCoverage true",
                 "android.buildTypes.debug.enableAndroidTestCoverage false");
-        GradleBuildResult result =
-                project.executor()
-                        .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.NONE)
-                        .run(":dep");
+        GradleBuildResult result = project.executor().run(":dep");
         try (Scanner scanner = result.getStdout()) {
             ScannerSubject.assertThat(scanner)
                     .doesNotContain(JacocoConfigurations.ANT_CONFIGURATION_NAME);
@@ -256,10 +252,7 @@ public class JacocoTest {
                 project.getBuildFile(),
                 "android.buildTypes.debug.enableAndroidTestCoverage false",
                 "android.buildTypes.debug.enableAndroidTestCoverage true");
-        result =
-                project.executor()
-                        .withConfigurationCaching(BaseGradleExecutor.ConfigurationCaching.NONE)
-                        .run(":dep");
+        result = project.executor().run(":dep");
         try (Scanner scanner = result.getStdout()) {
             ScannerSubject.assertThat(scanner)
                     .contains(JacocoConfigurations.ANT_CONFIGURATION_NAME);
