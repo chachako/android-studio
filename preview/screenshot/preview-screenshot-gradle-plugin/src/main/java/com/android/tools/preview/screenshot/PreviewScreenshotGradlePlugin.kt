@@ -56,8 +56,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
         project.plugins.withType(AndroidBasePlugin::class.java) {
             val componentsExtension = project.extensions.getByType(AndroidComponentsExtension::class.java)
             val agpVersion = componentsExtension.pluginVersion
-            if (agpVersion < AndroidPluginVersion(8, 3, 0).alpha(1)) {
-                error("Android Gradle plugin version 8.3.0-alpha01 or higher is required." +
+            if (agpVersion < AndroidPluginVersion(8, 4, 0).alpha(9)) {
+                error("Android Gradle plugin version 8.4.0-alpha09 or higher is required." +
                         " Current version is $agpVersion.")
             }
             if (agpVersion >= AndroidPluginVersion(8,5).alpha(1)
