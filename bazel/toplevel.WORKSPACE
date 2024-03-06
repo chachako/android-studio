@@ -174,7 +174,6 @@ http_file(
     urls = ["https://dl.google.com/android/repository/emulator-linux_x64-11078245.zip"],
 )
 
-
 # An empty local repository which must be overridden according to the instructions at
 # go/agp-profiled-benchmarks if running the "_profiled" AGP build benchmarks.
 new_local_repository(
@@ -196,8 +195,8 @@ new_local_repository(
 )
 
 local_repository(
-   name = "absl-py",
-   path = "external/python/absl-py",
+    name = "absl-py",
+    path = "external/python/absl-py",
 )
 
 # In Android Studio, we cannot bundle the standard Compose compiler because it might not be
@@ -221,3 +220,14 @@ http_archive(
     # The following URL comes from https://androidx.dev/storage/compose-compiler/repository.
     url = "https://androidx.dev/storage/compose-compiler/repository/androidx/compose/compiler/compiler-hosted/1.5.8-dev-k1.9.22-42b6ec2b037/compiler-hosted-1.5.8-dev-k1.9.22-42b6ec2b037-sources.jar",
 )
+
+http_archive(
+    name = "robolectric",
+    sha256 = "5bcde5db598f6938c9887a140a0a1249f95d3c16274d40869503d0c322a20d5d",
+    strip_prefix = "robolectric-bazel-4.8.2",
+    urls = ["https://github.com/robolectric/robolectric-bazel/archive/4.8.2.tar.gz"],
+)
+
+load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
+
+robolectric_repositories()

@@ -41,7 +41,11 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE, sdk = [Build.VERSION_CODES.P])
+@Config(
+  manifest = Config.NONE,
+  minSdk = Build.VERSION_CODES.O,
+  maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
+)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class GetSchemaTest {
   private val testEnvironment = SqliteInspectorTestEnvironment()

@@ -1,6 +1,6 @@
 load("//tools/adt/idea/studio:studio.bzl", "studio_data")
 load("//tools/base/app-inspection:app_inspection.bzl", "app_inspection_jar")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
 load("//tools/base/bazel:proto.bzl", "android_java_proto_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -50,29 +50,9 @@ app_inspection_jar(
     deps = agent_deps,
 )
 
-kotlin_test(
-    name = "agent_tests",
+kotlin_library(
+    name = "agent_tests_lib",
     srcs = glob(["testSrc/**/*.kt"]),
-    data = [
-        "@maven//:org.robolectric.android-all-instrumented_9-robolectric-4913185-2-i4",
-    ],
-    jvm_flags = [
-        "-Dtest.suite.jar=agent_tests.jar",
-        # The following properties configure Robolectric to use a local Maven repo. The `user.home`
-        # is required because Robolectric creates a lock file there but when running from the
-        # sandbox, there is no home dir set.
-        "-Duser.home=.",
-        "-Drobolectric.dependency.repo.id=local",
-        "-Drobolectric.dependency.repo.url=file:external/maven/repository",
-    ],
-    tags = [
-        "no_mac",
-        "no_windows",
-    ],
-    test_class = "com.android.testutils.JarTestSuite",
-    runtime_deps = [
-        "//prebuilts/studio/sdk:platforms/latest_runtime_jar",
-    ],
     deps = [
         ":agent-jar",
         "//tools/base/app-inspection/inspectors/lib:androidx-test-monitor",
@@ -82,6 +62,23 @@ kotlin_test(
         "@maven//:junit.junit",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
         "@maven//:org.robolectric.robolectric",
+    ],
+)
+
+android_local_test(
+    name = "agent_tests",
+    custom_package = "com.emptytest",
+    jvm_flags = [
+        "-Dtest.suite.jar=agent_tests_lib.jar",
+    ],
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    test_class = "com.android.testutils.JarTestSuite",
+    deps = [
+        ":agent_tests_lib",
+        "@robolectric//bazel:android-all",
     ],
 )
 
