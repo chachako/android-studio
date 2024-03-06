@@ -89,12 +89,16 @@ public class Gradle implements Closeable {
     }
 
     public void addRepo(@NonNull File repo) throws Exception {
+        addRepo(repo, getRepoDir());
+    }
+
+    public static void addRepo(@NonNull File repo, @NonNull File repoDir) throws Exception {
         String name = repo.getName();
         if (name.endsWith(".zip")) {
-            unzip(repo, getRepoDir());
+            unzip(repo, repoDir);
         } else if (name.endsWith(".manifest")) {
             List<String> artifacts = Files.readAllLines(repo.toPath());
-            new RepoLinker().link(getRepoDir().toPath(), artifacts);
+            new RepoLinker().link(repoDir.toPath(), artifacts);
         } else {
             throw new IllegalArgumentException("Unknown repo type " + name);
         }
