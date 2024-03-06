@@ -273,9 +273,6 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
                 arguments.add("--configuration-cache");
                 arguments.add("--configuration-cache-problems=fail");
                 break;
-            case OFF:
-                arguments.add("--no-configuration-cache");
-                break;
             case PROJECT_ISOLATION:
                 arguments.add("-Dorg.gradle.unsafe.isolated-projects=true");
                 arguments.add("--configuration-cache-problems=warn");
@@ -475,15 +472,6 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
 
     public enum ConfigurationCaching {
         ON,
-
-        // Don't use this option if possible to avoid introducing regression to configuration cache.
-        // If some task is not compatible and cannot be fixed now, please configure the task with
-        // Task.notCompatibleWithConfigurationCache() method. This would allow us to have a better
-        // understanding of the root cause of the incompatibility and ensure build can fall back to
-        // non-config-cache mode and finish successfully.
-        @Deprecated
-        OFF,
-
         NONE,
         PROJECT_ISOLATION,
     }
