@@ -234,8 +234,18 @@ interface RepairDeviceAction : DeviceAction {
  * @param message a user-visible statement of what went wrong
  * @param cause the underlying exception; not displayed to user
  */
-open class DeviceActionException(message: String, cause: Throwable? = null) :
-  Exception(message, cause)
+open class DeviceActionException
+@JvmOverloads
+constructor(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/**
+ * Indicates that a device action was canceled by the user. In contrast to DeviceActionException,
+ * this generally doesn't merit an error message.
+ *
+ * This is also distinct from a lower-level CancellationException, which could happen if a device
+ * action occurs on a scope which is canceled.
+ */
+class DeviceActionCanceledException(message: String) : DeviceActionException(message)
 
 /**
  * Indicates that the device action was called when it is not enabled. This may be unavoidable due

@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import org.junit.After
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -188,6 +189,26 @@ class LocalEmulatorProvisionerPluginTest {
     handle.awaitReady()
     assertThat(connectedDevice.deviceProperties().allReadonly()["ro.test.snapshot"])
       .isEqualTo(snapshotPath.toString())
+  }
+
+  @Test
+  fun bootFailure(): Unit = runBlockingWithTimeout {
+    val avdInfo = avdManager.createAvd()
+    avdManager.breakAvd(avdInfo, "AVD is broken")
+
+    yieldUntil { provisioner.devices.value.size == 1 }
+
+    val handle = provisioner.devices.value[0]
+
+    try {
+      handle.activationAction?.activate()
+      fail("Expected DeviceActionException")
+    } catch (expected: DeviceActionException) {
+      assertThat(expected.message).isEqualTo("AVD is broken")
+    }
+
+    assertThat(handle.state.isTransitioning).isFalse()
+    assertThat(handle.state.isOnline()).isFalse()
   }
 
   private fun buildProperties(info: AvdInfo) =

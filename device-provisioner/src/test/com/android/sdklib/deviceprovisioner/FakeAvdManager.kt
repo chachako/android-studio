@@ -87,6 +87,15 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
       return newAvdInfo
     }
 
+  fun breakAvd(avdInfo: AvdInfo, message: String) {
+    synchronized(avds) {
+      avds.remove(avdInfo)
+      val newAvdInfo =
+        avdInfo.copy(properties = avdInfo.properties + (LAUNCH_EXCEPTION_MESSAGE to message))
+      avds += newAvdInfo
+    }
+  }
+
   override suspend fun startAvd(avdInfo: AvdInfo) = boot(avdInfo, false, null)
 
   override suspend fun coldBootAvd(avdInfo: AvdInfo) = boot(avdInfo, true, null)
@@ -95,6 +104,8 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
     boot(avdInfo, false, snapshot)
 
   private fun boot(avdInfo: AvdInfo, coldBoot: Boolean, snapshot: LocalEmulatorSnapshot?) {
+    avdInfo.properties[LAUNCH_EXCEPTION_MESSAGE]?.let { throw DeviceActionException(it) }
+
     val device =
       FakeEmulatorConsole(avdInfo.name, avdInfo.dataFolderPath.toString()) { doStopAvd(avdInfo) }
     val selector = DeviceSelector.fromSerialNumber("emulator-${device.port}")
@@ -190,3 +201,5 @@ fun AvdInfo.copy(
   properties: Map<String, String> = this.properties,
   status: AvdInfo.AvdStatus = this.status,
 ): AvdInfo = AvdInfo(name, iniFile, folderPath, systemImage, properties, status)
+
+private const val LAUNCH_EXCEPTION_MESSAGE = "launch_exception_message"
