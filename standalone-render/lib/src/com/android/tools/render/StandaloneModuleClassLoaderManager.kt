@@ -19,13 +19,18 @@ package com.android.tools.render
 import com.android.annotations.concurrency.GuardedBy
 import com.android.tools.rendering.ModuleRenderContext
 import com.android.tools.rendering.classloading.ClassTransform
+import com.android.tools.rendering.classloading.CodeExecutionTrackerTransform
 import com.android.tools.rendering.classloading.ModuleClassLoader
 import com.android.tools.rendering.classloading.ModuleClassLoaderDiagnosticsRead
 import com.android.tools.rendering.classloading.ModuleClassLoaderManager
+import com.android.tools.rendering.classloading.PseudoClassLocatorForLoader
+import com.android.tools.rendering.classloading.loaders.AsmTransformingLoader
 import com.android.tools.rendering.classloading.loaders.ClassLoaderLoader
+import com.android.tools.rendering.classloading.loaders.DelegatingClassLoader
 import com.google.common.cache.CacheBuilder
 import com.intellij.openapi.module.Module
 import com.intellij.util.lang.UrlClassLoader
+import com.android.tools.rendering.classloading.toClassTransform
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.io.path.Path
@@ -38,13 +43,52 @@ import kotlin.io.path.Path
 internal class StandaloneModuleClassLoaderManager(
     private val classPath: List<String>,
 ) : ModuleClassLoaderManager<ModuleClassLoader> {
-    private class DefaultModuleClassLoader(
+
+    /**
+     * A loader responsible for loading all the classes in out-of-studio version of
+     * [ModuleClassLoader].
+     * TODO: Merge this with ModuleClassLoaderImpl
+     */
+    private class DefaultLoader(
         parent: ClassLoader?,
-        loader: Loader,
-    ) : ModuleClassLoader(
-        parent,
-        loader
-    ) {
+        classPath: List<String>,
+    ) : DelegatingClassLoader.Loader {
+        val classesToPaths = mutableMapOf<String, String>()
+        private val classTransforms = toClassTransform(
+            { CodeExecutionTrackerTransform(it, "") }
+        )
+
+        private val loader: DelegatingClassLoader.Loader
+        init {
+            val parentLoader = parent?.let { ClassLoaderLoader(it) }
+            val jarClassLoader = UrlClassLoader.build()
+                .useCache(false)
+                .parent(parent)
+                .files(classPath.map { Path(it) })
+                .get()
+            val jarClassLoaderLoader = ClassLoaderLoader(jarClassLoader) { fqcn, path, _ ->
+                classesToPaths[fqcn] = path
+            }
+            loader = AsmTransformingLoader(
+                classTransforms,
+                jarClassLoaderLoader,
+                PseudoClassLocatorForLoader(
+                    listOfNotNull(jarClassLoaderLoader, parentLoader).asSequence(),
+                    parent
+                )
+            )
+        }
+
+        override fun loadClass(fqcn: String): ByteArray? = loader.loadClass(fqcn)
+    }
+
+    class DefaultModuleClassLoader private constructor(
+        parent: ClassLoader?,
+        private val loader: DefaultLoader
+    ) : ModuleClassLoader(parent, loader) {
+        constructor(parent: ClassLoader?, classPath: List<String>) :
+                this(parent, DefaultLoader(parent, classPath))
+
         private val loadedClasses = mutableSetOf<String>()
         override val stats: ModuleClassLoaderDiagnosticsRead =
             object : ModuleClassLoaderDiagnosticsRead {
@@ -61,19 +105,13 @@ internal class StandaloneModuleClassLoaderManager(
                 loadedClasses.add(fqcn)
             }
         }
+        val classesToPaths: Map<String, String>
+            get() = loader.classesToPaths
     }
 
-    private fun createClassLoader(parent: ClassLoader?): DefaultModuleClassLoader =
-        DefaultModuleClassLoader(
-            parent,
-            ClassLoaderLoader(
-                UrlClassLoader.build()
-                    .useCache(false)
-                    .parent(parent)
-                    .files(classPath.map { Path(it) })
-                    .get()
-            ),
-        )
+    private fun createClassLoader(parent: ClassLoader?): DefaultModuleClassLoader {
+        return DefaultModuleClassLoader(parent, classPath)
+    }
 
     private val sharedClassLoadersLock = ReentrantLock()
     @GuardedBy("sharedClassLoadersLock")
