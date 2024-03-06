@@ -91,7 +91,7 @@ class PreviewScreenshotGradlePluginTest {
             }
             assertThat(e).hasMessageThat()
                 .contains("Preview screenshot plugin is an experimental feature. It requires Android " +
-                    "Gradle plugin version 8.3 / 8.4")
+                    "Gradle plugin version 8.4 (alpha09+).")
         }
     }
 }

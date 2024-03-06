@@ -63,7 +63,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             if (agpVersion >= AndroidPluginVersion(8,5).alpha(1)
                 && agpVersion.previewType != "dev") {
                 error("Preview screenshot plugin is an experimental feature. It requires Android " +
-                        "Gradle plugin version 8.3 / 8.4. Current version is $agpVersion.")
+                        "Gradle plugin version 8.4 (alpha09+). Current version is $agpVersion.")
             }
 
             val analyticsServiceProvider = project.gradle.sharedServices.registerIfAbsent(
