@@ -437,6 +437,20 @@ gradle_integration_test(
     deps = TEST_DEPS,
 )
 
+PRIVACY_SANDBOX_CONSUMPTION_TESTS = [
+    "src/test/java/com/android/build/gradle/integration/privacysandbox/*Consumption*.java",
+    "src/test/java/com/android/build/gradle/integration/privacysandbox/*Consumption*.kt",
+]
+
+PRIVACY_SANDBOX_MAVEN_REPOS = [
+    "//tools/base/build-system:android_gradle_plugin_runtime_dependencies",
+    "//tools/base/build-system/integration-test:androidx_latest",
+    "//tools/base/build-system/integration-test:support_library_latest",
+    "//tools/base/build-system/integration-test:kotlin_gradle_plugin_prebuilts",
+    "//tools/base/build-system/integration-test:ksp_gradle_plugin",
+    "//tools/base/build-system/integration-test/application:prebuilts",
+]
+
 gradle_integration_test(
     name = "privacy-sandbox-tests",
     timeout = "long",
@@ -445,22 +459,32 @@ gradle_integration_test(
             "src/test/java/com/android/build/gradle/integration/privacysandbox/*.java",
             "src/test/java/com/android/build/gradle/integration/privacysandbox/*.kt",
         ],
+        exclude = CONNECTED_TESTS + PRIVACY_SANDBOX_CONSUMPTION_TESTS,
+    ),
+    data = TEST_DATA,
+    maven_repo_zips = [
+        "//tools/base/build-system:android_gradle_plugin",
+    ],
+    maven_repos = PRIVACY_SANDBOX_MAVEN_REPOS,
+    resources = glob(["src/test/resources/**"]),
+    shard_count = 3,
+    deps = TEST_DEPS,
+)
+
+gradle_integration_test(
+    name = "privacy-sandbox-consumption-tests",
+    timeout = "long",
+    srcs = glob(
+        PRIVACY_SANDBOX_CONSUMPTION_TESTS,
         exclude = CONNECTED_TESTS,
     ),
     data = TEST_DATA,
     maven_repo_zips = [
         "//tools/base/build-system:android_gradle_plugin",
     ],
-    maven_repos = [
-        "//tools/base/build-system:android_gradle_plugin_runtime_dependencies",
-        "//tools/base/build-system/integration-test:androidx_latest",
-        "//tools/base/build-system/integration-test:support_library_latest",
-        "//tools/base/build-system/integration-test:kotlin_gradle_plugin_prebuilts",
-        "//tools/base/build-system/integration-test:ksp_gradle_plugin",
-        "//tools/base/build-system/integration-test/application:prebuilts",
-    ],
+    maven_repos = PRIVACY_SANDBOX_MAVEN_REPOS,
     resources = glob(["src/test/resources/**"]),
-    shard_count = 4,
+    shard_count = 2,
     deps = TEST_DEPS,
 )
 
