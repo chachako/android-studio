@@ -17,7 +17,6 @@
 package com.android.tools.appinspection
 
 import android.app.Activity
-import android.app.ActivityThread
 import android.app.PendingIntent
 import android.content.Intent
 

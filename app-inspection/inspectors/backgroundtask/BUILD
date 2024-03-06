@@ -26,10 +26,8 @@ app_inspection_jar(
     inspection_resource_strip_prefix = "tools/base/app-inspection/inspectors/backgroundtask/resources",
     inspection_resources = glob(["resources/META-INF/**"]),
     proto = ":backgroundtask_inspector_java_proto",
-    # do not sort: fake_android must come before latest_jar in the classpath to override small pieces of it
     deps = [
         ":backgroundtask_inspector_java_proto",
-        "//tools/base/app-inspection/inspectors/fake-android:fake_android",
         "//prebuilts/studio/sdk:platforms/latest_jar",
         "//prebuilts/tools/common/m2:androidx.inspection.inspection.1.0.0",
         "//tools/base/app-inspection/inspectors/common:app-inspection.inspectors.common",
@@ -51,9 +49,11 @@ kotlin_test(
     runtime_deps = [
         "//prebuilts/studio/sdk:platforms/latest_runtime_jar",
     ],
+    # do not sort: fake_android must come before agent-sources_undexed in the classpath to override
+    # small pieces of it.
     deps = [
-        ":agent-sources_undexed",
         "//tools/base/app-inspection/inspectors/fake-android:fake_android",
+        ":agent-sources_undexed",
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.truth.truth",

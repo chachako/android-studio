@@ -77,7 +77,10 @@ constructor(private val application: Application, private val settingsDao: Setti
 
   override fun startJob() {
     val id = jobId.getAndIncrement()
-    val job = JobInfo.Builder(id, ComponentName(application, AppJobService::class.java)).build()
+    val job =
+      JobInfo.Builder(id, ComponentName(application, AppJobService::class.java))
+        .setRequiresBatteryNotLow(true)
+        .build()
     val jobScheduler = application.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
     jobScheduler.schedule(job)
 

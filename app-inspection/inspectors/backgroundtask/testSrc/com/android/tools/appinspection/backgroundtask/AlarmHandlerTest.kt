@@ -105,7 +105,6 @@ class AlarmHandlerTest {
                     .setAction("action")
                     .setData("uri")
                     .setType("type")
-                    .setIdentifier("identifier")
                     .setPackage("package")
                     .setComponentName(
                       ComponentNameProto.newBuilder()

@@ -17,11 +17,9 @@
 package com.android.tools.appinspection
 
 import android.app.Activity
-import android.app.ActivityThread
 import android.app.AlarmManager
 import android.app.Instrumentation
 import android.app.IntentService
-import android.app.JobSchedulerImpl
 import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobParameters
@@ -179,7 +177,7 @@ class BackgroundTaskInspector(
     }
 
     environment.artTooling().registerEntryHook(
-      ActivityThread::class.java,
+      javaClass.classLoader.loadClass("android.app.ActivityThread"),
       HANDLE_RECEIVER_METHOD_NAME,
     ) { _, args ->
       pendingIntentHandler.onReceiverDataCreated(args[0] ?: return@registerEntryHook)
@@ -228,15 +226,16 @@ class BackgroundTaskInspector(
   }
 
   private fun registerJobHooks() {
+    val jobSchedulerImpl = javaClass.classLoader.loadClass("android.app.JobSchedulerImpl")
     environment.artTooling().registerEntryHook(
-      JobSchedulerImpl::class.java,
+      jobSchedulerImpl,
       "schedule(Landroid/app/job/JobInfo;)I",
     ) { _, args ->
       jobHandler.onScheduleJobEntry((args[0] as JobInfo?) ?: return@registerEntryHook)
     }
 
     environment.artTooling().registerExitHook<Int>(
-      JobSchedulerImpl::class.java,
+      jobSchedulerImpl,
       "schedule(Landroid/app/job/JobInfo;)I",
     ) { scheduleResult ->
       jobHandler.onScheduleJobExit(scheduleResult)

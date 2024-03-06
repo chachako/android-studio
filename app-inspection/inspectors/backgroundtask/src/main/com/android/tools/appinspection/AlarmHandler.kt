@@ -21,6 +21,7 @@ import android.app.AlarmManager.OnAlarmListener
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.inspection.Connection
@@ -174,7 +175,9 @@ private fun Intent.toProto(): IntentProtoBuilder {
   action?.let { builder.setAction(it) }
   component?.let { builder.setComponentName(it.toProto()) }
   data?.let { builder.setData(it.toString()) }
-  identifier?.let { builder.setIdentifier(it) }
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    identifier?.let { builder.setIdentifier(it) }
+  }
   `package`?.let { builder.setPackage(it) }
   type?.let { builder.setType(it) }
   extras?.let { builder.setExtras(it.toDisplayString()) }
