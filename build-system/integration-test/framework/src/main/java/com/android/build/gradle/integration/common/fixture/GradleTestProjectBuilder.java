@@ -98,6 +98,15 @@ public class GradleTestProjectBuilder {
     @NonNull
     public GradleTestProject create() {
 
+        // Use a specific Jdk to run Gradle, which might be different from the one running the test
+        // class
+        String jdkVersionForGradle = System.getProperty("gradle.java.version");
+        if (jdkVersionForGradle != null && jdkVersionForGradle.equals("17")) {
+            gradleProperties.add(
+                    "org.gradle.java.home="
+                            + TestUtils.getJava17Jdk().toString().replace("\\", "/"));
+        }
+
         if (androidSdkDir == null && withSdk) {
             androidSdkDir = SdkHelper.findSdkDir();
         }
