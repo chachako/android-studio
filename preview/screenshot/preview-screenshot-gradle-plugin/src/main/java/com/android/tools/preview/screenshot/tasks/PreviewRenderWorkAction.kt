@@ -24,7 +24,6 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
-import java.net.URL
 import java.net.URLClassLoader
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -36,7 +35,7 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
         val logger = Logger.getLogger(PreviewRenderWorkAction::class.qualifiedName)
     }
     abstract class RenderWorkActionParameters : WorkParameters {
-        abstract val cliToolInput: RegularFileProperty
+        abstract val cliToolArgumentsFile: RegularFileProperty
         abstract val toolJarPath: ConfigurableFileCollection
         abstract val outputDir: DirectoryProperty
     }
@@ -48,7 +47,7 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
 
     private fun render() {
         val classLoader = getClassloader(parameters.toolJarPath)
-        invokeMainMethod(listOf(parameters.cliToolInput.get().asFile.absolutePath), classLoader)
+        invokeMainMethod(listOf(parameters.cliToolArgumentsFile.get().asFile.absolutePath), classLoader)
     }
 
     private fun invokeMainMethod(arguments: List<String>, classLoader: ClassLoader) {

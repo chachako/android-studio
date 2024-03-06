@@ -44,7 +44,7 @@ class PreviewFinderTest {
     fun testConfigureInput() {
         val classpath = listOf("path/to/classes.jar","path/to/R.jar")
         val previewsFile = tempDirRule.newFile("previews_discovered.json")
-        val cliToolInputFile = tempDirRule.newFile("cli_tools_input.json")
+        val cliToolArgumentsFile = tempDirRule.newFile("cli_tools_arguments.json")
         previewsFile.writeText("""
             {
               "screenshots": [
@@ -65,7 +65,7 @@ class PreviewFinderTest {
             "outputFolder",
             "packageName",
             "resourceApkPath",
-            cliToolInputFile,
+            cliToolArgumentsFile,
             previewsFile)
         assertEquals("""
             {
@@ -91,6 +91,6 @@ class PreviewFinderTest {
               "resultsFileName": "results.json"
             }
         """.trimIndent(),
-                cliToolInputFile.readText())
+                cliToolArgumentsFile.readText())
     }
 }

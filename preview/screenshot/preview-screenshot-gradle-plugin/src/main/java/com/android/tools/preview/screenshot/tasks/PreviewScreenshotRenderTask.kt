@@ -66,7 +66,7 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     abstract val testClassesDir: ListProperty<Directory>
 
     @get:OutputFile
-    abstract val cliToolInput: RegularFileProperty
+    abstract val cliToolArgumentsFile: RegularFileProperty
 
     @get:Internal
     abstract val layoutlibDir: ConfigurableFileCollection
@@ -130,14 +130,14 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             outputDir.get().asFile.absolutePath,
             packageName.get(),
             resourcesApk,
-            cliToolInput.get().asFile,
+            cliToolArgumentsFile.get().asFile,
             previewsDiscovered.get().asFile
         )
 
         // invoke CLI tool
         val workerQueue = workerExecutor.processIsolation()
         workerQueue.submit(PreviewRenderWorkAction::class.java) { parameters ->
-            parameters.cliToolInput.set(cliToolInput)
+            parameters.cliToolArgumentsFile.set(cliToolArgumentsFile)
             parameters.toolJarPath.setFrom(screenshotCliJar)
             parameters.outputDir.set(outputDir)
         }
