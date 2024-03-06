@@ -69,6 +69,7 @@ import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.builder.core.ComponentType
 import com.android.utils.appendCapitalized
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.util.PatternSet
@@ -379,18 +380,15 @@ abstract class KmpComponentImpl<DslInfoT: KmpComponentDslInfo>(
                 }
             }
         )
-
+        val projectDir = services.projectInfo.projectDirectory
         sources.resources.addStaticSources(
             services.provider {
-                androidKotlinCompilation.allKotlinSourceSets.flatMap { sourceSet ->
-                    sourceSet.resources.srcDirs.map { srcDir ->
-
-                        ProviderBasedDirectoryEntryImpl(
-                            name = "Java resources",
-                            elements = services.fileCollection(srcDir).builtBy(sourceSet.resources).getDirectories(services.projectInfo.projectDirectory),
-                            filter = PatternSet().exclude("**/*.java", "**/*.kt"),
-                        )
-                    }
+                androidKotlinCompilation.allKotlinSourceSets.map { sourceSet ->
+                    ProviderBasedDirectoryEntryImpl(
+                        name = "Java resources",
+                        elements = sourceSet.resources.sourceDirectories.getDirectories(projectDir),
+                        filter = PatternSet().exclude("**/*.java", "**/*.kt"),
+                    )
                 }
             }
         )
