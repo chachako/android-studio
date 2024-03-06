@@ -16,14 +16,18 @@
 
 package com.android.tools.render
 
+import com.android.annotations.concurrency.GuardedBy
 import com.android.tools.rendering.ModuleRenderContext
 import com.android.tools.rendering.classloading.ClassTransform
 import com.android.tools.rendering.classloading.ModuleClassLoader
 import com.android.tools.rendering.classloading.ModuleClassLoaderDiagnosticsRead
 import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.rendering.classloading.loaders.ClassLoaderLoader
+import com.google.common.cache.CacheBuilder
 import com.intellij.openapi.module.Module
 import com.intellij.util.lang.UrlClassLoader
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.io.path.Path
 
 /**
@@ -71,6 +75,14 @@ internal class StandaloneModuleClassLoaderManager(
             ),
         )
 
+    private val sharedClassLoadersLock = ReentrantLock()
+    @GuardedBy("sharedClassLoadersLock")
+    private val sharedClassLoaders =
+        CacheBuilder
+            .newBuilder()
+            .maximumSize(10)
+            .build<ClassLoader?, DefaultModuleClassLoader>()
+
     override fun getShared(
         parent: ClassLoader?,
         moduleRenderContext: ModuleRenderContext,
@@ -78,7 +90,10 @@ internal class StandaloneModuleClassLoaderManager(
         additionalNonProjectTransformation: ClassTransform,
         onNewModuleClassLoader: Runnable
     ): ModuleClassLoaderManager.Reference<ModuleClassLoader> {
-        return ModuleClassLoaderManager.Reference(this, createClassLoader(parent))
+        val classLoader = sharedClassLoadersLock.withLock {
+            sharedClassLoaders.get(parent) { createClassLoader(parent) }
+        }
+        return ModuleClassLoaderManager.Reference(this, classLoader)
     }
 
     override fun getPrivate(
