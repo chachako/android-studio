@@ -38,12 +38,22 @@ import java.util.Objects
  * stable version of Android Gradle Plugin, it's recommended to drop support for the preview versions.
  * For example, if a new API was introduced in 7.0.0-alpha05, you can test for that using
  *
- * ```if (androidComponents.pluginVersion >= AndroidPluginVersion(7.0).alpha(5)) { ... }```
+ * ```if (androidComponents.pluginVersion >= AndroidPluginVersion(7, 0).alpha(5)) { ... }```
  *
  * If that API is marked as stable in 7.0.0, drop support for the preview versions before it by
  * updating your condition to:
  *
- * ```if (androidComponents.pluginVersion >= AndroidPluginVersion(7.0)) { ... }```
+ * ```if (androidComponents.pluginVersion >= AndroidPluginVersion(7, 0)) { ... }```
+ *
+ * Take care with maximum version checks to avoid excluding point releases.
+ * For example, if a behavior is only applicable for AGP 8.7 series, and you have a different code
+ * path for the following version, don't check for 8.7.0 as the maximum, as your plugin will break
+ * on point releases of 8.7.0, instead compare with an exclusive bound with the first alpha of the
+ * subsequent major-minor version. (This applies even if the alpha is never released as it turned
+ * out to be a major version)
+ *
+ * ```if (androidComponents.pluginVersion < AndroidPluginVersion(8, 8).alpha(1)) { ... }```
+ *
  */
 class AndroidPluginVersion private constructor(
     /**
