@@ -19,6 +19,8 @@ package com.android.build.gradle.internal
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
+import com.android.build.api.component.impl.KmpUnitTestImpl
+import com.android.build.api.component.impl.UnitTestImpl
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
@@ -223,28 +225,28 @@ class UnitTestTaskManager(
         createRunUnitTestTask(unitTestCreationConfig)
     }
 
-    private fun createRunUnitTestTask(unitTestCreationConfig: HostTestCreationConfig) {
-        if (unitTestCreationConfig.isUnitTestCoverageEnabled) {
+    private fun createRunUnitTestTask(creationConfig: HostTestCreationConfig) {
+        if (creationConfig.isCoverageEnabled) {
             project.pluginManager.apply(JacocoPlugin::class.java)
         }
         val runTestsTask = taskFactory.register(AndroidUnitTest.CreationAction(
-            unitTestCreationConfig,
-            getJacocoVersion(unitTestCreationConfig)
+            creationConfig,
+            getJacocoVersion(creationConfig)
         ))
 
-        unitTestCreationConfig.runTestTaskConfigurationActions(runTestsTask)
+        creationConfig.runTestTaskConfigurationActions(runTestsTask)
         taskFactory.configure(globalConfig.taskNames.test) { test: Task ->
             test.dependsOn(runTestsTask)
         }
 
-        if (unitTestCreationConfig.isUnitTestCoverageEnabled) {
+        if (creationConfig.isCoverageEnabled) {
             val ant = JacocoConfigurations.getJacocoAntTaskConfiguration(
-                project, getJacocoVersion(unitTestCreationConfig)
+                project, getJacocoVersion(creationConfig)
             )
             project.plugins.withType(JacocoPlugin::class.java) {
                 // Jacoco plugin is applied and test coverage enabled, ∴ generate coverage report.
                 taskFactory.register(
-                    JacocoReportTask.CreateActionUnitTest(unitTestCreationConfig, ant)
+                    JacocoReportTask.CreateActionUnitTest(creationConfig, ant)
                 )
             }
         }

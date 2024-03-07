@@ -65,14 +65,6 @@ open class ScreenshotTestImpl @Inject constructor(
     global
 ), UnitTest, HostTestCreationConfig {
 
-    // these would normally be public but not for unit-test. They are there to feed the
-    // manifest but aren't actually used.
-    override val isUnitTestCoverageEnabled: Boolean
-        get() = false
-
-    override val isScreenshotTestCoverageEnabled: Boolean
-        get() = dslInfo.isScreenshotTestCoverageEnabled
-
     override fun configureTestTask(action: (Test) -> Unit) {
         throw RuntimeException("Screenshot testing variants do not have a Test task")
     }
@@ -80,4 +72,7 @@ open class ScreenshotTestImpl @Inject constructor(
     override fun runTestTaskConfigurationActions(testTask: TaskProvider<out Test>) {
         // nothing to do until we have a Test task.
     }
+
+    override val isCoverageEnabled: Boolean
+        get() = dslInfo.isCoverageEnabled
 }

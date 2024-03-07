@@ -100,11 +100,8 @@ open class UnitTestImpl @Inject constructor(
 
     // these would normally be public but not for unit-test. They are there to feed the
     // manifest but aren't actually used.
-    override val isUnitTestCoverageEnabled: Boolean
-        get() = dslInfo.isUnitTestCoverageEnabled
-
-    override val isScreenshotTestCoverageEnabled: Boolean
-        get() = false
+    override val isCoverageEnabled: Boolean
+        get() = dslInfo.isCoverageEnabled
 
     private val testTaskConfigActions = mutableListOf<(Test) -> Unit>()
 

@@ -65,9 +65,6 @@ internal class ScreenshotTestComponentDslInfoImpl(
     override val minSdkVersion: MutableAndroidVersion
         get() = mainVariantDslInfo.minSdkVersion
 
-    override val isUnitTestCoverageEnabled: Boolean
-        get() = false // Support can be added later if needed
-
-    override val isScreenshotTestCoverageEnabled: Boolean
-        get() = false  // TODO: add dsl info to BuildType for ST coverage.
+    override val isCoverageEnabled: Boolean
+        get() = false  // TODO(karimai): add dsl info to BuildType for ST coverage.
 }

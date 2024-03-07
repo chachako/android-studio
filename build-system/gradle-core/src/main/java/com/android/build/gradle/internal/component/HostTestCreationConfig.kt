@@ -21,10 +21,8 @@ import org.gradle.api.tasks.testing.Test
 
 interface HostTestCreationConfig: TestComponentCreationConfig {
 
-    val isUnitTestCoverageEnabled: Boolean
-
     fun runTestTaskConfigurationActions(testTask: TaskProvider<out Test>)
 
-    val isScreenshotTestCoverageEnabled: Boolean
+    val isCoverageEnabled: Boolean
 }
 
