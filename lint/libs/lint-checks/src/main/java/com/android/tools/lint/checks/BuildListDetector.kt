@@ -24,7 +24,10 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.intellij.psi.CommonClassNames.JAVA_UTIL_LIST
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.util.TypeConversionUtil
+import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.UThisExpression
@@ -67,12 +70,22 @@ class BuildListDetector : Detector(), SourceCodeScanner {
         object : AbstractUastVisitor() {
           override fun visitCallExpression(node: UCallExpression): Boolean {
             val name = node.methodName ?: node.methodIdentifier?.name
-            if (name == "add" || name == "addAll") {
+            if (name != null && name.startsWith("add")) {
               val receiver = node.receiver
               if (receiver == null || receiver is UThisExpression) {
                 val containingClass = node.resolve()?.containingClass?.qualifiedName
-                if (containingClass == null || containingClass == "java.util.List") {
+                if (containingClass == null || containingClass == JAVA_UTIL_LIST) {
                   isAdding = true
+                } else {
+                  // Extension function on the list?
+                  val sourcePsi = node.sourcePsi
+                  if (
+                    sourcePsi is KtCallExpression &&
+                      node.receiverType?.let { TypeConversionUtil.erasure(it) }?.canonicalText ==
+                        JAVA_UTIL_LIST
+                  ) {
+                    isAdding = true
+                  }
                 }
               }
             }

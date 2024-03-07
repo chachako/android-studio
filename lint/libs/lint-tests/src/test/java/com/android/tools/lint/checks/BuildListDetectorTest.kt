@@ -115,4 +115,28 @@ class BuildListDetectorTest : AbstractCheckTest() {
         """
       )
   }
+
+  fun testCustomAdd() {
+    lint()
+      .files(
+        kotlin(
+            """
+            fun example(): List<String> {
+              return buildList {
+                addIfPresent("test")
+              }
+            }
+
+            private fun <E> MutableList<E>.addIfPresent(e: E) {
+              if (contains(e)) {
+                add(e)
+              }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }
