@@ -1,6 +1,6 @@
-load("//tools/base/bazel:maven.bzl", "maven_repository")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
 load("//tools/base/bazel:coverage.bzl", "coverage_java_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
+load("//tools/base/bazel:maven.bzl", "maven_repository")
 
 #keep sorted
 TEST_DEPS = [
@@ -83,7 +83,7 @@ coverage_java_test(
         "tools/base/build-system/integration-test/dagger_prebuilts.manifest," +
         "tools/base/build-system/integration-test/kotlin_gradle_plugin_prebuilts.manifest",
     ],
-    shard_count = 8,
+    shard_count = 10,  # Use 10 shards instead of 8 to prevent/reduce flakiness (b/311233515)
     tags = [
         "block-network",
         "cpu:3",
