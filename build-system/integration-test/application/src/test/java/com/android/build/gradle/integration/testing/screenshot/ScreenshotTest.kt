@@ -72,9 +72,6 @@ class ScreenshotTest {
                         kotlin {
                             jvmToolchain(17)
                         }
-                        testOptions {
-                            unitTests.includeAndroidResources true
-                        }
                     }
                 """.trimIndent()
             }

@@ -21,6 +21,7 @@ import com.android.Version
 import com.android.build.api.AndroidPluginVersion
 import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.HasDeviceTests
@@ -130,6 +131,12 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         "$bt/$fn"
                     } ?: bt
                 } ?: flavorName ?: ""
+            }
+
+            componentsExtension.beforeVariants {
+                // TODO(b/330377509): Remove this test option once the screenshotTest source set is in use.
+                val extension = project.extensions.getByType(CommonExtension::class.java)
+                extension.testOptions.unitTests.isIncludeAndroidResources = true
             }
 
             componentsExtension.onVariants { variant ->

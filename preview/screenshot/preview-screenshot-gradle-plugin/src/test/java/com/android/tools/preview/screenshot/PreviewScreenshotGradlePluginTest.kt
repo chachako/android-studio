@@ -16,6 +16,7 @@
 package com.android.tools.preview.screenshot
 
 import com.android.build.api.AndroidPluginVersion
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.gradle.api.AndroidBasePlugin
 import com.android.testutils.MockitoKt.argumentCaptor
@@ -46,9 +47,12 @@ class PreviewScreenshotGradlePluginTest {
     lateinit var mockProject: Project
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     lateinit var mockAndroidPlugin: AndroidComponentsExtension<*, *, *>
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    lateinit var mockCommonExtension: CommonExtension<*, *, *, *, *, *>
     @Before
     fun setupMocks() {
         `when`(mockProject.extensions.getByType(eq(AndroidComponentsExtension::class.java))).thenReturn(mockAndroidPlugin)
+        `when`(mockProject.extensions.getByType(eq(CommonExtension::class.java))).thenReturn(mockCommonExtension)
     }
     private fun applyScreenshotPlugin(
             agpVersion: AndroidPluginVersion = AndroidPluginVersion(8, 1)) {
