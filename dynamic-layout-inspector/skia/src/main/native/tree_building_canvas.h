@@ -23,13 +23,11 @@
 #include <memory>
 
 #include "include/core/SkCanvasVirtualEnforcer.h"
-#include "include/core/SkColorSpace.h"
 #include "include/core/SkPicture.h"
 #include "include/core/SkScalar.h"
-#include "include/core/SkSerialProcs.h"
 #include "include/core/SkStream.h"
 #include "include/core/SkSurface.h"
-#include "include/encode/SkPngEncoder.h"
+#include "include/core/SkColorSpace.h"
 
 #ifndef SKIA_TREEBUILDINGCANVAS_H
 #define SKIA_TREEBUILDINGCANVAS_H
@@ -69,20 +67,53 @@ class TreeBuildingCanvas : public SkCanvasVirtualEnforcer<SkCanvas> {
       const char* skp, size_t len, int version,
       const ::google::protobuf::RepeatedPtrField<
           ::layoutinspector::proto::RequestedNodeInfo>* requested_node_info,
-      float scale, ::layoutinspector::proto::InspectorView* root);
+      float scale, ::layoutinspector::proto::InspectorView* root) {
+#ifdef TREEBUILDINGCANVAS_DEBUG
+    std::cerr << "###start scale: " << scale << std::endl;
+#endif
+    std::unique_ptr<SkStreamAsset> stream =
+        SkMemoryStream::MakeDirect(skp, len);
+    sk_sp<SkPicture> picture(SkPicture::MakeFromStream(stream.get()));
+    if (picture == nullptr) {
+#ifdef TREEBUILDINGCANVAS_DEBUG
+      std::cerr << "Got null picture, abort. Len was " << len << std::endl;
+#endif
+
+      return;
+    }
+    picture->ref();
+
+    SkIRect rootBounds = SkIRect::MakeXYWH(0, 0, 1, 1);
+    std::map<long, SkIRect> requested_nodes;
+    for (const ::layoutinspector::proto::RequestedNodeInfo& node :
+         *requested_node_info) {
+      SkIRect rect =
+          SkIRect::MakeXYWH(node.x() * scale, node.y() * scale,
+                            node.width() * scale, node.height() * scale);
+      rootBounds.join(rect);
+      requested_nodes.insert(std::make_pair(node.id(), rect));
+    }
+    TreeBuildingCanvas canvas(version, root, rootBounds.width(),
+                              rootBounds.height(), requested_nodes, scale);
+    picture->playback(&canvas);
+
+    picture->unref();
+#ifdef TREEBUILDINGCANVAS_DEBUG
+    std::cerr << "###end" << std::endl;
+#endif
+  }
 
   ~TreeBuildingCanvas() override;
 
  protected:
-  explicit TreeBuildingCanvas(int version,
-                              ::layoutinspector::proto::InspectorView* r,
-                              int width, int height,
-                              std::map<long, SkIRect> requested_nodes,
-                              float scale)
+  explicit TreeBuildingCanvas(
+      int version, ::layoutinspector::proto::InspectorView* r,
+      int width, int height, std::map<long, SkIRect> requested_nodes,
+      float scale)
       : SkCanvasVirtualEnforcer<SkCanvas>(),
         request_version(version),
         request_scale(scale),
-        surface(SkSurfaces::Raster(
+        surface(SkSurface::MakeRaster(
             SkImageInfo::Make(width, height, kBGRA_8888_SkColorType,
                               kUnpremul_SkAlphaType, SkColorSpace::MakeSRGB()),
             width * sizeof(int32_t), nullptr)),
@@ -107,6 +138,8 @@ class TreeBuildingCanvas : public SkCanvasVirtualEnforcer<SkCanvas> {
   SkImageInfo onImageInfo() const override;
 
   bool onGetProps(SkSurfaceProps* props, bool top) const override;
+
+  void onFlush() override;
 
   void willSave() override;
 

@@ -1,14 +1,9 @@
 #include <jni.h>
 #include <string>
-#include "include/codec/SkPngDecoder.h"
 #include "include/core/SkBitmap.h"
-#include "include/core/SkFontMgr.h"
+#include "include/core/SkEncodedImageFormat.h"
 #include "include/core/SkPictureRecorder.h"
-#include "include/core/SkSerialProcs.h"
-#include "include/core/SkTypeface.h"
 #include "include/effects/SkGradientShader.h"
-#include "include/encode/SkPngEncoder.h"
-#include "include/ports/SkFontMgr_empty.h"
 #include "skia.grpc.pb.h"
 #include "skia.pb.h"
 #include "tree_building_canvas.h"
@@ -22,34 +17,6 @@ void add_requested_node(::layoutinspector::proto::GetViewTreeRequest &request,
   node1->set_width(width);
   node1->set_height(height);
   node1->set_id(id);
-}
-
-sk_sp<SkImage> DeserializeImage(const void *bytes, size_t length, void *) {
-  sk_sp<SkData> data = SkData::MakeWithoutCopy(bytes, length);
-  const auto get_image = [](std::unique_ptr<SkCodec> codec) -> sk_sp<SkImage> {
-    if (!codec) {
-      return nullptr;
-    }
-    SkImageInfo targetInfo =
-        codec->getInfo().makeAlphaType(kPremul_SkAlphaType);
-    return std::get<0>(codec->getImage(targetInfo));
-  };
-  if (SkPngDecoder::IsPng(bytes, length)) {
-    return get_image(SkPngDecoder::Decode(data, nullptr));
-  }
-  return nullptr;
-}
-
-static sk_sp<SkTypeface> DeserializeTypeface(const void *data, size_t length,
-                                             void *ctx) {
-  // TODO(bungeman,kjlubick) This should not be how the Skia deserial proc
-  // works.
-  SkStream *stream = *(reinterpret_cast<SkStream **>(const_cast<void *>(data)));
-  if (length < sizeof(stream)) {
-    return nullptr;
-  }
-  // Use an empty font manager to use the fonts included in the skia image.
-  return SkTypeface::MakeDeserialize(stream, SkFontMgr_New_Custom_Empty());
 }
 
 jbyteArray build_tree(sk_sp<SkData> data,
@@ -122,11 +89,8 @@ sk_sp<SkData> generateBoxesData() {
                          nullptr);
 
   sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
-  SkSerialProcs sProcs;
-  sProcs.fImageProc = [](SkImage *img, void *) -> sk_sp<SkData> {
-    return SkPngEncoder::Encode(nullptr, img, SkPngEncoder::Options{});
-  };
-  return picture->serialize(&sProcs);
+
+  return picture->serialize();
 }
 
 JNIEXPORT jbyteArray JNICALL
@@ -151,9 +115,6 @@ Java_com_android_tools_layoutinspector_SkiaParserTest_generateBoxesData(
 JNIEXPORT jbyteArray JNICALL
 Java_com_android_tools_layoutinspector_SkiaParserTest_generateImage(
     JNIEnv *env, jobject instance) {
-  // Register the appropriate codecs for the supported image formats.
-  SkCodecs::Register(SkPngDecoder::Decoder());
-
   SkPictureRecorder recorder;
 
   SkCanvas *canvas = recorder.beginRecording({0, 0, 10, 10});
@@ -169,8 +130,8 @@ Java_com_android_tools_layoutinspector_SkiaParserTest_generateImage(
   sk_sp<SkImage> origImage = bitmap.asImage();
   // Probably the original image is PNG already, but we reencode explicitly to
   // be sure, since we know SKPs from android will contain PNG images.
-  sk_sp<SkData> data(SkPngEncoder::Encode(nullptr, origImage.get(), {}));
-  sk_sp<SkImage> pngImage = SkImages::DeferredFromEncodedData(data);
+  sk_sp<SkData> data(origImage->encodeToData(SkEncodedImageFormat::kPNG, 100));
+  sk_sp<SkImage> pngImage = SkImage::MakeFromEncoded(data);
 
   const SkRect &skRect1 = SkRect::MakeXYWH(0, 0, 10, 10);
   canvas->drawAnnotation(skRect1, "RenderNode(id=1, name='Image')", nullptr);
@@ -179,14 +140,10 @@ Java_com_android_tools_layoutinspector_SkiaParserTest_generateImage(
   canvas->drawAnnotation(skRect1, "/RenderNode(id=1, name='Image')", nullptr);
 
   sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
-  SkSerialProcs sProcs;
-  sProcs.fImageProc = [](SkImage *img, void *) -> sk_sp<SkData> {
-    return SkPngEncoder::Encode(nullptr, img, SkPngEncoder::Options{});
-  };
 
   ::layoutinspector::proto::GetViewTreeRequest request;
   add_requested_node(request, 0, 0, 10, 10, 1);
-  return build_tree(picture->serialize(&sProcs), request, 1.0, env);
+  return build_tree(picture->serialize(), request, 1.0, env);
 }
 
 JNIEXPORT jbyteArray JNICALL
@@ -264,10 +221,6 @@ Java_com_android_tools_layoutinspector_SkiaParserTest_generateTransformedViews(
   canvas->drawAnnotation(skRect1, "/RenderNode(id=1, name='Node1')", nullptr);
 
   sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
-  SkSerialProcs sProcs;
-  sProcs.fImageProc = [](SkImage *img, void *) -> sk_sp<SkData> {
-    return SkPngEncoder::Encode(nullptr, img, SkPngEncoder::Options{});
-  };
 
   ::layoutinspector::proto::GetViewTreeRequest request;
   add_requested_node(request, 0, 0, 256, 256, 1);
@@ -275,7 +228,7 @@ Java_com_android_tools_layoutinspector_SkiaParserTest_generateTransformedViews(
   add_requested_node(request, 98, 185, 90, 55, 3);
   add_requested_node(request, 10, 10, 20, 20, 4);
 
-  return build_tree(picture->serialize(&sProcs), request, 0.7, env);
+  return build_tree(picture->serialize(), request, 0.7, env);
 }
 
 JNIEXPORT jbyteArray JNICALL
@@ -285,10 +238,7 @@ Java_com_android_tools_layoutinspector_SkiaParserTest_generateRealWorldExample(
   std::cout << filenameChars << std::endl;
   sk_sp<SkData> data = SkData::MakeFromFileName(filenameChars);
   env->ReleaseStringUTFChars(filenameStr, filenameChars);
-  SkDeserialProcs procs;
-  procs.fImageProc = DeserializeImage;
-  procs.fTypefaceProc = DeserializeTypeface;
-  sk_sp<SkPicture> picture = SkPicture::MakeFromData(data.get(), &procs);
+  sk_sp<SkPicture> picture = SkPicture::MakeFromData(data.get());
 
   ::layoutinspector::proto::GetViewTreeRequest request;
   add_requested_node(request, 0, 0, 1023, 240, 82);
@@ -300,11 +250,7 @@ Java_com_android_tools_layoutinspector_SkiaParserTest_generateRealWorldExample(
   add_requested_node(request, 872, 837, 112, 112, 87);
   add_requested_node(request, 0, 0, 1000, 904, 80);
   add_requested_node(request, 0, 0, 1000, 1000, 73);
-  SkSerialProcs sProcs;
-  sProcs.fImageProc = [](SkImage *img, void *) -> sk_sp<SkData> {
-    return SkPngEncoder::Encode(nullptr, img, SkPngEncoder::Options{});
-  };
 
-  return build_tree(picture->serialize(&sProcs), request, 0.7, env);
+  return build_tree(picture->serialize(), request, 0.7, env);
 }
 }

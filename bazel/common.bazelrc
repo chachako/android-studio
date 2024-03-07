@@ -251,3 +251,11 @@ build:dynamic --noexperimental_worker_multiplex
 
 build:without_vendor --repo_env=SETUP_VENDOR=0
 build:without_vendor --//tools/base/bazel:without-vendor
+
+# TODO: Remove these skia settings when a better approach is supported by the skia code base.
+# TODO:(https://bugs.chromium.org/p/skia/issues/detail?id=13983)
+build --@skia_repo//src/encode:include_encoder=png_encode_codec
+build --@skia_repo//src/codec:include_decoder=png_decode_codec
+build --@skia_repo//src/sksl:enable_sksl=true
+build --@skia_repo//bazel/common_config_settings:include_fontmgr=custom_empty_fontmgr
+build --@skia_repo//bazel/common_config_settings:fontmgr_factory=custom_empty_fontmgr_factory

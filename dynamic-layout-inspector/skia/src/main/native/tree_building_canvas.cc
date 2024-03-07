@@ -17,108 +17,15 @@
 
 #include <memory>
 #include <stack>
-#include "include/codec/SkPngDecoder.h"
 #include "include/core/SkClipOp.h"
-#include "include/core/SkFontMgr.h"
-#include "include/core/SkImage.h"
 #include "include/core/SkImageInfo.h"
+
+#include "include/core/SkImage.h"
 #include "include/core/SkRRect.h"
-#include "include/core/SkTypeface.h"
+#include "include/core/SkImageEncoder.h"
 #include "include/encode/SkPngEncoder.h"
-#include "include/ports/SkFontMgr_empty.h"
 
 namespace v1 {
-namespace {
-
-sk_sp<SkImage> DeserializeImage(const void* bytes, size_t length, void*) {
-  sk_sp<SkData> data = SkData::MakeWithoutCopy(bytes, length);
-  const auto get_image = [](std::unique_ptr<SkCodec> codec) -> sk_sp<SkImage> {
-    if (!codec) {
-      return nullptr;
-    }
-    // prefer premul over unpremul (this produces better filtering in general)
-    SkImageInfo targetInfo =
-        codec->getInfo().makeAlphaType(kPremul_SkAlphaType);
-    return std::get<0>(codec->getImage(targetInfo));
-  };
-  if (SkPngDecoder::IsPng(bytes, length)) {
-    return get_image(SkPngDecoder::Decode(data, nullptr));
-  }
-#ifdef TREEBUILDINGCANVAS_DEBUG
-  stderr::cerr << "Unsupported codec encountered" << std::endl;
-#endif
-  return nullptr;
-
-  // If we decide to support other codecs, enable the code below.
-  // And add a dependency of the codec in the BUILD file.
-
-  //  if (SkBmpDecoder::IsBmp(bytes, length)) {
-  //    return get_image(SkBmpDecoder::Decode(data, nullptr));
-  //  }
-  //  if (SkGifDecoder::IsGif(bytes, length)) {
-  //    return get_image(SkGifDecoder::Decode(data, nullptr));
-  //  }
-  //  if (SkJpegDecoder::IsJpeg(bytes, length)) {
-  //    return get_image(SkJpegDecoder::Decode(data, nullptr));
-  //  }
-  //  return get_image(SkWebpDecoder::Decode(data, nullptr));
-}
-
-static sk_sp<SkTypeface> DeserializeTypeface(const void* data, size_t length,
-                                             void* ctx) {
-  // TODO(bungeman,kjlubick) This should not be how the Skia deserial proc
-  // works.
-  SkStream* stream = *(reinterpret_cast<SkStream**>(const_cast<void*>(data)));
-  if (length < sizeof(stream)) {
-    return nullptr;
-  }
-  // Use an empty font manager to use the fonts included in the skia image.
-  return SkTypeface::MakeDeserialize(stream, SkFontMgr_New_Custom_Empty());
-}
-}  // namespace
-
-void TreeBuildingCanvas::ParsePicture(
-    const char* skp, size_t len, int version,
-    const ::google::protobuf::RepeatedPtrField<
-        ::layoutinspector::proto::RequestedNodeInfo>* requested_node_info,
-    float scale, ::layoutinspector::proto::InspectorView* root) {
-#ifdef TREEBUILDINGCANVAS_DEBUG
-  std::cerr << "###start scale: " << scale << std::endl;
-#endif
-  std::unique_ptr<SkStreamAsset> stream = SkMemoryStream::MakeDirect(skp, len);
-  SkDeserialProcs procs;
-  procs.fImageProc = DeserializeImage;
-  procs.fTypefaceProc = DeserializeTypeface;
-  sk_sp<SkPicture> picture(SkPicture::MakeFromStream(stream.get(), &procs));
-  if (picture == nullptr) {
-#ifdef TREEBUILDINGCANVAS_DEBUG
-    std::cerr << "Got null picture, abort. Len was " << len << std::endl;
-#endif
-
-    return;
-  }
-  picture->ref();
-
-  SkIRect rootBounds = SkIRect::MakeXYWH(0, 0, 1, 1);
-  std::map<long, SkIRect> requested_nodes;
-  for (const ::layoutinspector::proto::RequestedNodeInfo& node :
-       *requested_node_info) {
-    SkIRect rect =
-        SkIRect::MakeXYWH(node.x() * scale, node.y() * scale,
-                          node.width() * scale, node.height() * scale);
-    rootBounds.join(rect);
-    requested_nodes.insert(std::make_pair(node.id(), rect));
-  }
-  TreeBuildingCanvas canvas(version, root, rootBounds.width(),
-                            rootBounds.height(), requested_nodes, scale);
-  picture->playback(&canvas);
-
-  picture->unref();
-#ifdef TREEBUILDINGCANVAS_DEBUG
-  std::cerr << "###end" << std::endl;
-#endif
-}
-
 TreeBuildingCanvas::~TreeBuildingCanvas() {
   if (!views.empty()) {
     std::cerr << "Found unclosed view!" << std::endl;
@@ -143,6 +50,8 @@ SkImageInfo TreeBuildingCanvas::onImageInfo() const {
 bool TreeBuildingCanvas::onGetProps(SkSurfaceProps* props, bool top) const {
   return real_canvas->getProps(props);
 }
+
+void TreeBuildingCanvas::onFlush() { real_canvas->flush(); }
 
 void TreeBuildingCanvas::willSave() {
   real_canvas->save();
