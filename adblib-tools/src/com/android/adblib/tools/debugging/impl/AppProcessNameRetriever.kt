@@ -20,6 +20,7 @@ import com.android.adblib.selector
 import com.android.adblib.shellCommand
 import com.android.adblib.tools.debugging.AppProcess
 import com.android.adblib.tools.debugging.JdwpProcess
+import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.tools.debugging.scope
 import com.android.adblib.withTextCollector
 import kotlinx.coroutines.delay
@@ -71,6 +72,7 @@ internal class AppProcessNameRetriever(private val process: AppProcess) {
                         .execute()
                         .first()
                 } catch (t: Throwable) {
+                    t.rethrowCancellation()
                     logger.warn(
                         t,
                         "Error executing shell command '$cmd' on device ${process.device}"
