@@ -10613,6 +10613,27 @@ maven_import(
 )
 
 maven_artifact(
+    name = "org.robolectric.android-all-instrumented_9-robolectric-4913185-2-i4",
+    pom = "repository/org/robolectric/android-all-instrumented/9-robolectric-4913185-2-i4/android-all-instrumented-9-robolectric-4913185-2-i4.pom",
+    repo_root_path = "repository",
+    repo_path = "org/robolectric/android-all-instrumented/9-robolectric-4913185-2-i4",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "org.robolectric.android-all-instrumented",
+    classifiers = [],
+    jars = [
+        "repository/org/robolectric/android-all-instrumented/9-robolectric-4913185-2-i4/android-all-instrumented-9-robolectric-4913185-2-i4.jar"
+    ],
+    original_deps = [],
+    pom = "repository/org/robolectric/android-all-instrumented/9-robolectric-4913185-2-i4/android-all-instrumented-9-robolectric-4913185-2-i4.pom",
+    repo_root_path = "repository",
+    repo_path = "org/robolectric/android-all-instrumented/9-robolectric-4913185-2-i4",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.robolectric.annotations_4.8.2",
     pom = "repository/org/robolectric/annotations/4.8.2/annotations-4.8.2.pom",
     repo_root_path = "repository",
@@ -55363,14 +55384,6 @@ maven_artifact(
     pom = "repository/org/robolectric/android-all-instrumented/7.0.0_r1-robolectric-r1-i4/android-all-instrumented-7.0.0_r1-robolectric-r1-i4.pom",
     repo_root_path = "repository",
     repo_path = "org/robolectric/android-all-instrumented/7.0.0_r1-robolectric-r1-i4",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.robolectric.android-all-instrumented_9-robolectric-4913185-2-i4",
-    pom = "repository/org/robolectric/android-all-instrumented/9-robolectric-4913185-2-i4/android-all-instrumented-9-robolectric-4913185-2-i4.pom",
-    repo_root_path = "repository",
-    repo_path = "org/robolectric/android-all-instrumented/9-robolectric-4913185-2-i4",
     visibility = ["//visibility:public"],
 )
 

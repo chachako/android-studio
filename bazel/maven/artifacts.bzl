@@ -190,6 +190,7 @@ ARTIFACTS = [
     "org.jspecify:jspecify:0.2.0",
     "org.mockito:mockito-core:5.6.0",
     "org.mortbay.jetty:jetty:6.1.26",
+    "org.robolectric:android-all-instrumented:9-robolectric-4913185-2-i4",
     "org.robolectric:robolectric:4.8.2",
     "org.ow2.asm:asm:9.6",
     "org.ow2.asm:asm-analysis:9.6",
