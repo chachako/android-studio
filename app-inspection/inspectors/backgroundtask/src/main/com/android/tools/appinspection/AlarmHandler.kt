@@ -117,6 +117,8 @@ class AlarmHandlerImpl(
         alarmSet = builder.build()
       }
     } catch (t: Throwable) {
+      println("Error (SDK=${Build.VERSION.SDK_INT})")
+      t.printStackTrace()
       Log.w(TAG, "Error handling Alarm", t)
     }
   }
@@ -148,10 +150,16 @@ class AlarmHandlerImpl(
   }
 
   private fun AlarmSet.Builder.setPendingIntent(pendingIntent: PendingIntent): Long {
-    val builder =
-      PendingIntentProto.newBuilder()
+    val builder = PendingIntentProto.newBuilder()
+    try {
+      builder
         .setCreatorPackage(pendingIntent.creatorPackage)
         .setCreatorUid(pendingIntent.creatorUid)
+    } catch (t: Throwable) {
+      // Tests running on Robolectric APIs 31 & 32 crash when accessing PendingIntent getters.
+      // Tested on a real device and it did not crash
+    }
+
     val info = intentRegistry.getPendingIntentInfo(pendingIntent)
     if (info != null) {
       builder

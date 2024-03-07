@@ -144,11 +144,8 @@ class PendingIntentHandlerImpl(
   }
 
   override fun onReceiverDataResult(data: Any) {
-    val clazz = Class.forName("android.app.ActivityThread\$ReceiverData")
     if (data == receiverData.get()) {
-      val field = clazz.getDeclaredField("intent")
-      field.isAccessible = true
-      val intent = field.get(data) as? Intent ?: return
+      val intent = data.getFieldValue("intent", null as Intent?) ?: return
       onIntentReceived(intent)
     }
   }

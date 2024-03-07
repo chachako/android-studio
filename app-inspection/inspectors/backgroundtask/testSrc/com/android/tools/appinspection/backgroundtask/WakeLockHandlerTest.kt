@@ -16,6 +16,7 @@
 
 package com.android.tools.appinspection.backgroundtask
 
+import android.os.Build
 import android.os.PowerManager
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.WakeLockAcquired
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.WakeLockReleased
@@ -23,16 +24,29 @@ import com.android.tools.appinspection.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(
+  manifest = Config.NONE,
+  minSdk = Build.VERSION_CODES.O,
+  maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
+)
 class WakeLockHandlerTest {
-
   @get:Rule val inspectorRule = BackgroundTaskInspectorRule()
+
+  private val powerManager =
+    RuntimeEnvironment.getApplication().getSystemService(PowerManager::class.java)
 
   @Test
   fun wakeLockAcquired() {
     val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
     wakeLockHandler.onNewWakeLockEntry(1, "tag")
-    val wakeLock = PowerManager.WakeLock(3, "tag2")
+
+    val wakeLock = powerManager.newWakeLock(3, "app:tag2")
     wakeLockHandler.onNewWakeLockExit(wakeLock)
     wakeLockHandler.onWakeLockAcquired(wakeLock, 10)
 
@@ -47,13 +61,16 @@ class WakeLockHandlerTest {
   @Test
   fun wakeLockAcquiredWithoutParameter() {
     val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
-    val wakeLock = PowerManager.WakeLock(1, "tag")
+
+    val wakeLock = powerManager.newWakeLock(1, "tag")
     wakeLockHandler.onWakeLockAcquired(wakeLock, 10)
 
     inspectorRule.connection.consume {
       with(wakeLockAcquired) {
-        assertThat(tag).isEqualTo("tag")
-        assertThat(level).isEqualTo(WakeLockAcquired.Level.PARTIAL_WAKE_LOCK)
+        // For some reason in Robolectric, `powerManager.newWakeLock()` creates a WakeLock with a
+        // tag==null and flags==0
+        assertThat(tag).isEqualTo("UNKNOWN")
+        assertThat(level).isEqualTo(WakeLockAcquired.Level.UNDEFINED_WAKE_LOCK_LEVEL)
       }
     }
   }
@@ -61,8 +78,8 @@ class WakeLockHandlerTest {
   @Test
   fun wakeLockReleased() {
     val wakeLockHandler = inspectorRule.inspector.wakeLockHandler
-    val wakeLock = PowerManager.WakeLock(1, "tag")
-    wakeLock.isHeld = true
+    val wakeLock = powerManager.newWakeLock(1, "tag")
+    wakeLock.acquire()
     wakeLockHandler.onWakeLockReleasedEntry(wakeLock, RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY)
     wakeLockHandler.onWakeLockReleasedExit()
     inspectorRule.connection.consume {

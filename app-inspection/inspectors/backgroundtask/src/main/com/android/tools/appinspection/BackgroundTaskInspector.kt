@@ -246,8 +246,9 @@ class BackgroundTaskInspector(
       jobHandlerClass,
       "ackStartMessage(Landroid/app/job/JobParameters;Z)V",
     ) { _, args ->
+      val jobParameters = (args[0] as? JobParameters) ?: return@registerEntryHook
       jobHandler.wrapOnStartJob(
-        params = (args[0] as? JobParameters) ?: return@registerEntryHook,
+        params = JobParametersWrapper(jobParameters),
         workOngoing = args[1] as Boolean,
       )
     }
@@ -256,8 +257,9 @@ class BackgroundTaskInspector(
       jobHandlerClass,
       "ackStopMessage(Landroid/app/job/JobParameters;Z)V",
     ) { _, args ->
+      val jobParameters = (args[0] as? JobParameters) ?: return@registerEntryHook
       jobHandler.wrapOnStopJob(
-        params = (args[0] as? JobParameters) ?: return@registerEntryHook,
+        params = JobParametersWrapper(jobParameters),
         reschedule = args[1] as Boolean,
       )
     }
@@ -266,8 +268,9 @@ class BackgroundTaskInspector(
       JobService::class.java,
       "jobFinished(Landroid/app/job/JobParameters;Z)V",
     ) { _, args ->
+      val jobParameters = (args[0] as? JobParameters) ?: return@registerEntryHook
       jobHandler.wrapJobFinished(
-        params = (args[0] as? JobParameters) ?: return@registerEntryHook,
+        params = JobParametersWrapper(jobParameters),
         wantsReschedule = args[1] as Boolean,
       )
     }

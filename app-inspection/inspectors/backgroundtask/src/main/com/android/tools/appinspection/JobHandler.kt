@@ -17,7 +17,6 @@
 package com.android.tools.appinspection
 
 import android.app.job.JobInfo
-import android.app.job.JobParameters
 import android.app.job.JobScheduler
 import android.app.job.JobService
 import androidx.inspection.Connection
@@ -52,7 +51,7 @@ interface JobHandler {
    * @param params the params parameter passed to the original method.
    * @param workOngoing the workOngoing parameter passed to the original method.
    */
-  fun wrapOnStartJob(params: JobParameters, workOngoing: Boolean)
+  fun wrapOnStartJob(params: JobParametersWrapper, workOngoing: Boolean)
 
   /**
    * Wraps [JobHandler.ackStopMessage], which is called when [JobService.onStopJob] is called.
@@ -61,7 +60,7 @@ interface JobHandler {
    * @param params the params parameter passed to the original method.
    * @param reschedule the reschedule parameter passed to the original method.
    */
-  fun wrapOnStopJob(params: JobParameters, reschedule: Boolean)
+  fun wrapOnStopJob(params: JobParametersWrapper, reschedule: Boolean)
 
   /**
    * Wraps [JobService.jobFinished].
@@ -69,7 +68,7 @@ interface JobHandler {
    * @param params the params parameter passed to the original method.
    * @param wantsReschedule the wantsReschedule parameter passed to the original method.
    */
-  fun wrapJobFinished(params: JobParameters, wantsReschedule: Boolean)
+  fun wrapJobFinished(params: JobParametersWrapper, wantsReschedule: Boolean)
 }
 
 class JobHandlerImpl(private val connection: Connection) : JobHandler {
@@ -146,7 +145,7 @@ class JobHandlerImpl(private val connection: Connection) : JobHandler {
     return scheduleResult
   }
 
-  override fun wrapOnStartJob(params: JobParameters, workOngoing: Boolean) {
+  override fun wrapOnStartJob(params: JobParametersWrapper, workOngoing: Boolean) {
     val eventId = jobIdToEventId.getOrPut(params.jobId) { BackgroundTaskUtil.nextId() }
     connection.sendBackgroundTaskEvent(eventId) {
       jobStartedBuilder.apply {
@@ -156,7 +155,7 @@ class JobHandlerImpl(private val connection: Connection) : JobHandler {
     }
   }
 
-  override fun wrapOnStopJob(params: JobParameters, reschedule: Boolean) {
+  override fun wrapOnStopJob(params: JobParametersWrapper, reschedule: Boolean) {
     val eventId = jobIdToEventId.getOrPut(params.jobId) { BackgroundTaskUtil.nextId() }
     connection.sendBackgroundTaskEvent(eventId) {
       jobStoppedBuilder
@@ -168,7 +167,7 @@ class JobHandlerImpl(private val connection: Connection) : JobHandler {
     }
   }
 
-  override fun wrapJobFinished(params: JobParameters, wantsReschedule: Boolean) {
+  override fun wrapJobFinished(params: JobParametersWrapper, wantsReschedule: Boolean) {
     val eventId = jobIdToEventId.getOrPut(params.jobId) { BackgroundTaskUtil.nextId() }
     connection.sendBackgroundTaskEvent(eventId) {
       stacktrace = getStackTrace(1)
@@ -179,7 +178,9 @@ class JobHandlerImpl(private val connection: Connection) : JobHandler {
     }
   }
 
-  private fun BackgroundTaskInspectorProtocol.JobParameters.Builder.setUp(params: JobParameters) {
+  private fun BackgroundTaskInspectorProtocol.JobParameters.Builder.setUp(
+    params: JobParametersWrapper
+  ) {
     jobId = params.jobId
     addAllTriggeredContentAuthorities(params.triggeredContentAuthorities?.toList() ?: listOf())
     addAllTriggeredContentUris(

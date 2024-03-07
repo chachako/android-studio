@@ -17,14 +17,12 @@
 package com.android.tools.appinspection
 
 import android.os.PowerManager.WakeLock
-import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.inspection.Connection
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.WakeLockAcquired
 import com.android.tools.appinspection.BackgroundTaskUtil.sendBackgroundTaskEvent
 import com.android.tools.appinspection.common.getStackTrace
-import java.lang.reflect.Field
 
 private const val DEFAULT_TAG = "UNKNOWN"
 
@@ -121,25 +119,10 @@ class WakeLockHandlerImpl(private val connection: Connection) : WakeLockHandler 
 
   override fun onWakeLockAcquired(wakeLock: WakeLock, timeout: Long) {
     val eventId = eventIdMap.getOrPut(wakeLock) { BackgroundTaskUtil.nextId() }
-    var creationParams = CreationParams(1, DEFAULT_TAG)
-    if (wakeLockCreationParamsMap.containsKey(wakeLock)) {
-      creationParams = wakeLockCreationParamsMap[wakeLock]!!
-    } else {
-      try {
-        val wakeLockClass: Class<*> = wakeLock.javaClass
-        val flagsField: Field = wakeLockClass.getDeclaredField("mFlags")
-        val tagField: Field = wakeLockClass.getDeclaredField("mTag")
-        flagsField.isAccessible = true
-        tagField.isAccessible = true
-        val flags: Int = flagsField.getInt(wakeLock)
-        val tag = tagField.get(wakeLock) as String
-        creationParams = CreationParams(flags, tag)
-      } catch (e: NoSuchFieldException) {
-        Log.e("Failed to retrieve wake lock parameters: ", e.localizedMessage)
-      } catch (e: IllegalAccessException) {
-        Log.e("Failed to retrieve wake lock parameters: ", e.localizedMessage)
+    val creationParams =
+      wakeLockCreationParamsMap.getOrElse(wakeLock) {
+        CreationParams(wakeLock.getFlags(), wakeLock.getTag())
       }
-    }
     connection.sendBackgroundTaskEvent(eventId) {
       stacktrace = getStackTrace(1)
       wakeLockAcquiredBuilder.apply {
@@ -185,3 +168,7 @@ class WakeLockHandlerImpl(private val connection: Connection) : WakeLockHandler 
     }
   }
 }
+
+private fun WakeLock.getFlags() = getFieldValue("mFlags", 1)
+
+private fun WakeLock.getTag() = getFieldValue("mTag", DEFAULT_TAG)

@@ -17,77 +17,122 @@
 package com.android.tools.appinspection.backgroundtask
 
 import android.app.job.JobInfo
-import android.app.job.JobParameters
 import android.content.ComponentName
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.PersistableBundle
+import backgroundtask.inspection.BackgroundTaskInspectorProtocol
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.JobInfo.BackoffPolicy
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.JobInfo.NetworkType
+import com.android.tools.appinspection.JobParametersWrapper
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+private typealias JobInfoProto = BackgroundTaskInspectorProtocol.JobInfo
+
+private typealias JobInfoProtoBuilder = BackgroundTaskInspectorProtocol.JobInfo.Builder
+
+@RunWith(RobolectricTestRunner::class)
+@Config(
+  manifest = Config.NONE,
+  minSdk = Build.VERSION_CODES.O,
+  maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
+)
 class JobHandlerTest {
 
   @get:Rule val inspectorRule = BackgroundTaskInspectorRule()
 
   private val fakeParameters =
-    JobParameters(
+    JobParametersWrapper(
       1,
-      PersistableBundle("Extra"),
-      Bundle("TransientExtras"),
+      PersistableBundle().put("EXTRA", "value"),
+      Bundle().put("TransientExtra", "value"),
       true,
       arrayOf(),
       arrayOf("authority"),
     )
 
   @Test
-  fun jobScheduled() {
+  fun jobScheduled_periodic() {
     val jobHandler = inspectorRule.inspector.jobHandler
     val job =
       JobInfo.Builder(1, ComponentName("com.package.name", "TestClass"))
-        .setBackoffCriteria(100, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
-        .setPeriodic(101, 102)
-        .setMinimumLatency(103)
-        .setOverrideDeadline(104)
-        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_METERED)
+        .setBackoffCriteria(20000, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
+        .setPeriodic(1000000, 500000)
+        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_NOT_ROAMING)
         .setTriggerContentMaxDelay(105)
         .setTriggerContentUpdateDelay(106)
-        .setPersisted(true)
         .setRequiresCharging(true)
         .setRequiresBatteryNotLow(true)
-        .setRequiresDeviceIdle(true)
         .setRequiresStorageNotLow(true)
-        .setExtras(PersistableBundle("Extra"))
-        .setTransientExtras(Bundle("TransientExtras"))
-        .addTriggerContentUri(JobInfo.TriggerContentUri(Uri()))
+        .setExtras(PersistableBundle().put("EXTRA", "value"))
         .build()
     jobHandler.onScheduleJobEntry(job)
     jobHandler.onScheduleJobExit(0)
     inspectorRule.connection.consume {
-      with(jobScheduled.job) {
-        assertThat(jobId).isEqualTo(1)
-        assertThat(serviceName).isEqualTo("TestClass")
-        assertThat(backoffPolicy).isEqualTo(BackoffPolicy.BACKOFF_POLICY_EXPONENTIAL)
-        assertThat(initialBackoffMs).isEqualTo(100)
-        assertThat(isPeriodic).isEqualTo(true)
-        assertThat(flexMs).isEqualTo(102)
-        assertThat(intervalMs).isEqualTo(101)
-        assertThat(minLatencyMs).isEqualTo(103)
-        assertThat(maxExecutionDelayMs).isEqualTo(104)
-        assertThat(networkType).isEqualTo(NetworkType.NETWORK_TYPE_METERED)
-        assertThat(triggerContentMaxDelay).isEqualTo(105)
-        assertThat(triggerContentUpdateDelay).isEqualTo(106)
-        assertThat(isPersisted).isEqualTo(true)
-        assertThat(isRequireCharging).isEqualTo(true)
-        assertThat(isRequireDeviceIdle).isEqualTo(true)
-        assertThat(isRequireStorageNotLow).isEqualTo(true)
-        assertThat(extras).isEqualTo("Extra")
-        assertThat(transientExtras).isEqualTo("TransientExtras")
-        assertThat(triggerContentUrisList.size).isEqualTo(1)
-        assertThat(triggerContentUrisList[0]).isEqualTo("uri")
-      }
+      assertThat(jobScheduled.job)
+        .isEqualTo(
+          JobInfoProto.newBuilder()
+            .setJobId(1)
+            .setServiceName("TestClass")
+            .setBackoffPolicy(BackoffPolicy.BACKOFF_POLICY_EXPONENTIAL)
+            .setInitialBackoffMs(20000)
+            .setIsPeriodic(true)
+            .setFlexMs(500000)
+            .setIntervalMs(1000000)
+            .setNetworkType(NetworkType.NETWORK_TYPE_NOT_ROAMING)
+            .setTriggerContentMaxDelay(105)
+            .setTriggerContentUpdateDelay(106)
+            .setIsRequireBatteryNotLow(true)
+            .setIsRequireCharging(true)
+            .setIsRequireStorageNotLow(true)
+            .setExtras("PersistableBundle[{EXTRA=value}]")
+            .setTransientExtras("Bundle[{}]")
+            .build()
+        )
+    }
+  }
+
+  @Test
+  fun jobScheduled_single() {
+    val jobHandler = inspectorRule.inspector.jobHandler
+    val job =
+      JobInfo.Builder(1, ComponentName("com.package.name", "TestClass"))
+        .setMinimumLatency(103)
+        .setOverrideDeadline(104)
+        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+        .setTransientExtras(Bundle().put("TransientExtras", "value"))
+        .addTriggerContentUri(JobInfo.TriggerContentUri(Uri.parse("http://foo"), 0))
+        .addTriggerContentUri(JobInfo.TriggerContentUri(Uri.parse("http://bar"), 0))
+        .build()
+    jobHandler.onScheduleJobEntry(job)
+    jobHandler.onScheduleJobExit(0)
+    inspectorRule.connection.consume {
+      assertThat(jobScheduled.job)
+        .isEqualTo(
+          JobInfoProto.newBuilder()
+            .setJobId(1)
+            .setServiceName("TestClass")
+            .setBackoffPolicy(BackoffPolicy.BACKOFF_POLICY_EXPONENTIAL)
+            .setInitialBackoffMs(30000) // default value
+            .setDefaultFlexMsDefault(300000)
+            .setDefaultIntervalMs(900000)
+            .setMinLatencyMs(103)
+            .setMaxExecutionDelayMs(104)
+            .setNetworkType(NetworkType.NETWORK_TYPE_UNMETERED)
+            .addTriggerContentUris("http://foo")
+            .addTriggerContentUris("http://bar")
+            .setTriggerContentMaxDelay(-1) // default value
+            .setTriggerContentUpdateDelay(-1) // default value
+            .setExtras("PersistableBundle[{}]")
+            .setTransientExtras("Bundle[{TransientExtras=value}]")
+            .build()
+        )
     }
   }
 
@@ -99,8 +144,8 @@ class JobHandlerTest {
       with(jobStarted) {
         with(params) {
           assertThat(jobId).isEqualTo(1)
-          assertThat(extras).isEqualTo("Extra")
-          assertThat(transientExtras).isEqualTo("TransientExtras")
+          assertThat(extras).isEqualTo("PersistableBundle[{EXTRA=value}]")
+          assertThat(transientExtras).isEqualTo("Bundle[{TransientExtra=value}]")
           assertThat(isOverrideDeadlineExpired).isTrue()
           assertThat(triggeredContentUrisCount).isEqualTo(0)
           assertThat(triggeredContentAuthoritiesCount).isEqualTo(1)
@@ -119,8 +164,8 @@ class JobHandlerTest {
       with(jobStopped) {
         with(params) {
           assertThat(jobId).isEqualTo(1)
-          assertThat(extras).isEqualTo("Extra")
-          assertThat(transientExtras).isEqualTo("TransientExtras")
+          assertThat(extras).isEqualTo("PersistableBundle[{EXTRA=value}]")
+          assertThat(transientExtras).isEqualTo("Bundle[{TransientExtra=value}]")
           assertThat(isOverrideDeadlineExpired).isTrue()
           assertThat(triggeredContentUrisCount).isEqualTo(0)
           assertThat(triggeredContentAuthoritiesCount).isEqualTo(1)
@@ -139,8 +184,8 @@ class JobHandlerTest {
       with(jobFinished) {
         with(params) {
           assertThat(jobId).isEqualTo(1)
-          assertThat(extras).isEqualTo("Extra")
-          assertThat(transientExtras).isEqualTo("TransientExtras")
+          assertThat(extras).isEqualTo("PersistableBundle[{EXTRA=value}]")
+          assertThat(transientExtras).isEqualTo("Bundle[{TransientExtra=value}]")
           assertThat(isOverrideDeadlineExpired).isTrue()
           assertThat(triggeredContentUrisCount).isEqualTo(0)
           assertThat(triggeredContentAuthoritiesCount).isEqualTo(1)
@@ -150,4 +195,18 @@ class JobHandlerTest {
       }
     }
   }
+}
+
+private fun JobInfoProtoBuilder.setDefaultFlexMsDefault(value: Long): JobInfoProtoBuilder {
+  if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+    flexMs = value
+  }
+  return this
+}
+
+private fun JobInfoProtoBuilder.setDefaultIntervalMs(value: Long): JobInfoProtoBuilder {
+  if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+    intervalMs = value
+  }
+  return this
 }
