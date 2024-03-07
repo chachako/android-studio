@@ -16,6 +16,7 @@
 
 package com.android.tools.appinspection.network
 
+import android.os.Build
 import com.android.tools.appinspection.network.http.FakeHttpUrlConnection
 import com.android.tools.idea.protobuf.ByteString
 import com.google.common.truth.Truth.assertThat
@@ -23,6 +24,9 @@ import java.net.HttpURLConnection
 import java.net.URL
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import studio.network.inspection.NetworkInspectorProtocol
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
 import studio.network.inspection.NetworkInspectorProtocol.InterceptCommand
@@ -39,6 +43,12 @@ private val EXPECTED_RESPONSE =
     )
     .build()
 
+@RunWith(RobolectricTestRunner::class)
+@Config(
+  manifest = Config.NONE,
+  minSdk = Build.VERSION_CODES.O,
+  maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
+)
 internal class HttpUrlTest {
 
   @get:Rule val inspectorRule = NetworkInspectorRule()

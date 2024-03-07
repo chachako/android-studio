@@ -18,9 +18,9 @@ package com.android.tools.appinspection.network
 
 import androidx.inspection.Inspector
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
-import com.android.tools.appinspection.network.utils.TestLogger
 import java.util.concurrent.Executor
 import org.junit.rules.ExternalResource
+import org.robolectric.shadows.ShadowLog
 import studio.network.inspection.NetworkInspectorProtocol
 import studio.network.inspection.NetworkInspectorProtocol.Response
 
@@ -29,17 +29,12 @@ internal class NetworkInspectorRule(val autoStart: Boolean = true) : ExternalRes
   val connection = FakeConnection()
   val environment = FakeEnvironment()
   val trafficStatsProvider = FakeTrafficStatsProvider()
-  val logger = TestLogger()
   val inspector =
-    NetworkInspector(
-      connection,
-      environment,
-      trafficStatsProvider,
-      speedDataIntervalMs = 10,
-      logger = logger,
-    )
+    NetworkInspector(connection, environment, trafficStatsProvider, speedDataIntervalMs = 10)
 
   override fun before() {
+    ShadowLog.stream = System.out
+
     if (autoStart) {
       start()
     }

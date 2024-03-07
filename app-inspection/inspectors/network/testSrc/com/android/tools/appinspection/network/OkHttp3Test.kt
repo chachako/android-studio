@@ -16,6 +16,7 @@
 
 package com.android.tools.appinspection.network
 
+import android.os.Build
 import com.android.tools.appinspection.network.okhttp3.FakeOkHttp3Client
 import com.google.common.truth.Truth.assertThat
 import java.io.IOException
@@ -29,6 +30,9 @@ import okhttp3.ResponseBody
 import okio.BufferedSink
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import studio.network.inspection.NetworkInspectorProtocol
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.Header
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
@@ -43,6 +47,12 @@ private val EXPECTED_RESPONSE =
     .addHeaders(Header.newBuilder().setKey("response-status-code").addValues("200"))
     .build()
 
+@RunWith(RobolectricTestRunner::class)
+@Config(
+  manifest = Config.NONE,
+  minSdk = Build.VERSION_CODES.O,
+  maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
+)
 internal class OkHttp3Test {
 
   @get:Rule val inspectorRule = NetworkInspectorRule()

@@ -16,6 +16,7 @@
 
 package com.android.tools.appinspection.network
 
+import android.os.Build
 import androidx.inspection.ArtTooling
 import androidx.inspection.InspectorEnvironment
 import androidx.inspection.InspectorExecutors
@@ -25,17 +26,23 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import studio.network.inspection.NetworkInspectorProtocol.SpeedEvent
 
+@RunWith(RobolectricTestRunner::class)
+@Config(
+  manifest = Config.NONE,
+  minSdk = Build.VERSION_CODES.O,
+  maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
+)
 internal class NetworkInspectorTest {
 
   @get:Rule val inspectorRule = NetworkInspectorRule(autoStart = false)
 
   private val trafficStatsProvider
     get() = inspectorRule.trafficStatsProvider
-
-  private val logger
-    get() = inspectorRule.logger
 
   @Test
   fun speedDataCollection() = runBlocking {
@@ -95,13 +102,13 @@ internal class NetworkInspectorTest {
 
   @Test
   fun registerHooks_logs() {
-    val networkInspector = NetworkInspector(FakeConnection(), FakeEnvironment(), logger = logger)
+    val networkInspector = NetworkInspector(FakeConnection(), FakeEnvironment())
 
     val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
     // Note that `AndroidChannelBuilder` is not hooked. This is because we didn't add a build
     // dependency on `grpc-android`. The test still verifies that we attempt to hook it.
-    assertThat(logger.messages)
+    assertThat(getLogLines())
       .containsExactly(
         "DEBUG: studio.inspectors: Instrumented java.net.URL",
         "DEBUG: studio.inspectors: Instrumented com.squareup.okhttp.OkHttpClient",
@@ -117,11 +124,11 @@ internal class NetworkInspectorTest {
   @Test
   fun registerHooks_failToAddOkHttp2And3Hooks_doesNotThrowException() {
     val environment = TestInspectorEnvironment("OkHttpClient")
-    val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
+    val networkInspector = NetworkInspector(FakeConnection(), environment)
 
     val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
-    assertThat(logger.messages.filter { !it.contains("studio.inspectors") })
+    assertThat(getVisibleLogLines())
       .containsExactly(
         "DEBUG: Network Inspector: Did not instrument OkHttpClient. App does not use OKHttp or class is omitted by app reduce"
       )
@@ -133,11 +140,11 @@ internal class NetworkInspectorTest {
   @Test
   fun registerHooks_failToAddOkHttp2_doesNotThrowExceptionDoesNotLogFailure() {
     val environment = TestInspectorEnvironment("com.squareup.okhttp.OkHttpClient")
-    val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
+    val networkInspector = NetworkInspector(FakeConnection(), environment)
 
     val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
-    assertThat(logger.messages.filter { !it.contains("studio.inspectors") }).isEmpty()
+    assertThat(getVisibleLogLines()).isEmpty()
     assertThat(javaNet).isTrue()
     assertThat(okhttp).isTrue()
     assertThat(grpc).isTrue()
@@ -146,11 +153,11 @@ internal class NetworkInspectorTest {
   @Test
   fun registerHooks_failToAddOkHttp3_doesNotThrowExceptionDoesNotLogFailure() {
     val environment = TestInspectorEnvironment("okhttp3.OkHttpClient")
-    val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
+    val networkInspector = NetworkInspector(FakeConnection(), environment)
 
     val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
-    assertThat(logger.messages.filter { !it.contains("studio.inspectors") }).isEmpty()
+    assertThat(getVisibleLogLines()).isEmpty()
     assertThat(javaNet).isTrue()
     assertThat(okhttp).isTrue()
     assertThat(grpc).isTrue()
@@ -159,11 +166,11 @@ internal class NetworkInspectorTest {
   @Test
   fun failToAddGrpcHooks_doesNotThrowException() {
     val environment = TestInspectorEnvironment("ManagedChannelBuilder")
-    val networkInspector = NetworkInspector(FakeConnection(), environment, logger = logger)
+    val networkInspector = NetworkInspector(FakeConnection(), environment)
 
     val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
-    assertThat(logger.messages.filter { !it.contains("studio.inspectors") })
+    assertThat(getVisibleLogLines())
       .containsExactly(
         "DEBUG: Network Inspector: Did not instrument 'ManagedChannelBuilder'. App does not use gRPC or class is omitted by app reduce"
       )

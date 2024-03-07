@@ -16,13 +16,15 @@
 
 package com.android.tools.appinspection.network.utils
 
+import android.util.Log
+
 // A Log tag that should not be filtered out by Android Studio.
 private const val TAG = "Network Inspector"
 // A Log tag that should be filtered out by Android Studio.
 private const val HIDDEN_TAG = "studio.inspectors"
 
 /** A simple logger interface */
-internal interface Logger {
+internal object Logger {
   fun debug(msg: String) {
     debug(TAG, msg)
   }
@@ -35,7 +37,11 @@ internal interface Logger {
     error(TAG, msg, t)
   }
 
-  fun debug(tag: String, msg: String)
+  fun debug(tag: String, msg: String) {
+    Log.d(tag, msg)
+  }
 
-  fun error(tag: String, msg: String, t: Throwable? = null)
+  fun error(tag: String, msg: String, t: Throwable?) {
+    Log.e(tag, msg, t)
+  }
 }

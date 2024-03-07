@@ -30,7 +30,6 @@ import com.android.tools.appinspection.network.rules.InterceptionRuleImpl
 import com.android.tools.appinspection.network.rules.InterceptionRuleServiceImpl
 import com.android.tools.appinspection.network.trackers.GrpcTracker
 import com.android.tools.appinspection.network.utils.Logger
-import com.android.tools.appinspection.network.utils.LoggerImpl
 import com.squareup.okhttp.Interceptor
 import com.squareup.okhttp.OkHttpClient
 import io.grpc.CallOptions
@@ -66,7 +65,6 @@ internal class NetworkInspector(
   private val environment: InspectorEnvironment,
   private val trafficStatsProvider: TrafficStatsProvider = TrafficStatsProviderImpl(),
   private val speedDataIntervalMs: Long = POLL_INTERVAL_MS,
-  private val logger: Logger = LoggerImpl(),
 ) : Inspector(connection) {
 
   /**
@@ -107,7 +105,7 @@ internal class NetworkInspector(
     when {
       command.hasStartInspectionCommand() -> {
         if (isStarted) {
-          logger.error("Inspector already started")
+          Logger.error("Inspector already started")
           callback.reply(
             NetworkInspectorProtocol.Response.newBuilder()
               .setStartInspectionResponse(
@@ -177,7 +175,7 @@ internal class NetworkInspector(
         runCatching { it.applicationInfo?.uid }.getOrNull()
       }
     if (uid == null) {
-      logger.error(
+      Logger.error(
         "Failed to find application instance. Collection of network speed is not available."
       )
       return false
@@ -246,7 +244,7 @@ internal class NetworkInspector(
           wrapURLConnection(urlConnection, trackerService, interceptionService)
         },
       )
-    logger.debugHidden("Instrumented ${URL::class.qualifiedName}")
+    Logger.debugHidden("Instrumented ${URL::class.qualifiedName}")
     return true
   }
 
@@ -277,7 +275,7 @@ internal class NetworkInspector(
             list
           },
         )
-      logger.debugHidden("Instrumented ${OkHttpClient::class.qualifiedName}")
+      Logger.debugHidden("Instrumented ${OkHttpClient::class.qualifiedName}")
       instrumented = true
     } catch (e: NoClassDefFoundError) {
       // Ignore. App may not depend on OkHttp.
@@ -296,14 +294,14 @@ internal class NetworkInspector(
             interceptors
           },
         )
-      logger.debugHidden("Instrumented ${okhttp3.OkHttpClient::class.qualifiedName}")
+      Logger.debugHidden("Instrumented ${okhttp3.OkHttpClient::class.qualifiedName}")
       instrumented = true
     } catch (e: NoClassDefFoundError) {
       // Ignore. App may not depend on OkHttp.
     }
     if (!instrumented) {
       // Only log if both OkHttp 2 and 3 were not detected
-      logger.debug(
+      Logger.debug(
         "Did not instrument OkHttpClient. App does not use OKHttp or class is omitted by app reduce"
       )
     }
@@ -315,10 +313,10 @@ internal class NetworkInspector(
       val grpcInterceptor = GrpcInterceptor { GrpcTracker(connection) }
       instrumentExistingGrpcChannels(grpcInterceptor)
       instrumentGrpcChannelBuilder(grpcInterceptor)
-      logger.debugHidden("Instrumented ${ManagedChannelBuilder::class.qualifiedName}")
+      Logger.debugHidden("Instrumented ${ManagedChannelBuilder::class.qualifiedName}")
       return true
     } catch (e: NoClassDefFoundError) {
-      logger.debug(
+      Logger.debug(
         "Did not instrument 'ManagedChannelBuilder'. App does not use gRPC or class is omitted by app reduce"
       )
       return false
@@ -345,12 +343,12 @@ internal class NetworkInspector(
           field.isAccessible = true
           val channel = field.get(it) as Channel
           field.set(it, InterceptingGrpcChannel(channel, grpcInterceptor))
-          logger.debugHidden("Preexisting channel was instrumented")
+          Logger.debugHidden("Preexisting channel was instrumented")
         } catch (e: Exception) {
-          logger.error("Preexisting channel of type was not instrumented", e)
+          Logger.error("Preexisting channel of type was not instrumented", e)
         }
       } else {
-        logger.debugHidden("Preexisting channel of type ${it::class.java.name} was skipped")
+        Logger.debugHidden("Preexisting channel of type ${it::class.java.name} was skipped")
       }
     }
   }
@@ -361,7 +359,7 @@ internal class NetworkInspector(
         try {
           javaClass.classLoader.loadClass(hook.className)
         } catch (e: ClassNotFoundException) {
-          logger.debugHidden("Could not load class ${hook.className}")
+          Logger.debugHidden("Could not load class ${hook.className}")
           return@forEach
         }
       environment

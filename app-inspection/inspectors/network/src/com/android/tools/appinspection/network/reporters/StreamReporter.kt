@@ -19,7 +19,6 @@ package com.android.tools.appinspection.network.reporters
 import androidx.annotation.VisibleForTesting
 import androidx.inspection.Connection
 import com.android.tools.appinspection.network.utils.Logger
-import com.android.tools.appinspection.network.utils.LoggerImpl
 import com.android.tools.appinspection.network.utils.sendHttpConnectionEvent
 import com.android.tools.idea.protobuf.ByteString
 import com.android.tools.idea.protobuf.ByteString.Output
@@ -45,7 +44,6 @@ constructor(
   private val connectionId: Long,
   maxBufferSize: Int?,
   bufferHelper: BufferHelper?,
-  private val logger: Logger,
 ) : ThreadReporter by threadReporter {
 
   private val maxBufferSize = maxBufferSize ?: MAX_BUFFER_SIZE
@@ -62,13 +60,13 @@ constructor(
 
   fun addBytes(bytes: ByteArray, offset: Int, len: Int) {
     if (buffer.size() + len > maxBufferSize) {
-      logger.error("Payload size exceeded max size (${buffer.size() + len})")
+      Logger.error("Payload size exceeded max size (${buffer.size() + len})")
       return
     }
     try {
       bufferHelper.write(buffer, bytes, offset, len)
     } catch (e: OutOfMemoryError) {
-      logger.error("Payload too large (${buffer.size()})", e)
+      Logger.error("Payload too large (${buffer.size()})", e)
       buffer.reset()
       buffer.write("Payload omitted because it was too large".toByteArray())
     }
@@ -84,7 +82,7 @@ constructor(
         try {
           bufferHelper.toByteString(buffer)
         } catch (e: OutOfMemoryError) {
-          logger.error("Payload too large (${buffer.size()})", e)
+          Logger.error("Payload too large (${buffer.size()})", e)
           ByteString.copyFrom("Payload omitted because it was too large", Charset.defaultCharset())
         }
       onClosed(data)
@@ -109,9 +107,7 @@ constructor(
     threadReporter: ThreadReporter,
     maxBufferSize: Int? = null,
     bufferHelper: BufferHelper? = null,
-    logger: Logger = LoggerImpl(),
-  ) :
-    StreamReporter(connection, threadReporter, connectionId, maxBufferSize, bufferHelper, logger) {
+  ) : StreamReporter(connection, threadReporter, connectionId, maxBufferSize, bufferHelper) {
 
     override fun onClosed(data: ByteString) {
       sendHttpConnectionEvent(
@@ -141,9 +137,7 @@ constructor(
     threadReporter: ThreadReporter,
     maxBufferSize: Int? = null,
     bufferHelper: BufferHelper? = null,
-    logger: Logger = LoggerImpl(),
-  ) :
-    StreamReporter(connection, threadReporter, connectionId, maxBufferSize, bufferHelper, logger) {
+  ) : StreamReporter(connection, threadReporter, connectionId, maxBufferSize, bufferHelper) {
 
     override fun onClosed(data: ByteString) {
       sendHttpConnectionEvent(

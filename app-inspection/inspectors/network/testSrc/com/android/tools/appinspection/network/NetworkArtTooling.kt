@@ -17,15 +17,23 @@
 package com.android.tools.appinspection.network
 
 import android.app.Application
+import android.content.pm.ApplicationInfo
 import com.android.tools.appinspection.common.FakeArtTooling
 
 class NetworkArtTooling : FakeArtTooling() {
   override fun <T> findInstances(clazz: Class<T>): List<T> {
     return if (clazz.name == Application::class.java.name) {
       @Suppress("UNCHECKED_CAST")
-      listOf(Application(), Application()) as List<T>
+      listOf(Application(), FakeApplication()) as List<T>
     } else {
       emptyList()
+    }
+  }
+
+  private class FakeApplication() : Application() {
+
+    override fun getApplicationInfo(): ApplicationInfo {
+      return ApplicationInfo()
     }
   }
 }

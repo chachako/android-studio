@@ -29,7 +29,7 @@ class FakeCall(
 ) : Call {
 
   override fun clone(): Call {
-    TODO("Not yet implemented")
+    throw NotImplementedError("Not yet implemented")
   }
 
   override fun request(): Request {
@@ -55,7 +55,7 @@ class FakeCall(
   }
 
   override fun timeout(): Timeout {
-    TODO("Not yet implemented")
+    throw NotImplementedError("Not yet implemented")
   }
 
   fun executeThenBlowUp(): Response {

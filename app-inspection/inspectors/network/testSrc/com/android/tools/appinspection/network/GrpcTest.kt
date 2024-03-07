@@ -19,7 +19,6 @@ package com.android.tools.appinspection.network
 import com.android.tools.appinspection.network.grpc.GrpcInterceptor
 import com.android.tools.appinspection.network.trackers.GrpcTracker
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
-import com.android.tools.appinspection.network.utils.TestLogger
 import com.google.common.truth.Truth.assertThat
 import com.google.grpc.test.GreeterGrpc
 import com.google.grpc.test.HelloRequest
@@ -57,11 +56,10 @@ class GrpcTest {
   private val server =
     InProcessServerBuilder.forName(serverName).directExecutor().addService(GreeterService()).build()
   private val fakeConnection = FakeConnection()
-  private val testLogger = TestLogger()
   private val channel =
     InProcessChannelBuilder.forName(serverName)
       .directExecutor()
-      .intercept(GrpcInterceptor { GrpcTracker(fakeConnection, testLogger) })
+      .intercept(GrpcInterceptor { GrpcTracker(fakeConnection) })
       .build()
   private val stub = GreeterGrpc.newBlockingStub(channel)
 

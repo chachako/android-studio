@@ -1,17 +1,26 @@
 package com.android.tools.appinspection.network.reporters
 
+import android.os.Build
 import androidx.inspection.Connection
 import com.android.tools.appinspection.network.FakeConnection
+import com.android.tools.appinspection.network.getLogLines
 import com.android.tools.appinspection.network.reporters.StreamReporter.BufferHelper
 import com.android.tools.appinspection.network.reporters.StreamReporter.InputStreamReporter
 import com.android.tools.appinspection.network.reporters.StreamReporter.OutputStreamReporter
-import com.android.tools.appinspection.network.utils.Logger
-import com.android.tools.appinspection.network.utils.TestLogger
 import com.android.tools.idea.protobuf.ByteString
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /** Tests for [StreamReporter] */
+@RunWith(RobolectricTestRunner::class)
+@Config(
+  manifest = Config.NONE,
+  minSdk = Build.VERSION_CODES.O,
+  maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
+)
 class StreamReporterTest {
   private val connection = FakeConnection()
 
@@ -20,11 +29,9 @@ class StreamReporterTest {
       override fun reportCurrentThread() {}
     }
 
-  private val logger = TestLogger()
-
   @Test
   fun streamReporter_addOneByte() {
-    val reporter = streamReporter(logger)
+    val reporter = streamReporter()
 
     reporter.addOneByte('a'.code)
     reporter.addOneByte('b'.code)
@@ -32,89 +39,88 @@ class StreamReporterTest {
     reporter.onStreamClose()
 
     assertThat(reporter.data).isEqualTo("abc")
-    assertThat(logger.messages).isEmpty()
+    assertThat(getLogLines()).isEmpty()
   }
 
   @Test
   fun streamReporter_addBytes() {
-    val reporter = streamReporter(logger)
+    val reporter = streamReporter()
 
     reporter.addBytes("-abc-".toByteArray(), 1, 3)
     reporter.onStreamClose()
 
     assertThat(reporter.data).isEqualTo("abc")
-    assertThat(logger.messages).isEmpty()
+    assertThat(getLogLines()).isEmpty()
   }
 
   @Test
   fun streamReporter_addOneByte_exceedsSize() {
-    val reporter = streamReporter(logger, maxBufferSize = 1)
+    val reporter = streamReporter(maxBufferSize = 1)
 
     reporter.addOneByte('a'.code)
     reporter.addOneByte('b'.code)
     reporter.onStreamClose()
 
     assertThat(reporter.data).isEqualTo("a")
-    assertThat(logger.messages)
+    assertThat(getLogLines())
       .containsExactly("ERROR: Network Inspector: Payload size exceeded max size (2)")
   }
 
   @Test
   fun streamReporter_addBytes_exceedsSize() {
-    val reporter = streamReporter(logger, maxBufferSize = 5)
+    val reporter = streamReporter(maxBufferSize = 5)
 
     reporter.addBytes("abc".toByteArray(), 0, 3)
     reporter.addBytes("efg".toByteArray(), 0, 3)
     reporter.onStreamClose()
 
     assertThat(reporter.data).isEqualTo("abc")
-    assertThat(logger.messages)
+    assertThat(getLogLines())
       .containsExactly("ERROR: Network Inspector: Payload size exceeded max size (6)")
   }
 
   @Test
   fun streamReporter_writeThrows() {
-    val reporter = streamReporter(logger, bufferHelper = FakeBufferHelper(throwOnWrite = true))
+    val reporter = streamReporter(bufferHelper = FakeBufferHelper(throwOnWrite = true))
 
     reporter.addBytes("abc".toByteArray(), 0, 3)
     reporter.onStreamClose()
 
     assertThat(reporter.data).isEqualTo("Payload omitted because it was too large")
-    assertThat(logger.messages).containsExactly("ERROR: Network Inspector: Payload too large (0)")
+    assertThat(getLogLines()).containsExactly("ERROR: Network Inspector: Payload too large (0)")
   }
 
   @Test
   fun streamReporter_toByteStringThrows() {
-    val reporter =
-      streamReporter(logger, bufferHelper = FakeBufferHelper(throwOnToByteString = true))
+    val reporter = streamReporter(bufferHelper = FakeBufferHelper(throwOnToByteString = true))
 
     reporter.addBytes("abc".toByteArray(), 0, 3)
     reporter.onStreamClose()
 
     assertThat(reporter.data).isEqualTo("Payload omitted because it was too large")
-    assertThat(logger.messages).containsExactly("ERROR: Network Inspector: Payload too large (3)")
+    assertThat(getLogLines()).containsExactly("ERROR: Network Inspector: Payload too large (3)")
   }
 
   @Test
   fun inputStreamReporter_reportsResponse() {
-    val reporter = inputStreamReporter(connection, logger)
+    val reporter = inputStreamReporter(connection)
 
     reporter.addBytes("abc".toByteArray(), 0, 3)
     reporter.onStreamClose()
 
     assertThat(connection.httpData.first().responsePayload.payload.toStringUtf8()).isEqualTo("abc")
-    assertThat(logger.messages).isEmpty()
+    assertThat(getLogLines()).isEmpty()
   }
 
   @Test
   fun outputStreamReporter_reportsRequest() {
-    val reporter = outputStreamReporter(connection, logger)
+    val reporter = outputStreamReporter(connection)
 
     reporter.addBytes("abc".toByteArray(), 0, 3)
     reporter.onStreamClose()
 
     assertThat(connection.httpData.first().requestPayload.payload.toStringUtf8()).isEqualTo("abc")
-    assertThat(logger.messages).isEmpty()
+    assertThat(getLogLines()).isEmpty()
   }
 
   private class FakeBufferHelper(
@@ -143,9 +149,7 @@ class StreamReporterTest {
     connectionId: Long,
     maxBufferSize: Int?,
     bufferHelper: BufferHelper?,
-    logger: Logger,
-  ) :
-    StreamReporter(connection, threadReporter, connectionId, maxBufferSize, bufferHelper, logger) {
+  ) : StreamReporter(connection, threadReporter, connectionId, maxBufferSize, bufferHelper) {
     var data: String? = null
 
     override fun onClosed(data: ByteString) {
@@ -154,23 +158,20 @@ class StreamReporterTest {
   }
 
   private fun streamReporter(
-    logger: Logger,
     connection: Connection = this.connection,
     maxBufferSize: Int = 10 * 1024 * 1024,
     bufferHelper: BufferHelper? = null,
-  ) = TestStreamReporter(connection, threadReporter, 1, maxBufferSize, bufferHelper, logger)
+  ) = TestStreamReporter(connection, threadReporter, 1, maxBufferSize, bufferHelper)
 
   private fun inputStreamReporter(
     connection: Connection,
-    logger: Logger,
     maxBufferSize: Int = 10 * 1024 * 1024,
     bufferHelper: BufferHelper? = null,
-  ) = InputStreamReporter(connection, 1, threadReporter, maxBufferSize, bufferHelper, logger)
+  ) = InputStreamReporter(connection, 1, threadReporter, maxBufferSize, bufferHelper)
 
   private fun outputStreamReporter(
     connection: Connection,
-    logger: Logger = this.logger,
     maxBufferSize: Int = 10 * 1024 * 1024,
     bufferHelper: BufferHelper? = null,
-  ) = OutputStreamReporter(connection, 1, threadReporter, maxBufferSize, bufferHelper, logger)
+  ) = OutputStreamReporter(connection, 1, threadReporter, maxBufferSize, bufferHelper)
 }

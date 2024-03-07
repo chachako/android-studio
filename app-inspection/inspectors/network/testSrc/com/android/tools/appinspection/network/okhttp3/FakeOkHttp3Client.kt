@@ -54,31 +54,31 @@ class FakeOkHttp3Client(private val networkInterceptorz: List<Interceptor>) : Ok
           }
 
           override fun call(): Call {
-            TODO("Not yet implemented")
+            throw NotImplementedError("Not yet implemented")
           }
 
           override fun connectTimeoutMillis(): Int {
-            TODO("Not yet implemented")
+            throw NotImplementedError("Not yet implemented")
           }
 
           override fun withConnectTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
-            TODO("Not yet implemented")
+            throw NotImplementedError("Not yet implemented")
           }
 
           override fun readTimeoutMillis(): Int {
-            TODO("Not yet implemented")
+            throw NotImplementedError("Not yet implemented")
           }
 
           override fun withReadTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
-            TODO("Not yet implemented")
+            throw NotImplementedError("Not yet implemented")
           }
 
           override fun writeTimeoutMillis(): Int {
-            TODO("Not yet implemented")
+            throw NotImplementedError("Not yet implemented")
           }
 
           override fun withWriteTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
-            TODO("Not yet implemented")
+            throw NotImplementedError("Not yet implemented")
           }
         }
       )

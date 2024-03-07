@@ -19,7 +19,6 @@ package com.android.tools.appinspection.network.trackers
 import androidx.inspection.Connection
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
 import com.android.tools.appinspection.network.utils.Logger
-import com.android.tools.appinspection.network.utils.LoggerImpl
 import com.android.tools.idea.protobuf.ByteString
 import io.grpc.Metadata
 import io.grpc.MethodDescriptor.Marshaller
@@ -38,10 +37,7 @@ import studio.network.inspection.NetworkInspectorProtocol.GrpcEvent.GrpcStreamCr
 import studio.network.inspection.NetworkInspectorProtocol.ThreadData
 
 /** A [GrpcTracker] that sends events to Android Studio */
-internal class GrpcTracker(
-  private val connection: Connection,
-  private val logger: Logger = LoggerImpl(),
-) {
+internal class GrpcTracker(private val connection: Connection) {
   private val connectionId = ConnectionIdGenerator.nextId()
 
   private var lastThread: AtomicReference<Thread?> = AtomicReference()
@@ -64,7 +60,7 @@ internal class GrpcTracker(
           )
       )
     } catch (t: Throwable) {
-      logger.error("Failed to report a GrpcEvent", t)
+      Logger.error("Failed to report a GrpcEvent", t)
     }
   }
 
@@ -77,7 +73,7 @@ internal class GrpcTracker(
           )
       )
     } catch (t: Throwable) {
-      logger.error("Failed to report a GrpcEvent", t)
+      Logger.error("Failed to report a GrpcEvent", t)
     }
   }
 
@@ -92,7 +88,7 @@ internal class GrpcTracker(
           )
       )
     } catch (t: Throwable) {
-      logger.error("Failed to report a GrpcEvent", t)
+      Logger.error("Failed to report a GrpcEvent", t)
     }
   }
 
@@ -105,7 +101,7 @@ internal class GrpcTracker(
           )
       )
     } catch (t: Throwable) {
-      logger.error("Failed to report a GrpcEvent", t)
+      Logger.error("Failed to report a GrpcEvent", t)
     }
   }
 
@@ -118,7 +114,7 @@ internal class GrpcTracker(
           )
       )
     } catch (t: Throwable) {
-      logger.error("Failed to report a GrpcEvent", t)
+      Logger.error("Failed to report a GrpcEvent", t)
     }
   }
 
@@ -133,7 +129,7 @@ internal class GrpcTracker(
       }
       connection.reportGrpcEvent(GrpcEvent.newBuilder().setGrpcCallEnded(callEnded))
     } catch (t: Throwable) {
-      logger.error("Failed to report a GrpcEvent", t)
+      Logger.error("Failed to report a GrpcEvent", t)
     }
   }
 

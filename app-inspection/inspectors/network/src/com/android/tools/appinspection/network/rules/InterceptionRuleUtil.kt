@@ -60,7 +60,7 @@ fun MatchingText.toRegex(): Regex =
 
 fun isContentCompressed(response: NetworkResponse): Boolean {
   val contentHeaderValues = response.responseHeaders[FIELD_CONTENT_ENCODING] ?: return false
-  return contentHeaderValues.any { it.toLowerCase().contains("gzip") }
+  return contentHeaderValues.any { it.lowercase().contains("gzip") }
 }
 
 fun ByteArray.gzip(): ByteArray {

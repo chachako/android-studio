@@ -17,7 +17,6 @@
 package com.android.tools.appinspection.network.rules
 
 import com.android.tools.appinspection.network.utils.Logger
-import com.android.tools.appinspection.network.utils.LoggerImpl
 import java.io.IOException
 import java.io.InputStream
 import java.util.regex.Pattern
@@ -37,15 +36,14 @@ interface InterceptionTransformation {
 
 /** A transformation class that changes the status code from response headers. */
 internal class StatusCodeReplacedTransformation(
-  private val statusCodeReplaced: StatusCodeReplaced,
-  private val logger: Logger = LoggerImpl(),
+  private val statusCodeReplaced: StatusCodeReplaced
 ) : InterceptionTransformation {
 
   override fun transform(response: NetworkResponse): NetworkResponse {
     val targetCodeProto = statusCodeReplaced.targetCode
     val replacingCode = statusCodeReplaced.newCode.toIntOrNull()
     if (replacingCode == null) {
-      logger.debug(
+      Logger.debug(
         "Ignoring interception rule because of an invalid newCode: ${statusCodeReplaced.newCode}"
       )
       return response
