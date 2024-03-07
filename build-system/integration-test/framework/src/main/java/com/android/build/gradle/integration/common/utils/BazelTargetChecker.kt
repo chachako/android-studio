@@ -32,11 +32,14 @@ import java.nio.file.Path
  *     root
  * @param ignoredBazelTargets the list of any bazel targets that should be ignored when checking
  *     for a 1-1 mapping between source files and bazel targets.
+ * @param ignoreTestSourceFiles the list of any source files that should be ignored when checking
+ *     for a 1-1 mapping between source files and bazel targets.
  */
 fun checkBazelTargetsMatchTestSourceFiles(
     sourceDirRelativePath: String,
     bazelFileRelativePath: String,
-    ignoredBazelTargets: List<String> = emptyList()
+    ignoredBazelTargets: List<String> = emptyList(),
+    ignoreTestSourceFiles: List<String> = emptyList()
 ) {
 
     val workspaceRoot: Path = TestUtils.getWorkspaceRoot()
@@ -47,6 +50,7 @@ fun checkBazelTargetsMatchTestSourceFiles(
         sourceDir.walk()
             .filter { it.extension == "kt" || it.extension == "java" }
             .map { it.nameWithoutExtension }
+            .filterNot { ignoreTestSourceFiles.contains(it) }
             .toList()
 
     val bazelTargets =

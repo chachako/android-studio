@@ -32,7 +32,8 @@ class BazelTargetTest {
         checkBazelTargetsMatchTestSourceFiles(
             "tools/base/build-system/integration-test/native/src/test",
             "tools/base/build-system/integration-test/native/BUILD.bazel",
-            ignoredBazelTargets = listOf("all_test_files", "prebuilts")
+            ignoredBazelTargets = listOf("all_test_files", "prebuilts"),
+            ignoreTestSourceFiles = listOf("AbstractModuleToModuleDepsTest")
         )
     }
 }

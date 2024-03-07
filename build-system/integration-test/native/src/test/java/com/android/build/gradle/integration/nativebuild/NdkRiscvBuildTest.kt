@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.nativebuild
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.NDK_WITH_RISCV_ABI
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldJniApp
 import com.android.build.gradle.integration.common.truth.TruthHelper
@@ -28,11 +29,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class NdkRiscvBuildTest {
-
-    // Using NDK r27 instead of a default version because Riscv is only supported on r27 and newer versions.
-    companion object {
-        private const val NDK_WITH_RISCV_ABI = "27.0.11246959"
-    }
 
     @Rule
     @JvmField
