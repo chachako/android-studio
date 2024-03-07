@@ -166,4 +166,22 @@ class StringCasingDetectorTest : AbstractCheckTest() {
       .run()
       .expectClean()
   }
+
+  fun testMarkup() {
+    lint()
+      .files(
+        xml(
+            "res/values/colors.xml",
+            """
+            <resources>
+                <string name="text1"><font color="#FF0000">text</font></string>
+                <string name="text2"><font color="#00FF00">text</font></string>
+            </resources>
+          """,
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }
