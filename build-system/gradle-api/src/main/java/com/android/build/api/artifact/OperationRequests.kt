@@ -230,7 +230,7 @@ interface MultipleArtifactTypeOutOperationRequest<FileTypeT: FileSystemLocation>
 }
 
 /**
- * Operations performed by a [Task] with a single [RegularFile] or [Directory] output.
+ * Operations performed by a [Task] with a single [RegularFile] output.
  *
  * [Task] is consuming existing version of the target [SingleArtifact] and producing a new version.
  */
@@ -291,6 +291,11 @@ interface InAndOutFileOperationRequest {
               ArtifactTypeT: Artifact.Transformable
 }
 
+/**
+ * Operations performed by a [Task] with a single [Directory] or [RegularFile] output.
+ *
+ * [Task] is consuming existing version of the target [MultipleArtifact] and producing a new version.
+ */
 interface CombiningOperationRequest<FileTypeT: FileSystemLocation> {
     /**
      * Initiates a transform request to a multiple [Artifact.Transformable] artifact type.
@@ -344,6 +349,11 @@ interface CombiningOperationRequest<FileTypeT: FileSystemLocation> {
               ArtifactTypeT: Artifact.Transformable
 }
 
+/**
+ * Operations performed by a [Task] with a single [Directory] output.
+ *
+ * [Task] is consuming existing version of the target [SingleArtifact] and producing a new version.
+ */
 interface InAndOutDirectoryOperationRequest<TaskT : Task> {
 
     /**
