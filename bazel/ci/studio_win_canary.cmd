@@ -34,7 +34,8 @@ call %BASEDIR%\tools\base\bazel\bazel.cmd ^
   --tool_tag=studio-win-canary ^
   -- ^
  //tools/... ^
- -//tools/vendor/google3/aswb/...
+ -//tools/vendor/google3/aswb/... ^
+ -//tools/vendor/google/aswb/...
 
 set /a EXITCODE=%ERRORLEVEL%
 
