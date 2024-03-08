@@ -167,8 +167,14 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   /**
    * If incrementally editing a single build.gradle file, tracks whether we have declared the google
    * maven repository in the buildscript block.
+   *
+   * Because there are many ways to declare repositories for plugin resolution (including e.g. in
+   * pluginManagement declarations in settings files), we track whether we have seen anything at all
+   * in buildscript repositories; if we haven't, we don't know whether the google maven repository
+   * is actually visible to the project.
    */
   private var mDeclaredGoogleMavenRepository: Boolean = false
+  private var mDeclaredBuildscriptRepository: Boolean = false
 
   data class AgpVersionCheckInfo(
     val newerVersion: Version,
@@ -958,9 +964,11 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         mJavaPluginInfo = JavaPluginInfo(cookie)
       }
     }
-    if (statement == "google" && parent == "repositories" && parentParent == "buildscript") {
-      mDeclaredGoogleMavenRepository = true
-      maybeReportAgpVersionIssue(context)
+    if (parent == "repositories" && parentParent == "buildscript") {
+      if (statement == "google") {
+        mDeclaredGoogleMavenRepository = true
+      }
+      mDeclaredBuildscriptRepository = true
     }
     if (statement == "jcenter" && parent == "repositories") {
       val message =
@@ -1895,6 +1903,11 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   }
 
   override fun afterCheckFile(context: Context) {
+    maybeReportJavaTargetCompatibilityIssue(context)
+    maybeReportAgpVersionIssue(context)
+  }
+
+  private fun maybeReportJavaTargetCompatibilityIssue(context: Context) {
     if (mAppliedJavaPlugin && !(mDeclaredSourceCompatibility && mDeclaredTargetCompatibility)) {
       val file = context.file
       val contents = context.client.readFile(file).toString()
@@ -1939,8 +1952,9 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   }
 
   private fun maybeReportAgpVersionIssue(context: Context) {
-    // b/144442233: surface check for outdated AGP only if google() is in buildscript repositories
-    if (mDeclaredGoogleMavenRepository || context is TomlContext) {
+    // b/144442233: hide check for outdated AGP if we are reasonably sure google()
+    // is not in plugin resolution repositories
+    if (mDeclaredGoogleMavenRepository || !mDeclaredBuildscriptRepository) {
       agpVersionCheckInfo?.let {
         val versionString = it.newerVersion.toString()
         val currentIdentifier = it.dependency.version?.toIdentifier()

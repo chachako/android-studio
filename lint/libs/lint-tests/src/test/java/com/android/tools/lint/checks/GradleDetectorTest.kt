@@ -1716,31 +1716,22 @@ class GradleDetectorTest : AbstractCheckTest() {
     lint()
       .files(
         gradle(
-          "" +
-            "buildscript {\n" +
-            "  repositories {\n" +
-            "    google()\n" +
-            "  }\n" +
-            "}\n" +
-            "\n" +
-            "plugins {\n" +
-            "  id 'com.android.application' version '3.4.0-alpha03'\n" +
-            "}\n"
+          "" + "plugins {\n" + "  id 'com.android.application' version '3.4.0-alpha03'\n" + "}\n"
         )
       )
       .issues(DEPENDENCY, AGP_DEPENDENCY)
       .run()
       .expect(
         "" +
-          "build.gradle:8: Warning: A newer version of com.android.application than 3.4.0-alpha03 is available: 8.0.2 [AndroidGradlePluginVersion]\n" +
+          "build.gradle:2: Warning: A newer version of com.android.application than 3.4.0-alpha03 is available: 8.0.2 [AndroidGradlePluginVersion]\n" +
           "  id 'com.android.application' version '3.4.0-alpha03'\n" +
           "                                       ~~~~~~~~~~~~~~~\n" +
           "0 errors, 1 warnings\n"
       )
       .expectFixDiffs(
         "" +
-          "Fix for build.gradle line 8: Change to 8.0.2:\n" +
-          "@@ -8 +8\n" +
+          "Fix for build.gradle line 2: Change to 8.0.2:\n" +
+          "@@ -2 +2\n" +
           "-   id 'com.android.application' version '3.4.0-alpha03'\n" +
           "+   id 'com.android.application' version '8.0.2'\n"
       )
