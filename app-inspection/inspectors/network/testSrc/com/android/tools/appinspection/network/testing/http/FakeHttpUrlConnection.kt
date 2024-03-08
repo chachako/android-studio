@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.network.http
+package com.android.tools.appinspection.network.testing.http
 
 import java.net.HttpURLConnection
 import java.net.URL

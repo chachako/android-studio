@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.network.okhttp2
+package com.android.tools.appinspection.network.testing.okhttp2
 
 import com.squareup.okhttp.Connection
 import com.squareup.okhttp.Interceptor

@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.network
+package com.android.tools.appinspection.network.testing.okhttp2
 
-import android.app.Application
-import android.content.pm.ApplicationInfo
-import com.android.tools.appinspection.common.FakeArtTooling
+import com.squareup.okhttp.Call
+import com.squareup.okhttp.Request
+import com.squareup.okhttp.Response
 
-class NetworkArtTooling : FakeArtTooling() {
-  override fun <T> findInstances(clazz: Class<T>): List<T> {
-    return if (clazz.name == Application::class.java.name) {
-      @Suppress("UNCHECKED_CAST")
-      listOf(Application(), FakeApplication()) as List<T>
-    } else {
-      emptyList()
-    }
+class FakeCall(
+  private val client: FakeOkHttp2Client,
+  private val request: Request,
+  private val response: Response,
+) : Call(client, request) {
+
+  override fun execute(): Response {
+    return client.triggerInterceptor(request, response)
   }
 
-  private class FakeApplication() : Application() {
-
-    override fun getApplicationInfo(): ApplicationInfo {
-      return ApplicationInfo()
-    }
+  fun executeThenBlowUp(): Response {
+    return client.triggerInterceptor(request, response, true)
   }
 }

@@ -2,11 +2,11 @@ package com.android.tools.appinspection.network.reporters
 
 import android.os.Build
 import androidx.inspection.Connection
-import com.android.tools.appinspection.network.FakeConnection
-import com.android.tools.appinspection.network.getLogLines
 import com.android.tools.appinspection.network.reporters.StreamReporter.BufferHelper
 import com.android.tools.appinspection.network.reporters.StreamReporter.InputStreamReporter
 import com.android.tools.appinspection.network.reporters.StreamReporter.OutputStreamReporter
+import com.android.tools.appinspection.network.testing.FakeConnection
+import com.android.tools.appinspection.network.testing.getLogLines
 import com.android.tools.idea.protobuf.ByteString
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test

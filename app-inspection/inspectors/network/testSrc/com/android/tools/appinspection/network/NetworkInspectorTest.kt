@@ -20,7 +20,12 @@ import android.os.Build
 import androidx.inspection.ArtTooling
 import androidx.inspection.InspectorEnvironment
 import androidx.inspection.InspectorExecutors
-import com.android.tools.appinspection.network.FakeTrafficStatsProvider.Stat
+import com.android.tools.appinspection.network.testing.FakeConnection
+import com.android.tools.appinspection.network.testing.FakeEnvironment
+import com.android.tools.appinspection.network.testing.FakeTrafficStatsProvider.Stat
+import com.android.tools.appinspection.network.testing.NetworkInspectorRule
+import com.android.tools.appinspection.network.testing.getLogLines
+import com.android.tools.appinspection.network.testing.getVisibleLogLines
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking

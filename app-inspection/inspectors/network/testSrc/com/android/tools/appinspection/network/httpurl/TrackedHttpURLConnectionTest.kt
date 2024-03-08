@@ -1,11 +1,11 @@
 package com.android.tools.appinspection.network.httpurl
 
-import com.android.tools.appinspection.network.http.FakeHttpUrlConnection
 import com.android.tools.appinspection.network.rules.InterceptionRule
 import com.android.tools.appinspection.network.rules.InterceptionRuleService
 import com.android.tools.appinspection.network.rules.NetworkConnection
 import com.android.tools.appinspection.network.rules.NetworkInterceptionMetrics
 import com.android.tools.appinspection.network.rules.NetworkResponse
+import com.android.tools.appinspection.network.testing.http.FakeHttpUrlConnection
 import com.android.tools.appinspection.network.trackers.HttpConnectionTracker
 import com.google.common.truth.Truth.assertThat
 import java.io.ByteArrayInputStream

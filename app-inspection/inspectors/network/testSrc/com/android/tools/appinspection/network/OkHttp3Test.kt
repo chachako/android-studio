@@ -17,7 +17,10 @@
 package com.android.tools.appinspection.network
 
 import android.os.Build
-import com.android.tools.appinspection.network.okhttp3.FakeOkHttp3Client
+import com.android.tools.appinspection.network.testing.NetworkInspectorRule
+import com.android.tools.appinspection.network.testing.createFakeRuleAddedEvent
+import com.android.tools.appinspection.network.testing.okhttp3.FakeOkHttp3Client
+import com.android.tools.appinspection.network.testing.receiveInterceptCommand
 import com.google.common.truth.Truth.assertThat
 import java.io.IOException
 import java.net.URL

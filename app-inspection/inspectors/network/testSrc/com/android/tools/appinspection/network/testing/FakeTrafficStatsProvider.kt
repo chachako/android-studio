@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.network
+package com.android.tools.appinspection.network.testing
 
+import com.android.tools.appinspection.network.TrafficStatsProvider
 import java.util.concurrent.atomic.AtomicInteger
 
 /** Fake implementation of [TrafficStatsProvider] */

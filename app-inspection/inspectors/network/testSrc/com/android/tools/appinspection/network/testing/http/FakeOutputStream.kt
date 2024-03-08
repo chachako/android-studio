@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.network.http
+package com.android.tools.appinspection.network.testing.http
 
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream

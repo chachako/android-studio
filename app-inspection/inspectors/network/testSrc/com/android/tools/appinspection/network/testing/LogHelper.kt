@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.network
+package com.android.tools.appinspection.network.testing
 
 import android.util.Log
 import org.robolectric.shadows.ShadowLog

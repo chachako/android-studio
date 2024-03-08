@@ -14,20 +14,48 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.network.okhttp2
+package com.android.tools.appinspection.network.testing.okhttp3
 
-import com.squareup.okhttp.Call
-import com.squareup.okhttp.Request
-import com.squareup.okhttp.Response
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Request
+import okhttp3.Response
+import okio.Timeout
 
 class FakeCall(
-  private val client: FakeOkHttp2Client,
+  private val client: FakeOkHttp3Client,
   private val request: Request,
   private val response: Response,
-) : Call(client, request) {
+) : Call {
+
+  override fun clone(): Call {
+    throw NotImplementedError("Not yet implemented")
+  }
+
+  override fun request(): Request {
+    return request
+  }
 
   override fun execute(): Response {
     return client.triggerInterceptor(request, response)
+  }
+
+  override fun enqueue(p0: Callback) {}
+
+  override fun cancel() {}
+
+  override fun isExecuted(): Boolean {
+    // does not matter
+    return false
+  }
+
+  override fun isCanceled(): Boolean {
+    // does not matter
+    return false
+  }
+
+  override fun timeout(): Timeout {
+    throw NotImplementedError("Not yet implemented")
   }
 
   fun executeThenBlowUp(): Response {

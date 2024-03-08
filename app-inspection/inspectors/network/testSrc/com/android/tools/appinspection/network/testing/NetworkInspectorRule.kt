@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.network
+package com.android.tools.appinspection.network.testing
 
 import androidx.inspection.Inspector
+import com.android.tools.appinspection.network.NetworkInspector
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
 import java.util.concurrent.Executor
 import org.junit.rules.ExternalResource

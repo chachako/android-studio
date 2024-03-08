@@ -17,7 +17,10 @@
 package com.android.tools.appinspection.network
 
 import android.os.Build
-import com.android.tools.appinspection.network.http.FakeHttpUrlConnection
+import com.android.tools.appinspection.network.testing.NetworkInspectorRule
+import com.android.tools.appinspection.network.testing.createFakeRuleAddedEvent
+import com.android.tools.appinspection.network.testing.http.FakeHttpUrlConnection
+import com.android.tools.appinspection.network.testing.receiveInterceptCommand
 import com.android.tools.idea.protobuf.ByteString
 import com.google.common.truth.Truth.assertThat
 import java.net.HttpURLConnection
@@ -290,7 +293,9 @@ internal class HttpUrlTest {
 
     try {
       connection.connect()
-    } catch (e: Exception) {}
+    } catch (e: Exception) {
+      // ignore
+    }
 
     assertThat(connection.headerFields).isEmpty()
   }

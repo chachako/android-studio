@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.network.okhttp3
+package com.android.tools.appinspection.network.testing.okhttp3
 
 import java.io.IOException
 import java.util.concurrent.TimeUnit

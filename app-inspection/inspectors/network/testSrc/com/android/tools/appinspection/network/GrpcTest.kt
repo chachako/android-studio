@@ -17,6 +17,7 @@
 package com.android.tools.appinspection.network
 
 import com.android.tools.appinspection.network.grpc.GrpcInterceptor
+import com.android.tools.appinspection.network.testing.FakeConnection
 import com.android.tools.appinspection.network.trackers.GrpcTracker
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
 import com.google.common.truth.Truth.assertThat
