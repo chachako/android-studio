@@ -17,28 +17,6 @@ _git = [
         "path": "prebuilts/clang",
     },
     {
-        "name": "freetype_repo",
-        "build_file": "tools/base/dynamic-layout-inspector/external/freetype.BUILD",
-        "path": "external/freetype",
-    },
-    {
-        "name": "skia_repo",
-        "path": "external/skia",
-        "repo_mapping": {
-            "@freetype": "@freetype_repo",
-            "@libpng": "@libpng_repo",
-        },
-    },
-    {
-        "name": "skia_user_config",
-        "path": "tools/base/dynamic-layout-inspector/external/skia-user-config",
-    },
-    {
-        "name": "libpng_repo",
-        "build_file": "tools/base/dynamic-layout-inspector/external/libpng.BUILD",
-        "path": "external/libpng",
-    },
-    {
         "name": "googletest",
         "path": "external/googletest",
     },
@@ -104,6 +82,28 @@ _vendor_git = [
     {
         "name": "androidsdk",
         "build_tools_version": "30.0.3",
+    },
+    {
+        "name": "freetype_repo",
+        "build_file": "tools/vendor/google/skia/external/freetype.BUILD",
+        "path": "external/freetype",
+    },
+    {
+        "name": "skia_repo",
+        "path": "external/skia",
+        "repo_mapping": {
+            "@freetype": "@freetype_repo",
+            "@libpng": "@libpng_repo",
+        },
+    },
+    {
+        "name": "skia_user_config",
+        "path": "tools/vendor/google/skia/external/skia-user-config",
+    },
+    {
+        "name": "libpng_repo",
+        "build_file": "tools/vendor/google/skia/external/libpng.BUILD",
+        "path": "external/libpng",
     },
 ]
 

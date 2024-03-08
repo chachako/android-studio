@@ -103,7 +103,13 @@ if not exist %DISTDIR%\ goto endscript
 @echo studio_win.cmd time: %time%
 
 @rem copy skia parser artifact to dist dir
-copy %BASEDIR%\bazel-bin\tools\base\dynamic-layout-inspector\skia\skiaparser.zip %DISTDIR%
+copy %BASEDIR%\bazel-bin\tools\vendor\google\skia\skiaparser.zip %DISTDIR%
+if errorlevel 1 (
+  set /a EXITCODE=1
+  goto endscript
+)
+@rem copy skia test artifact to dist dir
+copy %BASEDIR%\bazel-bin\tools\vendor\google\skia\skia_test_support.zip %DISTDIR%
 if errorlevel 1 (
   set /a EXITCODE=1
   goto endscript

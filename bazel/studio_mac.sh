@@ -57,8 +57,9 @@ if [[ -d "${dist_dir}" ]]; then
   # affect info, so we need to pass only --config=release here in order to fetch the proper
   # binaries
   readonly bin_dir="$("${script_dir}"/bazel --output_base="${TMPDIR}" info --config=release bazel-bin)"
-  cp -a ${bin_dir}/tools/base/dynamic-layout-inspector/skia/skiaparser.zip ${dist_dir}
   cp -a ${bin_dir}/tools/base/profiler/native/trace_processor_daemon/trace_processor_daemon ${dist_dir}
+  cp -a ${bin_dir}/tools/vendor/google/skia/skiaparser.zip ${dist_dir}
+  cp -a ${bin_dir}/tools/vendor/google/skia/skia_test_support.zip ${dist_dir}
   echo "<head><meta http-equiv=\"refresh\" content=\"0; URL='https://fusion2.corp.google.com/invocations/${invocation_id}'\" /></head>" > "${dist_dir}"/upsalite_test_results.html
 fi
 
