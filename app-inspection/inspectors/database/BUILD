@@ -55,7 +55,7 @@ kotlin_library(
     srcs = glob(["testSrc/**/*.kt"]),
     deps = [
         ":agent-jar",
-        "//tools/base/app-inspection/inspectors/lib:androidx-test-monitor",
+        "//prebuilts/tools/common/m2:androidx-monitor",
         "//tools/base/app-inspection/inspectors/lib:inspection-testing",
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.truth.truth",

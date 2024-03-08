@@ -1,6 +1,6 @@
 load("//tools/adt/idea/studio:studio.bzl", "studio_data")
 load("//tools/base/app-inspection:app_inspection.bzl", "app_inspection_jar")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
 load("//tools/base/bazel:proto.bzl", "android_java_proto_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -54,7 +54,7 @@ kotlin_library(
     srcs = glob(["testSrc/**/*.kt"]),
     deps = [
         ":agent-jar",
-        "//tools/base/app-inspection/inspectors/lib:androidx-test-monitor",
+        "//prebuilts/tools/common/m2:androidx-monitor",
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.truth.truth",

@@ -69,7 +69,7 @@ kotlin_library(
     deps = [
         ":agent-jar",
         ":test_server_java_proto",
-        "//tools/base/app-inspection/inspectors/lib:androidx-test-monitor",
+        "//prebuilts/tools/common/m2:androidx-monitor",
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
