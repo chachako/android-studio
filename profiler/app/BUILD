@@ -92,38 +92,3 @@ dex_library(
         "//tools/base/app-inspection/agent",
     ],
 )
-
-java_library(
-    name = "perfa_okhttp_java",
-    srcs = glob([
-        "perfa-okhttp/src/main/**/*.java",
-    ]),
-    deps = [
-        ":perfa_java",
-        "//prebuilts/studio/sdk:platforms/latest_jar",
-        "@maven//:androidx.annotation.annotation",
-        "@maven//:com.squareup.okhttp.okhttp",
-        "@maven//:com.squareup.okhttp3.okhttp",
-        "@maven//:com.squareup.okio.okio",
-    ],
-)
-
-dex_library(
-    name = "perfa_okhttp_dex_jar",
-    jars = [":perfa_okhttp_java"],
-    output = "perfa_okhttp_dex.jar",
-)
-
-# D8 does not allow generating multiple classes to a single dex file because
-# of multidex. We are going to tell it to output to a zip file first and
-# then extract classes.dex to it as our perfa_okhttp.dex. If this dex file
-# over flows, add classes02.dex to it (and whatever needs to be done to upload
-# to the device as well)
-genrule(
-    name = "perfa_okhttp",
-    srcs = [":perfa_okhttp_dex.jar"],
-    outs = ["perfa_okhttp.dex"],
-    # Assumes everything fits into classes.dex, add classes02.dex should when it is full
-    cmd = "$(location //tools/base/bazel:unzipper) $(location :perfa_okhttp_dex.jar) classes.dex:$(location :perfa_okhttp.dex)",
-    tools = ["//tools/base/bazel:unzipper"],
-)

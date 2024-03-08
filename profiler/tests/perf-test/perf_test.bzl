@@ -57,7 +57,6 @@ def perf_test(
         ],
         app_runtime_deps = app_runtime_deps + [
             "//tools/base/profiler/app:perfa_java",
-            "//tools/base/profiler/app:perfa_okhttp",
             "//tools/base/profiler/native/agent:libsupportjni.so",
         ],
         tags = tags,
