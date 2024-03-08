@@ -64,46 +64,70 @@ internal class AppProcessNameRetriever(private val process: AppProcess) {
         return withContext(process.scope.coroutineContext) {
             val cmd = "cat /proc/${process.pid}/cmdline"
             logger.debug { "Looking for process name of $process using '$cmd'" }
-            for (retry in 0 until retryCount) {
-                val output = try {
-                    process.device.session.deviceServices
-                        .shellCommand(process.device.selector, cmd)
-                        .withTextCollector()
-                        .execute()
-                        .first()
-                } catch (t: Throwable) {
-                    t.rethrowCancellation()
-                    logger.warn(
-                        t,
-                        "Error executing shell command '$cmd' on device ${process.device}"
-                    )
-                    // try again
+            var lastValidName = ""
+            var retryAttempt = 0
+            while (retryAttempt <= retryCount) {
+                val name = execProcCmdLineAndReturnValidOrEmpty()
+                if (name.isEmpty()) {
+                    // Try again a little later
+                    delay(retryDelay.toMillis())
+                    ++retryAttempt
+                    lastValidName = ""
                     continue
                 }
 
-                // 'cmdline' is argv, where each arg is terminated by a `nul`, so
-                // the process name is all characters of the output until the first `nul`.
-                val name = output.stdout.takeWhile { it != 0.toChar() }
-                when {
-                    name.isBlank() || name == "<pre-initialized>" -> {
-                        // Try again a little later
-                        delay(retryDelay.toMillis())
-                        continue
-                    }
-
-                    output.stderr.contains("No such file or directory") -> {
-                        logger.debug { "`cmdline` file for process ${process.pid} does not exist: stderr=${output.stderr}" }
-                        throw IOException("Unable to retrieve process name of process ${process.pid}, the process has exited")
-                    }
-
-                    else -> {
-                        logger.debug { "Found app process name of $process: '$name'" }
-                        return@withContext name
-                    }
+                // NOTE: To mitigate the issue raised in b/316931621 we retry `cat proc/<pid>/cmdline`
+                // to ensure we are not seeing a temporarily invalid cmdline value
+                if (name == lastValidName) {
+                    return@withContext name
+                } else {
+                    lastValidName = name
+                    // We got a valid name, but need to quickly recheck it.
+                    // Don't count it as a retry
+                    delay (100)
                 }
             }
 
             throw IOException("Process name could not be retrieved from the device")
+        }
+    }
+
+    private suspend fun execProcCmdLineAndReturnValidOrEmpty(): String {
+        val cmd = "cat /proc/${process.pid}/cmdline"
+        logger.debug { "Looking for process name of $process using '$cmd'" }
+        val output = try {
+            process.device.session.deviceServices
+                .shellCommand(process.device.selector, cmd)
+                .withTextCollector()
+                .execute()
+                .first()
+        } catch (t: Throwable) {
+            t.rethrowCancellation()
+            logger.warn(
+                t,
+                "Error executing shell command '$cmd' on device ${process.device}"
+            )
+            // try again
+            return ""
+        }
+
+        // 'cmdline' is argv, where each arg is terminated by a `nul`, so
+        // the process name is all characters of the output until the first `nul`.
+        val name = output.stdout.takeWhile { it != 0.toChar() }
+        when {
+            name.isBlank() || name == "<pre-initialized>" -> {
+                return ""
+            }
+
+            output.stderr.contains("No such file or directory") -> {
+                logger.debug { "`cmdline` file for process ${process.pid} does not exist: stderr=${output.stderr}" }
+                throw IOException("Unable to retrieve process name of process ${process.pid}, the process has exited")
+            }
+
+            else -> {
+                logger.debug { "Found app process name of $process: '$name'" }
+                return name
+            }
         }
     }
 }

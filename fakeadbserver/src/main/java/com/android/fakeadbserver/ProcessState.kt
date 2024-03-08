@@ -27,8 +27,7 @@ abstract class ProcessState(val pid: Int) {
     open val architecture: String
         get() = ""
 
-    open val commandLine: String
-        get() = ""
+    open var commandLine: String = ""
 }
 
 /**
@@ -37,7 +36,7 @@ abstract class ProcessState(val pid: Int) {
 class ProfileableProcessState(
     pid: Int,
     override val architecture: String,
-    override val commandLine: String
+    override var commandLine: String
 ) : ProcessState(pid) {
 
     override val debuggable: Boolean

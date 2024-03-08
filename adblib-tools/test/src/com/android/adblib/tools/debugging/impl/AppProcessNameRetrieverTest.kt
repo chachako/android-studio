@@ -148,4 +148,46 @@ class AppProcessNameRetrieverTest : AdbLibToolsTestBase() {
             // Assert
             Assert.fail("Should not reach")
         }
+
+    @Test
+    fun retrieveProcessNameFromProc_canIgnoreNonfinalizedName(): Unit = CoroutineTestUtils.runBlockingWithTimeout {
+        // Prepare
+        val deviceId = "1234"
+        val fakeDevice =
+            fakeAdb.connectDevice(
+                deviceId,
+                "test1",
+                "test2",
+                "model",
+                "30", // SDK >= 30 is required for abb_exec feature.
+                DeviceState.HostConnectionType.USB
+            )
+        fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
+        val connectedDevice =
+            hostServices.session.connectedDevicesTracker.connectedDevices
+                .mapNotNull { connectedDevices ->
+                    connectedDevices.firstOrNull { device ->
+                        device.serialNumber == fakeDevice.deviceId
+                    }
+                }.first()
+        val pid10 = 10
+        val process = fakeDevice.startProfileableProcess(pid10, "x86", "a.b.c")
+        val appTracker = AppProcessTracker.create(connectedDevice)
+        val appProcesses =
+            appTracker.appProcessFlow.first { appProcesses -> appProcesses.isNotEmpty() }
+        val appProcessNameRetriever = AppProcessNameRetriever(appProcesses[0])
+
+        // Act
+        launch {
+            for (i in 0 .. 10) {
+                process.commandLine = "cmdline-$i"
+                delay(10)
+            }
+        }
+        // Note that retrying an unstable cmdline value does not count towards a retry count
+        val appProcessName = appProcessNameRetriever.retrieve(0, Duration.ofMillis(100))
+
+        // Assert
+        Assert.assertEquals("cmdline-10", appProcessName)
+    }
 }
