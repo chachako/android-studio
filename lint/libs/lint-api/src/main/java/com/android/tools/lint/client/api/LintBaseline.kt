@@ -238,7 +238,6 @@ class LintBaseline(
 
     if (writeOnClose && (!removeFixed || found)) {
       if (entriesToWrite != null && shouldBaseline(issue.id)) {
-        val project = incident.project
         entriesToWrite!!.add(ReportedEntry(incident))
       }
     }
@@ -955,10 +954,10 @@ class LintBaseline(
         val c1 = s1[i1]
         val c2 = s2[i2]
         if (c1 != c2) {
-          while (i1 < n1 && (s1[i1] == '`' || s1[i1] == ' ')) {
+          while (i1 < n1 && (s1[i1] == '`' || s1[i1].isWhitespace())) {
             i1++
           }
-          while (i2 < n2 && (s2[i2] == '`' || s2[i2] == ' ')) {
+          while (i2 < n2 && (s2[i2] == '`' || s2[i2].isWhitespace())) {
             i2++
           }
           if (i1 == n1 || i2 == n2) {

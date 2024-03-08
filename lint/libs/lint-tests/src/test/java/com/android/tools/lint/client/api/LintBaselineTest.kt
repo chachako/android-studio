@@ -742,6 +742,27 @@ class LintBaselineTest {
   }
 
   @Test
+  fun tolerateNewlineChanges() {
+    // Regression test for b/328444663
+    val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
+    assertTrue(
+      baseline.sameMessage(
+        RtlDetector.COMPAT,
+        "\n  This is text\n  that could be trim \n  indented.\n",
+        "This is text\nthat could be trim indented.",
+      )
+    )
+
+    assertTrue(
+      baseline.sameMessage(
+        RtlDetector.COMPAT,
+        "This is text\nthat could be trim indented.",
+        "\n  This is text\n  that could be trim \n  indented.\n",
+      )
+    )
+  }
+
+  @Test
   fun tolerateUnusedAttributeChanges() {
     val baseline = LintBaseline(ToolsBaseTestLintClient(), File(""))
     assertTrue(
