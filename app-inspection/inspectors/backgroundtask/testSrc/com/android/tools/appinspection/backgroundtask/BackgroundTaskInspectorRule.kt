@@ -19,9 +19,6 @@ package com.android.tools.appinspection.backgroundtask
 import androidx.inspection.Inspector
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.Command
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.TrackBackgroundTaskCommand
-import com.android.tools.appinspection.BackgroundTaskInspector
-import com.android.tools.appinspection.BackgroundTaskInspectorFactory
-import com.android.tools.appinspection.BackgroundTaskUtil
 import java.util.concurrent.Executor
 import org.junit.rules.ExternalResource
 import org.robolectric.shadows.ShadowLog

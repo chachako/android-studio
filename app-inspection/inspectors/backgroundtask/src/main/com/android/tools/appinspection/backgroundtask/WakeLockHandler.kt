@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection
+package com.android.tools.appinspection.backgroundtask
 
 import android.os.PowerManager.WakeLock
 import androidx.annotation.VisibleForTesting
 import androidx.inspection.Connection
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.WakeLockAcquired
-import com.android.tools.appinspection.BackgroundTaskUtil.sendBackgroundTaskEvent
+import com.android.tools.appinspection.backgroundtask.BackgroundTaskUtil.sendBackgroundTaskEvent
 import com.android.tools.appinspection.common.getStackTrace
 
 private const val DEFAULT_TAG = "UNKNOWN"

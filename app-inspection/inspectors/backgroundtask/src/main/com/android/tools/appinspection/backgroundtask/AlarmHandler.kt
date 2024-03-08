@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection
+package com.android.tools.appinspection.backgroundtask
 
 import android.app.AlarmManager
 import android.app.AlarmManager.OnAlarmListener
@@ -30,7 +30,7 @@ import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmCancelled
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmFired
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmListener
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmSet
-import com.android.tools.appinspection.BackgroundTaskUtil.sendBackgroundTaskEvent
+import com.android.tools.appinspection.backgroundtask.BackgroundTaskUtil.sendBackgroundTaskEvent
 import com.android.tools.appinspection.common.getStackTrace
 import java.util.concurrent.ConcurrentHashMap
 

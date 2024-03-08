@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection
+package com.android.tools.appinspection.backgroundtask
 
 import android.util.Log
 

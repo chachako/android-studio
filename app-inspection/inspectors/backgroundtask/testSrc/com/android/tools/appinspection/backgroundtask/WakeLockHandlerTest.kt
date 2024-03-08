@@ -20,7 +20,6 @@ import android.os.Build
 import android.os.PowerManager
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.WakeLockAcquired
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.WakeLockReleased
-import com.android.tools.appinspection.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test

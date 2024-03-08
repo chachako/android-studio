@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection
+package com.android.tools.appinspection.backgroundtask
 
 import android.app.PendingIntent
 import android.content.Intent
-import com.android.tools.appinspection.IntentRegistry.IntentWrapper.Companion.wrap
+import com.android.tools.appinspection.backgroundtask.IntentRegistry.IntentWrapper.Companion.wrap
 import java.util.concurrent.ConcurrentHashMap
 
 /** A registry that keeps track of [Intent]/[PendingIntent] relationships */

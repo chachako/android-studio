@@ -29,11 +29,6 @@ import backgroundtask.inspection.BackgroundTaskInspectorProtocol.AlarmSet
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.PendingIntent.Type.ACTIVITY
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.PendingIntent.Type.BROADCAST
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.PendingIntent.Type.SERVICE
-import com.android.tools.appinspection.ComponentNameProto
-import com.android.tools.appinspection.IntentProto
-import com.android.tools.appinspection.IntentProtoBuilder
-import com.android.tools.appinspection.PendingIntentHandler
-import com.android.tools.appinspection.PendingIntentProto
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection
+package com.android.tools.appinspection.backgroundtask
 
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
@@ -24,7 +24,7 @@ import backgroundtask.inspection.BackgroundTaskInspectorProtocol
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.JobInfo.BackoffPolicy
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.JobInfo.NetworkType
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.JobScheduled
-import com.android.tools.appinspection.BackgroundTaskUtil.sendBackgroundTaskEvent
+import com.android.tools.appinspection.backgroundtask.BackgroundTaskUtil.sendBackgroundTaskEvent
 import com.android.tools.appinspection.common.getStackTrace
 
 /** A handler class that adds necessary hooks to track job related events. */

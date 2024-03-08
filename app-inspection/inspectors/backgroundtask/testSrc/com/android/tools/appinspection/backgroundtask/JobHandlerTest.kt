@@ -25,7 +25,6 @@ import android.os.PersistableBundle
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.JobInfo.BackoffPolicy
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.JobInfo.NetworkType
-import com.android.tools.appinspection.JobParametersWrapper
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
