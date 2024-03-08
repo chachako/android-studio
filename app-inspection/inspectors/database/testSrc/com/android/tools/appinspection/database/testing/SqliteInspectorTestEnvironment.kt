@@ -35,34 +35,29 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import org.junit.rules.ExternalResource
+import org.robolectric.shadows.ShadowLog
 
 private const val SQLITE_INSPECTOR_ID = "androidx.sqlite.inspection"
 
-class SqliteInspectorTestEnvironment(val ioExecutorOverride: Executor? = null) :
-  ExternalResource() {
-  private lateinit var inspectorTester: InspectorTester
-  private lateinit var artTooling: FakeArtTooling
+class SqliteInspectorTestEnvironment(ioExecutorOverride: Executor? = null) : ExternalResource() {
+  private val artTooling = FakeArtTooling()
   private val job = Job()
+  private val inspectorEnvironment =
+    DefaultTestInspectorEnvironment(TestInspectorExecutors(job, ioExecutorOverride), artTooling)
+  private val inspectorTester: InspectorTester = runBlocking {
+    InspectorTester(inspectorId = SQLITE_INSPECTOR_ID, environment = inspectorEnvironment)
+  }
 
   override fun before() {
-
-    artTooling = FakeArtTooling()
-    inspectorTester = runBlocking {
-      InspectorTester(
-        inspectorId = SQLITE_INSPECTOR_ID,
-        environment =
-          DefaultTestInspectorEnvironment(
-            TestInspectorExecutors(job, ioExecutorOverride),
-            artTooling,
-          ),
-      )
-    }
+    ShadowLog.stream = System.out
   }
 
   override fun after() {
     inspectorTester.dispose()
     runBlocking { job.cancelAndJoin() }
   }
+
+  fun getLooper() = inspectorEnvironment.executors().handler().looper
 
   @OptIn(ExperimentalCoroutinesApi::class)
   fun assertNoQueuedEvents() {

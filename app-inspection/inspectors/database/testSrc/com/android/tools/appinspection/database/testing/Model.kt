@@ -17,7 +17,7 @@
 package com.android.tools.appinspection.database.testing
 
 data class Database(val name: String?, val tables: List<Table>) {
-  constructor(name: String, vararg tables: Table) : this(name, tables.toList())
+  constructor(name: String?, vararg tables: Table) : this(name, tables.toList())
 }
 
 data class Table(
