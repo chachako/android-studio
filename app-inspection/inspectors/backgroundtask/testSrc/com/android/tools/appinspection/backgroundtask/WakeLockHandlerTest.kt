@@ -20,6 +20,7 @@ import android.os.Build
 import android.os.PowerManager
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.WakeLockAcquired
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.WakeLockReleased
+import com.android.tools.appinspection.backgroundtask.testing.BackgroundTaskInspectorRule
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test

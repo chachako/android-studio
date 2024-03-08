@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.backgroundtask
+package com.android.tools.appinspection.backgroundtask.testing
 
 import androidx.inspection.ArtTooling
 import androidx.inspection.InspectorEnvironment

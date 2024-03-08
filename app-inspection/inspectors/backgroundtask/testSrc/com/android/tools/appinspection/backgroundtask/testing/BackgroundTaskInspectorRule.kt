@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.backgroundtask
+package com.android.tools.appinspection.backgroundtask.testing
 
 import androidx.inspection.Inspector
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.Command
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.TrackBackgroundTaskCommand
+import com.android.tools.appinspection.backgroundtask.BackgroundTaskInspectorFactory
+import com.android.tools.appinspection.backgroundtask.BackgroundTaskUtil
 import java.util.concurrent.Executor
 import org.junit.rules.ExternalResource
 import org.robolectric.shadows.ShadowLog
 
 class BackgroundTaskInspectorRule : ExternalResource() {
 
-  lateinit var connection: FakeConnection
-  lateinit var environment: FakeEnvironment
-  lateinit var inspector: BackgroundTaskInspector
+  val connection = FakeConnection()
+  private val environment = FakeEnvironment()
+  val inspector = BackgroundTaskInspectorFactory().createInspector(connection, environment)
 
   override fun before() {
     ShadowLog.stream = System.out
 
-    connection = FakeConnection()
-    environment = FakeEnvironment()
-    inspector = BackgroundTaskInspectorFactory().createInspector(connection, environment)
     inspector.onReceiveCommand(
       Command.newBuilder()
         .setTrackBackgroundTask(TrackBackgroundTaskCommand.getDefaultInstance())
