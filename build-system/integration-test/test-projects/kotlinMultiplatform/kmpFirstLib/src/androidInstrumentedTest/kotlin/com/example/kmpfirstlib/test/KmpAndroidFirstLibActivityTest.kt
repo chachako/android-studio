@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 
 import com.example.kmpfirstlib.KmpAndroidActivity
 import com.example.kmpfirstlib.KmpAndroidFirstLibClass
+import com.example.kmpfirstlib.KmpCommonFirstLibClass
 
 import org.junit.Assert
 import org.junit.Test
@@ -37,5 +38,14 @@ class KmpAndroidFirstLibActivityTest {
         }
 
         Assert.assertTrue(androidLibResValue == "android lib debug resource")
+    }
+
+    @Test
+    fun testInternalVisibilityAccess() {
+        val x = KmpAndroidFirstLibClass()
+        assert(x.callInternalFuncAndroidMain() == "foobar")
+
+        val y = KmpCommonFirstLibClass()
+        assert(y.getInternal() == "I'm here")
     }
 }

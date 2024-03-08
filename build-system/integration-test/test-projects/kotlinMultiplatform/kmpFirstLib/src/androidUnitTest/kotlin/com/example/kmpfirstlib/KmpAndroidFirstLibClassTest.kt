@@ -19,4 +19,13 @@ class KmpAndroidFirstLibClassTest {
             com.google.common.math.IntMath.checkedAdd(2, 3) == 5
         )
     }
+
+    @Test
+    fun testInternalVisibilityAccess() {
+        val x = KmpAndroidFirstLibClass()
+        assert(x.callInternalFuncAndroidMain() == "foobar")
+
+        val y = KmpCommonFirstLibClass()
+        assert(y.getInternal() == "I'm here")
+    }
 }

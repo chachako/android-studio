@@ -22,7 +22,6 @@ import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.component.impl.features.InstrumentationCreationConfigImpl
 import com.android.build.api.component.impl.features.PrivacySandboxCreationConfigImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
-import com.android.build.api.variant.AndroidResources
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.ComponentIdentity

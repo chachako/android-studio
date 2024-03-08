@@ -72,9 +72,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
             """.trimIndent()
         )
 
-        // TODO (b/293964676): remove withFailOnWarning(false) once KMP bug is fixed
         project.executor()
-            .withFailOnWarning(false)
             .run(":kmpFirstLib:mergeAndroidInstrumentedTestJavaResource")
 
         val androidTestMergedRes = project.getSubproject("kmpFirstLib").getIntermediateFile(

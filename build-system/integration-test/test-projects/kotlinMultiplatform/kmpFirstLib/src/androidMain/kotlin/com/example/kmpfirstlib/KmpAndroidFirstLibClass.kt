@@ -26,4 +26,8 @@ class KmpAndroidFirstLibClass {
     fun callJavaClass(): String {
         return KmpAndroidFirstLibJavaClass().callCommonLibClass()
     }
+
+    internal fun callInternalFuncAndroidMain(): String {
+        return "foobar"
+    }
 }
