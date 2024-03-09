@@ -1139,7 +1139,7 @@ public class MainTest extends AbstractCheckTest {
         try {
             checkDriver(
                     ""
-                            + "src/test/pkg/Test.java:4: Error: Call requires API level 24 (current min is 1): java.lang.Byte#hashCode [NewApi]\n"
+                            + "src/test/pkg/Test.java:4: Error: Call requires API level 24, or core library desugaring (current min is 1): java.lang.Byte#hashCode [NewApi]\n"
                             + "        return java.lang.Byte.hashCode(b);\n"
                             + "                              ~~~~~~~~\n"
                             + "1 errors, 0 warnings",

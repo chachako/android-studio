@@ -701,6 +701,15 @@ class LintBaselineTest {
         "Implicit cast from `Cursor` to `Closeable` requires API level 16 (current min is 14)",
       )
     )
+
+    assertTrue(
+      baseline.sameMessage(
+        ApiDetector.UNSUPPORTED,
+        new =
+          "Call requires API level 24, or core library desugaring (current min is 1): `java.util.Map#getOrDefault`",
+        old = "Call requires API level 24 (current min is 1): `java.util.Map#getOrDefault`",
+      )
+    )
   }
 
   @Test

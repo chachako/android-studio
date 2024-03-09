@@ -968,8 +968,10 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     }
 
     val desugaring = map.getInt(KEY_DESUGAR, null)?.let { Desugaring.fromConstant(it) }
+    var libraryDesugaring = false
     if ((desugaring == null || desugaring == Desugaring.JAVA_8_LIBRARY)) {
       if (mainProject.isDesugaring(Desugaring.JAVA_8_LIBRARY)) {
+        libraryDesugaring = true
         // See if library desugaring is turned on in the main project
         val owner = map.getString(KEY_OWNER, null)
         if (owner != null && canBeDesugaredLater(owner)) {
@@ -1011,7 +1013,39 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
     // Update the minSdkVersion included in the message
     val formatString = map.getString(KEY_MESSAGE) ?: return false
-    incident.message = String.format(formatString, minSdk)
+    val message = String.format(formatString, minSdk)
+    incident.message = message
+
+    if (!libraryDesugaring) {
+      val owner = map.getString(KEY_OWNER, null)
+      if (owner != null && canBeDesugaredLater(owner)) {
+        val name = map.getString(KEY_NAME)
+        val desc = map.getString(KEY_DESC)
+        val lookup = DesugaredMethodLookup.getBundledLibraryDesugaringRules(mainProject)
+        var isDesugarable = false
+        if (name != null && desc != null) {
+          if (lookup.isDesugaredMethod(owner, name, desc)) {
+            isDesugarable = true
+          }
+        } else if (name != null) {
+          if (lookup.isDesugaredField(owner, name)) {
+            isDesugarable = true
+          }
+        } else if (lookup.isDesugaredClass(owner)) {
+          isDesugarable = true
+        }
+        if (isDesugarable) {
+          val index = message.indexOf(" (")
+          if (index != -1) {
+            incident.message =
+              message.substring(0, index) +
+                ", or core library desugaring" +
+                message.substring(index)
+          }
+        }
+      }
+    }
+
     return true
   }
 

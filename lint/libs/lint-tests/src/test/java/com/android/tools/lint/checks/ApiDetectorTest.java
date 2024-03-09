@@ -3963,10 +3963,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
                         + "src/test/pkg/LambdaTest.java:9: Error: Call requires API level 23 (current min is 1): android.view.View#performContextClick [NewApi]\n"
                         + "    private View.OnTouchListener myListener = (v, event) -> v.performContextClick();\n"
                         + "                                                              ~~~~~~~~~~~~~~~~~~~\n"
-                        + "src/test/pkg/LambdaTest.java:12: Error: Call requires API level 24 (current min is 1): java.util.Map#forEach [NewApi]\n"
+                        + "src/test/pkg/LambdaTest.java:12: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.Map#forEach [NewApi]\n"
                         + "        map.forEach((t, u) -> Log.i(\"tag\", t + u));\n"
                         + "            ~~~~~~~\n"
-                        + "2 errors, 0 warnings\n";
+                        + "2 errors, 0 warnings";
         //noinspection all // Sample code
         lint().files(
                         java(
@@ -5750,10 +5750,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
     public void testConcurrentHashMapUsage() {
         String expected =
                 ""
-                        + "src/test/pkg/MapUsage.java:7: Error: The type of the for loop iterated value is java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which requires API level 24 (current min is 1); to work around this, add an explicit cast to (Map) before the keySet call. [NewApi]\n"
+                        + "src/test/pkg/MapUsage.java:7: Error: The type of the for loop iterated value is java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which requires API level 24, or core library desugaring (current min is 1); to work around this, add an explicit cast to (Map) before the keySet call. [NewApi]\n"
                         + "        for (String key : map.keySet()) {\n"
                         + "                          ~~~~~~~~~~~~\n"
-                        + "src/test/pkg/MapUsage.java:11: Error: The type of the for loop iterated value is java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which requires API level 24 (current min is 21); to work around this, add an explicit cast to (Map) before the keySet call. [NewApi]\n"
+                        + "src/test/pkg/MapUsage.java:11: Error: The type of the for loop iterated value is java.util.concurrent.ConcurrentHashMap.KeySetView<java.lang.String,java.lang.Object>, which requires API level 24, or core library desugaring (current min is 21); to work around this, add an explicit cast to (Map) before the keySet call. [NewApi]\n"
                         + "            for (String key : map.keySet()) {\n"
                         + "                              ~~~~~~~~~~~~\n"
                         + "2 errors, 0 warnings";
@@ -6010,10 +6010,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
         // Regression test for https://issuetracker.google.com/37137282
         String expected =
                 ""
-                        + "src/test/pkg/MapApiTest.java:8: Error: Call requires API level 24 (current min is 1): java.util.Map#getOrDefault [NewApi]\n"
+                        + "src/test/pkg/MapApiTest.java:8: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.Map#getOrDefault [NewApi]\n"
                         + "        map.getOrDefault(\"foo\", \"bar\");\n"
                         + "            ~~~~~~~~~~~~\n"
-                        + "1 errors, 0 warnings\n";
+                        + "1 errors, 0 warnings";
         //noinspection all // Sample code
         lint().files(
                         java(
@@ -6059,7 +6059,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "src/test/pkg/TestClass.kt:12: Error: Call requires API level 24 (current min is 14): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault) [NewApi]\n"
+                                + "src/test/pkg/TestClass.kt:12: Error: Call requires API level 24, or core library desugaring (current min is 14): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault) [NewApi]\n"
                                 + "        map.getOrDefault(key1, 0F)\n"
                                 + "            ~~~~~~~~~~~~\n"
                                 + "src/test/pkg/TestClass.kt:13: Error: Call requires API level 24 (current min is 14): java.util.HashMap#getOrDefault [NewApi]\n"
@@ -6087,16 +6087,16 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "src/test.kt:3: Error: Call requires API level 24 (current min is 1): java.util.Map#getOrDefault [NewApi]\n"
+                                + "src/test.kt:3: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.Map#getOrDefault [NewApi]\n"
                                 + "    map.getOrDefault(\"foo\", \"bar\")\n"
                                 + "        ~~~~~~~~~~~~\n"
-                                + "src/test.kt:4: Error: Call requires API level 24 (current min is 1): java.util.Map#remove [NewApi]\n"
+                                + "src/test.kt:4: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.Map#remove [NewApi]\n"
                                 + "    map.remove(\"foo\", \"bar\")\n"
                                 + "        ~~~~~~\n"
-                                + "src/test.kt:9: Error: Call requires API level 24 (current min is 1): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault) [NewApi]\n"
+                                + "src/test.kt:9: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.Map#getOrDefault (called from kotlin.collections.Map#getOrDefault) [NewApi]\n"
                                 + "    map.getOrDefault(\"foo\", null)\n"
                                 + "        ~~~~~~~~~~~~\n"
-                                + "src/test.kt:10: Error: Call requires API level 24 (current min is 1): java.util.Map#remove [NewApi]\n"
+                                + "src/test.kt:10: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.Map#remove [NewApi]\n"
                                 + "    map.remove(\"foo\", \"bar\")\n"
                                 + "        ~~~~~~\n"
                                 + "4 errors, 0 warnings");
@@ -6430,16 +6430,16 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "src/test/pkg/JavaForEach.java:8: Error: Call requires API level 24 (current min is 21): java.lang.Iterable#forEach [NewApi]\n"
+                                + "src/test/pkg/JavaForEach.java:8: Error: Call requires API level 24, or core library desugaring (current min is 21): java.lang.Iterable#forEach [NewApi]\n"
                                 + "        list.forEach(new Consumer<String>() {\n"
                                 + "             ~~~~~~~\n"
-                                + "src/test/pkg/JavaForEach.java:8: Error: Class requires API level 24 (current min is 21): java.util.function.Consumer [NewApi]\n"
+                                + "src/test/pkg/JavaForEach.java:8: Error: Class requires API level 24, or core library desugaring (current min is 21): java.util.function.Consumer [NewApi]\n"
                                 + "        list.forEach(new Consumer<String>() {\n"
                                 + "                         ~~~~~~~~~~~~~~~~\n"
-                                + "src/test/pkg/JavaForEach.java:15: Error: Call requires API level 24 (current min is 23): java.lang.Iterable#forEach [NewApi]\n"
+                                + "src/test/pkg/JavaForEach.java:15: Error: Call requires API level 24, or core library desugaring (current min is 23): java.lang.Iterable#forEach [NewApi]\n"
                                 + "            list.forEach(new Consumer<String>() {\n"
                                 + "                 ~~~~~~~\n"
-                                + "src/test/pkg/JavaForEach.java:15: Error: Class requires API level 24 (current min is 23): java.util.function.Consumer [NewApi]\n"
+                                + "src/test/pkg/JavaForEach.java:15: Error: Class requires API level 24, or core library desugaring (current min is 23): java.util.function.Consumer [NewApi]\n"
                                 + "            list.forEach(new Consumer<String>() {\n"
                                 + "                             ~~~~~~~~~~~~~~~~\n"
                                 + "4 errors, 0 warnings");
@@ -6479,25 +6479,25 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "src/test/pkg/Used.java:9: Error: Call requires API level 24 (current min is 15): java.util.Collection#stream [NewApi]\n"
+                                + "src/test/pkg/Used.java:9: Error: Call requires API level 24, or core library desugaring (current min is 15): java.util.Collection#stream [NewApi]\n"
                                 + "        return list.stream().map((Function<String, Object>) s -> \n"
                                 + "                    ~~~~~~\n"
-                                + "src/test/pkg/Used.java:9: Error: Call requires API level 24 (current min is 15): java.util.stream.Stream#map [NewApi]\n"
+                                + "src/test/pkg/Used.java:9: Error: Call requires API level 24, or core library desugaring (current min is 15): java.util.stream.Stream#map [NewApi]\n"
                                 + "        return list.stream().map((Function<String, Object>) s -> \n"
                                 + "                             ~~~\n"
-                                + "src/test/pkg/Used.java:10: Error: Call requires API level 24 (current min is 15): java.util.stream.Collectors#toList [NewApi]\n"
+                                + "src/test/pkg/Used.java:10: Error: Call requires API level 24, or core library desugaring (current min is 15): java.util.stream.Collectors#toList [NewApi]\n"
                                 + "                fromNullable(s)).collect(Collectors.toList());\n"
                                 + "                                                    ~~~~~~\n"
-                                + "src/test/pkg/Used.java:10: Error: Call requires API level 24 (current min is 15): java.util.stream.Stream#collect [NewApi]\n"
+                                + "src/test/pkg/Used.java:10: Error: Call requires API level 24, or core library desugaring (current min is 15): java.util.stream.Stream#collect [NewApi]\n"
                                 + "                fromNullable(s)).collect(Collectors.toList());\n"
                                 + "                                 ~~~~~~~\n"
-                                + "src/test/pkg/Used.java:14: Error: Call requires API level 24 (current min is 15): java.util.Collection#stream [NewApi]\n"
+                                + "src/test/pkg/Used.java:14: Error: Call requires API level 24, or core library desugaring (current min is 15): java.util.Collection#stream [NewApi]\n"
                                 + "        list.stream().map(new Function<String, Object>() {\n"
                                 + "             ~~~~~~\n"
-                                + "src/test/pkg/Used.java:14: Error: Call requires API level 24 (current min is 15): java.util.stream.Stream#map [NewApi]\n"
+                                + "src/test/pkg/Used.java:14: Error: Call requires API level 24, or core library desugaring (current min is 15): java.util.stream.Stream#map [NewApi]\n"
                                 + "        list.stream().map(new Function<String, Object>() {\n"
                                 + "                      ~~~\n"
-                                + "src/test/pkg/Used.java:14: Error: Class requires API level 24 (current min is 15): java.util.function.Function [NewApi]\n"
+                                + "src/test/pkg/Used.java:14: Error: Class requires API level 24, or core library desugaring (current min is 15): java.util.function.Function [NewApi]\n"
                                 + "        list.stream().map(new Function<String, Object>() {\n"
                                 + "                              ~~~~~~~~~~~~~~~~~~~~~~~~\n"
                                 + "7 errors, 0 warnings");
@@ -7505,7 +7505,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\n"
                                         + "fun testJava8() {\n"
                                         + "    // Error, Api 24, Java8\n"
-                                        + "    mutableListOf(1, 2, 3)./*Call requires API level 24 (current min is 1): java.util.Collection#removeIf*/removeIf/**/ {\n"
+                                        + "    mutableListOf(1, 2, 3)./*Call requires API level 24, or core library desugaring (current min is 1): java.util.Collection#removeIf*/removeIf/**/ {\n"
                                         + "        true\n"
                                         + "    }\n"
                                         + "\n"
@@ -7515,7 +7515,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    }\n"
                                         + "\n"
                                         + "    // Error, Api 24, Java8\n"
-                                        + "    mapOf(1 to 2)./*Call requires API level 24 (current min is 1): java.util.Map#forEach*/forEach/**/ { key, value -> key + value }\n"
+                                        + "    mapOf(1 to 2)./*Call requires API level 24, or core library desugaring (current min is 1): java.util.Map#forEach*/forEach/**/ { key, value -> key + value }\n"
                                         + "\n"
                                         + "    // Ok, Kotlin\n"
                                         + "    mapOf(1 to 2).forEach { (key, value) -> key + value }\n"
@@ -7756,10 +7756,10 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "src/test/pkg/test.kt:4: Error: Call requires API level 24 (current min is 1): java.util.Map#getOrDefault [NewApi]\n"
+                                + "src/test/pkg/test.kt:4: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.Map#getOrDefault [NewApi]\n"
                                 + "    map.getOrDefault(\"a\", \"b\")\n"
                                 + "        ~~~~~~~~~~~~\n"
-                                + "src/test/pkg/test.kt:5: Error: Call requires API level 24 (current min is 1): java.util.Map#remove [NewApi]\n"
+                                + "src/test/pkg/test.kt:5: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.Map#remove [NewApi]\n"
                                 + "    map.remove(\"a\", \"b\")\n"
                                 + "        ~~~~~~\n"
                                 + "2 errors, 0 warnings");
@@ -8105,16 +8105,16 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "src/org/apache/logging/log4j/core/appender/AsyncAppenderEventDispatcher.java:12: Error: Call requires API level 24 (current min is 1): java.util.Collection#stream [NewApi]\n"
+                                + "src/org/apache/logging/log4j/core/appender/AsyncAppenderEventDispatcher.java:12: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.Collection#stream [NewApi]\n"
                                 + "        return appenders.stream().map(AppenderControl::getAppender).collect(Collectors.toList());\n"
                                 + "                         ~~~~~~\n"
-                                + "src/org/apache/logging/log4j/core/appender/AsyncAppenderEventDispatcher.java:12: Error: Call requires API level 24 (current min is 1): java.util.stream.Collectors#toList [NewApi]\n"
+                                + "src/org/apache/logging/log4j/core/appender/AsyncAppenderEventDispatcher.java:12: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.stream.Collectors#toList [NewApi]\n"
                                 + "        return appenders.stream().map(AppenderControl::getAppender).collect(Collectors.toList());\n"
                                 + "                                                                                       ~~~~~~\n"
-                                + "src/org/apache/logging/log4j/core/appender/AsyncAppenderEventDispatcher.java:12: Error: Call requires API level 24 (current min is 1): java.util.stream.Stream#collect [NewApi]\n"
+                                + "src/org/apache/logging/log4j/core/appender/AsyncAppenderEventDispatcher.java:12: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.stream.Stream#collect [NewApi]\n"
                                 + "        return appenders.stream().map(AppenderControl::getAppender).collect(Collectors.toList());\n"
                                 + "                                                                    ~~~~~~~\n"
-                                + "src/org/apache/logging/log4j/core/appender/AsyncAppenderEventDispatcher.java:12: Error: Call requires API level 24 (current min is 1): java.util.stream.Stream#map [NewApi]\n"
+                                + "src/org/apache/logging/log4j/core/appender/AsyncAppenderEventDispatcher.java:12: Error: Call requires API level 24, or core library desugaring (current min is 1): java.util.stream.Stream#map [NewApi]\n"
                                 + "        return appenders.stream().map(AppenderControl::getAppender).collect(Collectors.toList());\n"
                                 + "                                  ~~~\n"
                                 + "4 errors, 0 warnings");

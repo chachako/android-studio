@@ -86,8 +86,8 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
         PathSubject.assertThat(reportFile).exists()
         PathSubject.assertThat(reportFile).containsAllOf(
-            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#getMonth [NewApi]",
-            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#now [NewApi]"
+            "Error: Call requires API level 26, or core library desugaring (current min is 22): java.time.LocalDate#getMonth [NewApi]",
+            "Error: Call requires API level 26, or core library desugaring (current min is 22): java.time.LocalDate#now [NewApi]"
         )
     }
 
@@ -103,8 +103,8 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
         PathSubject.assertThat(reportFile).exists()
         PathSubject.assertThat(reportFile).containsAllOf(
-            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#getMonth [NewApi]",
-            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#now [NewApi]"
+            "Error: Call requires API level 26, or core library desugaring (current min is 22): java.time.LocalDate#getMonth [NewApi]",
+            "Error: Call requires API level 26, or core library desugaring (current min is 22): java.time.LocalDate#now [NewApi]"
         )
     }
 
@@ -132,8 +132,8 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
         PathSubject.assertThat(reportFile).exists()
         PathSubject.assertThat(reportFile).containsAllOf(
-            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#getMonth [NewApi]",
-            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#now [NewApi]"
+            "Error: Call requires API level 26, or core library desugaring (current min is 22): java.time.LocalDate#getMonth [NewApi]",
+            "Error: Call requires API level 26, or core library desugaring (current min is 22): java.time.LocalDate#now [NewApi]"
         )
     }
 
@@ -190,8 +190,8 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
         PathSubject.assertThat(reportFile).exists()
         PathSubject.assertThat(reportFile).containsAllOf(
-            "Error: Call requires API level 26 (current min is 24): java.time.LocalDate#getMonth [NewApi]",
-            "Error: Call requires API level 26 (current min is 24): java.time.LocalDate#now [NewApi]",
+            "Error: Call requires API level 26, or core library desugaring (current min is 24): java.time.LocalDate#getMonth [NewApi]",
+            "Error: Call requires API level 26, or core library desugaring (current min is 24): java.time.LocalDate#now [NewApi]",
             "Found byte-order-mark in the middle of a file [ByteOrderMark]"
         )
     }
@@ -561,8 +561,8 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
             )
         PathSubject.assertThat(androidrReportFile).exists()
         PathSubject.assertThat(androidrReportFile).containsAllOf(
-            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#getMonth [NewApi]",
-            "Error: Call requires API level 26 (current min is 22): java.time.LocalDate#now [NewApi]"
+            "Error: Call requires API level 26, or core library desugaring (current min is 22): java.time.LocalDate#getMonth [NewApi]",
+            "Error: Call requires API level 26, or core library desugaring (current min is 22): java.time.LocalDate#now [NewApi]"
         )
     }
 
@@ -690,8 +690,8 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
         PathSubject.assertThat(reportFile).exists()
         PathSubject.assertThat(reportFile).containsAllOf(
-            "Error: Call requires API level 26 (current min is 24): java.time.LocalDate#getMonth [NewApi]",
-            "Error: Call requires API level 26 (current min is 24): java.time.LocalDate#now [NewApi]"
+            "Error: Call requires API level 26, or core library desugaring (current min is 24): java.time.LocalDate#getMonth [NewApi]",
+            "Error: Call requires API level 26, or core library desugaring (current min is 24): java.time.LocalDate#now [NewApi]"
         )
         // We don't expect to see non-Android lint issues in downstream lint reports.
         PathSubject.assertThat(reportFile).doesNotContain(
@@ -749,8 +749,8 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
 
         PathSubject.assertThat(reportFile).exists()
         PathSubject.assertThat(reportFile).containsAllOf(
-            "Error: Call requires API level 26 (current min is 24): java.time.LocalDate#getMonth [NewApi]",
-            "Error: Call requires API level 26 (current min is 24): java.time.LocalDate#now [NewApi]"
+            "Error: Call requires API level 26, or core library desugaring (current min is 24): java.time.LocalDate#getMonth [NewApi]",
+            "Error: Call requires API level 26, or core library desugaring (current min is 24): java.time.LocalDate#now [NewApi]"
         )
         PathSubject.assertThat(reportFile).doesNotContain("[LintError]")
     }

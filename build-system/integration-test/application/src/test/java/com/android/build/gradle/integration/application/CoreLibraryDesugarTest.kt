@@ -199,15 +199,15 @@ class CoreLibraryDesugarTest {
         executor().expectFailure().run("app:lintDebug")
         val reportXml = app.file("build/reports/lint-results-debug.html").readText()
         // main
-        assertThat(reportXml).contains("Call requires API level 24 (current min is 21): <code>java.util.Collection#stream</code>")
+        assertThat(reportXml).contains("Call requires API level 24, or core library desugaring (current min is 21): <code>java.util.Collection#stream</code>")
         // android test - regex ??
-        assertThat(reportXml).doesNotContain("Call requires API level 26 (current min is 21): <code>java.time.LocalDate#now</code>")
-        assertThat(reportXml).doesNotContain("Call requires API level 26 (current min is 21): <code>java.time.LocalDate#getMonth</code>")
+        assertThat(reportXml).doesNotContain("Call requires API level 26, or core library desugaring (current min is 21): <code>java.time.LocalDate#now</code>")
+        assertThat(reportXml).doesNotContain("Call requires API level 26, or core library desugaring (current min is 21): <code>java.time.LocalDate#getMonth</code>")
         assertThat(reportXml).doesNotContain(
                 """
                    <span class="location"><a href="../../src/androidTest/java/com/example/helloworld/HelloWorldTest.java">
                    ../../src/androidTest/java/com/example/helloworld/HelloWorldTest.java</a>:41</span>:
-                   <span class="message">Call requires API level 24 (current min is 21): <code>java.util.Collection#stream
+                   <span class="message">Call requires API level 24, or core library desugaring (current min is 21): <code>java.util.Collection#stream
                 """.trimIndent()
         )
     }
@@ -340,7 +340,7 @@ class CoreLibraryDesugarTest {
         assertThat(result.failureMessage).contains("Lint found errors in the project")
         val reportXml = app.file("build/reports/lint-results-debug.html").readText()
         assertThat(reportXml).contains(
-            "Call requires API level 24 (current min is 21): <code>java.util.Collection#stream</code>")
+            "Call requires API level 24, or core library desugaring (current min is 21): <code>java.util.Collection#stream</code>")
     }
 
     @Test
