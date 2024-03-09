@@ -49,6 +49,7 @@ import com.android.tools.lint.client.api.LintXmlConfiguration;
 import com.android.tools.lint.client.api.Vendor;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Context;
+import com.android.tools.lint.detector.api.Desugaring;
 import com.android.tools.lint.detector.api.Incident;
 import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.Lint;
@@ -520,6 +521,23 @@ public class Main {
             initializeDriver(driver);
 
             return driver;
+        }
+
+        @NonNull
+        @Override
+        public Set<Desugaring> getDesugaring(@NonNull Project project) {
+            if (argumentState.desugaredMethodsPaths != null) {
+                for (String file : argumentState.desugaredMethodsPaths) {
+                    if ("none".equals(file)) {
+                        break;
+                    }
+                    String text = FilesKt.readText(new File(file), Charsets.UTF_8);
+                    if (text.contains("\njava/nio/file/")) { // includes Java 8 library desugaring
+                        return Desugaring.FULL;
+                    }
+                }
+            }
+            return super.getDesugaring(project);
         }
 
         @NonNull

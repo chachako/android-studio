@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
+@file:Suppress("RedundantSuppression", "rawtypes", "RedundantOperationOnEmptyContainer")
+
 package com.android.tools.lint.checks
 
-import com.android.tools.lint.checks.infrastructure.TestMode
+import com.android.testutils.TestUtils
+import com.android.tools.lint.LintCliFlags
+import com.android.tools.lint.MainTest
 import com.android.tools.lint.detector.api.Desugaring
 import com.android.tools.lint.detector.api.Detector
+import java.io.File
 
 @Suppress("PrivatePropertyName")
 class ApiDetectorDesugaringTest : AbstractCheckTest() {
@@ -82,9 +87,6 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
             """
     lint()
       .files(manifest().minSdk(1), gradleVersion24_language17, tryWithResources)
-      // Can't easily test 1.7 desugaring in partial mode (and minor corner case since AGP has
-      // default to 1.8 f
-      .skipTestModes(TestMode.PARTIAL)
       .run()
       .expect(expected)
   }
@@ -293,7 +295,7 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                         integer.addAndGet(5);
                     }
 
-                    public void bannedMembers(java.util.Collection collection, java.util.stream.BaseStream<String> base) {
+                    public void bannedMembers(java.util.Collection collection, @SuppressWarnings("rawtypes") java.util.stream.BaseStream base) {
                         Stream stream = collection.parallelStream();
                         BaseStream parallel = base.parallel();
                     }
@@ -346,7 +348,7 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
                 import java.util.ArrayList;
                 import java.util.function.IntBinaryOperator;
 
-                @SuppressWarnings({"unused", "SimplifyStreamApiCallChains", "OptionalGetWithoutIsPresent", "OptionalUsedAsFieldOrParameterType", "Convert2MethodRef", "ClassNameDiffersFromFileName", "MethodMayBeStatic"})
+                @SuppressWarnings({"unused", "ClassNameDiffersFromFileName", "MethodMayBeStatic", "SimplifyStreamApiCallChains"})
                 public class Test {
                     public @interface Something {
                         javax.lang.model.type.TypeKind value();
@@ -367,13 +369,222 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
           .indented(),
         // Make sure it's treated as a plain library
         gradle("""
-                apply plugin: 'java'
-                """).indented(),
+          apply plugin: 'java'
+          """).indented(),
       )
 
-    val main = project(manifest().minSdk(1)).dependsOn(lib)
+    val main =
+      project(
+          manifest().minSdk(1),
+          gradle("""
+        android.compileOptions.coreLibraryDesugaringEnabled = true
+        """),
+        )
+        .dependsOn(lib)
 
-    lint().projects(lib, main).desugaring(Desugaring.FULL).run().expectClean()
+    lint().projects(lib, main).run().expectClean()
+  }
+
+  fun testDesugarInheritedMethods() {
+    // Regression test for https://issuetracker.google.com/327670482
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import java.util.ArrayList;
+
+            public class DesugaringJavaTestClass {
+                DesugaringJavaTestClass() {
+                    ArrayList<String> list = new ArrayList<>();
+                    list.removeIf(s -> true);
+                }
+            }
+            """
+          )
+          .indented(),
+        gradle(
+          """
+          android.compileOptions.coreLibraryDesugaringEnabled = true
+          """
+        ),
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testDesugarInheritedMethodsInLibrary() {
+    // Like testDesugarInheritedMethods, but here the code is in a library
+    // where core library desugaring has not been turned on, and we're
+    // generating a report for a downstream app module which turns it on only there.
+    // Regression test for https://issuetracker.google.com/327670482
+    val lib =
+      project(
+        java(
+            """
+            package test.pkg;
+
+            import java.util.ArrayList;
+
+            public class DesugaringJavaTestClass {
+                DesugaringJavaTestClass() {
+                    ArrayList<String> list = new ArrayList<>();
+                    list.removeIf(s -> true);
+                }
+            }
+            """
+          )
+          .indented(),
+        // Make sure it's treated as a plain library
+        gradle(
+            """
+            apply plugin: 'java'
+            android.compileOptions.coreLibraryDesugaringEnabled = false
+            """
+          )
+          .indented(),
+      )
+
+    val main =
+      project(
+          manifest().minSdk(1),
+          gradle(
+              """
+              android.compileOptions.coreLibraryDesugaringEnabled = true
+              """
+            )
+            .indented(),
+        )
+        .dependsOn(lib)
+
+    lint().projects(lib, main).run().expectClean()
+  }
+
+  fun testLibraryDesugaringNioFields() {
+    // 267449090: Lint information for library desugaring is missing fields
+    lint()
+      .files(
+        manifest().minSdk(1),
+        kotlin(
+            """
+                package test.pkg
+
+                import java.nio.file.Path
+                import kotlin.io.path.writeLines
+
+                fun test(tempFile: Path) {
+                    tempFile.writeLines(listOf("Hello"), options = arrayOf(java.nio.file.StandardOpenOption.APPEND))
+                }
+                """
+          )
+          .indented(),
+        java(
+            """
+                package test.pkg;
+
+                import static java.nio.charset.StandardCharsets.UTF_8;
+
+                import java.io.IOException;
+                import java.nio.file.Files;
+                import java.nio.file.Path;
+                import java.util.List;
+
+                public class FieldTest {
+                    public void test(Path tempFile) throws IOException {
+                        Files.write(tempFile, List.of("Hello"), UTF_8, java.nio.file.StandardOpenOption.APPEND);
+                    }
+                }
+                """
+          )
+          .indented(),
+      )
+      .desugaring(Desugaring.FULL)
+      .run()
+      .expectClean()
+  }
+
+  fun testLibraryDesugaringFields() {
+    try {
+      val project =
+        getProjectDir(
+          null,
+          manifest().minSdk(1),
+          kotlin(
+              """
+            package test.pkg
+
+            import java.nio.file.Path
+            import kotlin.io.path.writeLines
+
+            fun test(tempFile: Path) {
+                tempFile.writeLines(listOf("Hello"), options = arrayOf(java.nio.file.StandardOpenOption.APPEND))
+            }
+            """
+            )
+            .indented(),
+          java(
+              """
+            package test.pkg;
+
+            import static java.nio.charset.StandardCharsets.UTF_8;
+
+            import java.io.IOException;
+            import java.nio.file.Files;
+            import java.nio.file.Path;
+            import java.util.List;
+
+            public class FieldTest {
+                public void test(Path tempFile) throws IOException {
+                    Files.write(tempFile, List.of("Hello"), UTF_8, java.nio.file.StandardOpenOption.APPEND);
+                }
+                public void test(Path tempFile, List<CharSequence> bytes, java.nio.charset.Charset cs) throws IOException {
+                    Files.write(tempFile, bytes, cs, java.nio.file.StandardOpenOption.APPEND);
+                }
+            }
+            """
+            )
+            .indented(),
+        )
+
+      val desugaringFile = File(project, "desugaring.xml")
+      desugaringFile.writeText(
+        """
+        java/net/URLDecoder
+        java/nio/charset/StandardCharsets
+        java/nio/file/Files
+        java/nio/file/SimpleFileVisitor
+        java/nio/file/StandardCopyOption
+        java/nio/file/StandardOpenOption
+        java/time/DateTimeException
+        java/util/List#of(Ljava/lang/Object;)Ljava/util/List;
+        """
+          .trimIndent()
+      )
+      MainTest.checkDriver(
+        "No issues found.",
+        "",
+        LintCliFlags.ERRNO_SUCCESS,
+        arrayOf(
+          "-q",
+          "--check",
+          "NewApi",
+          "--sdk-home",
+          TestUtils.getSdk().toString(),
+          "--text",
+          "stdout",
+          "--disable",
+          "LintError",
+          "--Xdesugared-methods",
+          desugaringFile.path,
+          project.path,
+        ),
+        null,
+        null,
+      )
+    } finally {
+      DesugaredMethodLookup.reset()
+    }
   }
 
   private val gradleVersion24_language18 =

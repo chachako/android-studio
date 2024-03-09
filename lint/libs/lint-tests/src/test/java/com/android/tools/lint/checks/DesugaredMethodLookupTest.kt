@@ -22,16 +22,25 @@ import com.android.tools.lint.detector.api.SourceSetType
 import com.android.tools.lint.model.LintModelAndroidArtifact
 import com.android.tools.lint.model.LintModelVariant
 import com.android.utils.SdkUtils.fileToUrl
-import java.io.File
 import kotlin.test.assertNotEquals
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.mockito.Mockito.mock
 
 class DesugaredMethodLookupTest {
+  @get:Rule var temporaryFolder = TemporaryFolder()
+
+  @After
+  fun tearDown() {
+    DesugaredMethodLookup.reset()
+  }
+
   @Test
   fun `test desugaring works with inner classes`() {
     val desc1 =
@@ -41,12 +50,11 @@ class DesugaredMethodLookupTest {
         "java/util/Map\$Entry#comparingByValue()Ljava/util/Comparator;\n" +
         "java/util/Map\$Entry#comparingByValue(Ljava/util/Comparator;)Ljava/util/Comparator;\n"
 
-    val file1 = File.createTempFile("desc1", ".txt")
-    file1.writeText(desc1)
+    val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
     try {
       DesugaredMethodLookup.setDesugaredMethods(listOf(file1.path))
       assertTrue(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "java/util/Map\$Entry",
           "comparingByValue",
           "(Ljava/util/Comparator;)",
@@ -54,7 +62,7 @@ class DesugaredMethodLookupTest {
         )
       )
       assertTrue(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "java/util/Map\$Entry",
           "comparingByValue",
           "()",
@@ -62,7 +70,7 @@ class DesugaredMethodLookupTest {
         )
       )
       assertFalse(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "java/util/Map\$Entry",
           "",
           "",
@@ -70,7 +78,7 @@ class DesugaredMethodLookupTest {
         )
       )
       assertFalse(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "java/util/Map",
           "comparingByValue",
           "()",
@@ -90,16 +98,123 @@ class DesugaredMethodLookupTest {
         "java/util/Collections#emptyEnumeration()Ljava/util/Enumeration;\n" +
         "java/util/Collection#stream()Ljava/util/stream/Stream;\n"
 
-    val file1 = File.createTempFile("desc1", ".txt")
-    file1.writeText(desc1)
+    val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
     try {
       DesugaredMethodLookup.setDesugaredMethods(listOf(file1.path))
-      DesugaredMethodLookup.isDesugared(
-        "java.util.Collection",
-        "stream",
-        "()",
-        SourceSetType.INSTRUMENTATION_TESTS,
+      assertTrue(
+        DesugaredMethodLookup.isDesugaredMethod(
+          "java.util.Collection",
+          "stream",
+          "()",
+          SourceSetType.INSTRUMENTATION_TESTS,
+        )
       )
+    } finally {
+      DesugaredMethodLookup.reset()
+    }
+  }
+
+  @Test
+  fun `test binary search with case sensitivity`() {
+    // java/util/concurrent/* sorts after java/util/Set in the lookup table created with the command
+    // listed in DesugaredMethodLookup#defaultDesugaredMethods -- make sure this is also handled
+    // the same way by lookup
+    assertTrue(
+      DesugaredMethodLookup.isDesugaredMethod(
+        "java/util/Set",
+        "of",
+        "([Ljava/lang/Object;)",
+        SourceSetType.MAIN,
+      )
+    )
+    assertTrue(
+      DesugaredMethodLookup.isDesugaredMethod(
+        "java/util/concurrent/atomic/AtomicReferenceFieldUpdater",
+        "compareAndSet",
+        "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)",
+        SourceSetType.MAIN,
+      )
+    )
+    assertTrue(
+      DesugaredMethodLookup.isDesugaredMethod(
+        "sun/misc/Unsafe",
+        "compareAndSwapObject",
+        "(Ljava/lang/Object;JLjava/lang/Object;Ljava/lang/Object;)",
+        SourceSetType.MAIN,
+      )
+    )
+  }
+
+  @Test
+  fun `test field lookup`() {
+    val desc1 =
+      "" +
+        "java/nio/charset/StandardCharsets#UTF_8\n" +
+        "java/nio/file/Files\n" +
+        "java/nio/file/StandardOpenOption\n"
+
+    val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
+    try {
+      DesugaredMethodLookup.setDesugaredMethods(listOf(file1.path))
+      assertTrue(
+        DesugaredMethodLookup.isDesugaredField(
+          "java.nio.charset.StandardCharsets",
+          "UTF_8",
+          SourceSetType.MAIN,
+        )
+      )
+      assertFalse(
+        DesugaredMethodLookup.isDesugaredMethod(
+          "java.nio.charset.StandardCharsets",
+          "UTF_8",
+          "()",
+          SourceSetType.MAIN,
+        )
+      )
+      assertTrue(
+        DesugaredMethodLookup.isDesugaredField(
+          "java.nio.file.StandardOpenOption",
+          "APPEND",
+          SourceSetType.MAIN,
+        )
+      )
+      assertTrue(
+        DesugaredMethodLookup.isDesugaredMethod(
+          "java.nio.file.Files",
+          "write",
+          "()",
+          SourceSetType.MAIN,
+        )
+      )
+    } finally {
+      DesugaredMethodLookup.reset()
+    }
+  }
+
+  @Test
+  fun `test class lookup`() {
+    val desc1 =
+      "" +
+        "java/nio/charset/StandardCharsets#UTF_8\n" +
+        "java/nio/file/Files\n" +
+        "java/nio/file/StandardOpenOption\n"
+
+    val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
+    try {
+      DesugaredMethodLookup.setDesugaredMethods(listOf(file1.path))
+      assertFalse(
+        DesugaredMethodLookup.isDesugaredClass(
+          "java.nio.charset.StandardCharsets",
+          SourceSetType.MAIN,
+        )
+      )
+      assertTrue(
+        DesugaredMethodLookup.isDesugaredClass(
+          "java.nio.file.StandardOpenOption",
+          SourceSetType.MAIN,
+        )
+      )
+      assertTrue(DesugaredMethodLookup.isDesugaredClass("java.nio.file.Files", SourceSetType.MAIN))
     } finally {
       DesugaredMethodLookup.reset()
     }
@@ -122,11 +237,10 @@ class DesugaredMethodLookupTest {
         "java/util/Collections#synchronizedSortedMap(Ljava/util/SortedMap;)Ljava/util/SortedMap;\n" +
         "java/util/Collections#synchronizedSortedMap(Ljava/util/SortedMap;)Ljava/util/SortedMap;\n"
 
-    val file1 = File.createTempFile("desc1", ".txt")
-    file1.writeText(desc1)
+    val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
     try {
       DesugaredMethodLookup.setDesugaredMethods(listOf(file1.path))
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "java.util.Collection",
         "stream",
         "()",
@@ -158,12 +272,11 @@ class DesugaredMethodLookupTest {
         "java/util/Collections#synchronizedSortedMap(Ljava/util/SortedMap;)Ljava/util/SortedMap;\n" +
         "java/util/Collections#synchronizedSortedMap(Ljava/util/SortedMap;)Ljava/util/SortedMap;\n"
 
-    val file1 = File.createTempFile("desc1", ".txt")
-    file1.writeText(desc1)
+    val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
     try {
       DesugaredMethodLookup.setDesugaredMethods(listOf(file1.path))
       assertTrue(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "java.util.Collection",
           "stream",
           "()",
@@ -178,7 +291,7 @@ class DesugaredMethodLookupTest {
   @Test
   fun `test find all`() {
     assertTrue(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "java/lang/Character",
         "compare",
         "(CC)",
@@ -188,16 +301,42 @@ class DesugaredMethodLookupTest {
 
     for (entry in DesugaredMethodLookup.defaultDesugaredMethods) {
       val sharp = entry.indexOf("#")
+      if (sharp == -1) {
+        // full class: make up some names; they *should* match
+        assertTrue(
+          entry,
+          DesugaredMethodLookup.isDesugaredMethod(
+            entry,
+            "foo",
+            "(I)",
+            SourceSetType.INSTRUMENTATION_TESTS,
+          ),
+        )
+        continue
+      }
       assertNotEquals(-1, sharp)
-      val paren = entry.indexOf('(', sharp + 1)
-      assertNotEquals(-1, paren)
-
       val owner = entry.substring(0, sharp).replace("/", ".").replace("\$", ".")
+      val paren = entry.indexOf('(', sharp + 1)
+      if (paren == -1) {
+        // field -- has name, but no desc.
+        val name = entry.substring(sharp + 1)
+        assertTrue(
+          entry,
+          DesugaredMethodLookup.isDesugaredField(owner, name, SourceSetType.INSTRUMENTATION_TESTS),
+        )
+        continue
+      }
+      assertNotEquals(-1, paren)
       val name = entry.substring(sharp + 1, paren)
       val desc = entry.substring(paren, entry.indexOf(")") + 1)
       assertTrue(
         entry,
-        DesugaredMethodLookup.isDesugared(owner, name, desc, SourceSetType.INSTRUMENTATION_TESTS),
+        DesugaredMethodLookup.isDesugaredMethod(
+          owner,
+          name,
+          desc,
+          SourceSetType.INSTRUMENTATION_TESTS,
+        ),
       )
     }
   }
@@ -205,7 +344,7 @@ class DesugaredMethodLookupTest {
   @Test
   fun `test not desugared methods`() {
     assertFalse(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "foo.bar.Baz",
         "foo",
         "(I)",
@@ -213,7 +352,7 @@ class DesugaredMethodLookupTest {
       )
     )
     assertFalse(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "java/lang/Character",
         "wrongmethod",
         "(I)",
@@ -221,7 +360,7 @@ class DesugaredMethodLookupTest {
       )
     )
     assertFalse(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "java/lang/Character",
         "compare",
         "(JJJJ)",
@@ -229,7 +368,7 @@ class DesugaredMethodLookupTest {
       )
     )
     assertFalse(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "java/lang/Character",
         "compare",
         "()",
@@ -245,7 +384,7 @@ class DesugaredMethodLookupTest {
 
     fun check() {
       assertFalse(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "foo/Bar",
           "baz",
           "()",
@@ -253,7 +392,7 @@ class DesugaredMethodLookupTest {
         )
       )
       assertTrue(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "abc/def/GHI\$JKL",
           "abc",
           "(III)",
@@ -261,7 +400,7 @@ class DesugaredMethodLookupTest {
         )
       )
       assertFalse(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "abc/def/GHI",
           "abc",
           "(III)",
@@ -269,7 +408,7 @@ class DesugaredMethodLookupTest {
         )
       )
       assertFalse(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "abc/def/GHI\$JKL",
           "ab",
           "(III)",
@@ -277,7 +416,7 @@ class DesugaredMethodLookupTest {
         )
       )
       assertTrue(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "hij/kl/mn/O",
           "pQr",
           "()",
@@ -287,7 +426,7 @@ class DesugaredMethodLookupTest {
 
       // Match methods where the descriptor just lists the class name
       assertTrue(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "def/gh/IJ",
           "name",
           "()",
@@ -296,24 +435,16 @@ class DesugaredMethodLookupTest {
       )
       // Match inner classes where the descriptor just lists the top level class name
       assertTrue(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "def/gh/IJ\$Inner",
           "name",
           "()",
           SourceSetType.INSTRUMENTATION_TESTS,
         )
       )
-      // Match methods where the descriptor just lists the class and method names
-      assertTrue(
-        DesugaredMethodLookup.isDesugared(
-          "g/hijk/l/MN",
-          "op",
-          "()",
-          SourceSetType.INSTRUMENTATION_TESTS,
-        )
-      )
+
       assertFalse(
-        DesugaredMethodLookup.isDesugared(
+        DesugaredMethodLookup.isDesugaredMethod(
           "g/hijk/l/MN",
           "wrongname",
           "()",
@@ -323,8 +454,8 @@ class DesugaredMethodLookupTest {
     }
 
     // Test single plain file
-    val file1 = File.createTempFile("desc1", ".txt")
-    val file2 = File.createTempFile("desc2", ".txt")
+    val file1 = temporaryFolder.newFile()
+    val file2 = temporaryFolder.newFile()
     file1.writeText(desc1 + desc2)
     try {
       assertNull(DesugaredMethodLookup.setDesugaredMethods(listOf(file1.path)))
@@ -380,21 +511,20 @@ class DesugaredMethodLookupTest {
     val desc1 = "" + "abc/def/GHI\$JKL#abc(III)Z\n" + "def/gh/IJ\n"
     val desc2 = "" + "g/hijk/l/MN#op\n" + "hij/kl/mn/O#pQr()Z\n"
 
-    val file1 = File.createTempFile("desc1", ".txt").apply { writeText(desc1) }
-    val file2 = File.createTempFile("desc2", ".txt").apply { writeText(desc2) }
+    val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
+    val file2 = temporaryFolder.newFile().apply { writeText(desc2) }
     val project = mock(Project::class.java)
     val variant = mock(LintModelVariant::class.java)
     val mainArtifact = mock(LintModelAndroidArtifact::class.java)
     whenever(project.buildVariant).thenReturn(variant)
     whenever(variant.mainArtifact).thenReturn(mainArtifact)
     whenever(mainArtifact.desugaredMethodsFiles).thenReturn(listOf(file2, file1))
-    // whenever(variant.desugaredMethodsFiles).thenReturn(listOf(file2, file1))
 
     assertFalse(
-      DesugaredMethodLookup.isDesugared("foo/Bar", "baz", "()", SourceSetType.MAIN, project)
+      DesugaredMethodLookup.isDesugaredMethod("foo/Bar", "baz", "()", SourceSetType.MAIN, project)
     )
     assertTrue(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "abc/def/GHI\$JKL",
         "abc",
         "(III)",
@@ -403,7 +533,7 @@ class DesugaredMethodLookupTest {
       )
     )
     assertFalse(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "abc/def/GHI\$JKL",
         "ab",
         "(III)",
@@ -412,11 +542,17 @@ class DesugaredMethodLookupTest {
       )
     )
     assertTrue(
-      DesugaredMethodLookup.isDesugared("hij/kl/mn/O", "pQr", "()", SourceSetType.MAIN, project)
+      DesugaredMethodLookup.isDesugaredMethod(
+        "hij/kl/mn/O",
+        "pQr",
+        "()",
+        SourceSetType.MAIN,
+        project,
+      )
     )
     // Make sure we're *NOT* picking up metadata from the fallback list
     assertFalse(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "java/lang/Character",
         "compare",
         "(CC)",
@@ -432,10 +568,10 @@ class DesugaredMethodLookupTest {
     whenever(project2.buildVariant).thenReturn(variant2)
     whenever(variant2.desugaredMethodsFiles).thenReturn(emptyList())
     assertFalse(
-      DesugaredMethodLookup.isDesugared("foo/Bar", "baz", "()", SourceSetType.MAIN, project2)
+      DesugaredMethodLookup.isDesugaredMethod("foo/Bar", "baz", "()", SourceSetType.MAIN, project2)
     )
     assertFalse(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "abc/def/GHI\$JKL",
         "abc",
         "(III)",
@@ -445,7 +581,7 @@ class DesugaredMethodLookupTest {
     )
     // make sure we're picking up the defaults in that case
     assertTrue(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "java/lang/Character",
         "compare",
         "(CC)",
@@ -460,8 +596,8 @@ class DesugaredMethodLookupTest {
     val desc1 = "" + "abc/def/GHI\$JKL#abc(III)Z\n" + "def/gh/IJ\n"
     val desc2 = "" + "g/hijk/l/MN#op\n" + "hij/kl/mn/O#pQr()Z\n"
 
-    val file1 = File.createTempFile("desc1", ".txt").apply { writeText(desc1) }
-    val file2 = File.createTempFile("desc2", ".txt").apply { writeText(desc2) }
+    val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
+    val file2 = temporaryFolder.newFile().apply { writeText(desc2) }
     val project = mock(Project::class.java)
     val variant = mock(LintModelVariant::class.java)
     val mainArtifact = mock(LintModelAndroidArtifact::class.java)
@@ -471,10 +607,10 @@ class DesugaredMethodLookupTest {
     whenever(variant.desugaredMethodsFiles).thenReturn(null)
 
     assertFalse(
-      DesugaredMethodLookup.isDesugared("foo/Bar", "baz", "()", SourceSetType.MAIN, project)
+      DesugaredMethodLookup.isDesugaredMethod("foo/Bar", "baz", "()", SourceSetType.MAIN, project)
     )
     assertTrue(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "abc/def/GHI\$JKL",
         "abc",
         "(III)",
@@ -483,7 +619,7 @@ class DesugaredMethodLookupTest {
       )
     )
     assertFalse(
-      DesugaredMethodLookup.isDesugared(
+      DesugaredMethodLookup.isDesugaredMethod(
         "abc/def/GHI\$JKL",
         "ab",
         "(III)",
@@ -492,7 +628,13 @@ class DesugaredMethodLookupTest {
       )
     )
     assertTrue(
-      DesugaredMethodLookup.isDesugared("hij/kl/mn/O", "pQr", "()", SourceSetType.MAIN, project)
+      DesugaredMethodLookup.isDesugaredMethod(
+        "hij/kl/mn/O",
+        "pQr",
+        "()",
+        SourceSetType.MAIN,
+        project,
+      )
     )
   }
 }

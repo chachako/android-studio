@@ -5373,24 +5373,27 @@ public class ApiDetectorTest extends AbstractCheckTest {
     public void test263526227() {
         // Regression test for
         // 263526227: Lint doesn't check valid casts for call receivers
+        // This unit test used to be for TypedArray.close, but that method
+        // is now automatically desugared by R8, so pick a different
+        // example.
         lint().files(
-                        manifest().minSdk(24),
+                        manifest().minSdk(23),
                         java(
                                 ""
                                         + "package test.pkg;\n"
-                                        + "import android.content.res.TypedArray;\n"
-                                        + "public class Test {\n"
-                                        + "    public void testAutoCloseable(TypedArray array) {\n"
-                                        + "        array.close(); // ERROR 1\n"
-                                        + "    }\n"
+                                        + "import android.net.wifi.p2p.WifiP2pManager;\n"
                                         + "\n"
-                                        + "}"))
+                                        + "public class Test {\n"
+                                        + "    public void test(WifiP2pManager.Channel channel) {\n"
+                                        + "        channel.close(); // ERROR 1\n"
+                                        + "    }\n"
+                                        + "}\n"))
                 .run()
                 .expect(
                         ""
-                                + "src/test/pkg/Test.java:5: Error: Call requires API level 31 (current min is 24): android.content.res.TypedArray#close [NewApi]\n"
-                                + "        array.close(); // ERROR 1\n"
-                                + "              ~~~~~\n"
+                                + "src/test/pkg/Test.java:6: Error: Call requires API level 27 (current min is 23): android.net.wifi.p2p.WifiP2pManager.Channel#close [NewApi]\n"
+                                + "        channel.close(); // ERROR 1\n"
+                                + "                ~~~~~\n"
                                 + "1 errors, 0 warnings");
     }
 
@@ -5494,7 +5497,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\n"
                                         + "class TryTest {\n"
                                         + "    fun testAutoCloseable() {\n"
-                                        + "        createArray().close() // ERROR 1\n"
+                                        + "        createArray().close() // OK: Now desugared by R8\n"
                                         + "        createArray().use { array -> // ERROR 2\n"
                                         + "            array.getDrawable(0)\n"
                                         + "        }\n"
@@ -5508,7 +5511,7 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "    fun testCloseable() {\n"
                                         + "        try {\n"
                                         + "            createSocket().close() // OK: since 1\n"
-                                        + "            createSocket().use { socket ->  // ERROR 5: Requires API 28\n"
+                                        + "            createSocket().use { socket ->  // ERROR 1: Requires API 28\n"
                                         + "                socket.accept()\n"
                                         + "            }\n"
                                         + "        } catch (ignore: IOException) {\n"
@@ -5521,9 +5524,6 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .run()
                 .expect(
                         ""
-                                + "src/test/pkg/TryTest.kt:10: Error: Call requires API level 31 (current min is 24): android.content.res.TypedArray#close [NewApi]\n"
-                                + "        createArray().close() // ERROR 1\n"
-                                + "                      ~~~~~\n"
                                 + "src/test/pkg/TryTest.kt:11: Error: Implicit cast from TypedArray to AutoCloseable requires API level 31 (current min is 24) [NewApi]\n"
                                 + "        createArray().use { array -> // ERROR 2\n"
                                 + "                      ~~~\n"
@@ -5534,9 +5534,9 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 + "        val closeable2: AutoCloseable = socket // ERROR 4: requires max(API 28, API 19)\n"
                                 + "                                        ~~~~~~\n"
                                 + "src/test/pkg/TryTest.kt:24: Error: Implicit cast from LocalServerSocket to Closeable requires API level 28 (current min is 24) [NewApi]\n"
-                                + "            createSocket().use { socket ->  // ERROR 5: Requires API 28\n"
+                                + "            createSocket().use { socket ->  // ERROR 1: Requires API 28\n"
                                 + "                           ~~~\n"
-                                + "5 errors, 0 warnings");
+                                + "4 errors, 0 warnings");
     }
 
     @SuppressWarnings("EmptyTryBlock")

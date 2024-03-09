@@ -35,6 +35,11 @@ class DesugaredMethodLookupComparatorTest(
     @Parameterized.Parameters
     fun inputData(): Collection<Array<Any>> {
       return listOf(
+        arrayOf("java.util.Collection", "stream", "", "java/util/Collection#stream", 0),
+
+        // Make sure we don't treat fields and methods on the same class as equivalent
+        arrayOf("java.util.Collection", "stream", "", "java/util/Collection#stream()", 1),
+        arrayOf("java.util.Collection", "stream", "()", "java/util/Collection#stream", 1),
         arrayOf(
           "java.util.Collection",
           "stream",

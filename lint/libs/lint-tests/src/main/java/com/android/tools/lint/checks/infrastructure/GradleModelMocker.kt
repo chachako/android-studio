@@ -24,6 +24,7 @@ import com.android.sdklib.AndroidTargetHash
 import com.android.sdklib.AndroidVersion
 import com.android.sdklib.SdkVersionInfo
 import com.android.tools.lint.LintCliFlags
+import com.android.tools.lint.checks.DesugaredMethodLookup
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.model.DefaultLintModelDependency
 import com.android.tools.lint.model.DefaultLintModelDependencyGraph
@@ -315,6 +316,15 @@ constructor(
     return moduleModel
   }
 
+  private fun getDefaultLibraryDesugaringFiles(minSdk: Int): List<File> {
+    val desugaringFile = File(projectDir, "desugaring.txt")
+    if (!desugaringFile.isFile) {
+      val lines = DesugaredMethodLookup.getBundledLibraryDesugaringRules(minSdk)!!
+      desugaringFile.writeText(lines.joinToString("\n"))
+    }
+    return listOf(desugaringFile)
+  }
+
   private fun initialize() {
     // built-in build-types
     updateBuildType("debug", true, { it })
@@ -385,7 +395,10 @@ constructor(
               File(projectDir, "build/intermediates/javac/$variantName/classes"),
               File(projectDir, "build/tmp/kotlin-classes/$variantName"),
             ),
-          desugaredMethodsFiles = emptySet(),
+          desugaredMethodsFiles =
+            if (buildFeatures.coreLibraryDesugaringEnabled)
+              getDefaultLibraryDesugaringFiles(defaultConfig.minSdkVersion?.apiLevel ?: 1)
+            else emptyList(),
           type = LintModelArtifactType.MAIN,
         )
       variants.add(
@@ -445,7 +458,10 @@ constructor(
           buildFeatures = buildFeatures,
           libraryResolver = this,
           partialResultsDir = null,
-          desugaredMethodsFiles = emptySet(),
+          desugaredMethodsFiles =
+            if (buildFeatures.coreLibraryDesugaringEnabled)
+              getDefaultLibraryDesugaringFiles(defaultConfig.minSdkVersion?.apiLevel ?: 1)
+            else emptyList(),
         )
       )
     }
@@ -1085,6 +1101,20 @@ constructor(
         if (SdkConstants.VALUE_TRUE == value) {
           updateVectorDrawableOptionsUseSupportLibrary { true }
         }
+      }
+      key.startsWith("android.compileOptions.coreLibraryDesugaringEnabled ") -> {
+        val value = getUnquotedValue(key)
+        updateBuildFeatures { it.copy(coreLibraryDesugaringEnabled = toBoolean(value)) }
+      }
+      key.startsWith("dependencies.coreLibraryDesugaring") -> {
+        /* Example:
+        dependencies {
+          coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.0.9'
+          coreLibraryDesugaring("com.android.tools:desugar_jdk_libs_nio:2.0.2")
+        }
+        ...but we don't need to interpret this from tests; we don't
+        supply or support older desugaring configuration files
+        */
       }
       key.startsWith("android.compileOptions.sourceCompatibility JavaVersion.VERSION_") -> {
         updateSourceCompatibility(
