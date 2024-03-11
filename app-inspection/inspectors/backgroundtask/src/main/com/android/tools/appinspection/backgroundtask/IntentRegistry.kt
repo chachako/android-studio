@@ -19,6 +19,7 @@ package com.android.tools.appinspection.backgroundtask
 import android.app.PendingIntent
 import android.content.Intent
 import com.android.tools.appinspection.backgroundtask.IntentRegistry.IntentWrapper.Companion.wrap
+import com.android.tools.appinspection.common.threadLocal
 import java.util.concurrent.ConcurrentHashMap
 
 /** A registry that keeps track of [Intent]/[PendingIntent] relationships */
@@ -33,14 +34,14 @@ class IntentRegistry {
   private val pendingIntentToInfoMap = ConcurrentHashMap<PendingIntent, PendingIntentInfo>()
 
   /* Intent shared between an entry hook and an exit hook for the same method. */
-  private val currentInfo = ThreadLocal<PendingIntentInfo>()
+  private var currentInfo by threadLocal<PendingIntentInfo?> { null }
 
   fun setCurrentInfo(type: PendingIntentType, requestCode: Int, intent: Intent, flags: Int) {
-    currentInfo.set(PendingIntentInfo(type, requestCode, intent, flags))
+    currentInfo = PendingIntentInfo(type, requestCode, intent, flags)
   }
 
   fun setPendingIntentForActiveIntent(pendingIntent: PendingIntent) {
-    val info = currentInfo.get()
+    val info = currentInfo ?: return
     intentToPendingIntentMap[info.intent.wrap()] = pendingIntent
     pendingIntentToInfoMap[pendingIntent] = info
   }

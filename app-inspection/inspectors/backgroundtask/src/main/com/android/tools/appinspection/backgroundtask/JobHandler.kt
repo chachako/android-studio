@@ -26,6 +26,7 @@ import backgroundtask.inspection.BackgroundTaskInspectorProtocol.JobInfo.Network
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.JobScheduled
 import com.android.tools.appinspection.backgroundtask.BackgroundTaskUtil.sendBackgroundTaskEvent
 import com.android.tools.appinspection.common.getStackTrace
+import com.android.tools.appinspection.common.threadLocal
 
 /** A handler class that adds necessary hooks to track job related events. */
 interface JobHandler {
@@ -46,27 +47,26 @@ interface JobHandler {
   fun onScheduleJobExit(scheduleResult: Int): Int
 
   /**
-   * Wraps JobHandler#ackStartMessage, which is called when [JobService.onStartJob] is called.
+   * Called when [JobService.onStartJob] is called.
    *
-   * @param params the params parameter passed to the original method.
-   * @param workOngoing the workOngoing parameter passed to the original method.
+   * @param params the `params` parameter passed to the original method.
+   * @param workOngoing the `workOngoing` parameter passed to the original method.
    */
   fun wrapOnStartJob(params: JobParametersWrapper, workOngoing: Boolean)
 
   /**
-   * Wraps [JobHandler.ackStopMessage], which is called when [JobService.onStopJob] is called.
+   * Called when [JobService.onStopJob] is called.
    *
-   * @param jobHandler the wrapped JobHandler instance, i.e. "this".
-   * @param params the params parameter passed to the original method.
-   * @param reschedule the reschedule parameter passed to the original method.
+   * @param params the `params` parameter passed to the original method.
+   * @param reschedule the `reschedule` parameter passed to the original method.
    */
   fun wrapOnStopJob(params: JobParametersWrapper, reschedule: Boolean)
 
   /**
    * Wraps [JobService.jobFinished].
    *
-   * @param params the params parameter passed to the original method.
-   * @param wantsReschedule the wantsReschedule parameter passed to the original method.
+   * @param params the `params` parameter passed to the original method.
+   * @param wantsReschedule the `wantsReschedule` parameter passed to the original method.
    */
   fun wrapJobFinished(params: JobParametersWrapper, wantsReschedule: Boolean)
 }
@@ -79,21 +79,21 @@ class JobHandlerImpl(private val connection: Connection) : JobHandler {
    * ThreadLocal protects against the situation when multiple threads schedule jobs at the same
    * time.
    */
-  private val scheduleJobInfo = ThreadLocal<JobInfo>()
+  private var scheduleJobInfo by threadLocal<JobInfo?> { null }
 
   /**
-   * Job ID is user-defined so we still need to send event ID to guarantee uniqueness across energy
+   * Job ID is user-defined, so we still need to send event ID to guarantee uniqueness across energy
    * events.
    */
   private val jobIdToEventId = mutableMapOf<Int, Long>()
 
   override fun onScheduleJobEntry(job: JobInfo) {
-    scheduleJobInfo.set(job)
+    scheduleJobInfo = job
   }
 
   override fun onScheduleJobExit(scheduleResult: Int): Int {
-    val jobInfo = scheduleJobInfo.get() ?: return scheduleResult
-    scheduleJobInfo.remove()
+    val jobInfo = scheduleJobInfo ?: return scheduleResult
+    scheduleJobInfo = null
     val eventId = jobIdToEventId.getOrPut(jobInfo.id) { BackgroundTaskUtil.nextId() }
 
     connection.sendBackgroundTaskEvent(eventId) {
@@ -114,6 +114,7 @@ class JobHandlerImpl(private val connection: Connection) : JobHandler {
           intervalMs = jobInfo.intervalMillis
           minLatencyMs = jobInfo.minLatencyMillis
           maxExecutionDelayMs = jobInfo.maxExecutionDelayMillis
+          @Suppress("DEPRECATION")
           networkType =
             when (jobInfo.networkType) {
               JobInfo.NETWORK_TYPE_ANY -> NetworkType.NETWORK_TYPE_ANY

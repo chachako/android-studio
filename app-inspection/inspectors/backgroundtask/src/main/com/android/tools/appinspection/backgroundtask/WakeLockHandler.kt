@@ -17,12 +17,14 @@
 package com.android.tools.appinspection.backgroundtask
 
 import android.os.PowerManager.WakeLock
+import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.inspection.Connection
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol
 import backgroundtask.inspection.BackgroundTaskInspectorProtocol.WakeLockAcquired
 import com.android.tools.appinspection.backgroundtask.BackgroundTaskUtil.sendBackgroundTaskEvent
 import com.android.tools.appinspection.common.getStackTrace
+import com.android.tools.appinspection.common.threadLocal
 
 private const val DEFAULT_TAG = "UNKNOWN"
 
@@ -40,6 +42,8 @@ private const val ON_AFTER_RELEASE = 0x20000000
 
 /** Wake lock release flags */
 @VisibleForTesting const val RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY = 0x00000001
+
+private const val TAG = "BackgroundInspector"
 
 /** A handler class that adds necessary hooks to track events for wake locks. */
 interface WakeLockHandler {
@@ -94,7 +98,7 @@ class WakeLockHandlerImpl(private val connection: Connection) : WakeLockHandler 
    * ThreadLocal protects against the situation when multiple threads create wake locks at the same
    * time.
    */
-  private val newWakeLockData = ThreadLocal<CreationParams>()
+  private var newWakeLockData by threadLocal<CreationParams?> { null }
 
   /**
    * Use a thread-local variable for wake lock release parameters, so a value can be temporarily
@@ -109,11 +113,14 @@ class WakeLockHandlerImpl(private val connection: Connection) : WakeLockHandler 
   private val wakeLockCreationParamsMap = mutableMapOf<WakeLock, CreationParams>()
 
   override fun onNewWakeLockEntry(levelAndFlags: Int, tag: String) {
-    newWakeLockData.set(CreationParams(levelAndFlags, tag))
+    newWakeLockData = CreationParams(levelAndFlags, tag)
   }
 
   override fun onNewWakeLockExit(wakeLock: WakeLock): WakeLock {
-    wakeLockCreationParamsMap[wakeLock] = newWakeLockData.get()
+    when (val wakeLockData = newWakeLockData) {
+      null -> Log.e(TAG, "onNewWakeLockExit called without a matching onNewWakeLockEntry call")
+      else -> wakeLockCreationParamsMap[wakeLock] = wakeLockData
+    }
     return wakeLock
   }
 

@@ -19,6 +19,7 @@ package com.android.tools.appinspection.backgroundtask
 import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent
+import com.android.tools.appinspection.common.threadLocal
 
 /**
  * Method name for [PendingIntent.getActivity(Context, int, Intent, int, Bundle)] to capture the
@@ -86,8 +87,8 @@ const val HANDLE_RECEIVER_METHOD_NAME =
 /**
  * Method name for [android.content.BroadcastReceiver.setPendingResult(PendingResult)]. If the
  * `PendingResult` is same with the ReceiverData captured from method [HANDLE_RECEIVER_METHOD_NAME],
- * it is safe to say that the method is called from [ActivityThread] and we can extract the [Intent]
- * properly.
+ * it is safe to say that the method is called from `android.app.ActivityThread` and we can extract
+ * the [Intent] properly.
  */
 const val SET_PENDING_RESULT_METHOD_NAME =
   "setPendingResult" + "(Landroid/content/BroadcastReceiver\$PendingResult;)V"
@@ -118,7 +119,7 @@ class PendingIntentHandlerImpl(
    * @see HANDLE_RECEIVER_METHOD_NAME
    * @see SET_PENDING_RESULT_METHOD_NAME
    */
-  private val receiverData = ThreadLocal<Any>()
+  private var receiverData by threadLocal<Any?> { null }
 
   override fun onIntentCapturedEntry(
     type: PendingIntentType,
@@ -140,11 +141,11 @@ class PendingIntentHandlerImpl(
   }
 
   override fun onReceiverDataCreated(data: Any) {
-    receiverData.set(data)
+    receiverData = data
   }
 
   override fun onReceiverDataResult(data: Any) {
-    if (data == receiverData.get()) {
+    if (data == receiverData) {
       val intent = data.getFieldValue("intent", null as Intent?) ?: return
       onIntentReceived(intent)
     }
