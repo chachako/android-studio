@@ -45,6 +45,9 @@ interface DeviceTemplate {
   val activationAction: TemplateActivationAction
 
   val editAction: EditTemplateAction?
+
+  val deleteAction: DeleteAction?
+    get() = null
 }
 
 /**
