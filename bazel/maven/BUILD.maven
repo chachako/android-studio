@@ -9906,10 +9906,10 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.jetbrains.skiko.skiko-awt_0.7.85.4",
-    pom = "repository/org/jetbrains/skiko/skiko-awt/0.7.85.4/skiko-awt-0.7.85.4.pom",
+    name = "org.jetbrains.skiko.skiko-awt_0.7.85.5",
+    pom = "repository/org/jetbrains/skiko/skiko-awt/0.7.85.5/skiko-awt-0.7.85.5.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/skiko/skiko-awt/0.7.85.4",
+    repo_path = "org/jetbrains/skiko/skiko-awt/0.7.85.5",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.20",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.20",
@@ -9922,7 +9922,7 @@ maven_import(
     name = "org.jetbrains.skiko.skiko-awt",
     classifiers = [],
     jars = [
-        "repository/org/jetbrains/skiko/skiko-awt/0.7.85.4/skiko-awt-0.7.85.4.jar"
+        "repository/org/jetbrains/skiko/skiko-awt/0.7.85.5/skiko-awt-0.7.85.5.jar"
     ],
     exports = [
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
@@ -9936,9 +9936,9 @@ maven_import(
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.20",
         "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.7.3",
     ],
-    pom = "repository/org/jetbrains/skiko/skiko-awt/0.7.85.4/skiko-awt-0.7.85.4.pom",
+    pom = "repository/org/jetbrains/skiko/skiko-awt/0.7.85.5/skiko-awt-0.7.85.5.pom",
     repo_root_path = "repository",
-    repo_path = "org/jetbrains/skiko/skiko-awt/0.7.85.4",
+    repo_path = "org/jetbrains/skiko/skiko-awt/0.7.85.5",
     visibility = ["//visibility:public"],
 )
 
@@ -54718,6 +54718,19 @@ maven_artifact(
     pom = "repository/org/jetbrains/skiko/skiko-awt-runtime-windows-x64/0.7.16/skiko-awt-runtime-windows-x64-0.7.16.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/skiko/skiko-awt-runtime-windows-x64/0.7.16",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.skiko.skiko-awt_0.7.85.4",
+    pom = "repository/org/jetbrains/skiko/skiko-awt/0.7.85.4/skiko-awt-0.7.85.4.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/skiko/skiko-awt/0.7.85.4",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.20",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.20",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.7.3",
+    ],
     visibility = ["//visibility:public"],
 )
 

@@ -182,7 +182,7 @@ ARTIFACTS = [
     "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4",
     "org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.6.4",
     "org.jetbrains:markdown:pom:0.2.1",
-    "org.jetbrains.skiko:skiko-awt:0.7.85.4",
+    "org.jetbrains.skiko:skiko-awt:0.7.85.5",
     "org.jetbrains.skiko:skiko-awt-runtime-linux-x64:0.7.85.4",
     "org.jetbrains.skiko:skiko-awt-runtime-macos-arm64:0.7.85.4",
     "org.jetbrains.skiko:skiko-awt-runtime-macos-x64:0.7.85.4",
