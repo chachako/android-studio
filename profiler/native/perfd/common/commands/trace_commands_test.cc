@@ -40,6 +40,8 @@ using std::string;
 
 using profiler::proto::ProfilerType;
 using profiler::proto::TraceConfiguration;
+using profiler::proto::TraceStartStatus;
+using profiler::proto::TraceStopStatus;
 
 namespace profiler {
 
@@ -157,8 +159,8 @@ TEST_F(TraceCommandsTest, StartUnspecifiedTraceCommandsTest) {
   EXPECT_EQ(events_[1].kind(), proto::Event::TRACE_STATUS);
   EXPECT_TRUE(events_[1].has_trace_status());
   EXPECT_TRUE(events_[1].trace_status().has_trace_start_status());
-  EXPECT_EQ(events_[1].trace_status().trace_start_status().error_message(),
-            "No trace type specified");
+  EXPECT_EQ(events_[1].trace_status().trace_start_status().error_code(),
+            TraceStartStatus::NO_TRACE_TYPE_SPECIFIED);
 }
 
 TEST_F(TraceCommandsTest, StopUnspecifiedTraceCommandsTest) {
@@ -216,8 +218,8 @@ TEST_F(TraceCommandsTest, StopUnspecifiedTraceCommandsTest) {
   EXPECT_EQ(events_[3].kind(), proto::Event::TRACE_STATUS);
   EXPECT_TRUE(events_[3].has_trace_status());
   EXPECT_TRUE(events_[3].trace_status().has_trace_stop_status());
-  EXPECT_EQ(events_[3].trace_status().trace_stop_status().error_message(),
-            "No trace type specified");
+  EXPECT_EQ(events_[3].trace_status().trace_stop_status().error_code(),
+            TraceStopStatus::NO_TRACE_TYPE_SPECIFIED_STOP);
 }
 
 TEST_F(TraceCommandsTest, StopTraceCommandEndsSessionInTaskBasedUx) {

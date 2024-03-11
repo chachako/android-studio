@@ -74,9 +74,9 @@ class AtraceManager {
                               int buffer_size_in_mb,
                               int *acquired_buffer_size_kb,
                               const std::string &trace_path,
-                              std::string *error);
+                              int64_t *error_code);
   profiler::proto::TraceStopStatus::Status StopProfiling(
-      const std::string &app_name, bool need_result, std::string *error);
+      const std::string &app_name, bool need_result, int64_t *error_code);
   void Shutdown();
   bool IsProfiling() { return is_profiling_; }
   int GetDumpCount() { return dumps_created_; }

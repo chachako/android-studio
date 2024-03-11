@@ -53,69 +53,78 @@ class MockBashCommandRunner final : public BashCommandRunner {
   explicit MockBashCommandRunner(const std::string& executable_path)
       : BashCommandRunner(executable_path) {}
   MOCK_CONST_METHOD2(RunAndReadOutput,
-                     bool(const std::string& cmd, std::string* output));
+                     bool(const std::string& cmd, std::string* output_code));
 };
 
 TEST(ActivityManagerTest, SamplingStart) {
   string trace_path;
-  string output_string;
+  string output_code;
   string cmd;
   std::unique_ptr<BashCommandRunner> bash{
       new MockBashCommandRunner(kAmExecutable)};
   EXPECT_CALL(*(static_cast<MockBashCommandRunner*>(bash.get())),
-              RunAndReadOutput(testing::A<const string&>(), &output_string))
+              RunAndReadOutput(testing::A<const string&>(), &output_code))
       .WillOnce(DoAll(SaveArg<0>(&cmd), SetArgPointee<1>(kMockOutputString),
                       Return(true)));
   TestActivityManager manager{std::move(bash)};
+
+  int64_t error_code = 0;
   manager.StartProfiling(ActivityManager::ProfilingMode::SAMPLING,
-                         kTestPackageName, 1000, trace_path, &output_string);
+                         kTestPackageName, 1000, trace_path, &output_code,
+                         &error_code);
   EXPECT_THAT(cmd, StartsWith(kAmExecutable));
   EXPECT_THAT(cmd, HasSubstr(kProfileStart));
   EXPECT_THAT(cmd, HasSubstr(kTestPackageName));
   EXPECT_THAT(cmd, HasSubstr("--sampling 1000 "));
   // '--sampling 0' is effectively instrumentation mode.
   EXPECT_THAT(cmd, Not(HasSubstr("--sampling 0 ")));
-  EXPECT_THAT(output_string, StrEq(kMockOutputString));
+  EXPECT_THAT(output_code, kMockOutputString);
 }
 
 TEST(ActivityManagerTest, InstrumentStart) {
   string trace_path;
-  string output_string;
+  string output_code;
   string cmd;
   std::unique_ptr<BashCommandRunner> bash{
       new MockBashCommandRunner(kAmExecutable)};
   EXPECT_CALL(*(static_cast<MockBashCommandRunner*>(bash.get())),
-              RunAndReadOutput(testing::A<const string&>(), &output_string))
+              RunAndReadOutput(testing::A<const string&>(), &output_code))
       .WillOnce(DoAll(SaveArg<0>(&cmd), SetArgPointee<1>(kMockOutputString),
                       Return(true)));
   TestActivityManager manager{std::move(bash)};
+
+  int64_t error_code = 0;
   manager.StartProfiling(ActivityManager::ProfilingMode::INSTRUMENTED,
-                         kTestPackageName, 1000, trace_path, &output_string);
+                         kTestPackageName, 1000, trace_path, &output_code,
+                         &error_code);
   EXPECT_THAT(cmd, StartsWith(kAmExecutable));
   EXPECT_THAT(cmd, HasSubstr(kProfileStart));
   EXPECT_THAT(cmd, HasSubstr(kTestPackageName));
   EXPECT_THAT(cmd, Not(HasSubstr("--sampling")));
-  EXPECT_THAT(output_string, StrEq(kMockOutputString));
+  EXPECT_THAT(output_code, kMockOutputString);
 }
 
 TEST(ActivityManagerTest, InstrumentSystemServerStart) {
   string trace_path;
-  string output_string;
+  string output_code;
   string cmd;
   std::unique_ptr<BashCommandRunner> bash{
       new MockBashCommandRunner(kAmExecutable)};
   EXPECT_CALL(*(static_cast<MockBashCommandRunner*>(bash.get())),
-              RunAndReadOutput(testing::A<const string&>(), &output_string))
+              RunAndReadOutput(testing::A<const string&>(), &output_code))
       .WillOnce(DoAll(SaveArg<0>(&cmd), SetArgPointee<1>(kMockOutputString),
                       Return(true)));
   TestActivityManager manager{std::move(bash)};
+
+  int64_t error_code = 0;
   manager.StartProfiling(ActivityManager::ProfilingMode::INSTRUMENTED,
-                         "system_process", 1000, trace_path, &output_string);
+                         "system_process", 1000, trace_path, &output_code,
+                         &error_code);
   EXPECT_THAT(cmd, StartsWith(kAmExecutable));
   EXPECT_THAT(cmd, HasSubstr(kProfileStart));
   EXPECT_THAT(cmd, HasSubstr(" system "));
   EXPECT_THAT(cmd, Not(HasSubstr(" system_process ")));
-  EXPECT_THAT(output_string, StrEq(kMockOutputString));
+  EXPECT_THAT(output_code, kMockOutputString);
 }
 
 }  // namespace profiler

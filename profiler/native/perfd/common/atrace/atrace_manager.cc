@@ -37,6 +37,7 @@
 #include "utils/tokenizer.h"
 #include "utils/trace.h"
 
+using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
 using std::string;
 
@@ -65,14 +66,15 @@ bool AtraceManager::StartProfiling(const std::string &app_pkg_name,
                                    int buffer_size_in_mb,
                                    int *acquired_buffer_size_kb,
                                    const std::string &trace_path,
-                                   std::string *error) {
+                                   int64_t *error_code) {
   std::lock_guard<std::mutex> lock(start_stop_mutex_);
   *acquired_buffer_size_kb = 0;
   if (is_profiling_) {
     return false;
   }
+
   if (buffer_size_in_mb < kBufferMinimumSizeMb) {
-    error->append("Requested buffer size is too small");
+    *error_code |= TraceStartStatus::REQUESTED_BUFFER_SIZE_TOO_SMALL;
     return false;
   }
 
@@ -125,11 +127,10 @@ bool AtraceManager::StartProfiling(const std::string &app_pkg_name,
   // value here ensures the thread reads the correct value before executing.
   is_profiling_ = isRunning;
   if (!isRunning) {
-    assert(error != nullptr);
-    error->append("Failed to run atrace start.");
+    *error_code |= TraceStartStatus::FAILED_TO_RUN_ATRACE_START;
     if (actual_buffer_size_kb < kBufferMinimumSizeMb) {
-      error->append(
-          " Atrace could not allocate enough memory to record a trace.");
+      *error_code |=
+          TraceStartStatus::ATRACE_NOT_ALLOCATE_MEMORY_TO_RECORD_TRACE;
     }
   } else {
     atrace_thread_ = std::thread(&AtraceManager::DumpData, this);
@@ -162,7 +163,7 @@ string AtraceManager::GetNextDumpPath() {
 }
 
 TraceStopStatus::Status AtraceManager::StopProfiling(
-    const std::string &app_pkg_name, bool need_result, std::string *error) {
+    const std::string &app_pkg_name, bool need_result, int64_t *error_code) {
   std::lock_guard<std::mutex> lock(start_stop_mutex_);
   Trace trace("CPU:StopProfiling atrace");
   Log::D(Log::Tag::PROFILER, "Profiler:Stopping profiling for %s",
@@ -190,8 +191,7 @@ TraceStopStatus::Status AtraceManager::StopProfiling(
     isRunning = atrace_->IsAtraceRunning();
   }
   if (isRunning) {
-    assert(error != nullptr);
-    error->append("Failed to stop atrace.");
+    *error_code |= TraceStopStatus::FAILED_TO_STOP_ATRACE;
     return TraceStopStatus::STILL_PROFILING_AFTER_STOP;
   }
   if (need_result) {

@@ -28,6 +28,7 @@
 #include "utils/process_manager.h"
 #include "utils/trace.h"
 
+using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
 using std::string;
 
@@ -40,17 +41,16 @@ namespace profiler {
 ActivityManager::ActivityManager()
     : bash_(new BashCommandRunner(kAmExecutable, true /* log command */)) {}
 
-bool ActivityManager::StartProfiling(const ProfilingMode profiling_mode,
-                                     const string &app_package_name,
-                                     int sampling_interval_us,
-                                     const string &trace_path,
-                                     string *error_string,
-                                     bool is_startup_profiling) {
+bool ActivityManager::StartProfiling(
+    const ProfilingMode profiling_mode, const string &app_package_name,
+    int sampling_interval_us, const string &trace_path,
+    std::string *error_string, int64_t *error_code, bool is_startup_profiling) {
   Trace trace("CPU:StartProfiling ART");
   std::lock_guard<std::mutex> lock(profiled_lock_);
 
   if (IsAppProfiled(app_package_name)) {
-    *error_string = "App is already being profiled with ART";
+    *error_code |= TraceStartStatus::APP_ALREADY_PROFILED_WITH_ART;
+
     return false;
   }
   // if |is_startup_profiling| is true, it means that profiling started with
@@ -72,7 +72,7 @@ bool ActivityManager::StartProfiling(const ProfilingMode profiling_mode,
     parameters << ProcessManager::GetCanonicalName(app_package_name);
     parameters << " " << trace_path;
     if (!bash_->Run(parameters.str(), error_string)) {
-      *error_string = "Unable to run profile start command";
+      *error_code |= TraceStartStatus::UNABLE_TO_RUN_PROFILE_START;
       return false;
     }
   }
@@ -81,8 +81,8 @@ bool ActivityManager::StartProfiling(const ProfilingMode profiling_mode,
 }
 
 TraceStopStatus::Status ActivityManager::StopProfiling(
-    const string &app_package_name, bool need_result, string *error_string,
-    int32_t timeout_sec, bool is_startup_profiling) {
+    const string &app_package_name, bool need_result, std::string *error_string,
+    int64_t *error_code, int32_t timeout_sec, bool is_startup_profiling) {
   Trace trace("CPU:StopProfiling ART");
   std::lock_guard<std::mutex> lock(profiled_lock_);
 
@@ -95,14 +95,15 @@ TraceStopStatus::Status ActivityManager::StopProfiling(
 
   if (need_result) {
     if (!notifier.IsReadyToNotify()) {
-      *error_string = "Unable to monitor trace file for completion";
+      *error_code |=
+          TraceStopStatus::UNABLE_TO_MONITOR_TRACE_FILE_FOR_COMPLETION;
       return TraceStopStatus::CANNOT_START_WAITING;
     }
   }
 
   // Run stop command via actual am.
   if (!RunProfileStopCmd(app_package_name, error_string)) {
-    *error_string = "Unable to run profile stop command";
+    *error_code |= TraceStopStatus::UNABLE_TO_RUN_PROFILE_STOP;
     return TraceStopStatus::STOP_COMMAND_FAILED;
   }
 
@@ -124,13 +125,14 @@ TraceStopStatus::Status ActivityManager::StopProfiling(
       case FileSystemNotifier::kSuccess:
         return TraceStopStatus::SUCCESS;
       case FileSystemNotifier::kTimeout:
-        *error_string = "Wait for ART trace file timed out.";
+        *error_code |= TraceStopStatus::WAIT_FOR_ART_TRACE_FILE_TIMED_OUT;
         return TraceStopStatus::WAIT_TIMEOUT;
       case FileSystemNotifier::kCannotReadEvent:
-        *error_string = "Cannot read events while waiting for ART trace file.";
+        *error_code |=
+            TraceStopStatus::CANNOT_READ_WHILE_WAITING_FOR_ART_TRACE_FILE;
         return TraceStopStatus::CANNOT_READ_WAIT_EVENT;
       case FileSystemNotifier::kUnspecified:
-        *error_string = "Wait for ART trace file failed.";
+        *error_code |= TraceStopStatus::WAIT_FOR_ART_TRACE_FILE_FAILED;
         return TraceStopStatus::WAIT_FAILED;
     }
   }

@@ -21,6 +21,7 @@
 #include "utils/trace.h"
 
 using profiler::proto::Device;
+using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
 using std::string;
 
@@ -32,43 +33,44 @@ PerfettoManager::PerfettoManager(std::shared_ptr<Perfetto> perfetto)
 bool PerfettoManager::StartProfiling(
     const std::string& app_name, const std::string& abi_arch,
     const perfetto::protos::TraceConfig& config, const std::string& trace_path,
-    std::string* error) {
+    int64_t* error_code) {
   if (perfetto_->IsPerfettoRunning()) {
-    error->append("Perfetto is already running unable to start new trace.");
+    *error_code |=
+        TraceStartStatus::PERFETTO_ALREADY_RUNNING_UNABLE_START_NEW_TRACE;
     return false;
   }
   if (perfetto_->IsTracerRunning()) {
-    error->append("Tracer is already running unable to run perfetto.");
+    *error_code |= TraceStartStatus::TRACER_ALREADY_RUNNING_UNABLE_RUN_PERFETTO;
     return false;
   }
   Trace trace("CPU: StartProfiling perfetto");
   Perfetto::LaunchStatus status =
       perfetto_->Run({config, abi_arch, trace_path});
   if ((status & Perfetto::FAILED_LAUNCH_PERFETTO) != 0) {
-    error->append("Failed to launch perfetto.\n");
+    *error_code |= TraceStartStatus::FAILED_TO_LAUNCH_PERFETTO;
   }
   if ((status & Perfetto::FAILED_LAUNCH_TRACER) != 0) {
-    error->append("Failed to launch tracer.\n");
+    *error_code |= TraceStartStatus::FAILED_TO_LAUNCH_TRACER;
   }
   if ((status & Perfetto::FAILED_LAUNCH_TRACED) != 0) {
-    error->append("Failed to launch traced.\n");
+    *error_code |= TraceStartStatus::FAILED_TO_LAUNCH_TRACED;
   }
   if ((status & Perfetto::FAILED_LAUNCH_TRACED_PROBES) != 0) {
-    error->append("Failed to launch traced_probes.");
+    *error_code |= TraceStartStatus::FAILED_TO_LAUNCH_TRACED_PROBES;
   }
   return status == Perfetto::LAUNCH_STATUS_SUCCESS;
 }
 
-TraceStopStatus::Status PerfettoManager::StopProfiling(std::string* error) {
+TraceStopStatus::Status PerfettoManager::StopProfiling(int64_t* error_code) {
   Trace trace("CPU:StopProfiling perfetto");
   perfetto_->Stop();
   bool stop_succeeded = true;
   if (perfetto_->IsTracerRunning()) {
-    error->append("Failed to stop tracer.");
+    *error_code |= TraceStopStatus::FAILED_TO_STOP_TRACER;
     stop_succeeded = false;
   }
   if (perfetto_->IsPerfettoRunning()) {
-    error->append("Failed to stop perfetto.");
+    *error_code |= TraceStopStatus::FAILED_TO_STOP_PERFETTO;
     stop_succeeded = false;
   }
   return stop_succeeded ? TraceStopStatus::SUCCESS

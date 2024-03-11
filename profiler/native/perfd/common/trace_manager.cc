@@ -41,12 +41,13 @@ CaptureInfo* TraceManager::StartCapture(
   // Early-out if there is an ongoing previous capture.
   if (!cache.empty() && cache.back().end_timestamp == kTimestampNotSet) {
     status->set_status(TraceStartStatus::FAILURE);
-    status->set_error_message("ongoing capture already exists");
+    status->set_error_code(status->error_code() |
+                           TraceStartStatus::ONGOING_CAPTURE_EXISTS);
     return nullptr;
   }
 
   status->set_status(TraceStartStatus::SUCCESS);
-  std::string error_message;
+  int64_t error_code = TraceStartStatus::NO_ERROR_TRACE_START;
   bool success = false;
   if (configuration.initiation_type() == proto::INITIATED_BY_API) {
     // Special case for API-initiated tracing: Only cache the CaptureInfo
@@ -62,13 +63,15 @@ CaptureInfo* TraceManager::StartCapture(
     // proto.
     switch (configuration.union_case()) {
       case TraceConfiguration::kArtOptions: {
+        std::string error_message;
         auto art_options = configuration.art_options();
         auto mode = art_options.trace_mode() == proto::TraceMode::INSTRUMENTED
                         ? ActivityManager::INSTRUMENTED
                         : ActivityManager::SAMPLING;
         success = activity_manager_->StartProfiling(
             mode, app_name, art_options.sampling_interval_us(),
-            configuration.temp_path(), &error_message, startup_profiling);
+            configuration.temp_path(), &error_message, &error_code,
+            startup_profiling);
         break;
       }
       case TraceConfiguration::kAtraceOptions: {
@@ -76,8 +79,7 @@ CaptureInfo* TraceManager::StartCapture(
         int acquired_buffer_size_kb = 0;
         success = atrace_manager_->StartProfiling(
             app_name, atrace_options.buffer_size_in_mb(),
-            &acquired_buffer_size_kb, configuration.temp_path(),
-            &error_message);
+            &acquired_buffer_size_kb, configuration.temp_path(), &error_code);
         break;
       }
       case TraceConfiguration::kSimpleperfOptions: {
@@ -85,19 +87,19 @@ CaptureInfo* TraceManager::StartCapture(
         success = simpleperf_manager_->StartProfiling(
             app_name, configuration.abi_cpu_arch(),
             simpleperf_options.sampling_interval_us(),
-            configuration.temp_path(), &error_message, startup_profiling);
+            configuration.temp_path(), &error_code, startup_profiling);
         break;
       }
       case TraceConfiguration::kPerfettoOptions: {
         auto perfetto_options = configuration.perfetto_options();
         success = perfetto_manager_->StartProfiling(
             app_name, configuration.abi_cpu_arch(), perfetto_options,
-            configuration.temp_path(), &error_message);
+            configuration.temp_path(), &error_code);
         break;
       }
       default:
         success = false;
-        error_message = "No technology-specific tracing options set.";
+        error_code |= TraceStartStatus::NO_TRACING_OPTIONS_SET;
         break;
     }
   }
@@ -114,7 +116,7 @@ CaptureInfo* TraceManager::StartCapture(
     return cache.Add(capture);
   } else {
     status->set_status(TraceStartStatus::FAILURE);
-    status->set_error_message(error_message);
+    status->set_error_code(error_code);
     return nullptr;
   }
 }
@@ -127,12 +129,13 @@ CaptureInfo* TraceManager::StopCapture(int64_t request_timestamp_ns,
 
   auto* ongoing_capture = GetOngoingCapture(app_name);
   if (ongoing_capture == nullptr) {
-    status->set_error_message("No ongoing capture exists");
+    status->set_error_code(status->error_code() |
+                           TraceStopStatus::NO_ONGOING_CAPTURE);
     status->set_status(TraceStopStatus::NO_ONGOING_PROFILING);
     return nullptr;
   }
 
-  std::string error_message;
+  int64_t error_code = TraceStopStatus::NO_ERROR_TRACE_STOP;
   TraceStopStatus::Status stop_status = TraceStopStatus::SUCCESS;
   if (ongoing_capture->configuration.initiation_type() ==
       proto::INITIATED_BY_API) {
@@ -145,31 +148,31 @@ CaptureInfo* TraceManager::StopCapture(int64_t request_timestamp_ns,
     Stopwatch stopwatch;
     switch (ongoing_capture->configuration.union_case()) {
       case TraceConfiguration::kArtOptions: {
+        std::string error_message;
         stop_status = activity_manager_->StopProfiling(
-            app_name, need_trace, &error_message,
+            app_name, need_trace, &error_message, &error_code,
             cpu_config_.art_stop_timeout_sec(),
             ongoing_capture->configuration.initiation_type() ==
                 proto::INITIATED_BY_STARTUP);
         break;
       }
       case TraceConfiguration::kAtraceOptions: {
-        stop_status = atrace_manager_->StopProfiling(app_name, need_trace,
-                                                     &error_message);
+        stop_status =
+            atrace_manager_->StopProfiling(app_name, need_trace, &error_code);
         break;
       }
       case TraceConfiguration::kSimpleperfOptions: {
         stop_status = simpleperf_manager_->StopProfiling(app_name, need_trace,
-                                                         &error_message);
+                                                         &error_code);
         break;
       }
       case TraceConfiguration::kPerfettoOptions: {
-        stop_status = perfetto_manager_->StopProfiling(&error_message);
+        stop_status = perfetto_manager_->StopProfiling(&error_code);
         break;
       }
       default:
         stop_status = TraceStopStatus::STOP_COMMAND_FAILED;
-        error_message =
-            "No technology-specific tracing options found on trace stoppage.";
+        error_code |= TraceStopStatus::NO_TRACING_OPTIONS_FOUND;
         break;
     }
     ongoing_capture->end_timestamp = clock_->GetCurrentTime();
@@ -177,7 +180,7 @@ CaptureInfo* TraceManager::StopCapture(int64_t request_timestamp_ns,
   }
 
   status->set_status(stop_status);
-  status->set_error_message(error_message);
+  status->set_error_code(error_code);
   ongoing_capture->stop_status.CopyFrom(*status);
 
   return ongoing_capture;

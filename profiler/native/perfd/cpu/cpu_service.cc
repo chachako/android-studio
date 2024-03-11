@@ -210,8 +210,9 @@ void CpuServiceImpl::DoStopProfilingApp(const string& app_name,
           fs.MoveFile(capture->configuration.temp_path(), oss.str());
       if (!move_success) {
         capture->stop_status.set_status(TraceStopStatus::CANNOT_READ_FILE);
-        capture->stop_status.set_error_message(
-            "Failed to read trace from device");
+        capture->stop_status.set_error_code(
+            status.error_code() |
+            TraceStopStatus::FAILED_TO_READ_TRACE_FROM_DEVICE);
       }
     }
 
@@ -236,7 +237,7 @@ grpc::Status CpuServiceImpl::StartStartupProfiling(
     response->set_status(proto::StartupProfilingResponse::SUCCESS);
   } else {
     response->set_status(proto::StartupProfilingResponse::FAILURE);
-    response->set_error_message(start_status.error_message());
+    response->set_error_code(start_status.error_code());
   }
 
   return Status::OK;

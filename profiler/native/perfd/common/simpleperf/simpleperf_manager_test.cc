@@ -41,32 +41,32 @@ class FakeFileSystem : public MemoryFileSystem {
 TEST(SimpleperfManagerTest, StartProfiling) {
   SimpleperfManager simpleperf_manager(
       std::unique_ptr<Simpleperf>(new FakeSimpleperf()));
-  string error;
+  int64_t error_code = 0;
   string fake_trace_path = "/tmp/fake-trace";
   string app_name = "some_app_name";
   string abi = "arm";
 
   EXPECT_FALSE(simpleperf_manager.IsProfiling(app_name));
   simpleperf_manager.StartProfiling(app_name, abi, 1000, fake_trace_path,
-                                    &error);
+                                    &error_code);
   EXPECT_TRUE(simpleperf_manager.IsProfiling(app_name));
 
   // Should not be able to start profiling twice.
   EXPECT_FALSE(simpleperf_manager.StartProfiling(app_name, abi, 1000,
-                                                 fake_trace_path, &error));
+                                                 fake_trace_path, &error_code));
 }
 
 TEST(SimpleperfManagerTest, StartStartupProfiling) {
   SimpleperfManager simpleperf_manager(
       std::unique_ptr<Simpleperf>(new FakeSimpleperf()));
-  string error;
+  int64_t error_code = 0;
   string fake_trace_path = "/tmp/fake-trace";
   string app_name = "some_app_name";
   string abi = "arm";
 
   EXPECT_FALSE(simpleperf_manager.IsProfiling(app_name));
   simpleperf_manager.StartProfiling(app_name, abi, 1000, fake_trace_path,
-                                    &error, true);
+                                    &error_code, true);
   EXPECT_TRUE(simpleperf_manager.IsProfiling(app_name));
 }
 
@@ -77,30 +77,31 @@ TEST(SimpleperfManagerTest, StartProfilingWithoutProfilingEnabled) {
   simpleperf->SetEnableProfilingSuccess(false);
   SimpleperfManager simpleperf_manager(std::move(simpleperf));
 
-  string error;
+  int64_t error_code = 0;
   string fake_trace_path = "/tmp/fake-trace";
   string app_name = "some_app_name";
   string abi = "arm";
 
   simpleperf_manager.StartProfiling(app_name, abi, 1000, fake_trace_path,
-                                    &error);
+                                    &error_code);
   EXPECT_FALSE(simpleperf_manager.IsProfiling(app_name));
-  EXPECT_THAT(error, HasSubstr("Unable to setprop to enable profiling"));
+  EXPECT_THAT(error_code,
+              proto::TraceStartStatus::UNABLE_TO_SETPROP_TO_ENABLE_PROFILING);
 }
 
 TEST(SimpleperfManagerTest, StopProfilingWantResult) {
   SimpleperfManager simpleperf_manager(
       std::unique_ptr<Simpleperf>(new FakeSimpleperf()));
-  string error;
+  int64_t error_code = 0;
   string fake_trace_path = "/tmp/trace_path";
   string app_name = "some_app_name";
   string abi = "arm";
 
   simpleperf_manager.StartProfiling(app_name, abi, 1000, fake_trace_path,
-                                    &error);
+                                    &error_code);
   EXPECT_TRUE(simpleperf_manager.IsProfiling(app_name));
 
-  auto result = simpleperf_manager.StopProfiling(app_name, true, &error);
+  auto result = simpleperf_manager.StopProfiling(app_name, true, &error_code);
   EXPECT_THAT(result, testing::Eq(TraceStopStatus::SUCCESS));
   EXPECT_FALSE(simpleperf_manager.IsProfiling(app_name));
 }
@@ -108,12 +109,12 @@ TEST(SimpleperfManagerTest, StopProfilingWantResult) {
 TEST(SimpleperfManagerTest, StopProfilingNotProfiledApp) {
   SimpleperfManager simpleperf_manager(
       std::unique_ptr<Simpleperf>(new FakeSimpleperf()));
-  string error;
+  int64_t error_code = 0;
   string app_name = "app";  // App that is not currently being profiled
 
-  auto result = simpleperf_manager.StopProfiling(app_name, true, &error);
+  auto result = simpleperf_manager.StopProfiling(app_name, true, &error_code);
   EXPECT_THAT(result, testing::Eq(TraceStopStatus::NO_ONGOING_PROFILING));
-  EXPECT_THAT(error, HasSubstr("This app was not being profiled"));
+  EXPECT_THAT(error_code, TraceStopStatus::APP_WAS_NOT_BEING_PROFILED);
 }
 
 TEST(SimpleperfManagerTest, StopProfilingFailToKillSimpleperf) {
@@ -123,18 +124,19 @@ TEST(SimpleperfManagerTest, StopProfilingFailToKillSimpleperf) {
   simpleperf->SetKillSimpleperfSuccess(false);
   SimpleperfManager simpleperf_manager(std::move(simpleperf));
 
-  string error;
+  int64_t error_code = 0;
   string fake_trace_path = "/tmp/trace_path";
   string app_name = "some_app_name";
   string abi = "arm";
 
   simpleperf_manager.StartProfiling(app_name, abi, 1000, fake_trace_path,
-                                    &error);
+                                    &error_code);
   EXPECT_TRUE(simpleperf_manager.IsProfiling(app_name));
 
-  auto result = simpleperf_manager.StopProfiling(app_name, true, &error);
+  auto result = simpleperf_manager.StopProfiling(app_name, true, &error_code);
   EXPECT_THAT(result, testing::Eq(TraceStopStatus::STOP_COMMAND_FAILED));
-  EXPECT_THAT(error, HasSubstr("Failed to send SIGTERM to simpleperf"));
+  EXPECT_THAT(error_code,
+              TraceStopStatus::FAILED_TO_SEND_SIGTERM_TO_SIMPLEPREF);
   // TODO (b/67630133): decide if we should keep profiling the app if we fail to
   // kill simpleperf.
   EXPECT_FALSE(simpleperf_manager.IsProfiling(app_name));
@@ -150,34 +152,34 @@ TEST(SimpleperfManagerTest, StopProfilingFailToCopyRawFile) {
       std::move(simpleperf),
       std::unique_ptr<FileSystem>(new FakeFileSystem(false)));
 
-  string error;
+  int64_t error_code = 0;
   string fake_trace_path = "/tmp/trace_path";
   string app_name = "some_app_name";
   string abi = "arm";
 
   simpleperf_manager.StartProfiling(app_name, abi, 1000, fake_trace_path,
-                                    &error);
+                                    &error_code);
   EXPECT_TRUE(simpleperf_manager.IsProfiling(app_name));
 
-  auto result = simpleperf_manager.StopProfiling(app_name, true, &error);
+  auto result = simpleperf_manager.StopProfiling(app_name, true, &error_code);
   EXPECT_THAT(result, testing::Eq(TraceStopStatus::CANNOT_COPY_FILE));
-  EXPECT_THAT(error, HasSubstr("Unable to copy simpleperf raw trace."));
+  EXPECT_THAT(error_code, TraceStopStatus::UNABLE_TO_COPY_SIMPLEPREF_RAW_TRACE);
   EXPECT_FALSE(simpleperf_manager.IsProfiling(app_name));
 }
 
 TEST(SimpleperfManagerTest, StopProfilingNotWantResult) {
   SimpleperfManager simpleperf_manager(
       std::unique_ptr<Simpleperf>(new FakeSimpleperf()));
-  string error;
+  int64_t error_code = 0;
   string fake_trace_path = "/tmp/trace_path";
   string app_name = "some_app_name";
   string abi = "x86";
 
   simpleperf_manager.StartProfiling(app_name, abi, 1000, fake_trace_path,
-                                    &error);
+                                    &error_code);
   EXPECT_TRUE(simpleperf_manager.IsProfiling(app_name));
 
-  auto result = simpleperf_manager.StopProfiling(app_name, false, &error);
+  auto result = simpleperf_manager.StopProfiling(app_name, false, &error_code);
   EXPECT_THAT(result, testing::Eq(TraceStopStatus::SUCCESS));
   EXPECT_FALSE(simpleperf_manager.IsProfiling(app_name));
 }
@@ -189,20 +191,21 @@ TEST(SimpleperfManagerTest, StopSimpleperfFailToKillSimpleperf) {
   simpleperf->SetKillSimpleperfSuccess(false);
   SimpleperfManager simpleperf_manager(std::move(simpleperf));
 
-  string error;
+  int64_t error_code = 0;
   string fake_trace_path = "/tmp/trace_path";
   string app_name = "some_app_name";
   string abi = "x86_64";
 
   simpleperf_manager.StartProfiling(app_name, abi, 1000, fake_trace_path,
-                                    &error);
+                                    &error_code);
   EXPECT_TRUE(simpleperf_manager.IsProfiling(app_name));
 
-  auto result = simpleperf_manager.StopProfiling(app_name, false, &error);
+  auto result = simpleperf_manager.StopProfiling(app_name, false, &error_code);
   EXPECT_THAT(result, testing::Eq(TraceStopStatus::STOP_COMMAND_FAILED));
   // If something goes wrong when we try to kill simpleplerf, we write that to
   // |error| and propagate it to the logs (CpuService will do the logging)
-  EXPECT_THAT(error, HasSubstr("Failed to send SIGTERM to simpleperf"));
+  EXPECT_THAT(error_code,
+              TraceStopStatus::FAILED_TO_SEND_SIGTERM_TO_SIMPLEPREF);
   EXPECT_FALSE(simpleperf_manager.IsProfiling(app_name));
 }
 
@@ -210,14 +213,14 @@ TEST(SimpleperfManagerTest, ReportSampleNotCalledIfRunningOnHost) {
   std::unique_ptr<FakeSimpleperf> simpleperf{new FakeSimpleperf()};
   SimpleperfManager simpleperf_manager(std::move(simpleperf));
 
-  string error;
+  int64_t error_code = 0;
   string fake_trace_path = "/tmp/trace_path";
   string app_name = "some_app_name";
   string abi = "arm";
 
   simpleperf_manager.StartProfiling(app_name, abi, 1000, fake_trace_path,
-                                    &error);
-  simpleperf_manager.StopProfiling(app_name, true, &error);
+                                    &error_code);
+  simpleperf_manager.StopProfiling(app_name, true, &error_code);
 
   auto *fake_simpleperf =
       dynamic_cast<FakeSimpleperf *>(simpleperf_manager.simpleperf());

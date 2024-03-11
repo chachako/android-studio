@@ -121,7 +121,7 @@ message StartupProfilingResponse {
     FAILURE = 2;
   }
   Status status = 1;
-  string error_message = 2;
+  int64 error_code = 2;
   // Buffer size (in KB) acquired by Atrace trace configs.
   int32 buffer_size_acquired_kb = 3;
 }

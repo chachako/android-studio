@@ -73,7 +73,7 @@ class MockAtraceManager final : public AtraceManager {
                       &clock_, 50,
                       std::unique_ptr<Atrace>(new FakeAtrace(&clock_))) {}
   MOCK_METHOD(bool, StartProfiling,
-              (const std::string&, int, int*, const std::string&, std::string*),
+              (const std::string&, int, int*, const std::string&, int64_t*),
               (override));
 
  private:
@@ -86,7 +86,7 @@ class MockPerfettoManager final : public PerfettoManager {
   MOCK_METHOD(bool, StartProfiling,
               (const std::string&, const std::string&,
                const perfetto::protos::TraceConfig&, const std::string&,
-               std::string*),
+               int64_t*),
               (override));
 };
 
@@ -137,7 +137,8 @@ struct TraceManagerTest : testing::Test {
     // Expect a success result.
     EXPECT_NE(capture, nullptr);
     EXPECT_EQ(start_status.status(), TraceStartStatus::SUCCESS);
-    EXPECT_EQ(start_status.error_message(), "");
+    EXPECT_EQ(start_status.error_code(),
+              TraceStartStatus::NO_ERROR_TRACE_START);
 
     // Validate state.
     EXPECT_TRUE(trace_manager->atrace_manager()->IsProfiling());
@@ -149,7 +150,7 @@ struct TraceManagerTest : testing::Test {
     capture = trace_manager->StopCapture(1, "fake_app", false, &stop_status);
     EXPECT_NE(capture, nullptr);
     EXPECT_EQ(stop_status.status(), TraceStopStatus::SUCCESS);
-    EXPECT_EQ(stop_status.error_message(), "");
+    EXPECT_EQ(stop_status.error_code(), TraceStopStatus::NO_ERROR_TRACE_STOP);
 
     // Validate state.
     EXPECT_FALSE(trace_manager->atrace_manager()->IsProfiling());
@@ -181,7 +182,8 @@ struct TraceManagerTest : testing::Test {
     // Expect a success result.
     EXPECT_NE(capture, nullptr);
     EXPECT_EQ(start_status.status(), TraceStartStatus::SUCCESS);
-    EXPECT_EQ(start_status.error_message(), "");
+    EXPECT_EQ(start_status.error_code(),
+              TraceStartStatus::NO_ERROR_TRACE_START);
 
     // Validate state.
     EXPECT_TRUE(trace_manager->perfetto_manager()->IsProfiling());
@@ -193,7 +195,7 @@ struct TraceManagerTest : testing::Test {
     capture = trace_manager->StopCapture(1, "fake_app", false, &stop_status);
     EXPECT_NE(capture, nullptr);
     EXPECT_EQ(stop_status.status(), TraceStopStatus::SUCCESS);
-    EXPECT_EQ(stop_status.error_message(), "");
+    EXPECT_EQ(stop_status.error_code(), TraceStopStatus::NO_ERROR_TRACE_STOP);
 
     // Validate state.
     EXPECT_FALSE(trace_manager->perfetto_manager()->IsProfiling());
@@ -314,7 +316,7 @@ TEST_F(TraceManagerTest, CannotStartMultipleTracesOnSameApp) {
 
   EXPECT_NE(capture, nullptr);
   EXPECT_EQ(start_status1.status(), TraceStartStatus::SUCCESS);
-  EXPECT_EQ(start_status1.error_message(), "");
+  EXPECT_EQ(start_status1.error_code(), TraceStartStatus::NO_ERROR_TRACE_START);
   EXPECT_EQ(capture->start_timestamp, 10);
   EXPECT_EQ(capture->end_timestamp, -1);
   EXPECT_TRUE(
@@ -328,7 +330,7 @@ TEST_F(TraceManagerTest, CannotStartMultipleTracesOnSameApp) {
 
   EXPECT_EQ(capture, nullptr);
   EXPECT_EQ(start_status2.status(), TraceStartStatus::FAILURE);
-  EXPECT_NE(start_status2.error_message(), "");
+  EXPECT_NE(start_status2.error_code(), TraceStartStatus::NO_ERROR_TRACE_START);
 
   // Starting on different app is okay.
   configuration.set_app_name("fake_app2");
@@ -339,7 +341,7 @@ TEST_F(TraceManagerTest, CannotStartMultipleTracesOnSameApp) {
 
   EXPECT_NE(capture, nullptr);
   EXPECT_EQ(start_status3.status(), TraceStartStatus::SUCCESS);
-  EXPECT_EQ(start_status3.error_message(), "");
+  EXPECT_EQ(start_status3.error_code(), TraceStartStatus::NO_ERROR_TRACE_START);
   EXPECT_EQ(capture->start_timestamp, 20);
   EXPECT_EQ(capture->end_timestamp, -1);
   EXPECT_TRUE(
@@ -360,7 +362,7 @@ TEST_F(TraceManagerTest, StopBeforeStartsDoesNothing) {
       trace_manager->StopCapture(1, "fake_app", false, &stop_status);
   EXPECT_EQ(capture, nullptr);
   EXPECT_EQ(stop_status.status(), TraceStopStatus::NO_ONGOING_PROFILING);
-  EXPECT_NE(stop_status.error_message(), "");
+  EXPECT_NE(stop_status.error_code(), TraceStopStatus::NO_ERROR_TRACE_STOP);
 
   // Simulate that daemon is killed.
   termination_service_.reset(nullptr);
@@ -383,7 +385,7 @@ TEST_F(TraceManagerTest, StartStopSequence) {
 
   EXPECT_NE(capture, nullptr);
   EXPECT_EQ(start_status.status(), TraceStartStatus::SUCCESS);
-  EXPECT_EQ(start_status.error_message(), "");
+  EXPECT_EQ(start_status.error_code(), TraceStartStatus::NO_ERROR_TRACE_START);
   EXPECT_EQ(capture->start_timestamp, 10);
   EXPECT_EQ(capture->end_timestamp, -1);
   EXPECT_TRUE(
@@ -395,7 +397,7 @@ TEST_F(TraceManagerTest, StartStopSequence) {
   capture = trace_manager->StopCapture(15, "fake_app", false, &stop_status);
   EXPECT_NE(capture, nullptr);
   EXPECT_EQ(stop_status.status(), TraceStopStatus::SUCCESS);
-  EXPECT_EQ(stop_status.error_message(), "");
+  EXPECT_EQ(stop_status.error_code(), TraceStopStatus::NO_ERROR_TRACE_STOP);
   EXPECT_EQ(capture->start_timestamp, 10);
   EXPECT_EQ(capture->end_timestamp, 20);
   EXPECT_TRUE(

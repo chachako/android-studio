@@ -58,8 +58,51 @@ message TraceStartStatus {
     FAILURE = 2;
   }
 
+  // Each enum value must be an integer with at most 1 bit set in the binary format.
+  enum ErrorCode {
+   // No error during trace start
+   NO_ERROR_TRACE_START = 0; // 0x0000
+   // No trace type specified
+   NO_TRACE_TYPE_SPECIFIED = 1; // 0x0001
+   // App is already being profiled with ART
+   APP_ALREADY_PROFILED_WITH_ART = 2; // 0x0002
+   // Unable to run profile start command
+   UNABLE_TO_RUN_PROFILE_START = 4; // 0x0004
+   // Requested buffer size is too small
+   REQUESTED_BUFFER_SIZE_TOO_SMALL = 8; // 0x0008
+   // Failed to run atrace start.
+   FAILED_TO_RUN_ATRACE_START = 16; // 0x0010
+   // Atrace could not allocate enough memory to record a trace.
+   ATRACE_NOT_ALLOCATE_MEMORY_TO_RECORD_TRACE = 32; // 0x0020
+   // Perfetto is already running unable to start new trace.
+   PERFETTO_ALREADY_RUNNING_UNABLE_START_NEW_TRACE = 64; // 0x0040
+   // Tracer is already running unable to run perfetto.
+   TRACER_ALREADY_RUNNING_UNABLE_RUN_PERFETTO = 128; // 0x0080
+   // Failed to launch perfetto.
+   FAILED_TO_LAUNCH_PERFETTO =  256; // 0x0100
+   // Failed to launch tracer.
+   FAILED_TO_LAUNCH_TRACER = 512; // 0x0200
+   // Failed to launch traced.
+   FAILED_TO_LAUNCH_TRACED = 1024; // 0x0400
+   // Failed to launch traced_probes.
+   FAILED_TO_LAUNCH_TRACED_PROBES = 2048; // 0x0800
+   // Simpleperf is already running; start tracing failed.
+   SIMPLEPREF_ALREADY_RUNNING = 4096; // 0x1000
+   // Unable to get process id to profile.
+   UNABLE_TO_GET_PROCESS_ID_TO_PROFILE = 8192; // 0x2000
+   // Unable to setprop to enable profiling.
+   UNABLE_TO_SETPROP_TO_ENABLE_PROFILING = 16384; // 0x4000
+   // Unable to create(fork) simpleperf process
+   UNABLE_TO_CREATE_FORK_SIMPLEPREF = 32768; // 0x8000
+   // Ongoing capture already exists
+   ONGOING_CAPTURE_EXISTS = 65536; // 0x10000
+   // No technology-specific tracing options set.
+   NO_TRACING_OPTIONS_SET = 131072; // 0x20000
+}
+
   Status status = 1;
-  string error_message = 2;
+  string error_message = 4; // TODO: Usage is in idea. Will be removed in upcoming CL.
+  int64 error_code = 2;
   // The time at which the trace was started (in nanoseconds).
   int64 start_time_ns = 3;
 }
@@ -85,8 +128,52 @@ message TraceStopStatus {
     OTHER_FAILURE = 15;
   }
 
+  // Each enum value must be an integer with at most 1 bit set in the binary format.
+  enum ErrorCode {
+   NO_ERROR_TRACE_STOP = 0; // 0x0000
+   // Failed to read trace from device
+   FAILED_TO_READ_TRACE_FROM_DEVICE = 1; // 0x0001
+   // Unable to monitor trace file for completion
+   UNABLE_TO_MONITOR_TRACE_FILE_FOR_COMPLETION = 2; // 0x0002
+   // Unable to run profile stop command
+   UNABLE_TO_RUN_PROFILE_STOP = 4; // 0x0004
+   // Cannot read events while waiting for ART trace file.
+   CANNOT_READ_WHILE_WAITING_FOR_ART_TRACE_FILE = 8; // 0x0008
+   // Wait for ART trace file failed.
+   WAIT_FOR_ART_TRACE_FILE_FAILED = 16; // 0x0010
+   // Wait for ART trace file timed out.
+   WAIT_FOR_ART_TRACE_FILE_TIMED_OUT = 32; // 0x0020
+   // Failed to stop atrace.
+   FAILED_TO_STOP_ATRACE = 64; // 0x0040
+   // Failed to stop tracer.
+   FAILED_TO_STOP_TRACER = 128; // 0x0080
+   // Failed to stop perfetto.
+   FAILED_TO_STOP_PERFETTO = 256; // 0x0100
+   // This app was not being profiled.
+   APP_WAS_NOT_BEING_PROFILED = 512; // 0x0200
+   // App died since profiling started.
+   APP_DIED_SINCE_PROFILEING_STARTED = 1024; // 0x0400
+   // Recorded pid and current app pid do not match
+   RECORDED_PIP_AND_CURRENT_APP_PID_DO_NOT_MATCH = 2048; // 0x0800
+   // Failed to send SIGTERM to simpleperf
+   FAILED_TO_SEND_SIGTERM_TO_SIMPLEPREF =4096; // 0x1000
+   // Unable to copy simpleperf raw trace.
+   UNABLE_TO_COPY_SIMPLEPREF_RAW_TRACE = 8192; // 0x2000
+   // waitpid failed with message
+   WAIT_PID_FAILED = 16384; // 0x4000
+   // Simpleperf did not exit as expected.
+   SIMPLE_PREF_NOT_EXIT_AS_EXPECTED = 32768; // 0x8000
+   // No ongoing capture exists
+   NO_ONGOING_CAPTURE = 65536; // 0x10000
+   // No technology-specific tracing options found on trace stoppage.
+   NO_TRACING_OPTIONS_FOUND = 131072; // 0x20000
+   // No trace type specified
+   NO_TRACE_TYPE_SPECIFIED_STOP = 262144; // 0x40000
+}
+
   Status status = 1;
-  string error_message = 2;
+  string error_message = 4; // TODO: Usage is in idea. Will be removed in upcoming CL.
+  int64 error_code = 2;
   // The time taken (i.e. elapsed duration) to stop the trace (in nanoseconds).
   int64 stopping_duration_ns = 3;
 }

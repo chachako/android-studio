@@ -37,7 +37,7 @@ class ActivityManager {
   // Starts profiling using ART runtime profiler either by sampling or
   // code instrumentation.
   // Returns true is profiling started successfully. Otherwise false
-  // and populate error_string.
+  // and populate error_code.
   // |trace_path| is where the trace file will be made available once profiling
   // of this app is stopped.
   // Calling start twice in a row (without a stop) will result in an error.
@@ -46,16 +46,16 @@ class ActivityManager {
   bool StartProfiling(const ProfilingMode profiling_mode,
                       const std::string &app_package_name,
                       int sampling_interval, const std::string &trace_path,
-                      std::string *error_string,
+                      std::string *error_string, int64_t *error_code,
                       bool is_startup_profiling = false);
 
   // Stops ongoing profiling. If no profiling was ongoing, this function is a
   // no-op. If |need_result|, waits ART for |timeout_sec| Seconds for finishing
   // writing the trace file. Returns true is profiling stopped successfully.
-  // Otherwise false and populate error_string.
+  // Otherwise false and populate error_code.
   profiler::proto::TraceStopStatus::Status StopProfiling(
       const std::string &app_package_name, bool need_result,
-      std::string *error_string, int32_t timeout_sec,
+      std::string *error_string, int64_t *error_code, int32_t timeout_sec,
       bool is_startup_profiling);
 
   // Virtual to support easier mocking.

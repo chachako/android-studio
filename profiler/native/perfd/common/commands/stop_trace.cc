@@ -111,8 +111,8 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
       bool move_success = fs.MoveFile(from_file_name, to_file_name);
       if (!move_success) {
         capture->stop_status.set_status(TraceStopStatus::CANNOT_READ_FILE);
-        capture->stop_status.set_error_message(
-            "Failed to read trace from device");
+        capture->stop_status.set_error_code(
+            TraceStopStatus::FAILED_TO_READ_TRACE_FROM_DEVICE);
       }
     }
     Event trace_event =
@@ -123,7 +123,7 @@ void Stop(Daemon* daemon, const profiler::proto::Command command_data,
     // to signal the stopping has initiated. In case the ongoing recording
     // cannot be found when StopProfiling() is called, we still a CPU_TRACE
     // event to mark the end of the stopping.
-    status.set_error_message("No ongoing capture exists");
+    status.set_error_code(TraceStopStatus::NO_ONGOING_CAPTURE);
     status.set_status(TraceStopStatus::NO_ONGOING_PROFILING);
 
     Event trace_event =

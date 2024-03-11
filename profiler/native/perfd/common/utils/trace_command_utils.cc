@@ -20,6 +20,7 @@ using profiler::proto::Event;
 using profiler::proto::ProfilerType;
 using profiler::proto::TraceInitiationType;
 using profiler::proto::TraceMode;
+using profiler::proto::TraceStartStatus;
 using profiler::proto::TraceStopStatus;
 
 namespace profiler {
@@ -86,14 +87,16 @@ Event PopulateTraceStatusEvent(const profiler::proto::Command& command_data,
   auto* stop_status =
       status_event.mutable_trace_status()->mutable_trace_stop_status();
   if (capture == nullptr) {
-    stop_status->set_error_message("No ongoing capture exists");
     stop_status->set_status(TraceStopStatus::NO_ONGOING_PROFILING);
+    stop_status->set_error_code(stop_status->error_code() |
+                                TraceStopStatus::NO_ONGOING_CAPTURE);
     return status_event;
   }
 
   if (profiler_type == ProfilerType::UNSPECIFIED) {
     stop_status->set_status(TraceStopStatus::STOP_COMMAND_FAILED);
-    stop_status->set_error_message("No trace type specified");
+    stop_status->set_error_code(stop_status->error_code() |
+                                TraceStopStatus::NO_TRACE_TYPE_SPECIFIED_STOP);
     return status_event;
   }
 
