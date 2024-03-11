@@ -29,7 +29,7 @@ class PreviewFinderTest {
     @Test
     fun testFindPreviewsAndSerializeWithEmptyClassPath() {
         val outputFile = tempDirRule.newFile("outputFile")
-        findPreviewsAndSerialize(listOf(), outputFile.toPath())
+        findPreviewsAndSerialize(listOf(), outputFile.toPath(), listOf(tempDirRule.root))
 
         Truth.assertThat(outputFile.readText()).isEqualTo("""
             {

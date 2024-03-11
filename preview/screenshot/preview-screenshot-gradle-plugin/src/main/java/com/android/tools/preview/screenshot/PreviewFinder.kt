@@ -27,6 +27,7 @@ import com.android.tools.render.compose.readComposeScreenshotsJson
 import com.android.tools.render.compose.writeComposeRenderingToJson
 import com.android.tools.render.compose.writeComposeScreenshotsToJson
 import java.io.File
+import java.io.File.separatorChar
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -59,14 +60,14 @@ fun configureInput (
     writeComposeRenderingToJson(cliToolArgumentsFile.writer(), composeRendering)
 }
 
-fun findPreviewsAndSerialize(classPath: List<String>, outputFile: Path) {
+fun findPreviewsAndSerialize(classPath: List<String>, outputFile: Path, testDirectories: List<File>) {
     val settings = MultipreviewSettings(
         "androidx.compose.ui.tooling.preview.Preview",
         "androidx.compose.ui.tooling.preview.PreviewParameter"
     )
     val multipreview = buildMultipreview(settings, classPath) {
         val className = getClassName(it)
-        className.endsWith("Test") || className.endsWith("TestKt")
+        classExistsIn(className, testDirectories)
     }
     val previews =  multipreview.methods.flatMap { method ->
         multipreview.getAnnotations(method).map { baseAnnotation ->
@@ -76,7 +77,22 @@ fun findPreviewsAndSerialize(classPath: List<String>, outputFile: Path) {
     serializePreviews(previews, outputFile)
 }
 
+// TODO: move this check to MethodFilter interface b/330334806
+fun classExistsIn(className: String, directories: List<File>): Boolean {
+    val classFilePath = className.replace('.', separatorChar) + ".class"
+    for (directory in directories) {
+        val potentialClassFile = File(directory, classFilePath)
+        if (potentialClassFile.exists()) {
+            return true // class found in test Directory
+        }
+    }
+    return false
+}
+
 private fun getClassName(fqcn: String): String {
+    if (fqcn.contains("$")) {
+        return fqcn.substring(0, fqcn.indexOf('$'))
+    }
     return fqcn.substring(0, fqcn.lastIndexOf("."))
 }
 

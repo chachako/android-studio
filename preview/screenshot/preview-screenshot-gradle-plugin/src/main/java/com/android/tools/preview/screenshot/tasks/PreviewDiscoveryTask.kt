@@ -81,8 +81,7 @@ abstract class PreviewDiscoveryTask: DefaultTask() {
         classpathJars.addAll(mainJars.get().map { it.asFile.absolutePath })
         classpathJars.addAll(testClassesDir.get().map { it.asFile.absolutePath})
         classpathJars.addAll(mainClassesDir.get().map { it.asFile.absolutePath})
-
         // TODO: use a worker here
-        findPreviewsAndSerialize(classpathJars, outputFilePath)
+        findPreviewsAndSerialize(classpathJars, outputFilePath, testClassesDir.get().map { it.asFile })
     }
 }
