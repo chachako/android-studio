@@ -395,7 +395,7 @@ final class SqliteInspector extends Inspector {
                 new EntryExitMatchingHookRegistry.OnExitCallback() {
                     @Override
                     public void onExit(EntryExitMatchingHookRegistry.Frame exitFrame) {
-                        final Object thisObject = exitFrame.mThisObject;
+                        final Object thisObject = exitFrame.getThisObject();
                         if (thisObject instanceof SQLiteDatabase) {
                             onDatabaseClosed((SQLiteDatabase) thisObject);
                         }
@@ -572,8 +572,8 @@ final class SqliteInspector extends Inspector {
                 new EntryExitMatchingHookRegistry.OnExitCallback() {
                     @Override
                     public void onExit(EntryExitMatchingHookRegistry.Frame exitFrame) {
-                        SQLiteCursor cursor = cursorParam(exitFrame.mResult);
-                        String query = stringParam(exitFrame.mArgs.get(1));
+                        SQLiteCursor cursor = cursorParam(exitFrame.getResult());
+                        String query = stringParam(exitFrame.getArgs().get(1));
 
                         // Only track cursors that might modify the database.
                         // TODO: handle PRAGMA select queries, e.g. PRAGMA_TABLE_INFO

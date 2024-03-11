@@ -23,5 +23,6 @@
     <orderEntry type="library" scope="TEST" name="robolectric" level="project" />
     <orderEntry type="library" name="androidx-annotation" level="project" />
     <orderEntry type="library" name="libtools.testutils.lib" level="project" />
+    <orderEntry type="module" module-name="app-inspection.inspectors.common" />
   </component>
 </module>

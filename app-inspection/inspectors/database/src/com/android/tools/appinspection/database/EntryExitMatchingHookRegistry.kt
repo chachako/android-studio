@@ -13,108 +13,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.appinspection.database
 
-package com.android.tools.appinspection.database;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.inspection.ArtTooling.EntryHook;
-import androidx.inspection.ArtTooling.ExitHook;
-import androidx.inspection.InspectorEnvironment;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.List;
+import androidx.inspection.InspectorEnvironment
+import com.android.tools.appinspection.common.threadLocal
+import com.android.tools.appinspection.database.EntryExitMatchingHookRegistry.OnExitCallback
+import java.util.ArrayDeque
+import java.util.Deque
 
 /**
  * The class allows for observing method's EntryHook parameters in ExitHook.
  *
- * <p>It works by registering both (entry and exit) hooks and keeping its own method frame stack. On
- * exit, it calls {@link OnExitCallback} provided by the user.
+ * It works by registering both (entry and exit) hooks and keeping its own method frame stack. On
+ * exit, it calls [OnExitCallback] provided by the user.
  *
- * <p>TODO: handle cases when frames could be dropped (e.g. because of an Exception) causing
- * internal state to be corrupted.
+ * TODO: handle cases when frames could be dropped (e.g. because of an Exception) causing internal
+ *   state to be corrupted.
  *
- * <p>Thread safe.
+ * Thread safe by using a [ThreadLocal].
  */
-final class EntryExitMatchingHookRegistry {
-    private final InspectorEnvironment mEnvironment;
-    private final ThreadLocal<Deque<Frame>> mFrameStack;
+internal class EntryExitMatchingHookRegistry(private val environment: InspectorEnvironment) {
+  private val frameStack: Deque<Frame> by threadLocal { ArrayDeque() }
 
-    EntryExitMatchingHookRegistry(InspectorEnvironment environment) {
-        mEnvironment = environment;
-        mFrameStack =
-                new ThreadLocal<Deque<Frame>>() {
-                    @NonNull
-                    @Override
-                    protected Deque<Frame> initialValue() {
-                        return new ArrayDeque<>();
-                    }
-                };
+  fun registerHook(originClass: Class<*>, originMethod: String, onExitCallback: OnExitCallback) {
+    val artTooling = environment.artTooling()
+
+    artTooling.registerEntryHook(originClass, originMethod) { thisObject, args ->
+      frameStack.addLast(Frame(originMethod, thisObject, args))
     }
 
-    void registerHook(
-            Class<?> originClass, final String originMethod, final OnExitCallback onExitCallback) {
-        mEnvironment
-                .artTooling()
-                .registerEntryHook(
-                        originClass,
-                        originMethod,
-                        new EntryHook() {
-                            @Override
-                            public void onEntry(
-                                    @Nullable Object thisObject, @NonNull List<Object> args) {
-                                getFrameStack()
-                                        .addLast(new Frame(originMethod, thisObject, args, null));
-                            }
-                        });
-
-        mEnvironment
-                .artTooling()
-                .registerExitHook(
-                        originClass,
-                        originMethod,
-                        new ExitHook<Object>() {
-                            @Override
-                            public Object onExit(Object result) {
-                                Frame entryFrame = getFrameStack().pollLast();
-                                if (entryFrame == null
-                                        || !originMethod.equals(entryFrame.mMethod)) {
-                                    // TODO: make more specific and handle
-                                    throw new IllegalStateException();
-                                }
-
-                                onExitCallback.onExit(
-                                        new Frame(
-                                                entryFrame.mMethod,
-                                                entryFrame.mThisObject,
-                                                entryFrame.mArgs,
-                                                result));
-                                return result;
-                            }
-                        });
+    artTooling.registerExitHook<Any>(originClass, originMethod) { result ->
+      val entryFrame: Frame = frameStack.pollLast()
+      // TODO: make more specific and handle
+      check(originMethod == entryFrame.method)
+      onExitCallback.onExit(entryFrame.copy(result = result))
+      result
     }
+  }
 
-    private @NonNull Deque<Frame> getFrameStack() {
-        /* It won't be null because of overridden {@link ThreadLocal#initialValue} */
-        //noinspection ConstantConditions
-        return mFrameStack.get();
-    }
+  internal data class Frame(
+    val method: String,
+    val thisObject: Any?,
+    val args: List<Any?>,
+    val result: Any? = null,
+  )
 
-    static final class Frame {
-        final String mMethod;
-        final Object mThisObject;
-        final List<Object> mArgs;
-        final Object mResult;
-
-        private Frame(String method, Object thisObject, List<Object> args, Object result) {
-            mMethod = method;
-            mThisObject = thisObject;
-            mArgs = args;
-            mResult = result;
-        }
-    }
-
-    interface OnExitCallback {
-        void onExit(Frame exitFrame);
-    }
+  internal fun interface OnExitCallback {
+    fun onExit(exitFrame: Frame)
+  }
 }
