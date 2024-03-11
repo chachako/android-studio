@@ -13,84 +13,73 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.appinspection.database
 
-package com.android.tools.appinspection.database;
+import androidx.annotation.GuardedBy
 
-import androidx.annotation.GuardedBy;
+private const val NEVER: Long = -1
 
 /**
  * Throttler implementation ensuring that events are run not more frequently that specified
  * interval. Events submitted during the interval period are collapsed into one (i.e. only one is
  * executed).
  *
- * <p>Thread safe.
+ * Thread safe.
+ *
+ * TODO(aalbert): This can probably be eliminated by using coroutines with a channel/flow
  */
-final class RequestCollapsingThrottler {
-    private static final long NEVER = -1;
+internal class RequestCollapsingThrottler(
+  private val minIntervalMs: Long,
+  private val action: Runnable,
+  private val executor: DeferredExecutor,
+) {
+  private val lock = Any()
 
-    private final Runnable mAction;
-    private final long mMinIntervalMs;
-    private final DeferredExecutor mExecutor;
-    private final Object mLock = new Object();
+  @GuardedBy("lock") private var pendingDispatch = false
 
-    @GuardedBy("mLock")
-    private boolean mPendingDispatch = false;
+  @GuardedBy("lock") private var lastSubmitted = NEVER
 
-    @GuardedBy("mLock")
-    private long mLastSubmitted = NEVER;
-
-    RequestCollapsingThrottler(long minIntervalMs, Runnable action, DeferredExecutor executor) {
-        mExecutor = executor;
-        mAction = action;
-        mMinIntervalMs = minIntervalMs;
+  fun submitRequest() {
+    synchronized(lock) {
+      if (pendingDispatch) {
+        return
+      }
+      pendingDispatch = true // about to schedule
     }
+    val delayMs = minIntervalMs - sinceLast() // delayMs < 0 is OK
+    scheduleDispatch(delayMs)
+  }
 
-    public void submitRequest() {
-        synchronized (mLock) {
-            if (mPendingDispatch) {
-                return;
-            } else {
-                mPendingDispatch = true; // about to schedule
-            }
+  // TODO: switch to ListenableFuture to react on failures
+  private fun scheduleDispatch(delayMs: Long) {
+    executor.schedule(
+      {
+        try {
+          action.run()
+        } finally {
+          synchronized(lock) {
+            lastSubmitted = now()
+            pendingDispatch = false
+          }
         }
-        long delayMs = mMinIntervalMs - sinceLast(); // delayMs < 0 is OK
-        scheduleDispatch(delayMs);
-    }
+      },
+      delayMs,
+    )
+  }
 
-    // TODO: switch to ListenableFuture to react on failures
-    @SuppressWarnings("FutureReturnValueIgnored")
-    private void scheduleDispatch(long delayMs) {
-        mExecutor.schedule(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            mAction.run();
-                        } finally {
-                            synchronized (mLock) {
-                                mLastSubmitted = now();
-                                mPendingDispatch = false;
-                            }
-                        }
-                    }
-                },
-                delayMs);
+  private fun sinceLast(): Long {
+    synchronized(lock) {
+      val lastSubmitted: Long = lastSubmitted
+      return if (lastSubmitted == NEVER) (minIntervalMs + 1) // more than minIntervalMs
+      else (now() - lastSubmitted)
     }
+  }
 
-    private static long now() {
-        return System.currentTimeMillis();
-    }
+  internal fun interface DeferredExecutor {
+    fun schedule(command: Runnable, delayMs: Long)
+  }
+}
 
-    private long sinceLast() {
-        synchronized (mLock) {
-            final long lastSubmitted = mLastSubmitted;
-            return lastSubmitted == NEVER
-                    ? (mMinIntervalMs + 1) // more than mMinIntervalMs
-                    : (now() - lastSubmitted);
-        }
-    }
-
-    interface DeferredExecutor {
-        void schedule(Runnable command, long delayMs);
-    }
+private fun now(): Long {
+  return System.currentTimeMillis()
 }
