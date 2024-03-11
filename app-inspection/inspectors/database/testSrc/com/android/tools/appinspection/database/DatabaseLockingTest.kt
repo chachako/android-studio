@@ -145,7 +145,7 @@ class DatabaseLockingTest {
 
   @Test
   fun test_timeoutError() =
-    withLockingTimeoutOverride(50) {
+    withLockingTimeoutOverride(50L) {
       runBlocking {
         // create a non-empty database
         val instance =
@@ -366,13 +366,13 @@ class DatabaseLockingTest {
     }
 
   @Suppress("SameParameterValue")
-  private fun withLockingTimeoutOverride(overrideMs: Int, block: () -> Any) {
-    val current = DatabaseLockRegistry.sTimeoutMs
+  private fun withLockingTimeoutOverride(overrideMs: Long, block: () -> Any) {
+    val current = DatabaseLockRegistry.TIMEOUT_MS
     try {
-      DatabaseLockRegistry.sTimeoutMs = overrideMs
+      DatabaseLockRegistry.TIMEOUT_MS = overrideMs
       block()
     } finally {
-      DatabaseLockRegistry.sTimeoutMs = current
+      DatabaseLockRegistry.TIMEOUT_MS = current
     }
   }
 

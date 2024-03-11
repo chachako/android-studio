@@ -53,6 +53,7 @@ app_inspection_jar(
 kotlin_library(
     name = "agent_tests_lib",
     srcs = glob(["testSrc/**/*.kt"]),
+    friends = [":agent-jar"],
     lint_is_test_sources = True,
     deps = [
         ":agent-jar",
