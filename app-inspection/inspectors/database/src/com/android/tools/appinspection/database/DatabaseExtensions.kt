@@ -14,69 +14,59 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.database;
+@file:JvmName("DatabaseExtensions")
 
-import android.database.sqlite.SQLiteDatabase;
-import androidx.annotation.NonNull;
-import java.io.File;
-import java.util.Objects;
+package com.android.tools.appinspection.database
 
-final class DatabaseExtensions {
+import android.database.sqlite.SQLiteDatabase
+import java.io.File
 
-    private static final String sInMemoryDatabasePath = ":memory:";
+private const val IN_MEMORY_DATABASE_PATH = ":memory:"
 
-    /** Placeholder {@code %x} is for database's hashcode */
-    private static final String sInMemoryDatabaseNameFormat =
-            sInMemoryDatabasePath + " {hashcode=0x%x}";
+/** Placeholder `%x` is for database's hashcode */
+private const val IN_MEMORY_DATABASE_NAME_FORMAT = "$IN_MEMORY_DATABASE_PATH {hashcode=0x%x}"
 
-    private DatabaseExtensions() {}
+/** Thread-safe as [SQLiteDatabase.getPath] and [Any.hashCode] are thread-safe */
+fun SQLiteDatabase.pathForDatabase(): String =
+  when {
+    isInMemoryDatabase() -> IN_MEMORY_DATABASE_NAME_FORMAT.format(hashCode())
+    else -> File(path).absolutePath
+  }
 
-    /** Thread-safe as {@link SQLiteDatabase#getPath} and {@link Object#hashCode) are thread-safe. */
-    static String pathForDatabase(@NonNull SQLiteDatabase database) {
-        return isInMemoryDatabase(database)
-                ? String.format(sInMemoryDatabaseNameFormat, database.hashCode())
-                : new File(database.getPath()).getAbsolutePath();
+/** Thread-safe as [SQLiteDatabase.getPath] is thread-safe. */
+fun SQLiteDatabase.isInMemoryDatabase() = IN_MEMORY_DATABASE_PATH == path
+
+/**
+ * Attempts to call [SQLiteDatabase.acquireReference] on the provided object.
+ *
+ * @return true if the operation was successful; false if unsuccessful because the database was
+ *   already closed; otherwise re-throws the exception thrown by
+ *   [ ][SQLiteDatabase.acquireReference].
+ */
+fun SQLiteDatabase.tryAcquireReference(): Boolean {
+  if (!isOpen) {
+    return false
+  }
+
+  try {
+    acquireReference()
+    return true // success
+  } catch (e: IllegalStateException) {
+    if (e.isAttemptAtUsingClosedDatabase()) {
+      return false
     }
+    throw e
+  }
+}
 
-    /** Thread-safe as {@link SQLiteDatabase#getPath} is thread-safe. */
-    static boolean isInMemoryDatabase(@NonNull SQLiteDatabase database) {
-        return Objects.equals(sInMemoryDatabasePath, database.getPath());
-    }
-
-    /**
-     * Attempts to call {@link SQLiteDatabase#acquireReference} on the provided object.
-     *
-     * @return true if the operation was successful; false if unsuccessful because the database was
-     *     already closed; otherwise re-throws the exception thrown by {@link
-     *     SQLiteDatabase#acquireReference}.
-     */
-    static boolean tryAcquireReference(@NonNull SQLiteDatabase database) {
-        if (!database.isOpen()) {
-            return false;
-        }
-
-        try {
-            database.acquireReference();
-            return true; // success
-        } catch (IllegalStateException e) {
-            if (isAttemptAtUsingClosedDatabase(e)) {
-                return false;
-            }
-            throw e;
-        }
-    }
-
-    /**
-     * Note that this is best-effort as relies on Exception message parsing, which could break in
-     * the future. Use in the context where false negatives (more likely) and false positives (less
-     * likely due to the specificity of the message) are tolerable, e.g. to assign error codes where
-     * if it fails we will just send an 'unknown' error.
-     */
-    static boolean isAttemptAtUsingClosedDatabase(IllegalStateException exception) {
-        String message = exception.getMessage();
-        return message != null
-                && (message.contains("attempt to re-open an already-closed object")
-                        || message.contains(
-                                "Cannot perform this operation because the connection pool has been closed"));
-    }
+/**
+ * Note that this is best-effort as relies on Exception message parsing, which could break in the
+ * future. Use in the context where false negatives (more likely) and false positives (less likely
+ * due to the specificity of the message) are tolerable, e.g. to assign error codes where if it
+ * fails we will just send an 'unknown' error.
+ */
+fun Throwable.isAttemptAtUsingClosedDatabase(): Boolean {
+  val message = this.message ?: return false
+  return (message.contains("attempt to re-open an already-closed object") ||
+    message.contains("Cannot perform this operation because the connection pool has been closed"))
 }
