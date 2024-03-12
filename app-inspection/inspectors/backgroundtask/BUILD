@@ -2,6 +2,7 @@ load("//tools/adt/idea/studio:studio.bzl", "studio_data")
 load("//tools/base/app-inspection:app_inspection.bzl", "app_inspection_jar")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
 load("//tools/base/bazel:proto.bzl", "android_java_proto_library")
+load("//tools/base/bazel:robolectric.bzl", "robolectric_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -49,35 +50,18 @@ app_inspection_jar(
     deps = agent_deps,
 )
 
-kotlin_library(
-    name = "agent_tests_lib",
+robolectric_test(
+    name = "agent_tests",
     srcs = glob(["testSrc/**/*.kt"]),
+    custom_package = "org.robolectric.default",
+    friends = [":agent-jar"],
     deps = [
         ":agent-jar",
-        "//prebuilts/tools/common/m2:androidx-monitor",
-        "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
         "@maven//:org.robolectric.android-all-instrumented",
         "@maven//:org.robolectric.robolectric",
-    ],
-)
-
-android_local_test(
-    name = "agent_tests.test",
-    custom_package = "org.robolectric.default",
-    jvm_flags = [
-        "-Dtest.suite.jar=agent_tests_lib.jar",
-    ],
-    tags = [
-        "no_mac",
-        "no_windows",
-    ],
-    test_class = "com.android.testutils.JarTestSuite",
-    deps = [
-        ":agent_tests_lib",
-        "@robolectric//bazel:android-all",
     ],
 )
 
