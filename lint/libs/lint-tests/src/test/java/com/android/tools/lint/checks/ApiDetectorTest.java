@@ -27,9 +27,11 @@ import static com.android.tools.lint.detector.api.VersionChecksTestKt.getRequire
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.SdkVersionInfo;
 import com.android.tools.lint.checks.infrastructure.ProjectDescription;
 import com.android.tools.lint.checks.infrastructure.TestFile;
+import com.android.tools.lint.checks.infrastructure.TestLintResult;
 import com.android.tools.lint.checks.infrastructure.TestLintTask;
 import com.android.tools.lint.detector.api.ApiConstraint;
 import com.android.tools.lint.detector.api.Context;
@@ -39,6 +41,7 @@ import com.android.tools.lint.detector.api.LintFix;
 import com.android.tools.lint.detector.api.Location;
 import com.android.tools.lint.detector.api.Project;
 import com.android.tools.lint.detector.api.Severity;
+import java.io.File;
 import org.intellij.lang.annotations.Language;
 
 @SuppressWarnings("TextBlockMigration")
@@ -9377,6 +9380,68 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .expectClean();
     }
 
+    public void testRemoveTest() {
+
+        TestLintResult result =
+                lint().files(
+                                kotlin(
+                                        ""
+                                                + "fun test(list: MutableList<String>) {\n"
+                                                + "    list.removeFirst()\n"
+                                                + "    list.removeLast()\n"
+                                                + "}"))
+                        .run();
+
+      TestLintClient client = createClient();
+      AndroidVersion version =
+                client.getPlatformLookup().getLatestSdkTarget(1, false, false).getVersion();
+        if (version.getApiLevel() < 35) {
+            result.expect(
+                            ""
+                                    + "src/test.kt:2: Warning: This Kotlin extension function will be hidden by java.util.SequencedCollection starting in API 35 [NewApi]\n"
+                                    + "    list.removeFirst()\n"
+                                    + "    ~~~~~~~~~~~~~~~~~~\n"
+                                    + "src/test.kt:3: Warning: This Kotlin extension function will be hidden by java.util.SequencedCollection starting in API 35 [NewApi]\n"
+                                    + "    list.removeLast()\n"
+                                    + "    ~~~~~~~~~~~~~~~~~\n"
+                                    + "0 errors, 2 warnings")
+                    .expectFixDiffs(
+                            ""
+                                    + "Fix for src/test.kt line 2: Replace with removeAt(0):\n"
+                                    + "@@ -2 +2\n"
+                                    + "-     list.removeFirst()\n"
+                                    + "+     list.removeAt(0)\n"
+                                    + "Fix for src/test.kt line 3: Replace with removeAt(list.lastIndex):\n"
+                                    + "@@ -3 +3\n"
+                                    + "-     list.removeLast()\n"
+                                    + "+     list.removeAt(list.lastIndex)");
+        } else {
+            result.expect(
+                            ""
+                                    + "src/test.kt:2: Error: Call requires API level 35 (current min is 1): java.util.List#removeFirst (Prior to API level 35, this call would resolve to a Kotlin stdlib extension function. You can use remove(index) instead.) [NewApi]\n"
+                                    + "    list.removeFirst()\n"
+                                    + "         ~~~~~~~~~~~\n"
+                                    + "src/test.kt:3: Error: Call requires API level 35 (current min is 1): java.util.List#removeLast (Prior to API level 35, this call would resolve to a Kotlin stdlib extension function. You can use remove(index) instead.) [NewApi]\n"
+                                    + "    list.removeLast()\n"
+                                    + "         ~~~~~~~~~~\n"
+                                    + "2 errors, 0 warnings")
+                    .expectFixDiffs(
+                            ""
+                                    + "Fix for src/test.kt line 2: Replace with removeAt(0):\n"
+                                    + "@@ -2 +2\n"
+                                    + "-     list.removeFirst()\n"
+                                    + "+     list.removeAt(0)\n"
+                                    + "Data for src/test.kt line 2:   minSdk : ffffffffffffffff\n"
+                                    + "  requiresApi : fffffffc00000000\n"
+                                    + "Fix for src/test.kt line 3: Replace with removeAt(list.lastIndex):\n"
+                                    + "@@ -3 +3\n"
+                                    + "-     list.removeLast()\n"
+                                    + "+     list.removeAt(list.lastIndex)\n"
+                                    + "Data for src/test.kt line 3:   minSdk : ffffffffffffffff\n"
+                                    + "  requiresApi : fffffffc00000000");
+        }
+    }
+
     @Override
     protected TestLintClient createClient() {
         return super.createClient();
@@ -9409,15 +9474,18 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 }
             }
 
-            assertTrue(message, fixData instanceof LintFix.DataMap);
-            LintFix.DataMap map = (LintFix.DataMap) fixData;
-            ApiConstraint requiredVersions = map.getApiConstraint(KEY_REQUIRES_API);
-            assertNotNull(requiredVersions);
-            ApiConstraint requiredVersion = requiredVersions.getConstraints().get(0);
-            assertTrue(
-                    "Could not extract message tokens from \"" + message + "\"",
-                    requiredVersion.min() >= 1
-                            && requiredVersion.min() <= SdkVersionInfo.HIGHEST_KNOWN_API);
+            if (fixData instanceof LintFix.DataMap) {
+              LintFix.DataMap map = (LintFix.DataMap) fixData;
+              ApiConstraint requiredVersions = map.getApiConstraint(KEY_REQUIRES_API);
+              assertNotNull(requiredVersions);
+              ApiConstraint requiredVersion = requiredVersions.getConstraints().get(0);
+              assertTrue(
+                  "Could not extract message tokens from \"" + message + "\"",
+                  requiredVersion.min() >= 1
+                      && requiredVersion.min() <= SdkVersionInfo.HIGHEST_KNOWN_API);
+            } else {
+              assertNotNull("Expected a custom API quickfix if not using regular API level fix mechanism", fixData);
+            }
         }
     }
 

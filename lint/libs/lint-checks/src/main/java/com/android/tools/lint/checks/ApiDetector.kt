@@ -142,6 +142,7 @@ import com.intellij.psi.util.TypeConversionUtil
 import java.io.IOException
 import java.util.EnumSet
 import kotlin.math.max
+import org.jetbrains.kotlin.asJava.elements.KtLightElementBase
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UArrayAccessExpression
@@ -1008,9 +1009,9 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
     val desugaring = map.getInt(KEY_DESUGAR, null)?.let { Desugaring.fromConstant(it) }
     var libraryDesugaring = false
     if ((desugaring == null || desugaring == Desugaring.JAVA_8_LIBRARY)) {
+      // See if library desugaring is turned on in the main project
       if (mainProject.isDesugaring(Desugaring.JAVA_8_LIBRARY)) {
         libraryDesugaring = true
-        // See if library desugaring is turned on in the main project
         val owner = map.getString(KEY_OWNER, null)
         if (owner != null && canBeDesugaredLater(owner)) {
           val name = map.getString(KEY_NAME)
@@ -1165,12 +1166,21 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       if (original != null) {
         formatString += " (called from `$original`)"
       }
+
+      var suggestedFix = fix ?: apiLevelFix(missing, minSdk)
+
+      if (owner == "java.util.List" && (name == "removeFirst" || name == "removeLast")) {
+        formatString +=
+          " (Prior to API level 35, this call would resolve to a Kotlin stdlib extension function. You can use `remove(`*index*`)` instead.)"
+        suggestedFix = fix().alternatives(createRemoveFirstFix(context, node, name), suggestedFix)
+      }
+
       report(
         issue,
         node,
         location,
         formatString,
-        fix ?: apiLevelFix(missing, minSdk),
+        suggestedFix,
         owner,
         name,
         desc,
@@ -1716,7 +1726,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         }
       }
 
-      if (method !is PsiCompiledElement) {
+      if (method !is PsiCompiledElement && method !is KtLightElementBase) {
         // We're only checking the Android SDK below, which should
         // be provided as binary (android.jar) and if we're actually
         // running on sources we don't want to perform this check
@@ -2131,6 +2141,18 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
               "kotlin.text.MatchNamedGroupCollection#get",
             )
           }
+        }
+        owner == "kotlin.collections.CollectionsKt__MutableCollectionsKt" &&
+          (name == "removeFirst" || name == "removeLast") -> {
+          val incident =
+            Incident(
+              UNSUPPORTED,
+              call,
+              context.getLocation(call),
+              "This Kotlin extension function will be hidden by `java.util.SequencedCollection` starting in API 35",
+              createRemoveFirstFix(context, call, name),
+            )
+          context.report(incident.overrideSeverity(Severity.WARNING))
         }
       }
     }
@@ -2983,6 +3005,26 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
 
     private fun apiLevelFix(api: ApiConstraint, minSdk: ApiConstraint): LintFix {
       return LintFix.create().data(KEY_REQUIRES_API, api, KEY_MIN_API, minSdk)
+    }
+
+    private fun createRemoveFirstFix(context: JavaContext, node: UElement, name: String?): LintFix {
+      val replacement =
+        if (name == "removeFirst") {
+          "removeAt(0"
+        } else {
+          val receiver = (node as? UCallExpression)?.receiver?.sourcePsi?.text ?: ""
+          "removeAt($receiver.lastIndex"
+        }
+      val replaceFix =
+        LintFix.create()
+          // the replacement is missing ")", so manually create the display name
+          .name("Replace with $replacement)")
+          .replace()
+          .pattern("$name\\s*\\(")
+          .with(replacement)
+          .range(context.getLocation(node))
+          .build()
+      return replaceFix
     }
 
     /**
