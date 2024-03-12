@@ -27,7 +27,6 @@ interface HasAndroidTest {
      * Variant's [AndroidTest] configuration, or null if android tests are disabled for this
      * variant.
      */
-    @Suppress("DEPRECATION")
     val androidTest: AndroidTest?
 
     /**

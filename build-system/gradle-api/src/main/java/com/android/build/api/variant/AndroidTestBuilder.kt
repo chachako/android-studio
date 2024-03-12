@@ -16,7 +16,6 @@
 
 package com.android.build.api.variant
 
-@Deprecated("replaced with DeviceTestBuilder")
 interface AndroidTestBuilder: DeviceTestBuilder {
 
     /**
@@ -45,6 +44,5 @@ interface AndroidTestBuilder: DeviceTestBuilder {
         message="Other plugins can change this value, it is not safe to read it at this stage",
         level = DeprecationLevel.ERROR
     )
-    @set:Deprecated("replaced with DeviceTestBuilder.enableMultiDex")
     override var enableMultiDex: Boolean?
 }

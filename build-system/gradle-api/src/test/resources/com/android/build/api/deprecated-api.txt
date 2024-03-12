@@ -7,13 +7,7 @@ Deprecated from AGP 8.4.0
   * com.android.build.api.artifact.Artifacts.add: void (com.android.build.api.artifact.MultipleArtifact<FileTypeT>, FileTypeT)
   * com.android.build.api.dsl.KeepRules.ignoreAllExternalDependencies: void (boolean)
   * com.android.build.api.dsl.KeepRules.ignoreExternalDependencies: void (java.lang.String[])
-  * com.android.build.api.variant.AndroidTestBuilder implements com.android.build.api.variant.DeviceTestBuilder
-  * com.android.build.api.variant.AndroidTestBuilder.getEnable: boolean ()
-  * com.android.build.api.variant.AndroidTestBuilder.setEnable: void (boolean)
-  * com.android.build.api.variant.AndroidTestBuilder.setEnableMultiDex: void (java.lang.Boolean)
   * com.android.build.api.variant.DeviceTestBuilder.getEnableMultiDex: java.lang.Boolean ()
-  * com.android.build.api.variant.HasAndroidTestBuilder
-  * com.android.build.api.variant.HasAndroidTestBuilder.getAndroidTest: com.android.build.api.variant.AndroidTestBuilder ()
 Deprecated from AGP UNKNOWN_VERSION
   * com.android.build.api.dsl.AaptOptions implements com.android.build.api.dsl.AndroidResources
   * com.android.build.api.dsl.AdbOptions implements com.android.build.api.dsl.Installation
@@ -236,8 +230,6 @@ Deprecated from AGP UNKNOWN_VERSION
   * com.android.build.api.variant.AndroidComponentsExtension.finalizeDSl: void (org.gradle.api.Action<DslExtensionT>)
   * com.android.build.api.variant.ComponentBuilder.getEnabled: boolean ()
   * com.android.build.api.variant.ComponentBuilder.setEnabled: void (boolean)
-  * com.android.build.api.variant.HasAndroidTestBuilder.getAndroidTestEnabled: boolean ()
-  * com.android.build.api.variant.HasAndroidTestBuilder.setAndroidTestEnabled: void (boolean)
   * com.android.build.api.variant.VariantInfo
   * com.android.build.api.variant.VariantInfo.getBuildTypeName: java.lang.String ()
   * com.android.build.api.variant.VariantInfo.getFlavorNames: com.google.common.collect.ImmutableList<java.lang.String> ()
@@ -307,8 +299,6 @@ Deprecated from AGP 8.3.0
   * com.android.build.api.variant.AndroidTestBuilder.getEnableMultiDex: java.lang.Boolean ()
   * com.android.build.api.variant.ApplicationVariantBuilder.getProfileable: boolean ()
   * com.android.build.api.variant.GeneratesApkBuilder.getEnableMultiDex: java.lang.Boolean ()
-  * com.android.build.api.variant.HasAndroidTestBuilder.getEnableAndroidTest: boolean ()
-  * com.android.build.api.variant.HasAndroidTestBuilder.setEnableAndroidTest: void (boolean)
 Deprecated from AGP 7.4.0
   * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdk: java.lang.Integer ()
   * com.android.build.api.dsl.LibraryBaseFlavor.getTargetSdkPreview: java.lang.String ()

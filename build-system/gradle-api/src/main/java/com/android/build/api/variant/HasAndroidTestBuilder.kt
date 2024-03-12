@@ -23,28 +23,23 @@ import org.gradle.api.Incubating
  *
  * This is implemented by select subtypes of [VariantBuilder].
  */
-@Deprecated(message="replaced with HasDeviceTestsBuilder", ReplaceWith("HasDeviceTestsBuilder"))
 interface HasAndroidTestBuilder {
 
     /**
      * Set to `true` if the variant's has any android tests, false otherwise.
      * Value is [Boolean#True] by default.
      */
-    @Deprecated("replaced with DeviceTest.enable", ReplaceWith("(this as DeviceTest).enable"))
     var androidTestEnabled: Boolean
 
     /**
      * Set to `true` if the variant's has any android tests, false otherwise.
      * Value is [Boolean#True] by default.
      */
-    @Deprecated("replaced with DeviceTest.enable", ReplaceWith("(this as DeviceTest).enable"))
     var enableAndroidTest: Boolean
 
     /**
      * Variant's [AndroidTestBuilder] configuration to turn on or off android tests and set
      * other android test related settings.
      */
-    @Suppress("DEPRECATION")
-    @get:Deprecated("replaced with DeviceTestBuilder.deviceTest")
     val androidTest: AndroidTestBuilder
 }

@@ -2446,8 +2446,9 @@ package com.android.build.api.variant {
     property public abstract com.android.build.api.variant.SigningConfig? signingConfig;
   }
 
-  @Deprecated public interface AndroidTestBuilder extends com.android.build.api.variant.DeviceTestBuilder {
-    property @Deprecated public abstract boolean enable;
+  public interface AndroidTestBuilder extends com.android.build.api.variant.DeviceTestBuilder {
+    method @Deprecated public void setEnableMultiDex(Boolean?);
+    property public abstract boolean enable;
     property @Deprecated public abstract Boolean? enableMultiDex;
   }
 
@@ -2828,15 +2829,15 @@ package com.android.build.api.variant {
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.TestedComponentPackaging packaging;
   }
 
-  @Deprecated public interface HasAndroidTestBuilder {
-    method @Deprecated public com.android.build.api.variant.AndroidTestBuilder getAndroidTest();
-    method @Deprecated public boolean getAndroidTestEnabled();
-    method @Deprecated public boolean getEnableAndroidTest();
-    method @Deprecated public void setAndroidTestEnabled(boolean);
-    method @Deprecated public void setEnableAndroidTest(boolean);
-    property @Deprecated public abstract com.android.build.api.variant.AndroidTestBuilder androidTest;
-    property @Deprecated public abstract boolean androidTestEnabled;
-    property @Deprecated public abstract boolean enableAndroidTest;
+  public interface HasAndroidTestBuilder {
+    method public com.android.build.api.variant.AndroidTestBuilder getAndroidTest();
+    method public boolean getAndroidTestEnabled();
+    method public boolean getEnableAndroidTest();
+    method public void setAndroidTestEnabled(boolean);
+    method public void setEnableAndroidTest(boolean);
+    property public abstract com.android.build.api.variant.AndroidTestBuilder androidTest;
+    property public abstract boolean androidTestEnabled;
+    property public abstract boolean enableAndroidTest;
   }
 
   @org.gradle.api.Incubating public interface HasDeviceTests {
