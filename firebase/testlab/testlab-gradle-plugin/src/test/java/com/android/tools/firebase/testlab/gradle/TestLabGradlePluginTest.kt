@@ -82,12 +82,12 @@ class TestLabGradlePluginTest {
 
     @Test
     fun agpVersionCheck() {
-        val unsupportedVersionsTooOld = listOf(
+        val unsupportedVersions = listOf(
                 AndroidPluginVersion(8, 1, 0).alpha(9),
                 AndroidPluginVersion(8, 1),
                 AndroidPluginVersion(8, 2),
                 AndroidPluginVersion(8, 2, 0).alpha(9),
-                AndroidPluginVersion(8, 5),
+                AndroidPluginVersion(8, 6),
         )
         val supportedVersions = listOf(
                 AndroidPluginVersion(8, 1).dev(),
@@ -98,13 +98,13 @@ class TestLabGradlePluginTest {
                 AndroidPluginVersion(8, 5, 0).dev(),
         )
 
-        unsupportedVersionsTooOld.forEach {
+        unsupportedVersions.forEach {
             val e = assertThrows(IllegalStateException::class.java) {
                 applyFtlPlugin(it)
             }
             assertThat(e).hasMessageThat()
                     .contains("Firebase TestLab plugin is an experimental feature. It requires Android " +
-                            "Gradle plugin version 8.3 or 8.4")
+                            "Gradle plugin version between 8.3 and 8.5.")
         }
 
         supportedVersions.forEach {

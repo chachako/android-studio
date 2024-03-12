@@ -48,6 +48,9 @@ import org.gradle.api.provider.Provider
 import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.jvm.toolchain.JavaToolchainService
 
+private val minAgpVersion = AndroidPluginVersion(8, 4, 0).alpha(9)
+private val maxAgpVersion = AndroidPluginVersion(8,5,255)
+
 /**
  * An entry point for Screenshot plugin that adds support for screenshot testing on Compose Previews
  */
@@ -56,14 +59,13 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
         project.plugins.withType(AndroidBasePlugin::class.java) {
             val componentsExtension = project.extensions.getByType(AndroidComponentsExtension::class.java)
             val agpVersion = componentsExtension.pluginVersion
-            if (agpVersion < AndroidPluginVersion(8, 4, 0).alpha(9)) {
-                error("Android Gradle plugin version 8.4.0-alpha09 or higher is required." +
-                        " Current version is $agpVersion.")
-            }
-            if (agpVersion >= AndroidPluginVersion(8,5).alpha(1)
-                && agpVersion.previewType != "dev") {
-                error("Preview screenshot plugin is an experimental feature. It requires Android " +
-                        "Gradle plugin version 8.4 (alpha09+). Current version is $agpVersion.")
+            if (agpVersion < minAgpVersion || (agpVersion > maxAgpVersion && agpVersion.previewType != "dev")) {
+                error(
+                    """
+                    Preview screenshot plugin requires Android Gradle plugin version between ${minAgpVersion.toVersionString()} and ${maxAgpVersion.major}.${maxAgpVersion.minor}.
+                    Current version is $agpVersion.
+                    """.trimIndent()
+                )
             }
 
             val analyticsServiceProvider = project.gradle.sharedServices.registerIfAbsent(
