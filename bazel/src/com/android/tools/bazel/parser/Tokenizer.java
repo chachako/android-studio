@@ -17,7 +17,6 @@
 package com.android.tools.bazel.parser;
 
 import com.android.tools.bazel.parser.ast.Token.Kind;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -36,9 +35,11 @@ public class Tokenizer {
     private int tokenIndex;
     private TokenizerToken token;
     private String string;
+    private String absolutePath;
 
     public Tokenizer(File file) throws IOException {
         byte[] bytes = Files.readAllBytes(file.toPath());
+        absolutePath = file.getAbsolutePath();
         string = new String(bytes, StandardCharsets.UTF_8);
         start = 0;
         prefix = 0;
@@ -169,6 +170,10 @@ public class Tokenizer {
 
     public String getString() {
         return string;
+    }
+
+    public String getAbsolutePath() {
+        return absolutePath;
     }
 
     public TokenizerToken firstToken() {

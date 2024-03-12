@@ -17,7 +17,6 @@
 package com.android.tools.bazel.parser;
 
 import com.android.tools.bazel.parser.ast.Token;
-
 import java.util.Collections;
 
 /**
@@ -72,6 +71,7 @@ class TokenizerToken extends Token {
     public String asError() {
         // TODO, optimize this:
         String string = tokenizer.getString();
+        String absolutePath = tokenizer.getAbsolutePath();
         int line = 1;
         int linestart = 0;
         for (int i = 0; i < start; i++) {
@@ -82,7 +82,16 @@ class TokenizerToken extends Token {
         }
         int lineend = string.indexOf('\n', start);
         int offset = start - linestart;
-        String error = "Unexpected token: " + kind + ". Line " + line + ":" + offset + "\n";
+        String error =
+                "Unexpected token: "
+                        + kind
+                        + ". File "
+                        + absolutePath
+                        + ", line "
+                        + line
+                        + ":"
+                        + offset
+                        + "\n";
         error += lineend != -1 ? string.substring(linestart, lineend) : string.substring(linestart);
         error += "\n" + String.join("", Collections.nCopies(offset, " ")) + "^\n";
         return error;
