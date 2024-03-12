@@ -39,13 +39,13 @@ iml_module(
     # do not sort: must match IML order
     exports = [
         "//tools/base/annotations:studio.android.sdktools.android-annotations",
-        "//tools/base/common:version",
+        "//tools/adt/idea/.idea/libraries:agp-version",
     ],
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
-        "//tools/base/common:version",
+        "//tools/adt/idea/.idea/libraries:agp-version",
     ],
 )
 
@@ -182,11 +182,4 @@ iml_module(
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
         "//tools/base/common:studio.android.sdktools.common[module]",
     ],
-)
-
-# managed by go/iml_to_build
-jvm_import(
-    name = "version",
-    jars = ["//tools/base/common/version:libversion.jar"],
-    visibility = ["//visibility:public"],
 )

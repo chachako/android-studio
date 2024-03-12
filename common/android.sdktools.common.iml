@@ -24,14 +24,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="library" name="studio-sdk" level="project" />
     <orderEntry type="module" module-name="android.sdktools.android-annotations" exported="" />
-    <orderEntry type="module-library" exported="">
-      <library name="version">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../bazel-bin/tools/base/common/version/libversion.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" exported="" name="agp-version" level="project" />
   </component>
 </module>

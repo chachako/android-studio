@@ -19,7 +19,10 @@ java_library(
     ],
     resource_strip_prefix = "tools/base/common/version",
     resources = ["//tools/base/common/version/com/android:version.properties"],
-    visibility = ["//tools/base/common:__pkg__"],
+    visibility = [
+        "//tools/adt/idea/.idea/libraries:__pkg__",
+        "//tools/base/common:__pkg__",
+    ],
 )
 
 java_test(

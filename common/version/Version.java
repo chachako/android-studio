@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Properties;
 
-/** Version strings for this builder-model artifact. */
+/** Version strings for Android Gradle plugin, Lint and related tools. */
 public final class Version {
     public static final String TOOLS_VERSION;
     public static final String ANDROID_GRADLE_PLUGIN_VERSION;
