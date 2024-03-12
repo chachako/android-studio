@@ -23,7 +23,7 @@ filegroup(
 
 fileset(
     name = "TestData",
-    srcs = glob(["src/test/data/**"]),
+    srcs = glob(["src/test/data/**"]) + ["//tools/base/build-system:supported_versions_properties_file"],
 )
 
 # managed by go/iml_to_build
@@ -93,10 +93,13 @@ maven_library(
     ],
 )
 
+#
+
 kotlin_test(
     name = "tools.tests",
     srcs = glob([
         "src/test/java/**/*.kt",
+        "src/test/java/com/android/*.java",
         "src/test/java/com/android/ide/common/blame/*.java",
         "src/test/java/com/android/io/*.java",
         "src/test/java/com/android/prefs/*.java",

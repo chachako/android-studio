@@ -237,6 +237,12 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "supported_versions_properties_file",
+    srcs = ["supported-versions.properties"],
+    visibility = ["//tools/base/common:__pkg__"],
+)
+
 java_library(
     name = "gradle-tooling-api",
     visibility = ["//tools/base/bazel:__subpackages__"],

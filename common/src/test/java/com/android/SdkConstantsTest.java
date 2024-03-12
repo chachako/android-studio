@@ -16,8 +16,14 @@
 package com.android;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import com.android.testutils.TestUtils;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Properties;
 import java.util.regex.Pattern;
 import org.junit.Test;
 
@@ -31,5 +37,22 @@ public class SdkConstantsTest {
         assertTrue(pattern.matcher("classes0.dex").matches());
         assertTrue(pattern.matcher("classes101.dex").matches());
         assertFalse(pattern.matcher("classesA.dex").matches());
+    }
+
+    // Ensure the OLD_GRADLE_VERSION is the same version set in the supported-version.properties
+    // file for consistency.
+    @Test
+    public void testOldGradleVersionAlignmentWithSupportVersionProperties() throws Exception {
+        Path dir = TestUtils.resolveWorkspacePath("tools/base/build-system");
+        // Loading the property file to compare with GRADLE_LATEST_VERSION
+        Properties property = new Properties();
+        try (FileInputStream inputStream =
+                new FileInputStream(dir.resolve("supported-versions.properties").toFile())) {
+            property.load(inputStream);
+        } catch (IOException e) {
+            throw new Exception("Error loading properties file: " + e.getMessage());
+        }
+        String gradle_minimum = property.getProperty("gradle_minimum");
+        assertEquals(SdkConstants.GRADLE_LATEST_VERSION, gradle_minimum);
     }
 }
