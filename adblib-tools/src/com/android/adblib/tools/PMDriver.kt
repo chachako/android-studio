@@ -17,6 +17,7 @@ package com.android.adblib.tools
 
 import com.android.adblib.AdbDeviceServices
 import com.android.adblib.DeviceSelector
+import com.android.adblib.availableFeatures
 import com.android.adblib.deviceProperties
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -26,7 +27,6 @@ import java.time.Duration
 import java.time.Instant
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import kotlin.io.path.fileSize
 
 // A summary of how install works based on the target device.
 // Three parameter are to be considered in order to decide of an install strategy.
@@ -141,7 +141,7 @@ internal class PMDriver(private val service : AdbDeviceServices, private val dev
         } catch (t: Throwable) {
             runCatching {
                 val flow = pm.abandon(device, sessionID)
-                flow.first();
+                flow.first()
             }.onFailure { t.addSuppressed(it) }
             throw t
         }
