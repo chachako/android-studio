@@ -394,12 +394,14 @@ enum ProfilerTaskType {
   UNSPECIFIED_TASK = 0;
   CALLSTACK_SAMPLE = 1;
   SYSTEM_TRACE = 2;
-  JAVA_KOTLIN_METHOD_TRACE = 3;
-  JAVA_KOTLIN_METHOD_SAMPLE = 4;
+  // Gap in numbering is due to deprecated enums.
+  // This allows for numbering to be consistent with
+  // the mirrored enums in studio_stats.proto.
   HEAP_DUMP = 5;
   NATIVE_ALLOCATIONS = 6;
   JAVA_KOTLIN_ALLOCATIONS = 7;
   LIVE_VIEW = 8;
+  JAVA_KOTLIN_METHOD_RECORDING = 9;
 }
 
 message SessionData {
