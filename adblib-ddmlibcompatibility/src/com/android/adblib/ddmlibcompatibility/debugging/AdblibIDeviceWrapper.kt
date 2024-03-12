@@ -20,6 +20,7 @@ import com.android.adblib.AdbFailResponseException
 import com.android.adblib.AdbProtocolErrorException
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.DeviceSelector
+import com.android.adblib.INFINITE_DURATION
 import com.android.adblib.RemoteFileMode
 import com.android.adblib.SocketSpec
 import com.android.adblib.adbLogger
@@ -37,6 +38,7 @@ import com.android.adblib.tools.EmulatorCommandException
 import com.android.adblib.tools.localConsoleAddress
 import com.android.adblib.tools.openEmulatorConsole
 import com.android.adblib.withErrorTimeout
+import com.android.ddmlib.AdbCommandRejectedException
 import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.AvdData
@@ -318,6 +320,8 @@ internal class AdblibIDeviceWrapper(
         val availableFeatures: List<String> =
             try {
                 runBlockingLegacy {
+                    // TODO: This query is cached and doesn't retry on failures which is
+                    // different from the `DeviceImpl` behavior.
                     connectedDevice.session.hostServices.availableFeatures(
                         DeviceSelector.fromSerialNumber(
                             serialNumber
@@ -325,10 +329,13 @@ internal class AdblibIDeviceWrapper(
                     )
                 }
             } catch (e: IOException) {
+                // Note that this block handles `AdbFailResponseException` as well
                 // ignore to match the behavior in the `DeviceImpl`
+                logger.error(e, "Error querying `availableFeatures`")
                 listOf()
             } catch (e: TimeoutException) {
                 // ignore to match the behavior in the `DeviceImpl`
+                logger.error(e, "Error querying `availableFeatures`")
                 listOf()
             }
 
@@ -421,13 +428,16 @@ internal class AdblibIDeviceWrapper(
     override fun createForward(localPort: Int, remotePort: Int) {
         logUsage(IDeviceUsageTracker.Method.CREATE_FORWARD_1) {
             runBlockingLegacy {
-                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-                connectedDevice.session.hostServices.forward(
-                    deviceSelector,
-                    local = SocketSpec.Tcp(localPort),
-                    remote = SocketSpec.Tcp(remotePort),
-                    rebind = true
-                )
+                mapToDdmlibException {
+                    val deviceSelector =
+                        DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                    connectedDevice.session.hostServices.forward(
+                        deviceSelector,
+                        local = SocketSpec.Tcp(localPort),
+                        remote = SocketSpec.Tcp(remotePort),
+                        rebind = true
+                    )
+                }
             }
         }
     }
@@ -439,26 +449,29 @@ internal class AdblibIDeviceWrapper(
     ) {
         logUsage(IDeviceUsageTracker.Method.CREATE_FORWARD_2) {
             runBlockingLegacy {
-                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-                val remoteSocketSpec = when (namespace) {
-                    IDevice.DeviceUnixSocketNamespace.ABSTRACT -> SocketSpec.LocalAbstract(
-                        remoteSocketName
-                    )
+                mapToDdmlibException {
+                    val deviceSelector =
+                        DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                    val remoteSocketSpec = when (namespace) {
+                        IDevice.DeviceUnixSocketNamespace.ABSTRACT -> SocketSpec.LocalAbstract(
+                            remoteSocketName
+                        )
 
-                    IDevice.DeviceUnixSocketNamespace.RESERVED -> SocketSpec.LocalReserved(
-                        remoteSocketName
-                    )
+                        IDevice.DeviceUnixSocketNamespace.RESERVED -> SocketSpec.LocalReserved(
+                            remoteSocketName
+                        )
 
-                    IDevice.DeviceUnixSocketNamespace.FILESYSTEM -> SocketSpec.LocalFileSystem(
-                        remoteSocketName
+                        IDevice.DeviceUnixSocketNamespace.FILESYSTEM -> SocketSpec.LocalFileSystem(
+                            remoteSocketName
+                        )
+                    }
+                    connectedDevice.session.hostServices.forward(
+                        deviceSelector,
+                        local = SocketSpec.Tcp(localPort),
+                        remoteSocketSpec,
+                        rebind = true
                     )
                 }
-                connectedDevice.session.hostServices.forward(
-                    deviceSelector,
-                    local = SocketSpec.Tcp(localPort),
-                    remoteSocketSpec,
-                    rebind = true
-                )
             }
         }
     }
@@ -466,11 +479,14 @@ internal class AdblibIDeviceWrapper(
     override fun removeForward(localPort: Int) {
         logUsage(IDeviceUsageTracker.Method.REMOVE_FORWARD) {
             runBlockingLegacy {
-                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-                connectedDevice.session.hostServices.killForward(
-                    deviceSelector,
-                    local = SocketSpec.Tcp(localPort)
-                )
+                mapToDdmlibException {
+                    val deviceSelector =
+                        DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                    connectedDevice.session.hostServices.killForward(
+                        deviceSelector,
+                        local = SocketSpec.Tcp(localPort)
+                    )
+                }
             }
         }
     }
@@ -478,13 +494,16 @@ internal class AdblibIDeviceWrapper(
     override fun createReverse(remotePort: Int, localPort: Int) {
         logUsage(IDeviceUsageTracker.Method.CREATE_REVERSE) {
             runBlockingLegacy {
-                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-                connectedDevice.session.deviceServices.reverseForward(
-                    deviceSelector,
-                    remote = SocketSpec.Tcp(remotePort),
-                    local = SocketSpec.Tcp(localPort),
-                    rebind = true
-                )
+                mapToDdmlibException {
+                    val deviceSelector =
+                        DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                    connectedDevice.session.deviceServices.reverseForward(
+                        deviceSelector,
+                        remote = SocketSpec.Tcp(remotePort),
+                        local = SocketSpec.Tcp(localPort),
+                        rebind = true
+                    )
+                }
             }
         }
     }
@@ -492,11 +511,14 @@ internal class AdblibIDeviceWrapper(
     override fun removeReverse(remotePort: Int) {
         logUsage(IDeviceUsageTracker.Method.REMOVE_REVERSE) {
             runBlockingLegacy {
-                val deviceSelector = DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
-                connectedDevice.session.deviceServices.reverseKillForward(
-                    deviceSelector,
-                    remote = SocketSpec.Tcp(remotePort)
-                )
+                mapToDdmlibException {
+                    val deviceSelector =
+                        DeviceSelector.fromSerialNumber(connectedDevice.serialNumber)
+                    connectedDevice.session.deviceServices.reverseKillForward(
+                        deviceSelector,
+                        remote = SocketSpec.Tcp(remotePort)
+                    )
+                }
             }
         }
     }
@@ -874,31 +896,39 @@ internal class AdblibIDeviceWrapper(
                         AdbHelper.AdbService.EXEC -> false
                         else -> true
                     }
-                    executeShellCommand(
-                        adbService,
-                        connectedDevice,
-                        command,
-                        receiver,
-                        maxTimeout,
-                        maxTimeToOutputResponse,
-                        maxTimeUnits,
-                        inputStream,
-                        shutdownOutput
-                    )
+                    runBlockingLegacy (timeout = INFINITE_DURATION) {
+                        mapToDdmlibException {
+                            executeShellCommand(
+                                adbService,
+                                connectedDevice,
+                                command,
+                                receiver,
+                                maxTimeout,
+                                maxTimeToOutputResponse,
+                                maxTimeUnits,
+                                inputStream,
+                                shutdownOutput
+                            )
+                        }
+                    }
                 }
 
                 AdbHelper.AdbService.ABB_EXEC -> {
-                    executeAbbCommand(
-                        adbService,
-                        connectedDevice,
-                        command,
-                        receiver,
-                        maxTimeout,
-                        maxTimeToOutputResponse,
-                        maxTimeUnits,
-                        inputStream,
-                        shutdownOutput = false // TODO(b/298475728): See the comment above
-                    )
+                    runBlockingLegacy (timeout = INFINITE_DURATION) {
+                        mapToDdmlibException {
+                            executeAbbCommand(
+                                adbService,
+                                connectedDevice,
+                                command,
+                                receiver,
+                                maxTimeout,
+                                maxTimeToOutputResponse,
+                                maxTimeUnits,
+                                inputStream,
+                                shutdownOutput = false // TODO(b/298475728): See the comment above
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -913,17 +943,19 @@ internal class AdblibIDeviceWrapper(
         parameters: Array<out String>
     ): SimpleConnectedSocket = logUsage(IDeviceUsageTracker.Method.RAW_EXEC2) {
         runBlockingLegacy {
-            val command = StringBuilder(executable)
-            for (parameter in parameters) {
-                command.append(" ")
-                command.append(parameter)
+            mapToDdmlibException {
+                val command = StringBuilder(executable)
+                for (parameter in parameters) {
+                    command.append(" ")
+                    command.append(parameter)
+                }
+                val channel = connectedDevice.session.deviceServices.rawExec(
+                    DeviceSelector.fromSerialNumber(
+                        serialNumber
+                    ), command.toString()
+                )
+                AdblibChannelWrapper(channel)
             }
-            val channel = connectedDevice.session.deviceServices.rawExec(
-                DeviceSelector.fromSerialNumber(
-                    serialNumber
-                ), command.toString()
-            )
-            AdblibChannelWrapper(channel)
         }
     }
 
@@ -959,11 +991,12 @@ internal class AdblibIDeviceWrapper(
     }
 
     /**
-     * Similar to [runBlocking] but with a custom [timeout]
+     * Similar to [runBlocking] but with a custom [timeout], and dealing with `InterruptedException`
+     * by converting them into `IOException` as `IDevice` interface checked exceptions don't include
+     * throwing `InterruptedException`
      *
      * @throws TimeoutException if [block] take more than [timeout] to execute
-     * @throws IOException that wraps `InterruptedException`, if encountered, in order to observe
-     *  `IDevice` interface checked exceptions which don't include throwing `InterruptedException`
+     * @throws IOException that wraps `InterruptedException`, if encountered
      */
     private fun <R> runBlockingLegacy(
         timeout: Duration = Duration.ofMillis(DdmPreferences.getTimeOut().toLong()),
@@ -971,14 +1004,35 @@ internal class AdblibIDeviceWrapper(
     ): R {
         try {
             return runBlocking {
-                connectedDevice.session.withErrorTimeout(timeout) {
+                if (timeout == INFINITE_DURATION) {
                     block()
+                } else {
+                    connectedDevice.session.withErrorTimeout(timeout) {
+                        block()
+                    }
                 }
             }
         } catch (e: InterruptedException) {
             // We wrap `InterruptedException` in `IOException` to maintain the contract
             // defined by `IDevice` interface where no `InterruptedException` is ever thrown
             throw IOException("Operation interrupted", e)
+        }
+    }
+
+    /**
+     * Maps exceptions thrown from the `AdbDeviceServices` and `AdbHostServices` methods of `adblib`
+     * to the (approximately) equivalent exceptions in `ddmlib`.
+     *
+     * Note that there is no perfect mapping from `adblib` to `ddmlib` exceptions. For example,
+     * instead of `ShellCommandUnresponsiveException` `adblib` throws a more general
+     * `TimeoutException` exception.
+     */
+    private inline fun <R> mapToDdmlibException(block: () -> R): R {
+        return try {
+            block()
+        }
+        catch (e: AdbFailResponseException) {
+            throw AdbCommandRejectedException.create(e.failMessage)
         }
     }
 

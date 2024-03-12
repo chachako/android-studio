@@ -30,11 +30,9 @@ import com.android.adblib.abbCommand
 import com.android.adblib.serialNumber
 import com.android.adblib.shellCommand
 import com.android.annotations.concurrency.WorkerThread
-import com.android.ddmlib.AdbCommandRejectedException
 import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IShellOutputReceiver
-import com.android.ddmlib.ShellCommandUnresponsiveException
 import com.android.ddmlib.TimeoutException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -44,7 +42,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.single
-import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -56,11 +53,10 @@ import java.util.concurrent.TimeUnit
  */
 @WorkerThread
 @Throws(IOException::class,
-        AdbCommandRejectedException::class,
-        TimeoutException::class,
-        ShellCommandUnresponsiveException::class
+        AdbFailResponseException::class,
+        TimeoutException::class
 )
-internal fun executeShellCommand(
+internal suspend fun executeShellCommand(
     adbService: AdbHelper.AdbService,
     connectedDevice: ConnectedDevice,
     command: String,
@@ -93,14 +89,10 @@ internal fun executeShellCommand(
     }
 
     shellCommand.withLegacyCollector(stdoutCollector)
-    mapToDdmlibException {
-        runBlocking {
-            // Note: We know there is only one item in the flow (Unit), because our
-            //       ShellCollector implementation forwards buffers directly to
-            //       the IShellOutputReceiver
-            shellCommand.execute().single()
-        }
-    }
+    // Note: We know there is only one item in the flow (Unit), because our
+    //       ShellCollector implementation forwards buffers directly to
+    //       the IShellOutputReceiver
+    shellCommand.execute().single()
 }
 
 private fun setShellProtocol(shellCommand: ShellCommand<*>, adbService: AdbHelper.AdbService) {
@@ -114,11 +106,10 @@ private fun setShellProtocol(shellCommand: ShellCommand<*>, adbService: AdbHelpe
 
 @WorkerThread
 @Throws(IOException::class,
-        AdbCommandRejectedException::class,
-        TimeoutException::class,
-        ShellCommandUnresponsiveException::class
+        AdbFailResponseException::class,
+        TimeoutException::class
 )
-internal fun executeAbbCommand(
+internal suspend fun executeAbbCommand(
     adbService: AdbHelper.AdbService,
     connectedDevice: ConnectedDevice,
     command: String,
@@ -159,14 +150,10 @@ internal fun executeAbbCommand(
 
     val stdoutCollector = ShellCollectorToIShellOutputReceiver(receiver)
     abbCommand.withLegacyCollector(stdoutCollector)
-    mapToDdmlibException {
-        runBlocking {
-            // Note: We know there is only one item in the flow (Unit), because our
-            //       ShellCollector implementation forwards buffers directly to
-            //       the IShellOutputReceiver
-            abbCommand.execute().single()
-        }
-    }
+    // Note: We know there is only one item in the flow (Unit), because our
+    //       ShellCollector implementation forwards buffers directly to
+    //       the IShellOutputReceiver
+    abbCommand.execute().single()
 }
 
 private fun setAbbProtocol(abbCommand: AbbCommand<*>, adbService: AdbHelper.AdbService) {
@@ -205,16 +192,3 @@ fun <T> executeShellCommand(adbSession: AdbSession, device: IDevice, command: St
     }
     shellCollector.end(this)
   }
-
-private inline fun <R> mapToDdmlibException(block: () -> R): R {
-  return try {
-    block()
-  }
-  catch (e: AdbFailResponseException) {
-    throw AdbCommandRejectedException.create(e.failMessage)
-  } catch (e: InterruptedException) {
-      // We wrap `InterruptedException` in `IOException` to maintain the contract
-      // defined by `IDevice` interface where no `InterruptedException` is ever thrown
-      throw IOException("Operation interrupted", e)
-  }
-}

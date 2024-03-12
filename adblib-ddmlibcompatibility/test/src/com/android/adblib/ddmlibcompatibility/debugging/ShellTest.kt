@@ -15,6 +15,7 @@
  */
 package com.android.adblib.ddmlibcompatibility.debugging
 
+import com.android.adblib.AdbDeviceFailResponseException
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.connectedDevicesTracker
@@ -22,7 +23,6 @@ import com.android.adblib.isOnline
 import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.FakeAdbServerProviderRule
-import com.android.ddmlib.AdbCommandRejectedException
 import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.MultiLineReceiver
 import com.android.fakeadbserver.DeviceState
@@ -92,7 +92,7 @@ class ShellTest {
         val receiver = ListReceiver()
 
         // Act
-        exceptionRule.expect(AdbCommandRejectedException::class.java)
+        exceptionRule.expect(AdbDeviceFailResponseException::class.java)
         executeShellCommand(
             AdbHelper.AdbService.SHELL,
             device,

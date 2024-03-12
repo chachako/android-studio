@@ -11,6 +11,7 @@ import com.android.adblib.serialNumber
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.testingutils.FakeAdbServerProviderRule
+import com.android.ddmlib.AdbCommandRejectedException
 import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
@@ -202,6 +203,23 @@ class AdblibIDeviceWrapperTest {
         assertTrue(uncaughtException.get() is IOException)
         assertEquals("Operation interrupted", uncaughtException.get()?.message)
     }
+
+    @Test
+    fun executeShellCommand_mapsAdbDeviceFailResponseException_toAdbCommandRejectedException() =
+        runBlockingWithTimeout {
+            // Prepare
+            val (connectedDevice, _) = createConnectedDevice(
+                "device1", DeviceState.DeviceStatus.BOOTLOADER
+            )
+            val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+            exceptionRule.expect(AdbCommandRejectedException::class.java)
+
+            // Act
+            adblibIDeviceWrapper.executeShellCommand("non-existant-command", ListReceiver())
+
+            // Assert
+            fail("Should not reach")
+        }
 
     @Test
     fun executeRemoteCommandCanHandleAbbExec() = runBlockingWithTimeout {
