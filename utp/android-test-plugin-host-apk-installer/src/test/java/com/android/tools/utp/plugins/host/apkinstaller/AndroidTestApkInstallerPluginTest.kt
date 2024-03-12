@@ -146,6 +146,7 @@ class AndroidTestApkInstallerPluginTest {
             override val errorType: Enum<*> = ErrorType.TEST
             override val namespace: String = "AndroidTestApkInstallerPlugin"
         }
+        private val BASE_INSTALL_CMD = "install"
         private const val INSTALL_MULTIPLE_CMD = "install-multiple"
     }
 
@@ -526,7 +527,7 @@ class AndroidTestApkInstallerPluginTest {
     }
 
     @Test
-    fun minApiLevelHigherThanDeviceApi() {
+    fun splitInstallOnDeviceApiLowerThanMinApiRequiredForSplitInstallTest() {
         `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
         // Minimum API that supports split APK is 21
         val tempDeviceProperties = AndroidDeviceProperties(mapOf(DEVICE_API_LEVEL to "20"))
@@ -550,6 +551,35 @@ class AndroidTestApkInstallerPluginTest {
                 "feature is 21 but device $mockDeviceSerial is API level 20.").message,
                 exception.message)
         verify(mockDeviceController, never()).execute(anyList(), any(Duration::class.java))
+    }
+
+    @Test
+    fun nonSplitInstallOnDeviceApiLowerThanMinApiRequiredForSplitInstallTest() {
+        `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
+        // Minimum API that supports split APK is 21
+        val tempDeviceProperties = AndroidDeviceProperties(mapOf(DEVICE_API_LEVEL to "20"))
+        `when`(mockDeviceController.getDevice().properties).thenReturn(tempDeviceProperties)
+        `when`(mockDeviceController.execute(anyList(), eq(null))).thenReturn(CommandResult(0, listOf()))
+        createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
+            addApksToInstallBuilder().apply {
+                addAllApkPaths(testApkPaths)
+                installOptionsBuilder.apply {
+                    addAllCommandLineParameter(additionalInstallOptions)
+                    installAsSplitApk = false
+                }.build()
+            }.build()
+        }.build()).apply {
+            beforeAll(mockDeviceController)
+        }
+
+        verify(mockLogger).info("Installing $testApkPaths on device $mockDeviceSerial.")
+        verify(mockDeviceController, times(5)).getDevice()
+        testApkPaths.forEach {
+            verify(mockDeviceController).execute(
+                listOf(BASE_INSTALL_CMD, "-t") +
+                        additionalInstallOptions +
+                        it, null)
+        }
     }
 
     @Test

@@ -75,7 +75,7 @@ class AndroidTestApkInstallerPlugin(
             NONE(Int.MIN_VALUE),
             SPLIT_APK(21)
         }
-
+        private val BASE_INSTALL_CMD = listOf("install")
         private val INSTALL_MULTIPLE_CMD = listOf("install-multiple")
         private val installErrorSummary = object : ErrorSummary {
             override val errorCode: Int = 2002
@@ -134,7 +134,12 @@ class AndroidTestApkInstallerPlugin(
         installableApk: InstallableApk?,
         deviceApiLevel: Int,
         forceReinstall: Boolean = false): List<String> {
-        val installCmd: MutableList<String> = INSTALL_MULTIPLE_CMD.toMutableList()
+
+        val installCmd = if (deviceApiLevel >= MinFeatureApiLevel.SPLIT_APK.apiLevel) {
+            INSTALL_MULTIPLE_CMD.toMutableList()
+        } else {
+            BASE_INSTALL_CMD.toMutableList()
+        }
         if (deviceApiLevel >= 34) installCmd.add("--bypass-low-target-sdk-block")
         // Append -t to install apk marked as testOnly.
         installCmd.add("-t")
