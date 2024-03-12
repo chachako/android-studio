@@ -38,6 +38,7 @@ import com.android.tools.appinspection.database.testing.asExitHook
 import com.android.tools.appinspection.database.testing.createInstance
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -105,6 +106,7 @@ class InvalidationTest {
   }
 
   @Test
+  @Ignore("b/328819365") // Test was marked as flaky and is also ignored in the original repo
   fun test_throttling(): Unit = runBlocking {
     // Starting to track databases makes the inspector register hooks
     testEnvironment.sendCommand(MessageFactory.createTrackDatabasesCommand())
@@ -137,6 +139,7 @@ class InvalidationTest {
   }
 
   @Test
+  @Ignore("b/328819365") // Test was marked as flaky and is also ignored in the original repo
   fun test_cursor_methods(): Unit = runBlocking {
     // Starting to track databases makes the inspector register hooks
     testEnvironment.sendCommand(MessageFactory.createTrackDatabasesCommand())
