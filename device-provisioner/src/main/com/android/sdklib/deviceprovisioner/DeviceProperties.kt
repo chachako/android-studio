@@ -47,6 +47,7 @@ import java.time.Duration
 import java.util.concurrent.TimeoutException
 import javax.swing.Icon
 import kotlin.math.ceil
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 
 /**
@@ -61,10 +62,10 @@ interface DeviceProperties {
   val primaryAbi: Abi?
     get() = abiList.firstOrNull()
 
-    /**
-     * The ABI that should be used to build and deploy, instead of supported ABIs in [abiList].
-     * Can be null if no preferred ABI is desired.
-     */
+  /**
+   * The ABI that should be used to build and deploy, instead of supported ABIs in [abiList]. Can be
+   * null if no preferred ABI is desired.
+   */
   val preferredAbi: String?
   val abiList: List<Abi>
 
@@ -369,6 +370,7 @@ data class Resolution(val width: Int, val height: Int) {
         }
         .onFailure { e ->
           when (e) {
+            is CancellationException -> throw e
             is AdbFailResponseException ->
               adbLogger(device.session).warn(e, "Failed to read device resolution")
             is TimeoutException,
