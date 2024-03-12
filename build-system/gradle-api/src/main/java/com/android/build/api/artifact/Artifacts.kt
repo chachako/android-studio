@@ -66,7 +66,7 @@ interface Artifacts {
      * @param type Type of the multiple artifact.
      * @param artifact is an existing static [FileTypeT]
      */
-    @Deprecated("Use addStaticDirectory instead")
+    @Deprecated("Use addStaticDirectory instead", replaceWith = ReplaceWith("addStaticDirectory"))
     fun <FileTypeT: FileSystemLocation> add(
             type: MultipleArtifact<FileTypeT>,
             artifact: FileTypeT
@@ -79,7 +79,6 @@ interface Artifacts {
      * @param type type of the multiple artifact.
      * @param inputLocation is an existing static file
      */
-    @Incubating
     fun <MultipleArtifactT> addStaticDirectory(
         type: MultipleArtifactT,
         inputLocation: Directory
