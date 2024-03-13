@@ -13,129 +13,109 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.appinspection.database
 
-package com.android.tools.appinspection.database;
+import android.util.Log
+import androidx.inspection.InspectorEnvironment
+import java.lang.ref.WeakReference
+import java.lang.reflect.Method
 
-import android.annotation.SuppressLint;
-import android.util.Log;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.inspection.InspectorEnvironment;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+private const val INVALIDATION_TRACKER_QNAME = "androidx.room.InvalidationTracker"
 
 /**
  * Tracks instances of Room's InvalidationTracker so that we can trigger them to re-check database
  * for changes in case there are observed tables in the application UI.
  *
- * <p>The list of instances of InvalidationTrackers are cached to avoid re-finding them after each
- * query. Make sure to call {@link #invalidateCache()} after a new database connection is detected.
+ * The list of instances of InvalidationTrackers are cached to avoid re-finding them after each
+ * query. Make sure to call [.invalidateCache] after a new database connection is detected.
+ *
+ * TODO(aalbert): THis seems overly complicated. It should be able to use a similar pattern to the
+ *   SqlDelight invalidators.
  */
-class RoomInvalidationRegistry implements Invalidation {
-    private static final String TAG = "RoomInvalidationRegistry";
-    private static final String INVALIDATION_TRACKER_QNAME = "androidx.room.InvalidationTracker";
+internal class RoomInvalidationRegistry(private val environment: InspectorEnvironment) :
+  Invalidation {
+  /** Might be null if application does not ship with Room. */
+  private val invoker = findInvalidationTrackerClass()
 
-    private final InspectorEnvironment mEnvironment;
+  /** The list of InvalidationTracker instances. */
+  private var invalidationInstances: List<WeakReference<*>>? = null
 
-    /** Might be null if application does not ship with Room. */
-    @Nullable private final InvalidationTrackerInvoker mInvoker;
+  /**
+   * Calls all the InvalidationTrackers to check their database for updated tables.
+   *
+   * If the list of InvalidationTracker instances are not cached, this will do a lookup.
+   */
+  override fun triggerInvalidations() {
+    if (invoker == null) {
+      return
+    }
+    val instances = getInvalidationTrackerInstances()
+    for (reference in instances) {
+      val instance = reference.get()
+      if (instance != null) {
+        invoker.trigger(instance)
+      }
+    }
+  }
 
-    /** The list of InvalidationTracker instances. */
-    @Nullable private List<WeakReference<?>> mInvalidationInstances = null;
+  /** Invalidates the list of InvalidationTracker instances. */
+  fun invalidateCache() {
+    invalidationInstances = null
+  }
 
-    RoomInvalidationRegistry(InspectorEnvironment environment) {
-        mEnvironment = environment;
-        mInvoker = findInvalidationTrackerClass();
+  private fun getInvalidationTrackerInstances(): List<WeakReference<*>> {
+    var cached = invalidationInstances
+    cached =
+      when {
+        cached != null -> return cached
+        invoker == null -> emptyList()
+        else -> {
+          val instances = environment.artTooling().findInstances(invoker.invalidationTrackerClass)
+          cached = instances.map { WeakReference(it) }
+          cached
+        }
+      }
+    invalidationInstances = cached
+    return cached
+  }
+
+  private fun findInvalidationTrackerClass(): InvalidationTrackerInvoker? {
+    try {
+      val classLoader = RoomInvalidationRegistry::class.java.classLoader
+      val klass = classLoader.loadClass(INVALIDATION_TRACKER_QNAME)
+      return InvalidationTrackerInvoker(klass)
+    } catch (e: ClassNotFoundException) {
+      Log.v(HIDDEN_TAG, "Room InvalidationTracker not found", e)
+    } catch (e: Throwable) {
+      Log.w(TAG, "Error setting up Room invalidation", e)
+    }
+    return null
+  }
+
+  /** Helper class to invoke methods on Room's InvalidationTracker class. */
+  internal class InvalidationTrackerInvoker(val invalidationTrackerClass: Class<*>) {
+    private val refreshMethod: Method?
+
+    init {
+      refreshMethod = safeGetRefreshMethod(invalidationTrackerClass)
     }
 
-    /**
-     * Calls all of the InvalidationTrackers to check their database for updated tables.
-     *
-     * <p>If the list of InvalidationTracker instances are not cached, this will do a lookup.
-     */
-    @Override
-    public void triggerInvalidations() {
-        if (mInvoker == null) {
-            return;
-        }
-        List<WeakReference<?>> instances = getInvalidationTrackerInstances();
-        for (WeakReference<?> reference : instances) {
-            Object instance = reference.get();
-            if (instance != null) {
-                mInvoker.trigger(instance);
-            }
-        }
+    private fun safeGetRefreshMethod(invalidationTrackerClass: Class<*>): Method? {
+      return try {
+        invalidationTrackerClass.getMethod("refreshVersionsAsync")
+      } catch (ex: NoSuchMethodException) {
+        null
+      }
     }
 
-    /** Invalidates the list of InvalidationTracker instances. */
-    void invalidateCache() {
-        mInvalidationInstances = null;
-    }
-
-    @NonNull
-    private List<WeakReference<?>> getInvalidationTrackerInstances() {
-        List<WeakReference<?>> cached = mInvalidationInstances;
-        if (cached != null) {
-            return cached;
-        }
-        if (mInvoker == null) {
-            cached = Collections.emptyList();
-        } else {
-            List<?> instances =
-                    mEnvironment.artTooling().findInstances(mInvoker.invalidationTrackerClass);
-            cached = new ArrayList<>(instances.size());
-            for (Object instance : instances) {
-                cached.add(new WeakReference<>(instance));
-            }
-        }
-        mInvalidationInstances = cached;
-        return cached;
-    }
-
-    @Nullable
-    private InvalidationTrackerInvoker findInvalidationTrackerClass() {
+    fun trigger(instance: Any?) {
+      if (refreshMethod != null) {
         try {
-            ClassLoader classLoader = RoomInvalidationRegistry.class.getClassLoader();
-            if (classLoader != null) {
-                Class<?> klass = classLoader.loadClass(INVALIDATION_TRACKER_QNAME);
-                return new InvalidationTrackerInvoker(klass);
-            }
-        } catch (ClassNotFoundException e) {
-            // ignore, optional functionality
+          refreshMethod.invoke(instance)
+        } catch (t: Throwable) {
+          Log.e(TAG, "Failed to invoke invalidation tracker", t)
         }
-        return null;
+      }
     }
-
-    /** Helper class to invoke methods on Room's InvalidationTracker class. */
-    static class InvalidationTrackerInvoker {
-        public final Class<?> invalidationTrackerClass;
-        @Nullable private final Method mRefreshMethod;
-
-        InvalidationTrackerInvoker(Class<?> invalidationTrackerClass) {
-            this.invalidationTrackerClass = invalidationTrackerClass;
-            mRefreshMethod = safeGetRefreshMethod(invalidationTrackerClass);
-        }
-
-        private Method safeGetRefreshMethod(Class<?> invalidationTrackerClass) {
-            try {
-                return invalidationTrackerClass.getMethod("refreshVersionsAsync");
-            } catch (NoSuchMethodException ex) {
-                return null;
-            }
-        }
-
-        @SuppressLint("BanUncheckedReflection") // Not a platform method.
-        public void trigger(Object instance) {
-            if (mRefreshMethod != null) {
-                try {
-                    mRefreshMethod.invoke(instance);
-                } catch (Throwable t) {
-                    Log.e(TAG, "Failed to invoke invalidation tracker", t);
-                }
-            }
-        }
-    }
+  }
 }
