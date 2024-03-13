@@ -567,7 +567,7 @@ class AndroidComponentsExtensionTest {
             Action::class.java
         ) as ArgumentCaptor<Action<in ApplicationBuildType>>
 
-        Mockito.`when`(buildTypesContainer.all(argument.capture())).thenAnswer {invocation ->
+        Mockito.`when`(buildTypesContainer.configureEach(argument.capture())).thenAnswer {invocation ->
             buildTypes.forEach {
                 invocation.getArgument<Action<in ApplicationBuildType>>(0).execute(it)
             }
@@ -589,7 +589,7 @@ class AndroidComponentsExtensionTest {
             Action::class.java
         ) as ArgumentCaptor<Action<in ApplicationProductFlavor>>
 
-        Mockito.`when`(productFlavorContainer.all(argument.capture())).thenAnswer {invocation ->
+        Mockito.`when`(productFlavorContainer.configureEach(argument.capture())).thenAnswer {invocation ->
             productFlavors.forEach {
                 invocation.getArgument<Action<in ApplicationProductFlavor>>(0).execute(it)
             }

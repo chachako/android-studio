@@ -23,6 +23,27 @@ maven_import(
 )
 
 maven_artifact(
+    name = "androidx.lint.lint-gradle_1.0.0-alpha01",
+    pom = "repository/androidx/lint/lint-gradle/1.0.0-alpha01/lint-gradle-1.0.0-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/lint/lint-gradle/1.0.0-alpha01",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "androidx.lint.lint-gradle",
+    classifiers = [],
+    jars = [
+        "repository/androidx/lint/lint-gradle/1.0.0-alpha01/lint-gradle-1.0.0-alpha01.jar"
+    ],
+    original_deps = [],
+    pom = "repository/androidx/lint/lint-gradle/1.0.0-alpha01/lint-gradle-1.0.0-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/lint/lint-gradle/1.0.0-alpha01",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.test.espresso.espresso-idling-resource_3.4.0",
     pom = "repository/androidx/test/espresso/espresso-idling-resource/3.4.0/espresso-idling-resource-3.4.0.pom",
     repo_root_path = "repository",

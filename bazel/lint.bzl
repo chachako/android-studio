@@ -2,11 +2,7 @@
 
 script_template = """\
 #!/bin/bash
-flags=""
-if [ "$1" = "--wrapper_script_flag=--debug" ]; then
-    flags="--debug"
-fi
-{binary} $flags {xml} {baseline}
+{binary} {xml} {baseline} {extraArgs}
 """
 
 def _lint_test_impl(ctx):
@@ -49,7 +45,8 @@ def _lint_test_impl(ctx):
         content = script_template.format(
             binary = ctx.executable._binary.short_path,
             xml = ctx.outputs.project_xml.short_path,
-            baseline = ctx.file.baseline.path if ctx.file.baseline else "",
+            baseline = "--lint-baseline " + ctx.file.baseline.path if ctx.file.baseline else "",
+            extraArgs = " ".join(ctx.attr.extra_args),
         ),
         is_executable = True,
     )
@@ -81,6 +78,7 @@ lint_test = rule(
         "deps": attr.label_list(allow_files = True),
         "baseline": attr.label(allow_single_file = True),
         "is_test_sources": attr.bool(),
+        "extra_args": attr.string_list(),
         "_binary": attr.label(
             executable = True,
             cfg = "target",

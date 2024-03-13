@@ -38,6 +38,7 @@ import com.android.build.gradle.internal.services.R8ParallelBuildService
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.tasks.factory.TaskConfigAction
 import com.android.build.gradle.internal.tasks.factory.TaskProviderCallback
+import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.build.gradle.internal.tasks.factory.registerTask
 import com.android.build.gradle.options.IntegerOption
 import com.android.build.gradle.tasks.BundleAar
@@ -228,7 +229,7 @@ class KmpTaskManager(
                 )
             }
 
-        project.tasks.getByName("assemble").dependsOn(variant.taskContainer.assembleTask)
+        project.tasks.named("assemble").dependsOn(variant.taskContainer.assembleTask)
     }
 
     private fun createUnitTestTasks(

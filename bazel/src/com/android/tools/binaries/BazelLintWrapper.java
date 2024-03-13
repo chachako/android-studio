@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -65,11 +66,22 @@ public class BazelLintWrapper {
     public static void main(String[] args) throws IOException {
         Path projectXml = Paths.get(args[0]);
         Path baseline = null;
-        if (args.length > 1) {
-            baseline = Paths.get(args[1]);
+        List<String> extraArgs = new ArrayList<>();
+        for (int i = 1; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.equals("--lint-baseline")) {
+                i++;
+                if (i < args.length) {
+                    baseline = Paths.get(args[i]);
+                } else {
+                    throw new RuntimeException("Missing argument after " + arg);
+                }
+            } else {
+                extraArgs.add(arg);
+            }
         }
         boolean update = System.getenv("UPDATE_LINT_BASELINE") != null;
-        new BazelLintWrapper().run(projectXml, baseline, update);
+        new BazelLintWrapper().run(projectXml, baseline, update, extraArgs);
     }
 
     private final DocumentBuilder documentBuilder;
@@ -101,7 +113,8 @@ public class BazelLintWrapper {
         return sandboxBase != null ? sandboxBase.relativize(path) : path;
     }
 
-    private void run(Path projectXml, Path originalBaseline, boolean update) throws IOException {
+    private void run(Path projectXml, Path originalBaseline, boolean update, List<String> extraArgs)
+            throws IOException {
         if (!Files.exists(projectXml)) {
             System.err.println("Cannot find project XML: " + projectXml);
             System.exit(1);
@@ -145,16 +158,22 @@ public class BazelLintWrapper {
 
         try {
             System.setOut(new PrintStream(baos));
-            int status =
-                    lintMain.run(
-                            new String[] {
-                                "--project", projectXml.toString(),
-                                "--xml", outputXml.toString(),
-                                "--baseline", newBaseline.toString(),
-                                "--config", lintConfig.toString(),
-                                "--update-baseline",
-                                "--client-id", "test"
-                            });
+            List<String> lintArgs =
+                    new ArrayList<>(
+                            Arrays.asList(
+                                    "--project",
+                                    projectXml.toString(),
+                                    "--xml",
+                                    outputXml.toString(),
+                                    "--baseline",
+                                    newBaseline.toString(),
+                                    "--config",
+                                    lintConfig.toString(),
+                                    "--update-baseline",
+                                    "--client-id",
+                                    "test"));
+            lintArgs.addAll(extraArgs);
+            int status = lintMain.run(lintArgs.toArray(new String[0]));
             switch (status) {
                 case 0:
                 case LintCliFlags.ERRNO_CREATED_BASELINE:

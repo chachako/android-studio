@@ -183,6 +183,8 @@ def kotlin_library(
         lint_enabled = True,
         lint_baseline = None,
         lint_classpath = [],
+        lint_custom_rules = [],
+        lint_extra_args = [],
         lint_is_test_sources = False,
         lint_timeout = None,
         compress_resources = False,
@@ -203,6 +205,8 @@ def kotlin_library(
         lint_enabled: enable or disable Lint checks
         lint_baseline: See impl.
         lint_classpath: See impl.
+        lint_custom_rules: See impl.
+        lint_extra_args: See impl.
         lint_is_test_sources: See impl.
         lint_timeout: See impl.
         compress_resources: Whether to compress resources.
@@ -250,9 +254,10 @@ def kotlin_library(
             srcs = srcs,
             baseline = lint_baseline,
             deps = collections.uniq((deps or []) + (exports or []) + (lint_classpath or [])),
-            custom_rules = ["//tools/base/lint:studio-checks.lint-rules.jar"],
+            custom_rules = ["//tools/base/lint:studio-checks.lint-rules.jar"] + lint_custom_rules,
             tags = ["no_windows"],
             is_test_sources = lint_is_test_sources,
+            extra_args = lint_extra_args,
             timeout = lint_timeout if lint_timeout else None,
         )
 

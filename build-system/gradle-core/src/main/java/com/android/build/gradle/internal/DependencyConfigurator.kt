@@ -133,7 +133,7 @@ class DependencyConfigurator(
         val enableJetifier = projectServices.projectOptions.get(BooleanOption.ENABLE_JETIFIER)
 
         if (!useAndroidX && !enableJetifier) {
-            project.configurations.all { configuration ->
+            project.configurations.configureEach { configuration ->
                 if (configuration.isCanBeResolved) {
                     configuration.incoming.afterResolve(
                         AndroidXDependencyCheck.AndroidXDisabledJetifierDisabled(
@@ -396,7 +396,7 @@ class DependencyConfigurator(
         // The Kotlin Kapt plugin should query for PROCESSED_JAR, but it is currently querying for
         // JAR, so we need to have the workaround below to make it get PROCESSED_JAR. See
         // http://issuetracker.google.com/111009645.
-        project.configurations.all { configuration: Configuration ->
+        project.configurations.configureEach { configuration: Configuration ->
             if (configuration.name.startsWith("kapt")) {
                 configuration
                     .attributes

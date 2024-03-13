@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="6" by="lint 8.3.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.3.0-dev">
+<issues format="6" by="lint 8.5.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.5.0-dev">
 
     <issue
         id="CheckResult"
@@ -21,6 +21,83 @@
             file="src/main/java/com/android/build/gradle/internal/services/SymbolTableBuildService.kt"
             line="96"
             column="25"/>
+    </issue>
+
+    <issue
+        id="EagerGradleConfiguration"
+        message="Avoid using eager method get"
+        errorLine1="            val processJavaResourcesTask = taskContainer.processJavaResourcesTask.get()"
+        errorLine2="                                                                                  ~~~">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/variant/BaseVariantData.kt"
+            line="208"
+            column="83"/>
+    </issue>
+
+    <issue
+        id="EagerGradleConfiguration"
+        message="Use configureEach instead of whenObjectAdded"
+        errorLine1="        signingConfigContainer.whenObjectAdded(this::addSigningConfig)"
+        errorLine2="                               ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/variant/LegacyVariantInputManager.kt"
+            line="111"
+            column="32"/>
+    </issue>
+
+    <issue
+        id="EagerGradleConfiguration"
+        message="Use configureEach instead of whenObjectAdded"
+        errorLine1="        buildTypeContainer.whenObjectAdded(this::addBuildType)"
+        errorLine2="                           ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/variant/LegacyVariantInputManager.kt"
+            line="116"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="EagerGradleConfiguration"
+        message="Use configureEach instead of whenObjectAdded"
+        errorLine1="        productFlavorContainer.whenObjectAdded(this::addProductFlavor);"
+        errorLine2="                               ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/variant/LegacyVariantInputManager.kt"
+            line="121"
+            column="32"/>
+    </issue>
+
+    <issue
+        id="EagerGradleConfiguration"
+        message="Use configureEach instead of whenObjectAdded"
+        errorLine1="            whenObjectAdded { device: Device ->"
+        errorLine2="            ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/dsl/ManagedDevices.kt"
+            line="35"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="EagerGradleConfiguration"
+        message="Use configureEach instead of whenObjectAdded"
+        errorLine1="            whenObjectAdded { device: com.android.build.api.dsl.ManagedVirtualDevice ->"
+        errorLine2="            ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/dsl/ManagedDevices.kt"
+            line="53"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="EagerGradleConfiguration"
+        message="Use register instead of create"
+        errorLine1="        final AndroidReportTask mergeReportsTask = project.getTasks().create(&quot;mergeAndroidReports&quot;,"
+        errorLine2="                                                                      ~~~~~~">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/plugins/ReportingPlugin.java"
+            line="102"
+            column="71"/>
     </issue>
 
     <issue
@@ -109,6 +186,17 @@
             file="src/main/java/com/android/build/gradle/internal/profile/WorkerProfilingRecord.kt"
             line="63"
             column="39"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Use of `scheduleAtFixedRate` is strongly discouraged because it can lead to unexpected behavior when Android processes become cached (tasks may unexpectedly execute hundreds or thousands of times in quick succession when a process changes from cached to uncached); prefer using `scheduleWithFixedDelay`"
+        errorLine1="        maintainAction = maintainExecutor!!."
+        errorLine2="                         ^">
+        <location
+            file="src/main/java/com/android/build/gradle/internal/services/Aapt2DaemonBuildService.kt"
+            line="242"
+            column="26"/>
     </issue>
 
     <issue
@@ -327,7 +415,7 @@
         errorLine2="            ~~~~~~~~~~~~~~">
         <location
             file="src/main/java/com/android/build/gradle/internal/tasks/DexMergingTask.kt"
-            line="823"
+            line="840"
             column="13"/>
     </issue>
 

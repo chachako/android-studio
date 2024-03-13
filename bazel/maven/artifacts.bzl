@@ -1,6 +1,7 @@
 """Defines the Maven artifacts which are fetched and checked into source."""
 ARTIFACTS = [
     "androidx.annotation:annotation:1.1.0",
+    "androidx.lint:lint-gradle:1.0.0-alpha01",
     "com.android.tools.build:bundletool:1.15.6",
     "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10",
     "com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10",

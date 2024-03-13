@@ -295,7 +295,7 @@ fun syncAgpAndKgpSources(
         }
     }
 
-    sourceSets.all {
+    sourceSets.configureEach {
         val kotlinSourceSet = it.findKotlinSourceSet()
         if (kotlinSourceSet != null) {
             if (!hasMpp) {
