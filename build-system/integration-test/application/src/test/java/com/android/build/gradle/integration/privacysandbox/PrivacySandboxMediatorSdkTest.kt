@@ -21,14 +21,21 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSdkLibraryProject
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSdkProject
+import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
+import com.android.bundle.SdkBundleConfigProto
+import com.android.bundle.SdkBundleConfigProto.SdkBundleConfig
+import com.android.bundle.SdkBundleConfigProto.SdkDependencyType
+import com.android.bundle.SdkMetadataOuterClass
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
+import com.android.tools.build.bundletool.model.SdkBundle
 import com.google.common.collect.ImmutableList
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.util.zip.ZipFile
 
 /*
  Test to cover complex SDK dependencies such as a 'mediator' SDK that depends on multiple other SDKs.
@@ -315,5 +322,49 @@ class PrivacySandboxMediatorSdkTest {
                         .run(":privacy-sandbox-sdk-mediator:validatePrivacySandboxSdkConfiguration")
         execution.assertErrorContains("'include' configuration can not contains dependencies found in 'requiredSdk' or 'optionalSdk'. " +
                 "Recommended Action: Remove the following dependency from the 'include' configuration: sdk-a")
+    }
+
+    @Test
+    fun asbSdkBundleConfigProtoContainsCorrectSdkDependencyInfo() {
+        val sdkMediatorProject = project.getSubproject(":privacy-sandbox-sdk-mediator")
+        executor().run(":privacy-sandbox-sdk-mediator:packagePrivacySandboxSdkBundle")
+
+        val asb =
+                sdkMediatorProject.getIntermediateFile(
+                        "asb",
+                        "single",
+                        "packagePrivacySandboxSdkBundle",
+                        "privacy-sandbox-sdk-mediator.asb")
+        ZipFile(asb).use { openAsar ->
+            val sdkBundleConfig =
+                    openAsar.getEntry("SdkBundleConfig.pb")
+            val sdkMetadataBytes = openAsar.getInputStream(sdkBundleConfig).readBytes()
+            val proto: SdkBundleConfigProto.SdkBundleConfig = sdkMetadataBytes.inputStream()
+                    .buffered()
+                    .use { input -> SdkBundleConfig.parseFrom(input) }
+            assertThat(proto.sdkDependenciesCount).isEqualTo(2)
+            val sdkBundlePackageNameMap =
+                    proto.sdkDependenciesList.toList().associateBy { it.packageName }
+            val sdkA = sdkBundlePackageNameMap.get("com.example.sdka")
+            val sdkB = sdkBundlePackageNameMap.get("com.example.sdkb")
+            val expectedSdkA = SdkBundleConfigProto.SdkBundle.newBuilder()
+                    .setPackageName("com.example.sdka")
+                    .setDependencyType(SdkDependencyType.SDK_DEPENDENCY_TYPE_REQUIRED)
+                    .setVersionMajor(1)
+                    .setVersionMinor(2)
+                    .setBuildTimeVersionPatch(3)
+                    .setCertificateDigest(sdkA?.certificateDigest)
+                    .build()
+            val expectedSdkB = SdkBundleConfigProto.SdkBundle.newBuilder()
+                    .setPackageName("com.example.sdkb")
+                    .setDependencyType(SdkDependencyType.SDK_DEPENDENCY_TYPE_OPTIONAL)
+                    .setVersionMajor(1)
+                    .setVersionMinor(2)
+                    .setBuildTimeVersionPatch(3)
+                    .setCertificateDigest(sdkB?.certificateDigest)
+                    .build()
+            assertThat(sdkA).isEqualTo(expectedSdkA)
+            assertThat(sdkB).isEqualTo(expectedSdkB)
+        }
     }
 }
