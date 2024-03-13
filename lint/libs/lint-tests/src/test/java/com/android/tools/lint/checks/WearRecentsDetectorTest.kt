@@ -15,6 +15,8 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.tools.lint.checks.infrastructure.ProjectDescription
+
 class WearRecentsDetectorTest : AbstractCheckTest() {
 
   override fun getDetector() = WearRecentsDetector()
@@ -56,6 +58,77 @@ class WearRecentsDetectorTest : AbstractCheckTest() {
               +             android:taskAffinity="|" />
               Autofix for AndroidManifest.xml line 8: Exclude from recents:
               @@ -14 +14
+              -         <activity android:name=".MainActivity" />
+              +         <activity
+              +             android:name=".MainActivity"
+              +             android:excludeFromRecents="true"
+              +             android:noHistory="true" />
+        """
+      )
+  }
+
+  fun testMultiModuleWithWearLibrary() {
+    // Similar to the above test, except with two modules. The app manifest does not mention
+    // android.hardware.type.watch, but it will be added in the merged manifest due to the library
+    // module's manifest. The lint check should still trigger.
+    val lib =
+      project()
+        .name("lib")
+        .files(
+          manifest(
+              """
+              <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld.lib">
+                  <uses-sdk android:minSdkVersion="30" />
+                  <uses-feature android:name="android.hardware.type.watch" />
+              </manifest>"""
+            )
+            .indented()
+        )
+        .type(ProjectDescription.Type.LIBRARY)
+
+    val app =
+      project()
+        .name("app")
+        .files(
+          manifest(
+              """
+              <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld"
+                    android:versionCode="1"
+                    android:versionName="1.0">
+                  <uses-sdk android:minSdkVersion="30" />
+                  <application android:icon="@drawable/icon" android:label="@string/app_name">
+                  <activity android:name=".MainActivity" />
+                  </application>
+              </manifest>"""
+            )
+            .indented()
+        )
+        .type(ProjectDescription.Type.APP)
+        .dependsOn(lib)
+
+    lint()
+      .projects(lib, app)
+      .run()
+      .expect(
+        """
+        AndroidManifest.xml:7: Warning: Set taskAffinity for Wear activities to make them appear correctly in recents [WearRecents]
+            <activity android:name=".MainActivity" />
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+      """
+      )
+      .expectFixDiffs(
+        """
+              Autofix for AndroidManifest.xml line 7: Set `taskAffinity`:
+              @@ -12 +12
+              -         <activity android:name=".MainActivity" />
+              +         <activity
+              +             android:name=".MainActivity"
+              +             android:taskAffinity="|" />
+              Autofix for AndroidManifest.xml line 7: Exclude from recents:
+              @@ -12 +12
               -         <activity android:name=".MainActivity" />
               +         <activity
               +             android:name=".MainActivity"

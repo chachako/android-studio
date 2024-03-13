@@ -43,7 +43,7 @@ open class WearDetector : Detector() {
     fun isWearProject(context: Context) =
       containsWearFeature(
         if (context.isGlobalAnalysis()) context.mainProject.mergedManifest?.documentElement
-        else context.project.manifestDom?.documentElement
+        else context.project.mergedManifest?.documentElement
       )
 
     private fun containsWearFeature(manifest: Element?): Boolean {
