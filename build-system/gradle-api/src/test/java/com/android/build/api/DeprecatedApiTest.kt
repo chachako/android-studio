@@ -18,6 +18,7 @@ package com.android.build.api
 
 import com.android.Version
 import com.android.build.api.dsl.Lint
+import com.android.ide.common.repository.AgpVersion
 import com.android.testutils.ApiTester
 import com.google.common.base.Charsets
 import com.google.common.base.Splitter
@@ -36,6 +37,9 @@ class DeprecatedApiTest {
         private val snapshotFileUrl =
             Resources.getResource(DeprecatedApiTest::class.java, "deprecated-api.txt")
         private val currentAgpVersion = Version.ANDROID_GRADLE_PLUGIN_VERSION.removeSuffix("-dev")
+
+        private val keyOrdering: Comparator<String> =
+            Comparator.comparing<String, AgpVersion> { if (it == "UNKNOWN_VERSION") AgpVersion.parse("0.0.0") else AgpVersion.parse(it) }.reversed()
 
         private fun transformFinalFileContent(currentSnapshotContent: List<String>):
                 Collection<String> {
@@ -61,7 +65,7 @@ class DeprecatedApiTest {
             }
 
             val deprecatedApiList = mutableListOf<String>()
-            currentDeprecatedApis.keys.forEach { version ->
+            currentDeprecatedApis.keys.sortedWith(keyOrdering).forEach { version ->
                 deprecatedApiList.add("Deprecated from AGP $version")
                 currentDeprecatedApis[version]!!.sorted().forEach { apiSignature ->
                     deprecatedApiList.add("  * $apiSignature")

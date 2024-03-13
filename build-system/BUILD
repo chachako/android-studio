@@ -485,6 +485,7 @@ maven_repository(
     name = "android_gradle_plugin_gradle_api_test_repository",
     # keep sorted
     artifacts = [
+        "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/testutils:tools.testutils",
         "@maven//:org.jetbrains.kotlin.kotlin-test-junit_" + KGP_VERSION_FOR_TESTS,
     ],
