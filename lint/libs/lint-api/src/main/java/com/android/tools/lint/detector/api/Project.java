@@ -315,23 +315,18 @@ public class Project {
     }
 
     /**
-     * Returns the merged manifest of this project. This may return null if not called on the main
-     * project. Note that the file reference in the merged manifest isn't accurate; the merged
-     * manifest accumulates information from a wide variety of locations.
+     * Returns the merged manifest of this project. Warning: context.project.mergedManifest will
+     * only give you the merged manifest of the current module being analyzed, which could be a
+     * library module. If you want the merged manifest of the final app module, you should use
+     * conditional incidents or partial results, and call context.mainProject.mergedManifest. Note
+     * that the file reference in the merged manifest isn't accurate; the merged manifest
+     * accumulates information from a wide variety of locations.
      *
      * @return The merged manifest, if available.
      */
     @Nullable
     public Document getMergedManifest() {
         if (mergedManifest == null) {
-            // Don't provide the merged manifest if doing partial analysis on a library
-            // project; accessing this here means the detector is not correctly handling
-            // libraries
-            if (LintClient.isUnitTest()
-                    && Context.Companion.checkForbidden(
-                            "project.getMergedManifest()", dir, null, "")) {
-                return null;
-            }
             mergedManifest = client.getMergedManifest(this);
         }
 
