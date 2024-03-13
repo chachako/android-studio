@@ -20,8 +20,6 @@ import com.android.Version
 import com.android.build.api.dsl.Lint
 import com.android.ide.common.repository.AgpVersion
 import com.android.testutils.ApiTester
-import com.google.common.base.Charsets
-import com.google.common.base.Splitter
 import com.google.common.io.Resources
 import com.google.common.reflect.ClassPath
 import org.junit.Test
@@ -40,42 +38,6 @@ class DeprecatedApiTest {
 
         private val keyOrdering: Comparator<String> =
             Comparator.comparing<String, AgpVersion> { if (it == "UNKNOWN_VERSION") AgpVersion.parse("0.0.0") else AgpVersion.parse(it) }.reversed()
-
-        private fun transformFinalFileContent(currentSnapshotContent: List<String>):
-                Collection<String> {
-            val expectedSnapshotContent = Splitter.on("\n")
-                .omitEmptyStrings()
-                .splitToList(Resources.toString(snapshotFileUrl, Charsets.UTF_8))
-
-            val knownDeprecatedApis = mutableMapOf<String, String>()
-            var agpVersion: String? = null
-            expectedSnapshotContent.subList(5, expectedSnapshotContent.size).forEach {
-                if (it.startsWith("Deprecated from AGP ")) {
-                    agpVersion = it.removePrefix("Deprecated from AGP ")
-                } else {
-                    knownDeprecatedApis[it.removePrefix("  * ")] = agpVersion!!
-                }
-            }
-
-            val currentDeprecatedApis = mutableMapOf<String, MutableList<String>>()
-            currentSnapshotContent.subList(5, currentSnapshotContent.size).forEach { api ->
-                currentDeprecatedApis.getOrPut(
-                    knownDeprecatedApis[api] ?: currentAgpVersion
-                ) { mutableListOf() }.add(api)
-            }
-
-            val deprecatedApiList = mutableListOf<String>()
-            currentDeprecatedApis.keys.sortedWith(keyOrdering).forEach { version ->
-                deprecatedApiList.add("Deprecated from AGP $version")
-                currentDeprecatedApis[version]!!.sorted().forEach { apiSignature ->
-                    deprecatedApiList.add("  * $apiSignature")
-                }
-            }
-
-            return currentSnapshotContent.subList(0, 3) +
-                    listOf("are announced on go/as-release-notes.", currentSnapshotContent[4]) +
-                    deprecatedApiList
-        }
 
         internal fun getApiTester(): ApiTester {
             val classes = ClassPath.from(
@@ -100,7 +62,10 @@ class DeprecatedApiTest {
 
                 """.trimIndent(),
                 snapshotFileUrl,
-                this::transformFinalFileContent,
+                { content -> transformFinalFileContent(content, snapshotFileUrl,
+                    currentKey =  currentAgpVersion,
+                    keyPrefix = "Deprecated from AGP ",
+                    keyOrdering = keyOrdering) },
                 ApiTester.Flag.OMIT_HASH
             )
         }

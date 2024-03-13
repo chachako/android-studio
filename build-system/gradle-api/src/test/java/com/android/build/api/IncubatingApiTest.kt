@@ -17,6 +17,9 @@
 package com.android.build.api
 
 import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.Lint
+import com.android.testutils.ApiTester
+import com.google.common.io.Resources
 import com.google.common.reflect.ClassPath
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
@@ -33,6 +36,11 @@ class IncubatingApiTest {
 
     @get:Rule
     val expect: Expect = Expect.create()
+
+    @Test
+    fun `check incubating APIs are tracked`() {
+        getApiTester().checkApiElements()
+    }
 
     @Suppress("UnstableApiUsage")
     @Test
@@ -96,6 +104,45 @@ class IncubatingApiTest {
     }
 
     companion object {
+
+        private val snapshotFileUrl =
+            Resources.getResource(DeprecatedApiTest::class.java, "incubating-api.txt")
+
+        internal fun getApiTester(currentKey: String? = null): ApiTester {
+            val classes = ClassPath.from(
+                Lint::class.java.classLoader
+            ).getTopLevelClassesRecursive("com.android.build.api")
+                .filter(::filterNonApiClasses)
+            return ApiTester(
+                "Incubating Android Gradle Plugin API.",
+                classes,
+                ApiTester.Filter.INCUBATING_ONLY,
+                """
+                The incubating API has changed,
+
+                All incubating APIs should be tracked with a tracking bug. File a bug and then run
+                    gradlew :base:gradle-api:updateIncubatingApi --args=BUG_NUMBER
+
+                To update all the API expectation files, run
+                    gradlew updateApi
+
+                Any new incubating APIs will be written with a bug number of DO NOT SUBMIT which
+                should be manually replaced before submitting
+
+                IncubatingApiUpdater will apply the following changes if run:
+
+                """.trimIndent(),
+                snapshotFileUrl,
+                { content -> transformFinalFileContent(
+                    currentSnapshotContent = content,
+                    snapshotFileUrl = snapshotFileUrl,
+                    currentKey = currentKey ?: "DO NOT SUBMIT",
+                    keyPrefix = "https://issuetracker.google.com/",
+                    keyOrdering = Comparator.comparingInt { it.toIntOrNull() ?: Int.MIN_VALUE })
+                },
+                ApiTester.Flag.OMIT_HASH
+            )
+        }
 
         private fun loadClass(name: String): Class<*> =
                 IncubatingApiTest::class.java.classLoader.loadClass(name)

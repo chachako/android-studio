@@ -63,9 +63,15 @@ def updateDeprecatedApi = tasks.register('updateDeprecatedApi', JavaExec) {
     mainClass = 'com.android.build.api.DeprecatedApiUpdater'
 }
 
+def updateIncubatingApi = tasks.register('updateIncubatingApi', JavaExec) {
+    classpath(sourceSets['test'].output.classesDirs, sourceSets['test'].runtimeClasspath)
+    mainClass = 'com.android.build.api.IncubatingApiUpdater'
+}
+
 def updateApi = tasks.register('updateApi') {
     dependsOn('updateMetalavaApi')
     dependsOn(updateDeprecatedApi)
+    dependsOn(updateIncubatingApi)
 }
 
 tasks.jar {

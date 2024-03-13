@@ -1,0 +1,733 @@
+Incubating Android Gradle Plugin API.
+-------------------------------------------------------------------------
+ATTENTION REVIEWER: If this needs to be changed, please make sure changes
+have associated tracking issues.
+-------------------------------------------------------------------------
+https://issuetracker.google.com/328745597
+  * com.android.build.api.AndroidPluginVersion.dev: com.android.build.api.AndroidPluginVersion ()
+https://issuetracker.google.com/328747466
+  * com.android.build.api.artifact.SingleArtifact$MERGED_NATIVE_LIBS extends com.android.build.api.artifact.SingleArtifact
+https://issuetracker.google.com/328747467
+  * com.android.build.api.dsl.ExternalNativeBuild.getExperimentalProperties: java.util.Map<java.lang.String, java.lang.Object> ()
+https://issuetracker.google.com/328747468
+  * com.android.build.api.dsl.TestOptions.emulatorControl: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorControl, kotlin.Unit>)
+  * com.android.build.api.dsl.TestOptions.getEmulatorControl: com.android.build.api.dsl.EmulatorControl ()
+https://issuetracker.google.com/328747868
+  * com.android.build.api.dsl.AarMetadata.getMinCompileSdkExtension: java.lang.Integer ()
+  * com.android.build.api.dsl.AarMetadata.setMinCompileSdkExtension: void (java.lang.Integer)
+https://issuetracker.google.com/328747927
+  * com.android.build.api.artifact.SingleArtifact$ASSETS extends com.android.build.api.artifact.SingleArtifact implements com.android.build.api.artifact.Artifact$Replaceable, com.android.build.api.artifact.Artifact$Transformable
+https://issuetracker.google.com/328747928
+  * com.android.build.api.dsl.BundleTexture.getDefaultFormat: java.lang.String ()
+  * com.android.build.api.dsl.BundleTexture.setDefaultFormat: void (java.lang.String)
+https://issuetracker.google.com/328748002
+  * com.android.build.api.artifact.SingleArtifact$APK_FROM_BUNDLE extends com.android.build.api.artifact.SingleArtifact implements com.android.build.api.artifact.Artifact$Transformable
+https://issuetracker.google.com/328748006
+  * com.android.build.api.dsl.TestOptions.getDeviceGroups: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> ()
+  * com.android.build.api.dsl.TestOptions.getDevices: org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> ()
+  * com.android.build.api.dsl.TestOptions.getManagedDevices: com.android.build.api.dsl.ManagedDevices ()
+  * com.android.build.api.dsl.TestOptions.managedDevices: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ManagedDevices, kotlin.Unit>)
+https://issuetracker.google.com/328748007
+  * com.android.build.api.variant.DslExtension
+  * com.android.build.api.variant.DslExtension$Builder
+  * com.android.build.api.variant.DslExtension$Builder.<init>: com.android.build.api.variant.DslExtension$Builder (java.lang.String)
+  * com.android.build.api.variant.DslExtension$Builder.build: com.android.build.api.variant.DslExtension ()
+  * com.android.build.api.variant.DslExtension$Builder.extendBuildTypeWith: com.android.build.api.variant.DslExtension$Builder (java.lang.Class<?>)
+  * com.android.build.api.variant.DslExtension$Builder.extendProductFlavorWith: com.android.build.api.variant.DslExtension$Builder (java.lang.Class<?>)
+  * com.android.build.api.variant.DslExtension$Builder.extendProjectWith: com.android.build.api.variant.DslExtension$Builder (java.lang.Class<?>)
+  * com.android.build.api.variant.DslExtension.<init>: com.android.build.api.variant.DslExtension (java.lang.String, java.lang.Class, java.lang.Class, java.lang.Class, kotlin.jvm.internal.DefaultConstructorMarker)
+  * com.android.build.api.variant.DslExtension.getBuildTypeExtensionType: java.lang.Class<?> ()
+  * com.android.build.api.variant.DslExtension.getDslName: java.lang.String ()
+  * com.android.build.api.variant.DslExtension.getProductFlavorExtensionType: java.lang.Class<?> ()
+  * com.android.build.api.variant.DslExtension.getProjectExtensionType: java.lang.Class<?> ()
+https://issuetracker.google.com/328748020
+  * com.android.build.api.dsl.EmulatorControl
+  * com.android.build.api.dsl.EmulatorControl.getAllowedEndpoints: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.EmulatorControl.getEnable: boolean ()
+  * com.android.build.api.dsl.EmulatorControl.getSecondsValid: int ()
+  * com.android.build.api.dsl.EmulatorControl.setEnable: void (boolean)
+  * com.android.build.api.dsl.EmulatorControl.setSecondsValid: void (int)
+https://issuetracker.google.com/328748021
+  * com.android.build.api.variant.Component.computeTaskName: java.lang.String (java.lang.String, java.lang.String)
+https://issuetracker.google.com/328748023
+  * com.android.build.api.variant.Variant.getExperimentalProperties: org.gradle.api.provider.MapProperty<java.lang.String, java.lang.Object> ()
+https://issuetracker.google.com/328748132
+  * com.android.build.api.dsl.AssetPackBundleExtension.deviceTier: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleDeviceTier, kotlin.Unit>)
+  * com.android.build.api.dsl.AssetPackBundleExtension.getDeviceTier: com.android.build.api.dsl.BundleDeviceTier ()
+  * com.android.build.api.dsl.Bundle.deviceTier: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleDeviceTier, kotlin.Unit>)
+  * com.android.build.api.dsl.Bundle.getDeviceTier: com.android.build.api.dsl.BundleDeviceTier ()
+  * com.android.build.api.dsl.BundleDeviceTier
+  * com.android.build.api.dsl.BundleDeviceTier.getDefaultTier: java.lang.String ()
+  * com.android.build.api.dsl.BundleDeviceTier.getEnableSplit: java.lang.Boolean ()
+  * com.android.build.api.dsl.BundleDeviceTier.setDefaultTier: void (java.lang.String)
+  * com.android.build.api.dsl.BundleDeviceTier.setEnableSplit: void (java.lang.Boolean)
+https://issuetracker.google.com/328748133
+  * com.android.build.api.dsl.CommonExtension.getTestOptions: com.android.build.api.dsl.TestOptions ()
+  * com.android.build.api.dsl.CommonExtension.testOptions: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.TestOptions, kotlin.Unit>)
+https://issuetracker.google.com/328748193
+  * com.android.build.api.dsl.CommonExtension.getJacoco: com.android.build.api.dsl.JacocoOptions ()
+  * com.android.build.api.dsl.CommonExtension.jacoco: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.JacocoOptions, kotlin.Unit>)
+  * com.android.build.api.dsl.JacocoOptions implements com.android.build.api.dsl.TestCoverage
+  * com.android.build.api.dsl.JacocoOptions.getVersion: java.lang.String ()
+  * com.android.build.api.dsl.JacocoOptions.setVersion: void (java.lang.String)
+https://issuetracker.google.com/328748252
+  * com.android.build.api.dsl.AndroidSourceSet.getJni: com.android.build.api.dsl.AndroidSourceDirectorySet ()
+  * com.android.build.api.dsl.AndroidSourceSet.jni: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet, kotlin.Unit>)
+https://issuetracker.google.com/328748254
+  * com.android.build.api.dsl.HasInitWith
+  * com.android.build.api.dsl.HasInitWith.initWith: void (T)
+https://issuetracker.google.com/328748293
+  * com.android.build.api.attributes.ProductFlavorAttr$Companion
+  * com.android.build.api.attributes.ProductFlavorAttr$Companion.of: org.gradle.api.attributes.Attribute<com.android.build.api.attributes.ProductFlavorAttr> (java.lang.String)
+  * com.android.build.api.attributes.ProductFlavorAttr.of: org.gradle.api.attributes.Attribute<com.android.build.api.attributes.ProductFlavorAttr> (java.lang.String)
+https://issuetracker.google.com/328748294
+  * com.android.build.api.dsl.BaselineProfile
+  * com.android.build.api.dsl.BaselineProfile.getIgnoreFrom: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.BaselineProfile.getIgnoreFromAllExternalDependencies: boolean ()
+  * com.android.build.api.dsl.BaselineProfile.setIgnoreFromAllExternalDependencies: void (boolean)
+https://issuetracker.google.com/328748314
+  * com.android.build.api.dsl.CommonExtension.getExperimentalProperties: java.util.Map<java.lang.String, java.lang.Object> ()
+https://issuetracker.google.com/328748347
+  * com.android.build.api.dsl.ApkExtension
+https://issuetracker.google.com/328748349
+  * com.android.build.api.dsl.LibraryKeepRules implements com.android.build.api.dsl.ConfigurableFiles
+  * com.android.build.api.dsl.LibraryKeepRules.getIgnoreFrom: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.LibraryKeepRules.getIgnoreFromAllExternalDependencies: boolean ()
+  * com.android.build.api.dsl.LibraryKeepRules.setIgnoreFromAllExternalDependencies: void (boolean)
+https://issuetracker.google.com/328748351
+  * com.android.build.api.transform.Transform.applyToVariant: boolean (com.android.build.api.variant.VariantInfo)
+https://issuetracker.google.com/328748371
+  * com.android.build.api.artifact.InAndOutFileOperationRequest.withName: com.android.build.api.artifact.InAndOutFileOperationRequest (java.lang.String)
+https://issuetracker.google.com/328748373
+  * com.android.build.api.dsl.PostProcessing
+  * com.android.build.api.dsl.PostProcessing.consumerProguardFile: void (java.lang.Object)
+  * com.android.build.api.dsl.PostProcessing.consumerProguardFiles: void (java.lang.Object[])
+  * com.android.build.api.dsl.PostProcessing.getCodeShrinker: java.lang.String ()
+  * com.android.build.api.dsl.PostProcessing.initWith: void (com.android.build.api.dsl.PostProcessing)
+  * com.android.build.api.dsl.PostProcessing.isObfuscate: boolean ()
+  * com.android.build.api.dsl.PostProcessing.isOptimizeCode: boolean ()
+  * com.android.build.api.dsl.PostProcessing.isRemoveUnusedCode: boolean ()
+  * com.android.build.api.dsl.PostProcessing.isRemoveUnusedResources: boolean ()
+  * com.android.build.api.dsl.PostProcessing.proguardFile: void (java.lang.Object)
+  * com.android.build.api.dsl.PostProcessing.proguardFiles: void (java.lang.Object[])
+  * com.android.build.api.dsl.PostProcessing.setCodeShrinker: void (java.lang.String)
+  * com.android.build.api.dsl.PostProcessing.setConsumerProguardFiles: void (java.util.List<?>)
+  * com.android.build.api.dsl.PostProcessing.setObfuscate: void (boolean)
+  * com.android.build.api.dsl.PostProcessing.setOptimizeCode: void (boolean)
+  * com.android.build.api.dsl.PostProcessing.setProguardFiles: void (java.util.List<?>)
+  * com.android.build.api.dsl.PostProcessing.setRemoveUnusedCode: void (boolean)
+  * com.android.build.api.dsl.PostProcessing.setRemoveUnusedResources: void (boolean)
+  * com.android.build.api.dsl.PostProcessing.setTestProguardFiles: void (java.util.List<?>)
+  * com.android.build.api.dsl.PostProcessing.testProguardFile: void (java.lang.Object)
+  * com.android.build.api.dsl.PostProcessing.testProguardFiles: void (java.lang.Object[])
+https://issuetracker.google.com/328748451
+  * com.android.build.api.artifact.SingleArtifact$RUNTIME_SYMBOL_LIST extends com.android.build.api.artifact.SingleArtifact
+https://issuetracker.google.com/328748453
+  * com.android.build.api.dsl.Bundle.codeTransparency: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleCodeTransparency, kotlin.Unit>)
+  * com.android.build.api.dsl.Bundle.getCodeTransparency: com.android.build.api.dsl.BundleCodeTransparency ()
+  * com.android.build.api.dsl.BundleCodeTransparency
+  * com.android.build.api.dsl.BundleCodeTransparency.getSigning: com.android.build.api.dsl.SigningConfig ()
+  * com.android.build.api.dsl.BundleCodeTransparency.signing: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig, kotlin.Unit>)
+https://issuetracker.google.com/328748454
+  * com.android.build.api.dsl.JniLibsPackaging.getTestOnly: java.util.Set<java.lang.String> ()
+https://issuetracker.google.com/328748468
+  * com.android.build.api.artifact.OutOperationRequest.toListenTo: void (ArtifactTypeT)
+https://issuetracker.google.com/328748469
+  * com.android.build.api.dsl.BundleLanguage.getEnableSplit: java.lang.Boolean ()
+  * com.android.build.api.dsl.BundleLanguage.setEnableSplit: void (java.lang.Boolean)
+https://issuetracker.google.com/328748471
+  * com.android.build.api.dsl.LibraryExtension.getPrefab: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.Prefab> ()
+https://issuetracker.google.com/328748474
+  * com.android.build.api.variant.DslLifecycle
+  * com.android.build.api.variant.DslLifecycle.finalizeDsl: void (kotlin.jvm.functions.Function1<? super T, kotlin.Unit>)
+  * com.android.build.api.variant.DslLifecycle.finalizeDsl: void (org.gradle.api.Action<T>)
+https://issuetracker.google.com/328748487
+  * com.android.build.api.dsl.BuildType.getPostprocessing: com.android.build.api.dsl.PostProcessing ()
+  * com.android.build.api.dsl.BuildType.postprocessing: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PostProcessing, kotlin.Unit>)
+https://issuetracker.google.com/328748492
+  * com.android.build.api.variant.Component.getCompileClasspath: org.gradle.api.file.FileCollection ()
+https://issuetracker.google.com/328748494
+  * com.android.build.api.variant.HasTestFixtures
+  * com.android.build.api.variant.HasTestFixtures.getTestFixtures: com.android.build.api.variant.TestFixtures ()
+  * com.android.build.api.variant.HasTestFixturesBuilder
+  * com.android.build.api.variant.HasTestFixturesBuilder.getEnableTestFixtures: boolean ()
+  * com.android.build.api.variant.HasTestFixturesBuilder.setEnableTestFixtures: void (boolean)
+  * com.android.build.api.variant.TestFixtures implements com.android.build.api.variant.GeneratesAar, com.android.build.api.variant.HasAndroidResources, com.android.build.api.variant.Component
+  * com.android.build.api.variant.TestVariant.getTestedApks: org.gradle.api.provider.Provider<org.gradle.api.file.Directory> ()
+https://issuetracker.google.com/328748510
+  * com.android.build.api.artifact.MultipleArtifactTypeOutOperationRequest
+  * com.android.build.api.artifact.MultipleArtifactTypeOutOperationRequest.toListenTo: void (ArtifactTypeT)
+https://issuetracker.google.com/328748511
+  * com.android.build.api.dsl.ApplicationInstallation.getInstallOptions: java.util.List<java.lang.String> ()
+https://issuetracker.google.com/328748512
+  * com.android.build.api.dsl.BundleTexture.getEnableSplit: java.lang.Boolean ()
+  * com.android.build.api.dsl.BundleTexture.setEnableSplit: void (java.lang.Boolean)
+https://issuetracker.google.com/328748513
+  * com.android.build.api.dsl.VariantDimension.externalNativeBuild: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ExternalNativeBuildFlags, kotlin.Unit>)
+  * com.android.build.api.dsl.VariantDimension.getExternalNativeBuild: com.android.build.api.dsl.ExternalNativeBuildFlags ()
+https://issuetracker.google.com/328748514
+  * com.android.build.api.variant.ApplicationVariant.getBundleConfig: com.android.build.api.variant.BundleConfig ()
+  * com.android.build.api.variant.BundleConfig
+  * com.android.build.api.variant.BundleConfig.addMetadataFile: void (java.lang.String, org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile>)
+  * com.android.build.api.variant.BundleConfig.getCodeTransparency: com.android.build.api.variant.CodeTransparency ()
+https://issuetracker.google.com/328748530
+  * com.android.build.api.variant.AndroidResources.getViewBinding: boolean ()
+https://issuetracker.google.com/328748534
+  * com.android.build.api.variant.SigningConfig.setConfig: void (com.android.build.api.dsl.SigningConfig)
+https://issuetracker.google.com/328748570
+  * com.android.build.api.dsl.AndroidSourceSet.baselineProfiles: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet, kotlin.Unit>)
+  * com.android.build.api.dsl.AndroidSourceSet.getBaselineProfiles: com.android.build.api.dsl.AndroidSourceDirectorySet ()
+https://issuetracker.google.com/328748571
+  * com.android.build.api.dsl.ConfigurableFiles
+  * com.android.build.api.dsl.ConfigurableFiles.file: void (java.lang.Object)
+  * com.android.build.api.dsl.ConfigurableFiles.files: void (java.lang.Object[])
+  * com.android.build.api.dsl.ConfigurableFiles.getFiles: java.util.List<java.io.File> ()
+https://issuetracker.google.com/328748591
+  * com.android.build.api.dsl.BuildType.getVcsInfo: com.android.build.api.dsl.VcsInfo ()
+  * com.android.build.api.dsl.BuildType.vcsInfo: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.VcsInfo, kotlin.Unit>)
+https://issuetracker.google.com/328748594
+  * com.android.build.api.variant.AarMetadata.getMinCompileSdkExtension: org.gradle.api.provider.Property<java.lang.Integer> ()
+https://issuetracker.google.com/328748602
+  * com.android.build.api.dsl.BundleAbi.getEnableSplit: java.lang.Boolean ()
+  * com.android.build.api.dsl.BundleAbi.setEnableSplit: void (java.lang.Boolean)
+https://issuetracker.google.com/328748603
+  * com.android.build.api.dsl.KeepRules
+  * com.android.build.api.dsl.KeepRules.ignoreAllExternalDependencies: void (boolean)
+  * com.android.build.api.dsl.KeepRules.ignoreExternalDependencies: void (java.lang.String[])
+  * com.android.build.api.dsl.KeepRules.ignoreFrom: void (java.lang.String[])
+  * com.android.build.api.dsl.KeepRules.ignoreFromAllExternalDependencies: void (boolean)
+https://issuetracker.google.com/328748652
+  * com.android.build.api.dsl.ApplicationAndroidResources.getGenerateLocaleConfig: boolean ()
+  * com.android.build.api.dsl.ApplicationAndroidResources.setGenerateLocaleConfig: void (boolean)
+  * com.android.build.api.dsl.ApplicationInstallation.getEnableBaselineProfile: boolean ()
+  * com.android.build.api.dsl.ApplicationInstallation.setEnableBaselineProfile: void (boolean)
+https://issuetracker.google.com/328748653
+  * com.android.build.api.dsl.ExternalNativeBuildFlags
+  * com.android.build.api.dsl.ExternalNativeBuildFlags.cmake: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.CmakeFlags, kotlin.Unit>)
+  * com.android.build.api.dsl.ExternalNativeBuildFlags.getCmake: com.android.build.api.dsl.CmakeFlags ()
+  * com.android.build.api.dsl.ExternalNativeBuildFlags.getExperimentalProperties: java.util.Map<java.lang.String, java.lang.Object> ()
+  * com.android.build.api.dsl.ExternalNativeBuildFlags.getNdkBuild: com.android.build.api.dsl.NdkBuildFlags ()
+  * com.android.build.api.dsl.ExternalNativeBuildFlags.ndkBuild: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.NdkBuildFlags, kotlin.Unit>)
+https://issuetracker.google.com/328748665
+  * com.android.build.api.dsl.DependencyVariantSelection
+  * com.android.build.api.dsl.DependencyVariantSelection.getBuildTypes: org.gradle.api.provider.ListProperty<java.lang.String> ()
+  * com.android.build.api.dsl.DependencyVariantSelection.getProductFlavors: org.gradle.api.provider.MapProperty<java.lang.String, java.util.List<java.lang.String>> ()
+https://issuetracker.google.com/328748668
+  * com.android.build.api.variant.AndroidComponentsExtension.registerExtension: void (com.android.build.api.variant.DslExtension, kotlin.jvm.functions.Function1<? super com.android.build.api.variant.VariantExtensionConfig<VariantT>, ? extends com.android.build.api.variant.VariantExtension>)
+https://issuetracker.google.com/328748669
+  * com.android.build.api.variant.Component.getLifecycleTasks: com.android.build.api.variant.LifecycleTasks ()
+https://issuetracker.google.com/328748670
+  * com.android.build.api.variant.Variant.missingDimensionStrategy: void (java.lang.String, java.lang.String[])
+https://issuetracker.google.com/328748686
+  * com.android.build.api.dsl.Bundle.getIntegrityConfigDir: org.gradle.api.file.DirectoryProperty ()
+https://issuetracker.google.com/328748688
+  * com.android.build.api.variant.AndroidResources.getNoCompress: org.gradle.api.provider.ListProperty<java.lang.String> ()
+  * com.android.build.api.variant.AndroidResourcesBuilder
+https://issuetracker.google.com/328748691
+  * com.android.build.api.variant.TestedComponentPackaging implements com.android.build.api.variant.Packaging
+https://issuetracker.google.com/328748709
+  * com.android.build.api.artifact.OutOperationRequest.withName: com.android.build.api.artifact.OutOperationRequest<FileTypeT> (java.lang.String)
+https://issuetracker.google.com/328748711
+  * com.android.build.api.dsl.BundleDensity.getEnableSplit: java.lang.Boolean ()
+  * com.android.build.api.dsl.BundleDensity.setEnableSplit: void (java.lang.Boolean)
+https://issuetracker.google.com/328748714
+  * com.android.build.api.dsl.Optimization
+  * com.android.build.api.dsl.Optimization.baselineProfile: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BaselineProfile, kotlin.Unit>)
+  * com.android.build.api.dsl.Optimization.keepRules: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KeepRules, kotlin.Unit>)
+  * com.android.build.api.dsl.VariantDimension.getOptimization: com.android.build.api.dsl.Optimization ()
+  * com.android.build.api.dsl.VariantDimension.optimization: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Optimization, kotlin.Unit>)
+https://issuetracker.google.com/328748727
+  * com.android.build.api.artifact.SingleArtifact$METADATA_LIBRARY_DEPENDENCIES_REPORT extends com.android.build.api.artifact.SingleArtifact implements com.android.build.api.artifact.Artifact$Replaceable, com.android.build.api.artifact.Artifact$Transformable
+https://issuetracker.google.com/328748729
+  * com.android.build.api.dsl.Installation.getInstallOptions: java.util.List<java.lang.String> ()
+https://issuetracker.google.com/328748732
+  * com.android.build.api.dsl.VectorDrawables.generatedDensities: void (java.lang.String[])
+  * com.android.build.api.dsl.VectorDrawables.getGeneratedDensities: java.util.Set<java.lang.String> ()
+https://issuetracker.google.com/328748734
+  * com.android.build.api.variant.CanMinifyCode
+  * com.android.build.api.variant.CanMinifyCode.isMinifyEnabled: boolean ()
+https://issuetracker.google.com/328748747
+  * com.android.build.api.dsl.AndroidResources.getNamespaced: boolean ()
+  * com.android.build.api.dsl.AndroidResources.setNamespaced: void (boolean)
+https://issuetracker.google.com/328748749
+  * com.android.build.api.dsl.SdkComponents.getAidl: org.gradle.api.provider.Provider<com.android.build.api.variant.Aidl> ()
+https://issuetracker.google.com/328748750
+  * com.android.build.api.variant.Aidl
+  * com.android.build.api.variant.Aidl.getExecutable: org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile> ()
+  * com.android.build.api.variant.Aidl.getFramework: org.gradle.api.provider.Provider<org.gradle.api.file.RegularFile> ()
+  * com.android.build.api.variant.Aidl.getVersion: org.gradle.api.provider.Provider<java.lang.String> ()
+https://issuetracker.google.com/328748766
+  * com.android.build.api.dsl.DynamicFeatureBuildType.isCrunchPngs: java.lang.Boolean ()
+  * com.android.build.api.dsl.DynamicFeatureBuildType.setCrunchPngs: void (java.lang.Boolean)
+https://issuetracker.google.com/328748770
+  * com.android.build.api.variant.AnnotationProcessor
+  * com.android.build.api.variant.AnnotationProcessor.getArgumentProviders: java.util.List<org.gradle.process.CommandLineArgumentProvider> ()
+  * com.android.build.api.variant.AnnotationProcessor.getArguments: org.gradle.api.provider.MapProperty<java.lang.String, java.lang.String> ()
+  * com.android.build.api.variant.AnnotationProcessor.getClassNames: org.gradle.api.provider.ListProperty<java.lang.String> ()
+https://issuetracker.google.com/328748772
+  * com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension implements com.android.build.api.variant.DslLifecycle, com.android.build.api.variant.AndroidComponents
+  * com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension.onVariant: void (kotlin.jvm.functions.Function1<? super com.android.build.api.variant.KotlinMultiplatformAndroidVariant, kotlin.Unit>)
+  * com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension.onVariant: void (org.gradle.api.Action<com.android.build.api.variant.KotlinMultiplatformAndroidVariant>)
+https://issuetracker.google.com/328748779
+  * com.android.build.api.dsl.AarMetadata.getMinAgpVersion: java.lang.String ()
+  * com.android.build.api.dsl.AarMetadata.setMinAgpVersion: void (java.lang.String)
+https://issuetracker.google.com/328748780
+  * com.android.build.api.dsl.AssetPackBundleExtension.countrySet: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleCountrySet, kotlin.Unit>)
+  * com.android.build.api.dsl.AssetPackBundleExtension.getCountrySet: com.android.build.api.dsl.BundleCountrySet ()
+  * com.android.build.api.dsl.Bundle.countrySet: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.BundleCountrySet, kotlin.Unit>)
+  * com.android.build.api.dsl.Bundle.getCountrySet: com.android.build.api.dsl.BundleCountrySet ()
+  * com.android.build.api.dsl.BundleCountrySet
+  * com.android.build.api.dsl.BundleCountrySet.getDefaultSet: java.lang.String ()
+  * com.android.build.api.dsl.BundleCountrySet.getEnableSplit: java.lang.Boolean ()
+  * com.android.build.api.dsl.BundleCountrySet.setDefaultSet: void (java.lang.String)
+  * com.android.build.api.dsl.BundleCountrySet.setEnableSplit: void (java.lang.Boolean)
+https://issuetracker.google.com/328748781
+  * com.android.build.api.dsl.TestOptions.failureRetention: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.FailureRetention, kotlin.Unit>)
+  * com.android.build.api.dsl.TestOptions.getFailureRetention: com.android.build.api.dsl.FailureRetention ()
+https://issuetracker.google.com/328748783
+  * com.android.build.api.variant.AndroidComponentsExtension.registerSourceType: void (java.lang.String)
+https://issuetracker.google.com/328748784
+  * com.android.build.api.variant.HasDeviceTests
+  * com.android.build.api.variant.HasDeviceTests.getDeviceTests: java.util.List<com.android.build.api.variant.DeviceTest> ()
+https://issuetracker.google.com/328748820
+  * com.android.build.api.dsl.Device implements org.gradle.api.Named, java.io.Serializable
+  * com.android.build.api.dsl.Device.getName: java.lang.String ()
+https://issuetracker.google.com/328748823
+  * com.android.build.api.variant.CodeTransparency
+  * com.android.build.api.variant.CodeTransparency.setSigningConfig: void (com.android.build.api.dsl.SigningConfig)
+https://issuetracker.google.com/328748839
+  * com.android.build.api.variant.ApplicationAndroidResources implements com.android.build.api.variant.AndroidResources
+  * com.android.build.api.variant.ApplicationAndroidResources.getGenerateLocaleConfig: boolean ()
+  * com.android.build.api.variant.ApplicationVariant.getAndroidResources: com.android.build.api.variant.ApplicationAndroidResources ()
+https://issuetracker.google.com/328748857
+  * com.android.build.api.dsl.MultiDexConfig
+  * com.android.build.api.dsl.MultiDexConfig.getEnable: boolean ()
+  * com.android.build.api.dsl.MultiDexConfig.getMainDexKeepRules: com.android.build.api.dsl.ConfigurableFiles ()
+  * com.android.build.api.dsl.MultiDexConfig.setEnable: void (boolean)
+https://issuetracker.google.com/328748858
+  * com.android.build.api.variant.CanMinifyAndroidResources
+  * com.android.build.api.variant.CanMinifyAndroidResources.getShrinkResources: boolean ()
+https://issuetracker.google.com/328748859
+  * com.android.build.api.variant.LifecycleTasks
+  * com.android.build.api.variant.LifecycleTasks.registerPreBuild: void (java.lang.Object[])
+https://issuetracker.google.com/328748875
+  * com.android.build.api.dsl.FailureRetention implements com.android.build.api.dsl.EmulatorSnapshots
+  * com.android.build.api.dsl.FailureRetention.getEnable: boolean ()
+  * com.android.build.api.dsl.FailureRetention.getMaxSnapshots: int ()
+  * com.android.build.api.dsl.FailureRetention.setEnable: void (boolean)
+  * com.android.build.api.dsl.FailureRetention.setMaxSnapshots: void (int)
+https://issuetracker.google.com/328748877
+  * com.android.build.api.dsl.PrivacySandboxKeepRules implements com.android.build.api.dsl.ConfigurableFiles
+  * com.android.build.api.dsl.PrivacySandboxKeepRules.getIgnoreFrom: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.PrivacySandboxKeepRules.getIgnoreFromAllExternalDependencies: boolean ()
+  * com.android.build.api.dsl.PrivacySandboxKeepRules.setIgnoreFromAllExternalDependencies: void (boolean)
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.getApplicationId: java.lang.String ()
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.getCompatSdkProviderClassName: java.lang.String ()
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.getPackageName: java.lang.String ()
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.getSdkProviderClassName: java.lang.String ()
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.setApplicationId: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.setCompatSdkProviderClassName: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.setPackageName: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.setSdkProviderClassName: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkBundle.setVersion: void (int, int, int)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.bundle: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PrivacySandboxSdkBundle, kotlin.Unit>)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getBuildToolsVersion: java.lang.String ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getBundle: com.android.build.api.dsl.PrivacySandboxSdkBundle ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getCompileSdk: java.lang.Integer ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getCompileSdkExtension: java.lang.Integer ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getCompileSdkPreview: java.lang.String ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getExperimentalProperties: java.util.Map<java.lang.String, java.lang.Object> ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getMinSdk: java.lang.Integer ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getMinSdkPreview: java.lang.String ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getNamespace: java.lang.String ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getOptimization: com.android.build.api.dsl.PrivacySandboxSdkOptimization ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getSigningConfig: com.android.build.api.dsl.SigningConfig ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.optimization: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PrivacySandboxSdkOptimization, kotlin.Unit>)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.setBuildToolsVersion: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.setCompileSdk: void (java.lang.Integer)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.setCompileSdkExtension: void (java.lang.Integer)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.setCompileSdkPreview: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.setMinSdk: void (java.lang.Integer)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.setMinSdkPreview: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.setNamespace: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.signingConfig: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig, kotlin.Unit>)
+  * com.android.build.api.dsl.PrivacySandboxSdkOptimization
+  * com.android.build.api.dsl.PrivacySandboxSdkOptimization.getKeepRules: com.android.build.api.dsl.PrivacySandboxKeepRules ()
+https://issuetracker.google.com/328748878
+  * com.android.build.api.variant.KotlinMultiplatformAndroidVariant implements com.android.build.api.variant.HasDeviceTests, com.android.build.api.variant.HasAndroidTest, com.android.build.api.variant.HasUnitTest
+  * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getArtifacts: com.android.build.api.artifact.Artifacts ()
+  * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getCompileClasspath: org.gradle.api.file.FileCollection ()
+  * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getInstrumentation: com.android.build.api.variant.Instrumentation ()
+  * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getLifecycleTasks: com.android.build.api.variant.LifecycleTasks ()
+  * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getName: java.lang.String ()
+  * com.android.build.api.variant.KotlinMultiplatformAndroidVariant.getNestedComponents: java.util.List<com.android.build.api.variant.Component> ()
+https://issuetracker.google.com/328748918
+  * com.android.build.api.dsl.NdkBuildFlags
+  * com.android.build.api.dsl.NdkBuildFlags.abiFilters: void (java.lang.String[])
+  * com.android.build.api.dsl.NdkBuildFlags.arguments: void (java.lang.String[])
+  * com.android.build.api.dsl.NdkBuildFlags.cFlags: void (java.lang.String[])
+  * com.android.build.api.dsl.NdkBuildFlags.cppFlags: void (java.lang.String[])
+  * com.android.build.api.dsl.NdkBuildFlags.getAbiFilters: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.NdkBuildFlags.getArguments: java.util.List<java.lang.String> ()
+  * com.android.build.api.dsl.NdkBuildFlags.getCFlags: java.util.List<java.lang.String> ()
+  * com.android.build.api.dsl.NdkBuildFlags.getCppFlags: java.util.List<java.lang.String> ()
+  * com.android.build.api.dsl.NdkBuildFlags.getTargets: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.NdkBuildFlags.targets: void (java.lang.String[])
+https://issuetracker.google.com/328748920
+  * com.android.build.api.variant.AndroidResources.getDataBinding: boolean ()
+https://issuetracker.google.com/328748921
+  * com.android.build.api.variant.LintLifecycleExtension implements com.android.build.api.variant.DslLifecycle
+https://issuetracker.google.com/328748935
+  * com.android.build.api.dsl.ConsumerKeepRules implements com.android.build.api.dsl.ConfigurableFiles
+  * com.android.build.api.dsl.ConsumerKeepRules.getIgnoreFrom: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.ConsumerKeepRules.getIgnoreFromAllExternalDependencies: boolean ()
+  * com.android.build.api.dsl.ConsumerKeepRules.getPublish: boolean ()
+  * com.android.build.api.dsl.ConsumerKeepRules.setIgnoreFromAllExternalDependencies: void (boolean)
+  * com.android.build.api.dsl.ConsumerKeepRules.setPublish: void (boolean)
+https://issuetracker.google.com/328748938
+  * com.android.build.api.variant.ApplicationVariant.getPackaging: com.android.build.api.variant.TestedApkPackaging ()
+  * com.android.build.api.variant.DynamicFeatureVariant.getPackaging: com.android.build.api.variant.TestedApkPackaging ()
+  * com.android.build.api.variant.TestedApkPackaging implements com.android.build.api.variant.TestedComponentPackaging, com.android.build.api.variant.ApkPackaging
+  * com.android.build.api.variant.TestedApkPackaging.getJniLibs: com.android.build.api.variant.JniLibsTestedApkPackaging ()
+https://issuetracker.google.com/328748959
+  * com.android.build.api.dsl.CommonExtension.getLintOptions: com.android.build.api.dsl.LintOptions ()
+  * com.android.build.api.dsl.CommonExtension.lintOptions: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.LintOptions, kotlin.Unit>)
+  * com.android.build.api.dsl.LintOptions
+  * com.android.build.api.dsl.LintOptions.baseline: void (java.io.File)
+  * com.android.build.api.dsl.LintOptions.baseline: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.check: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.check: void (java.lang.String[])
+  * com.android.build.api.dsl.LintOptions.checkOnly: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.checkOnly: void (java.lang.String[])
+  * com.android.build.api.dsl.LintOptions.disable: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.disable: void (java.lang.String[])
+  * com.android.build.api.dsl.LintOptions.enable: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.enable: void (java.lang.String[])
+  * com.android.build.api.dsl.LintOptions.error: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.error: void (java.lang.String[])
+  * com.android.build.api.dsl.LintOptions.fatal: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.fatal: void (java.lang.String[])
+  * com.android.build.api.dsl.LintOptions.getBaselineFile: java.io.File ()
+  * com.android.build.api.dsl.LintOptions.getCheckOnly: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.LintOptions.getDisable: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.LintOptions.getEnable: java.util.Set<java.lang.String> ()
+  * com.android.build.api.dsl.LintOptions.getHtmlOutput: java.io.File ()
+  * com.android.build.api.dsl.LintOptions.getHtmlReport: boolean ()
+  * com.android.build.api.dsl.LintOptions.getLintConfig: java.io.File ()
+  * com.android.build.api.dsl.LintOptions.getSarifOutput: java.io.File ()
+  * com.android.build.api.dsl.LintOptions.getSarifReport: boolean ()
+  * com.android.build.api.dsl.LintOptions.getTextOutput: java.io.File ()
+  * com.android.build.api.dsl.LintOptions.getTextReport: boolean ()
+  * com.android.build.api.dsl.LintOptions.getXmlOutput: java.io.File ()
+  * com.android.build.api.dsl.LintOptions.getXmlReport: boolean ()
+  * com.android.build.api.dsl.LintOptions.ignore: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.ignore: void (java.lang.String[])
+  * com.android.build.api.dsl.LintOptions.informational: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.informational: void (java.lang.String[])
+  * com.android.build.api.dsl.LintOptions.isAbortOnError: boolean ()
+  * com.android.build.api.dsl.LintOptions.isAbsolutePaths: boolean ()
+  * com.android.build.api.dsl.LintOptions.isCheckAllWarnings: boolean ()
+  * com.android.build.api.dsl.LintOptions.isCheckDependencies: boolean ()
+  * com.android.build.api.dsl.LintOptions.isCheckGeneratedSources: boolean ()
+  * com.android.build.api.dsl.LintOptions.isCheckReleaseBuilds: boolean ()
+  * com.android.build.api.dsl.LintOptions.isCheckTestSources: boolean ()
+  * com.android.build.api.dsl.LintOptions.isExplainIssues: boolean ()
+  * com.android.build.api.dsl.LintOptions.isIgnoreTestSources: boolean ()
+  * com.android.build.api.dsl.LintOptions.isIgnoreWarnings: boolean ()
+  * com.android.build.api.dsl.LintOptions.isNoLines: boolean ()
+  * com.android.build.api.dsl.LintOptions.isQuiet: boolean ()
+  * com.android.build.api.dsl.LintOptions.isShowAll: boolean ()
+  * com.android.build.api.dsl.LintOptions.isWarningsAsErrors: boolean ()
+  * com.android.build.api.dsl.LintOptions.setAbortOnError: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setAbsolutePaths: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setBaselineFile: void (java.io.File)
+  * com.android.build.api.dsl.LintOptions.setCheckAllWarnings: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setCheckDependencies: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setCheckGeneratedSources: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setCheckReleaseBuilds: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setCheckTestSources: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setExplainIssues: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setHtmlOutput: void (java.io.File)
+  * com.android.build.api.dsl.LintOptions.setHtmlReport: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setIgnoreTestSources: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setIgnoreWarnings: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setLintConfig: void (java.io.File)
+  * com.android.build.api.dsl.LintOptions.setNoLines: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setQuiet: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setSarifOutput: void (java.io.File)
+  * com.android.build.api.dsl.LintOptions.setSarifReport: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setShowAll: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setTextOutput: void (java.io.File)
+  * com.android.build.api.dsl.LintOptions.setTextReport: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setWarningsAsErrors: void (boolean)
+  * com.android.build.api.dsl.LintOptions.setXmlOutput: void (java.io.File)
+  * com.android.build.api.dsl.LintOptions.setXmlReport: void (boolean)
+  * com.android.build.api.dsl.LintOptions.textOutput: void (java.io.File)
+  * com.android.build.api.dsl.LintOptions.textOutput: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.warning: void (java.lang.String)
+  * com.android.build.api.dsl.LintOptions.warning: void (java.lang.String[])
+https://issuetracker.google.com/328748961
+  * com.android.build.api.variant.ApplicationVariantBuilder.getProfileable: boolean ()
+  * com.android.build.api.variant.ApplicationVariantBuilder.setProfileable: void (boolean)
+https://issuetracker.google.com/328748963
+  * com.android.build.api.variant.Sources.getKotlin: com.android.build.api.variant.SourceDirectories$Flat ()
+https://issuetracker.google.com/328748995
+  * com.android.build.api.dsl.EmulatorSnapshots
+  * com.android.build.api.dsl.EmulatorSnapshots.getCompressSnapshots: boolean ()
+  * com.android.build.api.dsl.EmulatorSnapshots.getEnableForTestFailures: boolean ()
+  * com.android.build.api.dsl.EmulatorSnapshots.getMaxSnapshotsForTestFailures: int ()
+  * com.android.build.api.dsl.EmulatorSnapshots.retainAll: void ()
+  * com.android.build.api.dsl.EmulatorSnapshots.setCompressSnapshots: void (boolean)
+  * com.android.build.api.dsl.EmulatorSnapshots.setEnableForTestFailures: void (boolean)
+  * com.android.build.api.dsl.EmulatorSnapshots.setMaxSnapshotsForTestFailures: void (int)
+https://issuetracker.google.com/328748998
+  * com.android.build.api.dsl.LibraryExtension.getAidlPackagedList: java.util.Collection<java.lang.String> ()
+https://issuetracker.google.com/328749001
+  * com.android.build.api.variant.Dexing
+  * com.android.build.api.variant.Dexing.getMultiDexKeepFile: org.gradle.api.file.RegularFileProperty ()
+  * com.android.build.api.variant.Dexing.getMultiDexKeepProguard: org.gradle.api.file.RegularFileProperty ()
+  * com.android.build.api.variant.Dexing.isMultiDexEnabled: boolean ()
+  * com.android.build.api.variant.GeneratesApk.getDexing: com.android.build.api.variant.Dexing ()
+https://issuetracker.google.com/328749002
+  * com.android.build.api.variant.Variant.getComponents: java.util.List<com.android.build.api.variant.Component> ()
+https://issuetracker.google.com/328749020
+  * com.android.build.api.dsl.ManagedVirtualDevice implements com.android.build.api.dsl.Device
+  * com.android.build.api.dsl.ManagedVirtualDevice.getApiLevel: int ()
+  * com.android.build.api.dsl.ManagedVirtualDevice.getApiPreview: java.lang.String ()
+  * com.android.build.api.dsl.ManagedVirtualDevice.getDevice: java.lang.String ()
+  * com.android.build.api.dsl.ManagedVirtualDevice.getRequire64Bit: boolean ()
+  * com.android.build.api.dsl.ManagedVirtualDevice.getSystemImageSource: java.lang.String ()
+  * com.android.build.api.dsl.ManagedVirtualDevice.setApiLevel: void (int)
+  * com.android.build.api.dsl.ManagedVirtualDevice.setApiPreview: void (java.lang.String)
+  * com.android.build.api.dsl.ManagedVirtualDevice.setDevice: void (java.lang.String)
+  * com.android.build.api.dsl.ManagedVirtualDevice.setRequire64Bit: void (boolean)
+  * com.android.build.api.dsl.ManagedVirtualDevice.setSystemImageSource: void (java.lang.String)
+https://issuetracker.google.com/328749036
+  * com.android.build.api.dsl.TestOptions.emulatorSnapshots: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorSnapshots, kotlin.Unit>)
+  * com.android.build.api.dsl.TestOptions.getEmulatorSnapshots: com.android.build.api.dsl.EmulatorSnapshots ()
+https://issuetracker.google.com/328749039
+  * com.android.build.api.variant.Component.getJavaCompilation: com.android.build.api.variant.JavaCompilation ()
+  * com.android.build.api.variant.JavaCompilation
+  * com.android.build.api.variant.JavaCompilation.getAnnotationProcessor: com.android.build.api.variant.AnnotationProcessor ()
+https://issuetracker.google.com/328749058
+  * com.android.build.api.variant.HasDeviceTestsBuilder
+  * com.android.build.api.variant.HasDeviceTestsBuilder.getDeviceTests: java.util.List<com.android.build.api.variant.DeviceTestBuilder> ()
+https://issuetracker.google.com/328749059
+  * com.android.build.api.variant.Variant.getNestedComponents: java.util.List<com.android.build.api.variant.Component> ()
+https://issuetracker.google.com/328749076
+  * com.android.build.api.artifact.TaskBasedOperation.wiredWithMultiple: com.android.build.api.artifact.MultipleArtifactTypeOutOperationRequest<FileTypeT> (kotlin.jvm.functions.Function1<? super TaskT, ? extends org.gradle.api.provider.ListProperty<FileTypeT>>)
+https://issuetracker.google.com/328749079
+  * com.android.build.api.dsl.ManagedDevices.getLocalDevices: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.ManagedVirtualDevice> ()
+https://issuetracker.google.com/328749082
+  * com.android.build.api.variant.AarMetadata.getMinAgpVersion: org.gradle.api.provider.Property<java.lang.String> ()
+https://issuetracker.google.com/328749096
+  * com.android.build.api.dsl.LibraryBuildType.androidTest: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidTest, kotlin.Unit>)
+  * com.android.build.api.dsl.LibraryBuildType.getAndroidTest: com.android.build.api.dsl.AndroidTest ()
+https://issuetracker.google.com/328749098
+  * com.android.build.api.variant.CanMinifyAndroidResourcesBuilder
+  * com.android.build.api.variant.CanMinifyAndroidResourcesBuilder.getShrinkResources: boolean ()
+  * com.android.build.api.variant.CanMinifyAndroidResourcesBuilder.setShrinkResources: void (boolean)
+https://issuetracker.google.com/328749100
+  * com.android.build.api.variant.PropertyAccessNotAllowedException extends java.lang.RuntimeException
+  * com.android.build.api.variant.PropertyAccessNotAllowedException.<init>: com.android.build.api.variant.PropertyAccessNotAllowedException (java.lang.String, java.lang.String)
+  * com.android.build.api.variant.PropertyAccessNotAllowedException.getLocation: java.lang.String ()
+  * com.android.build.api.variant.PropertyAccessNotAllowedException.getPropertyName: java.lang.String ()
+https://issuetracker.google.com/328749195
+  * com.android.build.api.variant.ApplicationAndroidResourcesBuilder implements com.android.build.api.variant.AndroidResourcesBuilder
+  * com.android.build.api.variant.ApplicationAndroidResourcesBuilder.getGenerateLocaleConfig: boolean ()
+  * com.android.build.api.variant.ApplicationAndroidResourcesBuilder.setGenerateLocaleConfig: void (boolean)
+https://issuetracker.google.com/328749235
+  * com.android.build.api.dsl.VcsInfo.getInclude: java.lang.Boolean ()
+  * com.android.build.api.dsl.VcsInfo.setInclude: void (java.lang.Boolean)
+https://issuetracker.google.com/328749236
+  * com.android.build.api.variant.GeneratesApkBuilder.getEnableMultiDex: java.lang.Boolean ()
+  * com.android.build.api.variant.GeneratesApkBuilder.setEnableMultiDex: void (java.lang.Boolean)
+https://issuetracker.google.com/328749276
+  * com.android.build.api.variant.CanMinifyCodeBuilder
+  * com.android.build.api.variant.CanMinifyCodeBuilder.isMinifyEnabled: boolean ()
+  * com.android.build.api.variant.CanMinifyCodeBuilder.setMinifyEnabled: void (boolean)
+https://issuetracker.google.com/328749278
+  * com.android.build.api.variant.TestedComponentPackaging.getJniLibs: com.android.build.api.variant.JniLibsTestedComponentPackaging ()
+https://issuetracker.google.com/328749295
+  * com.android.build.api.variant.JniLibsTestedApkPackaging implements com.android.build.api.variant.JniLibsTestedComponentPackaging, com.android.build.api.variant.JniLibsApkPackaging
+  * com.android.build.api.variant.JniLibsTestedComponentPackaging implements com.android.build.api.variant.JniLibsPackaging
+  * com.android.build.api.variant.JniLibsTestedComponentPackaging.getTestOnly: org.gradle.api.provider.SetProperty<java.lang.String> ()
+https://issuetracker.google.com/328749317
+  * com.android.build.api.dsl.KmpOptimization
+  * com.android.build.api.dsl.KmpOptimization.getConsumerKeepRules: com.android.build.api.dsl.ConsumerKeepRules ()
+  * com.android.build.api.dsl.KmpOptimization.getKeepRules: com.android.build.api.dsl.LibraryKeepRules ()
+  * com.android.build.api.dsl.KmpOptimization.getMinify: boolean ()
+  * com.android.build.api.dsl.KmpOptimization.getTestKeepRules: com.android.build.api.dsl.ConfigurableFiles ()
+  * com.android.build.api.dsl.KmpOptimization.setMinify: void (boolean)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation implements org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.getCompilerOptions: org.jetbrains.kotlin.gradle.plugin.HasCompilerOptions<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions> ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.getKotlinOptions: org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (kotlin.jvm.functions.Function1<? super org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation.kotlinOptions: void (org.gradle.api.Action<org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.getCompilationName: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.getDefaultSourceSetName: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.getSourceSetTreeName: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.setCompilationName: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.setDefaultSourceSetName: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder.setSourceSetTreeName: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.aarMetadata: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AarMetadata, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.dependencyVariantSelection: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DependencyVariantSelection, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getAarMetadata: com.android.build.api.dsl.AarMetadata ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getBuildToolsVersion: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getCompileSdk: java.lang.Integer ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getCompileSdkExtension: java.lang.Integer ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getCompileSdkPreview: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getDependencyVariantSelection: com.android.build.api.dsl.DependencyVariantSelection ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getExperimentalProperties: java.util.Map<java.lang.String, java.lang.Object> ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getLint: com.android.build.api.dsl.Lint ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getMaxSdk: java.lang.Integer ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getMinSdk: java.lang.Integer ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getMinSdkPreview: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getNamespace: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getOptimization: com.android.build.api.dsl.KmpOptimization ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getPackaging: com.android.build.api.dsl.Packaging ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getTestCoverage: com.android.build.api.dsl.TestCoverage ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.getTestNamespace: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.isCoreLibraryDesugaringEnabled: boolean ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.lint: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Lint, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.optimization: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KmpOptimization, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.packaging: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Packaging, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.setBuildToolsVersion: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.setCompileSdk: void (java.lang.Integer)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.setCompileSdkExtension: void (java.lang.Integer)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.setCompileSdkPreview: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.setCoreLibraryDesugaringEnabled: void (boolean)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.setMaxSdk: void (java.lang.Integer)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.setMinSdk: void (java.lang.Integer)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.setMinSdkPreview: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.setNamespace: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.setTestNamespace: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.useLibrary: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.useLibrary: void (java.lang.String, boolean)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnDevice: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnDeviceBuilder: com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice> (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnJvm: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidExtension.withAndroidTestOnJvmBuilder: com.android.build.api.dsl.HasConfigurableValue<com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm> (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidCompilationBuilder, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTarget implements org.jetbrains.kotlin.gradle.plugin.KotlinTarget, com.android.build.api.dsl.KotlinMultiplatformAndroidExtension
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTarget.getCompilations: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation> ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTarget.withJava: void ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTargetKt.androidLibrary: void (org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension, kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.KotlinMultiplatformAndroidTarget, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.emulatorControl: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorControl, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.emulatorSnapshots: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.EmulatorSnapshots, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getAnimationsDisabled: boolean ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getApplicationId: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getEmulatorControl: com.android.build.api.dsl.EmulatorControl ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getEmulatorSnapshots: com.android.build.api.dsl.EmulatorSnapshots ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getEnableCoverage: boolean ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getExecution: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getFunctionalTest: java.lang.Boolean ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getHandleProfiling: java.lang.Boolean ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getInstallation: com.android.build.api.dsl.Installation ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getInstrumentationRunner: java.lang.String ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getInstrumentationRunnerArguments: java.util.Map<java.lang.String, java.lang.String> ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getManagedDevices: com.android.build.api.dsl.ManagedDevices ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getMultidex: com.android.build.api.dsl.MultiDexConfig ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.getSigning: com.android.build.api.dsl.ApkSigningConfig ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.installation: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Installation, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.managedDevices: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ManagedDevices, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.multidex: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.MultiDexConfig, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.setAnimationsDisabled: void (boolean)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.setApplicationId: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.setEnableCoverage: void (boolean)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.setExecution: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.setFunctionalTest: void (java.lang.Boolean)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.setHandleProfiling: void (java.lang.Boolean)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.setInstrumentationRunner: void (java.lang.String)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice.signing: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ApkSigningConfig, kotlin.Unit>)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDeviceCompilation implements com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnDevice, com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm.getEnableCoverage: boolean ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm.isIncludeAndroidResources: boolean ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm.isReturnDefaultValues: boolean ()
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm.setEnableCoverage: void (boolean)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm.setIncludeAndroidResources: void (boolean)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm.setReturnDefaultValues: void (boolean)
+  * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmCompilation implements com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm, com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
+https://issuetracker.google.com/328749318
+  * com.android.build.api.variant.DeviceTestBuilder
+  * com.android.build.api.variant.DeviceTestBuilder.getEnable: boolean ()
+  * com.android.build.api.variant.DeviceTestBuilder.getEnableMultiDex: java.lang.Boolean ()
+  * com.android.build.api.variant.DeviceTestBuilder.setEnable: void (boolean)
+  * com.android.build.api.variant.DeviceTestBuilder.setEnableMultiDex: void (java.lang.Boolean)
+https://issuetracker.google.com/328749416
+  * com.android.build.api.variant.VariantExtensionConfig
+  * com.android.build.api.variant.VariantExtensionConfig.buildTypeExtension: T (java.lang.Class<T>)
+  * com.android.build.api.variant.VariantExtensionConfig.getVariant: VariantT ()
+  * com.android.build.api.variant.VariantExtensionConfig.productFlavorsExtensions: java.util.List<T> (java.lang.Class<T>)
+  * com.android.build.api.variant.VariantExtensionConfig.projectExtension: T (java.lang.Class<T>)
+https://issuetracker.google.com/330685970
+  * com.android.build.api.dsl.FusedLibraryExtension
+  * com.android.build.api.dsl.FusedLibraryExtension.getMinSdk: java.lang.Integer ()
+  * com.android.build.api.dsl.FusedLibraryExtension.getNamespace: java.lang.String ()
+  * com.android.build.api.dsl.FusedLibraryExtension.setMinSdk: void (java.lang.Integer)
+  * com.android.build.api.dsl.FusedLibraryExtension.setNamespace: void (java.lang.String)
+https://issuetracker.google.com/330686862
+  * com.android.build.api.dsl.TestFixtures
+  * com.android.build.api.dsl.TestFixtures.getAndroidResources: boolean ()
+  * com.android.build.api.dsl.TestFixtures.getEnable: boolean ()
+  * com.android.build.api.dsl.TestFixtures.setAndroidResources: void (boolean)
+  * com.android.build.api.dsl.TestFixtures.setEnable: void (boolean)
+  * com.android.build.api.dsl.TestedExtension.getTestFixtures: com.android.build.api.dsl.TestFixtures ()
+  * com.android.build.api.dsl.TestedExtension.testFixtures: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.TestFixtures, kotlin.Unit>)
+https://issuetracker.google.com/330686870
+  * com.android.build.api.instrumentation.StaticTestData
+  * com.android.build.api.instrumentation.StaticTestData.getAnimationsDisabled: boolean ()
+  * com.android.build.api.instrumentation.StaticTestData.getApplicationId: java.lang.String ()
+  * com.android.build.api.instrumentation.StaticTestData.getFlavorName: java.lang.String ()
+  * com.android.build.api.instrumentation.StaticTestData.getInstrumentationRunner: java.lang.String ()
+  * com.android.build.api.instrumentation.StaticTestData.getInstrumentationRunnerArguments: java.util.Map<java.lang.String, java.lang.String> ()
+  * com.android.build.api.instrumentation.StaticTestData.getInstrumentationTargetPackageId: java.lang.String ()
+  * com.android.build.api.instrumentation.StaticTestData.getMinSdkVersion: com.android.build.api.variant.AndroidVersion ()
+  * com.android.build.api.instrumentation.StaticTestData.getPrivacySandboxInstallBundlesFinder: kotlin.jvm.functions.Function1<com.android.builder.testing.api.DeviceConfigProvider, java.util.List<java.util.List<java.nio.file.Path>>> ()
+  * com.android.build.api.instrumentation.StaticTestData.getTestApk: java.io.File ()
+  * com.android.build.api.instrumentation.StaticTestData.getTestDirectories: java.util.List<java.io.File> ()
+  * com.android.build.api.instrumentation.StaticTestData.getTestedApkFinder: kotlin.jvm.functions.Function1<com.android.builder.testing.api.DeviceConfigProvider, java.util.List<java.io.File>> ()
+  * com.android.build.api.instrumentation.StaticTestData.getTestedApplicationId: java.lang.String ()
+  * com.android.build.api.instrumentation.StaticTestData.isLibrary: boolean ()
+  * com.android.build.api.instrumentation.StaticTestData.isTestCoverageEnabled: boolean ()
+https://issuetracker.google.com/330688483
+  * com.android.build.api.instrumentation.manageddevice.DeviceDslRegistration
+  * com.android.build.api.instrumentation.manageddevice.DeviceDslRegistration.getDslImplementationClass: java.lang.Class<? extends DeviceT> ()
+  * com.android.build.api.instrumentation.manageddevice.DeviceDslRegistration.setDslImplementationClass: void (java.lang.Class<? extends DeviceT>)
+  * com.android.build.api.instrumentation.manageddevice.DeviceDslRegistration.setSetupActions: void (java.lang.Class<? extends com.android.build.api.instrumentation.manageddevice.DeviceSetupConfigureAction<DeviceT, SetupInputT>>, java.lang.Class<? extends com.android.build.api.instrumentation.manageddevice.DeviceSetupTaskAction<SetupInputT>>)
+  * com.android.build.api.instrumentation.manageddevice.DeviceDslRegistration.setTestRunActions: void (java.lang.Class<? extends com.android.build.api.instrumentation.manageddevice.DeviceTestRunConfigureAction<DeviceT, TestRunInputT>>, java.lang.Class<? extends com.android.build.api.instrumentation.manageddevice.DeviceTestRunTaskAction<TestRunInputT>>)
+  * com.android.build.api.instrumentation.manageddevice.DeviceSetupConfigureAction
+  * com.android.build.api.instrumentation.manageddevice.DeviceSetupConfigureAction.configureTaskInput: SetupInputT (DeviceT)
+  * com.android.build.api.instrumentation.manageddevice.DeviceSetupInput implements java.io.Serializable
+  * com.android.build.api.instrumentation.manageddevice.DeviceSetupTaskAction
+  * com.android.build.api.instrumentation.manageddevice.DeviceSetupTaskAction.setup: void (SetupInputT, org.gradle.api.file.Directory)
+  * com.android.build.api.instrumentation.manageddevice.DeviceTestRunConfigureAction
+  * com.android.build.api.instrumentation.manageddevice.DeviceTestRunConfigureAction.configureTaskInput: InputT (DeviceT)
+  * com.android.build.api.instrumentation.manageddevice.DeviceTestRunInput implements java.io.Serializable
+  * com.android.build.api.instrumentation.manageddevice.DeviceTestRunParameters
+  * com.android.build.api.instrumentation.manageddevice.DeviceTestRunParameters.getDeviceInput: InputT ()
+  * com.android.build.api.instrumentation.manageddevice.DeviceTestRunParameters.getSetupResult: org.gradle.api.file.DirectoryProperty ()
+  * com.android.build.api.instrumentation.manageddevice.DeviceTestRunParameters.getTestRunData: com.android.build.api.instrumentation.manageddevice.TestRunData ()
+  * com.android.build.api.instrumentation.manageddevice.DeviceTestRunTaskAction
+  * com.android.build.api.instrumentation.manageddevice.DeviceTestRunTaskAction.runTests: boolean (com.android.build.api.instrumentation.manageddevice.DeviceTestRunParameters<InputT>)
+  * com.android.build.api.instrumentation.manageddevice.ManagedDeviceRegistry
+  * com.android.build.api.instrumentation.manageddevice.ManagedDeviceRegistry.registerDeviceType: void (java.lang.Class<DeviceT>, kotlin.jvm.functions.Function1<? super com.android.build.api.instrumentation.manageddevice.DeviceDslRegistration<DeviceT>, kotlin.Unit>)
+  * com.android.build.api.instrumentation.manageddevice.TestRunData
+  * com.android.build.api.instrumentation.manageddevice.TestRunData.getAdditionalInstallOptions: java.util.List<java.lang.String> ()
+  * com.android.build.api.instrumentation.manageddevice.TestRunData.getAdditionalTestOutputDir: org.gradle.api.file.Directory ()
+  * com.android.build.api.instrumentation.manageddevice.TestRunData.getCoverageOutputDirectory: org.gradle.api.file.Directory ()
+  * com.android.build.api.instrumentation.manageddevice.TestRunData.getDeviceName: java.lang.String ()
+  * com.android.build.api.instrumentation.manageddevice.TestRunData.getHelperApks: java.util.Set<java.io.File> ()
+  * com.android.build.api.instrumentation.manageddevice.TestRunData.getOutputDirectory: org.gradle.api.file.Directory ()
+  * com.android.build.api.instrumentation.manageddevice.TestRunData.getProjectPath: java.lang.String ()
+  * com.android.build.api.instrumentation.manageddevice.TestRunData.getTestData: com.android.build.api.instrumentation.StaticTestData ()
+  * com.android.build.api.instrumentation.manageddevice.TestRunData.getTestRunId: java.lang.String ()
+  * com.android.build.api.instrumentation.manageddevice.TestRunData.getVariantName: java.lang.String ()
+  * com.android.build.api.variant.AndroidComponents.getManagedDeviceRegistry: com.android.build.api.instrumentation.manageddevice.ManagedDeviceRegistry ()
+https://issuetracker.google.com/330694540
+  * com.android.build.api.variant.Sources.getByName: com.android.build.api.variant.SourceDirectories$Flat (java.lang.String)
