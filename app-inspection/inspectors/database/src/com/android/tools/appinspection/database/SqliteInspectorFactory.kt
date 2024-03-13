@@ -13,27 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.appinspection.database
 
-package com.android.tools.appinspection.database;
+import androidx.inspection.Connection
+import androidx.inspection.InspectorEnvironment
+import androidx.inspection.InspectorFactory
 
-import androidx.annotation.NonNull;
-import androidx.inspection.Connection;
-import androidx.inspection.InspectorEnvironment;
-import androidx.inspection.InspectorFactory;
+private const val SQLITE_INSPECTOR_ID = "androidx.sqlite.inspection"
 
 /** Factory for SqliteInspector */
-public final class SqliteInspectorFactory extends InspectorFactory<SqliteInspector> {
-    private static final String SQLITE_INSPECTOR_ID = "androidx.sqlite.inspection";
+internal class SqliteInspectorFactory : InspectorFactory<SqliteInspector>(SQLITE_INSPECTOR_ID) {
 
-    @SuppressWarnings("unused") // called by ServiceLoader
-    public SqliteInspectorFactory() {
-        super(SQLITE_INSPECTOR_ID);
-    }
-
-    @NonNull
-    @Override
-    public SqliteInspector createInspector(
-            @NonNull Connection connection, @NonNull InspectorEnvironment environment) {
-        return new SqliteInspector(connection, environment);
-    }
+  override fun createInspector(connection: Connection, environment: InspectorEnvironment) =
+    SqliteInspector(connection, environment)
 }

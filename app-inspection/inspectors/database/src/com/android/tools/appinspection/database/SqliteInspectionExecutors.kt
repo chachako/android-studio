@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:JvmName("SqliteInspectionExecutors")
 
-package com.android.tools.appinspection.database;
+package com.android.tools.appinspection.database
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.Executor
+import java.util.concurrent.Future
+import java.util.concurrent.FutureTask
 
-class SqliteInspectionExecutors {
-    private SqliteInspectionExecutors() {}
-
-    static Future<Void> submit(Executor executor, Runnable runnable) {
-        FutureTask<Void> task = new FutureTask<>(runnable, null);
-        executor.execute(task);
-        return task;
-    }
+object SqliteInspectionExecutors {
+  // TODO(aalbert): Remove this by using coroutines
+  @JvmStatic
+  fun submit(executor: Executor, runnable: Runnable): Future<Void?> {
+    val task = FutureTask<Void?>(runnable, null)
+    executor.execute(task)
+    return task
+  }
 }
