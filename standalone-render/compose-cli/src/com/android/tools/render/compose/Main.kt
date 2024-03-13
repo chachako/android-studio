@@ -19,7 +19,7 @@ package com.android.tools.render.compose
 import com.android.ide.common.rendering.api.Result
 import com.android.tools.preview.applyTo
 import com.android.tools.render.RenderRequest
-import com.android.tools.render.render
+import com.android.tools.render.Renderer
 import com.android.tools.rendering.RenderResult
 import javax.imageio.ImageIO
 import kotlin.io.path.Path
@@ -43,31 +43,32 @@ fun main(args: Array<String>) {
             }
         }.toMap()
 
-        render(
+        Renderer.createRenderer(
             composeRendering.fontsPath,
             composeRendering.resourceApkPath,
             composeRendering.packageName,
             composeRendering.classPath,
             composeRendering.layoutlibPath,
-            requestToImageName.keys.asSequence(),
-        ) { request, i, result ->
-            val resultId = "${requestToImageName[request]}_$i"
-            val screenshotResult = try {
-                val imagePath = result.renderedImage.copy?.let { image ->
-                    val imgFile =
-                        Path(composeRendering.outputFolder).resolve("$resultId.png")
-                            .toFile()
+        ).use {
+            it.render(requestToImageName.keys.asSequence()) { request, i, result ->
+                val resultId = "${requestToImageName[request]}_$i"
+                val screenshotResult = try {
+                    val imagePath = result.renderedImage.copy?.let { image ->
+                        val imgFile =
+                            Path(composeRendering.outputFolder).resolve("$resultId.png")
+                                .toFile()
 
-                    imgFile.createNewFile()
-                    ImageIO.write(image, "png", imgFile)
-                    imgFile.absolutePath
+                        imgFile.createNewFile()
+                        ImageIO.write(image, "png", imgFile)
+                        imgFile.absolutePath
+                    }
+                    val screenshotError = extractError(result)
+                    ComposeScreenshotResult(resultId, imagePath, screenshotError)
+                } catch (t: Throwable) {
+                    ComposeScreenshotResult(resultId, null, ScreenshotError(t))
                 }
-                val screenshotError = extractError(result)
-                ComposeScreenshotResult(resultId, imagePath, screenshotError)
-            } catch (t: Throwable) {
-                ComposeScreenshotResult(resultId, null, ScreenshotError(t))
+                screenshotResults.add(screenshotResult)
             }
-            screenshotResults.add(screenshotResult)
         }
         ComposeRenderingResult(null, screenshotResults)
     } catch (t: Throwable) {

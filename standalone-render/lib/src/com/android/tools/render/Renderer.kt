@@ -16,6 +16,7 @@
 
 package com.android.tools.render
 
+import com.android.annotations.TestOnly
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.ide.common.rendering.api.SessionParams
 import com.android.ide.common.resources.configuration.FolderConfiguration
@@ -26,10 +27,12 @@ import com.android.tools.module.ModuleKey
 import com.android.tools.render.configuration.StandaloneConfigurationModelModule
 import com.android.tools.render.configuration.StandaloneConfigurationSettings
 import com.android.tools.render.environment.StandaloneEnvironmentContext
+import com.android.tools.render.framework.IJFramework
 import com.android.tools.render.framework.StandaloneFramework
 import com.android.tools.rendering.RenderLogger
 import com.android.tools.rendering.RenderResult
 import com.android.tools.rendering.RenderService
+import com.android.tools.rendering.api.RenderModelModule
 import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.rendering.parsers.RenderXmlFileSnapshot
 import com.android.tools.res.LocalResourceRepository
@@ -38,66 +41,30 @@ import com.android.tools.res.apk.ApkResourceRepository
 import com.android.tools.res.ids.apk.ApkResourceIdManager
 import com.android.tools.sdk.AndroidPlatform
 import com.android.tools.sdk.AndroidSdkData
-import com.google.common.annotations.VisibleForTesting
+import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 /** The main entry point to invoke rendering. */
-fun render(
+class Renderer private constructor(
     fontsPath: String?,
     resourceApkPath: String?,
     packageName: String,
     classPath: List<String>,
     layoutlibPath: String,
-    renderRequests: Sequence<RenderRequest>,
-    onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
-) = renderImpl(
-    fontsPath,
-    resourceApkPath,
-    packageName,
-    classPath,
-    layoutlibPath,
-    renderRequests,
-    onRenderResult,
-    false
-)
+    private val isForTest: Boolean,
+) : Closeable {
+    private val framework: IJFramework
+    private val configuration: Configuration
+    private val module: RenderModelModule
 
-@VisibleForTesting
-fun renderForTest(
-    fontsPath: String?,
-    resourceApkPath: String?,
-    packageName: String,
-    classPath: List<String>,
-    layoutlibPath: String,
-    renderRequests: Sequence<RenderRequest>,
-    onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
-) = renderImpl(
-    fontsPath,
-    resourceApkPath,
-    packageName,
-    classPath,
-    layoutlibPath,
-    renderRequests,
-    onRenderResult,
-    true
-)
+    init {
+        TimeZone.getDefault()
 
-internal fun renderImpl(
-    fontsPath: String?,
-    resourceApkPath: String?,
-    packageName: String,
-    classPath: List<String>,
-    layoutlibPath: String,
-    renderRequests: Sequence<RenderRequest>,
-    onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
-    isForTest: Boolean,
-) {
-    // Warmup TimeZone.getDefault so that it works inside rendering not triggering security
-    TimeZone.getDefault()
+        framework = StandaloneFramework(!isForTest)
 
-    StandaloneFramework(!isForTest).use { framework ->
         val resourceIdManager = ApkResourceIdManager()
         resourceApkPath?.let {
             resourceIdManager.loadApkResources(it)
@@ -149,9 +116,9 @@ internal fun renderImpl(
                 androidTarget
             )
 
-        val configuration = Configuration.create(configurationSettings, FolderConfiguration())
+        configuration = Configuration.create(configurationSettings, FolderConfiguration())
 
-        val module = StandaloneRenderModelModule(
+        module = StandaloneRenderModelModule(
             resourceRepositoryManager,
             androidModuleInfo,
             androidPlatform,
@@ -162,7 +129,16 @@ internal fun renderImpl(
             environment,
             resourceIdManager,
         )
+    }
 
+    /**
+     * Renders xml layouts defined by [renderRequests] calling [onRenderResult] for every render
+     * execution.
+     */
+    fun render(
+        renderRequests: Sequence<RenderRequest>,
+        onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
+    ) {
         renderRequests.forEach { request ->
             request.configurationModifier(configuration)
             request.xmlLayoutsProvider().forEachIndexed { i, layout ->
@@ -203,11 +179,36 @@ internal fun renderImpl(
                 }
             }
         }
+    }
 
+    override fun close() {
         try {
             RenderService.shutdownRenderExecutor()
         } catch (t: Throwable) {
             t.printStackTrace()
+        } finally {
+            framework.close()
         }
+    }
+
+    companion object {
+        @JvmStatic
+        fun createRenderer(
+            fontsPath: String?,
+            resourceApkPath: String?,
+            packageName: String,
+            classPath: List<String>,
+            layoutlibPath: String,
+        ) = Renderer(fontsPath, resourceApkPath, packageName, classPath, layoutlibPath, false)
+
+        @TestOnly
+        @JvmStatic
+        fun createTestRenderer(
+            fontsPath: String?,
+            resourceApkPath: String?,
+            packageName: String,
+            classPath: List<String>,
+            layoutlibPath: String,
+        ) = Renderer(fontsPath, resourceApkPath, packageName, classPath, layoutlibPath, true)
     }
 }

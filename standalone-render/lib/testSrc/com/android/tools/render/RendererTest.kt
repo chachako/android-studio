@@ -92,16 +92,17 @@ class RendererTest {
         val layoutlibPath = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib")
 
         var outputImage: BufferedImage? = null
-        renderForTest(
+        Renderer.createTestRenderer(
             null,
             null,
             "",
             emptyList(),
             layoutlibPath.absolutePathString(),
-            sequenceOf(request),
-        ) { _, _, result ->
-            assertNull("A single RenderResult is expected", outputImage)
-            outputImage = result.renderedImage.copy
+        ).use {
+            it.render(sequenceOf(request)) { _, _, result ->
+                assertNull("A single RenderResult is expected", outputImage)
+                outputImage = result.renderedImage.copy
+            }
         }
 
         assertNotNull(outputImage)
@@ -127,15 +128,16 @@ class RendererTest {
     @Test
     fun testIncorrectLayoutlibPath() {
         val renderResults = mutableListOf<RenderResult>()
-        renderForTest(
+        Renderer.createTestRenderer(
             null,
             null,
             "",
             emptyList(),
             "",
-            sequenceOf(RenderRequest({}) { sequenceOf("") }),
-        ) { _, _, result ->
-            renderResults.add(result)
+        ).use {
+            it.render(sequenceOf(RenderRequest({}) { sequenceOf("") })) { _, _, result ->
+                renderResults.add(result)
+            }
         }
 
         assertEquals(1, renderResults.size)
@@ -164,15 +166,16 @@ class RendererTest {
         val layoutlibPath = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib")
 
         val renderResults = mutableListOf<RenderResult>()
-        renderForTest(
+        Renderer.createTestRenderer(
             null,
             null,
             "",
             emptyList(),
             layoutlibPath.absolutePathString(),
-            sequenceOf(RenderRequest({}) { sequenceOf(layout) }),
-        ) { _, _, result ->
-            renderResults.add(result)
+        ).use {
+            it.render(sequenceOf(RenderRequest({}) { sequenceOf(layout) })) { _, _, result ->
+                renderResults.add(result)
+            }
         }
 
         assertEquals(1, renderResults.size)
