@@ -13,13 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.tools.appinspection.database
 
-/** Triggers invalidation after SQL mutations are executed */
-internal fun interface Invalidation {
-  fun triggerInvalidations()
-
-  companion object {
-    val NOOP = Invalidation {}
-  }
-}
+const val TAG: String = "StudioInspectors"
+const val HIDDEN_TAG: String = "studio.inspectors"

@@ -13,64 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.appinspection.database
 
-package com.android.tools.appinspection.database;
+import android.util.Log
+import androidx.inspection.ArtTooling
+import java.lang.reflect.Method
 
-import android.annotation.SuppressLint;
-import android.util.Log;
-import androidx.annotation.NonNull;
-import androidx.inspection.ArtTooling;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Objects;
+private const val SQLDELIGHT_QUERY_CLASS_NAME = "com.squareup.sqldelight.Query"
+private const val SQLDELIGHT_NOTIFY_METHOD_NAME = "notifyDataChanged"
 
-class SqlDelightInvalidation implements Invalidation {
-    public static final String TAG = "StudioInspectors";
-    public static final String HIDDEN_TAG = "studio.inspectors";
-
-    private static final String SQLDELIGHT_QUERY_CLASS_NAME = "com.squareup.sqldelight.Query";
-    private static final String SQLDELIGHT_NOTIFY_METHOD_NAME = "notifyDataChanged";
-
-    private final @NonNull ArtTooling mArtTooling;
-    private final @NonNull Class<?> mQueryClass;
-    private final @NonNull Method mNotifyDataChangeMethod;
-
-    @NonNull
-    static Invalidation create(@NonNull ArtTooling artTooling) {
-        ClassLoader classLoader = SqlDelightInvalidation.class.getClassLoader();
-        Objects.requireNonNull(classLoader);
-        try {
-            Class<?> queryClass = classLoader.loadClass(SQLDELIGHT_QUERY_CLASS_NAME);
-            Method notifyMethod = queryClass.getMethod(SQLDELIGHT_NOTIFY_METHOD_NAME);
-            return new SqlDelightInvalidation(artTooling, queryClass, notifyMethod);
-        } catch (ClassNotFoundException e) {
-            Log.v(HIDDEN_TAG, "SqlDelight not found", e);
-            return () -> {};
-        } catch (Exception e) {
-            Log.w(TAG, "Error setting up SqlDelight invalidation", e);
-            return () -> {};
-        }
+internal class SqlDelightInvalidation
+private constructor(
+  private val artTooling: ArtTooling,
+  private val queryClass: Class<*>,
+  private val notifyDataChangeMethod: Method,
+) : Invalidation {
+  override fun triggerInvalidations() {
+    // invalidating all queries because we can't say which ones were actually affected.
+    artTooling.findInstances(queryClass).forEach {
+      try {
+        notifyDataChangeMethod.invoke(it)
+      } catch (e: Throwable) {
+        Log.w(TAG, "Error calling notifyDataChanged", e)
+      }
     }
+  }
 
-    private SqlDelightInvalidation(
-            @NonNull ArtTooling artTooling,
-            @NonNull Class<?> queryClass,
-            @NonNull Method notifyDataChangeMethod) {
-        mArtTooling = artTooling;
-        mQueryClass = queryClass;
-        mNotifyDataChangeMethod = notifyDataChangeMethod;
+  companion object {
+    @JvmStatic
+    fun create(artTooling: ArtTooling): Invalidation {
+      try {
+        val classLoader = SqlDelightInvalidation::class.java.classLoader
+        val queryClass = classLoader.loadClass(SQLDELIGHT_QUERY_CLASS_NAME)
+        val notifyMethod = queryClass.getMethod(SQLDELIGHT_NOTIFY_METHOD_NAME)
+        return SqlDelightInvalidation(artTooling, queryClass, notifyMethod)
+      } catch (e: ClassNotFoundException) {
+        Log.v(HIDDEN_TAG, "SqlDelight not found", e)
+        return Invalidation.NOOP
+      } catch (e: Throwable) {
+        Log.w(TAG, "Error setting up SqlDelight invalidation", e)
+        return Invalidation.NOOP
+      }
     }
-
-    @SuppressLint("BanUncheckedReflection")
-    @Override
-    public void triggerInvalidations() {
-        // invalidating all queries because we can't say which ones were actually affected.
-        for (Object query : mArtTooling.findInstances(mQueryClass)) {
-            try {
-                mNotifyDataChangeMethod.invoke(query);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                Log.w(TAG, "Error calling notifyDataChanged", e);
-            }
-        }
-    }
+  }
 }

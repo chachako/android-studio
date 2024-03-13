@@ -13,99 +13,84 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.appinspection.database
 
-package com.android.tools.appinspection.database;
+import android.util.Log
+import androidx.inspection.ArtTooling
+import java.lang.reflect.Field
+import java.lang.reflect.Method
 
-import android.annotation.SuppressLint;
-import android.util.Log;
-import androidx.annotation.NonNull;
-import androidx.inspection.ArtTooling;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Objects;
+private const val DRIVER_CLASSNAME: String =
+  "app.cash.sqldelight.driver.android.AndroidSqliteDriver"
+private const val NOTIFY_METHOD: String = "notifyListeners"
+private const val LISTENERS_FIELD: String = "listeners"
 
 /**
  * An [Invalidation] for the SqlDelight 2 library.
  *
- * <p>SqlDelight 2 invalidation API uses an internal "queryKey" to associate queries with listeners.
+ * SqlDelight 2 invalidation API uses an internal "queryKey" to associate queries with listeners.
  * The key is created by the generated code and is typically just the affected table name but can in
  * theory be anything. In fact, a user can register a listener directly using
  * SqlDriver#addListener() and provide their own queryKeys. This will work as long as the user also
  * manages notification using SqlDriver#notifyListeners().
  *
- * <p>The public API that notifies listeners requires this queryKey:
- *
+ * The public API that notifies listeners requires this queryKey:
  * <pre>
- *   override fun notifyListeners(vararg queryKeys: String)
- * </pre>
+ * override fun notifyListeners(vararg queryKeys: String)
+ * </pre> *
  *
  * There is no public API that works without it and there is no public API that lists the current
  * listeners or queryKey's.
  *
- * <p>Because of this, we need to access the private field AndroidSqliteDriver#listeners and extract
+ * Because of this, we need to access the private field AndroidSqliteDriver#listeners and extract
  * the registered queryKeys.
  */
-class SqlDelight2Invalidation implements Invalidation {
-    public static final String TAG = "StudioInspectors";
-    public static final String HIDDEN_TAG = "studio.inspectors";
-
-    public static final String DRIVER_CLASSNAME =
-            "app.cash.sqldelight.driver.android.AndroidSqliteDriver";
-    public static final String NOTIFY_METHOD = "notifyListeners";
-    public static final String LISTENERS_FIELD = "listeners";
-
-    private final @NonNull ArtTooling mArtTooling;
-    private final @NonNull Class<?> mDriverClass;
-    private final @NonNull Method mNotifyListenersMethod;
-    private final @NonNull Field mListenersField;
-
-    static Invalidation create(@NonNull ArtTooling artTooling) {
-        try {
-            ClassLoader classLoader =
-                    Objects.requireNonNull(SqlDelight2Invalidation.class.getClassLoader());
-            Class<?> driverClass = classLoader.loadClass(DRIVER_CLASSNAME);
-            Method notifyListenersMethod =
-                    driverClass.getDeclaredMethod(NOTIFY_METHOD, String[].class);
-            Field listenersField = driverClass.getDeclaredField(LISTENERS_FIELD);
-            listenersField.setAccessible(true);
-            return new SqlDelight2Invalidation(
-                    artTooling, driverClass, notifyListenersMethod, listenersField);
-        } catch (ClassNotFoundException e) {
-            Log.v(HIDDEN_TAG, "SqlDelight 2 not found", e);
-            return () -> {};
-        } catch (Exception e) {
-            Log.w(TAG, "Error setting up SqlDelight 2 invalidation", e);
-            return () -> {};
+internal class SqlDelight2Invalidation
+private constructor(
+  private val artTooling: ArtTooling,
+  private val driverClass: Class<*>,
+  private val notifyListenersMethod: Method,
+  private val listenersField: Field,
+) : Invalidation {
+  override fun triggerInvalidations() {
+    artTooling.findInstances(driverClass).forEach { driver ->
+      try {
+        val listeners = driver.getListeners()
+        synchronized(listeners) {
+          notifyListenersMethod.invoke(driver, listeners.keys.toTypedArray<String>() as Any)
         }
+      } catch (e: Exception) {
+        Log.w(TAG, "Error invalidating SqlDriver", e)
+      }
     }
+  }
 
-    private SqlDelight2Invalidation(
-            @NonNull ArtTooling artTooling,
-            @NonNull Class<?> driverClass,
-            @NonNull Method notifyListenersMethod,
-            @NonNull Field listenersField) {
-        mArtTooling = artTooling;
-        mDriverClass = driverClass;
-        mNotifyListenersMethod = notifyListenersMethod;
-        mListenersField = listenersField;
+  companion object {
+    @JvmStatic
+    fun create(artTooling: ArtTooling): Invalidation {
+      try {
+        val classLoader = SqlDelight2Invalidation::class.java.classLoader
+        val driverClass = classLoader.loadClass(DRIVER_CLASSNAME)
+        val notifyListenersMethod =
+          driverClass.getDeclaredMethod(NOTIFY_METHOD, Array<String>::class.java)
+        val listenersField = driverClass.getDeclaredField(LISTENERS_FIELD)
+        listenersField.isAccessible = true
+        return SqlDelight2Invalidation(
+          artTooling,
+          driverClass,
+          notifyListenersMethod,
+          listenersField,
+        )
+      } catch (e: ClassNotFoundException) {
+        Log.v(HIDDEN_TAG, "SqlDelight 2 not found", e)
+        return Invalidation.NOOP
+      } catch (e: Throwable) {
+        Log.w(TAG, "Error setting up SqlDelight 2 invalidation", e)
+        return Invalidation.NOOP
+      }
     }
+  }
 
-    @SuppressLint("BanUncheckedReflection")
-    @Override
-    public void triggerInvalidations() {
-        for (Object driver : mArtTooling.findInstances(mDriverClass)) {
-            try {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> listeners =
-                        Objects.requireNonNull((Map<String, Object>) mListenersField.get(driver));
-                synchronized (listeners) {
-                    mNotifyListenersMethod.invoke(
-                            driver, (Object) listeners.keySet().toArray(new String[0]));
-                }
-            } catch (Exception e) {
-                Log.w(TAG, "Error invalidating SqlDriver", e);
-            }
-        }
-    }
+  @Suppress("UNCHECKED_CAST")
+  private fun Any.getListeners(): Map<String, Any> = listenersField.get(this) as Map<String, Any>
 }
