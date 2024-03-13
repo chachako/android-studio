@@ -24,14 +24,6 @@ new_local_repository(
     path = "prebuilts/studio/jdk/jdk8",
 )
 
-local_repository(
-    name = "blaze",
-    path = "tools/vendor/google3/blaze",
-    repo_mapping = {
-        "@local_jdk": "@studio_jdk",
-    },
-)
-
 vendor_repository(
     name = "vendor",
     bzl = "@//tools/base/bazel:vendor.bzl",
