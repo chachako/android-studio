@@ -329,7 +329,7 @@ internal class AdblibIDeviceWrapper(
                     )
                 }
             } catch (e: IOException) {
-                // Note that this block handles `AdbFailResponseException` as well
+                // Note that this block handles `AdbFailResponseException` as well.
                 // ignore to match the behavior in the `DeviceImpl`
                 logger.error(e, "Error querying `availableFeatures`")
                 listOf()
@@ -576,7 +576,7 @@ internal class AdblibIDeviceWrapper(
 
                 Log.d(LOG_TAG, "Stat remote file '$remote' on device '$serialNumber'")
 
-                mapToSyncException {
+                mapToDdmlibException {
                     connectedDevice.session.deviceServices.syncStat(deviceSelector, remote)
                         ?.let {
                             SyncService.FileStat(
@@ -1030,9 +1030,8 @@ internal class AdblibIDeviceWrapper(
     private inline fun <R> mapToDdmlibException(block: () -> R): R {
         return try {
             block()
-        }
-        catch (e: AdbFailResponseException) {
-            throw AdbCommandRejectedException.create(e.failMessage)
+        } catch (e: AdbFailResponseException) {
+            throw AdbCommandRejectedException.create(e.failMessage).also { it.initCause(e) }
         }
     }
 

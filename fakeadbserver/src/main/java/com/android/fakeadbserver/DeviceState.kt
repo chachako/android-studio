@@ -56,6 +56,7 @@ class DeviceState internal constructor(
     val properties: Map<String, String>
     private var mDeviceStatus: DeviceStatus
     var delayStdout: Duration = Duration.ZERO
+    var acceptsSyncServiceRequests = true
     val serviceManager: ServiceManager
 
     // Keep track of all PM commands invocation

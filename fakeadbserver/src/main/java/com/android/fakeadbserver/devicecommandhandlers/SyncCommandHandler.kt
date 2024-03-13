@@ -44,8 +44,13 @@ class SyncCommandHandler : DeviceCommandHandler("sync") {
         val output = socket.getOutputStream()
         val input = socket.getInputStream()
 
-        // Tell client we accepted the `sync` service request
-        writeOkay(output)
+        if (device.acceptsSyncServiceRequests) {
+            // Tell client we accepted the `sync` service request
+            writeOkay(output)
+        } else {
+            writeFailResponse(output, "fake device is not accepting sync requests")
+            return
+        }
 
         //
         // Handle the various "SEND", "RECV", etc. requests
