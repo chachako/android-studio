@@ -300,7 +300,7 @@ internal class DatabaseRegistry(
     return references.isNotEmpty()
   }
 
-  internal interface Callback {
+  internal fun interface Callback {
     fun onPostEvent(databaseId: Int, path: String)
   }
 
