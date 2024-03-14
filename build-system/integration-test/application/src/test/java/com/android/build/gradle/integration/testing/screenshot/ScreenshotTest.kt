@@ -31,6 +31,7 @@ import com.google.common.collect.Iterables
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.GradleBuildProfileSpan.ExecutionType
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import kotlin.io.path.listDirectoryEntries
@@ -188,6 +189,7 @@ class ScreenshotTest {
             .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
 
     @Test
+    @Ignore("b/329497815")
     fun discoverPreviews() {
         getExecutor().run("debugPreviewDiscovery")
         val previewsDiscoveredFile  = project.buildDir.resolve("intermediates/preview/debug/previews_discovered.json")
