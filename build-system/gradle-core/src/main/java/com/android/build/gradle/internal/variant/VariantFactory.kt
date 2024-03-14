@@ -168,7 +168,8 @@ interface VariantFactory<VariantBuilderT : VariantBuilder, VariantDslInfoT: Vari
         buildFeatures: BuildFeatures,
         dataBinding: DataBinding,
         projectOptions: ProjectOptions,
-        includeAndroidResources: Boolean
+        includeAndroidResources: Boolean,
+        hostTestComponentType: ComponentType
     ): BuildFeatureValues
 
     fun createAndroidTestBuildFeatureValues(

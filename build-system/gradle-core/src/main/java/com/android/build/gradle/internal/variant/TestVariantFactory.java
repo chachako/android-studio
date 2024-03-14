@@ -68,6 +68,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.jetbrains.annotations.NotNull;
 
 /** Customization of {@link AbstractAppVariantFactory} for test-only projects. */
 public class TestVariantFactory
@@ -164,7 +165,8 @@ public class TestVariantFactory
             @NonNull BuildFeatures buildFeatures,
             @NonNull DataBinding dataBinding,
             @NonNull ProjectOptions projectOptions,
-            boolean includeAndroidResources) {
+            boolean includeAndroidResources,
+            @NotNull ComponentType hostTestComponentType) {
         throw new RuntimeException("cannot instantiate test build features in test plugin");
     }
 

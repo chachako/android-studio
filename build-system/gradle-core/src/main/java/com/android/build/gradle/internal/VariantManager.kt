@@ -729,7 +729,8 @@ class VariantManager<
                         dslExtension.buildFeatures,
                         dslExtension.dataBinding,
                         dslServices.projectOptions,
-                        globalTaskCreationConfig.unitTestOptions.isIncludeAndroidResources
+                        globalTaskCreationConfig.unitTestOptions.isIncludeAndroidResources,
+                        ComponentTypeImpl.UNIT_TEST
                 ),
                 variantDslInfo as HostTestComponentDslInfo,
                 variantDependencies,
@@ -749,8 +750,8 @@ class VariantManager<
                     dslExtension.buildFeatures,
                     dslExtension.dataBinding,
                     dslServices.projectOptions,
-                    // TODO(karimai): is isIncludeAndroidResources applicable for Screenshot test.
-                    true
+                    includeAndroidResources = true,
+                    ComponentTypeImpl.SCREENSHOT_TEST
                 ),
                 variantDslInfo as HostTestComponentDslInfo,
                 variantDependencies,
