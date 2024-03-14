@@ -7,7 +7,7 @@ load(
 )
 
 java_library(
-    name = "version",
+    name = "agp-version",
     srcs = ["Version.java"],
     # This compiled class is used in both the studio
     # (//tools/base/common:studio.android.sdktools.common) and tools
@@ -20,8 +20,8 @@ java_library(
         "--release",
         "11",
     ],
-    resource_strip_prefix = "tools/base/common/version",
-    resources = ["//tools/base/common/version/com/android:version.properties"],
+    resource_strip_prefix = "tools/base/common/agp-version",
+    resources = ["//tools/base/common/agp-version/com/android:version.properties"],
     visibility = [
         "//tools/adt/idea/.idea/libraries:__pkg__",
         "//tools/base/common:__pkg__",
@@ -29,7 +29,7 @@ java_library(
 )
 
 java_test(
-    name = "version_test",
+    name = "agp-version_test",
     srcs = ["VersionTest.java"],
     jvm_flags = select({
         "//tools/base/bazel:release": [
@@ -43,7 +43,7 @@ java_test(
     }),
     test_class = "com.android.VersionTest",
     deps = [
-        ":version",
+        ":agp-version",
         "@maven//:junit.junit",
     ],
 )

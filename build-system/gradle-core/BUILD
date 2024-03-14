@@ -11,12 +11,12 @@ fileset(
         "src/fromGradle/resources/**",
     ]) + [
         "//prebuilts/tools/common/aapt:aapt2_version.properties",
-        "//tools/base/common/version/com/android:version.properties",
+        "//tools/base/common/agp-version/com/android:version.properties",
     ],
     mappings = {
         "src/main/resources/": "",
         "src/fromGradle/resources/": "",
-        "//tools/base/common/version/com/android:version.properties": "com/android/build/api/extension/impl/version.properties",
+        "//tools/base/common/agp-version/com/android:version.properties": "com/android/build/api/extension/impl/version.properties",
         "//prebuilts/tools/common/aapt:aapt2_version.properties": "com/android/build/gradle/internal/res/aapt2_version.properties",
     },
 )

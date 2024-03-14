@@ -6,8 +6,8 @@ load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
 fileset(
     name = "version.properties",
-    srcs = ["//tools/base/common/version/com/android:version.properties"],
-    mappings = {"//tools/base/common/version/com/android:": "com/android/builder/model/"},
+    srcs = ["//tools/base/common/agp-version/com/android:version.properties"],
+    mappings = {"//tools/base/common/agp-version/com/android:": "com/android/builder/model/"},
 )
 
 # managed by go/iml_to_build

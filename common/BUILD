@@ -70,7 +70,7 @@ maven_library(
         "src/main/java/com/android/xml/sax/*.java",
     ]),
     bundled_deps = [
-        "//tools/base/common/version",
+        "//tools/base/common/agp-version",
     ],
     coordinates = "com.android.tools:common",
     description = "common library used by other Android tools libraries.",
