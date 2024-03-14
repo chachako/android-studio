@@ -1962,11 +1962,6 @@ fun getMethodName(call: UCallExpression): String? {
   return methodIdentifier?.name ?: call.methodName
 }
 
-/** Returns true if the given element is written in Kotlin. */
-fun isKotlin(element: PsiElement?): Boolean {
-  return element != null && isKotlin(element.language)
-}
-
 /**
  * Checks whether the given [element] is just a marker tag in a layout, not a real view. Note that
  * merge and include tags are not considered markers since they are replaced with real views.
@@ -1995,18 +1990,31 @@ fun isLayoutMarkerTag(tagName: String): Boolean =
     else -> false
   }
 
-/** Returns true if the given element is written in Java. */
+/** Returns `true` if the given element is written in Kotlin. */
+@Deprecated(
+  "Prefer to check element's language directly",
+  replaceWith = ReplaceWith("element != null && isKotlin(element.language)"),
+)
+fun isKotlin(element: PsiElement?): Boolean {
+  return element != null && isKotlin(element.language)
+}
+
+/** Returns `true` if the given element is written in Java. */
+@Deprecated(
+  "Prefer to check element's language directly",
+  replaceWith = ReplaceWith("element != null && isJava(element.language)"),
+)
 fun isJava(element: PsiElement?): Boolean {
   return element != null && isJava(element.language)
 }
 
-/** Returns true if the given language is Kotlin. */
-fun isKotlin(language: Language?): Boolean {
+/** Returns `true` if the given language is Kotlin. */
+fun isKotlin(language: Language): Boolean {
   return language == KotlinLanguage.INSTANCE
 }
 
-/** Returns true if the given language is Java. */
-fun isJava(language: Language?): Boolean {
+/** Returns `true` if the given language is Java. */
+fun isJava(language: Language): Boolean {
   return language == JavaLanguage.INSTANCE
 }
 
@@ -2939,6 +2947,6 @@ object LintUtils {
     replaceWith = ReplaceWith("com.android.tools.lint.detector.api.isKotlin(language)"),
   )
   fun isKotlin(language: Language?): Boolean {
-    return com.android.tools.lint.detector.api.isKotlin(language)
+    return language != null && com.android.tools.lint.detector.api.isKotlin(language)
   }
 }
