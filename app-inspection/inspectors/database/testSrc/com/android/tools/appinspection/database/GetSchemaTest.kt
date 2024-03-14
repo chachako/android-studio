@@ -18,8 +18,8 @@ package com.android.tools.appinspection.database
 
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
+import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode.ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE
 import com.android.testutils.CloseablesRule
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.ErrorContent.ErrorCode.ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE
 import com.android.tools.appinspection.database.testing.Column
 import com.android.tools.appinspection.database.testing.Database
 import com.android.tools.appinspection.database.testing.MessageFactory.createGetSchemaCommand

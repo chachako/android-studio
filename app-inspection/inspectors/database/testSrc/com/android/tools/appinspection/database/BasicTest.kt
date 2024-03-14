@@ -17,8 +17,8 @@
 package com.android.tools.appinspection.database
 
 import android.os.Build
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Command
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.ErrorContent.ErrorCode.ERROR_UNRECOGNISED_COMMAND_VALUE
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Command
+import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode.ERROR_UNRECOGNISED_COMMAND_VALUE
 import com.android.tools.appinspection.database.testing.MessageFactory
 import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
 import com.google.common.truth.Truth.assertThat

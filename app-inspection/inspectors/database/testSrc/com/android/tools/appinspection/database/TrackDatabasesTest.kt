@@ -21,10 +21,10 @@ import android.database.sqlite.SQLiteClosable
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.inspection.ArtTooling.ExitHook
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Event
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Response
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.android.testutils.CloseablesRule
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Event
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Response
 import com.android.tools.appinspection.database.testing.Database
 import com.android.tools.appinspection.database.testing.Hook
 import com.android.tools.appinspection.database.testing.MessageFactory.createKeepDatabasesOpenCommand

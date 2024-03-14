@@ -19,12 +19,12 @@ package com.android.tools.appinspection.database
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
+import androidx.sqlite.inspection.SqliteInspectorProtocol.CellValue
+import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode.ERROR_ISSUE_WITH_PROCESSING_QUERY_VALUE
+import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode.ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE
+import androidx.sqlite.inspection.SqliteInspectorProtocol.QueryResponse
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Row
 import com.android.testutils.CloseablesRule
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.CellValue
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.ErrorContent.ErrorCode.ERROR_ISSUE_WITH_PROCESSING_QUERY_VALUE
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.ErrorContent.ErrorCode.ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.QueryResponse
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Row
 import com.android.tools.appinspection.database.testing.Column
 import com.android.tools.appinspection.database.testing.Database
 import com.android.tools.appinspection.database.testing.MessageFactory.createGetSchemaCommand

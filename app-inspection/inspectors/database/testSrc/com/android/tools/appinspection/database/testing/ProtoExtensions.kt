@@ -16,18 +16,18 @@
 
 package com.android.tools.appinspection.database.testing
 
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.CellValue
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.CellValue.OneOfCase
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Command
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.GetSchemaCommand
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.GetSchemaResponse
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.KeepDatabasesOpenCommand
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.KeepDatabasesOpenResponse
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.QueryCommand
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.QueryParameterValue
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Response
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.TrackDatabasesCommand
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.TrackDatabasesResponse
+import androidx.sqlite.inspection.SqliteInspectorProtocol.CellValue
+import androidx.sqlite.inspection.SqliteInspectorProtocol.CellValue.OneOfCase
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Command
+import androidx.sqlite.inspection.SqliteInspectorProtocol.GetSchemaCommand
+import androidx.sqlite.inspection.SqliteInspectorProtocol.GetSchemaResponse
+import androidx.sqlite.inspection.SqliteInspectorProtocol.KeepDatabasesOpenCommand
+import androidx.sqlite.inspection.SqliteInspectorProtocol.KeepDatabasesOpenResponse
+import androidx.sqlite.inspection.SqliteInspectorProtocol.QueryCommand
+import androidx.sqlite.inspection.SqliteInspectorProtocol.QueryParameterValue
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Response
+import androidx.sqlite.inspection.SqliteInspectorProtocol.TrackDatabasesCommand
+import androidx.sqlite.inspection.SqliteInspectorProtocol.TrackDatabasesResponse
 
 val CellValue.value: Any?
   get() = valueType.first

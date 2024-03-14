@@ -18,8 +18,8 @@ syntax = "proto3";
 
 package database.inspection;
 
-option java_package = "com.android.tools.appinspection.database.proto";
-option java_outer_classname = "DatabaseInspectorProtocol";
+option java_package = "androidx.sqlite.inspection";
+option java_outer_classname = "SqliteInspectorProtocol";
 
 // --- Commands ---
 

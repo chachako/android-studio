@@ -22,11 +22,11 @@ import androidx.inspection.ArtTooling
 import androidx.inspection.testing.DefaultTestInspectorEnvironment
 import androidx.inspection.testing.InspectorTester
 import androidx.inspection.testing.TestInspectorExecutors
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Command
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.DatabaseOpenedEvent
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Event
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Response
+import androidx.sqlite.inspection.SqliteInspectorProtocol
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Command
+import androidx.sqlite.inspection.SqliteInspectorProtocol.DatabaseOpenedEvent
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Event
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Response
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Executor
 import kotlin.test.fail
@@ -103,7 +103,7 @@ suspend fun SqliteInspectorTestEnvironment.issueQuery(
   databaseId: Int,
   command: String,
   queryParams: List<String?>? = null,
-): DatabaseInspectorProtocol.QueryResponse {
+): SqliteInspectorProtocol.QueryResponse {
   val response = sendCommand(MessageFactory.createQueryCommand(databaseId, command, queryParams))
   if (response.hasErrorOccurred()) {
     fail("Unexpected error: $${response.errorOccurred.content.stackTrace}")

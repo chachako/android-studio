@@ -24,9 +24,9 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
 import android.os.Build
 import androidx.inspection.ArtTooling
+import androidx.sqlite.inspection.SqliteInspectorProtocol
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Event.OneOfCase.DATABASE_POSSIBLY_CHANGED
 import com.android.testutils.CloseablesRule
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol
-import com.android.tools.appinspection.database.proto.DatabaseInspectorProtocol.Event.OneOfCase.DATABASE_POSSIBLY_CHANGED
 import com.android.tools.appinspection.database.testing.Column
 import com.android.tools.appinspection.database.testing.Database
 import com.android.tools.appinspection.database.testing.Hook
@@ -99,7 +99,7 @@ class InvalidationTest {
       testEnvironment.receiveEvent().let { event ->
         assertThat(event.oneOfCase).isEqualTo(DATABASE_POSSIBLY_CHANGED)
         assertThat(event.databasePossiblyChanged)
-          .isEqualTo(DatabaseInspectorProtocol.DatabasePossiblyChangedEvent.getDefaultInstance())
+          .isEqualTo(SqliteInspectorProtocol.DatabasePossiblyChangedEvent.getDefaultInstance())
       }
       testEnvironment.assertNoQueuedEvents()
     }
