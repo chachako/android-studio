@@ -47,6 +47,7 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
 import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.jvm.toolchain.JavaToolchainService
+import java.util.UUID
 
 private val minAgpVersion = AndroidPluginVersion(8, 4, 0).alpha(9)
 private val maxAgpVersion = AndroidPluginVersion(8,5,255)
@@ -55,6 +56,32 @@ private val maxAgpVersion = AndroidPluginVersion(8,5,255)
  * An entry point for Screenshot plugin that adds support for screenshot testing on Compose Previews
  */
 class PreviewScreenshotGradlePlugin : Plugin<Project> {
+
+    companion object {
+        /**
+         * Get build service name that works even if build service types come from different
+         * class loaders. If the service name is the same, and some type T is defined in two
+         * class loaders L1 and L2. E.g. this is true for composite builds and other project
+         * setups (see b/154388196).
+         *
+         * Registration of service may register (T from L1) or (T from L2). This means that
+         * querying it with T from other class loader will fail at runtime. This method makes
+         * sure both T from L1 and T from L2 will successfully register build services.
+         *
+         * Copied from
+         * com.android.build.gradle.internal.services.BuildServicesKt.getBuildServiceName.
+         */
+        private fun getBuildServiceName(type: Class<*>, project: Project): String {
+            return type.name + "_" + perClassLoaderConstant + "_" + project.path
+        }
+
+        /**
+         *  Used to get unique build service name. Each class loader will initialize its own
+         *  version.
+         */
+        private val perClassLoaderConstant = UUID.randomUUID().toString()
+    }
+
     override fun apply(project: Project) {
         project.plugins.withType(AndroidBasePlugin::class.java) {
             val componentsExtension = project.extensions.getByType(AndroidComponentsExtension::class.java)
@@ -69,7 +96,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             }
 
             val analyticsServiceProvider = project.gradle.sharedServices.registerIfAbsent(
-                AnalyticsService::class.java.canonicalName,
+                getBuildServiceName(AnalyticsService::class.java, project),
                 AnalyticsService::class.java) { spec ->
                 spec.parameters.androidGradlePluginVersion.set(agpVersion.toVersionString())
             }
