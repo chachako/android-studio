@@ -27,11 +27,12 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.build.gradle.internal.profile.GradleTaskExecutionType
+import com.android.tools.render.compose.ComposeScreenshot
+import com.android.tools.render.compose.readComposeScreenshotsJson
 import com.google.common.collect.Iterables
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.GradleBuildProfileSpan.ExecutionType
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import kotlin.io.path.listDirectoryEntries
@@ -189,67 +190,36 @@ class ScreenshotTest {
             .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
 
     @Test
-    @Ignore("b/329497815")
     fun discoverPreviews() {
         getExecutor().run("debugPreviewDiscovery")
+
         val previewsDiscoveredFile  = project.buildDir.resolve("intermediates/preview/debug/previews_discovered.json")
         assert(previewsDiscoveredFile.exists())
-        assertThat(previewsDiscoveredFile.readText()).isEqualTo("""
-            {
-              "screenshots": [
-                {
-                  "methodFQN": "pkg.name.ExampleTest.simpleComposableTest",
-                  "methodParams": [],
-                  "previewParams": {
-                    "showBackground": "true"
-                  },
-                  "imageName": "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee"
-                },
-                {
-                  "methodFQN": "pkg.name.ExampleTest.simpleComposableTest2",
-                  "methodParams": [],
-                  "previewParams": {
-                    "showBackground": "true"
-                  },
-                  "imageName": "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee"
-                },
-                {
-                  "methodFQN": "pkg.name.ExampleTest.multiPreviewTest",
-                  "methodParams": [],
-                  "previewParams": {
-                    "showBackground": "true"
-                  },
-                  "imageName": "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee"
-                },
-                {
-                  "methodFQN": "pkg.name.ExampleTest.multiPreviewTest",
-                  "methodParams": [],
-                  "previewParams": {
-                    "showBackground": "false"
-                  },
-                  "imageName": "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee"
-                },
-                {
-                  "methodFQN": "pkg.name.ExampleTest.parameterProviderTest",
-                  "methodParams": [
-                    {
-                      "provider": "pkg.name.SimplePreviewParameterProvider"
-                    }
-                  ],
-                  "previewParams": {},
-                  "imageName": "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523"
-                },
-                {
-                  "methodFQN": "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3",
-                  "methodParams": [],
-                  "previewParams": {
-                    "showBackground": "true"
-                  },
-                  "imageName": "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee"
-                }
-              ]
-            }
-        """.trimIndent())
+        val screenshots = readComposeScreenshotsJson(previewsDiscoveredFile.reader())
+        assertThat(screenshots.size).isEqualTo(6)
+        val expectedComposeScreenshots = listOf(
+            ComposeScreenshot("pkg.name.ExampleTest.simpleComposableTest", listOf(),
+                mapOf(Pair("showBackground", "true")),
+                "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee"),
+            ComposeScreenshot("pkg.name.ExampleTest.simpleComposableTest2", listOf(),
+                mapOf(Pair("showBackground", "true")),
+                "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee"),
+            ComposeScreenshot("pkg.name.ExampleTest.multiPreviewTest", listOf(),
+                mapOf(Pair("showBackground", "true")),
+                "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee"),
+            ComposeScreenshot("pkg.name.ExampleTest.multiPreviewTest", listOf(),
+                mapOf(Pair("showBackground", "false")),
+                "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee"),
+            ComposeScreenshot("pkg.name.ExampleTest.parameterProviderTest",
+                listOf(mapOf(Pair("provider", "pkg.name.SimplePreviewParameterProvider"))),
+                mapOf(),
+                "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523"),
+            ComposeScreenshot("pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3",
+                listOf(),
+                mapOf(Pair("showBackground", "true")),
+                "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee")
+        )
+        assertThat(screenshots).containsExactlyElementsIn(expectedComposeScreenshots)
     }
 
     @Test

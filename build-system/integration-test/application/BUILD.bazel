@@ -532,7 +532,10 @@ gradle_integration_test(
         "//tools/base/build-system/integration-test/application:prebuilts",
         "//tools/base/build-system/integration-test:kotlin_gradle_plugin_for_compose_prebuilts",
     ],
-    deps = TEST_DEPS,
+    deps = TEST_DEPS + [
+        "//tools/base/standalone-render/compose-cli:standalone-render.compose-cli",
+        "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",
+    ],
 )
 
 gradle_integration_test(
