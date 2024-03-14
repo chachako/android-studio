@@ -37,15 +37,11 @@ iml_module(
     resources = ["src/main/resources"],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
-    exports = [
-        "//tools/base/annotations:studio.android.sdktools.android-annotations",
-        "//tools/adt/idea/.idea/libraries:agp-version",
-    ],
+    exports = ["//tools/base/annotations:studio.android.sdktools.android-annotations"],
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
-        "//tools/adt/idea/.idea/libraries:agp-version",
     ],
 )
 

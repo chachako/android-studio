@@ -13,9 +13,12 @@ java_library(
     # (//tools/base/common:studio.android.sdktools.common) and tools
     # (//tools/base/common:tools.common) builds, and so is constrained
     # to target a JDK the same or lower than both.
+    # (but is no longer injected into AGP from studio (b/306442910), so is not
+    # constrained  to be the lowest java version supported for syncing a Gradle
+    # project)
     javacopts = [
         "--release",
-        "8",
+        "11",
     ],
     resource_strip_prefix = "tools/base/common/version",
     resources = ["//tools/base/common/version/com/android:version.properties"],

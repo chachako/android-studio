@@ -24,6 +24,5 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="library" name="studio-sdk" level="project" />
     <orderEntry type="module" module-name="android.sdktools.android-annotations" exported="" />
-    <orderEntry type="library" exported="" name="agp-version" level="project" />
   </component>
 </module>

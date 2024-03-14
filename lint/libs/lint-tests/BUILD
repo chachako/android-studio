@@ -152,6 +152,7 @@ iml_module(
         "//prebuilts/studio/intellij-sdk:studio-sdk[test]",
         "//tools/base/lint/libs/lint-tests:liblint-checks-proto",
         "//tools/adt/idea/.idea/libraries:kotlin-test[test]",
+        "//tools/adt/idea/.idea/libraries:agp-version[test]",
     ],
 )
 

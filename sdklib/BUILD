@@ -41,6 +41,7 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:jimfs[test]",
         "//tools/base/repository:studio.android.sdktools.repository[module]",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
+        "//tools/adt/idea/.idea/libraries:agp-version",
     ],
 )
 
