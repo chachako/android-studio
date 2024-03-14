@@ -274,10 +274,10 @@ class LeakDetector : Detector(), SourceCodeScanner {
     containingClass: UClass,
     field: UField,
   ): Boolean {
-    val targetField = field.javaPsi ?: return false
-    if (isKotlin(targetField)) {
+    if (isKotlin(field.lang)) {
       return false
     }
+    val targetField = field.javaPsi ?: return false
     for (constructor in containingClass.constructors) {
       val body = constructor.body ?: continue
       for (statement in body.statements) {

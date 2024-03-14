@@ -261,7 +261,7 @@ class LintDetectorDetector : Detector(), UastScanner {
   }
 
   private fun checkKotlin(context: JavaContext, declaration: UClass) {
-    if (!isKotlin(declaration.sourcePsi)) {
+    if (!isKotlin(declaration.lang)) {
       if (getCopyrightYear(context) >= 2020) {
         context.report(
           USE_KOTLIN,
@@ -386,7 +386,7 @@ class LintDetectorDetector : Detector(), UastScanner {
           }
         val string = getString(source)
         checkTrimIndent(source, isUnitTestFile = true)
-        if (string.contains("$") && isKotlin(testFile.sourcePsi)) {
+        if (string.contains("$") && isKotlin(testFile.lang)) {
           checkDollarSubstitutions(source)
         }
       }
@@ -574,8 +574,9 @@ class LintDetectorDetector : Detector(), UastScanner {
                 val issue = resolved.toUElementOfType<UField>()
                 @Suppress("ControlFlowWithEmptyBody")
                 if (
-                  isJava(issue?.sourcePsi) &&
-                    evaluator.inheritsFrom(issue?.getContainingUClass(), CLASS_DETECTOR)
+                  issue != null &&
+                    isJava(issue.lang) &&
+                    evaluator.inheritsFrom(issue.getContainingUClass(), CLASS_DETECTOR)
                 ) {
                   // Don't need to do anything; we'll see this registration
                   // as part of our regular detector visit

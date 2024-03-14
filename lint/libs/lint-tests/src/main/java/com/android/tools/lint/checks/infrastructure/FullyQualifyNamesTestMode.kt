@@ -162,7 +162,7 @@ class FullyQualifyNamesTestMode :
       // will change (such as a scenario found by the RemoteViewDetector's tests). However,
       // actually putting kotlin.String in won't always work either so leave it alone
       // if it's one of these targeted classes.
-      if (!allowKotlinCoreTypes() && isKotlinCoreType(fqn) && isKotlin(psi)) {
+      if (!allowKotlinCoreTypes() && isKotlinCoreType(fqn) && isKotlin(node.lang)) {
         return
       }
 

@@ -55,7 +55,7 @@ class NonConstantResourceIdDetector : Detector(), SourceCodeScanner {
 
   class ResourceIdVisitor(val context: JavaContext) : UElementHandler() {
     override fun visitSwitchExpression(node: USwitchExpression) {
-      if (isJava(node.sourcePsi)) {
+      if (isJava(node.lang)) {
         checkSwitchCasesForRClassReferences(node.body)
       }
     }
@@ -77,7 +77,7 @@ class NonConstantResourceIdDetector : Detector(), SourceCodeScanner {
 
     override fun visitField(node: UField) {
       val initializer = node.uastInitializer
-      if (initializer != null && isKotlin(node) && context.evaluator.isConst(node)) {
+      if (initializer != null && isKotlin(node.lang) && context.evaluator.isConst(node)) {
         checkExpression(initializer, "in const fields")
       }
     }

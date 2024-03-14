@@ -901,7 +901,7 @@ internal class AnnotationHandler(
       // `SuperType(...)`, skip here
       // because the latter (an issue on the super type call) is much narrower scope to report an
       // issue.
-      if (call is UObjectLiteralExpression && isKotlin(call.sourcePsi)) return
+      if (call is UObjectLiteralExpression && isKotlin(call.lang)) return
       checkCallUnresolved(context, call)
     } else {
       checkCall(context, method, call)

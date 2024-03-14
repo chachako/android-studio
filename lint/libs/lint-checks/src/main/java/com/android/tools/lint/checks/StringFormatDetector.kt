@@ -744,7 +744,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
           'b',
           'B' -> // '+' concatenation of Booleans does not exist in Kotlin,
             // so "%b" should not be flagged as a trivial conversion.
-            if (isKotlin(calledMethod)) {
+            if (isKotlin(calledMethod.language)) {
               return
             }
         }

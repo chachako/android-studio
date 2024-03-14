@@ -212,7 +212,7 @@ class WrongCommentTypeDetector : Detector(), SourceCodeScanner {
             "*/"
 
         try {
-          if (isKotlin(node)) {
+          if (isKotlin(node.language)) {
             val docComment = createKDocFromText(node.project, content)
 
             for (section in docComment.getAllSections()) {

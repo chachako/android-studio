@@ -78,7 +78,7 @@ class ExternalAnnotationsDetector : Detector(), SourceCodeScanner {
     reference: UReferenceExpression,
     referenced: PsiElement,
   ) {
-    if (isKotlin(referenced)) {
+    if (isKotlin(referenced.language)) {
       check(reference, referenced as? PsiMember ?: return, context)
     }
   }

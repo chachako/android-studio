@@ -341,7 +341,7 @@ fun UCallExpression.getDispatchReceivers(
   // we resolve to the variable declaration before consulting the dispatch receiver evaluator.
   // TODO(kotlin-uast-cleanup): For now we use heuristics to decide whether this is an
   //  invoke on a local lambda variable; it's not obvious that there's a better way.
-  if (isKotlin(this.sourcePsi) && methodName == "invoke") {
+  if (isKotlin(this.lang) && methodName == "invoke") {
     val decl = receiver?.tryResolve().toUElement() ?: return emptyList()
     return receiverEval[decl]
   }

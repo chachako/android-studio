@@ -92,8 +92,9 @@ class KotlinNullnessAnnotationDetector : Detector(), SourceCodeScanner {
     usageInfo: AnnotationUsageInfo,
   ) {
     // Only applies for Kotlin annotations
-    val sourcePsi = element.sourcePsi ?: return
-    if (!isKotlin(sourcePsi)) {
+    // with source, i.e., skip synthetic nullness annotations added by UAST
+    element.sourcePsi ?: return
+    if (!isKotlin(element.lang)) {
       return
     }
     val annotated = element.uastParent as? UAnnotated ?: return
@@ -158,7 +159,7 @@ class KotlinNullnessAnnotationDetector : Detector(), SourceCodeScanner {
           // this a warning.
           overrideSeverity(Severity.WARNING)
           // We can also safely apply these fixes in batch mode. Contradictions should probably
-          // examined manually.
+          // be examined manually.
           fix.autoFix()
         }
       }

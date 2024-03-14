@@ -121,7 +121,8 @@ class DiffUtilDetector : Detector(), SourceCodeScanner {
 
   private fun isSealedOrData(context: JavaContext, cls: PsiClass?): Boolean {
     if (cls == null) return false
-    return isKotlin(cls) && (context.evaluator.isSealed(cls) || context.evaluator.isData(cls))
+    return isKotlin(cls.language) &&
+      (context.evaluator.isSealed(cls) || context.evaluator.isData(cls))
   }
 
   private fun defaultEquals(context: JavaContext, type: PsiClassType?): Boolean {
@@ -256,7 +257,7 @@ class DiffUtilDetector : Detector(), SourceCodeScanner {
           }
         } else {
           val message =
-            if (isKotlin(node.sourcePsi))
+            if (isKotlin(node.lang))
               "Suspicious equality check: Did you mean `==` instead of `===` ?"
             else "Suspicious equality check: Did you mean `.equals()` instead of `==` ?"
           val location =

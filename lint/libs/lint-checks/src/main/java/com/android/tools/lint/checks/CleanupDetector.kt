@@ -270,7 +270,7 @@ class CleanupDetector : Detector(), SourceCodeScanner {
     val psi = node.sourcePsi
     if (
       psi != null &&
-        isJava(psi) &&
+        isJava(node.lang) &&
         PsiTreeUtil.getParentOfType(psi, PsiResourceVariable::class.java) != null
     ) {
       return

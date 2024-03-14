@@ -242,7 +242,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
     method: PsiMethod,
     qualifiedName: String,
   ) {
-    val charset = if (isKotlin(node.sourcePsi)) "Charsets.UTF_8" else "StandardCharsets.UTF_8"
+    val charset = if (isKotlin(node.lang)) "Charsets.UTF_8" else "StandardCharsets.UTF_8"
     val typeName = qualifiedName.substringAfterLast('.')
 
     val message =
@@ -306,7 +306,7 @@ class DefaultEncodingDetector : Detector(), SourceCodeScanner {
     method: PsiMethod,
     qualifiedName: String,
   ) {
-    val isKotlin = isKotlin(node.sourcePsi)
+    val isKotlin = isKotlin(node.lang)
     val name = method.name
     val call = node.methodIdentifier?.name ?: method.name
     val evaluator = context.evaluator

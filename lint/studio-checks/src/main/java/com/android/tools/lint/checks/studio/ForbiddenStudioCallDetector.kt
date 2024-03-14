@@ -159,7 +159,7 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
     // Mockito#when
     if (
       method.name == "when" &&
-        isKotlin(node.sourcePsi) &&
+        isKotlin(node.lang) &&
         (context.evaluator.isMemberInClass(method, "org.mockito.Mockito") ||
           context.evaluator.isMemberInClass(method, "org.mockito.MockedStatic") ||
           context.evaluator.isMemberInClass(method, "org.mockito.stubbing.Stubber"))

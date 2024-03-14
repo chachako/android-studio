@@ -1990,7 +1990,7 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         if (fqcn == null) {
           name
         } else if (CONSTRUCTOR_NAME == name) {
-          if (isKotlin(reference.sourcePsi)) {
+          if (isKotlin(reference.lang)) {
             "$fqcn()"
           } else {
             "new $fqcn"

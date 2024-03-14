@@ -394,7 +394,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
 
         // It's the last child: see if the parent is unused
         val parent = skipParenthesizedExprUp(curr.uastParent)
-        if (parent is ULambdaExpression && isKotlin(sourcePsi)) {
+        if (parent is ULambdaExpression && sourcePsi != null && isKotlin(sourcePsi.language)) {
           val expressionType = parent.getExpressionType()?.canonicalText
           if (
             expressionType != null &&
@@ -423,7 +423,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
           return false
         }
 
-        if (isJava(sourcePsi)) {
+        if (sourcePsi != null && isJava(sourcePsi.language)) {
           // In Java there's no implicit passing to the parent
           return true
         }

@@ -236,7 +236,8 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
   override fun createUastHandler(context: JavaContext): UElementHandler? {
     // using deprecated psi field here instead of sourcePsi because the IDE
     // still uses older version of UAST
-    if (isKotlin(context.uastFile?.psi)) {
+    val uastFile = context.uastFile
+    if (uastFile != null && isKotlin(uastFile.lang)) {
       val checkNullness = context.isEnabled(PLATFORM_NULLNESS)
       if (checkNullness) {
         return KotlinVisitor(context)

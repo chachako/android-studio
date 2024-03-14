@@ -395,7 +395,7 @@ open class DefaultJavaEvaluator(
     // check if "$self" for UltraLightParameter
     if (
       (first?.startsWith("\$this") == true || first?.startsWith("\$self") == true) &&
-        isKotlin(call.sourcePsi)
+        isKotlin(call.lang)
     ) {
       // Kotlin extension method.
       j++

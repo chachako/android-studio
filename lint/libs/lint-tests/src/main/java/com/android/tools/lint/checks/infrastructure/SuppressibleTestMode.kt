@@ -349,7 +349,7 @@ class SuppressibleTestMode :
       var curr = root.sourcePsi.findElementAt(offset)
       if (curr != null && curr !is PsiComment) {
         curr =
-          if (isKotlin(curr)) {
+          if (isKotlin(curr.language)) {
             findKotlinSuppressElement(curr)
           } else {
             findJavaSuppressElement(curr)

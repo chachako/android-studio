@@ -152,7 +152,7 @@ class SyntheticAccessorDetector : Detector(), SourceCodeScanner {
         if (!context.evaluator.isPrivate(member)) {
           return
         }
-        if (resolved is PsiField && isKotlin(resolved)) {
+        if (resolved is PsiField && isKotlin(resolved.language)) {
           // We don't recommend changing 'private' Kotlin fields to 'internal', because
           // that's just trading a synthetic accessor for a property accessor.
           return
@@ -190,7 +190,7 @@ class SyntheticAccessorDetector : Detector(), SourceCodeScanner {
         context.getLocation(node)
       }
 
-    val isKotlin = isKotlin(member)
+    val isKotlin = isKotlin(member.language)
     val name = if (isKotlin) "Make internal" else "Make package protected"
 
     val fixRange =
@@ -221,7 +221,7 @@ class SyntheticAccessorDetector : Detector(), SourceCodeScanner {
           if (context.evaluator.isStatic(member)) {
             return
           }
-          if (isKotlin(member)) {
+          if (isKotlin) {
             // Sealed class? This will create a private constructor we can't delete
             if (context.evaluator.isSealed(member)) {
               return

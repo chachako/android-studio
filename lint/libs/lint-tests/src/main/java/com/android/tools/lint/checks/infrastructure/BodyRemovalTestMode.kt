@@ -139,7 +139,7 @@ class BodyRemovalTestMode :
             return
           }
           val parent = skipParenthesizedExprUp(node.uastParent)
-          if (parent is UBlockExpression && isKotlin(node.sourcePsi)) {
+          if (parent is UBlockExpression && isKotlin(node.lang)) {
             val count = parent.expressions.size
             if (count != 1) return
             val method = skipParenthesizedExprUp(parent.uastParent) as? UMethod ?: return

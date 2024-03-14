@@ -866,7 +866,7 @@ open class ControlFlowGraph<T : Any> private constructor() {
           if (strict) {
             // strict mode takes precedence over all other exception-handling settings
             DEFAULT_EXCEPTIONS_STRICT
-          } else if (isKotlin(reference.sourcePsi)) {
+          } else if (isKotlin(reference.lang)) {
             // Kotlin is not allowed to ignore unchecked exceptions, so always return the default
             // exceptions list
             DEFAULT_EXCEPTIONS_KOTLIN
@@ -955,7 +955,7 @@ open class ControlFlowGraph<T : Any> private constructor() {
        */
       val pendingThrows = mutableMapOf<UElement, MutableList<Pair<UElement, List<String>>>>()
 
-      val isKotlin = isKotlin(method.sourcePsi)
+      val isKotlin = isKotlin(method.lang)
 
       method.uastBody?.let { graph.getOrCreate(it) }
       method.uastBody?.accept(
@@ -1834,7 +1834,7 @@ open class ControlFlowGraph<T : Any> private constructor() {
             val switchExpression = node.expression
             switchExpression?.accept(this)
 
-            val fallthrough = isJava(node.sourcePsi)
+            val fallthrough = isJava(node.lang)
             val exits = mutableListOf<UElement>()
 
             val pendingBefore = pending.toMutableList()
@@ -2108,7 +2108,7 @@ open class ControlFlowGraph<T : Any> private constructor() {
             val identifier = instruction.switchIdentifier.name
             when {
               identifier != "<error>" -> identifier
-              isKotlin(instruction.sourcePsi) -> "when"
+              isKotlin(instruction.lang) -> "when"
               else -> "switch"
             }
           }

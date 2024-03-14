@@ -156,7 +156,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
       // has more dire consequences than suggested (specifying *both* actually
       // causes the kotlin @Target attribute to be ignored, and the java @Target
       // also breaks Java access to the annotation). See issue 207151948.
-      if (!isKotlin(node.sourcePsi)) {
+      if (!isKotlin(node.lang)) {
         return
       }
       val nameElement = node.namePsiElement
@@ -431,8 +431,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
         }
         type == OPEN_FOR_TESTING_ANNOTATION -> {
           // Make sure on Kotlin and method or class
-          val sourcePsi = annotation.sourcePsi
-          if (sourcePsi != null && !isKotlin(sourcePsi)) {
+          if (!isKotlin(annotation.lang)) {
             context.report(
               ANNOTATION_USAGE,
               annotation,
@@ -1064,7 +1063,7 @@ class AnnotationDetector : Detector(), SourceCodeScanner {
         if (!warnedFlags!!.add(resolved)) {
           return
         }
-        val operator = if (isKotlin(resolved)) "shl" else "<<"
+        val operator = if (isKotlin(resolved.language)) "shl" else "<<"
         val message =
           String.format(
             Locale.US,

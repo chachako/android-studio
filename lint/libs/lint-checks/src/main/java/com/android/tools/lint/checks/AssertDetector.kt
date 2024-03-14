@@ -183,7 +183,7 @@ class AssertDetector : Detector(), SourceCodeScanner {
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
     // Make sure it's Kotlin, and that the assert() call being called is the stdlib one
-    if (!isKotlin(node.sourcePsi)) {
+    if (!isKotlin(node.lang)) {
       return
     }
 

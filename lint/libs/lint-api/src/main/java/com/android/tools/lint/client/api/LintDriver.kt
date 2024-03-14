@@ -3407,7 +3407,7 @@ class LintDriver(
 
       if (currentScope is UFile) {
         return false
-      } else if (currentScope is UImportStatement && isJava(currentScope.sourcePsi)) {
+      } else if (currentScope is UImportStatement && isJava(currentScope.lang)) {
         // Special case: if the error is on an import statement in Java
         // you don't have the option of suppressing on the file, so
         // allow suppressing on the top level class instead, if any

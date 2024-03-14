@@ -702,7 +702,7 @@ abstract class DataFlowAnalyzer(
     //   temp variable w/ lhs as an initializer,
     //   `if` expression w/ `temp != null` condition, where `else` branch contains rhs
     // _without_ sourcePsi. In contrast, [UIfExpression]s in Java always have sourcePsi.
-    if (!isJava(node.sourcePsi)) { // Does not apply to Java
+    if (!isJava(node.lang)) { // Does not apply to Java
       // Handle Elvis operator
       val parent = skipParenthesizedExprUp(node.uastParent)
       if (parent != null && node.isElvisIf()) {

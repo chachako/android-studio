@@ -96,7 +96,7 @@ class CanvasSizeDetector : Detector(), SourceCodeScanner {
     val drawable = context.evaluator.extendsClass(containingClass, CLASS_DRAWABLE, false)
     val calling = node is UCallExpression
     val verb = if (calling) "Calling" else "Referencing"
-    val kotlin = isKotlin(node.sourcePsi)
+    val kotlin = isKotlin(node.lang)
     val replacement =
       if (drawable) {
         if (kotlin) "bounds.$name" else "getBounds().$name"

@@ -84,7 +84,7 @@ class SamDetector : Detector(), SourceCodeScanner {
 
   override fun createUastHandler(context: JavaContext): UElementHandler? {
     val psi = context.uastFile?.sourcePsi ?: return null
-    if (isJava(psi)) {
+    if (isJava(psi.language)) {
       return null
     }
     return object : UElementHandler() {
@@ -155,7 +155,7 @@ class SamDetector : Detector(), SourceCodeScanner {
       }
       return
     }
-    if (!isJava(psiMethod)) {
+    if (!isJava(psiMethod.language)) {
       return
     }
 

@@ -76,7 +76,7 @@ class ImportAliasTestMode :
     root: UFile,
     clientData: MutableMap<String, Any>,
   ): MutableList<Edit> {
-    if (!isKotlin(root.sourcePsi)) {
+    if (!isKotlin(root.lang)) {
       return mutableListOf()
     }
     val editMap = mutableMapOf<Int, Edit>()

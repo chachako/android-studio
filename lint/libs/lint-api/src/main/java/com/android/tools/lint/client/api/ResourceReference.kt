@@ -171,7 +171,7 @@ class ResourceReference(
             // In the IDE we have proper reference resolving for synthetic imports
             !LintClient.isStudio &&
             element is USimpleNameReferenceExpression &&
-            isKotlin(element.sourcePsi) &&
+            isKotlin(element.lang) &&
             element.identifier != "it"
         ) {
           // If we have any synthetic imports in this class, this unresolved symbol is
