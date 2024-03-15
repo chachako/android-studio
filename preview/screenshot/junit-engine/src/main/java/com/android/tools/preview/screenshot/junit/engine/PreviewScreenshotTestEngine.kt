@@ -147,7 +147,7 @@ class PreviewScreenshotTestEngine : TestEngine {
         }
     }
 
-    private fun compareImages(composeScreenshot: ComposeScreenshotResult, testDisplayName: String): PreviewResult {
+    private fun compareImages(composeScreenshot: ComposeScreenshotResult, testDisplayName: String, startTime: Long): PreviewResult {
         // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
         val imageDiffer = ImageDiffer.MSSIMMatcher()
         val screenshotName = composeScreenshot.resultId
@@ -170,6 +170,7 @@ class PreviewScreenshotTestEngine : TestEngine {
 
             return PreviewResult(1,
                 composeScreenshot.resultId,
+                getDurationInSeconds(startTime),
                 "Image render failed",
                 referenceImage = ImageDetails(referencePath, referenceMessage),
                 actualImage = ImageDetails(null, "Image render failed")
@@ -206,6 +207,7 @@ class PreviewScreenshotTestEngine : TestEngine {
             }
         }
         return result.toPreviewResponse(code, testDisplayName,
+            getDurationInSeconds(startTime),
             ImageDetails(referencePath, referenceMessage),
             ImageDetails(actualPath, null),
             ImageDetails(diffPath, diffMessage))
@@ -215,9 +217,14 @@ class PreviewScreenshotTestEngine : TestEngine {
         return System.getProperty("com.android.tools.preview.screenshot.junit.engine.${key}")
     }
 
+    private fun getDurationInSeconds(startTimeMillis: Long): Float {
+        return (System.currentTimeMillis() - startTimeMillis) / 1000F
+    }
+
     private fun reportResult(listener: EngineExecutionListener, screenshot: ComposeScreenshotResult, testDescriptor: TestDescriptor, testDisplayName: String): PreviewResult  {
+        val startTime = System.currentTimeMillis()
         listener.executionStarted(testDescriptor)
-        val imageComparison = compareImages(screenshot, testDisplayName)
+        val imageComparison = compareImages(screenshot, testDisplayName, startTime)
         val result = if (imageComparison.responseCode != 0) {
             TestExecutionResult.failed(AssertionError(imageComparison.message))
         } else TestExecutionResult.successful()

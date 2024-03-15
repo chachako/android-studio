@@ -24,6 +24,7 @@ import java.nio.file.Path
 data class PreviewResult(
     val responseCode: Int,
     val previewName: String,
+    val durationInSeconds: Float,
     val message: String? = null,
     val referenceImage: ImageDetails? = null,
     val actualImage: ImageDetails? = null,
@@ -32,10 +33,10 @@ data class PreviewResult(
 ) {
 }
 
-fun Verify.AnalysisResult.toPreviewResponse(code: Int, name: String, reference: ImageDetails,
+fun Verify.AnalysisResult.toPreviewResponse(code: Int, name: String, durationInSeconds: Float, reference: ImageDetails,
     actual: ImageDetails? = null,
     diff: ImageDetails? = null): PreviewResult{
-    return PreviewResult(code, name, message, reference, actual, diff)
+    return PreviewResult(code, name, durationInSeconds, message, reference, actual, diff)
 }
 
 /**

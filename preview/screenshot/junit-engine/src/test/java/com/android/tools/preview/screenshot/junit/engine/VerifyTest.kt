@@ -39,7 +39,7 @@ class VerifyTest {
     fun assertMatchReference_missingReference() {
         val analysis = verifier().assertMatchReference(referenceFilePath("circle"), loadTestImage("circle"))
 
-        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("referencePath"), null))
+        val previewResult = analysis.toPreviewResponse(1, "name", 1F, ImageDetails(Path.of("referencePath"), null))
         assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.MissingReference>(analysis)
         assertEquals(loadTestImage("circle"), analysis.actual)
@@ -51,7 +51,7 @@ class VerifyTest {
 
         val analysis = verifier().assertMatchReference(referenceFilePath("circle"), loadTestImage("circle"))
 
-        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("referencePath"), null))
+        val previewResult = analysis.toPreviewResponse(1, "name", 1F, ImageDetails(Path.of("referencePath"), null))
         assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.Passed>(analysis)
         assertEquals(loadTestImage("circle"), analysis.actual)
@@ -80,7 +80,7 @@ class VerifyTest {
 
         val analysis = verifier().assertMatchReference(referenceFilePath("circle"), loadTestImage("star"))
 
-        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("referencePath"), null))
+        val previewResult = analysis.toPreviewResponse(1, "name", 1F, ImageDetails(Path.of("referencePath"), null))
         assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.Failed>(analysis)
         assertEquals(loadTestImage("star"), analysis.actual)
@@ -94,7 +94,7 @@ class VerifyTest {
 
         val analysis = verifier().assertMatchReference(referenceFilePath("vertical_rectangle"), loadTestImage("horizontal_rectangle"))
 
-        val previewResult = analysis.toPreviewResponse(1, "name", ImageDetails(Path.of("referencePath"), null))
+        val previewResult = analysis.toPreviewResponse(1, "name", 1F, ImageDetails(Path.of("referencePath"), null))
         assert(previewResult.message == analysis.message)
         assertIs<Verify.AnalysisResult.SizeMismatch>(analysis)
         assertEquals(loadTestImage("vertical_rectangle"), analysis.expected)

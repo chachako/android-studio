@@ -34,17 +34,17 @@ class SaveResultsUtilTest {
     private lateinit var previewResults: List<PreviewResult>
 
     private fun createPreviewResultSuccess(): PreviewResult {
-        return PreviewResult(0, "package.previewTest1", "Reference image saved", ImageDetails(referenceImagePath, null))
+        return PreviewResult(0, "package.previewTest1", 2F,"Reference image saved", ImageDetails(referenceImagePath, null))
     }
 
     private fun createPreviewResultFailed(): PreviewResult {
-        return PreviewResult(1, "package.previewTest2", "Images don't match", ImageDetails(referenceImagePath, null),
+        return PreviewResult(1, "package.previewTest2", 2F, "Images don't match", ImageDetails(referenceImagePath, null),
             ImageDetails(actualPath, null), ImageDetails(diffPath, null)
         )
     }
 
     private fun createPreviewResultError(): PreviewResult {
-        return PreviewResult(2, "package.previewTest3", "Render error",
+        return PreviewResult(2, "package.previewTest3", 0F, "Render error",
             ImageDetails(referenceImagePath, null), ImageDetails(null, "Render error: Class XYZ not found"))
     }
 

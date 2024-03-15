@@ -28,6 +28,7 @@ const val ACTUAL = "actual"
 const val CLASSNAME = "classname"
 const val COLON = ":"
 const val DIFF = "diff"
+const val TIME = "time"
 const val ERRORS = "errors"
 const val FAILURE = "failure"
 const val FAILURES = "failures"
@@ -108,6 +109,7 @@ private fun printTest(serializer: KXmlSerializer, result: PreviewResult) {
     val lastPeriod = testWithoutSuffix.lastIndexOf(".")
     serializer.attribute(NAMESPACE, NAME, result.previewName.substring(lastPeriod+ 1))
     serializer.attribute(NAMESPACE, CLASSNAME, testWithoutSuffix.substringBeforeLast(PERIOD))
+    serializer.attribute(NAMESPACE, TIME, result.durationInSeconds.toString())
     when (result.responseCode) {
         0 -> printImages(serializer, SUCCESS, result.message!!, result)
         1 -> printImages(serializer, FAILURE, result.message!!, result)
