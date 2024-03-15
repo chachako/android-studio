@@ -93,7 +93,7 @@ private fun serializePreviews(
             calcImageName(method, annotation)
         )
     }
-    writeComposeScreenshotsToJson(fileWriter, composeScreenshots)
+    writeComposeScreenshotsToJson(fileWriter, composeScreenshots.sortedBy { it.imageName })
 }
 
 private fun convertListMap(parameters: List<ParameterRepresentation>): List<Map<String, String>> {

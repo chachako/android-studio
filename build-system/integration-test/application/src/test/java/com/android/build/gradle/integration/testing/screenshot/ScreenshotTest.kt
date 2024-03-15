@@ -189,7 +189,6 @@ class ScreenshotTest {
             .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
 
     @Test
-    @Ignore("b/329497815")
     fun discoverPreviews() {
         getExecutor().run("debugPreviewDiscovery")
         val previewsDiscoveredFile  = project.buildDir.resolve("intermediates/preview/debug/previews_discovered.json")
@@ -197,22 +196,6 @@ class ScreenshotTest {
         assertThat(previewsDiscoveredFile.readText()).isEqualTo("""
             {
               "screenshots": [
-                {
-                  "methodFQN": "pkg.name.ExampleTest.simpleComposableTest",
-                  "methodParams": [],
-                  "previewParams": {
-                    "showBackground": "true"
-                  },
-                  "imageName": "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee"
-                },
-                {
-                  "methodFQN": "pkg.name.ExampleTest.simpleComposableTest2",
-                  "methodParams": [],
-                  "previewParams": {
-                    "showBackground": "true"
-                  },
-                  "imageName": "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee"
-                },
                 {
                   "methodFQN": "pkg.name.ExampleTest.multiPreviewTest",
                   "methodParams": [],
@@ -238,6 +221,22 @@ class ScreenshotTest {
                   ],
                   "previewParams": {},
                   "imageName": "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523"
+                },
+                {
+                  "methodFQN": "pkg.name.ExampleTest.simpleComposableTest2",
+                  "methodParams": [],
+                  "previewParams": {
+                    "showBackground": "true"
+                  },
+                  "imageName": "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee"
+                },
+                {
+                  "methodFQN": "pkg.name.ExampleTest.simpleComposableTest",
+                  "methodParams": [],
+                  "previewParams": {
+                    "showBackground": "true"
+                  },
+                  "imageName": "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3",
