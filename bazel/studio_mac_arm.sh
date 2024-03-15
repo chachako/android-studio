@@ -40,7 +40,8 @@ readonly config_options="--config=release --config=ants --config=rcache"
         "${conditional_flags[@]}" \
         -- \
         //tools/base/bazel/... \
-        //tools/base/dynamic-layout-inspector/skia:skiaparser \
+        //tools/vendor/google/skia:skiaparser \
+        //tools/vendor/google/skia:skia_test_support \
         //tools/adt/idea/android/src/com/android/tools/idea/diagnostics/heap/native/...
 
 readonly bazel_status=$?
