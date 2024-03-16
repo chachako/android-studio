@@ -2676,4 +2676,98 @@ src/test/pkg/ConstructorTest.java:14: Error: Expected resource of type drawable 
             """
       )
   }
+
+  fun testComposeDimensions() {
+    // Regression test for b/329691637
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import androidx.annotation.Dimension
+            import androidx.annotation.Px
+            import androidx.compose.ui.unit.Dp
+            import androidx.compose.ui.unit.TextUnit
+            import androidx.compose.ui.unit.dp
+            import androidx.compose.ui.unit.sp
+
+            @Px
+            private fun getSizePx(): Int {
+                return 0
+            }
+
+            @Dimension(unit = Dimension.DP)
+            private fun getSizeDp(): Int {
+                return 0
+            }
+
+            @Dimension(unit = Dimension.SP)
+            private fun getSizeSp(): Int {
+                return 0
+            }
+
+            fun print(dp: Dp) {
+            }
+
+            fun print(sp: TextUnit) {
+            }
+
+            fun test(@Px px: Int, @Dimension(unit = Dimension.SP) sp: Int) {
+                print(getSizeDp().dp) // OK 1
+                print(getSizePx().dp) // ERROR 1
+                print(getSizeSp().dp) // ERROR 2
+                print(getSizeDp().sp) // ERROR 3
+                print(getSizeSp().sp) // OK 2
+
+                print(px.dp) // ERROR 4
+                print(sp.dp) // ERROR 5
+                print(sp.sp) // OK 3
+                // What about `.em` ? We don't have a @Dimension unit for that. Should we create one?
+            }
+            """
+          )
+          .indented(),
+        kotlin(
+            """
+            // Compose Stubs
+            package androidx.compose.ui.unit
+
+            @kotlin.jvm.JvmInline
+            value class Dp(val value: Float)
+
+            @kotlin.jvm.JvmInline
+            value class TextUnit internal constructor(internal val packedValue: Long)
+
+            inline val Int.dp: Dp get() = Dp(value = this.toFloat())
+            inline val Double.dp: Dp get() = Dp(value = this.toFloat())
+            inline val Float.dp: Dp get() = Dp(value = this)
+            inline val Int.sp: TextUnit get() = TextUnit(this.toLong())
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/test.kt:33: Error: Mismatched @Dimension units here; expected density-independent (dp) integer but received a pixel integer [ResourceType]
+            print(getSizePx().dp) // ERROR 1
+                  ~~~~~~~~~~~
+        src/test/pkg/test.kt:34: Error: Mismatched @Dimension units here; expected density-independent (dp) integer but received a scale-independent (sp) integer [ResourceType]
+            print(getSizeSp().dp) // ERROR 2
+                  ~~~~~~~~~~~
+        src/test/pkg/test.kt:35: Error: Mismatched @Dimension units here; expected a scale-independent (sp) integer but received density-independent (dp) integer [ResourceType]
+            print(getSizeDp().sp) // ERROR 3
+                  ~~~~~~~~~~~
+        src/test/pkg/test.kt:38: Error: Mismatched @Dimension units here; expected density-independent (dp) integer but received a pixel integer [ResourceType]
+            print(px.dp) // ERROR 4
+                  ~~
+        src/test/pkg/test.kt:39: Error: Mismatched @Dimension units here; expected density-independent (dp) integer but received a scale-independent (sp) integer [ResourceType]
+            print(sp.dp) // ERROR 5
+                  ~~
+        5 errors, 0 warnings
+        """
+      )
+  }
 }

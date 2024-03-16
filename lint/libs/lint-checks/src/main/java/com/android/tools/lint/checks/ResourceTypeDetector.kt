@@ -86,6 +86,7 @@ import org.jetbrains.uast.UIfExpression
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.UReferenceExpression
+import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.skipParenthesizedExprDown
@@ -363,12 +364,37 @@ class ResourceTypeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       val typeUnit =
         ResourceEvaluator.DIMENSION_MARKERS.firstOrNull { types.contains(it) } ?: return
       if (unit != typeUnit && unit.isDimension()) {
-        val message =
-          "Mismatched @Dimension units here; expected ${
-                unit.getMarkerTypeDescription()} but received ${typeUnit.getMarkerTypeDescription()}"
-        report(context, RESOURCE_TYPE, argument, context.getLocation(argument), message)
+        reportUnitMismatch(unit, typeUnit, context, argument)
+      } else {
+        val parent = skipParenthesizedExprUp(argument.uastParent)
+        if (
+          parent is UQualifiedReferenceExpression &&
+            parent.receiver.skipParenthesizedExprDown() === argument
+        ) {
+          val selector = parent.selector.skipParenthesizedExprDown()
+          if (selector is USimpleNameReferenceExpression) {
+            val name = selector.identifier
+            if (name == "dp" && unit != DIMENSION_DP_MARKER_TYPE) {
+              reportUnitMismatch(DIMENSION_DP_MARKER_TYPE, unit, context, argument)
+            } else if (name == "sp" && unit != DIMENSION_SP_MARKER_TYPE) {
+              reportUnitMismatch(DIMENSION_SP_MARKER_TYPE, unit, context, argument)
+            }
+          }
+        }
       }
     }
+  }
+
+  private fun reportUnitMismatch(
+    unit: ResourceType,
+    typeUnit: ResourceType,
+    context: JavaContext,
+    argument: UElement,
+  ) {
+    val expected = unit.getMarkerTypeDescription()
+    val actual = typeUnit.getMarkerTypeDescription()
+    val message = "Mismatched @Dimension units here; expected $expected but received $actual"
+    report(context, RESOURCE_TYPE, argument, context.getLocation(argument), message)
   }
 
   private fun ResourceType.isDimension(): Boolean {
