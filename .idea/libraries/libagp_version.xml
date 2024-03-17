@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="libagp-version">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../bazel-bin/tools/base/common/agp-version/libagp-version.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
