@@ -16,7 +16,6 @@
 
 package com.android.tools.preview.screenshot.report
 
-import org.gradle.internal.ErroringAction
 import java.io.IOException
 
 internal class ScreenshotClassPageRenderer: PageRenderer<ClassTestResults>() {
@@ -83,7 +82,6 @@ internal class ScreenshotClassPageRenderer: PageRenderer<ClassTestResults>() {
 
     override fun registerTabs() {
         addFailuresTab()
-        // TODO(b/330166275) - Don't use internal Gradle API (ErroringAcion)
         addTab("Tests", object : ErroringAction<SimpleHtmlWriter>() {
             @Throws(IOException::class)
             override fun doExecute(objectToExecute: SimpleHtmlWriter) {
