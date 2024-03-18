@@ -50,7 +50,7 @@ abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRenderer<T>() 
     }
 
     protected fun addFailuresTab() {
-        if (!results.failures.isEmpty()) {
+        if (results.failures.isNotEmpty()) {
             addTab(
                 "Failed tests",
                 object : ErroringAction<SimpleHtmlWriter>() {
@@ -108,12 +108,12 @@ abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRenderer<T>() 
     protected fun renderCompositeResults(
         htmlWriter: SimpleHtmlWriter,
         map: Map<String, CompositeTestResults>,
-        name: String?
+        name: String
     ) {
         htmlWriter.startElement("table")
         htmlWriter.startElement("thead")
         htmlWriter.startElement("tr")
-        htmlWriter.startElement("th").characters(name).endElement()
+        htmlWriter.startElement("th").characters(name.toCharArray()).endElement()
         htmlWriter.startElement("th").characters("Tests").endElement()
         htmlWriter.startElement("th").characters("Failures").endElement()
         htmlWriter.startElement("th").characters("Skipped").endElement()
@@ -123,10 +123,12 @@ abstract class PageRenderer<T : CompositeTestResults> : TabbedPageRenderer<T>() 
         htmlWriter.endElement() //thead
         for (results: CompositeTestResults in map.values) {
             htmlWriter.startElement("tr")
-            htmlWriter.startElement("td")
-                .attribute("class", results.statusClass)
-                .characters(results.name)
-                .endElement()
+            results.name?.let {
+                htmlWriter.startElement("td")
+                    .attribute("class", results.statusClass)
+                    .characters(it.toCharArray())
+                    .endElement()
+            }
             htmlWriter.startElement("td").characters(results.testCount.toString()).endElement()
             htmlWriter.startElement("td")
                 .characters(results.failureCount.toString())

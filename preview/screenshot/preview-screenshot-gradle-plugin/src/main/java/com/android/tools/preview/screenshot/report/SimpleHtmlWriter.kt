@@ -16,7 +16,6 @@
 
 package com.android.tools.preview.screenshot.report
 
-import org.gradle.internal.xml.SimpleMarkupWriter
 import java.io.IOException
 import java.io.Writer
 
@@ -24,8 +23,7 @@ import java.io.Writer
  *
  * A streaming HTML writer.
  */
-class SimpleHtmlWriter @JvmOverloads constructor(writer: Writer?, indent: String? = null) :
-    // TODO(b/330166275) - Don't use internal Gradle API (SimpleMarkupWriter)
+class SimpleHtmlWriter @JvmOverloads constructor(writer: Writer, indent: String? = null) :
     SimpleMarkupWriter(writer, indent) {
 
     init {
