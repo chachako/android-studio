@@ -71,6 +71,15 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     @get:Internal
     abstract val layoutlibDir: ConfigurableFileCollection
 
+    @get:Classpath
+    abstract val layoutlibJar: ConfigurableFileCollection
+
+    @get:Classpath
+    abstract val frameworkResJar: ConfigurableFileCollection
+
+    @get:Classpath
+    abstract val layoutlibDataDir: ConfigurableFileCollection
+
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
 
@@ -145,6 +154,7 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             parameters.cliToolArgumentsFile.set(cliToolArgumentsFile)
             parameters.toolJarPath.setFrom(screenshotCliJar)
             parameters.outputDir.set(outputDir)
+            parameters.layoutlibJar.setFrom(layoutlibJar)
         }
 
     }

@@ -30,6 +30,7 @@ import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.api.AndroidBasePlugin
+import com.android.tools.preview.screenshot.layoutlibExtractor.LayoutlibDataFromMaven
 import com.android.tools.preview.screenshot.layoutlibExtractor.LayoutlibFromMaven
 import com.android.tools.preview.screenshot.services.AnalyticsService
 import com.android.tools.preview.screenshot.tasks.PreviewDiscoveryTask
@@ -81,6 +82,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
          *  version.
          */
         private val perClassLoaderConstant = UUID.randomUUID().toString()
+        private const val LAYOUTLIB_VERSION = "14.0.4"
     }
 
     override fun apply(project: Project) {
@@ -104,7 +106,11 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
 
             val sdkDirectory = componentsExtension.sdkComponents.sdkDirectory
             createPreviewlibCliToolConfiguration(project)
+            createLayoutlibConfiguration(project)
+            createLayoutlibRuntimeConfiguration(project)
+            createLayoutlibResourcesConfiguration(project)
             val layoutlibFromMaven = LayoutlibFromMaven.create(project)
+            val layoutlibDataFromMaven = LayoutlibDataFromMaven.create(project, LAYOUTLIB_VERSION)
 
             val updateAllTask = project.tasks.register(
                 "previewScreenshotUpdateAndroidTest",
@@ -220,7 +226,12 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         })
                         task.previewsDiscovered.set(discoveryTaskProvider.flatMap { it.previewsOutputFile })
                         task.screenshotCliJar.from(task.project.configurations.getByName(previewlibCliToolConfigurationName))
+                        task.layoutlibJar.from(task.project.configurations.getByName(
+                            layoutlibJarConfigurationName))
+                        task.frameworkResJar.from(task.project.configurations.getByName(
+                            layoutlibResourcesConfigurationName))
                         task.layoutlibDir.setFrom(layoutlibFromMaven.layoutlibDirectory)
+                        task.layoutlibDataDir.setFrom(layoutlibDataFromMaven.layoutlibDataDirectory)
                         resourceDirProvider?.let { task.resourcesDir.set(it) }
                         resourceFileProvider?.let { task.resourceFile.set(it) }
 
@@ -357,6 +368,57 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
         }
     }
 
+    private fun createLayoutlibConfiguration(project: Project) {
+        val container = project.configurations
+        val dependencies = project.dependencies
+        if (container.findByName(layoutlibJarConfigurationName) == null) {
+            container.create(layoutlibJarConfigurationName).apply {
+                isVisible = false
+                isTransitive = true
+                isCanBeConsumed = false
+                description = "A configuration to resolve layoutlib jar dependencies."
+            }
+            val version = LAYOUTLIB_VERSION
+            dependencies.add(
+                layoutlibJarConfigurationName,
+                "com.android.tools.layoutlib:layoutlib:$version")
+        }
+    }
+
+    private fun createLayoutlibRuntimeConfiguration(project: Project) {
+        val container = project.configurations
+        val dependencies = project.dependencies
+        if (container.findByName(layoutlibRunTimeConfigurationName) == null) {
+            container.create(layoutlibRunTimeConfigurationName).apply {
+                isVisible = false
+                isTransitive = true
+                isCanBeConsumed = false
+                description = "A configuration to resolve layoutlib runtime data dependencies."
+            }
+            val version = LAYOUTLIB_VERSION
+            dependencies.add(
+                layoutlibRunTimeConfigurationName,
+                "com.android.tools.layoutlib:layoutlib-runtime:$version")
+        }
+    }
+
+    private fun createLayoutlibResourcesConfiguration(project: Project) {
+        val container = project.configurations
+        val dependencies = project.dependencies
+        if (container.findByName(layoutlibResourcesConfigurationName) == null) {
+            container.create(layoutlibResourcesConfigurationName).apply {
+                isVisible = false
+                isTransitive = true
+                isCanBeConsumed = false
+                description = "A configuration to resolve render CLI tool dependencies."
+            }
+            val version = LAYOUTLIB_VERSION
+            dependencies.add(
+                layoutlibResourcesConfigurationName,
+                "com.android.tools.layoutlib:layoutlib-resources:$version")
+        }
+    }
+
     private fun AndroidPluginVersion.toVersionString(): String {
         val builder = StringBuilder("$major.$minor.$micro")
         previewType?.let { builder.append("-$it")}
@@ -369,6 +431,9 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
 
 private const val previewlibCliToolConfigurationName = "_internal-screenshot-test-task-previewlib-cli"
 private const val previewScreenshotTestEngineConfigurationName = "_internal-preview-screenshot-test-engine"
+private const val layoutlibJarConfigurationName = "_internal-screenshot-test-task-layoutlib"
+private const val layoutlibRunTimeConfigurationName = "_internal-screenshot-test-task-layoutlib-data"
+private const val layoutlibResourcesConfigurationName = "_internal-screenshot-test-task-layoutlib-res"
 private const val ARTIFACT_IMPL = "com.android.build.api.artifact.impl.ArtifactsImpl"
 private const val ANALYTICS_ENABLED_ARTIFACTS = "com.android.build.api.component.analytics.AnalyticsEnabledArtifacts"
 private const val INTERNAL_ARTIFACT_TYPE = "com.android.build.gradle.internal.scope.InternalArtifactType"

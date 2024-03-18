@@ -563,6 +563,7 @@ gradle_integration_test(
     maven_repos = [
         "//tools/base/build-system:android_gradle_plugin_runtime_dependencies",
         "//tools/base/build-system/integration-test/application:prebuilts",
+        "//tools/base/build-system/integration-test/application:layoutlib_prebuilts",
         "//tools/base/build-system/integration-test:kotlin_gradle_plugin_for_compose_prebuilts",
     ],
     deps = TEST_DEPS,
@@ -796,6 +797,16 @@ maven_repository(
         "@maven//:org.tensorflow.tensorflow-lite-metadata_0.1.0",
         "@maven//:org.tensorflow.tensorflow-lite-support_0.1.0",
         "@maven//:org.threeten.threetenbp_1.3.3",
+    ],
+    visibility = ["__subpackages__"],
+)
+
+maven_repository(
+    name = "layoutlib_prebuilts",
+    artifacts = [
+        "@maven//:com.android.tools.layoutlib.layoutlib-resources_14.0.4",
+        "@maven//:com.android.tools.layoutlib.layoutlib-runtime_14.0.4",
+        "@maven//:com.android.tools.layoutlib.layoutlib_14.0.4",
     ],
     visibility = ["__subpackages__"],
 )

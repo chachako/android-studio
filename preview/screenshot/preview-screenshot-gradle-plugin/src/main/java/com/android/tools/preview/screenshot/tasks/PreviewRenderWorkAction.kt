@@ -20,7 +20,6 @@ import com.android.tools.render.compose.readComposeRenderingResultJson
 import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
@@ -35,6 +34,7 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
         val logger = Logger.getLogger(PreviewRenderWorkAction::class.qualifiedName)
     }
     abstract class RenderWorkActionParameters : WorkParameters {
+        abstract val layoutlibJar: ConfigurableFileCollection
         abstract val cliToolArgumentsFile: RegularFileProperty
         abstract val toolJarPath: ConfigurableFileCollection
         abstract val outputDir: DirectoryProperty
@@ -46,7 +46,8 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
     }
 
     private fun render() {
-        val classLoader = getClassloader(parameters.toolJarPath)
+        val classpath = listOf(parameters.layoutlibJar, parameters.toolJarPath)
+        val classLoader = getClassloader(classpath)
         invokeMainMethod(listOf(parameters.cliToolArgumentsFile.get().asFile.absolutePath), classLoader)
     }
 
@@ -56,8 +57,9 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
         method.invoke(null, arguments.toTypedArray())
     }
 
-    private fun getClassloader(classpath: FileCollection): ClassLoader {
-        return URLClassLoader(classpath.files.map { it.toURI().toURL() }.toTypedArray())
+    private fun getClassloader(classpath: List<ConfigurableFileCollection>): ClassLoader {
+        val urls = classpath.flatMap { it.files }.map { it.toURI().toURL() }
+        return URLClassLoader(urls.toTypedArray())
     }
 
     private fun verifyRender() {
