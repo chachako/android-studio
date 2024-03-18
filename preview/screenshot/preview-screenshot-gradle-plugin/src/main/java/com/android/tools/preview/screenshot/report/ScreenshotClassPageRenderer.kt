@@ -83,6 +83,7 @@ internal class ScreenshotClassPageRenderer: PageRenderer<ClassTestResults>() {
 
     override fun registerTabs() {
         addFailuresTab()
+        // TODO(b/330166275) - Don't use internal Gradle API (ErroringAcion)
         addTab("Tests", object : ErroringAction<SimpleHtmlWriter>() {
             @Throws(IOException::class)
             override fun doExecute(objectToExecute: SimpleHtmlWriter) {

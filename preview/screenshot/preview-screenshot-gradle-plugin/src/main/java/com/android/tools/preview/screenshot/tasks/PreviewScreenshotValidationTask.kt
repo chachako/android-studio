@@ -73,6 +73,7 @@ abstract class PreviewScreenshotValidationTask : Test(), VerificationTask {
         }
     }
 
+    // TODO(b/330166275) - Don't use internal Gradle API (JvmTestExecutionSpec)
     override fun createTestExecutionSpec(): JvmTestExecutionSpec {
         setTestEngineParam("previews-discovered", previewFile.get().asFile.absolutePath)
         setTestEngineParam("referenceImageDirPath", referenceImageDir.get().asFile.absolutePath)

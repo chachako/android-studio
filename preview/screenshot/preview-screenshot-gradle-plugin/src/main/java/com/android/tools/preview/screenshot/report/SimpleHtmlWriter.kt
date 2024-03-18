@@ -25,6 +25,7 @@ import java.io.Writer
  * A streaming HTML writer.
  */
 class SimpleHtmlWriter @JvmOverloads constructor(writer: Writer?, indent: String? = null) :
+    // TODO(b/330166275) - Don't use internal Gradle API (SimpleMarkupWriter)
     SimpleMarkupWriter(writer, indent) {
 
     init {

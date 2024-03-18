@@ -103,6 +103,10 @@ kotlin_library(
     srcs = glob([
         "src/main/java/**/*.kt",
     ]),
+    lint_baseline = "lint_baseline.xml",
+    lint_custom_rules = [
+        "@maven//:androidx.lint.lint-gradle",  # For gradle-specific lint checks
+    ],
     deps = [
         "//tools/base/build-system:gradle-api",
         "//tools/base/build-system/gradle-core",

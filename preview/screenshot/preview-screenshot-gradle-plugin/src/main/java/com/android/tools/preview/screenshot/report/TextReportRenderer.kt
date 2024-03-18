@@ -35,6 +35,7 @@ abstract class TextReportRenderer<T> {
      * Renders the report for the given model to a file.
      */
     open fun writeTo(model: T, file: File) {
+        // TODO(b/330166275) - Don't use internal Gradle API (IoActions)
         IoActions.writeTextFile(file, "utf-8", object : ErroringAction<Writer>() {
             @Throws(Exception::class)
             override fun doExecute(objectToExecute: Writer) {
