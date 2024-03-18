@@ -12519,6 +12519,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.annotation.annotation-jvm_1.8.0-alpha01",
+    pom = "repository/androidx/annotation/annotation-jvm/1.8.0-alpha01/annotation-jvm-1.8.0-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/annotation/annotation-jvm/1.8.0-alpha01",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.annotation.annotation_1.0.0",
     pom = "repository/androidx/annotation/annotation/1.0.0/annotation-1.0.0.pom",
     repo_root_path = "repository",
@@ -12600,6 +12611,18 @@ maven_artifact(
     repo_path = "androidx/annotation/annotation/1.6.0",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.annotation.annotation_1.8.0-alpha01",
+    pom = "repository/androidx/annotation/annotation/1.8.0-alpha01/annotation-1.8.0-alpha01.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/annotation/annotation/1.8.0-alpha01",
+    deps = [
+        "androidx.annotation.annotation-jvm_1.8.0-alpha01",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.10",
     ],
     visibility = ["//visibility:public"],
 )
@@ -19478,6 +19501,19 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.lifecycle.lifecycle-common-jvm_2.8.0-alpha02",
+    pom = "repository/androidx/lifecycle/lifecycle-common-jvm/2.8.0-alpha02/lifecycle-common-jvm-2.8.0-alpha02.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/lifecycle/lifecycle-common-jvm/2.8.0-alpha02",
+    deps = [
+        "androidx.annotation.annotation-jvm_1.8.0-alpha01",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.7.3",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.lifecycle.lifecycle-common_2.0.0",
     pom = "repository/androidx/lifecycle/lifecycle-common/2.0.0/lifecycle-common-2.0.0.pom",
     repo_root_path = "repository",
@@ -19622,6 +19658,21 @@ maven_artifact(
         "androidx.annotation.annotation_1.1.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
         "org.jetbrains.kotlinx.kotlinx-coroutines-android_1.6.4",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.lifecycle.lifecycle-common_2.8.0-alpha02",
+    pom = "repository/androidx/lifecycle/lifecycle-common/2.8.0-alpha02/lifecycle-common-2.8.0-alpha02.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/lifecycle/lifecycle-common/2.8.0-alpha02",
+    deps = [
+        "androidx.annotation.annotation_1.8.0-alpha01",
+        "androidx.lifecycle.lifecycle-common-jvm_2.8.0-alpha02",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
+        "org.jetbrains.kotlinx.atomicfu_0.17.0",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.7.3",
     ],
     visibility = ["//visibility:public"],
 )
@@ -20173,6 +20224,23 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.lifecycle.lifecycle-runtime-android_2.8.0-alpha02",
+    pom = "repository/androidx/lifecycle/lifecycle-runtime-android/2.8.0-alpha02/lifecycle-runtime-android-2.8.0-alpha02.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/lifecycle/lifecycle-runtime-android/2.8.0-alpha02",
+    deps = [
+        "androidx.annotation.annotation-jvm_1.8.0-alpha01",
+        "androidx.arch.core.core-common_2.2.0",
+        "androidx.arch.core.core-runtime_2.2.0",
+        "androidx.lifecycle.lifecycle-common_2.8.0-alpha02",
+        "androidx.profileinstaller.profileinstaller_1.3.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-android_1.7.3",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.lifecycle.lifecycle-runtime-compose_2.6.1",
     pom = "repository/androidx/lifecycle/lifecycle-runtime-compose/2.6.1/lifecycle-runtime-compose-2.6.1.pom",
     repo_root_path = "repository",
@@ -20183,6 +20251,20 @@ maven_artifact(
         "androidx.compose.ui.ui_1.0.1",
         "androidx.lifecycle.lifecycle-runtime-ktx_2.6.1",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.lifecycle.lifecycle-runtime-desktop_2.8.0-alpha02",
+    pom = "repository/androidx/lifecycle/lifecycle-runtime-desktop/2.8.0-alpha02/lifecycle-runtime-desktop-2.8.0-alpha02.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/lifecycle/lifecycle-runtime-desktop/2.8.0-alpha02",
+    deps = [
+        "androidx.annotation.annotation-jvm_1.8.0-alpha01",
+        "androidx.arch.core.core-common_2.2.0",
+        "androidx.lifecycle.lifecycle-common-jvm_2.8.0-alpha02",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
     ],
     visibility = ["//visibility:public"],
 )
@@ -20450,6 +20532,21 @@ maven_artifact(
         "androidx.lifecycle.lifecycle-common_2.6.2",
         "androidx.profileinstaller.profileinstaller_1.3.0",
         "org.jetbrains.kotlin.kotlin-stdlib_1.8.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.lifecycle.lifecycle-runtime_2.8.0-alpha02",
+    pom = "repository/androidx/lifecycle/lifecycle-runtime/2.8.0-alpha02/lifecycle-runtime-2.8.0-alpha02.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/lifecycle/lifecycle-runtime/2.8.0-alpha02",
+    deps = [
+        "androidx.annotation.annotation_1.8.0-alpha01",
+        "androidx.arch.core.core-common_2.2.0",
+        "androidx.lifecycle.lifecycle-common_2.8.0-alpha02",
+        "androidx.lifecycle.lifecycle-runtime-android_2.8.0-alpha02",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
     ],
     visibility = ["//visibility:public"],
 )

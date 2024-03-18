@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.plugins
 
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.dsl.PrivacySandboxSdkExtension
+import com.android.build.gradle.internal.dependency.KotlinPlatformAttribute
 import com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension
 import com.android.build.gradle.internal.dsl.PrivacySandboxSdkExtensionImpl
 import com.android.build.gradle.internal.fusedlibrary.configureElements
@@ -62,6 +63,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.Usage
+import org.gradle.api.attributes.java.TargetJvmEnvironment
 import org.gradle.api.component.SoftwareComponentFactory
 import org.gradle.api.configuration.BuildFeatures
 import org.gradle.api.plugins.JvmEcosystemPlugin
@@ -161,6 +163,8 @@ class PrivacySandboxSdkPlugin @Inject constructor(
         // so far by default, we consume and publish only 'debug' variant
         val buildType: BuildTypeAttr = project.objects.named(BuildTypeAttr::class.java, "debug")
 
+        val jvmEnvironment: TargetJvmEnvironment =
+            project.objects.named(TargetJvmEnvironment::class.java, TargetJvmEnvironment.ANDROID)
         // 'include' is the configuration that users will use to indicate which dependencies should
         // be fused.
         val includeConfigurations = project.configurations.create("include").also {
@@ -200,29 +204,44 @@ class PrivacySandboxSdkPlugin @Inject constructor(
                     BuildTypeAttr.ATTRIBUTE,
                     buildType,
             )
+            it.attributes.attribute(
+                TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+                jvmEnvironment
+            )
             it.extendsFrom(includeConfigurations)
         }
         // This is the internal configuration that will be used to feed tasks that require access
         // to the resolved 'include' dependency. It is for JAVA_RUNTIME usage which mean all transitive
         // dependencies that are implementation() scoped will  be included.
         val includeRuntimeClasspath =
-                project.configurations.create("includeRuntimeClasspath").also {
-                    it.isCanBeConsumed = false
-                    it.isCanBeResolved = true
+            project.configurations.create("includeRuntimeClasspath").also {
+                it.isCanBeConsumed = false
+                it.isCanBeResolved = true
 
-                    it.attributes.attribute(
-                            Usage.USAGE_ATTRIBUTE,
-                            project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME)
-                    )
-                    it.attributes.attribute(
-                            BuildTypeAttr.ATTRIBUTE,
-                            buildType,
-                    )
+                it.attributes.attribute(
+                    Usage.USAGE_ATTRIBUTE,
+                    project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME)
+                )
+                it.attributes.attribute(
+                    BuildTypeAttr.ATTRIBUTE,
+                    buildType,
+                )
+                it.attributes.attribute(
+                    TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+                    jvmEnvironment
+                )
 
-                    it.extendsFrom(includeConfigurations)
-                    it.extendsFrom(requiredSdkConfiguration)
-                    it.extendsFrom(optionalSdkConfiguration)
-                }
+                it.extendsFrom(includeConfigurations)
+                it.extendsFrom(requiredSdkConfiguration)
+                it.extendsFrom(optionalSdkConfiguration)
+            }
+
+        if (!projectServices.projectOptions[BooleanOption.DISABLE_KOTLIN_ATTRIBUTE_SETUP]) {
+            KotlinPlatformAttribute.configureKotlinPlatformAttribute(
+                listOf(includeApiClasspath, includeRuntimeClasspath),
+                project
+            )
+        }
 
         fun configurePrivacySandboxElements(configuration: Configuration, usage: String) {
             configureElements(
