@@ -71,8 +71,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
          * Copied from
          * com.android.build.gradle.internal.services.BuildServicesKt.getBuildServiceName.
          */
-        private fun getBuildServiceName(type: Class<*>, project: Project): String {
-            return type.name + "_" + perClassLoaderConstant + "_" + project.path
+        private fun getBuildServiceName(type: Class<*>): String {
+            return type.name + "_" + perClassLoaderConstant
         }
 
         /**
@@ -96,7 +96,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             }
 
             val analyticsServiceProvider = project.gradle.sharedServices.registerIfAbsent(
-                getBuildServiceName(AnalyticsService::class.java, project),
+                getBuildServiceName(AnalyticsService::class.java),
                 AnalyticsService::class.java) { spec ->
                 spec.parameters.androidGradlePluginVersion.set(agpVersion.toVersionString())
             }
