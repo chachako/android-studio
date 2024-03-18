@@ -397,13 +397,12 @@ class AndroidLintAnalysisTaskCacheabilityTest {
         assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebug")).didWork()
         assertThat(project1.buildResult.getTask(":lib:generateDebugLintModel")).didWork()
 
-        // Replace foo1 and foo2 and check again. In this case, we expect lib's lint analysis task
-        // to be up-to-date because foo1 and foo2 are identical.
+        // Replace foo1 and foo2 and check again.
         TestFileUtils.searchAndReplace(project1.getSubproject(":lib").buildFile, "foo1", "foo2")
         project1.executor().run(":app:lintDebug")
         assertThat(project1.buildResult.getTask(":app:lintReportDebug")).didWork()
         assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebug")).wasUpToDate()
-        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebug")).wasUpToDate()
+        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebug")).didWork()
         assertThat(project1.buildResult.getTask(":lib:generateDebugLintModel")).didWork()
 
         // Swap the order in which the foo2 and bar directories are added and check again.
@@ -431,7 +430,7 @@ class AndroidLintAnalysisTaskCacheabilityTest {
         project1.executor().run(":app:lintDebug")
         assertThat(project1.buildResult.getTask(":app:lintReportDebug")).didWork()
         assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebug")).wasUpToDate()
-        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebug")).wasUpToDate()
+        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebug")).didWork()
         assertThat(project1.buildResult.getTask(":lib:generateDebugLintModel")).didWork()
 
         // Switch the order of the fake source directory and check again.
@@ -454,6 +453,32 @@ class AndroidLintAnalysisTaskCacheabilityTest {
         assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebugAndroidTest")).wasFromCache()
         assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebugTestFixtures")).wasFromCache()
         assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebugUnitTest")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":feature:lintAnalyzeDebug")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":feature:lintAnalyzeDebugAndroidTest")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":feature:lintAnalyzeDebugUnitTest")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebug")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebugAndroidTest")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebugTestFixtures")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":lib:lintAnalyzeDebugUnitTest")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":java-lib:lintAnalyzeJvmMain")).wasFromCache()
+        assertThat(project1.buildResult.getTask(":java-lib:lintAnalyzeJvmTest")).wasFromCache()
+    }
+
+    /**
+     * Lint analysis tasks should run again if the build file changes.
+     *
+     * Regression test for b/328960698.
+     */
+    @Test
+    fun testCacheMissAfterBuildFileComment() {
+        TestFileUtils.appendToFile(project1.gradlePropertiesFile, "\norg.gradle.caching=true\n")
+        project1.executor().run("clean", ":app:lintDebug")
+        TestFileUtils.appendToFile(project1.getSubproject("app").buildFile, "// comment")
+        project1.executor().run("clean", ":app:lintDebug")
+        assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebug")).didWork()
+        assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebugAndroidTest")).didWork()
+        assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebugTestFixtures")).didWork()
+        assertThat(project1.buildResult.getTask(":app:lintAnalyzeDebugUnitTest")).didWork()
         assertThat(project1.buildResult.getTask(":feature:lintAnalyzeDebug")).wasFromCache()
         assertThat(project1.buildResult.getTask(":feature:lintAnalyzeDebugAndroidTest")).wasFromCache()
         assertThat(project1.buildResult.getTask(":feature:lintAnalyzeDebugUnitTest")).wasFromCache()

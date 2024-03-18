@@ -123,7 +123,7 @@ class UpdateLintBaselineStandaloneTest {
             ""
         )
         val result7 = project.executor().run(":updateLintBaseline")
-        GradleTaskSubject.assertThat(result7.getTask(":lintAnalyzeJvmMain")).wasUpToDate()
+        GradleTaskSubject.assertThat(result7.getTask(":lintAnalyzeJvmMain")).didWork()
         GradleTaskSubject.assertThat(result7.getTask(":updateLintBaselineJvm")).didWork()
         PathSubject.assertThat(baselineFile).doesNotExist()
         ScannerSubject.assertThat(result7.stdout)

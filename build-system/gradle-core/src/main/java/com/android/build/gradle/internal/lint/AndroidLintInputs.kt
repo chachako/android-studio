@@ -358,6 +358,10 @@ abstract class ProjectInputs {
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val lintConfigFiles: ConfigurableFileCollection
 
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val buildFile: RegularFileProperty
+
     internal fun initialize(variant: VariantWithTests, lintMode: LintMode) {
         initialize(variant.main, lintMode)
     }
@@ -420,6 +424,8 @@ abstract class ProjectInputs {
         projectDirectoryPathInput.disallowChanges()
         buildDirectoryPathInput.disallowChanges()
         initializeLintConfigFiles(projectInfo)
+        buildFile.set(projectInfo.buildFile)
+        buildFile.disallowChanges()
     }
 
     internal fun convertToLintModelModule(): LintModelModule {
