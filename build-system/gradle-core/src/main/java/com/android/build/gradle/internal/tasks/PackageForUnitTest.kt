@@ -58,6 +58,10 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.zip.Deflater.BEST_SPEED
 
+/**
+ * Task that takes the linked android resources zip and android assets and puts them into a zip file
+ * without code or signing.
+*/
 @DisableCachingByDefault(because = SIMPLE_MERGING_TASK)
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.TEST, secondaryTaskCategories = [TaskCategory.APK_PACKAGING])
 abstract class PackageForUnitTest : NonIncrementalTask() {
