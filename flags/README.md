@@ -43,7 +43,7 @@ Spaces are not allowed. Instead, use periods to indicate spacing, as in
 `fps.cap` above.
 
 While the program will provide its own defaults for all flags, you might
-imagine configuring them via the command-line; for example:
+imagine configuring them via the command-line, for example:
 
 `java ... -Daudio.3d=false -Dgraphics.resolution=640x480`
 
@@ -51,10 +51,8 @@ imagine configuring them via the command-line; for example:
 
 First, define the shell.
 
-```java
-public final class GameFlags {
-   private GameFlags() {}
-}
+```kotlin
+object GameFlags
 ```
 
 ### Flags
@@ -62,10 +60,9 @@ public final class GameFlags {
 Next, create a `Flags` instance, which you can think of as the owner of all
 flags.
 
-```java
-public final class GameFlags {
-   private static final Flags FLAGS = new Flags();
-   private GameFlags() {}
+```kotlin
+object GameFlags {
+   val FLAGS = Flags()
 }
 ```
 
@@ -80,15 +77,12 @@ allowing user customization and A/B testing experiments.
 `FlagGroup`s allow each system to define their own scoped flags without
 worrying about conflicting with any other flags:
 
-```java
-public final class GameFlags {
-   private static final Flags FLAGS = new Flags();
+```kotlin
+object GameFlags {
+   val FLAGS = Flags()
 
-   private static final FlagGroup AUDIO = new FlagGroup(FLAGS, "audio", "Audio");
-   private static final FlagGroup GRAPHICS =
-      new FlagGroup(FLAGS, "graphics", "Graphics");
-   
-   private GameFlags() {}
+   val AUDIO = FlagGroup(FLAGS, "audio", "Audio")
+   val GRAPHICS = new FlagGroup(FLAGS, "graphics", "Graphics")
 }
 ```
 
@@ -101,26 +95,26 @@ shown to users.
 
 At last, let's specify some flags.
 
-Flags support common primitive value types: *int*, *long*, *bool*, and *string*. Use
-the appropriate `Flag#create(group, ..., defaultValue)` methods to create them.
+Flags support common primitive value types: *Int*, *Long*, *Boolean*, and *String*. Use
+the appropriate constructors to create them.
 
-```java
-public final class GameFlags {
+```kotlin
+class GameFlags {
    ...
 
-   public static final Flag<Boolean> USE_3D_AUDIO = Flag.create(
-      AUDIO, "3d", "Enable 3D audio", "... description ...", true);
+   val USE_3D_AUDIO = BooleanFlag(
+      AUDIO, "3d", "Enable 3D audio", "... description ...", true)
 
-   public static final Flag<String> RESOLUTION = Flag.create(
+   val RESOLUTION = StringFlag(
       GRAPHICS, "resolution", "Initial resolution", "... description ...",
-      "1280x720");
+      "1280x720")
 
-   public static final Flag<Integer> FPS_CAP = Flag.create(
-      GRAPHICS, "fps.cap", "FPS cap", "... description ...", 30);
+   val FPS_CAP = IntFlag(
+      GRAPHICS, "fps.cap", "FPS cap", "... description ...", 30)
 
-   public static final Flag<Long> MAX_HEAP_SIZE = Flag.create(
+   val MAX_HEAP_SIZE = LongFlag(
       MEMORY, "max.heap.size", "Max Heap Size in bytes", "... description ...",
-      4_000_000_000L);
+      4_000_000_000L)
    ...
 }
 ```
@@ -130,25 +124,25 @@ e.g. `3d` above becomes `audio.3d`.
 
 And that's it! Now that these flags are defined, they can be used in code:
 
-```java
+```kotlin
 if (GameFlags.USE_3D_AUDIO.get()) {
    ... 3D audio logic ...
 }
 
-Dimension resolution = Dimension.parse(GameFlags.RESOLUTION.get());
+val resolution = Dimension.parse(GameFlags.RESOLUTION.get())
 
-int currFps = update(...);
+val currFps = update(...)
 if (currFps > GameFlags.FPS_CAP.get()) {
    ... sleep ...
 }
 
-long maxHeapSize = GameFlags.MAX_HEAP_SIZE.get();
-configureMemorySettings(..., maxHeapSize, ...);
+val maxHeapSize = GameFlags.MAX_HEAP_SIZE.get()
+configureMemorySettings(..., maxHeapSize, ...)
 ```
 
 ## Overriding Flags
 
-A flag which cannot be overridden is no better than a constant. This section
+A flag that cannot be overridden is no better than a constant. This section
 discusses the various ways you can override a flag.
 
 ### FlagOverrides
@@ -169,8 +163,8 @@ command-line values.
 
 You would specify this by constructing `Flags` like:
 
-```java
-Flags flags = new Flags(userSettings, remoteSettings, commandLineSettings);
+```kotlin
+val flags = Flags(userSettings, remoteSettings, commandLineSettings)
 ```
 
 The first argument must always be the mutable collection, and it will always be
@@ -178,15 +172,15 @@ checked first; the remaining arguments are checked in the order specified.
 
 **Note:** If you do not explicitly pass in a mutable `FlagOverrides` instance
 as the first argument, `Flags` will automatically create one. The mutable
-`FlagOverrides` instance can be accessed via `Flags#getOverrides()`.
+`FlagOverrides` instance can be accessed via `Flags.getOverrides()`.
 
 ### Java System Properties
 
 To use Java System properties as a source of flag overrides, use the provided
 `PropertyOverrides` class.
 
-```java
-Flags FLAGS = new Flags(new PropertyOverrides());
+```kotlin
+val FLAGS = Flags(PropertyOverrides())
 ```
 
 This class reads in all System properties and treats them as potential flags
@@ -200,37 +194,36 @@ For example, if you start an application like so:
 
 then, even if you define a flag with a default value of 30:
 
-```java
-public static final Flag<Integer> FPS_CAP = Flag.create(
-   GRAPHICS, ..., 30);
+```kotlin
+val FPS_CAP = IntFlag(GRAPHICS, ..., 30)
 ```
 
 `get()` will return the overridden value, 60:
 
-```java
-assertThat(System.getProperty("graphics.fps.cap")).equals("60");
-assertThat(FPS_CAP.get()).isEqualTo(60);
+```kotlin
+assertThat(System.getProperty("graphics.fps.cap")).isEqualTo("60")
+assertThat(FPS_CAP.get()).isEqualTo(60)
 ```
 
 ### Flag API
 
 Although you can technically override a flag directly through the
-`FlagOverrides` instance returned by `Flags#getOverrides()`, in practice, you
+`FlagOverrides` instance returned by `Flags.getOverrides()`, in practice, you
 often won't have access to the parent `Flags` class (which should be declared
 `private`).
 
-The recommended way to override a flag's value is through the `Flag#override`
+The recommended way to override a flag's value is through the `Flag.override`
 method. Note that this call does not actually modify the flag itself but rather
 updates the mutable `FlagOverrides` collection in its parent `Flags` class for
 you. Convenient!
 
-```java
-GameFlags.FPS_CAP.override(45);
-// Same as: GameFlags.FLAGS.getOverrides().put("graphics.fps.cap", "45");
+```kotlin
+GameFlags.FPS_CAP.override(45)
+// Same as: GameFlags.FLAGS.getOverrides().put("graphics.fps.cap", "45")
 ```
 
 Besides being easier to read, this API has the additional advantage of ensuring
-type-safety. `Flag#override` won't let you set a flag's override value to an
+type-safety. `Flag.override` won't let you set a flag's override value to an
 incompatible `String` value by mistake, like this typo for example:
 `FLAGS.getOverrides().put("graphics.fps.cap", "45'")`
 
@@ -240,40 +233,40 @@ are overriding flags in one thread while reading their values in another.
 ### Serialization
 
 If you'd like to persist a user's flag settings across multiple sessions, all
-you need to do is save the values in `Flags#getOverrides()` to disk on exiting
+you need to do is save the values in `Flags.getOverrides()` to disk on exiting
 and restore them on load.
 
 There are many libraries and approaches on serializing data, but the skeleton
 of a simple example is provided for concreteness:
 
-```java
+```kotlin
 // On closing your application...
-List<String> flagValues = new ArrayList<>();
-List<Flag<?>> flags = ... // Use reflection to get all flags?
-for (Flag<?> flag : flags) {
-  String value = FLAGS.getUserOverrides().get(flag);
+val flagValues = mutableListOf<String>()
+val flags: List<Flag<*>> = ... // Use reflection to get all flags?
+for (flag in flags) {
+  val value = FLAGS.getUserOverrides().get(flag)
   if (value != null) {
-    flagValues.add(String.format("%s=%s", flag.getId(), value));
+    flagValues.add(String.format("%s=%s", flag.getId(), value))
   }
 }
 // Write flagValues to file
 ```
 
-```java
+```kotlin
 // On starting up your application...
-List<String> flagValuesLines = ... // load from disk
-Map<String, String> flagValues = new HashMap<>();
+val flagValuesLines: List<String> = ... // load from disk
+val flagValues = mutableMapOf<String, String>()
 for (line in flagValuesLines) {
-    String[] split = line.split('=', 2);
-    flagValues.put(split[0], split[1]);
+    val split = line.split('=', 2)
+    flagValues.put(split[0], split[1])
 }
 
 // Flags.getOverrides() will be empty on startup
-List<Flag<?>> flags = ... // Use reflection to get all flags?
-for (Flag<?> flag : flags) {
-    String value = flagValues.get(flag.getId());
+val flags: List<Flag<*>> = ... // Use reflection to get all flags?
+for (flag in flags) {
+    val value = flagValues.get(flag.getId())
     if (value != null) {
-       FLAGS.getUserOverrides().put(flag, value);
+       FLAGS.getUserOverrides().put(flag, value)
     }
 }
 ```
@@ -284,15 +277,15 @@ reader.*
 You might also create your own custom `FlagOverrides` implementation class and
 pass that into your `Flags` constructor:
 
-```java
+```kotlin
 class PersistedOverrides implements FlagOverrides {
-    private Map<String, String> myOverrides = new HashMap<>();
-    public PersistedOverrides() { deserialize(); }
-    public void serialize() { ... }
-    private void deserialize() { ... }
+    val overrides = mutableMapOf<String, String>()
+    fun PersistedOverrides() = deserialize()
+    fun serialize() { ... }
+    fun deserialize() { ... }
 }
 ...
-Flags FLAGS = new Flags(new PersistedOverrides(), ...);
+val FLAGS = Flags(PersistedOverrides(), ...)
 ```
 
 <!--

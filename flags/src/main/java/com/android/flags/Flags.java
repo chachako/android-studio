@@ -37,8 +37,8 @@ import java.util.Map;
  *         private static final FlagGroup AUDIO = new FlagGroup(FLAGS, "audio", "Audio");
  *         private static final FlagGroup GRAPHICS = new FlagGroup(FLAGS<, "graphics", "Graphics");
  *
- *         public static final Flag{Boolean} USE_3D_AUDIO = Flag.create(AUDIO, ...);
- *         public static final Flag{Integer} FPS_CAP = Flag.create(GRAPHICS, ...);
+ *         public static final Flag{Boolean} USE_3D_AUDIO = new BooleanFlag(AUDIO, ...);
+ *         public static final Flag{Integer} FPS_CAP = new IntFlag(GRAPHICS, ...);
  *     }
  *
  *     // Elsewhere...

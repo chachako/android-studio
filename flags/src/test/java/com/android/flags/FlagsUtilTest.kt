@@ -26,8 +26,8 @@ class FlagsUtilTest {
   fun `check ifEnabled is executed only when the flag is true`() {
     val flags = Flags()
     val group = FlagGroup(flags, "group", "Unused")
-    val flagBoolFalse = Flag.create(group, "bool.false", "Unused", "Unused", false)
-    val flagBoolTrue = Flag.create(group, "bool.true", "Unused", "Unused", true)
+    val flagBoolFalse = BooleanFlag(group, "bool.false", "Unused", "Unused", false)
+    val flagBoolTrue = BooleanFlag(group, "bool.true", "Unused", "Unused", true)
 
     assertNull(flagBoolFalse.ifEnabled { fail("The callback should not run for a flag set to false") })
     var isExecuted = false
@@ -42,8 +42,8 @@ class FlagsUtilTest {
   fun `check ifDisabled is executed only when the flag is false`() {
     val flags = Flags()
     val group = FlagGroup(flags, "group", "Unused")
-    val flagBoolFalse = Flag.create(group, "bool.false", "Unused", "Unused", false)
-    val flagBoolTrue = Flag.create(group, "bool.true", "Unused", "Unused", true)
+    val flagBoolFalse = BooleanFlag(group, "bool.false", "Unused", "Unused", false)
+    val flagBoolTrue = BooleanFlag(group, "bool.true", "Unused", "Unused", true)
 
     assertNull(flagBoolTrue.ifDisabled { fail("The callback should not run for a flag set to true") })
     var isExecuted = false

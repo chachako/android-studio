@@ -12,10 +12,10 @@ public class FlagOverridesTest {
 
         Flags flags = new Flags(flagOverrides);
         FlagGroup group = new FlagGroup(flags, "test", "Dummy");
-        Flag<String> flagA = Flag.create(group, "a", "Dummy", "Dummy", "A");
-        Flag<String> flagB = Flag.create(group, "b", "Dummy", "Dummy", "B");
-        Flag<String> flagC = Flag.create(group, "c", "Dummy", "Dummy", "C");
-        Flag<String> flagD = Flag.create(group, "d", "Dummy", "Dummy", "D");
+        Flag<String> flagA = new StringFlag(group, "a", "Dummy", "Dummy", "A");
+        Flag<String> flagB = new StringFlag(group, "b", "Dummy", "Dummy", "B");
+        Flag<String> flagC = new StringFlag(group, "c", "Dummy", "Dummy", "C");
+        Flag<String> flagD = new StringFlag(group, "d", "Dummy", "Dummy", "D");
 
         flagOverrides.put(flagA, "a");
         flagOverrides.put(flagB, "b");

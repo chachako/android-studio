@@ -47,11 +47,11 @@ public class FlagsTest {
         Flags flags = new Flags(propertyOverrides);
         FlagGroup group = new FlagGroup(flags, "test", "Test Group");
 
-        Flag<Integer> flagInt = Flag.create(group, "int", "Unused", "Unused", 10);
-        Flag<Boolean> flagBool = Flag.create(group, "bool", "Unused", "Unused", false);
-        Flag<String> flagStr = Flag.create(group, "str", "Unused", "Unused", "Default value");
+        Flag<Integer> flagInt = new IntFlag(group, "int", "Unused", "Unused", 10);
+        Flag<Boolean> flagBool = new BooleanFlag(group, "bool", "Unused", "Unused", false);
+        Flag<String> flagStr = new StringFlag(group, "str", "Unused", "Unused", "Default value");
         Flag<TestingEnum> flagEnum =
-                Flag.create(group, "enum", "Unused", "Unused", TestingEnum.FOO);
+                new EnumFlag(group, "enum", "Unused", "Unused", TestingEnum.FOO);
 
         assertThat(flagInt.get()).isEqualTo(123);
         assertThat(flagBool.get()).isEqualTo(true);
@@ -65,11 +65,11 @@ public class FlagsTest {
 
         FlagGroup group = new FlagGroup(flags, "test", "Test Group");
 
-        Flag<Integer> flagInt = Flag.create(group, "int", "Unused", "Unused", 10);
-        Flag<Boolean> flagBool = Flag.create(group, "bool", "Unused", "Unused", false);
-        Flag<String> flagStr = Flag.create(group, "str", "Unused", "Unused", "Default value");
+        Flag<Integer> flagInt = new IntFlag(group, "int", "Unused", "Unused", 10);
+        Flag<Boolean> flagBool = new BooleanFlag(group, "bool", "Unused", "Unused", false);
+        Flag<String> flagStr = new StringFlag(group, "str", "Unused", "Unused", "Default value");
         Flag<TestingEnum> flagEnum =
-                Flag.create(group, "enum", "Unused", "Unused", TestingEnum.FOO);
+                new EnumFlag(group, "enum", "Unused", "Unused", TestingEnum.FOO);
 
         flags.getOverrides().put(flagInt, "456");
         flags.getOverrides().put(flagBool, "true");
@@ -101,7 +101,7 @@ public class FlagsTest {
         Flags flags = new Flags(propertyOverrides);
 
         FlagGroup group = new FlagGroup(flags, "test", "Test Group");
-        Flag<String> flagStr = Flag.create(group, "str", "Unused", "Unused", "Default value");
+        Flag<String> flagStr = new StringFlag(group, "str", "Unused", "Unused", "Default value");
 
         flags.getOverrides().put(flagStr, "Manual override");
         assertThat(flagStr.get()).isEqualTo("Manual override");
@@ -115,7 +115,7 @@ public class FlagsTest {
         DefaultFlagOverrides customMutableOverrides = new DefaultFlagOverrides();
         Flags flags = new Flags(customMutableOverrides);
         FlagGroup group = new FlagGroup(flags, "test", "Test Group");
-        Flag<String> flagStr = Flag.create(group, "str", "Unused", "Unused", "Default value");
+        Flag<String> flagStr = new StringFlag(group, "str", "Unused", "Unused", "Default value");
 
         customMutableOverrides.put(flagStr, "Overridden value");
 
@@ -130,12 +130,12 @@ public class FlagsTest {
     public void flagsThrowsExceptionIfFlagsWithDuplicateIdsAreRegisetered() throws Exception {
         Flags flags = new Flags();
         FlagGroup group = new FlagGroup(flags, "test", "Test Group");
-        Flag<String> flag1 = Flag.create(group, "str1", "Unused", "Unused", "Str 1");
-        Flag<String> flag2 = Flag.create(group, "str2", "Unused", "Unused", "Str 2");
+        Flag<String> flag1 = new StringFlag(group, "str1", "Unused", "Unused", "Str 1");
+        Flag<String> flag2 = new StringFlag(group, "str2", "Unused", "Unused", "Str 2");
 
         try {
             // Oops. Copy/paste error...
-            Flag<String> flag3 = Flag.create(group, "str2", "Unused", "Unused", "Str 3");
+            Flag<String> flag3 = new StringFlag(group, "str2", "Unused", "Unused", "Str 3");
             Assert.fail();
         } catch (IllegalArgumentException ignored) {
         }
@@ -151,9 +151,9 @@ public class FlagsTest {
         Flags flags = new Flags(propertyOverrides);
         FlagGroup group = new FlagGroup(flags, "test", "Test Group");
 
-        Flag<Integer> flagInt = Flag.create(group, "int", "Unused", "Unused", 10);
+        Flag<Integer> flagInt = new IntFlag(group, "int", "Unused", "Unused", 10);
         Flag<TestingEnum> flagEnum =
-                Flag.create(group, "enum", "Unused", "Unused", TestingEnum.FOO);
+                new EnumFlag(group, "enum", "Unused", "Unused", TestingEnum.FOO);
 
         assertThat(flagInt.get()).isEqualTo(10);
         assertThat(flagEnum.get()).isEqualTo(TestingEnum.FOO);
@@ -167,7 +167,7 @@ public class FlagsTest {
         FlagGroup group = new FlagGroup(flags, "test", "Test Group");
 
         try {
-            Flag<Integer> flag = Flag.create(group, "Invalid Id", "", "", 10);
+            Flag<Integer> flag = new IntFlag(group, "Invalid Id", "", "", 10);
             flag.validate();
             Assert.fail("Expected validation Assert.failure");
         } catch (IllegalArgumentException error) {
@@ -175,7 +175,7 @@ public class FlagsTest {
         }
 
         try {
-            Flag<Integer> flag = Flag.create(group, "id", " wrong", "", 10);
+            Flag<Integer> flag = new IntFlag(group, "id", " wrong", "", 10);
             flag.validate();
             Assert.fail("Expected validation Assert.failure");
         } catch (IllegalArgumentException error) {
@@ -186,7 +186,7 @@ public class FlagsTest {
             // Fail serialization: serialization is pretty locked down by typed serializers,
             // but for enums it's using capitalization which we can break
             @SuppressWarnings({"NonAsciiCharacters", "UnicodeInCode"})
-            Flag<TestingEnum> flag = Flag.create(group, "id2", "", "", TestingEnum.DOTLESS_ı);
+            Flag<TestingEnum> flag = new EnumFlag(group, "id2", "", "", TestingEnum.DOTLESS_ı);
             flag.validate();
             Assert.fail("Expected validation Assert.failure");
         } catch (IllegalArgumentException error) {
@@ -196,7 +196,7 @@ public class FlagsTest {
 
         try {
             // We've already registered id above
-            Flag<Integer> flag = Flag.create(group, "id", "Id 2", "", 10);
+            Flag<Integer> flag = new IntFlag(group, "id", "Id 2", "", 10);
             flag.validate();
             Assert.fail("Expected validation Assert.failure");
         } catch (IllegalArgumentException error) {
