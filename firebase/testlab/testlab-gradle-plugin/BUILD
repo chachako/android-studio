@@ -116,6 +116,10 @@ kotlin_library(
         "src/main/java/**/*.kt",
         "src/main/java/**/*.java",
     ]),
+    lint_baseline = "lint_baseline.xml",
+    lint_custom_rules = [
+        "@maven//:androidx.lint.lint-gradle",  # For gradle-specific lint checks
+    ],
     deps = [
         "//prebuilts/tools/common/m2:com.google.api-client.google-api-client_1.22.0",
         "//prebuilts/tools/common/m2:com.google.apis.google-api-services-storage_v1-rev82-1.22.0",
