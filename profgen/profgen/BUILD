@@ -52,5 +52,6 @@ iml_module(
     deps = [
         "//tools/adt/idea/.idea/libraries:asm-tools",
         "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//prebuilts/studio/intellij-sdk:studio-sdk-plugin-java",
     ],
 )

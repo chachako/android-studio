@@ -23,5 +23,9 @@ iml_module(
     srcs = ["src"],
     iml_files = ["android.sdktools.base.bazel.avd.iml"],
     visibility = ["//visibility:public"],
-    deps = ["//prebuilts/studio/intellij-sdk:studio-sdk"],
+    # do not sort: must match IML order
+    deps = [
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//prebuilts/studio/intellij-sdk:studio-sdk-plugin-java",
+    ],
 )

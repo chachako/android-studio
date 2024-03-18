@@ -8,7 +8,11 @@ iml_module(
     iml_files = ["intellij.android.environment-services.iml"],
     resources = ["resources"],
     visibility = ["//visibility:public"],
-    deps = ["//prebuilts/studio/intellij-sdk:studio-sdk"],
+    # do not sort: must match IML order
+    deps = [
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//prebuilts/studio/intellij-sdk:studio-sdk-plugin-java",
+    ],
 )
 
 # Build target to verify that render-resources builds for tools/base

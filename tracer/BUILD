@@ -66,5 +66,9 @@ iml_module(
     iml_files = ["android.sdktools.tracer.iml"],
     lint_baseline = "lint_baseline.xml",
     visibility = ["//visibility:public"],
-    deps = ["//prebuilts/studio/intellij-sdk:studio-sdk"],
+    # do not sort: must match IML order
+    deps = [
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//prebuilts/studio/intellij-sdk:studio-sdk-plugin-java",
+    ],
 )

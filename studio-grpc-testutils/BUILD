@@ -24,6 +24,7 @@ iml_module(
     deps = [
         "//tools/adt/idea/.idea/libraries:studio-grpc[test]",
         "//prebuilts/studio/intellij-sdk:studio-sdk[test]",
+        "//prebuilts/studio/intellij-sdk:studio-sdk-plugin-java",
         "//tools/adt/idea/android-test-framework:intellij.android.testFramework[module, test]",
     ],
 )
