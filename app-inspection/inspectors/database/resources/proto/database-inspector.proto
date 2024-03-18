@@ -39,7 +39,10 @@ message Command {
 
 // Request for the Inspector to track database connections (existing and new)
 // and notify of those via DatabaseOpenedEvent objects.
-message TrackDatabasesCommand {}
+message TrackDatabasesCommand {
+  // If true, agent will open databases found on disk that are not already open.
+  bool force_open = 1;
+}
 
 // Request for the Inspector to return schema information for a given database.
 message GetSchemaCommand {

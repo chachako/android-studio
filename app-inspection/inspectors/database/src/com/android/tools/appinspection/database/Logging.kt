@@ -17,4 +17,4 @@
 package com.android.tools.appinspection.database
 
 const val TAG: String = "StudioInspectors"
-const val HIDDEN_TAG: String = "studio.inspectors"
+const val HIDDEN_TAG: String = "studio.inspectors.db"

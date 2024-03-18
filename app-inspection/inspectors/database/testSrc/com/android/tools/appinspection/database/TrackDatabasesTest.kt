@@ -375,6 +375,26 @@ class TrackDatabasesTest {
   }
 
   @Test
+  fun test_findInstances_disk_forceOpen() = runBlocking {
+    val db1a = Database("db1").createInstance(closeablesRule, temporaryFolder)
+    val application =
+      object : Application() {
+        override fun databaseList(): Array<String> = arrayOf(db1a.absolutePath)
+
+        override fun getDatabasePath(name: String?) =
+          getInstrumentation().context.getDatabasePath(name)
+      }
+
+    testEnvironment.registerApplication(application)
+    startTracking(forceOpen = true)
+
+    // Since we're using FakeArtTooling, we can't assert that we actually get a openDatabase
+    // event, so we just assert that we don't get a `closed` event. It's not a great test but
+    // it's all we can do given the infrastructure.
+    assertNoQueuedEvents()
+  }
+
+  @Test
   fun test_findInstances_disk_filters_helper_files() = runBlocking {
     val db = Database("db1").createInstance(closeablesRule, temporaryFolder, false)
 
@@ -623,8 +643,8 @@ class TrackDatabasesTest {
     testEnvironment.assertNoQueuedEvents()
   }
 
-  private suspend fun startTracking(): List<Hook> {
-    testEnvironment.sendCommand(createTrackDatabasesCommand())
+  private suspend fun startTracking(forceOpen: Boolean = false): List<Hook> {
+    testEnvironment.sendCommand(createTrackDatabasesCommand(forceOpen))
     return testEnvironment.consumeRegisteredHooks()
   }
 

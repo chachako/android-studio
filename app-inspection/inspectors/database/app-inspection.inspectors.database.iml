@@ -20,9 +20,10 @@
     <orderEntry type="library" name="Guava" level="project" />
     <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
     <orderEntry type="library" name="android" level="project" />
-    <orderEntry type="library" scope="TEST" name="robolectric" level="project" />
+    <orderEntry type="library" name="robolectric" level="project" />
     <orderEntry type="library" name="androidx-annotation" level="project" />
     <orderEntry type="library" name="libtools.testutils.lib" level="project" />
     <orderEntry type="module" module-name="app-inspection.inspectors.common" />
+    <orderEntry type="library" name="mockito" level="project" />
   </component>
 </module>

@@ -16,8 +16,11 @@
 package com.android.tools.appinspection.database
 
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteDatabase.OPEN_READWRITE
 import android.util.ArraySet
+import android.util.Log
 import androidx.annotation.GuardedBy
+import androidx.annotation.VisibleForTesting
 
 private const val NOT_TRACKED = -1
 
@@ -47,11 +50,12 @@ internal class DatabaseRegistry(
 ) {
   // True if keep-database-connection-open functionality is enabled.
   private var keepDatabasesOpen = false
+  private var forceOpen = false
 
   private val lock = Any()
 
   // Starting from '1' to distinguish from '0' which could stand for an unset parameter.
-  @GuardedBy("lock") private var mNextId = 1
+  @GuardedBy("lock") private var nextId = 1
 
   // TODO: decide if use weak-references to database objects
   /**
@@ -63,11 +67,15 @@ internal class DatabaseRegistry(
 
   // Database connection id -> extra database reference used to facilitate the
   // keep-database-connection-open functionality.
-  @GuardedBy("lock") private val keepOpenReferences = mutableMapOf<Int, KeepOpenReference>()
+  @VisibleForTesting
+  @GuardedBy("lock")
+  internal val keepOpenReferences = mutableMapOf<Int, KeepOpenReference>()
 
   // Database path -> database connection id - allowing to report a consistent id for all
   // references pointing to the same path.
   @GuardedBy("lock") private val pathToId = mutableMapOf<String, Int>()
+
+  @VisibleForTesting @GuardedBy("lock") val forcedOpen = mutableSetOf<SQLiteDatabase>()
 
   /**
    * Should be called when the inspection code detects a database being open operation.
@@ -78,6 +86,10 @@ internal class DatabaseRegistry(
    */
   fun notifyDatabaseOpened(database: SQLiteDatabase) {
     handleDatabaseSignal(database)
+    Log.v(HIDDEN_TAG, "Database opened: " + database.path)
+    if (Log.isLoggable(HIDDEN_TAG, Log.VERBOSE)) {
+      logDatabaseStatus(database.path)
+    }
   }
 
   fun notifyReleaseReference(database: SQLiteDatabase) {
@@ -135,9 +147,20 @@ internal class DatabaseRegistry(
    * disk.
    */
   fun notifyOnDiskDatabase(path: String) {
+    Log.v(HIDDEN_TAG, "notifyOnDiskDatabase: $path")
     synchronized(lock) {
-      if (!pathToId.containsKey(path)) {
-        val id = mNextId++
+      if (pathToId.containsKey(path)) {
+        Log.v(HIDDEN_TAG, "Database is already open: $path")
+        return
+      }
+      if (forceOpen) {
+        Log.v(HIDDEN_TAG, "Force opening: $path")
+        // We just need to open the database. Our hook will call notifyDatabaseOpened()
+        val db = SQLiteDatabase.openDatabase(path, null, OPEN_READWRITE)
+        forcedOpen.add(db)
+      } else {
+        Log.v(HIDDEN_TAG, "Registering as offline: $path")
+        val id = nextId++
         pathToId[path] = id
         onClosedCallback.onPostEvent(id, path)
       }
@@ -160,7 +183,7 @@ internal class DatabaseRegistry(
       val isOpen = database.isOpen
 
       if (id == NOT_TRACKED) { // handling a transition: not tracked -> tracked
-        id = mNextId++
+        id = nextId++
         registerReference(id, database)
         if (isOpen) {
           notifyOpenedId = id
@@ -218,6 +241,19 @@ internal class DatabaseRegistry(
     }
   }
 
+  fun enableForceOpen() {
+    forceOpen = true
+  }
+
+  fun dispose() {
+    // TODO(161081452): release database locks and keep-open references
+    synchronized(lock) {
+      for (database in forcedOpen) {
+        database.close()
+      }
+    }
+  }
+
   @GuardedBy("lock")
   private fun getConnectionImpl(databaseId: Int): SQLiteDatabase? {
     val keepOpenReference = keepOpenReferences[databaseId]
@@ -225,19 +261,23 @@ internal class DatabaseRegistry(
       return keepOpenReference.database
     }
 
-    val references = databases[databaseId] ?: return null
+    val candidates = databases[databaseId]?.filter { it.isOpen } ?: return null
 
-    // tries to find an open reference preferring write-enabled over read-only
-    var readOnlyReference: SQLiteDatabase? = null
-    references
-      .filter { it.isOpen }
-      .forEach {
-        if (!it.isReadOnly) {
-          return it
-        } // write-enabled was found: return it
-        readOnlyReference = it
+    // Assign a score to each candidate.
+    // - Read-only instance has the lowest score.
+    // - Non forced read-write instance has the max score.
+    val scores =
+      candidates.map {
+        val score =
+          when {
+            it.isReadOnly -> 0
+            forcedOpen.contains(it) -> 1
+            else -> return@map DbScore(it, Int.MAX_VALUE)
+          }
+        DbScore(it, score)
       }
-    return readOnlyReference // or null if we did not find an open reference
+
+    return scores.maxByOrNull { it.score }?.db
   }
 
   @GuardedBy("lock")
@@ -271,7 +311,7 @@ internal class DatabaseRegistry(
 
     // Try secure a keep-open reference
     val reference = getConnectionImpl(id)
-    if (reference != null) {
+    if (reference != null && !forcedOpen.contains(reference)) {
       keepOpenReferences[id] = KeepOpenReference(reference)
     }
   }
@@ -304,7 +344,8 @@ internal class DatabaseRegistry(
     fun onPostEvent(databaseId: Int, path: String)
   }
 
-  private class KeepOpenReference(val database: SQLiteDatabase) {
+  @VisibleForTesting
+  internal class KeepOpenReference(val database: SQLiteDatabase) {
     private val lock = Any()
 
     @GuardedBy("lock") private var acquiredReferenceCount = 0
@@ -331,4 +372,23 @@ internal class DatabaseRegistry(
       }
     }
   }
+
+  private fun logDatabaseStatus(path: String) {
+    synchronized(lock) {
+      val id = pathToId[path] ?: return
+      val statusList = databases[id]?.map { it.getStatus() } ?: return
+      Log.v(HIDDEN_TAG, "  id=id  path=$path instances: [${statusList.joinToString { it }}]")
+    }
+  }
+
+  private fun SQLiteDatabase.getStatus(): String {
+    return buildString {
+      append(if (isReadOnly) "ReadOnly" else "ReadWrite")
+      if (forcedOpen.contains(this@getStatus)) {
+        append("|Forced")
+      }
+    }
+  }
+
+  private class DbScore(val db: SQLiteDatabase, val score: Int)
 }

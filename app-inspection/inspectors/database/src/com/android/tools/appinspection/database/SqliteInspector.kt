@@ -66,6 +66,7 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.ReleaseDatabaseLockRes
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Row
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Table
+import androidx.sqlite.inspection.SqliteInspectorProtocol.TrackDatabasesCommand
 import androidx.sqlite.inspection.SqliteInspectorProtocol.TrackDatabasesResponse
 import com.android.tools.appinspection.database.RequestCollapsingThrottler.DeferredExecutor
 import com.android.tools.appinspection.database.SqliteInspectionExecutors.submit
@@ -187,7 +188,7 @@ internal class SqliteInspector(
     try {
       val command = Command.parseFrom(data)
       when (command.oneOfCase) {
-        TRACK_DATABASES -> handleTrackDatabases(callback)
+        TRACK_DATABASES -> handleTrackDatabases(command.trackDatabases, callback)
         GET_SCHEMA -> handleGetSchema(command.getSchema, callback)
         QUERY -> handleQuery(command.query, callback)
         KEEP_DATABASES_OPEN -> handleKeepDatabasesOpen(command.keepDatabasesOpen, callback)
@@ -217,13 +218,12 @@ internal class SqliteInspector(
     }
   }
 
-  @Suppress("RedundantOverride")
   override fun onDispose() {
     super.onDispose()
-    // TODO(161081452): release database locks and keep-open references
+    databaseRegistry.dispose()
   }
 
-  private fun handleTrackDatabases(callback: CommandCallback) {
+  private fun handleTrackDatabases(command: TrackDatabasesCommand, callback: CommandCallback) {
     callback.reply(
       Response.newBuilder()
         .setTrackDatabases(TrackDatabasesResponse.getDefaultInstance())
@@ -248,7 +248,9 @@ internal class SqliteInspector(
         onDatabaseClosed(instance)
       }
     }
-
+    if (command.forceOpen) {
+      databaseRegistry.enableForceOpen()
+    }
     // Check for database instances on disk
     for (instance in environment.artTooling().findInstances(Application::class.java)) {
       for (name in instance.databaseList()) {
@@ -524,6 +526,7 @@ internal class SqliteInspector(
   }
 
   private fun dispatchDatabaseOpenedEvent(databaseId: Int, path: String) {
+    Log.v(HIDDEN_TAG, "dispatchDatabaseOpenedEvent: ${path.substringAfterLast("/")}")
     connection.sendEvent(
       Event.newBuilder()
         .setDatabaseOpened(DatabaseOpenedEvent.newBuilder().setDatabaseId(databaseId).setPath(path))
@@ -533,6 +536,7 @@ internal class SqliteInspector(
   }
 
   private fun dispatchDatabaseClosedEvent(databaseId: Int, path: String) {
+    Log.v(HIDDEN_TAG, "dispatchDatabaseClosedEvent: ${path.substringAfterLast("/")}")
     connection.sendEvent(
       Event.newBuilder()
         .setDatabaseClosed(DatabaseClosedEvent.newBuilder().setDatabaseId(databaseId).setPath(path))
