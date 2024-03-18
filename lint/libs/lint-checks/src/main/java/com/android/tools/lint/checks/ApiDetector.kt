@@ -2299,10 +2299,13 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       for (resource in resourceList) {
         val classType = TypeConversionUtil.erasure(resource.type) as? PsiClassType ?: continue
         val psiClass = classType.resolve() ?: continue
+        val name = "close"
+        val desc = "()"
         val closeMethod =
-          psiClass.findMethodsByName("close", true).firstOrNull { !it.hasParameters() } ?: continue
-        val containingClass = closeMethod.containingClass?.qualifiedName ?: continue
-        val api = apiDatabase?.getMethodVersions(containingClass, "close", "()") ?: continue
+          psiClass.findMethodsByName(name, true).firstOrNull { !it.hasParameters() } ?: continue
+        val containingClass = closeMethod.containingClass
+        val owner = containingClass?.qualifiedName ?: continue
+        val api = apiDatabase?.getMethodVersions(owner, name, desc) ?: continue
         if (api == ApiConstraint.UNKNOWN) {
           continue
         }
@@ -2314,6 +2317,21 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
         if (suppressed) {
           continue
         }
+
+        // R8 rewrites many auto close methods now:
+        if (
+          isDesugaredMethod(
+            owner,
+            name,
+            desc,
+            context.sourceSetType,
+            if (context.driver.isGlobalAnalysis()) context.mainProject else context.project,
+            containingClass,
+          )
+        ) {
+          return
+        }
+
         minSdk = max(minSdk, localMinSdk)
         val location = context.getLocation(resource as UElement)
         val message =

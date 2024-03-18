@@ -5472,15 +5472,41 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                         + "\n"
                                         + "}"))
                 .run()
-                .expect(
-                        ""
-                                + "src/test/pkg/TryTest.java:11: Error: Implicit TypedArray.close() call from try-with-resources requires API level 31 (current min is 24) [NewApi]\n"
-                                + "        try (TypedArray array = createArray(); // ERROR 1\n"
-                                + "             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-                                + "src/test/pkg/TryTest.java:12: Error: Implicit TypedArray.close() call from try-with-resources requires API level 31 (current min is 24) [NewApi]\n"
-                                + "             TypedArray array2 = createArray()) { // ERROR 2\n"
-                                + "             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-                                + "2 errors, 0 warnings");
+                // As of b/264405783 this is automatically handled by R8, so we no longer get the
+                // following errors:
+                // src/test/pkg/TryTest.java:11: Error: Implicit TypedArray.close() call from
+                //   try-with-resources requires API level 31 (current min is 24) [NewApi]
+                //          try (TypedArray array = createArray(); // ERROR 1
+                //               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                // src/test/pkg/TryTest.java:12: Error: Implicit TypedArray.close() call from
+                //   try-with-resources requires API level 31 (current min is 24) [NewApi]
+                //               TypedArray array2 = createArray()) { // ERROR 2
+                //               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                //  2 errors, 0 warnings
+                .expectClean();
+    }
+
+    public void testAutoCloseWithDesugaring() {
+        lint().files(
+                        manifest().minSdk(19),
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import android.content.res.Resources;\n"
+                                        + "import android.content.res.TypedArray;\n"
+                                        + "\n"
+                                        + "public class JavaTryWithResources {\n"
+                                        + "    public static void test(Resources resources) {\n"
+                                        + "        System.out.println(\"Test - start\");\n"
+                                        + "        try (TypedArray typedArray = resources.obtainTypedArray(R.array.colors)) {\n"
+                                        + "            System.out.println(\"Got TypedArray with \" + typedArray.length() + \" elements.\");\n"
+                                        + "        }\n"
+                                        + "        System.out.println(\"Test - end\");\n"
+                                        + "    }\n"
+                                        + "}\n"))
+                .run()
+                .expectClean();
     }
 
     public void testTryWithResourcesAutoCloseKotlin() {
@@ -5620,12 +5646,14 @@ public class ApiDetectorTest extends AbstractCheckTest {
                                 },
                                 false))
                 .run()
-                .expect(
-                        ""
-                                + "src/test/pkg/TryWithResourcesTest.java:9: Error: Implicit MyDrmClient.close() call from try-with-resources requires API level 24 (current min is 21) [NewApi]\n"
-                                + "        try (MyDrmClient helper = createHelper()) { // requires 24\n"
-                                + "             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-                                + "1 errors, 0 warnings");
+                // As of b/264405783 this is automatically handled by R8, so we no longer get the
+                // following errors:
+                // src/test/pkg/TryWithResourcesTest.java:9: Error: Implicit MyDrmClient.close()
+                //   call from try-with-resources requires API level 24 (current min is 21) [NewApi]
+                //         try (MyDrmClient helper = createHelper()) { // requires 24
+                //              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                // 1 errors, 0 warnings
+                .expectClean();
     }
 
     public void testExceptionHandlingDalvik() {
