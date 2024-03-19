@@ -525,9 +525,8 @@ abstract class TaskManager(
                 null,
                 null,
                 taskProviderCallback)
-        if (globalConfig.unitTestOptions.isIncludeAndroidResources) {
-            creationConfig.taskContainer.compileTask.dependsOn(mergeResourcesTask)
-        }
+
+        creationConfig.taskContainer.compileTask.dependsOn(mergeResourcesTask)
         return mergeResourcesTask
     }
 

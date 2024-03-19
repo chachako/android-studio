@@ -121,4 +121,24 @@ class KotlinMultiplatformAndroidPluginBasicTest {
         project.executor()
             .run(":kmpFirstLib:androidPrebuild")
     }
+
+    @Test
+    fun kmpWithAndroidTestOnly() {
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpSecondLib").ktsBuildFile,
+            """
+                kotlin {
+                    androidLibrary {
+                        withAndroidTestOnDeviceBuilder {
+                            compilationName = "instrumentedTest"
+                            defaultSourceSetName = "androidInstrumentedTest"
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        project.executor()
+            .run(":kmpSecondLib:androidPrebuild")
+    }
 }
