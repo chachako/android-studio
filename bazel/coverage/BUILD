@@ -163,6 +163,7 @@ coverage_report(
     tests = [
         "//tools/adt/idea/app-inspection/inspectors/backgroundtask/model:app-inspection.inspectors.backgroundtask.model_tests",
         "//tools/adt/idea/app-inspection/inspectors/backgroundtask/view:app-inspection.inspectors.backgroundtask.view.tests_tests",
+        "//tools/base/app-inspection/inspectors/backgroundtask:agent_tests.test",
     ],
 )
 
@@ -553,6 +554,7 @@ coverage_report(
         "//tools/adt/idea/app-inspection/inspectors/network/ide:app-inspection.inspectors.network.ide.tests_tests",
         "//tools/adt/idea/app-inspection/inspectors/network/model:app-inspection.inspectors.network.model_tests",
         "//tools/adt/idea/app-inspection/inspectors/network/view:app-inspection.inspectors.network.view.tests_tests",
+        "//tools/base/app-inspection/inspectors/network:agent_tests.test",
     ],
 )
 
@@ -1125,6 +1127,8 @@ coverage_report(
         "//tools/base/apkparser/analyzer:studio.android.sdktools.analyzer_tests",
         "//tools/base/apkparser/analyzer:tools.tests",
         "//tools/base/apkparser/cli:tools.tests",
+        "//tools/base/app-inspection/inspectors/backgroundtask:agent_tests.test",
+        "//tools/base/app-inspection/inspectors/network:agent_tests.test",
         "//tools/base/aspects_agent:agent_tests",
         "//tools/base/bazel:bin2c_tests",
         "//tools/base/bazel:iml_to_build_tests",
