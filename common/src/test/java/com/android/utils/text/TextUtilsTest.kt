@@ -16,7 +16,6 @@
 package com.android.utils.text
 
 import com.google.common.truth.Truth.assertThat
-import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -38,7 +37,8 @@ class TextUtilsTest {
 
   @Test
   fun ellipsize() {
-    assertFailsWith<IllegalArgumentException> { "foobar".ellipsize(0) }
+    assertThat("foobar".ellipsize(-1)).isEqualTo("")
+    assertThat("foobar".ellipsize(0)).isEqualTo("")
     assertThat("foobar".ellipsize(1)).isEqualTo("…")
     assertThat("foobar".ellipsize(2)).isEqualTo("f…")
     assertThat("foobar".ellipsize(3)).isEqualTo("f…r")
@@ -46,5 +46,20 @@ class TextUtilsTest {
     assertThat("foobar".ellipsize(5)).isEqualTo("fo…ar")
     assertThat("foobar".ellipsize(6)).isEqualTo("foobar")
     assertThat("foobar".ellipsize(7)).isEqualTo("foobar")
+  }
+
+  @Test
+  fun truncate() {
+    assertThat("foobar".truncate(-1)).isEqualTo("")
+    assertThat("foobar".truncate(0)).isEqualTo("")
+    assertThat("foobar".truncate(1)).isEqualTo("…")
+    assertThat("foobar".truncate(2)).isEqualTo("f…")
+    assertThat("foobar".truncate(3)).isEqualTo("fo…")
+    assertThat("foobar".truncate(3, '7')).isEqualTo("fo7")
+    assertThat("foobar".truncate(4)).isEqualTo("foo…")
+    assertThat("foobar".truncate(4, '7')).isEqualTo("foo7")
+    assertThat("foobar".truncate(5)).isEqualTo("foob…")
+    assertThat("foobar".truncate(6)).isEqualTo("foobar")
+    assertThat("foobar".truncate(7)).isEqualTo("foobar")
   }
 }
