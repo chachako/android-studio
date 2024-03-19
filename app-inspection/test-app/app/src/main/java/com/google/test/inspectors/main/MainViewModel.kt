@@ -10,6 +10,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.PowerManager
+import android.os.PowerManager.PARTIAL_WAKE_LOCK
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.content.getSystemService
 import androidx.lifecycle.LiveData
@@ -74,6 +76,10 @@ constructor(private val application: Application, private val settingsDao: Setti
   }
 
   private val scope = CoroutineScope(viewModelScope.coroutineContext + exceptionHandler)
+  private val wakeLock =
+    application
+      .getSystemService(PowerManager::class.java)
+      .newWakeLock(PARTIAL_WAKE_LOCK, "com.google.test.inspectors:test")
 
   override fun startJob() {
     val id = jobId.getAndIncrement()
@@ -190,5 +196,13 @@ constructor(private val application: Application, private val settingsDao: Setti
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
       ),
     )
+  }
+
+  override fun doAcquireWakeLock() {
+    wakeLock.acquire(5000)
+  }
+
+  override fun doReleaseWakeLock() {
+    wakeLock.release()
   }
 }

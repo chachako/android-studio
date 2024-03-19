@@ -3,6 +3,7 @@ package com.google.test.inspectors.main
 import com.google.test.inspectors.HttpClient
 
 internal interface MainScreenActions {
+
   fun startJob() {}
 
   fun startWork() {}
@@ -20,4 +21,8 @@ internal interface MainScreenActions {
   fun doCustomGrpc(name: String) {}
 
   fun doSetAlarm() {}
+
+  fun doAcquireWakeLock() {}
+
+  fun doReleaseWakeLock() {}
 }

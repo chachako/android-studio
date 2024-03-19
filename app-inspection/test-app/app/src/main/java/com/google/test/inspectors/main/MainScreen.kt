@@ -112,6 +112,8 @@ private fun MainScreen(actions: MainScreenActions) {
     button("gRPC XML") { actions.doXmlGrpc("XML") }
     button("gRPC Custom") { actions.doCustomGrpc("Custom") }
     button("Set Alarm") { actions.doSetAlarm() }
+    button("Acquire Wake Lock") { actions.doAcquireWakeLock() }
+    button("Release Wake Lock") { actions.doReleaseWakeLock() }
   }
 }
 
