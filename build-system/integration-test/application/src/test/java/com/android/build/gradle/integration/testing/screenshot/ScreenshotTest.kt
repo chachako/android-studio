@@ -16,24 +16,31 @@
 
 package com.android.build.gradle.integration.testing.screenshot
 
+import com.android.build.gradle.integration.common.fixture.GradleBuildResult
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
+import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
+import com.android.build.gradle.integration.common.fixture.testprojects.SubProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
+import com.android.build.gradle.integration.common.truth.forEachLine
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.build.gradle.internal.profile.GradleTaskExecutionType
-import com.google.common.collect.Iterables
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.GradleBuildProfileSpan.ExecutionType
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import java.io.FileOutputStream
+import java.util.UUID
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 
@@ -42,41 +49,94 @@ class ScreenshotTest {
     @get:Rule
     val project = createGradleProjectBuilder {
         withKotlinPlugin = true
-        rootProject {
+        subProject("app") {
+            plugins.add(PluginType.ANDROID_APP)
+            setupProject()
+        }
+        subProject("lib") {
             plugins.add(PluginType.ANDROID_LIB)
-            plugins.add(PluginType.KOTLIN_ANDROID)
+            setupProject()
+        }
+    }
+            .withKotlinGradlePlugin(true)
+            .withKotlinVersion(KOTLIN_VERSION_FOR_COMPOSE_TESTS)
+            .enableProfileOutput()
+            .create()
+
+    @Before
+    fun tweakBuildScriptForRootProject() {
+        // Do not add any buildscript dependencies, those are added per project
+        // to enforce Gradle to load them by a separate classloader per project.
+        project.buildFile.writeText("""
+            apply from: "../commonHeader.gradle"
+        """.trimIndent())
+    }
+
+    @JvmField
+    @Rule
+    val temporaryFolder = TemporaryFolder()
+
+    private val appProject: GradleTestProject
+        get() = project.getSubproject("app")
+
+    private fun SubProjectBuilder.setupProject() {
+        plugins.add(PluginType.KOTLIN_ANDROID)
+        plugins.add(PluginType.Custom("com.android.tools.preview.screenshot"))
+        appendToBuildFile {
+            val customJarName = UUID.randomUUID().toString()
+            val customJar = temporaryFolder.newFile(customJarName)
+            JarOutputStream(FileOutputStream(customJar)).use {
+                it.putNextEntry(JarEntry(customJarName))
+                it.write(customJarName.toByteArray())
+                it.closeEntry()
+            }
+            """
+            buildscript {
+                apply from: "../../commonBuildScript.gradle"
+                dependencies {
+                    classpath "com.android.tools.preview.screenshot:preview-screenshot-gradle-plugin:+"
+
+                    // Gradle will use a separate classloader for a project only when it has a
+                    // different set of classpath dependencies. So here we add an empty jar file.
+                    classpath files('${customJar.invariantSeparatorsPath}')
+                }
+            }
+            println("Class loader for AGP API = " + com.android.build.api.variant.AndroidComponentsExtension.class.getClassLoader().hashCode())
+            """
+        }
+        android {
+            setUpHelloWorld()
+            minSdk = 24
+            hasInstrumentationTests = true
+        }
+        dependencies {
+            testImplementation("junit:junit:4.13.2")
+            implementation("androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}")
+            implementation("androidx.compose.material:material:${TaskManager.COMPOSE_UI_VERSION}")
+        }
+        appendToBuildFile {
+            """
             android {
-                setUpHelloWorld()
-                minSdk = 24
-                hasInstrumentationTests = true
+                buildFeatures {
+                    compose true
+                }
+                composeOptions {
+                    useLiveLiterals false
+                }
+                kotlinOptions {
+                    freeCompilerArgs += [
+                      "-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
+                    ]
+                }
+                kotlin {
+                    jvmToolchain(17)
+                }
+
             }
-            dependencies {
-                testImplementation("junit:junit:4.13.2")
-                implementation("androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}")
-                implementation("androidx.compose.material:material:${TaskManager.COMPOSE_UI_VERSION}")
-            }
-            appendToBuildFile {
-                """
-                    android {
-                        buildFeatures {
-                            compose true
-                        }
-                        composeOptions {
-                            useLiveLiterals false
-                        }
-                        kotlinOptions {
-                            freeCompilerArgs += [
-                              "-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
-                            ]
-                        }
-                        kotlin {
-                            jvmToolchain(17)
-                        }
-                    }
-                """.trimIndent()
-            }
-            addFile(
-                    "src/main/java/com/Example.kt", """
+            """.trimIndent()
+        }
+        addFile(
+                "src/main/java/com/Example.kt", """
                 package pkg.name
 
                 import androidx.compose.material.Text
@@ -87,8 +147,8 @@ class ScreenshotTest {
                     Text(text)
                 }
             """.trimIndent()
-            )
-            addFile(
+        )
+        addFile(
                 "src/main/java/com/SimplePreviewParameterProvider.kt", """
                 package pkg.name
 
@@ -100,9 +160,9 @@ class ScreenshotTest {
                     )
                 }
             """.trimIndent()
-            )
-            addFile(
-                    "src/androidTest/java/com/ExampleTest.kt", """
+        )
+        addFile(
+                "src/androidTest/java/com/ExampleTest.kt", """
 
                 package pkg.name
 
@@ -140,8 +200,8 @@ class ScreenshotTest {
                 }
 
             """.trimIndent()
-            )
-            addFile(
+        )
+        addFile(
                 "src/androidTest/java/com/TopLevelPreviewTest.kt", """
 
                 package pkg.name
@@ -157,26 +217,6 @@ class ScreenshotTest {
                 }
 
             """.trimIndent()
-            )
-        }
-    }
-            .withKotlinGradlePlugin(true)
-            .withKotlinVersion(KOTLIN_VERSION_FOR_COMPOSE_TESTS)
-            .enableProfileOutput()
-            .create()
-
-    @Before
-    fun setUp() {
-        TestFileUtils.appendToFile(
-            project.buildFile,
-            """
-                buildscript {
-                    dependencies {
-                        classpath "com.android.tools.preview.screenshot:preview-screenshot-gradle-plugin:+"
-                    }
-                }
-                apply plugin: 'com.android.tools.preview.screenshot'
-            """.trimIndent()
         )
     }
 
@@ -185,10 +225,11 @@ class ScreenshotTest {
             .with(BooleanOption.USE_ANDROID_X, true)
             .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
 
+
     @Test
     fun discoverPreviews() {
-        getExecutor().run("debugPreviewDiscovery")
-        val previewsDiscoveredFile  = project.buildDir.resolve("intermediates/preview/debug/previews_discovered.json")
+        getExecutor().run(":app:debugPreviewDiscovery")
+        val previewsDiscoveredFile  = appProject.buildDir.resolve("intermediates/preview/debug/previews_discovered.json")
         assert(previewsDiscoveredFile.exists())
         assertThat(previewsDiscoveredFile.readText()).isEqualTo("""
             {
@@ -251,9 +292,9 @@ class ScreenshotTest {
     @Test
     fun runPreviewScreenshotTest() {
         // Generate screenshots to be tested against
-        getExecutor().run("previewScreenshotUpdateDebugAndroidTest")
+        getExecutor().run(":app:previewScreenshotUpdateDebugAndroidTest")
 
-        val referenceScreenshotDir = project.projectDir.resolve("src/androidTest/screenshot/debug/").toPath()
+        val referenceScreenshotDir = appProject.projectDir.resolve("src/androidTest/screenshot/debug/").toPath()
         assertThat(referenceScreenshotDir.listDirectoryEntries().map { it.name }).containsExactly(
             "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee_0.png",
             "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee_0.png",
@@ -265,13 +306,13 @@ class ScreenshotTest {
         )
 
         // Validate previews matches screenshots
-        getExecutor().run("previewScreenshotDebugAndroidTest")
+        getExecutor().run(":app:previewScreenshotDebugAndroidTest")
 
         // Verify that test engine generated HTML reports and all tests pass
-        val indexHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
-        val classHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/classes/pkg.name.ExampleTest.html")
-        val class2HtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/classes/pkg.name.TopLevelPreviewTestKt.html")
-        val packageHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/packages/pkg.name.html")
+        val indexHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
+        val classHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/classes/pkg.name.ExampleTest.html")
+        val class2HtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/classes/pkg.name.TopLevelPreviewTestKt.html")
+        val packageHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/packages/pkg.name.html")
         assertThat(indexHtmlReport).exists()
         assertThat(classHtmlReport).exists()
         val expectedOutput = listOf(
@@ -288,17 +329,17 @@ class ScreenshotTest {
         assertThat(packageHtmlReport).exists()
 
         // Assert that no diff images were generated because screenshot matched the reference image
-        val diffDir = project.buildDir.resolve("outputs/androidTest-results/preview/debug/diffs").toPath()
+        val diffDir = appProject.buildDir.resolve("outputs/androidTest-results/preview/debug/diffs").toPath()
         assert(diffDir.listDirectoryEntries().isEmpty())
 
         // Update previews to be different from the references
-        val testFile = project.projectDir.resolve("src/main/java/com/Example.kt")
+        val testFile = appProject.projectDir.resolve("src/main/java/com/Example.kt")
         TestFileUtils.searchAndReplace(testFile, "Hello World", "HelloWorld ")
-        val previewParameterProviderFile = project.projectDir.resolve("src/main/java/com/SimplePreviewParameterProvider.kt")
+        val previewParameterProviderFile = appProject.projectDir.resolve("src/main/java/com/SimplePreviewParameterProvider.kt")
         TestFileUtils.searchAndReplace(previewParameterProviderFile, "Primary text", " Primarytext")
 
         // Rerun validation task - modified tests should fail and diffs are generated
-        getExecutor().expectFailure().run("previewScreenshotDebugAndroidTest")
+        getExecutor().expectFailure().run(":app:previewScreenshotDebugAndroidTest")
 
         assertThat(indexHtmlReport).exists()
         assertThat(classHtmlReport).exists()
@@ -328,41 +369,66 @@ class ScreenshotTest {
     }
 
     @Test
+    fun runPreviewScreenshotTestWithMultiModuleProject() {
+        // Generate screenshots to be tested against
+        verifyClassLoaderSetup(getExecutor().run("previewScreenshotUpdateDebugAndroidTest"))
+
+        // Validate previews matches screenshots
+        verifyClassLoaderSetup(getExecutor().run("previewScreenshotDebugAndroidTest"))
+    }
+
+    private fun verifyClassLoaderSetup(result: GradleBuildResult) {
+        val taskLogs = mutableSetOf<String>()
+        result.stdout.forEachLine {
+            if (it.startsWith("Class loader for AGP API = ")) {
+                taskLogs.add(it)
+            }
+        }
+        assertThat(taskLogs)
+                .named("Log lines that should contain different class loader hashes")
+                .hasSize(2)
+    }
+
+    @Test
     fun analytics() {
         val capturer = ProfileCapturer(project)
 
         val profiles = capturer.capture {
-            getExecutor().run("debugPreviewDiscovery")
+            getExecutor().run(":app:debugPreviewDiscovery")
         }
 
-        val spanList = Iterables.getOnlyElement(profiles).spanList
-        val taskSpan = spanList.first {
-            it.task.type == GradleTaskExecutionType.PREVIEW_DISCOVERY_VALUE
+        profiles.mapNotNull { profile ->
+            val spanList = profile.spanList
+            val taskSpan = spanList.firstOrNull {
+                it.task.type == GradleTaskExecutionType.PREVIEW_DISCOVERY_VALUE
+            } ?: return@mapNotNull null
+            val executionSpan = spanList.firstOrNull {
+                it.parentId == taskSpan.id && it.type == ExecutionType.TASK_EXECUTION_ALL_PHASES
+            } ?: return@mapNotNull null
+            executionSpan.durationInMs
+        }.first { durationInMs ->
+            durationInMs > 0L
         }
-        val executionSpan = spanList.first {
-            it.parentId == taskSpan.id && it.type == ExecutionType.TASK_EXECUTION_ALL_PHASES
-        }
-        assertThat(executionSpan.durationInMs).isGreaterThan(0L)
     }
 
     @Test
     fun runPreviewScreenshotTestWithNoPreviewsToTest() {
         // Comment out preview tests
-        val testFile1 = project.projectDir.resolve("src/androidTest/java/com/ExampleTest.kt")
+        val testFile1 = appProject.projectDir.resolve("src/androidTest/java/com/ExampleTest.kt")
         TestFileUtils.replaceLine(testFile1, 1, "/*")
         TestFileUtils.replaceLine(testFile1, testFile1.readLines().size, "*/")
-        val testFile2 = project.projectDir.resolve("src/androidTest/java/com/TopLevelPreviewTest.kt")
+        val testFile2 = appProject.projectDir.resolve("src/androidTest/java/com/TopLevelPreviewTest.kt")
         TestFileUtils.replaceLine(testFile2, 1, "/*")
         TestFileUtils.replaceLine(testFile2, testFile2.readLines().size, "*/")
 
-        getExecutor().run("previewScreenshotUpdateDebugAndroidTest")
+        getExecutor().run(":app:previewScreenshotUpdateDebugAndroidTest")
 
-        val referenceScreenshotDir = project.projectDir.resolve("src/androidTest/screenshot/debug/").toPath()
+        val referenceScreenshotDir = appProject.projectDir.resolve("src/androidTest/screenshot/debug/").toPath()
         assertThat(referenceScreenshotDir.listDirectoryEntries()).isEmpty()
 
-        getExecutor().run("previewScreenshotDebugAndroidTest")
+        getExecutor().run(":app:previewScreenshotDebugAndroidTest")
 
-        val indexHtmlReport = project.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
+        val indexHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
         assertThat(indexHtmlReport).exists()
         assertThat(indexHtmlReport.readText()).contains("""<div class="counter">0</div>""")
 

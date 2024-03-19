@@ -66,7 +66,7 @@ internal enum class BuildSystem {
         )
         if (withKotlinGradlePlugin) {
             // To get the Kotlin version
-            script.append("    apply from: '../commonHeader.gradle'\n")
+            script.append("    apply from: \"\$commonScriptFolder/commonHeader.gradle\"\n")
         }
         script.append("    dependencies {\n")
         if (withAndroidGradlePlugin) {
