@@ -33,7 +33,7 @@ interface DeviceTemplate {
   val properties: DeviceProperties
 
   val stateFlow: StateFlow<TemplateState>
-    get() = MutableStateFlow(TemplateState(null)).asStateFlow()
+    get() = MutableStateFlow(TemplateState()).asStateFlow()
 
   val state: TemplateState
     get() = stateFlow.value
@@ -56,4 +56,4 @@ interface DeviceTemplate {
  *
  * Fields of this class should be immutable data fields (with equality defined appropriately).
  */
-data class TemplateState(val error: DeviceError?)
+data class TemplateState(val isActivating: Boolean = false, val error: DeviceError? = null)
