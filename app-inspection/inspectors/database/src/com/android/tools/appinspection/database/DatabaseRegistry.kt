@@ -158,6 +158,9 @@ internal class DatabaseRegistry(
         // We just need to open the database. Our hook will call notifyDatabaseOpened()
         val db = SQLiteDatabase.openDatabase(path, null, OPEN_READWRITE)
         forcedOpen.add(db)
+        if (Log.isLoggable(HIDDEN_TAG, Log.VERBOSE)) {
+          logDatabaseStatus(path)
+        }
       } else {
         Log.v(HIDDEN_TAG, "Registering as offline: $path")
         val id = nextId++
