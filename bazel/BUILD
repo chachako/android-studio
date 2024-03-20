@@ -61,7 +61,7 @@ java_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "@intellij//:intellij-sdk",
     ],
 )
 

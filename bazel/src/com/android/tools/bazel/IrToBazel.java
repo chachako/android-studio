@@ -150,7 +150,7 @@ public class IrToBazel {
                 if (dependency.dependency instanceof IrLibrary) {
                     // TODO: Update iml files to have the right names.
                     Map<String, String> UNMANAGED = ImmutableMap.of(
-                            "studio-sdk", "intellij",
+                            "studio-sdk", "intellij-sdk",
                             "studio-plugin-", "",
                             "rust-plugin", "rust-plugin",
                             "intellij-updater", "updater",

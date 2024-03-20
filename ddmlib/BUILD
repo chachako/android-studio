@@ -23,8 +23,8 @@ iml_module(
     ],
     # do not sort: must match IML order
     deps = [
-        "//prebuilts/studio/intellij-sdk:studio-sdk",
-        "//prebuilts/studio/intellij-sdk:studio-sdk-plugin-java",
+        "@intellij//:intellij-sdk",
+        "@intellij//:com.intellij.java",
         "//tools/base/common:studio.android.sdktools.common[module]",
         "//tools/adt/idea/.idea/libraries:kxml2",
         "//tools/base/testutils:studio.android.sdktools.testutils[module, test]",
@@ -238,7 +238,7 @@ iml_module(
         "//tools/base/bazel/avd:studio.android.sdktools.base.bazel.avd[module, test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
         "//tools/base/ddmlib:studio.android.sdktools.ddmlib[module, test]",
-        "//prebuilts/studio/intellij-sdk:studio-sdk[test]",
-        "//prebuilts/studio/intellij-sdk:studio-sdk-plugin-java",
+        "@intellij//:intellij-sdk[test]",
+        "@intellij//:com.intellij.java",
     ],
 )
