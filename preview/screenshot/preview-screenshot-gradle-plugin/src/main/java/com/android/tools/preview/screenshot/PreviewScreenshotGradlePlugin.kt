@@ -49,6 +49,7 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
 import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.jvm.toolchain.JavaToolchainService
+import java.util.Locale
 import java.util.UUID
 
 private val minAgpVersion = AndroidPluginVersion(8, 4, 0).alpha(9)
@@ -82,6 +83,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
          *  version.
          */
         private val perClassLoaderConstant = UUID.randomUUID().toString()
+
+        const val ST_SOURCE_SET_ENABLED = "android.experimental.enableScreenshotTest"
         private const val LAYOUTLIB_VERSION = "14.0.4"
         private const val LAYOUTLIB_RUNTIME_VERSION = "14.0.4"
         private const val LAYOUTLIB_RESOURCES_VERSION = "14.0.4"
@@ -96,6 +99,15 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     """
                     Preview screenshot plugin requires Android Gradle plugin version between ${minAgpVersion.toVersionString()} and ${maxAgpVersion.major}.${maxAgpVersion.minor}.
                     Current version is $agpVersion.
+                    """.trimIndent()
+                )
+            }
+            val screenshotSourcesetEnabled = project.findProperty(ST_SOURCE_SET_ENABLED)
+            if (screenshotSourcesetEnabled.toString().lowercase(Locale.US) != "true") {
+                error(
+                    """
+                    Please enable screenshotTest source set first to run the screenshot test plugin.
+                    Add "$ST_SOURCE_SET_ENABLED=true" to gradle.properties
                     """.trimIndent()
                 )
             }
@@ -462,4 +474,3 @@ private const val INTERNAL_ARTIFACT_TYPE = "com.android.build.gradle.internal.sc
 private const val PREVIEW_OUTPUT = "outputs/androidTest-results/preview"
 private const val PREVIEW_INTERMEDIATES = "intermediates/preview"
 private const val PREVIEW_REPORTS = "reports/androidTests/preview"
-

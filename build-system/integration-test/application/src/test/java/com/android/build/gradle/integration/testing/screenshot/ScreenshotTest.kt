@@ -71,6 +71,10 @@ class ScreenshotTest {
         project.buildFile.writeText("""
             apply from: "../commonHeader.gradle"
         """.trimIndent())
+        TestFileUtils.appendToFile(
+            project.gradlePropertiesFile,
+            "${BooleanOption.ENABLE_SCREENSHOT_TEST.propertyName}=true"
+        )
     }
 
     @JvmField
