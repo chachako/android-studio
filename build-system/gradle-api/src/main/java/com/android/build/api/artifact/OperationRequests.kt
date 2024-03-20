@@ -159,7 +159,7 @@ interface OutOperationRequest<FileTypeT: FileSystemLocation> {
      *          }
      *     }
      *
-     * You can register a transform to the collection of [org.gradle.api.file.RegularFile]:
+     * You can register the Task that consumes the manifest file as a [org.gradle.api.file.RegularFile]:
      *
      * ```kotlin
      *     val taskProvider= projects.tasks.register(MyTask::class.java, "verifyManifestTask")
@@ -209,7 +209,8 @@ interface MultipleArtifactTypeOutOperationRequest<FileTypeT: FileSystemLocation>
      *          }
      *     }
      *
-     * You can register a transform to the collection of [org.gradle.api.file.RegularFile]:
+     * You can register the Task that consumes the proguard files as a [ListProperty] of
+     * [org.gradle.api.file.RegularFile]:
      *
      * ```kotlin
      *     val taskProvider= projects.tasks.register(MyTask::class.java, "verifyKeepProguardTask")
