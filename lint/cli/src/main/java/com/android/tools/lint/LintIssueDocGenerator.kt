@@ -144,7 +144,7 @@ class LintIssueDocGenerator(
     for (registry in registryMap.keys) {
       val aliases = mutableMapOf<String, Issue>()
       for (issue in registry.issues) {
-        issue.getAliases()?.forEach { aliases[it] = issue }
+        issue.getAliases().forEach { aliases[it] = issue }
       }
       map[registry] = aliases
     }

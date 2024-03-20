@@ -157,7 +157,7 @@ private constructor(
     return _platforms.contains(Platform.ANDROID)
   }
 
-  private var aliases: List<String>? = null
+  private var aliases: List<String> = emptyList()
 
   /**
    * Sets previous names for this issue; this is useful when you for various reasons have to rename
@@ -165,13 +165,13 @@ private constructor(
    * existing incidents listed in baselines etc.
    */
   fun setAliases(aliases: List<String>?): Issue {
-    assert(this.aliases == null) // calling more than once is probably not intentional
-    this.aliases = aliases
+    assert(this.aliases.isEmpty()) // calling more than once is probably not intentional
+    this.aliases = aliases ?: emptyList()
     return this
   }
 
   /** Returns any names for this issue; see [setAliases]. */
-  fun getAliases(): List<String>? = aliases
+  fun getAliases(): List<String> = aliases
 
   private var options: List<Option> = emptyList()
 

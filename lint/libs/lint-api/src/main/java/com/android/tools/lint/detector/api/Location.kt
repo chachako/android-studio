@@ -333,12 +333,7 @@ protected constructor(
     override fun isSuppressed(driver: LintDriver, issue: Issue): Boolean {
       if (item is IgnoredIdProvider) {
         val ignored = item.getIgnoredIds()
-        val id = issue.id
-        val aliases = issue.getAliases()
-        if (aliases != null && aliases.any { ignored.containsId(it) }) {
-          return true
-        }
-        return ignored.containsId(id)
+        return issue.getAliases().any { ignored.containsId(it) } || ignored.containsId(issue.id)
       }
       return super.isSuppressed(driver, issue)
     }

@@ -345,7 +345,7 @@ abstract class IssueRegistry protected constructor() {
     val map = Maps.newHashMapWithExpectedSize<String, Issue>(issues.size + 20)
     for (issue in issues) {
       map[issue.id] = issue
-      issue.getAliases()?.forEach { alias ->
+      issue.getAliases().forEach { alias ->
         map[alias] = issue
         renamedIds[alias] = issue.id
       }

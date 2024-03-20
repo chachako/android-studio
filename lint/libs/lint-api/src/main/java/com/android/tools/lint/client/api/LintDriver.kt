@@ -4100,7 +4100,7 @@ class LintDriver(
           return true
         }
 
-        if (issue.getAliases()?.any { matches(it, id) } == true) {
+        if (issue.getAliases().any { matches(it, id) }) {
           return true
         }
 
