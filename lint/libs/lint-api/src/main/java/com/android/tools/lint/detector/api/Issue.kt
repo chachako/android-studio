@@ -21,7 +21,6 @@ import com.android.tools.lint.client.api.Configuration
 import com.android.tools.lint.client.api.IssueRegistry
 import com.android.tools.lint.client.api.Vendor
 import com.android.tools.lint.detector.api.TextFormat.RAW
-import java.util.ArrayList
 import java.util.EnumSet
 
 /**
@@ -104,7 +103,8 @@ private constructor(
    */
   var implementation: Implementation,
 ) : Comparable<Issue> {
-  private var moreInfoUrls: Any? = null
+  // TODO revise below once Kotlin supports union
+  private var moreInfoUrls: Any? /* null | String | MutableList<String> */ = null
   private var enabledByDefault = true
 
   private var _platforms = platforms
@@ -191,16 +191,14 @@ private constructor(
 
   /** A link (a URL string) to more information, or null. */
   val moreInfo: List<String>
-    get() {
-      when (moreInfoUrls) {
-        null -> return emptyList()
-        is String -> return listOf(moreInfoUrls as String)
-        else -> {
-          assert(moreInfoUrls is List<*>)
-          @Suppress("UNCHECKED_CAST") return moreInfoUrls as List<String>
-        }
+    @Suppress("UNCHECKED_CAST")
+    get() =
+      when (val urls = moreInfoUrls) {
+        null -> emptyList()
+        is String -> listOf(urls)
+        is List<*> -> urls as List<String>
+        else -> throw IllegalStateException("Unexpected `moreInfoUrls` of $urls")
       }
-    }
 
   init {
     assert(briefDescription.isNotEmpty())
@@ -241,19 +239,12 @@ private constructor(
   fun addMoreInfo(moreInfoUrl: String): Issue {
     // Nearly all issues supply at most a single URL, so don't bother with
     // lists wrappers for most of these issues
-    when (moreInfoUrls) {
+    @Suppress("UNCHECKED_CAST")
+    when (val existing = moreInfoUrls) {
       null -> moreInfoUrls = moreInfoUrl
-      is String -> {
-        val existing = moreInfoUrls as String
-        val list = ArrayList<String>(2)
-        list.add(existing)
-        list.add(moreInfoUrl)
-        moreInfoUrls = list
-      }
-      else -> {
-        assert(moreInfoUrls is List<*>)
-        @Suppress("UNCHECKED_CAST") (moreInfoUrls as MutableList<String>).add(moreInfoUrl)
-      }
+      is String -> moreInfoUrls = mutableListOf(existing, moreInfoUrl)
+      is MutableList<*> -> (existing as MutableList<String>).add(moreInfoUrl)
+      else -> throw IllegalStateException("Unexpected `moreInfoUrls`: $existing")
     }
     return this
   }
