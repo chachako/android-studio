@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Com
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
+import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.tasks.LOCALE_CONFIG_FILE_NAME
 import com.android.testutils.truth.PathSubject
@@ -34,17 +35,21 @@ import org.junit.Test
 import java.io.File
 
 private val DEFAULT = null // default locale
-private val ES = Locale("b+es+ES", "es-ES")
-private val ZH = Locale("b+zh+Hans+SG", "zh-Hans-SG")
-private val EN_GB = Locale("en-rGB", "en-GB")
-private val EN_US = Locale("b+en+US", "en-US")
-private val RU = Locale("b+ru+RU", "ru-RU")
-private val PT = Locale("b+pt+BR", "pt-BR")
-private val JP = Locale("b+jp+JP", "jp-JP")
+private val ES = LocaleFolderToStandard("es-rES", "es-ES")
+private val ZH_HANT_TW = LocaleFolderToStandard("b+zh+Hant+TW", "zh-Hant-TW")
+private val ZH_HANT = LocaleFolderToStandard("b+zh+Hant", "zh-Hant")
+private val EN_GB = LocaleFolderToStandard("en-rGB", "en-GB")
+private val RU = LocaleFolderToStandard("ru-rRU", "ru-RU")
+private val PT = LocaleFolderToStandard("pt-rBR", "pt-BR")
+private val CHR_US = LocaleFolderToStandard("b+chr+US", "chr-US")
+private val CHR = LocaleFolderToStandard("b+chr", "chr")
+private val ES_419 = LocaleFolderToStandard("b+es+419", "es-419")
+private val DE = LocaleFolderToStandard("de", "de")
+private val DE_DE = LocaleFolderToStandard("de-rDE", "de-DE")
 
-private data class Locale(
-    val code: String,
-    val text: String
+private data class LocaleFolderToStandard(
+    val folderName: String,
+    val standardName: String
 )
 
 class LocaleConfigGenerationTest {
@@ -64,7 +69,7 @@ class LocaleConfigGenerationTest {
                         <locale android:name="zh-TW"/>
                         <locale android:name="pt"/>
                         <locale android:name="fr"/>
-                        <locale android:name="zh-Hans-SG"/>
+                        <locale android:name="zh-Hant-TW"/>
                     </locale-config>
                 """.trimIndent()
             )
@@ -89,7 +94,7 @@ class LocaleConfigGenerationTest {
 
     private fun addLocaleForVariantDimension(
         project: GradleTestProject,
-        locale: Locale?,
+        locale: LocaleFolderToStandard?,
         variantDimension: String = "main",
         addResFile: Boolean = true
     ) {
@@ -97,9 +102,10 @@ class LocaleConfigGenerationTest {
             if (locale == DEFAULT) {
                 project.file("src/${variantDimension}/res/values/strings.xml")
             } else {
-                project.file("src/${variantDimension}/res/values-${locale.code}/strings.xml")
+                project.file(
+                    "src/${variantDimension}/res/values-${locale.folderName}/strings.xml")
             }
-        val text = locale?.text ?: "en-US"
+        val text = locale?.standardName ?: "en-US"
 
         file.parentFile.mkdirs()
         if (addResFile) {
@@ -125,9 +131,9 @@ class LocaleConfigGenerationTest {
     }
 
     private fun GradleTestProject.withLocales(
-        appLocales: List<Locale?>,
-        lib1Locales: List<Locale?>,
-        lib2Locales: List<Locale?>
+        appLocales: List<LocaleFolderToStandard?>,
+        lib1Locales: List<LocaleFolderToStandard?>,
+        lib2Locales: List<LocaleFolderToStandard?>
     ): GradleTestProject {
         appLocales.forEach {
             addLocaleForVariantDimension(this.getSubproject("app"), it)
@@ -164,7 +170,7 @@ class LocaleConfigGenerationTest {
             dslString += """
                 android.flavorDimensions "language"
                 android.productFlavors {
-                        tokyo {
+                        cherokee {
                             dimension "language"
                         }
                         london {
@@ -222,13 +228,36 @@ class LocaleConfigGenerationTest {
         )
     }
 
+    private fun validateLocalesInLocaleConfigAndApk(
+        expectedLocaleList: List<String>,
+        defaultLocale: String? = "en-US"
+    ) {
+        assertLocaleConfig("debug").isEqualTo(expectedLocaleList)
+
+        // The APK locale list will return the default locale as "--_--" in this method
+        val apkLocaleList = expectedLocaleList.map { if (it == defaultLocale) "--_--" else it }
+        TruthHelper.assertThat(
+            project.getSubproject("app").getApk(GradleTestProject.ApkType.DEBUG))
+            .locales()
+            .containsExactlyElementsIn(apkLocaleList)
+    }
+
+    private fun getExpectedLocaleList(
+        nonDefaultLocales: List<String>,
+        defaultLocale: String
+    ): List<String> {
+        val combinedList = mutableListOf("*$defaultLocale")
+        combinedList.addAll(nonDefaultLocales)
+        return combinedList
+    }
+
     @Test
     fun `Test with default behavior locale config is not generated`() {
         // no DSL
 
         val result = project.withLocales(
-            appLocales = listOf(DEFAULT, ES, ZH, EN_GB),
-            lib1Locales = listOf(EN_US, ES, RU),
+            appLocales = listOf(DEFAULT, ES, ZH_HANT_TW, EN_GB),
+            lib1Locales = listOf(DEFAULT, ES, RU),
             lib2Locales = listOf(PT)
         ).executor().run("assembleDebug")
 
@@ -252,8 +281,8 @@ class LocaleConfigGenerationTest {
         buildDsl(generateLocaleConfig = false)
 
         val result = project.withLocales(
-            appLocales = listOf(DEFAULT, ES, ZH, EN_GB),
-            lib1Locales = listOf(EN_US, ES, RU),
+            appLocales = listOf(DEFAULT, ES, ZH_HANT_TW, EN_GB),
+            lib1Locales = listOf(DEFAULT, ES, RU),
             lib2Locales = listOf()
         ).withUserLocaleConfig().executor().run("assembleDebug")
 
@@ -282,8 +311,8 @@ class LocaleConfigGenerationTest {
         buildDsl(generateLocaleConfig = true)
 
         val result = project.withLocales(
-            appLocales = listOf(DEFAULT, ES, ZH, EN_GB),
-            lib1Locales = listOf(EN_US, ES, RU),
+            appLocales = listOf(DEFAULT, ES, ZH_HANT_TW, EN_GB),
+            lib1Locales = listOf(DEFAULT, ES, RU),
             lib2Locales = listOf(PT)
         ).executor().run("assembleDebug")
 
@@ -315,20 +344,18 @@ class LocaleConfigGenerationTest {
         buildDsl(generateLocaleConfig = true, defaultLocale = "de-DE")
 
         project.withLocales(
-            appLocales = listOf(DEFAULT, ES, ZH, EN_GB),
+            appLocales = listOf(DEFAULT, ES, ZH_HANT_TW, EN_GB),
             lib1Locales = listOf(RU),
             lib2Locales = listOf(PT)
         ).execute("assembleDebug")
 
-        assertLocaleList("app", "debug")
-            .isEqualTo(listOf("de-DE", "es-ES", "zh-Hans-SG", "en-GB"))
-        assertLocaleList("lib1", "debug")
-            .isEqualTo(listOf("ru-RU"))
-        assertLocaleList("lib2", "debug")
-            .isEqualTo(listOf("pt-BR"))
+        assertLocaleList("app", "debug").isEqualTo(
+            getExpectedLocaleList(listOf("b+zh+Hant+TW", "en-rGB", "es-rES"), "de-DE"))
+        assertLocaleList("lib1", "debug").isEqualTo(listOf("ru-rRU"))
+        assertLocaleList("lib2", "debug").isEqualTo(listOf("pt-rBR"))
         // Final xml adds default locale (de-DE)
         assertLocaleConfig("debug")
-            .isEqualTo(listOf("de-DE", "es-ES", "zh-Hans-SG", "en-GB", "ru-RU", "pt-BR"))
+            .isEqualTo(listOf("de-DE", "zh-Hant-TW", "en-GB", "es-ES", "ru-RU", "pt-BR"))
     }
 
     @Test
@@ -336,19 +363,17 @@ class LocaleConfigGenerationTest {
         buildDsl(generateLocaleConfig = true)
 
         project.withLocales(
-            appLocales = listOf(DEFAULT, ES, ZH, EN_GB),
+            appLocales = listOf(DEFAULT, ES, ZH_HANT_TW, EN_GB),
             lib1Locales = listOf(ES, RU), // Duplicate ES
-            lib2Locales = listOf(PT, EN_US) // Duplicate EN_US (default)
+            lib2Locales = listOf(PT, EN_GB) // Duplicate EN_GB
         ).execute("assembleDebug")
 
-        assertLocaleList("app", "debug")
-            .isEqualTo(listOf("en-US", "es-ES", "zh-Hans-SG", "en-GB"))
-        assertLocaleList("lib1", "debug")
-            .isEqualTo(listOf("es-ES", "ru-RU"))
-        assertLocaleList("lib2", "debug")
-            .isEqualTo(listOf("en-US", "pt-BR"))
+        assertLocaleList("app", "debug").isEqualTo(
+            getExpectedLocaleList(listOf("b+zh+Hant+TW", "en-rGB", "es-rES"), "en-US"))
+        assertLocaleList("lib1", "debug").isEqualTo(listOf("es-rES", "ru-rRU"))
+        assertLocaleList("lib2", "debug").isEqualTo(listOf("en-rGB", "pt-rBR"))
         assertLocaleConfig("debug")
-            .isEqualTo(listOf("en-US", "es-ES", "zh-Hans-SG", "en-GB", "ru-RU", "pt-BR"))
+            .isEqualTo(listOf("en-US", "zh-Hant-TW", "en-GB", "es-ES", "ru-RU", "pt-BR"))
     }
 
     @Test
@@ -356,8 +381,8 @@ class LocaleConfigGenerationTest {
         buildDsl(generateLocaleConfig = true)
 
         val result = project.withLocales(
-            appLocales = listOf(DEFAULT, ES, ZH, EN_GB),
-            lib1Locales = listOf(EN_US, ES, RU),
+            appLocales = listOf(DEFAULT, ES, ZH_HANT_TW, EN_GB),
+            lib1Locales = listOf(DEFAULT, ES, RU),
             lib2Locales = listOf()
         ).withUserLocaleConfig().executor().expectFailure().run("assembleDebug")
 
@@ -437,20 +462,73 @@ class LocaleConfigGenerationTest {
     }
 
     @Test
-    fun `Test error when using resource configurations`() {
+    fun `Test locales filtered by resource configurations`() {
         buildDsl(generateLocaleConfig = true)
 
+        // Validate non-locale resource configuration does not filter locales
         project.getSubproject("app").buildFile.appendText("""
-            android.defaultConfig.resourceConfigurations += ["en"]
+            android.defaultConfig.resourceConfigurations += ["mdpi"]
         """.trimIndent())
 
-        val result = project.executor().expectFailure().run("assembleDebug")
+        project.withLocales(
+            appLocales = listOf(DEFAULT, ES, ZH_HANT_TW, EN_GB, DE),
+            lib1Locales = listOf(RU),
+            lib2Locales = listOf(PT)
+        ).execute("assembleDebug")
 
-        ScannerSubject.assertThat(result.stderr).contains(
-            "You cannot specify languages in resource configurations when " +
-            "automatic locale generation is enabled. To use resource configurations, " +
-            "please provide the locale config manually: " +
-            "https://d.android.com/r/tools/locale-config")
+        validateLocalesInLocaleConfigAndApk(
+            listOf("en-US", "zh-Hant-TW", "de", "en-GB", "es-ES", "ru-RU", "pt-BR")
+        )
+
+        // Validate resConfig locale without matching any strings locale
+        TestFileUtils.searchAndReplace(project.getSubproject("app").buildFile,
+            "android.defaultConfig.resourceConfigurations += [\"mdpi\"]",
+            "android.defaultConfig.resourceConfigurations += [\"fr\"]")
+
+        project.withLocales(
+            appLocales = listOf(DEFAULT, ES, ZH_HANT_TW, EN_GB, DE),
+            lib1Locales = listOf(RU, DEFAULT),
+            lib2Locales = listOf(PT)
+        ).execute("assembleDebug")
+
+        // The default locale should not be removed
+        validateLocalesInLocaleConfigAndApk(listOf("en-US"))
+
+        // "de", "es-ES", "zh-Hant", "chr", "es-419" should match
+        TestFileUtils.searchAndReplace(project.getSubproject("app").buildFile,
+            "android.defaultConfig.resourceConfigurations += [\"fr\"]",
+            "android.defaultConfig.resourceConfigurations += " +
+                "[\"mdpi\", \"de\", \"en\", \"b+zh+Hant\", \"es-rES\", \"b+chr\", \"b+es+419\"]"
+        )
+
+        project.withLocales(
+            appLocales = listOf(DEFAULT, ES, ZH_HANT_TW, EN_GB, DE),
+            lib1Locales = listOf(RU, DEFAULT, CHR),
+            lib2Locales = listOf(PT, ZH_HANT, ES_419)
+        ).execute("assembleDebug")
+
+        validateLocalesInLocaleConfigAndApk(
+            listOf("en-US", "de", "es-ES", "chr", "es-419", "zh-Hant"))
+    }
+
+    @Test
+    fun `Test resource configuration filtering with different default locale`() {
+        buildDsl(generateLocaleConfig = true, defaultLocale = RU.standardName)
+
+        project.getSubproject("app").buildFile.appendText("""
+            android.defaultConfig.resourceConfigurations += ["b+zh+Hant+TW", "en", "es", "de-rDE"]
+        """.trimIndent())
+
+        project.withLocales(
+            appLocales = listOf(DEFAULT, ZH_HANT, ZH_HANT_TW),
+            lib1Locales = listOf(EN_GB, DE_DE),
+            lib2Locales = listOf(ES_419, DE)
+        ).execute("assembleDebug")
+
+        // Having "b+zh+Hant+TW" in resConfigs should match both "zh-Hant" and "zh-Hant-TW"
+        // Having "de-rDE" in resConfigs should match both "de" and "de-DE"
+        validateLocalesInLocaleConfigAndApk(
+            listOf("ru-RU", "zh-Hant", "zh-Hant-TW", "de-DE", "de"), defaultLocale = RU.standardName)
     }
 
     @Test
@@ -489,7 +567,7 @@ class LocaleConfigGenerationTest {
     fun `Test build flavor res are included`() {
         buildDsl(generateLocaleConfig = true, addFlavor = true)
 
-        addLocaleForVariantDimension(project.getSubproject("app"), JP, "tokyo")
+        addLocaleForVariantDimension(project.getSubproject("app"), CHR_US, "cherokee")
         addLocaleForVariantDimension(project.getSubproject("app"), EN_GB, "london")
 
         project.withLocales(
@@ -499,22 +577,24 @@ class LocaleConfigGenerationTest {
         ).execute("assembleDebug")
 
         // london flavor res should not be included
-        assertLocaleList("app", "tokyoDebug").isEqualTo(listOf("en-US", "jp-JP"))
-        assertLocaleConfig("tokyo/debug").isEqualTo(listOf("en-US", "jp-JP", "es-ES", "pt-BR"))
+        assertLocaleList("app", "cherokeeDebug")
+            .isEqualTo(getExpectedLocaleList(listOf("b+chr+US"), "en-US"))
+        assertLocaleConfig("cherokee/debug").isEqualTo(listOf("en-US", "chr-US", "es-ES", "pt-BR"))
     }
 
     @Test
     fun `Test emptyResFoldersAreIgnored`() {
         buildDsl(generateLocaleConfig = true)
 
-        addLocaleForVariantDimension(project.getSubproject("app"), JP, addResFile = false)
+        addLocaleForVariantDimension(project.getSubproject("app"), CHR_US, addResFile = false)
         project.withLocales(
             appLocales = listOf(DEFAULT),
             lib1Locales = listOf(ES),
             lib2Locales = listOf(PT)
         ).execute("assembleDebug")
 
-        assertLocaleList("app", "debug").isEqualTo(listOf("en-US"))
+        assertLocaleList("app", "debug")
+            .isEqualTo(getExpectedLocaleList(emptyList(), "en-US"))
         assertLocaleConfig("debug").isEqualTo(listOf("en-US", "es-ES", "pt-BR"))
     }
 
@@ -560,49 +640,16 @@ class LocaleConfigGenerationTest {
     fun `Test pseudolocales are present`() {
         buildDsl(generateLocaleConfig = true, pseudoLocalesEnabled = true)
 
-        project
-            .withLocales(appLocales = listOf(), lib1Locales = listOf(), lib2Locales = listOf())
-            .execute("assembleDebug")
+        project.withLocales(
+            appLocales = listOf(DEFAULT),
+            lib1Locales = listOf(),
+            lib2Locales = listOf()
+        ).execute("assembleDebug")
 
-        assertLocaleList("app", "debug")
-            .isEqualTo(listOf("en-US", SdkConstants.EN_XA, SdkConstants.AR_XB))
+        assertLocaleList("app", "debug").isEqualTo(
+        getExpectedLocaleList(listOf(SdkConstants.EN_XA, SdkConstants.AR_XB), "en-US"))
         assertLocaleList("lib1", "debug").isEmpty()
         assertLocaleList("lib2", "debug").isEmpty()
-        assertLocaleConfig("debug")
-            .isEqualTo(listOf("en-US", SdkConstants.EN_XA, SdkConstants.AR_XB))
-
-        TestFileUtils.appendToFile(
-            project.getSubproject("lib1").buildFile,
-            "android.buildTypes.debug.pseudoLocalesEnabled true"
-        )
-
-        project
-            .withLocales(appLocales = listOf(), lib1Locales = listOf(), lib2Locales = listOf())
-            .execute("assembleDebug")
-
-        assertLocaleList("app", "debug")
-            .isEqualTo(listOf("en-US", SdkConstants.EN_XA, SdkConstants.AR_XB))
-        assertLocaleList("lib1", "debug")
-            .isEqualTo(listOf(SdkConstants.EN_XA, SdkConstants.AR_XB))
-        assertLocaleList("lib2", "debug").isEmpty()
-        assertLocaleConfig("debug")
-            .isEqualTo(listOf("en-US", SdkConstants.EN_XA, SdkConstants.AR_XB))
-
-        TestFileUtils.searchAndReplace(
-            project.getSubproject("app").buildFile,
-            "android.buildTypes.debug.pseudoLocalesEnabled true",
-            ""
-        )
-
-        project
-            .withLocales(appLocales = listOf(), lib1Locales = listOf(), lib2Locales = listOf())
-            .execute("assembleDebug")
-
-        assertLocaleList("app", "debug").isEqualTo(listOf("en-US"))
-        assertLocaleList("lib1", "debug")
-            .isEqualTo(listOf(SdkConstants.EN_XA, SdkConstants.AR_XB))
-        assertLocaleList("lib2", "debug").isEmpty()
-        assertLocaleConfig("debug")
-            .isEqualTo(listOf("en-US", SdkConstants.EN_XA, SdkConstants.AR_XB))
+        validateLocalesInLocaleConfigAndApk(listOf("en-US", "en-XA", "ar-XB"))
     }
 }
