@@ -286,18 +286,7 @@ private constructor(
     return id
   }
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) {
-      return true
-    }
-    if (other == null || javaClass != other.javaClass) {
-      return false
-    }
-
-    val issue = other as Issue?
-
-    return id == issue!!.id
-  }
+  override fun equals(other: Any?): Boolean = this === other || other is Issue && id == other.id
 
   override fun hashCode(): Int {
     return id.hashCode()
