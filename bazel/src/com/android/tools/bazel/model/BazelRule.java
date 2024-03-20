@@ -56,7 +56,7 @@ public abstract class BazelRule {
     public abstract void update() throws IOException;
 
     public String getLabel() {
-        return "//" + pkg.getName() + (pkg.getName().endsWith("/" + name) ? "" : ":" + name);
+        return pkg.getQualifiedName() + (pkg.getName().endsWith("/" + name) ? "" : ":" + name);
     }
 
     public void addDependency(BazelRule rule, boolean isExported) {

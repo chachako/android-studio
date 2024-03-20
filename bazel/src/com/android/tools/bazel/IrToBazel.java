@@ -56,6 +56,9 @@ public class IrToBazel {
                 bazelProject.getBaseDir().toPath().resolve(bazelProject.getProjectPath()).toFile();
         Path workspace = bazelProject.getBaseDir().toPath();
         Workspace bazel = new Workspace(workspace.toFile());
+        Workspace intellij = new Workspace(
+                bazel.findPackage("tools/base/intellij-bazel/intellij").getPackageDir(),
+                "intellij");
 
         // Map from file path to the bazel rule that provides it. Usually java_imports.
         Map<String, BazelRule> jarRules = Maps.newHashMap();
@@ -147,11 +150,11 @@ public class IrToBazel {
                 if (dependency.dependency instanceof IrLibrary) {
                     // TODO: Update iml files to have the right names.
                     Map<String, String> UNMANAGED = ImmutableMap.of(
-                            "studio-sdk", "studio-sdk",
-                            "studio-plugin", "studio-sdk-plugin",
+                            "studio-sdk", "intellij",
+                            "studio-plugin-", "",
                             "rust-plugin", "rust-plugin",
-                            "intellij-updater", "studio-sdk-updater",
-                            "intellij-test-framework", "studio-sdk-test-framework"
+                            "intellij-updater", "updater",
+                            "intellij-test-framework", "test-framework"
                     );
                     IrLibrary library = (IrLibrary) dependency.dependency;
                     JvmImport javaImport = imports.get(library);
@@ -179,11 +182,7 @@ public class IrToBazel {
                                                             "prebuilts/tools/common/rust-plugin"),
                                                     "rust-plugin");
                                 } else {
-                                    rule =
-                                            new UnmanagedRule(
-                                                    bazel.findPackage(
-                                                            "prebuilts/studio/intellij-sdk"),
-                                                    newName);
+                                    rule = new UnmanagedRule(intellij.findPackage(""), newName);
                                 }
                                 unmanaged.put(newName, rule);
                             }

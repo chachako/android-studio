@@ -51,3 +51,25 @@ def intellij_plugin(name, plugin_id, **kwargs):
         name = name,
         plugin = ":%s" % plugin_id,
     )
+
+def setup_intellij_platforms(specs):
+    for target, spec in specs.items():
+        for id, jars in spec.plugin_jars.items():
+            native.alias(
+                name = id,
+                actual = target + "-plugin-" + id,
+                visibility = ["//visibility:public"],
+            )
+        api = {
+            "intellij-sdk": "",
+            "product-info": "-product-info",
+            "test-framework": "-test-framework",
+            "vm-options": "-vm-options",
+            "updater": "-updater",
+        }
+        for alias, suffix in api.items():
+            native.alias(
+                name = alias,
+                actual = target + suffix,
+                visibility = ["//visibility:public"],
+            )

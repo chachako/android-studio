@@ -33,10 +33,17 @@ public class Workspace {
 
     private final File directory;
 
+    private final String name;
+
     private final Map<String, Package> packages = Maps.newLinkedHashMap();
 
     public Workspace(File directory) {
+        this(directory, "");
+    }
+
+    public Workspace(File directory, String name) {
         this.directory = directory;
+        this.name = name;
     }
 
     public void generate(GenerationListener listener) throws IOException {
@@ -113,6 +120,11 @@ public class Workspace {
             }
         }
         return false;
+    }
+
+    public String getReference() {
+        // All packages are resolved as referenced from the main workspace.
+        return name.isEmpty() ? "" : "@" + name;
     }
 
     public interface GenerationListener {

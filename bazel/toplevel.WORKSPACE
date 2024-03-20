@@ -223,3 +223,8 @@ http_archive(
 load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
 
 robolectric_repositories()
+
+local_repository(
+    name = "intellij",
+    path = "tools/base/intellij-bazel/intellij",
+)

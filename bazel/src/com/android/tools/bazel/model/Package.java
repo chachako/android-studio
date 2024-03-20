@@ -150,4 +150,8 @@ public class Package {
         }
         rules.put(rule.getName().toLowerCase(Locale.US), rule);
     }
+
+    public String getQualifiedName() {
+        return workspace.getReference() + "//" + getName();
+    }
 }
