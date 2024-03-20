@@ -17,11 +17,12 @@
 package com.android.build.gradle.integration.application
 
 import com.android.Version
+import com.android.build.gradle.integration.common.fixture.GradleBuildResult
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.integration.common.truth.forEachLine
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.internal.services.LintParallelBuildService
 import com.android.build.gradle.options.StringOption
 import com.android.buildanalyzer.common.AndroidGradlePluginAttributionData
 import com.google.common.truth.Truth.assertThat
@@ -29,6 +30,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.FileOutputStream
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
 
 class DifferentProjectClassLoadersTest {
     @JvmField
@@ -62,7 +66,8 @@ class DifferentProjectClassLoadersTest {
     /** Regression test for b/154388196. */
     @Test
     fun testCleanBuild() {
-        project.executor().run("assembleDebug")
+        val result = project.executor().run("assembleDebug")
+        verifyClassLoaderSetup(result)
     }
 
     /**
@@ -71,7 +76,8 @@ class DifferentProjectClassLoadersTest {
      */
     @Test
     fun testLint() {
-        project.executor().run("lintDebug")
+        val result = project.executor().run("lintDebug")
+        verifyClassLoaderSetup(result)
     }
 
     @Test
@@ -91,7 +97,6 @@ class DifferentProjectClassLoadersTest {
                     }
                 }
                 """.trimIndent()
-
         TestFileUtils.appendToFile(
             project.getSubproject("androidLib1").buildFile,
             setUpDummyTask("firstLibTask")
@@ -102,9 +107,10 @@ class DifferentProjectClassLoadersTest {
         )
 
         val attributionDir = temporaryFolder.newFolder()
-        project.executor()
+        val result = project.executor()
             .with(StringOption.IDE_ATTRIBUTION_FILE_LOCATION, attributionDir.absolutePath)
             .run("assembleDebug")
+        verifyClassLoaderSetup(result)
 
         val attributionData = AndroidGradlePluginAttributionData.load(attributionDir)!!
         assertThat(attributionData.taskNameToTaskInfoMap.keys).contains("firstLibTask")
@@ -114,18 +120,34 @@ class DifferentProjectClassLoadersTest {
     private fun addDirectClasspath(name: String) {
         project.getSubproject(name).buildFile.also {
             val currentBuild = it.readText()
+            val customJar = temporaryFolder.newFile(name)
+            JarOutputStream(FileOutputStream(customJar)).use {
+                it.putNextEntry(JarEntry(name))
+                it.write(name.toByteArray())
+                it.closeEntry()
+            }
             it.writeText(
                 """
                 |buildscript {
                 |  apply from: "../../commonBuildScript.gradle"
                 |  dependencies {
                 |    classpath 'com.android.tools.build:gradle:${Version.ANDROID_GRADLE_PLUGIN_VERSION}'
-                |    classpath files('non_existent_$name.jar')
+                |    classpath files('${customJar.invariantSeparatorsPath}')
                 |  }
                 |}
+                |println("Class loader for AGP API = " + com.android.build.api.dsl.LibraryExtension.class.getClassLoader().hashCode())
                 |$currentBuild
             """.trimMargin()
             )
         }
+    }
+
+    private fun verifyClassLoaderSetup(result: GradleBuildResult) {
+        val taskLogs = mutableSetOf<String>()
+        result.stdout.forEachLine {
+            if (it.startsWith("Class loader for AGP API = ")) taskLogs.add(it)
+        }
+        assertThat(taskLogs).named("Log lines that should contain different class loader hashes")
+            .hasSize(2)
     }
 }
