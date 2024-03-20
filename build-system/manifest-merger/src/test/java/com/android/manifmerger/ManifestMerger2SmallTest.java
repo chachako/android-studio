@@ -2095,6 +2095,39 @@ public class ManifestMerger2SmallTest {
     }
 
     @Test
+    public void testFixNoDotPackage() throws Exception {
+        MockLog mockLog = new MockLog();
+        String libInput =
+                "<manifest\n"
+                        + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                        + "    package=\"withoutdots\">\n"
+                        + "    <application android:name=\"lib1\">\n"
+                        + "        <activity android:name=\".MainActivity\">\n"
+                        + "        </activity>\n"
+                        + "    </application>\n"
+                        + "</manifest>";
+        File libFile = TestUtils.inputAsFile("testRemoveNavGraphs", libInput);
+
+        try {
+            MergingReport mergingReport =
+                    ManifestMerger2.newMerger(libFile, mockLog, ManifestMerger2.MergeType.LIBRARY)
+                            .withFeatures(Feature.MAKE_AAPT_SAFE)
+                            .merge();
+            assertThat(mergingReport.getResult()).isEqualTo(MergingReport.Result.SUCCESS);
+            // check that MERGED manifest has the original package, but the aapt safe one has
+            // the suffix appended
+            Document mergedDoc = parse(mergingReport.getMergedDocument(MergedManifestKind.MERGED));
+            Document aaptDoc = parse(mergingReport.getMergedDocument(MergedManifestKind.AAPT_SAFE));
+            assertThat(mergedDoc.getDocumentElement().getAttribute("package"))
+                    .isEqualTo("withoutdots");
+            assertThat(aaptDoc.getDocumentElement().getAttribute("package"))
+                    .isEqualTo("withoutdots.for.verification");
+        } finally {
+            assertThat(libFile.delete()).named("libFile file was deleted").isTrue();
+        }
+    }
+
+    @Test
     public void testAAPTWillNotBeGeneratedIfNoChanges() throws Exception {
         MockLog mockLog = new MockLog();
         String libInput =
