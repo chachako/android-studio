@@ -115,12 +115,17 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             return@recordTaskAction // No previews discovered to render
         }
 
-        val resourcesApk = getResourcesApk()
         val classpathJars = mutableListOf<String>()
         classpathJars.addAll(mainClassesDir.get().map{it.asFile }.toList().map { it.absolutePath })
         classpathJars.addAll(testClassesDir.get().map{it.asFile }.toList().map { it.absolutePath })
         classpathJars.addAll(mainClasspath.get().map{it.asFile }.toList().map { it.absolutePath })
         classpathJars.addAll(testClasspath.get().map{it.asFile }.toList().map { it.absolutePath })
+
+        // Rendering requires androidx.compose.ui:ui-tooling as a runtime dependency
+        val regex = Regex("ui-tooling-[0-9a-z.]+-runtime.jar")
+        if (classpathJars.none { regex.containsMatchIn(it) }) {
+            throw RuntimeException("Missing required runtime dependency. Please add androidx.compose.ui:ui-tooling to your testing module's dependencies.")
+        }
 
         val fontsDir = sdkFontsDir.orNull?.asFile?.absolutePath
         configureInput(
@@ -129,7 +134,7 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             layoutlibDir.singleFile.absolutePath + "/layoutlib/",
             outputDir.get().asFile.absolutePath,
             packageName.get(),
-            resourcesApk,
+            getResourcesApk(),
             cliToolArgumentsFile.get().asFile,
             previewsDiscovered.get().asFile
         )

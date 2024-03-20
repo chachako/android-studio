@@ -438,4 +438,14 @@ class ScreenshotTest {
         TestFileUtils.replaceLine(testFile2, 1, "")
         TestFileUtils.replaceLine(testFile2, testFile2.readLines().size, "")
     }
+
+    @Test
+    fun runPreviewScreenshotTestsWithMissingUiToolingDep() {
+        val uiToolingDep = "implementation 'androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}'"
+        val uiToolingPreviewDep = "implementation 'androidx.compose.ui:ui-tooling-preview:${TaskManager.COMPOSE_UI_VERSION}'"
+        TestFileUtils.searchAndReplace(appProject.buildFile, uiToolingDep, uiToolingPreviewDep)
+
+        val result = getExecutor().expectFailure().run(":app:previewScreenshotUpdateDebugAndroidTest")
+        result.assertErrorContains("Missing required runtime dependency. Please add androidx.compose.ui:ui-tooling to your testing module's dependencies.")
+    }
 }
