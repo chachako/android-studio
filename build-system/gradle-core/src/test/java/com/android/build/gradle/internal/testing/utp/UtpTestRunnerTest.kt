@@ -18,18 +18,21 @@ package com.android.build.gradle.internal.testing.utp
 
 import com.android.build.api.variant.impl.AndroidVersionImpl
 import com.android.build.gradle.internal.SdkComponentsBuildService
+import com.android.build.gradle.internal.testing.AdbHelper
 import com.android.build.gradle.internal.testing.StaticTestData
 import com.android.builder.model.TestOptions
 import com.android.builder.testing.api.DeviceConnector
 import com.android.ide.common.process.ProcessExecutor
 import com.android.ide.common.workers.ExecutorServiceAdapter
 import com.android.testutils.MockitoKt.any
+import com.android.testutils.MockitoKt.mock
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.utils.ILogger
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.platform.proto.api.config.RunnerConfigProto
 import com.google.testing.platform.proto.api.core.TestSuiteResultProto.TestSuiteResult
 import com.google.testing.platform.proto.api.service.ServerConfigProto.ServerConfig
+import org.gradle.api.provider.Provider
 import org.gradle.workers.WorkQueue
 import org.gradle.workers.WorkerExecutor
 import org.junit.Before
@@ -63,6 +66,7 @@ class UtpTestRunnerTest {
     @Mock lateinit var mockWorkQueue: WorkQueue
     @Mock lateinit var mockExecutorServiceAdapter: ExecutorServiceAdapter
     @Mock lateinit var mockVersionedSdkLoader: SdkComponentsBuildService.VersionedSdkLoader
+    @Mock lateinit var mockAdbHelper: AdbHelper
     @Mock lateinit var mockTestData: StaticTestData
     @Mock lateinit var mockAppApk: File
     @Mock lateinit var mockPrivacySandboxSdkApk: File
@@ -88,10 +92,21 @@ class UtpTestRunnerTest {
 
         `when`(mockDevice.serialNumber).thenReturn("mockDeviceSerialNumber")
         `when`(mockDevice.apiLevel).thenReturn(28)
-        `when`(mockDevice.name).thenReturn("mockDeviceName")
         `when`(mockTestData.minSdkVersion).thenReturn(AndroidVersionImpl(28))
         `when`(mockTestData.testedApkFinder).thenReturn { listOf(mockAppApk) }
-        `when`(mockUtpConfigFactory.createRunnerConfigProtoForLocalDevice(
+
+        val adbHelperProvider: Provider<AdbHelper> = mock()
+        `when`(adbHelperProvider.get()).thenReturn(mockAdbHelper)
+        `when`(mockVersionedSdkLoader.adbHelper).thenReturn(adbHelperProvider)
+
+
+    }
+
+    private fun runUtp(result: UtpTestRunResult, expectedToRunTests: Boolean = true): Boolean {
+        if (expectedToRunTests) {
+            // need to set up additional stubbing here, b/c of strict stubbing mode.
+            `when`(mockDevice.name).thenReturn("mockDeviceName")
+            `when`(mockUtpConfigFactory.createRunnerConfigProtoForLocalDevice(
                 any(),
                 any(),
                 any(),
@@ -116,14 +131,13 @@ class UtpTestRunnerTest {
                 any(),
                 any(),
                 nullable(ShardConfig::class.java),
-        )).then {
-            RunnerConfigProto.RunnerConfig.getDefaultInstance()
-        }
-        `when`(mockUtpConfigFactory.createServerConfigProto())
+            )).then {
+                RunnerConfigProto.RunnerConfig.getDefaultInstance()
+            }
+            `when`(mockUtpConfigFactory.createServerConfigProto())
                 .thenReturn(ServerConfig.getDefaultInstance())
-    }
+        }
 
-    private fun runUtp(result: UtpTestRunResult): Boolean {
         val runner = UtpTestRunner(
             null,
             mockProcessExecutor,
@@ -196,5 +210,20 @@ class UtpTestRunnerTest {
             .isEqualTo(RunnerConfigProto.RunnerConfig.getDefaultInstance())
 
         assertThat(result).isFalse()
+    }
+
+    @Test
+    fun runTestsFiltersManagedDevices() {
+        `when`(mockTestData.privacySandboxInstallBundlesFinder).thenReturn { emptyList() }
+        // Ensure all devices are determined to be managed devices.
+        `when`(mockAdbHelper.isManagedDevice(any(), any())).thenReturn(true)
+
+        val result = runUtp(UtpTestRunResult(testPassed = true,
+            TestSuiteResult.getDefaultInstance()), expectedToRunTests = false)
+
+        // Since the only available devices will only be managed devices, we expect no tests to
+        // be run.
+        assertThat(capturedRunnerConfigs).hasSize(0)
+        assertThat(result).isTrue()
     }
 }

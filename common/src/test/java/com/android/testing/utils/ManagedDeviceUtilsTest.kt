@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,29 +22,48 @@ import kotlin.test.assertEquals
 class ManagedDeviceUtilsTest {
 
     @Test
-    fun testComputeSystemImageHashFromDsl() {
-        var expectedHash = "system-images;android-29;default;x86"
-        var computedHash = computeSystemImageHashFromDsl(29, "aosp", "x86")
+    fun isGradleManagedDevice_detectsManagedDevices() {
+        assertEquals(
+            true,
+            isGradleManagedDevice("dev29_google_apis_x86_Pixel_2__something__snapshot")
+        )
+        assertEquals(
+            true,
+            isGradleManagedDevice("dev32_default_arm64-v8a_Pixel_3_snapshot")
+        )
 
-        assertEquals(expectedHash, computedHash)
-
-        expectedHash = "system-images;android-30;google_apis;x86_64"
-        computedHash = computeSystemImageHashFromDsl(30, "google", "x86_64")
-
-        assertEquals(expectedHash, computedHash)
-
-        expectedHash = "system-images;android-31;android-wear;x86_64"
-        computedHash = computeSystemImageHashFromDsl(31, "android-wear", "x86_64")
-
-        assertEquals(expectedHash, computedHash)
+        assertEquals(
+            true,
+            isGradleManagedDevice("app:myDeviceAndroidTest")
+        )
+        assertEquals(
+            true,
+            isGradleManagedDevice("app:device1AndroidTest_0")
+        )
+        assertEquals(
+            true,
+            isGradleManagedDevice("sub-project:complex_device_nameAndroidTest_12")
+        )
     }
 
     @Test
-    fun testParseApiFromHash() {
-        assertEquals(29, parseApiFromHash("system-images;android-29;default;x86"))
-        assertEquals(24, parseApiFromHash("system-images;android-24;default;arm64-v8a"))
+    fun isGradleManagedDevice_identifiesNonManagedDevices() {
         assertEquals(
-            30, parseApiFromHash("system-images;android-30;google_apis_playstore;x86_64")
+            false,
+            isGradleManagedDevice("some_model_id")
+        )
+        // Even a valid GMD AVD should fail, if it doesn't conform to a setup task format.
+        assertEquals(
+            false,
+            isGradleManagedDevice("dev32_default_arm64-v8a_Pixel_3")
+        )
+        assertEquals(
+            false,
+            isGradleManagedDevice(":toLevelAndroidTest")
+        )
+        assertEquals(
+            false,
+            isGradleManagedDevice("app:device1AndroidTest_")
         )
     }
 }
