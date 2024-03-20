@@ -53,8 +53,9 @@ class DataBindingMultiModuleTest(useAndroidX: Boolean) {
         val executor = project.executor();
         // use release to get 1 classes.dex instead of many
         executor.run("clean", "assembleRelease")
-        val apk = getApk()
-        assertThat(apk).exists()
+        getApk().use {
+            assertThat(it).exists()
+        }
         assertBRs("_all", "inheritedInput", "input", "appInput")
         // add a bindable to the inherited
         val newBindable = project
@@ -169,16 +170,13 @@ class DataBindingMultiModuleTest(useAndroidX: Boolean) {
     }
 
     private fun assertBRs(vararg fields: String) {
-        val apk = getApk()
-        assertThat(apk)
-            .hasMainDexFile()
-            .that().run {
+        getApk().use { apk ->
+            assertThat(apk).hasMainDexFile().that().run {
                 BR_CLASSES.forEach { brClass ->
-                    containsClass(brClass)
-                        .that()
-                        .hasExactFields(fields.toSet())
+                    containsClass(brClass).that().hasExactFields(fields.toSet())
                 }
             }
+        }
     }
 
     private fun getApk(): Apk {
