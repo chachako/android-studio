@@ -7,7 +7,7 @@ package com.android.build.api {
     method public com.android.build.api.AndroidPluginVersion alpha(int alpha);
     method public com.android.build.api.AndroidPluginVersion beta(int beta);
     method public int compareTo(com.android.build.api.AndroidPluginVersion other);
-    method @org.gradle.api.Incubating public com.android.build.api.AndroidPluginVersion dev();
+    method public com.android.build.api.AndroidPluginVersion dev();
     method public static com.android.build.api.AndroidPluginVersion getCurrent();
     method public int getMajor();
     method public int getMicro();
