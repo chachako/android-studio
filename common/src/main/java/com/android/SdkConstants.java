@@ -1029,7 +1029,7 @@ public final class SdkConstants {
     public static final String ANDROID_NS_NAME = "android";
     /** The default prefix used for the {@link #ANDROID_URI} name space including the colon */
     public static final String ANDROID_NS_NAME_PREFIX = "android:";
-
+    /** The string length of {@link #ANDROID_NS_NAME_PREFIX} */
     public static final int ANDROID_NS_NAME_PREFIX_LEN = ANDROID_NS_NAME_PREFIX.length();
     /** The default prefix used for the {@link #TOOLS_URI} name space */
     public static final String TOOLS_NS_NAME = "tools";

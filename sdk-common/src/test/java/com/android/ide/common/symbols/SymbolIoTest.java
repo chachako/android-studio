@@ -1263,4 +1263,49 @@ public class SymbolIoTest {
                     .startsWith("Basic");
         }
     }
+
+    @Test
+    public void checkAndroidNamespaceNormalisation() throws Exception {
+         try (FileSystem fs = Jimfs.newFileSystem()) {
+             Path rDef = fs.getPath("R-def.txt");
+             SymbolTable thisLibrary = SymbolTable.builder()
+                     .tablePackage("com.example.lib")
+                     .add(
+                             Symbol.createStyleableSymbol(
+                                     "MyButton",
+                                     ImmutableList.of(42, 0, 0, 0, 0),
+                                     ImmutableList.of(
+                                             "something",
+                                             "android:background",
+                                             "android:foreground",
+                                             "android_background",
+                                             "android_foreground"
+                                     ),
+                                     true
+                             )
+                     )
+                     .build();
+             SymbolIo.writeRDef(thisLibrary, rDef);
+             SymbolTable symbolTableFromRDef = SymbolIo.readRDef(rDef);
+             List<String> outputLines = java.nio.file.Files.readAllLines(
+                     rDef, StandardCharsets.UTF_8);
+             assertThat(outputLines)
+                     .containsExactly(
+                             "R_DEF: Internal format may change without notice",
+                             "com.example.lib",
+                             "styleable MyButton something android:background android:foreground android_background android_foreground");
+
+             assertThat(symbolTableFromRDef.getSymbols()
+                                .values()
+                                .iterator()
+                                .next()
+                                .getChildren()).containsExactly(
+                     "something",
+                     "android_background",
+                     "android_foreground",
+                     "android_background",
+                     "android_foreground"
+             );
+         }
+    }
 }
