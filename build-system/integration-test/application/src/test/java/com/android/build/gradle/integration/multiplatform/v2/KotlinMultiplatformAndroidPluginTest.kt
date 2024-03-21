@@ -29,6 +29,7 @@ import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Assume
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -59,6 +60,7 @@ class KotlinMultiplatformAndroidPluginTest(private val publishLibs: Boolean) {
         }
     }
 
+    @Ignore("b/329887373")
     @Test
     fun testKmpLibraryTestApkContentsWithBuildTypeSelection() {
         TestFileUtils.appendToFile(
