@@ -74,10 +74,6 @@ https://issuetracker.google.com/328748252
 https://issuetracker.google.com/328748254
   * com.android.build.api.dsl.HasInitWith
   * com.android.build.api.dsl.HasInitWith.initWith: void (T)
-https://issuetracker.google.com/328748293
-  * com.android.build.api.attributes.ProductFlavorAttr$Companion
-  * com.android.build.api.attributes.ProductFlavorAttr$Companion.of: org.gradle.api.attributes.Attribute<com.android.build.api.attributes.ProductFlavorAttr> (java.lang.String)
-  * com.android.build.api.attributes.ProductFlavorAttr.of: org.gradle.api.attributes.Attribute<com.android.build.api.attributes.ProductFlavorAttr> (java.lang.String)
 https://issuetracker.google.com/328748294
   * com.android.build.api.dsl.BaselineProfile
   * com.android.build.api.dsl.BaselineProfile.getIgnoreFrom: java.util.Set<java.lang.String> ()
