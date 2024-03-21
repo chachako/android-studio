@@ -25,21 +25,10 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode
 import androidx.sqlite.inspection.SqliteInspectorProtocol.QueryResponse
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Row
 import com.android.testutils.CloseablesRule
-import com.android.tools.appinspection.database.testing.Column
-import com.android.tools.appinspection.database.testing.Database
+import com.android.tools.appinspection.database.testing.*
 import com.android.tools.appinspection.database.testing.MessageFactory.createGetSchemaCommand
 import com.android.tools.appinspection.database.testing.MessageFactory.createQueryCommand
 import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesCommand
-import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
-import com.android.tools.appinspection.database.testing.Table
-import com.android.tools.appinspection.database.testing.createInstance
-import com.android.tools.appinspection.database.testing.displayName
-import com.android.tools.appinspection.database.testing.insertValues
-import com.android.tools.appinspection.database.testing.issueQuery
-import com.android.tools.appinspection.database.testing.toCreateString
-import com.android.tools.appinspection.database.testing.toTableList
-import com.android.tools.appinspection.database.testing.type
-import com.android.tools.appinspection.database.testing.value
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.fail
@@ -401,7 +390,7 @@ class QueryTest {
     val dbId = inspectDatabase(db)
     var recordCount = 0
     var batchCount = 0
-    while (true) { // break close inside of the loop
+    while (true) { // break close inside the loop
       val response =
         testEnvironment.sendCommand(
           createQueryCommand(
@@ -605,6 +594,36 @@ class QueryTest {
   @Test
   fun test_float64() {
     test_value64(Float.MAX_VALUE * 2.0, { s -> s.getDouble(0) }, { c -> c.doubleValue })
+  }
+
+  @Test
+  fun test_query_isNotForcedOpen() = runBlocking {
+    val database = Database("db1").createInstance(closeablesRule, temporaryFolder)
+
+    testEnvironment.registerAlreadyOpenDatabases(listOf(database))
+    testEnvironment.sendCommand(createTrackDatabasesCommand())
+    val databaseId = testEnvironment.awaitDatabaseOpenedEvent(database.displayName).databaseId
+
+    val response = issueQuery(databaseId, "SELECT 1")
+
+    assertThat(response.isForcedConnection).isFalse()
+  }
+
+  @Test
+  fun test_query_isForcedOpen() = runBlocking {
+    val database = Database("db1").createInstance(closeablesRule, temporaryFolder)
+    testEnvironment.registerApplication(database)
+    testEnvironment.sendCommand(createTrackDatabasesCommand(forceOpen = true))
+    val hooks = testEnvironment.consumeRegisteredHooks()
+    testEnvironment.getDatabaseRegistry().forcedOpen.forEach {
+      // We need to trigger the hooks ourselves
+      hooks.triggerOnOpened(it)
+    }
+    val databaseId = testEnvironment.awaitDatabaseOpenedEvent(database.displayName).databaseId
+
+    val response = issueQuery(databaseId, "SELECT 1")
+
+    assertThat(response.isForcedConnection).isTrue()
   }
 
   private fun <T> test_value64(

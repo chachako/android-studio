@@ -120,6 +120,8 @@ message TrackDatabasesResponse {}
 // Object expected as a response to GetSchemaCommand.
 message GetSchemaResponse {
   repeated Table tables = 1;
+  // True if the connection that was used for this query was forced
+  bool is_forced_connection = 2;
 }
 
 // Schema information for a table or a view.
@@ -151,6 +153,8 @@ message QueryResponse {
   repeated Row rows = 1;
   // Names of columns in the result set
   repeated string column_names = 2;
+  // True if the connection that was used for this query was forced
+  bool is_forced_connection = 3;
 }
 
 // Query result row.

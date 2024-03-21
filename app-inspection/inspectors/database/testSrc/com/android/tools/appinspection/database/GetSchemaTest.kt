@@ -20,14 +20,9 @@ import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode.ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE
 import com.android.testutils.CloseablesRule
-import com.android.tools.appinspection.database.testing.Column
-import com.android.tools.appinspection.database.testing.Database
+import com.android.tools.appinspection.database.testing.*
 import com.android.tools.appinspection.database.testing.MessageFactory.createGetSchemaCommand
 import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesCommand
-import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
-import com.android.tools.appinspection.database.testing.Table
-import com.android.tools.appinspection.database.testing.createInstance
-import com.android.tools.appinspection.database.testing.inspectDatabase
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.fail
 import kotlinx.coroutines.runBlocking
@@ -180,6 +175,36 @@ class GetSchemaTest {
       assertThat(error.recoverability.isRecoverable).isEqualTo(true)
       assertThat(error.errorCodeValue).isEqualTo(ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE)
     }
+  }
+
+  @Test
+  fun test_get_scheme_isNotForcedOpen() = runBlocking {
+    val database = Database("db1").createInstance(closeablesRule, temporaryFolder)
+
+    testEnvironment.registerAlreadyOpenDatabases(listOf(database))
+    testEnvironment.sendCommand(createTrackDatabasesCommand())
+    val databaseId = testEnvironment.awaitDatabaseOpenedEvent(database.displayName).databaseId
+
+    val response = testEnvironment.sendCommand(createGetSchemaCommand(databaseId))
+
+    assertThat(response.getSchema.isForcedConnection).isFalse()
+  }
+
+  @Test
+  fun test_get_scheme_isForcedOpen() = runBlocking {
+    val database = Database("db1").createInstance(closeablesRule, temporaryFolder)
+    testEnvironment.registerApplication(database)
+    testEnvironment.sendCommand(createTrackDatabasesCommand(forceOpen = true))
+    val hooks = testEnvironment.consumeRegisteredHooks()
+    testEnvironment.getDatabaseRegistry().forcedOpen.forEach {
+      // We need to trigger the hooks ourselves
+      hooks.triggerOnOpened(it)
+    }
+    val databaseId = testEnvironment.awaitDatabaseOpenedEvent(database.displayName).databaseId
+
+    val response = testEnvironment.sendCommand(createGetSchemaCommand(databaseId))
+
+    assertThat(response.getSchema.isForcedConnection).isTrue()
   }
 
   private fun test_get_schema(

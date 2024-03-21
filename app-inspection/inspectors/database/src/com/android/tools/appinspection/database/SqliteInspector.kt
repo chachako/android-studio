@@ -28,6 +28,7 @@ import android.database.sqlite.SQLiteStatement
 import android.os.Build
 import android.os.CancellationSignal
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.inspection.ArtTooling
 import androidx.inspection.Connection
 import androidx.inspection.Inspector
@@ -169,7 +170,8 @@ internal class SqliteInspector(
   connection: Connection,
   private val environment: InspectorEnvironment,
 ) : Inspector(connection) {
-  private val databaseRegistry =
+  @VisibleForTesting
+  internal val databaseRegistry =
     DatabaseRegistry(::dispatchDatabaseOpenedEvent, ::dispatchDatabaseClosedEvent)
   private val databaseLockRegistry = DatabaseLockRegistry()
   private val ioExecutor = environment.executors().io()
@@ -281,7 +283,7 @@ internal class SqliteInspector(
       Runnable {
         val lockId: Int
         try {
-          lockId = databaseLockRegistry.acquireLock(databaseId, connection.mDatabase)
+          lockId = databaseLockRegistry.acquireLock(databaseId, connection.database)
         } catch (e: Throwable) {
           processLockingException(callback, e, true)
           return@Runnable
@@ -559,21 +561,21 @@ internal class SqliteInspector(
     val connection = acquireConnection(command.databaseId, callback) ?: return
 
     // TODO: consider a timeout
-    submit(connection.mExecutor) { callback.reply(querySchema(connection.mDatabase).toByteArray()) }
+    submit(connection.executor) { callback.reply(querySchema(connection.database).toByteArray()) }
   }
 
   private fun handleQuery(command: QueryCommand, callback: CommandCallback) {
     val connection = acquireConnection(command.databaseId, callback) ?: return
 
     val cancellationSignal = CancellationSignal()
-    val executor = connection.mExecutor
+    val executor = connection.executor
     // TODO: consider a timeout
     val future: Future<*> =
       submit(executor) {
         val params = parseQueryParameterValues(command)
         var cursor: Cursor? = null
         try {
-          cursor = rawQuery(connection.mDatabase, command.query, params, cancellationSignal)
+          cursor = rawQuery(connection.database, command.query, params, cancellationSignal)
 
           var responseSizeLimitHint = command.responseSizeLimitHint
           // treating unset field as unbounded
@@ -584,6 +586,7 @@ internal class SqliteInspector(
             Response.newBuilder()
               .setQuery(
                 QueryResponse.newBuilder()
+                  .setIsForcedConnection(databaseRegistry.isForcedConnection(connection.database))
                   .addAllRows(convert(cursor, responseSizeLimitHint))
                   .addAllColumnNames(columnNames)
                   .build()
@@ -665,8 +668,8 @@ internal class SqliteInspector(
     if (connection != null) {
       // With WAL enabled, we prefer to use the IO executor. With WAL off we don't have a
       // choice and must use the executor that has a lock (transaction) on the database.
-      return if (connection.mDatabase.isWriteAheadLoggingEnabled)
-        DatabaseConnection(connection.mDatabase, ioExecutor)
+      return if (connection.database.isWriteAheadLoggingEnabled)
+        DatabaseConnection(connection.database, ioExecutor)
       else connection
     }
 
@@ -702,7 +705,9 @@ internal class SqliteInspector(
     var cursor: Cursor? = null
     try {
       cursor = rawQuery(database, QUERY_TABLE_INFO, arrayOfNulls(0), null)
-      val schemaBuilder = GetSchemaResponse.newBuilder()
+      val schemaBuilder =
+        GetSchemaResponse.newBuilder()
+          .setIsForcedConnection(databaseRegistry.isForcedConnection(database))
 
       val objectTypeIx = cursor.getColumnIndex("type") // view or table
       val tableNameIx = cursor.getColumnIndex("tableName")
@@ -791,7 +796,7 @@ internal class SqliteInspector(
    * Executor is relevant in the context of locking, where a locked database with WAL disabled needs
    * to run queries on the thread that locked it.
    */
-  internal class DatabaseConnection(val mDatabase: SQLiteDatabase, val mExecutor: Executor)
+  internal class DatabaseConnection(val database: SQLiteDatabase, val executor: Executor)
 
   companion object {
 

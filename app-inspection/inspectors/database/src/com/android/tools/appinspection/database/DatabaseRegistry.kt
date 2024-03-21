@@ -170,6 +170,9 @@ internal class DatabaseRegistry(
     }
   }
 
+  fun isForcedConnection(database: SQLiteDatabase) =
+    synchronized(lock) { forcedOpen.contains(database) }
+
   /** Thread-safe */
   private fun handleDatabaseSignal(database: SQLiteDatabase) {
     var notifyOpenedId: Int? = null

@@ -27,6 +27,7 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.Command
 import androidx.sqlite.inspection.SqliteInspectorProtocol.DatabaseOpenedEvent
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Event
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response
+import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Executor
 import kotlin.test.fail
@@ -37,15 +38,16 @@ import kotlinx.coroutines.runBlocking
 import org.junit.rules.ExternalResource
 import org.robolectric.shadows.ShadowLog
 
-private const val SQLITE_INSPECTOR_ID = "androidx.sqlite.inspection"
+internal const val SQLITE_INSPECTOR_ID = "androidx.sqlite.inspection"
 
 class SqliteInspectorTestEnvironment(ioExecutorOverride: Executor? = null) : ExternalResource() {
   private val artTooling = FakeArtTooling()
   private val job = Job()
   private val inspectorEnvironment =
     DefaultTestInspectorEnvironment(TestInspectorExecutors(job, ioExecutorOverride), artTooling)
+  private val inspectorFactory = TestInspectorFactory()
   private val inspectorTester: InspectorTester = runBlocking {
-    InspectorTester(inspectorId = SQLITE_INSPECTOR_ID, environment = inspectorEnvironment)
+    InspectorTester(SQLITE_INSPECTOR_ID, inspectorEnvironment, inspectorFactory)
   }
 
   override fun before() {
@@ -56,6 +58,8 @@ class SqliteInspectorTestEnvironment(ioExecutorOverride: Executor? = null) : Ext
     inspectorTester.dispose()
     runBlocking { job.cancelAndJoin() }
   }
+
+  internal fun getDatabaseRegistry() = inspectorFactory.getSqliteInspector().databaseRegistry
 
   fun getLooper() = inspectorEnvironment.executors().handler().looper
 
@@ -83,6 +87,19 @@ class SqliteInspectorTestEnvironment(ioExecutorOverride: Executor? = null) : Ext
   }
 
   fun registerApplication(application: Application) {
+    artTooling.registerInstancesToFind(listOf(application))
+  }
+
+  fun registerApplication(vararg databases: SQLiteDatabase) {
+    val application =
+      object : Application() {
+        override fun databaseList(): Array<String> =
+          databases.map { it.absolutePath }.toTypedArray()
+
+        override fun getDatabasePath(name: String?) =
+          InstrumentationRegistry.getInstrumentation().context.getDatabasePath(name)
+      }
+
     artTooling.registerInstancesToFind(listOf(application))
   }
 
