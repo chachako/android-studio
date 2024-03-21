@@ -49,7 +49,5 @@ interface AarMetadata {
      * minAgpVersion must be a stable AGP version, and it must be formatted with major, minor, and
      * micro values (for example, "4.0.0").
      */
-    @get:Incubating
-    @set:Incubating
     var minAgpVersion: String?
 }
