@@ -242,7 +242,6 @@ interface InAndOutFileOperationRequest {
      * @param name file name in the output folder.
      * @return itself
      */
-    @Incubating
     fun withName(name: String): InAndOutFileOperationRequest
 
     /**

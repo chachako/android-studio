@@ -90,8 +90,6 @@ https://issuetracker.google.com/328748349
   * com.android.build.api.dsl.LibraryKeepRules.setIgnoreFromAllExternalDependencies: void (boolean)
 https://issuetracker.google.com/328748351
   * com.android.build.api.transform.Transform.applyToVariant: boolean (com.android.build.api.variant.VariantInfo)
-https://issuetracker.google.com/328748371
-  * com.android.build.api.artifact.InAndOutFileOperationRequest.withName: com.android.build.api.artifact.InAndOutFileOperationRequest (java.lang.String)
 https://issuetracker.google.com/328748373
   * com.android.build.api.dsl.PostProcessing
   * com.android.build.api.dsl.PostProcessing.consumerProguardFile: void (java.lang.Object)

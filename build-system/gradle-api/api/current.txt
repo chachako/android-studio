@@ -120,7 +120,7 @@ package com.android.build.api.artifact {
 
   public interface InAndOutFileOperationRequest {
     method public <ArtifactTypeT extends com.android.build.api.artifact.Artifact.Single<org.gradle.api.file.RegularFile> & com.android.build.api.artifact.Artifact.Transformable> void toTransform(ArtifactTypeT type);
-    method @org.gradle.api.Incubating public com.android.build.api.artifact.InAndOutFileOperationRequest withName(String name);
+    method public com.android.build.api.artifact.InAndOutFileOperationRequest withName(String name);
   }
 
   public abstract sealed class MultipleArtifact<FileTypeT extends org.gradle.api.file.FileSystemLocation> extends com.android.build.api.artifact.Artifact.Multiple<FileTypeT> {
