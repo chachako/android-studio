@@ -17,19 +17,10 @@
 package com.android.build.gradle.integration.privacysandbox
 
 import com.android.SdkConstants
-import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSampleProject
-import com.android.build.gradle.integration.common.truth.ApkSubject
-import com.android.build.gradle.integration.common.truth.ApkSubject.assertThat
-import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
-import com.android.build.gradle.options.StringOption
-import com.android.builder.model.v2.ide.SyncIssue
-import com.android.ide.common.build.GenericBuiltArtifactsLoader
 import com.android.ide.common.signing.KeystoreHelper
 import com.android.testutils.TestUtils
 import com.android.testutils.apk.Apk
@@ -41,13 +32,10 @@ import com.android.tools.apk.analyzer.AaptInvoker
 import com.android.utils.FileUtils
 import com.android.utils.StdLogger
 import com.google.common.truth.Truth.assertThat
-import com.google.protobuf.TextFormat
-import com.google.wireless.android.sdk.stats.GradleBuildProject
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.Path
 import java.util.Objects
 import java.util.zip.ZipFile
 import kotlin.io.path.name
@@ -297,6 +285,21 @@ class PrivacySandboxSdkTest {
                 .withFailOnWarning(false) // kgp uses deprecated api WrapUtil
                 .with(BooleanOption.PRIVACY_SANDBOX_SDK_REQUIRE_SERVICES, false)
                 .run(":example-app:assembleDebug")
+    }
+
+    @Test
+    fun testProguardRulesGeneration() {
+        TestFileUtils.searchAndReplace(
+            project.getSubproject(":privacy-sandbox-sdk").buildFile,
+            """compatSdkProviderClassName = "Test"""",
+            ""
+        )
+        TestFileUtils.searchAndReplace(
+            project.getSubproject(":privacy-sandbox-sdk").buildFile,
+            """sdkProviderClassName = "Test"""",
+            ""
+        )
+        executor().run(":privacy-sandbox-sdk:generatePrivacySandboxProguardRules")
     }
 
     @Test
