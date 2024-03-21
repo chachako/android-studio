@@ -17976,10 +17976,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.databinding.databinding-common_8.3.0",
-    pom = "repository/androidx/databinding/databinding-common/8.3.0/databinding-common-8.3.0.pom",
+    name = "androidx.databinding.databinding-common_8.3.1",
+    pom = "repository/androidx/databinding/databinding-common/8.3.1/databinding-common-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "androidx/databinding/databinding-common/8.3.0",
+    repo_path = "androidx/databinding/databinding-common/8.3.1",
     visibility = ["//visibility:public"],
 )
 
@@ -18390,14 +18390,14 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "androidx.databinding.databinding-compiler-common_8.3.0",
-    pom = "repository/androidx/databinding/databinding-compiler-common/8.3.0/databinding-compiler-common-8.3.0.pom",
+    name = "androidx.databinding.databinding-compiler-common_8.3.1",
+    pom = "repository/androidx/databinding/databinding-compiler-common/8.3.1/databinding-compiler-common-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "androidx/databinding/databinding-compiler-common/8.3.0",
+    repo_path = "androidx/databinding/databinding-compiler-common/8.3.1",
     deps = [
-        "androidx.databinding.databinding-common_8.3.0",
-        "com.android.databinding.baseLibrary_8.3.0",
-        "com.android.tools.annotations_31.3.0",
+        "androidx.databinding.databinding-common_8.3.1",
+        "com.android.databinding.baseLibrary_8.3.1",
+        "com.android.tools.annotations_31.3.1",
         "com.android.tools.build.jetifier.jetifier-core_1.0.0-beta10",
         "com.google.code.gson.gson_2.10.1",
         "com.google.guava.guava_32.0.1-jre",
@@ -24726,12 +24726,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.application.com.android.application.gradle.plugin_8.3.0",
-    pom = "repository/com/android/application/com.android.application.gradle.plugin/8.3.0/com.android.application.gradle.plugin-8.3.0.pom",
+    name = "com.android.application.com.android.application.gradle.plugin_8.3.1",
+    pom = "repository/com/android/application/com.android.application.gradle.plugin/8.3.1/com.android.application.gradle.plugin-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/application/com.android.application.gradle.plugin/8.3.0",
+    repo_path = "com/android/application/com.android.application.gradle.plugin/8.3.1",
     deps = [
-        "com.android.tools.build.gradle_8.3.0",
+        "com.android.tools.build.gradle_8.3.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -24905,10 +24905,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.databinding.baseLibrary_8.3.0",
-    pom = "repository/com/android/databinding/baseLibrary/8.3.0/baseLibrary-8.3.0.pom",
+    name = "com.android.databinding.baseLibrary_8.3.1",
+    pom = "repository/com/android/databinding/baseLibrary/8.3.1/baseLibrary-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/databinding/baseLibrary/8.3.0",
+    repo_path = "com/android/databinding/baseLibrary/8.3.1",
     visibility = ["//visibility:public"],
 )
 
@@ -25025,12 +25025,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.library.com.android.library.gradle.plugin_8.3.0",
-    pom = "repository/com/android/library/com.android.library.gradle.plugin/8.3.0/com.android.library.gradle.plugin-8.3.0.pom",
+    name = "com.android.library.com.android.library.gradle.plugin_8.3.1",
+    pom = "repository/com/android/library/com.android.library.gradle.plugin/8.3.1/com.android.library.gradle.plugin-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/library/com.android.library.gradle.plugin/8.3.0",
+    repo_path = "com/android/library/com.android.library.gradle.plugin/8.3.1",
     deps = [
-        "com.android.tools.build.gradle_8.3.0",
+        "com.android.tools.build.gradle_8.3.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -26444,12 +26444,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.analytics-library.crash_31.3.0",
-    pom = "repository/com/android/tools/analytics-library/crash/31.3.0/crash-31.3.0.pom",
+    name = "com.android.tools.analytics-library.crash_31.3.1",
+    pom = "repository/com/android/tools/analytics-library/crash/31.3.1/crash-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/analytics-library/crash/31.3.0",
+    repo_path = "com/android/tools/analytics-library/crash/31.3.1",
     deps = [
-        "com.android.tools.annotations_31.3.0",
+        "com.android.tools.annotations_31.3.1",
         "com.google.guava.guava_32.0.1-jre",
         "org.apache.httpcomponents.httpclient_4.5.14",
         "org.apache.httpcomponents.httpcore_4.4.16",
@@ -26701,10 +26701,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.analytics-library.protos_31.3.0",
-    pom = "repository/com/android/tools/analytics-library/protos/31.3.0/protos-31.3.0.pom",
+    name = "com.android.tools.analytics-library.protos_31.3.1",
+    pom = "repository/com/android/tools/analytics-library/protos/31.3.1/protos-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/analytics-library/protos/31.3.0",
+    repo_path = "com/android/tools/analytics-library/protos/31.3.1",
     deps = [
         "com.google.protobuf.protobuf-java_3.22.3",
     ],
@@ -27077,14 +27077,14 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.analytics-library.shared_31.3.0",
-    pom = "repository/com/android/tools/analytics-library/shared/31.3.0/shared-31.3.0.pom",
+    name = "com.android.tools.analytics-library.shared_31.3.1",
+    pom = "repository/com/android/tools/analytics-library/shared/31.3.1/shared-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/analytics-library/shared/31.3.0",
+    repo_path = "com/android/tools/analytics-library/shared/31.3.1",
     deps = [
-        "com.android.tools.analytics-library.protos_31.3.0",
-        "com.android.tools.annotations_31.3.0",
-        "com.android.tools.common_31.3.0",
+        "com.android.tools.analytics-library.protos_31.3.1",
+        "com.android.tools.annotations_31.3.1",
+        "com.android.tools.common_31.3.1",
         "com.google.code.gson.gson_2.10.1",
         "com.google.guava.guava_32.0.1-jre",
         "net.java.dev.jna.jna-platform_5.6.0",
@@ -27466,15 +27466,15 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.analytics-library.tracker_31.3.0",
-    pom = "repository/com/android/tools/analytics-library/tracker/31.3.0/tracker-31.3.0.pom",
+    name = "com.android.tools.analytics-library.tracker_31.3.1",
+    pom = "repository/com/android/tools/analytics-library/tracker/31.3.1/tracker-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/analytics-library/tracker/31.3.0",
+    repo_path = "com/android/tools/analytics-library/tracker/31.3.1",
     deps = [
-        "com.android.tools.analytics-library.protos_31.3.0",
-        "com.android.tools.analytics-library.shared_31.3.0",
-        "com.android.tools.annotations_31.3.0",
-        "com.android.tools.common_31.3.0",
+        "com.android.tools.analytics-library.protos_31.3.1",
+        "com.android.tools.analytics-library.shared_31.3.1",
+        "com.android.tools.annotations_31.3.1",
+        "com.android.tools.common_31.3.1",
         "com.google.guava.guava_32.0.1-jre",
         "com.google.protobuf.protobuf-java_3.22.3",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
@@ -27820,10 +27820,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.aapt2-proto_8.3.0-10880808",
-    pom = "repository/com/android/tools/build/aapt2-proto/8.3.0-10880808/aapt2-proto-8.3.0-10880808.pom",
+    name = "com.android.tools.build.aapt2-proto_8.3.1-10880808",
+    pom = "repository/com/android/tools/build/aapt2-proto/8.3.1-10880808/aapt2-proto-8.3.1-10880808.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/aapt2-proto/8.3.0-10880808",
+    repo_path = "com/android/tools/build/aapt2-proto/8.3.1-10880808",
     deps = [
         "com.google.protobuf.protobuf-java_3.22.3",
     ],
@@ -27951,10 +27951,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.aapt2_8.3.0-10880808",
-    pom = "repository/com/android/tools/build/aapt2/8.3.0-10880808/aapt2-8.3.0-10880808.pom",
+    name = "com.android.tools.build.aapt2_8.3.1-10880808",
+    pom = "repository/com/android/tools/build/aapt2/8.3.1-10880808/aapt2-8.3.1-10880808.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/aapt2/8.3.0-10880808",
+    repo_path = "com/android/tools/build/aapt2/8.3.1-10880808",
     visibility = ["//visibility:public"],
 )
 
@@ -28223,14 +28223,14 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.aaptcompiler_8.3.0",
-    pom = "repository/com/android/tools/build/aaptcompiler/8.3.0/aaptcompiler-8.3.0.pom",
+    name = "com.android.tools.build.aaptcompiler_8.3.1",
+    pom = "repository/com/android/tools/build/aaptcompiler/8.3.1/aaptcompiler-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/aaptcompiler/8.3.0",
+    repo_path = "com/android/tools/build/aaptcompiler/8.3.1",
     deps = [
-        "com.android.tools.build.aapt2-proto_8.3.0-10880808",
-        "com.android.tools.layoutlib.layoutlib-api_31.3.0",
-        "com.android.tools.common_31.3.0",
+        "com.android.tools.build.aapt2-proto_8.3.1-10880808",
+        "com.android.tools.layoutlib.layoutlib-api_31.3.1",
+        "com.android.tools.common_31.3.1",
         "com.google.protobuf.protobuf-java_3.22.3",
         "com.google.guava.guava_32.0.1-jre",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
@@ -28407,10 +28407,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.apksig_8.3.0",
-    pom = "repository/com/android/tools/build/apksig/8.3.0/apksig-8.3.0.pom",
+    name = "com.android.tools.build.apksig_8.3.1",
+    pom = "repository/com/android/tools/build/apksig/8.3.1/apksig-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/apksig/8.3.0",
+    repo_path = "com/android/tools/build/apksig/8.3.1",
     visibility = ["//visibility:public"],
 )
 
@@ -28700,12 +28700,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.apkzlib_8.3.0",
-    pom = "repository/com/android/tools/build/apkzlib/8.3.0/apkzlib-8.3.0.pom",
+    name = "com.android.tools.build.apkzlib_8.3.1",
+    pom = "repository/com/android/tools/build/apkzlib/8.3.1/apkzlib-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/apkzlib/8.3.0",
+    repo_path = "com/android/tools/build/apkzlib/8.3.1",
     deps = [
-        "com.android.tools.build.apksig_8.3.0",
+        "com.android.tools.build.apksig_8.3.1",
         "com.google.code.findbugs.jsr305_3.0.2",
         "com.google.guava.guava_32.0.1-jre",
         "org.bouncycastle.bcpkix-jdk15on_1.67",
@@ -28973,12 +28973,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.builder-model_8.3.0",
-    pom = "repository/com/android/tools/build/builder-model/8.3.0/builder-model-8.3.0.pom",
+    name = "com.android.tools.build.builder-model_8.3.1",
+    pom = "repository/com/android/tools/build/builder-model/8.3.1/builder-model-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/builder-model/8.3.0",
+    repo_path = "com/android/tools/build/builder-model/8.3.1",
     deps = [
-        "com.android.tools.annotations_31.3.0",
+        "com.android.tools.annotations_31.3.1",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
     ],
     visibility = ["//visibility:public"],
@@ -29269,14 +29269,14 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.builder-test-api_8.3.0",
-    pom = "repository/com/android/tools/build/builder-test-api/8.3.0/builder-test-api-8.3.0.pom",
+    name = "com.android.tools.build.builder-test-api_8.3.1",
+    pom = "repository/com/android/tools/build/builder-test-api/8.3.1/builder-test-api-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/builder-test-api/8.3.0",
+    repo_path = "com/android/tools/build/builder-test-api/8.3.1",
     deps = [
-        "com.android.tools.ddms.ddmlib_31.3.0",
-        "com.android.tools.annotations_31.3.0",
-        "com.android.tools.common_31.3.0",
+        "com.android.tools.ddms.ddmlib_31.3.1",
+        "com.android.tools.annotations_31.3.1",
+        "com.android.tools.common_31.3.1",
         "com.google.guava.guava_32.0.1-jre",
     ],
     visibility = ["//visibility:public"],
@@ -29992,26 +29992,26 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.builder_8.3.0",
-    pom = "repository/com/android/tools/build/builder/8.3.0/builder-8.3.0.pom",
+    name = "com.android.tools.build.builder_8.3.1",
+    pom = "repository/com/android/tools/build/builder/8.3.1/builder-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/builder/8.3.0",
+    repo_path = "com/android/tools/build/builder/8.3.1",
     deps = [
-        "com.android.tools.build.manifest-merger_31.3.0",
-        "com.android.zipflinger_8.3.0",
-        "com.android.tools.build.apksig_8.3.0",
-        "com.android.tools.build.apkzlib_8.3.0",
+        "com.android.tools.build.manifest-merger_31.3.1",
+        "com.android.zipflinger_8.3.1",
+        "com.android.tools.build.apksig_8.3.1",
+        "com.android.tools.build.apkzlib_8.3.1",
         "com.squareup.javawriter_2.5.0",
-        "com.android.tools.build.builder-model_8.3.0",
-        "com.android.tools.build.builder-test-api_8.3.0",
-        "com.android.tools.sdklib_31.3.0",
-        "com.android.tools.sdk-common_31.3.0",
-        "com.android.tools.common_31.3.0",
-        "com.android.tools.ddms.ddmlib_31.3.0",
-        "com.android.signflinger_8.3.0",
-        "com.android.tools.analytics-library.protos_31.3.0",
-        "com.android.tools.analytics-library.tracker_31.3.0",
-        "com.android.tools.layoutlib.layoutlib-api_31.3.0",
+        "com.android.tools.build.builder-model_8.3.1",
+        "com.android.tools.build.builder-test-api_8.3.1",
+        "com.android.tools.sdklib_31.3.1",
+        "com.android.tools.sdk-common_31.3.1",
+        "com.android.tools.common_31.3.1",
+        "com.android.tools.ddms.ddmlib_31.3.1",
+        "com.android.signflinger_8.3.1",
+        "com.android.tools.analytics-library.protos_31.3.1",
+        "com.android.tools.analytics-library.tracker_31.3.1",
+        "com.android.tools.layoutlib.layoutlib-api_31.3.1",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
         "org.bouncycastle.bcpkix-jdk15on_1.67",
         "commons-codec.commons-codec_1.10",
@@ -30582,13 +30582,13 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.gradle-api_8.3.0",
-    pom = "repository/com/android/tools/build/gradle-api/8.3.0/gradle-api-8.3.0.pom",
+    name = "com.android.tools.build.gradle-api_8.3.1",
+    pom = "repository/com/android/tools/build/gradle-api/8.3.1/gradle-api-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/gradle-api/8.3.0",
+    repo_path = "com/android/tools/build/gradle-api/8.3.1",
     deps = [
         "org.ow2.asm.asm_9.6",
-        "com.android.tools.build.builder-test-api_8.3.0",
+        "com.android.tools.build.builder-test-api_8.3.1",
         "com.google.guava.guava_32.0.1-jre",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
     ],
@@ -30721,10 +30721,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.gradle-settings-api_8.3.0",
-    pom = "repository/com/android/tools/build/gradle-settings-api/8.3.0/gradle-settings-api-8.3.0.pom",
+    name = "com.android.tools.build.gradle-settings-api_8.3.1",
+    pom = "repository/com/android/tools/build/gradle-settings-api/8.3.1/gradle-settings-api-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/gradle-settings-api/8.3.0",
+    repo_path = "com/android/tools/build/gradle-settings-api/8.3.1",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
     ],
@@ -31731,39 +31731,39 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.gradle_8.3.0",
-    pom = "repository/com/android/tools/build/gradle/8.3.0/gradle-8.3.0.pom",
+    name = "com.android.tools.build.gradle_8.3.1",
+    pom = "repository/com/android/tools/build/gradle/8.3.1/gradle-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/gradle/8.3.0",
+    repo_path = "com/android/tools/build/gradle/8.3.1",
     deps = [
-        "com.android.tools.build.builder_8.3.0",
-        "com.android.tools.build.builder-model_8.3.0",
-        "com.android.tools.build.gradle-api_8.3.0",
-        "com.android.tools.build.gradle-settings-api_8.3.0",
-        "com.android.tools.sdk-common_31.3.0",
-        "com.android.tools.sdklib_31.3.0",
-        "com.android.tools.repository_31.3.0",
-        "com.android.tools.ddms.ddmlib_31.3.0",
-        "com.android.tools.build.aapt2-proto_8.3.0-10880808",
-        "com.android.tools.build.aaptcompiler_8.3.0",
-        "com.android.tools.analytics-library.crash_31.3.0",
-        "com.android.tools.analytics-library.shared_31.3.0",
-        "com.android.tools.lint.lint-model_31.3.0",
-        "com.android.tools.lint.lint-typedef-remover_31.3.0",
-        "androidx.databinding.databinding-compiler-common_8.3.0",
-        "androidx.databinding.databinding-common_8.3.0",
-        "com.android.databinding.baseLibrary_8.3.0",
-        "com.android.tools.build.builder-test-api_8.3.0",
-        "com.android.tools.layoutlib.layoutlib-api_31.3.0",
-        "com.android.tools.utp.android-device-provider-ddmlib-proto_31.3.0",
-        "com.android.tools.utp.android-device-provider-gradle-proto_31.3.0",
-        "com.android.tools.utp.android-test-plugin-host-additional-test-output-proto_31.3.0",
-        "com.android.tools.utp.android-test-plugin-host-coverage-proto_31.3.0",
-        "com.android.tools.utp.android-test-plugin-host-emulator-control-proto_31.3.0",
-        "com.android.tools.utp.android-test-plugin-host-logcat-proto_31.3.0",
-        "com.android.tools.utp.android-test-plugin-host-apk-installer-proto_31.3.0",
-        "com.android.tools.utp.android-test-plugin-host-retention-proto_31.3.0",
-        "com.android.tools.utp.android-test-plugin-result-listener-gradle-proto_31.3.0",
+        "com.android.tools.build.builder_8.3.1",
+        "com.android.tools.build.builder-model_8.3.1",
+        "com.android.tools.build.gradle-api_8.3.1",
+        "com.android.tools.build.gradle-settings-api_8.3.1",
+        "com.android.tools.sdk-common_31.3.1",
+        "com.android.tools.sdklib_31.3.1",
+        "com.android.tools.repository_31.3.1",
+        "com.android.tools.ddms.ddmlib_31.3.1",
+        "com.android.tools.build.aapt2-proto_8.3.1-10880808",
+        "com.android.tools.build.aaptcompiler_8.3.1",
+        "com.android.tools.analytics-library.crash_31.3.1",
+        "com.android.tools.analytics-library.shared_31.3.1",
+        "com.android.tools.lint.lint-model_31.3.1",
+        "com.android.tools.lint.lint-typedef-remover_31.3.1",
+        "androidx.databinding.databinding-compiler-common_8.3.1",
+        "androidx.databinding.databinding-common_8.3.1",
+        "com.android.databinding.baseLibrary_8.3.1",
+        "com.android.tools.build.builder-test-api_8.3.1",
+        "com.android.tools.layoutlib.layoutlib-api_31.3.1",
+        "com.android.tools.utp.android-device-provider-ddmlib-proto_31.3.1",
+        "com.android.tools.utp.android-device-provider-gradle-proto_31.3.1",
+        "com.android.tools.utp.android-test-plugin-host-additional-test-output-proto_31.3.1",
+        "com.android.tools.utp.android-test-plugin-host-coverage-proto_31.3.1",
+        "com.android.tools.utp.android-test-plugin-host-emulator-control-proto_31.3.1",
+        "com.android.tools.utp.android-test-plugin-host-logcat-proto_31.3.1",
+        "com.android.tools.utp.android-test-plugin-host-apk-installer-proto_31.3.1",
+        "com.android.tools.utp.android-test-plugin-host-retention-proto_31.3.1",
+        "com.android.tools.utp.android-test-plugin-result-listener-gradle-proto_31.3.1",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
         "com.android.tools.build.transform-api_2.0.0-deprecated-use-gradle-api",
         "org.apache.httpcomponents.httpmime_4.5.6",
@@ -32147,14 +32147,14 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.build.manifest-merger_31.3.0",
-    pom = "repository/com/android/tools/build/manifest-merger/31.3.0/manifest-merger-31.3.0.pom",
+    name = "com.android.tools.build.manifest-merger_31.3.1",
+    pom = "repository/com/android/tools/build/manifest-merger/31.3.1/manifest-merger-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/build/manifest-merger/31.3.0",
+    repo_path = "com/android/tools/build/manifest-merger/31.3.1",
     deps = [
-        "com.android.tools.common_31.3.0",
-        "com.android.tools.sdklib_31.3.0",
-        "com.android.tools.sdk-common_31.3.0",
+        "com.android.tools.common_31.3.1",
+        "com.android.tools.sdklib_31.3.1",
+        "com.android.tools.sdk-common_31.3.1",
         "com.google.code.gson.gson_2.10.1",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
         "net.sf.kxml.kxml2_2.3.0",
@@ -32481,12 +32481,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.ddms.ddmlib_31.3.0",
-    pom = "repository/com/android/tools/ddms/ddmlib/31.3.0/ddmlib-31.3.0.pom",
+    name = "com.android.tools.ddms.ddmlib_31.3.1",
+    pom = "repository/com/android/tools/ddms/ddmlib/31.3.1/ddmlib-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/ddms/ddmlib/31.3.0",
+    repo_path = "com/android/tools/ddms/ddmlib/31.3.1",
     deps = [
-        "com.android.tools.common_31.3.0",
+        "com.android.tools.common_31.3.1",
         "com.google.protobuf.protobuf-java_3.22.3",
         "net.sf.kxml.kxml2_2.3.0",
         "org.jetbrains.annotations_23.0.0",
@@ -32718,10 +32718,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.external.com-intellij.intellij-core_31.3.0",
-    pom = "repository/com/android/tools/external/com-intellij/intellij-core/31.3.0/intellij-core-31.3.0.pom",
+    name = "com.android.tools.external.com-intellij.intellij-core_31.3.1",
+    pom = "repository/com/android/tools/external/com-intellij/intellij-core/31.3.1/intellij-core-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/external/com-intellij/intellij-core/31.3.0",
+    repo_path = "com/android/tools/external/com-intellij/intellij-core/31.3.1",
     deps = [
         "org.jetbrains.intellij.deps.trove4j_1.0.20200330",
     ],
@@ -32857,10 +32857,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.external.com-intellij.kotlin-compiler_31.3.0",
-    pom = "repository/com/android/tools/external/com-intellij/kotlin-compiler/31.3.0/kotlin-compiler-31.3.0.pom",
+    name = "com.android.tools.external.com-intellij.kotlin-compiler_31.3.1",
+    pom = "repository/com/android/tools/external/com-intellij/kotlin-compiler/31.3.1/kotlin-compiler-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/external/com-intellij/kotlin-compiler/31.3.0",
+    repo_path = "com/android/tools/external/com-intellij/kotlin-compiler/31.3.1",
     visibility = ["//visibility:public"],
 )
 
@@ -33012,10 +33012,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.external.org-jetbrains.uast_31.3.0",
-    pom = "repository/com/android/tools/external/org-jetbrains/uast/31.3.0/uast-31.3.0.pom",
+    name = "com.android.tools.external.org-jetbrains.uast_31.3.1",
+    pom = "repository/com/android/tools/external/org-jetbrains/uast/31.3.1/uast-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/external/org-jetbrains/uast/31.3.0",
+    repo_path = "com/android/tools/external/org-jetbrains/uast/31.3.1",
     visibility = ["//visibility:public"],
 )
 
@@ -33328,13 +33328,13 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.layoutlib.layoutlib-api_31.3.0",
-    pom = "repository/com/android/tools/layoutlib/layoutlib-api/31.3.0/layoutlib-api-31.3.0.pom",
+    name = "com.android.tools.layoutlib.layoutlib-api_31.3.1",
+    pom = "repository/com/android/tools/layoutlib/layoutlib-api/31.3.1/layoutlib-api-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/layoutlib/layoutlib-api/31.3.0",
+    repo_path = "com/android/tools/layoutlib/layoutlib-api/31.3.1",
     deps = [
-        "com.android.tools.annotations_31.3.0",
-        "com.android.tools.common_31.3.0",
+        "com.android.tools.annotations_31.3.1",
+        "com.android.tools.common_31.3.1",
         "net.sf.kxml.kxml2_2.3.0",
         "org.jetbrains.annotations_23.0.0",
     ],
@@ -33766,27 +33766,27 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.lint.lint-api_31.3.0",
-    pom = "repository/com/android/tools/lint/lint-api/31.3.0/lint-api-31.3.0.pom",
+    name = "com.android.tools.lint.lint-api_31.3.1",
+    pom = "repository/com/android/tools/lint/lint-api/31.3.1/lint-api-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/lint/lint-api/31.3.0",
+    repo_path = "com/android/tools/lint/lint-api/31.3.1",
     deps = [
-        "com.android.tools.lint.lint-model_31.3.0",
-        "com.android.tools.external.com-intellij.intellij-core_31.3.0",
-        "com.android.tools.external.com-intellij.kotlin-compiler_31.3.0",
-        "com.android.tools.external.org-jetbrains.uast_31.3.0",
-        "com.android.tools.build.manifest-merger_31.3.0",
-        "com.android.tools.common_31.3.0",
-        "com.android.tools.layoutlib.layoutlib-api_31.3.0",
-        "com.android.tools.sdk-common_31.3.0",
-        "com.android.tools.sdklib_31.3.0",
+        "com.android.tools.lint.lint-model_31.3.1",
+        "com.android.tools.external.com-intellij.intellij-core_31.3.1",
+        "com.android.tools.external.com-intellij.kotlin-compiler_31.3.1",
+        "com.android.tools.external.org-jetbrains.uast_31.3.1",
+        "com.android.tools.build.manifest-merger_31.3.1",
+        "com.android.tools.common_31.3.1",
+        "com.android.tools.layoutlib.layoutlib-api_31.3.1",
+        "com.android.tools.sdk-common_31.3.1",
+        "com.android.tools.sdklib_31.3.1",
         "commons-io.commons-io_2.13.0",
         "net.sf.kxml.kxml2_2.3.0",
         "org.jetbrains.kotlin.kotlin-reflect_1.9.20",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
         "org.ow2.asm.asm_9.6",
         "org.ow2.asm.asm-tree_9.6",
-        "com.android.tools.build.builder-model_8.3.0",
+        "com.android.tools.build.builder-model_8.3.1",
         "com.google.guava.guava_32.0.1-jre",
     ],
     visibility = ["//visibility:public"],
@@ -34157,21 +34157,21 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.lint.lint-checks_31.3.0",
-    pom = "repository/com/android/tools/lint/lint-checks/31.3.0/lint-checks-31.3.0.pom",
+    name = "com.android.tools.lint.lint-checks_31.3.1",
+    pom = "repository/com/android/tools/lint/lint-checks/31.3.1/lint-checks-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/lint/lint-checks/31.3.0",
+    repo_path = "com/android/tools/lint/lint-checks/31.3.1",
     deps = [
-        "com.android.tools.lint.lint-api_31.3.0",
+        "com.android.tools.lint.lint-api_31.3.1",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
-        "com.android.tools.external.com-intellij.intellij-core_31.3.0",
-        "com.android.tools.external.com-intellij.kotlin-compiler_31.3.0",
-        "com.android.tools.external.org-jetbrains.uast_31.3.0",
-        "com.android.tools.common_31.3.0",
-        "com.android.tools.layoutlib.layoutlib-api_31.3.0",
-        "com.android.tools.play-sdk-proto_31.3.0",
-        "com.android.tools.sdk-common_31.3.0",
-        "com.android.tools.sdklib_31.3.0",
+        "com.android.tools.external.com-intellij.intellij-core_31.3.1",
+        "com.android.tools.external.com-intellij.kotlin-compiler_31.3.1",
+        "com.android.tools.external.org-jetbrains.uast_31.3.1",
+        "com.android.tools.common_31.3.1",
+        "com.android.tools.layoutlib.layoutlib-api_31.3.1",
+        "com.android.tools.play-sdk-proto_31.3.1",
+        "com.android.tools.sdk-common_31.3.1",
+        "com.android.tools.sdklib_31.3.1",
         "com.google.code.gson.gson_2.10.1",
         "com.google.guava.guava_32.0.1-jre",
         "net.sf.kxml.kxml2_2.3.0",
@@ -34610,17 +34610,17 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.lint.lint-gradle_31.3.0",
-    pom = "repository/com/android/tools/lint/lint-gradle/31.3.0/lint-gradle-31.3.0.pom",
+    name = "com.android.tools.lint.lint-gradle_31.3.1",
+    pom = "repository/com/android/tools/lint/lint-gradle/31.3.1/lint-gradle-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/lint/lint-gradle/31.3.0",
+    repo_path = "com/android/tools/lint/lint-gradle/31.3.1",
     deps = [
-        "com.android.tools.external.com-intellij.intellij-core_31.3.0",
-        "com.android.tools.external.com-intellij.kotlin-compiler_31.3.0",
-        "com.android.tools.external.org-jetbrains.uast_31.3.0",
-        "com.android.tools.common_31.3.0",
-        "com.android.tools.lint.lint_31.3.0",
-        "com.android.tools.lint.lint-typedef-remover_31.3.0",
+        "com.android.tools.external.com-intellij.intellij-core_31.3.1",
+        "com.android.tools.external.com-intellij.kotlin-compiler_31.3.1",
+        "com.android.tools.external.org-jetbrains.uast_31.3.1",
+        "com.android.tools.common_31.3.1",
+        "com.android.tools.lint.lint_31.3.1",
+        "com.android.tools.lint.lint-typedef-remover_31.3.1",
         "org.codehaus.groovy.groovy_3.0.10",
     ],
     visibility = ["//visibility:public"],
@@ -34867,14 +34867,14 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.lint.lint-model_31.3.0",
-    pom = "repository/com/android/tools/lint/lint-model/31.3.0/lint-model-31.3.0.pom",
+    name = "com.android.tools.lint.lint-model_31.3.1",
+    pom = "repository/com/android/tools/lint/lint-model/31.3.1/lint-model-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/lint/lint-model/31.3.0",
+    repo_path = "com/android/tools/lint/lint-model/31.3.1",
     deps = [
-        "com.android.tools.build.builder-model_8.3.0",
-        "com.android.tools.common_31.3.0",
-        "com.android.tools.sdk-common_31.3.0",
+        "com.android.tools.build.builder-model_8.3.1",
+        "com.android.tools.common_31.3.1",
+        "com.android.tools.sdk-common_31.3.1",
         "net.sf.kxml.kxml2_2.3.0",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
     ],
@@ -35025,12 +35025,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.lint.lint-typedef-remover_31.3.0",
-    pom = "repository/com/android/tools/lint/lint-typedef-remover/31.3.0/lint-typedef-remover-31.3.0.pom",
+    name = "com.android.tools.lint.lint-typedef-remover_31.3.1",
+    pom = "repository/com/android/tools/lint/lint-typedef-remover/31.3.1/lint-typedef-remover-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/lint/lint-typedef-remover/31.3.0",
+    repo_path = "com/android/tools/lint/lint-typedef-remover/31.3.1",
     deps = [
-        "com.android.tools.annotations_31.3.0",
+        "com.android.tools.annotations_31.3.1",
         "com.google.guava.guava_32.0.1-jre",
         "org.ow2.asm.asm_9.6",
     ],
@@ -35449,24 +35449,24 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.lint.lint_31.3.0",
-    pom = "repository/com/android/tools/lint/lint/31.3.0/lint-31.3.0.pom",
+    name = "com.android.tools.lint.lint_31.3.1",
+    pom = "repository/com/android/tools/lint/lint/31.3.1/lint-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/lint/lint/31.3.0",
+    repo_path = "com/android/tools/lint/lint/31.3.1",
     deps = [
-        "com.android.tools.lint.lint-api_31.3.0",
-        "com.android.tools.lint.lint-checks_31.3.0",
-        "com.android.tools.external.com-intellij.intellij-core_31.3.0",
-        "com.android.tools.external.com-intellij.kotlin-compiler_31.3.0",
-        "com.android.tools.external.org-jetbrains.uast_31.3.0",
-        "com.android.tools.analytics-library.protos_31.3.0",
-        "com.android.tools.analytics-library.shared_31.3.0",
-        "com.android.tools.analytics-library.tracker_31.3.0",
-        "com.android.tools.build.manifest-merger_31.3.0",
-        "com.android.tools.common_31.3.0",
-        "com.android.tools.layoutlib.layoutlib-api_31.3.0",
-        "com.android.tools.sdk-common_31.3.0",
-        "com.android.tools.sdklib_31.3.0",
+        "com.android.tools.lint.lint-api_31.3.1",
+        "com.android.tools.lint.lint-checks_31.3.1",
+        "com.android.tools.external.com-intellij.intellij-core_31.3.1",
+        "com.android.tools.external.com-intellij.kotlin-compiler_31.3.1",
+        "com.android.tools.external.org-jetbrains.uast_31.3.1",
+        "com.android.tools.analytics-library.protos_31.3.1",
+        "com.android.tools.analytics-library.shared_31.3.1",
+        "com.android.tools.analytics-library.tracker_31.3.1",
+        "com.android.tools.build.manifest-merger_31.3.1",
+        "com.android.tools.common_31.3.1",
+        "com.android.tools.layoutlib.layoutlib-api_31.3.1",
+        "com.android.tools.sdk-common_31.3.1",
+        "com.android.tools.sdklib_31.3.1",
         "com.google.guava.guava_32.0.1-jre",
         "net.sf.kxml.kxml2_2.3.0",
         "org.jetbrains.kotlin.kotlin-reflect_1.9.20",
@@ -35713,10 +35713,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.utp.android-device-provider-ddmlib-proto_31.3.0",
-    pom = "repository/com/android/tools/utp/android-device-provider-ddmlib-proto/31.3.0/android-device-provider-ddmlib-proto-31.3.0.pom",
+    name = "com.android.tools.utp.android-device-provider-ddmlib-proto_31.3.1",
+    pom = "repository/com/android/tools/utp/android-device-provider-ddmlib-proto/31.3.1/android-device-provider-ddmlib-proto-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/utp/android-device-provider-ddmlib-proto/31.3.0",
+    repo_path = "com/android/tools/utp/android-device-provider-ddmlib-proto/31.3.1",
     deps = [
         "com.google.protobuf.protobuf-java_3.22.3",
     ],
@@ -35902,10 +35902,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.utp.android-device-provider-gradle-proto_31.3.0",
-    pom = "repository/com/android/tools/utp/android-device-provider-gradle-proto/31.3.0/android-device-provider-gradle-proto-31.3.0.pom",
+    name = "com.android.tools.utp.android-device-provider-gradle-proto_31.3.1",
+    pom = "repository/com/android/tools/utp/android-device-provider-gradle-proto/31.3.1/android-device-provider-gradle-proto-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/utp/android-device-provider-gradle-proto/31.3.0",
+    repo_path = "com/android/tools/utp/android-device-provider-gradle-proto/31.3.1",
     deps = [
         "com.google.protobuf.protobuf-java_3.22.3",
     ],
@@ -36065,10 +36065,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.utp.android-test-plugin-host-additional-test-output-proto_31.3.0",
-    pom = "repository/com/android/tools/utp/android-test-plugin-host-additional-test-output-proto/31.3.0/android-test-plugin-host-additional-test-output-proto-31.3.0.pom",
+    name = "com.android.tools.utp.android-test-plugin-host-additional-test-output-proto_31.3.1",
+    pom = "repository/com/android/tools/utp/android-test-plugin-host-additional-test-output-proto/31.3.1/android-test-plugin-host-additional-test-output-proto-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/utp/android-test-plugin-host-additional-test-output-proto/31.3.0",
+    repo_path = "com/android/tools/utp/android-test-plugin-host-additional-test-output-proto/31.3.1",
     deps = [
         "com.google.protobuf.protobuf-java_3.22.3",
     ],
@@ -36139,10 +36139,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.utp.android-test-plugin-host-apk-installer-proto_31.3.0",
-    pom = "repository/com/android/tools/utp/android-test-plugin-host-apk-installer-proto/31.3.0/android-test-plugin-host-apk-installer-proto-31.3.0.pom",
+    name = "com.android.tools.utp.android-test-plugin-host-apk-installer-proto_31.3.1",
+    pom = "repository/com/android/tools/utp/android-test-plugin-host-apk-installer-proto/31.3.1/android-test-plugin-host-apk-installer-proto-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/utp/android-test-plugin-host-apk-installer-proto/31.3.0",
+    repo_path = "com/android/tools/utp/android-test-plugin-host-apk-installer-proto/31.3.1",
     deps = [
         "com.google.protobuf.protobuf-java_3.22.3",
     ],
@@ -36287,10 +36287,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.utp.android-test-plugin-host-coverage-proto_31.3.0",
-    pom = "repository/com/android/tools/utp/android-test-plugin-host-coverage-proto/31.3.0/android-test-plugin-host-coverage-proto-31.3.0.pom",
+    name = "com.android.tools.utp.android-test-plugin-host-coverage-proto_31.3.1",
+    pom = "repository/com/android/tools/utp/android-test-plugin-host-coverage-proto/31.3.1/android-test-plugin-host-coverage-proto-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/utp/android-test-plugin-host-coverage-proto/31.3.0",
+    repo_path = "com/android/tools/utp/android-test-plugin-host-coverage-proto/31.3.1",
     deps = [
         "com.google.protobuf.protobuf-java_3.22.3",
     ],
@@ -36416,10 +36416,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.utp.android-test-plugin-host-emulator-control-proto_31.3.0",
-    pom = "repository/com/android/tools/utp/android-test-plugin-host-emulator-control-proto/31.3.0/android-test-plugin-host-emulator-control-proto-31.3.0.pom",
+    name = "com.android.tools.utp.android-test-plugin-host-emulator-control-proto_31.3.1",
+    pom = "repository/com/android/tools/utp/android-test-plugin-host-emulator-control-proto/31.3.1/android-test-plugin-host-emulator-control-proto-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/utp/android-test-plugin-host-emulator-control-proto/31.3.0",
+    repo_path = "com/android/tools/utp/android-test-plugin-host-emulator-control-proto/31.3.1",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
         "com.google.protobuf.protobuf-java_3.22.3",
@@ -36503,10 +36503,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.utp.android-test-plugin-host-logcat-proto_31.3.0",
-    pom = "repository/com/android/tools/utp/android-test-plugin-host-logcat-proto/31.3.0/android-test-plugin-host-logcat-proto-31.3.0.pom",
+    name = "com.android.tools.utp.android-test-plugin-host-logcat-proto_31.3.1",
+    pom = "repository/com/android/tools/utp/android-test-plugin-host-logcat-proto/31.3.1/android-test-plugin-host-logcat-proto-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/utp/android-test-plugin-host-logcat-proto/31.3.0",
+    repo_path = "com/android/tools/utp/android-test-plugin-host-logcat-proto/31.3.1",
     deps = [
         "com.google.protobuf.protobuf-java_3.22.3",
     ],
@@ -36699,10 +36699,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.utp.android-test-plugin-host-retention-proto_31.3.0",
-    pom = "repository/com/android/tools/utp/android-test-plugin-host-retention-proto/31.3.0/android-test-plugin-host-retention-proto-31.3.0.pom",
+    name = "com.android.tools.utp.android-test-plugin-host-retention-proto_31.3.1",
+    pom = "repository/com/android/tools/utp/android-test-plugin-host-retention-proto/31.3.1/android-test-plugin-host-retention-proto-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/utp/android-test-plugin-host-retention-proto/31.3.0",
+    repo_path = "com/android/tools/utp/android-test-plugin-host-retention-proto/31.3.1",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
         "com.google.protobuf.protobuf-java_3.22.3",
@@ -36989,10 +36989,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.utp.android-test-plugin-result-listener-gradle-proto_31.3.0",
-    pom = "repository/com/android/tools/utp/android-test-plugin-result-listener-gradle-proto/31.3.0/android-test-plugin-result-listener-gradle-proto-31.3.0.pom",
+    name = "com.android.tools.utp.android-test-plugin-result-listener-gradle-proto_31.3.1",
+    pom = "repository/com/android/tools/utp/android-test-plugin-result-listener-gradle-proto/31.3.1/android-test-plugin-result-listener-gradle-proto-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/utp/android-test-plugin-result-listener-gradle-proto/31.3.0",
+    repo_path = "com/android/tools/utp/android-test-plugin-result-listener-gradle-proto/31.3.1",
     deps = [
         "com.google.code.gson.gson_2.10.1",
         "com.google.guava.guava_32.0.1-jre",
@@ -37244,10 +37244,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.annotations_31.3.0",
-    pom = "repository/com/android/tools/annotations/31.3.0/annotations-31.3.0.pom",
+    name = "com.android.tools.annotations_31.3.1",
+    pom = "repository/com/android/tools/annotations/31.3.1/annotations-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/annotations/31.3.0",
+    repo_path = "com/android/tools/annotations/31.3.1",
     visibility = ["//visibility:public"],
 )
 
@@ -37561,12 +37561,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.common_31.3.0",
-    pom = "repository/com/android/tools/common/31.3.0/common-31.3.0.pom",
+    name = "com.android.tools.common_31.3.1",
+    pom = "repository/com/android/tools/common/31.3.1/common-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/common/31.3.0",
+    repo_path = "com/android/tools/common/31.3.1",
     deps = [
-        "com.android.tools.annotations_31.3.0",
+        "com.android.tools.annotations_31.3.1",
         "com.google.guava.guava_32.0.1-jre",
         "net.java.dev.jna.jna-platform_5.6.0",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
@@ -37855,12 +37855,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.dvlib_31.3.0",
-    pom = "repository/com/android/tools/dvlib/31.3.0/dvlib-31.3.0.pom",
+    name = "com.android.tools.dvlib_31.3.1",
+    pom = "repository/com/android/tools/dvlib/31.3.1/dvlib-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/dvlib/31.3.0",
+    repo_path = "com/android/tools/dvlib/31.3.1",
     deps = [
-        "com.android.tools.common_31.3.0",
+        "com.android.tools.common_31.3.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -37943,10 +37943,10 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.play-sdk-proto_31.3.0",
-    pom = "repository/com/android/tools/play-sdk-proto/31.3.0/play-sdk-proto-31.3.0.pom",
+    name = "com.android.tools.play-sdk-proto_31.3.1",
+    pom = "repository/com/android/tools/play-sdk-proto/31.3.1/play-sdk-proto-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/play-sdk-proto/31.3.0",
+    repo_path = "com/android/tools/play-sdk-proto/31.3.1",
     deps = [
         "com.google.protobuf.protobuf-java_3.22.3",
     ],
@@ -38318,13 +38318,13 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.repository_31.3.0",
-    pom = "repository/com/android/tools/repository/31.3.0/repository-31.3.0.pom",
+    name = "com.android.tools.repository_31.3.1",
+    pom = "repository/com/android/tools/repository/31.3.1/repository-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/repository/31.3.0",
+    repo_path = "com/android/tools/repository/31.3.1",
     deps = [
-        "com.android.tools.analytics-library.shared_31.3.0",
-        "com.android.tools.common_31.3.0",
+        "com.android.tools.analytics-library.shared_31.3.1",
+        "com.android.tools.common_31.3.1",
         "com.google.jimfs.jimfs_1.1",
         "com.sun.activation.javax.activation_1.2.0",
         "org.apache.commons.commons-compress_1.21",
@@ -38906,17 +38906,17 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.sdk-common_31.3.0",
-    pom = "repository/com/android/tools/sdk-common/31.3.0/sdk-common-31.3.0.pom",
+    name = "com.android.tools.sdk-common_31.3.1",
+    pom = "repository/com/android/tools/sdk-common/31.3.1/sdk-common-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/sdk-common/31.3.0",
+    repo_path = "com/android/tools/sdk-common/31.3.1",
     deps = [
-        "com.android.tools.analytics-library.shared_31.3.0",
-        "com.android.tools.build.aapt2-proto_8.3.0-10880808",
-        "com.android.tools.common_31.3.0",
-        "com.android.tools.ddms.ddmlib_31.3.0",
-        "com.android.tools.layoutlib.layoutlib-api_31.3.0",
-        "com.android.tools.sdklib_31.3.0",
+        "com.android.tools.analytics-library.shared_31.3.1",
+        "com.android.tools.build.aapt2-proto_8.3.1-10880808",
+        "com.android.tools.common_31.3.1",
+        "com.android.tools.ddms.ddmlib_31.3.1",
+        "com.android.tools.layoutlib.layoutlib-api_31.3.1",
+        "com.android.tools.sdklib_31.3.1",
         "com.google.code.gson.gson_2.10.1",
         "com.google.guava.guava_32.0.1-jre",
         "com.google.protobuf.protobuf-java_3.22.3",
@@ -39335,15 +39335,15 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.sdklib_31.3.0",
-    pom = "repository/com/android/tools/sdklib/31.3.0/sdklib-31.3.0.pom",
+    name = "com.android.tools.sdklib_31.3.1",
+    pom = "repository/com/android/tools/sdklib/31.3.1/sdklib-31.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/sdklib/31.3.0",
+    repo_path = "com/android/tools/sdklib/31.3.1",
     deps = [
-        "com.android.tools.repository_31.3.0",
-        "com.android.tools.common_31.3.0",
-        "com.android.tools.dvlib_31.3.0",
-        "com.android.tools.layoutlib.layoutlib-api_31.3.0",
+        "com.android.tools.repository_31.3.1",
+        "com.android.tools.common_31.3.1",
+        "com.android.tools.dvlib_31.3.1",
+        "com.android.tools.layoutlib.layoutlib-api_31.3.1",
         "com.google.code.gson.gson_2.10.1",
         "org.apache.commons.commons-compress_1.21",
         "org.apache.httpcomponents.httpcore_4.4.16",
@@ -39571,14 +39571,14 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.signflinger_8.3.0",
-    pom = "repository/com/android/signflinger/8.3.0/signflinger-8.3.0.pom",
+    name = "com.android.signflinger_8.3.1",
+    pom = "repository/com/android/signflinger/8.3.1/signflinger-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/signflinger/8.3.0",
+    repo_path = "com/android/signflinger/8.3.1",
     deps = [
-        "com.android.tools.annotations_31.3.0",
-        "com.android.tools.build.apksig_8.3.0",
-        "com.android.zipflinger_8.3.0",
+        "com.android.tools.annotations_31.3.1",
+        "com.android.tools.build.apksig_8.3.1",
+        "com.android.zipflinger_8.3.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -39773,12 +39773,12 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.zipflinger_8.3.0",
-    pom = "repository/com/android/zipflinger/8.3.0/zipflinger-8.3.0.pom",
+    name = "com.android.zipflinger_8.3.1",
+    pom = "repository/com/android/zipflinger/8.3.1/zipflinger-8.3.1.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/zipflinger/8.3.0",
+    repo_path = "com/android/zipflinger/8.3.1",
     deps = [
-        "com.android.tools.annotations_31.3.0",
+        "com.android.tools.annotations_31.3.1",
     ],
     visibility = ["//visibility:public"],
 )
