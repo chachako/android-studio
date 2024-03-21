@@ -174,7 +174,6 @@ interface OutOperationRequest<FileTypeT: FileSystemLocation> {
      *
      * @param type the [Artifact.Single] artifact identifier.
      */
-    @Incubating
     fun <ArtifactTypeT> toListenTo(type: ArtifactTypeT)
             where ArtifactTypeT : Artifact.Single<FileTypeT>
 }
