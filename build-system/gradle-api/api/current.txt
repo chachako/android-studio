@@ -261,13 +261,13 @@ package com.android.build.api.dsl {
   public interface AarMetadata {
     method @org.gradle.api.Incubating public String? getMinAgpVersion();
     method public Integer? getMinCompileSdk();
-    method @org.gradle.api.Incubating public Integer? getMinCompileSdkExtension();
+    method public Integer? getMinCompileSdkExtension();
     method @org.gradle.api.Incubating public void setMinAgpVersion(String?);
     method public void setMinCompileSdk(Integer?);
-    method @org.gradle.api.Incubating public void setMinCompileSdkExtension(Integer?);
+    method public void setMinCompileSdkExtension(Integer?);
     property @org.gradle.api.Incubating public abstract String? minAgpVersion;
     property public abstract Integer? minCompileSdk;
-    property @org.gradle.api.Incubating public abstract Integer? minCompileSdkExtension;
+    property public abstract Integer? minCompileSdkExtension;
   }
 
   public interface AbiSplit extends com.android.build.api.dsl.Split {

@@ -37,8 +37,6 @@ interface AarMetadata {
     /**
      * The minimum compileSdkExtension required by any consuming module.
      */
-    @get:Incubating
-    @set:Incubating
     var minCompileSdkExtension: Int?
 
     /**
