@@ -33342,6 +33342,30 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.android.tools.layoutlib.layoutlib-resources_14.0.4",
+    pom = "repository/com/android/tools/layoutlib/layoutlib-resources/14.0.4/layoutlib-resources-14.0.4.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/layoutlib/layoutlib-resources/14.0.4",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.layoutlib.layoutlib-runtime_14.0.4",
+    pom = "repository/com/android/tools/layoutlib/layoutlib-runtime/14.0.4/layoutlib-runtime-14.0.4.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/layoutlib/layoutlib-runtime/14.0.4",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.android.tools.layoutlib.layoutlib_14.0.4",
+    pom = "repository/com/android/tools/layoutlib/layoutlib/14.0.4/layoutlib-14.0.4.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/tools/layoutlib/layoutlib/14.0.4",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.tools.lint.lint-api_26.0.0",
     pom = "repository/com/android/tools/lint/lint-api/26.0.0/lint-api-26.0.0.pom",
     repo_root_path = "repository",
