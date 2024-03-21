@@ -30,6 +30,7 @@ import com.android.utils.usLocaleCapitalize
 import com.google.common.truth.Truth
 import org.junit.Assume
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -699,6 +700,7 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
         )
     }
 
+    @Ignore("b/330790534")
     @Test
     fun `test no lint tasks if lint plugin not applied`() {
         Assume.assumeTrue(lintAnalysisPerComponent)
