@@ -385,8 +385,12 @@ internal class AdblibIDeviceWrapper(
         return deviceClientManager.clients.toTypedArray()
     }
 
+    /**
+     * Even though the argument is called applicationName, we actually look for the processName
+     * to maintain backward compatibility.
+     */
     override fun getClient(applicationName: String?): Client? {
-        return clients.firstOrNull { applicationName == it.clientData.packageName }
+        return clients.firstOrNull { applicationName == it.clientData.clientDescription }
     }
 
     override fun getProfileableClients(): Array<ProfileableClient> {

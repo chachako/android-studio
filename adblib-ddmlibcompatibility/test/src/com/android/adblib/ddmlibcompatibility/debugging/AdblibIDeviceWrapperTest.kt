@@ -492,8 +492,8 @@ class AdblibIDeviceWrapperTest {
 
         // Act / Assert
         yieldUntil {adblibIDeviceWrapper.clients.size == 1}
-        yieldUntil {adblibIDeviceWrapper.getClient("packageName1") != null}
-        assertEquals(10, adblibIDeviceWrapper.getClient("packageName1")?.clientData?.pid)
+        yieldUntil {adblibIDeviceWrapper.getClient("processName1") != null}
+        assertEquals(10, adblibIDeviceWrapper.getClient("processName1")?.clientData?.pid)
     }
 
     @Test
@@ -521,7 +521,7 @@ class AdblibIDeviceWrapperTest {
 
         // Act / Assert
         yieldUntil {adblibIDeviceWrapper.clients.size == 1}
-        yieldUntil {adblibIDeviceWrapper.getClient("packageName1") != null}
+        yieldUntil {adblibIDeviceWrapper.getClient("processName1") != null}
         assertEquals("packageName1", adblibIDeviceWrapper.getClientName(10))
     }
 
