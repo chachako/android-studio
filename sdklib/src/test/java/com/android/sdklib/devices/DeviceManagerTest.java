@@ -35,6 +35,7 @@ import com.android.sdklib.repository.targets.SystemImage;
 import com.android.testutils.NoErrorsOrWarningsLogger;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -476,7 +477,8 @@ public class DeviceManagerTest {
                         sdkPath.resolve("system-images/android-22/tag-1/x86"),
                         IdDisplay.create("tag-1", "tag-1"),
                         IdDisplay.create("OEM", "Tag 1 OEM"),
-                        Abi.X86.toString(),
+                        Collections.singletonList(Abi.X86.toString()),
+                        Collections.emptyList(),
                         new Path[] {},
                         p);
 
@@ -760,7 +762,8 @@ public class DeviceManagerTest {
                         sdkPath.resolve("system-images/android-22/android-wear/x86"),
                         IdDisplay.create("android-wear", "android-wear"),
                         IdDisplay.create("Google", "Google"),
-                        Abi.X86.toString(),
+                        Collections.singletonList(Abi.X86.toString()),
+                        Collections.emptyList(),
                         new Path[] {},
                         p);
         sdkManager.makeSystemImageFolder(imageWithDevice22, "wearos_small_round");
@@ -775,7 +778,8 @@ public class DeviceManagerTest {
                         sdkPath.resolve("system-images/android-25/android-wear/x86"),
                         IdDisplay.create("android-wear", "android-wear"),
                         IdDisplay.create("Google", "Google"),
-                        Abi.ARMEABI.toString(),
+                        Collections.singletonList(Abi.ARMEABI.toString()),
+                        Collections.emptyList(),
                         new Path[] {},
                         p);
         sdkManager.makeSystemImageFolder(imageWithDevice25, "wearos_small_round");

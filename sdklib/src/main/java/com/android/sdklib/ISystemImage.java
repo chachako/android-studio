@@ -92,12 +92,25 @@ public interface ISystemImage extends Comparable<ISystemImage> {
     IdDisplay getAddonVendor();
 
     /**
-     * Returns the ABI type.
-     * See {@link Abi} for a full list.
+     * Returns the primary natively supported ABI type. See {@link Abi} for a full list of valid
+     * values. Cannot be null nor empty.
+     */
+    @NonNull
+    String getPrimaryAbiType();
+
+    /**
+     * Returns the natively supported ABI types. See {@link Abi} for a full list of valid values.
      * Cannot be null nor empty.
      */
     @NonNull
-    String getAbiType();
+    List<String> getAbiTypes();
+
+    /**
+     * Returns the supported translated ABI types. See {@link Abi} for a full list of valid values.
+     * Cannot be null.
+     */
+    @NonNull
+    List<String> getTranslatedAbiTypes();
 
     /**
      * Returns the skins embedded in the system image. <br>

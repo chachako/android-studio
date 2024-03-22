@@ -154,12 +154,12 @@ public class TempSdkManager extends ExternalResource {
                 : systemImage.getAddonVendor().getId();
         // Path should like SDK/system-images/platform-N/tag/abi/userdata.img+source.properties
         makeFakeSysImgInternal(
-          sysImgDir,
-          systemImage.getTag().getId(),
-          systemImage.getAbiType(),
-          deviceId,
-          systemImage.getAndroidVersion().getApiString(),
-          vendor);
+                sysImgDir,
+                systemImage.getTag().getId(),
+                systemImage.getPrimaryAbiType(),
+                deviceId,
+                systemImage.getAndroidVersion().getApiString(),
+                vendor);
     }
 
     /**

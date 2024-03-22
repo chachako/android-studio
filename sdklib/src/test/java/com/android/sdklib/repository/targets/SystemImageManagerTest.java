@@ -78,14 +78,14 @@ public class SystemImageManagerTest extends TestCase {
     }
 
     private void verifyPlatform13(@NonNull ISystemImage img, @NonNull Path sdkRoot) {
-        assertEquals("armeabi", img.getAbiType());
+        assertEquals("armeabi", img.getPrimaryAbiType());
         assertNull(img.getAddonVendor());
         assertEquals(sdkRoot.resolve("platforms/android-13/images/"), img.getLocation());
         assertEquals("default", img.getTag().getId());
     }
 
     private void verifyTvAddon13(@NonNull ISystemImage img, @NonNull Path sdkRoot) {
-        assertEquals("x86", img.getAbiType());
+        assertEquals("x86", img.getPrimaryAbiType());
         assertEquals("google", img.getAddonVendor().getId());
         assertEquals(
                 sdkRoot.resolve("add-ons/addon-google_tv_addon-google-13/images/x86/"),
@@ -93,7 +93,7 @@ public class SystemImageManagerTest extends TestCase {
     }
 
     private void verifyGoogleApisSysImg23(@NonNull ISystemImage img, @NonNull Path sdkRoot) {
-        assertEquals("x86_64", img.getAbiType());
+        assertEquals("x86_64", img.getPrimaryAbiType());
         assertEquals("google", img.getAddonVendor().getId());
         assertEquals(
                 sdkRoot.resolve("system-images/android-23/google_apis/x86_64/"), img.getLocation());
@@ -101,7 +101,7 @@ public class SystemImageManagerTest extends TestCase {
     }
 
     private void verifySysImg23(@NonNull ISystemImage img, @NonNull Path sdkRoot) {
-        assertEquals("x86", img.getAbiType());
+        assertEquals("x86", img.getPrimaryAbiType());
         assertNull(img.getAddonVendor());
         assertEquals(sdkRoot.resolve("system-images/android-23/default/x86/"), img.getLocation());
         assertEquals(2, img.getSkins().length);

@@ -944,7 +944,7 @@ public class AvdManager {
             configValues.put(
                     AVD_INI_TAG_DISPLAYNAMES,
                     tags.stream().map(IdDisplay::getDisplay).collect(joining(",")));
-            configValues.put(AVD_INI_ABI_TYPE, systemImage.getAbiType());
+            configValues.put(AVD_INI_ABI_TYPE, systemImage.getPrimaryAbiType());
             configValues.put(AVD_INI_PLAYSTORE_ENABLED, Boolean.toString(deviceHasPlayStore && systemImage.hasPlayStore()));
             configValues.put(
                     AVD_INI_ARC, Boolean.toString(SystemImageTags.CHROMEOS_TAG.equals(tag)));
@@ -1954,7 +1954,7 @@ public class AvdManager {
         Path imageFolder = systemImage.getLocation();
         Path userdataSrc = imageFolder.resolve(USERDATA_IMG);
 
-        String abiType = systemImage.getAbiType();
+        String abiType = systemImage.getPrimaryAbiType();
 
         if (CancellableFileIo.notExists(userdataSrc)) {
             if (CancellableFileIo.isDirectory(imageFolder.resolve(DATA_FOLDER))) {
@@ -2012,7 +2012,7 @@ public class AvdManager {
             @NonNull ILogger             log)
             throws AvdMgrException {
 
-        String abiType = systemImage.getAbiType();
+        String abiType = systemImage.getPrimaryAbiType();
         Abi abi = Abi.getEnum(abiType);
         if (abi != null) {
             String arch = abi.getCpuArch();

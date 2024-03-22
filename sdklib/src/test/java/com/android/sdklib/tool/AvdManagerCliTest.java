@@ -88,7 +88,7 @@ public class AvdManagerCliTest {
         DetailsTypes.SysImgDetailsType details1 =
                 AndroidSdkHandler.getSysImgModule().createLatestFactory().createSysImgDetailsType();
         details1.getTags().add(IdDisplay.create("google_apis", "Google APIs"));
-        details1.setAbi("x86");
+        details1.getAbis().add("x86");
         details1.setVendor(IdDisplay.create("google", "Google"));
         details1.setApiLevel(25);
         p1.setTypeDetails((TypeDetails) details1);
@@ -102,7 +102,7 @@ public class AvdManagerCliTest {
         DetailsTypes.SysImgDetailsType details2 =
                 AndroidSdkHandler.getSysImgModule().createLatestFactory().createSysImgDetailsType();
         details2.getTags().add(IdDisplay.create("google_apis_playstore", "Google Play"));
-        details2.setAbi("x86");
+        details2.getAbis().add("x86");
         details2.setVendor(IdDisplay.create("google", "Google"));
         details2.setApiLevel(25);
         p2.setTypeDetails((TypeDetails) details2);
@@ -115,7 +115,7 @@ public class AvdManagerCliTest {
         DetailsTypes.SysImgDetailsType details3 =
                 AndroidSdkHandler.getSysImgModule().createLatestFactory().createSysImgDetailsType();
         details3.getTags().add(IdDisplay.create("android-wear", "Google APIs"));
-        details3.setAbi("armeabi-v7a");
+        details3.getAbis().add("armeabi-v7a");
         details3.setApiLevel(26);
         details3.setExtensionLevel(5);
         details3.setBaseExtension(false);
