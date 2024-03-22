@@ -144,6 +144,8 @@
                    minOccurs="0"  />
       <xsd:element name="cpu"               type= "c:cpuType" />
       <xsd:element name="gpu"               type= "c:gpuType" />
+      <xsd:element name="abi"               type= "c:abiType"
+                   minOccurs="0" />
       <xsd:element name="abis"              type= "c:abiType"
                                             maxOccurs="unbounded"/>
       <xsd:element name="translatedAbis"    type= "c:abiType"
@@ -373,6 +375,7 @@
                    minOccurs="0" />
       <xsd:element name="cpu"               type="c:cpuType" minOccurs="0" />
       <xsd:element name="gpu"               type="c:gpuType" minOccurs="0" />
+      <xsd:element name="abi"               type="c:abiType" minOccurs="0" />
       <xsd:element name="abis"              type="c:abiType"
                    minOccurs="0"            maxOccurs="unbounded"/>
       <xsd:element name="translatedAbis"    type="c:abiType"
