@@ -20,6 +20,7 @@ import com.android.tools.lint.UastEnvironment.Companion.kotlinLibrary
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.openapi.vfs.VirtualFileSetFactory
@@ -195,7 +196,7 @@ private constructor(
     TopDownAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
       ideaProject,
       ktPsiFiles,
-      CliBindingTraceForLint(),
+      CliBindingTraceForLint(ideaProject),
       kotlinCompilerConfig,
       kotlinCompilerEnv::createPackagePartProvider,
       klibList = klibs,
@@ -387,7 +388,7 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
 }
 
 // A Kotlin compiler BindingTrace optimized for Lint.
-private class CliBindingTraceForLint : CliBindingTrace() {
+private class CliBindingTraceForLint(project: Project) : CliBindingTrace(project) {
   override fun <K, V> record(slice: WritableSlice<K, V>, key: K, value: V) {
     // Copied from NoScopeRecordCliBindingTrace.
     when (slice) {
