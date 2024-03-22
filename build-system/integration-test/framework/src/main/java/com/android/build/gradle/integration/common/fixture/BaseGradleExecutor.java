@@ -267,8 +267,6 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
         }
 
         switch (configurationCaching) {
-            case NONE:
-                break;
             case ON:
                 arguments.add("--configuration-cache");
                 arguments.add("--configuration-cache-problems=fail");
@@ -472,7 +470,6 @@ public abstract class BaseGradleExecutor<T extends BaseGradleExecutor> {
 
     public enum ConfigurationCaching {
         ON,
-        NONE,
         PROJECT_ISOLATION,
     }
 
