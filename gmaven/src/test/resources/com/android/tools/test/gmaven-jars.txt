@@ -1812,6 +1812,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   META-INF/frontend.kotlin_module
   META-INF/frontend.native.kotlin_module
   META-INF/ir.actualization.kotlin_module
+  META-INF/ir.inline.kotlin_module
   META-INF/ir.objcinterop.kotlin_module
   META-INF/ir.psi2ir.kotlin_module
   META-INF/ir.serialization.common.kotlin_module
@@ -2423,6 +2424,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/fir/java/scopes/
   org/jetbrains/kotlin/fir/java/symbols/
   org/jetbrains/kotlin/fir/lazy/
+  org/jetbrains/kotlin/fir/modules/
   org/jetbrains/kotlin/fir/pipeline/
   org/jetbrains/kotlin/fir/plugin/
   org/jetbrains/kotlin/fir/references/
@@ -2490,6 +2492,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/ir/descriptors/
   org/jetbrains/kotlin/ir/expressions/
   org/jetbrains/kotlin/ir/expressions/impl/
+  org/jetbrains/kotlin/ir/inline/
   org/jetbrains/kotlin/ir/linkage/
   org/jetbrains/kotlin/ir/linkage/partial/
   org/jetbrains/kotlin/ir/objcinterop/
