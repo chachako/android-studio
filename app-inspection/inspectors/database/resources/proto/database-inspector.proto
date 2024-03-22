@@ -246,6 +246,8 @@ message DatabaseOpenedEvent {
   // Path to db file or ":memory" if it is in-memory database.
   // Note: there is no guarantee that it is necessarily unique between databases.
   string path = 2;
+  // True if the connection that was used for this query was forced
+  bool is_forced_connection = 3;
 }
 
 // Notification of a database connection closed (database no longer query-able)

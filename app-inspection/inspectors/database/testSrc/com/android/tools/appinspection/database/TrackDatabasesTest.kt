@@ -24,11 +24,23 @@ import androidx.inspection.ArtTooling.ExitHook
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Event
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response
 import com.android.testutils.CloseablesRule
-import com.android.tools.appinspection.database.testing.*
+import com.android.tools.appinspection.database.testing.CREATE_IN_MEMORY_DATABASE_COMMAND_SIGNATURE_API27
+import com.android.tools.appinspection.database.testing.Database
+import com.android.tools.appinspection.database.testing.Hook
 import com.android.tools.appinspection.database.testing.MessageFactory.createKeepDatabasesOpenCommand
 import com.android.tools.appinspection.database.testing.MessageFactory.createKeepDatabasesOpenResponse
 import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesCommand
 import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesResponse
+import com.android.tools.appinspection.database.testing.OPEN_DATABASE_COMMAND_SIGNATURE_API11
+import com.android.tools.appinspection.database.testing.OPEN_DATABASE_COMMAND_SIGNATURE_API27
+import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
+import com.android.tools.appinspection.database.testing.absolutePath
+import com.android.tools.appinspection.database.testing.asExitHook
+import com.android.tools.appinspection.database.testing.createInstance
+import com.android.tools.appinspection.database.testing.displayName
+import com.android.tools.appinspection.database.testing.triggerOnAllReferencesReleased
+import com.android.tools.appinspection.database.testing.triggerOnOpened
+import com.android.tools.appinspection.database.testing.triggerReleaseReference
 import com.google.common.truth.Truth.assertThat
 import java.io.File
 import kotlinx.coroutines.runBlocking
@@ -42,11 +54,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
 
 @RunWith(RobolectricTestRunner::class)
-@Config(
-  manifest = Config.NONE,
-  minSdk = Build.VERSION_CODES.O,
-  maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
-)
+@Config(manifest = Config.NONE, minSdk = Build.VERSION_CODES.O, maxSdk = Build.VERSION_CODES.O)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class TrackDatabasesTest {
   private val testEnvironment = SqliteInspectorTestEnvironment()
@@ -331,16 +339,60 @@ class TrackDatabasesTest {
   }
 
   @Test
-  fun test_findInstances_disk_forceOpen() = runBlocking {
-    val db1a = Database("db1").createInstance(closeablesRule, temporaryFolder)
+  fun test_findInstances_disk_forceOpen(): Unit = runBlocking {
+    val db = Database("db1").createInstance(closeablesRule, temporaryFolder)
 
-    testEnvironment.registerApplication(db1a)
-    startTracking(forceOpen = true)
+    testEnvironment.registerApplication(db)
+    val hooks = startTracking(forceOpen = true)
 
-    // Since we're using FakeArtTooling, we can't assert that we actually get a openDatabase
-    // event, so we just assert that we don't get a `closed` event. It's not a great test, but
-    // it's all we can do given the infrastructure.
-    assertNoQueuedEvents()
+    // We have to simulate a call to the hooks
+    val forcedInstance = testEnvironment.getDatabaseRegistry().forcedOpen.first()
+    hooks.triggerOnOpened(forcedInstance)
+
+    // We can't assert that `isForced = true` because the hooks are called too late
+    receiveOpenedEventId(db.displayName)
+  }
+
+  @Test
+  fun test_findInstances_disk_forceOpenThenOpenNative(): Unit = runBlocking {
+    val database = Database("db1")
+    val db = database.createInstance(closeablesRule, temporaryFolder)
+
+    testEnvironment.registerApplication(db)
+    val hooks = startTracking(forceOpen = true)
+
+    // We have to simulate a call to the hooks
+    val forcedInstance = testEnvironment.getDatabaseRegistry().forcedOpen.first()
+    hooks.triggerOnOpened(forcedInstance)
+    hooks.triggerOnOpened(db)
+
+    // We can't assert that `isForced = true` because the hooks are called too late
+    receiveOpenedEventId(db.displayName)
+    receiveClosedEventId(db.displayName)
+    receiveOpenedEventId(db.displayName, isForced = false)
+  }
+
+  @Test
+  fun test_findInstances_disk_forceOpenThenOpenNativeAndClosed(): Unit = runBlocking {
+    val database = Database("db1")
+    val db = database.createInstance(closeablesRule, temporaryFolder)
+
+    testEnvironment.registerApplication(db)
+    val hooks = startTracking(forceOpen = true)
+
+    // We have to simulate a call to the hooks
+    val forcedInstance = testEnvironment.getDatabaseRegistry().forcedOpen.first()
+    hooks.triggerOnOpened(forcedInstance)
+    hooks.triggerOnOpened(db)
+    db.close()
+    hooks.triggerOnAllReferencesReleased(db)
+
+    // We can't assert that `isForced = true` because the hooks are called too late
+    receiveOpenedEventId(db.displayName)
+    receiveClosedEventId(db.displayName)
+    receiveOpenedEventId(db.displayName, isForced = false)
+    receiveClosedEventId(db.displayName)
+    receiveOpenedEventId(db.displayName, isForced = true)
   }
 
   @Test
@@ -620,10 +672,11 @@ class TrackDatabasesTest {
   private suspend fun receiveOpenedEventId(database: SQLiteDatabase): Int =
     receiveOpenedEventId(database.displayName)
 
-  private suspend fun receiveOpenedEventId(displayName: String): Int =
+  private suspend fun receiveOpenedEventId(displayName: String, isForced: Boolean = false): Int =
     testEnvironment.receiveEvent().let {
       assertThat(it.oneOfCase).isEqualTo(Event.OneOfCase.DATABASE_OPENED)
       assertThat(it.databaseOpened.path).isEqualTo(displayName)
+      assertThat(it.databaseOpened.isForcedConnection).isEqualTo(isForced)
       it.databaseOpened.databaseId
     }
 

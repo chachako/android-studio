@@ -20,7 +20,8 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.os.Build
 import com.android.testutils.CloseablesRule
-import com.android.tools.appinspection.database.DatabaseRegistry.Callback
+import com.android.tools.appinspection.database.DatabaseRegistry.OnDatabaseClosedCallback
+import com.android.tools.appinspection.database.DatabaseRegistry.OnDatabaseOpenedCallback
 import com.android.tools.appinspection.database.DatabaseRegistryTest.EventType.CLOSE
 import com.android.tools.appinspection.database.DatabaseRegistryTest.EventType.OPEN
 import com.google.common.truth.Truth.assertThat
@@ -147,11 +148,19 @@ class DatabaseRegistryTest {
     assertThat(registry.keepOpenReferences).isEmpty()
   }
 
-  private class DbCallback(private val type: EventType, private val events: MutableList<DbEvent>) :
-    Callback {
+  private class DbOpenedCallback(private val events: MutableList<DbEvent>) :
+    OnDatabaseOpenedCallback {
 
-    override fun onPostEvent(databaseId: Int, path: String) {
-      events.add(DbEvent(type, databaseId, path))
+    override fun onDatabaseOpened(databaseId: Int, path: String, isForced: Boolean) {
+      events.add(DbEvent(OPEN, databaseId, path))
+    }
+  }
+
+  private class DbClosedCallback(private val events: MutableList<DbEvent>) :
+    OnDatabaseClosedCallback {
+
+    override fun onDatabaseClosed(databaseId: Int, path: String) {
+      events.add(DbEvent(CLOSE, databaseId, path))
     }
   }
 
@@ -163,7 +172,7 @@ class DatabaseRegistryTest {
   private data class DbEvent(val type: EventType, val id: Int, val path: String)
 
   private fun databaseRegistry(events: MutableList<DbEvent>, forceOpen: Boolean = false) =
-    DatabaseRegistry(DbCallback(OPEN, events), DbCallback(CLOSE, events)).apply {
+    DatabaseRegistry(DbOpenedCallback(events), DbClosedCallback(events)).apply {
       if (forceOpen) {
         enableForceOpen()
       }

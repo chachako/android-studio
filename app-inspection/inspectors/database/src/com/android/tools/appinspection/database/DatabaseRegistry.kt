@@ -45,8 +45,8 @@ private const val NOT_TRACKED = -1
  * @param onClosedCallback called when tracking state changes open->closed
  */
 internal class DatabaseRegistry(
-  private val onOpenedCallback: Callback,
-  private val onClosedCallback: Callback,
+  private val onOpenedCallback: OnDatabaseOpenedCallback,
+  private val onClosedCallback: OnDatabaseClosedCallback,
 ) {
   // True if keep-database-connection-open functionality is enabled.
   private var keepDatabasesOpen = false
@@ -56,6 +56,8 @@ internal class DatabaseRegistry(
 
   // Starting from '1' to distinguish from '0' which could stand for an unset parameter.
   @GuardedBy("lock") private var nextId = 1
+
+  @GuardedBy("lock") private var isForceOpenInProgress = false
 
   // TODO: decide if use weak-references to database objects
   /**
@@ -156,8 +158,13 @@ internal class DatabaseRegistry(
       if (forceOpen) {
         Log.v(HIDDEN_TAG, "Force opening: $path")
         // We just need to open the database. Our hook will call notifyDatabaseOpened()
-        val db = SQLiteDatabase.openDatabase(path, null, OPEN_READWRITE)
-        forcedOpen.add(db)
+        isForceOpenInProgress = true
+        try {
+          val db = SQLiteDatabase.openDatabase(path, null, OPEN_READWRITE)
+          forcedOpen.add(db)
+        } finally {
+          isForceOpenInProgress = false
+        }
         if (Log.isLoggable(HIDDEN_TAG, Log.VERBOSE)) {
           logDatabaseStatus(path)
         }
@@ -165,7 +172,7 @@ internal class DatabaseRegistry(
         Log.v(HIDDEN_TAG, "Registering as offline: $path")
         val id = nextId++
         pathToId[path] = id
-        onClosedCallback.onPostEvent(id, path)
+        onClosedCallback.onDatabaseClosed(id, path)
       }
     }
   }
@@ -177,6 +184,7 @@ internal class DatabaseRegistry(
   private fun handleDatabaseSignal(database: SQLiteDatabase) {
     var notifyOpenedId: Int? = null
     var notifyClosedId: Int? = null
+    var isForced = isForceOpenInProgress
 
     synchronized(lock) {
       var id = getIdForDatabase(database)
@@ -207,9 +215,19 @@ internal class DatabaseRegistry(
         // announce anything; later, when processing the queued up closed events nothing
         // will be announced as the currently processed database will keep at least one open
         // connection.
-        if (!hasReferences(id)) {
+        val references = getReferences(id)
+        if (references.isEmpty()) {
           notifyOpenedId = id
+        } else {
+          // TODO(aalbert): Maybe actually close the forced connection. This would require either:
+          //   1. Reopen a forced connection when all connections are closed
+          //   2. Implicitly enabling keep-open when is-forced.
+          if (references.hasForcedConnections()) {
+            notifyClosedId = id
+            notifyOpenedId = id
+          }
         }
+
         registerReference(id, database)
       } else {
         // handling a transition: tracked(open) -> tracked(closed)
@@ -220,22 +238,36 @@ internal class DatabaseRegistry(
         // event now as the subsequent calls will do it if appropriate
         val hasReferencesPre = hasReferences(id)
         unregisterReference(id, database)
-        val hasReferencesPost = hasReferences(id)
-        if (hasReferencesPre && !hasReferencesPost) {
-          notifyClosedId = id
+        val referencesPost = getReferences(id)
+        if (hasReferencesPre) {
+          if (referencesPost.isEmpty()) {
+            notifyClosedId = id
+          } else if (referencesPost.hasOnlyForcedConnections()) {
+            notifyOpenedId = id
+            notifyClosedId = id
+            isForced = true
+          }
         }
       }
 
       secureKeepOpenReference(id)
 
-      // notify of changes if any
+      // notify of changes if any. We could have a `close` event followed by an `open` when
+      // switching from forcedOpen to native connection.
+      if (notifyClosedId != null) {
+        onClosedCallback.onDatabaseClosed(notifyClosedId!!, database.pathForDatabase())
+      }
       if (notifyOpenedId != null) {
-        onOpenedCallback.onPostEvent(notifyOpenedId!!, database.pathForDatabase())
-      } else if (notifyClosedId != null) {
-        onClosedCallback.onPostEvent(notifyClosedId!!, database.pathForDatabase())
+        onOpenedCallback.onDatabaseOpened(notifyOpenedId!!, database.pathForDatabase(), isForced)
       }
     }
   }
+
+  @GuardedBy("lock")
+  private fun Set<SQLiteDatabase>.hasForcedConnections() = any { forcedOpen.contains(it) }
+
+  @GuardedBy("lock")
+  private fun Set<SQLiteDatabase>.hasOnlyForcedConnections() = all { forcedOpen.contains(it) }
 
   /**
    * Returns a currently active database reference if one is available. Null otherwise. Consumer of
@@ -341,13 +373,17 @@ internal class DatabaseRegistry(
   }
 
   @GuardedBy("lock")
-  private fun hasReferences(databaseId: Int): Boolean {
-    val references = databases[databaseId] ?: return false
-    return references.isNotEmpty()
+  private fun hasReferences(databaseId: Int) = getReferences(databaseId).isNotEmpty()
+
+  @GuardedBy("lock")
+  private fun getReferences(databaseId: Int) = databases[databaseId] ?: emptySet()
+
+  internal fun interface OnDatabaseOpenedCallback {
+    fun onDatabaseOpened(databaseId: Int, path: String, isForced: Boolean)
   }
 
-  internal fun interface Callback {
-    fun onPostEvent(databaseId: Int, path: String)
+  internal fun interface OnDatabaseClosedCallback {
+    fun onDatabaseClosed(databaseId: Int, path: String)
   }
 
   @VisibleForTesting
