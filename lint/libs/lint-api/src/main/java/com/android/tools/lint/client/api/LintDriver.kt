@@ -26,6 +26,7 @@ import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_KTS
+import com.android.SdkConstants.DOT_SOMETHING
 import com.android.SdkConstants.DOT_TOML
 import com.android.SdkConstants.DOT_VERSIONS_DOT_TOML
 import com.android.SdkConstants.FD_GRADLE
@@ -2078,7 +2079,7 @@ class LintDriver(
     val gradleKtsContexts =
       project.gradleBuildScripts
         .asSequence()
-        .filter { it.name.endsWith(DOT_KTS) }
+        .filter { it.name.endsWith(DOT_KTS) || it.name.endsWith(DOT_SOMETHING) }
         .map { JavaContext(this, project, main, it) }
         .toList()
 
@@ -2230,12 +2231,17 @@ class LintDriver(
     val generatedFolders = project.generatedSourceFolders
     for (file in files) {
       val path = file.path
-      if (path.endsWith(DOT_JAVA) || path.endsWith(DOT_KT) || path.endsWith(DOT_KTS)) {
+      if (
+        path.endsWith(DOT_JAVA) ||
+          path.endsWith(DOT_KT) ||
+          path.endsWith(DOT_KTS) ||
+          path.endsWith(DOT_SOMETHING)
+      ) {
         val context = JavaContext(this, project, main, file)
 
         when {
           // Figure out if this file is a Gradle .kts context
-          path.endsWith(DOT_KTS) -> {
+          path.endsWith(DOT_KTS) || path.endsWith(DOT_SOMETHING) -> {
             gradleKtsContexts.add(context)
           }
           // instrumented test context

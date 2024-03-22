@@ -21,6 +21,7 @@ import com.android.SdkConstants.DOT_GRADLE
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_KTS
+import com.android.SdkConstants.DOT_SOMETHING
 import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.FD_ASSETS
 import com.android.tools.lint.detector.api.Context
@@ -152,7 +153,11 @@ internal class OtherFileVisitor(private val detectors: List<Detector>) {
       if (subset != null && !subset.isEmpty()) {
         val files = ArrayList<File>(subset.size)
         for (file in subset) {
-          if (file.name.endsWith(DOT_GRADLE) || file.name.endsWith(DOT_KTS)) {
+          if (
+            file.name.endsWith(DOT_GRADLE) ||
+              file.name.endsWith(DOT_KTS) ||
+              file.name.endsWith(DOT_SOMETHING)
+          ) {
             files.add(file)
           }
         }
