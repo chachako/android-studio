@@ -415,7 +415,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         }
       }
     } else if (
-      (property == "compileSdkVersion" || property == "compileSdk") && parent == "android"
+      (property == "compileSdkVersion" || property == "compileSdk") && parent.startsWith("android")
     ) {
       var version = -1
       if (isStringLiteral(value)) {
@@ -505,7 +505,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           checkDependency(context, dependency, false, valueCookie, statementCookie)
         }
       }
-    } else if (parent == "dependencies") {
+    } else if (parent == "dependencies" || parent == "declarativeDependencies") {
       if (value.startsWith("files") && value.matches("^files\\(['\"].*[\"']\\)$".toRegex())) {
         val path = value.substring("files('".length, value.length - 2)
         if (path.contains("\\\\")) {
