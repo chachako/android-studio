@@ -41,8 +41,7 @@ import kotlinx.coroutines.launch
  */
 internal class JdwpProcessImpl(
     override val device: ConnectedDevice,
-    override val pid: Int,
-    private val onClosed: (JdwpProcessImpl) -> Unit
+    override val pid: Int
 ) : AbstractJdwpProcess() {
 
     private val logger = adbLogger(device.session)
@@ -122,7 +121,6 @@ internal class JdwpProcessImpl(
         logger.debug { "close()" }
         sharedJdwpSessionProvider.close()
         cache.close()
-        onClosed(this)
     }
 
     override fun toString(): String {
