@@ -87,15 +87,6 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
       return newAvdInfo
     }
 
-  fun breakAvd(avdInfo: AvdInfo, message: String) {
-    synchronized(avds) {
-      avds.remove(avdInfo)
-      val newAvdInfo =
-        avdInfo.copy(properties = avdInfo.properties + (LAUNCH_EXCEPTION_MESSAGE to message))
-      avds += newAvdInfo
-    }
-  }
-
   override suspend fun startAvd(avdInfo: AvdInfo) = boot(avdInfo, false, null)
 
   override suspend fun coldBootAvd(avdInfo: AvdInfo) = boot(avdInfo, true, null)
@@ -202,4 +193,4 @@ fun AvdInfo.copy(
   status: AvdInfo.AvdStatus = this.status,
 ): AvdInfo = AvdInfo(name, iniFile, folderPath, systemImage, properties, status)
 
-private const val LAUNCH_EXCEPTION_MESSAGE = "launch_exception_message"
+const val LAUNCH_EXCEPTION_MESSAGE = "launch_exception_message"
