@@ -19,6 +19,7 @@ package com.android.tools.lint.checks.infrastructure;
 import static com.android.SdkConstants.ANDROID_MANIFEST_XML;
 import static com.android.SdkConstants.ANDROID_URI;
 import static com.android.SdkConstants.ATTR_ID;
+import static com.android.SdkConstants.FN_BUILD_GRADLE_KTS;
 import static com.android.SdkConstants.NEW_ID_PREFIX;
 
 import com.android.annotations.NonNull;
@@ -383,7 +384,7 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
     @NonNull
     public static TestFile kts(@NonNull @Language("kotlin-script") String source) {
         //noinspection LanguageMismatch
-        return TestFiles.kotlin("build.gradle.kts", source);
+        return TestFiles.kotlin(FN_BUILD_GRADLE_KTS, source);
     }
 
     @SuppressWarnings("UnknownLanguage")

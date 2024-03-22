@@ -689,7 +689,8 @@ abstract class LintClient {
     // check
     if (
       File(project.dir, SdkConstants.FN_BUILD_GRADLE).exists() ||
-        File(project.dir, SdkConstants.FN_BUILD_GRADLE_KTS).exists()
+        File(project.dir, SdkConstants.FN_BUILD_GRADLE_KTS).exists() ||
+        File(project.dir, SdkConstants.FN_BUILD_GRADLE_DECLARATIVE).exists()
     ) {
       return true
     }
@@ -700,7 +701,8 @@ abstract class LintClient {
       if (
         root != null &&
           (File(root, SdkConstants.FN_BUILD_GRADLE).exists() ||
-            File(root, SdkConstants.FN_BUILD_GRADLE_KTS).exists())
+            File(root, SdkConstants.FN_BUILD_GRADLE_KTS).exists() ||
+            File(root, SdkConstants.FN_BUILD_GRADLE_DECLARATIVE).exists())
       ) {
         return true
       }
@@ -1933,7 +1935,8 @@ abstract class LintClient {
     if (parent != null) {
       if (
         File(parent, SdkConstants.FN_BUILD_GRADLE).exists() ||
-          File(parent, SdkConstants.FN_BUILD_GRADLE_KTS).exists()
+          File(parent, SdkConstants.FN_BUILD_GRADLE_KTS).exists() ||
+          File(parent, SdkConstants.FN_BUILD_GRADLE_DECLARATIVE).exists()
       ) {
         return parent
       }

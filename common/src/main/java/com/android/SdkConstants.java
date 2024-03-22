@@ -160,12 +160,16 @@ public final class SdkConstants {
     public static final String FN_BUILD_GRADLE_KTS = "build.gradle.kts";
     /** An SDK Project's build.gradle.toml declarative file */
     public static final String FN_DECLARATIVE_BUILD_GRADLE = "build.gradle.toml";
+    /** An SDK Project's build.gradle.something declarative file */
+    public static final String FN_BUILD_GRADLE_DECLARATIVE = "build.gradle.something";
     /** An SDK Project's settings.gradle file */
     public static final String FN_SETTINGS_GRADLE = "settings.gradle";
     /** An SDK Project's settings.gradle Kotlin script file */
     public static final String FN_SETTINGS_GRADLE_KTS = "settings.gradle.kts";
     /** An SDK Project's settings.gradle toml file */
     public static final String FN_SETTINGS_GRADLE_TOML = "settings.gradle.toml";
+    /** An SDK Project's settings.gradle.something declarative file */
+    public static final String FN_SETTINGS_GRADLE_DECLARATIVE = "settings.gradle.something";
     /** An SDK Project's gradle.properties file */
     public static final String FN_GRADLE_PROPERTIES = "gradle.properties";
     /** An SDK Project's Gradle cache config.properties file */
@@ -2141,6 +2145,7 @@ public final class SdkConstants {
     public static final String DOT_SRCJAR = ".srcjar";
     public static final String DOT_KLIB = ".klib";
     public static final String DOT_GRADLE = ".gradle";
+    public static final String DOT_SOMETHING = ".something";
     public static final String DOT_PROPERTIES = ".properties";
     public static final String DOT_JSON = ".json";
     public static final String DOT_PSD = ".psd";
@@ -2176,6 +2181,8 @@ public final class SdkConstants {
     public static final String EXT_GRADLE = "gradle";
     /** Extension of Kotlin gradle files, i.e. "gradle.kts" */
     public static final String EXT_GRADLE_KTS = "gradle.kts";
+    /** Extension of Kotlin gradle files, i.e. "gradle.something" */
+    public static final String EXT_GRADLE_SOMETHING = "gradle.something";
     /** Extension of declarative gradle files, i.e. "gradle.toml" */
     public static final String EXT_GRADLE_TOML = "gradle.toml";
     /** Extension of jar files, i.e. "jar" */
