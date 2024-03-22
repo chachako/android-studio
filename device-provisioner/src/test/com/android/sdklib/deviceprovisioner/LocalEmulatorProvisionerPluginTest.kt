@@ -207,7 +207,9 @@ class LocalEmulatorProvisionerPluginTest {
       assertThat(expected.message).isEqualTo("AVD is broken")
     }
 
-    assertThat(handle.state.isTransitioning).isFalse()
+    // This flag is reset immediately after the DeviceActionException is thrown, but we still need
+    // to wait for it to happen
+    yieldUntil { !handle.state.isTransitioning }
     assertThat(handle.state.isOnline()).isFalse()
   }
 
