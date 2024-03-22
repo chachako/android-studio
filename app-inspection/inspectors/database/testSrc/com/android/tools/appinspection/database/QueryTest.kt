@@ -366,9 +366,12 @@ class QueryTest {
   @Test
   fun test_large_number_of_values_with_response_size_limit() = runBlocking {
     // test config
-    val expectedRecordCount = 4096
+
+    // A very large query might be causing b/330783298. We don't need a very large result to prove
+    // that paging works.
+    val expectedRecordCount = 100
     val recordSize = 512
-    val idealBatchCount = 256
+    val idealBatchCount = 10
     val responseSizeLimitHint = expectedRecordCount.toLong() * recordSize / idealBatchCount
 
     // create a database
