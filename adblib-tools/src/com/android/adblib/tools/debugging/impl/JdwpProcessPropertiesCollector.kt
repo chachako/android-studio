@@ -624,7 +624,7 @@ internal class JdwpProcessPropertiesCollector(
 private fun Throwable.toAdbUsageTrackerFailureType(): AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType {
     // This regex matches errors like `'closed' error on device serial #emulator-5554 executing service 'jdwp:2900'`
     // which are mentioned in b/311788428 and b/322467516
-    val closedFailResponseExecutingService = Regex("'closed' error on .* executing service .*")
+    val closedFailResponseExecutingService = Regex(".*'closed' error on .* executing service .*")
 
     return when {
         this is TimeoutCancellationException ->
