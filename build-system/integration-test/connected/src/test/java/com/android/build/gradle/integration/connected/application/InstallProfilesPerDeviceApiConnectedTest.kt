@@ -24,6 +24,8 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.connected.utils.getEmulator
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.ide.common.build.GenericBuiltArtifactsLoader
+import com.android.testutils.truth.PathSubject
+import com.android.testutils.truth.ZipFileSubject
 import com.android.utils.FileUtils
 import com.android.utils.NullLogger
 import com.google.common.truth.Truth
@@ -31,6 +33,7 @@ import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 
 class InstallProfilesPerDeviceApiConnectedTest {
     companion object {
@@ -287,6 +290,52 @@ class InstallProfilesPerDeviceApiConnectedTest {
         )
         Truth.assertThat(appMetadataJson.readText()).contains("baselineProfiles")
         Truth.assertThat(appMetadataJson.readText()).contains("basic-release.dm")
+    }
+
+    // Regression test for b/330593433
+    @Test
+    fun apkZipPackagingTest() {
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+                apply plugin: 'maven-publish'
+                publishing {
+                    repositories {
+                        maven { url 'testrepo' }
+                    }
+                }
+                android {
+                    publishing {
+                        singleVariant('release') { publishApk() }
+                    }
+                }
+                afterEvaluate {
+                    publishing {
+                        publications {
+                            app(MavenPublication) {
+                                groupId = 'test.basic'
+                                artifactId = 'app'
+                                version = '1.0'
+
+                                from components.release
+                            }
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+        project.execute("publishAppPublicationToMavenRepository")
+        val testRepo = File(project.projectDir, "testrepo")
+        val groupIdFolder = FileUtils.join(testRepo, "test", "basic")
+
+        val apkFile = FileUtils.join(groupIdFolder, "app", "1.0", "app-1.0.zip")
+        PathSubject.assertThat(apkFile).isFile()
+
+        ZipFileSubject.assertThat(
+            apkFile
+        ) { it: ZipFileSubject ->
+            it.contains(SdkConstants.FN_OUTPUT_BASELINE_PROFILES)
+        }
     }
 
     // This test is disabled and should only be run locally with an API level lower than 28
