@@ -183,6 +183,29 @@ class LintStandaloneTest(
         assertThat(lintReport).contains("DuplicatePlatformClasses")
     }
 
+    /**
+     * Regression test for b/330911660
+     */
+    @Test
+    fun checkExternalKmpDependency() {
+        TestFileUtils.searchAndReplace(
+            project.buildFile,
+            "ignoreTestSources true",
+            "ignoreTestSources false"
+        )
+
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+                dependencies {
+                    testImplementation 'org.jetbrains.skiko:skiko:0.7.7'
+                }
+            """.trimIndent()
+        )
+
+        getExecutor().run(":lint")
+    }
+
     private fun getExecutor(): GradleTaskExecutor =
         project.executor()
             .with(BooleanOption.RUN_LINT_IN_PROCESS, runLintInProcess)

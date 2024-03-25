@@ -786,6 +786,28 @@ class KotlinMultiplatformAndroidLintTest(private val lintAnalysisPerComponent: B
         PathSubject.assertThat(reportFile).contains("No issues found.")
     }
 
+    /**
+     * Regression test for b/330911660
+     */
+    @Test
+    fun `test external KMP dependency`() {
+        Assume.assumeTrue(lintAnalysisPerComponent)
+        TestFileUtils.appendToFile(
+            project.getSubproject("kmpJvmOnly").ktsBuildFile,
+            """
+                kotlin {
+                    sourceSets.getByName("jvmTest") {
+                        dependencies {
+                            implementation("org.jetbrains.skiko:skiko:0.7.7")
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+
+        getExecutor().run(":kmpJvmOnly:clean", ":kmpJvmOnly:lint")
+    }
+
     private fun addNewApiIssuesToKmpFirstLib(
         addCommonMainIssues: Boolean = false,
         addAndroidMainIssues: Boolean = false,
