@@ -487,7 +487,7 @@ class VariantManager<
                 )
             }
         }
-        val variantDslInfo = variantDslInfoBuilder.createDslInfo()
+        val testFixturesComponentDslInfo = variantDslInfoBuilder.createDslInfo()
 
         // now that we have the result of the filter, we can continue configuring the variant
         createCompoundSourceSets(productFlavorDataList, variantDslInfoBuilder)
@@ -539,32 +539,32 @@ class VariantManager<
             project,
             dslServices.projectOptions,
             projectServices.issueReporter,
-            variantDslInfo
+            testFixturesComponentDslInfo
         )
             .addSourceSets(testFixturesVariantSourceSets)
-            .setFlavorSelection(getFlavorSelection(variantDslInfo))
+            .setFlavorSelection(getFlavorSelection(testFixturesComponentDslInfo))
             .overrideVariantNameAttribute(mainComponentInfo.variant.name)
             .setMainVariant(mainComponentInfo.variant)
             .build()
         val pathHelper =
             VariantPathHelper(
                 project.layout.buildDirectory,
-                variantDslInfo,
+                testFixturesComponentDslInfo,
                 dslServices
             )
-        val componentIdentity = variantDslInfo.componentIdentity
+        val componentIdentity = testFixturesComponentDslInfo.componentIdentity
         val artifacts = ArtifactsImpl(project, componentIdentity.name)
         val taskContainer = MutableTaskContainer()
         val testFixturesBuildFeatureValues = variantFactory.createTestFixturesBuildFeatureValues(
             dslExtension.buildFeatures,
             dslServices.projectOptions,
-            variantDslInfo.testFixturesAndroidResourcesEnabled
+            testFixturesComponentDslInfo.testFixturesAndroidResourcesEnabled
         )
 
         return variantFactory.createTestFixtures(
-            variantDslInfo.componentIdentity,
+            testFixturesComponentDslInfo.componentIdentity,
             testFixturesBuildFeatureValues,
-            variantDslInfo,
+            testFixturesComponentDslInfo,
             variantDependencies,
             variantSources,
             pathHelper,
@@ -585,7 +585,8 @@ class VariantManager<
         testedComponentInfo: VariantComponentInfo<VariantBuilderT, VariantDslInfoT, VariantT>,
         componentType: ComponentType,
         testFixturesEnabled: Boolean,
-        defaultDeviceTestBuilder: DeviceTestBuilderImpl? = null,
+        deviceTestBuilder: DeviceTestBuilderImpl? = null,
+        hostTestBuilder: HostTestBuilderImpl? = null,
     ): TestComponentCreationConfig {
 
         // handle test variant
@@ -626,7 +627,19 @@ class VariantManager<
                     it.getSourceSet(componentType)!!)
             }
         }
-        val variantDslInfo = variantDslInfoBuilder.createDslInfo()
+
+        // TODO: Eventually, we must get rid of screenshot_test component type and specific types
+        val testComponentDslInfo = when(componentType) {
+            ComponentTypeImpl.UNIT_TEST ->
+                variantDslInfoBuilder.createUnitTestComponentDslInfo(
+                    hostTestBuilder?._enableCodeCoverage ?: false)
+            ComponentTypeImpl.SCREENSHOT_TEST ->
+                variantDslInfoBuilder.createScreenshotTestComponentDslInfo(
+                    hostTestBuilder?._enableCodeCoverage ?: false)
+            else ->
+                variantDslInfoBuilder.createDslInfo()
+        }
+
         createCompoundSourceSets(productFlavorDataList, variantDslInfoBuilder)
         val variantSources = variantDslInfoBuilder.createVariantSources()
 
@@ -675,19 +688,19 @@ class VariantManager<
                 project,
                 dslServices.projectOptions,
                 projectServices.issueReporter,
-                variantDslInfo)
+                testComponentDslInfo)
                 .addSourceSets(testVariantSourceSets)
-                .setFlavorSelection(getFlavorSelection(variantDslInfo))
+                .setFlavorSelection(getFlavorSelection(testComponentDslInfo))
                 .setTestedVariant(testedComponentInfo.variant)
                .setTestFixturesEnabled(testFixturesEnabled)
         val variantDependencies = builder.build()
         val pathHelper =
             VariantPathHelper(
                 project.layout.buildDirectory,
-                variantDslInfo,
+                testComponentDslInfo,
                 dslServices
             )
-        val componentIdentity = variantDslInfo.componentIdentity
+        val componentIdentity = testComponentDslInfo.componentIdentity
         val artifacts = ArtifactsImpl(project, componentIdentity.name)
         val taskContainer = MutableTaskContainer()
 
@@ -701,15 +714,15 @@ class VariantManager<
 
         val testComponent = when(componentType) {
             // this is ANDROID_TEST
-            ComponentTypeImpl.ANDROID_TEST -> defaultDeviceTestBuilder?.let {
+            ComponentTypeImpl.ANDROID_TEST -> deviceTestBuilder?.let {
                 variantFactory.createAndroidTest(
-                    variantDslInfo.componentIdentity,
+                    testComponentDslInfo.componentIdentity,
                     variantFactory.createAndroidTestBuildFeatureValues(
                             dslExtension.buildFeatures,
                             dslExtension.dataBinding,
                             dslServices.projectOptions
                     ),
-                    variantDslInfo as AndroidTestComponentDslInfo,
+                    testComponentDslInfo as AndroidTestComponentDslInfo,
                     variantDependencies,
                     variantSources,
                     pathHelper,
@@ -724,48 +737,54 @@ class VariantManager<
                 )
             } ?: throw IllegalStateException("Expected a test component type, but ${componentIdentity.name} has type $componentType")
             // this is UNIT_TEST
-            ComponentTypeImpl.UNIT_TEST -> variantFactory.createUnitTest(
-                variantDslInfo.componentIdentity,
-                variantFactory.createHostTestBuildFeatureValues(
+            ComponentTypeImpl.UNIT_TEST -> hostTestBuilder?.let {
+                variantFactory.createUnitTest(
+                    testComponentDslInfo.componentIdentity,
+                    variantFactory.createHostTestBuildFeatureValues(
                         dslExtension.buildFeatures,
                         dslExtension.dataBinding,
                         dslServices.projectOptions,
                         globalTaskCreationConfig.unitTestOptions.isIncludeAndroidResources,
                         ComponentTypeImpl.UNIT_TEST
-                ),
-                variantDslInfo as HostTestComponentDslInfo,
-                variantDependencies,
-                variantSources,
-                pathHelper,
-                artifacts,
-                testVariantData,
-                taskContainer,
-                testedComponentInfo.variant,
-                variantPropertiesApiServices,
-                taskCreationServices,
-                globalTaskCreationConfig
-            )
-            ComponentTypeImpl.SCREENSHOT_TEST -> variantFactory.createScreenshotTest(
-                variantDslInfo.componentIdentity,
-                variantFactory.createHostTestBuildFeatureValues(
-                    dslExtension.buildFeatures,
-                    dslExtension.dataBinding,
-                    dslServices.projectOptions,
-                    includeAndroidResources = true,
-                    ComponentTypeImpl.SCREENSHOT_TEST
-                ),
-                variantDslInfo as HostTestComponentDslInfo,
-                variantDependencies,
-                variantSources,
-                pathHelper,
-                artifacts,
-                testVariantData,
-                taskContainer,
-                testedComponentInfo.variant,
-                variantPropertiesApiServices,
-                taskCreationServices,
-                globalTaskCreationConfig
-            )
+                    ),
+                    testComponentDslInfo as HostTestComponentDslInfo,
+                    variantDependencies,
+                    variantSources,
+                    pathHelper,
+                    artifacts,
+                    testVariantData,
+                    taskContainer,
+                    testedComponentInfo.variant,
+                    variantPropertiesApiServices,
+                    taskCreationServices,
+                    globalTaskCreationConfig,
+                    it,
+                )
+            } ?: throw IllegalArgumentException("Expected a HostTestBuilder instance for UNIT_TEST")
+            ComponentTypeImpl.SCREENSHOT_TEST -> hostTestBuilder?.let {
+                variantFactory.createScreenshotTest(
+                    testComponentDslInfo.componentIdentity,
+                    variantFactory.createHostTestBuildFeatureValues(
+                        dslExtension.buildFeatures,
+                        dslExtension.dataBinding,
+                        dslServices.projectOptions,
+                        includeAndroidResources = true,
+                        ComponentTypeImpl.SCREENSHOT_TEST
+                    ),
+                    testComponentDslInfo as HostTestComponentDslInfo,
+                    variantDependencies,
+                    variantSources,
+                    pathHelper,
+                    artifacts,
+                    testVariantData,
+                    taskContainer,
+                    testedComponentInfo.variant,
+                    variantPropertiesApiServices,
+                    taskCreationServices,
+                    globalTaskCreationConfig,
+                    it
+                )
+            } ?: throw IllegalArgumentException("Expected a HostTestBuilder instance for UNIT_TEST")
             else -> throw IllegalStateException("Expected a test component type, but ${componentIdentity.name} has type $componentType")
         }
 
@@ -878,7 +897,8 @@ class VariantManager<
                                 variantInfo,
                                 ComponentTypeImpl.ANDROID_TEST,
                                 testFixturesEnabledForVariant,
-                                deviceTestBuilder as DeviceTestBuilderImpl,
+                                deviceTestBuilder = deviceTestBuilder as DeviceTestBuilderImpl,
+                                hostTestBuilder = null,
                             )
                             addTestComponent(androidTest)
                             (variant as InternalHasDeviceTests).deviceTests.add(androidTest as DeviceTestImpl)
@@ -894,6 +914,8 @@ class VariantManager<
                                 variantInfo,
                                 (hostTestBuilder as HostTestBuilderImpl).componentType,
                                 testFixturesEnabledForVariant,
+                                deviceTestBuilder = null,
+                                hostTestBuilder = hostTestBuilder
                             )
                             addTestComponent(testComponent)
                             (variant as HasHostTestsCreationConfig)

@@ -23,6 +23,7 @@ import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.impl.AndroidResourcesImpl
+import com.android.build.api.variant.impl.HostTestBuilderImpl
 import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
@@ -54,7 +55,8 @@ open class UnitTestImpl @Inject constructor(
     testedVariant: VariantCreationConfig,
     internalServices: VariantServices,
     taskCreationServices: TaskCreationServices,
-    global: GlobalTaskCreationConfig
+    global: GlobalTaskCreationConfig,
+    hostTestBuilder: HostTestBuilderImpl,
 ) : HostTestImpl(
     componentIdentity,
     buildFeatureValues,
@@ -68,7 +70,8 @@ open class UnitTestImpl @Inject constructor(
     testedVariant,
     internalServices,
     taskCreationServices,
-    global
+    global,
+    hostTestBuilder,
 ), HostTestCreationConfig, UnitTest {
 
     /**
@@ -98,11 +101,6 @@ open class UnitTestImpl @Inject constructor(
 
     override val androidResources: AndroidResourcesImpl =
             getAndroidResources(dslInfo.androidResourcesDsl!!.androidResources)
-
-    // these would normally be public but not for unit-test. They are there to feed the
-    // manifest but aren't actually used.
-    override val isCoverageEnabled: Boolean
-        get() = dslInfo.isCoverageEnabled
 
     private val testTaskConfigActions = mutableListOf<(Test) -> Unit>()
 

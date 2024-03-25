@@ -86,10 +86,10 @@ open class DynamicFeatureVariantBuilderImpl @Inject constructor(
     override val deviceTests: List<DeviceTestBuilder>
         get() = listOf(defaultDeviceTestBuilder)
 
-    override val hostTests: Map<String, HostTestBuilder> = mapOf(
-            HostTestBuilder.UNIT_TEST_TYPE to
-                    HostTestBuilderImpl.forUnitTest(variantBuilderServices),
-            HostTestBuilder.SCREENSHOT_TEST_TYPE to
-                    HostTestBuilderImpl.forScreenshotTest(dslInfo.experimentalProperties)
+    override val hostTests: Map<String, HostTestBuilder> =
+        HostTestBuilderImpl.create(
+            dslInfo.dslDefinedHostTests,
+            variantBuilderServices,
+            dslInfo.experimentalProperties,
         )
 }

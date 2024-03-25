@@ -17,6 +17,7 @@
 package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.HostTestBuilder
+import com.android.build.api.variant.PropertyAccessNotAllowedException
 import com.android.tools.build.gradle.internal.profile.VariantMethodType
 import com.google.wireless.android.sdk.stats.GradleBuildVariant
 
@@ -25,7 +26,7 @@ open class AnalyticsEnabledHostTestBuilder(
     val stats: GradleBuildVariant.Builder,
 ): HostTestBuilder {
     override var enable: Boolean
-        get() = delegate.enable
+        get() = throw PropertyAccessNotAllowedException("enable", "HostTestBuilder")
         set(value) {
             stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
                 VariantMethodType.UNIT_TEST_ENABLED_VALUE
@@ -38,5 +39,13 @@ open class AnalyticsEnabledHostTestBuilder(
             stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
                 VariantMethodType.HOST_TEST_TYPE_VALUE
             delegate.type = value
+        }
+
+    override var enableCodeCoverage: Boolean
+        get() = throw PropertyAccessNotAllowedException("enableCodeCoverage", "HostTestBuilder")
+        set(value) {
+            stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
+                VariantMethodType.HOST_TEST_ENABLE_CODE_COVERAGE_VALUE
+            delegate.enableCodeCoverage = value
         }
 }

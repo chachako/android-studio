@@ -39,7 +39,7 @@ internal class ScreenshotTestComponentDslInfoImpl(
     services: VariantServices,
     buildDirectory: DirectoryProperty,
     mainVariantDslInfo: TestedVariantDslInfo,
-    extension: InternalTestedExtension<*, *, *, *, *, *>
+    extension: InternalTestedExtension<*, *, *, *, *, *>,
 ) : HostTestComponentDslInfoImpl(
     componentIdentity,
     componentType,
@@ -49,7 +49,7 @@ internal class ScreenshotTestComponentDslInfoImpl(
     services,
     buildDirectory,
     mainVariantDslInfo,
-    extension
+    extension,
 ), HostTestComponentDslInfo {
 
     override val namespace: Provider<String> by lazy {
@@ -65,6 +65,4 @@ internal class ScreenshotTestComponentDslInfoImpl(
     override val minSdkVersion: MutableAndroidVersion
         get() = mainVariantDslInfo.minSdkVersion
 
-    override val isCoverageEnabled: Boolean
-        get() = false  // TODO(karimai): add dsl info to BuildType for ST coverage.
 }

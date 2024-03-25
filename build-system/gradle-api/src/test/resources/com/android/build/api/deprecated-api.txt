@@ -13,6 +13,7 @@ Deprecated from AGP 8.5.0
   * com.android.build.api.dsl.Ndk.setJobs: void (java.lang.Integer)
   * com.android.build.api.dsl.Ndk.setModuleName: void (java.lang.String)
   * com.android.build.api.dsl.Ndk.setStl: void (java.lang.String)
+  * com.android.build.api.variant.HostTestBuilder.getEnableCodeCoverage: boolean ()
 Deprecated from AGP 8.4.0
   * com.android.build.api.artifact.Artifacts.add: void (com.android.build.api.artifact.MultipleArtifact<FileTypeT>, FileTypeT)
   * com.android.build.api.dsl.KeepRules.ignoreAllExternalDependencies: void (boolean)

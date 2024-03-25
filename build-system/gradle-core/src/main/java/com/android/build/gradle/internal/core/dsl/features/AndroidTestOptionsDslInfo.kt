@@ -19,7 +19,6 @@ package com.android.build.gradle.internal.core.dsl.features
 import com.android.build.api.dsl.EmulatorControl
 import com.android.build.api.dsl.EmulatorSnapshots
 import com.android.build.api.dsl.ManagedDevices
-import org.gradle.api.tasks.testing.Test
 
 /**
  * Contains the final dsl info computed from the DSL object model (extension, default config,
@@ -33,4 +32,5 @@ interface AndroidTestOptionsDslInfo: TestOptionsDslInfo {
     val managedDevices: ManagedDevices
     val emulatorControl: EmulatorControl
     val emulatorSnapshots: EmulatorSnapshots
+    val codeCoverageEnabled:Boolean
 }

@@ -19,6 +19,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Com
 import com.android.build.gradle.integration.common.fixture.LoggingLevel
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -33,14 +34,6 @@ class JacocoLibraryProjectTest {
 
     @Before
     fun enableCodeCoverage() {
-        project.buildFile.appendText("""
-            android.buildTypes.debug.enableAndroidTestCoverage true
-            dependencies {
-                testImplementation "junit:junit:4.12"
-            }
-
-        """.trimIndent())
-
         project.projectDir.resolve("src/test/java/example/MyTest.java").also {
             it.parentFile.mkdirs()
             it.writeText("""
@@ -65,7 +58,39 @@ class JacocoLibraryProjectTest {
             apply plugin: 'jacoco'
 
             $buildFile
+            android.buildTypes.debug.enableAndroidTestCoverage true
+            dependencies {
+                testImplementation "junit:junit:4.12"
+            }
         """.trimIndent())
+        verifyJacocoExecution()
+    }
+
+    @Test
+    fun testUnitTestsWithJacocoThroughVariantApi(){
+        val buildFile = project.buildFile.readText()
+        project.buildFile.writeText("""
+            apply plugin: 'jacoco'
+
+            $buildFile
+
+            dependencies {
+                testImplementation "junit:junit:4.12"
+            }
+
+            androidComponents {
+                beforeVariants(selector().withBuildType("debug")) {
+                    it.hostTests.get(
+                        com.android.build.api.variant.HostTestBuilder.UNIT_TEST_TYPE
+                    ).enableCodeCoverage = true
+                }
+            }
+            """.trimIndent()
+        )
+        verifyJacocoExecution()
+    }
+
+    private fun verifyJacocoExecution() {
         val result = project.executor().withLoggingLevel(LoggingLevel.INFO).run("createDebugUnitTestCoverageReport")
 
         assertThat(result.stdout).doesNotContain("Cannot process instrumented class")

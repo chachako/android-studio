@@ -22,7 +22,6 @@ import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.DependenciesInfoBuilder
 import com.android.build.api.variant.DeviceTestBuilder
-import com.android.build.api.variant.HasHostTestsBuilder
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.PropertyAccessNotAllowedException
 import com.android.build.api.variant.VariantBuilder
@@ -135,10 +134,10 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
     override val androidResources: ApplicationAndroidResourcesBuilder =
         ApplicationAndroidResourcesBuilderImpl(dslInfo.generateLocaleConfig)
 
-    override val hostTests: Map<String, HostTestBuilder> = mapOf(
-            HostTestBuilder.UNIT_TEST_TYPE to
-                HostTestBuilderImpl.forUnitTest(variantBuilderServices),
-            HostTestBuilder.SCREENSHOT_TEST_TYPE to
-                HostTestBuilderImpl.forScreenshotTest(dslInfo.experimentalProperties)
+    override val hostTests: Map<String, HostTestBuilder> =
+        HostTestBuilderImpl.create(
+            dslInfo.dslDefinedHostTests,
+            variantBuilderServices,
+            dslInfo.experimentalProperties,
         )
 }

@@ -114,8 +114,8 @@ open class KmpHostTestImpl @Inject constructor(
         }
     }
 
-    override val isCoverageEnabled: Boolean
-        get() = dslInfo.isCoverageEnabled
+    override val isCodeCoverageEnabled: Boolean
+        get() = global.androidTestOptions.codeCoverageEnabled
 
     override fun <ParamT : InstrumentationParameters> transformClassesWith(
         classVisitorFactoryImplClass: Class<out AsmClassVisitorFactory<ParamT>>,

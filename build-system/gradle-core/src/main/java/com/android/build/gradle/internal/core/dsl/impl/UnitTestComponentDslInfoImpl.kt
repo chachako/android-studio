@@ -65,6 +65,4 @@ internal class UnitTestComponentDslInfoImpl(
     override val minSdkVersion: MutableAndroidVersion
         get() = mainVariantDslInfo.minSdkVersion
 
-    override val isCoverageEnabled: Boolean
-        get() = buildTypeObj.enableUnitTestCoverage || buildTypeObj.isTestCoverageEnabled
 }

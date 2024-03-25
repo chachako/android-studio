@@ -27,10 +27,4 @@ package com.android.build.gradle.internal.core.dsl
  *
  * @see [com.android.build.gradle.internal.component.HostTestCreationConfig]
  */
-interface HostTestComponentDslInfo: TestComponentDslInfo {
-
-    /**
-     * Return true if the test coverage for this component is enabled, otherwise, return false.
-     */
-    val isCoverageEnabled: Boolean
-}
+interface HostTestComponentDslInfo: TestComponentDslInfo

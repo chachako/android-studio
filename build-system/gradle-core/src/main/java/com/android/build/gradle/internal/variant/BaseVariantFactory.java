@@ -28,6 +28,7 @@ import com.android.build.api.dsl.CommonExtension;
 import com.android.build.api.variant.ComponentIdentity;
 import com.android.build.api.variant.VariantBuilder;
 import com.android.build.api.variant.impl.DeviceTestBuilderImpl;
+import com.android.build.api.variant.impl.HostTestBuilderImpl;
 import com.android.build.gradle.internal.BuildTypeData;
 import com.android.build.gradle.internal.ProductFlavorData;
 import com.android.build.gradle.internal.api.BaseVariantImpl;
@@ -120,7 +121,8 @@ public abstract class BaseVariantFactory<
             @NonNull VariantCreationConfig testedVariant,
             @NonNull VariantServices variantServices,
             @NonNull TaskCreationServices taskCreationServices,
-            @NonNull GlobalTaskCreationConfig globalConfig) {
+            @NonNull GlobalTaskCreationConfig globalConfig,
+            @NonNull HostTestBuilderImpl hostTestBuilder) {
         return dslServices.newInstance(
                 UnitTestImpl.class,
                 componentIdentity,
@@ -135,7 +137,8 @@ public abstract class BaseVariantFactory<
                 testedVariant,
                 variantServices,
                 taskCreationServices,
-                globalConfig);
+                globalConfig,
+                hostTestBuilder);
     }
 
     @NonNull
@@ -153,11 +156,12 @@ public abstract class BaseVariantFactory<
             @NonNull VariantCreationConfig testedVariant,
             @NonNull VariantServices variantServices,
             @NonNull TaskCreationServices taskCreationServices,
-            @NonNull GlobalTaskCreationConfig globalConfig) {
+            @NonNull GlobalTaskCreationConfig globalConfig,
+            @NonNull HostTestBuilderImpl hostTestBuilder) {
         return dslServices.newInstance(
                 ScreenshotTestImpl.class,
                 componentIdentity,
-                createUnitTestBuildFeatures(buildFeatures),  // TODO
+                createUnitTestBuildFeatures(buildFeatures), // TODO
                 dslInfo,
                 variantDependencies,
                 variantSources,
@@ -168,7 +172,8 @@ public abstract class BaseVariantFactory<
                 testedVariant,
                 variantServices,
                 taskCreationServices,
-                globalConfig);
+                globalConfig,
+                hostTestBuilder);
     }
 
     @NonNull

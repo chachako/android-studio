@@ -58,4 +58,23 @@ interface HostTestBuilder {
     @get:Incubating
     @set:Incubating
     var type: String
+
+    /**
+     * Specifies host test code coverage data collection by configuring the JacocoPlugin.
+     *
+     * When enabled, the Jacoco plugin is applied and coverage data is collected
+     * by the Jacoco plugin. This can avoid unwanted build time instrumentation required to collect
+     * coverage data from other test types such as connected tests.
+     *
+     * If the value is initialized from the DSL [com.android.build.api.dsl.BuildType.enableUnitTestCoverage],
+     * it will be used for [HasHostTestsBuilder.UNIT_TEST_TYPE].
+     */
+    @get:Incubating
+    @get:Deprecated(
+        message="Other plugins can change this value, it is not safe to read it at this stage, " +
+                "use [HostTest.enableCodeCoverage]",
+        level = DeprecationLevel.ERROR
+    )
+    @set: Incubating
+    var enableCodeCoverage: Boolean
 }

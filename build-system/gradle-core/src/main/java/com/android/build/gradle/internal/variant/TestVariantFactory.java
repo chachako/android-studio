@@ -30,6 +30,7 @@ import com.android.build.api.variant.ComponentIdentity;
 import com.android.build.api.variant.TestVariantBuilder;
 import com.android.build.api.variant.impl.DeviceTestBuilderImpl;
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfig;
+import com.android.build.api.variant.impl.HostTestBuilderImpl;
 import com.android.build.api.variant.impl.TestVariantBuilderImpl;
 import com.android.build.api.variant.impl.TestVariantImpl;
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
@@ -68,7 +69,6 @@ import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.jetbrains.annotations.NotNull;
 
 /** Customization of {@link AbstractAppVariantFactory} for test-only projects. */
 public class TestVariantFactory
@@ -166,7 +166,7 @@ public class TestVariantFactory
             @NonNull DataBinding dataBinding,
             @NonNull ProjectOptions projectOptions,
             boolean includeAndroidResources,
-            @NotNull ComponentType hostTestComponentType) {
+            @NonNull ComponentType hostTestComponentType) {
         throw new RuntimeException("cannot instantiate test build features in test plugin");
     }
 
@@ -212,7 +212,8 @@ public class TestVariantFactory
             @NonNull VariantCreationConfig testedVariant,
             @NonNull VariantServices variantServices,
             @NonNull TaskCreationServices taskCreationServices,
-            @NonNull GlobalTaskCreationConfig globalConfig) {
+            @NonNull GlobalTaskCreationConfig globalConfig,
+            @NonNull HostTestBuilderImpl hostTestBuilder) {
         throw new RuntimeException("cannot instantiate unit-test properties in test plugin");
     }
 
@@ -231,7 +232,8 @@ public class TestVariantFactory
             @NonNull VariantCreationConfig testedVariant,
             @NonNull VariantServices variantServices,
             @NonNull TaskCreationServices taskCreationServices,
-            @NonNull GlobalTaskCreationConfig globalConfig) {
+            @NonNull GlobalTaskCreationConfig globalConfig,
+            @NonNull HostTestBuilderImpl hostTestBuilder) {
         throw new RuntimeException("cannot instantiate screenshot-test properties in test plugin");
     }
 

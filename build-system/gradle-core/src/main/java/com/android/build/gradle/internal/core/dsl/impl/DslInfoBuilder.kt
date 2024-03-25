@@ -248,7 +248,10 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *, *>, DslInf
         )
     }
 
-    private fun createUnitTestComponentDslInfo(): HostTestComponentDslInfo {
+    // TODO : Move this back to VariantManager once we don't have a screenshot test specific version
+    internal fun createUnitTestComponentDslInfo(
+        isCodeCoverageEnabled: Boolean,
+    ): HostTestComponentDslInfo {
         return UnitTestComponentDslInfoImpl(
             componentIdentity = createComponentIdentity(),
             componentType = componentType,
@@ -262,17 +265,19 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *, *>, DslInf
         )
     }
 
-    private fun createScreenshotTestComponentDslInfo(): HostTestComponentDslInfoImpl {
+    internal fun createScreenshotTestComponentDslInfo(
+        isCodeCoverageEnabled: Boolean,
+    ): HostTestComponentDslInfoImpl {
         return ScreenshotTestComponentDslInfoImpl(
-                componentIdentity = createComponentIdentity(),
-                componentType = componentType,
-                defaultConfig = defaultConfig,
-                buildTypeObj = buildType,
-                productFlavorList = flavors.map { it.first },
-                services = variantServices,
-                buildDirectory = buildDirectory,
-                mainVariantDslInfo = productionVariant!!,
-                extension = extension as InternalTestedExtension<*, *, *, *, *, *>
+            componentIdentity = createComponentIdentity(),
+            componentType = componentType,
+            defaultConfig = defaultConfig,
+            buildTypeObj = buildType,
+            productFlavorList = flavors.map { it.first },
+            services = variantServices,
+            buildDirectory = buildDirectory,
+            mainVariantDslInfo = productionVariant!!,
+            extension = extension as InternalTestedExtension<*, *, *, *, *, *>
         )
     }
 
@@ -299,9 +304,7 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *, *>, DslInf
             ComponentTypeImpl.OPTIONAL_APK -> createDynamicFeatureVariantDslInfo()
             ComponentTypeImpl.TEST_APK -> createTestProjectVariantDslInfo()
             ComponentTypeImpl.TEST_FIXTURES -> createTestFixturesComponentDslInfo()
-            ComponentTypeImpl.UNIT_TEST -> createUnitTestComponentDslInfo()
             ComponentTypeImpl.ANDROID_TEST -> createAndroidTestComponentDslInfo()
-            ComponentTypeImpl.SCREENSHOT_TEST -> createScreenshotTestComponentDslInfo()
             else -> {
                 throw RuntimeException("Unknown component type ${componentType.name}")
             }

@@ -36,7 +36,7 @@ import kotlin.test.fail
 /**
  * Tests for [PackageForHostTest]
  */
-class PackageForHostTestTest {
+class PackageForDslDefinedHostTestTest {
 
     @Rule
     @JvmField

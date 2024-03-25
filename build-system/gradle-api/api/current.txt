@@ -2889,14 +2889,19 @@ package com.android.build.api.variant {
 
   @org.gradle.api.Incubating public interface HostTest extends com.android.build.api.variant.TestComponent {
     method @org.gradle.api.Incubating public void configureTestTask(kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public boolean isCodeCoverageEnabled();
+    property @org.gradle.api.Incubating public abstract boolean isCodeCoverageEnabled;
   }
 
   @org.gradle.api.Incubating public interface HostTestBuilder {
     method @org.gradle.api.Incubating public boolean getEnable();
+    method @Deprecated @org.gradle.api.Incubating public boolean getEnableCodeCoverage();
     method @org.gradle.api.Incubating public String getType();
     method @org.gradle.api.Incubating public void setEnable(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setEnableCodeCoverage(boolean);
     method @org.gradle.api.Incubating public void setType(String);
     property @org.gradle.api.Incubating public abstract boolean enable;
+    property @Deprecated @org.gradle.api.Incubating public abstract boolean enableCodeCoverage;
     property @org.gradle.api.Incubating public abstract String type;
     field public static final com.android.build.api.variant.HostTestBuilder.Companion Companion;
     field @org.gradle.api.Incubating public static final String SCREENSHOT_TEST_TYPE = "ScreenshotTest";

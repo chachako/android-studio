@@ -45,4 +45,5 @@ internal class AndroidTestOptionsDslInfoImpl(
         get() = extension.testOptions.emulatorSnapshots
     override val targetSdkVersion: AndroidVersion?
         get() = extension.testOptions.run { createTargetSdkVersion(targetSdk, targetSdkPreview)}
+    override val codeCoverageEnabled: Boolean = false
 }

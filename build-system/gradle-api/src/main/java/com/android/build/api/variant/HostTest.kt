@@ -55,4 +55,17 @@ interface HostTest: TestComponent {
      */
     @Incubating
     fun configureTestTask(action: (Test)-> Unit)
+
+    /**
+     * Whether test coverage is enabled for this host test.
+     *
+     * If enabled, this uses Jacoco to capture coverage and creates a report in the build
+     * directory.
+     *
+     * You cannot change the value any longer, to change it, please use
+     * [HostTestBuilder.enableCodeCoverage] in the [AndroidComponentsExtension.beforeVariants]
+     * callback.
+     */
+    @get:Incubating
+    val isCodeCoverageEnabled: Boolean
 }

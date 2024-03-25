@@ -19,6 +19,8 @@ package com.android.build.api.component.impl
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ComponentIdentity
+import com.android.build.api.variant.HostTest
+import com.android.build.api.variant.impl.HostTestBuilderImpl
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
@@ -37,7 +39,7 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
 import javax.inject.Inject
 
-open class HostTestImpl @Inject constructor(
+abstract class HostTestImpl @Inject constructor(
     componentIdentity: ComponentIdentity,
     buildFeatureValues: BuildFeatureValues,
     dslInfo: HostTestComponentDslInfo,
@@ -50,7 +52,8 @@ open class HostTestImpl @Inject constructor(
     testedVariant: VariantCreationConfig,
     internalServices: VariantServices,
     taskCreationServices: TaskCreationServices,
-    global: GlobalTaskCreationConfig
+    global: GlobalTaskCreationConfig,
+    hostTestBuilder: HostTestBuilderImpl,
 ) : TestComponentImpl<HostTestComponentDslInfo>(
     componentIdentity,
     buildFeatureValues,
@@ -65,11 +68,12 @@ open class HostTestImpl @Inject constructor(
     internalServices,
     taskCreationServices,
     global
-) {
+), HostTest {
 
     // ---------------------------------------------------------------------------------------------
     // PUBLIC API
     // ---------------------------------------------------------------------------------------------
+    override val isCodeCoverageEnabled: Boolean = hostTestBuilder._enableCodeCoverage
 
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API
