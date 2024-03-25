@@ -38,11 +38,9 @@ import com.android.testutils.TestUtils
 import com.android.testutils.apk.Dex
 import com.android.testutils.truth.DexSubject.assertThat
 import com.android.testutils.truth.DexSubject.assertThatDex
-import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.file.FileType
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.work.ChangeType
 import org.gradle.work.InputChanges
@@ -317,7 +315,7 @@ class DexingTransformTest {
             override val bootClasspath = FakeConfigurableFileCollection(bootClasspath)
             override val errorFormat = FakeGradleProperty(errorFormat)
             override val enableDesugaring = FakeGradleProperty(desugaring)
-            override val libConfiguration: Property<String> = FakeGradleProperty()
+            override val desugarLibConfigFiles = FakeConfigurableFileCollection()
             override val enableGlobalSynthetics = FakeGradleProperty(enableGlobalSynthetics)
             override val enableApiModeling = FakeGradleProperty(enableGlobalSynthetics)
         }

@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.Adb
+import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor.ConfigurationCaching.OFF
 import com.android.build.gradle.integration.common.fixture.DESUGAR_DEPENDENCY_VERSION
 import com.android.build.gradle.integration.common.fixture.DESUGAR_NIO_DEPENDENCY_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
@@ -751,6 +752,17 @@ class CoreLibraryDesugarTest {
                         "Lj$/nio/file/Paths;->get(Ljava/lang/String;[Ljava/lang/String;)Lj$/nio/file/Path;")
     }
 
+    /** Regression test for bug 329346760. */
+    @Suppress("DEPRECATION")
+    @Test
+    fun `building both debug and release variants does not deadlock`() {
+        // Note: Before the bug was fixed, the deadlock *usually* happened on the second build (it
+        // may sometimes happen on the first or the third+ build).
+        // It happened only with configuration cache disabled.
+        repeat(2) {
+            executor().withConfigurationCaching(OFF).run(":app:assemble")
+        }
+    }
 
     private fun addFileDependencies(project: GradleTestProject) {
         val fileDep = "withDesugarApi.jar"
