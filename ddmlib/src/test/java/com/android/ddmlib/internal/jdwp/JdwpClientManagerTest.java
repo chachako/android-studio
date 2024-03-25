@@ -38,14 +38,12 @@ import com.android.fakeadbserver.DeviceState;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -96,26 +94,6 @@ public class JdwpClientManagerTest {
     }
 
     @Test
-    @Ignore("b/303072576")
-    public void connectionRegistorsSelector() throws Throwable {
-        myFakeAdb.before();
-        Selector selector = Selector.open();
-        DeviceState state = myFakeAdb.connectAndWaitForDevice();
-        assertThat(state.getDeviceStatus()).isEqualTo(DeviceState.DeviceStatus.ONLINE);
-        FakeAdbTestRule.launchAndWaitForProcess(state, true);
-        assertThat(selector.keys()).isEmpty();
-        JdwpClientManager connection =
-                new JdwpClientManager(
-                        new JdwpClientManagerId(FakeAdbTestRule.SERIAL, FakeAdbTestRule.PID),
-                        selector);
-        assertThat(selector.keys()).isNotEmpty();
-        SelectionKey key = selector.keys().iterator().next();
-        assertThat(key.isAcceptable()).isFalse();
-        assertThat(key.attachment()).isEqualTo(connection);
-        assertThat(key.interestOps()).isEqualTo(SelectionKey.OP_READ);
-    }
-
-    @Test
     public void inspectorIsRunOnWriteAndRead() throws Throwable {
         ByteBuffer data = ChunkHandler.allocBuffer(4);
         ByteBuffer handshake = ByteBuffer.allocate(JdwpHandshake.HANDSHAKE_LEN);
@@ -159,47 +137,6 @@ public class JdwpClientManagerTest {
         manager.read();
         // One monitor connected the filter should be called once.
         testInterceptor.verifyFunctionCallCount(0, 1);
-    }
-
-    @Test
-    @Ignore("b/303072576")
-    public void dontWriteWhenFiltered() throws Throwable {
-        // Need to start a server before FakeAdb so we have the actual server instead of the
-        // fallback.
-
-        myServer.start();
-        myFakeAdb.before();
-
-        // Attach device and process
-        DeviceState state = myFakeAdb.connectAndWaitForDevice();
-        assertThat(state.getDeviceStatus()).isEqualTo(DeviceState.DeviceStatus.ONLINE);
-        FakeAdbTestRule.launchAndWaitForProcess(state, true);
-
-        // Spy on the real connection
-        JdwpClientManager connection =
-                Mockito.spy(
-                        myServer.getFactory()
-                                .createConnection(
-                                        new JdwpClientManagerId(
-                                                FakeAdbTestRule.SERIAL, FakeAdbTestRule.PID)));
-
-        // Add a mock interceptor to verify the functions we expect get called
-        TestInterceptor testInterceptor = new TestInterceptor(true);
-        connection.addInterceptor(testInterceptor);
-
-        // Create a fake client that writes data to device
-        JdwpProxyClient client = mock(JdwpProxyClient.class);
-        connection.addListener(client);
-        // Create a test packet.
-        ByteBuffer data = ChunkHandler.allocBuffer(4);
-        JdwpPacket packet = new JdwpPacket(data);
-        ChunkHandler.getChunkDataBuf(data);
-        data.putInt(1234);
-        ChunkHandler.finishChunkPacket(packet, JdwpTest.CHUNK_TEST, data.position());
-
-        // Write data to device from client.
-        connection.write(client, packet);
-        verify(connection, times(0)).writeRaw(any());
     }
 
     @Test
