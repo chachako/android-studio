@@ -315,16 +315,23 @@ class LibraryCacheImpl(
 
                 ResolvedArtifact.DependencyType.ANDROID_SANDBOX_SDK -> {
                     val folder = artifact.extractedFolder
-                        ?: throw RuntimeException("Null extracted folder for artifact: $artifact")
-
-                    LibraryImpl.createJavaLibrary(
-                        stringCache.cacheString(libraryInfo.computeKey()),
-                        libraryInfo,
-                        folder,
-                        additionalArtifacts.source,
-                        additionalArtifacts.javadoc,
-                        additionalArtifacts.sample,
-                    )
+                    if (folder != null) {
+                        LibraryImpl.createJavaLibrary(
+                            stringCache.cacheString(libraryInfo.computeKey()),
+                            libraryInfo,
+                            folder,
+                            additionalArtifacts.source,
+                            additionalArtifacts.javadoc,
+                            additionalArtifacts.sample,
+                        )
+                    } else {
+                        // If privacy sandbox isn't enabled treat the library as an empty artifact
+                        // (The build will fail with an explanation)
+                        LibraryImpl.createNoArtifactFileLibrary(
+                            stringCache.cacheString(libraryInfo.computeKey()),
+                            libraryInfo,
+                        )
+                    }
                 }
 
                 ResolvedArtifact.DependencyType.JAVA -> {

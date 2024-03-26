@@ -20,7 +20,10 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProjectBuilder
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.build.gradle.options.BooleanOption
+import com.android.builder.model.v2.ide.LibraryType
 import com.android.testutils.MavenRepoGenerator
+import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 
@@ -54,7 +57,6 @@ class PrivacySandboxAsarConsumptionSmokeTest {
         }
     }
             .withAdditionalMavenRepo(mavenRepo)
-            .addGradleProperties("${BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT.propertyName}=true")
             .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
             .create()
 
@@ -62,12 +64,18 @@ class PrivacySandboxAsarConsumptionSmokeTest {
     @Test
     fun testDependencyWithoutSupportEnabled() {
         project.getSubproject(":example-app").buildFile.appendText("""
-            android.privacySandbox {
-                enable = false
-            }
+            android.privacySandbox.enable = false
         """.trimIndent())
         val result = project.executor().expectFailure().run(":example-app:assembleDebug")
         assertThat(result.stderr).contains("Dependency com.example:externalasar:1 is an Android Privacy Sandbox SDK library")
+
+        val models = project.modelV2().fetchModels(variantName = "debug")
+        val variantDependencies = models.container.getProject(":example-app").variantDependencies ?: error("Expected variant dependencies model to build")
+        val compileDependencies = variantDependencies.mainArtifact.compileDependencies
+        assertThat(compileDependencies).hasSize(1)
+        val library = variantDependencies.libraries[compileDependencies.single().key] ?: error("Inconsistent model: failed to load compile library")
+        assertThat(library.type).isEqualTo(LibraryType.NO_ARTIFACT_FILE)
+        assertThat(library.libraryInfo?.name).isEqualTo("externalasar")
     }
 
 }
