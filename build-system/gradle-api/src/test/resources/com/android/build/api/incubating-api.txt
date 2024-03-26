@@ -262,8 +262,6 @@ https://issuetracker.google.com/328748780
 https://issuetracker.google.com/328748781
   * com.android.build.api.dsl.TestOptions.failureRetention: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.FailureRetention, kotlin.Unit>)
   * com.android.build.api.dsl.TestOptions.getFailureRetention: com.android.build.api.dsl.FailureRetention ()
-https://issuetracker.google.com/328748783
-  * com.android.build.api.variant.AndroidComponentsExtension.registerSourceType: void (java.lang.String)
 https://issuetracker.google.com/328748784
   * com.android.build.api.variant.HasDeviceTests
   * com.android.build.api.variant.HasDeviceTests.getDeviceTests: java.util.List<com.android.build.api.variant.DeviceTest> ()
@@ -707,5 +705,3 @@ https://issuetracker.google.com/330688483
   * com.android.build.api.instrumentation.manageddevice.TestRunData.getTestRunId: java.lang.String ()
   * com.android.build.api.instrumentation.manageddevice.TestRunData.getVariantName: java.lang.String ()
   * com.android.build.api.variant.AndroidComponents.getManagedDeviceRegistry: com.android.build.api.instrumentation.manageddevice.ManagedDeviceRegistry ()
-https://issuetracker.google.com/330694540
-  * com.android.build.api.variant.Sources.getByName: com.android.build.api.variant.SourceDirectories$Flat (java.lang.String)

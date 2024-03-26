@@ -2419,7 +2419,7 @@ package com.android.build.api.variant {
     method public void onVariants(optional com.android.build.api.variant.VariantSelector selector, kotlin.jvm.functions.Function1<? super VariantT,kotlin.Unit> callback);
     method public void onVariants(optional com.android.build.api.variant.VariantSelector selector, org.gradle.api.Action<VariantT> callback);
     method @org.gradle.api.Incubating public void registerExtension(com.android.build.api.variant.DslExtension dslExtension, kotlin.jvm.functions.Function1<? super com.android.build.api.variant.VariantExtensionConfig<VariantT>,? extends com.android.build.api.variant.VariantExtension> configurator);
-    method @org.gradle.api.Incubating public void registerSourceType(String name);
+    method public void registerSourceType(String name);
     method public com.android.build.api.variant.VariantSelector selector();
   }
 
@@ -3056,7 +3056,7 @@ package com.android.build.api.variant {
     method public com.android.build.api.variant.SourceDirectories.Flat? getAidl();
     method public com.android.build.api.variant.SourceDirectories.Layered? getAssets();
     method public com.android.build.api.variant.SourceDirectories.Flat? getBaselineProfiles();
-    method @org.gradle.api.Incubating public com.android.build.api.variant.SourceDirectories.Flat getByName(String name);
+    method public com.android.build.api.variant.SourceDirectories.Flat getByName(String name);
     method public com.android.build.api.variant.SourceDirectories.Flat? getJava();
     method public com.android.build.api.variant.SourceDirectories.Layered? getJniLibs();
     method @org.gradle.api.Incubating public com.android.build.api.variant.SourceDirectories.Flat? getKotlin();

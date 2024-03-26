@@ -103,6 +103,5 @@ interface Sources {
      *
      * These sources directories are attached to the variant and will be visible to Android Studio.
      */
-    @Incubating
     fun getByName(name: String): SourceDirectories.Flat
 }
