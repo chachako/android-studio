@@ -22,8 +22,8 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.model.BaseModelComparator
 import com.android.build.gradle.integration.common.fixture.model.BasicComparator
 import com.android.build.gradle.integration.common.fixture.model.normaliseCompileTarget
-import com.android.build.gradle.integration.common.fixture.model.normalizeVersionsOfCommonDependencies
 import com.android.build.gradle.integration.common.fixture.model.normalizeBuildToolsVersion
+import com.android.build.gradle.integration.common.fixture.model.normalizeVersionsOfCommonDependencies
 import com.android.build.gradle.integration.multiplatform.v2.getBuildMap
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
@@ -94,6 +94,7 @@ class KmpModelComparator(
                     .replace(Regex("\"sha1\": \".*\""), "\"sha1\": \"{DIGEST}\"")
                     .replace(Regex("\"md5\": \".*\""), "\"md5\": \"{DIGEST}\"")
                     .replace(Regex("\"size\": .*,"), "\"size\": {SIZE},")
+                    .replace(Regex("-commonMain-.{6}\\.klib"), "-commonMain-{HASH_CODE}\\.klib")
             }.also {
                 if (printModelToStdout) {
                     generateStdoutHeader(normalizer)

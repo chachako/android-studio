@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject.Com
 import com.android.build.gradle.integration.common.fixture.ModelBuilderV2.FetchResult
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2.ModelInfo
 import com.android.build.gradle.integration.common.fixture.model.FileNormalizer
+import com.android.build.gradle.integration.common.fixture.model.normalizeVersionsOfCommonDependencies
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.Option
 import com.android.builder.model.v2.ide.SyncIssue
@@ -390,33 +391,18 @@ class FileNormalizerImpl(
         rootDataList = mutableList.toList()
     }
 
-    override fun normalize(file: File): String  {
-        val suffix = if (file.isFile) {
-            "{F}"
-        } else if (file.isDirectory) {
-            "{D}"
-        } else {
-            "{!}"
+    override fun normalize(file: File): String {
+        val filePath = rootDataList.firstNotNullOfOrNull {
+            file.relativeToOrNull(it.root, it.varName, it.stringModifier)
+        } ?: file.invariantSeparatorsPath
+
+        val suffix = when {
+            file.isFile -> "{F}"
+            file.isDirectory -> "{D}"
+            else -> "{!}"
         }
 
-        for (rootData in rootDataList) {
-            val result = file.relativeToOrNull(
-                rootData.root,
-                rootData.varName,
-                rootData.stringModifier
-            )
-
-            if (result != null) {
-                return result + suffix
-            }
-        }
-
-        return if (SdkConstants.currentPlatform() == SdkConstants.PLATFORM_WINDOWS) {
-            // Normalize path separator for files that don't contain any special roots.
-            file.toString().replace("\\", "/")
-        } else {
-            file.toString()
-        } + suffix
+        return filePath.normalizeVersionsOfCommonDependencies() + suffix
     }
 
     override fun toString(): String {

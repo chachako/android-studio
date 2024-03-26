@@ -16,9 +16,9 @@
 
 package com.android.build.gradle.integration.common.fixture.model
 
+import com.android.SdkConstants.NDK_DEFAULT_VERSION
 import com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
 import com.android.build.gradle.integration.common.fixture.DEFAULT_COMPILE_SDK_VERSION
-import com.android.SdkConstants.NDK_DEFAULT_VERSION
 import com.android.builder.core.ToolsRevisionUtils
 import com.android.builder.model.v2.CustomSourceDirectory
 import com.android.builder.model.v2.dsl.BaseConfig
@@ -28,18 +28,18 @@ import com.android.builder.model.v2.dsl.DependenciesInfo
 import com.android.builder.model.v2.dsl.ProductFlavor
 import com.android.builder.model.v2.dsl.SigningConfig
 import com.android.builder.model.v2.ide.AaptOptions
+import com.android.builder.model.v2.ide.AbstractArtifact
 import com.android.builder.model.v2.ide.AndroidArtifact
+import com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags
 import com.android.builder.model.v2.ide.AndroidLibraryData
 import com.android.builder.model.v2.ide.ApiVersion
 import com.android.builder.model.v2.ide.ArtifactDependencies
-import com.android.builder.model.v2.ide.AbstractArtifact
-import com.android.builder.model.v2.ide.Installation
-import com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags
 import com.android.builder.model.v2.ide.BasicArtifact
 import com.android.builder.model.v2.ide.BasicVariant
 import com.android.builder.model.v2.ide.BundleInfo
 import com.android.builder.model.v2.ide.ComponentInfo
 import com.android.builder.model.v2.ide.GraphItem
+import com.android.builder.model.v2.ide.Installation
 import com.android.builder.model.v2.ide.JavaArtifact
 import com.android.builder.model.v2.ide.JavaCompileOptions
 import com.android.builder.model.v2.ide.Library
@@ -58,9 +58,9 @@ import com.android.builder.model.v2.ide.ViewBindingOptions
 import com.android.builder.model.v2.models.AndroidDsl
 import com.android.builder.model.v2.models.AndroidProject
 import com.android.builder.model.v2.models.BasicAndroidProject
+import com.android.builder.model.v2.models.VariantDependencies
 import com.android.builder.model.v2.models.Versions
 import com.android.builder.model.v2.models.Versions.Version
-import com.android.builder.model.v2.models.VariantDependencies
 import com.android.builder.model.v2.models.ndk.NativeAbi
 import com.android.builder.model.v2.models.ndk.NativeModule
 import com.android.builder.model.v2.models.ndk.NativeVariant
@@ -598,7 +598,7 @@ internal fun ModelSnapshotter<VariantDependencies>.snapshotVariantDependencies()
         dataObject("libraryInfo", Library::libraryInfo) {
             item("group", LibraryInfo::group)
             pathAsAString(name = "name", propertyAction = LibraryInfo::name)
-            item("version", LibraryInfo::version)
+            item("version", propertyAction = LibraryInfo::version, modifyAction = { it!!.normalizeVersionsOfCommonDependencies() })
             item("isTestFixtures", ComponentInfo::isTestFixtures)
             item("buildType", ComponentInfo::buildType)
             valueList(

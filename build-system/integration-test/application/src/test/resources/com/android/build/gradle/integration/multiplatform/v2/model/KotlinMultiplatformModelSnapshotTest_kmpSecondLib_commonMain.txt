@@ -17,7 +17,7 @@
   {
     "binaryType": "KOTLIN_COMPILE",
     "classpath": [
-      "{INCLUDED_BUILD(:kotlinMultiplatform)}/.kotlin/metadata/kotlinTransformedMetadataLibraries/org.jetbrains.kotlin-kotlin-stdlib-{KOTLIN_VERSION_FOR_TESTS}-commonMain-ap9o9Q.klib"
+      "{INCLUDED_BUILD(:kotlinMultiplatform)}/.kotlin/metadata/kotlinTransformedMetadataLibraries/org.jetbrains.kotlin-kotlin-stdlib-{KOTLIN_VERSION_FOR_TESTS}-commonMain-{HASH_CODE}.klib"
     ],
     "coordinates": {
       "group": "org.jetbrains.kotlin",
