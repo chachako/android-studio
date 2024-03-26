@@ -61,7 +61,7 @@ function copy_bazel_artifacts() {(
   cp -a ${bin_dir}/tools/vendor/google/aswb/aswb.mac_arm.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/skia/skiaparser.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/skia/skia_test_support.zip ${artifacts_dir}
-  cp -a ${bin_dir}/tools/vendor/google/ml/aiplugin.zip ${artifacts_dir}
+  cp -a ${bin_dir}/tools/vendor/google/ml/aiplugin*.zip ${artifacts_dir}
 
   cp -a ${bin_dir}/tools/base/sdklib/commandlinetools_*.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/base/ddmlib/tools.ddmlib.jar ${artifacts_dir}/ddmlib.jar

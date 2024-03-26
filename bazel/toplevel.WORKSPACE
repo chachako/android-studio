@@ -220,10 +220,9 @@ http_archive(
 )
 
 load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
-
 robolectric_repositories()
 
-local_repository(
-    name = "intellij",
-    path = "tools/base/intellij-bazel/intellij",
-)
+
+load("//tools/base/intellij-bazel:platforms.bzl", "setup_intellij_platforms")
+setup_intellij_platforms()
+

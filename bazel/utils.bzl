@@ -290,6 +290,6 @@ merged_zip = rule(
 
 def is_release():
     return select({
-        "//tools/base/bazel:release": True,
+        "@//tools/base/bazel:release": True,
         "//conditions:default": False,
     })
