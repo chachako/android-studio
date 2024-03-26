@@ -501,7 +501,7 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public boolean getEnableBaselineProfile();
     method @org.gradle.api.Incubating public void setEnableBaselineProfile(boolean);
     property @org.gradle.api.Incubating public abstract boolean enableBaselineProfile;
-    property @org.gradle.api.Incubating public abstract java.util.List<java.lang.String> installOptions;
+    property public abstract java.util.List<java.lang.String> installOptions;
   }
 
   public interface ApplicationProductFlavor extends com.android.build.api.dsl.ApplicationBaseFlavor com.android.build.api.dsl.ProductFlavor {
@@ -1163,12 +1163,12 @@ package com.android.build.api.dsl {
   }
 
   public interface Installation {
-    method @org.gradle.api.Incubating public java.util.List<java.lang.String> getInstallOptions();
+    method public java.util.List<java.lang.String> getInstallOptions();
     method public int getTimeOutInMs();
     method @Deprecated public void installOptions(String option);
     method @Deprecated public void installOptions(java.lang.String... options);
     method public void setTimeOutInMs(int);
-    property @org.gradle.api.Incubating public abstract java.util.List<java.lang.String> installOptions;
+    property public abstract java.util.List<java.lang.String> installOptions;
     property public abstract int timeOutInMs;
   }
 
