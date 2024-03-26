@@ -1,0 +1,20 @@
+<variant
+    name="main"
+    package=""
+    debuggable="true"
+    partialResultsDir="build/intermediates/lint_partial_results/global/lintAnalyzeJvmMain">
+  <buildFeatures/>
+  <sourceProviders>
+    <sourceProvider
+        javaDirectories="src/main/java"/>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <artifact
+      classOutputs="build/classes/java/main"
+      type="MAIN"
+      applicationId="">
+  </artifact>
+</variant>

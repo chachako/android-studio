@@ -1,0 +1,19 @@
+<variant
+    name="main"
+    package=""
+    debuggable="true"
+    partialResultsDir="build/intermediates/unit_test_lint_partial_results/global/lintAnalyzeJvmTest">
+  <buildFeatures/>
+  <sourceProviders>
+  </sourceProviders>
+  <testSourceProviders>
+    <sourceProvider
+        javaDirectories="src/test/java"
+        unitTest="true"/>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <artifact
+      type="UNIT_TEST">
+  </artifact>
+</variant>

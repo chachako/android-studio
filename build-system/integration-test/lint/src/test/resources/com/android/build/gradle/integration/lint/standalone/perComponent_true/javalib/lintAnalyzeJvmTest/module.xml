@@ -1,0 +1,19 @@
+<lint-module
+    format="1"
+    dir="${projectDir}/java-lib1"
+    name=":java-lib1"
+    type="JAVA_LIBRARY"
+    maven="project:java-lib1:unspecified"
+    agpVersion="$androidGradlePluginVersion"
+    buildFolder="build"
+    resourcePrefix=""
+    javaSourceLevel="17"
+    compileTarget=""
+    neverShrinking="true">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="main"/>
+</lint-module>

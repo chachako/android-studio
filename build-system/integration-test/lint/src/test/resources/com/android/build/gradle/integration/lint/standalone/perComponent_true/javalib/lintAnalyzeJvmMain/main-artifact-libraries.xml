@@ -1,0 +1,31 @@
+<libraries>
+  <library
+      name="com.google.guava:guava:19.0@jar"
+      jars="${mavenRepo}/com/google/guava/guava/19.0/guava-19.0.jar"
+      resolved="com.google.guava:guava:19.0"
+      provided="true"/>
+  <library
+      name=":@@:java-lib3"
+      jars="${projectDir}/java-lib3/build/libs/java-lib3.jar"
+      resolved="::"/>
+  <library
+      name=":@@:java-lib2"
+      jars="${projectDir}/java-lib2/build/libs/java-lib2.jar"
+      resolved="::"/>
+  <library
+      name="com.android.support:collections:28.0.0@jar"
+      jars="${mavenRepo}/com/android/support/collections/28.0.0/collections-28.0.0.jar"
+      resolved="com.android.support:collections:28.0.0"/>
+  <library
+      name="android.arch.lifecycle:common:1.1.1@jar"
+      jars="${mavenRepo}/android/arch/lifecycle/common/1.1.1/common-1.1.1.jar"
+      resolved="android.arch.lifecycle:common:1.1.1"/>
+  <library
+      name="android.arch.core:common:1.1.1@jar"
+      jars="${mavenRepo}/android/arch/core/common/1.1.1/common-1.1.1.jar"
+      resolved="android.arch.core:common:1.1.1"/>
+  <library
+      name="com.android.support:support-annotations:28.0.0@jar"
+      jars="${mavenRepo}/com/android/support/support-annotations/28.0.0/support-annotations-28.0.0.jar"
+      resolved="com.android.support:support-annotations:28.0.0"/>
+</libraries>
