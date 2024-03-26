@@ -67,6 +67,7 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import java.io.EOFException
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.channels.ClosedChannelException
 
@@ -626,6 +627,9 @@ private fun Throwable.toAdbUsageTrackerFailureType(): AdbUsageTracker.JdwpProces
 
         this is AdbFailResponseException && closedFailResponseExecutingService.matches(message) ->
             AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.CONNECTION_CLOSED_ERROR
+
+        this is IOException ->
+            AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.IO_EXCEPTION
 
         else -> AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.OTHER_ERROR
     }
