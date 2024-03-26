@@ -202,8 +202,6 @@ https://issuetracker.google.com/328748686
 https://issuetracker.google.com/328748688
   * com.android.build.api.variant.AndroidResources.getNoCompress: org.gradle.api.provider.ListProperty<java.lang.String> ()
   * com.android.build.api.variant.AndroidResourcesBuilder
-https://issuetracker.google.com/328748691
-  * com.android.build.api.variant.TestedComponentPackaging implements com.android.build.api.variant.Packaging
 https://issuetracker.google.com/328748711
   * com.android.build.api.dsl.BundleDensity.getEnableSplit: java.lang.Boolean ()
   * com.android.build.api.dsl.BundleDensity.setEnableSplit: void (java.lang.Boolean)
@@ -356,11 +354,6 @@ https://issuetracker.google.com/328748935
   * com.android.build.api.dsl.ConsumerKeepRules.getPublish: boolean ()
   * com.android.build.api.dsl.ConsumerKeepRules.setIgnoreFromAllExternalDependencies: void (boolean)
   * com.android.build.api.dsl.ConsumerKeepRules.setPublish: void (boolean)
-https://issuetracker.google.com/328748938
-  * com.android.build.api.variant.ApplicationVariant.getPackaging: com.android.build.api.variant.TestedApkPackaging ()
-  * com.android.build.api.variant.DynamicFeatureVariant.getPackaging: com.android.build.api.variant.TestedApkPackaging ()
-  * com.android.build.api.variant.TestedApkPackaging implements com.android.build.api.variant.TestedComponentPackaging, com.android.build.api.variant.ApkPackaging
-  * com.android.build.api.variant.TestedApkPackaging.getJniLibs: com.android.build.api.variant.JniLibsTestedApkPackaging ()
 https://issuetracker.google.com/328748959
   * com.android.build.api.dsl.CommonExtension.getLintOptions: com.android.build.api.dsl.LintOptions ()
   * com.android.build.api.dsl.CommonExtension.lintOptions: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.LintOptions, kotlin.Unit>)
@@ -518,12 +511,6 @@ https://issuetracker.google.com/328749276
   * com.android.build.api.variant.CanMinifyCodeBuilder
   * com.android.build.api.variant.CanMinifyCodeBuilder.isMinifyEnabled: boolean ()
   * com.android.build.api.variant.CanMinifyCodeBuilder.setMinifyEnabled: void (boolean)
-https://issuetracker.google.com/328749278
-  * com.android.build.api.variant.TestedComponentPackaging.getJniLibs: com.android.build.api.variant.JniLibsTestedComponentPackaging ()
-https://issuetracker.google.com/328749295
-  * com.android.build.api.variant.JniLibsTestedApkPackaging implements com.android.build.api.variant.JniLibsTestedComponentPackaging, com.android.build.api.variant.JniLibsApkPackaging
-  * com.android.build.api.variant.JniLibsTestedComponentPackaging implements com.android.build.api.variant.JniLibsPackaging
-  * com.android.build.api.variant.JniLibsTestedComponentPackaging.getTestOnly: org.gradle.api.provider.SetProperty<java.lang.String> ()
 https://issuetracker.google.com/328749317
   * com.android.build.api.dsl.KmpOptimization
   * com.android.build.api.dsl.KmpOptimization.getConsumerKeepRules: com.android.build.api.dsl.ConsumerKeepRules ()

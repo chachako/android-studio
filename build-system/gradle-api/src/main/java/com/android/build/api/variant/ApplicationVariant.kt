@@ -75,6 +75,5 @@ interface ApplicationVariant : GeneratesApk,
     /**
      * Variant's packagingOptions, initialized by the corresponding global DSL element.
      */
-    @get:Incubating
     override val packaging: TestedApkPackaging
 }
