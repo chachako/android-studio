@@ -1,6 +1,7 @@
 """Defines the Maven artifacts which are fetched and checked into source."""
 ARTIFACTS = [
     "androidx.annotation:annotation:1.1.0",
+    "androidx.annotation:annotation-jvm:1.7.1",
     "androidx.lint:lint-gradle:1.0.0-alpha01",
     "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10",
     "com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10",
@@ -18,10 +19,13 @@ ARTIFACTS = [
     "com.fasterxml:aalto-xml:1.3.0",
     "com.github.javaparser:javaparser-core:3.23.0",
     "com.github.rising3:semver:0.3.1",
+    "com.google.api-client:google-api-client:1.35.2",
     "com.google.apis:google-api-services-cloudbilling:v1-rev20240119-2.0.0",
+    "com.google.apis:google-api-services-cloudresourcemanager:v1beta1-rev577-1.25.0",
     "com.google.apis:google-api-services-cloudresourcemanager:v3-rev20230416-2.0.0",
     "com.google.apis:google-api-services-monitoring:v3-rev20230806-2.0.0",
     "com.google.apis:google-api-services-oauth2:v2-rev150-1.22.0",
+    "com.google.apis:google-api-services-oauth2:v2-rev157-1.25.0",
     "com.google.apis:google-api-services-oauth2:v2-rev20200213-2.0.0",
     "com.google.apis:google-api-services-sourcerepo:v1-rev20230123-2.0.0",
     "com.google.apis:google-api-services-storage:v1-rev20230301-2.0.0",
@@ -44,9 +48,14 @@ ARTIFACTS = [
     "com.google.flogger:flogger:0.8",
     "com.google.guava:guava-testlib:32.0.1-jre",
     "com.google.guava:guava:32.0.1-jre",
+    "com.google.http-client:google-http-client-apache-v2:1.42.0",
+    "com.google.http-client:google-http-client-gson:1.43.3",
     "com.google.http-client:google-http-client-jackson2:1.22.0",
+    "com.google.http-client:google-http-client:1.43.3",
     "com.google.jimfs:jimfs:1.1",
     "com.google.oauth-client:google-oauth-client-java6:1.34.1",
+    "com.google.oauth-client:google-oauth-client-java6:1.35.0",
+    "com.google.oauth-client:google-oauth-client:1.35.0",
     "com.google.protobuf:protobuf-bom:pom:3.17.2",  # Necessary for old agp tests
     "com.google.protobuf:protobuf-bom:pom:3.19.3",  # Necessary for old agp tests
     "com.google.protobuf:protobuf-bom:pom:3.22.3",

@@ -2,6 +2,35 @@ load("@//tools/base/bazel:maven.bzl", "maven_artifact", "maven_import")
 
 # Bazel rules auto-generated from maven repo.
 maven_artifact(
+    name = "androidx.annotation.annotation-jvm_1.7.1",
+    pom = "repository/androidx/annotation/annotation-jvm/1.7.1/annotation-jvm-1.7.1.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/annotation/annotation-jvm/1.7.1",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "androidx.annotation.annotation-jvm",
+    classifiers = [],
+    jars = [
+        "repository/androidx/annotation/annotation-jvm/1.7.1/annotation-jvm-1.7.1.jar"
+    ],
+    exports = [
+        "org.jetbrains.kotlin.kotlin-stdlib",
+    ],
+    original_deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.10",
+    ],
+    pom = "repository/androidx/annotation/annotation-jvm/1.7.1/annotation-jvm-1.7.1.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/annotation/annotation-jvm/1.7.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.annotation.annotation_1.1.0",
     pom = "repository/androidx/annotation/annotation/1.1.0/annotation-1.1.0.pom",
     repo_root_path = "repository",
@@ -1775,14 +1804,14 @@ maven_import(
 )
 
 maven_artifact(
-    name = "com.google.http-client.google-http-client-gson_1.42.3",
-    pom = "repository/com/google/http-client/google-http-client-gson/1.42.3/google-http-client-gson-1.42.3.pom",
+    name = "com.google.http-client.google-http-client-gson_1.43.3",
+    pom = "repository/com/google/http-client/google-http-client-gson/1.43.3/google-http-client-gson-1.43.3.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/http-client/google-http-client-gson/1.42.3",
-    parent = "com.google.http-client.google-http-client-parent_1.42.3",
+    repo_path = "com/google/http-client/google-http-client-gson/1.43.3",
+    parent = "com.google.http-client.google-http-client-parent_1.43.3",
     deps = [
-        "com.google.http-client.google-http-client_1.42.3",
-        "com.google.code.gson.gson_2.10",
+        "com.google.http-client.google-http-client_1.43.3",
+        "com.google.code.gson.gson_2.10.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -1790,21 +1819,21 @@ maven_artifact(
 maven_import(
     name = "com.google.http-client.google-http-client-gson",
     classifiers = [],
-    parent = "com.google.http-client.google-http-client-parent_1.42.3",
+    parent = "com.google.http-client.google-http-client-parent_1.43.3",
     jars = [
-        "repository/com/google/http-client/google-http-client-gson/1.42.3/google-http-client-gson-1.42.3.jar"
+        "repository/com/google/http-client/google-http-client-gson/1.43.3/google-http-client-gson-1.43.3.jar"
     ],
     exports = [
         "com.google.http-client.google-http-client",
         "com.google.code.gson.gson",
     ],
     original_deps = [
-        "com.google.http-client.google-http-client_1.42.3",
-        "com.google.code.gson.gson_2.10",
+        "com.google.http-client.google-http-client_1.43.3",
+        "com.google.code.gson.gson_2.10.1",
     ],
-    pom = "repository/com/google/http-client/google-http-client-gson/1.42.3/google-http-client-gson-1.42.3.pom",
+    pom = "repository/com/google/http-client/google-http-client-gson/1.43.3/google-http-client-gson-1.43.3.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/http-client/google-http-client-gson/1.42.3",
+    repo_path = "com/google/http-client/google-http-client-gson/1.43.3",
     visibility = ["//visibility:public"],
 )
 
@@ -1843,18 +1872,18 @@ maven_import(
 )
 
 maven_artifact(
-    name = "com.google.http-client.google-http-client_1.42.3",
-    pom = "repository/com/google/http-client/google-http-client/1.42.3/google-http-client-1.42.3.pom",
+    name = "com.google.http-client.google-http-client_1.43.3",
+    pom = "repository/com/google/http-client/google-http-client/1.43.3/google-http-client-1.43.3.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/http-client/google-http-client/1.42.3",
-    parent = "com.google.http-client.google-http-client-parent_1.42.3",
+    repo_path = "com/google/http-client/google-http-client/1.43.3",
+    parent = "com.google.http-client.google-http-client-parent_1.43.3",
     deps = [
-        "org.apache.httpcomponents.httpclient_4.5.13",
-        "org.apache.httpcomponents.httpcore_4.4.15",
+        "org.apache.httpcomponents.httpclient_4.5.14",
+        "org.apache.httpcomponents.httpcore_4.4.16",
         "com.google.code.findbugs.jsr305_3.0.2",
-        "com.google.errorprone.error_prone_annotations_2.16",
+        "com.google.errorprone.error_prone_annotations_2.18.0",
         "com.google.guava.guava_30.1.1-android",
-        "com.google.j2objc.j2objc-annotations_1.3",
+        "com.google.j2objc.j2objc-annotations_2.8",
         "io.opencensus.opencensus-api_0.31.1",
         "io.opencensus.opencensus-contrib-http-util_0.31.1",
     ],
@@ -1864,9 +1893,9 @@ maven_artifact(
 maven_import(
     name = "com.google.http-client.google-http-client",
     classifiers = [],
-    parent = "com.google.http-client.google-http-client-parent_1.42.3",
+    parent = "com.google.http-client.google-http-client-parent_1.43.3",
     jars = [
-        "repository/com/google/http-client/google-http-client/1.42.3/google-http-client-1.42.3.jar"
+        "repository/com/google/http-client/google-http-client/1.43.3/google-http-client-1.43.3.jar"
     ],
     exports = [
         "org.apache.httpcomponents.httpclient",
@@ -1879,18 +1908,18 @@ maven_import(
         "io.opencensus.opencensus-contrib-http-util",
     ],
     original_deps = [
-        "org.apache.httpcomponents.httpclient_4.5.13",
-        "org.apache.httpcomponents.httpcore_4.4.15",
+        "org.apache.httpcomponents.httpclient_4.5.14",
+        "org.apache.httpcomponents.httpcore_4.4.16",
         "com.google.code.findbugs.jsr305_3.0.2",
-        "com.google.errorprone.error_prone_annotations_2.16",
+        "com.google.errorprone.error_prone_annotations_2.18.0",
         "com.google.guava.guava_30.1.1-android",
-        "com.google.j2objc.j2objc-annotations_1.3",
+        "com.google.j2objc.j2objc-annotations_2.8",
         "io.opencensus.opencensus-api_0.31.1",
         "io.opencensus.opencensus-contrib-http-util_0.31.1",
     ],
-    pom = "repository/com/google/http-client/google-http-client/1.42.3/google-http-client-1.42.3.pom",
+    pom = "repository/com/google/http-client/google-http-client/1.43.3/google-http-client-1.43.3.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/http-client/google-http-client/1.42.3",
+    repo_path = "com/google/http-client/google-http-client/1.43.3",
     visibility = ["//visibility:public"],
 )
 
@@ -1950,14 +1979,14 @@ maven_import(
 )
 
 maven_artifact(
-    name = "com.google.oauth-client.google-oauth-client-java6_1.34.1",
-    pom = "repository/com/google/oauth-client/google-oauth-client-java6/1.34.1/google-oauth-client-java6-1.34.1.pom",
+    name = "com.google.oauth-client.google-oauth-client-java6_1.35.0",
+    pom = "repository/com/google/oauth-client/google-oauth-client-java6/1.35.0/google-oauth-client-java6-1.35.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/oauth-client/google-oauth-client-java6/1.34.1",
-    parent = "com.google.oauth-client.google-oauth-client-parent_1.34.1",
+    repo_path = "com/google/oauth-client/google-oauth-client-java6/1.35.0",
+    parent = "com.google.oauth-client.google-oauth-client-parent_1.35.0",
     deps = [
-        "com.google.oauth-client.google-oauth-client_1.34.1",
-        "com.google.http-client.google-http-client_1.42.0",
+        "com.google.oauth-client.google-oauth-client_1.35.0",
+        "com.google.http-client.google-http-client_1.43.3",
     ],
     visibility = ["//visibility:public"],
 )
@@ -1965,33 +1994,33 @@ maven_artifact(
 maven_import(
     name = "com.google.oauth-client.google-oauth-client-java6",
     classifiers = [],
-    parent = "com.google.oauth-client.google-oauth-client-parent_1.34.1",
+    parent = "com.google.oauth-client.google-oauth-client-parent_1.35.0",
     jars = [
-        "repository/com/google/oauth-client/google-oauth-client-java6/1.34.1/google-oauth-client-java6-1.34.1.jar"
+        "repository/com/google/oauth-client/google-oauth-client-java6/1.35.0/google-oauth-client-java6-1.35.0.jar"
     ],
     exports = [
         "com.google.oauth-client.google-oauth-client",
         "com.google.http-client.google-http-client",
     ],
     original_deps = [
-        "com.google.oauth-client.google-oauth-client_1.34.1",
-        "com.google.http-client.google-http-client_1.42.0",
+        "com.google.oauth-client.google-oauth-client_1.35.0",
+        "com.google.http-client.google-http-client_1.43.3",
     ],
-    pom = "repository/com/google/oauth-client/google-oauth-client-java6/1.34.1/google-oauth-client-java6-1.34.1.pom",
+    pom = "repository/com/google/oauth-client/google-oauth-client-java6/1.35.0/google-oauth-client-java6-1.35.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/oauth-client/google-oauth-client-java6/1.34.1",
+    repo_path = "com/google/oauth-client/google-oauth-client-java6/1.35.0",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.google.oauth-client.google-oauth-client_1.34.1",
-    pom = "repository/com/google/oauth-client/google-oauth-client/1.34.1/google-oauth-client-1.34.1.pom",
+    name = "com.google.oauth-client.google-oauth-client_1.35.0",
+    pom = "repository/com/google/oauth-client/google-oauth-client/1.35.0/google-oauth-client-1.35.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/oauth-client/google-oauth-client/1.34.1",
-    parent = "com.google.oauth-client.google-oauth-client-parent_1.34.1",
+    repo_path = "com/google/oauth-client/google-oauth-client/1.35.0",
+    parent = "com.google.oauth-client.google-oauth-client-parent_1.35.0",
     deps = [
-        "com.google.http-client.google-http-client_1.42.0",
-        "com.google.http-client.google-http-client-gson_1.42.0",
+        "com.google.http-client.google-http-client_1.43.3",
+        "com.google.http-client.google-http-client-gson_1.43.3",
         "com.google.guava.guava_31.1-android",
     ],
     visibility = ["//visibility:public"],
@@ -2000,9 +2029,9 @@ maven_artifact(
 maven_import(
     name = "com.google.oauth-client.google-oauth-client",
     classifiers = [],
-    parent = "com.google.oauth-client.google-oauth-client-parent_1.34.1",
+    parent = "com.google.oauth-client.google-oauth-client-parent_1.35.0",
     jars = [
-        "repository/com/google/oauth-client/google-oauth-client/1.34.1/google-oauth-client-1.34.1.jar"
+        "repository/com/google/oauth-client/google-oauth-client/1.35.0/google-oauth-client-1.35.0.jar"
     ],
     exports = [
         "com.google.http-client.google-http-client",
@@ -2010,13 +2039,13 @@ maven_import(
         "com.google.guava.guava",
     ],
     original_deps = [
-        "com.google.http-client.google-http-client_1.42.0",
-        "com.google.http-client.google-http-client-gson_1.42.0",
+        "com.google.http-client.google-http-client_1.43.3",
+        "com.google.http-client.google-http-client-gson_1.43.3",
         "com.google.guava.guava_31.1-android",
     ],
-    pom = "repository/com/google/oauth-client/google-oauth-client/1.34.1/google-oauth-client-1.34.1.pom",
+    pom = "repository/com/google/oauth-client/google-oauth-client/1.35.0/google-oauth-client-1.35.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/google/oauth-client/google-oauth-client/1.34.1",
+    repo_path = "com/google/oauth-client/google-oauth-client/1.35.0",
     visibility = ["//visibility:public"],
 )
 
@@ -39873,6 +39902,15 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.fasterxml.jackson.core.jackson-core_2.9.6",
+    pom = "repository/com/fasterxml/jackson/core/jackson-core/2.9.6/jackson-core-2.9.6.pom",
+    repo_root_path = "repository",
+    repo_path = "com/fasterxml/jackson/core/jackson-core/2.9.6",
+    parent = "com.fasterxml.jackson.jackson-base_2.9.6",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.fasterxml.jackson.core.jackson-core_2.9.9",
     pom = "repository/com/fasterxml/jackson/core/jackson-core/2.9.9/jackson-core-2.9.9.pom",
     repo_root_path = "repository",
@@ -41148,6 +41186,38 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.api-client.google-api-client_1.25.0",
+    pom = "repository/com/google/api-client/google-api-client/1.25.0/google-api-client-1.25.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/api-client/google-api-client/1.25.0",
+    parent = "com.google.api-client.google-api-client-parent_1.25.0",
+    deps = [
+        "com.google.oauth-client.google-oauth-client_1.25.0",
+        "com.google.http-client.google-http-client-jackson2_1.25.0",
+        "com.google.guava.guava_20.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.api-client.google-api-client_1.35.2",
+    pom = "repository/com/google/api-client/google-api-client/1.35.2/google-api-client-1.35.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/api-client/google-api-client/1.35.2",
+    parent = "com.google.api-client.google-api-client-parent_1.35.2",
+    deps = [
+        "com.google.oauth-client.google-oauth-client_1.34.1",
+        "com.google.http-client.google-http-client-gson_1.42.0",
+        "com.google.guava.guava_31.1-jre",
+        "com.google.http-client.google-http-client-apache-v2_1.42.0",
+        "org.apache.httpcomponents.httpcore_4.4.15",
+        "org.apache.httpcomponents.httpclient_4.5.13",
+        "com.google.http-client.google-http-client_1.42.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.api-client.google-api-client_2.0.0",
     pom = "repository/com/google/api-client/google-api-client/2.0.0/google-api-client-2.0.0.pom",
     repo_root_path = "repository",
@@ -41212,6 +41282,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.apis.google-api-services-cloudresourcemanager_v1beta1-rev577-1.25.0",
+    pom = "repository/com/google/apis/google-api-services-cloudresourcemanager/v1beta1-rev577-1.25.0/google-api-services-cloudresourcemanager-v1beta1-rev577-1.25.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/apis/google-api-services-cloudresourcemanager/v1beta1-rev577-1.25.0",
+    parent = "org.sonatype.oss.oss-parent_7",
+    deps = [
+        "com.google.api-client.google-api-client_1.25.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.apis.google-api-services-oauth2_v2-rev150-1.22.0",
     pom = "repository/com/google/apis/google-api-services-oauth2/v2-rev150-1.22.0/google-api-services-oauth2-v2-rev150-1.22.0.pom",
     repo_root_path = "repository",
@@ -41219,6 +41301,18 @@ maven_artifact(
     parent = "org.sonatype.oss.oss-parent_7",
     deps = [
         "com.google.api-client.google-api-client_1.22.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.apis.google-api-services-oauth2_v2-rev157-1.25.0",
+    pom = "repository/com/google/apis/google-api-services-oauth2/v2-rev157-1.25.0/google-api-services-oauth2-v2-rev157-1.25.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/apis/google-api-services-oauth2/v2-rev157-1.25.0",
+    parent = "org.sonatype.oss.oss-parent_7",
+    deps = [
+        "com.google.api-client.google-api-client_1.25.0",
     ],
     visibility = ["//visibility:public"],
 )
@@ -42664,6 +42758,20 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.http-client.google-http-client-apache-v2_1.42.0",
+    pom = "repository/com/google/http-client/google-http-client-apache-v2/1.42.0/google-http-client-apache-v2-1.42.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/http-client/google-http-client-apache-v2/1.42.0",
+    parent = "com.google.http-client.google-http-client-parent_1.42.0",
+    deps = [
+        "com.google.http-client.google-http-client_1.42.0",
+        "org.apache.httpcomponents.httpclient_4.5.13",
+        "org.apache.httpcomponents.httpcore_4.4.15",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.http-client.google-http-client-apache-v2_1.42.1",
     pom = "repository/com/google/http-client/google-http-client-apache-v2/1.42.1/google-http-client-apache-v2-1.42.1.pom",
     repo_root_path = "repository",
@@ -42717,6 +42825,32 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.http-client.google-http-client-gson_1.42.3",
+    pom = "repository/com/google/http-client/google-http-client-gson/1.42.3/google-http-client-gson-1.42.3.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/http-client/google-http-client-gson/1.42.3",
+    parent = "com.google.http-client.google-http-client-parent_1.42.3",
+    deps = [
+        "com.google.http-client.google-http-client_1.42.3",
+        "com.google.code.gson.gson_2.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.http-client.google-http-client-jackson2_1.25.0",
+    pom = "repository/com/google/http-client/google-http-client-jackson2/1.25.0/google-http-client-jackson2-1.25.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/http-client/google-http-client-jackson2/1.25.0",
+    parent = "com.google.http-client.google-http-client-parent_1.25.0",
+    deps = [
+        "com.google.http-client.google-http-client_1.25.0",
+        "com.fasterxml.jackson.core.jackson-core_2.9.6",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.http-client.google-http-client-jackson2_1.31.0",
     pom = "repository/com/google/http-client/google-http-client-jackson2/1.31.0/google-http-client-jackson2-1.31.0.pom",
     repo_root_path = "repository",
@@ -42738,6 +42872,20 @@ maven_artifact(
     deps = [
         "com.google.code.findbugs.jsr305_1.3.9",
         "org.apache.httpcomponents.httpclient_4.0.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.http-client.google-http-client_1.25.0",
+    pom = "repository/com/google/http-client/google-http-client/1.25.0/google-http-client-1.25.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/http-client/google-http-client/1.25.0",
+    parent = "com.google.http-client.google-http-client-parent_1.25.0",
+    deps = [
+        "com.google.code.findbugs.jsr305_3.0.2",
+        "org.apache.httpcomponents.httpclient_4.5.5",
+        "com.google.j2objc.j2objc-annotations_1.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -42815,6 +42963,25 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.http-client.google-http-client_1.42.3",
+    pom = "repository/com/google/http-client/google-http-client/1.42.3/google-http-client-1.42.3.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/http-client/google-http-client/1.42.3",
+    parent = "com.google.http-client.google-http-client-parent_1.42.3",
+    deps = [
+        "org.apache.httpcomponents.httpclient_4.5.13",
+        "org.apache.httpcomponents.httpcore_4.4.15",
+        "com.google.code.findbugs.jsr305_3.0.2",
+        "com.google.errorprone.error_prone_annotations_2.16",
+        "com.google.guava.guava_30.1.1-android",
+        "com.google.j2objc.j2objc-annotations_1.3",
+        "io.opencensus.opencensus-api_0.31.1",
+        "io.opencensus.opencensus-contrib-http-util_0.31.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.j2objc.j2objc-annotations_1.1",
     pom = "repository/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.pom",
     repo_root_path = "repository",
@@ -42833,6 +43000,19 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.oauth-client.google-oauth-client-java6_1.34.1",
+    pom = "repository/com/google/oauth-client/google-oauth-client-java6/1.34.1/google-oauth-client-java6-1.34.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/oauth-client/google-oauth-client-java6/1.34.1",
+    parent = "com.google.oauth-client.google-oauth-client-parent_1.34.1",
+    deps = [
+        "com.google.oauth-client.google-oauth-client_1.34.1",
+        "com.google.http-client.google-http-client_1.42.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.oauth-client.google-oauth-client_1.22.0",
     pom = "repository/com/google/oauth-client/google-oauth-client/1.22.0/google-oauth-client-1.22.0.pom",
     repo_root_path = "repository",
@@ -42841,6 +43021,33 @@ maven_artifact(
     deps = [
         "com.google.http-client.google-http-client_1.22.0",
         "com.google.code.findbugs.jsr305_1.3.9",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.oauth-client.google-oauth-client_1.25.0",
+    pom = "repository/com/google/oauth-client/google-oauth-client/1.25.0/google-oauth-client-1.25.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/oauth-client/google-oauth-client/1.25.0",
+    parent = "com.google.oauth-client.google-oauth-client-parent_1.25.0",
+    deps = [
+        "com.google.http-client.google-http-client_1.25.0",
+        "com.google.code.findbugs.jsr305_3.0.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.oauth-client.google-oauth-client_1.34.1",
+    pom = "repository/com/google/oauth-client/google-oauth-client/1.34.1/google-oauth-client-1.34.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/oauth-client/google-oauth-client/1.34.1",
+    parent = "com.google.oauth-client.google-oauth-client-parent_1.34.1",
+    deps = [
+        "com.google.http-client.google-http-client_1.42.0",
+        "com.google.http-client.google-http-client-gson_1.42.0",
+        "com.google.guava.guava_31.1-android",
     ],
     visibility = ["//visibility:public"],
 )
@@ -45469,6 +45676,20 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.apache.httpcomponents.httpclient_4.5.5",
+    pom = "repository/org/apache/httpcomponents/httpclient/4.5.5/httpclient-4.5.5.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/httpcomponents/httpclient/4.5.5",
+    parent = "org.apache.httpcomponents.httpcomponents-client_4.5.5",
+    deps = [
+        "org.apache.httpcomponents.httpcore_4.4.9",
+        "commons-logging.commons-logging_1.2",
+        "commons-codec.commons-codec_1.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.apache.httpcomponents.httpclient_4.5.6",
     pom = "repository/org/apache/httpcomponents/httpclient/4.5.6/httpclient-4.5.6.pom",
     repo_root_path = "repository",
@@ -45583,6 +45804,15 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "org/apache/httpcomponents/httpcore/4.4.6",
     parent = "org.apache.httpcomponents.httpcomponents-core_4.4.6",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.apache.httpcomponents.httpcore_4.4.9",
+    pom = "repository/org/apache/httpcomponents/httpcore/4.4.9/httpcore-4.4.9.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/httpcomponents/httpcore/4.4.9",
+    parent = "org.apache.httpcomponents.httpcomponents-core_4.4.9",
     visibility = ["//visibility:public"],
 )
 
@@ -55667,6 +55897,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.fasterxml.jackson.jackson-base_2.9.6",
+    pom = "repository/com/fasterxml/jackson/jackson-base/2.9.6/jackson-base-2.9.6.pom",
+    repo_root_path = "repository",
+    repo_path = "com/fasterxml/jackson/jackson-base/2.9.6",
+    parent = "com.fasterxml.jackson.jackson-bom_2.9.6",
+)
+
+maven_artifact(
     name = "com.fasterxml.jackson.jackson-base_2.9.9",
     pom = "repository/com/fasterxml/jackson/jackson-base/2.9.9/jackson-base-2.9.9.pom",
     repo_root_path = "repository",
@@ -55680,6 +55918,14 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "com/fasterxml/jackson/jackson-bom/2.11.1",
     parent = "com.fasterxml.jackson.jackson-parent_2.11",
+)
+
+maven_artifact(
+    name = "com.fasterxml.jackson.jackson-bom_2.9.6",
+    pom = "repository/com/fasterxml/jackson/jackson-bom/2.9.6/jackson-bom-2.9.6.pom",
+    repo_root_path = "repository",
+    repo_path = "com/fasterxml/jackson/jackson-bom/2.9.6",
+    parent = "com.fasterxml.jackson.jackson-parent_2.9.1.1",
 )
 
 maven_artifact(
@@ -55699,11 +55945,26 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.fasterxml.jackson.jackson-parent_2.9.1.1",
+    pom = "repository/com/fasterxml/jackson/jackson-parent/2.9.1.1/jackson-parent-2.9.1.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/fasterxml/jackson/jackson-parent/2.9.1.1",
+    parent = "com.fasterxml.oss-parent_33",
+)
+
+maven_artifact(
     name = "com.fasterxml.jackson.jackson-parent_2.9.1.2",
     pom = "repository/com/fasterxml/jackson/jackson-parent/2.9.1.2/jackson-parent-2.9.1.2.pom",
     repo_root_path = "repository",
     repo_path = "com/fasterxml/jackson/jackson-parent/2.9.1.2",
     parent = "com.fasterxml.oss-parent_34",
+)
+
+maven_artifact(
+    name = "com.fasterxml.oss-parent_33",
+    pom = "repository/com/fasterxml/oss-parent/33/oss-parent-33.pom",
+    repo_root_path = "repository",
+    repo_path = "com/fasterxml/oss-parent/33",
 )
 
 maven_artifact(
@@ -55782,6 +56043,21 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "com/google/api-client/google-api-client-parent/1.22.0",
     parent = "org.sonatype.oss.oss-parent_7",
+)
+
+maven_artifact(
+    name = "com.google.api-client.google-api-client-parent_1.25.0",
+    pom = "repository/com/google/api-client/google-api-client-parent/1.25.0/google-api-client-parent-1.25.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/api-client/google-api-client-parent/1.25.0",
+    parent = "org.sonatype.oss.oss-parent_7",
+)
+
+maven_artifact(
+    name = "com.google.api-client.google-api-client-parent_1.35.2",
+    pom = "repository/com/google/api-client/google-api-client-parent/1.35.2/google-api-client-parent-1.35.2.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/api-client/google-api-client-parent/1.35.2",
 )
 
 maven_artifact(
@@ -56363,6 +56639,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.http-client.google-http-client-parent_1.25.0",
+    pom = "repository/com/google/http-client/google-http-client-parent/1.25.0/google-http-client-parent-1.25.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/http-client/google-http-client-parent/1.25.0",
+    parent = "org.sonatype.oss.oss-parent_7",
+)
+
+maven_artifact(
     name = "com.google.http-client.google-http-client-parent_1.31.0",
     pom = "repository/com/google/http-client/google-http-client-parent/1.31.0/google-http-client-parent-1.31.0.pom",
     repo_root_path = "repository",
@@ -56399,6 +56683,13 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.http-client.google-http-client-parent_1.43.3",
+    pom = "repository/com/google/http-client/google-http-client-parent/1.43.3/google-http-client-parent-1.43.3.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/http-client/google-http-client-parent/1.43.3",
+)
+
+maven_artifact(
     name = "com.google.jimfs.jimfs-parent_1.1",
     pom = "repository/com/google/jimfs/jimfs-parent/1.1/jimfs-parent-1.1.pom",
     repo_root_path = "repository",
@@ -56415,10 +56706,25 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.oauth-client.google-oauth-client-parent_1.25.0",
+    pom = "repository/com/google/oauth-client/google-oauth-client-parent/1.25.0/google-oauth-client-parent-1.25.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/oauth-client/google-oauth-client-parent/1.25.0",
+    parent = "org.sonatype.oss.oss-parent_7",
+)
+
+maven_artifact(
     name = "com.google.oauth-client.google-oauth-client-parent_1.34.1",
     pom = "repository/com/google/oauth-client/google-oauth-client-parent/1.34.1/google-oauth-client-parent-1.34.1.pom",
     repo_root_path = "repository",
     repo_path = "com/google/oauth-client/google-oauth-client-parent/1.34.1",
+)
+
+maven_artifact(
+    name = "com.google.oauth-client.google-oauth-client-parent_1.35.0",
+    pom = "repository/com/google/oauth-client/google-oauth-client-parent/1.35.0/google-oauth-client-parent-1.35.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/oauth-client/google-oauth-client-parent/1.35.0",
 )
 
 maven_artifact(
@@ -57128,6 +57434,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.apache.httpcomponents.httpcomponents-client_4.5.5",
+    pom = "repository/org/apache/httpcomponents/httpcomponents-client/4.5.5/httpcomponents-client-4.5.5.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/httpcomponents/httpcomponents-client/4.5.5",
+    parent = "org.apache.httpcomponents.httpcomponents-parent_10",
+)
+
+maven_artifact(
     name = "org.apache.httpcomponents.httpcomponents-client_4.5.6",
     pom = "repository/org/apache/httpcomponents/httpcomponents-client/4.5.6/httpcomponents-client-4.5.6.pom",
     repo_root_path = "repository",
@@ -57232,6 +57546,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.apache.httpcomponents.httpcomponents-core_4.4.9",
+    pom = "repository/org/apache/httpcomponents/httpcomponents-core/4.4.9/httpcomponents-core-4.4.9.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/httpcomponents/httpcomponents-core/4.4.9",
+    parent = "org.apache.httpcomponents.httpcomponents-parent_9",
+)
+
+maven_artifact(
     name = "org.apache.httpcomponents.httpcomponents-parent_10",
     pom = "repository/org/apache/httpcomponents/httpcomponents-parent/10/httpcomponents-parent-10.pom",
     repo_root_path = "repository",
@@ -57245,6 +57567,14 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "org/apache/httpcomponents/httpcomponents-parent/11",
     parent = "org.apache.apache_21",
+)
+
+maven_artifact(
+    name = "org.apache.httpcomponents.httpcomponents-parent_9",
+    pom = "repository/org/apache/httpcomponents/httpcomponents-parent/9/httpcomponents-parent-9.pom",
+    repo_root_path = "repository",
+    repo_path = "org/apache/httpcomponents/httpcomponents-parent/9",
+    parent = "org.apache.apache_18",
 )
 
 maven_artifact(
