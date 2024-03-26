@@ -202,7 +202,7 @@ interface MultipleArtifactTypeOutOperationRequest<FileTypeT: FileSystemLocation>
      *
      * ```kotlin
      *     abstract class MyTask: DefaultTask() {
-     *          @get:InputFile abstract val proguardFiles: ListProperty<RegularFile>
+     *          @get:InputFiles abstract val proguardFiles: ListProperty<RegularFile>
      *
      *          @TaskAction fun taskAction() {
      *              ... verify that those proguard files are correct ...
