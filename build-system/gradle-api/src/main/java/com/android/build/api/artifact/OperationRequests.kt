@@ -44,7 +44,6 @@ interface OutOperationRequest<FileTypeT: FileSystemLocation> {
      * @param name file or directory name
      * @return itself
      */
-    @Incubating
     fun withName(name: String): OutOperationRequest<FileTypeT>
 
     /**

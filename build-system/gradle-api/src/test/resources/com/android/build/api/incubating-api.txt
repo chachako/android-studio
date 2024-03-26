@@ -208,8 +208,6 @@ https://issuetracker.google.com/328748688
   * com.android.build.api.variant.AndroidResourcesBuilder
 https://issuetracker.google.com/328748691
   * com.android.build.api.variant.TestedComponentPackaging implements com.android.build.api.variant.Packaging
-https://issuetracker.google.com/328748709
-  * com.android.build.api.artifact.OutOperationRequest.withName: com.android.build.api.artifact.OutOperationRequest<FileTypeT> (java.lang.String)
 https://issuetracker.google.com/328748711
   * com.android.build.api.dsl.BundleDensity.getEnableSplit: java.lang.Boolean ()
   * com.android.build.api.dsl.BundleDensity.setEnableSplit: void (java.lang.Boolean)
