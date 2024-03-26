@@ -117,8 +117,6 @@ https://issuetracker.google.com/328748453
   * com.android.build.api.dsl.BundleCodeTransparency
   * com.android.build.api.dsl.BundleCodeTransparency.getSigning: com.android.build.api.dsl.SigningConfig ()
   * com.android.build.api.dsl.BundleCodeTransparency.signing: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig, kotlin.Unit>)
-https://issuetracker.google.com/328748454
-  * com.android.build.api.dsl.JniLibsPackaging.getTestOnly: java.util.Set<java.lang.String> ()
 https://issuetracker.google.com/328748469
   * com.android.build.api.dsl.BundleLanguage.getEnableSplit: java.lang.Boolean ()
   * com.android.build.api.dsl.BundleLanguage.setEnableSplit: void (java.lang.Boolean)

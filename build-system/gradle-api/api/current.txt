@@ -1188,13 +1188,13 @@ package com.android.build.api.dsl {
     method public java.util.Set<java.lang.String> getExcludes();
     method public java.util.Set<java.lang.String> getKeepDebugSymbols();
     method public java.util.Set<java.lang.String> getPickFirsts();
-    method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getTestOnly();
+    method public java.util.Set<java.lang.String> getTestOnly();
     method public Boolean? getUseLegacyPackaging();
     method public void setUseLegacyPackaging(Boolean?);
     property public abstract java.util.Set<java.lang.String> excludes;
     property public abstract java.util.Set<java.lang.String> keepDebugSymbols;
     property public abstract java.util.Set<java.lang.String> pickFirsts;
-    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> testOnly;
+    property public abstract java.util.Set<java.lang.String> testOnly;
     property public abstract Boolean? useLegacyPackaging;
   }
 
