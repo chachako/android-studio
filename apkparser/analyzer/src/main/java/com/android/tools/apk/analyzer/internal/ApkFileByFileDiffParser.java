@@ -30,6 +30,8 @@ package com.android.tools.apk.analyzer.internal;
  * limitations under the License.
  */
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.android.annotations.NonNull;
 import com.android.tools.apk.analyzer.ArchiveContext;
 import com.android.tools.apk.analyzer.ArchiveEntry;
@@ -41,7 +43,9 @@ import com.google.archivepatcher.explainer.PatchExplainer;
 import com.google.archivepatcher.generator.bsdiff.BsDiffDeltaGenerator;
 import com.google.archivepatcher.shared.DeflateCompressor;
 import com.google.common.annotations.VisibleForTesting;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,22 +54,31 @@ import java.util.Map;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ApkFileByFileDiffParser {
+
     @NonNull
     public static DefaultMutableTreeNode createTreeNode(
             @NonNull ArchiveContext oldFile, @NonNull ArchiveContext newFile)
             throws IOException, InterruptedException {
+        return createTreeNode(oldFile, newFile, (count, size) -> {});
+    }
+
+    @NonNull
+    public static DefaultMutableTreeNode createTreeNode(
+            @NonNull ArchiveContext oldFile,
+            @NonNull ArchiveContext newFile,
+            OnProgressListener onProgressListener)
+            throws IOException, InterruptedException {
         ArchiveNode oldRoot = ArchiveTreeStructure.create(oldFile);
         ArchiveNode newRoot = ArchiveTreeStructure.create(newFile);
-
-        PatchExplainer explainer =
-                new PatchExplainer(new DeflateCompressor(), new BsDiffDeltaGenerator());
+        BsDiffDeltaGenerator generator = new ListeningDiffGenerator(onProgressListener);
+        PatchExplainer explainer = new PatchExplainer(new DeflateCompressor(), generator);
         Map<String, Long> pathsToDiffSize = new HashMap<>();
         List<EntryExplanation> explanationList =
                 explainer.explainPatch(
                         oldFile.getArchive().getPath().toFile(),
                         newFile.getArchive().getPath().toFile());
         for (EntryExplanation explanation : explanationList) {
-            String path = new String(explanation.getPath().getData(), "UTF8");
+            String path = new String(explanation.getPath().getData(), UTF_8);
             pathsToDiffSize.put(path, explanation.getCompressedSizeInPatch());
         }
         return createTreeNode(oldRoot, newRoot, pathsToDiffSize);
@@ -186,5 +199,32 @@ public class ApkFileByFileDiffParser {
                 new ApkFileByFileEntry(name, oldFile, newFile, oldSize, newSize, patchSize));
         ApkEntry.sort(node);
         return node;
+    }
+
+    private static class ListeningDiffGenerator extends BsDiffDeltaGenerator {
+
+        private final OnProgressListener myListener;
+
+        private int myCount = 0;
+
+        private long mySize = 0;
+
+        private ListeningDiffGenerator(OnProgressListener listener) {
+            myListener = listener;
+        }
+
+        @Override
+        public void generateDelta(File oldBlob, File newBlob, OutputStream deltaOut)
+                throws IOException, InterruptedException {
+            super.generateDelta(oldBlob, newBlob, deltaOut);
+            myCount++;
+            mySize += oldBlob.length();
+            myListener.onProgress(myCount, mySize);
+        }
+    }
+
+    public interface OnProgressListener {
+
+        void onProgress(int count, long size);
     }
 }
