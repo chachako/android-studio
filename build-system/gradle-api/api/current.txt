@@ -2720,7 +2720,7 @@ package com.android.build.api.variant {
     method public com.android.build.api.variant.DslExtension.Builder extendProjectWith(Class<?> typeExtension);
   }
 
-  @org.gradle.api.Incubating public interface DslLifecycle<T> {
+  public interface DslLifecycle<T> {
     method public void finalizeDsl(kotlin.jvm.functions.Function1<? super T,kotlin.Unit> callback);
     method public void finalizeDsl(org.gradle.api.Action<T> callback);
   }

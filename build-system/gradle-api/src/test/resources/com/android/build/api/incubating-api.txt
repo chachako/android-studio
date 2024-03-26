@@ -124,10 +124,6 @@ https://issuetracker.google.com/328748469
   * com.android.build.api.dsl.BundleLanguage.setEnableSplit: void (java.lang.Boolean)
 https://issuetracker.google.com/328748471
   * com.android.build.api.dsl.LibraryExtension.getPrefab: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.Prefab> ()
-https://issuetracker.google.com/328748474
-  * com.android.build.api.variant.DslLifecycle
-  * com.android.build.api.variant.DslLifecycle.finalizeDsl: void (kotlin.jvm.functions.Function1<? super T, kotlin.Unit>)
-  * com.android.build.api.variant.DslLifecycle.finalizeDsl: void (org.gradle.api.Action<T>)
 https://issuetracker.google.com/328748487
   * com.android.build.api.dsl.BuildType.getPostprocessing: com.android.build.api.dsl.PostProcessing ()
   * com.android.build.api.dsl.BuildType.postprocessing: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PostProcessing, kotlin.Unit>)
