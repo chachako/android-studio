@@ -56,9 +56,7 @@ class AvdManagerTest {
     @get:Rule
     val tmpFolder = TemporaryFolder()
 
-    private val rootDir: Path by lazy {
-        tmpFolder.newFolder().toPath()
-    }
+    private lateinit var rootDir: Path
     private lateinit var manager: AvdManager
     private lateinit var sdkFolder: Path
     private lateinit var systemImageFolder: Path
@@ -77,6 +75,7 @@ class AvdManagerTest {
 
     @Before
     fun setup() {
+        rootDir = tmpFolder.newFolder().toPath()
         sdkFolder = Files.createDirectories(rootDir.resolve("sdk"))
         systemImageFolder = sdkFolder.resolve("system-images/android-29/default/x86")
         Files.createDirectories(systemImageFolder)
@@ -115,13 +114,26 @@ class AvdManagerTest {
 
     @Test
     fun addSingleDevice() {
-        manager.createAvd(
+        manager.createOrRetrieveAvd(
             FakeGradleProvider(FakeGradleDirectory(FileOpUtils.toFile(systemImageFolder))),
             "system-images;android-29;default;x86",
             "device1",
             "Pixel 2")
 
-        val allAvds = manager.allAvds()
+        var allAvds = manager.allAvds()
+        assertThat(allAvds).hasSize(1)
+        assertThat(allAvds.first()).isEqualTo("device1")
+        // Ensure the lock file is also created.
+        assertThat(avdFolder.toFile().resolve("device1.lock").exists()).isTrue()
+
+        // Since, the device exists, create or retrieve should not make another device.
+        manager.createOrRetrieveAvd(
+            FakeGradleProvider(FakeGradleDirectory(FileOpUtils.toFile(systemImageFolder))),
+            "system-images;android-29;default;x86",
+            "device1",
+            "Pixel 2")
+
+        allAvds = manager.allAvds()
         assertThat(allAvds).hasSize(1)
         assertThat(allAvds.first()).isEqualTo("device1")
     }
@@ -171,12 +183,12 @@ class AvdManagerTest {
 
     @Test
     fun testDeleteDevices() {
-        manager.createAvd(
+        manager.createOrRetrieveAvd(
             FakeGradleProvider(FakeGradleDirectory(FileOpUtils.toFile(systemImageFolder))),
             "system-images;android-29;default;x86",
             "device1",
             "Pixel 2")
-        manager.createAvd(
+        manager.createOrRetrieveAvd(
             FakeGradleProvider(FakeGradleDirectory(FileOpUtils.toFile(systemImageFolder))),
             "system-images;android-29;default;x86",
             "device2",
@@ -184,12 +196,19 @@ class AvdManagerTest {
 
         var allAvds = manager.allAvds()
         assertThat(allAvds).hasSize(2)
+        // Ensure the lock files exists
+        assertThat(avdFolder.toFile().resolve("device1.lock").exists()).isTrue()
+        assertThat(avdFolder.toFile().resolve("device2.lock").exists()).isTrue()
 
         manager.deleteAvds(listOf("device1"))
 
         allAvds = manager.allAvds()
         assertThat(allAvds).hasSize(1)
         assertThat(allAvds.first()).isEqualTo("device2")
+        // Ensure the lock file is also deleted.
+        assertThat(avdFolder.toFile().resolve("device1.lock").exists()).isFalse()
+        // The other lock should be preserved.
+        assertThat(avdFolder.toFile().resolve("device2.lock").exists()).isTrue()
     }
 
     @Test
