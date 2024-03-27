@@ -43,6 +43,7 @@ import com.android.build.gradle.options.ProjectOptions;
 import com.android.build.gradle.tasks.AndroidAnalyticsTestListener;
 import com.android.build.gradle.tasks.GenerateTestConfig;
 import com.android.buildanalyzer.common.TaskCategory;
+import com.android.builder.core.ComponentType;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.util.Collection;
@@ -184,7 +185,7 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
         @NonNull
         @Override
         public String getName() {
-            return computeTaskName(this.hostTestCreationConfig.getComponentType().getPrefix());
+            return computeTaskName(ComponentType.UNIT_TEST_PREFIX);
         }
 
         @NonNull
