@@ -616,6 +616,7 @@ class FakeAdbServer private constructor(var features: Set<String> = DEFAULT_FEAT
                     "cmd",
                     "abb",
                     "abb_exec",
+                    "track_app"
                 )
             )
         )

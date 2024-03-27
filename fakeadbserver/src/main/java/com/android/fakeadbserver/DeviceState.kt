@@ -442,6 +442,9 @@ class DeviceState internal constructor(
                     features.add("abb")
                     features.add("abb_exec")
                 }
+                if (api >= 31) {
+                    features.add("track_app")
+                }
                 if (api >= 34) {
                     features.add("support_boot_stages")
                 }

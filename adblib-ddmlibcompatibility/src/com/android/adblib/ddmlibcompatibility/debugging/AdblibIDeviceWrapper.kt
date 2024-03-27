@@ -317,29 +317,25 @@ internal class AdblibIDeviceWrapper(
 
     override fun supportsFeature(feature: IDevice.Feature): Boolean {
         // NOTE: Calling `logUsage` here would log too many events, so let's not log these events
-        val availableFeatures: List<String> =
+        val availableFeatures: Set<String> =
             try {
                 runBlockingLegacy {
                     // TODO: This query is cached and doesn't retry on failures which is
                     // different from the `DeviceImpl` behavior.
-                    connectedDevice.session.hostServices.availableFeatures(
-                        DeviceSelector.fromSerialNumber(
-                            serialNumber
-                        )
-                    )
+                    connectedDevice.availableFeatures()
                 }
             } catch (e: IOException) {
                 // Note that this block handles `AdbFailResponseException` as well.
                 // ignore to match the behavior in the `DeviceImpl`
                 logger.error(e, "Error querying `availableFeatures`")
-                listOf()
+                emptySet()
             } catch (e: TimeoutException) {
                 // ignore to match the behavior in the `DeviceImpl`
                 logger.error(e, "Error querying `availableFeatures`")
-                listOf()
+                emptySet()
             }
 
-        return iDeviceSharedImpl.supportsFeature(feature, availableFeatures.toSet())
+        return iDeviceSharedImpl.supportsFeature(feature, availableFeatures)
     }
 
     override fun supportsFeature(feature: IDevice.HardwareFeature): Boolean =

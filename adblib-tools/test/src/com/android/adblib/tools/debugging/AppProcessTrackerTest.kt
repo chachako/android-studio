@@ -44,7 +44,6 @@ class AppProcessTrackerTest {
     @Rule
     val fakeAdbRule = FakeAdbServerProviderRule {
         installDefaultCommandHandlers()
-        setFeatures("push_sync")
     }
 
     private val fakeAdb get() = fakeAdbRule.fakeAdb
@@ -59,7 +58,7 @@ class AppProcessTrackerTest {
                 "test1",
                 "test2",
                 "model",
-                "30", // SDK >= 30 is required for abb_exec feature.
+                "31", // SDK >= 31 is required for track_app feature.
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
@@ -182,7 +181,7 @@ class AppProcessTrackerTest {
                     "test1",
                     "test2",
                     "model",
-                    "30", // SDK >= 30 is required for abb_exec feature.
+                    "31", // SDK >= 31 is required for track_app feature.
                     DeviceState.HostConnectionType.USB
                 )
             fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
@@ -197,7 +196,7 @@ class AppProcessTrackerTest {
             launch {
                 fakeDevice.startClient(pid10, 0, "a.b.c", false)
                 fakeDevice.startClient(pid11, 0, "a.b.c.e", false)
-                yieldUntil { listOfProcessList.size >= 1 }
+                yieldUntil { listOfProcessList.size >= 1 && listOfProcessList.last().size == 2 }
 
                 fakeAdb.disconnectDevice(fakeDevice.deviceId)
             }
@@ -292,7 +291,7 @@ class AppProcessTrackerTest {
                     "test1",
                     "test2",
                     "model",
-                    "30", // SDK >= 30 is required for abb_exec feature.
+                    "31", // SDK >= 31 is required for track_app feature.
                     DeviceState.HostConnectionType.USB
                 )
             val connectedDevice =

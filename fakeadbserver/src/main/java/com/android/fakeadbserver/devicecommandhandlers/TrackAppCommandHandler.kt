@@ -44,6 +44,10 @@ class TrackAppCommandHandler : DeviceCommandHandler("track-app") {
         args: String
     ) {
         val stream = socket.getOutputStream()
+        if (!device.features.contains("track_app")) {
+            writeFailResponse(stream, "track-app is not supported by this device")
+            return
+        }
 
         val queue = device.clientChangeHub
             .subscribe(

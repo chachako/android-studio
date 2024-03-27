@@ -43,7 +43,7 @@ class AppProcessNameRetrieverTest : AdbLibToolsTestBase() {
                 "test1",
                 "test2",
                 "model",
-                "30", // SDK >= 30 is required for abb_exec feature.
+                "31", // SDK >= 31 is required for track_app feature.
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
@@ -78,7 +78,7 @@ class AppProcessNameRetrieverTest : AdbLibToolsTestBase() {
                 "test1",
                 "test2",
                 "model",
-                "30", // SDK >= 30 is required for abb_exec feature.
+                "31", // SDK >= 31 is required for track_app feature.
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
@@ -114,7 +114,7 @@ class AppProcessNameRetrieverTest : AdbLibToolsTestBase() {
                     "test1",
                     "test2",
                     "model",
-                    "30", // SDK >= 30 is required for abb_exec feature.
+                    "31", // SDK >= 31 is required for track_app feature.
                     DeviceState.HostConnectionType.USB
                 )
             fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
@@ -159,7 +159,7 @@ class AppProcessNameRetrieverTest : AdbLibToolsTestBase() {
                 "test1",
                 "test2",
                 "model",
-                "30", // SDK >= 30 is required for abb_exec feature.
+                "31", // SDK >= 30 is required for track_app feature.
                 DeviceState.HostConnectionType.USB
             )
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
