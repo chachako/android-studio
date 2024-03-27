@@ -627,7 +627,7 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
     }
 
     /**
-     * Returns the name of the client by pid or <code>null</code> if pid is unknown
+     * Returns the client's package name by pid or an empty string if pid is unknown
      *
      * @param pid the pid of the client.
      */

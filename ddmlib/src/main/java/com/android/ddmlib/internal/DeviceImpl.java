@@ -1282,7 +1282,7 @@ public final class DeviceImpl implements IDevice {
             Client[] clients = getClients();
             for (Client c : clients) {
                 if (pid == c.getClientData().getPid()) {
-                    name = c.getClientData().getClientDescription();
+                    name = c.getClientData().getPackageName();
                     break;
                 }
             }
