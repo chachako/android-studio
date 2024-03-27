@@ -329,7 +329,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     if (Version.ANDROID_GRADLE_PLUGIN_VERSION.endsWith("-dev"))
                         "-dev"
                     else
-                        "-eap02"
+                        "-eap03"
             dependencies.add(
                 previewScreenshotTestEngineConfigurationName,
                 "com.android.tools.preview.screenshot.junit.engine:junit-engine:${engineVersion}")
