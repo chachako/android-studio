@@ -73,7 +73,7 @@ maven_library(
     resources = [
         "//prebuilts/studio/layoutlib:build.prop",
         "//prebuilts/studio/layoutlib/data",
-        "//prebuilts/studio/layoutlib/data:native_libs",
+        "//prebuilts/studio/layoutlib/data:native_libs_all_platforms",
     ],
     version = select({
         "//tools/base/bazel:release": COMPOSE_CLI_VERSION + "-alpha01",
