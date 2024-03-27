@@ -59,32 +59,12 @@ platform(
     ),
 )
 
-constraint_setting(
-    name = "macos_version",
-)
-
-constraint_value(
-    name = "macos_latest",
-    constraint_setting = ":macos_version",
-)
-
 platform(
     name = "macos",
     constraint_values = [
         "@platforms//os:macos",
-        ":macos_latest",
     ],
     # N.B. we pick the CPU based on the host (x86_64 or arm64).
     parents = ["@local_config_platform//:host"],
 )
 
-constraint_value(
-    name = "macos_10.13",
-    constraint_setting = ":macos_version",
-)
-
-platform(
-    name = "macpro10.13",
-    constraint_values = [":macos_10.13"],
-    parents = [":macos"],
-)

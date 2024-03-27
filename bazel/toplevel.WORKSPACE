@@ -9,7 +9,6 @@ register_toolchains(
     "@native_toolchain//:cc-toolchain-darwin",
     "@native_toolchain//:cc-toolchain-x64_windows-clang-cl",
     "//tools/base/bazel/toolchains/darwin:python_toolchain",
-    "//tools/base/bazel/toolchains/darwin:python_toolchain_10.13",
     "//prebuilts/studio/jdk/jdk11:runtime_toolchain_definition",
     "//prebuilts/studio/jdk/jdk17:java_runtime_toolchain",
     "//prebuilts/studio/jdk/jdk17:java8_compile_toolchain_definition",
