@@ -134,6 +134,7 @@ message TrackStatus {
     // Only used by the legacy pipeline.
     // TODO investigate whether it can be removed after full migration.
     FAILURE_UNKNOWN = 5;
+    AGENT_UNATTACHABLE = 6; // Agent unable to attach
   }
   Status status = 1;
   // If |SUCESS|, the start time of the AllocationInfo message which
