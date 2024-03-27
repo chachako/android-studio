@@ -172,6 +172,7 @@ interface AndroidProjectBuilder {
     var targetProjectPath: String?
     var renderscriptTargetApi: Int?
     var renderscriptSupportModeEnabled: Boolean?
+    var privacySandboxEnabled: Boolean?
     var hasInstrumentationTests: Boolean?
     val dynamicFeatures: MutableSet<String>
 

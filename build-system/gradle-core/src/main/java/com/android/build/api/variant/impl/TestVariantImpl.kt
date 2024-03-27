@@ -123,17 +123,35 @@ open class TestVariantImpl @Inject constructor(
         renderscriptCreationConfig?.renderscript
     }
     override val testedApks: Provider<Directory> by lazy {
+        getTestedModuleDirectoryArtifact(AndroidArtifacts.ArtifactType.APK)
+    }
+
+    override val privacySandboxCompatApks: Provider<Directory> by lazy {
+        getTestedModuleDirectoryArtifact(
+            AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_COMPAT_SPLIT_APKS)
+    }
+
+    override val usesSdkLibrarySplitForLocalDeployment: Provider<Directory> by lazy {
+        getTestedModuleDirectoryArtifact(
+            AndroidArtifacts.ArtifactType.USES_SDK_LIBRARY_SPLIT_FOR_LOCAL_DEPLOYMENT)
+    }
+
+    private fun getTestedModuleDirectoryArtifact(
+        artifactType: AndroidArtifacts.ArtifactType): Provider<Directory> {
         val projectDirectory = services.projectInfo.projectDirectory
-        variantDependencies.getArtifactFileCollection(
+        return variantDependencies.getArtifactFileCollection(
             AndroidArtifacts.ConsumedConfigType.PROVIDED_CLASSPATH,
             AndroidArtifacts.ArtifactScope.ALL,
-            AndroidArtifacts.ArtifactType.APK
+            artifactType
         ).elements.map {
             projectDirectory.dir(
                 it.single().asFile.absolutePath
             )
         }
     }
+
+    override val privacySandboxEnabled: Boolean
+        get() = dslInfo.privacySandboxDsl.enable
 
     override val dexing: DexingCreationConfig by lazy(LazyThreadSafetyMode.NONE) {
         DexingImpl(

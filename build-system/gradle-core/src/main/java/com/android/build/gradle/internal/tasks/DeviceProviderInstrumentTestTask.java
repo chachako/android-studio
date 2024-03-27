@@ -1001,17 +1001,8 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
                                                         .RUNTIME_CLASSPATH));
             }
             task.getRClasses().disallowChanges();
-            if (creationConfig.getPrivacySandboxCreationConfig() != null && testedConfig != null) {
-                task.getPrivacySandboxSdkApksFiles()
-                        .setFrom(
-                                testedConfig
-                                        .getVariantDependencies()
-                                        .getArtifactFileCollection(
-                                                AndroidArtifacts.ConsumedConfigType
-                                                        .RUNTIME_CLASSPATH,
-                                                AndroidArtifacts.ArtifactScope.ALL,
-                                                AndroidArtifacts.ArtifactType
-                                                        .ANDROID_PRIVACY_SANDBOX_SDK_APKS));
+            if (testData.getPrivacySandboxSdkApks() != null) {
+                task.getPrivacySandboxSdkApksFiles().setFrom(testData.getPrivacySandboxSdkApks());
             }
             task.getPrivacySandboxSdkApksFiles().disallowChanges();
         }

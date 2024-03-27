@@ -2042,8 +2042,11 @@ package com.android.build.api.dsl {
   }
 
   public interface TestExtension extends com.android.build.api.dsl.CommonExtension<com.android.build.api.dsl.TestBuildFeatures,com.android.build.api.dsl.TestBuildType,com.android.build.api.dsl.TestDefaultConfig,com.android.build.api.dsl.TestProductFlavor,com.android.build.api.dsl.TestAndroidResources,com.android.build.api.dsl.TestInstallation> {
+    method public com.android.build.api.dsl.PrivacySandbox getPrivacySandbox();
     method public String? getTargetProjectPath();
+    method public void privacySandbox(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PrivacySandbox,kotlin.Unit> action);
     method public void setTargetProjectPath(String?);
+    property public abstract com.android.build.api.dsl.PrivacySandbox privacySandbox;
     property public abstract String? targetProjectPath;
   }
 

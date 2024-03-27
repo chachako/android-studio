@@ -37,6 +37,7 @@ internal class AndroidProjectBuilderImpl(
     override var targetProjectPath: String? = null
     override var renderscriptTargetApi: Int? = null
     override var renderscriptSupportModeEnabled: Boolean? = null
+    override var privacySandboxEnabled: Boolean? = null
     override var hasInstrumentationTests: Boolean? = null
     override val dynamicFeatures: MutableSet<String> = mutableSetOf()
 
@@ -157,7 +158,7 @@ internal class AndroidProjectBuilderImpl(
             sb.append("  minSdkPreview = $minSdkPreview\n")
         }
         if (hasInstrumentationTests == true) {
-            sb.append("testInstrumentationRunner \"androidx.test.runner.AndroidJUnitRunner\"")
+            sb.append("testInstrumentationRunner \"androidx.test.runner.AndroidJUnitRunner\"\n")
         }
         applicationId?.let {
             sb.append("    applicationId = \"$it\"\n")
@@ -181,6 +182,13 @@ internal class AndroidProjectBuilderImpl(
         }
         renderscriptSupportModeEnabled?.let {
             sb.append("    renderscriptSupportModeEnabled=$it\n")
+        }
+        privacySandboxEnabled?.let {
+            sb.append("""
+                |privacySandbox {
+                |   enable=$it
+                |}
+                |""".trimMargin())
         }
         renderscriptTargetApi?.let {
             sb.append("    renderscriptTargetApi=$it\n")

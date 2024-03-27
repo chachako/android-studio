@@ -29,7 +29,6 @@ import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeGradleProvider
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
 import com.android.build.gradle.internal.profile.AnalyticsService
-import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfigImpl
 import com.android.build.gradle.internal.test.AbstractTestDataImpl
 import com.android.build.gradle.internal.testing.utp.EmulatorControlConfig
@@ -315,12 +314,7 @@ class ManagedDeviceInstrumentationTestTaskTest {
                 .projectOptions
                 .get(BooleanOption.PRIVACY_SANDBOX_SDK_SUPPORT)).thenReturn(true)
 
-        `when`((creationConfig as AndroidTestCreationConfig).mainVariant
-                .variantDependencies
-                .getArtifactFileCollection(
-                        AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
-                        AndroidArtifacts.ArtifactScope.ALL,
-                        AndroidArtifacts.ArtifactType.ANDROID_PRIVACY_SANDBOX_SDK_APKS))
+        `when`(testData.privacySandboxSdkApks)
                 .thenReturn(project.objects.fileCollection())
         val config = ManagedDeviceInstrumentationTestTask.CreationAction(
             creationConfig,

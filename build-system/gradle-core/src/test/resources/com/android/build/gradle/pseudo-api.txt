@@ -445,6 +445,7 @@ com.android.build.gradle.TestExtension.getNdkVersion: java.lang.String ()
 com.android.build.gradle.TestExtension.getPackaging: com.android.build.api.dsl.Packaging ()
 com.android.build.gradle.TestExtension.getPackagingOptions: com.android.build.api.dsl.Packaging ()
 com.android.build.gradle.TestExtension.getPackagingOptions: com.android.build.gradle.internal.dsl.PackagingOptions ()
+com.android.build.gradle.TestExtension.getPrivacySandbox: com.android.build.api.dsl.PrivacySandbox ()
 com.android.build.gradle.TestExtension.getProductFlavors: java.util.Collection ()
 com.android.build.gradle.TestExtension.getProductFlavors: org.gradle.api.NamedDomainObjectContainer<com.android.build.gradle.internal.dsl.ProductFlavor> ()
 com.android.build.gradle.TestExtension.getResourcePrefix: java.lang.String ()
@@ -475,6 +476,8 @@ com.android.build.gradle.TestExtension.packaging: void (kotlin.jvm.functions.Fun
 com.android.build.gradle.TestExtension.packaging: void (org.gradle.api.Action<com.android.build.api.dsl.Packaging>)
 com.android.build.gradle.TestExtension.packagingOptions: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.Packaging, kotlin.Unit>)
 com.android.build.gradle.TestExtension.packagingOptions: void (org.gradle.api.Action<com.android.build.gradle.internal.dsl.PackagingOptions>)
+com.android.build.gradle.TestExtension.privacySandbox: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PrivacySandbox, kotlin.Unit>)
+com.android.build.gradle.TestExtension.privacySandbox: void (org.gradle.api.Action<com.android.build.api.dsl.PrivacySandbox>)
 com.android.build.gradle.TestExtension.productFlavors: void (kotlin.jvm.functions.Function1<? super org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.TestProductFlavor>, kotlin.Unit>)
 com.android.build.gradle.TestExtension.productFlavors: void (org.gradle.api.Action<org.gradle.api.NamedDomainObjectContainer<com.android.build.gradle.internal.dsl.ProductFlavor>>)
 com.android.build.gradle.TestExtension.release: void (org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.TestBuildType>, kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.TestBuildType, kotlin.Unit>)
@@ -1554,6 +1557,7 @@ com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension.optimiz
 com.android.build.gradle.internal.dsl.InternalPrivacySandboxSdkExtension.signingConfig: void (org.gradle.api.Action<com.android.build.api.dsl.SigningConfig>)
 com.android.build.gradle.internal.dsl.InternalSigningConfig implements com.android.build.api.dsl.SigningConfig, com.android.build.api.dsl.ApkSigningConfig, org.gradle.api.Named, com.android.builder.model.SigningConfig
 com.android.build.gradle.internal.dsl.InternalTestExtension implements com.android.build.api.dsl.TestExtension, com.android.build.gradle.internal.dsl.InternalCommonExtension
+com.android.build.gradle.internal.dsl.InternalTestExtension.privacySandbox: void (org.gradle.api.Action<com.android.build.api.dsl.PrivacySandbox>)
 com.android.build.gradle.internal.dsl.InternalTestedExtension implements com.android.build.api.dsl.TestedExtension, com.android.build.gradle.internal.dsl.InternalCommonExtension
 com.android.build.gradle.internal.dsl.InternalTestedExtension.testFixtures: void (org.gradle.api.Action<com.android.build.api.dsl.TestFixtures>)
 com.android.build.gradle.internal.dsl.JavaCompileOptions implements com.android.build.gradle.api.JavaCompileOptions, com.android.build.api.dsl.JavaCompileOptions
