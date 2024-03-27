@@ -57,8 +57,10 @@ import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.api.reporting.DirectoryReport;
 import org.gradle.api.tasks.CacheableTask;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Nested;
@@ -117,15 +119,16 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
     @PathSensitive(PathSensitivity.RELATIVE)
     public abstract ListProperty<Collection<Directory>> getTestJniLibs();
 
+    @Input
+    public abstract Property<Boolean> getJacocoExtensionEnabled();
+
     @Override
     @TaskAction
     public void executeTests() {
-        // Get the Jacoco extension to determine later if we have code coverage enabled.
-        JacocoTaskExtension jcoExtension = getExtensions().findByType(JacocoTaskExtension.class);
         AndroidAnalyticsTestListener testListener =
                 new AndroidAnalyticsTestListener(
                         dependencies,
-                        jcoExtension != null && jcoExtension.isEnabled(),
+                        getJacocoExtensionEnabled().get(),
                         getAnalyticsService().get(),
                         this.getFilter(),
                         isIdeInvoked);
@@ -217,6 +220,17 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
                 pluginExtension.setToolVersion(jacocoVersion);
             }
 
+            JacocoTaskExtension jacocoTaskExtension =
+                    task.getExtensions().findByType(JacocoTaskExtension.class);
+            HasConfigurableValuesKt.setDisallowChanges(
+                    task.getJacocoExtensionEnabled(),
+                    hostTestCreationConfig
+                            .getServices()
+                            .provider(
+                                    () ->
+                                            jacocoTaskExtension != null
+                                                    && jacocoTaskExtension.isEnabled()));
+
             hostTestCreationConfig.onTestedVariant(
                     testedConfig -> {
                         if (hostTestCreationConfig.getCodeCoverageEnabled()) {
@@ -225,10 +239,6 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
                                     .withType(
                                             JacocoPlugin.class,
                                             plugin -> {
-                                                JacocoTaskExtension jacocoTaskExtension =
-                                                        task.getExtensions()
-                                                                .findByType(
-                                                                        JacocoTaskExtension.class);
                                                 jacocoTaskExtension.setDestinationFile(
                                                         task.getJacocoCoverageOutputFile()
                                                                 .getAsFile());
