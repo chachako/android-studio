@@ -9993,41 +9993,6 @@ maven_import(
 )
 
 maven_artifact(
-    name = "org.jetbrains.skiko.skiko_0.7.7",
-    pom = "repository/org/jetbrains/skiko/skiko/0.7.7/skiko-0.7.7.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/skiko/skiko/0.7.7",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.6.10",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.5.2",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.6.10",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_import(
-    name = "org.jetbrains.skiko.skiko",
-    classifiers = [],
-    jars = [
-        "repository/org/jetbrains/skiko/skiko/0.7.7/skiko-0.7.7.jar"
-    ],
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core",
-        "org.jetbrains.kotlin.kotlin-stdlib-common",
-    ],
-    original_deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.6.10",
-        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.5.2",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.6.10",
-    ],
-    pom = "repository/org/jetbrains/skiko/skiko/0.7.7/skiko-0.7.7.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/skiko/skiko/0.7.7",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "org.jetbrains.annotations_23.0.0",
     pom = "repository/org/jetbrains/annotations/23.0.0/annotations-23.0.0.pom",
     repo_root_path = "repository",
@@ -55081,6 +55046,19 @@ maven_artifact(
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.9.21",
         "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.8.0-RC",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.skiko.skiko_0.7.7",
+    pom = "repository/org/jetbrains/skiko/skiko/0.7.7/skiko-0.7.7.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/skiko/skiko/0.7.7",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.6.10",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.5.2",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.6.10",
     ],
     visibility = ["//visibility:public"],
 )
