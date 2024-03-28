@@ -20,7 +20,6 @@ import com.android.tools.preview.screenshot.services.AnalyticsService
 import com.android.tools.render.compose.readComposeScreenshotsJson
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
@@ -72,14 +71,13 @@ abstract class PreviewScreenshotValidationTask : Test(), VerificationTask {
         }
     }
 
-    // TODO(b/330166275) - Don't use internal Gradle API (JvmTestExecutionSpec)
-    override fun createTestExecutionSpec(): JvmTestExecutionSpec {
+    override fun useJUnitPlatform() {
         setTestEngineParam("previews-discovered", previewFile.get().asFile.absolutePath)
         setTestEngineParam("referenceImageDirPath", referenceImageDir.get().asFile.absolutePath)
         setTestEngineParam("diffImageDirPath", diffImageDir.get().asFile.absolutePath)
         setTestEngineParam("renderTaskOutputDirPath", renderTaskOutputDir.get().asFile.absolutePath)
         setTestEngineParam("resultsDirPath", resultsDir.get().asFile.absolutePath)
-        return super.createTestExecutionSpec()
+        super.useJUnitPlatform()
     }
 }
 
