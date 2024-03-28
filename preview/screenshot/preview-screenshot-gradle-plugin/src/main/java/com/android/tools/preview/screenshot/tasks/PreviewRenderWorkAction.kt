@@ -21,6 +21,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import java.net.URLClassLoader
@@ -38,6 +39,7 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
         abstract val cliToolArgumentsFile: RegularFileProperty
         abstract val toolJarPath: ConfigurableFileCollection
         abstract val outputDir: DirectoryProperty
+        abstract val javaSecManagerArgument: Property<String?>
     }
 
     override fun execute() {
@@ -48,7 +50,7 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
     private fun render() {
         val classpath = listOf(parameters.layoutlibJar, parameters.toolJarPath)
         val classLoader = getClassloader(classpath)
-        invokeMainMethod(listOf(parameters.cliToolArgumentsFile.get().asFile.absolutePath), classLoader)
+        invokeMainMethod(listOfNotNull(parameters.cliToolArgumentsFile.get().asFile.absolutePath, parameters.javaSecManagerArgument.get()), classLoader)
     }
 
     private fun invokeMainMethod(arguments: List<String>, classLoader: ClassLoader) {
