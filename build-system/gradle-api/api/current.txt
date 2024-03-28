@@ -1712,24 +1712,24 @@ package com.android.build.api.dsl {
 
   public interface Ndk {
     method public java.util.Set<java.lang.String> getAbiFilters();
-    method public String? getCFlags();
+    method @Deprecated public String? getCFlags();
     method public String? getDebugSymbolLevel();
-    method public Integer? getJobs();
-    method public java.util.List<java.lang.String>? getLdLibs();
-    method public String? getModuleName();
-    method public String? getStl();
-    method public void setCFlags(String?);
+    method @Deprecated public Integer? getJobs();
+    method @Deprecated public java.util.List<java.lang.String>? getLdLibs();
+    method @Deprecated public String? getModuleName();
+    method @Deprecated public String? getStl();
+    method @Deprecated public void setCFlags(String?);
     method public void setDebugSymbolLevel(String?);
-    method public void setJobs(Integer?);
-    method public void setModuleName(String?);
-    method public void setStl(String?);
+    method @Deprecated public void setJobs(Integer?);
+    method @Deprecated public void setModuleName(String?);
+    method @Deprecated public void setStl(String?);
     property public abstract java.util.Set<java.lang.String> abiFilters;
-    property public abstract String? cFlags;
+    property @Deprecated public abstract String? cFlags;
     property public abstract String? debugSymbolLevel;
-    property public abstract Integer? jobs;
-    property public abstract java.util.List<java.lang.String>? ldLibs;
-    property public abstract String? moduleName;
-    property public abstract String? stl;
+    property @Deprecated public abstract Integer? jobs;
+    property @Deprecated public abstract java.util.List<java.lang.String>? ldLibs;
+    property @Deprecated public abstract String? moduleName;
+    property @Deprecated public abstract String? stl;
   }
 
   public interface NdkBuild {

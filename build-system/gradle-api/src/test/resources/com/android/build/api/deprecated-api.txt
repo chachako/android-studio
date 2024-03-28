@@ -3,6 +3,16 @@ Deprecated Android Gradle Plugin API.
 ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 are announced on go/as-release-notes.
 -------------------------------------------------------------------------
+Deprecated from AGP 8.5.0
+  * com.android.build.api.dsl.Ndk.getCFlags: java.lang.String ()
+  * com.android.build.api.dsl.Ndk.getJobs: java.lang.Integer ()
+  * com.android.build.api.dsl.Ndk.getLdLibs: java.util.List<java.lang.String> ()
+  * com.android.build.api.dsl.Ndk.getModuleName: java.lang.String ()
+  * com.android.build.api.dsl.Ndk.getStl: java.lang.String ()
+  * com.android.build.api.dsl.Ndk.setCFlags: void (java.lang.String)
+  * com.android.build.api.dsl.Ndk.setJobs: void (java.lang.Integer)
+  * com.android.build.api.dsl.Ndk.setModuleName: void (java.lang.String)
+  * com.android.build.api.dsl.Ndk.setStl: void (java.lang.String)
 Deprecated from AGP 8.4.0
   * com.android.build.api.artifact.Artifacts.add: void (com.android.build.api.artifact.MultipleArtifact<FileTypeT>, FileTypeT)
   * com.android.build.api.dsl.KeepRules.ignoreAllExternalDependencies: void (boolean)
