@@ -28,9 +28,11 @@ import com.intellij.psi.CommonClassNames.JAVA_UTIL_LIST
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.util.TypeConversionUtil
 import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.UThisExpression
+import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 /** Makes sure that `buildList` calls actually add items */
@@ -68,6 +70,22 @@ class BuildListDetector : Detector(), SourceCodeScanner {
       var isAdding = false
       argument.body.accept(
         object : AbstractUastVisitor() {
+
+          override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
+            val operator = node.operator
+            if (operator == UastBinaryOperator.PLUS_ASSIGN) {
+              val operatorMethod = node.resolveOperator()
+              if (
+                operatorMethod?.name == "plusAssign" &&
+                  operatorMethod.containingClass?.qualifiedName ==
+                    "kotlin.collections.CollectionsKt__MutableCollectionsKt"
+              ) {
+                isAdding = true
+              }
+            }
+            return super.visitBinaryExpression(node)
+          }
+
           override fun visitCallExpression(node: UCallExpression): Boolean {
             val name = node.methodName ?: node.methodIdentifier?.name
             if (name != null && name.startsWith("add")) {

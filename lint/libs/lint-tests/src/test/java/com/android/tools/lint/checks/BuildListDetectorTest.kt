@@ -139,4 +139,22 @@ class BuildListDetectorTest : AbstractCheckTest() {
       .run()
       .expectClean()
   }
+
+  fun test331666842() {
+    lint()
+      .files(
+        kotlin(
+            """
+            fun test() {
+              buildList {
+                this += ""
+              }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expectClean()
+  }
 }
