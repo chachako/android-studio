@@ -24,7 +24,7 @@ val defaultPackageNameParameter: StringParameter
       name = "Package name"
       visible = { !isNewModule }
       default = "com.mycompany.myapp"
-      constraints = listOf(Constraint.PACKAGE)
+      constraints = listOf(Constraint.NONEMPTY, Constraint.PACKAGE)
       suggest = { packageName }
     }
 
