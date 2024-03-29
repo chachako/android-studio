@@ -17,6 +17,7 @@
 package com.android.tools.preview.screenshot.layoutlibExtractor
 
 import com.android.Version
+import com.android.utils.FileUtils
 import com.google.common.io.ByteStreams
 import org.gradle.api.Project
 import org.gradle.api.artifacts.transform.InputArtifact
@@ -25,6 +26,7 @@ import org.gradle.api.artifacts.transform.TransformOutputs
 import org.gradle.api.artifacts.transform.TransformParameters
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.provider.Provider
@@ -44,7 +46,8 @@ class LayoutlibDataFromMaven(val layoutlibDataDirectory: FileCollection) {
         @JvmStatic
         fun create(
             project: Project,
-            version: String
+            version: String,
+            frameworkResJar: FileCollection
         ): LayoutlibDataFromMaven {
             val configuration = project.configurations.detachedConfiguration(
                 project.dependencies.create(
@@ -65,6 +68,9 @@ class LayoutlibDataFromMaven(val layoutlibDataDirectory: FileCollection) {
                     ArtifactTypeDefinition.JAR_TYPE
                 )
                 it.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, TYPE_EXTRACTED_LAYOUTLIB_DATA)
+                it.parameters.apply {
+                    frameworkRes.setFrom(frameworkResJar)
+                }
             }
 
             val layoutlibDataDirectory = configuration.incoming.artifactView { config ->
@@ -78,7 +84,13 @@ class LayoutlibDataFromMaven(val layoutlibDataDirectory: FileCollection) {
             return LayoutlibDataFromMaven(layoutlibDataDirectory)
         }
 
-        abstract class LayoutLibDataExtractor : TransformAction<TransformParameters.None> {
+        abstract class LayoutLibDataExtractor : TransformAction<LayoutLibDataExtractor.Parameters> {
+
+            abstract class Parameters: TransformParameters {
+
+                @get:Classpath
+                abstract val frameworkRes: ConfigurableFileCollection
+            }
 
             @get:Classpath
             @get:InputArtifact
@@ -86,7 +98,7 @@ class LayoutlibDataFromMaven(val layoutlibDataDirectory: FileCollection) {
 
             override fun transform(transformOutputs: TransformOutputs) {
                 val input = inputArtifact.get().asFile
-                val outDir = transformOutputs.dir(input.nameWithoutExtension).toPath()
+                val outDir = transformOutputs.dir("layoutlib").toPath()
                 Files.createDirectories(outDir)
                 ZipInputStream(input.inputStream().buffered()).use { zipInputStream ->
                     while (true) {
@@ -101,6 +113,8 @@ class LayoutlibDataFromMaven(val layoutlibDataDirectory: FileCollection) {
                         }
                     }
                 }
+                val resJar = outDir.resolve("data").resolve("framework_res.jar").toFile()
+                FileUtils.copyFile(parameters.frameworkRes.singleFile, resJar)
             }
         }
 

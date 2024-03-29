@@ -124,7 +124,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             createLayoutlibRuntimeConfiguration(project)
             createLayoutlibResourcesConfiguration(project)
             val layoutlibFromMaven = LayoutlibFromMaven.create(project)
-            val layoutlibDataFromMaven = LayoutlibDataFromMaven.create(project, LAYOUTLIB_RUNTIME_VERSION)
+            val layoutlibDataFromMaven = LayoutlibDataFromMaven.create(project, LAYOUTLIB_RUNTIME_VERSION,
+              project.configurations.getByName(layoutlibResourcesConfigurationName))
 
             val updateAllTask = project.tasks.register(
                 "previewScreenshotUpdateAndroidTest",
@@ -243,8 +244,6 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.screenshotCliJar.from(task.project.configurations.getByName(previewlibCliToolConfigurationName))
                         task.layoutlibJar.from(task.project.configurations.getByName(
                             layoutlibJarConfigurationName))
-                        task.frameworkResJar.from(task.project.configurations.getByName(
-                            layoutlibResourcesConfigurationName))
                         task.layoutlibDir.setFrom(layoutlibFromMaven.layoutlibDirectory)
                         task.layoutlibDataDir.setFrom(layoutlibDataFromMaven.layoutlibDataDirectory)
                         resourceDirProvider?.let { task.resourcesDir.set(it) }
