@@ -726,8 +726,33 @@ abstract class Detector {
    * Note that the baseline mechanism will first try some simple checks on its own, such as allowing
    * messages to append new details, so you don't have to explicitly check for equality.
    *
-   * (There are some utility methods in [LintBaseline.Companion] which you can find useful here,
-   * such as [LintBaseline.sameSuffixFrom].)
+   * **Avoid directly checking strings for equality here**. Instead, consider calling for example
+   * [LintBaseline.stringsEquivalent].
+   *
+   * Here are some examples:
+   *
+   * Use search/replace to tweak the wording in a message to the new one:
+   * ```kotlin
+   * override fun sameMessage(issue: Issue, new: String, old: String): Boolean {
+   *   // Handle the case where we dropped a prefix at some point:
+   *   //   "[Accessibility] Empty contentDescription attribute on image"
+   *   //   ==
+   *   //   "Empty contentDescription attribute on image"
+   *   return stringsEquivalent(old.removePrefix("[Accessibility] "), new)
+   * }
+   * ```
+   *
+   * Allow a number or version to drift:
+   * ```kotlin
+   * override fun sameMessage(issue: Issue, new: String, old: String): Boolean {
+   *   // The error message includes a version number which drifts over time; allow this:
+   *   // "To support older versions than API 17 (project specifies 11) you should also ...
+   *   //  ==
+   *   // "To support older versions than API 17 (project specifies 14) you should also ...
+   *   // Allow the single token right after "project specifies" to differ:
+   *   return stringsEquivalent(old, new) { s, i -> s.tokenPrecededBy("project specifies ", i) }
+   * }
+   * ```
    */
   open fun sameMessage(issue: Issue, new: String, old: String): Boolean {
     return false
