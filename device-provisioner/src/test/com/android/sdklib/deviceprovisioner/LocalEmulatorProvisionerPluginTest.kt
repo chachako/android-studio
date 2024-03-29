@@ -284,6 +284,7 @@ class LocalEmulatorProvisionerPluginTest {
     yieldUntil { provisioner.devices.value.size == 1 }
 
     val handle = provisioner.devices.value[0]
+    assertThat(handle.state.error).isNotNull()
     val activationAction = handle.activationAction!!
     val repairAction = handle.repairDeviceAction!!
 
@@ -294,6 +295,7 @@ class LocalEmulatorProvisionerPluginTest {
     // Should become possible to activate the device
     activationAction.presentation.takeWhile { !it.enabled }.collect()
     repairAction.presentation.takeWhile { it.enabled }.collect()
+    assertThat(handle.state.error).isNull()
   }
 
   @Test

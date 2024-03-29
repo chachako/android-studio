@@ -68,12 +68,11 @@ sealed interface DeviceState {
 
   data class Disconnected(
     override val properties: DeviceProperties,
-    override val isTransitioning: Boolean,
-    override val status: String,
+    override val isTransitioning: Boolean = false,
+    override val status: String = "Offline",
     override val reservation: Reservation? = null,
     override val error: DeviceError? = null,
   ) : DeviceState {
-    constructor(properties: DeviceProperties) : this(properties, false, "Offline")
 
     override val isReady: Boolean
       get() = false

@@ -487,7 +487,12 @@ class LocalEmulatorProvisionerPlugin(
         .stateIn(
           scope,
           SharingStarted.Eagerly,
-          InternalState(Disconnected(initialDeviceProperties), null, initialAvdInfo, null),
+          InternalState(
+            Disconnected(initialDeviceProperties, error = initialAvdInfo.deviceError),
+            null,
+            initialAvdInfo,
+            null,
+          ),
         )
 
     override val stateFlow =
