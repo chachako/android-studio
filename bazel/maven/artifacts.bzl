@@ -91,6 +91,7 @@ ARTIFACTS = [
     "com.googlecode.jarjar:jarjar:1.3",
     "com.googlecode.juniversalchardet:juniversalchardet:1.0.3",
     "com.nothome:javaxdelta:2.0.1",
+    "com.squareup.okhttp3:mockwebserver:3.12.0",
     "com.squareup.okhttp3:okhttp:3.12.0",
     "com.squareup.okhttp:okhttp:2.5.0",
     "com.squareup.okio:okio-jvm:3.0.0",

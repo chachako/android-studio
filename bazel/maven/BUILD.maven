@@ -2670,6 +2670,40 @@ maven_import(
 )
 
 maven_artifact(
+    name = "com.squareup.okhttp3.mockwebserver_3.12.0",
+    pom = "repository/com/squareup/okhttp3/mockwebserver/3.12.0/mockwebserver-3.12.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/squareup/okhttp3/mockwebserver/3.12.0",
+    parent = "com.squareup.okhttp3.parent_3.12.0",
+    deps = [
+        "com.squareup.okhttp3.okhttp_3.12.0",
+        "junit.junit_4.12",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "com.squareup.okhttp3.mockwebserver",
+    classifiers = [],
+    parent = "com.squareup.okhttp3.parent_3.12.0",
+    jars = [
+        "repository/com/squareup/okhttp3/mockwebserver/3.12.0/mockwebserver-3.12.0.jar"
+    ],
+    exports = [
+        "com.squareup.okhttp3.okhttp",
+        "junit.junit",
+    ],
+    original_deps = [
+        "com.squareup.okhttp3.okhttp_3.12.0",
+        "junit.junit_4.12",
+    ],
+    pom = "repository/com/squareup/okhttp3/mockwebserver/3.12.0/mockwebserver-3.12.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/squareup/okhttp3/mockwebserver/3.12.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.squareup.okhttp3.okhttp_3.12.0",
     pom = "repository/com/squareup/okhttp3/okhttp/3.12.0/okhttp-3.12.0.pom",
     repo_root_path = "repository",
