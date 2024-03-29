@@ -105,7 +105,14 @@ internal class JdwpSessionProxy(
     ) {
         serverSocket.accept().use { debuggerSocket ->
             logger.debug { "External debugger connection accepted: $debuggerSocket" }
-            processStateFlow.updateProxyStatus { it.copy(isExternalDebuggerAttached = true) }
+            processStateFlow.update {
+                it.copy(
+                    isWaitingForDebugger = false,
+                    jdwpSessionProxyStatus = it.jdwpSessionProxyStatus.copy(
+                        isExternalDebuggerAttached = true
+                    )
+                )
+            }
             try {
                 proxyJdwpSession(debuggerSocket)
             } finally {

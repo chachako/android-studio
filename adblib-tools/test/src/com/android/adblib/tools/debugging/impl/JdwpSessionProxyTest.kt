@@ -159,4 +159,41 @@ class JdwpSessionProxyTest : AdbLibToolsJdwpTestBase() {
         assertEquals(1, replies.size)
         assertEquals(vmVersionPacket.id, replies[0].id)
     }
+
+    @Test
+    fun attachingDebuggerSetsIsWaitingForDebuggerToFalse() = runBlockingWithTimeout {
+        // Prepare
+        val deviceID = "1234"
+        val fakeDevice =
+            fakeAdb.connectDevice(
+                deviceID,
+                "test1",
+                "test2",
+                "model",
+                "30", // SDK >= 30 is required for abb_exec feature.
+                DeviceState.HostConnectionType.USB
+            )
+        fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
+        val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
+        val pid = 12
+        fakeDevice.startClient(pid, 0, "a.b.c", true)
+
+        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, pid))
+        process.startMonitoring()
+        yieldUntil {
+            process.properties.jdwpSessionProxyStatus.socketAddress != null &&
+                    process.properties.processName != null
+        }
+        assertTrue(process.properties.isWaitingForDebugger)
+
+        // Act
+        attachDebuggerSession(process)
+        yieldUntil {
+            process.properties.jdwpSessionProxyStatus.isExternalDebuggerAttached
+        }
+
+        // Assert
+        assertTrue(process.properties.jdwpSessionProxyStatus.isExternalDebuggerAttached)
+        assertFalse(process.properties.isWaitingForDebugger)
+    }
 }

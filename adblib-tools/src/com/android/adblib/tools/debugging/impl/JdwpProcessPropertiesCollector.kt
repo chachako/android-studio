@@ -341,6 +341,7 @@ internal class JdwpProcessPropertiesCollector(
             logger.debug { "Not using STAG value since it's disabled by a 'SUPPORT_STAG_PACKETS' property" }
         }
         collectState.propertiesFlow.update {
+            val stage = if (session.property(SUPPORT_STAG_PACKETS)) heloChunk.stage else null
             it.copy(
                 processName = filterFakeName(heloChunk.processName),
                 userId = heloChunk.userId,
@@ -349,7 +350,8 @@ internal class JdwpProcessPropertiesCollector(
                 abi = heloChunk.abi,
                 jvmFlags = heloChunk.jvmFlags,
                 isNativeDebuggable = heloChunk.isNativeDebuggable,
-                stage = if (session.property(SUPPORT_STAG_PACKETS)) heloChunk.stage else null,
+                stage = stage,
+                isWaitingForDebugger = stage?.equals(AppStage.DEBG) ?: it.isWaitingForDebugger
             )
         }
         logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
@@ -378,7 +380,12 @@ internal class JdwpProcessPropertiesCollector(
             DdmsWaitChunk.parse(chunkCopy, workBuffer)
         }
         logger.debug { "`WAIT` command: $waitChunk" }
-        collectState.propertiesFlow.update { it.copy(waitCommandReceived = true) }
+        collectState.propertiesFlow.update {
+            it.copy(
+                waitCommandReceived = true,
+                isWaitingForDebugger = true
+            )
+        }
         logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
     }
 
@@ -417,6 +424,7 @@ internal class JdwpProcessPropertiesCollector(
         collectState.propertiesFlow.update {
             it.copy(
                 stage = stagChunk.stage,
+                isWaitingForDebugger = stagChunk.stage == AppStage.DEBG
             )
         }
         logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
