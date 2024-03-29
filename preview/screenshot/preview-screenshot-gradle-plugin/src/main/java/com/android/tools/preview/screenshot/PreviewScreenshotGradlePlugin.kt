@@ -334,7 +334,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 isVisible = false
                 isTransitive = true
                 isCanBeConsumed = false
-                description = "A configuration to resolve preview screenshot test engine dependencies."
+                description = "A configuration to resolve screenshot test engine dependencies."
             }
             val engineVersion = "0.0.1" +
                     if (Version.ANDROID_GRADLE_PLUGIN_VERSION.endsWith("-dev"))
@@ -343,7 +343,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         "-eap03"
             dependencies.add(
                 previewScreenshotTestEngineConfigurationName,
-                "com.android.tools.preview.screenshot.junit.engine:junit-engine:${engineVersion}")
+                "com.android.tools.screenshot:screenshot-test-junit-engine:${engineVersion}")
         }
     }
 
@@ -430,7 +430,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
 }
 
 private const val previewlibCliToolConfigurationName = "_internal-screenshot-test-task-previewlib-cli"
-private const val previewScreenshotTestEngineConfigurationName = "_internal-preview-screenshot-test-engine"
+private const val previewScreenshotTestEngineConfigurationName = "_internal-screenshot-test-junit-engine"
 private const val layoutlibJarConfigurationName = "_internal-screenshot-test-task-layoutlib"
 private const val layoutlibRunTimeConfigurationName = "_internal-screenshot-test-task-layoutlib-data"
 private const val layoutlibResourcesConfigurationName = "_internal-screenshot-test-task-layoutlib-res"

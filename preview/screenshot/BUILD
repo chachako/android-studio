@@ -7,7 +7,7 @@ maven_repository(
     artifacts = [
         "//tools/base/common:tools.common",
         "//tools/base/multipreview-asm",
-        "//tools/base/preview/screenshot/junit-engine",
+        "//tools/base/preview/screenshot/screenshot-test-junit-engine",
         "//tools/base/standalone-render/compose-cli:standalone-render.compose-cli",
         "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",
     ],
