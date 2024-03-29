@@ -298,7 +298,7 @@ public abstract class InstallVariantTask extends NonIncrementalTask {
                     File renamedBaselineProfile =
                             FileUtils.join(
                                     apkDirectory.getAsFile(),
-                                    "baselineProfiles",
+                                    SdkConstants.FN_OUTPUT_BASELINE_PROFILES,
                                     fileIndex,
                                     apkName + ".dm");
                     if (!renamedBaselineProfile.exists()) {

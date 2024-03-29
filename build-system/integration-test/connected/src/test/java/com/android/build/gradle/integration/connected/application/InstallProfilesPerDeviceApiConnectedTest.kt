@@ -127,7 +127,7 @@ class InstallProfilesPerDeviceApiConnectedTest {
             SdkConstants.FD_OUTPUTS,
             SdkConstants.EXT_ANDROID_PACKAGE,
             "release",
-            "baselineProfiles",
+            SdkConstants.FN_OUTPUT_BASELINE_PROFILES,
             "0",
             "basic-release.dm"
         )
@@ -141,7 +141,8 @@ class InstallProfilesPerDeviceApiConnectedTest {
             "release",
             BuiltArtifactsImpl.METADATA_FILE_NAME
         )
-        Truth.assertThat(appMetadataJson.readText()).contains("baselineProfiles")
+        Truth.assertThat(appMetadataJson.readText())
+            .contains(SdkConstants.FN_OUTPUT_BASELINE_PROFILES)
         Truth.assertThat(appMetadataJson.readText()).contains("basic-release.dm")
 
         val builtArtifacts = GenericBuiltArtifactsLoader.loadFromFile(appMetadataJson, NullLogger())
@@ -195,7 +196,7 @@ class InstallProfilesPerDeviceApiConnectedTest {
             SdkConstants.FD_OUTPUTS,
             SdkConstants.EXT_ANDROID_PACKAGE,
             "release",
-            "baselineProfiles",
+            SdkConstants.FN_OUTPUT_BASELINE_PROFILES,
             "0",
             "basic-x86_64-release.dm"
         )
@@ -209,7 +210,8 @@ class InstallProfilesPerDeviceApiConnectedTest {
             "release",
             BuiltArtifactsImpl.METADATA_FILE_NAME
         )
-        Truth.assertThat(appMetadataJson.readText()).contains("baselineProfiles")
+        Truth.assertThat(appMetadataJson.readText())
+            .contains(SdkConstants.FN_OUTPUT_BASELINE_PROFILES)
         Truth.assertThat(appMetadataJson.readText()).contains("basic-x86-release.dm")
         Truth.assertThat(appMetadataJson.readText()).contains("basic-x86_64-release.dm")
 
@@ -274,7 +276,7 @@ class InstallProfilesPerDeviceApiConnectedTest {
             SdkConstants.FD_OUTPUTS,
             SdkConstants.EXT_ANDROID_PACKAGE,
             "release",
-            "baselineProfiles",
+            SdkConstants.FN_OUTPUT_BASELINE_PROFILES,
             "0",
             "basic-release.dm"
         )
@@ -288,7 +290,8 @@ class InstallProfilesPerDeviceApiConnectedTest {
             "release",
             BuiltArtifactsImpl.METADATA_FILE_NAME
         )
-        Truth.assertThat(appMetadataJson.readText()).contains("baselineProfiles")
+        Truth.assertThat(appMetadataJson.readText())
+            .contains(SdkConstants.FN_OUTPUT_BASELINE_PROFILES)
         Truth.assertThat(appMetadataJson.readText()).contains("basic-release.dm")
     }
 
