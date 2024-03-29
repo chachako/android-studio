@@ -9,6 +9,7 @@ register_toolchains(
     "@native_toolchain//:cc-toolchain-darwin",
     "@native_toolchain//:cc-toolchain-x64_windows-clang-cl",
     "//tools/base/bazel/toolchains/darwin:python_toolchain",
+    "//prebuilts/python/linux-x86:python_toolchain",
     "//prebuilts/studio/jdk/jdk11:runtime_toolchain_definition",
     "//prebuilts/studio/jdk/jdk17:java_runtime_toolchain",
     "//prebuilts/studio/jdk/jdk17:java8_compile_toolchain_definition",
@@ -219,9 +220,9 @@ http_archive(
 )
 
 load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
+
 robolectric_repositories()
 
-
 load("//tools/base/intellij-bazel:platforms.bzl", "setup_intellij_platforms")
-setup_intellij_platforms()
 
+setup_intellij_platforms()
