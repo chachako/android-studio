@@ -29,14 +29,13 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.VerificationTask
 import org.gradle.api.tasks.testing.Test
 
 /**
  * Runs screenshot tests of a variant.
  */
 @CacheableTask
-abstract class PreviewScreenshotValidationTask : Test(), VerificationTask {
+abstract class PreviewScreenshotValidationTask : Test() {
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val referenceImageDir: DirectoryProperty
