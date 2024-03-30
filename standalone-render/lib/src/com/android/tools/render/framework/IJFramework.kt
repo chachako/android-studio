@@ -51,7 +51,7 @@ internal class StandaloneFramework(stopExecutor: Boolean) : IJFramework {
 
     init {
         ApplicationManager.setApplication(app, disposable)
-        PluginManagerCore.setPluginSet(PluginSetBuilder(emptySet()).createPluginSet())
+        PluginManagerCore.setPluginSet(PluginSetBuilder(emptySet()).createPluginSetWithEnabledModulesMap())
         if (stopExecutor) {
             Disposer.register(disposable) {
                 // Make sure the queue is empty
