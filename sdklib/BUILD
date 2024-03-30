@@ -21,7 +21,10 @@ iml_module(
     resources = ["src/main/resources"],
     test_data = ["//prebuilts/studio/sdk:platforms/latest"],
     test_resources = ["src/test/resources"],
-    test_srcs = ["src/test/java"],
+    test_srcs = [
+        "src/test/java",
+        "src/integrationTest/java",
+    ],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     exports = [

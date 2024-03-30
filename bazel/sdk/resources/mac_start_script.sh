@@ -169,4 +169,12 @@ if [ "$(uname)" = "Darwin" ] && [ "$HOME" = "$PWD" ]; then
   cd "$(dirname "$0")"
 fi
 
+JAVA_VER=$($JAVACMD -version 2>&1 | awk -F '"' '/version/ {print $2}' | awk -F '.' '{sub("^$", "0", $2); print $1$2}')
+if test "$JAVA_VER" -lt 170 && [ -z "${SKIP_JDK_VERSION_CHECK}" ]; then
+  FRIENDLY_JAVA_VER=$($JAVACMD -version 2>&1 | awk -F '"' '/version/ {print $2}' )
+  echo "This tool requires JDK 17 or later. Your version was detected as $FRIENDLY_JAVA_VER."
+  echo "To override this check, set SKIP_JDK_VERSION_CHECK."
+  exit 1
+fi
+
 exec "$JAVACMD" "$@"

@@ -61,6 +61,22 @@ if "x%~1" == "x" goto execute
 set CMD_LINE_ARGS=%*
 
 :execute
+
+@rem check whether we have the right version of java
+setlocal enabledelayedexpansion
+for /f "tokens=3" %%a in ( '""%JAVA_EXE%" -version 2>&1 |findstr "version""' ) do (
+  for /f "tokens=1,2 delims=." %%b in ( 'echo %%a' ) do (
+    set versionWithQ=%%b%%c
+  )
+)
+set version=!versionWithQ:"=!
+
+if !version! lss 170 if "%SKIP_JDK_VERSION_CHECK%" == "" (
+  echo Java version 17 or higher is required.
+  echo To override this check set SKIP_JDK_VERSION_CHECK
+  goto :eof
+)
+
 @rem Setup the command line
 
 set CLASSPATH=${JARS}
