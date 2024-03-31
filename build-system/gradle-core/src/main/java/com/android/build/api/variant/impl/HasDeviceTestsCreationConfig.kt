@@ -29,16 +29,22 @@ import com.android.builder.core.ComponentTypeImpl
  *
  * Encapsulates access to the deprecated [com.android.build.api.variant.HasAndroidTest] interface.
  */
-interface InternalHasDeviceTests: HasDeviceTests, com.android.build.api.variant.HasAndroidTest {
+interface HasDeviceTestsCreationConfig: HasDeviceTests, com.android.build.api.variant.HasAndroidTest {
 
     //
     // Public API implementation
     //
-    override val deviceTests: MutableList<DeviceTest>
+    override val deviceTests: List<DeviceTest>
 
     //
     // Private APIs
     //
+
+    /**
+     * Adds a new [DeviceTest] to this component/variant.
+     */
+    fun addDeviceTest(deviceTest: DeviceTest)
+
     val defaultDeviceTest: DeviceTest?
         get() = deviceTests.find {
             if (it is DeviceTestImpl) {
@@ -72,9 +78,6 @@ interface InternalHasDeviceTests: HasDeviceTests, com.android.build.api.variant.
     fun getByName(name: String): DeviceTest? =
         deviceTests.find { deviceTest -> deviceTest.name == name }
 
-    //
-    // Private APIs
-    //
 
     /**
      * This is the deprecated public API implementation mainly for backward compatibility.

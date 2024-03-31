@@ -82,7 +82,7 @@ open class ApplicationVariantImpl @Inject constructor(
     globalTaskCreationConfig
 ), ApplicationVariant,
     ApplicationCreationConfig,
-    InternalHasDeviceTests,
+    HasDeviceTestsCreationConfig,
     HasHostTestsCreationConfig,
     HasTestFixtures,
     HasHostTests,
@@ -135,7 +135,8 @@ open class ApplicationVariantImpl @Inject constructor(
     override val hostTests: Map<String, HostTestCreationConfig>
         get() = internalHostTests.toImmutableMap() // immutableMap so java users cannot modify it.
 
-    override val deviceTests = mutableListOf<DeviceTest>()
+    override val deviceTests: List<DeviceTest>
+        get() = internalDeviceTests
 
     override var testFixtures: TestFixturesImpl? = null
 
@@ -228,6 +229,10 @@ open class ApplicationVariantImpl @Inject constructor(
         internalHostTests[testTypeName] = testComponent
     }
 
+    override fun addDeviceTest(deviceTest: DeviceTest) {
+        internalDeviceTests.add(deviceTest)
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Private stuff
     // ---------------------------------------------------------------------------------------------
@@ -236,6 +241,7 @@ open class ApplicationVariantImpl @Inject constructor(
      * use [addTestComponent] to add a [HostTest] to the map.
      */
     private val internalHostTests = mutableMapOf<String, HostTestCreationConfig>()
+    private val internalDeviceTests = mutableListOf<DeviceTest>()
 
     override val consumesFeatureJars: Boolean
         get() = optimizationCreationConfig.minifiedEnabled && global.hasDynamicFeatures

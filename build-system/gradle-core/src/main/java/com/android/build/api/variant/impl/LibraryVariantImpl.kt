@@ -76,7 +76,7 @@ open class LibraryVariantImpl @Inject constructor(
     globalTaskCreationConfig,
 ), LibraryVariant,
     LibraryCreationConfig,
-    InternalHasDeviceTests,
+    HasDeviceTestsCreationConfig,
     HasTestFixtures,
     HasHostTestsCreationConfig,
     HasHostTests,
@@ -103,7 +103,8 @@ open class LibraryVariantImpl @Inject constructor(
         )
 
 
-    override val deviceTests = mutableListOf<DeviceTest>()
+    override val deviceTests: List<DeviceTest>
+        get() = internalDeviceTests
 
     override val hostTests: Map<String, HostTestCreationConfig>
         get() = internalHostTests
@@ -170,9 +171,14 @@ open class LibraryVariantImpl @Inject constructor(
         internalHostTests[testTypeName] = testComponent
     }
 
+    override fun addDeviceTest(deviceTest: DeviceTest) {
+        internalDeviceTests.add(deviceTest)
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Private stuff
     // ---------------------------------------------------------------------------------------------
 
     private val internalHostTests = mutableMapOf<String, HostTestCreationConfig>()
+    private val internalDeviceTests = mutableListOf<DeviceTest>()
 }

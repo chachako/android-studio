@@ -40,7 +40,7 @@ import com.android.build.api.variant.impl.GlobalVariantBuilderConfig
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfigImpl
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.HostTestBuilderImpl
-import com.android.build.api.variant.impl.InternalHasDeviceTests
+import com.android.build.api.variant.impl.HasDeviceTestsCreationConfig
 import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.api.variant.impl.InternalVariantBuilder
 import com.android.build.gradle.BaseExtension
@@ -881,7 +881,7 @@ class VariantManager<
                     (variantBuilder as? HasDeviceTestsBuilder)?.deviceTests
                         ?.filter { it.enable && buildTypeData == testBuildTypeData }
                         ?.forEach { deviceTestBuilder ->
-                            val androidTest = createTestComponents<AndroidTestComponentDslInfo>(
+                            val deviceTest = createTestComponents<AndroidTestComponentDslInfo>(
                                 dimensionCombination,
                                 buildTypeData,
                                 productFlavorDataList,
@@ -890,8 +890,8 @@ class VariantManager<
                                 testFixturesEnabledForVariant,
                                 deviceTestBuilder,
                             )
-                            addTestComponent(androidTest)
-                            (variant as InternalHasDeviceTests).deviceTests.add(androidTest as DeviceTestImpl)
+                            addTestComponent(deviceTest)
+                            (variant as HasDeviceTestsCreationConfig).addDeviceTest(deviceTest as DeviceTestImpl)
                     }
 
                     (variantBuilder as? HasHostTestsBuilder)?.hostTests

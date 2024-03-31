@@ -353,7 +353,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
 
         mainVariant.unitTest = unitTest
         androidTest?.let {
-            mainVariant.deviceTests.add(it)
+            mainVariant.addDeviceTest(it)
         }
 
         val stats = configuratorService.getVariantBuilder(

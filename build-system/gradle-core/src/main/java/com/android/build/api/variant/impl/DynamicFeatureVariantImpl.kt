@@ -83,7 +83,7 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     globalTaskCreationConfig
 ), DynamicFeatureVariant,
     DynamicFeatureCreationConfig,
-    InternalHasDeviceTests,
+    HasDeviceTestsCreationConfig,
     HasTestFixtures,
     HasHostTestsCreationConfig,
     HasHostTests,
@@ -127,7 +127,8 @@ open class DynamicFeatureVariantImpl @Inject constructor(
         )
     }
 
-    override val deviceTests = mutableListOf<DeviceTest>()
+    override val deviceTests: List<DeviceTest>
+        get() = internalDeviceTests
 
     override val hostTests: Map<String, HostTestCreationConfig>
         get() = internalHostTests
@@ -216,11 +217,15 @@ open class DynamicFeatureVariantImpl @Inject constructor(
         internalHostTests[testTypeName] = testComponent
     }
 
+    override fun addDeviceTest(deviceTest: DeviceTest) {
+        internalDeviceTests.add(deviceTest)
+    }
     // ---------------------------------------------------------------------------------------------
     // Private stuff
 
     // ---------------------------------------------------------------------------------------------
     private val internalHostTests = mutableMapOf<String, HostTestCreationConfig>()
+    private val internalDeviceTests = mutableListOf<DeviceTest>()
 
     private fun instantiateBaseModuleMetadata(
         variantDependencies: VariantDependencies
