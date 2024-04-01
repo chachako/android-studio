@@ -33,7 +33,9 @@ internal class PMPm(deviceServices: AdbDeviceServices) : PM(deviceServices) {
         return deviceService.shell(device, cmd.joinToString(" "), TextShellCollector())
     }
 
-    override suspend fun streamApk(device: DeviceSelector, sessionID: String, apk: AdbInputChannel, filename: String, size: Long) : Flow<String>{
+    override suspend fun streamApk(device: DeviceSelector, sessionID: String, apk: AdbInputChannel, path: String, size: Long) : Flow<String>{
+        // Because we hit the shell, the apk names must be escaped
+        val filename = sanitizeApkName(path)
         val cmd = "$CMD install-write -S $size $sessionID $filename -"
         return deviceService.exec(device, cmd, TextShellCollector(), apk, shutdownOutput = false)
     }

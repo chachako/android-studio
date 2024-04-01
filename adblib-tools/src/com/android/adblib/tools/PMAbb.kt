@@ -46,6 +46,8 @@ internal class PMAbb(deviceServices: AdbDeviceServices) : PM(deviceServices) {
     }
 
     override suspend fun streamApk(device: DeviceSelector, sessionID: String, apk: AdbInputChannel, filename: String, size: Long) : Flow<String> {
+        // There is no need to escape apk names here since we never hit the shell and abb uses \0
+        // separator instead of space.
         val cmd = listOf(CMD, "install-write", "-S", size.toString(), sessionID, filename, "-")
         return if (useAbbExecService) {
             deviceService.abb_exec(device, cmd, TextShellCollector(), apk, shutdownOutput = false)

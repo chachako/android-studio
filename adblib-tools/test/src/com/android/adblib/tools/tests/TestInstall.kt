@@ -128,6 +128,22 @@ class TestInstall : TestInstallBase() {
         Assert.assertEquals("install-commit 1234", fakeDevice.pmLogs[1])
     }
 
+    @Test
+    fun testPmStrategyNameSanitizing() {
+        val apk = Files.createTempFile("adblib tools(test)1.apk", null)
+        val fakeDevice = addFakeDevice(fakeAdb, 23)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+
+        runBlocking {
+            deviceServices.install(deviceSelector, listOf<Path>(apk))
+        }
+
+        Assert.assertEquals(3, fakeDevice.pmLogs.size)
+        Assert.assertEquals("install-create -S 0", fakeDevice.pmLogs[0])
+        Assert.assertTrue("", fakeDevice.pmLogs[1].contains("adblib_tools_test_1.apk"))
+        Assert.assertEquals("install-commit 1234", fakeDevice.pmLogs[2])
+    }
+
     // Use API = 24, just when CMD was introduced.
     @Test
     fun testCmdStrategy() {
@@ -156,6 +172,22 @@ class TestInstall : TestInstallBase() {
         Assert.assertEquals(2, fakeDevice.cmdLogs.size)
         Assert.assertEquals("package install-create -S 0", fakeDevice.cmdLogs[0])
         Assert.assertEquals("package install-commit 1234", fakeDevice.cmdLogs[1])
+    }
+
+    @Test
+    fun testCmdStrategyNameSanitizing() {
+        val apk = Files.createTempFile("adblib tools(test)1.apk", null)
+        val fakeDevice = addFakeDevice(fakeAdb, 29)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+
+        runBlocking {
+            deviceServices.install(deviceSelector, listOf<Path>(apk))
+        }
+
+        Assert.assertEquals(3, fakeDevice.cmdLogs.size)
+        Assert.assertEquals("package install-create -S 0", fakeDevice.cmdLogs[0])
+        Assert.assertTrue("", fakeDevice.cmdLogs[1].contains("adblib_tools_test_1.apk"))
+        Assert.assertEquals("package install-commit 1234", fakeDevice.cmdLogs[2])
     }
 
     // Use API = 30 which should have ABB and ABB_EXEC
@@ -243,5 +275,24 @@ class TestInstall : TestInstallBase() {
             }
         } catch (_: InstallException) {
         }
+    }
+
+    @Test
+    fun testAbbNoNameSanitizing() {
+        val nameWithBadChars = "adblib tools(test)1.apk"
+        val fakeDevice = addFakeDevice(fakeAdb, 30)
+        val deviceSelector = DeviceSelector.fromSerialNumber(fakeDevice.deviceId)
+
+        val apk = Files.createTempFile(nameWithBadChars, null)
+        val apks = listOf(apk)
+
+        runBlocking {
+                deviceServices.install(deviceSelector, apks, emptyList())
+        }
+
+        Assert.assertEquals(3, fakeDevice.abbLogs.size)
+        Assert.assertEquals("package\u0000install-create\u0000-S\u00000", fakeDevice.abbLogs[0])
+        Assert.assertTrue("", fakeDevice.abbLogs[1].contains(nameWithBadChars))
+        Assert.assertEquals("package\u0000install-commit\u00001234", fakeDevice.abbLogs[2])
     }
 }
