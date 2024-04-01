@@ -366,9 +366,8 @@ class TrackDatabasesTest {
     hooks.triggerOnOpened(forcedInstance)
     hooks.triggerOnOpened(db)
 
-    // We can't assert that `isForced = true` because the hooks are called too late
+    // We can't assert that the first `isForced = true` because the hooks are called too late
     receiveOpenedEventId(db.displayName)
-    receiveClosedEventId(db.displayName)
     receiveOpenedEventId(db.displayName, isForced = false)
   }
 
@@ -387,11 +386,9 @@ class TrackDatabasesTest {
     db.close()
     hooks.triggerOnAllReferencesReleased(db)
 
-    // We can't assert that `isForced = true` because the hooks are called too late
+    // We can't assert that the first `isForced = true` because the hooks are called too late
     receiveOpenedEventId(db.displayName)
-    receiveClosedEventId(db.displayName)
     receiveOpenedEventId(db.displayName, isForced = false)
-    receiveClosedEventId(db.displayName)
     receiveOpenedEventId(db.displayName, isForced = true)
   }
 

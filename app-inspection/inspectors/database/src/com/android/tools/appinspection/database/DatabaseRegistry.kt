@@ -216,16 +216,11 @@ internal class DatabaseRegistry(
         // will be announced as the currently processed database will keep at least one open
         // connection.
         val references = getReferences(id)
-        if (references.isEmpty()) {
+        if (references.isEmpty() || references.hasForcedConnections()) {
           notifyOpenedId = id
-        } else {
           // TODO(aalbert): Maybe actually close the forced connection. This would require either:
           //   1. Reopen a forced connection when all connections are closed
           //   2. Implicitly enabling keep-open when is-forced.
-          if (references.hasForcedConnections()) {
-            notifyClosedId = id
-            notifyOpenedId = id
-          }
         }
 
         registerReference(id, database)
@@ -244,7 +239,6 @@ internal class DatabaseRegistry(
             notifyClosedId = id
           } else if (referencesPost.hasOnlyForcedConnections()) {
             notifyOpenedId = id
-            notifyClosedId = id
             isForced = true
           }
         }
