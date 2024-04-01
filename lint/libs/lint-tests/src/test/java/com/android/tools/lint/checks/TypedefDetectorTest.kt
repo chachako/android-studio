@@ -20,7 +20,6 @@ import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.client.api.LintBaseline
 import com.android.tools.lint.detector.api.Detector
 import java.io.File
-import org.junit.Assert.assertTrue
 import org.junit.ComparisonFailure
 
 class TypedefDetectorTest : AbstractCheckTest() {
@@ -771,7 +770,6 @@ class TypedefDetectorTest : AbstractCheckTest() {
   }
 
   fun testIntDef() {
-
     lint()
       .files(
         java(
@@ -1649,7 +1647,6 @@ class TypedefDetectorTest : AbstractCheckTest() {
           .indented(),
         SUPPORT_ANNOTATIONS_JAR,
       )
-      .checkUInjectionHost(false)
       .run()
       .expectClean()
   }

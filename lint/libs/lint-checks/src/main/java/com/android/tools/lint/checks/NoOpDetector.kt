@@ -284,6 +284,7 @@ class NoOpDetector : Detector(), SourceCodeScanner {
       UQualifiedReferenceExpression::class.java,
       UBinaryExpression::class.java,
       ULiteralExpression::class.java,
+      UPolyadicExpression::class.java,
     )
   }
 
@@ -360,6 +361,17 @@ class NoOpDetector : Detector(), SourceCodeScanner {
             node,
             node.sourcePsi?.text ?: node.value?.toString() ?: node.asSourceString(),
           )
+        }
+      }
+
+      override fun visitPolyadicExpression(node: UPolyadicExpression) {
+        // Even simple "test" string literal is mapped to a polyadic expression
+        // after KTIJ-27448 (ui injection host)
+        val operand = node.operands.singleOrNull() as? ULiteralExpression ?: return
+        // Make sure we check if the overall polyadic expression is used and expects side effect
+        if (isExpressionValueUnused(node) && !expectsSideEffect(context, node)) {
+          // But report on that literal expression
+          report(context, operand, operand.sourcePsi?.text ?: operand.asSourceString())
         }
       }
 

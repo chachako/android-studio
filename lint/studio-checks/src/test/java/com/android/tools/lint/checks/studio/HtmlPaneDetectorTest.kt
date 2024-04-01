@@ -156,7 +156,6 @@ class HtmlPaneDetectorTest {
         ),
       )
       .issues(HtmlPaneDetector.ISSUE)
-      .checkUInjectionHost(false)
       .run()
       .expect(
         """

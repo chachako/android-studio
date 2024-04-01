@@ -34,6 +34,7 @@ import com.intellij.openapi.vfs.CompactVirtualFileSet
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSet
 import com.intellij.openapi.vfs.VirtualFileSetFactory
+import com.intellij.pom.java.LanguageFeatureProvider
 import it.unimi.dsi.fastutil.ints.IntSet
 import java.nio.file.Files
 import java.util.concurrent.locks.ReentrantLock
@@ -185,6 +186,10 @@ internal fun configureApplicationEnvironment(
   CoreApplicationEnvironment.registerApplicationExtensionPoint(
     DiagnosticSuppressor.EP_NAME,
     DiagnosticSuppressor::class.java,
+  )
+  CoreApplicationEnvironment.registerApplicationExtensionPoint(
+    LanguageFeatureProvider.EXTENSION_POINT_NAME,
+    LanguageFeatureProvider::class.java,
   )
 
   appConfigured = true

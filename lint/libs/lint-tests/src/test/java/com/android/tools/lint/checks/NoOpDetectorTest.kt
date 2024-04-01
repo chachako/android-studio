@@ -18,7 +18,6 @@
 
 package com.android.tools.lint.checks
 
-import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 
 class NoOpDetectorTest : AbstractCheckTest() {
@@ -426,7 +425,6 @@ class NoOpDetectorTest : AbstractCheckTest() {
           )
           .indented()
       )
-      .skipTestModes(TestMode.UI_INJECTION_HOST)
       .run()
       .expect(
         """

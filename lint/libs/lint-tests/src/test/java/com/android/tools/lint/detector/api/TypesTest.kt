@@ -61,7 +61,8 @@ class TypesTest : TestCase() {
         "    UClass (name = Kotlin) [public final class Kotlin : Parent {...}]\n" +
         "        UField (name = property1) [@org.jetbrains.annotations.NotNull private final var property1: java.lang.String = \"Default Value\"] : PsiType:String\n" +
         "            UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n" +
-        "            ULiteralExpression (value = \"Default Value\") [\"Default Value\"] : PsiType:String\n" +
+        "            UPolyadicExpression (operator = +) [\"Default Value\"] : PsiType:String\n" +
+        "                ULiteralExpression (value = \"Default Value\") [\"Default Value\"] : PsiType:String\n" +
         "        UField (name = property2) [@org.jetbrains.annotations.Nullable private var property2: java.lang.String = null] : PsiType:String\n" +
         "            UAnnotation (fqName = org.jetbrains.annotations.Nullable) [@org.jetbrains.annotations.Nullable]\n" +
         "            ULiteralExpression (value = null) [null] : PsiType:Void\n" +
@@ -75,7 +76,8 @@ class TypesTest : TestCase() {
         "        UMethod (name = method) [public fun method() : java.lang.String {...}] : PsiType:String\n" +
         "            UBlockExpression [{...}]\n" +
         "                UReturnExpression [return \"Hello World\"]\n" +
-        "                    ULiteralExpression (value = \"Hello World\") [\"Hello World\"] : PsiType:String\n" +
+        "                    UPolyadicExpression (operator = +) [\"Hello World\"] : PsiType:String\n" +
+        "                        ULiteralExpression (value = \"Hello World\") [\"Hello World\"] : PsiType:String\n" +
         "        UMethod (name = otherMethod) [public final fun otherMethod(@org.jetbrains.annotations.NotNull ok: boolean, @org.jetbrains.annotations.NotNull times: int) : void {...}] : PsiType:void\n" +
         "            UParameter (name = ok) [@org.jetbrains.annotations.NotNull var ok: boolean] : PsiType:boolean\n" +
         "                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n" +
@@ -90,7 +92,8 @@ class TypesTest : TestCase() {
         "        UMethod (name = Kotlin) [public fun Kotlin(@org.jetbrains.annotations.NotNull property1: java.lang.String, @org.jetbrains.annotations.NotNull arg2: int) {...}]\n" +
         "            UParameter (name = property1) [@org.jetbrains.annotations.NotNull var property1: java.lang.String = \"Default Value\"] : PsiType:String\n" +
         "                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n" +
-        "                ULiteralExpression (value = \"Default Value\") [\"Default Value\"] : PsiType:String\n" +
+        "                UPolyadicExpression (operator = +) [\"Default Value\"] : PsiType:String\n" +
+        "                    ULiteralExpression (value = \"Default Value\") [\"Default Value\"] : PsiType:String\n" +
         "            UParameter (name = arg2) [@org.jetbrains.annotations.NotNull var arg2: int] : PsiType:int\n" +
         "                UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]\n" +
         "            UBlockExpression [{...}]\n" +
@@ -128,7 +131,8 @@ class TypesTest : TestCase() {
                 UClass (name = Kotlin)
                     UField (name = property1)
                         UAnnotation (fqName = org.jetbrains.annotations.NotNull)
-                        ULiteralExpression (value = "Default Value")
+                        UPolyadicExpression (operator = +)
+                            ULiteralExpression (value = "Default Value")
                     UField (name = property2)
                         UAnnotation (fqName = org.jetbrains.annotations.Nullable)
                         ULiteralExpression (value = null)
@@ -142,7 +146,8 @@ class TypesTest : TestCase() {
                     UMethod (name = method)
                         UBlockExpression
                             UReturnExpression
-                                ULiteralExpression (value = "Hello World")
+                                UPolyadicExpression (operator = +)
+                                    ULiteralExpression (value = "Hello World")
                     UMethod (name = otherMethod)
                         UParameter (name = ok)
                             UAnnotation (fqName = org.jetbrains.annotations.NotNull)
@@ -157,7 +162,8 @@ class TypesTest : TestCase() {
                     UMethod (name = Kotlin)
                         UParameter (name = property1)
                             UAnnotation (fqName = org.jetbrains.annotations.NotNull)
-                            ULiteralExpression (value = "Default Value")
+                            UPolyadicExpression (operator = +)
+                                ULiteralExpression (value = "Default Value")
                         UParameter (name = arg2)
                             UAnnotation (fqName = org.jetbrains.annotations.NotNull)
                         UBlockExpression

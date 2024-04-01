@@ -18,7 +18,6 @@ package com.android.tools.lint.checks.infrastructure;
 
 import static com.android.SdkConstants.VALUE_TRUE;
 import static com.android.tools.lint.checks.infrastructure.TestFile.createTempDirectory;
-import static com.android.tools.lint.checks.infrastructure.TestMode.UI_INJECTION_HOST;
 import static com.android.tools.lint.client.api.LintClient.CLIENT_UNIT_TESTS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -1040,24 +1039,9 @@ public class TestLintTask {
     }
 
     /**
-     * Whether lint should check that the lint checks correctly handles the UInjectionHost string
-     * literals. This will run lint checks that contain Kotlin files twice and diff the results.
-     *
-     * <p>This is just an alias for {@code testModes().remove(TestMode.UI_INJECTION_HOSE)}.
-     */
-    public TestLintTask checkUInjectionHost(boolean check) {
-        if (check) {
-            testModes.add(UI_INJECTION_HOST);
-        } else {
-            testModes.remove(UI_INJECTION_HOST);
-        }
-        return this;
-    }
-
-    /**
      * Normally lint unit tests will abort if an exception is found. You can allow exceptions (which
      * will then be routed through lint's normal error trapping mechanism). This is primarily
-     * intended to test lint itself..
+     * intended to test lint itself.
      */
     public TestLintTask allowExceptions(boolean allowExceptions) {
         this.allowExceptions = allowExceptions;

@@ -31,9 +31,11 @@ import com.android.tools.lint.detector.api.Location
 import java.util.TreeSet
 import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
+import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 import org.jetbrains.kotlin.psi.KtValueArgument
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 import org.jetbrains.uast.UElement
+import org.jetbrains.uast.UPolyadicExpression
 
 // Various TOML-related utilities used by GradleDetector, but placed in their own
 // compilation unit since GradleDetector is getting massive.
@@ -482,7 +484,16 @@ private fun createReplaceWithLibraryReferenceFix(
 }
 
 private fun getGradleDependencyStringLocation(context: GradleContext, valueCookie: Any): Location {
-  val sourcePsi = (valueCookie as? UElement)?.sourcePsi
+  var sourcePsi = (valueCookie as? UElement)?.sourcePsi
+  // Even simple "test" string literal is mapped to a polyadic expression
+  // after KTIJ-27448 (ui injection host)
+  if (
+    sourcePsi is KtStringTemplateExpression &&
+      (valueCookie as? UPolyadicExpression)?.operands?.size == 1
+  ) {
+    // Unwrap the polyadic expression
+    sourcePsi = valueCookie.operands.single().sourcePsi
+  }
   if (sourcePsi is KtLiteralStringTemplateEntry) {
     // In UAST we end up with the element for the contents within the string, not the whole String
     // element

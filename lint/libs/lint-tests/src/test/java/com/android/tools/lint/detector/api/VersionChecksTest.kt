@@ -26,6 +26,7 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.checks.infrastructure.TestMode.Companion.PARTIAL
 import com.android.tools.lint.detector.api.VersionChecks.Companion.getMinSdkVersionFromMethodName
+import com.android.tools.lint.useFirUast
 
 /** Unit tests for [VersionChecks]. This is using the ApiDetector to drive the analysis. */
 class VersionChecksTest : AbstractCheckTest() {
@@ -4774,6 +4775,10 @@ class VersionChecksTest : AbstractCheckTest() {
   }
 
   fun testExtensionSdkCheck() {
+    // TODO(b/331978236): Java UAST drops Kotlin annotations on methods
+    if (!useFirUast()) {
+      return
+    }
     lint()
       .files(
         java(

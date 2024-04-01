@@ -580,7 +580,6 @@ class LintDetectorDetectorTest {
           }
           .toTypedArray(),
       )
-      .checkUInjectionHost(false)
       .testModes(TestMode.DEFAULT)
       .allowMissingSdk()
       .allowCompilationErrors()

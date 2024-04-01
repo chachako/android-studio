@@ -161,13 +161,15 @@ class ResolveTest : TestCase() {
                                     UCallExpression (kind = UastCallKind(name='constructor_call'), argCount = 1)) [<init>("hello1")] => PsiMethod:Bar
                                         UIdentifier (Identifier (Bar)) [UIdentifier (Identifier (Bar))]
                                         USimpleNameReferenceExpression (identifier = <init>, resolvesTo = PsiClass: Bar) [<init>] => PsiClass:Bar
-                                        ULiteralExpression (value = "hello1") ["hello1"]
+                                        UPolyadicExpression (operator = +) ["hello1"]
+                                            ULiteralExpression (value = "hello1") ["hello1"]
                             UDeclarationsExpression [var bar2: lib.Bar2 = <init>("hello2")]
                                 ULocalVariable (name = bar2) [var bar2: lib.Bar2 = <init>("hello2")]
                                     UCallExpression (kind = UastCallKind(name='constructor_call'), argCount = 1)) [<init>("hello2")] => PsiMethod:Bar2
                                         UIdentifier (Identifier (Bar2)) [UIdentifier (Identifier (Bar2))]
                                         USimpleNameReferenceExpression (identifier = <init>, resolvesTo = PsiClass: Bar2) [<init>] => PsiClass:Bar2
-                                        ULiteralExpression (value = "hello2") ["hello2"]
+                                        UPolyadicExpression (operator = +) ["hello2"]
+                                            ULiteralExpression (value = "hello2") ["hello2"]
             """
         .trimIndent()
         .trim(),

@@ -1146,7 +1146,8 @@ class UastTest : TestCase() {
                                             USwitchClauseExpressionWithBody [ -> {...]
                                                 UExpressionList (when_entry) [{...]
                                                     UYieldExpression [yield ""]
-                                                        ULiteralExpression (value = "") [""] : PsiType:String
+                                                        UPolyadicExpression (operator = +) [""] : PsiType:String
+                                                            ULiteralExpression (value = "") [""] : PsiType:String
                         UMethod (name = getUint) [public static final fun getUint() : int = UastEmptyExpression] : PsiType:int
                         UMethod (name = getUlong) [public static final fun getUlong() : long = UastEmptyExpression] : PsiType:long
                         UMethod (name = getUbyte) [public static final fun getUbyte() : byte = UastEmptyExpression] : PsiType:byte
@@ -1162,7 +1163,8 @@ class UastTest : TestCase() {
                                 UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("Hello, world!")] : PsiType:Unit
                                     UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
                                     USimpleNameReferenceExpression (identifier = println, resolvesTo = null) [println] : PsiType:Unit
-                                    ULiteralExpression (value = "Hello, world!") ["Hello, world!"] : PsiType:String
+                                    UPolyadicExpression (operator = +) ["Hello, world!"] : PsiType:String
+                                        ULiteralExpression (value = "Hello, world!") ["Hello, world!"] : PsiType:String
                         UClass (name = Companion) [public static final class Companion {...}]
                             UMethod (name = sayHello) [@kotlin.jvm.JvmStatic...}] : PsiType:void
                                 UAnnotation (fqName = kotlin.jvm.JvmStatic) [@kotlin.jvm.JvmStatic]
@@ -1170,7 +1172,8 @@ class UastTest : TestCase() {
                                     UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("Hello, world!")] : PsiType:Unit
                                         UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
                                         USimpleNameReferenceExpression (identifier = println, resolvesTo = null) [println] : PsiType:Unit
-                                        ULiteralExpression (value = "Hello, world!") ["Hello, world!"] : PsiType:String
+                                        UPolyadicExpression (operator = +) ["Hello, world!"] : PsiType:String
+                                            ULiteralExpression (value = "Hello, world!") ["Hello, world!"] : PsiType:String
                             UMethod (name = Companion) [private fun Companion() = UastEmptyExpression]
                     UClass (name = FooAnnotation) [public abstract annotation FooAnnotation {...}]
                         UField (name = Companion) [@null public static final var Companion: test.pkg.FooAnnotation.Companion] : PsiType:Companion
@@ -1813,7 +1816,8 @@ class UastTest : TestCase() {
                                     UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("hello")] : PsiType:Unit
                                       UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
                                       USimpleNameReferenceExpression (identifier = println, resolvesTo = null) [println] : PsiType:Unit
-                                      ULiteralExpression (value = "hello") ["hello"] : PsiType:String
+                                      UPolyadicExpression (operator = +) ["hello"] : PsiType:String
+                                        ULiteralExpression (value = "hello") ["hello"] : PsiType:String
                     UMethod (name = test2) [public static final fun test2() : void {...}] : PsiType:void
                       UBlockExpression [{...}] : PsiType:void
                         UDeclarationsExpression [var thread2: java.lang.Thread = <init>(Runnable({ ...}))]
@@ -1830,7 +1834,8 @@ class UastTest : TestCase() {
                                       UCallExpression (kind = UastCallKind(name='method_call'), argCount = 1)) [println("hello")] : PsiType:Unit
                                         UIdentifier (Identifier (println)) [UIdentifier (Identifier (println))]
                                         USimpleNameReferenceExpression (identifier = println, resolvesTo = null) [println] : PsiType:Unit
-                                        ULiteralExpression (value = "hello") ["hello"] : PsiType:String
+                                        UPolyadicExpression (operator = +) ["hello"] : PsiType:String
+                                          ULiteralExpression (value = "hello") ["hello"] : PsiType:String
                 """
           .trimIndent(),
         file.asLogTypes(indent = "  ").trim(),
@@ -2151,7 +2156,8 @@ class UastTest : TestCase() {
                       UAnnotation (fqName = org.jetbrains.annotations.NotNull) [@org.jetbrains.annotations.NotNull]
                       UAnnotation (fqName = MyFieldAnnotation) [@MyFieldAnnotation(value = "SomeStringValue")]
                         UNamedExpression (name = value) [value = "SomeStringValue"]
-                          ULiteralExpression (value = "SomeStringValue") ["SomeStringValue"] : PsiType:String
+                          UPolyadicExpression (operator = +) ["SomeStringValue"] : PsiType:String
+                            ULiteralExpression (value = "SomeStringValue") ["SomeStringValue"] : PsiType:String
                       ULiteralExpression (value = 0) [0] : PsiType:int
                     UMethod (name = getMyProperty) [public static final fun getMyProperty() : int = UastEmptyExpression] : PsiType:int
                     UMethod (name = setMyProperty) [public static final fun setMyProperty(<set-?>: int) : void = UastEmptyExpression] : PsiType:void

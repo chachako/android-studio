@@ -127,6 +127,13 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
           when {
             // For empty strings the Kotlin string template will return an empty operand list
             operands.values.isEmpty() && node.sourcePsi is KtStringTemplateExpression -> ""
+            // Even simple "test" string literal is mapped to a polyadic expression
+            // after KTIJ-27448 (ui injection host)
+            // whose operator is a bogus `+` while operand is a single string literal
+            // ArgList.`plus` attempts to reduce operands as numbers, which is not the case
+            operands.values.size == 1 && node.sourcePsi is KtStringTemplateExpression -> {
+              operands.values.single()
+            }
             else ->
               when (node.operator) {
                 UastBinaryOperator.LOGICAL_OR -> operands.logicalOr()

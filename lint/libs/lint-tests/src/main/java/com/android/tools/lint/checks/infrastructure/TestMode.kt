@@ -15,9 +15,6 @@
  */
 package com.android.tools.lint.checks.infrastructure
 
-import com.android.SdkConstants.DOT_KT
-import com.android.SdkConstants.DOT_KTS
-import com.android.tools.lint.checks.infrastructure.TestMode.Companion.UI_INJECTION_HOST
 import com.android.tools.lint.client.api.LintDriver
 import com.android.tools.lint.client.api.LintListener
 import com.android.tools.lint.detector.api.Context
@@ -51,10 +48,7 @@ open class TestMode(
    */
   open val folderName: String = "default"
 
-  /**
-   * Whether the test type is applicable for the given [context]. For example, the
-   * [UI_INJECTION_HOST] type will skip projects without Kotlin source files.
-   */
+  /** Whether the test type is applicable for the given [context]. */
   open fun applies(context: TestModeContext) = true
 
   /**
@@ -65,8 +59,7 @@ open class TestMode(
 
   /**
    * Optional hook to run after the test type has finished, which can perform any appropriate test
-   * cleanup. For example, the [UI_INJECTION_HOST] test type will set a global flag to change the
-   * behavior of UAST, so this method lets the test type clean this up.
+   * cleanup.
    */
   open fun after(context: TestModeContext) {}
 
@@ -190,44 +183,6 @@ open class TestMode(
 
     /** The default type of lint execution. */
     @JvmField val DEFAULT = TestMode(description = "Default", "TestMode.DEFAULT")
-
-    /** Run lint with UI injection host mode turned on. */
-    @JvmField
-    val UI_INJECTION_HOST =
-      object : TestMode("UInjectionHost Enabled", "TestMode.UI_INJECTION_HOST") {
-        override fun applies(context: TestModeContext): Boolean {
-          return context.projects.any { project ->
-            project.files.any {
-              it.targetRelativePath.endsWith(DOT_KT) || it.targetRelativePath.endsWith(DOT_KTS)
-            }
-          }
-        }
-
-        override fun before(context: TestModeContext): Any {
-          return TestLintTask.setForceUiInjection(true)
-        }
-
-        override fun after(context: TestModeContext) {
-          TestLintTask.setForceUiInjection(false)
-        }
-
-        override val diffExplanation =
-          """
-                The unit test results differ based on whether
-                `kotlin.uast.force.uinjectionhost` is on or off. Make sure your
-                detector correctly handles strings in Kotlin; soon all String
-                `ULiteralExpression` elements will be wrapped in a `UPolyadicExpression`.
-                Lint now runs the tests twice, in both modes, and checks that
-                the results are identical.
-
-                Alternatively, if this difference is expected, you can set the
-                `testModes(...)` to include only one of these two, or turn off
-                the equality check altogether via `.expectIdenticalTestModeOutput(false)`.
-                You can then check each output by passing in a `testMode` parameter
-                to `expect`(...).
-                """
-            .trimIndent()
-      }
 
     @JvmField
     val BYTECODE_ONLY =
@@ -382,7 +337,6 @@ open class TestMode(
     fun values(): List<TestMode> =
       listOf(
         DEFAULT,
-        UI_INJECTION_HOST,
         RESOURCE_REPOSITORIES,
         PARTIAL,
         MODULE_RESOURCES,
