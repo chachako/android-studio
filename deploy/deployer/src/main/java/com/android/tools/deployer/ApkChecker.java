@@ -45,15 +45,14 @@ public class ApkChecker {
             String fingerprint = apk.checksum; // This is the zip digest
 
             Path path = Paths.get(apk.path);
-            String size = "INVALID_SIZE";
+            long size = -1;
             String creationTime = "NOT_AVAILABLE";
             String lastModifiedTime = "NOT_AVAILABLE";
             String lastAccessTime = "NOT_AVAILABLE";
 
             try {
                 BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
-                long length = attr.size();
-                size = String.valueOf(length);
+                size = attr.size();
                 creationTime = attr.creationTime().toString();
                 lastModifiedTime = attr.lastModifiedTime().toString();
                 lastAccessTime = attr.lastAccessTime().toString();
@@ -62,7 +61,7 @@ public class ApkChecker {
             }
 
             logger.info(
-                    "Deploy APK Check session='%s', path='%s', size='%s', fingerprint='%s', "
+                    "Deploy APK Check session='%s', path='%s', size='%,d', fingerprint='%s', "
                             + "crTime='%s', modTime='%s', acTime='%s'",
                     deploySessionId,
                     apk.path,
