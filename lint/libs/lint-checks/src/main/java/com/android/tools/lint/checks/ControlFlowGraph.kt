@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtLambdaExpression
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtSafeQualifiedExpression
+import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
@@ -818,14 +819,11 @@ open class ControlFlowGraph<T : Any> private constructor() {
           }
           is UParenthesizedExpression -> return isSafe(element.expression)
           is UastEmptyExpression -> return true
-          is UBinaryExpression -> {
-            if (!isSafe(element.leftOperand) || !isSafe(element.rightOperand)) {
+          is UPolyadicExpression -> {
+            if (element is UBinaryExpression && element.resolveOperator() != null) {
               return false
             }
-            if (element.resolveOperator() != null) {
-              return false
-            }
-            return true
+            return element.operands.all(::isSafe)
           }
           is UIfExpression -> {
             return isSafe(element.condition) &&
@@ -2049,6 +2047,13 @@ open class ControlFlowGraph<T : Any> private constructor() {
           }
 
           override fun afterVisitLiteralExpression(node: ULiteralExpression) {}
+
+          override fun afterVisitPolyadicExpression(node: UPolyadicExpression) {
+            if (node.operands.size == 1 && node.sourcePsi is KtStringTemplateExpression) {
+              return // Ignore the UPolyadicExpression wrapper for KT string literals (KTIJ-27448).
+            }
+            super.afterVisitPolyadicExpression(node)
+          }
         }
       )
 
