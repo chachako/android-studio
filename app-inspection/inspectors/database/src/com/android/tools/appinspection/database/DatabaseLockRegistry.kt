@@ -20,12 +20,13 @@ import android.os.CancellationSignal
 import androidx.annotation.GuardedBy
 import androidx.annotation.VisibleForTesting
 import com.android.tools.appinspection.database.SqliteInspector.DatabaseConnection
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 /** Handles database locking and associated bookkeeping. Thread-safe. */
-internal class DatabaseLockRegistry {
+internal class DatabaseLockRegistry(private val databaseRegistry: DatabaseRegistry) {
   private val guard = Any() // used for synchronization within the class
 
   @GuardedBy("guard") private val lockIdToLockMap = mutableMapOf<Int, Lock>()
@@ -74,6 +75,7 @@ internal class DatabaseLockRegistry {
       if (--lock.count == 0) {
         try {
           lock.unlockDatabase()
+          lock.latch.countDown()
         } catch (e: Exception) {
           lock.count++ // correct the count
           throw e
@@ -82,6 +84,15 @@ internal class DatabaseLockRegistry {
         databaseIdToLockMap.remove(lock.databaseId)
       }
     }
+  }
+
+  fun waitForUnlockedDatabase(path: String) {
+    val latch =
+      synchronized(guard) {
+        val id = databaseRegistry.getIdForPath(path) ?: return
+        databaseIdToLockMap[id]?.latch ?: return
+      }
+    latch.await()
   }
 
   /**
@@ -118,9 +129,9 @@ internal class DatabaseLockRegistry {
       future =
         executor.submit {
           // starts a transaction
-          database
-            .rawQuery("BEGIN IMMEDIATE;", arrayOfNulls(0), cancellationSignal)
-            .count // forces the cursor to execute the query
+          database.rawQuery("BEGIN IMMEDIATE;", arrayOfNulls(0), cancellationSignal).use {
+            it.count // forces the cursor to execute the query
+          }
         }
       future.get(TIMEOUT_MS, MILLISECONDS)
     } catch (e: Exception) {
@@ -147,9 +158,9 @@ internal class DatabaseLockRegistry {
       // Submitting a Runnable, so we can set a timeout.
       future =
         SqliteInspectionExecutors.submit(executor) { // ends the transaction
-          database
-            .rawQuery("ROLLBACK;", arrayOfNulls(0), cancellationSignal)
-            .count // forces the cursor to execute the query
+          database.rawQuery("ROLLBACK;", arrayOfNulls(0), cancellationSignal).use {
+            it.count // forces the cursor to execute the query
+          }
           database.releaseReference()
         }
       future.get(TIMEOUT_MS, MILLISECONDS)
@@ -160,7 +171,12 @@ internal class DatabaseLockRegistry {
     }
   }
 
-  private class Lock(val lockId: Int, val databaseId: Int, val database: SQLiteDatabase) {
+  private class Lock(
+    val lockId: Int,
+    val databaseId: Int,
+    val database: SQLiteDatabase,
+    val latch: CountDownLatch = CountDownLatch(1),
+  ) {
     var count: Int = 0 // number of simultaneous locks secured on the database
   }
 

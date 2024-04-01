@@ -39,7 +39,7 @@ import com.android.tools.appinspection.database.testing.asExitHook
 import com.android.tools.appinspection.database.testing.createInstance
 import com.android.tools.appinspection.database.testing.displayName
 import com.android.tools.appinspection.database.testing.triggerOnAllReferencesReleased
-import com.android.tools.appinspection.database.testing.triggerOnOpened
+import com.android.tools.appinspection.database.testing.triggerOnOpenedExit
 import com.android.tools.appinspection.database.testing.triggerReleaseReference
 import com.google.common.truth.Truth.assertThat
 import java.io.File
@@ -111,9 +111,10 @@ class TrackDatabasesTest {
       testEnvironment.consumeRegisteredHooks().filter {
         possibleSignatures.contains(it.originMethod)
       }
-    assertThat(hookEntries).hasSize(wantedSignatures.size)
-    assertThat(hookEntries.map { it.originMethod }.containsAll(wantedSignatures)).isTrue()
-    hookEntries.forEachIndexed { ix, entry ->
+    val exitHooks = hookEntries.filterIsInstance<Hook.ExitHook>()
+    assertThat(exitHooks).hasSize(wantedSignatures.size)
+    assertThat(exitHooks.map { it.originMethod }.containsAll(wantedSignatures)).isTrue()
+    exitHooks.forEachIndexed { ix, entry ->
       // expect one exit hook tracking database open events
       assertThat(entry).isInstanceOf(Hook.ExitHook::class.java)
       assertThat(entry.originClass.name).isEqualTo(SQLiteDatabase::class.java.name)
@@ -127,6 +128,8 @@ class TrackDatabasesTest {
         assertThat(event.databaseOpened.path).isEqualTo(database.displayName)
       }
     }
+    val entryHooks = hookEntries.filterIsInstance<Hook.EntryHook>()
+    assertThat(entryHooks).hasSize(wantedSignatures.size)
 
     assertThat(testEnvironment.consumeRegisteredHooks()).isEmpty()
   }
@@ -137,7 +140,7 @@ class TrackDatabasesTest {
     testEnvironment.sendCommand(createTrackDatabasesCommand())
     val onOpenHook =
       testEnvironment.consumeRegisteredHooks().first {
-        it.originMethod == OPEN_DATABASE_COMMAND_SIGNATURE_API11
+        it is Hook.ExitHook && it.originMethod == OPEN_DATABASE_COMMAND_SIGNATURE_API11
       }
     @Suppress("UNCHECKED_CAST")
     val onOpen = (onOpenHook.asExitHook as ExitHook<SQLiteDatabase>)::onExit
@@ -347,7 +350,7 @@ class TrackDatabasesTest {
 
     // We have to simulate a call to the hooks
     val forcedInstance = testEnvironment.getDatabaseRegistry().forcedOpen.first()
-    hooks.triggerOnOpened(forcedInstance)
+    hooks.triggerOnOpenedExit(forcedInstance)
 
     // We can't assert that `isForced = true` because the hooks are called too late
     receiveOpenedEventId(db.displayName)
@@ -363,8 +366,8 @@ class TrackDatabasesTest {
 
     // We have to simulate a call to the hooks
     val forcedInstance = testEnvironment.getDatabaseRegistry().forcedOpen.first()
-    hooks.triggerOnOpened(forcedInstance)
-    hooks.triggerOnOpened(db)
+    hooks.triggerOnOpenedExit(forcedInstance)
+    hooks.triggerOnOpenedExit(db)
 
     // We can't assert that the first `isForced = true` because the hooks are called too late
     receiveOpenedEventId(db.displayName)
@@ -381,8 +384,8 @@ class TrackDatabasesTest {
 
     // We have to simulate a call to the hooks
     val forcedInstance = testEnvironment.getDatabaseRegistry().forcedOpen.first()
-    hooks.triggerOnOpened(forcedInstance)
-    hooks.triggerOnOpened(db)
+    hooks.triggerOnOpenedExit(forcedInstance)
+    hooks.triggerOnOpenedExit(db)
     db.close()
     hooks.triggerOnAllReferencesReleased(db)
 
@@ -648,7 +651,7 @@ class TrackDatabasesTest {
 
   private fun openDatabase(path: String?, hooks: List<Hook>): SQLiteDatabase =
     Database(path).createInstance(closeablesRule, temporaryFolder).also {
-      hooks.triggerOnOpened(it)
+      hooks.triggerOnOpenedExit(it)
     }
 
   private fun closeDatabase(database: SQLiteDatabase, hooks: List<Hook>) {

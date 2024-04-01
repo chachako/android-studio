@@ -29,7 +29,8 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import androidx.inspection.ArtTooling
+import androidx.inspection.ArtTooling.EntryHook
+import androidx.inspection.ArtTooling.ExitHook
 import androidx.inspection.Connection
 import androidx.inspection.Inspector
 import androidx.inspection.InspectorEnvironment
@@ -80,7 +81,7 @@ import java.util.WeakHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Future
 
-private const val OPEN_DATABASE_COMMAND_SIGNATURE_API_11 =
+private const val OPEN_DATABASE_COMMAND_SIG_API_11 =
   "openDatabase" +
     "(" +
     "Ljava/lang/String;" +
@@ -90,7 +91,7 @@ private const val OPEN_DATABASE_COMMAND_SIGNATURE_API_11 =
     ")" +
     "Landroid/database/sqlite/SQLiteDatabase;"
 
-private const val OPEN_DATABASE_COMMAND_SIGNATURE_API_27 =
+private const val OPEN_DATABASE_COMMAND_SIG_API_27 =
   "openDatabase" +
     "(" +
     "Ljava/io/File;" +
@@ -98,21 +99,12 @@ private const val OPEN_DATABASE_COMMAND_SIGNATURE_API_27 =
     ")" +
     "Landroid/database/sqlite/SQLiteDatabase;"
 
-private const val CREATE_IN_MEMORY_DATABASE_COMMAND_SIGNATURE_API_27 =
+private const val CREATE_IN_MEMORY_DATABASE_COMMAND_SIG_API_27 =
   "createInMemory" +
     "(" +
     "Landroid/database/sqlite/SQLiteDatabase\$OpenParams;" +
     ")" +
     "Landroid/database/sqlite/SQLiteDatabase;"
-
-private val OPEN_DATABASE_COMMANDS_LEGACY = listOf(OPEN_DATABASE_COMMAND_SIGNATURE_API_11)
-
-private val OPEN_DATABASE_COMMANDS =
-  listOf(
-    OPEN_DATABASE_COMMAND_SIGNATURE_API_27,
-    OPEN_DATABASE_COMMAND_SIGNATURE_API_11,
-    CREATE_IN_MEMORY_DATABASE_COMMAND_SIGNATURE_API_27,
-  )
 
 private const val ALL_REFERENCES_RELEASE_COMMAND_SIGNATURE = "onAllReferencesReleased()V"
 
@@ -173,7 +165,7 @@ internal class SqliteInspector(
   @VisibleForTesting
   internal val databaseRegistry =
     DatabaseRegistry(::dispatchDatabaseOpenedEvent, ::dispatchDatabaseClosedEvent)
-  private val databaseLockRegistry = DatabaseLockRegistry()
+  private val databaseLockRegistry = DatabaseLockRegistry(databaseRegistry)
   private val ioExecutor = environment.executors().io()
 
   /** Utility instance that handles communication with Room's InvalidationTracker instances. */
@@ -364,14 +356,13 @@ internal class SqliteInspector(
   }
 
   private fun registerDatabaseOpenedHooks() {
-    val methods =
-      when (Build.VERSION.SDK_INT < 27) {
-        true -> OPEN_DATABASE_COMMANDS_LEGACY
-        false -> OPEN_DATABASE_COMMANDS
-      }
+    val entryHook = EntryHook { _, args ->
+      // args[0] is either a `String` or a `File`. Either way, `toString()` works
+      databaseLockRegistry.waitForUnlockedDatabase(args[0].toString())
+    }
 
-    val hook: ArtTooling.ExitHook<SQLiteDatabase> =
-      ArtTooling.ExitHook { database ->
+    val exitHook =
+      ExitHook<SQLiteDatabase> { database ->
         try {
           onDatabaseOpened(database)
         } catch (exception: Throwable) {
@@ -389,8 +380,15 @@ internal class SqliteInspector(
         }
         database
       }
-    for (method in methods) {
-      environment.artTooling().registerExitHook(SQLiteDatabase::class.java, method, hook)
+    val artTooling = environment.artTooling()
+    val clazz = SQLiteDatabase::class.java
+
+    artTooling.registerEntryHook(clazz, OPEN_DATABASE_COMMAND_SIG_API_11, entryHook)
+    artTooling.registerExitHook(clazz, OPEN_DATABASE_COMMAND_SIG_API_11, exitHook)
+    if (Build.VERSION.SDK_INT >= 27) {
+      artTooling.registerEntryHook(clazz, OPEN_DATABASE_COMMAND_SIG_API_27, entryHook)
+      artTooling.registerExitHook(clazz, OPEN_DATABASE_COMMAND_SIG_API_27, exitHook)
+      artTooling.registerExitHook(clazz, CREATE_IN_MEMORY_DATABASE_COMMAND_SIG_API_27, exitHook)
     }
   }
 

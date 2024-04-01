@@ -50,10 +50,22 @@ private const val ALL_REFERENCES_RELEASED_COMMAND_SIGNATURE = "onAllReferencesRe
 private const val RELEASE_REFERENCE_COMMAND_SIGNATURE = "releaseReference()V"
 
 @Suppress("UNCHECKED_CAST")
-internal fun List<Hook>.triggerOnOpened(db: SQLiteDatabase) {
-  val onOpen = filter { it.originMethod == OPEN_DATABASE_COMMAND_SIGNATURE_API11 }
+internal fun List<Hook>.triggerOnOpenedExit(db: SQLiteDatabase) {
+  val onOpen =
+    filterIsInstance<Hook.ExitHook>().filter {
+      it.originMethod == OPEN_DATABASE_COMMAND_SIGNATURE_API11
+    }
   Truth.assertThat(onOpen).hasSize(1)
   (onOpen.first().asExitHook as ArtTooling.ExitHook<SQLiteDatabase>).onExit(db)
+}
+
+internal fun List<Hook>.triggerOnOpenedEntry(thisObj: Any?, vararg args: Any) {
+  val onOpen =
+    filterIsInstance<Hook.EntryHook>().filter {
+      it.originMethod == OPEN_DATABASE_COMMAND_SIGNATURE_API11
+    }
+  Truth.assertThat(onOpen).hasSize(1)
+  onOpen.first().asEntryHook.onEntry(thisObj, args.asList())
 }
 
 internal fun List<Hook>.triggerReleaseReference(db: SQLiteDatabase) {

@@ -620,7 +620,7 @@ class QueryTest {
     val hooks = testEnvironment.consumeRegisteredHooks()
     testEnvironment.getDatabaseRegistry().forcedOpen.forEach {
       // We need to trigger the hooks ourselves
-      hooks.triggerOnOpened(it)
+      hooks.triggerOnOpenedExit(it)
     }
     val databaseId = testEnvironment.awaitDatabaseOpenedEvent(database.displayName).databaseId
 

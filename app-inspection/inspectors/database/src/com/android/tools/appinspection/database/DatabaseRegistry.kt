@@ -426,5 +426,11 @@ internal class DatabaseRegistry(
     }
   }
 
+  fun getIdForPath(path: String): Int? {
+    synchronized(lock) {
+      return pathToId[path]
+    }
+  }
+
   private class DbScore(val db: SQLiteDatabase, val score: Int)
 }

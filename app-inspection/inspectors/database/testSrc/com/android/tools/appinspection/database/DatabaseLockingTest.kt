@@ -28,26 +28,18 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.ACQ
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.ERROR_OCCURRED
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.RELEASE_DATABASE_LOCK
 import com.android.testutils.CloseablesRule
-import com.android.tools.appinspection.database.testing.Column
-import com.android.tools.appinspection.database.testing.Database
-import com.android.tools.appinspection.database.testing.MessageFactory
-import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
-import com.android.tools.appinspection.database.testing.Table
-import com.android.tools.appinspection.database.testing.createInstance
-import com.android.tools.appinspection.database.testing.inspectDatabase
-import com.android.tools.appinspection.database.testing.issueQuery
+import com.android.tools.appinspection.database.testing.*
+import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesCommand
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors.newSingleThreadExecutor
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern.CASE_INSENSITIVE
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -265,6 +257,31 @@ class DatabaseLockingTest {
         }
       }
     }
+
+  @Test
+  fun test_lockingPreventsOpen(): Unit = runBlocking {
+    val db = Database("db", table).createInstance(closeablesRule, temporaryFolder)
+    testEnvironment.sendCommand(createTrackDatabasesCommand())
+    val hooks = testEnvironment.consumeRegisteredHooks()
+    val id = testEnvironment.inspectDatabase(db)
+    val latch = CountDownLatch(1)
+
+    // Lock database
+    val lockId = testEnvironment.sendCommand(acquireLockCommand(id)).acquireDatabaseLock.lockId
+    launch(Dispatchers.IO) {
+      // Simulate opening a database while it's locked
+      hooks.triggerOnOpenedEntry(null, db.path)
+      latch.countDown()
+    }
+
+    // Should not be able top open the database while it's locked
+    val completed = latch.await(500, MILLISECONDS)
+    assertThat(completed).named("'Open' should not succeed because db is locked").isFalse()
+
+    // Unlock database and assert that `open` has completed
+    testEnvironment.sendCommand(releaseLockCommand(lockId))
+    latch.await(2, SECONDS)
+  }
 
   @Test
   fun test_appResumesAfterLockReleased() = runBlocking {
