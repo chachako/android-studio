@@ -801,6 +801,7 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/intellij.platform.extensions.kotlin_module
   META-INF/intellij.platform.projectModel.kotlin_module
   META-INF/intellij.platform.util.base.kotlin_module
+  META-INF/intellij.platform.util.coroutines.kotlin_module
   META-INF/intellij.platform.util.diff.kotlin_module
   META-INF/intellij.platform.util.kotlin_module
   META-INF/intellij.platform.util.progress.kotlin_module
@@ -811,6 +812,7 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/kotlinx-coroutines-core.kotlin_module
   META-INF/kotlinx-coroutines-debug.kotlin_module
   META-INF/kotlinx-serialization-core.kotlin_module
+  META-INF/kotlinx-serialization-json.kotlin_module
   META-INF/kotlinx_coroutines_core.version
   META-INF/kotlinx_coroutines_debug.version
   META-INF/licenses/
@@ -864,16 +866,14 @@ com/android/tools/external/com-intellij/intellij-core
   META-INF/maven/org.jctools/jctools-core/
   META-INF/maven/org.jctools/jctools-core/pom.properties
   META-INF/maven/org.jctools/jctools-core/pom.xml
-  META-INF/maven/org.jetbrains.intellij.deps.fastutil/
-  META-INF/maven/org.jetbrains.intellij.deps.fastutil/intellij-deps-fastutil/
-  META-INF/maven/org.jetbrains.intellij.deps.fastutil/intellij-deps-fastutil/pom.properties
-  META-INF/maven/org.jetbrains.intellij.deps.fastutil/intellij-deps-fastutil/pom.xml
   META-INF/maven/org.slf4j/
   META-INF/maven/org.slf4j/log4j-over-slf4j/
   META-INF/maven/org.slf4j/log4j-over-slf4j/pom.properties
   META-INF/maven/org.slf4j/log4j-over-slf4j/pom.xml
   META-INF/native-image/
   META-INF/native-image/io.opentelemetry/
+  META-INF/native-image/io.opentelemetry/opentelemetry-api/
+  META-INF/native-image/io.opentelemetry/opentelemetry-api/resource-config.json
   META-INF/native-image/io.opentelemetry/opentelemetry-sdk-trace/
   META-INF/native-image/io.opentelemetry/opentelemetry-sdk-trace/reflect-config.json
   META-INF/proguard/
@@ -1007,7 +1007,11 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/java/
   com/intellij/java/frontback/
   com/intellij/java/frontback/psi/
+  com/intellij/java/frontback/psi/fake/
+  com/intellij/java/frontback/psi/fake/placeholder.txt
   com/intellij/java/frontback/psi/impl/
+  com/intellij/java/frontback/psi/impl/fake/
+  com/intellij/java/frontback/psi/impl/fake/placeholder.txt
   com/intellij/java/workspace/
   com/intellij/java/workspace/entities/
   com/intellij/java/workspace/entities/README.md
@@ -1097,6 +1101,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/openapi/vfs/local/
   com/intellij/openapi/vfs/newvfs/
   com/intellij/openapi/vfs/newvfs/events/
+  com/intellij/openapi/vfs/newvfs/persistent/
   com/intellij/openapi/vfs/pointers/
   com/intellij/openapi/wm/
   com/intellij/openapi/wm/ex/
@@ -1107,11 +1112,10 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/platform/backend/navigation/
   com/intellij/platform/backend/presentation/
   com/intellij/platform/backend/workspace/
+  com/intellij/platform/backend/workspace/impl/
   com/intellij/platform/diagnostic/
   com/intellij/platform/diagnostic/telemetry/
   com/intellij/platform/diagnostic/telemetry/helpers/
-  com/intellij/platform/diagnostic/telemetry/otExporters/
-  com/intellij/platform/diagnostic/telemetry/otExporters/open-telemetry-metrics-plotter.html
   com/intellij/platform/jps/
   com/intellij/platform/jps/model/
   com/intellij/platform/jps/model/impl/
@@ -1120,6 +1124,10 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/platform/jps/model/serialization/
   com/intellij/platform/jps/model/serialization/resolver/
   com/intellij/platform/util/
+  com/intellij/platform/util/coroutines/
+  com/intellij/platform/util/coroutines/channel/
+  com/intellij/platform/util/coroutines/flow/
+  com/intellij/platform/util/coroutines/sync/
   com/intellij/platform/util/progress/
   com/intellij/platform/util/progress/impl/
   com/intellij/platform/workspace/
@@ -1141,6 +1149,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/platform/workspace/storage/impl/serialization/
   com/intellij/platform/workspace/storage/impl/serialization/registration/
   com/intellij/platform/workspace/storage/impl/serialization/serializer/
+  com/intellij/platform/workspace/storage/impl/trace/
   com/intellij/platform/workspace/storage/impl/url/
   com/intellij/platform/workspace/storage/instrumentation/
   com/intellij/platform/workspace/storage/metadata/
@@ -1238,7 +1247,6 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/ui/icons/
   com/intellij/usageView/
   com/intellij/util/
-  com/intellij/util/channel/
   com/intellij/util/cls/
   com/intellij/util/codeInsight/
   com/intellij/util/concurrency/
@@ -1268,6 +1276,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/util/io/blobstorage/
   com/intellij/util/io/dev/
   com/intellij/util/io/dev/appendonlylog/
+  com/intellij/util/io/dev/durablemaps/
   com/intellij/util/io/dev/enumerator/
   com/intellij/util/io/dev/intmultimaps/
   com/intellij/util/io/dev/mmapped/
@@ -1294,9 +1303,12 @@ com/android/tools/external/com-intellij/intellij-core
   com/intellij/util/xml/
   com/intellij/util/xml/dom/
   com/intellij/util/xmlb/
+  com/intellij/util/xmlb/.editorconfig
   com/intellij/util/xmlb/annotations/
   com/intellij/workspaceModel/
   com/intellij/workspaceModel/ide/
+  com/intellij/workspaceModel/ide/legacyBridge/
+  com/intellij/workspaceModel/ide/legacyBridge/sdk/
   com/intellij/xml/
   com/intellij/xml/util/
   com/sun/
@@ -1341,6 +1353,7 @@ com/android/tools/external/com-intellij/intellij-core
   com/sun/jna/openbsd-x86/
   com/sun/jna/openbsd-x86/libjnidispatch.so
   com/sun/jna/platform/
+  com/sun/jna/platform/bsd/
   com/sun/jna/platform/dnd/
   com/sun/jna/platform/dnd/package.html
   com/sun/jna/platform/linux/
@@ -1395,8 +1408,6 @@ com/android/tools/external/com-intellij/intellij-core
   com/sun/jna/win32-x86/
   com/sun/jna/win32-x86/jnidispatch.dll
   com/sun/jna/win32/
-  gnu/
-  gnu/trove/
   intellij.java.frontback.psi.impl.xml
   intellij.java.frontback.psi.xml
   io/
@@ -1421,6 +1432,7 @@ com/android/tools/external/com-intellij/intellij-core
   io/opentelemetry/context/version.properties
   io/opentelemetry/extension/
   io/opentelemetry/extension/incubator/
+  io/opentelemetry/extension/incubator/logs/
   io/opentelemetry/extension/incubator/metrics/
   io/opentelemetry/extension/incubator/propagation/
   io/opentelemetry/extension/incubator/trace/
@@ -1428,7 +1440,11 @@ com/android/tools/external/com-intellij/intellij-core
   io/opentelemetry/internal/
   io/opentelemetry/internal/shaded/
   io/opentelemetry/internal/shaded/jctools/
+  io/opentelemetry/internal/shaded/jctools/counters/
+  io/opentelemetry/internal/shaded/jctools/maps/
   io/opentelemetry/internal/shaded/jctools/queues/
+  io/opentelemetry/internal/shaded/jctools/queues/atomic/
+  io/opentelemetry/internal/shaded/jctools/queues/unpadded/
   io/opentelemetry/internal/shaded/jctools/util/
   io/opentelemetry/sdk/
   io/opentelemetry/sdk/common/
@@ -1464,6 +1480,7 @@ com/android/tools/external/com-intellij/intellij-core
   io/opentelemetry/sdk/trace/samplers/
   io/opentelemetry/sdk/trace/version.properties
   io/opentelemetry/sdk/version.properties
+  io/opentelemetry/semconv/
   it/
   it/unimi/
   it/unimi/dsi/
@@ -1474,7 +1491,6 @@ com/android/tools/external/com-intellij/intellij-core
   it/unimi/dsi/fastutil/doubles/
   it/unimi/dsi/fastutil/floats/
   it/unimi/dsi/fastutil/ints/
-  it/unimi/dsi/fastutil/io/
   it/unimi/dsi/fastutil/longs/
   it/unimi/dsi/fastutil/objects/
   it/unimi/dsi/fastutil/shorts/
@@ -1550,6 +1566,8 @@ com/android/tools/external/com-intellij/intellij-core
   kotlinx/serialization/descriptors/
   kotlinx/serialization/encoding/
   kotlinx/serialization/internal/
+  kotlinx/serialization/json/
+  kotlinx/serialization/json/internal/
   kotlinx/serialization/modules/
   messages/
   messages/CoreBundle.properties
@@ -1676,7 +1694,6 @@ com/android/tools/external/com-intellij/intellij-core
   org/jaxen/util/
   org/jaxen/xom/
   org/jdom/
-  org/jdom/adapters/
   org/jdom/filter/
   org/jdom/filter2/
   org/jdom/input/
