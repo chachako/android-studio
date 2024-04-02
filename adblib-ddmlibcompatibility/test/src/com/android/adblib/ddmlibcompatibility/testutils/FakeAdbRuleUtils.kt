@@ -33,10 +33,14 @@ fun FakeAdbRule.createAdbSession(closeables: CloseablesRule): AdbSession {
     return closeables.register(AdbSession.create(host, channelProvider))
 }
 
-suspend fun FakeAdbRule.connectTestDevice(sdk: String = "31", timeout: Duration = Duration.ofSeconds(2)): Pair<IDevice, DeviceState> {
+suspend fun FakeAdbRule.connectTestDevice(
+    deviceId: String = "1234",
+    sdk: String = "31",
+    timeout: Duration = Duration.ofSeconds(2)
+): Pair<IDevice, DeviceState> {
     return withTimeout(timeout.toMillis()) {
         val deviceState = this@connectTestDevice.attachDevice(
-            "1234",
+            deviceId,
             "manuf",
             "model",
             "2022",
