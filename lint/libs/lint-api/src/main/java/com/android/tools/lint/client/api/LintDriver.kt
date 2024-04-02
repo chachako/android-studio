@@ -185,7 +185,7 @@ class LintDriver(
    */
   val request: LintRequest,
 ) {
-  /** The original client (not the wrapped one intended to pass to detectors. */
+  /** The original client (not the wrapped one intended to pass to detectors). */
   private val realClient: LintClient = client
 
   /**
