@@ -39,7 +39,7 @@ fun configureInput (
     fontsPath: String?,
     layoutlibPath: String,
     outputFolder: String,
-    packageName: String,
+    namespace: String,
     resourceApkPath: String,
     cliToolArgumentsFile: File,
     previewsFile: File
@@ -53,7 +53,7 @@ fun configureInput (
         layoutlibPath,
         outputFolder,
         classPath,
-        packageName,
+        namespace,
         resourceApkPath,
         previews
     )

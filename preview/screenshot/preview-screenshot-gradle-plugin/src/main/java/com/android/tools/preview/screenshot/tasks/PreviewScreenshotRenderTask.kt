@@ -85,7 +85,7 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     abstract val outputDir: DirectoryProperty
 
     @get:Input
-    abstract val packageName: Property<String>
+    abstract val namespace: Property<String>
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
@@ -147,7 +147,7 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             fontsDir,
             layoutlibDir.singleFile.absolutePath + "/layoutlib/",
             outputDir.get().asFile.absolutePath,
-            packageName.get(),
+            namespace.get(),
             getResourcesApk(),
             cliToolArgumentsFile.get().asFile,
             previewsDiscovered.get().asFile
