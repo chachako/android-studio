@@ -155,7 +155,7 @@ internal class FakeIDevice(private val serialNumber: String): IDevice {
         TODO("Not yet implemented")
     }
 
-    override fun getClient(applicationName: String?): Client {
+    override fun getClient(processName: String?): Client {
         TODO("Not yet implemented")
     }
 

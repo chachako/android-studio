@@ -353,12 +353,12 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
     Client[] getClients();
 
     /**
-     * Returns a {@link Client} by its application name.
+     * Returns a {@link Client} by its process name.
      *
-     * @param applicationName the name of the application
+     * @param processName the name of the process. Process name often matches a package name.
      * @return the <code>Client</code> object or <code>null</code> if no match was found.
      */
-    Client getClient(String applicationName);
+    Client getClient(String processName);
 
     /** Returns the array of profileable clients. */
     default ProfileableClient[] getProfileableClients() {
