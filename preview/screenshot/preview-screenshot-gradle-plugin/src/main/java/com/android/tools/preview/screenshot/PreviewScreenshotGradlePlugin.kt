@@ -154,9 +154,10 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             }
 
             componentsExtension.beforeVariants {
-                // TODO(b/330377509): Remove this test option once the screenshotTest source set is in use.
+                // TODO(b/330377509): Remove the unit test isIncludeAndroidResources option once the screenshotTest source set is in use.
                 val extension = project.extensions.getByType(CommonExtension::class.java)
                 extension.testOptions.unitTests.isIncludeAndroidResources = true
+                extension.experimentalProperties.put(ST_SOURCE_SET_ENABLED, true)
             }
 
             componentsExtension.onVariants { variant ->
