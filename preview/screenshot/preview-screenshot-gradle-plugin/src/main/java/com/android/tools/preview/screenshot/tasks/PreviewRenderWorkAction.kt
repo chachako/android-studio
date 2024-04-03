@@ -39,7 +39,6 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
         abstract val cliToolArgumentsFile: RegularFileProperty
         abstract val toolJarPath: ConfigurableFileCollection
         abstract val outputDir: DirectoryProperty
-        abstract val javaSecManagerArgument: Property<String?>
     }
 
     override fun execute() {
@@ -50,7 +49,7 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
     private fun render() {
         val classpath = listOf(parameters.layoutlibJar, parameters.toolJarPath)
         val classLoader = getClassloader(classpath)
-        invokeMainMethod(listOfNotNull(parameters.cliToolArgumentsFile.get().asFile.absolutePath, parameters.javaSecManagerArgument.get()), classLoader)
+        invokeMainMethod(listOf(parameters.cliToolArgumentsFile.get().asFile.absolutePath), classLoader)
     }
 
     private fun invokeMainMethod(arguments: List<String>, classLoader: ClassLoader) {

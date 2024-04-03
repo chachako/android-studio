@@ -154,13 +154,14 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
         )
 
         // invoke CLI tool
-        val workerQueue = workerExecutor.processIsolation()
+        val workerQueue = workerExecutor.processIsolation{spec ->
+            javaSecManagerArg?.let { spec.forkOptions.jvmArgs(listOf(it)) } // needed to allow security manager in jdk18 +
+        }
         workerQueue.submit(PreviewRenderWorkAction::class.java) { parameters ->
             parameters.cliToolArgumentsFile.set(cliToolArgumentsFile)
             parameters.toolJarPath.setFrom(screenshotCliJar)
             parameters.outputDir.set(outputDir)
             parameters.layoutlibJar.setFrom(layoutlibJar)
-            parameters.javaSecManagerArgument.set(javaSecManagerArg)
         }
 
     }
