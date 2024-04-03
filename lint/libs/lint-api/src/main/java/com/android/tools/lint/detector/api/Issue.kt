@@ -107,15 +107,13 @@ private constructor(
   private var moreInfoUrls: Any? /* null | String | MutableList<String> */ = null
   private var enabledByDefault = true
 
-  private var _platforms = platforms
-
   /**
    * Set of platforms where this issue applies. For example, if the analysis is being run on an
    * Android project, lint will include all checks that either don't specify any platform scopes, or
    * includes the android scope.
    */
-  val platforms: EnumSet<Platform>
-    get() = _platforms
+  var platforms: EnumSet<Platform> = platforms
+    private set
 
   /**
    * Whether we're analyzing Android sources. Note that within an Android project there may be
@@ -125,20 +123,20 @@ private constructor(
    */
   fun setAndroidSpecific(value: Boolean): Issue {
     if (value) {
-      _platforms =
-        if (_platforms.isEmpty()) {
+      platforms =
+        if (platforms.isEmpty()) {
           Platform.ANDROID_SET
         } else {
-          val new = EnumSet.copyOf(_platforms)
+          val new = EnumSet.copyOf(platforms)
           new.add(Platform.ANDROID)
           new
         }
     } else {
-      _platforms =
-        if (_platforms == Platform.ANDROID_SET) {
+      platforms =
+        if (platforms == Platform.ANDROID_SET) {
           Platform.UNSPECIFIED
         } else {
-          val new = EnumSet.copyOf(_platforms)
+          val new = EnumSet.copyOf(platforms)
           new.remove(Platform.ANDROID)
           new
         }
@@ -154,7 +152,7 @@ private constructor(
    * This is a convenience property around [platforms].
    */
   fun isAndroidSpecific(): Boolean {
-    return _platforms.contains(Platform.ANDROID)
+    return platforms.contains(Platform.ANDROID)
   }
 
   private var aliases: List<String> = emptyList()
