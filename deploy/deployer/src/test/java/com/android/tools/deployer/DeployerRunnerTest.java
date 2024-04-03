@@ -826,7 +826,7 @@ public class DeployerRunnerTest {
                         "getprop",
                         "pm install-create -r -t -S ${size:com.example.simpleapp}",
                         "pm install-write -S ${size:com.example.simpleapp:base.apk} 2 simple.apk -",
-                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split+ver.apk -",
+                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split_ver.apk -",
                         "pm install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -951,7 +951,7 @@ public class DeployerRunnerTest {
                         "getprop",
                         "pm install-create -r -t -S ${size:com.example.simpleapp}",
                         "pm install-write -S ${size:com.example.simpleapp:base.apk} 2 simple.apk -",
-                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split+code.apk -",
+                        "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split_code.apk -",
                         "pm install-commit 2");
                 assertMetrics(
                         runner.getMetrics(),
@@ -1471,7 +1471,7 @@ public class DeployerRunnerTest {
                         device,
                         "getprop",
                         "pm install-create -r -t -S ${size:com.example.simpleapp}",
-                        "pm install-write -S ${size:com.example.simpleapp:base.apk} 2 simple+new_asset.apk -",
+                        "pm install-write -S ${size:com.example.simpleapp:base.apk} 2 simple_new_asset.apk -",
                         "pm install-write -S ${size:com.example.simpleapp:split_split_01.apk} 2 split.apk -",
                         "pm install-commit 2");
                 assertMetrics(
