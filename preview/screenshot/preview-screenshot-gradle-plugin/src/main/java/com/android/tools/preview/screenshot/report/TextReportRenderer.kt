@@ -16,8 +16,12 @@
 
 package com.android.tools.preview.screenshot.report
 
-import org.gradle.internal.IoActions
+import org.gradle.api.UncheckedIOException
+import java.io.BufferedWriter
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStreamWriter
 import java.io.Writer
 
 /**
@@ -35,12 +39,24 @@ abstract class TextReportRenderer<T> {
      * Renders the report for the given model to a file.
      */
     open fun writeTo(model: T, file: File) {
-        // TODO(b/330166275) - Don't use internal Gradle API (IoActions)
-        IoActions.writeTextFile(file, "utf-8", object : ErroringAction<Writer>() {
-            @Throws(Exception::class)
-            override fun doExecute(objectToExecute: Writer) {
-                writeTo(model, objectToExecute)
+        try {
+            val parentFile: File = file.getParentFile()
+            if (!parentFile.mkdirs() && !parentFile.isDirectory()) {
+                throw IOException(String.format("Unable to create directory '%s'", parentFile))
+            } else {
+                val writer =
+                    BufferedWriter(OutputStreamWriter(FileOutputStream(file), "utf-8"))
+                writer.use {
+                    writeTo(model, it)
+                }
             }
-        })
+        } catch (var8: java.lang.Exception) {
+            throw UncheckedIOException(
+                String.format(
+                    "Could not write to file '%s'.",
+                    file
+                ), var8
+            )
+        }
     }
 }

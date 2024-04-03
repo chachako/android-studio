@@ -1,15 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <issues format="6" by="lint 8.5.0-dev" type="baseline" client="" dependencies="true" name="" variant="all" version="8.5.0-dev">
 
-    <issue
-        id="InternalGradleApiUsage"
-        message="Avoid using internal Gradle APIs"
-        errorLine1="import org.gradle.internal.IoActions"
-        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/main/java/com/android/tools/preview/screenshot/report/TextReportRenderer.kt"
-            line="19"
-            column="1"/>
-    </issue>
-
 </issues>
