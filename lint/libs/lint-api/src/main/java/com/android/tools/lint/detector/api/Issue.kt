@@ -331,20 +331,18 @@ private constructor(
       priority: Int,
       severity: Severity,
       implementation: Implementation,
-    ): Issue {
-      val platforms = computePlatforms(null, implementation)
-      return Issue(
+    ): Issue =
+      Issue(
         id,
         briefDescription,
         explanation,
         category,
         priority,
         severity,
-        platforms,
+        computePlatforms(null, implementation),
         null,
         implementation,
       )
-    }
 
     /**
      * Creates a new issue. The description strings can use some simple markup; see the
@@ -378,29 +376,22 @@ private constructor(
       androidSpecific: Boolean? = null,
       platforms: EnumSet<Platform>? = null,
       suppressAnnotations: Collection<String>? = null,
-    ): Issue {
-      val applicablePlatforms = platforms ?: computePlatforms(androidSpecific, implementation)
-      val issue =
-        Issue(
+    ): Issue =
+      Issue(
           id,
           briefDescription,
           explanation,
           category,
           priority,
           severity,
-          applicablePlatforms,
+          platforms ?: computePlatforms(androidSpecific, implementation),
           suppressAnnotations,
           implementation,
         )
-      if (moreInfo != null) {
-        issue.addMoreInfo(moreInfo)
-      }
-      if (!enabledByDefault) {
-        issue.setEnabledByDefault(false)
-      }
-
-      return issue
-    }
+        .apply {
+          if (moreInfo != null) addMoreInfo(moreInfo)
+          if (!enabledByDefault) setEnabledByDefault(false)
+        }
 
     private fun computePlatforms(
       androidSpecific: Boolean?,
