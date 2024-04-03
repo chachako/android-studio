@@ -50475,6 +50475,26 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-klib-commonizer-embeddable_2.0.0-Beta5",
+    pom = "repository/org/jetbrains/kotlin/kotlin-klib-commonizer-embeddable/2.0.0-Beta5/kotlin-klib-commonizer-embeddable-2.0.0-Beta5.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-klib-commonizer-embeddable/2.0.0-Beta5",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_2.0.0-Beta5",
+        "org.jetbrains.kotlin.kotlin-compiler-embeddable_2.0.0-Beta5",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-native-prebuilt_2.0.0-Beta5",
+    pom = "repository/org/jetbrains/kotlin/kotlin-native-prebuilt/2.0.0-Beta5/kotlin-native-prebuilt-2.0.0-Beta5.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-native-prebuilt/2.0.0-Beta5",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlin.kotlin-native-utils_1.3.20",
     pom = "repository/org/jetbrains/kotlin/kotlin-native-utils/1.3.20/kotlin-native-utils-1.3.20.pom",
     repo_root_path = "repository",
