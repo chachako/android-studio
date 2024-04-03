@@ -911,6 +911,7 @@ DATA = [
     "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3",
     "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:1.7.3",
     "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1",  # Needed for TemplateTest#testNewComposeWearActivityWithTileAndComplication
     "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3",
     "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0-RC2",
