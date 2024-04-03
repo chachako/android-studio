@@ -31,9 +31,9 @@ enum class Platform {
    * An example of where this is relevant is something like the AssertionDetector, which looks for
    * "assert" keywords in Java and flags them as problematic, since on Android, assertions are not
    * enforced (they were unreliable on Dalvik and not implemented on ART). However, when lint is run
-   * on on a Java project, we don't want it to flag assertions.
+   * on a Java project, we don't want it to flag assertions.
    *
-   * Finally note that a detector can always do on the fly checks for this before reporting errors,
+   * Finally, note that a detector can always do on the fly checks for this before reporting errors,
    * e.g. via [Project.isAndroidProject], but this scope filtering is intended to limit up front
    * analysis and to filter the available issue list etc. Android specific detectors should still
    * check this in some cases, since in an Android project a module can depend on a non-Android
