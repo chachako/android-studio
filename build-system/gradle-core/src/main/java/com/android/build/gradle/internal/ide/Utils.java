@@ -154,13 +154,26 @@ public class Utils {
     public static FileCollection getGeneratedResourceFoldersFileCollection(
             @NonNull ComponentCreationConfig component) {
         ConfigurableFileCollection fileCollection = component.getServices().fileCollection();
-        if (component.getOldVariantApiLegacySupport() != null) {
-            fileCollection.from(
-                    component
-                            .getOldVariantApiLegacySupport()
-                            .getVariantData()
-                            .getExtraGeneratedResFolders());
-        }
+        component
+                .getSources()
+                .res(
+                        resSources -> {
+                            resSources.forAllSources(
+                                    directoryEntry -> {
+                                        if (directoryEntry.isUserAdded()
+                                                && directoryEntry.isGenerated()
+                                                && directoryEntry.getShouldBeAddedToIdeModel()) {
+                                            fileCollection.from(
+                                                    directoryEntry.asFiles(
+                                                            component
+                                                                    .getServices()
+                                                                    .getProjectInfo()
+                                                                    .getBuildDirectory()));
+                                        }
+                                        return Unit.INSTANCE;
+                                    });
+                            return Unit.INSTANCE;
+                        });
         if (component.getBuildFeatures().getRenderScript()) {
             fileCollection.from(
                     component
