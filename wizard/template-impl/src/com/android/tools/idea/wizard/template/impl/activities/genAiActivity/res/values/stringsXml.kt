@@ -17,8 +17,14 @@ package com.android.tools.idea.wizard.template.impl.activities.genAiActivity.res
 
 fun stringsXml() = """
 <resources>
+    <string name="app_name">Gemini API</string>
     <string name="action_go">Go</string>
-    <string name="summarize_label">Text to summarize</string>
-    <string name="summarize_hint">Enter text or a URL to summarize</string>
+    <string name="baking_title">Baking with Gemini</string>
+    <string name="label_prompt">Prompt</string>
+    <string name="prompt_placeholder">Provide a recipe for the baked goods in the image</string>
+    <string name="image1_description">Blueberry cookies</string>
+    <string name="image2_description">Homemade bread</string>
+    <string name="image3_description">Red-velvet cupcake</string>
+    <string name="results_placeholder">(Results will appear here)</string>
 </resources>
 """

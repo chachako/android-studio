@@ -27,9 +27,11 @@ import com.android.tools.idea.wizard.template.impl.activities.composeActivityMat
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.src.app_package.ui.themeKt
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.src.app_package.ui.typeKt
 import com.android.tools.idea.wizard.template.impl.activities.genAiActivity.res.values.stringsXml
+import com.android.tools.idea.wizard.template.impl.activities.genAiActivity.src.app_package.bakingScreen
 import com.android.tools.idea.wizard.template.impl.activities.genAiActivity.src.app_package.mainActivityKt
-import com.android.tools.idea.wizard.template.impl.activities.genAiActivity.src.app_package.summarizeUiState
-import com.android.tools.idea.wizard.template.impl.activities.genAiActivity.src.app_package.summarizeViewModelKt
+import com.android.tools.idea.wizard.template.impl.activities.genAiActivity.src.app_package.uiState
+import com.android.tools.idea.wizard.template.impl.activities.genAiActivity.src.app_package.bakingViewModelKt
+import java.io.File
 
 fun RecipeExecutor.genAiActivityRecipe(
   moduleData: ModuleTemplateData,
@@ -68,7 +70,7 @@ fun RecipeExecutor.genAiActivityRecipe(
   )
   addDependency(mavenCoordinate = "androidx.compose.material3:material3")
 
-  addDependency(mavenCoordinate = "com.google.ai.client.generativeai:generativeai:0.1.1")
+  addDependency(mavenCoordinate = "com.google.ai.client.generativeai:generativeai:0.2.2")
   addSecretsGradlePlugin()
 
   generateManifest(
@@ -81,6 +83,8 @@ fun RecipeExecutor.genAiActivityRecipe(
     generateActivityTitle = true
   )
 
+  copy(File("genai-activity").resolve("drawable"), resOut.resolve("drawable"))
+
   mergeXml(
     themesXml(themeName = moduleData.themesData.main.name),
     resOut.resolve("values/themes.xml")
@@ -90,8 +94,9 @@ fun RecipeExecutor.genAiActivityRecipe(
   val themeName = "${moduleData.themesData.appName}Theme"
 
   save(mainActivityKt(activityClass, packageName, themeName), srcOut.resolve("${activityClass}.kt"))
-  save(summarizeViewModelKt(packageName), srcOut.resolve("SummarizeViewModel.kt"))
-  save(summarizeUiState(packageName), srcOut.resolve("SummarizeUiState.kt"))
+  save(bakingViewModelKt(packageName), srcOut.resolve("BakingViewModel.kt"))
+  save(bakingScreen(packageName), srcOut.resolve("BakingScreen.kt"))
+  save(uiState(packageName), srcOut.resolve("UiState.kt"))
 
   val uiThemeFolder = "ui/theme"
   save(colorKt(packageName), srcOut.resolve("$uiThemeFolder/Color.kt"))

@@ -17,43 +17,54 @@ package com.android.tools.idea.wizard.template.impl.activities.genAiActivity.src
 
 import com.android.tools.idea.wizard.template.escapeKotlinIdentifier
 
-fun summarizeViewModelKt(
+fun bakingViewModelKt(
     packageName: String,
 ) = """
 package ${escapeKotlinIdentifier(packageName)}
 
+import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.content
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class SummarizeViewModel(
-    private val generativeModel: GenerativeModel
-) : ViewModel() {
+class BakingViewModel : ViewModel() {
+  private val _uiState: MutableStateFlow<UiState> =
+    MutableStateFlow(UiState.Initial)
+  val uiState: StateFlow<UiState> =
+    _uiState.asStateFlow()
 
-    private val _uiState: MutableStateFlow<SummarizeUiState> =
-        MutableStateFlow(SummarizeUiState.Initial)
-    val uiState: StateFlow<SummarizeUiState> =
-        _uiState.asStateFlow()
+  private val generativeModel = GenerativeModel(
+    modelName = "gemini-pro-vision",
+    apiKey = BuildConfig.apiKey
+  )
 
-    fun summarize(inputText: String) {
-        _uiState.value = SummarizeUiState.Loading
+  fun sendPrompt(
+    bitmap: Bitmap,
+    prompt: String
+  ) {
+    _uiState.value = UiState.Loading
 
-        val prompt = "Summarize the following text for me: ${"$"}inputText"
-
-        viewModelScope.launch {
-            try {
-                val response = generativeModel.generateContent(prompt)
-                response.text?.let { outputContent ->
-                    _uiState.value = SummarizeUiState.Success(outputContent)
-                }
-            } catch (e: Exception) {
-                _uiState.value = SummarizeUiState.Error(e.localizedMessage ?: "")
-            }
+    viewModelScope.launch(Dispatchers.IO) {
+      try {
+        val response = generativeModel.generateContent(
+          content {
+            image(bitmap)
+            text(prompt)
+          }
+        )
+        response.text?.let { outputContent ->
+          _uiState.value = UiState.Success(outputContent)
         }
+      } catch (e: Exception) {
+        _uiState.value = UiState.Error(e.localizedMessage ?: "")
+      }
     }
+  }
 }
 """
