@@ -255,6 +255,20 @@ class TrackDatabasesTest {
   }
 
   @Test
+  fun test_track_databases_force_open_implies_keep_open() = runBlocking {
+    // given
+    val hooks = startTracking(forceOpen = true)
+
+    assertNoQueuedEvents()
+
+    openDatabase("db2", hooks).let { db ->
+      receiveOpenedEventId(db)
+      closeDatabase(db, hooks)
+      assertOpen(db)
+    }
+  }
+
+  @Test
   fun test_on_closed_notification() = runBlocking {
     // given
     val hooks = startTracking()
