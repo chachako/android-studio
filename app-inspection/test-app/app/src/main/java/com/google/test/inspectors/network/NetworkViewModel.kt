@@ -18,12 +18,12 @@ package com.google.test.inspectors.network
 
 import androidx.lifecycle.viewModelScope
 import com.google.test.inspectors.Logger
-import com.google.test.inspectors.db.SettingsDao
 import com.google.test.inspectors.grpc.custom.CustomRequest
 import com.google.test.inspectors.grpc.json.JsonRequest
 import com.google.test.inspectors.grpc.proto.protoRequest
 import com.google.test.inspectors.grpc.xml.XmlRequest
 import com.google.test.inspectors.network.grpc.GrpcClient
+import com.google.test.inspectors.settings.db.SettingsDao
 import com.google.test.inspectors.ui.scafold.AppScaffoldViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

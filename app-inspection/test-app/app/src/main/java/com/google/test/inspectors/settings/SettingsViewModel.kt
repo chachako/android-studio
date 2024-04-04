@@ -17,8 +17,8 @@
 package com.google.test.inspectors.settings
 
 import androidx.lifecycle.ViewModel
-import com.google.test.inspectors.db.SettingsDao
 import com.google.test.inspectors.network.grpc.GrpcClient.ChannelBuilderType
+import com.google.test.inspectors.settings.db.SettingsDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

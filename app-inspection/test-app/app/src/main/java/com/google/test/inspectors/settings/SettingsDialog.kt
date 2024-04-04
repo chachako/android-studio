@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 The Android Open Source Project
+ * Copyright 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,9 +52,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.test.inspectors.db.SettingsDao
 import com.google.test.inspectors.network.grpc.GrpcClient.ChannelBuilderType
 import com.google.test.inspectors.network.grpc.GrpcClient.ChannelBuilderType.MANAGED_FOR_ADDRESS
+import com.google.test.inspectors.settings.db.SettingsDao
 import com.google.test.inspectors.ui.theme.InspectorsTestAppTheme
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
