@@ -217,7 +217,7 @@ private val ALLOWED_ERRORS = listOf(
 private fun runComposeCliRender(settingsFile: File): String {
     val javaHome = System.getProperty("java.home")
     val composeCliRenderFolder = TestUtils.resolveWorkspacePath("tools/base/standalone-render/compose-cli")
-    val command = listOf("$javaHome/bin/java", "-cp", "standalone-render.compose-cli.jar", "com.android.tools.render.compose.MainKt", settingsFile.absolutePath)
+    val command = listOf("$javaHome/bin/java", "-Dlayoutlib.thread.profile.timeoutms=10000", "-cp", "standalone-render.compose-cli.jar", "com.android.tools.render.compose.MainKt", settingsFile.absolutePath)
     val procBuilder = ProcessBuilder(command)
         .directory(composeCliRenderFolder.toFile())
         .redirectOutput(ProcessBuilder.Redirect.PIPE)
