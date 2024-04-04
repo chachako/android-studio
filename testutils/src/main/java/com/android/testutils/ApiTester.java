@@ -34,7 +34,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -162,7 +161,7 @@ public final class ApiTester {
         Path file = dir.resolve(StringsKt.substringAfterLast(expectedFileUrl.getFile(), '/', "?"));
         Collection<String> content = transformFinalFileContent.invoke(getApiElements(transform));
         List<String> previous = Files.readAllLines(file);
-        Files.write(file, content, StandardCharsets.UTF_8);
+        Files.writeString(file, Joiner.on("\n").join(content) + "\n");
         if (!previous.equals(content)) {
             System.out.println();
             System.out.println("Applied diff to " + file);
