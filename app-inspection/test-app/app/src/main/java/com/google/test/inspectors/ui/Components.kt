@@ -16,11 +16,10 @@
 
 package com.google.test.inspectors.ui
 
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 
-@Composable
-fun SimpleTextButton(text: String, onClick: () -> Unit) {
-  Button(onClick = onClick) { Text(text) }
+fun LazyGridScope.button(text: String, onClick: () -> Unit) {
+  item { Button(onClick = onClick) { Text(text) } }
 }

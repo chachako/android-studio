@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2024 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.test.inspectors.main
 
 import android.app.AlarmManager
@@ -9,13 +25,13 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.os.PowerManager.PARTIAL_WAKE_LOCK
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.content.getSystemService
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequest
@@ -34,41 +50,22 @@ import com.google.test.inspectors.grpc.proto.protoRequest
 import com.google.test.inspectors.grpc.xml.XmlRequest
 import com.google.test.inspectors.network.HttpClient
 import com.google.test.inspectors.network.grpc.GrpcClient
+import com.google.test.inspectors.ui.scafold.AppScaffoldViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 private val jobId = AtomicInteger(1)
-private const val StopTimeoutMillis: Long = 5000
-
-/**
- * A [SharingStarted] meant to be used with a [kotlinx.coroutines.flow.StateFlow] to expose data to
- * the UI.
- *
- * When the UI stops observing, upstream flows stay active for some time to allow the system to come
- * back from a short-lived configuration change (such as rotations). If the UI stops observing for
- * longer, the cache is kept but the upstream flows are stopped. When the UI comes back, the latest
- * value is replayed and the upstream flows are executed again. This is done to save resources when
- * the app is in the background but let users switch between apps quickly.
- */
-private val WhileUiSubscribed: SharingStarted = SharingStarted.WhileSubscribed(StopTimeoutMillis)
 
 @HiltViewModel
 internal class MainViewModel
 @Inject
 constructor(private val application: Application, private val settingsDao: SettingsDao) :
-  ViewModel(), MainScreenActions {
-
-  private val snackFlow: MutableStateFlow<String?> = MutableStateFlow(null)
-  val snackState: StateFlow<String?> = snackFlow.stateIn(viewModelScope, WhileUiSubscribed, null)
+  AppScaffoldViewModel(), MainScreenActions {
 
   private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
     setSnack("Error: ${throwable.message}")
@@ -85,7 +82,7 @@ constructor(private val application: Application, private val settingsDao: Setti
     val id = jobId.getAndIncrement()
     val job =
       JobInfo.Builder(id, ComponentName(application, AppJobService::class.java))
-        .setRequiresBatteryNotLow(true)
+        .safeSetRequiresBatteryNotLow(true)
         .build()
     val jobScheduler = application.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
     jobScheduler.schedule(job)
@@ -159,14 +156,6 @@ constructor(private val application: Application, private val settingsDao: Setti
   private suspend fun newGrpcClient() =
     GrpcClient(settingsDao.getHost(), settingsDao.getPort(), settingsDao.getChannelBuilderType())
 
-  private fun setSnack(text: String) {
-    snackFlow.value =
-      when (text) {
-        snackState.value -> "$text (repeated)"
-        else -> text
-      }
-  }
-
   override fun doSetAlarm() {
     val alarmManager = application.getSystemService<AlarmManager>() ?: throw IllegalStateException()
     val intent =
@@ -205,4 +194,11 @@ constructor(private val application: Application, private val settingsDao: Setti
   override fun doReleaseWakeLock() {
     wakeLock.release()
   }
+}
+
+private fun JobInfo.Builder.safeSetRequiresBatteryNotLow(value: Boolean): JobInfo.Builder {
+  if (Build.VERSION.SDK_INT >= 26) {
+    setRequiresBatteryNotLow(value)
+  }
+  return this
 }
