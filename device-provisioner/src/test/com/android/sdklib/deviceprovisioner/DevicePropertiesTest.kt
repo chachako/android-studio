@@ -25,6 +25,22 @@ import org.junit.Test
 
 class DevicePropertiesTest {
   @Test
+  fun equality() {
+    val clonedProps = pixel8Props.toBuilder().build()
+
+    assertThat(clonedProps).isEqualTo(pixel8Props)
+    assertThat(clonedProps).isNotSameAs(pixel8Props)
+  }
+
+  @Test
+  fun update() {
+    val pixel8ProProps = pixel8Props.toBuilder().apply { model = "Pixel 8 Pro" }.build()
+
+    assertThat(pixel8ProProps.model).isEqualTo("Pixel 8 Pro")
+    assertThat(pixel8ProProps).isNotEqualTo(pixel8Props)
+  }
+
+  @Test
   fun readCommonProperties() {
     val props =
       props(
@@ -120,3 +136,15 @@ class DevicePropertiesTest {
       icon = EmptyIcon.DEFAULT
     }
 }
+
+private val pixel8Props =
+  DeviceProperties.Builder()
+    .apply {
+      populateDeviceInfoProto("Test", null, emptyMap(), "123")
+      manufacturer = "Google"
+      model = "Pixel 8"
+      androidVersion = AndroidVersion(34)
+      abiList = listOf(Abi.ARM64_V8A, Abi.RISCV64)
+      icon = EmptyIcon.DEFAULT
+    }
+    .build()

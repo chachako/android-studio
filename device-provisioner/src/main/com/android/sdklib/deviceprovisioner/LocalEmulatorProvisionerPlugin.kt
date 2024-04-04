@@ -27,6 +27,7 @@ import com.android.adblib.tools.localConsoleAddress
 import com.android.adblib.tools.openEmulatorConsole
 import com.android.adblib.utils.createChildScope
 import com.android.annotations.concurrency.GuardedBy
+import com.android.sdklib.AndroidVersion
 import com.android.sdklib.SdkVersionInfo
 import com.android.sdklib.SystemImageTags
 import com.android.sdklib.deviceprovisioner.DeviceState.Connected
@@ -36,12 +37,16 @@ import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
 import com.android.sdklib.internal.avd.AvdManager
 import com.android.sdklib.internal.avd.HardwareProperties
+import com.google.wireless.android.sdk.stats.DeviceInfo
 import com.intellij.icons.AllIcons
 import java.io.IOException
 import java.nio.file.Path
 import java.time.Duration
+import javax.swing.Icon
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -706,53 +711,61 @@ class LocalEmulatorProvisionerPlugin(
   }
 }
 
-class LocalEmulatorProperties(
-  base: DeviceProperties,
+data class LocalEmulatorProperties(
+  override val manufacturer: String?,
+  override val model: String?,
+  override val androidVersion: AndroidVersion?,
+  override val abiList: List<Abi>,
+  override val preferredAbi: String?,
+  override val androidRelease: String?,
+  override val disambiguator: String?,
+  override val deviceType: DeviceType?,
+  override val isVirtual: Boolean?,
+  override val isRemote: Boolean?,
+  override val isDebuggable: Boolean?,
+  override val wearPairingId: String?,
+  override val resolution: Resolution?,
+  override val density: Int?,
+  override val icon: Icon,
+  override val connectionType: ConnectionType?,
+  override val deviceInfoProto: DeviceInfo,
   val avdName: String,
   val avdPath: Path,
   val displayName: String,
-  val avdConfigProperties: Map<String, String>,
-) : DeviceProperties by base {
+  val hasPlayStore: Boolean,
+  val avdConfigProperties: ImmutableMap<String, String>,
+) : DeviceProperties {
+
+  override fun toBuilder(): Builder = Builder().apply { copyFrom(this@LocalEmulatorProperties) }
 
   override val title = displayName
 
   companion object {
-    inline fun build(avdInfo: AvdInfo, block: Builder.() -> Unit) =
-      buildPartial(avdInfo).apply(block).run {
-        LocalEmulatorProperties(
-          buildBase(),
-          checkNotNull(avdName),
-          avdInfo.dataFolderPath,
-          checkNotNull(displayName),
-          avdInfo.properties,
-        )
-      }
-
-    fun buildPartial(avdInfo: AvdInfo) =
-      Builder().apply {
-        isVirtual = true
-        manufacturer = avdInfo.deviceManufacturer
-        model = avdInfo.deviceName
-        androidVersion = avdInfo.androidVersion
-        androidRelease = SdkVersionInfo.getVersionString(avdInfo.androidVersion.apiLevel)
-        abiList = listOfNotNull(Abi.getEnum(avdInfo.abiType))
-        avdName = avdInfo.name
-        displayName = avdInfo.displayName
-        deviceType = avdInfo.toDeviceType()
-        hasPlayStore = avdInfo.hasPlayStore()
-        wearPairingId = avdInfo.id.takeIf { isPairable() }
-        density = avdInfo.density
-        resolution = avdInfo.resolution
-        isDebuggable = !avdInfo.hasPlayStore()
-        preferredAbi =
-          avdInfo.parseUserSettingsFile(null)?.get(AvdManager.USER_SETTINGS_INI_PREFERRED_ABI)
-      }
+    inline fun build(avdInfo: AvdInfo, block: Builder.() -> Unit): LocalEmulatorProperties =
+      Builder()
+        .apply {
+          setAvdInfo(avdInfo)
+          block()
+        }
+        .build()
   }
 
   class Builder : DeviceProperties.Builder() {
     var avdName: String? = null
+    var avdPath: Path? = null
     var displayName: String? = null
     var hasPlayStore: Boolean = false
+    val avdConfigProperties: MutableMap<String, String> = mutableMapOf()
+
+    fun copyFrom(properties: LocalEmulatorProperties) {
+      super.copyFrom(properties)
+      avdName = properties.avdName
+      avdPath = properties.avdPath
+      displayName = properties.displayName
+      hasPlayStore = properties.hasPlayStore
+      avdConfigProperties.clear()
+      avdConfigProperties.putAll(properties.avdConfigProperties)
+    }
 
     fun isPairable(): Boolean {
       val apiLevel = androidVersion?.apiLevel ?: return false
@@ -764,6 +777,53 @@ class LocalEmulatorProperties(
         DeviceType.WEAR -> apiLevel >= 28
       }
     }
+
+    fun setAvdInfo(avdInfo: AvdInfo) {
+      isVirtual = true
+      manufacturer = avdInfo.deviceManufacturer
+      model = avdInfo.deviceName
+      androidVersion = avdInfo.androidVersion
+      androidRelease = SdkVersionInfo.getVersionString(avdInfo.androidVersion.apiLevel)
+      abiList = listOfNotNull(Abi.getEnum(avdInfo.abiType))
+      avdName = avdInfo.name
+      avdPath = avdInfo.dataFolderPath
+      displayName = avdInfo.displayName
+      deviceType = avdInfo.toDeviceType()
+      hasPlayStore = avdInfo.hasPlayStore()
+      wearPairingId = avdInfo.id.takeIf { isPairable() }
+      density = avdInfo.density
+      resolution = avdInfo.resolution
+      isDebuggable = !avdInfo.hasPlayStore()
+      preferredAbi =
+        avdInfo.parseUserSettingsFile(null)?.get(AvdManager.USER_SETTINGS_INI_PREFERRED_ABI)
+      avdConfigProperties.putAll(avdInfo.properties)
+    }
+
+    override fun build() =
+      LocalEmulatorProperties(
+        manufacturer = manufacturer,
+        model = model,
+        androidVersion = androidVersion,
+        abiList = abiList,
+        preferredAbi = preferredAbi,
+        androidRelease = androidRelease,
+        disambiguator = disambiguator,
+        deviceType = deviceType,
+        isVirtual = isVirtual,
+        isRemote = isRemote,
+        isDebuggable = isDebuggable,
+        wearPairingId = wearPairingId,
+        resolution = resolution,
+        density = density,
+        icon = checkNotNull(icon),
+        connectionType = connectionType,
+        deviceInfoProto = deviceInfoProto.build(),
+        avdName = checkNotNull(avdName),
+        avdPath = checkNotNull(avdPath),
+        displayName = checkNotNull(displayName),
+        hasPlayStore = hasPlayStore,
+        avdConfigProperties = avdConfigProperties.toImmutableMap(),
+      )
   }
 }
 

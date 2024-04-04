@@ -85,6 +85,37 @@ class LocalEmulatorProvisionerPluginTest {
   }
 
   @Test
+  fun propertiesEquality() {
+    val props = buildProperties(avdManager.makeAvdInfo(1, AndroidVersion(29), hasPlayStore = true))
+    val builder = props.toBuilder()
+
+    val newProps = builder.build()
+
+    assertThat(newProps).isEqualTo(props)
+    assertThat(newProps).isNotSameAs(props)
+  }
+
+  @Test
+  fun genericPropertiesUpdate() {
+    val avdProps =
+      buildProperties(avdManager.makeAvdInfo(1, AndroidVersion(29), hasPlayStore = true))
+    val baseProps =
+      DeviceProperties.build {
+        populateDeviceInfoProto("Test", null, emptyMap(), "1")
+        model = "Phone 6"
+        icon = EmptyIcon.DEFAULT
+      }
+    val props = listOf(avdProps, baseProps)
+
+    val updatedProps = props.map { it.toBuilder().apply { manufacturer = "XYZ" }.build() }
+
+    assertThat(updatedProps[0]).isInstanceOf(LocalEmulatorProperties::class.java)
+    assertThat((updatedProps[0] as LocalEmulatorProperties).avdPath).isEqualTo(avdProps.avdPath)
+    assertThat(updatedProps[1]).isInstanceOf(BaseDeviceProperties::class.java)
+    updatedProps.forEach { assertThat(it.manufacturer).isEqualTo("XYZ") }
+  }
+
+  @Test
   fun offlineDevices(): Unit = runBlockingWithTimeout {
     avdManager.createAvd()
     avdManager.createAvd()

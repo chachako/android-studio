@@ -53,7 +53,7 @@ import kotlinx.coroutines.flow.first
 /**
  * Stores various properties about a device that are generally stable.
  *
- * This is designed to be extended by subclasses through composition.
+ * Implementations of this interface are expected to be data classes.
  */
 interface DeviceProperties {
 
@@ -149,10 +149,15 @@ interface DeviceProperties {
   /** A DeviceInfo proto for use in AndroidStudioEvent to describe the device in metrics. */
   val deviceInfoProto: DeviceInfo
 
+  /**
+   * Produces a mutable Builder for this class. Implementations other than [BaseDeviceProperties]
+   * should refine the return type to the appropriate subtype of [DeviceProperties.Builder].
+   */
+  fun toBuilder(): Builder
+
   companion object {
     /** Builds a basic DeviceProperties instance with no additional fields. */
-    inline fun build(block: Builder.() -> Unit): DeviceProperties =
-      Builder().apply(block).buildBase()
+    inline fun build(block: Builder.() -> Unit): DeviceProperties = Builder().apply(block).build()
 
     /** Builds a basic DeviceProperties instance for testing; some validation is skipped. */
     @VisibleForTesting
@@ -178,6 +183,26 @@ interface DeviceProperties {
     var icon: Icon? = null
     var connectionType: ConnectionType? = null
     var deviceInfoProto: DeviceInfo.Builder = DeviceInfo.newBuilder()
+
+    fun copyFrom(properties: DeviceProperties) {
+      manufacturer = properties.manufacturer
+      model = properties.model
+      androidVersion = properties.androidVersion
+      abiList = properties.abiList
+      preferredAbi = properties.preferredAbi
+      androidRelease = properties.androidRelease
+      disambiguator = properties.disambiguator
+      deviceType = properties.deviceType
+      isVirtual = properties.isVirtual
+      isRemote = properties.isRemote
+      isDebuggable = properties.isDebuggable
+      wearPairingId = properties.wearPairingId
+      resolution = properties.resolution
+      density = properties.density
+      icon = properties.icon
+      connectionType = properties.connectionType
+      deviceInfoProto = properties.deviceInfoProto.toBuilder()
+    }
 
     /** Uses the ADB serial number to determine if the device is WiFi-connected. */
     fun readAdbSerialNumber(adbSerialNumber: String) {
@@ -260,7 +285,7 @@ interface DeviceProperties {
       repeat(length) { append(intRange.random().toString(Character.MAX_RADIX)) }
     }
 
-    fun buildBase(): DeviceProperties {
+    open fun build(): DeviceProperties {
       check(deviceInfoProto.deviceProvisionerId.isNotEmpty()) {
         "populateDeviceInfoProto was not invoked"
       }
@@ -270,7 +295,7 @@ interface DeviceProperties {
     @VisibleForTesting fun buildBaseForTest() = buildBaseWithoutChecks()
 
     private fun buildBaseWithoutChecks(): DeviceProperties =
-      Impl(
+      BaseDeviceProperties(
         manufacturer = manufacturer,
         model = model,
         androidVersion = androidVersion,
@@ -290,26 +315,31 @@ interface DeviceProperties {
         deviceInfoProto = deviceInfoProto.build(),
       )
   }
+}
 
-  class Impl(
-    override val manufacturer: String?,
-    override val model: String?,
-    override val androidVersion: AndroidVersion?,
-    override val abiList: List<Abi>,
-    override val preferredAbi: String?,
-    override val androidRelease: String?,
-    override val disambiguator: String?,
-    override val deviceType: DeviceType?,
-    override val isVirtual: Boolean?,
-    override val isRemote: Boolean?,
-    override val isDebuggable: Boolean?,
-    override val wearPairingId: String?,
-    override val resolution: Resolution?,
-    override val density: Int?,
-    override val icon: Icon,
-    override val connectionType: ConnectionType?,
-    override val deviceInfoProto: DeviceInfo,
-  ) : DeviceProperties
+/** A basic DeviceProperties implementation with no additional fields. */
+data class BaseDeviceProperties(
+  override val manufacturer: String?,
+  override val model: String?,
+  override val androidVersion: AndroidVersion?,
+  override val abiList: List<Abi>,
+  override val preferredAbi: String?,
+  override val androidRelease: String?,
+  override val disambiguator: String?,
+  override val deviceType: DeviceType?,
+  override val isVirtual: Boolean?,
+  override val isRemote: Boolean?,
+  override val isDebuggable: Boolean?,
+  override val wearPairingId: String?,
+  override val resolution: Resolution?,
+  override val density: Int?,
+  override val icon: Icon,
+  override val connectionType: ConnectionType?,
+  override val deviceInfoProto: DeviceInfo,
+) : DeviceProperties {
+
+  override fun toBuilder(): DeviceProperties.Builder =
+    DeviceProperties.Builder().apply { copyFrom(this@BaseDeviceProperties) }
 }
 
 /**
