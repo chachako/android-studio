@@ -229,13 +229,13 @@ internal class AdblibIDeviceWrapper(
     @Deprecated("")
     override fun getAvdName(): String? =
         logUsage(IDeviceUsageTracker.Method.GET_AVD_NAME) {
-            return mAvdName
+            mAvdName
         }
 
     @Deprecated("")
     override fun getAvdPath(): String? =
         logUsage(IDeviceUsageTracker.Method.GET_AVD_PATH) {
-            return mAvdPath
+            mAvdPath
         }
 
     override fun getAvdData(): ListenableFuture<AvdData?> =
@@ -976,7 +976,10 @@ internal class AdblibIDeviceWrapper(
     /**
      * Executes a block and logs its success of failure status using the Android Studio UsageTracker
      */
-    private inline fun <R> logUsage(method: IDeviceUsageTracker.Method, block: () -> R): R {
+    private inline fun <R> logUsage(
+        method: IDeviceUsageTracker.Method,
+        crossinline block: () -> R
+    ): R {
         return try {
             block().also { iDeviceUsageTracker.logUsage(method, false) }
         } catch (t: Throwable) {
