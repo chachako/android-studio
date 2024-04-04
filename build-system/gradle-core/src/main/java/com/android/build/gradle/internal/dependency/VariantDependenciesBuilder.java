@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.dependency;
 
+import static com.android.build.gradle.internal.dependency.KotlinPlatformAttributeKt.configureKotlinPlatformAttribute;
 import static com.android.build.gradle.internal.dependency.VariantDependencies.CONFIG_NAME_TESTED_APKS;
 import static com.android.build.gradle.internal.publishing.AndroidArtifacts.PublishedConfigType.AAB_PUBLICATION;
 import static com.android.build.gradle.internal.publishing.AndroidArtifacts.PublishedConfigType.API_ELEMENTS;
@@ -331,9 +332,7 @@ public class VariantDependenciesBuilder {
 
         // only apply this treatment if KGP is not applied
         if (!projectOptions.get(BooleanOption.DISABLE_KOTLIN_ATTRIBUTE_SETUP) && !kgpApplied()) {
-
-            KotlinPlatformAttribute.configureKotlinPlatformAttribute(
-                    List.of(compileClasspath, runtimeClasspath), project);
+            configureKotlinPlatformAttribute(List.of(compileClasspath, runtimeClasspath), project);
         }
 
         boolean isLibraryConstraintApplied =
