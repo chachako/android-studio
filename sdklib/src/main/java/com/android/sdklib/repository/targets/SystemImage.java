@@ -31,7 +31,6 @@ import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * {@link ISystemImage} based on a {@link RepoPackage} (either system image, platform, or addon).
@@ -118,7 +117,7 @@ public class SystemImage implements ISystemImage {
         return mVendor;
     }
 
-    @NotNull
+    @NonNull
     @Override
     public String getPrimaryAbiType() {
         return mAbis.get(0);
