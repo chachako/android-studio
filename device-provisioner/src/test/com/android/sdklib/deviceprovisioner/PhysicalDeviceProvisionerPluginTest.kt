@@ -161,6 +161,7 @@ class PhysicalDeviceProvisionerPluginTest : DeviceProvisionerTestFixture() {
       // Disconnect completely.
       setDevices()
       channel.receiveUntilPassing { handles -> assertThat(handles).isEmpty() }
+      assertThat(handle4.state.properties.connectionType).isNull()
     }
   }
 

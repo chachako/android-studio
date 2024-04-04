@@ -179,7 +179,9 @@ private class PhysicalDeviceHandle(
   }
 
   fun deviceDisconnected(device: ConnectedDevice) {
-    flowForDevice(device).update { Disconnected(it!!.properties) }
+    flowForDevice(device).update {
+      Disconnected(it!!.properties.toBuilder().apply { connectionType = null }.build())
+    }
     updateState()
   }
 }
