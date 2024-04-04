@@ -3,8 +3,8 @@ package com.google.test.inspectors.db
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
-import com.google.test.inspectors.grpc.GrpcClient
-import com.google.test.inspectors.grpc.GrpcClient.ChannelBuilderType.MANAGED_FOR_ADDRESS
+import com.google.test.inspectors.network.grpc.GrpcClient
+import com.google.test.inspectors.network.grpc.GrpcClient.ChannelBuilderType.MANAGED_FOR_ADDRESS
 
 @Dao
 internal interface SettingsDao {

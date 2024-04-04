@@ -29,11 +29,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.test.inspectors.JavaNet
-import com.google.test.inspectors.OkHttp2
-import com.google.test.inspectors.OkHttp3
-import com.google.test.inspectors.SimpleTextButton
+import com.google.test.inspectors.network.JavaNet
+import com.google.test.inspectors.network.OkHttp2
+import com.google.test.inspectors.network.OkHttp3
 import com.google.test.inspectors.settings.SettingsDialog
+import com.google.test.inspectors.ui.SimpleTextButton
 import com.google.test.inspectors.ui.theme.InspectorsTestAppTheme
 
 private val POST_DATA =

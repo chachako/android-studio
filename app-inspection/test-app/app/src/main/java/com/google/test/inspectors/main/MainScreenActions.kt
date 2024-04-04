@@ -1,6 +1,6 @@
 package com.google.test.inspectors.main
 
-import com.google.test.inspectors.HttpClient
+import com.google.test.inspectors.network.HttpClient
 
 internal interface MainScreenActions {
 

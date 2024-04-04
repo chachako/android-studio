@@ -18,16 +18,13 @@ package com.google.test.inspectors.settings
 
 import androidx.lifecycle.ViewModel
 import com.google.test.inspectors.db.SettingsDao
-import com.google.test.inspectors.grpc.GrpcClient.ChannelBuilderType
+import com.google.test.inspectors.network.grpc.GrpcClient.ChannelBuilderType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-internal class SettingsViewModel
-@Inject
-constructor(
-  private val settingsDao: SettingsDao,
-) : ViewModel() {
+internal class SettingsViewModel @Inject constructor(private val settingsDao: SettingsDao) :
+  ViewModel() {
 
   suspend fun getHost(): String = settingsDao.getHost()
 

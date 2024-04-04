@@ -53,8 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.test.inspectors.db.SettingsDao
-import com.google.test.inspectors.grpc.GrpcClient.ChannelBuilderType
-import com.google.test.inspectors.grpc.GrpcClient.ChannelBuilderType.MANAGED_FOR_ADDRESS
+import com.google.test.inspectors.network.grpc.GrpcClient.ChannelBuilderType
+import com.google.test.inspectors.network.grpc.GrpcClient.ChannelBuilderType.MANAGED_FOR_ADDRESS
 import com.google.test.inspectors.ui.theme.InspectorsTestAppTheme
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -64,10 +64,7 @@ import kotlinx.coroutines.flow.onEach
 
 @OptIn(FlowPreview::class)
 @Composable
-internal fun SettingsDialog(
-  onDismiss: () -> Unit,
-  viewModel: SettingsViewModel = hiltViewModel(),
-) {
+internal fun SettingsDialog(onDismiss: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
   var host by remember { mutableStateOf("") }
   LaunchedEffect(key1 = Unit) {
     host = viewModel.getHost()
@@ -124,12 +121,7 @@ private fun SettingsDialog(
     properties = DialogProperties(usePlatformDefaultWidth = false),
     modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 80.dp),
     onDismissRequest = { onDismiss() },
-    title = {
-      Text(
-        text = "Settings",
-        style = MaterialTheme.typography.titleLarge,
-      )
-    },
+    title = { Text(text = "Settings", style = MaterialTheme.typography.titleLarge) },
     text = {
       Divider()
       Column(Modifier.verticalScroll(rememberScrollState())) {
@@ -193,7 +185,7 @@ private fun SettingsPanel(
 
     DropdownMenu(
       expanded = channelPickerExpanded,
-      onDismissRequest = { channelPickerExpanded = false }
+      onDismissRequest = { channelPickerExpanded = false },
     ) {
       ChannelBuilderType.entries.forEach {
         DropdownMenuItem(
@@ -201,7 +193,7 @@ private fun SettingsPanel(
           onClick = {
             onChannelBuilderTypeUpdated(it)
             channelPickerExpanded = false
-          }
+          },
         )
       }
     }

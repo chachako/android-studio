@@ -27,7 +27,7 @@
       </intent-filter>
     </activity>
     <receiver
-            android:name=".AlarmReceiver"
+            android:name=".background.AlarmReceiver"
             android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -36,7 +36,7 @@
     </receiver>
 
     <service
-            android:name=".AppJobService"
+            android:name=".background.AppJobService"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
     <provider

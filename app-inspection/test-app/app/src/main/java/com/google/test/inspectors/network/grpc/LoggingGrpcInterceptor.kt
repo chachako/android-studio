@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.test.inspectors.grpc
+package com.google.test.inspectors.network.grpc
 
 import android.util.Log
 import io.grpc.Attributes
@@ -37,16 +37,15 @@ internal class LoggingGrpcInterceptor : ClientInterceptor {
   override fun <Req : Any, Res : Any> interceptCall(
     method: MethodDescriptor<Req, Res>,
     options: CallOptions,
-    next: Channel
+    next: Channel,
   ): ClientCall<Req, Res> {
     return InterceptingClientCall(
       next.newCall(method, options.withStreamTracerFactory(StreamTracer.Factory()))
     )
   }
 
-  private class InterceptingClientCall<Req : Any, Res : Any>(
-    delegate: ClientCall<Req, Res>,
-  ) : SimpleForwardingClientCall<Req, Res>(delegate) {
+  private class InterceptingClientCall<Req : Any, Res : Any>(delegate: ClientCall<Req, Res>) :
+    SimpleForwardingClientCall<Req, Res>(delegate) {
 
     override fun start(responseListener: Listener<Res>, headers: Metadata) {
       Log.i(TAG, "InterceptingClientCall.start(): ${headers.toLog()}")
@@ -74,9 +73,8 @@ internal class LoggingGrpcInterceptor : ClientInterceptor {
     }
   }
 
-  class ClientCallListener<Res : Any>(
-    responseListener: ClientCall.Listener<Res>,
-  ) : SimpleForwardingClientCallListener<Res>(responseListener) {
+  class ClientCallListener<Res : Any>(responseListener: ClientCall.Listener<Res>) :
+    SimpleForwardingClientCallListener<Res>(responseListener) {
 
     override fun onMessage(message: Res) {
       super.onMessage(message)
