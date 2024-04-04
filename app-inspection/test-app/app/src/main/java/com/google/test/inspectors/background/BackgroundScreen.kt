@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.test.inspectors.main
+package com.google.test.inspectors.background
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -25,30 +25,41 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.test.inspectors.ui.ButtonGrid
 import com.google.test.inspectors.ui.button
+import com.google.test.inspectors.ui.scafold.AppScaffold
 import com.google.test.inspectors.ui.theme.InspectorsTestAppTheme
 
 @Composable
-fun MainScreen(onNetworkClicked: () -> Unit, onBackgroundClicked: () -> Unit) {
-  Scaffold(topBar = { TopBar() }) {
-    Box(modifier = Modifier.padding(it)) {
-      ButtonGrid {
-        button("Network Actions", onNetworkClicked)
-        button("Background Actions", onBackgroundClicked)
-      }
-    }
+fun BackgroundScreen() {
+  val viewModel: BackgroundViewModel = hiltViewModel()
+  AppScaffold(viewModel, topBar = { TopBar() }) { BackgroundScreen(viewModel) }
+}
+
+@Composable
+private fun BackgroundScreen(actions: BackgroundScreenActions) {
+  ButtonGrid {
+    button("Start Job") { actions.startJob() }
+    button("Start Work") { actions.startWork() }
+    button("Acquire Wake Lock") { actions.doAcquireWakeLock() }
+    button("Release Wake Lock") { actions.doReleaseWakeLock() }
+    button("Set Alarm") { actions.doSetAlarm() }
   }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar() {
-  TopAppBar(title = { Text(text = "Inspectors Test App") })
+  TopAppBar(title = { Text(text = "Background Actions") })
 }
 
 @Preview(showBackground = true)
 @Composable
-fun MainPreview() {
-  InspectorsTestAppTheme { MainScreen({}, {}) }
+fun BackgroundPreview() {
+  InspectorsTestAppTheme {
+    Scaffold(topBar = { TopBar() }) {
+      Box(modifier = Modifier.padding(it)) { BackgroundScreen(object : BackgroundScreenActions {}) }
+    }
+  }
 }

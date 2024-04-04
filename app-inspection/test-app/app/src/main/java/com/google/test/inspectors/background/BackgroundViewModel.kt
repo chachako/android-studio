@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.test.inspectors.main
+package com.google.test.inspectors.background
 
 import android.app.AlarmManager
 import android.app.Application
@@ -39,17 +39,6 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.Worker
 import com.google.test.inspectors.Logger
-import com.google.test.inspectors.background.AlarmReceiver
-import com.google.test.inspectors.background.AppJobService
-import com.google.test.inspectors.background.InjectedWorker
-import com.google.test.inspectors.background.ManualWorker
-import com.google.test.inspectors.db.SettingsDao
-import com.google.test.inspectors.grpc.custom.CustomRequest
-import com.google.test.inspectors.grpc.json.JsonRequest
-import com.google.test.inspectors.grpc.proto.protoRequest
-import com.google.test.inspectors.grpc.xml.XmlRequest
-import com.google.test.inspectors.network.HttpClient
-import com.google.test.inspectors.network.grpc.GrpcClient
 import com.google.test.inspectors.ui.scafold.AppScaffoldViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.concurrent.atomic.AtomicInteger
@@ -62,10 +51,8 @@ import kotlinx.coroutines.launch
 private val jobId = AtomicInteger(1)
 
 @HiltViewModel
-internal class MainViewModel
-@Inject
-constructor(private val application: Application, private val settingsDao: SettingsDao) :
-  AppScaffoldViewModel(), MainScreenActions {
+internal class BackgroundViewModel @Inject constructor(private val application: Application) :
+  AppScaffoldViewModel(), BackgroundScreenActions {
 
   private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
     setSnack("Error: ${throwable.message}")
@@ -110,51 +97,6 @@ constructor(private val application: Application, private val settingsDao: Setti
     }
     workManager.enqueue(request)
   }
-
-  override fun doGet(client: HttpClient, url: String) {
-    scope.launch {
-      val result = client.doGet(url)
-      setSnack("${client.name} Result: ${result.rc}")
-    }
-  }
-
-  override fun doPost(client: HttpClient, url: String, data: ByteArray, type: String) {
-    scope.launch {
-      val result = client.doPost(url, data, type)
-      setSnack("${client.name} Result: ${result.rc}")
-    }
-  }
-
-  override fun doProtoGrpc(name: String) {
-    scope.launch {
-      val response = newGrpcClient().use { it.doProtoGrpc(protoRequest { this.name = name }) }
-      setSnack(response.message)
-    }
-  }
-
-  override fun doJsonGrpc(name: String) {
-    scope.launch {
-      val response = newGrpcClient().use { it.doJsonGrpc(JsonRequest(name)) }
-      setSnack(response.message)
-    }
-  }
-
-  override fun doXmlGrpc(name: String) {
-    scope.launch {
-      val response = newGrpcClient().use { it.doXmlGrpc(XmlRequest(name)) }
-      setSnack(response.message)
-    }
-  }
-
-  override fun doCustomGrpc(name: String) {
-    scope.launch {
-      val response = newGrpcClient().use { it.doCustomGrpc(CustomRequest(name)) }
-      setSnack(response.message)
-    }
-  }
-
-  private suspend fun newGrpcClient() =
-    GrpcClient(settingsDao.getHost(), settingsDao.getPort(), settingsDao.getChannelBuilderType())
 
   override fun doSetAlarm() {
     val alarmManager = application.getSystemService<AlarmManager>() ?: throw IllegalStateException()
