@@ -259,6 +259,16 @@ class PrivacySandboxMediatorSdkTest {
                     }
                     """.trimIndent())
         }
+        subProject(":android-lib") {
+            plugins.add(PluginType.ANDROID_LIB)
+            plugins.add(PluginType.KOTLIN_ANDROID)
+            android {
+                defaultCompileSdk()
+                namespace = "com.example.androidlib"
+                minSdk = 23
+            }
+        }
+
         rootProject {
             useNewPluginsDsl = true
             plugins.add(PluginType.KSP)
@@ -323,6 +333,38 @@ class PrivacySandboxMediatorSdkTest {
         execution.assertErrorContains("'include' configuration can not contains dependencies found in 'requiredSdk' or 'optionalSdk'. " +
                 "Recommended Action: Remove the following dependency from the 'include' configuration: sdk-a")
     }
+
+    @Test
+    fun failWhenAddingANonSdkDependencyToRequiredSdk() {
+        val sdkProject = project.getSubproject(":privacy-sandbox-sdk-mediator")
+        // Add a new requiredSdk dependency, that is not an SDK.
+        TestFileUtils.searchAndReplace(
+            sdkProject.buildFile.toPath(),
+            "include project(':privacy-sandbox-sdk-mediator-impl')",
+            """include project(':privacy-sandbox-sdk-mediator-impl')
+                requiredSdk('com.externaldep:externaljar:1')""".trimIndent()
+        )
+        var execution =
+            executor().expectFailure()
+                .run(":privacy-sandbox-sdk-mediator:validatePrivacySandboxSdkConfiguration")
+        execution.assertErrorContains(
+            "com.externaldep:externaljar:1 is a not a privacy sandbox sdk."
+        )
+
+        TestFileUtils.searchAndReplace(
+            sdkProject.buildFile.toPath(),
+            "requiredSdk('com.externaldep:externaljar:1')",
+            "requiredSdk(project(':android-lib'))"
+        )
+        execution =
+            executor().expectFailure()
+                .run(":privacy-sandbox-sdk-mediator:validatePrivacySandboxSdkConfiguration")
+        execution.assertErrorContains(
+            "project :android-lib is a not a privacy sandbox sdk"
+        )
+    }
+
+
 
     @Test
     fun asbSdkBundleConfigProtoContainsCorrectSdkDependencyInfo() {

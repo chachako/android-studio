@@ -192,6 +192,12 @@ class PrivacySandboxSdkConsumptionTest {
               version_minor: 2
               build_time_version_patch: 3
             }
+            sdk {
+              package_name: "com.example.privacysandboxsdkb"
+              version_major: 1
+              version_minor: 2
+              build_time_version_patch: 3
+            }
             """.trimIndent())
 
         Apk(project.getSubproject(":example-app")
@@ -230,7 +236,7 @@ class PrivacySandboxSdkConsumptionTest {
         val sdkApks =
                 GenericBuiltArtifactsLoader.loadListFromFile(privacySandboxSdkInfo.outputListingFile,
                         StdLogger(StdLogger.Level.INFO))
-        Apk(File(sdkApks.single().elements.single().outputFile)).use {
+        Apk(File(sdkApks.single { it.applicationId.startsWith("com.example.privacysandboxsdk_") }.elements.single().outputFile)).use {
             ApkSubject.assertThat(it).exists()
             ApkSubject.assertThat(it).containsClass(SDK_IMPL_A_CLASS)
             ApkSubject.assertThat(it)
@@ -241,7 +247,7 @@ class PrivacySandboxSdkConsumptionTest {
                 GenericBuiltArtifactsLoader.loadFromFile(privacySandboxSdkInfo.outputListingLegacyFile,
                         StdLogger(StdLogger.Level.INFO))!!
 
-        assertThat(compatSplits.elements).named("compat splits elements").hasSize(2)
+        assertThat(compatSplits.elements).named("compat splits elements").hasSize(3)
         Apk(File(compatSplits.elements.single { it.outputFile.endsWith(
                 INJECTED_PRIVACY_SANDBOX_COMPAT_SUFFIX) }.outputFile)).use {
             ApkSubject.assertThat(it).exists()
@@ -277,6 +283,7 @@ class PrivacySandboxSdkConsumptionTest {
         assertThat(extractedSdkApks.map { it.name })
                 .containsExactly(
                         "example-app-debug-injected-privacy-sandbox-compat.apk",
+                        "comexampleprivacysandboxsdkb-master.apk",
                         "comexampleprivacysandboxsdk-master.apk"
                 )
 
@@ -381,9 +388,20 @@ class PrivacySandboxSdkConsumptionTest {
                 .expectFailure()
                 .run(":example-app:assemble")
         assertThat(buildFailsConsumptionNotEnabled.failureMessage).isEqualTo(
-                """An issue was found when checking AAR metadata:
+                """2 issues were found when checking AAR metadata:
 
   1.  Dependency :privacy-sandbox-sdk is an Android Privacy Sandbox SDK library, and needs
+      Privacy Sandbox support to be enabled in projects that depend on it.
+
+      Recommended action: Enable privacy sandbox consumption in this project by setting
+          android {
+              privacySandbox {
+                  enable = true
+              }
+          }
+      in this project's build.gradle
+
+  2.  Dependency :privacy-sandbox-sdk-b is an Android Privacy Sandbox SDK library, and needs
       Privacy Sandbox support to be enabled in projects that depend on it.
 
       Recommended action: Enable privacy sandbox consumption in this project by setting

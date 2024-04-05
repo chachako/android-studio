@@ -260,10 +260,12 @@ class PrivacySandboxSdkPlugin @Inject constructor(
         // this is the outgoing configuration for JAVA_API scoped declarations
         project.configurations.create("apiElements") { apiElements ->
             configurePrivacySandboxElements(apiElements, Usage.JAVA_API)
+            apiElements.extendsFrom(requiredSdkConfiguration)
         }
         // this is the outgoing configuration for JAVA_RUNTIME scoped declarations
         project.configurations.create("runtimeElements") { runtimeElements ->
             configurePrivacySandboxElements(runtimeElements, Usage.JAVA_RUNTIME)
+            runtimeElements.extendsFrom(requiredSdkConfiguration)
         }
         val incomingConfigurationsToAdd = listOf(includeApiClasspath, includeRuntimeClasspath)
         incomingConfigurationsToAdd.forEach { configuration ->

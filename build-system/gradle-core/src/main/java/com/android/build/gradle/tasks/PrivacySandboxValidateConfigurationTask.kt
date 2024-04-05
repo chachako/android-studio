@@ -90,7 +90,16 @@ abstract class PrivacySandboxValidateConfigurationTask : NonIncrementalTask() {
             error("${undeclaredSdks.joinToString()} " +
                     "must also be defined in 'optionalSdk' or 'requiredSdk' configurations.")
         }
-
+        // Check only SDKs are present in required configuration
+        for (dependency in optionalAndRequiredDeps) {
+            val resolvedDependencyResult = dependency as? ResolvedDependencyResult ?: continue
+            val selectedId = resolvedDependencyResult.selected.id
+            if (asarProducingDependencies.any { it == selectedId }) continue
+            error(
+                "$selectedId is a not a privacy sandbox sdk.\n" +
+                        "requiredSdk' and 'optionalSdk' configurations must only contain Privacy Sandbox SDK dependencies."
+            )
+        }
     }
 
     class CreationAction(val creationConfig: PrivacySandboxSdkVariantScope)
