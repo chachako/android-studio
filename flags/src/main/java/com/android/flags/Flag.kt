@@ -16,7 +16,6 @@
 package com.android.flags
 
 import java.util.Locale
-import java.util.function.Supplier
 
 /**
  * A flag is a setting with an unique ID and some value. Flags are often used to gate features (e.g.
@@ -32,6 +31,8 @@ sealed class Flag<T>(
   /** Returns a user-friendly description for what feature this flag gates. */
   val description: String,
   defaultValue: T,
+  /** Flags with non-static defaults will have a description of how that default is computed. */
+  val defaultValueDescription: String?,
   private val valueConverter: ValueConverter<T>
 ) {
 
@@ -132,21 +133,30 @@ sealed class Flag<T>(
   }
 }
 
-class BooleanFlag(
+class BooleanFlag private constructor(
   group: FlagGroup,
   name: String,
   displayName: String,
   description: String,
-  defaultValue: Boolean
-) : Flag<Boolean>(group, name, displayName, description, defaultValue, Converter) {
+  defaultValue: Boolean,
+  defaultValueDescription: String? = null,
+) : Flag<Boolean>(group, name, displayName, description, defaultValue, defaultValueDescription, Converter) {
 
   constructor(
     group: FlagGroup,
     name: String,
     displayName: String,
     description: String,
-    defaultValueProvider: Supplier<Boolean>
-  ) : this(group, name, displayName, description, defaultValueProvider.get())
+    defaultValue: Boolean,
+    ) : this(group, name, displayName, description, defaultValue, null)
+
+  constructor(
+    group: FlagGroup,
+    name: String,
+    displayName: String,
+    description: String,
+    defaultValueProvider: FlagDefault<Boolean>
+  ) : this(group, name, displayName, description, defaultValueProvider.get(), defaultValueProvider.explanation)
 
   object Converter : ValueConverter<Boolean> {
     override fun serialize(value: Boolean) = value.toString()
@@ -155,21 +165,30 @@ class BooleanFlag(
   }
 }
 
-class IntFlag(
+class IntFlag private constructor(
   group: FlagGroup,
   name: String,
   displayName: String,
   description: String,
-  defaultValue: Int
-) : Flag<Int>(group, name, displayName, description, defaultValue, Converter) {
+  defaultValue: Int,
+  defaultValueDescription: String? = null,
+) : Flag<Int>(group, name, displayName, description, defaultValue, defaultValueDescription, Converter) {
 
   constructor(
     group: FlagGroup,
     name: String,
     displayName: String,
     description: String,
-    defaultValueProvider: Supplier<Int>
-  ) : this(group, name, displayName, description, defaultValueProvider.get())
+    defaultValue: Int,
+  ) : this(group, name, displayName, description, defaultValue, null)
+
+  constructor(
+    group: FlagGroup,
+    name: String,
+    displayName: String,
+    description: String,
+    defaultValueProvider: FlagDefault<Int>
+  ) : this(group, name, displayName, description, defaultValueProvider.get(), defaultValueProvider.explanation)
 
   object Converter : ValueConverter<Int> {
     override fun serialize(value: Int) = value.toString()
@@ -178,21 +197,30 @@ class IntFlag(
   }
 }
 
-class LongFlag(
+class LongFlag private constructor(
   group: FlagGroup,
   name: String,
   displayName: String,
   description: String,
-  defaultValue: Long
-) : Flag<Long>(group, name, displayName, description, defaultValue, Converter) {
+  defaultValue: Long,
+  defaultValueDescription: String? = null,
+) : Flag<Long>(group, name, displayName, description, defaultValue, defaultValueDescription, Converter) {
 
   constructor(
     group: FlagGroup,
     name: String,
     displayName: String,
     description: String,
-    defaultValueProvider: Supplier<Long>
-  ) : this(group, name, displayName, description, defaultValueProvider.get())
+    defaultValue: Long,
+  ) : this(group, name, displayName, description, defaultValue, null)
+
+  constructor(
+    group: FlagGroup,
+    name: String,
+    displayName: String,
+    description: String,
+    defaultValueProvider: FlagDefault<Long>
+  ) : this(group, name, displayName, description, defaultValueProvider.get(), defaultValueProvider.explanation)
 
   object Converter : ValueConverter<Long> {
     override fun serialize(value: Long) = value.toString()
@@ -201,21 +229,30 @@ class LongFlag(
   }
 }
 
-class StringFlag(
+class StringFlag private constructor(
   group: FlagGroup,
   name: String,
   displayName: String,
   description: String,
-  defaultValue: String
-) : Flag<String>(group, name, displayName, description, defaultValue, Converter) {
+  defaultValue: String,
+  defaultValueDescription: String? = null,
+ ) : Flag<String>(group, name, displayName, description, defaultValue, defaultValueDescription, Converter) {
 
   constructor(
     group: FlagGroup,
     name: String,
     displayName: String,
     description: String,
-    defaultValueProvider: Supplier<String>
-  ) : this(group, name, displayName, description, defaultValueProvider.get())
+    defaultValue: String,
+  ) : this(group, name, displayName, description, defaultValue, null)
+
+  constructor(
+    group: FlagGroup,
+    name: String,
+    displayName: String,
+    description: String,
+    defaultValueProvider: FlagDefault<String>
+  ) : this(group, name, displayName, description, defaultValueProvider.get(), defaultValueProvider.explanation)
 
   object Converter : ValueConverter<String> {
     override fun serialize(value: String) = value
@@ -224,12 +261,13 @@ class StringFlag(
   }
 }
 
-class EnumFlag<T : Enum<T>>(
+class EnumFlag<T : Enum<T>> private constructor(
   group: FlagGroup,
   name: String,
   displayName: String,
   description: String,
-  defaultValue: T
+  defaultValue: T,
+  defaultValueDescription: String? = null,
 ) :
   Flag<T>(
     group,
@@ -237,6 +275,7 @@ class EnumFlag<T : Enum<T>>(
     displayName,
     description,
     defaultValue,
+    defaultValueDescription,
     EnumConverter(defaultValue.javaClass)
   ) {
 
@@ -245,8 +284,16 @@ class EnumFlag<T : Enum<T>>(
     name: String,
     displayName: String,
     description: String,
-    defaultValueProvider: Supplier<T>
-  ) : this(group, name, displayName, description, defaultValueProvider.get())
+    defaultValue: T,
+  ) : this(group, name, displayName, description, defaultValue, null)
+
+  constructor(
+    group: FlagGroup,
+    name: String,
+    displayName: String,
+    description: String,
+    defaultValueProvider: FlagDefault<T>
+  ) : this(group, name, displayName, description, defaultValueProvider.get(), defaultValueProvider.explanation)
 
   /**
    * Creates a [ValueConverter] for the given enum class. Values are stored using their names, to

@@ -19,7 +19,6 @@ package com.android.flags;
 import static com.google.common.truth.Truth.assertThat;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -244,30 +243,45 @@ public class FlagTest {
         AtomicInteger stringSupplierCalled = new AtomicInteger();
         AtomicInteger enumSupplierCalled = new AtomicInteger();
 
-        Supplier<Boolean> boolSupplier =
-                () -> {
-                    boolSupplierCalled.incrementAndGet();
-                    return true;
+        FlagDefault<Boolean> boolSupplier =
+                new FlagDefault<Boolean>("test boolean supplier") {
+                    @Override
+                    public Boolean get() {
+                        boolSupplierCalled.incrementAndGet();
+                        return true;
+                    }
                 };
-        Supplier<Integer> intSupplier =
-                () -> {
-                    intSupplierCalled.incrementAndGet();
-                    return 753;
+        FlagDefault<Integer> intSupplier =
+                new FlagDefault<Integer>("test integer supplier") {
+                    @Override
+                    public Integer get() {
+                        intSupplierCalled.incrementAndGet();
+                        return 753;
+                    }
                 };
-        Supplier<Long> longSupplier =
-                () -> {
-                    longSupplierCalled.incrementAndGet();
-                    return 555L;
+        FlagDefault<Long> longSupplier =
+                new FlagDefault<Long>("test long supplier") {
+                    @Override
+                    public Long get() {
+                        longSupplierCalled.incrementAndGet();
+                        return 555L;
+                    }
                 };
-        Supplier<String> stringSupplier =
-                () -> {
-                    stringSupplierCalled.incrementAndGet();
-                    return "some string";
+        FlagDefault<String> stringSupplier =
+                new FlagDefault<String>("test string supplier") {
+                    @Override
+                    public String get() {
+                        stringSupplierCalled.incrementAndGet();
+                        return "some string";
+                    }
                 };
-        Supplier<Colors> enumSupplier =
-                () -> {
-                    enumSupplierCalled.incrementAndGet();
-                    return Colors.BLUE;
+        FlagDefault<Colors> enumSupplier =
+                new FlagDefault<Colors>("test enum supplier") {
+                    @Override
+                    public Colors get() {
+                        enumSupplierCalled.incrementAndGet();
+                        return Colors.BLUE;
+                    }
                 };
 
         Flags flags = new Flags();
@@ -292,6 +306,12 @@ public class FlagTest {
         assertThat(longSupplierCalled.get()).isEqualTo(1);
         assertThat(stringSupplierCalled.get()).isEqualTo(1);
         assertThat(enumSupplierCalled.get()).isEqualTo(1);
+
+        assertThat(boolFlag.getDefaultValueDescription()).isEqualTo("test boolean supplier");
+        assertThat(intFlag.getDefaultValueDescription()).isEqualTo("test integer supplier");
+        assertThat(longFlag.getDefaultValueDescription()).isEqualTo("test long supplier");
+        assertThat(stringFlag.getDefaultValueDescription()).isEqualTo("test string supplier");
+        assertThat(enumFlag.getDefaultValueDescription()).isEqualTo("test enum supplier");
     }
 
     private static final class GameFeatures {
