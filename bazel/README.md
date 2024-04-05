@@ -173,11 +173,19 @@ In order to fetch new Maven artifacts into the local Maven repository under
 1. Add the dependency to the `ARTIFACTS` or `DATA` in
 the `tools/base/bazel/maven/artifacts.bzl` file.
 
-  * If the artifact is needed as a compile or runtime Java dependency in Bazel,
-    then add it to `ARTIFACTS`.
+  * In most cases, it should be added to `DATA`. For instance, if the artifact
+    is only used in the `data` section of rules (e.g., it's used as a Gradle
+    dependency artifact in tests), or if the artifact is going to
+    be used to build Android Studio (i.e., added to an IntelliJ IDEA library
+    either in `.idea/libraries/*.xml`, or an inline library in `*.iml` files),
+    then use `DATA`. Note that the Android Studio build case requires running
+    `iml_to_build` which generates a `java_import` rule that wraps the files
+    listed in the library.
 
-  * If the artifact will only be used in tests as data (i.e., passed into
-    `maven_repository` rules), then add it to `DATA`.
+  * If you need to use the artifact directly in the `deps` or `runtime_deps` section
+    of a `(maven|kotlin|java)_library` rule, then add it to `ARTIFACTS`. This
+    will bring the artifact, and all of its transitive depdendencies to the
+    Java classpath of such rules that depend on it.
 
 2. Use the following script to download the artifacts and update the
    `BUILD.maven` file.
