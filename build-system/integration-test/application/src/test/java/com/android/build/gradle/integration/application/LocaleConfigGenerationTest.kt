@@ -652,4 +652,19 @@ class LocaleConfigGenerationTest {
         assertLocaleList("lib2", "debug").isEmpty()
         validateLocalesInLocaleConfigAndApk(listOf("en-US", "en-XA", "ar-XB"))
     }
+
+    // Regression test for b/332731575
+    @Test
+    fun `Test values folders that are not locale specific`() {
+        buildDsl(generateLocaleConfig = true)
+        val themesFile =
+            project.getSubproject("app").file("src/main/res/values-night/themes.xml")
+        themesFile.parentFile.mkdirs()
+        themesFile.writeText("<resources></resources>")
+        project.withLocales(
+            appLocales = listOf(DEFAULT),
+            lib1Locales = listOf(),
+            lib2Locales = listOf()
+        ).execute("assembleDebug")
+    }
 }

@@ -16,6 +16,7 @@
 
 package com.android.ide.common.resources
 
+import com.android.ide.common.resources.configuration.FolderConfiguration
 import com.android.ide.common.resources.configuration.LocaleQualifier
 import com.android.SdkConstants
 import java.io.File
@@ -55,7 +56,10 @@ fun generateFolderLocaleSet(
     val folderLocales = mutableSetOf<String>()
     folderLocales.addAll(
         allResources.filter { resourceFolder ->
-            resourceFolder.name.startsWith("values-")
+            resourceFolder.name.startsWith("values-") &&
+            FolderConfiguration.getConfigFromQualifiers(
+                resourceFolder.name.substringAfter("values-").split("-")
+            )?.localeQualifier != null
         }.map { it.name.substringAfter("values-") }
     )
 
