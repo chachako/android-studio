@@ -25,18 +25,22 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
 import com.google.test.inspectors.ui.ButtonGrid
 import com.google.test.inspectors.ui.button
+import com.google.test.inspectors.ui.navigation.Destination
 import com.google.test.inspectors.ui.theme.InspectorsTestAppTheme
 
 @Composable
-fun MainScreen(onNetworkClicked: () -> Unit, onBackgroundClicked: () -> Unit) {
-  Scaffold(topBar = { TopBar() }) {
-    Box(modifier = Modifier.padding(it)) {
-      ButtonGrid {
-        button("Network Actions", onNetworkClicked)
-        button("Background Actions", onBackgroundClicked)
-      }
+fun MainScreen(navigator: NavHostController) {
+  MainScreen { navigator.navigate(it) }
+}
+
+@Composable
+private fun MainScreen(navigate: (String) -> Unit = {}) {
+  Scaffold(topBar = { TopBar() }) { padding ->
+    Box(modifier = Modifier.padding(padding)) {
+      ButtonGrid { Destination.entries.forEach { button(it.title) { navigate(it.name) } } }
     }
   }
 }
@@ -50,5 +54,5 @@ private fun TopBar() {
 @Preview(showBackground = true)
 @Composable
 fun MainPreview() {
-  InspectorsTestAppTheme { MainScreen({}, {}) }
+  InspectorsTestAppTheme { MainScreen() }
 }

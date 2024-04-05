@@ -21,29 +21,23 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.test.inspectors.background.BackgroundScreen
+import com.google.test.inspectors.database.DatabaseScreen
 import com.google.test.inspectors.main.MainScreen
 import com.google.test.inspectors.network.NetworkScreen
-import com.google.test.inspectors.ui.navigation.Destination.BACKGROUND
-import com.google.test.inspectors.ui.navigation.Destination.NETWORK
 
-private enum class Destination(val screen: @Composable () -> Unit) {
-  NETWORK({ NetworkScreen() }),
-  BACKGROUND({ BackgroundScreen() }),
+enum class Destination(val title: String, val screen: @Composable () -> Unit) {
+  DATABASE("Database Actions", { DatabaseScreen() }),
+  NETWORK("Network Actions", { NetworkScreen() }),
+  BACKGROUND("Background Actions", { BackgroundScreen() }),
 }
 
 @Composable
 fun Navigation() {
   val navController = rememberNavController()
 
+  val destinations = Destination.entries
   NavHost(navController = navController, startDestination = "main") {
-    composable("main") {
-      MainScreen(
-        onNetworkClicked = { navController.navigate(NETWORK.name) },
-        onBackgroundClicked = { navController.navigate(BACKGROUND.name) },
-      )
-    }
-    Destination.entries.forEach { destination ->
-      composable(destination.name) { destination.screen() }
-    }
+    composable("main") { MainScreen(navController) }
+    destinations.forEach { destination -> composable(destination.name) { destination.screen() } }
   }
 }
