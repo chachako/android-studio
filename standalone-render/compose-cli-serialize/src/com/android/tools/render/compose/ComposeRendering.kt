@@ -24,7 +24,7 @@ data class ComposeRendering(
     val layoutlibPath: String,
     val outputFolder: String,
     val classPath: List<String>,
-    val packageName: String,
+    val namespace: String,
     val resourceApkPath: String,
     val screenshots: List<ComposeScreenshot>,
     val resultsFileName: String = "results.json"

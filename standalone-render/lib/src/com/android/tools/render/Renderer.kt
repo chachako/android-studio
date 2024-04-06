@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit
 class Renderer private constructor(
     fontsPath: String?,
     resourceApkPath: String?,
-    packageName: String,
+    namespace: String,
     classPath: List<String>,
     layoutlibPath: String,
     private val isForTest: Boolean,
@@ -78,7 +78,7 @@ class Renderer private constructor(
 
         val androidVersion = AndroidVersion(33)
         val androidTarget = StandaloneAndroidTarget(androidVersion)
-        val androidModuleInfo = StandaloneModuleInfo(packageName, androidVersion)
+        val androidModuleInfo = StandaloneModuleInfo(namespace, androidVersion)
 
         val androidSdkData = AndroidSdkData.getSdkDataWithoutValidityCheck(File(""))
 
@@ -105,7 +105,7 @@ class Renderer private constructor(
             androidPlatform,
             moduleKey,
             moduleDependencies,
-            packageName,
+            namespace,
             environment.layoutlibContext,
             layoutlibPath,
         )
@@ -125,7 +125,7 @@ class Renderer private constructor(
             moduleKey,
             moduleDependencies,
             framework.project,
-            packageName,
+            namespace,
             environment,
             resourceIdManager,
         )
@@ -196,19 +196,19 @@ class Renderer private constructor(
         fun createRenderer(
             fontsPath: String?,
             resourceApkPath: String?,
-            packageName: String,
+            namespace: String,
             classPath: List<String>,
             layoutlibPath: String,
-        ) = Renderer(fontsPath, resourceApkPath, packageName, classPath, layoutlibPath, false)
+        ) = Renderer(fontsPath, resourceApkPath, namespace, classPath, layoutlibPath, false)
 
         @TestOnly
         @JvmStatic
         fun createTestRenderer(
             fontsPath: String?,
             resourceApkPath: String?,
-            packageName: String,
+            namespace: String,
             classPath: List<String>,
             layoutlibPath: String,
-        ) = Renderer(fontsPath, resourceApkPath, packageName, classPath, layoutlibPath, true)
+        ) = Renderer(fontsPath, resourceApkPath, namespace, classPath, layoutlibPath, true)
     }
 }

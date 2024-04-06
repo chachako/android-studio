@@ -34,7 +34,7 @@ class JsonSerializationTest {
                 "/path/to/lib2.jar",
                 "/path/to/classes"
               ],
-              "packageName": "com.my.package",
+              "namespace": "com.my.package",
               "resourceApkPath": "/path/to/resource.apk",
               "screenshots": [
                 {

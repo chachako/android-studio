@@ -63,7 +63,7 @@ class PreviewFinderTest {
             "fontsPath",
             "layoutlibpath",
             "outputFolder",
-            "packageName",
+            "namespace",
             "resourceApkPath",
             cliToolArgumentsFile,
             previewsFile)
@@ -76,7 +76,7 @@ class PreviewFinderTest {
                 "path/to/classes.jar",
                 "path/to/R.jar"
               ],
-              "packageName": "packageName",
+              "namespace": "namespace",
               "resourceApkPath": "resourceApkPath",
               "screenshots": [
                 {

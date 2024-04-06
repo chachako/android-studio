@@ -46,7 +46,7 @@ fun main(args: Array<String>) {
         Renderer.createRenderer(
             composeRendering.fontsPath,
             composeRendering.resourceApkPath,
-            composeRendering.packageName,
+            composeRendering.namespace,
             composeRendering.classPath,
             composeRendering.layoutlibPath,
         ).use {
