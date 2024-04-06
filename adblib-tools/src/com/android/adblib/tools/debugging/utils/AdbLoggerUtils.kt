@@ -28,28 +28,29 @@ import kotlin.coroutines.cancellation.CancellationException
  * depending on the severity of the error, with the assumption [AdbLogger.Level.INFO] is
  * the default [AdbLogger] level.
  */
-fun AdbLogger.logIOCompletionErrors(throwable: Throwable) {
+fun AdbLogger.logIOCompletionErrors(throwable: Throwable, messagePrefix: String = "") {
+    val prefix = if (messagePrefix.isEmpty()) "" else "$messagePrefix: "
     when (throwable) {
         // Cancellation is always expected to happen
         is CancellationException -> {
-            debug(throwable) { "Completion due to cancellation" }
+            debug(throwable) { "${prefix}Completion due to cancellation" }
         }
         // Errors related to EOF, end of connection or end of Channel are expected to happen
         is EOFException,
         is ClosedChannelException,
         is ClosedSendChannelException,
         is ClosedReceiveChannelException -> {
-            info { "Completion due to EOF or connection closed ($throwable)"}
+            info { "${prefix}Completion due to EOF or connection closed ($throwable)"}
             debug(throwable) { "-- Associated exception" }
         }
         // Other type of I/O errors are expected to happen, but rarely, so logging the stacktrace
         // can be useful.
         is IOException -> {
-            info(throwable) { "Completion due to I/O Exception" }
+            info(throwable) { "${prefix}Completion due to I/O Exception" }
         }
         // Other errors are not expected, log a warning
         else -> {
-            warn(throwable, "Completion due to unexpected exception")
+            warn(throwable, "${prefix}Completion due to unexpected exception")
         }
     }
 }
