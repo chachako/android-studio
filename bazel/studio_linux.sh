@@ -170,7 +170,9 @@ function run_bazel_test() {
     -- \
     //tools/adt/idea/studio:android-studio \
     //tools/adt/idea/studio:updater_deploy.jar \
-    //tools/vendor/google/aswb:aswb \
+    //tools/vendor/google/aswb:aswb.linux.zip \
+    //tools/vendor/google/aswb:aswb.mac.zip \
+    //tools/vendor/google/aswb:aswb.mac_arm.zip \
     //tools/adt/idea/native/installer:android-studio-bundle-data \
     //tools/base/profiler/native/trace_processor_daemon \
     //tools/base/deploy/deployer:deployer.runner_deploy.jar \
