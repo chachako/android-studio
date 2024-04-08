@@ -1,5 +1,6 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
+load("//tools/base/bazel:proto.bzl", "java_proto_library")
 
 # managed by go/iml_to_build
 iml_module(
@@ -15,6 +16,7 @@ iml_module(
         "@intellij//:com.intellij.java",
         "//tools/base/fakeadbserver:studio.android.sdktools.fakeadbserver[module, test]",
         "//tools/base/adblib:studio.android.sdktools.adblib[module]",
+        "//tools/adt/idea/.idea/libraries:libadblib-tools-proto",
     ],
 )
 
@@ -38,6 +40,8 @@ kotlin_library(
         "//tools/base/adblib",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
+        # See rule at end of this file
+        ":adblib-tools-proto",
     ],
 )
 
@@ -86,4 +90,17 @@ kotlin_test(
         # FakeAdbServer
         "//tools/base/fakeadbserver:tools.fakeadbserver",
     ],
+)
+
+#
+# Rule to compile 'proto/process_inventory_server.proto' for the stand-alone "kotlin_library" version
+# of adblib. This compiles the proto into the "com.android.server.adb.tools.proto" package.
+#
+java_proto_library(
+    # buildifier: disable=java_proto_library-naming
+    name = "adblib-tools-proto",
+    srcs = [
+        "proto/process_inventory_server.proto",
+    ],
+    visibility = ["//visibility:public"],
 )

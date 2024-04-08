@@ -216,7 +216,7 @@ class TcpServerTest {
                 if (runCount == retryCount) {
                     super.runServer(serverSocket)
                 } else {
-                    // Simulator a "crashing" server
+                    // Simulate a "crashing" server
                     serverSocket.close()
                 }
             }

@@ -1,0 +1,222 @@
+/*
+ * Copyright (C) 2021 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+option java_package = "com.android.adblib.tools.debugging.processinventory.protos";
+option java_outer_classname = "ProcessInventoryServerProto";
+option optimize_for = LITE_RUNTIME;
+package adblib.tools.protos;
+
+/*
+ * The protocol for "ProcessInventoryServer" is as follows
+ *
+ * Sending a request to the server:
+ *    bytes 0-3: 32-bit integer (little endian): length of "Request" proto to follow
+ *    bytes 4-n: array of bytes: "Request" proto message
+ *
+ * Receiving a response from the server:
+ *    bytes 0-3: 32-bit integer (little endian): length of "Response" proto to follow
+ *    bytes 4-n: array of bytes: "Response" proto message
+ *
+ * If "Request" was for a "stream" of "Response", the socket remains open, and many
+ * "Response" packets are sent to the socket until the socket closes.
+ */
+message Request {
+    /**
+     * An arbitrary string describing/identifying the client making the request. This string
+     * is only used for logging and diagnostics.
+     */
+    string client_description = 1;
+
+    /**
+     * The request payload, depending on the request [type]
+     */
+    oneof payload {
+        TrackDeviceRequestPayload track_device_request_payload = 10;
+        UpdateDeviceRequestPayload update_device_request_payload = 11;
+    }
+
+    /**
+     * Ask the server to start emitting `TrackDeviceResponsePayload` responses as process updates
+     * are sent to the server.
+     */
+    message TrackDeviceRequestPayload {
+        DeviceId device_id = 1;
+    }
+
+    /**
+     * Request to notify of updates to one or more processes, including "process termination"
+     */
+    message UpdateDeviceRequestPayload {
+        DeviceId device_id = 1;
+        ProcessUpdates process_updates = 2;
+    }
+
+}
+
+message Response {
+    /**
+     * An arbitrary string describing/identifying the server instance, used only for logging and
+     * diagnostic. The name is transient, i.e. a server restart may (a probably will) result in
+     * a new value.
+     */
+    string server_description = 1;
+
+    /**
+     * Whether the request was successful, i.e. whether the [payload] field contains
+     * the reply
+     */
+    bool ok = 2;
+
+    /**
+     * If [ok] is `false`, an optional error message
+     */
+    optional string error_message = 3;
+
+    oneof payload {
+        TrackDeviceResponsePayload track_device_response_payload = 11;
+        UpdateDeviceResponsePayload update_device_response_payload = 12;
+    }
+
+    /**
+     * The list of process changes since the last response was sent.
+     *
+     * Note: This response is sent multiple times until the connection is closed.
+     */
+    message TrackDeviceResponsePayload {
+        ProcessUpdates process_updates = 1;
+    }
+
+    message UpdateDeviceResponsePayload {
+        // Nothing, just an "ACK"
+    }
+}
+
+/**
+ * A device identifier as stored in the 'ProcessInventoryServer'
+ */
+message DeviceId {
+    /**
+     * An identifier of the ADB/adblib session used to distinguish between device
+     * serial numbers on different ADB connections.
+     *
+     * Note: This is currently unused, but is reserved for future use if support for
+     * multiple ADB connections is required.
+     */
+    string adb_session_id = 1;
+
+    /**
+     * The device serial number, identifying a device for a given adb_session_id
+     */
+    string serial_number = 2;
+}
+
+/*
+ * Changes from a previously sent `ProcessUpdates` message
+ */
+message ProcessUpdates {
+  repeated ProcessUpdate process_update = 1;
+}
+
+/*
+ * A single process change: a process may have been added, removed or one or more of its fields
+ * may have changed.
+ */
+message ProcessUpdate {
+    oneof process_update {
+        // A new process has been added or an existing process has been updated
+        JdwpProcessInfo process_updated = 1;
+        // A previously known process has exited
+        int32 process_terminated_pid = 2;
+    }
+}
+
+message JdwpProcessInfo {
+    int32 pid = 1;
+    CollectionStatus collection_status = 2;
+    JavaDebuggerStatus external_debugger_status = 3;
+
+    optional string process_name = 4;
+    optional string package_name = 5;
+    optional int32 user_id = 6;
+    optional string abi = 7;
+    optional string vm_identifier = 8;
+    optional string jvm_flags = 9;
+    optional bool native_debuggable = 10;
+    optional bool wait_packet_received = 11;
+    optional Features features = 13;
+
+    message CollectionStatus {
+        /**
+         * Whether all properties have been collected.
+         */
+        bool completed = 1;
+
+        /**
+         * Description of the last error encountered when collecting process properties, or `null`
+         * if no error occurred. Once [collection_completed] is `true`, this value never changes.
+         */
+        Exception exception = 2;
+    }
+
+    message JavaDebuggerStatus {
+        /**
+         * Whether the JDWP session is currently open waiting for a Java Debugger
+         * to connect to the address specified in [socket_address].
+         *
+         * Typically, this value is `true` when a process a received a `WAIT` packet from
+         * from the Android platform, i.e. [wait_packet_received] is `true`. Usually, this
+         * is the result of starting a process with `am start -D`.
+         *
+         * Note the value is reset to `false` once a Java debugger has connected to
+         * the [socket_address] address, and never set to `true` again.
+         */
+        bool waiting_for_debugger = 1;
+
+        /**
+         * Whether a Java debugger is currently connected to [socket_address], i.e. whether
+         * a JDWP session is active for this JDWP process.
+         */
+        bool debugger_is_attached = 2;
+
+        /**
+         * The [InetSocketAddress] a Java debugger can connect to start a JDWP debugging session.
+         */
+        optional InetSocketAddress socket_address = 3;
+    }
+
+    message Features {
+        repeated string feature = 1;
+    }
+}
+
+/**
+ * See https://docs.oracle.com/javase/8/docs/api/java/net/InetSocketAddress.html
+ * See https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html
+ */
+message InetSocketAddress {
+    /** host name if known ('localhost' for local machine) */
+    optional string hostname = 1;
+    /** bytes of the IP address, either 4-bytes for ipv4 or 16-bytes for ipv6 */
+    bytes ip_address = 2;
+    int32 tcp_port = 3;
+}
+
+message Exception {
+    string class_name = 1;
+    string message = 2;
+    optional Exception cause = 3;
+}
