@@ -16,50 +16,15 @@
 package com.android.tools.lint.client.api
 
 import com.android.tools.lint.detector.api.CURRENT_API
-import com.android.tools.lint.detector.api.Issue
 
 /** Registry which merges many issue registries into one, and presents a unified list of issues. */
 open class CompositeIssueRegistry(val registries: List<IssueRegistry>) : IssueRegistry() {
-  private var mergedIssues: List<Issue>? = null
-
-  override val issues: List<Issue>
-    get() {
-      val issues = this.mergedIssues
-      if (issues != null) {
-        return issues
-      }
-
-      var capacity = 0
-      for (registry in registries) {
-        capacity += registry.issues.size
-      }
-      val list = ArrayList<Issue>(capacity)
-      for (registry in registries) {
-        list.addAll(registry.issues)
-      }
-      this.mergedIssues = list
-      return list
-    }
-
-  override val deletedIssues: List<String>
-    get() {
-      // Usually nothing
-      if (registries.all { it.deletedIssues.isEmpty() }) {
-        return emptyList()
-      }
-      return registries.map { it.deletedIssues }.flatten()
-    }
+  override val issues by
+    lazy(LazyThreadSafetyMode.NONE) { registries.flatMap(IssueRegistry::issues) }
+  override val deletedIssues
+    get() = registries.flatMap(IssueRegistry::deletedIssues)
 
   override val api: Int = CURRENT_API
-
-  override val isUpToDate: Boolean
-    get() {
-      for (registry in registries) {
-        if (!registry.isUpToDate) {
-          return false
-        }
-      }
-
-      return true
-    }
+  override val isUpToDate
+    get() = registries.all(IssueRegistry::isUpToDate)
 }
