@@ -117,7 +117,7 @@ public class Implementation {
      * <p>NOTE: You would normally call {@link #isAdequate(EnumSet)} rather than calling this method
      * directly.
      *
-     * @return a list of required scopes, or null.
+     * @return a list of required scopes.
      */
     @NonNull
     public EnumSet<Scope>[] getAnalysisScopes() {
