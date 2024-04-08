@@ -17,7 +17,6 @@ cc_library(
     name = "support",
     srcs = [
         "support/cpu_trace.cc",
-        "support/energy_passthrough.cc",
         "support/event_passthrough.cc",
         "support/http_tracker.cc",
         "support/memory_stats_logger.cc",

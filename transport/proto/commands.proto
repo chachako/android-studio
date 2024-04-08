@@ -53,6 +53,8 @@ message Command {
     STOP_ALLOC_TRACKING = 405;
 
     // Energy Profiler Prefix = 500
+    // deprecated. do not use.
+
     // Event Profiler Prefix = 600
 
     // Sample echo Command
@@ -107,6 +109,8 @@ message Command {
     StopAllocTracking stop_alloc_tracking = 405;
 
     // Energy Profiler Prefix = 500
+    // Deprecated. Do not use.
+
     // Event Profiler Prefix = 600
 
     // Sample Echo Command starts at 1000;

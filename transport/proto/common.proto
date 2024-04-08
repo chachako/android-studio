@@ -22,7 +22,6 @@ option java_outer_classname = "Common";
 import "app_inspection.proto";
 import "cpu_data.proto";
 import "echo.proto";
-import "energy_data.proto";
 import "interaction_data.proto";
 import "memory_data.proto";
 import "network_data.proto";
@@ -101,10 +100,7 @@ message Event {
     MEMORY_TRACE = 412;
 
     // Energy Profiler Prefix = 500
-    // no specified group id.
-    ENERGY_USAGE = 501;
-    // group_id: event_id
-    ENERGY_EVENT = 502;
+    // Deprecated. Do not use.
 
     // Event Profiler Prefix = 600
     INTERACTION = 601;
@@ -214,12 +210,7 @@ message Event {
     MemoryAllocStatsData memory_alloc_Stats = 411;
 
     // Energy Profiler Prefix = 500
-    // Energy consumption calculated from CPU, network and location activities.
-    // Populated when |kind| is |ENERGY_USAGE|.
-    EnergyUsageData energy_usage = 501;
-    // Energy-impacting system event, e.g. wake locks.
-    // Populated when |kind| is |ENERGY_EVENT|.
-    EnergyEventData energy_event = 502;
+    // Deprecated. Do not use.
 
     // Event Profiler Prefix = 600
     InteractionData interaction = 601;
@@ -474,8 +465,8 @@ message CommonConfig {
   string service_address = 2;
   // address used for jvmti devices that use unix sockets.
   string service_socket_name = 3;
-  // equivalent to StudioFlags.PROFILER_ENERGY_PROFILER_ENABLED.
-  bool energy_profiler_enabled = 4;
+  // Deprecated. Do not use.
+  // bool energy_profiler_enabled = 4;
   // Deprecated. Do not use.
   bool profiler_unified_pipeline = 5;
   // equivalent to StudioFlags.PROFILER_CUSTOM_EVENT_VISUALIZATION

@@ -16,17 +16,6 @@ filegroup(
     visibility = ["//visibility:private"],
 )
 
-# Since Energy profiler doesn't support compile-time instrumentation, don't include the src
-# to avoid adding its dependencies.
-filegroup(
-    name = "common-srcs-excluding-energy",
-    srcs = glob(
-        include = ["common/src/main/**/*.java"],
-        exclude = ["common/src/main/java/com/android/tools/profiler/support/energy/**/*.java"],
-    ),
-    visibility = ["//visibility:private"],
-)
-
 filegroup(
     name = "common-srcs",
     srcs = glob(["common/src/main/**/*.java"]),
@@ -42,7 +31,7 @@ filegroup(
 java_library(
     name = "studio-profiler-core",
     srcs = [
-        ":common-srcs-excluding-energy",
+        ":common-srcs",
         ":echo-sample-srcs",
         ":supportlib-srcs",
     ],

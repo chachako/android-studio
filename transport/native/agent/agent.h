@@ -27,7 +27,6 @@
 
 #include "proto/agent_service.grpc.pb.h"
 #include "proto/internal_cpu.grpc.pb.h"
-#include "proto/internal_energy.grpc.pb.h"
 #include "proto/internal_event.grpc.pb.h"
 #include "proto/internal_network.grpc.pb.h"
 
@@ -55,11 +54,6 @@ using NetworkServiceTask = std::function<grpc::Status(
 // |context|. Returns the status from the grpc call.
 using EventServiceTask = std::function<grpc::Status(
     proto::InternalEventService::Stub& stub, grpc::ClientContext& context)>;
-
-// Function for submitting an energy grpc request via |stub| using the given
-// |context|. Returns the status from the grpc call.
-using EnergyServiceTask = std::function<grpc::Status(
-    proto::InternalEnergyService::Stub& stub, grpc::ClientContext& context)>;
 
 // Function for submitting a CPU grpc request via |stub| using the given
 // |context|. Returns the status from the grpc call.
@@ -104,8 +98,6 @@ class Agent {
 
   void SubmitEventTasks(const std::vector<EventServiceTask>& tasks);
 
-  void SubmitEnergyTasks(const std::vector<EnergyServiceTask>& tasks);
-
   void SubmitCpuTasks(const std::vector<CpuServiceTask>& tasks);
 
   void AddDaemonStatusChangedCallback(DaemonStatusChanged callback);
@@ -144,7 +136,6 @@ class Agent {
   // resolved to the correct grpc target.
   proto::AgentService::Stub& agent_stub();
   proto::InternalCpuService::Stub& cpu_stub();
-  proto::InternalEnergyService::Stub& energy_stub();
   proto::InternalEventService::Stub& event_stub();
   proto::InternalNetworkService::Stub& network_stub();
 
@@ -198,7 +189,6 @@ class Agent {
   std::shared_ptr<grpc::Channel> channel_;
   std::unique_ptr<proto::AgentService::Stub> agent_stub_;
   std::unique_ptr<proto::InternalCpuService::Stub> cpu_stub_;
-  std::unique_ptr<proto::InternalEnergyService::Stub> energy_stub_;
   std::unique_ptr<proto::InternalEventService::Stub> event_stub_;
   std::unique_ptr<proto::InternalNetworkService::Stub> network_stub_;
 

@@ -28,7 +28,6 @@ open class ProfilerConfig : TransportRule.Config() {
     open val liveAllocSampleRate = 1
 
     final override fun initDaemonConfig(daemonConfig: Common.CommonConfig.Builder) {
-        daemonConfig.energyProfilerEnabled = true
         // The production is disabling keyboard events by default, which can be
         // overridden by the server flag. But we still test the functionality as it's
         // enabled to avoid accidental breakage. See b/211154220.
