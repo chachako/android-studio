@@ -176,7 +176,7 @@ import org.xmlpull.v1.XmlPullParser
 /** Analyzes Android projects and files */
 class LintDriver(
   /** The [registry] containing issues to be checked. */
-  var registry: IssueRegistry,
+  registry: IssueRegistry,
   /** The tool wrapping the analyzer, such as an IDE or a CLI. */
   client: LintClient,
   /**
@@ -185,6 +185,9 @@ class LintDriver(
    */
   val request: LintRequest,
 ) {
+  var registry: IssueRegistry = registry
+    private set
+
   /** The original client (not the wrapped one intended to pass to detectors). */
   private val realClient: LintClient = client
 
@@ -221,7 +224,7 @@ class LintDriver(
    * within an Android project there may be non-Android libraries, but this flag indicates whether
    * there's any Android sources.
    */
-  var platforms: EnumSet<Platform> = request.getPlatform() ?: Platform.ANDROID_SET
+  private val platforms: EnumSet<Platform> = request.getPlatform() ?: Platform.ANDROID_SET
 
   private lateinit var applicableDetectors: List<Detector>
   private lateinit var scopeDetectors: Map<Scope, MutableList<Detector>>
