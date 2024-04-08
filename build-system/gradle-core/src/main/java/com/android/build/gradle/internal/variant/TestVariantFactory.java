@@ -33,7 +33,7 @@ import com.android.build.api.variant.impl.GlobalVariantBuilderConfig;
 import com.android.build.api.variant.impl.HostTestBuilderImpl;
 import com.android.build.api.variant.impl.TestVariantBuilderImpl;
 import com.android.build.api.variant.impl.TestVariantImpl;
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig;
 import com.android.build.gradle.internal.component.HostTestCreationConfig;
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig;
 import com.android.build.gradle.internal.component.TestVariantCreationConfig;
@@ -239,7 +239,7 @@ public class TestVariantFactory
 
     @NonNull
     @Override
-    public AndroidTestCreationConfig createAndroidTest(
+    public DeviceTestCreationConfig createAndroidTest(
             @NonNull ComponentIdentity componentIdentity,
             @NonNull BuildFeatureValues buildFeatures,
             @NonNull AndroidTestComponentDslInfo dslInfo,

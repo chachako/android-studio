@@ -3,6 +3,8 @@ Incubating Android Gradle Plugin API.
 ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 have associated tracking issues.
 -------------------------------------------------------------------------
+https://issuetracker.google.com/DO NOT SUBMIT
+  * com.android.build.api.variant.DeviceTest.getCodeCoverageEnabled: boolean ()
 https://issuetracker.google.com/328747466
   * com.android.build.api.artifact.SingleArtifact$MERGED_NATIVE_LIBS extends com.android.build.api.artifact.SingleArtifact
 https://issuetracker.google.com/328747467
@@ -711,6 +713,9 @@ https://issuetracker.google.com/335848584
   * com.android.build.api.variant.HostTest.isCodeCoverageEnabled: boolean ()
   * com.android.build.api.variant.HostTestBuilder.getEnableCodeCoverage: boolean ()
   * com.android.build.api.variant.HostTestBuilder.setEnableCodeCoverage: void (boolean)
+https://issuetracker.google.com/336296433
+  * com.android.build.api.variant.DeviceTestBuilder.getEnableCodeCoverage: boolean ()
+  * com.android.build.api.variant.DeviceTestBuilder.setEnableCodeCoverage: void (boolean)
 https://issuetracker.google.com/336985668
   * com.android.build.api.variant.HostTest.configureTestTask: void (kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test, kotlin.Unit>)
   * com.android.build.api.variant.UnitTest.configureTestTask: void (kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test, kotlin.Unit>)

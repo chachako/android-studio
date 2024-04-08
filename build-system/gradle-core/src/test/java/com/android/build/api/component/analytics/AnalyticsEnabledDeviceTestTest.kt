@@ -16,7 +16,6 @@
 package com.android.build.api.component.analytics
 
 import com.android.build.api.variant.DeviceTest
-import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.SigningConfig
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
@@ -71,5 +70,17 @@ class AnalyticsEnabledDeviceTestTest {
         ).isEqualTo(VariantPropertiesMethodType.SIGNING_CONFIG_VALUE)
         Mockito.verify(delegate, Mockito.times(1))
             .signingConfig
+    }
+
+    @Test
+    fun isCodeCoverageEnabled() {
+        Mockito.`when`(delegate.codeCoverageEnabled).thenReturn(true)
+        Truth.assertThat(proxy.codeCoverageEnabled).isTrue()
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.DEVICE_TEST_CODE_COVERAGE_ENABLED_VALUE)
+        Mockito.verify(delegate, Mockito.times(1)).codeCoverageEnabled
     }
 }

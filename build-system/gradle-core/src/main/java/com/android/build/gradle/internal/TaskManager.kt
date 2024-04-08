@@ -26,10 +26,9 @@ import com.android.build.api.dsl.Device
 import com.android.build.api.dsl.DeviceGroup
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.variant.ScopedArtifacts
-import com.android.build.api.variant.impl.DirectoryEntry
 import com.android.build.api.variant.impl.TaskProviderBasedDirectoryEntryImpl
 import com.android.build.gradle.api.AndroidSourceSet
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
@@ -460,7 +459,7 @@ abstract class TaskManager(
             processResources: Boolean,
             flags: Set<MergeResources.Flag>) {
         if (!creationConfig.buildFeatures.androidResources &&
-            creationConfig !is AndroidTestCreationConfig) {
+            creationConfig !is DeviceTestCreationConfig) {
             return
         }
         val alsoOutputNotCompiledResources = (creationConfig.componentType.isApk
@@ -643,7 +642,7 @@ abstract class TaskManager(
             mergeType: MergeType,
             baseName: Provider<String>) {
         if (!creationConfig.buildFeatures.androidResources &&
-            creationConfig !is AndroidTestCreationConfig) {
+            creationConfig !is DeviceTestCreationConfig) {
             return
         }
         creationConfig.oldVariantApiLegacySupport?.variantData?.calculateFilters(
@@ -1048,7 +1047,7 @@ abstract class TaskManager(
         // Register a test coverage report generation task to every managedDeviceCheck
         // task.
         if (creationConfig is TestComponentCreationConfig &&
-            creationConfig.isAndroidTestCoverageEnabled) {
+            creationConfig.codeCoverageEnabled) {
             val jacocoAntConfiguration = JacocoConfigurations.getJacocoAntTaskConfiguration(
                 project, JacocoTask.getJacocoVersion(creationConfig)
             )
@@ -1152,7 +1151,7 @@ abstract class TaskManager(
             }
 
         // New gradle-transform jacoco instrumentation support.
-        if (creationConfig.isAndroidTestCoverageEnabled &&
+        if (creationConfig.codeCoverageEnabled &&
             !creationConfig.componentType.isForTesting) {
             createJacocoTask(creationConfig)
         } else {
@@ -1806,7 +1805,7 @@ abstract class TaskManager(
                 .assetGenTask =
                 taskFactory.register(creationConfig.computeTaskNameInternal("generate", "Assets"))
         // Create anchor task for creating instrumentation test coverage reports
-        if (creationConfig is VariantCreationConfig && creationConfig.isAndroidTestCoverageEnabled) {
+        if (creationConfig is VariantCreationConfig && creationConfig.codeCoverageEnabled) {
             creationConfig
                     .taskContainer
                     .coverageReportTask = taskFactory.register(

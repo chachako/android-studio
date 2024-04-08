@@ -37,7 +37,7 @@ import com.android.build.api.variant.impl.BuiltArtifactsImpl
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.InternalHasDeviceTests
 import com.android.build.api.variant.impl.HasHostTestsCreationConfig
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
@@ -286,7 +286,7 @@ class ModelBuilder<
         // Not doing this is confusing to users as they see folders marked as source that aren't
         // used by anything.
         val variantDimensionInfo = DimensionInformation.createFrom(variants)
-        val androidTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<AndroidTestCreationConfig>())
+        val androidTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<DeviceTestCreationConfig>())
         val unitTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<UnitTestImpl>())
         val testFixtures = DimensionInformation.createFrom(variants.mapNotNull { (it as? HasTestFixtures)?.testFixtures })
         val screenshotTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<ScreenshotTestImpl>())
@@ -793,7 +793,7 @@ class ModelBuilder<
         val generatedClassPaths = addGeneratedClassPaths(component, classesFolders)
 
         val testInfo: TestInfo? = when(component) {
-            is TestVariantCreationConfig, is AndroidTestCreationConfig -> {
+            is TestVariantCreationConfig, is DeviceTestCreationConfig -> {
                 val runtimeApks: Collection<File> = project
                     .configurations
                     .findByName(SdkConstants.GRADLE_ANDROID_TEST_UTIL_CONFIGURATION)?.files

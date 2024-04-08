@@ -23,8 +23,9 @@ import com.android.build.gradle.options.BooleanOption
 
 class DeviceTestBuilderImpl(
     variantBuilderServices: VariantBuilderServices,
-    enableMultiDex: Boolean?
-):DeviceTestBuilder {
+    enableMultiDex: Boolean?,
+    enableCodeCoverage: Boolean,
+): DeviceTestBuilder {
 
     override var enable = !variantBuilderServices.projectOptions[BooleanOption.ENABLE_NEW_TEST_DSL]
 
@@ -33,5 +34,13 @@ class DeviceTestBuilderImpl(
         get() =  throw PropertyAccessNotAllowedException("enableMultiDex", "DeviceTestBuilder")
         set(value) {
            _enableMultiDex = value
+        }
+
+    internal var _enableCoverage: Boolean = enableCodeCoverage
+
+    override var enableCodeCoverage: Boolean
+        get() = throw PropertyAccessNotAllowedException("enableCodeCoverage", "DeviceTestBuilder")
+        set(value) {
+            _enableCoverage = value
         }
 }

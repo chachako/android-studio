@@ -207,7 +207,7 @@ open class DynamicFeatureVariantImpl @Inject constructor(
     override val signingConfig: SigningConfigImpl? = null
 
     override val useJacocoTransformInstrumentation: Boolean
-        get() = isAndroidTestCoverageEnabled
+        get() = deviceTests?.any { it.codeCoverageEnabled } ?: false
 
     override val packageJacocoRuntime: Boolean
         get() = false

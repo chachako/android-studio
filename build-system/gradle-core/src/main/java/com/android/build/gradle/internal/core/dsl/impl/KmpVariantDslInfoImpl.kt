@@ -111,6 +111,7 @@ class KmpVariantDslInfoImpl(
     override val buildConfigDslInfo: BuildConfigDslInfo? = null
     override val manifestPlaceholdersDslInfo: ManifestPlaceholdersDslInfo? = null
     override val dslDefinedHostTests: List<ComponentDslInfo.DslDefinedHostTest> = listOf()
+    override val dslDefinedDeviceTests: List<ComponentDslInfo.DslDefinedDeviceTest> = listOf()
 
     class KmpOptimizationDslInfoImpl(
         private val extension: KotlinMultiplatformAndroidExtension,

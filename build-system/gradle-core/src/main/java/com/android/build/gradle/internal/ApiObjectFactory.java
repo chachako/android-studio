@@ -30,8 +30,8 @@ import com.android.build.gradle.internal.api.ReadOnlyObjectProvider;
 import com.android.build.gradle.internal.api.TestVariantImpl;
 import com.android.build.gradle.internal.api.TestedVariant;
 import com.android.build.gradle.internal.api.UnitTestVariantImpl;
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig;
 import com.android.build.gradle.internal.component.HostTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.crash.ExternalApiUsageException;
@@ -71,11 +71,11 @@ public class ApiObjectFactory {
 
         if (variantFactory.getComponentType().getHasTestComponents()) {
 
-            AndroidTestCreationConfig androidTestVariantProperties = null;
+            DeviceTestCreationConfig androidTestVariantProperties = null;
 
             if (variant instanceof InternalHasDeviceTests) {
                 androidTestVariantProperties =
-                        (AndroidTestCreationConfig)
+                        (DeviceTestCreationConfig)
                                 ((InternalHasDeviceTests) variant).getDefaultDeviceTest();
             }
 

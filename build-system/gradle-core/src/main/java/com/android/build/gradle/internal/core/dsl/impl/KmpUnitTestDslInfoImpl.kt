@@ -90,4 +90,11 @@ class KmpUnitTestDslInfoImpl(
             ComponentDslInfo.DslDefinedHostTest(HostTestBuilder.UNIT_TEST_TYPE,
                 testOnJvmConfig.enableCoverage)
         )
+
+    override val dslDefinedDeviceTests: List<ComponentDslInfo.DslDefinedDeviceTest> =
+        (extension as KotlinMultiplatformAndroidExtensionImpl).androidTestOnDeviceOptions?.let {
+            listOf(
+                ComponentDslInfo.DslDefinedDeviceTest(it.enableCoverage)
+            )
+        } ?: listOf()
 }

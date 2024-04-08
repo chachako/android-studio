@@ -21,7 +21,7 @@ import com.android.Version
 import com.android.build.api.component.impl.KmpAndroidTestImpl
 import com.android.build.api.component.impl.KmpHostTestImpl
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.KmpComponentCreationConfig
 import com.android.build.gradle.internal.component.KmpCreationConfig
 import com.android.build.gradle.internal.component.HostTestCreationConfig
@@ -102,7 +102,7 @@ object KotlinModelBuildingConfigurator {
                         AndroidCompilation.Builder::setUnitTestInfo
                     )
                     .setIfNotNull(
-                        (component as? AndroidTestCreationConfig)?.toInfo(
+                        (component as? DeviceTestCreationConfig)?.toInfo(
                             testInstrumentationRunner, testInstrumentationRunnerArguments
                         ),
                         AndroidCompilation.Builder::setInstrumentedTestInfo
@@ -230,7 +230,7 @@ object KotlinModelBuildingConfigurator {
             )
             .build()
 
-    private fun AndroidTestCreationConfig.toInfo(
+    private fun DeviceTestCreationConfig.toInfo(
         testInstrumentationRunner: String?,
         testInstrumentationRunnerArguments: Map<String, String>
     ) =

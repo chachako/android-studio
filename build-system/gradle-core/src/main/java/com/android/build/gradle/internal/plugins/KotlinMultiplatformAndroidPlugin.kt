@@ -42,7 +42,6 @@ import com.android.build.gradle.internal.DependencyConfigurator
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.VariantManager.Companion.finalizeAllComponents
-import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.impl.KmpAndroidTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpUnitTestDslInfoImpl
@@ -386,7 +385,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
             bootClasspathConfig = global
         )
 
-        if (androidTest?.isAndroidTestCoverageEnabled == true) {
+        if (androidTest?.codeCoverageEnabled == true) {
             dependencyConfigurator.configureJacocoTransforms()
         }
 

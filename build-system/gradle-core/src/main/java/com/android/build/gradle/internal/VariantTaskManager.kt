@@ -23,7 +23,7 @@ import com.android.build.api.dsl.DataBinding
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.attribution.CheckJetifierBuildService
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.HostTestCreationConfig
@@ -323,7 +323,7 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
                         variantDependencies.runtimeClasspath.name,
                         multiDexInstrumentationDep)
             }
-            androidTestTaskManager.createTasks(testVariant as AndroidTestCreationConfig)
+            androidTestTaskManager.createTasks(testVariant as DeviceTestCreationConfig)
         } else if (testVariant.componentType.isForScreenshotPreview) {
             // SCREENSHOT_TEST
             screenshotTestTaskManager.createTasks(testVariant as HostTestCreationConfig)

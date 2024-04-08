@@ -37,7 +37,7 @@ import com.android.build.gradle.internal.BuildToolsExecutableInput;
 import com.android.build.gradle.internal.LoggerWrapper;
 import com.android.build.gradle.internal.SdkComponentsBuildService;
 import com.android.build.gradle.internal.SdkComponentsKt;
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig;
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
 import com.android.build.gradle.internal.core.dsl.features.AndroidTestOptionsDslInfo;
@@ -801,8 +801,8 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             // this can be null for test plugin
             VariantCreationConfig testedConfig = null;
 
-            if (creationConfig instanceof AndroidTestCreationConfig) {
-                testedConfig = ((AndroidTestCreationConfig) creationConfig).getMainVariant();
+            if (creationConfig instanceof DeviceTestCreationConfig) {
+                testedConfig = ((DeviceTestCreationConfig) creationConfig).getMainVariant();
             }
 
             ComponentType componentType =
@@ -918,9 +918,8 @@ public abstract class DeviceProviderInstrumentTestTask extends NonIncrementalTas
             task.getTestRunnerFactory()
                     .getTargetIsSplitApk()
                     .set(componentType != null && componentType.isDynamicFeature());
-            task.getCodeCoverageEnabled().set(creationConfig.isAndroidTestCoverageEnabled());
-            boolean useJacocoTransformOutputs =
-                    creationConfig.isAndroidTestCoverageEnabled();
+            task.getCodeCoverageEnabled().set(creationConfig.getCodeCoverageEnabled());
+            boolean useJacocoTransformOutputs = creationConfig.getCodeCoverageEnabled();
             task.dependencies =
                     creationConfig
                             .getVariantDependencies()

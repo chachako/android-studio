@@ -22,9 +22,7 @@ import com.android.build.api.instrumentation.manageddevice.DeviceTestRunInput
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunParameters
 import com.android.build.api.instrumentation.manageddevice.DeviceTestRunTaskAction
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
-import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeGradleWorkExecutor
-import com.android.build.gradle.internal.fixtures.FakeListProperty
 import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.test.AbstractTestDataImpl
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -34,7 +32,6 @@ import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
 import com.android.testutils.MockitoKt.same
 import com.google.common.truth.Truth.assertThat
-import kotlin.test.assertFalse
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactCollection
@@ -48,7 +45,6 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers.RETURNS_DEEP_STUBS
 import org.mockito.Mock
-import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.withSettings

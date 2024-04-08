@@ -5,7 +5,7 @@ import com.android.build.api.component.impl.UnitTestImpl
 import com.android.build.api.dsl.Lint
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.gradle.internal.TaskManager
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.TestComponentCreationConfig
@@ -313,7 +313,7 @@ class LintTaskManager constructor(
             val key = testComponent.mainVariant.name
             val current = variantsWithTests[key]!!
             when (testComponent) {
-                is AndroidTestCreationConfig -> {
+                is DeviceTestCreationConfig -> {
                     check(current.androidTest == null) {
                         "Component ${current.main} appears to have two conflicting android test components ${current.androidTest} and $testComponent"
                     }

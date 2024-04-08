@@ -33,7 +33,8 @@ public class DeviceTestBuilderImplTest {
         VariantBuilderServices variantBuilderServices = Mockito.mock(VariantBuilderServices.class);
         Mockito.when(variantBuilderServices.getProjectOptions()).thenReturn(projectOptions);
 
-        DeviceTestBuilder tested = new DeviceTestBuilderImpl(variantBuilderServices, false);
+        DeviceTestBuilder tested = new DeviceTestBuilderImpl(variantBuilderServices, false, false);
+        //noinspection deprecation
         tested.getEnableMultiDex();
     }
 }

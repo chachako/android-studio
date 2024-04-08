@@ -27,7 +27,7 @@ import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.impl.FlatSourceDirectoriesImpl
 import com.android.build.api.variant.impl.LayeredSourceDirectoriesImpl
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
@@ -862,7 +862,7 @@ abstract class VariantInputs {
 
     @get:Nested
     @get:Optional
-    abstract val unitTestSourceProvider: Property<SourceProviderInput>
+    abstract val hostTestSourceProvider: Property<SourceProviderInput>
 
     @get:Nested
     @get:Optional
@@ -932,8 +932,8 @@ abstract class VariantInputs {
 
     fun initialize(
         variantCreationConfig: VariantCreationConfig,
-        unitTestCreationConfig: HostTestCreationConfig?,
-        androidTestCreationConfig: AndroidTestCreationConfig?,
+        hostTestCreationConfig: HostTestCreationConfig?,
+        deviceTestCreationConfig: DeviceTestCreationConfig?,
         testFixturesCreationConfig: TestFixturesCreationConfig?,
         services: TaskCreationServices,
         variantName: String,
@@ -964,10 +964,10 @@ abstract class VariantInputs {
         mainArtifact.disallowChanges()
 
         testArtifact.setDisallowChanges(
-            unitTestCreationConfig?.let { unitTest ->
+            hostTestCreationConfig?.let { hostTest ->
                 services.newInstance(JavaArtifactInput::class.java)
                     .initialize(
-                        unitTest,
+                        hostTest,
                         lintMode,
                         useModuleDependencyLintModels = false,
                         addBaseModuleLintModel,
@@ -981,7 +981,7 @@ abstract class VariantInputs {
         )
 
         androidTestArtifact.setDisallowChanges(
-            androidTestCreationConfig?.let { androidTest ->
+            deviceTestCreationConfig?.let { androidTest ->
                 services.newInstance(AndroidArtifactInput::class.java)
                     .initialize(
                         androidTest,
@@ -1084,8 +1084,8 @@ abstract class VariantInputs {
         extractedProguardFiles.disallowChanges()
         consumerProguardFiles.disallowChanges()
 
-        unitTestCreationConfig?.let {
-            unitTestSourceProvider.set(
+        hostTestCreationConfig?.let {
+            hostTestSourceProvider.set(
                 variantCreationConfig.services
                     .newInstance(SourceProviderInput::class.java)
                     .initialize(
@@ -1097,7 +1097,7 @@ abstract class VariantInputs {
             )
         }
 
-        androidTestCreationConfig?.let {
+        deviceTestCreationConfig?.let {
             androidTestSourceProvider.set(
                 variantCreationConfig.services
                     .newInstance(SourceProviderInput::class.java)
@@ -1122,7 +1122,7 @@ abstract class VariantInputs {
                     )
             )
         }
-        unitTestSourceProvider.disallowChanges()
+        hostTestSourceProvider.disallowChanges()
         androidTestSourceProvider.disallowChanges()
         testFixturesSourceProvider.disallowChanges()
         debuggable.setDisallowChanges(variantCreationConfig.debuggable)
@@ -1244,7 +1244,7 @@ abstract class VariantInputs {
                     )
             )
             if (!fatalOnly) {
-                unitTestSourceProvider.set(
+                hostTestSourceProvider.set(
                     project.objects
                         .newInstance(SourceProviderInput::class.java)
                         .initializeForStandalone(
@@ -1256,7 +1256,7 @@ abstract class VariantInputs {
             }
         }
         testArtifact.disallowChanges()
-        unitTestSourceProvider.disallowChanges()
+        hostTestSourceProvider.disallowChanges()
         androidTestArtifact.disallowChanges()
         testFixturesArtifact.disallowChanges()
         namespace.setDisallowChanges("")
@@ -1354,7 +1354,7 @@ abstract class VariantInputs {
                         fileCollection.from(it.kotlin.sourceDirectories)
                     }
                 }
-            unitTestSourceProvider.set(
+            hostTestSourceProvider.set(
                 project.objects
                     .newInstance(SourceProviderInput::class.java)
                     .initializeForStandaloneWithKotlinMultiplatform(
@@ -1365,7 +1365,7 @@ abstract class VariantInputs {
             )
         }
         testArtifact.disallowChanges()
-        unitTestSourceProvider.disallowChanges()
+        hostTestSourceProvider.disallowChanges()
         androidTestArtifact.disallowChanges()
         testFixturesArtifact.disallowChanges()
         namespace.setDisallowChanges("")
@@ -1431,7 +1431,7 @@ abstract class VariantInputs {
             consumerProguardFiles = consumerProguardFiles.orNull?.map { it.asFile } ?: listOf(),
             sourceProviders = mainSourceProvider.orNull?.toLintModels() ?: emptyList(),
             testSourceProviders = listOfNotNull(
-                unitTestSourceProvider.orNull?.toLintModels(),
+                hostTestSourceProvider.orNull?.toLintModels(),
                 androidTestSourceProvider.orNull?.toLintModels(),
             ).flatten(),
             testFixturesSourceProviders = testFixturesSourceProvider.orNull?.toLintModels() ?: emptyList(),

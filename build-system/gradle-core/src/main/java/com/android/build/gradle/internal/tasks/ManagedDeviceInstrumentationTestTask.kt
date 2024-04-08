@@ -22,7 +22,7 @@ import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.internal.AvdComponentsBuildService
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.SdkComponentsBuildService
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.InstrumentedTestCreationConfig
 import com.android.build.gradle.internal.computeManagedDeviceEmulatorMode
 import com.android.build.gradle.internal.dsl.EmulatorControl
@@ -414,7 +414,7 @@ abstract class ManagedDeviceInstrumentationTestTask: NonIncrementalTask(), Andro
             val globalConfig = creationConfig.global
             val projectOptions = creationConfig.services.projectOptions
 
-            val testedConfig = (creationConfig as? AndroidTestCreationConfig)?.mainVariant
+            val testedConfig = (creationConfig as? DeviceTestCreationConfig)?.mainVariant
 
             val variantName = testedConfig?.name ?: creationConfig.name
 

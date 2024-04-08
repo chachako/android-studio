@@ -27,7 +27,7 @@ import com.android.build.api.variant.impl.GlobalVariantBuilderConfig
 import com.android.build.api.variant.impl.HostTestBuilderImpl
 import com.android.build.gradle.internal.api.BaseVariantImpl
 import com.android.build.gradle.internal.api.ReadOnlyObjectProvider
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig
 import com.android.build.gradle.internal.component.HostTestCreationConfig
@@ -148,8 +148,8 @@ interface VariantFactory<VariantBuilderT : VariantBuilder, VariantDslInfoT: Vari
         variantServices: VariantServices,
         taskCreationServices: TaskCreationServices,
         globalConfig: GlobalTaskCreationConfig,
-        defaultDeviceTestBuilder: DeviceTestBuilderImpl,
-    ): AndroidTestCreationConfig
+        deviceTestBuilder: DeviceTestBuilderImpl,
+        ): DeviceTestCreationConfig
 
     fun createVariantData(
         componentIdentity: ComponentIdentity,

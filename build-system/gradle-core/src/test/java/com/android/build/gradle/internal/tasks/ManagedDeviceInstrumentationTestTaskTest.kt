@@ -21,7 +21,7 @@ import com.android.build.gradle.internal.AvdComponentsBuildService
 import com.android.build.gradle.internal.ManagedVirtualDeviceLockManager
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.SdkComponentsBuildService.VersionedSdkLoader
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.dsl.EmulatorControl
 import com.android.build.gradle.internal.dsl.EmulatorSnapshots
 import com.android.build.gradle.internal.dsl.ManagedVirtualDevice
@@ -111,7 +111,7 @@ class ManagedDeviceInstrumentationTestTaskTest {
     @Mock
     lateinit var sdkService: SdkComponentsBuildService
 
-    @Mock(answer = RETURNS_DEEP_STUBS, extraInterfaces = [AndroidTestCreationConfig::class])
+    @Mock(answer = RETURNS_DEEP_STUBS, extraInterfaces = [DeviceTestCreationConfig::class])
     lateinit var creationConfig: TestVariantImpl
 
     @Mock(answer = RETURNS_DEEP_STUBS)

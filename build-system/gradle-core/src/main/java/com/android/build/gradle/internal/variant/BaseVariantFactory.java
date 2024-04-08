@@ -33,8 +33,8 @@ import com.android.build.gradle.internal.BuildTypeData;
 import com.android.build.gradle.internal.ProductFlavorData;
 import com.android.build.gradle.internal.api.BaseVariantImpl;
 import com.android.build.gradle.internal.api.ReadOnlyObjectProvider;
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig;
 import com.android.build.gradle.internal.component.ComponentCreationConfig;
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig;
 import com.android.build.gradle.internal.component.HostTestCreationConfig;
 import com.android.build.gradle.internal.component.TestFixturesCreationConfig;
 import com.android.build.gradle.internal.component.VariantCreationConfig;
@@ -178,7 +178,7 @@ public abstract class BaseVariantFactory<
 
     @NonNull
     @Override
-    public AndroidTestCreationConfig createAndroidTest(
+    public DeviceTestCreationConfig createAndroidTest(
             @NonNull ComponentIdentity componentIdentity,
             @NonNull BuildFeatureValues buildFeatures,
             @NonNull AndroidTestComponentDslInfo dslInfo,
@@ -192,7 +192,7 @@ public abstract class BaseVariantFactory<
             @NonNull VariantServices variantServices,
             @NonNull TaskCreationServices taskCreationServices,
             @NonNull GlobalTaskCreationConfig globalConfig,
-            @NonNull DeviceTestBuilderImpl defaultDeviceTestBuilder) {
+            @NonNull DeviceTestBuilderImpl deviceTestBuilder) {
         return dslServices.newInstance(
                 DeviceTestImpl.class,
                 componentIdentity,
@@ -208,7 +208,7 @@ public abstract class BaseVariantFactory<
                 variantServices,
                 taskCreationServices,
                 globalConfig,
-                defaultDeviceTestBuilder);
+                deviceTestBuilder);
     }
 
     @Nullable

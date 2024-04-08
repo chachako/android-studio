@@ -170,4 +170,5 @@ class KmpAndroidTestDslInfoImpl(
     override val renderscriptDslInfo: RenderscriptDslInfo? = null
     override val manifestPlaceholdersDslInfo: ManifestPlaceholdersDslInfo? = null
     override val dslDefinedHostTests: List<ComponentDslInfo.DslDefinedHostTest> = listOf()
+    override val dslDefinedDeviceTests: List<ComponentDslInfo.DslDefinedDeviceTest> = listOf()
 }

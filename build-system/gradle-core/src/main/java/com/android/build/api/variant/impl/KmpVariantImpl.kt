@@ -32,7 +32,6 @@ import com.android.build.api.variant.CanMinifyAndroidResourcesBuilder
 import com.android.build.api.variant.CanMinifyCodeBuilder
 import com.android.build.api.variant.Component
 import com.android.build.api.variant.DeviceTest
-import com.android.build.api.variant.HostTest
 import com.android.build.api.variant.KotlinMultiplatformAndroidVariant
 import com.android.build.api.variant.TestedComponentPackaging
 import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
@@ -125,8 +124,8 @@ open class KmpVariantImpl @Inject constructor(
     override val androidDeviceTest: KmpAndroidTestImpl?
         get() = deviceTests.filterIsInstance<KmpAndroidTestImpl>().firstOrNull()
 
-    override val isAndroidTestCoverageEnabled: Boolean
-        get() = androidDeviceTest?.isAndroidTestCoverageEnabled ?: false
+    override val codeCoverageEnabled: Boolean
+        get() = androidDeviceTest?.codeCoverageEnabled ?: false
 
     override val nestedComponents: List<KmpComponentImpl<*>>
         get() = listOfNotNull(

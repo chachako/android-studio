@@ -2675,20 +2675,25 @@ package com.android.build.api.variant {
   @org.gradle.api.Incubating public interface DeviceTest extends com.android.build.api.variant.GeneratesTestApk com.android.build.api.variant.HasAndroidResources com.android.build.api.variant.TestComponent {
     method @org.gradle.api.Incubating public org.gradle.api.provider.Property<java.lang.String> getApplicationId();
     method @org.gradle.api.Incubating public org.gradle.api.provider.MapProperty<java.lang.String,? extends com.android.build.api.variant.BuildConfigField<? extends java.io.Serializable>> getBuildConfigFields();
+    method public boolean getCodeCoverageEnabled();
     method @org.gradle.api.Incubating public org.gradle.api.provider.ListProperty<org.gradle.api.file.RegularFile> getProguardFiles();
     method @org.gradle.api.Incubating public com.android.build.api.variant.SigningConfig? getSigningConfig();
     property @org.gradle.api.Incubating public abstract org.gradle.api.provider.Property<java.lang.String> applicationId;
     property @org.gradle.api.Incubating public abstract org.gradle.api.provider.MapProperty<java.lang.String,? extends com.android.build.api.variant.BuildConfigField<? extends java.io.Serializable>> buildConfigFields;
+    property public abstract boolean codeCoverageEnabled;
     property @org.gradle.api.Incubating public abstract org.gradle.api.provider.ListProperty<org.gradle.api.file.RegularFile> proguardFiles;
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.SigningConfig? signingConfig;
   }
 
   @org.gradle.api.Incubating public interface DeviceTestBuilder {
     method @org.gradle.api.Incubating public boolean getEnable();
+    method @Deprecated @org.gradle.api.Incubating public boolean getEnableCodeCoverage();
     method @Deprecated public Boolean? getEnableMultiDex();
     method @org.gradle.api.Incubating public void setEnable(boolean);
+    method @Deprecated @org.gradle.api.Incubating public void setEnableCodeCoverage(boolean);
     method @Deprecated @org.gradle.api.Incubating public void setEnableMultiDex(Boolean?);
     property @org.gradle.api.Incubating public abstract boolean enable;
+    property @Deprecated @org.gradle.api.Incubating public abstract boolean enableCodeCoverage;
     property @Deprecated public abstract Boolean? enableMultiDex;
   }
 

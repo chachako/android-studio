@@ -49,6 +49,10 @@ interface ComponentDslInfo {
         val codeCoverageEnabled: Boolean,
     )
 
+    class DslDefinedDeviceTest(
+        val codeCoverageEnabled: Boolean,
+    )
+
     /**
      * Returns the list of [ComponentDslInfo.DslDefinedHostTest] pre-defined from the DSL for this
      * component.
@@ -57,6 +61,8 @@ interface ComponentDslInfo {
      * by AGP for this Component.
      */
     val dslDefinedHostTests: List<DslDefinedHostTest>
+
+    val dslDefinedDeviceTests: List<DslDefinedDeviceTest>
 
     /**
      * Returns the application ID for this variant. This could be coming from the manifest or could

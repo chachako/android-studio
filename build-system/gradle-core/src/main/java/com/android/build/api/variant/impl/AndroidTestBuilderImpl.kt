@@ -36,4 +36,10 @@ class AndroidTestBuilderImpl(
         set(value) {
             deviceTestBuilder.enableMultiDex = value
         }
+
+    override var enableCodeCoverage: Boolean
+        get() = throw PropertyAccessNotAllowedException("enableCodeCoverage", "AndroidTestBuilder")
+        set(value) {
+            deviceTestBuilder.enableCodeCoverage = value
+        }
 }

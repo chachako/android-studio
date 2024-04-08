@@ -25,7 +25,9 @@ import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.PropertyAccessNotAllowedException
 import com.android.build.api.variant.VariantBuilder
+import com.android.build.gradle.internal.core.dsl.AndroidTestComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo
+import com.android.build.gradle.internal.core.dsl.VariantDslInfo
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.VariantBuilderServices
 import com.android.builder.errors.IssueReporter
@@ -122,14 +124,20 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
             _enableMultiDex = value
         }
 
-    private val defaultDeviceTestBuilder = DeviceTestBuilderImpl(
-        variantBuilderServices,
-        _enableMultiDex,
-    )
+    override val deviceTests: List<DeviceTestBuilderImpl> =
+        dslInfo.dslDefinedDeviceTests.map { deviceTest ->
+            DeviceTestBuilderImpl(
+                variantBuilderServices,
+                _enableMultiDex,
+                deviceTest.codeCoverageEnabled
+            )
+        }
 
-    override val androidTest: AndroidTestBuilder = AndroidTestBuilderImpl(defaultDeviceTestBuilder)
-    override val deviceTests: List<DeviceTestBuilder>
-        get() = listOf(defaultDeviceTestBuilder)
+    override val androidTest: AndroidTestBuilder by lazy(LazyThreadSafetyMode.NONE) {
+        AndroidTestBuilderImpl(
+            deviceTests.single()
+        )
+    }
 
     override val androidResources: ApplicationAndroidResourcesBuilder =
         ApplicationAndroidResourcesBuilderImpl(dslInfo.generateLocaleConfig)

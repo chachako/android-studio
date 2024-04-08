@@ -733,7 +733,7 @@ class VariantManager<
                     variantPropertiesApiServices,
                     taskCreationServices,
                     globalTaskCreationConfig,
-                    it
+                    it,
                 )
             } ?: throw IllegalStateException("Expected a test component type, but ${componentIdentity.name} has type $componentType")
             // this is UNIT_TEST

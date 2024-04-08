@@ -42,4 +42,12 @@ open class AnalyticsEnabledDeviceTestBuilder(
             delegate.enableMultiDex = value
         }
 
+
+    override var enableCodeCoverage: Boolean
+        get() =  throw PropertyAccessNotAllowedException("enableCodeCoverage", "AndroidTestBuilder")
+        set(value) {
+            stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
+                VariantMethodType.DEVICE_TEST_ENABLE_CODE_COVERAGE_VALUE
+            delegate.enableCodeCoverage = value
+        }
 }

@@ -18,9 +18,7 @@ package com.android.build.api.variant.impl
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.attributes.ProductFlavorAttr
 import com.android.build.api.component.UnitTest
-import com.android.build.api.component.impl.DeviceTestImpl
 import com.android.build.api.component.impl.ComponentImpl
-import com.android.build.api.component.impl.UnitTestImpl
 import com.android.build.api.component.impl.features.BuildConfigCreationConfigImpl
 import com.android.build.api.component.impl.features.NativeBuildCreationConfigImpl
 import com.android.build.api.component.impl.features.OptimizationCreationConfigImpl
@@ -57,7 +55,6 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
-import com.android.builder.core.ComponentTypeImpl
 import com.android.utils.appendCapitalized
 import com.android.utils.capitalizeAndAppend
 import com.google.common.collect.ImmutableMap
@@ -276,8 +273,8 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
                 dslInfo.manifestPlaceholdersDslInfo?.placeholders)
     }
 
-    override val isAndroidTestCoverageEnabled: Boolean
-        get() = ((this as? InternalHasDeviceTests)?.defaultDeviceTest as? DeviceTestImpl)?.isAndroidTestCoverageEnabled == true
+    override val codeCoverageEnabled: Boolean
+        get() = (this as? HasDeviceTests)?.deviceTests?.any { it.codeCoverageEnabled } ?: false
 
     override val isCoreLibraryDesugaringEnabledLintCheck: Boolean
         get() = if (this is ApkCreationConfig) {

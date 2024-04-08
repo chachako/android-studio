@@ -23,7 +23,7 @@ import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.AbstractAppTaskManager
-import com.android.build.gradle.internal.component.AndroidTestCreationConfig
+import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
@@ -47,7 +47,6 @@ import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.BuildPrivacySandboxSdkApks
 import com.android.build.gradle.tasks.ExtractSupportedLocalesTask
 import com.android.build.gradle.tasks.GenerateLocaleConfigTask
-import com.android.builder.internal.aapt.AaptUtils
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -379,7 +378,7 @@ class ApplicationTaskManager(
             taskFactory.register(BuildPrivacySandboxSdkApks.CreationAction(creationConfig as ApplicationCreationConfig))
         }
         if (!globalConfig.hasDynamicFeatures ||
-            creationConfig is AndroidTestCreationConfig
+            creationConfig is DeviceTestCreationConfig
         ) {
             // no dynamic features means we can just use the standard install task
             super.createInstallTask(creationConfig)

@@ -62,4 +62,15 @@ class AnalyticsEnabledDeviceTestBuilderTest {
         ).isEqualTo(VariantMethodType.ENABLE_MULTI_DEX_VALUE)
         Mockito.verify(delegate, Mockito.times(1)).enableMultiDex = true
     }
+
+    @Test
+    fun testEnableCoverage() {
+        proxy.enableCodeCoverage = true
+
+        Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantAccessList.first().type
+        ).isEqualTo(VariantMethodType.DEVICE_TEST_ENABLE_CODE_COVERAGE_VALUE)
+        Mockito.verify(delegate, Mockito.times(1)).enableCodeCoverage = true
+    }
 }

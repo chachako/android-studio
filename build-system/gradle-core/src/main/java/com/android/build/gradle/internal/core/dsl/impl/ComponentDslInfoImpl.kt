@@ -148,4 +148,12 @@ internal abstract class ComponentDslInfoImpl internal constructor(
                 false
             ),
         )
+
+    override val dslDefinedDeviceTests: List<ComponentDslInfo.DslDefinedDeviceTest> =
+        listOf(
+            ComponentDslInfo.DslDefinedDeviceTest(
+                buildTypeObj.enableAndroidTestCoverage || buildTypeObj.isTestCoverageEnabled
+            )
+        )
+
 }

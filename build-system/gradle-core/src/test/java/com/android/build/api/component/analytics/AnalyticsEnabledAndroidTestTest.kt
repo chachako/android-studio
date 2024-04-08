@@ -26,7 +26,6 @@ import com.android.build.api.variant.ResValue
 import com.android.build.api.variant.ResourcesPackaging
 import com.android.build.api.variant.SigningConfig
 import com.android.build.gradle.internal.fixtures.FakeGradleProperty
-import com.android.build.gradle.internal.fixtures.FakeGradleProvider
 import com.android.build.gradle.internal.fixtures.FakeObjectFactory
 import com.android.tools.build.gradle.internal.profile.VariantPropertiesMethodType
 import com.google.common.truth.Truth
@@ -258,5 +257,17 @@ class AnalyticsEnabledAndroidTestTest {
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.PROGUARD_FILES_VALUE)
+    }
+
+    @Test
+    fun isCodeCoverageEnabled() {
+        Mockito.`when`(delegate.codeCoverageEnabled).thenReturn(true)
+        Truth.assertThat(proxy.codeCoverageEnabled).isTrue()
+
+        Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantPropertiesAccessList.first().type
+        ).isEqualTo(VariantPropertiesMethodType.DEVICE_TEST_CODE_COVERAGE_ENABLED_VALUE)
+        Mockito.verify(delegate, Mockito.times(1)).codeCoverageEnabled
     }
 }
