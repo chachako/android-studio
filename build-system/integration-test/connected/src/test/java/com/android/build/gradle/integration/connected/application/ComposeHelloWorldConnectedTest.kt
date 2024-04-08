@@ -51,8 +51,6 @@ class ComposeHelloWorldConnectedTest {
 
     @Test
     fun connectedCheck() {
-        project.executor()
-            .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
-            .run("connectedAndroidTest")
+        project.executor().run("connectedAndroidTest")
     }
 }

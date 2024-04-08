@@ -687,7 +687,7 @@ ext {
             false,
             kotlinVersion,
             TaskManager.COMPOSE_UI_VERSION,
-            TaskManager.COMPOSE_KOTLIN_COMPILER_EXTENSION_VERSION,
+            TestUtils.COMPOSE_COMPILER_FOR_TESTS,
         )
         if (APPLY_DEVICEPOOL_PLUGIN) {
             result += """
@@ -1601,7 +1601,7 @@ buildCache {
                 kotlinVersion,
                 TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS,
                 TaskManager.COMPOSE_UI_VERSION,
-                TaskManager.COMPOSE_KOTLIN_COMPILER_EXTENSION_VERSION,
+                TestUtils.COMPOSE_COMPILER_FOR_TESTS,
         )
     }
 

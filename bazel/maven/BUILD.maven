@@ -13582,6 +13582,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.compose.compiler.compiler_1.5.11",
+    pom = "repository/androidx/compose/compiler/compiler/1.5.11/compiler-1.5.11.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/compiler/compiler/1.5.11",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.compose.foundation.foundation-android_1.5.0",
     pom = "repository/androidx/compose/foundation/foundation-android/1.5.0/foundation-android-1.5.0.pom",
     repo_root_path = "repository",

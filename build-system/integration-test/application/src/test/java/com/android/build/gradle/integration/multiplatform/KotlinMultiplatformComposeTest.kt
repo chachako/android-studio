@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.createGr
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.setUpHelloWorld
 import com.android.build.gradle.internal.TaskManager.Companion.COMPOSE_UI_VERSION
 import com.android.build.gradle.options.BooleanOption
+import com.android.testutils.TestUtils
 import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS
 import org.junit.Rule
 import org.junit.Test
@@ -44,19 +45,27 @@ class KotlinMultiplatformComposeTest {
             appendToBuildFile {
                 """
                     kotlin {
-                        android()
+                        android {
+                           compilations.all {
+                              it.compilerOptions.options.freeCompilerArgs.addAll(
+                                  "-P",
+                                  "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+                              )
+                              it.compilerOptions.options.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+                           }
+                        }
                     }
                     android {
                         buildFeatures {
                             compose true
                         }
+                        compileOptions {
+                            sourceCompatibility JavaVersion.VERSION_1_8
+                            targetCompatibility JavaVersion.VERSION_1_8
+                        }
                         composeOptions {
                             useLiveLiterals false
-                        }
-                        kotlinOptions {
-                            freeCompilerArgs += [
-                              "-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
-                            ]
+                            kotlinCompilerExtensionVersion = "${TestUtils.COMPOSE_COMPILER_FOR_TESTS}"
                         }
                     }
                 """.trimIndent()
@@ -88,7 +97,6 @@ class KotlinMultiplatformComposeTest {
     fun testLibraryBuilds() {
         project.executor()
             .with(BooleanOption.USE_ANDROID_X, true)
-            .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
             .run("assembleDebug")
     }
 }

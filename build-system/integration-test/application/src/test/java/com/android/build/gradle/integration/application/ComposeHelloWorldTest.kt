@@ -30,30 +30,28 @@ class ComposeHelloWorldTest {
 
     @Test
     fun appAndTestsBuildSuccessfully() {
-        val executor = project.executor()
-            .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
-
-        val tasks = listOf("clean",  "assembleDebug", "assembleDebugAndroidTest")
-        executor.run(tasks)
+        val tasks = listOf("clean", "assembleDebug", "assembleDebugAndroidTest")
+        project.executor().run(tasks)
         // run once again to test configuration caching
-        executor.run(tasks)
+        project.executor().run(tasks)
     }
 
     @Test
     fun testLiveLiterals() {
-        val executor = project.executor()
-            .withFailOnWarning(false) // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
-
         // Run compilation with live literals on
-        TestFileUtils.appendToFile(project.getSubproject("app").buildFile,
-                "android.composeOptions.useLiveLiterals = true")
-        executor.run("assembleDebug")
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            "android.composeOptions.useLiveLiterals = true"
+        )
+        project.executor().run("assembleDebug")
 
         // Turn off live literals and run again
-        TestFileUtils.searchAndReplace(project.getSubproject("app").buildFile,
-                "android.composeOptions.useLiveLiterals = true",
-                "android.composeOptions.useLiveLiterals = false")
-        val result = executor.run("assembleDebug")
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("app").buildFile,
+            "android.composeOptions.useLiveLiterals = true",
+            "android.composeOptions.useLiveLiterals = false"
+        )
+        val result = project.executor().run("assembleDebug")
         assertThat(result.didWorkTasks).contains(":app:compileDebugKotlin")
     }
 }

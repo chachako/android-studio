@@ -240,6 +240,7 @@ DATA = [
     "androidx.compose.compiler:compiler:1.3.2",
     "androidx.compose.compiler:compiler:1.4.7",
     "androidx.compose.compiler:compiler:1.5.1",
+    "androidx.compose.compiler:compiler:1.5.11",
     "androidx.compose.compiler:compiler-hosted:1.5.7",
     "androidx.compose:compose-bom:pom:2022.10.00",
     "androidx.compose:compose-bom:pom:2023.03.00",

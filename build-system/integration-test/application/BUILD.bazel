@@ -725,7 +725,7 @@ maven_repository(
         "@maven//:androidx.annotation.annotation-jvm_1.6.0",
         "@maven//:androidx.appcompat.appcompat_1.1.0",
         "@maven//:androidx.appcompat.appcompat_1.3.0",
-        "@maven//:androidx.compose.compiler.compiler_1.3.2",
+        "@maven//:androidx.compose.compiler.compiler_1.5.11",
         "@maven//:androidx.compose.material.material_1.3.0",
         "@maven//:androidx.compose.ui.ui-tooling_1.3.0",
         "@maven//:androidx.constraintlayout.constraintlayout_2.1.4",

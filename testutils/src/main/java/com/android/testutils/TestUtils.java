@@ -60,11 +60,14 @@ public class TestUtils {
     /**
      * Kotlin version used in AGP integration tests for Compose.
      *
-     * <p>This may be different from {@link KOTLIN_VERSION_FOR_TESTS} because sometimes we can't
+     * <p>This may be different from {@link #KOTLIN_VERSION_FOR_TESTS} because sometimes we can't
      * upgrade the test projects to the latest version of the Kotlin Gradle plugin if there isn't a
      * compatible Compose version yet.
      */
-    public static final String KOTLIN_VERSION_FOR_COMPOSE_TESTS = "1.7.20";
+    public static final String KOTLIN_VERSION_FOR_COMPOSE_TESTS = "1.9.20";
+
+    /** Compose compiler compatible with {@link #KOTLIN_VERSION_FOR_COMPOSE_TESTS}. */
+    public static final String COMPOSE_COMPILER_FOR_TESTS = "1.5.11";
 
     /**
      * The Android platform version used in the gradle-core and builder unit tests.

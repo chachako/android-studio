@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.android.annotations.NonNull;
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor.ConfigurationCaching;
-import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder;
 import com.android.build.gradle.integration.common.fixture.TestProjectPaths;
@@ -95,15 +94,9 @@ public class CheckAll {
     public void assembleAndLint() throws Exception {
         AssumeUtil.assumeNotWindows(); // b/73306170
         Assume.assumeTrue(canAssemble(project));
-        executor().withEnableInfoLogging(false).run("assembleDebug", "assembleAndroidTest", "lint");
-    }
-
-    private GradleTaskExecutor executor() {
-        if (PROJECTS_TO_RUN_WITH_FAIL_ON_WARNING_DISABLED.contains(project.getName())) {
-            return project.executor().withFailOnWarning(false);
-        } else {
-            return project.executor();
-        }
+        project.executor()
+                .withEnableInfoLogging(false)
+                .run("assembleDebug", "assembleAndroidTest", "lint");
     }
 
     private static boolean canAssemble(@NonNull GradleTestProject project) {
@@ -111,9 +104,7 @@ public class CheckAll {
     }
 
     private static final ImmutableSet<String> PROJECTS_TO_RUN_WITH_FAIL_ON_WARNING_DISABLED =
-            ImmutableSet.of(
-                    "composeHelloWorld" // TODO(298678053): Remove after updating TestUtils.KOTLIN_VERSION_FOR_COMPOSE_TESTS to 1.8.0+
-            );
+            ImmutableSet.of();
 
     private static final ImmutableSet<String> BROKEN_ALWAYS_ASSEMBLE =
             ImmutableSet.of(
