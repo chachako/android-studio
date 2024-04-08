@@ -18,6 +18,8 @@ package com.android.tools.maven;
 
 import com.android.tools.json.GradleMetadataJsonReader;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.nio.file.Files;
@@ -109,6 +111,7 @@ public class MavenRepository {
         }
 
         if (resolveConflicts) {
+            checkRequestedDependenciesAreUnique(deps);
             session.setDependencyGraphTransformer(
                     new ConflictResolver(
                             // Skip explicitly requested version check.
@@ -133,6 +136,26 @@ public class MavenRepository {
         addImportDependencies(result, resolveConflicts);
 
         return result.getRoot();
+    }
+
+    private static void checkRequestedDependenciesAreUnique(List<Dependency> deps) {
+        Multimap<Artifact, Dependency> map = Multimaps.index(deps, dependency -> dependency.getArtifact().setVersion(""));
+        if (map.keySet().size() == deps.size()) {
+            return;
+        }
+        StringBuilder errorBuilder = new StringBuilder("Multiple coordinates that only differ by version should be in DATA, not artifacts:\n");
+        map.asMap().forEach( (key, value) -> {
+            if (value.size() > 1) {
+                errorBuilder.append("    ").append(key.toString()).append("\n");
+                for (Dependency dependency : value) {
+                    errorBuilder.append("        ")
+                            .append(dependency.getArtifact().toString())
+                            .append("\n");
+                }
+            }
+        });
+        errorBuilder.append("\nSee https://android.googlesource.com/platform/tools/base/+/mirror-goog-studio-main/bazel/README.md#fetching-new-maven-dependencies for more information");
+        throw new IllegalArgumentException(errorBuilder.toString());
     }
 
     /**
