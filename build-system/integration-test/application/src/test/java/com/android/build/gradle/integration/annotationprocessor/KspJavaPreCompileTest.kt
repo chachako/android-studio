@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.gradle.tasks.ANNOTATION_PROCESSOR_LIST_FILE_NAME
+import com.android.testutils.TestInputsGenerator.writeJarWithEmptyEntries
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
@@ -33,6 +34,31 @@ class KspJavaPreCompileTest {
 
     @Test
     fun kspJavaPreCompileTest() {
+        project.executor().run(":app:javaPreCompileDebug")
+
+        val annotationProcessorList =
+            InternalArtifactType.ANNOTATION_PROCESSOR_LIST.getOutputDir(project.getSubproject("app").buildDir)
+                .resolve("debug/javaPreCompileDebug/$ANNOTATION_PROCESSOR_LIST_FILE_NAME").readText()
+        Truth.assertThat(annotationProcessorList).isEqualTo(
+            "{\"mock-processor.jar (project :mock-processor)\":\"KSP_PROCESSOR\"}")
+    }
+
+    /** Regression test for b/331806519. */
+    @Test
+    fun annotationProcessorsFromKspClasspathShouldBeIgnored() {
+        val processorJar =
+            project.getSubproject(":app").projectDir.resolve("annotationProcessor.jar")
+        writeJarWithEmptyEntries(
+            processorJar.toPath(),
+            listOf("META-INF/services/javax.annotation.processing.Processor")
+        )
+        project.getSubproject(":app").buildFile.appendText("""
+
+            dependencies {
+              ksp files("${processorJar.invariantSeparatorsPath}")
+            }
+        """.trimIndent())
+
         project.executor().run(":app:javaPreCompileDebug")
 
         val annotationProcessorList =

@@ -20,6 +20,7 @@ import com.android.build.gradle.internal.fixtures.FakeGradleProperty
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.android.build.gradle.internal.fixtures.FakeObjectFactory
 import com.android.build.gradle.internal.profile.AnalyticsService
+import com.android.testutils.TestInputsGenerator
 import com.google.common.base.Charsets
 import com.google.common.io.Files
 import com.google.common.truth.Truth.assertThat
@@ -53,6 +54,7 @@ class JavaPreCompileTaskTest {
         getWorkAction(
             getAnnotationProcessorArtifacts(jar, directory, nonJarFile),
             emptyList(),
+            emptyList(),
             outputFile
         ).execute()
 
@@ -70,12 +72,15 @@ class JavaPreCompileTaskTest {
                 nonJarFile
             ),
             emptyList(),
+            emptyList(),
             outputFile
         ).execute()
 
-        assertThat(getAnnotationProcessorList()).containsExactly(
-            jarWithAnnotationProcessor.name,
-            directoryWithAnnotationProcessor.name
+        assertThat(getAnnotationProcessorList()).containsExactlyEntriesIn(
+            mapOf(
+                jarWithAnnotationProcessor.name to ProcessorInfo.NON_INCREMENTAL_AP,
+                directoryWithAnnotationProcessor.name to ProcessorInfo.NON_INCREMENTAL_AP,
+            )
         )
     }
 
@@ -89,11 +94,67 @@ class JavaPreCompileTaskTest {
                 directory,
                 nonJarFile
             ),
+            emptyList(),
             listOf(ANNOTATION_PROCESSOR_CLASS_NAME),
             outputFile
         ).execute()
 
-        assertThat(getAnnotationProcessorList()).containsExactly(ANNOTATION_PROCESSOR_CLASS_NAME)
+        assertThat(getAnnotationProcessorList()).containsExactlyEntriesIn(
+            mapOf(ANNOTATION_PROCESSOR_CLASS_NAME to ProcessorInfo.NON_INCREMENTAL_AP)
+        )
+    }
+
+    @Test
+    fun `ksp processors are present`() {
+        val kspProcessorJar = temporaryFolder.newFile()
+        TestInputsGenerator.writeJarWithEmptyEntries(
+            kspProcessorJar.toPath(), listOf(KSP_PROCESSORS_INDICATOR_FILE)
+        )
+
+        val kspProcessorDir = temporaryFolder.newFolder()
+        kspProcessorDir.resolve(KSP_PROCESSORS_INDICATOR_FILE).let {
+            it.parentFile.mkdirs()
+            it.createNewFile()
+        }
+
+        getWorkAction(
+            emptyList(), getAnnotationProcessorArtifacts(
+                kspProcessorDir, kspProcessorJar
+            ), emptyList(), outputFile
+        ).execute()
+
+        assertThat(getAnnotationProcessorList()).containsExactlyEntriesIn(
+            mapOf(
+                kspProcessorDir.name to ProcessorInfo.KSP_PROCESSOR,
+                kspProcessorJar.name to ProcessorInfo.KSP_PROCESSOR
+            )
+        )
+    }
+
+    @Test
+    fun `annotation processors are ignored in ksp artifacts`() {
+        val kspProcessorJar = temporaryFolder.newFile()
+        TestInputsGenerator.writeJarWithEmptyEntries(
+            kspProcessorJar.toPath(), listOf(KSP_PROCESSORS_INDICATOR_FILE)
+        )
+
+        val annotationProcessorDir = temporaryFolder.newFolder()
+        annotationProcessorDir.resolve(ANNOTATION_PROCESSORS_INDICATOR_FILE).let {
+            it.parentFile.mkdirs()
+            it.createNewFile()
+        }
+
+        getWorkAction(
+            emptyList(), getAnnotationProcessorArtifacts(
+                annotationProcessorDir, kspProcessorJar
+            ), emptyList(), outputFile
+        ).execute()
+
+        assertThat(getAnnotationProcessorList()).containsExactlyEntriesIn(
+            mapOf(
+                kspProcessorJar.name to ProcessorInfo.KSP_PROCESSOR
+            )
+        )
     }
 
     private fun getAnnotationProcessorArtifacts(vararg files: File): List<SerializableArtifact> {
@@ -104,6 +165,7 @@ class JavaPreCompileTaskTest {
 
     private fun getWorkAction(
         annotationProcessorArtifacts: List<SerializableArtifact>,
+        kspProcessorArtifacts: List<SerializableArtifact>,
         annotationProcessorClassNames: List<String>,
         annotationProcessorListFile: File
     ): JavaPreCompileWorkAction {
@@ -119,6 +181,9 @@ class JavaPreCompileTaskTest {
                     override val annotationProcessorListFile: RegularFileProperty =
                         FakeObjectFactory.factory.fileProperty()
                             .fileValue(annotationProcessorListFile)
+                    override val kspProcessorArtifacts =
+                        project.objects.listProperty(SerializableArtifact::class.java)
+                            .value(kspProcessorArtifacts)
                     override val projectPath = FakeGradleProperty("projectName")
                     override val taskOwner = FakeGradleProperty("taskOwner")
                     override val workerKey = FakeGradleProperty("workerKey")
@@ -129,7 +194,7 @@ class JavaPreCompileTaskTest {
         }
     }
 
-    private fun getAnnotationProcessorList() = readAnnotationProcessorsFromJsonFile(outputFile).keys
+    private fun getAnnotationProcessorList() = readAnnotationProcessorsFromJsonFile(outputFile)
 
     companion object {
 
