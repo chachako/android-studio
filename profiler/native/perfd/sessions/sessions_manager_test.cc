@@ -76,7 +76,7 @@ TEST_F(SessionsManagerTest, BeginSessionSendsQueuedEvents) {
       [&writer, &event_buffer] { event_buffer.WriteEventsTo(&writer); });
 
   proto::BeginSession begin_session;
-  manager->BeginSession(&daemon, 0, 0, begin_session);
+  manager->BeginSession(&daemon, 0, 0, begin_session, false);
 
   std::mutex mutex;
   {

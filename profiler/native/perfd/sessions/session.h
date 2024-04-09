@@ -30,7 +30,8 @@ class Daemon;
 class Session final {
  public:
   Session(int64_t stream_id, int32_t pid, int64_t start_timestamp,
-          Daemon* daemon);
+          Daemon* daemon, proto::ProfilerTaskType task_type,
+          bool is_task_based_ux_enabled);
 
   bool IsActive() const;
 
@@ -49,6 +50,9 @@ class Session final {
   std::vector<std::unique_ptr<Sampler>>& samplers() { return samplers_; }
 
  private:
+  void PopulateSamplers(Daemon* daemon, proto::ProfilerTaskType task_type,
+                        bool is_task_based_ux_enabled);
+
   proto::Session info_;
   // Samplers used for the unified data pipeline.
   std::vector<std::unique_ptr<Sampler>> samplers_;

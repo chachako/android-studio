@@ -158,7 +158,7 @@ TEST_F(HeapDumpTest, CommandsGeneratesEventsInTaskBasedUX) {
   // Start session so that there is a session to end on heap dump termination.
   auto* manager = SessionsManager::Instance();
   proto::BeginSession begin_session;
-  manager->BeginSession(daemon_.get(), 0, 0, begin_session);
+  manager->BeginSession(daemon_.get(), 0, 0, begin_session, true);
 
   // Execute the start command
   clock_.SetCurrentTime(10);

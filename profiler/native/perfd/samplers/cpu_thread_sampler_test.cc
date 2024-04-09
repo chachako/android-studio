@@ -37,6 +37,7 @@ using profiler::TestUtils;
 using profiler::proto::CpuThreadData;
 using profiler::proto::Event;
 using profiler::proto::EventGroup;
+using profiler::proto::ProfilerTaskType;
 using std::ostringstream;
 using std::string;
 using std::unique_ptr;
@@ -85,7 +86,8 @@ TEST(CpuThreadSamplerTest, SampleCpuThreads) {
   EventBuffer event_buffer(&clock);
   Daemon daemon(&clock, &config, &file_cache, &event_buffer);
   int32_t pid = 1;
-  Session session(0, pid, 0, &daemon);
+  Session session(0, pid, 0, &daemon, ProfilerTaskType::UNSPECIFIED_TASK,
+                  false);
   DiskFileSystem fs;
   CpuThreadSampler sampler(session, &clock, &event_buffer,
                            new MockProcfsFiles(&clock, fs.GetWorkingDir()));

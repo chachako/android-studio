@@ -40,7 +40,8 @@ class SessionsManager final {
   // Begins a new session. If a session was
   // already running it will be ended.
   void BeginSession(Daemon *daemon, int64_t stream_id, int32_t pid,
-                    const proto::BeginSession &data);
+                    const proto::BeginSession &data,
+                    bool is_task_based_ux_enabled);
 
   // Ends the given session if it was active.
   void EndSession(Daemon *daemon, int64_t session_id);

@@ -83,7 +83,7 @@ class TraceCommandsTest : public testing::Test {
 
     auto* manager = SessionsManager::Instance();
     proto::BeginSession begin_session;
-    manager->BeginSession(daemon_.get(), 0, 0, begin_session);
+    manager->BeginSession(daemon_.get(), 0, 0, begin_session, false);
 
     // Execute the start command
     trace_config_.set_app_name("fake_app");

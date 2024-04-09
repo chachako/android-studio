@@ -34,8 +34,8 @@ SessionsManager* SessionsManager::Instance() {
 }
 
 void SessionsManager::BeginSession(Daemon* daemon, int64_t stream_id,
-                                   int32_t pid,
-                                   const proto::BeginSession& data) {
+                                   int32_t pid, const proto::BeginSession& data,
+                                   bool is_task_based_ux_enabled) {
   int64_t now = daemon->clock()->GetCurrentTime();
   if (!sessions_.empty()) {
     DoEndSession(daemon, sessions_.back().get(), now);
@@ -55,7 +55,9 @@ void SessionsManager::BeginSession(Daemon* daemon, int64_t stream_id,
     }
   }
 
-  std::unique_ptr<Session> session(new Session(stream_id, pid, now, daemon));
+  auto task_type = data.task_type();
+  std::unique_ptr<Session> session(new Session(
+      stream_id, pid, now, daemon, task_type, is_task_based_ux_enabled));
   proto::Event event;
   event.set_pid(pid);
   event.set_group_id(session->info().session_id());
@@ -71,7 +73,7 @@ void SessionsManager::BeginSession(Daemon* daemon, int64_t stream_id,
   session_started->set_jvmti_enabled(data.jvmti_config().attach_agent());
   session_started->set_process_abi(data.process_abi());
   session_started->set_type(proto::SessionData::SessionStarted::FULL);
-  session_started->set_task_type(data.task_type());
+  session_started->set_task_type(task_type);
   session_started->set_is_startup_task(data.is_startup_task());
   daemon->buffer()->Add(event);
 

@@ -84,7 +84,8 @@ TEST(FakeSampler, TestSamplerInsertion) {
   EventBuffer event_buffer(&clock);
 
   Daemon daemon(&clock, &config, &file_cache, &event_buffer);
-  Session session(0, 0, 0, &daemon);
+  Session session(0, 0, 0, &daemon, proto::ProfilerTaskType::UNSPECIFIED_TASK,
+                  false);
   std::vector<FakeSampler*> samplers;
   int64_t sampling_interval_ms = 100;
   for (int i = 1; i < 11; i++) {
