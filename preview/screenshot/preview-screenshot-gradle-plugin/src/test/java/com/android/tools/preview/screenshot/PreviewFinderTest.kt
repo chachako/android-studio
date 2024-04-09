@@ -60,6 +60,7 @@ class PreviewFinderTest {
             }
         """.trimIndent())
         configureInput(classpath,
+            classpath,
             "fontsPath",
             "layoutlibpath",
             "outputFolder",
@@ -73,6 +74,10 @@ class PreviewFinderTest {
               "layoutlibPath": "layoutlibpath",
               "outputFolder": "outputFolder",
               "classPath": [
+                "path/to/classes.jar",
+                "path/to/R.jar"
+              ],
+              "projectClassPath": [
                 "path/to/classes.jar",
                 "path/to/R.jar"
               ],

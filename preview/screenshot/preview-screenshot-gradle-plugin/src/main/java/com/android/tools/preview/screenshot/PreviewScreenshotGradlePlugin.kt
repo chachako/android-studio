@@ -251,8 +251,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         .use(renderTaskProvider)
                         .toGet(
                             ScopedArtifact.CLASSES,
-                            PreviewScreenshotRenderTask::mainClasspath,
-                            PreviewScreenshotRenderTask::mainClassesDir,
+                            PreviewScreenshotRenderTask::mainClasspathAll,
+                            PreviewScreenshotRenderTask::mainClassesDirAll,
                         )
 
                     variant.deviceTests.singleOrNull()?.artifacts
@@ -260,9 +260,27 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         ?.use(renderTaskProvider)
                         ?.toGet(
                             ScopedArtifact.CLASSES,
-                            PreviewScreenshotRenderTask::testClasspath,
-                            PreviewScreenshotRenderTask::testClassesDir,
+                            PreviewScreenshotRenderTask::testClasspathAll,
+                            PreviewScreenshotRenderTask::testClassesDirAll,
                         )
+
+                    variant.artifacts
+                            .forScope(ScopedArtifacts.Scope.PROJECT)
+                            .use(renderTaskProvider)
+                            .toGet(
+                                    ScopedArtifact.CLASSES,
+                                    PreviewScreenshotRenderTask::mainClasspathProject,
+                                    PreviewScreenshotRenderTask::mainClassesDirProject,
+                            )
+
+                    variant.deviceTests.singleOrNull()?.artifacts
+                            ?.forScope(ScopedArtifacts.Scope.PROJECT)
+                            ?.use(renderTaskProvider)
+                            ?.toGet(
+                                    ScopedArtifact.CLASSES,
+                                    PreviewScreenshotRenderTask::testClasspathProject,
+                                    PreviewScreenshotRenderTask::testClassesDirProject,
+                            )
 
                     val updateTask = project.tasks.register(
                         "previewScreenshotUpdate${variantName.capitalized()}AndroidTest",
@@ -303,7 +321,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.testLogging {
                             it.showStandardStreams = true
                         }
-                        task.testClassesDirs = project.files(renderTaskProvider.flatMap { it.testClassesDir }) + project.files(renderTaskProvider.flatMap { it.testClasspath })
+                        task.testClassesDirs = project.files(renderTaskProvider.flatMap { it.testClassesDirAll }) + project.files(renderTaskProvider.flatMap { it.testClasspathAll })
                         task.classpath = task.project.configurations.getByName(previewScreenshotTestEngineConfigurationName) + task.testClassesDirs
                     }
 

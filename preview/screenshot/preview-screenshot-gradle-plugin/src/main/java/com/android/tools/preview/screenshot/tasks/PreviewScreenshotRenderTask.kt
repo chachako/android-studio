@@ -55,16 +55,28 @@ import javax.inject.Inject
 abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
 
     @get:Classpath
-    abstract val mainClasspath: ListProperty<RegularFile>
+    abstract val mainClasspathAll: ListProperty<RegularFile>
 
     @get:Classpath
-    abstract val testClasspath: ListProperty<RegularFile>
+    abstract val testClasspathAll: ListProperty<RegularFile>
 
     @get:Classpath
-    abstract val mainClassesDir: ListProperty<Directory>
+    abstract val mainClassesDirAll: ListProperty<Directory>
 
     @get:Classpath
-    abstract val testClassesDir: ListProperty<Directory>
+    abstract val testClassesDirAll: ListProperty<Directory>
+
+    @get:Classpath
+    abstract val mainClasspathProject: ListProperty<RegularFile>
+
+    @get:Classpath
+    abstract val testClasspathProject: ListProperty<RegularFile>
+
+    @get:Classpath
+    abstract val mainClassesDirProject: ListProperty<Directory>
+
+    @get:Classpath
+    abstract val testClassesDirProject: ListProperty<Directory>
 
     @get:OutputFile
     abstract val cliToolArgumentsFile: RegularFileProperty
@@ -126,10 +138,16 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
         }
 
         val classpathJars = mutableListOf<String>()
-        classpathJars.addAll(mainClassesDir.get().map{it.asFile }.toList().map { it.absolutePath })
-        classpathJars.addAll(testClassesDir.get().map{it.asFile }.toList().map { it.absolutePath })
-        classpathJars.addAll(mainClasspath.get().map{it.asFile }.toList().map { it.absolutePath })
-        classpathJars.addAll(testClasspath.get().map{it.asFile }.toList().map { it.absolutePath })
+        classpathJars.addAll(mainClassesDirAll.get().map{it.asFile }.toList().map { it.absolutePath })
+        classpathJars.addAll(testClassesDirAll.get().map{it.asFile }.toList().map { it.absolutePath })
+        classpathJars.addAll(mainClasspathAll.get().map{it.asFile }.toList().map { it.absolutePath })
+        classpathJars.addAll(testClasspathAll.get().map{it.asFile }.toList().map { it.absolutePath })
+
+        val projectClassPath =  mutableListOf<String>()
+        projectClassPath.addAll(mainClassesDirProject.get().map{it.asFile }.toList().map { it.absolutePath })
+        projectClassPath.addAll(testClassesDirProject.get().map{it.asFile }.toList().map { it.absolutePath })
+        projectClassPath.addAll(mainClasspathProject.get().map{it.asFile }.toList().map { it.absolutePath })
+        projectClassPath.addAll(testClasspathProject.get().map{it.asFile }.toList().map { it.absolutePath })
 
         // Rendering requires androidx.compose.ui:ui-tooling as a runtime dependency
         val regex = Regex("ui-tooling-[0-9a-z.]+-runtime.jar")
@@ -144,6 +162,7 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
         val fontsDir = sdkFontsDir.orNull?.asFile?.absolutePath
         configureInput(
             classpathJars,
+            projectClassPath,
             fontsDir,
             layoutlibDir.singleFile.absolutePath + "/layoutlib/",
             outputDir.get().asFile.absolutePath,

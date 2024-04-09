@@ -34,6 +34,11 @@ class JsonSerializationTest {
                 "/path/to/lib2.jar",
                 "/path/to/classes"
               ],
+              "projectClassPath": [
+                "/path/to/lib1.jar",
+                "/path/to/lib2.jar",
+                "/path/to/classes"
+              ],
               "namespace": "com.my.package",
               "resourceApkPath": "/path/to/resource.apk",
               "screenshots": [
@@ -54,6 +59,7 @@ class JsonSerializationTest {
             "/path/to/fonts",
             "/path/to/layout/lib",
             "/path/to/output/folder",
+            listOf("/path/to/lib1.jar", "/path/to/lib2.jar", "/path/to/classes"),
             listOf("/path/to/lib1.jar", "/path/to/lib2.jar", "/path/to/classes"),
             "com.my.package",
             "/path/to/resource.apk",
@@ -153,6 +159,7 @@ class JsonSerializationTest {
             "/path/to/fonts",
             "/path/to/layout/lib",
             "/path/to/output/folder",
+            listOf("/path/to/lib1.jar", "/path/to/lib2.jar", "/path/to/classes"),
             listOf("/path/to/lib1.jar", "/path/to/lib2.jar", "/path/to/classes"),
             "com.my.package",
             "/path/to/resource.apk",

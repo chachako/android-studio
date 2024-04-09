@@ -36,6 +36,7 @@ import org.objectweb.asm.Type
 
 fun configureInput (
     classPath: List<String>,
+    projectClassPath: List<String>,
     fontsPath: String?,
     layoutlibPath: String,
     outputFolder: String,
@@ -53,6 +54,7 @@ fun configureInput (
         layoutlibPath,
         outputFolder,
         classPath,
+        projectClassPath,
         namespace,
         resourceApkPath,
         previews

@@ -54,6 +54,7 @@ class PerfMainTest {
             TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib").absolutePathString(),
             outputFolder.absolutePath,
             classPath,
+            classPath,
             "com.example.composeapplication",
             apk.absolutePathString(),
             screenshots,
