@@ -359,6 +359,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         "-dev"
                     else
                         "-eap03"
+            dependencies.add(previewScreenshotTestEngineConfigurationName, "org.junit.platform:junit-platform-launcher")
             dependencies.add(
                 previewScreenshotTestEngineConfigurationName,
                 "com.android.tools.compose:compose-preview-validation-junit-engine:${engineVersion}")

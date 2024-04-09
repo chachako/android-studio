@@ -114,7 +114,6 @@ class ScreenshotTest {
             testImplementation("junit:junit:4.13.2")
             implementation("androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}")
             implementation("androidx.compose.material:material:${TaskManager.COMPOSE_UI_VERSION}")
-            testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.9.2")
         }
         appendToBuildFile {
             """
@@ -228,7 +227,6 @@ class ScreenshotTest {
     private fun getExecutor(): GradleTaskExecutor =
         project.executor()
             .with(BooleanOption.USE_ANDROID_X, true)
-            .withFailOnWarning(false) // TODO(b/333398506): remove once fixed
 
     @Test
     fun discoverPreviews() {
@@ -430,7 +428,9 @@ class ScreenshotTest {
         val referenceScreenshotDir = appProject.projectDir.resolve("src/androidTest/screenshot/debug/").toPath()
         assertThat(referenceScreenshotDir.listDirectoryEntries()).isEmpty()
 
-        getExecutor().run(":app:previewScreenshotDebugAndroidTest")
+        getExecutor()
+            .withFailOnWarning(false) // TODO(b/333398506): remove once fixed
+            .run(":app:previewScreenshotDebugAndroidTest")
 
         val indexHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
         assertThat(indexHtmlReport).exists()
