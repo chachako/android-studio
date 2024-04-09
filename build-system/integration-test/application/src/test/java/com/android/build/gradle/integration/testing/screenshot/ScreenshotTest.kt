@@ -114,6 +114,7 @@ class ScreenshotTest {
             testImplementation("junit:junit:4.13.2")
             implementation("androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}")
             implementation("androidx.compose.material:material:${TaskManager.COMPOSE_UI_VERSION}")
+            testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.9.2")
         }
         appendToBuildFile {
             """

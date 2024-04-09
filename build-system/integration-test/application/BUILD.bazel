@@ -566,7 +566,9 @@ gradle_integration_test(
         "//tools/base/build-system/integration-test/application:layoutlib_prebuilts",
         "//tools/base/build-system/integration-test:kotlin_gradle_plugin_for_compose_prebuilts",
     ],
-    deps = TEST_DEPS,
+    deps = TEST_DEPS + [
+        "@maven//:org.junit.platform.junit-platform-launcher",
+    ],
 )
 
 gradle_integration_test(

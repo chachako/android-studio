@@ -312,6 +312,9 @@ interface DependenciesBuilder {
      */
     fun testImplementation(dependency: Any)
 
+    /** Adds a dependency to the testRuntimeOnly configuration. See [implementation] for details. */
+    fun testRuntimeOnly(dependency: Any)
+
     /**
      * adds a dependency in the androidTestImplementation scope.
      *

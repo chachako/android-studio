@@ -57,6 +57,10 @@ class DependenciesBuilderImpl() : DependenciesBuilder {
         dependencies.add("testImplementation" to dependency)
     }
 
+    override fun testRuntimeOnly(dependency: Any) {
+        dependencies.add("testRuntimeOnly" to dependency)
+    }
+
     override fun androidTestImplementation(dependency: Any) {
         dependencies.add("androidTestImplementation" to dependency)
     }
