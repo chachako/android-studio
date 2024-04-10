@@ -83,6 +83,8 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
          */
         private val perClassLoaderConstant = UUID.randomUUID().toString()
         private const val LAYOUTLIB_VERSION = "14.0.4"
+        private const val LAYOUTLIB_RUNTIME_VERSION = "14.0.4"
+        private const val LAYOUTLIB_RESOURCES_VERSION = "14.0.4"
     }
 
     override fun apply(project: Project) {
@@ -414,7 +416,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 isCanBeConsumed = false
                 description = "A configuration to resolve layoutlib runtime data dependencies."
             }
-            val version = LAYOUTLIB_VERSION
+            val version = LAYOUTLIB_RUNTIME_VERSION
             dependencies.add(
                 layoutlibRunTimeConfigurationName,
                 "com.android.tools.layoutlib:layoutlib-runtime:$version")
@@ -431,7 +433,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 isCanBeConsumed = false
                 description = "A configuration to resolve render CLI tool dependencies."
             }
-            val version = LAYOUTLIB_VERSION
+            val version = LAYOUTLIB_RESOURCES_VERSION
             dependencies.add(
                 layoutlibResourcesConfigurationName,
                 "com.android.tools.layoutlib:layoutlib-resources:$version")
