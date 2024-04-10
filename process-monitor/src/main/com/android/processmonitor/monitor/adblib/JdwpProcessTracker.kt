@@ -20,7 +20,7 @@ import com.android.adblib.ConnectedDevice
 import com.android.adblib.deviceInfo
 import com.android.adblib.tools.debugging.AppProcess
 import com.android.adblib.tools.debugging.appProcessFlow
-import com.android.adblib.tools.debugging.isAppProcessTrackerSupported
+import com.android.adblib.tools.debugging.isTrackAppSupported
 import com.android.adblib.tools.debugging.jdwpProcessFlow
 import com.android.adblib.withPrefix
 import com.android.processmonitor.common.ProcessEvent
@@ -50,7 +50,7 @@ internal class JdwpProcessTracker(
         return channelFlow {
             val currentPids: MutableSet<Int> = mutableSetOf()
 
-            val flow = when (device.isAppProcessTrackerSupported()) {
+            val flow = when (device.isTrackAppSupported()) {
                 true -> device.appProcessFlow.asJdwpProcessFlow()
                 false -> device.jdwpProcessFlow
             }

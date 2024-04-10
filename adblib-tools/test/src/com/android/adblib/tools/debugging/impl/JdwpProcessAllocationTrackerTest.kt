@@ -17,6 +17,7 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.testingutils.CoroutineTestUtils
 import com.android.adblib.testingutils.FakeAdbServerProvider
+import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessAllocationTracker
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.toByteBuffer
@@ -105,8 +106,12 @@ class JdwpProcessAllocationTrackerTest : AdbLibToolsTestBase() {
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(10, 0, "a.b.c", false)
-        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, 10))
+        val process = connectedDevice.jdwpProcessManager.getProcess(10)
         // Note: We don't currently need to collect process properties for the profiler API to work
         return JdwpProcessAllocationTrackerImpl(process)
+    }
+
+    private fun JdwpProcessManager.getProcess(pid: Int): JdwpProcess {
+        return this.addProcesses(setOf(pid))[pid]!!
     }
 }

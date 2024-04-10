@@ -16,14 +16,13 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.tools.debugging.JdwpProcess
-import com.android.adblib.tools.debugging.SharedJdwpSession
 import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Base class of internal implementations of [JdwpProcess], defining additional functions
  * to ensure proper behavior required for sharing [JdwpProcess] instances.
  *
- * Concrete instances should be obtained through [JdwpProcessFactory.create].
+ * Concrete instances should be obtained through [JdwpProcessManager].
  */
 internal abstract class AbstractJdwpProcess : JdwpProcess, AutoCloseable {
 
