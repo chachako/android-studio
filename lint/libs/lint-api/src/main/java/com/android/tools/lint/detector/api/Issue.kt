@@ -339,7 +339,7 @@ private constructor(
         category,
         priority,
         severity,
-        computePlatforms(null, implementation),
+        platformsFromImplementation(implementation),
         null,
         implementation,
       )
@@ -384,7 +384,9 @@ private constructor(
           category,
           priority,
           severity,
-          platforms ?: computePlatforms(androidSpecific, implementation),
+          platforms
+            ?: androidSpecific?.let(::platformsFromAndroidSpecificFlag)
+            ?: platformsFromImplementation(implementation),
           suppressAnnotations,
           implementation,
         )
@@ -393,17 +395,14 @@ private constructor(
           if (!enabledByDefault) setEnabledByDefault(false)
         }
 
-    private fun computePlatforms(
-      androidSpecific: Boolean?,
-      implementation: Implementation,
-    ): EnumSet<Platform> {
-      val android = androidSpecific ?: scopeImpliesAndroid(implementation.scope)
-      return when {
-        android -> Platform.ANDROID_SET
-        androidSpecific == false -> Platform.JDK_SET
+    private fun platformsFromAndroidSpecificFlag(specific: Boolean): EnumSet<Platform> =
+      if (specific) Platform.ANDROID_SET else Platform.JDK_SET
+
+    private fun platformsFromImplementation(impl: Implementation): EnumSet<Platform> =
+      when {
+        scopeImpliesAndroid(impl.scope) -> Platform.ANDROID_SET
         else -> Platform.UNSPECIFIED
       }
-    }
 
     private fun scopeImpliesAndroid(scope: EnumSet<Scope>): Boolean {
       return scope.contains(Scope.MANIFEST) ||
