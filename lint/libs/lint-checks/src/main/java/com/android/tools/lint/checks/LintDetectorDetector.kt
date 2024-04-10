@@ -612,44 +612,33 @@ class LintDetectorDetector : Detector(), UastScanner {
         return
       }
 
-      val parameters = create.parameters
-      val mapping = evaluator.computeArgumentMapping(call, create)
-      val reversed =
-        mutableMapOf<PsiParameter, UExpression>()
-          .also { mapping.forEach { (argument, parameter) -> it[parameter] = argument } }
-          .toMap()
-
-      val idParameter = parameters[0]
-      val summaryParameter = parameters[1]
-      val explanationParameter = parameters[2]
-
-      // id, brief, explanation are always the first 3 arguments
-      reversed[idParameter]?.let {
-        val string = getString(it)
-        checkId(it, string)
-      }
-      reversed[summaryParameter]?.let {
-        val string = getString(it)
-        if (string.isNotEmpty()) {
-          // checkLintString(it, string)
-          checkSummary(it, string)
-        }
-      }
-      reversed[explanationParameter]?.let {
-        val string = getString(it)
-        if (string.isNotEmpty()) {
-          checkLintString(it, string)
-          checkTrimIndent(it)
-          checkContinuations(it, string)
-        }
-      }
-
-      if (parameters.size == 12) {
-        // more info is 5th parameter
-        reversed[parameters[4]]?.let {
-          val string = getString(it)
-          if (string.isNotEmpty()) {
-            checkMoreInfoUrl(it, string)
+      /** Below will need updating if we ever change [Issue.create]'s parameter names */
+      for ((arg, param) in evaluator.computeArgumentMapping(call, create)) {
+        when (param.name) {
+          "id" -> {
+            val string = getString(arg)
+            checkId(arg, string)
+          }
+          "briefDescription" -> {
+            val string = getString(arg)
+            if (string.isNotEmpty()) {
+              // checkLintString(it, string)
+              checkSummary(arg, string)
+            }
+          }
+          "explanation" -> {
+            val string = getString(arg)
+            if (string.isNotEmpty()) {
+              checkLintString(arg, string)
+              checkTrimIndent(arg)
+              checkContinuations(arg, string)
+            }
+          }
+          "moreInfo" -> {
+            val string = getString(arg)
+            if (string.isNotEmpty()) {
+              checkMoreInfoUrl(arg, string)
+            }
           }
         }
       }
