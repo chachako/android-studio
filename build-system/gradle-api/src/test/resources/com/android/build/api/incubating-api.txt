@@ -3,8 +3,6 @@ Incubating Android Gradle Plugin API.
 ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 have associated tracking issues.
 -------------------------------------------------------------------------
-https://issuetracker.google.com/253282793
-  * com.android.build.api.dsl.AndroidSourceDirectorySet.getDirectories: java.util.Set<java.lang.String> ()
 https://issuetracker.google.com/328747466
   * com.android.build.api.artifact.SingleArtifact$MERGED_NATIVE_LIBS extends com.android.build.api.artifact.SingleArtifact
 https://issuetracker.google.com/328747467
@@ -688,3 +686,5 @@ https://issuetracker.google.com/330688483
   * com.android.build.api.instrumentation.manageddevice.TestRunData.getTestRunId: java.lang.String ()
   * com.android.build.api.instrumentation.manageddevice.TestRunData.getVariantName: java.lang.String ()
   * com.android.build.api.variant.AndroidComponents.getManagedDeviceRegistry: com.android.build.api.instrumentation.manageddevice.ManagedDeviceRegistry ()
+https://issuetracker.google.com/333537222
+  * com.android.build.api.dsl.AndroidSourceDirectorySet.getDirectories: java.util.Set<java.lang.String> ()
