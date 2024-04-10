@@ -41,7 +41,7 @@ maven_repository(
     name = "maven_test_dependencies",
     # keep sorted
     artifacts = [
-        "//tools/base/multipreview-asm",
+        "//tools/base/multipreview-asm:compose-preview-detector",
         "//tools/base/standalone-render/compose-cli:standalone-render.compose-cli",
         "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",
         "//tools/base/testutils:tools.testutils",
@@ -56,7 +56,7 @@ maven_repository(
     name = "maven_dependencies",
     # keep sorted
     artifacts = [
-        "//tools/base/multipreview-asm",
+        "//tools/base/multipreview-asm:compose-preview-detector",
         "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",
     ],
 )
@@ -111,7 +111,7 @@ kotlin_library(
         "//tools/base/build-system:gradle-api",
         "//tools/base/build-system/gradle-core",
         "//tools/base/common:tools.common",
-        "//tools/base/multipreview-asm:tools.multipreview-asm",
+        "//tools/base/multipreview-asm:tools.compose-preview-detector",
         "//tools/base/sdk-common:tools.sdk-common",
         "//tools/base/sdklib:tools.sdklib",
         "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",

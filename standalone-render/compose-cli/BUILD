@@ -12,7 +12,7 @@ kotlin_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tools/adt/idea/preview-elements:tools.preview-elements",
-        "//tools/base/multipreview-asm:tools.multipreview-asm",
+        "//tools/base/multipreview-asm:tools.compose-preview-detector",
         "//tools/base/standalone-render/compose-cli-serialize:tools.standalone-render.compose-cli-serialize",
         "//tools/base/standalone-render/lib:tools.standalone-render.lib",
     ],
@@ -37,7 +37,7 @@ merge_deps(
         "//tools/base/device_validator:tools.dvlib",
         "//tools/base/environment-services:tools.environment-services",
         "//tools/base/layoutlib-api:tools.layoutlib-api",
-        "//tools/base/multipreview-asm:tools.multipreview-asm",
+        "//tools/base/multipreview-asm:tools.compose-preview-detector",
         "//tools/base/repository:tools.repository",
         "//tools/base/resource-repository:tools.resource-repository",
         "//tools/base/sdk-common:tools.sdk-common",
