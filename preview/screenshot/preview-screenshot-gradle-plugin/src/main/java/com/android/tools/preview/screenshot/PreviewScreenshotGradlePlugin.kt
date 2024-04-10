@@ -86,7 +86,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
 
         const val ST_SOURCE_SET_ENABLED = "android.experimental.enableScreenshotTest"
         private const val LAYOUTLIB_VERSION = "14.0.4"
-        private const val LAYOUTLIB_RUNTIME_VERSION = "14.0.4"
+        private const val LAYOUTLIB_RUNTIME_VERSION = "14.0.6"
         private const val LAYOUTLIB_RESOURCES_VERSION = "14.0.4"
     }
 
@@ -124,7 +124,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             createLayoutlibRuntimeConfiguration(project)
             createLayoutlibResourcesConfiguration(project)
             val layoutlibFromMaven = LayoutlibFromMaven.create(project)
-            val layoutlibDataFromMaven = LayoutlibDataFromMaven.create(project, LAYOUTLIB_VERSION)
+            val layoutlibDataFromMaven = LayoutlibDataFromMaven.create(project, LAYOUTLIB_RUNTIME_VERSION)
 
             val updateAllTask = project.tasks.register(
                 "previewScreenshotUpdateAndroidTest",
