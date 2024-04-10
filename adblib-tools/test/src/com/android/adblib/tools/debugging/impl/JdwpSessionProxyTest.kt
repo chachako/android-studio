@@ -180,10 +180,7 @@ class JdwpSessionProxyTest : AdbLibToolsJdwpTestBase() {
 
         val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, pid))
         process.startMonitoring()
-        yieldUntil {
-            process.properties.jdwpSessionProxyStatus.socketAddress != null &&
-                    process.properties.processName != null
-        }
+        yieldUntil { process.properties.waitCommandReceived }
         assertTrue(process.properties.isWaitingForDebugger)
 
         // Act
