@@ -44,15 +44,16 @@ internal class JdwpProcessImpl(
     override val pid: Int
 ) : AbstractJdwpProcess() {
 
-    private val logger = adbLogger(device.session)
-        .withPrefix("${device.session} - $device - pid=$pid - ")
+    private val processDescription = "${device.session} - $device - pid=$pid"
+
+    private val logger = adbLogger(device.session).withPrefix("$processDescription - ")
 
     private val session: AdbSession
         get() = device.session
 
     private val stateFlow = AtomicStateFlow(MutableStateFlow(JdwpProcessProperties(pid)))
 
-    override val cache = CoroutineScopeCache.create(device.scope)
+    override val cache = CoroutineScopeCache.create(device.scope, processDescription)
 
     override val propertiesFlow = stateFlow.asStateFlow()
 

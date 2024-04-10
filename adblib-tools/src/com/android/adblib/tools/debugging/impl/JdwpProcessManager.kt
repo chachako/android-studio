@@ -541,8 +541,8 @@ private class JdwpProcessDelegate(
     private val delegateSession: AdbSession
 ) : AbstractJdwpProcess() {
 
-    private val logger = adbLogger(device.session)
-        .withPrefix("${device.session} - $device - pid=$pid - ")
+    private val processDescription = "${device.session} - $device - pid=$pid"
+    private val logger = adbLogger(device.session).withPrefix("$processDescription - ")
 
     private val propertiesMutableFlow = MutableStateFlow(JdwpProcessProperties(pid))
 
@@ -551,7 +551,7 @@ private class JdwpProcessDelegate(
     override val jdwpSessionActivationCount: StateFlow<Int>
         get() = withJdwpSessionTracker.activationCount
 
-    override val cache = CoroutineScopeCache.create(device.scope)
+    override val cache = CoroutineScopeCache.create(device.scope, processDescription)
 
     override val propertiesFlow = propertiesMutableFlow.asStateFlow()
 

@@ -33,10 +33,11 @@ internal class AppProcessImpl(
     override val jdwpProcess: JdwpProcess?,
 ) : AppProcess, AutoCloseable {
 
-    private val logger = adbLogger(device.session)
-        .withPrefix("${device.session} - $device - pid=$pid -")
+    private val processDescription = "${device.session} - $device - pid=$pid"
 
-    override val cache = CoroutineScopeCache.create(device.scope)
+    private val logger = adbLogger(device.session).withPrefix("$processDescription -")
+
+    override val cache = CoroutineScopeCache.create(device.scope, processDescription)
 
     override val pid: Int
         get() = process.pid
