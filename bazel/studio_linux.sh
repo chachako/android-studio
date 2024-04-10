@@ -287,6 +287,8 @@ fi
 # http://g3doc/wireless/android/build_tools/g3doc/public/buildbot#environment-variables
 if [[ -d "${DIST_DIR}" ]]; then
 
+  cp ${SCRIPT_DIR}/../build-system/supported-versions.properties ${DIST_DIR}/agp-supported-versions.properties
+
   collect_logs
   if [[ $? -ne 0 ]]; then
     echo "Bazel logs-collector failed!"
