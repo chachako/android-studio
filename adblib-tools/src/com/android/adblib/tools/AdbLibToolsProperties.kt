@@ -21,7 +21,6 @@ import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.SharedJdwpSession
 import com.android.adblib.tools.debugging.impl.AbstractJdwpProcess
 import com.android.adblib.tools.debugging.impl.AppProcessImpl
-import com.android.adblib.tools.debugging.impl.JdwpProcessManager
 import java.time.Duration
 
 /**
@@ -68,16 +67,6 @@ object AdbLibToolsProperties {
     val JDWP_PROCESS_TRACKER_CLOSE_NOTIFICATION_DELAY = AdbSessionHost.DurationProperty(
         name = "$NAME_PREFIX.jdwp.process.tracker.close.notification.delay",
         defaultValue = Duration.ofMillis(100)
-    )
-
-    /**
-     * Delay between the time [JdwpProcessManager] receives a new list of process ids
-     * and the time it updates its internal map to close instances of [AbstractJdwpProcess]
-     * corresponding to JDWP processes that have exited.
-     */
-    val JDWP_PROCESS_MANAGER_REFRESH_DELAY = AdbSessionHost.DurationProperty(
-        name = "$NAME_PREFIX.jdwp.process.manager.refresh.delay",
-        defaultValue = Duration.ofMillis(200),
     )
 
     /**

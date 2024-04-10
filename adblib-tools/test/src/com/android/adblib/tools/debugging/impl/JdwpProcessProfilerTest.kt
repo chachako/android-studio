@@ -17,7 +17,6 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.FakeAdbServerProvider
-import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessProfiler
 import com.android.adblib.tools.debugging.ProfilerStatus
 import com.android.adblib.tools.debugging.toByteArray
@@ -192,7 +191,7 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(10, 0, "a.b.c", false)
-        val process = connectedDevice.jdwpProcessManager.getProcess(10)
+        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, 10))
         // Note: We don't currently need to collect process properties for the profiler API to
         // work, so we don't call "process.startMonitoring()" here
         return JdwpProcessProfilerImpl(process)
@@ -201,9 +200,5 @@ class JdwpProcessProfilerTest : AdbLibToolsTestBase() {
     fun DeviceState.client(pid: Int): ClientState {
         return getClient(pid)
             ?: throw IllegalArgumentException("Client $pid does not exist on device ${this.deviceId}")
-    }
-
-    private fun JdwpProcessManager.getProcess(pid: Int): JdwpProcess {
-        return this.addProcesses(setOf(pid))[pid]!!
     }
 }

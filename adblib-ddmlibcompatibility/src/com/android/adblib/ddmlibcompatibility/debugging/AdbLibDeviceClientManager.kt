@@ -26,7 +26,7 @@ import com.android.adblib.ddmlibcompatibility.debugging.ProcessTrackerHost.Clien
 import com.android.adblib.property
 import com.android.adblib.scope
 import com.android.adblib.serialNumber
-import com.android.adblib.tools.debugging.isTrackAppSupported
+import com.android.adblib.tools.debugging.isAppProcessTrackerSupported
 import com.android.adblib.withPrefix
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.Client
@@ -136,7 +136,7 @@ internal class AdbLibDeviceClientManager(
 
     private suspend fun startProcessTracking(device: ConnectedDevice) {
         val host = ProcessTrackerHostImpl(device)
-        if (device.isTrackAppSupported()) {
+        if (device.isAppProcessTrackerSupported()) {
             AppProcessTracker(host).startTracking()
         } else {
             JdwpTracker(host).startTracking()

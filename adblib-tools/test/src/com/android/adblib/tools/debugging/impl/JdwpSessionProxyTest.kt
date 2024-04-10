@@ -17,7 +17,6 @@ package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.testingutils.CoroutineTestUtils.runBlockingWithTimeout
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
-import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.properties
 import com.android.adblib.tools.testutils.AdbLibToolsJdwpTestBase
@@ -51,7 +50,8 @@ class JdwpSessionProxyTest : AdbLibToolsJdwpTestBase() {
         fakeDevice.startClient(10, 0, "a.b.c", false)
 
         // Act
-        val process = connectedDevice.jdwpProcessManager.getProcess(10)
+        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, 10))
+        process.startMonitoring()
         yieldUntil {
             process.properties.jdwpSessionProxyStatus.socketAddress != null
         }
@@ -178,7 +178,8 @@ class JdwpSessionProxyTest : AdbLibToolsJdwpTestBase() {
         val pid = 12
         fakeDevice.startClient(pid, 0, "a.b.c", true)
 
-        val process = connectedDevice.jdwpProcessManager.getProcess(pid)
+        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, pid))
+        process.startMonitoring()
         yieldUntil {
             process.properties.jdwpSessionProxyStatus.socketAddress != null &&
                     process.properties.processName != null
@@ -194,9 +195,5 @@ class JdwpSessionProxyTest : AdbLibToolsJdwpTestBase() {
         // Assert
         assertTrue(process.properties.jdwpSessionProxyStatus.isExternalDebuggerAttached)
         assertFalse(process.properties.isWaitingForDebugger)
-    }
-
-    private fun JdwpProcessManager.getProcess(pid: Int): JdwpProcess {
-        return this.addProcesses(setOf(pid))[pid]!!
     }
 }

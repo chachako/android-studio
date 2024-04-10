@@ -18,21 +18,32 @@ package com.android.adblib.tools.debugging.impl
 import com.android.adblib.AppProcessEntry
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.adbLogger
+import com.android.adblib.property
 import com.android.adblib.scope
+import com.android.adblib.selector
+import com.android.adblib.tools.AdbLibToolsProperties.JDWP_PROCESS_TRACKER_CLOSE_NOTIFICATION_DELAY
+import com.android.adblib.tools.AdbLibToolsProperties.TRACK_APP_RETRY_DELAY
 import com.android.adblib.tools.debugging.AppProcess
 import com.android.adblib.tools.debugging.AppProcessTracker
-import com.android.adblib.tools.debugging.trackAppStateFlow
-import com.android.adblib.tools.debugging.utils.logIOCompletionErrors
+import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.utils.createChildScope
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import java.io.EOFException
 
 internal class AppProcessTrackerImpl(
     override val device: ConnectedDevice
 ) : AppProcessTracker {
+
+    private val session
+        get() = device.session
 
     private val logger = adbLogger(device.session)
         .withPrefix("${device.session} - $device -")
@@ -41,11 +52,7 @@ internal class AppProcessTrackerImpl(
 
     private val trackProcessesJob: Job by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
         scope.launch {
-            runCatching {
-                trackProcesses()
-            }.onFailure { throwable ->
-                logger.logIOCompletionErrors(throwable)
-            }
+            trackProcesses()
         }
     }
 
@@ -59,28 +66,80 @@ internal class AppProcessTrackerImpl(
         }
 
     private suspend fun trackProcesses() {
-        val processMap = ProcessMap<AppProcessImpl>()
-        device.trackAppStateFlow().collect { trackAppItem ->
-            updateProcessMap(processMap, trackAppItem.entries)
-            processesMutableFlow.emit(processMap.values.toList())
+        val processMap = ProcessMap<AppProcessImpl>(
+            onRemove = { appProcess ->
+                logger.debug { "Removing process ${appProcess.pid} from process map" }
+                closeAppProcess(appProcess)
+            }
+        )
+        var deviceDisconnected = false
+        try {
+            session.deviceServices
+                .trackApp(device.selector)
+                .retryWhen { throwable, _ ->
+                    // We want to retry the `trackApp` request as long as the device is connected.
+                    // But we also want to end the flow when the device has been disconnected.
+                    if (!scope.isActive) {
+                        logger.info { "Tracker service ending because device is disconnected" }
+                        deviceDisconnected = true
+                        false // Don't retry, let exception through
+                    } else {
+                        // Retry after emitting empty list
+                        if (throwable is EOFException) {
+                            logger.info { "Tracker services ended with expected EOF exception, retrying" }
+                        } else {
+                            logger.info(throwable) { "Tracker ended unexpectedly ($throwable), retrying" }
+                        }
+                        // When disconnected, assume we have no processes
+                        emit(emptyList())
+                        delay(session.property(TRACK_APP_RETRY_DELAY).toMillis())
+                        true // Retry
+                    }
+                }.collect { appEntryList ->
+                    logger.debug { "Received a new list of processes: $appEntryList" }
+                    updateProcessMap(processMap, appEntryList)
+                    processesMutableFlow.emit(processMap.values.toList())
+                }
+        } catch (t: Throwable) {
+            t.rethrowCancellation()
+            if (deviceDisconnected) {
+                logger.debug(t) { "Ignoring exception $t because device has been disconnected" }
+            } else {
+                throw t
+            }
+        } finally {
+            logger.debug { "Clearing process map" }
+            processMap.clear()
+            processesMutableFlow.value = emptyList()
         }
     }
 
-    private fun updateProcessMap(
-        appProcessMap: ProcessMap<AppProcessImpl>,
-        newAppProcessEntryList: List<AppProcessEntry>
-    ) {
-        // Ask the jdwp process manager for the jdwp process instances so that we can use them
-        // in the corresponding "AppProcess" instances
-        val jdwpPids = newAppProcessEntryList.filter { it.debuggable }.map { it.pid }.toSet()
-        val jdwpProcessMap = device.jdwpProcessManager.addProcesses(jdwpPids)
+    private fun closeAppProcess(appProcess: AppProcessImpl) {
+        val delayMillis = session.property(JDWP_PROCESS_TRACKER_CLOSE_NOTIFICATION_DELAY).toMillis()
+        if (delayMillis > 0) {
+            scope.launch {
+                withTimeoutOrNull(delayMillis) {
+                    appProcess.awaitReadyToClose()
+                } ?: run {
+                    logger.info { "App process was not ready to close within $delayMillis milliseconds" }
+                }
+            }.invokeOnCompletion {
+                appProcess.close()
+            }
+        } else {
+            appProcess.close()
+        }
+    }
 
-        val appProcessPids = newAppProcessEntryList.map { it.pid }
-        appProcessMap.update(appProcessPids, valueFactory = { pid ->
+    private fun updateProcessMap(map: ProcessMap<AppProcessImpl>, list: List<AppProcessEntry>) {
+        val pids = list.map { it.pid }
+        map.update(pids, valueFactory = { pid ->
             logger.debug { "Adding process $pid to process map" }
 
-            val entry = newAppProcessEntryList.first { it.pid == pid }
-            AppProcessImpl(device, entry, jdwpProcessMap[pid])
+            val entry = list.first { it.pid == pid }
+            AppProcessImpl(device, entry).also {
+                it.startMonitoring()
+            }
         })
     }
 }

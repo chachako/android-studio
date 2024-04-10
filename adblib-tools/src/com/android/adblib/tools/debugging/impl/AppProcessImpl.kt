@@ -21,7 +21,6 @@ import com.android.adblib.CoroutineScopeCache
 import com.android.adblib.adbLogger
 import com.android.adblib.scope
 import com.android.adblib.tools.debugging.AppProcess
-import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.withPrefix
 
 /**
@@ -30,7 +29,6 @@ import com.android.adblib.withPrefix
 internal class AppProcessImpl(
     override val device: ConnectedDevice,
     private val process: AppProcessEntry,
-    override val jdwpProcess: JdwpProcess?,
 ) : AppProcess, AutoCloseable {
 
     private val logger = adbLogger(device.session)
@@ -50,9 +48,23 @@ internal class AppProcessImpl(
     override val architecture: String
         get() = process.architecture
 
+    override val jdwpProcess: AbstractJdwpProcess? = when (process.debuggable) {
+        true -> JdwpProcessFactory.create(device, pid)
+        false -> null
+    }
+
+    fun startMonitoring() {
+        jdwpProcess?.startMonitoring()
+    }
+
+    suspend fun awaitReadyToClose() {
+        jdwpProcess?.awaitReadyToClose()
+    }
+
     override fun close() {
         logger.debug { "close()" }
         cache.close()
+        jdwpProcess?.close()
     }
 
     override fun toString(): String {

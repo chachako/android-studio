@@ -110,3 +110,22 @@ val ConnectedDevice.appProcessFlow: Flow<List<AppProcess>>
     get() = flowWhenOnline(session.property(APP_PROCESS_TRACKER_RETRY_DELAY)) {
         it.appProcessTracker.appProcessFlow
     }
+
+suspend fun ConnectedDevice.isAppProcessTrackerSupported(): Boolean {
+    // Only supported on API 31+ (Android "S")
+    if (deviceProperties().api() < 31) {
+        return false
+    }
+
+    // Check `track-app` works at least once in case there is a problem with it
+    return runCatching {
+        session.deviceServices.trackApp(selector).first()
+        true
+    }.onFailure { throwable ->
+        adbLogger(session).warn(
+            throwable,
+            "There was an error invoking the `track-app` service on device $serialNumber, " +
+                    "falling back to `track-jdwp`"
+        )
+    }.getOrDefault(false)
+}

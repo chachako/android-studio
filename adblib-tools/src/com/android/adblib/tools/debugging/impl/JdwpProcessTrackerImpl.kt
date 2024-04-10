@@ -16,22 +16,35 @@
 package com.android.adblib.tools.debugging.impl
 
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.ProcessIdList
 import com.android.adblib.adbLogger
+import com.android.adblib.emptyProcessIdList
+import com.android.adblib.property
 import com.android.adblib.scope
+import com.android.adblib.selector
+import com.android.adblib.tools.AdbLibToolsProperties.JDWP_PROCESS_TRACKER_CLOSE_NOTIFICATION_DELAY
+import com.android.adblib.tools.AdbLibToolsProperties.TRACK_JDWP_RETRY_DELAY
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpProcessTracker
-import com.android.adblib.tools.debugging.trackJdwpStateFlow
+import com.android.adblib.tools.debugging.rethrowCancellation
 import com.android.adblib.utils.createChildScope
-import com.android.adblib.utils.toImmutableList
 import com.android.adblib.withPrefix
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import java.io.EOFException
 
 internal class JdwpProcessTrackerImpl(
-    override val device: ConnectedDevice
-) : JdwpProcessTracker {
+  override val device: ConnectedDevice
+): JdwpProcessTracker {
+
+    private val session
+        get() = device.session
 
     private val logger = adbLogger(device.session)
         .withPrefix("${device.session} - $device - ")
@@ -54,13 +67,77 @@ internal class JdwpProcessTrackerImpl(
         }
 
     private suspend fun trackProcesses() {
-        device.trackJdwpStateFlow().collect { trackJdwpItem ->
-            val processIds = trackJdwpItem.processIds.toSet()
-            val processMap = device.jdwpProcessManager.addProcesses(processIds)
-            processMap.values.toImmutableList().also { jdwpProcessList ->
-                logger.verbose { "Emitting new list of JDWP processes: $jdwpProcessList" }
-                processesMutableFlow.emit(jdwpProcessList)
+        val processMap = ProcessMap<AbstractJdwpProcess>(
+            onRemove = { process ->
+                logger.debug { "Removing process ${process.pid} from process map" }
+                closeJdwpProcess(process)
             }
+        )
+        var deviceDisconnected = false
+        try {
+            session.deviceServices
+                .trackJdwp(device.selector)
+                .retryWhen { throwable, _ ->
+                    // We want to retry the `trackJdwp` request as long as the device is connected.
+                    // But we also want to end the flow when the device has been disconnected.
+                    if (!scope.isActive) {
+                        logger.info { "JDWP tracker service ending because device is disconnected" }
+                        deviceDisconnected = true
+                        false // Don't retry, let exception through
+                    } else {
+                        // Retry after emitting empty list
+                        if (throwable is EOFException) {
+                            logger.info { "JDWP tracker services ended with expected EOF exception, retrying" }
+                        } else {
+                            logger.info(throwable) { "JDWP tracker ended unexpectedly ($throwable), retrying" }
+                        }
+                        // When disconnected, assume we have no processes
+                        emit(emptyProcessIdList())
+                        delay(session.property(TRACK_JDWP_RETRY_DELAY).toMillis())
+                        true // Retry
+                    }
+                }.collect { processIdList ->
+                    logger.debug { "Received a new list of processes: $processIdList" }
+                    updateProcessMap(processMap, processIdList)
+                    processesMutableFlow.emit(processMap.values.toList())
+                }
+        } catch (t: Throwable) {
+            t.rethrowCancellation()
+            if (deviceDisconnected) {
+                logger.debug(t) { "Ignoring exception $t because device has been disconnected" }
+            } else {
+                throw t
+            }
+        } finally {
+            logger.debug { "Clearing process map" }
+            processMap.clear()
+            processesMutableFlow.value = emptyList()
         }
+    }
+
+    private fun closeJdwpProcess(jdwpProcess: AbstractJdwpProcess) {
+        val delayMillis = session.property(JDWP_PROCESS_TRACKER_CLOSE_NOTIFICATION_DELAY).toMillis()
+        if (delayMillis > 0) {
+            scope.launch {
+                withTimeoutOrNull(delayMillis) {
+                    jdwpProcess.awaitReadyToClose()
+                } ?: run {
+                    logger.info { "JDWP process was not ready to close within $delayMillis milliseconds" }
+                }
+            }.invokeOnCompletion {
+                jdwpProcess.close()
+            }
+        } else {
+            jdwpProcess.close()
+        }
+    }
+
+    private fun updateProcessMap(map: ProcessMap<AbstractJdwpProcess>, list: ProcessIdList) {
+        map.update(list, valueFactory = { pid ->
+            logger.debug { "Adding process $pid to process map" }
+            JdwpProcessFactory.create(device, pid).also {
+                it.startMonitoring()
+            }
+        })
     }
 }

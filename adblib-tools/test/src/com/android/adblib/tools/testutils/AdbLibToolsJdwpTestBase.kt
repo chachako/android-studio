@@ -19,8 +19,7 @@ import com.android.adblib.ByteBufferAdbOutputChannel
 import com.android.adblib.testingutils.CoroutineTestUtils
 import com.android.adblib.tools.debugging.JdwpProcess
 import com.android.adblib.tools.debugging.JdwpSession
-import com.android.adblib.tools.debugging.impl.JdwpProcessManager
-import com.android.adblib.tools.debugging.impl.jdwpProcessManager
+import com.android.adblib.tools.debugging.impl.JdwpProcessFactory
 import com.android.adblib.tools.debugging.packets.JdwpPacketView
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkType
 import com.android.adblib.tools.debugging.packets.ddms.DdmsChunkView
@@ -60,8 +59,9 @@ open class AdbLibToolsJdwpTestBase : AdbLibToolsTestBase() {
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
         val connectedDevice = waitForOnlineConnectedDevice(session, fakeDevice.deviceId)
         fakeDevice.startClient(pid, 0, "a.b.c", false)
-        val process = connectedDevice.jdwpProcessManager.getProcess(pid)
-        //process.startMonitoring()
+
+        val process = registerCloseable(JdwpProcessFactory.create(connectedDevice, pid))
+        process.startMonitoring()
         CoroutineTestUtils.yieldUntil {
             process.properties.jdwpSessionProxyStatus.socketAddress != null &&
                     process.properties.processName != null
@@ -159,7 +159,4 @@ open class AdbLibToolsJdwpTestBase : AdbLibToolsTestBase() {
         }
     }
 
-    private fun JdwpProcessManager.getProcess(pid: Int): JdwpProcess {
-        return this.addProcesses(setOf(pid))[pid]!!
-    }
 }

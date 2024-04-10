@@ -22,11 +22,11 @@ import java.util.TreeMap
  * A custom collection similar to a map of [Int] to [T], with the intent of storing a collection
  * of unique process IDs associated to arbitrary values of type [T].
  *
- * [AutoCloseable.close] is called for every instance [T] discarded from the collection.
+ * [onRemove] is called for every instance [T] discarded from the collection.
  *
  * Note: This collection is **not** thread-safe.
  */
-internal class ProcessMap<T> where T: Any {
+internal class ProcessMap<T>(private val onRemove: (T) -> Unit) {
 
     /**
      * Use a [SortedMap] (as opposed to a regular [Map]) merely for convenience,
@@ -90,9 +90,5 @@ internal class ProcessMap<T> where T: Any {
 
     private fun remove(pid: Int) {
         map.remove(pid)?.also { onRemove(it) }
-    }
-
-    private fun onRemove(value: T) {
-        (value as? AutoCloseable)?.close()
     }
 }
