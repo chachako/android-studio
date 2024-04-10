@@ -21,6 +21,7 @@ import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.OsType
 import com.android.testutils.TestUtils
 import org.junit.Rule
@@ -171,18 +172,25 @@ class JavaCompileWithToolChainTest {
             }
             """.trimIndent()
         )
-        // Run JavaCompile targeting Java 7, expect failure
+        // Run JavaCompile 21 targeting Java 7, expect failure
         val resultWithError = project.executor().expectFailure().run("compileDebugJavaWithJavac")
         resultWithError.assertErrorContains("Java compiler version 21 has removed support for compiling with source/target version 7.")
 
-        // Run JavaCompile targeting Java 8, expect a warning
+        // Run JavaCompile 21 targeting Java 8, expect a warning
         TestFileUtils.searchAndReplace(
             project.buildFile,
             "JavaVersion.VERSION_1_7",
             "JavaVersion.VERSION_1_8",
         )
         val resultWithWarning = project.executor().run("compileDebugJavaWithJavac")
-        resultWithWarning.assertOutputContains("Java compiler version 21 has deprecated support for compiling with source/target version 8.")
+        val warningMessage = "Java compiler version 21 has deprecated support for compiling with source/target version 8."
+        resultWithWarning.assertOutputContains(warningMessage)
+
+        // Run JavaCompile 21 targeting Java 8 again with the suppress-warning option, expect no warning
+        val resultWithNoWarning = project.executor()
+            .with(BooleanOption.JAVA_COMPILE_SUPPRESS_SOURCE_TARGET_DEPRECATION_WARNING, true)
+            .run("compileDebugJavaWithJavac")
+        resultWithNoWarning.assertOutputDoesNotContain(warningMessage)
     }
 
     companion object {
