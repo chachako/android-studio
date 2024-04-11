@@ -280,11 +280,11 @@ class MergedFlavorTest {
         } catch (e : RuntimeException) {
             assertThat(e.message).isEqualTo(
                 """versionCode cannot be set on a mergedFlavor directly.
-                |versionCodeOverride can instead be set for variant outputs using the following syntax:
-                |android {
-                |    applicationVariants.all { variant ->
-                |        variant.outputs.each { output ->
-                |            output.versionCodeOverride = 123
+                |versionCodeOverride can instead be set for variant outputs using the following kts syntax:
+                |androidComponents {
+                |    onVariants { variant ->
+                |        variant.outputs.forEach { output ->
+                |            output.versionCode.set(123)
                 |        }
                 |    }
                 |}
@@ -302,11 +302,11 @@ class MergedFlavorTest {
         } catch (e : RuntimeException) {
             assertThat(e.message).isEqualTo(
                 """versionName cannot be set on a mergedFlavor directly.
-                |versionNameOverride can instead be set for variant outputs using the following syntax:
-                |android {
-                |    applicationVariants.all { variant ->
-                |        variant.outputs.each { output ->
-                |            output.versionNameOverride = "foo"
+                |versionNameOverride can instead be set for variant outputs using the following kts syntax:
+                |androidComponents {
+                |    onVariants { variant ->
+                |        variant.outputs.forEach { output ->
+                |            output.versionName.set("foo")
                 |        }
                 |    }
                 |}
