@@ -22,7 +22,6 @@ import com.android.build.gradle.internal.CompileOptions.Companion.DEFAULT_JAVA_V
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
@@ -81,7 +80,6 @@ class ComposePluginOptionsTest {
 
     /** Regression test for b/318384658. */
     @Test
-    @Ignore("b/325947913")
     fun `test AGP does not override user-specified plugin options`() {
         project.getSubproject(":app").buildFile.appendText("\n" +
             """

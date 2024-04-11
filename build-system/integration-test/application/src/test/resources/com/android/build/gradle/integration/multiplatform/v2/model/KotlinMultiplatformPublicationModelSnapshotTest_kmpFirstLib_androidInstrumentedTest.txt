@@ -158,6 +158,7 @@
       "attributes": {
         "artifactType": "android-classes-jar",
         "org.gradle.category": "library",
+        "org.gradle.jvm.environment": "standard-jvm",
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-api",
         "org.jetbrains.kotlin.platform.type": "jvm",

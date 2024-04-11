@@ -67,9 +67,8 @@ class KmpModelComparator(
             if (normalizedString.startsWith(
                     "{GRADLE}/caches/modules-2/files-2.1/com.example/kmpSecondLib-android/1.0/"
                 )) {
-                "{GRADLE_CACHE}/{MODULES_2}/{LIBRARY_COORDINATES}/{CHECKSUM}" + normalizedString.removePrefix(
-                    "{GRADLE}/caches/modules-2/files-2.1/com.example/kmpSecondLib-android/1.0/"
-                ).substring(40) // remove the hash
+                "{GRADLE_CACHE}/{MODULES_2}/{LIBRARY_COORDINATES}/{CHECKSUM}/" +
+                        normalizedString.substringAfterLast("/")
             } else if (normalizedString.endsWith("transformed/local-api.jar")) {
                 // kotlin gradle plugin uses relative path to represent local file coordinates
                 "{GRADLE_CACHE}/{CHECKSUM}/transformed/local-api.jar"
