@@ -22,6 +22,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
 import java.io.File
@@ -82,6 +83,14 @@ class FakeGradleDirectoryProperty(private val directory: Directory?) : Directory
     }
 
     override fun disallowUnsafeRead() {
+        TODO("Not yet implemented")
+    }
+
+    override fun unset(): Property<Directory> {
+        TODO("Not yet implemented")
+    }
+
+    override fun unsetConvention(): Property<Directory> {
         TODO("Not yet implemented")
     }
 

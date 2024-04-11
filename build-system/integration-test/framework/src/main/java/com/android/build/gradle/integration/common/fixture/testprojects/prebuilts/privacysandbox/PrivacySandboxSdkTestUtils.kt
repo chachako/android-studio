@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.TestProj
 import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.sdklib.BuildToolInfo
 import com.android.testutils.TestUtils.KOTLIN_VERSION_FOR_TESTS
+import org.gradle.api.JavaVersion
 
 private val aidlPath = SdkHelper.getBuildTool(BuildToolInfo.PathId.AIDL).absolutePath
         .replace("""\""", """\\""")
@@ -46,6 +47,13 @@ fun TestProjectBuilder.privacySandboxSdkLibraryProject(path: String, action: Sub
         plugins.add(PluginType.KSP)
         android {
             defaultCompileSdk()
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_1_8
+                targetCompatibility = JavaVersion.VERSION_1_8
+            }
+            kotlinOptions {
+                jvmTarget = "1.8"
+            }
         }
         dependencies {
             implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10")

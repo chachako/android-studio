@@ -198,34 +198,10 @@ public class TestProjects {
     public static void prepareProject(
             @NonNull Project project, @NonNull Map<String, String> gradleProperties) {
         try {
-            addFakeService(project);
             loadGradleProperties(project, gradleProperties);
             addPrebuiltMavenRepository(project);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
-        }
-    }
-
-    /**
-     * In Gradle 6.7-rc-1 BuildEventsListenerRegistry service is not created in we need it in order
-     * to instantiate AGP. This creates a fake one and injects it - http://b/168630734.
-     */
-    private static void addFakeService(Project project) {
-        try {
-            ProjectScopeServices gss =
-                    (ProjectScopeServices) ((DefaultProject) project).getServices();
-
-            Field state = ProjectScopeServices.class.getSuperclass().getDeclaredField("state");
-            state.setAccessible(true);
-            AtomicReference<Object> stateValue = (AtomicReference<Object>) state.get(gss);
-            Class<?> enumClass = Class.forName(DefaultServiceRegistry.class.getName() + "$State");
-            stateValue.set(enumClass.getEnumConstants()[0]);
-
-            // add service and set state so that future mutations are not allowed
-            gss.add(BuildEventsListenerRegistry.class, new FakeBuildEventsListenerRegistry());
-            stateValue.set(enumClass.getEnumConstants()[1]);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
         }
     }
 

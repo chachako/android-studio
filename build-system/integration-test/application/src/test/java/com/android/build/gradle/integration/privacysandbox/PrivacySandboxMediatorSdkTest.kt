@@ -81,6 +81,7 @@ class PrivacySandboxMediatorSdkTest {
         │                                           │
         └───────────────────────────────────────────┘
          */
+        withKotlinPlugin = true
         subProject(":app") {
             plugins.add(PluginType.ANDROID_APP)
             android {

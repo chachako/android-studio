@@ -82,9 +82,33 @@ class FakeMapProperty<K, V>(
         TODO("Not yet implemented")
     }
 
+    override fun unset(): MapProperty<K, V> {
+        TODO("Not yet implemented")
+    }
+
+    override fun unsetConvention(): MapProperty<K, V> {
+        TODO("Not yet implemented")
+    }
+
     override fun empty(): MapProperty<K, V> {
         values?.clear()
         return this
+    }
+
+    override fun insertAll(provider: Provider<out MutableMap<out K, out V>>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun insertAll(entries: MutableMap<out K, out V>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun insert(key: K, providerOfValue: Provider<out V>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun insert(key: K, value: V) {
+        TODO("Not yet implemented")
     }
 
     override fun getting(p0: K): Provider<V> {

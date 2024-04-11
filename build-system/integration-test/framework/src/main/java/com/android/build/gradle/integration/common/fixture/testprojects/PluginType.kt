@@ -69,7 +69,7 @@ sealed class PluginType(
             isKotlin = true,
             useNewDsl = true,
             last = true,
-            version = "1.7.10-1.0.6"
+            version = "2.0.0-RC1-1.0.20"
     )
     object KOTLIN_MPP: PluginType(
         id = "org.jetbrains.kotlin.multiplatform",

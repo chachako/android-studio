@@ -97,26 +97,26 @@ class UnresolvedVariantDependencyModelTest {
         Truth.assertThat(unresolvedDeps.single().name).isEqualTo("project :lib")
         Truth.assertThat(unresolvedDeps.single().cause).isEqualTo(
                 """
-No matching variant of project :lib was found. The consumer was configured to find a library for use during compile-time, preferably optimized for Android, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging', attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}', attribute 'org.jetbrains.kotlin.platform.type' with value 'androidJvm' but:
-  - Variant 'debugApiElements' capability project:lib:unspecified declares a component for use during compile-time, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
+No matching variant of project :lib was found. The consumer was configured to find a library for use during compile-time, preferably optimized for Android, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}', attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging', attribute 'org.jetbrains.kotlin.platform.type' with value 'androidJvm' but:
+  - Variant 'debugApiElements' declares a component for use during compile-time, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
       - Incompatible because this component declares a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'debug' and the consumer needed a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging'
       - Other compatible attributes:
           - Doesn't say anything about its component category (required a library)
           - Doesn't say anything about its target Java environment (preferred optimized for Android)
           - Doesn't say anything about org.jetbrains.kotlin.platform.type (required 'androidJvm')
-  - Variant 'debugRuntimeElements' capability project:lib:unspecified declares a component for use during runtime, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
+  - Variant 'debugRuntimeElements' declares a component for use during runtime, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
       - Incompatible because this component declares a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'debug' and the consumer needed a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging'
       - Other compatible attributes:
           - Doesn't say anything about its component category (required a library)
           - Doesn't say anything about its target Java environment (preferred optimized for Android)
           - Doesn't say anything about org.jetbrains.kotlin.platform.type (required 'androidJvm')
-  - Variant 'releaseApiElements' capability project:lib:unspecified declares a component for use during compile-time, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
+  - Variant 'releaseApiElements' declares a component for use during compile-time, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
       - Incompatible because this component declares a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'release' and the consumer needed a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging'
       - Other compatible attributes:
           - Doesn't say anything about its component category (required a library)
           - Doesn't say anything about its target Java environment (preferred optimized for Android)
           - Doesn't say anything about org.jetbrains.kotlin.platform.type (required 'androidJvm')
-  - Variant 'releaseRuntimeElements' capability project:lib:unspecified declares a component for use during runtime, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
+  - Variant 'releaseRuntimeElements' declares a component for use during runtime, as well as attribute 'com.android.build.api.attributes.AgpVersionAttr' with value '{AGP-VERSION}':
       - Incompatible because this component declares a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'release' and the consumer needed a component, as well as attribute 'com.android.build.api.attributes.BuildTypeAttr' with value 'staging'
       - Other compatible attributes:
           - Doesn't say anything about its component category (required a library)

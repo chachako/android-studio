@@ -98,6 +98,14 @@ class FakeGradleProperty<T>(private var value: T? = null): Property<T> {
         TODO("Not yet implemented")
     }
 
+    override fun unset(): Property<T> {
+        TODO("Not yet implemented")
+    }
+
+    override fun unsetConvention(): Property<T> {
+        TODO("Not yet implemented")
+    }
+
     override fun forUseAtConfigurationTime(): Provider<T> {
         TODO("Not yet implemented")
     }

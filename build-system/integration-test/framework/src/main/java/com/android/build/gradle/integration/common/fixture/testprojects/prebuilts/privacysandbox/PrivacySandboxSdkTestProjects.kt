@@ -101,6 +101,7 @@ fun privacySandboxSampleProject(): GradleTestProject {
              │
         sdk-impl-b
          */
+        withKotlinPlugin = true
         // An SDK module used by the :example-app application.
         privacySandboxSdkProject(":privacy-sandbox-sdk") {
             android {

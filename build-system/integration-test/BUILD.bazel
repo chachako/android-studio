@@ -86,6 +86,12 @@ maven_repository(
     visibility = [":__subpackages__"],
 )
 
+# Kotlin dependencies for Gradle
+KTS = [
+    "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.22",
+    "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.22",
+]
+
 # Kotlin Gradle plugin dependencies
 # IMPORTANT: This list should generally not be used as it contains mixed versions. It's here only
 # for historical reasons and should be removed at some point. Consider using
@@ -105,23 +111,22 @@ maven_repository(
         "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.8.20",
         "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.0",
         "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.10",
-        "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.22",
         "@maven//:org.jetbrains.kotlin.kotlin-script-runtime_1.6.21",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.6.21",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.10",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.20",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.0",
-    ],
+    ] + KTS,
     visibility = ["//visibility:public"],
 )
 
 maven_repository(
     name = "ksp_gradle_plugin",
     artifacts = [
-        "@maven//:com.google.devtools.ksp.symbol-processing_1.7.10-1.0.6",
-        "@maven//:com.google.devtools.ksp.com.google.devtools.ksp.gradle.plugin_1.7.10-1.0.6",
-        "@maven//:com.google.devtools.ksp.symbol-processing-gradle-plugin_1.7.10-1.0.6",
+        "@maven//:com.google.devtools.ksp.symbol-processing_2.0.0-RC1-1.0.20",
+        "@maven//:com.google.devtools.ksp.com.google.devtools.ksp.gradle.plugin_2.0.0-RC1-1.0.20",
+        "@maven//:com.google.devtools.ksp.symbol-processing-gradle-plugin_2.0.0-RC1-1.0.20",
     ],
     visibility = ["//visibility:public"],
 )
@@ -144,6 +149,8 @@ maven_repository(
         "@maven//:org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_1.9.22",
         "@maven//:org.jetbrains.kotlin.jvm.org.jetbrains.kotlin.jvm.gradle.plugin_1.9.22",
         "@maven//:org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.22",
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-common_1.9.22",
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.22",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.0",
     ],
     visibility = ["//visibility:public"],

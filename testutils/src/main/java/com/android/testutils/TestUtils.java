@@ -64,7 +64,7 @@ public class TestUtils {
      * upgrade the test projects to the latest version of the Kotlin Gradle plugin if there isn't a
      * compatible Compose version yet.
      */
-    public static final String KOTLIN_VERSION_FOR_COMPOSE_TESTS = "1.9.20";
+    public static final String KOTLIN_VERSION_FOR_COMPOSE_TESTS = "1.9.22";
 
     /** Compose compiler compatible with {@link #KOTLIN_VERSION_FOR_COMPOSE_TESTS}. */
     public static final String COMPOSE_COMPILER_FOR_TESTS = "1.5.11";

@@ -83,6 +83,14 @@ class FakeListProperty<T>(
         TODO("Not yet implemented")
     }
 
+    override fun unset(): ListProperty<T> {
+        TODO("Not yet implemented")
+    }
+
+    override fun unsetConvention(): ListProperty<T> {
+        TODO("Not yet implemented")
+    }
+
     override fun set(p0: MutableIterable<T>?) {
         TODO("Not yet implemented")
     }
@@ -102,6 +110,26 @@ class FakeListProperty<T>(
     override fun empty(): ListProperty<T> {
         values?.clear()
         return this
+    }
+
+    override fun appendAll(provider: Provider<out MutableIterable<T>>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun appendAll(elements: MutableIterable<T>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun appendAll(vararg elements: T) {
+        TODO("Not yet implemented")
+    }
+
+    override fun append(provider: Provider<out T>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun append(element: T) {
+        TODO("Not yet implemented")
     }
 
     override fun add(p0: T) {
