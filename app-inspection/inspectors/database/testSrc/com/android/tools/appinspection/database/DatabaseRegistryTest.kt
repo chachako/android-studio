@@ -25,6 +25,7 @@ import com.android.tools.appinspection.database.DatabaseRegistry.OnDatabaseOpene
 import com.android.tools.appinspection.database.DatabaseRegistryTest.EventType.CLOSE
 import com.android.tools.appinspection.database.DatabaseRegistryTest.EventType.OPEN
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -85,12 +86,10 @@ class DatabaseRegistryTest {
     val registry = databaseRegistry(events, forceOpen = true)
     openHelper.createAndClose()
     registry.notifyOnDiskDatabase(openHelper.databaseName)
-    val forcedDb = registry.forcedOpen.first()
-    registry.notifyDatabaseOpened(forcedDb)
 
-    val connection = registry.getConnection(events.first().id)
+    val connection = registry.getConnection(events.first().id) ?: fail("No database found")
 
-    assertThat(connection).isEqualTo(forcedDb)
+    assertThat(registry.isForcedConnection(connection)).isTrue()
   }
 
   @Test
@@ -99,13 +98,11 @@ class DatabaseRegistryTest {
     val registry = databaseRegistry(events, forceOpen = true)
     openHelper.createAndClose()
     registry.notifyOnDiskDatabase(openHelper.databaseName)
-    val forcedDb = registry.forcedOpen.first()
-    registry.notifyDatabaseOpened(forcedDb)
     registry.notifyDatabaseOpened(openHelper.getReadOnlyDb())
 
-    val connection = registry.getConnection(events.first().id)
+    val connection = registry.getConnection(events.first().id) ?: fail("No database found")
 
-    assertThat(connection).isSameInstanceAs(forcedDb)
+    assertThat(registry.isForcedConnection(connection)).isTrue()
   }
 
   @Test
@@ -114,24 +111,25 @@ class DatabaseRegistryTest {
     val registry = databaseRegistry(events, forceOpen = true)
     openHelper.createAndClose()
     registry.notifyOnDiskDatabase(openHelper.databaseName)
-    val forcedDb = registry.forcedOpen.first()
     val readWriteDb = openHelper.getReadWriteDb()
-    registry.notifyDatabaseOpened(forcedDb)
     registry.notifyDatabaseOpened(readWriteDb)
 
-    val connection = registry.getConnection(events.first().id)
+    val connection = registry.getConnection(events.first().id) ?: fail("No database found")
 
     assertThat(connection).isEqualTo(readWriteDb)
   }
 
   @Test
   fun getConnection_alreadyOpen_notForced() {
-    val openHelper = OpenHelper("${temporaryFolder.root}/db")
+    val path = "${temporaryFolder.root}/db"
+    val openHelper = OpenHelper(path)
     val registry = databaseRegistry(events, forceOpen = true)
     registry.notifyDatabaseOpened(openHelper.getReadWriteDb())
     registry.notifyOnDiskDatabase(openHelper.databaseName)
 
-    assertThat(registry.forcedOpen).isEmpty()
+    val id = registry.getIdForPath(path) ?: fail("No database found")
+    val database = registry.getConnection(id) ?: fail("No database found")
+    assertThat(registry.isForcedConnection(database)).isFalse()
   }
 
   @Test
@@ -140,8 +138,6 @@ class DatabaseRegistryTest {
     val registry = databaseRegistry(events, forceOpen = true)
     openHelper.createAndClose()
     registry.notifyOnDiskDatabase(openHelper.databaseName)
-    val forcedDb = registry.forcedOpen.first()
-    registry.notifyDatabaseOpened(forcedDb)
 
     registry.notifyKeepOpenToggle(true)
 
@@ -176,6 +172,7 @@ class DatabaseRegistryTest {
       if (forceOpen) {
         enableForceOpen()
       }
+      enableTestMode()
       closeablesRule.register(AutoCloseable { dispose() })
     }
 

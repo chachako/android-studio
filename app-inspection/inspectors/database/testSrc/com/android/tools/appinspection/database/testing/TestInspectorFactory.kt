@@ -36,6 +36,8 @@ internal class TestInspectorFactory : InspectorFactory<SqliteInspector>(SQLITE_I
       val inspector =
         sqliteInspector.takeIf { it != null } ?: SqliteInspector(connection, environment)
       sqliteInspector = inspector
+      val databaseRegistry = inspector.databaseRegistry
+      databaseRegistry.enableTestMode()
       return inspector
     }
   }

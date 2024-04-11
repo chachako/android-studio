@@ -52,6 +52,8 @@ internal class DatabaseRegistry(
   private var keepDatabasesOpen = false
   private var forceOpen = false
 
+  private var isTestMode: Boolean = false
+
   private val lock = Any()
 
   // Starting from '1' to distinguish from '0' which could stand for an unset parameter.
@@ -77,7 +79,7 @@ internal class DatabaseRegistry(
   // references pointing to the same path.
   @GuardedBy("lock") private val pathToId = mutableMapOf<String, Int>()
 
-  @VisibleForTesting @GuardedBy("lock") val forcedOpen = mutableSetOf<SQLiteDatabase>()
+  @GuardedBy("lock") private val forcedOpen = mutableSetOf<SQLiteDatabase>()
 
   /**
    * Should be called when the inspection code detects a database being open operation.
@@ -163,7 +165,11 @@ internal class DatabaseRegistry(
         isForceOpenInProgress = true
         try {
           val db = SQLiteDatabase.openDatabase(path, null, OPEN_READWRITE)
-          forcedOpen.add(db)
+          if (isTestMode) {
+            // During tests, ART Tooling hooks are not activated so this, so we need to trigger it
+            // manually.
+            notifyDatabaseOpened(db)
+          }
         } finally {
           isForceOpenInProgress = false
         }
@@ -177,6 +183,10 @@ internal class DatabaseRegistry(
         onClosedCallback.onDatabaseClosed(id, path)
       }
     }
+  }
+
+  fun enableTestMode() {
+    isTestMode = true
   }
 
   fun isForcedConnection(database: SQLiteDatabase) =
@@ -197,6 +207,9 @@ internal class DatabaseRegistry(
       // returned from the creation; or with an already acquiredReference on it),
       // - or called after the last reference was released which cannot be undone.
       val isOpen = database.isOpen
+      if (isForceOpenInProgress && isOpen) {
+        forcedOpen.add(database)
+      }
 
       if (id == NOT_TRACKED) { // handling a transition: not tracked -> tracked
         id = nextId++

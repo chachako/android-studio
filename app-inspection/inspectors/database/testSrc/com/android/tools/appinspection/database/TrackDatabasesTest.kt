@@ -364,16 +364,10 @@ class TrackDatabasesTest {
   @Test
   fun test_findInstances_disk_forceOpen(): Unit = runBlocking {
     val db = Database("db1").createInstance(closeablesRule, temporaryFolder)
-
     testEnvironment.registerApplication(db)
-    val hooks = startTracking(forceOpen = true)
+    startTracking(forceOpen = true)
 
-    // We have to simulate a call to the hooks
-    val forcedInstance = testEnvironment.getDatabaseRegistry().forcedOpen.first()
-    hooks.triggerOnOpenedExit(forcedInstance)
-
-    // We can't assert that `isForced = true` because the hooks are called too late
-    receiveOpenedEventId(db.displayName)
+    receiveOpenedEventId(db.displayName, isForced = true)
   }
 
   @Test
@@ -385,12 +379,9 @@ class TrackDatabasesTest {
     val hooks = startTracking(forceOpen = true)
 
     // We have to simulate a call to the hooks
-    val forcedInstance = testEnvironment.getDatabaseRegistry().forcedOpen.first()
-    hooks.triggerOnOpenedExit(forcedInstance)
     hooks.triggerOnOpenedExit(db)
 
-    // We can't assert that the first `isForced = true` because the hooks are called too late
-    receiveOpenedEventId(db.displayName)
+    receiveOpenedEventId(db.displayName, isForced = true)
     receiveOpenedEventId(db.displayName, isForced = false)
   }
 
@@ -403,14 +394,11 @@ class TrackDatabasesTest {
     val hooks = startTracking(forceOpen = true)
 
     // We have to simulate a call to the hooks
-    val forcedInstance = testEnvironment.getDatabaseRegistry().forcedOpen.first()
-    hooks.triggerOnOpenedExit(forcedInstance)
     hooks.triggerOnOpenedExit(db)
     db.close()
     hooks.triggerOnAllReferencesReleased(db)
 
-    // We can't assert that the first `isForced = true` because the hooks are called too late
-    receiveOpenedEventId(db.displayName)
+    receiveOpenedEventId(db.displayName, isForced = true)
     receiveOpenedEventId(db.displayName, isForced = false)
     receiveOpenedEventId(db.displayName, isForced = true)
   }
