@@ -54,7 +54,11 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE, minSdk = Build.VERSION_CODES.O, maxSdk = Build.VERSION_CODES.O)
+@Config(
+  manifest = Config.NONE,
+  minSdk = Build.VERSION_CODES.O,
+  maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
+)
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class TrackDatabasesTest {
   private val testEnvironment = SqliteInspectorTestEnvironment()
@@ -96,24 +100,26 @@ class TrackDatabasesTest {
         OPEN_DATABASE_COMMAND_SIGNATURE_API27,
         CREATE_IN_MEMORY_DATABASE_COMMAND_SIGNATURE_API27,
       )
-    val wantedSignatures =
-      when {
-        Build.VERSION.SDK_INT < 27 -> listOf(OPEN_DATABASE_COMMAND_SIGNATURE_API11)
-        else ->
-          listOf(
-            OPEN_DATABASE_COMMAND_SIGNATURE_API11,
-            OPEN_DATABASE_COMMAND_SIGNATURE_API27,
-            CREATE_IN_MEMORY_DATABASE_COMMAND_SIGNATURE_API27,
-          )
+    val exitHookSignatures = buildSet {
+      add(OPEN_DATABASE_COMMAND_SIGNATURE_API11)
+      if (Build.VERSION.SDK_INT >= 27) {
+        add(OPEN_DATABASE_COMMAND_SIGNATURE_API27)
+        add(CREATE_IN_MEMORY_DATABASE_COMMAND_SIGNATURE_API27)
       }
+    }
+    val entryHookSignatures = buildSet {
+      add(OPEN_DATABASE_COMMAND_SIGNATURE_API11)
+      if (Build.VERSION.SDK_INT >= 27) {
+        add(OPEN_DATABASE_COMMAND_SIGNATURE_API27)
+      }
+    }
 
     val hookEntries =
       testEnvironment.consumeRegisteredHooks().filter {
         possibleSignatures.contains(it.originMethod)
       }
     val exitHooks = hookEntries.filterIsInstance<Hook.ExitHook>()
-    assertThat(exitHooks).hasSize(wantedSignatures.size)
-    assertThat(exitHooks.map { it.originMethod }.containsAll(wantedSignatures)).isTrue()
+    assertThat(exitHooks.map { it.originMethod }).containsExactlyElementsIn(exitHookSignatures)
     exitHooks.forEachIndexed { ix, entry ->
       // expect one exit hook tracking database open events
       assertThat(entry).isInstanceOf(Hook.ExitHook::class.java)
@@ -129,7 +135,7 @@ class TrackDatabasesTest {
       }
     }
     val entryHooks = hookEntries.filterIsInstance<Hook.EntryHook>()
-    assertThat(entryHooks).hasSize(wantedSignatures.size)
+    assertThat(entryHooks.map { it.originMethod }).containsExactlyElementsIn(entryHookSignatures)
 
     assertThat(testEnvironment.consumeRegisteredHooks()).isEmpty()
   }
