@@ -158,16 +158,12 @@ public final class SdkConstants {
     public static final String FN_BUILD_GRADLE = "build.gradle";
     /** An SDK Project's build.gradle Kotlin script file */
     public static final String FN_BUILD_GRADLE_KTS = "build.gradle.kts";
-    /** An SDK Project's build.gradle.toml declarative file */
-    public static final String FN_DECLARATIVE_BUILD_GRADLE = "build.gradle.toml";
     /** An SDK Project's build.gradle.something declarative file */
     public static final String FN_BUILD_GRADLE_DECLARATIVE = "build.gradle.something";
     /** An SDK Project's settings.gradle file */
     public static final String FN_SETTINGS_GRADLE = "settings.gradle";
     /** An SDK Project's settings.gradle Kotlin script file */
     public static final String FN_SETTINGS_GRADLE_KTS = "settings.gradle.kts";
-    /** An SDK Project's settings.gradle toml file */
-    public static final String FN_SETTINGS_GRADLE_TOML = "settings.gradle.toml";
     /** An SDK Project's settings.gradle.something declarative file */
     public static final String FN_SETTINGS_GRADLE_DECLARATIVE = "settings.gradle.something";
     /** An SDK Project's gradle.properties file */
@@ -2183,8 +2179,6 @@ public final class SdkConstants {
     public static final String EXT_GRADLE_KTS = "gradle.kts";
     /** Extension of Kotlin gradle files, i.e. "gradle.something" */
     public static final String EXT_GRADLE_SOMETHING = "gradle.something";
-    /** Extension of declarative gradle files, i.e. "gradle.toml" */
-    public static final String EXT_GRADLE_TOML = "gradle.toml";
     /** Extension of jar files, i.e. "jar" */
     public static final String EXT_JAR = "jar";
     /** Extension of ZIP files, i.e. "zip" */
