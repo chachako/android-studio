@@ -103,8 +103,7 @@ open class DeviceTestImpl @Inject constructor(
     // PUBLIC API
     // ---------------------------------------------------------------------------------------------
 
-    override val debuggable: Boolean
-        get() = dslInfo.isDebuggable
+    override val debuggable: Boolean = dslInfo.isDebuggable
 
     override val minSdk: AndroidVersion
         get() = mainVariant.minSdk
@@ -327,13 +326,13 @@ open class DeviceTestImpl @Inject constructor(
     override val advancedProfilingTransforms: List<String> = emptyList()
 
     // Only instrument library androidTests. In app modules, the main classes are instrumented.
-    override val useJacocoTransformInstrumentation: Boolean
-        get() = dslInfo.isAndroidTestCoverageEnabled && mainVariant.componentType.isAar
+    override val useJacocoTransformInstrumentation: Boolean =
+        dslInfo.isAndroidTestCoverageEnabled && mainVariant.componentType.isAar
 
     // Only include the jacoco agent if coverage is enabled in library test components
     // as in apps it will have already been included in the tested application.
-    override val packageJacocoRuntime: Boolean
-        get() = dslInfo.isAndroidTestCoverageEnabled && mainVariant.componentType.isAar
+    override val packageJacocoRuntime: Boolean =
+        dslInfo.isAndroidTestCoverageEnabled && mainVariant.componentType.isAar
 
     override val enableApiModeling: Boolean
         get() = isApiModelingEnabled()
