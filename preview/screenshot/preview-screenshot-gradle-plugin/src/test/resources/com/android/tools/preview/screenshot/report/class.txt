@@ -72,24 +72,24 @@
 <a name="useAppContext2"></a>
 <h3 class="failures">useAppContext2</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>
-<img src="%1$s" alt="Error displaying image at %2$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%1$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %2$s"/>
 </td>
-<td>
-<img src="%3$s" alt="Error displaying image at %4$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%3$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %4$s"/>
 </td>
-<td>
-<img src="%5$s" alt="Error displaying image at %6$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%5$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %6$s"/>
 </td>
 </tr>
 </tbody>
@@ -100,23 +100,23 @@
 <a name="useAppContext3"></a>
 <h3 class="failures">useAppContext3</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>
-<img src="%1$s" alt="Error displaying image at %2$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%1$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %2$s"/>
 </td>
-<td>
-<img src="%3$s" alt="Error displaying image at %4$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%3$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %4$s"/>
 </td>
-<td>Size Mismatch. Reference image: 5x5 Actual image: 4x5</td>
+<td style="width: 33.33%%">Size Mismatch. Reference image: 5x5 Actual image: 4x5</td>
 </tr>
 </tbody>
 </table>
@@ -126,21 +126,21 @@
 <a name="useAppContext4"></a>
 <h3 class="failures">useAppContext4</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>Reference image does not exist</td>
-<td>
-<img src="%3$s" alt="Error displaying image at %4$s"/>
+<td style="width: 33.33%%">Reference image does not exist</td>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%3$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %4$s"/>
 </td>
-<td>No diff</td>
+<td style="width: 33.33%%">No diff</td>
 </tr>
 </tbody>
 </table>
@@ -153,23 +153,23 @@
 <a name="useAppContext1"></a>
 <h3 class="success">useAppContext1</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>
-<img src="%1$s" alt="Error displaying image at %2$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%1$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %2$s"/>
 </td>
-<td>
-<img src="%3$s" alt="Error displaying image at %4$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%3$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %4$s"/>
 </td>
-<td>Images match</td>
+<td style="width: 33.33%%">Images match</td>
 </tr>
 </tbody>
 </table>
@@ -179,24 +179,24 @@
 <a name="useAppContext2"></a>
 <h3 class="failures">useAppContext2</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>
-<img src="%1$s" alt="Error displaying image at %2$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%1$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %2$s"/>
 </td>
-<td>
-<img src="%3$s" alt="Error displaying image at %4$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%3$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %4$s"/>
 </td>
-<td>
-<img src="%5$s" alt="Error displaying image at %6$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%5$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %6$s"/>
 </td>
 </tr>
 </tbody>
@@ -207,23 +207,23 @@
 <a name="useAppContext3"></a>
 <h3 class="failures">useAppContext3</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>
-<img src="%1$s" alt="Error displaying image at %2$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%1$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %2$s"/>
 </td>
-<td>
-<img src="%3$s" alt="Error displaying image at %4$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%3$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %4$s"/>
 </td>
-<td>Size Mismatch. Reference image: 5x5 Actual image: 4x5</td>
+<td style="width: 33.33%%">Size Mismatch. Reference image: 5x5 Actual image: 4x5</td>
 </tr>
 </tbody>
 </table>
@@ -233,21 +233,21 @@
 <a name="useAppContext4"></a>
 <h3 class="failures">useAppContext4</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>Reference image does not exist</td>
-<td>
-<img src="%3$s" alt="Error displaying image at %4$s"/>
+<td style="width: 33.33%%">Reference image does not exist</td>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%3$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %4$s"/>
 </td>
-<td>No diff</td>
+<td style="width: 33.33%%">No diff</td>
 </tr>
 </tbody>
 </table>

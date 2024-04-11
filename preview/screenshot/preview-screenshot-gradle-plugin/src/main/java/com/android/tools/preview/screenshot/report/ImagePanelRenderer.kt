@@ -31,7 +31,7 @@ class ImagePanelRenderer: ReportRenderer<ScreenshotTestImages, SimpleHtmlWriter>
 
         // Wrap in a <span>, to work around CSS problem in IE
         htmlWriter.startElement("span")
-            .startElement("table")
+            .startElement("table").attribute("style", "table-layout: fixed")
             .startElement("thead")
             .startElement("tr")
 
@@ -40,7 +40,7 @@ class ImagePanelRenderer: ReportRenderer<ScreenshotTestImages, SimpleHtmlWriter>
         addColumn(htmlWriter, COLUMN_NAME_DIFF)
 
         htmlWriter.endElement().endElement()
-        htmlWriter.startElement("tbody").attribute("class", "grid")  // this class will render a grid like background to better show the diff between png images with and without background
+        htmlWriter.startElement("tbody").attribute("class", "grid").attribute("style", "width: 100%")  // this class will render a grid like background to better show the diff between png images with and without background
             .startElement("tr")
         val texts = getTexts(ssImages)
         renderImage(htmlWriter, ssImages.reference?.path, texts.referenceImageText)
@@ -51,17 +51,17 @@ class ImagePanelRenderer: ReportRenderer<ScreenshotTestImages, SimpleHtmlWriter>
     }
 
     private fun addColumn(htmlWriter: SimpleHtmlWriter, columnName: String) {
-        htmlWriter.startElement("th").characters(columnName).endElement()
+        htmlWriter.startElement("th").attribute("style", "width: 33.33%").characters(columnName).endElement()
     }
 
     private fun renderImage(htmlWriter: SimpleHtmlWriter, imagePath: String?, text: String) {
         if (!imagePath.isNullOrEmpty() && File(imagePath).exists()) {
             val base64String = Base64.getEncoder().encodeToString(File(imagePath).readBytes())
-            htmlWriter.startElement("td")
-                .startElement("img").attribute("src", "data:image/png;base64, $base64String").attribute("alt", text).endElement()
+            htmlWriter.startElement("td").attribute("style", "width: 33.33%; padding: 1em")
+                .startElement("img").attribute("src", "data:image/png;base64, $base64String").attribute("style", "max-width: 100%; height: auto;").attribute("alt", text).endElement()
                 .endElement()
         } else {
-            htmlWriter.startElement(("td")).characters(text).endElement()
+            htmlWriter.startElement("td").attribute("style", "width: 33.33%").characters(text).endElement()
         }
     }
 
@@ -84,4 +84,4 @@ class ImagePanelRenderer: ReportRenderer<ScreenshotTestImages, SimpleHtmlWriter>
     }
 }
 
-data class ImageTexts(val referenceImageText: String, val actualText: String, val diffText: String) {}
+data class ImageTexts(val referenceImageText: String, val actualText: String, val diffText: String)

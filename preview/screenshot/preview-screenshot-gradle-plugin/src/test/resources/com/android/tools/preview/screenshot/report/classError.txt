@@ -72,21 +72,21 @@
 <a name="useAppContext2"></a>
 <h3 class="failures">useAppContext2</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>
-<img src="%1$s" alt="Error displaying image at %2$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%1$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %2$s"/>
 </td>
-<td>Render failure: ClassNotFoundException: com.xxx.example.Class</td>
-<td>No diff</td>
+<td style="width: 33.33%%">Render failure: ClassNotFoundException: com.xxx.example.Class</td>
+<td style="width: 33.33%%">No diff</td>
 </tr>
 </tbody>
 </table>
@@ -96,19 +96,19 @@
 <a name="useAppContext3"></a>
 <h3 class="failures">useAppContext3</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>Reference image missing</td>
-<td>Error displaying image at Timeout</td>
-<td>No diff</td>
+<td style="width: 33.33%%">Reference image missing</td>
+<td style="width: 33.33%%">Error displaying image at Timeout</td>
+<td style="width: 33.33%%">No diff</td>
 </tr>
 </tbody>
 </table>
@@ -121,21 +121,21 @@
 <a name="useAppContext2"></a>
 <h3 class="failures">useAppContext2</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>
-<img src="%1$s" alt="Error displaying image at %2$s"/>
+<td style="width: 33.33%%; padding: 1em">
+<img src="%1$s" style="max-width: 100%%; height: auto;" alt="Error displaying image at %2$s"/>
 </td>
-<td>Render failure: ClassNotFoundException: com.xxx.example.Class</td>
-<td>No diff</td>
+<td style="width: 33.33%%">Render failure: ClassNotFoundException: com.xxx.example.Class</td>
+<td style="width: 33.33%%">No diff</td>
 </tr>
 </tbody>
 </table>
@@ -145,19 +145,19 @@
 <a name="useAppContext3"></a>
 <h3 class="failures">useAppContext3</h3>
 <span>
-<table>
+<table style="table-layout: fixed">
 <thead>
 <tr>
-<th>Reference Image</th>
-<th>Actual Image</th>
-<th>Diff Image</th>
+<th style="width: 33.33%%">Reference Image</th>
+<th style="width: 33.33%%">Actual Image</th>
+<th style="width: 33.33%%">Diff Image</th>
 </tr>
 </thead>
-<tbody class="grid">
+<tbody class="grid" style="width: 100%%">
 <tr>
-<td>Reference image missing</td>
-<td>Error displaying image at Timeout</td>
-<td>No diff</td>
+<td style="width: 33.33%%">Reference image missing</td>
+<td style="width: 33.33%%">Error displaying image at Timeout</td>
+<td style="width: 33.33%%">No diff</td>
 </tr>
 </tbody>
 </table>
