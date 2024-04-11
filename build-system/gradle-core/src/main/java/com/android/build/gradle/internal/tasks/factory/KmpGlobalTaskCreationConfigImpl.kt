@@ -33,7 +33,7 @@ import com.android.build.gradle.internal.KotlinMultiplatformCompileOptionsImpl
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
 import com.android.build.gradle.internal.core.SettingsOptions
-import com.android.build.gradle.internal.core.dsl.impl.features.KmpAndroidTestOptionsDslInfoImpl
+import com.android.build.gradle.internal.core.dsl.impl.features.KmpDeviceTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.features.KmpUnitTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.KotlinMultiplatformAndroidExtensionImpl
@@ -119,7 +119,7 @@ internal class KmpGlobalTaskCreationConfigImpl(
     }
 
     override val androidTestOptions by lazy(LazyThreadSafetyMode.NONE) {
-        KmpAndroidTestOptionsDslInfoImpl(extension)
+        KmpDeviceTestOptionsDslInfoImpl(extension)
     }
 
     override val unitTestOptions by lazy(LazyThreadSafetyMode.NONE) {

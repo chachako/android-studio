@@ -46,7 +46,7 @@ import com.android.build.gradle.internal.core.dsl.KmpComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.impl.KmpAndroidTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpUnitTestDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.KmpVariantDslInfoImpl
-import com.android.build.gradle.internal.core.dsl.impl.features.KmpAndroidTestOptionsDslInfoImpl
+import com.android.build.gradle.internal.core.dsl.impl.features.KmpDeviceTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.dependency.AgpVersionCompatibilityRule
 import com.android.build.gradle.internal.dependency.JacocoInstrumentationService
 import com.android.build.gradle.internal.dependency.ModelArtifactCompatibilityRule.Companion.setUp
@@ -646,7 +646,7 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
     }
 
     val managedDeviceRegistry: ManagedDeviceRegistry by lazy(LazyThreadSafetyMode.NONE) {
-        ManagedDeviceRegistry(KmpAndroidTestOptionsDslInfoImpl(androidExtension))
+        ManagedDeviceRegistry(KmpDeviceTestOptionsDslInfoImpl(androidExtension))
     }
 
     private fun createComponentExtension(

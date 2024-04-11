@@ -21,10 +21,10 @@ import com.android.build.api.dsl.EmulatorSnapshots
 import com.android.build.api.dsl.ManagedDevices
 
 /**
- * Contains the final dsl info computed from the DSL object model (extension, default config,
- * build type, flavors) that are needed by components that configure and run instrumentation tests
+ * Contains the final dsl info computed from the extension level DSL object model that are needed
+ * by components that configure and run instrumentation tests
  */
-interface AndroidTestOptionsDslInfo: TestOptionsDslInfo {
+interface DeviceTestOptionsDslInfo: TestOptionsDslInfo {
     val animationsDisabled: Boolean
     val execution: String
     val resultsDir: String?

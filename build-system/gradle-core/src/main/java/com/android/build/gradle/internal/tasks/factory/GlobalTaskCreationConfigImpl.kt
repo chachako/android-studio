@@ -34,9 +34,9 @@ import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.attribution.BuildAnalyzerIssueReporter
 import com.android.build.gradle.internal.core.SettingsOptions
-import com.android.build.gradle.internal.core.dsl.features.AndroidTestOptionsDslInfo
+import com.android.build.gradle.internal.core.dsl.features.DeviceTestOptionsDslInfo
 import com.android.build.gradle.internal.core.dsl.features.UnitTestOptionsDslInfo
-import com.android.build.gradle.internal.core.dsl.impl.features.AndroidTestOptionsDslInfoImpl
+import com.android.build.gradle.internal.core.dsl.impl.features.DeviceTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.core.dsl.impl.features.UnitTestOptionsDslInfoImpl
 import com.android.build.gradle.internal.dsl.CommonExtensionImpl
 import com.android.build.gradle.internal.dsl.LanguageSplitOptions
@@ -178,8 +178,8 @@ class GlobalTaskCreationConfigImpl(
     override val testCoverage: TestCoverage
         get() = extension.testCoverage
 
-    override val androidTestOptions: AndroidTestOptionsDslInfo
-        get() = AndroidTestOptionsDslInfoImpl(extension)
+    override val androidTestOptions: DeviceTestOptionsDslInfo
+        get() = DeviceTestOptionsDslInfoImpl(extension)
 
     override val unitTestOptions: UnitTestOptionsDslInfo
         get() = UnitTestOptionsDslInfoImpl(extension)
