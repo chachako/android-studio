@@ -71,11 +71,6 @@ internal data class DdmsHeloChunk(
      * Application package name, or `null` if not available
      */
     val packageName: String? = null,
-
-    /**
-     * App boot state
-     */
-    val stage: AppStage? = null
 ) {
 
     companion object {
@@ -119,9 +114,9 @@ internal data class DdmsHeloChunk(
             // https://cs.android.com/android/_/android/platform/frameworks/base/+/ab720ee1611da9fd4579d1adeb0acd6358b4f424
             val packageName = readOptionalLengthPrefixedString(buffer)
 
-            // Process boot stage was introduced in 2023
-            // TODO: add a link to I4699c62756f50106962ec8481bf67f103fa41b8f change
-            val stage = readOptionalInt(buffer)?.let { AppStage(it) }
+            // Process boot stage was introduced in 2023, but later removed. Read and ignore it.
+            // https://cs.android.com/android/_/android/platform/frameworks/base/+/3878a7736ec3465c212180985f6c986be08d310a
+            readOptionalInt(buffer)
 
             // All done, return chunk
             return DdmsHeloChunk(
@@ -133,11 +128,11 @@ internal data class DdmsHeloChunk(
                 abi,
                 jvmFlags,
                 nativeDebuggable,
-                packageName,
-                stage
+                packageName
             )
         }
 
+        // This method is used only by tests
         internal fun writePayload(
             buffer: ResizableBuffer,
             protocolVersion: Int,
@@ -149,7 +144,7 @@ internal data class DdmsHeloChunk(
             jvmFlags: String? = null,
             isNativeDebuggable: Boolean? = null,
             packageName: String? = null,
-            stage: AppStage? = null
+            deprecatedStage: Int? = null
         ) {
             writeInt(buffer, protocolVersion)
             writeInt(buffer, pid)
@@ -163,7 +158,7 @@ internal data class DdmsHeloChunk(
             writeOptionalLengthPrefixedString(buffer, jvmFlags)
             writeOptionalByte(buffer, isNativeDebuggable?.let { if (it) 1 else 0 })
             writeOptionalLengthPrefixedString(buffer, packageName)
-            writeOptionalInt(buffer, stage?.value)
+            writeOptionalInt(buffer, deprecatedStage)
         }
     }
 }

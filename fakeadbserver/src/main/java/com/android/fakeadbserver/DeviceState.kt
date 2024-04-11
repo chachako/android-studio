@@ -179,9 +179,6 @@ class DeviceState internal constructor(
     ): ClientState {
         synchronized(mProcessStates) {
             val clientState = ClientState(pid, uid, processName, packageName, isWaiting)
-            if (apiLevel >= 34) {
-                clientState.setStage(AppStage.BOOT)
-            }
             mProcessStates[pid] = clientState
             clientChangeHub.clientListChanged()
             clientChangeHub.appProcessListChanged()

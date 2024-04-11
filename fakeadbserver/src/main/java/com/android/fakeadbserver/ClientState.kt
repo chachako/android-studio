@@ -32,10 +32,6 @@ class ClientState internal constructor(
     val viewsState = ClientViewsState()
     val profilerState = ProfilerState()
 
-    // If non-empty then the STAG command(s) will be sent out after the HELO response after
-    // the specified delay(s). STAG payload will be populated from the ClientState.stage value.
-    val sendStagCommandAfterHelo = mutableListOf<Duration>()
-
     // If non-null then the WAIT command indicating that the client is waiting for debugger will be
     // sent out before or after the HELO reply.
     // Note that if the specified duration is negative then the WAIT command will be sent out right
@@ -52,9 +48,6 @@ class ClientState internal constructor(
     var isAllocationTrackerEnabled = false
     var allocationTrackerDetails = ""
 
-    // App boot stage
-    var stage: AppStage? = null
-        private set
     private val hgpcRequestsCount = AtomicInteger()
     private val nextDdmsCommandId = AtomicInteger(0x70000000)
 
@@ -123,10 +116,6 @@ class ClientState internal constructor(
 
     fun getHgpcRequestsCount(): Int {
         return hgpcRequestsCount.get()
-    }
-
-    fun setStage(stage: AppStage) {
-        this.stage = stage
     }
 
     companion object {

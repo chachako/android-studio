@@ -16,7 +16,6 @@
 package com.android.adblib.tools.debugging
 
 import com.android.adblib.tools.debugging.impl.JdwpSessionProxy
-import com.android.adblib.tools.debugging.packets.ddms.chunks.AppStage
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsFeatChunk
 import java.net.InetSocketAddress
 
@@ -80,11 +79,6 @@ data class JdwpProcessProperties(
      * `true` if the `WAIT` command was received.
      */
     val waitCommandReceived: Boolean = false,
-
-    /**
-     * The process boot stage if available
-     */
-    val stage: AppStage? = null,
 
     /**
      * `true` if the process is waiting for a debugger to attach.

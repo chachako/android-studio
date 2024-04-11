@@ -40,8 +40,7 @@ class DdmsHeloChunkTest {
                 abi = "x86",
                 jvmFlags = "flags",
                 isNativeDebuggable = false,
-                packageName = "bar",
-                stage = AppStage.DEBG
+                packageName = "bar"
             )
             buffer.forChannelWrite()
         }
@@ -64,7 +63,6 @@ class DdmsHeloChunkTest {
         Assert.assertEquals("flags", heloChunk.jvmFlags)
         Assert.assertEquals(false, heloChunk.isNativeDebuggable)
         Assert.assertEquals("bar", heloChunk.packageName)
-        Assert.assertEquals(AppStage.DEBG, heloChunk.stage)
     }
 
     @Test
@@ -100,7 +98,6 @@ class DdmsHeloChunkTest {
         Assert.assertEquals(null, heloChunk.jvmFlags)
         Assert.assertEquals(false, heloChunk.isNativeDebuggable)
         Assert.assertEquals(null, heloChunk.packageName)
-        Assert.assertEquals(null, heloChunk.stage)
     }
 
     @Test
@@ -137,7 +134,6 @@ class DdmsHeloChunkTest {
         Assert.assertEquals(null, heloChunk.jvmFlags)
         Assert.assertEquals(false, heloChunk.isNativeDebuggable)
         Assert.assertEquals(null, heloChunk.packageName)
-        Assert.assertEquals(null, heloChunk.stage)
     }
 
     @Test
@@ -175,7 +171,6 @@ class DdmsHeloChunkTest {
         Assert.assertEquals(null, heloChunk.jvmFlags)
         Assert.assertEquals(false, heloChunk.isNativeDebuggable)
         Assert.assertEquals(null, heloChunk.packageName)
-        Assert.assertEquals(null, heloChunk.stage)
     }
 
     @Test
@@ -214,7 +209,6 @@ class DdmsHeloChunkTest {
         Assert.assertEquals("blah", heloChunk.jvmFlags)
         Assert.assertEquals(false, heloChunk.isNativeDebuggable)
         Assert.assertEquals(null, heloChunk.packageName)
-        Assert.assertEquals(null, heloChunk.stage)
     }
 
     @Test
@@ -254,11 +248,10 @@ class DdmsHeloChunkTest {
         Assert.assertEquals("blah", heloChunk.jvmFlags)
         Assert.assertEquals(true, heloChunk.isNativeDebuggable)
         Assert.assertEquals(null, heloChunk.packageName)
-        Assert.assertEquals(null, heloChunk.stage)
     }
 
     @Test
-    fun testParsingWithMissingStageWorks() = runBlockingWithTimeout {
+    fun testParsingIgnoresDeprecatedStage() = runBlockingWithTimeout {
         // Prepare
         val payload = run {
             val buffer = ResizableBuffer()
@@ -272,7 +265,8 @@ class DdmsHeloChunkTest {
                 abi = "x64",
                 jvmFlags = "blah",
                 isNativeDebuggable = true,
-                packageName = "bar"
+                packageName = "bar",
+                deprecatedStage = 732
             )
             buffer.forChannelWrite()
         }
@@ -295,6 +289,5 @@ class DdmsHeloChunkTest {
         Assert.assertEquals("blah", heloChunk.jvmFlags)
         Assert.assertEquals(true, heloChunk.isNativeDebuggable)
         Assert.assertEquals("bar", heloChunk.packageName)
-        Assert.assertEquals(null, heloChunk.stage)
     }
 }

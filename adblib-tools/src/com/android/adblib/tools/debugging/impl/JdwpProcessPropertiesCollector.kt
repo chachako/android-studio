@@ -27,7 +27,6 @@ import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECT
 import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_COLLECTOR_DELAY_USE_SHORT
 import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT
 import com.android.adblib.tools.AdbLibToolsProperties.PROCESS_PROPERTIES_RETRY_DURATION
-import com.android.adblib.tools.AdbLibToolsProperties.SUPPORT_STAG_PACKETS
 import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.SharedJdwpSession
@@ -39,11 +38,9 @@ import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD
 import com.android.adblib.tools.debugging.packets.ddms.DdmsPacketConstants.DDMS_CMD_SET
 import com.android.adblib.tools.debugging.packets.ddms.EphemeralDdmsChunk
-import com.android.adblib.tools.debugging.packets.ddms.chunks.AppStage
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsApnmChunk
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsFeatChunk
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsHeloChunk
-import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsStagChunk
 import com.android.adblib.tools.debugging.packets.ddms.chunks.DdmsWaitChunk
 import com.android.adblib.tools.debugging.packets.ddms.clone
 import com.android.adblib.tools.debugging.packets.ddms.ddmsChunks
@@ -283,9 +280,7 @@ internal class JdwpProcessPropertiesCollector(
         //   "Android VM" is "receiving any valid JDWP command packet". Unfortunately, there
         //   is no "negative" version of the "WAIT" packet, meaning if the process is not
         //   in the "waiting for a debugger" state, there is no packet sent.
-        // * Starting API 34 we know the stage of the app boot progress. It provides info such as
-        //   whether the process is waiting for debugger, or if the process is up and running.
-
+        //
         // `HELO` packet is a reply to the `HELO` command we sent to the VM
         if (jdwpPacket.isReply && jdwpPacket.id == commands.heloCommand.id) {
             processHeloReply(collectState, jdwpPacket, workBuffer)
@@ -298,7 +293,7 @@ internal class JdwpProcessPropertiesCollector(
             collectState.featReplyReceived = true
         }
 
-        // `WAIT`, `APNM`, and `STAG` are DDMS chunks embedded in a JDWP command packet sent from
+        // `WAIT` and `APNM` are DDMS chunks embedded in a JDWP command packet sent from
         // the VM to us
         if (jdwpPacket.isCommand(DDMS_CMD_SET, DDMS_CMD)) {
             // For completeness, we process all chunks embedded in a JDWP packet, even
@@ -313,10 +308,6 @@ internal class JdwpProcessPropertiesCollector(
 
                     DdmsChunkType.APNM -> {
                         processApnmCommand(collectState, chunk.clone(), workBuffer)
-                    }
-
-                    DdmsChunkType.STAG -> {
-                        processStagCommand(collectState, chunk.clone(), workBuffer)
                     }
 
                     else -> {
@@ -337,11 +328,7 @@ internal class JdwpProcessPropertiesCollector(
             DdmsHeloChunk.parse(heloChunkView, workBuffer)
         }
         logger.debug { "`HELO` reply: $heloChunk" }
-        if (heloChunk.stage != null && !session.property(SUPPORT_STAG_PACKETS)) {
-            logger.debug { "Not using STAG value since it's disabled by a 'SUPPORT_STAG_PACKETS' property" }
-        }
         collectState.propertiesFlow.update {
-            val stage = if (session.property(SUPPORT_STAG_PACKETS)) heloChunk.stage else null
             it.copy(
                 processName = filterFakeName(heloChunk.processName),
                 userId = heloChunk.userId,
@@ -349,9 +336,7 @@ internal class JdwpProcessPropertiesCollector(
                 vmIdentifier = heloChunk.vmIdentifier,
                 abi = heloChunk.abi,
                 jvmFlags = heloChunk.jvmFlags,
-                isNativeDebuggable = heloChunk.isNativeDebuggable,
-                stage = stage,
-                isWaitingForDebugger = stage?.equals(AppStage.DEBG) ?: it.isWaitingForDebugger
+                isNativeDebuggable = heloChunk.isNativeDebuggable
             )
         }
         logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
@@ -403,28 +388,6 @@ internal class JdwpProcessPropertiesCollector(
                 processName = filterFakeName(apnmChunk.processName),
                 userId = apnmChunk.userId,
                 packageName = filterFakeName(apnmChunk.packageName)
-            )
-        }
-        logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
-    }
-
-    private suspend fun processStagCommand(
-        collectState: CollectState,
-        chunkCopy: DdmsChunkView,
-        workBuffer: ResizableBuffer
-    ) {
-        val stagChunk = processDdmsChunk(chunkCopy, "STAG") {
-            DdmsStagChunk.parse(chunkCopy, workBuffer)
-        }
-        logger.debug { "`STAG` command: $stagChunk" }
-        if(!session.property(SUPPORT_STAG_PACKETS)) {
-            logger.debug { "Discarding STAG reply since it's disabled by a 'SUPPORT_STAG_PACKETS' property" }
-            return
-        }
-        collectState.propertiesFlow.update {
-            it.copy(
-                stage = stagChunk.stage,
-                isWaitingForDebugger = stagChunk.stage == AppStage.DEBG
             )
         }
         logger.verbose { "Updated stateflow: ${collectState.propertiesFlow.value}" }
@@ -584,13 +547,7 @@ internal class JdwpProcessPropertiesCollector(
                     return false
                 }
 
-                // For Api 34+ use boot stage data
-                if (propertiesFlow.value.stage != null) {
-                    return propertiesFlow.value.stage == AppStage.DEBG
-                            || propertiesFlow.value.stage == AppStage.A_GO
-                }
-
-                // For Api <= 33 we can only say we collected everything we need
+                // We can only say we collected everything we need
                 // if we received the `WAIT` packet (because there is
                 // no such thing as a `NO_WAIT` packet).
                 return waitReceived

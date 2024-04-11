@@ -52,8 +52,6 @@ value class DdmsChunkType(val value: Int) {
 
         val APNM = chunkTypeFromString("APNM")
 
-        val STAG = chunkTypeFromString("STAG")
-
         val WAIT = chunkTypeFromString("WAIT")
 
         val EXIT = chunkTypeFromString("EXIT")

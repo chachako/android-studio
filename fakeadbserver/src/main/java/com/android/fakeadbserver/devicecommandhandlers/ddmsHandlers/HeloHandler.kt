@@ -56,14 +56,14 @@ class HeloHandler : DdmPacketHandler {
         val packageName = client.packageName
 
         // Api boot stage starts at API 34
-        val writeStage = deviceApiLevel >= 34
+        val writeDeprecatedStage = deviceApiLevel >= 34
         val payloadLength = (HELO_CHUNK_HEADER_LENGTH + (VM_IDENTIFIER.length + appName.length) * 2
                 + (if (writeUserId) 4 else 0)
                 + (if (writeAbi) 4 + abi.length * 2 else 0)
                 + (if (writeJvmFlags) 4 + jvmFlags.length * 2 else 0)
                 + (if (writeNativeDebuggable) 1 else 0)
                 + (if (writePackageName) 4 + packageName.length * 2 else 0)
-                + if (writeStage) 4 else 0)
+                + if (writeDeprecatedStage) 4 else 0)
         val payload = ByteArray(payloadLength)
         val payloadBuffer = ByteBuffer.wrap(payload)
         payloadBuffer.putInt(VERSION)
@@ -100,10 +100,10 @@ class HeloHandler : DdmPacketHandler {
                 payloadBuffer.putChar(c)
             }
         }
-        if (writeStage) {
-            val stage =
-                client.stage ?: throw IllegalStateException("'stage' must be set before its used")
-            payloadBuffer.putInt(stage.value)
+        if (writeDeprecatedStage) {
+            // Stage value is no longer used by Android Studio. Continue writing a meaningless
+            // value.
+            payloadBuffer.putInt(6768)
         }
         val responsePacket = DdmPacket.createResponse(packet.id, CHUNK_TYPE, payload)
         try {
@@ -164,25 +164,6 @@ class HeloHandler : DdmPacketHandler {
             // Note that Negative waitCommandDelay is handled earlier in this method
         }
 
-        var totalDelayStagCommand = 0L
-        for (sendStagCommandDelay in client.sendStagCommandAfterHelo) {
-            totalDelayStagCommand += sendStagCommandDelay.toMillis()
-            val delayStagCommand = totalDelayStagCommand
-            socketScope.launch {
-                delay(delayStagCommand)
-                val stage =
-                    client.stage
-                        ?: throw IllegalStateException("'stage' must be set before its used")
-                val stagPayload = ByteBuffer.allocate(4)
-                stagPayload.putInt(stage.value)
-                val stagPacket = DdmPacket.createCommand(
-                    client.nextDdmsCommandId(),
-                    DdmPacket.encodeChunkType("STAG"),
-                    stagPayload.array()
-                )
-                stagPacket.write(jdwpHandlerOutput)
-            }
-        }
         return true
     }
 
