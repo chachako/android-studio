@@ -85,7 +85,10 @@ internal class RoomInvalidationRegistry(private val environment: InspectorEnviro
       val klass = classLoader.loadClass(INVALIDATION_TRACKER_QNAME)
       return InvalidationTrackerInvoker(klass)
     } catch (e: ClassNotFoundException) {
-      Log.v(HIDDEN_TAG, "Room InvalidationTracker not found", e)
+      Log.v(
+        HIDDEN_TAG,
+        "Room InvalidationTracker not found. Either app is not using it or Proguard has renamed it.",
+      )
     } catch (e: Throwable) {
       Log.w(TAG, "Error setting up Room invalidation", e)
     }

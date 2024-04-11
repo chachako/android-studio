@@ -48,7 +48,10 @@ private constructor(
         val notifyMethod = queryClass.getMethod(SQLDELIGHT_NOTIFY_METHOD_NAME)
         return SqlDelightInvalidation(artTooling, queryClass, notifyMethod)
       } catch (e: ClassNotFoundException) {
-        Log.v(HIDDEN_TAG, "SqlDelight not found", e)
+        Log.v(
+          HIDDEN_TAG,
+          "SqlDelight not found. Either app is not using it or Proguard has renamed it.",
+        )
         return Invalidation.NOOP
       } catch (e: Throwable) {
         Log.w(TAG, "Error setting up SqlDelight invalidation", e)

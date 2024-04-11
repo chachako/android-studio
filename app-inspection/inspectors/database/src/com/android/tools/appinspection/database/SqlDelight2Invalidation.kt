@@ -82,7 +82,10 @@ private constructor(
           listenersField,
         )
       } catch (e: ClassNotFoundException) {
-        Log.v(HIDDEN_TAG, "SqlDelight 2 not found", e)
+        Log.v(
+          HIDDEN_TAG,
+          "SqlDelight 2 not found. Either app is not using it or Proguard has renamed it.",
+        )
         return Invalidation.NOOP
       } catch (e: Throwable) {
         Log.w(TAG, "Error setting up SqlDelight 2 invalidation", e)
