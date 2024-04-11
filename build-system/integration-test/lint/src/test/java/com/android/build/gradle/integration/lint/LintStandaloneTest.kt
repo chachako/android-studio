@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.runner.FilterableParameterize
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.OptionalBooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -132,7 +133,7 @@ class LintStandaloneTest(
 
     @Test
     fun checkK2Uast() {
-        getExecutor().with(BooleanOption.LINT_USE_K2_UAST, true).run( ":lint")
+        getExecutor().with(OptionalBooleanOption.LINT_USE_K2_UAST, true).run( ":lint")
 
         val file = project.file("lint-results.txt")
         assertThat(file).exists()

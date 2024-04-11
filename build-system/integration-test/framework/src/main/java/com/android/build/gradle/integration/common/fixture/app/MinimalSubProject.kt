@@ -223,5 +223,16 @@ class MinimalSubProject private constructor(
                 isMultiplatform = true
             )
         }
+
+        fun kotlinMultiplatformJvmOnly(): MinimalSubProject {
+            return MinimalSubProject(
+                path = null,
+                plugin = "org.jetbrains.kotlin.multiplatform",
+                addCompileAndSdkVersionToBuildFile = false,
+                addVersionCodeToBuildFile = false,
+                addManifestFile = false,
+                namespace = null
+            )
+        }
     }
 }

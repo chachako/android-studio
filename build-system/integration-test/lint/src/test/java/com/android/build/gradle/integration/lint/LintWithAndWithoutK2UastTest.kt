@@ -24,6 +24,7 @@ import com.android.build.gradle.integration.common.runner.FilterableParameterize
 import com.android.build.gradle.integration.common.truth.forEachLine
 import com.android.build.gradle.internal.dsl.ModulePropertyKey.OptionalBoolean
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.OptionalBooleanOption
 import com.android.build.gradle.options.StringOption.LINT_RESERVED_MEMORY_PER_TASK
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -83,7 +84,7 @@ class LintWithAndWithoutK2UastTest(private val runLintInProcess: Boolean) {
     val project: GradleTestProject =
         GradleTestProject.builder()
             .fromTestApp(multiModuleTestProject)
-            .addGradleProperties("${BooleanOption.LINT_USE_K2_UAST.propertyName}=false")
+            .addGradleProperties("${OptionalBooleanOption.LINT_USE_K2_UAST.propertyName}=false")
             .create()
 
     @get:Rule

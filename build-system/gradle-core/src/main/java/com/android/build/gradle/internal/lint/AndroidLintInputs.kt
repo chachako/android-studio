@@ -18,7 +18,6 @@
 package com.android.build.gradle.internal.lint
 
 import com.android.SdkConstants
-import com.android.Version
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.Lint
@@ -56,14 +55,17 @@ import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.utils.createTargetSdkVersion
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.getDesugaredMethods
+import com.android.build.gradle.internal.utils.isKotlinPluginAppliedInTheSameClassloader
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.OptionalBooleanOption
 import com.android.build.gradle.options.ProjectOptions
 import com.android.build.gradle.options.StringOption
 import com.android.builder.core.ComponentType
 import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.errors.EvalIssueException
 import com.android.builder.errors.IssueReporter
+import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.AgpVersion
 import com.android.sdklib.AndroidVersion
 import com.android.tools.lint.model.DefaultLintModelAndroidArtifact
@@ -93,8 +95,10 @@ import com.android.tools.lint.model.LintModelSourceProvider
 import com.android.tools.lint.model.LintModelVariant
 import com.android.utils.FileUtils
 import com.android.utils.PathUtils
+import com.android.utils.appendCapitalized
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.ConfigurableFileCollection
@@ -120,12 +124,15 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.Companion.DEFAULT
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.Callable
@@ -443,7 +450,7 @@ abstract class ProjectInputs {
                 mavenArtifactId.get(),
                 mavenVersion.get()
             ),
-            agpVersion = AgpVersion.tryParse(Version.ANDROID_GRADLE_PLUGIN_VERSION),
+            agpVersion = AgpVersion.tryParse(com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION),
             buildFolder = File(buildDirectoryPath.get()),
             lintOptions = lintOptions.toLintModel(),
             lintRuleJars = listOf(),
@@ -2507,6 +2514,131 @@ abstract class ArtifactInput {
     }
 }
 
+/**
+ * Inputs related to whether to use K2 UAST
+ */
+abstract class UastInputs  {
+
+    /**
+     * Whether to use K2 UAST when running the corresponding task. This provider will be set iff the
+     * corresponding [OptionalBooleanOption.LINT_USE_K2_UAST] or [OptionalBoolean.LINT_USE_K2_UAST]
+     * are set.
+     *
+     * If unset, K2 UAST will be used iff the corresponding kotlin language version is at least 2.0
+     * (see [UsesUast.useK2Uast])
+     */
+    @get:Input
+    @get:Optional
+    abstract val useK2UastManualSetting: Property<Boolean>
+
+    /**
+     * The kotlin language version used by the corresponding [KotlinCompile] task. This property is
+     * set via [KotlinCompile.compilerOptions], which is the replacement for the deprecated
+     * [KotlinCompile.kotlinOptions].
+     */
+    @get:Input
+    @get:Optional
+    abstract val compilerOptionsKotlinLanguageVersion: Property<String>
+
+    /**
+     * The kotlin language version used by the corresponding [KotlinCompile] task. This property is
+     * set via the deprecated [KotlinCompile.kotlinOptions].
+     */
+    @get:Input
+    @get:Optional
+    abstract val kotlinOptionsKotlinLanguageVersion: Property<String>
+
+    /**
+     * The default kotlin language version used by the corresponding [KotlinCompile] task, which is
+     * used if the language version is not set on [KotlinCompile.compilerOptions] or
+     * [KotlinCompile.kotlinOptions].
+     */
+    @get:Input
+    @get:Optional
+    abstract val defaultKotlinLanguageVersion: Property<String>
+
+    @get:Internal
+    val useK2Uast: Boolean
+        @Suppress("UnstableApiUsage")
+        get() {
+            return useK2UastManualSetting.orNull
+                ?: kotlinLanguageVersion
+                    ?.let { Version.parse(it) >= Version.prefixInfimum("2") }
+                ?: false
+        }
+
+    @get:Internal
+    val kotlinLanguageVersion: String?
+        get() =
+            compilerOptionsKotlinLanguageVersion.orNull
+                ?: kotlinOptionsKotlinLanguageVersion.orNull
+                ?: defaultKotlinLanguageVersion.orNull
+
+    fun initialize(project: Project, variant: VariantCreationConfig) {
+        this.useK2UastManualSetting.setDisallowChanges(variant.lintUseK2UastManualSetting)
+        val kotlinCompileTaskName =
+            if (variant.componentType == ComponentTypeImpl.KMP_ANDROID) {
+                "compileAndroidMain"
+            } else {
+                "compile".appendCapitalized(variant.name, "Kotlin")
+            }
+        initializeFromKotlinCompileTask(kotlinCompileTaskName, project)
+    }
+
+    fun initializeForStandalone(
+        project: Project,
+        taskCreationServices: TaskCreationServices,
+        kotlinCompileTaskName: String
+    ) {
+        this.useK2UastManualSetting
+            .setDisallowChanges(
+                taskCreationServices.projectOptions
+                    .getProvider(OptionalBooleanOption.LINT_USE_K2_UAST)
+            )
+        initializeFromKotlinCompileTask(kotlinCompileTaskName, project)
+    }
+
+    /**
+     * This function makes an effort to set the kotlin language version inputs based on the task
+     * named [kotlinCompileTaskName], but it's not always possible (e.g., if KGP is not applied in
+     * the same class loader). This function catches any exceptions that might be thrown because of
+     * unexpected behavior from KGP.
+     */
+    private fun initializeFromKotlinCompileTask(
+        kotlinCompileTaskName: String,
+        project: Project
+    ) {
+        if (!isKotlinPluginAppliedInTheSameClassloader(project)) {
+            return
+        }
+        val kotlinCompileTaskProvider: TaskProvider<KotlinCompile> =
+            try {
+                project.tasks.withType(KotlinCompile::class.java).named(kotlinCompileTaskName)
+            } catch (e: UnknownDomainObjectException) {
+                return
+            }
+        this.compilerOptionsKotlinLanguageVersion.set(
+            kotlinCompileTaskProvider.flatMap { kotlinCompileTask ->
+                runCatching {
+                    kotlinCompileTask.compilerOptions.languageVersion.map { it.version }
+                }.getOrNull()
+                    ?: project.provider { null }
+            }
+        )
+        this.compilerOptionsKotlinLanguageVersion.disallowChanges()
+        // Ignore the type mismatch warning because the Gradle docs say "May return null"
+        this.kotlinOptionsKotlinLanguageVersion.set(
+            kotlinCompileTaskProvider.map { kotlinCompileTask ->
+                runCatching { kotlinCompileTask.kotlinOptions.languageVersion }.getOrNull()
+            }
+        )
+        this.kotlinOptionsKotlinLanguageVersion.disallowChanges()
+        this.defaultKotlinLanguageVersion.setDisallowChanges(
+            runCatching { DEFAULT.version }.getOrNull()
+        )
+    }
+}
+
 class LintFromMaven(val files: FileCollection, val version: String) {
 
     companion object {
@@ -2557,8 +2689,8 @@ class LintFromMaven(val files: FileCollection, val version: String) {
 internal fun getLintMavenArtifactVersion(
     versionOverride: String?,
     reporter: IssueReporter?,
-    defaultVersion: String = Version.ANDROID_TOOLS_BASE_VERSION,
-    agpVersion: String = Version.ANDROID_GRADLE_PLUGIN_VERSION
+    defaultVersion: String = com.android.Version.ANDROID_TOOLS_BASE_VERSION,
+    agpVersion: String = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
 ): String {
     if (versionOverride == null) {
         return defaultVersion

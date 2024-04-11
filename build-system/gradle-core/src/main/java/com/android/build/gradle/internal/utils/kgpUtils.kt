@@ -186,11 +186,12 @@ fun recordKotlinCompilePropertiesForAnalytics(
 }
 
 /**
- * Returns `KotlinCompile.kotlinOptions.languageVersion`. If we fail to access the property (e.g.,
- * because the compile and runtime versions of KGP differ), this method will return `null`.
+ * Attempts to return the language version of [kotlinCompile]. If we fail to access the property
+ * (e.g., because the compile and runtime versions of KGP differ), this method will return `null`.
  */
 private fun getLanguageVersionUnsafe(kotlinCompile: KotlinCompile): String? {
     return runCatching { kotlinCompile.kotlinOptions.languageVersion }.getOrNull()
+        ?: runCatching { org.jetbrains.kotlin.gradle.dsl.KotlinVersion.DEFAULT.version }.getOrNull()
 }
 
 /** Add compose compiler extension args to Kotlin compile task. */

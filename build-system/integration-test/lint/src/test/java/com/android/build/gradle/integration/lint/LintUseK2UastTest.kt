@@ -19,7 +19,7 @@ package com.android.build.gradle.integration.lint
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.dsl.ModulePropertyKey.OptionalBoolean
-import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.OptionalBooleanOption
 import com.android.testutils.truth.PathSubject.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -39,7 +39,7 @@ class LintUseK2UastTest {
     @Test
     fun testUseK2Uast() {
         project.executor()
-            .with(BooleanOption.LINT_USE_K2_UAST, true)
+            .with(OptionalBooleanOption.LINT_USE_K2_UAST, true)
             .run(":app:clean", ":app:lintDebug")
         checkLintReport()
     }

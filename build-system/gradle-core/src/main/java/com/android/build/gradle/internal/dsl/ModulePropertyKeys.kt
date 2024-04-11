@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.dsl
 
 import com.android.build.gradle.options.BooleanOption
+import com.android.build.gradle.options.OptionalBooleanOption
 import com.android.build.gradle.options.StringOption
 import com.android.build.gradle.options.parseBoolean
 import org.gradle.api.artifacts.Dependency
@@ -69,9 +70,9 @@ sealed interface ModulePropertyKey<OutputT> {
 
         /**
          * Whether to use K2 UAST when running lint. The corresponding global property is
-         * [BooleanOption.LINT_USE_K2_UAST].
+         * [OptionalBooleanOption.LINT_USE_K2_UAST].
          */
-        LINT_USE_K2_UAST(BooleanOption.LINT_USE_K2_UAST.propertyName),
+        LINT_USE_K2_UAST(OptionalBooleanOption.LINT_USE_K2_UAST.propertyName),
 
         /**
          * Whether to enable various R8 optimization on the code

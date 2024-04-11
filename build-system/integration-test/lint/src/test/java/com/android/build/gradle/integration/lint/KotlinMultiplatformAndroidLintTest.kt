@@ -22,7 +22,7 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject.Companio
 import com.android.build.gradle.integration.common.truth.forEachLine
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.options.BooleanOption.LINT_ANALYSIS_PER_COMPONENT
-import com.android.build.gradle.options.BooleanOption.LINT_USE_K2_UAST
+import com.android.build.gradle.options.OptionalBooleanOption.LINT_USE_K2_UAST
 import com.android.build.gradle.options.StringOption.LINT_RESERVED_MEMORY_PER_TASK
 import com.android.testutils.truth.PathSubject
 import com.android.utils.FileUtils

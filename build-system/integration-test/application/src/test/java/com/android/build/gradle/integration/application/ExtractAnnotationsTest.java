@@ -26,7 +26,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.runner.FilterableParameterized;
 import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.build.gradle.options.BooleanOption;
+import com.android.build.gradle.options.OptionalBooleanOption;
 import com.android.testutils.apk.Zip;
 import com.google.common.truth.Truth;
 import java.io.File;
@@ -248,6 +248,6 @@ public class ExtractAnnotationsTest {
     }
 
     private GradleTaskExecutor getExecutor() {
-        return project.executor().with(BooleanOption.LINT_USE_K2_UAST, useK2Uast);
+        return project.executor().with(OptionalBooleanOption.LINT_USE_K2_UAST, useK2Uast);
     }
 }
