@@ -164,7 +164,6 @@ ARTIFACTS = [
     "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:pom:1.9.20",
     "org.jetbrains.kotlin:kotlin-compiler:1.9.20",
     "org.jetbrains.kotlin:kotlin-gradle-plugin-api:1.9.20",
-    "org.jetbrains.kotlin:kotlin-gradle-plugin-api:1.9.22",
     "org.jetbrains.kotlin:kotlin-reflect:1.9.20",
     "org.jetbrains.kotlin:kotlin-stdlib-common:1.9.20",
     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20",
