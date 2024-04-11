@@ -179,7 +179,7 @@ class DatabaseRegistryTest {
       closeablesRule.register(AutoCloseable { dispose() })
     }
 
-  private class OpenHelper(path: String) :
+  private inner class OpenHelper(path: String) :
     SQLiteOpenHelper(RuntimeEnvironment.getApplication(), path, null, 1) {
 
     override fun onCreate(db: SQLiteDatabase) {}
@@ -187,13 +187,13 @@ class DatabaseRegistryTest {
     override fun onUpgrade(db: SQLiteDatabase, fromVersion: Int, toVersion: Int) {}
 
     fun getReadOnlyDb(): SQLiteDatabase {
-      val mock = spy(readableDatabase)
+      val mock = spy(closeablesRule.register(readableDatabase))
       whenever(mock.isReadOnly).thenReturn(true)
       return mock
     }
 
     fun getReadWriteDb(): SQLiteDatabase {
-      return writableDatabase
+      return closeablesRule.register(writableDatabase)
     }
 
     fun createAndClose() {
