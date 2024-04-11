@@ -97,6 +97,15 @@ internal class StandaloneModuleClassLoaderManager(
         override val isUserCodeUpToDate: Boolean = true
         override fun hasLoadedClass(fqcn: String): Boolean =
             loadedClasses.contains(fqcn)
+
+        override val projectLoadedClasses: Set<String> = emptySet()
+        override val nonProjectLoadedClasses: Set<String>
+            get() = loadedClasses
+        override val projectClassesTransform: ClassTransform = ClassTransform.identity
+        override val nonProjectClassesTransform: ClassTransform = ClassTransform.identity
+
+        override fun dispose() { }
+
         override val isDisposed: Boolean = false
         override fun onAfterLoadClass(fqcn: String, loaded: Boolean, durationMs: Long) {
             if (loaded) {
