@@ -185,4 +185,70 @@ class SourcesJarTest {
             }
         }
     }
+
+    @Test
+    fun testAddingJavaAndResSourcesToModel() {
+        project.getSubproject(":lib").also { libProject ->
+            libProject.buildFile.appendText(
+                """
+            abstract class JavaGenerator extends DefaultTask {
+                @OutputDirectory
+                abstract DirectoryProperty getOutputDirectory();
+
+                @TaskAction
+                void run() {
+                    def outputFile = new File(getOutputDirectory().get().getAsFile(), "SomeSource.java")
+                    new FileWriter(outputFile).with {
+                        write("Some Kotlin code\n")
+                        flush()
+                    }
+                }
+            }
+
+            abstract class ResGenerator extends DefaultTask {
+                @OutputDirectory
+                abstract DirectoryProperty getOutputDirectory();
+
+                @TaskAction
+                void run() {
+                    def outputFile = new File(getOutputDirectory().get().getAsFile(), "foo.xml")
+                    new FileWriter(outputFile).with {
+                        write("<some xml/>\n")
+                        flush()
+                    }
+                }
+            }
+
+            def writeKotlinTask = tasks.register("createJavaSources", JavaGenerator.class)
+            def writeResTask = tasks.register("createResResources", ResGenerator.class)
+            androidComponents {
+                onVariants(selector().all(),  { variant ->
+                    // register it under java source code.
+                    variant.sources.java.addGeneratedSourceDirectory(writeKotlinTask, JavaGenerator::getOutputDirectory)
+                    variant.sources.res.addGeneratedSourceDirectory(writeResTask,ResGenerator::getOutputDirectory)
+
+                })
+            }
+        """.trimIndent()
+            )
+
+            val modelContainer = libProject.modelV2().fetchModels().container
+
+            modelContainer.getProject(":lib").androidProject?.variants?.forEach { variant ->
+                var foundRes = false
+                variant.mainArtifact.generatedResourceFolders.forEach { file ->
+                    if (file.absolutePath.contains("createResResources")) {
+                        foundRes = true
+                    }
+                }
+                var foundJava = false
+                variant.mainArtifact.generatedSourceFolders.forEach { file ->
+                    if (file.absolutePath.contains("createJavaSources")) {
+                        foundJava = true
+                    }
+                }
+                Truth.assertThat(foundRes && foundJava).isTrue()
+            }
+        }
+    }
 }

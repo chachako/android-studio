@@ -158,20 +158,13 @@ public class Utils {
                 .getSources()
                 .res(
                         resSources -> {
-                            resSources.forAllSources(
-                                    directoryEntry -> {
-                                        if (directoryEntry.isUserAdded()
-                                                && directoryEntry.isGenerated()
-                                                && directoryEntry.getShouldBeAddedToIdeModel()) {
-                                            fileCollection.from(
-                                                    directoryEntry.asFiles(
-                                                            component
-                                                                    .getServices()
-                                                                    .getProjectInfo()
-                                                                    .getBuildDirectory()));
-                                        }
-                                        return Unit.INSTANCE;
-                                    });
+                            fileCollection.from(
+                                    resSources.variantSourcesForModel$gradle_core(
+                                            directoryEntry ->
+                                                    directoryEntry.isUserAdded()
+                                                            && directoryEntry.isGenerated()
+                                                            && directoryEntry
+                                                                    .getShouldBeAddedToIdeModel()));
                             return Unit.INSTANCE;
                         });
         if (component.getBuildFeatures().getRenderScript()) {

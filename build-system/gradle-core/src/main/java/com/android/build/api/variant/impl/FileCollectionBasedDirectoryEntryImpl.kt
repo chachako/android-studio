@@ -37,8 +37,7 @@ class FileCollectionBasedDirectoryEntryImpl(
         fileCollection.elements.zip(projectDir) {
                 elements: MutableSet<FileSystemLocation>,
                 dir: Directory ->
-            elements.filter { it.asFile.isDirectory || !it.asFile.exists() }
-                .map { dir.dir(it.asFile.path) }
+            elements.map { dir.dir(it.asFile.path) }
         }
 
     override fun asFileTree(fileTreeCreator: () -> ConfigurableFileTree): Provider<List<ConfigurableFileTree>> =
