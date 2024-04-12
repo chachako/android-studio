@@ -13,222 +13,199 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.build.gradle.integration.application
 
-package com.android.build.gradle.integration.application;
-
-import static com.android.build.gradle.integration.common.truth.ApkSubject.assertThat;
-import static com.android.testutils.truth.PathSubject.assertThat;
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import com.android.annotations.NonNull;
-import com.android.build.gradle.integration.common.fixture.GradleTestProject;
-import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
-import com.android.build.gradle.integration.common.utils.AndroidProjectUtilsV2;
-import com.android.build.gradle.integration.common.utils.ModelContainerUtils;
-import com.android.build.gradle.integration.common.utils.TestFileUtils;
-import com.android.builder.model.v2.ide.AndroidArtifact;
-import com.android.builder.model.v2.ide.Variant;
-import com.android.testutils.apk.Apk;
-import com.android.utils.FileUtils;
-import com.google.common.collect.MoreCollectors;
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
+import com.android.build.gradle.integration.common.fixture.ModelContainerV2
+import com.android.build.gradle.integration.common.truth.ApkSubject
+import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.integration.common.utils.getDebugGenerateSourcesCommands
+import com.android.build.gradle.integration.common.utils.getVariantByName
+import com.android.testutils.truth.PathSubject
+import com.android.utils.FileUtils
+import com.google.common.truth.Truth
+import org.junit.*
+import java.io.File
 
 /**
  * Tests for generated source registration APIs.
  *
- * <p>Includes the following APIs:
  *
- * <ul>
- *   <li>registerJavaGeneratingTask
- *   <li>registerResGeneratingTask
- *   <li>registerGeneratedResFolders
- * </ul>
+ * Includes the following APIs:
+ *
+ *
+ *  * registerJavaGeneratingTask
+ *  * registerResGeneratingTask
+ *  * registerGeneratedResFolders
+ *
  */
-public class GenFolderApiTest {
-    @ClassRule
-    public static GradleTestProject project =
-            GradleTestProject.builder().fromTestProject("genFolderApi").create();
+class GenFolderApiTest {
 
-    private static List<String> ideSetupTasks;
+    @get:Rule
+    val project: GradleTestProject = builder().fromTestProject("genFolderApi").create()
 
-    private static ModelContainerV2 container;
+    private lateinit var ideSetupTasks: List<String>
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    private lateinit var container: ModelContainerV2
+
+    @Before
+    @Throws(Exception::class)
+    fun setUp() {
         project.executor()
-                .withArgument("-P" + "inject_enable_generate_values_res=true")
-                .run("assembleDebug");
+            .withArgument("-P" + "inject_enable_generate_values_res=true")
+            .run("assembleDebug")
         container =
-                project.modelV2()
-                        .withArgument("-P" + "inject_enable_generate_values_res=true")
-                        .fetchModels()
-                        .getContainer();
-
-        ideSetupTasks = ModelContainerUtils.getDebugGenerateSourcesCommands(container);
-    }
-
-    @AfterClass
-    public static void cleanUp() {
-        project = null;
-        container = null;
-    }
-
-    @Test
-    public void checkTheCustomJavaGenerationTaskRan() throws Exception {
-        try (Apk apk = project.getApk(GradleTestProject.ApkType.DEBUG)) {
-            assertThat(apk).containsClass("Lcom/custom/Foo;");
-            assertThat(apk).containsClass("Lcom/custom/Bar;");
-        }
-    }
-
-    @Test
-    public void checkTheCustomResGenerationTaskRan() throws Exception {
-        try (Apk apk = project.getApk(GradleTestProject.ApkType.DEBUG)) {
-            assertThat(apk).contains("res/xml/generated.xml");
-            assertThat(apk)
-                    .hasClass("Lcom/android/tests/basic/R$string;")
-                    .that()
-                    .hasField("generated_string");
-        }
-    }
-
-    /** Regression test for b/120750247 */
-    @Test
-    public void checkCustomGenerationRunAtSync() throws Exception {
-        project.executor()
+            project.modelV2()
                 .withArgument("-P" + "inject_enable_generate_values_res=true")
-                .run("clean");
-        project.executor()
-                .withArgument("-P" + "inject_enable_generate_values_res=true")
-                .run(ideSetupTasks);
+                .fetchModels()
+                .container
 
-        AndroidArtifact mainArtifact =
-                AndroidProjectUtilsV2.getVariantByName(
-                                container.getProject().getAndroidProject(), "debug")
-                        .getMainArtifact();
-
-        File customCode =
-                mainArtifact.getGeneratedSourceFolders().stream()
-                        .filter(it -> it.getAbsolutePath().startsWith(getSourceFolderStart()))
-                        .collect(MoreCollectors.onlyElement());
-        assertThat(customCode).isDirectory();
-
-        File customResources =
-                mainArtifact.getGeneratedResourceFolders().stream()
-                        .filter(it -> it.getAbsolutePath().startsWith(getCustomResPath()))
-                        .collect(MoreCollectors.onlyElement());
-        assertThat(customResources).isDirectory();
-
-        File customResources2 =
-                mainArtifact.getGeneratedResourceFolders().stream()
-                        .filter(it -> it.getAbsolutePath().startsWith(getCustomRes2Path()))
-                        .collect(MoreCollectors.onlyElement());
-        assertThat(customResources2).isDirectory();
+        ideSetupTasks = container.getDebugGenerateSourcesCommands()
     }
 
-
     @Test
-    public void checkAddingAndRemovingGeneratingTasks() throws Exception {
-        project.executor()
-                .withArgument("-P" + "inject_enable_generate_values_res=false")
-                .run("assembleDebug");
-
-        try (Apk apk = project.getApk(GradleTestProject.ApkType.DEBUG)) {
-            assertThat(apk)
-                    .hasClass("Lcom/android/tests/basic/R$string;")
-                    .that()
-                    .doesNotHaveField("generated_string");
-        }
-
-        project.executor()
-                .withArgument("-P" + "inject_enable_generate_values_res=true")
-                .run("assembleDebug");
-        try (Apk apk = project.getApk(GradleTestProject.ApkType.DEBUG)) {
-            assertThat(apk)
-                    .hasClass("Lcom/android/tests/basic/R$string;")
-                    .that()
-                    .hasField("generated_string");
+    @Throws(Exception::class)
+    fun checkTheCustomJavaGenerationTaskRan() {
+        project.getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
+            ApkSubject.assertThat(apk).containsClass("Lcom/custom/Foo;")
+            ApkSubject.assertThat(apk).containsClass("Lcom/custom/Bar;")
         }
     }
 
     @Test
-    public void checkJavaFolderInModel() {
-        for (Variant variant : container.getProject().getAndroidProject().getVariants()) {
+    @Throws(Exception::class)
+    fun checkTheCustomResGenerationTaskRan() {
+        project.getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
+            ApkSubject.assertThat(apk).contains("res/xml/generated.xml")
+            ApkSubject.assertThat(apk)
+                .hasClass("Lcom/android/tests/basic/R\$string;")
+                .that()
+                .hasField("generated_string")
+        }
+    }
 
-            AndroidArtifact mainInfo = variant.getMainArtifact();
-            assertNotNull(
-                    "Null-check on mainArtifactInfo for " + variant.getDisplayName(), mainInfo);
+    /** Regression test for b/120750247  */
+    @Test
+    @Throws(Exception::class)
+    fun checkCustomGenerationRunAtSync() {
+        project.executor()
+            .withArgument("-P" + "inject_enable_generate_values_res=true")
+            .run("clean")
+        project.executor()
+            .withArgument("-P" + "inject_enable_generate_values_res=true")
+            .run(ideSetupTasks)
 
-            Collection<File> genSourceFolder = mainInfo.getGeneratedSourceFolders();
+        val mainArtifact =
+            container.getProject().androidProject
+                ?.getVariantByName("debug")
+                ?.mainArtifact!!
+
+        val customCode =
+            mainArtifact.generatedSourceFolders
+                .single { it: File -> it.absolutePath.startsWith(sourceFolderStart) }
+        PathSubject.assertThat(customCode).isDirectory()
+
+        val customResources =
+            mainArtifact.generatedResourceFolders
+                .single { it: File -> it.absolutePath.startsWith(customResPath) }
+
+        PathSubject.assertThat(customResources).isDirectory()
+
+        val customResources2 =
+            mainArtifact.generatedResourceFolders.single { it: File ->
+                it.absolutePath.startsWith(
+                    customRes2Path
+                )
+            }
+        PathSubject.assertThat(customResources2).isDirectory()
+    }
+
+
+    @Test
+    @Throws(Exception::class)
+    fun checkAddingAndRemovingGeneratingTasks() {
+        project.executor()
+            .withArgument("-P" + "inject_enable_generate_values_res=false")
+            .run("assembleDebug")
+
+        project.getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
+            ApkSubject.assertThat(apk)
+                .hasClass("Lcom/android/tests/basic/R\$string;")
+                .that()
+                .doesNotHaveField("generated_string")
+        }
+        project.executor()
+            .withArgument("-P" + "inject_enable_generate_values_res=true")
+            .run("assembleDebug")
+        project.getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
+            ApkSubject.assertThat(apk)
+                .hasClass("Lcom/android/tests/basic/R\$string;")
+                .that()
+                .hasField("generated_string")
+        }
+    }
+
+    @Test
+    fun checkJavaFolderInModel() {
+        container.getProject().androidProject?.variants?.forEach { variant ->
+            val mainInfo = variant.mainArtifact
+            Assert.assertNotNull(
+                "Null-check on mainArtifactInfo for " + variant.displayName, mainInfo
+            )
+
+            val genSourceFolder = mainInfo.generatedSourceFolders
 
             // We're looking for a custom folder
-            String sourceFolderStart = getSourceFolderStart();
-            boolean found = false;
-            for (File f : genSourceFolder) {
-                if (f.getAbsolutePath().startsWith(sourceFolderStart)) {
-                    found = true;
-                    break;
+            val sourceFolderStart = sourceFolderStart
+            var found = false
+            for (f in genSourceFolder) {
+                if (f.absolutePath.startsWith(sourceFolderStart)) {
+                    found = true
+                    break
                 }
             }
 
-            assertTrue("custom generated source folder check", found);
+            Assert.assertTrue("custom generated source folder check", found)
         }
     }
 
     @Test
-    public void checkResFolderInModel() {
-        for (Variant variant : container.getProject().getAndroidProject().getVariants()) {
-            com.android.builder.model.v2.ide.AndroidArtifact mainInfo = variant.getMainArtifact();
-            assertNotNull(
-                    "Null-check on mainArtifactInfo for " + variant.getDisplayName(), mainInfo);
+    fun checkResFolderInModel() {
+        container.getProject().androidProject?.variants?.forEach {  variant ->
+            val mainInfo = variant.mainArtifact
+            Assert.assertNotNull(
+                "Null-check on mainArtifactInfo for " + variant.displayName, mainInfo
+            )
 
-            List<String> genResFolders =
-                    mainInfo.getGeneratedResourceFolders()
-                            .stream()
-                            .map(File::getAbsolutePath)
-                            .collect(Collectors.toList());
-
-            assertThat(genResFolders).containsNoDuplicates();
-
-            assertThat(genResFolders)
-                    .containsAllOf(
-                            getCustomResPath() + variant.getName(),
-                            getCustomRes2Path() + variant.getName());
+            val genResFolders = mainInfo.generatedResourceFolders.map(File::getAbsolutePath)
+            Truth.assertThat(genResFolders).containsNoDuplicates()
+            Truth.assertThat(genResFolders)
+                .containsAtLeast(
+                    customResPath + variant.name,
+                    customRes2Path + variant.name
+                )
         }
     }
 
     @Test
-    public void backwardsCompatible() throws Exception {
+    @Throws(Exception::class)
+    fun backwardsCompatible() {
         // ATTENTION Author and Reviewers - please make sure required changes to the build file
         // are backwards compatible before updating this test.
-        assertThat(TestFileUtils.sha1NormalizedLineEndings(project.file("build.gradle")))
-                .isEqualTo("384acd749b7c400845fb96eace7b0def85cade2e");
+        Truth.assertThat(TestFileUtils.sha1NormalizedLineEndings(project.file("build.gradle")))
+            .isEqualTo("384acd749b7c400845fb96eace7b0def85cade2e")
     }
 
-    @NonNull
-    private String getCustomResPath() {
-        return FileUtils.join(project.getProjectDir().getAbsolutePath(), "build", "customRes")
-                + File.separatorChar;
-    }
+    private val customResPath: String
+        get() = (FileUtils.join(project.projectDir.absolutePath, "build", "customRes")
+                + File.separatorChar)
 
-    @NonNull
-    private String getCustomRes2Path() {
-        return FileUtils.join(project.getProjectDir().getAbsolutePath(), "build", "customRes2")
-                + File.separatorChar;
-    }
+    private val customRes2Path: String
+        get() = (FileUtils.join(project.projectDir.absolutePath, "build", "customRes2")
+                + File.separatorChar)
 
-    @NonNull
-    private String getSourceFolderStart() {
-        return FileUtils.join(project.getProjectDir().getAbsolutePath(), "build", "customCode")
-                + File.separatorChar;
-    }
+    private val sourceFolderStart: String
+        get() = (FileUtils.join(project.projectDir.absolutePath, "build", "customCode")
+                + File.separatorChar)
 }
