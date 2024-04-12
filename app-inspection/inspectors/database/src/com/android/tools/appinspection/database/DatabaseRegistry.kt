@@ -311,24 +311,7 @@ internal class DatabaseRegistry(
     if (keepOpenReference != null) {
       return keepOpenReference.database
     }
-
-    val candidates = databases[databaseId]?.filter { it.isOpen } ?: return null
-
-    // Assign a score to each candidate.
-    // - Read-only instance has the lowest score.
-    // - Non forced read-write instance has the max score.
-    val scores =
-      candidates.map {
-        val score =
-          when {
-            it.isReadOnly -> 0
-            forcedOpen.contains(it) -> 1
-            else -> return@map DbScore(it, Int.MAX_VALUE)
-          }
-        DbScore(it, score)
-      }
-
-    return scores.maxByOrNull { it.score }?.db
+    return getOpenDatabases(databaseId).findBestConnection()
   }
 
   @GuardedBy("lock")
@@ -453,4 +436,26 @@ internal class DatabaseRegistry(
   }
 
   private class DbScore(val db: SQLiteDatabase, val score: Int)
+
+  @GuardedBy("lock")
+  private fun getOpenDatabases(id: Int) = databases[id]?.filter { it.isOpen } ?: emptySet()
+
+  private fun Collection<SQLiteDatabase>.findBestConnection(): SQLiteDatabase? {
+    // Assign a score to each candidate.
+    // - Read-only instance has the lowest score.
+    // - Non forced read-write instance has the max score.
+    val scores = map {
+      val score =
+        when {
+          it.isReadOnly -> 0
+          isForcedConnection(it) -> 1
+          else -> return@map DbScore(it, 2)
+        }
+      DbScore(it, score)
+    }
+    if (Log.isLoggable(HIDDEN_TAG, Log.VERBOSE)) {
+      Log.v(HIDDEN_TAG, "scores: ${scores.joinToString { "${it.db.hashCode()} -> ${it.score}" }}")
+    }
+    return scores.maxByOrNull { it.score }?.db
+  }
 }
