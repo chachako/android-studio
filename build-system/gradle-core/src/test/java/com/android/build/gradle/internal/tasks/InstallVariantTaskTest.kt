@@ -16,9 +16,9 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
-import com.android.build.gradle.internal.fixtures.FakeFileCollection
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectory
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectoryProperty
+import com.android.build.gradle.internal.fixtures.FakeLogger
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
 import com.android.ddmlib.AndroidDebugBridge
@@ -26,25 +26,28 @@ import com.android.ddmlib.internal.FakeAdbTestRule
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.services.PackageManager
 import com.android.sdklib.AndroidVersion
+import com.android.testutils.MockLog
 import com.android.utils.StdLogger
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
+import com.google.common.truth.Truth.assertThat
 import org.gradle.api.logging.Logger
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.internal.verification.VerificationModeFactory.times
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 @RunWith(Parameterized::class)
 class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
@@ -67,15 +70,17 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
     @Rule
     var temporaryFolder = TemporaryFolder()
 
-    @Mock
-    lateinit var logger: Logger
+    lateinit var logger: FakeLogger
 
     @get:Rule
     val fakeAdb = FakeAdbTestRule(deviceVersion)
 
+    @Mock
     private lateinit var deviceConnector: DeviceConnector
     private lateinit var deviceState: DeviceState
     private lateinit var mainOutputFileApk: File
+
+    private var sandboxSupported: Boolean = false
 
     lateinit var privacySandboxLegacyApkSplitsDirectory: File
 
@@ -83,9 +88,11 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
     fun setUp() {
         deviceState = fakeAdb.connectAndWaitForDevice()
         deviceState.setActivityManager(PackageManager())
-        if (deviceVersion.apiLevel >= 34) {
+        sandboxSupported = deviceVersion.apiLevel >= 34
+        if (sandboxSupported) {
             deviceState.serviceManager.setService("sdk_sandbox") { _, _ -> }
         }
+        logger = FakeLogger()
         val device = AndroidDebugBridge.getBridge()!!.devices.single()
         deviceConnector = CustomConnectedDevice(
                 device,
@@ -93,6 +100,7 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
                 10000,
                 TimeUnit.MILLISECONDS,
                 deviceVersion)
+
         privacySandboxLegacyApkSplitsDirectory = temporaryFolder.newFolder("privacysandbox-legacy-split-apks")
     }
 
@@ -104,18 +112,17 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
 
     @Test
     @Throws(Exception::class)
-    @Ignore("b/303076495") // Won't pass because the privacy sandbox sdk .apks file is not set up correctly.
     fun checkDependencyApkInstallation() {
         createMainApkListingFile()
-        val listingFile = createDependencyApkListingFile()
+        val splitApk = getSdkSupportSplitApk()
         InstallVariantTask.install(
             "project",
             "variant",
             FakeDeviceProvider(ImmutableList.of(deviceConnector)),
             AndroidVersion.DEFAULT,
             FakeGradleDirectory(temporaryFolder.root),
-            ImmutableSet.of(listingFile),
-            FakeGradleDirectoryProperty(null),
+            getPrivacySandboxSdkApks(),
+            FakeGradleDirectoryProperty(FakeGradleDirectory(splitApk)),
             FakeGradleDirectoryProperty(FakeGradleDirectory(privacySandboxLegacyApkSplitsDirectory)),
             ImmutableSet.of(),
             ImmutableList.of(),
@@ -123,32 +130,30 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
             logger,
             FakeGradleDirectoryProperty(null),
         )
-        Mockito.verify(logger, times(3)).quiet("Installed on {} {}.", 1, "device")
-        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).name
-        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).apiLevel
-        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).abis
-        Mockito.verify(deviceConnector, Mockito.atLeastOnce()).deviceConfig
-        val inOrder = Mockito.inOrder(deviceConnector)
 
-        inOrder.verify(deviceConnector).installPackage(
-            ArgumentMatchers.eq(temporaryFolder.newFolder("apks").resolve("dependency1.apk")),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-        inOrder.verify(deviceConnector).installPackage(
-            ArgumentMatchers.eq(temporaryFolder.root.resolve("dependency2.apk")),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-        inOrder.verify(deviceConnector).installPackage(
-            ArgumentMatchers.eq(temporaryFolder.root.resolve("main.apk")),
-            ArgumentMatchers.any(),
-            ArgumentMatchers.anyInt(),
-            ArgumentMatchers.any()
-        )
-        Mockito.verifyNoMoreInteractions(deviceConnector)
+
+        val packageInstalls =
+            deviceState.abbLogs.filter { it.startsWith("package\u0000install-write") }
+        if (sandboxSupported) {
+            assertThat(logger.lifeCycles).containsExactly(
+                "Installing Privacy Sandbox APK '{}' on '{}' for {}:{}",
+                "Installing Privacy Sandbox APK '{}' on '{}' for {}:{}",
+                "Installing APK '{}' on '{}' for {}:{}"
+            )
+            assertThat(packageInstalls.count()).isEqualTo(2)
+        } else {
+            assertThat(logger.lifeCycles).containsExactly(
+                "Installing APK '{}' on '{}' for {}:{}")
+            assertThat(packageInstalls.count()).isEqualTo(0)
+        }
+        assertThat(deviceState.pmLogs)
+            .containsExactly("install -r -t \"/data/local/tmp/main.apk\"")
+    }
+
+    private fun getSdkSupportSplitApk(): File {
+        val privacySandboxSupportSplit =
+            temporaryFolder.newFolder("privacy-sandobox-support-split")
+        return File(privacySandboxSupportSplit, "sdk-support.apk")
     }
 
     private fun checkSingleApk(deviceConnector: DeviceConnector) {
@@ -171,16 +176,8 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
         assert(deviceState.pmLogs.any {
             it.startsWith("install -r -t") && it.contains("main.apk")
         })
-
-        Mockito.verify(logger)
-                .lifecycle(
-                        "Installing APK '{}' on '{}' for {}:{}",
-                        "main.apk",
-                        deviceConnector.name,
-                        "project",
-                        "variant"
-                )
-        Mockito.verify(logger).quiet("Installed on {} {}.", 1, "device")
+        assertThat(logger.quiets)
+            .containsExactly("Installed on {} {}.")
     }
 
     internal class FakeDeviceProvider(private val devices: List<DeviceConnector>) : DeviceProvider() {
@@ -230,47 +227,20 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
 }""", Charsets.UTF_8)
     }
 
-    private fun createDependencyApkListingFile(): File {
-        val dependencyApk1 = temporaryFolder.newFile("dependency1.apk")
-        val dependencyApk2 = temporaryFolder.newFile("dependency2.apk")
-        return temporaryFolder.newFile("dependencyApkListingFile.txt").also {
-            it.writeText("""
-[{
-  "version": 1,
-  "artifactType": {
-    "type": "APK",
-    "kind": "Directory"
-  },
-  "applicationId": "com.android.test1",
-  "variantName": "debug",
-  "elements": [
-    {
-      "type": "SINGLE",
-      "filters": [],
-      "versionCode": 123,
-      "versionName": "version_name",
-      "outputFile": "${dependencyApk1.name}"
-    }
-  ]
-},{
-  "version": 1,
-  "artifactType": {
-    "type": "APK",
-    "kind": "Directory"
-  },
-  "applicationId": "com.android.test2",
-  "variantName": "debug",
-  "elements": [
-    {
-      "type": "SINGLE",
-      "filters": [],
-      "versionCode": 123,
-      "versionName": "version_name",
-      "outputFile": "${dependencyApk2.name}"
-    }
-  ]
-}]""", Charsets.UTF_8)
+    private fun getPrivacySandboxSdkApks(): Set<File> {
+        val sdkApkDir = temporaryFolder.newFolder("sdkApks")
+        val sdkApks = listOf(
+            File(sdkApkDir, "sdkApk1.zip"),
+            File(sdkApkDir, "sdkApk2.zip")
+        )
+        sdkApks.forEach { zip ->
+            ZipOutputStream(BufferedOutputStream(FileOutputStream(zip))).use { instrumentedJar ->
+                val standalonesDir = ZipEntry("standalones/standalone.apk")
+                instrumentedJar.putNextEntry(standalonesDir)
+                instrumentedJar.closeEntry()
+            }
         }
+        return sdkApks.toSet()
     }
 
 }
