@@ -107,6 +107,10 @@ internal class StandaloneModuleClassLoaderManager(
         override fun dispose() { }
 
         override val isDisposed: Boolean = false
+        override fun isCompatibleParentClassLoader(parent: ClassLoader?): Boolean = true
+
+        override fun areDependenciesUpToDate(): Boolean = true
+
         override fun onAfterLoadClass(fqcn: String, loaded: Boolean, durationMs: Long) {
             if (loaded) {
                 loadedClasses.add(fqcn)
