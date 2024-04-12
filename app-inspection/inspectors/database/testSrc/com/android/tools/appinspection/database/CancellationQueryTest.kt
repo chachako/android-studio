@@ -26,7 +26,7 @@ import com.android.tools.appinspection.database.testing.createInstance
 import com.android.tools.appinspection.database.testing.inspectDatabase
 import com.android.tools.appinspection.database.testing.issueQuery
 import com.google.common.truth.Truth.assertThat
-import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors.newCachedThreadPool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelAndJoin
@@ -42,6 +42,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
+import org.robolectric.junit.rules.CloseGuardRule
 
 @RunWith(RobolectricTestRunner::class)
 @Config(
@@ -58,7 +59,10 @@ class CancellationQueryTest {
 
   @get:Rule
   val rule: RuleChain =
-    RuleChain.outerRule(environment).around(temporaryFolder).around(closeablesRule)
+    RuleChain.outerRule(CloseGuardRule())
+      .around(closeablesRule)
+      .around(environment)
+      .around(temporaryFolder)
 
   @Test
   fun test_query_cancellations() = runBlocking {
@@ -84,7 +88,8 @@ class CancellationQueryTest {
   }
 }
 
-class CountingDelegatingExecutorService(private val executor: Executor) : Executor {
+class CountingDelegatingExecutorService(private val executor: ExecutorService) :
+  ExecutorService by executor {
   enum class Event {
     STARTED,
     FINISHED

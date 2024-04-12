@@ -48,6 +48,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
+import org.robolectric.junit.rules.CloseGuardRule
 
 @RunWith(RobolectricTestRunner::class)
 @Config(
@@ -63,7 +64,10 @@ class DatabaseLockingTest {
 
   @get:Rule
   val rule: RuleChain =
-    RuleChain.outerRule(testEnvironment).around(temporaryFolder).around(closeablesRule)
+    RuleChain.outerRule(CloseGuardRule())
+      .around(closeablesRule)
+      .around(testEnvironment)
+      .around(temporaryFolder)
 
   private val database = Database("db1", Table("t1", listOf(Column("c1", "int"))))
   private val table = database.tables.single()
@@ -144,15 +148,18 @@ class DatabaseLockingTest {
           database.createInstance(closeablesRule, temporaryFolder, writeAheadLoggingEnabled = true)
         val databaseId = testEnvironment.inspectDatabase(instance)
         instance.beginTransaction() // guarantees a timeout
-
-        // try to lock the database (expecting a failure)
-        testEnvironment.sendCommand(acquireLockCommand(databaseId)).let { response ->
-          // verify expected error response
-          assertThat(response.oneOfCase).isEqualTo(ERROR_OCCURRED)
-          assertThat(response.errorOccurred.content.message)
-            .matches(".*trying to lock .*database .*TimeoutException.*".toPattern())
-          assertThat(response.errorOccurred.content.errorCode)
-            .isEqualTo(ERROR_ISSUE_WITH_LOCKING_DATABASE)
+        try {
+          // try to lock the database (expecting a failure)
+          testEnvironment.sendCommand(acquireLockCommand(databaseId)).let { response ->
+            // verify expected error response
+            assertThat(response.oneOfCase).isEqualTo(ERROR_OCCURRED)
+            assertThat(response.errorOccurred.content.message)
+              .matches(".*trying to lock .*database .*TimeoutException.*".toPattern())
+            assertThat(response.errorOccurred.content.errorCode)
+              .isEqualTo(ERROR_ISSUE_WITH_LOCKING_DATABASE)
+          }
+        } finally {
+          instance.endTransaction()
         }
       }
     }
@@ -252,9 +259,10 @@ class DatabaseLockingTest {
 
         // unlock the first database (app thread) and retry locking
         applicationThread.submit { db1.endTransaction() }.get(2, SECONDS)
-        testEnvironment.sendCommand(acquireLockCommand(id1)).let { response ->
-          assertThat(response.oneOfCase).isEqualTo(ACQUIRE_DATABASE_LOCK)
-        }
+        val result3 = testEnvironment.sendCommand(acquireLockCommand(id1))
+        result3.let { response -> assertThat(response.oneOfCase).isEqualTo(ACQUIRE_DATABASE_LOCK) }
+        testEnvironment.sendCommand(releaseLockCommand(result2.acquireDatabaseLock.lockId))
+        testEnvironment.sendCommand(releaseLockCommand(result3.acquireDatabaseLock.lockId))
       }
     }
 
@@ -284,7 +292,7 @@ class DatabaseLockingTest {
   }
 
   @Test
-  fun test_appResumesAfterLockReleased() = runBlocking {
+  fun test_appResumesAfterLockReleased(): Unit = runBlocking {
     // create database
     val db = database.createInstance(closeablesRule, temporaryFolder)
     val id = testEnvironment.inspectDatabase(db)
@@ -292,9 +300,10 @@ class DatabaseLockingTest {
     // start a job inserting values at app thread
     val insertCount = AtomicInteger(0)
     var latch = CountDownLatch(2) // allows for a few insert operations to succeed
+    val active = AtomicBoolean(true)
     val insertTask =
       applicationThread.submit {
-        while (true) {
+        while (active.get()) {
           db.execSQL("insert into ${table.name} values (1)")
           insertCount.incrementAndGet()
           latch.countDown()
@@ -321,9 +330,8 @@ class DatabaseLockingTest {
     latch = CountDownLatch(2) // allows for a few insert operations to happen
     assertThat(latch.await(2, SECONDS)).isTrue()
     assertThat(insertCount.get()).isGreaterThan(countWhenLocked)
-    insertTask.cancel(true)
-
-    Unit
+    active.set(false)
+    assertThat(insertTask.get(2, SECONDS))
   }
 
   @Test

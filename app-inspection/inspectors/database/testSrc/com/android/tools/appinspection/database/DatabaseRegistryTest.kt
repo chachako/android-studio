@@ -37,6 +37,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
+import org.robolectric.junit.rules.CloseGuardRule
 
 /** Tests for [DatabaseRegistry] */
 @RunWith(RobolectricTestRunner::class)
@@ -50,7 +51,9 @@ class DatabaseRegistryTest {
   private val temporaryFolder = TemporaryFolder()
   private val closeablesRule = CloseablesRule()
 
-  @get:Rule val rule: RuleChain = RuleChain.outerRule(temporaryFolder).around(closeablesRule)
+  @get:Rule
+  val rule: RuleChain =
+    RuleChain.outerRule(CloseGuardRule()).around(closeablesRule).around(temporaryFolder)
 
   private val events = mutableListOf<DbEvent>()
 

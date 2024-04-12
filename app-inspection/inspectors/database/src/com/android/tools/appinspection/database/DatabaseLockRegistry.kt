@@ -17,6 +17,7 @@ package com.android.tools.appinspection.database
 
 import android.database.sqlite.SQLiteDatabase
 import android.os.CancellationSignal
+import android.util.Log
 import androidx.annotation.GuardedBy
 import androidx.annotation.VisibleForTesting
 import com.android.tools.appinspection.database.SqliteInspector.DatabaseConnection
@@ -24,6 +25,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit.MILLISECONDS
+import java.util.concurrent.TimeUnit.SECONDS
 
 /** Handles database locking and associated bookkeeping. Thread-safe. */
 internal class DatabaseLockRegistry(private val databaseRegistry: DatabaseRegistry) {
@@ -168,6 +170,15 @@ internal class DatabaseLockRegistry(private val databaseRegistry: DatabaseRegist
       cancellationSignal.cancel()
       future?.cancel(true)
       throw e
+    }
+  }
+
+  fun dispose() {
+    // TODO(aalbert): Release all held locks?
+    executor.shutdown()
+    val completed = executor.awaitTermination(2, SECONDS)
+    if (!completed) {
+      Log.w(TAG, "DatabaseLockRegistry did not terminate properly")
     }
   }
 

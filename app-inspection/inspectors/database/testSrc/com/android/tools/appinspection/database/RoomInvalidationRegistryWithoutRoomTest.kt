@@ -18,11 +18,14 @@ package com.android.tools.appinspection.database
 
 import android.os.Build
 import androidx.inspection.InspectorEnvironment
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
+import org.robolectric.junit.rules.CloseGuardRule
 
 /**
  * This test just checks that we have reasonable defaults (e.g. no crash) if Room is not available
@@ -36,6 +39,8 @@ import org.robolectric.annotation.SQLiteMode
 )
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class RoomInvalidationRegistryWithoutRoomTest {
+  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule())
+
   @Test
   fun noOpTest() {
     // this does not really assert anything, we just want to make sure it does not crash and

@@ -216,6 +216,7 @@ internal class SqliteInspector(
   override fun onDispose() {
     super.onDispose()
     databaseRegistry.dispose()
+    databaseLockRegistry.dispose()
   }
 
   private fun handleTrackDatabases(command: TrackDatabasesCommand, callback: CommandCallback) {

@@ -41,6 +41,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
+import org.robolectric.junit.rules.CloseGuardRule
 
 @RunWith(RobolectricTestRunner::class)
 @Config(
@@ -57,7 +58,10 @@ class QueryTest {
 
   @get:Rule
   val rule: RuleChain =
-    RuleChain.outerRule(testEnvironment).around(temporaryFolder).around(closeablesRule)
+    RuleChain.outerRule(CloseGuardRule())
+      .around(closeablesRule)
+      .around(testEnvironment)
+      .around(temporaryFolder)
 
   private val table1: Table =
     Table(
