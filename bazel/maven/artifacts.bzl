@@ -544,7 +544,7 @@ DATA = [
     "com.android.tools:desugar_jdk_libs_nio:2.0.4",
     "com.android.tools.layoutlib:layoutlib:14.0.4",
     "com.android.tools.layoutlib:layoutlib-resources:14.0.4",
-    "com.android.tools.layoutlib:layoutlib-runtime:14.0.4",
+    "com.android.tools.layoutlib:layoutlib-runtime:14.0.6",
     "com.android.tools.lint:lint-checks:26.5.0",
     "com.android.tools.lint:lint-gradle:26.3.2",
     "com.android.tools.lint:lint-gradle:26.5.0",
