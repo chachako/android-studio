@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.tests
 
 import com.android.build.api.attributes.ProductFlavorAttr
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.internal.fixture.TestConstants
 import com.android.build.gradle.internal.fixture.TestProjects
@@ -31,14 +32,22 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
 /**
  * Test to validate that the configurations have the right flavor attributes based on the DSL
  * usage.
  */
-
-class FlavorSelectionTest {
+@RunWith(Parameterized::class)
+class FlavorSelectionTest(val variantApi: VariantApiType) {
     @get:Rule val projectDirectory = TemporaryFolder()
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun variantAPI() = VariantApiType.values()
+    }
 
     private lateinit var project: Project
     private lateinit var plugin: AppPlugin
@@ -74,9 +83,21 @@ class FlavorSelectionTest {
         }
 
         // now use the variant API to configure a specific variant
-        android.applicationVariants.all {
-            it.missingDimensionStrategy("variant", "variant")
-            it.missingDimensionStrategy("variant-only", "variant-only")
+        when (variantApi) {
+            VariantApiType.OLD -> {
+                android.applicationVariants.all {
+                    it.missingDimensionStrategy("variant", "variant")
+                    it.missingDimensionStrategy("variant-only", "variant-only")
+                }
+            }
+            VariantApiType.NEW -> {
+                val androidComponents = project.extensions.getByType(
+                    ApplicationAndroidComponentsExtension::class.java)
+                androidComponents.onVariants {
+                    it.missingDimensionStrategy("variant", "variant")
+                    it.missingDimensionStrategy("variant-only", "variant-only")
+                }
+            }
         }
 
         plugin.runAfterEvaluate(project)
