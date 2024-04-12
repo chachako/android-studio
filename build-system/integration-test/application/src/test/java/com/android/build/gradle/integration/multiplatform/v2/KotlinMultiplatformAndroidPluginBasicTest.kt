@@ -17,10 +17,13 @@
 package com.android.build.gradle.integration.multiplatform.v2
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.utils.FileUtils
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
+import java.nio.file.Files
 
 class KotlinMultiplatformAndroidPluginBasicTest {
 
@@ -139,5 +142,23 @@ class KotlinMultiplatformAndroidPluginBasicTest {
 
         project.executor()
             .run(":kmpSecondLib:androidPrebuild")
+    }
+
+    @Test
+    fun instrumentedTestAndroidManifestNotRequired() {
+        val manifest = FileUtils.join(
+            project.getSubproject("kmpFirstLib").projectDir,
+            "src",
+            "androidInstrumentedTest",
+            "AndroidManifest.xml"
+        ).toPath()
+
+        val deleted = Files.deleteIfExists(manifest)
+        Truth.assertThat(deleted).isTrue()
+        val result = project.executor().run(":kmpFirstLib:packageAndroidInstrumentedTest")
+
+        ScannerSubject.assertThat(result.stderr).doesNotContain(
+            "Manifest file does not exist"
+        )
     }
 }

@@ -579,9 +579,10 @@ class KotlinMultiplatformAndroidPlugin @Inject constructor(
         taskManager.canParseManifest.set(
             !dslServices.projectOptions[BooleanOption.DISABLE_EARLY_MANIFEST_PARSING]
         )
+
         val manifestParser = LazyManifestParser(
             manifestFile = projectServices.objectFactory.fileProperty().fileValue(manifestLocation),
-            manifestFileRequired = true,
+            manifestFileRequired = ComponentTypeImpl.ANDROID_TEST.requiresManifest,
             taskManager.canParseManifest,
             projectServices = projectServices,
         )
