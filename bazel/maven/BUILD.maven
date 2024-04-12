@@ -47617,17 +47617,6 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_1.9.20",
-    pom = "repository/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.20/org.jetbrains.kotlin.android.gradle.plugin-1.9.20.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.20",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
     name = "org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_1.9.22",
     pom = "repository/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/1.9.22/org.jetbrains.kotlin.android.gradle.plugin-1.9.22.pom",
     repo_root_path = "repository",
@@ -47744,17 +47733,6 @@ maven_artifact(
     repo_path = "org/jetbrains/kotlin/jvm/org.jetbrains.kotlin.jvm.gradle.plugin/2.0.0-RC1",
     deps = [
         "org.jetbrains.kotlin.kotlin-gradle-plugin_2.0.0-RC1",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlin.kapt.org.jetbrains.kotlin.kapt.gradle.plugin_1.9.20",
-    pom = "repository/org/jetbrains/kotlin/kapt/org.jetbrains.kotlin.kapt.gradle.plugin/1.9.20/org.jetbrains.kotlin.kapt.gradle.plugin-1.9.20.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kapt/org.jetbrains.kotlin.kapt.gradle.plugin/1.9.20",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-gradle-plugin_1.9.20",
     ],
     visibility = ["//visibility:public"],
 )
@@ -47950,17 +47928,6 @@ maven_artifact(
     repo_path = "org/jetbrains/kotlin/kotlin-android-extensions-runtime/1.9.0",
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.9.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlin.kotlin-android-extensions-runtime_1.9.20",
-    pom = "repository/org/jetbrains/kotlin/kotlin-android-extensions-runtime/1.9.20/kotlin-android-extensions-runtime-1.9.20.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kotlin-android-extensions-runtime/1.9.20",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.9.20",
     ],
     visibility = ["//visibility:public"],
 )
@@ -48351,14 +48318,6 @@ maven_artifact(
     deps = [
         "org.jetbrains.kotlin.kotlin-compiler-embeddable_1.8.21",
     ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.jetbrains.kotlin.kotlin-annotation-processing-gradle_1.9.20",
-    pom = "repository/org/jetbrains/kotlin/kotlin-annotation-processing-gradle/1.9.20/kotlin-annotation-processing-gradle-1.9.20.pom",
-    repo_root_path = "repository",
-    repo_path = "org/jetbrains/kotlin/kotlin-annotation-processing-gradle/1.9.20",
     visibility = ["//visibility:public"],
 )
 
