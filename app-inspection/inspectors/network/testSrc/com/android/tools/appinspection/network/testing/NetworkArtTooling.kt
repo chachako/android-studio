@@ -18,7 +18,7 @@ package com.android.tools.appinspection.network.testing
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
-import com.android.tools.appinspection.common.FakeArtTooling
+import com.android.tools.appinspection.common.testing.FakeArtTooling
 
 class NetworkArtTooling : FakeArtTooling() {
   override fun <T> findInstances(clazz: Class<T>): List<T> {

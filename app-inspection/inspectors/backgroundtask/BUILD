@@ -57,6 +57,7 @@ robolectric_test(
     friends = [":agent-jar"],
     deps = [
         ":agent-jar",
+        "//tools/base/app-inspection/inspectors/common:app-inspection.inspectors.common.testing",
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",

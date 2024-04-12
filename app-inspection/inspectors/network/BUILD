@@ -70,6 +70,7 @@ robolectric_test(
     deps = [
         ":agent-jar",
         ":test_server_java_proto",
+        "//tools/base/app-inspection/inspectors/common:app-inspection.inspectors.common.testing",
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",

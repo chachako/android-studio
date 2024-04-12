@@ -19,7 +19,7 @@ package com.android.tools.appinspection.backgroundtask.testing
 import androidx.inspection.ArtTooling
 import androidx.inspection.InspectorEnvironment
 import androidx.inspection.InspectorExecutors
-import com.android.tools.appinspection.common.FakeArtTooling
+import com.android.tools.appinspection.common.testing.FakeArtTooling
 import com.google.common.util.concurrent.MoreExecutors
 
 class FakeEnvironment : InspectorEnvironment {

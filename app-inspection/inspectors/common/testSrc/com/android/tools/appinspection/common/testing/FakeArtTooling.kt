@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.tools.appinspection.common
+package com.android.tools.appinspection.common.testing
 
 import androidx.inspection.ArtTooling
 

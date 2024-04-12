@@ -1,7 +1,7 @@
 """This module implements Robolectric rules."""
 
-load(":coverage.bzl", "coverage_android_local_test")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
+load(":coverage.bzl", "coverage_android_local_test")
 
 def robolectric_test(
         name,
@@ -20,7 +20,6 @@ def robolectric_test(
         deps: The dependencies of this library.
         jvm_flags: Flags to pass to the jvm
         friends: a list of friend jars (allowing access to 'internal' members) out: the output jar file
-        visibility: The visibility of the target
         test_class: A test class to run
         custom_package: A custom package name
         **kwargs: arguments to pass through to android_local_test
@@ -33,6 +32,7 @@ def robolectric_test(
         lint_is_test_sources = True,
         coverage_baseline_enabled = False,
         friends = friends,
+        testonly = True,
         deps = depset(
             deps +
             [
