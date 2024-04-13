@@ -89,10 +89,6 @@ internal class DatabaseRegistry(
    */
   fun notifyDatabaseOpened(database: SQLiteDatabase) {
     handleDatabaseSignal(database)
-    Log.v(HIDDEN_TAG, "Database opened: " + database.path)
-    if (Log.isLoggable(HIDDEN_TAG, Log.VERBOSE)) {
-      logDatabaseStatus(database.path)
-    }
   }
 
   fun notifyReleaseReference(database: SQLiteDatabase) {
@@ -171,9 +167,6 @@ internal class DatabaseRegistry(
           }
         } finally {
           isForceOpenInProgress = false
-        }
-        if (Log.isLoggable(HIDDEN_TAG, Log.VERBOSE)) {
-          logDatabaseStatus(path)
         }
       } else {
         Log.v(HIDDEN_TAG, "Registering as offline: $path")
@@ -268,6 +261,7 @@ internal class DatabaseRegistry(
       if (notifyOpenedId != null) {
         onOpenedCallback.onDatabaseOpened(notifyOpenedId!!, database.pathForDatabase(), isForced)
       }
+      logDatabaseStatus(database.path)
     }
   }
 
@@ -408,20 +402,26 @@ internal class DatabaseRegistry(
   }
 
   private fun logDatabaseStatus(path: String) {
+    if (!Log.isLoggable(HIDDEN_TAG, Log.VERBOSE)) {
+      return
+    }
     synchronized(lock) {
       val id = pathToId[path] ?: return
+      Log.v(HIDDEN_TAG, "Database: $path (id=$id):")
       val statusList = databases[id]?.map { it.getStatus() } ?: return
-      Log.v(HIDDEN_TAG, "  id=id  path=$path instances: [${statusList.joinToString { it }}]")
+      Log.v(HIDDEN_TAG, "  instances: [${statusList.joinToString { it }}]")
     }
   }
 
+  @GuardedBy("lock")
   private fun SQLiteDatabase.getStatus(): String {
-    return buildString {
-      append(if (isReadOnly) "ReadOnly" else "ReadWrite")
-      if (forcedOpen.contains(this@getStatus)) {
-        append("|Forced")
-      }
-    }
+    val id = pathToId[path] ?: -1
+    val suffix = if (keepOpenReferences[id]?.database == this) "*" else ""
+    return when {
+      isReadOnly -> "ReadOnly"
+      isForcedConnection(this) -> "Forced"
+      else -> "ReadWrite"
+    } + suffix
   }
 
   fun getIdForPath(path: String): Int? {
