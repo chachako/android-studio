@@ -732,6 +732,7 @@ DATA = [
     "org.bytedeco:ffmpeg-platform:6.0-1.5.9",
     "org.bytedeco:javacpp-platform:1.5.9",
     "org.codehaus.mojo:animal-sniffer-annotations:1.19",
+    "org.gradle:gradle-declarative-dsl-core:8.8-20240328140806+0000",  # Version used here should be in the list of verified bootstrap builds
     "org.jacoco:org.jacoco.agent:0.7.4.201502262128",  # Keep old Jacoco version for testing.
     "org.jacoco:org.jacoco.agent:0.8.11",
     "org.jacoco:org.jacoco.agent:0.8.7",
@@ -1000,6 +1001,7 @@ REMOTE_REPOS = {
     "Gradle Libs": "https://repo.gradle.org/gradle/libs-releases/",
     "GradlePlugins": "https://plugins.gradle.org/m2",
     "Kotlin dev": "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev/",
+    "Gradle Snapshots": "https://repo.gradle.org/gradle/libs-snapshots/",
     "IntelliJ Third-Party deps": "https://cache-redirector.jetbrains.com/intellij-dependencies",
     "Compose": "https://maven.pkg.jetbrains.space/public/p/compose/dev/",
     "Jewel": "https://packages.jetbrains.team/maven/p/kpm/public/",
