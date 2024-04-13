@@ -24,6 +24,7 @@ import androidx.inspection.ArtTooling.ExitHook
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Event
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response
 import com.android.testutils.CloseablesRule
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.testing.CREATE_IN_MEMORY_DATABASE_COMMAND_SIGNATURE_API27
 import com.android.tools.appinspection.database.testing.Database
 import com.android.tools.appinspection.database.testing.Hook
@@ -72,6 +73,7 @@ class TrackDatabasesTest {
       .around(closeablesRule)
       .around(testEnvironment)
       .around(temporaryFolder)
+      .around(LogPrinterRule())
 
   @Test
   fun test_track_databases() = runBlocking {

@@ -17,6 +17,7 @@
 package com.android.tools.appinspection.network
 
 import android.os.Build
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.network.testing.NetworkInspectorRule
 import com.android.tools.appinspection.network.testing.createFakeRuleAddedEvent
 import com.android.tools.appinspection.network.testing.http.FakeHttpUrlConnection
@@ -57,7 +58,9 @@ private val EXPECTED_RESPONSE =
 internal class HttpUrlTest {
   private val inspectorRule = NetworkInspectorRule()
 
-  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule()).around(inspectorRule)
+  @get:Rule
+  val rule: RuleChain =
+    RuleChain.outerRule(CloseGuardRule()).around(inspectorRule).around(LogPrinterRule())
 
   @Test
   fun httpGet() {

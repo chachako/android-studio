@@ -21,6 +21,9 @@ kotlin_library(
         "testSrc/com/android/tools/appinspection/common/testing/*.kt",
     ]),
     deps = [
+        "//prebuilts/studio/sdk:platforms/latest_jar",
         "//prebuilts/tools/common/m2:androidx.inspection.inspection.1.0.0",
+        "@maven//:junit.junit",
+        "@maven//:org.robolectric.robolectric",
     ],
 )

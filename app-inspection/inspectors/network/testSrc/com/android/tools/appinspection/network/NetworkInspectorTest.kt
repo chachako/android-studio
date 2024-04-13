@@ -20,6 +20,7 @@ import android.os.Build
 import androidx.inspection.ArtTooling
 import androidx.inspection.InspectorEnvironment
 import androidx.inspection.InspectorExecutors
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.network.testing.FakeConnection
 import com.android.tools.appinspection.network.testing.FakeEnvironment
 import com.android.tools.appinspection.network.testing.FakeTrafficStatsProvider.Stat
@@ -47,7 +48,9 @@ import studio.network.inspection.NetworkInspectorProtocol.SpeedEvent
 internal class NetworkInspectorTest {
   private val inspectorRule = NetworkInspectorRule(autoStart = false)
 
-  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule()).around(inspectorRule)
+  @get:Rule
+  val rule: RuleChain =
+    RuleChain.outerRule(CloseGuardRule()).around(inspectorRule).around(LogPrinterRule())
 
   private val trafficStatsProvider
     get() = inspectorRule.trafficStatsProvider

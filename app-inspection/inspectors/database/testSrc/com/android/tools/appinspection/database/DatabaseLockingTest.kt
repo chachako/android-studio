@@ -28,6 +28,7 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.ACQ
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.ERROR_OCCURRED
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.RELEASE_DATABASE_LOCK
 import com.android.testutils.CloseablesRule
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.testing.*
 import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesCommand
 import com.google.common.truth.Truth.assertThat
@@ -68,6 +69,7 @@ class DatabaseLockingTest {
       .around(closeablesRule)
       .around(testEnvironment)
       .around(temporaryFolder)
+      .around(LogPrinterRule())
 
   private val database = Database("db1", Table("t1", listOf(Column("c1", "int"))))
   private val table = database.tables.single()

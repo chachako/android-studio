@@ -18,6 +18,7 @@ package com.android.tools.appinspection.database
 
 import android.os.Build
 import androidx.inspection.InspectorEnvironment
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -39,7 +40,7 @@ import org.robolectric.junit.rules.CloseGuardRule
 )
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class RoomInvalidationRegistryWithoutRoomTest {
-  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule())
+  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule()).around(LogPrinterRule())
 
   @Test
   fun noOpTest() {

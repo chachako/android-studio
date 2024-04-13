@@ -20,6 +20,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.os.Build
 import com.android.testutils.CloseablesRule
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.DatabaseRegistry.OnDatabaseClosedCallback
 import com.android.tools.appinspection.database.DatabaseRegistry.OnDatabaseOpenedCallback
 import com.android.tools.appinspection.database.DatabaseRegistryTest.EventType.CLOSE
@@ -53,7 +54,10 @@ class DatabaseRegistryTest {
 
   @get:Rule
   val rule: RuleChain =
-    RuleChain.outerRule(CloseGuardRule()).around(closeablesRule).around(temporaryFolder)
+    RuleChain.outerRule(CloseGuardRule())
+      .around(closeablesRule)
+      .around(temporaryFolder)
+      .around(LogPrinterRule())
 
   private val events = mutableListOf<DbEvent>()
 

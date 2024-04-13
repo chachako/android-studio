@@ -34,7 +34,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import org.junit.rules.ExternalResource
-import org.robolectric.shadows.ShadowLog
 
 internal const val SQLITE_INSPECTOR_ID = "androidx.sqlite.inspection"
 
@@ -53,10 +52,6 @@ class SqliteInspectorTestEnvironment(
   init {
     // TODO(b/334351830): Remove when bug is fixed
     job.invokeOnCompletion { ioExecutorOverride.shutdown() }
-  }
-
-  override fun before() {
-    ShadowLog.stream = System.out
   }
 
   override fun after() {

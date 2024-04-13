@@ -23,7 +23,6 @@ import com.android.tools.appinspection.backgroundtask.BackgroundTaskInspectorFac
 import com.android.tools.appinspection.backgroundtask.BackgroundTaskUtil
 import java.util.concurrent.Executor
 import org.junit.rules.ExternalResource
-import org.robolectric.shadows.ShadowLog
 
 class BackgroundTaskInspectorRule : ExternalResource() {
 
@@ -32,8 +31,6 @@ class BackgroundTaskInspectorRule : ExternalResource() {
   val inspector = BackgroundTaskInspectorFactory().createInspector(connection, environment)
 
   override fun before() {
-    ShadowLog.stream = System.out
-
     inspector.onReceiveCommand(
       Command.newBuilder()
         .setTrackBackgroundTask(TrackBackgroundTaskCommand.getDefaultInstance())

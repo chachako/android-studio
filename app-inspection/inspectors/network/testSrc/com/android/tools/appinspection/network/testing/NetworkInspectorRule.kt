@@ -21,7 +21,6 @@ import com.android.tools.appinspection.network.NetworkInspector
 import com.android.tools.appinspection.network.utils.ConnectionIdGenerator
 import java.util.concurrent.Executor
 import org.junit.rules.ExternalResource
-import org.robolectric.shadows.ShadowLog
 import studio.network.inspection.NetworkInspectorProtocol
 import studio.network.inspection.NetworkInspectorProtocol.Response
 
@@ -34,8 +33,6 @@ internal class NetworkInspectorRule(val autoStart: Boolean = true) : ExternalRes
     NetworkInspector(connection, environment, trafficStatsProvider, speedDataIntervalMs = 10)
 
   override fun before() {
-    ShadowLog.stream = System.out
-
     if (autoStart) {
       start()
     }

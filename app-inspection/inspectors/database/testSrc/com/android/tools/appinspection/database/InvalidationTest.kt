@@ -27,6 +27,7 @@ import androidx.inspection.ArtTooling
 import androidx.sqlite.inspection.SqliteInspectorProtocol
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Event.OneOfCase.DATABASE_POSSIBLY_CHANGED
 import com.android.testutils.CloseablesRule
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.testing.Column
 import com.android.tools.appinspection.database.testing.Database
 import com.android.tools.appinspection.database.testing.Hook
@@ -69,6 +70,7 @@ class InvalidationTest {
       .around(closeablesRule)
       .around(testEnvironment)
       .around(temporaryFolder)
+      .around(LogPrinterRule())
 
   private val shadowLooper = shadowOf(testEnvironment.getLooper())
 

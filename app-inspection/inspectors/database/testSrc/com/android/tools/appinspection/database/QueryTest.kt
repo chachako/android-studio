@@ -25,6 +25,7 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode
 import androidx.sqlite.inspection.SqliteInspectorProtocol.QueryResponse
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Row
 import com.android.testutils.CloseablesRule
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.testing.*
 import com.android.tools.appinspection.database.testing.MessageFactory.createGetSchemaCommand
 import com.android.tools.appinspection.database.testing.MessageFactory.createQueryCommand
@@ -62,6 +63,7 @@ class QueryTest {
       .around(closeablesRule)
       .around(testEnvironment)
       .around(temporaryFolder)
+      .around(LogPrinterRule())
 
   private val table1: Table =
     Table(

@@ -20,6 +20,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode.ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE
 import com.android.testutils.CloseablesRule
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.testing.*
 import com.android.tools.appinspection.database.testing.MessageFactory.createGetSchemaCommand
 import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesCommand
@@ -54,6 +55,7 @@ class GetSchemaTest {
       .around(closeablesRule)
       .around(testEnvironment)
       .around(temporaryFolder)
+      .around(LogPrinterRule())
 
   @Test
   fun test_get_schema_complex_tables() {

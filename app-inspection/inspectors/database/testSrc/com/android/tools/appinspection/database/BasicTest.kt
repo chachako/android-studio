@@ -19,6 +19,7 @@ package com.android.tools.appinspection.database
 import android.os.Build
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Command
 import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode.ERROR_UNRECOGNISED_COMMAND_VALUE
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.testing.MessageFactory
 import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
 import com.google.common.truth.Truth.assertThat
@@ -41,7 +42,9 @@ import org.robolectric.junit.rules.CloseGuardRule
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class BasicTest {
   private val testEnvironment = SqliteInspectorTestEnvironment()
-  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule()).around(testEnvironment)
+  @get:Rule
+  val rule: RuleChain =
+    RuleChain.outerRule(CloseGuardRule()).around(testEnvironment).around(LogPrinterRule())
 
   @Test
   fun test_basic_proto() {

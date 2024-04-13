@@ -18,6 +18,7 @@ package com.android.tools.appinspection.database
 
 import android.os.Build
 import com.android.testutils.CloseablesRule
+import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.CountingDelegatingExecutorService.Event.FINISHED
 import com.android.tools.appinspection.database.CountingDelegatingExecutorService.Event.STARTED
 import com.android.tools.appinspection.database.testing.Database
@@ -63,6 +64,7 @@ class CancellationQueryTest {
       .around(closeablesRule)
       .around(environment)
       .around(temporaryFolder)
+      .around(LogPrinterRule())
 
   @Test
   fun test_query_cancellations() = runBlocking {
