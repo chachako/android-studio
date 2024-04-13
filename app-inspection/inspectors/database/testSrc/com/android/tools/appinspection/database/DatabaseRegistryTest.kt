@@ -168,11 +168,10 @@ class DatabaseRegistryTest {
   private data class DbEvent(val type: EventType, val id: Int, val path: String)
 
   private fun databaseRegistry(events: MutableList<DbEvent>, forceOpen: Boolean = false) =
-    DatabaseRegistry(DbOpenedCallback(events), DbClosedCallback(events)).apply {
+    DatabaseRegistry(DbOpenedCallback(events), DbClosedCallback(events), testMode = true).apply {
       if (forceOpen) {
         enableForceOpen()
       }
-      enableTestMode()
       closeablesRule.register(AutoCloseable { dispose() })
     }
 

@@ -59,8 +59,6 @@ class SqliteInspectorTestEnvironment(ioExecutorOverride: Executor? = null) : Ext
     runBlocking { job.cancelAndJoin() }
   }
 
-  internal fun getDatabaseRegistry() = inspectorFactory.getSqliteInspector().databaseRegistry
-
   fun getLooper() = inspectorEnvironment.executors().handler().looper
 
   @OptIn(ExperimentalCoroutinesApi::class)

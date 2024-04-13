@@ -47,12 +47,11 @@ private const val NOT_TRACKED = -1
 internal class DatabaseRegistry(
   private val onOpenedCallback: OnDatabaseOpenedCallback,
   private val onClosedCallback: OnDatabaseClosedCallback,
+  private val testMode: Boolean = false,
 ) {
   // True if keep-database-connection-open functionality is enabled.
   private var keepDatabasesOpen = false
   private var forceOpen = false
-
-  private var isTestMode: Boolean = false
 
   private val lock = Any()
 
@@ -165,7 +164,7 @@ internal class DatabaseRegistry(
         isForceOpenInProgress = true
         try {
           val db = SQLiteDatabase.openDatabase(path, null, OPEN_READWRITE)
-          if (isTestMode) {
+          if (testMode) {
             // During tests, ART Tooling hooks are not activated so this, so we need to trigger it
             // manually.
             notifyDatabaseOpened(db)
@@ -183,10 +182,6 @@ internal class DatabaseRegistry(
         onClosedCallback.onDatabaseClosed(id, path)
       }
     }
-  }
-
-  fun enableTestMode() {
-    isTestMode = true
   }
 
   fun isForcedConnection(database: SQLiteDatabase) =

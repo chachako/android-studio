@@ -161,10 +161,11 @@ private val HIDDEN_TABLES = setOf("android_metadata", "sqlite_sequence")
 internal class SqliteInspector(
   connection: Connection,
   private val environment: InspectorEnvironment,
+  testMode: Boolean = false,
 ) : Inspector(connection) {
   @VisibleForTesting
   internal val databaseRegistry =
-    DatabaseRegistry(::dispatchDatabaseOpenedEvent, ::dispatchDatabaseClosedEvent)
+    DatabaseRegistry(::dispatchDatabaseOpenedEvent, ::dispatchDatabaseClosedEvent, testMode)
   private val databaseLockRegistry = DatabaseLockRegistry(databaseRegistry)
   private val ioExecutor = environment.executors().io()
 

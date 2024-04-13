@@ -23,22 +23,7 @@ import com.android.tools.appinspection.database.SqliteInspector
 
 /** An [InspectorFactory] that gives access to the created inspector. */
 internal class TestInspectorFactory : InspectorFactory<SqliteInspector>(SQLITE_INSPECTOR_ID) {
-  private var sqliteInspector: SqliteInspector? = null
 
-  fun getSqliteInspector() =
-    sqliteInspector ?: throw IllegalStateException("createInspector hasn't been called yet")
-
-  override fun createInspector(
-    connection: Connection,
-    environment: InspectorEnvironment,
-  ): SqliteInspector {
-    synchronized(this) {
-      val inspector =
-        sqliteInspector.takeIf { it != null } ?: SqliteInspector(connection, environment)
-      sqliteInspector = inspector
-      val databaseRegistry = inspector.databaseRegistry
-      databaseRegistry.enableTestMode()
-      return inspector
-    }
-  }
+  override fun createInspector(connection: Connection, environment: InspectorEnvironment) =
+    SqliteInspector(connection, environment, testMode = true)
 }
