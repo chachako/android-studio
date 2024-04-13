@@ -34,10 +34,10 @@ class FakeTrafficStatsProvider : TrafficStatsProvider {
   }
 
   override fun getUidRxBytes(uid: Int) =
-    rxData.getOrElse(rxIndex.getAndIncrement()) { rxData.last() }
+    rxData.getOrElse(rxIndex.getAndIncrement()) { rxData.lastOrNull() ?: 0 }
 
   override fun getUidTxBytes(uid: Int) =
-    txData.getOrElse(txIndex.getAndIncrement()) { txData.last() }
+    txData.getOrElse(txIndex.getAndIncrement()) { txData.lastOrNull() ?: 0 }
 
   data class Stat(val rxBytes: Long, val txBytes: Long)
 }
