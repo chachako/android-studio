@@ -151,6 +151,33 @@ class DatabaseRegistryTest {
     assertThat(registry.keepOpenReferences).isEmpty()
   }
 
+  @Test
+  fun notifyKeepOpenToggle__replaceReadonlyWithWriteable() {
+    val openHelper = OpenHelper("${temporaryFolder.root}/db")
+    val readOnlyDb = openHelper.getReadOnlyDb(autoClose = false)
+    val readWriteDb = openHelper.getReadWriteDb(autoClose = false)
+    val registry = databaseRegistry(events)
+    registry.notifyKeepOpenToggle(true)
+
+    // Open and close a read-only database
+    registry.notifyDatabaseOpenAndClose(readOnlyDb)
+    val id = events.first().id
+
+    assertThat(readOnlyDb.isOpen).isTrue()
+    assertThat(registry.getConnection(id)).isEqualTo(readOnlyDb)
+    assertThat(registry.getDatabases(id)).containsExactly(readOnlyDb)
+
+    // Open and close a read-write database
+    registry.notifyDatabaseOpenAndClose(readWriteDb)
+
+    assertThat(readOnlyDb.isOpen).isFalse()
+    //    // simulate hook called when readWriteDb was closed
+    //    registry.notifyAllDatabaseReferencesReleased(readOnlyDb)
+    assertThat(readWriteDb.isOpen).isTrue()
+    assertThat(registry.getConnection(id)).isEqualTo(readWriteDb)
+    assertThat(registry.getDatabases(id)).containsExactly(readWriteDb)
+  }
+
   private class DbOpenedCallback(private val events: MutableList<DbEvent>) :
     OnDatabaseOpenedCallback {
 
@@ -189,18 +216,33 @@ class DatabaseRegistryTest {
 
     override fun onUpgrade(db: SQLiteDatabase, fromVersion: Int, toVersion: Int) {}
 
-    fun getReadOnlyDb(): SQLiteDatabase {
-      val mock = spy(closeablesRule.register(readableDatabase))
+    fun getReadOnlyDb(autoClose: Boolean = true): SQLiteDatabase {
+      val db = readableDatabase
+      if (autoClose) {
+        closeablesRule.register(db)
+      }
+      val mock = spy(db)
       whenever(mock.isReadOnly).thenReturn(true)
       return mock
     }
 
-    fun getReadWriteDb(): SQLiteDatabase {
-      return closeablesRule.register(writableDatabase)
+    fun getReadWriteDb(autoClose: Boolean = true): SQLiteDatabase {
+      val db = writableDatabase
+      if (autoClose) {
+        closeablesRule.register(db)
+      }
+      return db
     }
 
     fun createAndClose() {
       readableDatabase.close()
     }
   }
+}
+
+private fun DatabaseRegistry.notifyDatabaseOpenAndClose(db: SQLiteDatabase) {
+  notifyDatabaseOpened(db)
+  notifyReleaseReference(db)
+  // call close() only after calling notifyReleaseReference() so the registry can secure a reference
+  db.close()
 }

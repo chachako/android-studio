@@ -285,6 +285,8 @@ internal class DatabaseRegistry(
     forceOpen = true
   }
 
+  @VisibleForTesting fun getDatabases(id: Int): Set<SQLiteDatabase> = databases.getValue(id)
+
   fun dispose() {
     // TODO(161081452): release database locks and keep-open references
     synchronized(lock) {
@@ -296,10 +298,6 @@ internal class DatabaseRegistry(
 
   @GuardedBy("lock")
   private fun getConnectionImpl(databaseId: Int): SQLiteDatabase? {
-    val keepOpenReference = keepOpenReferences[databaseId]
-    if (keepOpenReference != null) {
-      return keepOpenReference.database
-    }
     return getOpenDatabases(databaseId).findBestConnection()
   }
 
@@ -328,15 +326,16 @@ internal class DatabaseRegistry(
   @GuardedBy("lock")
   private fun secureKeepOpenReference(id: Int) {
     val shouldKeepOpen = keepDatabasesOpen || forceOpen
-    if (!(shouldKeepOpen) || keepOpenReferences.containsKey(id)) {
-      // Keep-open is disabled, or we already have a keep-open-reference for that id.
+    if (!(shouldKeepOpen)) {
       return
     }
 
-    // Try secure a keep-open reference
-    val reference = getConnectionImpl(id)
-    if (reference != null && !forcedOpen.contains(reference)) {
-      keepOpenReferences[id] = KeepOpenReference(reference)
+    val best =
+      getOpenDatabases(id).filter { !isForcedConnection(it) }.findBestConnection() ?: return
+    val kept = keepOpenReferences[id]
+    if (best != kept?.database) {
+      keepOpenReferences[id] = KeepOpenReference(best)
+      kept?.releaseAllReferences()
     }
   }
 
@@ -373,7 +372,7 @@ internal class DatabaseRegistry(
   }
 
   @VisibleForTesting
-  internal class KeepOpenReference(val database: SQLiteDatabase) {
+  internal inner class KeepOpenReference(val database: SQLiteDatabase) {
     private val lock = Any()
 
     @GuardedBy("lock") private var acquiredReferenceCount = 0
@@ -396,6 +395,10 @@ internal class DatabaseRegistry(
         while (acquiredReferenceCount > 0) {
           database.releaseReference()
           acquiredReferenceCount--
+        }
+        if (testMode && !database.isOpen) {
+          // Simulate hook call if operation resulted in database getting actually closed
+          notifyAllDatabaseReferencesReleased(database)
         }
       }
     }

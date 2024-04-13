@@ -240,10 +240,8 @@ class TrackDatabasesTest {
 
     // toggle keepOpen = false
     issueKeepDatabasesOpenCommand(false)
-    assertNoQueuedEvents()
     dbs.forEach { (id, db) ->
       assertClosed(db)
-      hooks.triggerOnAllReferencesReleased(db)
       receiveClosedEvent(id, db.displayName)
     }
     assertNoQueuedEvents()
