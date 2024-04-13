@@ -31,9 +31,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.junit.rules.CloseGuardRule
 import studio.network.inspection.NetworkInspectorProtocol.SpeedEvent
 
 @RunWith(RobolectricTestRunner::class)
@@ -43,8 +45,9 @@ import studio.network.inspection.NetworkInspectorProtocol.SpeedEvent
   maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
 )
 internal class NetworkInspectorTest {
+  private val inspectorRule = NetworkInspectorRule(autoStart = false)
 
-  @get:Rule val inspectorRule = NetworkInspectorRule(autoStart = false)
+  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule()).around(inspectorRule)
 
   private val trafficStatsProvider
     get() = inspectorRule.trafficStatsProvider

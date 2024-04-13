@@ -27,9 +27,11 @@ import java.net.HttpURLConnection
 import java.net.URL
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.junit.rules.CloseGuardRule
 import studio.network.inspection.NetworkInspectorProtocol
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
 import studio.network.inspection.NetworkInspectorProtocol.InterceptCommand
@@ -53,8 +55,9 @@ private val EXPECTED_RESPONSE =
   maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
 )
 internal class HttpUrlTest {
+  private val inspectorRule = NetworkInspectorRule()
 
-  @get:Rule val inspectorRule = NetworkInspectorRule()
+  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule()).around(inspectorRule)
 
   @Test
   fun httpGet() {

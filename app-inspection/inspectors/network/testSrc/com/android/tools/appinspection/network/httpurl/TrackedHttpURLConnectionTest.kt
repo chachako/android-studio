@@ -13,11 +13,16 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URL
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
+import org.robolectric.junit.rules.CloseGuardRule
 import studio.network.inspection.NetworkInspectorProtocol
 
 /** Tests for [TrackedHttpURLConnection] */
 class TrackedHttpURLConnectionTest {
+  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule())
+
   private val fakeTrackerFactory: (String, String) -> HttpConnectionTracker = { _, _ ->
     FakeHttpConnectionTracker()
   }

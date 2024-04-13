@@ -34,11 +34,13 @@ import com.android.tools.appinspection.backgroundtask.testing.put
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import org.robolectric.junit.rules.CloseGuardRule
 
 private const val PENDING_INTENT_REQUEST_CODE = 3
 private const val PENDING_INTENT_FLAGS = 0x1234
@@ -50,8 +52,9 @@ private const val PENDING_INTENT_FLAGS = 0x1234
   maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
 )
 class AlarmHandlerTest {
+  private val inspectorRule = BackgroundTaskInspectorRule()
 
-  @get:Rule val inspectorRule = BackgroundTaskInspectorRule()
+  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule()).around(inspectorRule)
 
   private val context
     get() = RuntimeEnvironment.getApplication()

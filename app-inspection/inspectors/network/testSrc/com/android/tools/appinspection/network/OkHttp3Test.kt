@@ -33,9 +33,11 @@ import okhttp3.ResponseBody
 import okio.BufferedSink
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.junit.rules.CloseGuardRule
 import studio.network.inspection.NetworkInspectorProtocol
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.Header
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
@@ -57,8 +59,9 @@ private val EXPECTED_RESPONSE =
   maxSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
 )
 internal class OkHttp3Test {
+  private val inspectorRule = NetworkInspectorRule()
 
-  @get:Rule val inspectorRule = NetworkInspectorRule()
+  @get:Rule val rule: RuleChain = RuleChain.outerRule(CloseGuardRule()).around(inspectorRule)
 
   @Test
   fun get() {
