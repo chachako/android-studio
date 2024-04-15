@@ -2145,6 +2145,8 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/api/standalone/base/
   org/jetbrains/kotlin/analysis/api/standalone/base/project/
   org/jetbrains/kotlin/analysis/api/standalone/base/project/structure/
+  org/jetbrains/kotlin/analysis/api/standalone/base/providers/
+  org/jetbrains/kotlin/analysis/api/standalone/base/services/
   org/jetbrains/kotlin/analysis/api/symbols/
   org/jetbrains/kotlin/analysis/api/symbols/markers/
   org/jetbrains/kotlin/analysis/api/symbols/pointers/
@@ -2189,6 +2191,7 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/analysis/low/level/api/fir/resolve/
   org/jetbrains/kotlin/analysis/low/level/api/fir/resolve/extensions/
   org/jetbrains/kotlin/analysis/low/level/api/fir/resolver/
+  org/jetbrains/kotlin/analysis/low/level/api/fir/services/
   org/jetbrains/kotlin/analysis/low/level/api/fir/sessions/
   org/jetbrains/kotlin/analysis/low/level/api/fir/state/
   org/jetbrains/kotlin/analysis/low/level/api/fir/stubBased/
@@ -2292,7 +2295,6 @@ com/android/tools/external/com-intellij/kotlin-compiler
   org/jetbrains/kotlin/cli/js/klib/
   org/jetbrains/kotlin/cli/jvm/
   org/jetbrains/kotlin/cli/jvm/compiler/
-  org/jetbrains/kotlin/cli/jvm/compiler/builder/
   org/jetbrains/kotlin/cli/jvm/compiler/jarfs/
   org/jetbrains/kotlin/cli/jvm/compiler/pipeline/
   org/jetbrains/kotlin/cli/jvm/config/
