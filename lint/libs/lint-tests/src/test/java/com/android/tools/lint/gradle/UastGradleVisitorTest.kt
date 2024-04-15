@@ -32,8 +32,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
-// Tests in this class should reflect, as though a somwhat distorted
-// mirror, the tests in GroovyGradleVisitorTest and
+// Tests in this class should reflect, as though through a somewhat
+// distorted mirror, the tests in GroovyGradleVisitorTest and
 // LintIdeGradleVisitorTest.  The correspondence cannot be exact, as
 // the syntactic and semantic differences are too big for compatibility
 // to be layered on top: but test additions here should almost certainly
