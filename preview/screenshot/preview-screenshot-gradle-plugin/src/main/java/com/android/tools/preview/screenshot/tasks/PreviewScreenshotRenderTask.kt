@@ -81,9 +81,6 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     @get:OutputFile
     abstract val cliToolArgumentsFile: RegularFileProperty
 
-    @get:Internal
-    abstract val layoutlibDir: ConfigurableFileCollection
-
     @get:Classpath
     abstract val layoutlibJar: ConfigurableFileCollection
 

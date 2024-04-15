@@ -31,7 +31,6 @@ import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.api.AndroidBasePlugin
 import com.android.tools.preview.screenshot.layoutlibExtractor.LayoutlibDataFromMaven
-import com.android.tools.preview.screenshot.layoutlibExtractor.LayoutlibFromMaven
 import com.android.tools.preview.screenshot.services.AnalyticsService
 import com.android.tools.preview.screenshot.tasks.PreviewDiscoveryTask
 import com.android.tools.preview.screenshot.tasks.PreviewScreenshotRenderTask
@@ -123,7 +122,6 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             createLayoutlibConfiguration(project)
             createLayoutlibRuntimeConfiguration(project)
             createLayoutlibResourcesConfiguration(project)
-            val layoutlibFromMaven = LayoutlibFromMaven.create(project)
             val layoutlibDataFromMaven = LayoutlibDataFromMaven.create(project, LAYOUTLIB_RUNTIME_VERSION,
               project.configurations.getByName(layoutlibResourcesConfigurationName))
 
@@ -244,7 +242,6 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.screenshotCliJar.from(task.project.configurations.getByName(previewlibCliToolConfigurationName))
                         task.layoutlibJar.from(task.project.configurations.getByName(
                             layoutlibJarConfigurationName))
-                        task.layoutlibDir.setFrom(layoutlibFromMaven.layoutlibDirectory)
                         task.layoutlibDataDir.setFrom(layoutlibDataFromMaven.layoutlibDataDirectory)
                         resourceDirProvider?.let { task.resourcesDir.set(it) }
                         resourceFileProvider?.let { task.resourceFile.set(it) }
