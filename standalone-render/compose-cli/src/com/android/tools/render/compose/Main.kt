@@ -48,9 +48,10 @@ fun main(args: Array<String>) {
             composeRendering.resourceApkPath,
             composeRendering.namespace,
             composeRendering.classPath,
+            composeRendering.projectClassPath,
             composeRendering.layoutlibPath,
-        ).use {
-            it.render(requestToImageName.keys.asSequence()) { request, i, result ->
+        ).use { renderer ->
+            renderer.render(requestToImageName.keys.asSequence()) { request, i, result, usedPaths ->
                 val resultId = "${requestToImageName[request]}_$i"
                 val screenshotResult = try {
                     val imagePath = result.renderedImage.copy?.let { image ->
@@ -68,6 +69,12 @@ fun main(args: Array<String>) {
                     ComposeScreenshotResult(resultId, null, ScreenshotError(t))
                 }
                 screenshotResults.add(screenshotResult)
+                val classesUsed = Path(composeRendering.outputFolder).resolve("$resultId.classes.txt").toFile()
+                classesUsed.writer().use { writer ->
+                    usedPaths.forEach { path ->
+                        writer.write("$path\n")
+                    }
+                }
             }
         }
         ComposeRenderingResult(null, screenshotResults)

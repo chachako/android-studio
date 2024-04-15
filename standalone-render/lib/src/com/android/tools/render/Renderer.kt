@@ -24,6 +24,7 @@ import com.android.resources.ResourceFolderType
 import com.android.sdklib.AndroidVersion
 import com.android.tools.configurations.Configuration
 import com.android.tools.module.ModuleKey
+import com.android.tools.render.StandaloneModuleClassLoaderManager.Companion.CLASSES_TRACKER_KEY
 import com.android.tools.render.configuration.StandaloneConfigurationModelModule
 import com.android.tools.render.configuration.StandaloneConfigurationSettings
 import com.android.tools.render.environment.StandaloneEnvironmentContext
@@ -33,6 +34,7 @@ import com.android.tools.rendering.RenderLogger
 import com.android.tools.rendering.RenderResult
 import com.android.tools.rendering.RenderService
 import com.android.tools.rendering.api.RenderModelModule
+import com.android.tools.rendering.classloading.ClassesTracker
 import com.android.tools.rendering.classloading.ModuleClassLoaderManager
 import com.android.tools.rendering.parsers.RenderXmlFileSnapshot
 import com.android.tools.res.LocalResourceRepository
@@ -53,6 +55,7 @@ class Renderer private constructor(
     resourceApkPath: String?,
     namespace: String,
     classPath: List<String>,
+    projectClassPath: List<String>,
     layoutlibPath: String,
     private val isForTest: Boolean,
 ) : Closeable {
@@ -86,7 +89,7 @@ class Renderer private constructor(
 
         val resourceRepositoryManager = SingleRepoResourceRepositoryManager(resourcesRepo)
 
-        val moduleClassLoaderManager = StandaloneModuleClassLoaderManager(classPath)
+        val moduleClassLoaderManager = StandaloneModuleClassLoaderManager(classPath, projectClassPath)
 
         framework.registerService(ModuleClassLoaderManager::class.java, moduleClassLoaderManager)
 
@@ -134,15 +137,26 @@ class Renderer private constructor(
     /**
      * Renders xml layouts defined by [renderRequests] calling [onRenderResult] for every render
      * execution.
+     *
+     * * [onRenderResult] callback receives 4 arguments:
+     * * [RenderRequest] the request that triggered the rendering.
+     * * [Int] id of the result to distinguish them fot the cases where a single [RenderRequest]
+     *   triggers several renderings, this could happen when e.g. a Composable is parameterized with
+     *   a ParameterProvider.
+     * * [RenderResult] an instance of the render result containing extended information about the
+     *   rendering, including errors if any.
+     * * [Set]<[String]> paths to all the project (from user code, not from library dependencies)
+     *   classes that were used during the rendering.
      */
     fun render(
         renderRequests: Sequence<RenderRequest>,
-        onRenderResult: (RenderRequest, Int, RenderResult) -> Unit,
+        onRenderResult: (RenderRequest, Int, RenderResult, Set<String>) -> Unit,
     ) {
         renderRequests.forEach { request ->
             request.configurationModifier(configuration)
             request.xmlLayoutsProvider().forEachIndexed { i, layout ->
                 val logger = RenderLogger()
+                var usedPaths = emptySet<String>()
                 val result = try {
                     val renderTask = RenderService { }.taskBuilder(module, configuration, logger)
                         .disableDecorations()
@@ -163,7 +177,14 @@ class Renderer private constructor(
                         )
 
                     renderTask.setXmlFile(xmlFile)
-                    renderTask.render().get(100, TimeUnit.SECONDS)
+                    val result = renderTask.render().get(100, TimeUnit.SECONDS)
+                    val classesToPaths = (renderTask.classLoader as StandaloneModuleClassLoaderManager.DefaultModuleClassLoader).classesToPaths
+                    usedPaths =
+                        ClassesTracker
+                            .getClasses(CLASSES_TRACKER_KEY)
+                            .mapNotNull { classesToPaths[it.replace("/", ".")] }
+                            .toSet()
+                    result
                 } catch (t: Throwable) {
                     RenderResult.createRenderTaskErrorResult(
                         module,
@@ -171,9 +192,11 @@ class Renderer private constructor(
                         t,
                         logger
                     )
+                } finally {
+                    ClassesTracker.clear(CLASSES_TRACKER_KEY)
                 }
                 try {
-                    onRenderResult(request, i, result)
+                    onRenderResult(request, i, result, usedPaths)
                 } catch (t: Throwable) {
                     t.printStackTrace()
                 }
@@ -198,8 +221,9 @@ class Renderer private constructor(
             resourceApkPath: String?,
             namespace: String,
             classPath: List<String>,
+            projectClassPath: List<String>,
             layoutlibPath: String,
-        ) = Renderer(fontsPath, resourceApkPath, namespace, classPath, layoutlibPath, false)
+        ) = Renderer(fontsPath, resourceApkPath, namespace, classPath, projectClassPath, layoutlibPath, false)
 
         @TestOnly
         @JvmStatic
@@ -209,6 +233,6 @@ class Renderer private constructor(
             namespace: String,
             classPath: List<String>,
             layoutlibPath: String,
-        ) = Renderer(fontsPath, resourceApkPath, namespace, classPath, layoutlibPath, true)
+        ) = Renderer(fontsPath, resourceApkPath, namespace, classPath, emptyList(), layoutlibPath, true)
     }
 }
