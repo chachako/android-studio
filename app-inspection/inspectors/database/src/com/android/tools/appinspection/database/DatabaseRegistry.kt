@@ -95,20 +95,15 @@ internal class DatabaseRegistry(
     synchronized(lock) {
       /**
        * Prevent all other methods from releasing a reference if a [KeepOpenReference] is present
+       *
+       * The below will always succeed as [keepOpenReferences] only contains active references:
+       * - we only insert active references into [keepOpenReferences]
+       * - [KeepOpenReference.releaseAllReferences] is the only place where we allow references to
+       *   be released
+       * - [KeepOpenReference.releaseAllReferences] is private and can only be called from this
+       *   class; and before it is called, it must be removed from [keepOpenReferences]
        */
-      keepOpenReferences.values
-        .filter { it.database == database }
-        .forEach {
-          /**
-           * The below will always succeed as [keepOpenReferences] only contains active references:
-           * - we only insert active references into [keepOpenReferences]
-           * - [KeepOpenReference.releaseAllReferences] is the only place where we allow references
-           *   to be released
-           * - [KeepOpenReference.releaseAllReferences] is private and can only be called from this
-           *   class; and before it is called, it must be removed from [keepOpenReferences]
-           */
-          it.acquireReference()
-        }
+      findKeepOpenReference(database)?.acquireReference()
     }
   }
 
@@ -455,5 +450,9 @@ internal class DatabaseRegistry(
       Log.v(HIDDEN_TAG, "scores: ${scores.joinToString { "${it.db.hashCode()} -> ${it.score}" }}")
     }
     return scores.maxByOrNull { it.score }?.db
+  }
+
+  private fun findKeepOpenReference(database: SQLiteDatabase): KeepOpenReference? {
+    return keepOpenReferences.values.find { it.database == database }
   }
 }
