@@ -23,8 +23,8 @@ import com.android.testutils.CloseablesRule
 import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.DatabaseRegistry.OnDatabaseClosedCallback
 import com.android.tools.appinspection.database.DatabaseRegistry.OnDatabaseOpenedCallback
-import com.android.tools.appinspection.database.DatabaseRegistryTest.EventType.CLOSE
-import com.android.tools.appinspection.database.DatabaseRegistryTest.EventType.OPEN
+import com.android.tools.appinspection.database.DatabaseRegistryTest.DbEvent.DbClosedEvent
+import com.android.tools.appinspection.database.DatabaseRegistryTest.DbEvent.DbOpenedEvent
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.fail
 import org.junit.Rule
@@ -178,11 +178,58 @@ class DatabaseRegistryTest {
     assertThat(registry.getDatabases(id)).containsExactly(readWriteDb)
   }
 
+  @Test
+  fun notifyDatabaseOpened_sendsEventsWhenDatabaseChanges() {
+    val path = "${temporaryFolder.root}/db"
+    val openHelper1 = OpenHelper(path)
+    val openHelper2 = OpenHelper(path)
+    val openHelper3 = OpenHelper(path)
+    val readOnlyDb = openHelper1.getReadOnlyDb(autoClose = false)
+    val readWriteDb1 = openHelper2.getReadWriteDb(autoClose = false)
+    val readWriteDb2 = openHelper3.getReadWriteDb(autoClose = false)
+    val registry = databaseRegistry(events)
+
+    // Transition from no db to a read-only db
+    registry.notifyDatabaseOpened(readOnlyDb)
+    assertThat(events).containsExactly(DbOpenedEvent(1, path, isReadOnly = true))
+    events.clear()
+
+    // Transition from read-only db to writable db
+    registry.notifyDatabaseOpened(readWriteDb1)
+    assertThat(events).containsExactly(DbOpenedEvent(1, path, isReadOnly = false))
+    events.clear()
+
+    // Opening another writeable db does not trigger an event
+    registry.notifyDatabaseOpened(readWriteDb2)
+    assertThat(events).isEmpty()
+
+    // Closing the first writeable db does not trigger an event because we still have another one
+    readWriteDb1.close()
+    registry.notifyAllDatabaseReferencesReleased(readWriteDb1)
+    assertThat(events).isEmpty()
+
+    // Closing the second writeable db does results in a transition to read-only
+    readWriteDb2.close()
+    registry.notifyAllDatabaseReferencesReleased(readWriteDb2)
+    assertThat(events).containsExactly(DbOpenedEvent(1, path, isReadOnly = true))
+    events.clear()
+
+    // Closing the read-only db triggers a `close` event.
+    readOnlyDb.close()
+    registry.notifyAllDatabaseReferencesReleased(readOnlyDb)
+    assertThat(events).containsExactly(DbClosedEvent(1, path))
+  }
+
   private class DbOpenedCallback(private val events: MutableList<DbEvent>) :
     OnDatabaseOpenedCallback {
 
-    override fun onDatabaseOpened(databaseId: Int, path: String, isForced: Boolean) {
-      events.add(DbEvent(OPEN, databaseId, path))
+    override fun onDatabaseOpened(
+      databaseId: Int,
+      path: String,
+      isForced: Boolean,
+      isReadOnly: Boolean,
+    ) {
+      events.add(DbOpenedEvent(databaseId, path, isReadOnly))
     }
   }
 
@@ -190,16 +237,19 @@ class DatabaseRegistryTest {
     OnDatabaseClosedCallback {
 
     override fun onDatabaseClosed(databaseId: Int, path: String) {
-      events.add(DbEvent(CLOSE, databaseId, path))
+      events.add(DbClosedEvent(databaseId, path))
     }
   }
 
-  private enum class EventType {
-    OPEN,
-    CLOSE,
-  }
+  private sealed class DbEvent(open val id: Int, open val path: String) {
+    data class DbOpenedEvent(
+      override val id: Int,
+      override val path: String,
+      val isReadOnly: Boolean,
+    ) : DbEvent(id, path)
 
-  private data class DbEvent(val type: EventType, val id: Int, val path: String)
+    data class DbClosedEvent(override val id: Int, override val path: String) : DbEvent(id, path)
+  }
 
   private fun databaseRegistry(events: MutableList<DbEvent>, forceOpen: Boolean = false) =
     DatabaseRegistry(DbOpenedCallback(events), DbClosedCallback(events), testMode = true).apply {

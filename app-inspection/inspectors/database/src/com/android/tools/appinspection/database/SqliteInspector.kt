@@ -527,7 +527,12 @@ internal class SqliteInspector(
     return if (string is String) string else null
   }
 
-  private fun dispatchDatabaseOpenedEvent(databaseId: Int, path: String, isForced: Boolean) {
+  private fun dispatchDatabaseOpenedEvent(
+    databaseId: Int,
+    path: String,
+    isForced: Boolean,
+    isReadOnly: Boolean,
+  ) {
     Log.v(HIDDEN_TAG, "dispatchDatabaseOpenedEvent: ${path.substringAfterLast("/")}")
     connection.sendEvent(
       Event.newBuilder()
@@ -536,6 +541,7 @@ internal class SqliteInspector(
             .setDatabaseId(databaseId)
             .setPath(path)
             .setIsForcedConnection(isForced)
+            .setIsReadOnly(isReadOnly)
         )
         .build()
         .toByteArray()

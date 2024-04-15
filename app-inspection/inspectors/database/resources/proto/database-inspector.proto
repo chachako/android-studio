@@ -248,6 +248,11 @@ message DatabaseOpenedEvent {
   string path = 2;
   // True if the connection that was used for this query was forced
   bool is_forced_connection = 3;
+  // True if the connection was opened with READONLY flag. Note that this does not necessarily mean
+  // the database is read-only. It just means it was opened as read-only which guarantees the
+  // database can be opened in situations where a read-write database is not possible. For example,
+  // if the file system in full.
+  bool is_read_only = 4;
 }
 
 // Notification of a database connection closed (database no longer query-able)

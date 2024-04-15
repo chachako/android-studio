@@ -23,6 +23,9 @@ import androidx.annotation.GuardedBy
 import androidx.annotation.VisibleForTesting
 
 private const val NOT_TRACKED = -1
+private const val SCORE_READ_ONLY = 0
+private const val SCORE_FORCED = 1
+private const val SCORE_BEST = 2
 
 /**
  * The class keeps track of databases under inspection, and can keep database connections open if
@@ -177,10 +180,6 @@ internal class DatabaseRegistry(
 
   /** Thread-safe */
   private fun handleDatabaseSignal(database: SQLiteDatabase) {
-    var notifyOpenedId: Int? = null
-    var notifyClosedId: Int? = null
-    var isForced = isForceOpenInProgress
-
     synchronized(lock) {
       var id = getIdForDatabase(database)
       // TODO: revisit the text below since now we're synchronized on the same lock (lock)
@@ -197,74 +196,34 @@ internal class DatabaseRegistry(
       if (id == NOT_TRACKED) { // handling a transition: not tracked -> tracked
         id = nextId++
         registerReference(id, database)
-        if (isOpen) {
-          notifyOpenedId = id
-        } else {
-          notifyClosedId = id
+        when {
+          isOpen -> onOpenedCallback.onDatabaseOpened(id, database)
+          else -> onClosedCallback.onDatabaseClosed(id, database.pathForDatabase())
         }
-      } else if (isOpen) {
-        // handling a transition: tracked(closed) -> tracked(open)
-        // There are two scenarios here:
-        // - hasReferences is up-to-date and there is an open reference already, so we
-        // don't need to announce a new one
-        // - hasReferences is stale, and references in it are queued up to be
-        // announced as closing, in this case the outside world thinks that the
-        // connection is open (close ones not processed yet), so we don't need to
-        // announce anything; later, when processing the queued up closed events nothing
-        // will be announced as the currently processed database will keep at least one open
-        // connection.
-        val references = getReferences(id)
-        if (references.isEmpty() || references.hasForcedConnections()) {
-          notifyOpenedId = id
-          // TODO(aalbert): Maybe actually close the forced connection. This would require either:
-          //   1. Reopen a forced connection when all connections are closed
-          //   2. Implicitly enabling keep-open when is-forced.
-        }
-
-        registerReference(id, database)
       } else {
-        // handling a transition: tracked(open) -> tracked(closed)
-        // There are two scenarios here:
-        // - hasReferences is up-to-date, and we can use it
-        // - hasReferences is stale, and references in it are queued up to be
-        // announced as closed; in this case there is no harm not announcing a closed
-        // event now as the subsequent calls will do it if appropriate
-        val hasReferencesPre = hasReferences(id)
-        unregisterReference(id, database)
-        val referencesPost = getReferences(id)
-        if (hasReferencesPre) {
-          if (referencesPost.isEmpty()) {
-            notifyClosedId = id
-          } else if (referencesPost.hasOnlyForcedConnections()) {
-            notifyOpenedId = id
-            isForced = true
+        val openDatabases = buildList {
+          addAll(getOpenDatabases(id))
+          if (!isOpen) {
+            add(database)
           }
         }
+        val before = openDatabases.findBestConnection()
+        when (isOpen) {
+          true -> registerReference(id, database)
+          false -> unregisterReference(id, database)
+        }
+        val after = getConnection(id)
+
+        when {
+          after == null -> onClosedCallback.onDatabaseClosed(id, database.pathForDatabase())
+          after.getScore() != before?.getScore() -> onOpenedCallback.onDatabaseOpened(id, after)
+        }
       }
 
-      if (!isForced) {
-        // This connection will not yet be registered as forced, so we don't want to use it as a
-        // `keep-open` reference
-        secureKeepOpenReference(id)
-      }
-
-      // notify of changes if any. We could have a `close` event followed by an `open` when
-      // switching from forcedOpen to native connection.
-      if (notifyClosedId != null) {
-        onClosedCallback.onDatabaseClosed(notifyClosedId!!, database.pathForDatabase())
-      }
-      if (notifyOpenedId != null) {
-        onOpenedCallback.onDatabaseOpened(notifyOpenedId!!, database.pathForDatabase(), isForced)
-      }
+      secureKeepOpenReference(id)
       logDatabaseStatus(database.path)
     }
   }
-
-  @GuardedBy("lock")
-  private fun Set<SQLiteDatabase>.hasForcedConnections() = any { forcedOpen.contains(it) }
-
-  @GuardedBy("lock")
-  private fun Set<SQLiteDatabase>.hasOnlyForcedConnections() = all { forcedOpen.contains(it) }
 
   /**
    * Returns a currently active database reference if one is available. Null otherwise. Consumer of
@@ -328,7 +287,7 @@ internal class DatabaseRegistry(
     val best =
       getOpenDatabases(id).filter { !isForcedConnection(it) }.findBestConnection() ?: return
     val kept = keepOpenReferences[id]
-    if (best != kept?.database) {
+    if (kept == null || best.getScore() > kept.database.getScore()) {
       keepOpenReferences[id] = KeepOpenReference(best)
       kept?.releaseAllReferences()
     }
@@ -352,14 +311,8 @@ internal class DatabaseRegistry(
     return NOT_TRACKED
   }
 
-  @GuardedBy("lock")
-  private fun hasReferences(databaseId: Int) = getReferences(databaseId).isNotEmpty()
-
-  @GuardedBy("lock")
-  private fun getReferences(databaseId: Int) = databases[databaseId] ?: emptySet()
-
   internal fun interface OnDatabaseOpenedCallback {
-    fun onDatabaseOpened(databaseId: Int, path: String, isForced: Boolean)
+    fun onDatabaseOpened(databaseId: Int, path: String, isForced: Boolean, isReadOnly: Boolean)
   }
 
   internal fun interface OnDatabaseClosedCallback {
@@ -438,12 +391,10 @@ internal class DatabaseRegistry(
     // - Read-only instance has the lowest score.
     // - Non forced read-write instance has the max score.
     val scores = map {
-      val score =
-        when {
-          it.isReadOnly -> 0
-          isForcedConnection(it) -> 1
-          else -> return@map DbScore(it, 2)
-        }
+      val score = it.getScore()
+      if (score == SCORE_BEST) {
+        return@map DbScore(it, 2)
+      }
       DbScore(it, score)
     }
     if (Log.isLoggable(HIDDEN_TAG, Log.VERBOSE)) {
@@ -452,7 +403,23 @@ internal class DatabaseRegistry(
     return scores.maxByOrNull { it.score }?.db
   }
 
+  private fun OnDatabaseOpenedCallback.onDatabaseOpened(id: Int, database: SQLiteDatabase) {
+    onDatabaseOpened(
+      id,
+      database.pathForDatabase(),
+      isForcedConnection(database),
+      database.isReadOnly,
+    )
+  }
+
   private fun findKeepOpenReference(database: SQLiteDatabase): KeepOpenReference? {
     return keepOpenReferences.values.find { it.database == database }
   }
+
+  private fun SQLiteDatabase.getScore() =
+    when {
+      isReadOnly -> SCORE_READ_ONLY
+      isForcedConnection(this) -> SCORE_FORCED
+      else -> SCORE_BEST
+    }
 }

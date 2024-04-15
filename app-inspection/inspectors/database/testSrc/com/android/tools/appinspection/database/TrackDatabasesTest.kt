@@ -517,22 +517,12 @@ class TrackDatabasesTest {
     issueKeepDatabasesOpenCommand(true)
     assertNoQueuedEvents()
 
-    var count = 0
     closeDatabase(db, hooks)
-    count++
     closeDatabase(db, hooks)
-    count++
     closeDatabase(db, hooks)
-    count++
     assertNoQueuedEvents()
 
     issueKeepDatabasesOpenCommand(false)
-    repeat(count) {
-      hooks.triggerReleaseReference(db)
-      if (!db.isOpen) {
-        hooks.triggerOnAllReferencesReleased(db)
-      }
-    }
 
     receiveClosedEvent(id, db.displayName)
     assertClosed(db)
