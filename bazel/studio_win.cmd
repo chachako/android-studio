@@ -75,6 +75,7 @@ setlocal
   @rem Run Bazel
   call %SCRIPTDIR%bazel.cmd ^
   --max_idle_secs=60 ^
+  --output_base=%TMPDIR% ^
   test ^
   --config=ci ^
   --config=ants ^
@@ -138,6 +139,7 @@ setlocal
 
   call %SCRIPTDIR%bazel.cmd ^
   --max_idle_secs=60 ^
+  --output_base=%TMPDIR% ^
   run //tools/vendor/adt_infra_internal/rbe/logscollector:logs-collector ^
   --config=ci ^
   -- ^
