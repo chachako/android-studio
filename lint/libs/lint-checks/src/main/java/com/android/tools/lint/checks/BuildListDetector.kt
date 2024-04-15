@@ -24,16 +24,15 @@ import com.android.tools.lint.detector.api.JavaContext
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
-import com.intellij.psi.CommonClassNames.JAVA_UTIL_LIST
 import com.intellij.psi.PsiMethod
-import com.intellij.psi.util.TypeConversionUtil
-import org.jetbrains.kotlin.psi.KtCallExpression
-import org.jetbrains.uast.UBinaryExpression
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.idea.references.mainReference
+import org.jetbrains.kotlin.psi.KtLambdaExpression
+import org.jetbrains.kotlin.psi.KtReferenceExpression
+import org.jetbrains.kotlin.psi.KtThisExpression
+import org.jetbrains.kotlin.psi.KtTreeVisitor
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.ULambdaExpression
-import org.jetbrains.uast.UThisExpression
-import org.jetbrains.uast.UastBinaryOperator
-import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 /** Makes sure that `buildList` calls actually add items */
 class BuildListDetector : Detector(), SourceCodeScanner {
@@ -67,50 +66,41 @@ class BuildListDetector : Detector(), SourceCodeScanner {
     val evaluator = context.evaluator
     if (node.valueArgumentCount == 1 && evaluator.isMemberInClass(method, BUILD_LIST_OWNER)) {
       val argument = node.valueArguments[0] as? ULambdaExpression ?: return
+      val lambda = argument.sourcePsi as? KtLambdaExpression ?: return
       var isAdding = false
-      argument.body.accept(
-        object : AbstractUastVisitor() {
-
-          override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
-            val operator = node.operator
-            if (operator == UastBinaryOperator.PLUS_ASSIGN) {
-              val operatorMethod = node.resolveOperator()
-              if (
-                operatorMethod?.name == "plusAssign" &&
-                  operatorMethod.containingClass?.qualifiedName ==
-                    "kotlin.collections.CollectionsKt__MutableCollectionsKt"
-              ) {
+      val literal = lambda.functionLiteral
+      lambda.accept(
+        @Suppress("LintImplPsiEquals")
+        object : KtTreeVisitor<Void>() {
+          override fun visitReferenceExpression(
+            expression: KtReferenceExpression,
+            data: Void?,
+          ): Void? {
+            analyze(expression) {
+              val receiverVal = getImplicitReceiverValue(expression)
+              val psi = receiverVal?.getImplicitReceiverPsi()
+              if (psi == literal) {
                 isAdding = true
               }
             }
-            return super.visitBinaryExpression(node)
+            return super.visitReferenceExpression(expression, data)
           }
 
-          override fun visitCallExpression(node: UCallExpression): Boolean {
-            val name = node.methodName ?: node.methodIdentifier?.name
-            if (name != null && name.startsWith("add")) {
-              val receiver = node.receiver
-              if (receiver == null || receiver is UThisExpression) {
-                val containingClass = node.resolve()?.containingClass?.qualifiedName
-                if (containingClass == null || containingClass == JAVA_UTIL_LIST) {
-                  isAdding = true
-                } else {
-                  // Extension function on the list?
-                  val sourcePsi = node.sourcePsi
-                  if (
-                    sourcePsi is KtCallExpression &&
-                      node.receiverType?.let { TypeConversionUtil.erasure(it) }?.canonicalText ==
-                        JAVA_UTIL_LIST
-                  ) {
-                    isAdding = true
-                  }
-                }
+          override fun visitThisExpression(expression: KtThisExpression, data: Void?): Void? {
+            analyze(expression) {
+              val reference =
+                expression.getTargetLabel()?.mainReference
+                  ?: expression.instanceReference.mainReference
+              val psi = reference.resolveToSymbol()?.psi
+              if (psi == literal) {
+                isAdding = true
               }
             }
-            return isAdding
+            return super.visitThisExpression(expression, data)
           }
         }
       )
+
       if (!isAdding) {
         val message = "No `add` calls within `buildList` lambda; this is usually a mistake"
         context.report(ISSUE, node, context.getNameLocation(node), message)
