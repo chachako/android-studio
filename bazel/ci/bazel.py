@@ -33,6 +33,20 @@ class BazelCmd:
   def __init__(self, build_env: BuildEnv):
     self.build_env = build_env
 
+  def build(self, *build_args) -> subprocess.CompletedProcess:
+    """Run a 'bazel build' command.
+
+    Raises:
+      CalledProcessError: If the build fails.
+    """
+    args = [self.build_env.bazel_path]
+    args.extend(self.startup_options)
+    args.append('build')
+    args.extend(build_args)
+
+    return subprocess.run(args, capture_output=True, check=False, cwd=os.environ.get('BUILD_WORKSPACE_DIRECTORY'))
+
+
   def query(self, *query_args) -> subprocess.CompletedProcess:
     """Run a 'bazel query' command.
 

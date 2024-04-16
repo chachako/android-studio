@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import uuid
 import subprocess
 import sys
 from typing import Callable, List
@@ -56,6 +57,19 @@ def studio_build_checks(ci: CI):
   ci.run(query_checks.no_local_genrules)
   ci.run(query_checks.require_cpu_tags)
   ci.run(query_checks.gradle_requires_cpu4_or_more)
+
+  def validate_coverage_graph(env: bazel.BuildEnv):
+    inv_id = uuid.uuid4()
+    result = bazel.BazelCmd(env).build(
+      '--config=ci', '--nobuild', f'--invocation_id={inv_id}',
+      '--', '@cov//:all.suite')
+    if result.returncode:
+      raise RuntimeError((
+        'Coverage build configuration is broken; you may need to update'
+        ' tools/base/bazel/coverage/BUILD\n'
+        f'\n See https://fusion2.corp.google.com/invocations/{inv_id}'
+      ))
+  ci.run(validate_coverage_graph)
 
 
 def main():
