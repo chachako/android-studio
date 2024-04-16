@@ -26,6 +26,8 @@ import com.android.adblib.tools.tcpserver.RetryPolicy
 import com.android.adblib.tools.tcpserver.TcpServer
 import com.android.adblib.tools.tcpserver.TcpServerConnection
 import com.android.adblib.utils.closeOnException
+import com.android.adblib.utils.createChildScope
+import com.android.adblib.utils.runAlongOtherScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
@@ -49,6 +51,8 @@ internal class TcpServerWithFailoverConnection(
 
     private val logger = adbLogger(session)
 
+    private val scope = session.scope.createChildScope(isSupervisor = true)
+
     private val serverLocalAddress = InetSocketAddress(InetAddress.getLoopbackAddress(), port)
 
     private val serverConnection = ServerConnection(serverLocalAddress)
@@ -56,32 +60,38 @@ internal class TcpServerWithFailoverConnection(
     override suspend fun <R> withClientSocket(
         block: suspend (newServerStarted: Boolean, socket: AdbChannel) -> R
     ): R {
-        return retryWithPolicy(retryPolicy) {
-            logger.verbose { "Connecting to server: $serverConnection" }
-            serverConnection.connect().use { connectionResult ->
-                val newServerStarted = connectionResult.newServerStarted
-                val socketChannel = connectionResult.socketChannel
-                logger.verbose { "Executing operation after connecting to server at '$socketChannel'" }
-                val result = try {
-                    block(newServerStarted, socketChannel)
-                } catch (t: Throwable) {
-                    logger.logIOCompletionErrors(t, "An operation involving a TCP server at $socketChannel failed")
-                    throw t
-                }
+        return runAlongOtherScope(scope) {
+            retryWithPolicy(retryPolicy) {
+                logger.verbose { "Connecting to server: $serverConnection" }
+                serverConnection.connect().use { connectionResult ->
+                    val newServerStarted = connectionResult.newServerStarted
+                    val socketChannel = connectionResult.socketChannel
+                    logger.verbose { "Executing operation after connecting to server at '$socketChannel'" }
+                    val result = try {
+                        block(newServerStarted, socketChannel)
+                    } catch (t: Throwable) {
+                        logger.logIOCompletionErrors(
+                            t,
+                            "An operation involving a TCP server at $socketChannel failed"
+                        )
+                        throw t
+                    }
 
-                // Close client socket "orderly" so all data is sent to peer. If this fails
-                // then we retry (we assume the server did not get all the data)
-                logger.verbose { "Shutting down socket after successful execution" }
-                socketChannel.shutdownOutput()
-                socketChannel.skipRemaining()
-                socketChannel.close()
-                logger.verbose { "Returning '$result' after successful execution" }
-                result
+                    // Close client socket "orderly" so all data is sent to peer. If this fails
+                    // then we retry (we assume the server did not get all the data)
+                    logger.verbose { "Shutting down socket after successful execution" }
+                    socketChannel.shutdownOutput()
+                    socketChannel.skipRemaining()
+                    socketChannel.close()
+                    logger.verbose { "Returning '$result' after successful execution" }
+                    result
+                }
             }
         }
     }
 
     override fun close() {
+        scope.cancel("${this::class.simpleName} has been closed")
         serverConnection.close()
         tcpServer.close()
     }
@@ -94,7 +104,7 @@ internal class TcpServerWithFailoverConnection(
             try {
                 return block()
             } catch (t: Throwable) {
-                t.rethrowCancellation()
+                currentCoroutineContext().ensureActive()
                 exceptions.addWithCap(t, cap = 10) // Keep 10 exceptions max.
                 failureCount++
 

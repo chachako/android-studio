@@ -213,7 +213,7 @@ internal class DeviceProcessCatalog(session: AdbSession, val deviceId: DeviceId)
             .also { proto ->
                 proto.pid = other.pid
                 if (other.hasProcessName()) proto.processName = other.processName
-                if (other.hasProcessName()) proto.packageName = other.packageName
+                if (other.hasPackageName()) proto.packageName = other.packageName
                 if (other.hasUserId()) proto.userId = other.userId
                 if (other.hasAbi()) proto.abi = other.abi
                 if (other.hasVmIdentifier()) proto.vmIdentifier = other.vmIdentifier

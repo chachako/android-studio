@@ -56,7 +56,7 @@ internal class ProcessInventoryServerSocketProtocol(
     inner class ClientProtocol(private val clientDescription: String) {
 
         /**
-         * Invokes the [ProcessInventoryServerProto.Request.RequestType.REQUEST_TRACK_DEVICE] service
+         * Invokes the [ProcessInventoryServerProto.Request.TrackDeviceRequestPayload] service
          * on the server a given device [deviceSerial], returning a [Flow] of
          * [ProcessInventoryServerProto.Response] each time there are updates to the inventory
          * of [ProcessInventoryServerProto.JdwpProcessInfo] of the corresponding device.
@@ -81,7 +81,7 @@ internal class ProcessInventoryServerSocketProtocol(
             }
 
         /**
-         * Invokes the [ProcessInventoryServerProto.Request.RequestType.REQUEST_UPDATE_DEVICE] service
+         * Invokes the [ProcessInventoryServerProto.Request.UpdateDeviceRequestPayload] service
          * on the server given a device [deviceSerial], returning a
          * [ProcessInventoryServerProto.Response] with "ok" status.
          */
@@ -100,7 +100,7 @@ internal class ProcessInventoryServerSocketProtocol(
         }
 
         /**
-         * Invokes the [ProcessInventoryServerProto.Request.RequestType.REQUEST_UPDATE_DEVICE] service
+         * Invokes the [ProcessInventoryServerProto.Request.UpdateDeviceRequestPayload] service
          * on the server given a device [deviceSerial], returning a
          * [ProcessInventoryServerProto.Response] with "ok" status.
          */

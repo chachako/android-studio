@@ -28,6 +28,44 @@ object AdbLibToolsProcessInventoryServerProperties {
     private const val NAME_PREFIX = "com.android.adblib.tools.debugging.process.inventory.server"
 
     /**
+     * The TCP port (on the local host) the server runs on.
+     *
+     * Note: The port name contains has the "V1" suffix in case of a breaking change of protocol
+     * in the future. At that point a port "V2" should be created to ensure multiple versions of
+     * the server can run concurrently (e.g. multiple instance of Android Studio) without
+     * interfering with each other.
+     *
+     * Note: The value `8597` was picked in April 2024, after going through the list at
+     * [List_of_TCP_and_UDP_port_numbers](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers),
+     * looking for an unused entry.
+     *
+     * Furthermore, the legacy JDWP proxy server (from ddmlib) was using ports `8598` and `8599`.
+     * (See [DdmPreferences.java](https://cs.android.com/android-studio/platform/tools/base/+/3e4497f560c68ab52b635c5d20b913279c051fcd:ddmlib/src/main/java/com/android/ddmlib/DdmPreferences.java;l=78))
+     */
+    val LOCAL_PORT_V1 = AdbSessionHost.IntProperty(
+        name = "$NAME_PREFIX.local.port.v1",
+        defaultValue = 8597
+    )
+
+    /**
+     * The socket connection timeout when trying to connect to a running instance of the
+     * [ProcessInventoryServer]
+     */
+    val CONNECT_TIMEOUT = AdbSessionHost.DurationProperty(
+        name = "$NAME_PREFIX.connect.timeout",
+        defaultValue = Duration.ofSeconds(5)
+    )
+
+    /**
+     * The [Duration] to wait between attempts to start a new [ProcessInventoryServer] when
+     * attempting to connect to an existing server.
+     */
+    val START_RETRY_DELAY = AdbSessionHost.DurationProperty(
+        name = "$NAME_PREFIX.start.retry.delay",
+        defaultValue = Duration.ofSeconds(1)
+    )
+
+    /**
      * The amount of time before a device is removed from the [ProcessInventoryServer]
      * inventory if not used.
      */
