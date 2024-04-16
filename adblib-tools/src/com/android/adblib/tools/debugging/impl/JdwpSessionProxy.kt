@@ -40,6 +40,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import java.io.EOFException
@@ -64,6 +67,13 @@ internal class JdwpSessionProxy(
 
     private val logger = adbLogger(device.session)
         .withPrefix("${device.session} - $device - pid=$pid - ")
+
+    private val proxyStatusStateFlow = MutableStateFlow(JdwpSessionProxyStatus())
+
+    /**
+     * The current [status][JdwpSessionProxyStatus] of this [JdwpSessionProxy]
+     */
+    val proxyStatus = proxyStatusStateFlow.asStateFlow()
 
     suspend fun execute(processStateFlow: AtomicStateFlow<JdwpProcessProperties>) {
         // Create server socket and start accepting JDWP connections
@@ -263,9 +273,14 @@ internal class JdwpSessionProxy(
     private fun AtomicStateFlow<JdwpProcessProperties>.updateProxyStatus(
         updater: (JdwpSessionProxyStatus) -> JdwpSessionProxyStatus
     ) {
-        this.update {
-            it.copy(jdwpSessionProxyStatus = updater(it.jdwpSessionProxyStatus))
+        update { currentProperties ->
+            val newStatus = updater(currentProperties.jdwpSessionProxyStatus)
+
+            // Update the proxy status state flow we expose as a field,
+            // as well as the proxy status of the returned JdwpSessionProperties
+            proxyStatusStateFlow.update { newStatus }
+            currentProperties.copy(jdwpSessionProxyStatus = newStatus)
         }
-        logger.verbose { "Updated stateflow: ${this.value}" }
+        logger.verbose { "Updated stateflow: $value" }
     }
 }

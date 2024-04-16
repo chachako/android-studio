@@ -35,7 +35,7 @@ internal class AppProcessTrackerImpl(
 ) : AppProcessTracker {
 
     private val logger = adbLogger(device.session)
-        .withPrefix("${device.session} - $device -")
+        .withPrefix("${device.session} - $device - ")
 
     private val processesMutableFlow = MutableStateFlow<List<AppProcess>>(emptyList())
 

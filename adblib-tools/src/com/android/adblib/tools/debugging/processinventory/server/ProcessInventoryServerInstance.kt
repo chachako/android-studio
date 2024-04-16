@@ -50,15 +50,16 @@ internal class ProcessInventoryServerInstance(
     private val serverSocket: AdbServerSocket,
 ) {
     private val serverInstanceDescription = config.serverDescription +
-            "-${this::class.java.simpleName}-${nextInstanceId()}"
+            "-EphemeralInstanceId(#${nextInstanceId()})"
 
-    private val logger = adbLogger(session).withPrefix("$serverInstanceDescription - ")
+    private val logger = adbLogger(session)
+        .withPrefix("$session - $serverInstanceDescription - ")
 
     private val activeDevicesMap = DeviceMap(session, parentScope)
 
     fun runAsync(): Job = parentScope.launch {
         runCatching {
-            logger.info { "Starting server at server socket: $serverSocket" }
+            logger.info { "Starting server at server socket '$serverSocket'" }
             while (true) {
                 // Accept one connection and handle it asynchronously, ensuring socket is closed
                 // in all cases (cancellation, errors and success)
@@ -85,7 +86,7 @@ internal class ProcessInventoryServerInstance(
         }
     }.also {
         it.invokeOnCompletion {
-            logger.info { "Stopping server running at server socket: $serverSocket (throwable=$it)" }
+            logger.info { "Stopping server running at server socket '$serverSocket' (throwable='$it')" }
         }
     }
 

@@ -35,6 +35,7 @@ import com.android.adblib.tools.tcpserver.RetryPolicy
 import com.android.adblib.tools.tcpserver.TcpServerConnection
 import com.android.adblib.utils.createChildScope
 import com.android.adblib.utils.runAlongOtherScope
+import com.android.adblib.withPrefix
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.ensureActive
@@ -113,6 +114,7 @@ private class ProcessInventoryServerConnectionForDevice(
         get() = device.session
 
     private val logger = adbLogger(session)
+        .withPrefix("${device.session} - $device - ${config.clientDescription} - ")
 
     private val processPropertiesListMutableStateFlow =
         MutableStateFlow<List<JdwpProcessProperties>>(emptyList())
@@ -172,6 +174,8 @@ private class ProcessInventoryServerConnectionForDevice(
         // as the device is connected. If the server becomes unavailable, a new connection
         // is opened automatically (until the device is disconnected)
         server.withClientSocket { newServerInstance, socketChannel ->
+            logger.info { "Tracking processes from server socket '$socketChannel'" }
+
             val protocolChannel = ProcessInventoryServerSocketProtocol(session, socketChannel)
                 .forClient(config.clientDescription)
 
@@ -287,9 +291,15 @@ private class ProcessInventoryServerConnectionForDevice(
                     proto.debuggerIsAttached =
                         it
                 }
-                source.jdwpSessionProxyStatus.socketAddress?.also {
-                    proto.socketAddress =
-                        it.toInetSocketAddressProto()
+                // We send the proxy address only if we are in the "waiting for debugger" state
+                // as this is the only use case we need to expose our internal proxy externally
+                // for external instances to connect to (since the JDWP process is stuck in
+                // the "WAIT" state)
+                if (source.isWaitingForDebugger) {
+                    source.jdwpSessionProxyStatus.socketAddress?.also {
+                        proto.socketAddress =
+                            it.toInetSocketAddressProto()
+                    }
                 }
             }
 

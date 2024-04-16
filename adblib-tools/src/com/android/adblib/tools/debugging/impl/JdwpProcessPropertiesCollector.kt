@@ -211,7 +211,7 @@ internal class JdwpProcessPropertiesCollector(
             collectWithSession(jdwpSession, collectState)
 
             if (collectState.hasCollectedEverything) {
-                if (collectState.propertiesFlow.value.isWaitingForDebugger) {
+                if (collectState.waitReceived) {
                     // See b/271466829: We need to keep the JDWP session open until an external
                     // debugger attaches to the Android process, because a JDWP session in a
                     // `WAIT` state needs to remain open until at least one "real" JDWP command

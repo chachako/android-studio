@@ -23,6 +23,7 @@ import com.android.adblib.testingutils.CoroutineTestUtils
 import com.android.adblib.testingutils.CoroutineTestUtils.waitNonNull
 import com.android.adblib.testingutils.CoroutineTestUtils.yieldUntil
 import com.android.adblib.tools.debugging.JdwpProcessProperties
+import com.android.adblib.tools.debugging.JdwpSessionProxyStatus
 import com.android.adblib.tools.debugging.processinventory.AdbLibToolsProcessInventoryServerProperties
 import com.android.adblib.tools.debugging.processinventory.server.ProcessInventoryServerConfiguration
 import com.android.adblib.tools.testutils.AdbLibToolsTestBase
@@ -130,6 +131,120 @@ class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
             jvmFlags = "flags",
             isNativeDebuggable = true,
             waitCommandReceived = true,
+            isWaitingForDebugger = true,
+            features = listOf("feat1", "feat2"),
+            completed = true,
+            exception = null
+        )
+        serverConnection.withConnectionForDevice(device) {
+            sendProcessProperties(localProperties)
+        }
+
+        yieldUntil { processList.isNotEmpty() && processList.last().size == 1 }
+        job.cancel()
+
+        // Assert
+        val lastList = processList.last()
+        assertEquals(1, lastList.size)
+        assertEquals(localProperties, lastList[0])
+    }
+
+    @Test
+    fun testProcessUpdateUpdatesAllPropertiesExceptProxyAddressWhenIsWaitingForDebuggerIsFalse(): Unit = CoroutineTestUtils.runBlockingWithTimeout {
+        // Prepare
+        setHostPropertyValue(
+            session.host,
+            AdbLibToolsProcessInventoryServerProperties.LOCAL_PORT_V1,
+            findFreeTcpPort()
+        )
+        val serverConnection = createServerConnection(session)
+        val deviceState = addFakeDevice(fakeAdb, api = 32)
+        val device = waitForOnlineConnectedDevice(session, deviceState.deviceId)
+
+        // Act
+        val processList = CopyOnWriteArrayList<List<JdwpProcessProperties>>()
+        val job = async {
+            serverConnection.withConnectionForDevice(device) {
+                processListStateFlow.collect {
+                    processList.add(it)
+                }
+            }
+        }
+
+        val localProperties = JdwpProcessProperties(
+            pid = 10,
+            processName = "Foo",
+            packageName = "Bar",
+            userId = 5,
+            vmIdentifier = "vm",
+            abi = "x86",
+            jvmFlags = "flags",
+            isNativeDebuggable = true,
+            waitCommandReceived = true,
+            jdwpSessionProxyStatus = JdwpSessionProxyStatus(
+                socketAddress = InetSocketAddress(InetAddress.getLoopbackAddress(), 200),
+                isExternalDebuggerAttached = true
+            ),
+            isWaitingForDebugger = false,
+            features = listOf("feat1", "feat2"),
+            completed = true,
+            exception = null
+        )
+        serverConnection.withConnectionForDevice(device) {
+            sendProcessProperties(localProperties)
+        }
+
+        yieldUntil { processList.isNotEmpty() && processList.last().size == 1 }
+        job.cancel()
+
+        // Assert
+        val lastList = processList.last()
+        val localPropertiesWithoutProxySocketAddress = localProperties.copy(
+            jdwpSessionProxyStatus = JdwpSessionProxyStatus(
+                socketAddress = null,
+                isExternalDebuggerAttached = true
+            )
+        )
+        assertEquals(1, lastList.size)
+        assertEquals(localPropertiesWithoutProxySocketAddress, lastList[0])
+    }
+
+    @Test
+    fun testProcessUpdateUpdatesAllPropertiesIncludingProxyAddressWhenIsWaitingForDebuggerIsTrue(): Unit = CoroutineTestUtils.runBlockingWithTimeout {
+        // Prepare
+        setHostPropertyValue(
+            session.host,
+            AdbLibToolsProcessInventoryServerProperties.LOCAL_PORT_V1,
+            findFreeTcpPort()
+        )
+        val serverConnection = createServerConnection(session)
+        val deviceState = addFakeDevice(fakeAdb, api = 32)
+        val device = waitForOnlineConnectedDevice(session, deviceState.deviceId)
+
+        // Act
+        val processList = CopyOnWriteArrayList<List<JdwpProcessProperties>>()
+        val job = async {
+            serverConnection.withConnectionForDevice(device) {
+                processListStateFlow.collect {
+                    processList.add(it)
+                }
+            }
+        }
+
+        val localProperties = JdwpProcessProperties(
+            pid = 10,
+            processName = "Foo",
+            packageName = "Bar",
+            userId = 5,
+            vmIdentifier = "vm",
+            abi = "x86",
+            jvmFlags = "flags",
+            isNativeDebuggable = true,
+            waitCommandReceived = true,
+            jdwpSessionProxyStatus = JdwpSessionProxyStatus(
+                socketAddress = InetSocketAddress(InetAddress.getLoopbackAddress(), 200),
+                isExternalDebuggerAttached = true
+            ),
             isWaitingForDebugger = true,
             features = listOf("feat1", "feat2"),
             completed = true,
