@@ -56020,6 +56020,19 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.junit.platform.junit-platform-launcher_1.10.1",
+    pom = "repository/org/junit/platform/junit-platform-launcher/1.10.1/junit-platform-launcher-1.10.1.pom",
+    repo_root_path = "repository",
+    repo_path = "org/junit/platform/junit-platform-launcher/1.10.1",
+    deps = [
+        "org.junit.platform.junit-platform-engine_1.10.1",
+        "org.apiguardian.apiguardian-api_1.1.2",
+        "org.junit.junit-bom_5.10.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.junit.platform.junit-platform-launcher_1.7.0",
     pom = "repository/org/junit/platform/junit-platform-launcher/1.7.0/junit-platform-launcher-1.7.0.pom",
     repo_root_path = "repository",
