@@ -66,6 +66,8 @@ class Renderer private constructor(
     init {
         TimeZone.getDefault()
 
+        val moduleClassLoaderManager = StandaloneModuleClassLoaderManager(classPath, projectClassPath)
+
         framework = StandaloneFramework(!isForTest)
 
         val resourceIdManager = ApkResourceIdManager()
@@ -88,8 +90,6 @@ class Renderer private constructor(
         val androidPlatform = AndroidPlatform(androidSdkData, androidTarget)
 
         val resourceRepositoryManager = SingleRepoResourceRepositoryManager(resourcesRepo)
-
-        val moduleClassLoaderManager = StandaloneModuleClassLoaderManager(classPath, projectClassPath)
 
         framework.registerService(ModuleClassLoaderManager::class.java, moduleClassLoaderManager)
 

@@ -17,6 +17,7 @@
 package com.android.tools.render
 
 import com.android.annotations.concurrency.GuardedBy
+import com.android.layoutlib.LayoutlibClassLoader
 import com.android.tools.rendering.ModuleRenderContext
 import com.android.tools.rendering.classloading.ClassTransform
 import com.android.tools.rendering.classloading.ClassesTracker
@@ -24,6 +25,7 @@ import com.android.tools.rendering.classloading.CodeExecutionTrackerTransform
 import com.android.tools.rendering.classloading.ModuleClassLoader
 import com.android.tools.rendering.classloading.ModuleClassLoaderDiagnosticsRead
 import com.android.tools.rendering.classloading.ModuleClassLoaderManager
+import com.android.tools.rendering.classloading.Preloader
 import com.android.tools.rendering.classloading.PseudoClassLocatorForLoader
 import com.android.tools.rendering.classloading.loaders.AsmTransformingLoader
 import com.android.tools.rendering.classloading.loaders.ClassLoaderLoader
@@ -33,6 +35,7 @@ import com.google.common.cache.CacheBuilder
 import com.intellij.openapi.module.Module
 import com.intellij.util.lang.UrlClassLoader
 import com.android.tools.rendering.classloading.toClassTransform
+import java.util.concurrent.Executors
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.io.path.Path
@@ -46,6 +49,12 @@ internal class StandaloneModuleClassLoaderManager(
     private val classPath: List<String>,
     private val projectClassPath: List<String>,
 ) : ModuleClassLoaderManager<ModuleClassLoader> {
+
+    private val preloader = Preloader(
+        createClassLoader(LayoutlibClassLoader(this::class.java.classLoader)),
+        Executors.newSingleThreadExecutor(),
+        COMPOSE_CLASSES
+    )
 
     /**
      * A loader responsible for loading all the classes in out-of-studio version of
@@ -164,7 +173,7 @@ internal class StandaloneModuleClassLoaderManager(
         onNewModuleClassLoader: Runnable
     ): ModuleClassLoaderManager.Reference<ModuleClassLoader> {
         val classLoader = sharedClassLoadersLock.withLock {
-            sharedClassLoaders.get(parent) { createClassLoader(parent) }
+            sharedClassLoaders.get(parent) { preloader.getClassLoader() }
         }
         return ModuleClassLoaderManager.Reference(this, classLoader)
     }

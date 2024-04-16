@@ -34,6 +34,14 @@ fun main(args: Array<String>) {
     val composeRendering = readComposeRenderingJson(File(args[0]).reader())
 
     val composeRenderingResult = try {
+        val r = Renderer.createRenderer(
+            composeRendering.fontsPath,
+            composeRendering.resourceApkPath,
+            composeRendering.namespace,
+            composeRendering.classPath,
+            composeRendering.projectClassPath,
+            composeRendering.layoutlibPath,
+        )
         val screenshotResults = mutableListOf<ComposeScreenshotResult>()
         val requestToImageName = composeRendering.screenshots.mapNotNull { screenshot ->
             screenshot.toPreviewElement()?.let { previewElement ->
@@ -43,14 +51,7 @@ fun main(args: Array<String>) {
             }
         }.toMap()
 
-        Renderer.createRenderer(
-            composeRendering.fontsPath,
-            composeRendering.resourceApkPath,
-            composeRendering.namespace,
-            composeRendering.classPath,
-            composeRendering.projectClassPath,
-            composeRendering.layoutlibPath,
-        ).use { renderer ->
+        r.use { renderer ->
             renderer.render(requestToImageName.keys.asSequence()) { request, i, result, usedPaths ->
                 val resultId = "${requestToImageName[request]}_$i"
                 val screenshotResult = try {
