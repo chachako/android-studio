@@ -49,8 +49,8 @@ public class GenerateRes extends DefaultTask {
 android.applicationVariants.all { variant ->
 
     // create a task that generates a java class
-    File sourceFolder = file("${buildDir}/customCode/${variant.dirName}")
-    def javaGenerationTask = tasks.create(name: "generatedCodeFor${variant.name.capitalize()}", type: GenerateCode) {
+    File sourceFolder = file("${buildDir}/customJava/${variant.dirName}")
+    def javaGenerationTask = tasks.create(name: "generatedJavaFor${variant.name.capitalize()}", type: GenerateCode) {
         value java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(Instant.now())
         className "Foo"
         outputFile file("${sourceFolder.absolutePath}/com/custom/Foo.java")
@@ -59,8 +59,8 @@ android.applicationVariants.all { variant ->
     variant.registerJavaGeneratingTask(javaGenerationTask, sourceFolder)
 
     // register another similar task, and wire it using the other registerJavaGeneratingTask API
-    File sourceFolder2 = file("${buildDir}/customCode2/${variant.dirName}")
-    def javaGenerationTask2 = tasks.register("generatedCodeFor${variant.name.capitalize()}2", GenerateCode) {
+    File sourceFolder2 = file("${buildDir}/customJava2/${variant.dirName}")
+    def javaGenerationTask2 = tasks.register("generatedJavaFor${variant.name.capitalize()}2", GenerateCode) {
         value java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm'Z'").withZone(ZoneId.from(ZoneOffset.UTC)).format(Instant.now())
         className "Bar"
         outputFile file("${sourceFolder.absolutePath}/com/custom/Bar.java")

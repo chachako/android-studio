@@ -26,6 +26,7 @@ import com.android.build.api.dsl.Device
 import com.android.build.api.dsl.DeviceGroup
 import com.android.build.api.instrumentation.FramesComputationMode
 import com.android.build.api.variant.ScopedArtifacts
+import com.android.build.api.variant.impl.DirectoryEntry
 import com.android.build.api.variant.impl.TaskProviderBasedDirectoryEntryImpl
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.internal.component.AndroidTestCreationConfig
@@ -1779,17 +1780,23 @@ abstract class TaskManager(
             if (creationConfig.componentType.isAar) {
                 task.dependsOn(PrepareLintJarForPublish.NAME)
             }
-            creationConfig.sources.res {res ->
-                res.forAllSources { directoryEntry ->
-                    if (directoryEntry.isGenerated && directoryEntry.isUserAdded){
-                        task.dependsOn(
-                            directoryEntry.asFiles(
-                                creationConfig.services.projectInfo.buildDirectory
+            listOfNotNull(
+                creationConfig.sources.res,
+                creationConfig.sources.java,
+                creationConfig.sources.kotlin
+            )
+                .forEach { code ->
+                    code.forAllSources { directoryEntry ->
+                        if (directoryEntry.isUserAdded && directoryEntry.isGenerated) {
+                            directoryEntry.makeDependentOf(
+                                task,
+                                creationConfig.services.provider {
+                                    creationConfig.services.projectInfo.projectDirectory
+                                }
                             )
-                        )
+                        }
                     }
                 }
-            }
         }
         creationConfig
             .taskContainer

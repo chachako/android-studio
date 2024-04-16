@@ -102,7 +102,6 @@ internal class AbstractSourceDirectoriesImplTest {
            abstract val output: DirectoryProperty
        }
 
-       val addedSource = project.layout.buildDirectory.dir("generated/_for_test/srcAddingTask").get().asFile
        val taskProvider = project.tasks.register("srcAddingTask", AddingTask::class.java)
 
        val testTarget = createTestTarget()
@@ -158,6 +157,10 @@ internal class AbstractSourceDirectoriesImplTest {
 
             override fun variantSourcesForModel(filter: (DirectoryEntry) -> Boolean): List<File> =
                 emptyList()
+
+            override fun forAllSources(action: (DirectoryEntry) -> Unit) {
+                listOfSources.forEach(action::invoke)
+            }
         }
     }
 }

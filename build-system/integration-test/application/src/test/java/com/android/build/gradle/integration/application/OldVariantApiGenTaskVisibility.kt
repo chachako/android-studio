@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.google.common.truth.Truth
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -27,6 +28,13 @@ class OldVariantApiGenTaskVisibility {
     @get:Rule
     val project = GradleTestProject.builder().fromTestProject("genFolderApi").create()
 
+    @Before
+    @Throws(Exception::class)
+    fun setUp() {
+
+        File(project.projectDir, "old_variant_api.build.gradle")
+            .copyTo(project.buildFile)
+    }
     @Test
     fun noManifestConfigurationPassesTest() {
         project.buildFile.appendText(
