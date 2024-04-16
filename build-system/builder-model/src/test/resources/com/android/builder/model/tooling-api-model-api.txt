@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-a7adb867e95a26606a4a6871b503c0025e529faadeee708320a471ccc5e4dfcd
+631cb02770fdb16fe18add3f26874406b02436e51d360a8de07a182217872041
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -787,6 +787,7 @@ com.android.builder.model.v2.ide.Variant.getAndroidTestArtifact: com.android.bui
 com.android.builder.model.v2.ide.Variant.getDesugaredMethods: java.util.List<java.io.File> ()
 com.android.builder.model.v2.ide.Variant.getDeviceTestArtifacts: java.util.Map<java.lang.String, com.android.builder.model.v2.ide.AndroidArtifact> ()
 com.android.builder.model.v2.ide.Variant.getDisplayName: java.lang.String ()
+com.android.builder.model.v2.ide.Variant.getExperimentalProperties: java.util.Map<java.lang.String, java.lang.String> ()
 com.android.builder.model.v2.ide.Variant.getHostTestArtifacts: java.util.Map<java.lang.String, com.android.builder.model.v2.ide.JavaArtifact> ()
 com.android.builder.model.v2.ide.Variant.getMainArtifact: com.android.builder.model.v2.ide.AndroidArtifact ()
 com.android.builder.model.v2.ide.Variant.getName: java.lang.String ()

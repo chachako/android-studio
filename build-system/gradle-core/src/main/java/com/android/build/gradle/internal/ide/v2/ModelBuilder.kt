@@ -32,9 +32,9 @@ import com.android.build.api.dsl.TestExtension
 import com.android.build.api.variant.ScopedArtifacts.Scope.ALL
 import com.android.build.api.variant.ScopedArtifacts.Scope.PROJECT
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
+import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.api.variant.impl.HasTestFixtures
 import com.android.build.api.variant.impl.HasDeviceTestsCreationConfig
-import com.android.build.api.variant.impl.HasHostTestsCreationConfig
 import com.android.build.gradle.internal.component.DeviceTestCreationConfig
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ApplicationCreationConfig
@@ -745,6 +745,9 @@ class ModelBuilder<
                 variant.minSdk,
                 variant.global
             ).files.toList(),
+            experimentalProperties = if (variant.experimentalProperties.isPresent) {
+                variant.experimentalProperties.get().mapValues { it.value.toString() }
+            } else emptyMap()
         )
     }
 
