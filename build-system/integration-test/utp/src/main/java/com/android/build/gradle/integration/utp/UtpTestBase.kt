@@ -43,6 +43,7 @@ abstract class UtpTestBase {
     lateinit var testResultXmlPath: String
     lateinit var testReportPath: String
     lateinit var testResultPbPath: String
+    lateinit var utpProfilePath: String
     lateinit var aggTestResultPbPath: String
     lateinit var testCoverageXmlPath: String
     lateinit var testLogcatPath: String
@@ -157,6 +158,7 @@ abstract class UtpTestBase {
 
         assertThat(project.file(testReportPath)).exists()
         assertThat(project.file(testResultPbPath)).exists()
+        assertThat(project.file(utpProfilePath)).exists()
         assertThat(project.file(testCoverageXmlPath)).contains(
             """<method name="stubFuncForTestingCodeCoverage" desc="()V" line="9">"""
         )
@@ -173,6 +175,7 @@ abstract class UtpTestBase {
         executor.expectFailure().run(testTaskName)
         assertThat(project.file(testReportPath)).exists()
         assertThat(project.file(testResultPbPath)).exists()
+        assertThat(project.file(utpProfilePath)).exists()
     }
 
     @Test
@@ -185,6 +188,7 @@ abstract class UtpTestBase {
 
         assertThat(project.file(testReportPath)).exists()
         assertThat(project.file(testResultPbPath)).exists()
+        assertThat(project.file(utpProfilePath)).exists()
     }
 
     @Test
@@ -198,6 +202,7 @@ abstract class UtpTestBase {
 
         assertThat(project.file(testReportPath)).exists()
         assertThat(project.file(testResultPbPath)).exists()
+        assertThat(project.file(utpProfilePath)).exists()
         assertThat(project.file(testCoverageXmlPath)).contains(
             """<method name="stubFuncForTestingCodeCoverage" desc="()V" line="9">"""
         )

@@ -17,6 +17,7 @@ maven_library(
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:com.google.protobuf.protobuf-java",
         "//tools/base/utp/android-device-provider-gradle-proto",
+        "//tools/base/utp/android-device-provider-profile",
         # Don't change dependency order or the test fails. Those plugins bundle kotlinx
         # coroutine jar which may be different version.
         "@maven//:com.google.testing.platform.android-device-provider-local",

@@ -3,27 +3,18 @@ load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
 
 maven_library(
-    name = "android-device-provider-ddmlib",
+    name = "android-device-provider-profile",
     srcs = glob([
         "src/main/java/**/*.kt",
     ]),
-    coordinates = "com.android.tools.utp:android-device-provider-ddmlib",
-    resource_strip_prefix = "tools/base/utp/android-device-provider-ddmlib/src/main/resources/",
-    resources = glob(["src/main/resources/**"]),
+    coordinates = "com.android.tools.utp:android-device-provider-profile",
     version = BASE_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/common:tools.common",
-        "//tools/base/ddmlib:tools.ddmlib",
-        "//tools/base/utp/android-device-provider-ddmlib-proto",
-        "//tools/base/utp/android-device-provider-profile",
-        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
-        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+        "//tools/base/utp/android-device-provider-profile-proto",
         "@maven//:com.google.protobuf.protobuf-java",
-        # Don't change dependency order or the test fails. Those plugins bundle kotlinx
-        # coroutine jar which may be different version.
-        "@maven//:com.google.testing.platform.android-device-provider-local",
-        "@maven//:com.google.testing.platform.launcher",  # CompileOnly should not be in the pom
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
     ],
 )
 
@@ -40,11 +31,7 @@ kotlin_test(
         # should be loaded first.
         "@maven//:com.google.testing.platform.launcher",
         # Test dependencies.
-        ":android-device-provider-ddmlib",
-        "//tools/base/common:tools.common",
-        "//tools/base/ddmlib:tools.ddmlib",
-        "//tools/base/sdk-common:tools.sdk-common",
-        "//tools/base/sdklib:tools.sdklib",
+        ":android-device-provider-profile",
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.protobuf.protobuf-java",
         "@maven//:com.google.truth.truth",

@@ -763,6 +763,7 @@ com.android.tools.utp:android-device-provider-ddmlib
     com.android.tools.ddms:ddmlib (runtime)
     com.google.protobuf:protobuf-java (runtime)
     com.android.tools.utp:android-device-provider-ddmlib-proto (runtime)
+    com.android.tools.utp:android-device-provider-profile (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
     org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm (runtime)
     com.google.testing.platform:core-proto (runtime)
@@ -782,12 +783,28 @@ com.android.tools.utp:android-device-provider-gradle
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
     com.google.protobuf:protobuf-java (runtime)
     com.android.tools.utp:android-device-provider-gradle-proto (runtime)
+    com.android.tools.utp:android-device-provider-profile (runtime)
     com.google.testing.platform:core-proto (runtime)
     com.google.testing.platform:android-device-provider-local (runtime)
 
 com.android.tools.utp:android-device-provider-gradle-proto
   pomName=com.android.tools.utp.android-device-provider-gradle-proto
   description=A protobuf messages used in a UTP plugin to provide a Gradle managed virtual Android devices
+  dependencies:
+    com.google.protobuf:protobuf-java (runtime)
+
+com.android.tools.utp:android-device-provider-profile
+  pomName=com.android.tools.utp.android-device-provider-profile
+  description=Library providing UTP plugins to talk to AGP
+  dependencies:
+    org.jetbrains.kotlin:kotlin-stdlib (compile)
+    com.android.tools:common (runtime)
+    com.google.protobuf:protobuf-java (runtime)
+    com.android.tools.utp:android-device-provider-profile-proto (runtime)
+
+com.android.tools.utp:android-device-provider-profile-proto
+  pomName=com.android.tools.utp.android-device-provider-profile-proto
+  description=A protobuf messages used by device providers to give detailed profiling messages
   dependencies:
     com.google.protobuf:protobuf-java (runtime)
 

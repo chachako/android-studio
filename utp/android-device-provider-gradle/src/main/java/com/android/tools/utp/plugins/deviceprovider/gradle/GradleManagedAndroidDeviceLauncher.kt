@@ -17,6 +17,7 @@
 package com.android.tools.utp.plugins.deviceprovider.gradle
 
 import com.android.tools.utp.plugins.deviceprovider.gradle.proto.GradleManagedAndroidDeviceProviderProto.GradleManagedAndroidDeviceProviderConfig
+import com.android.tools.utp.plugins.deviceprovider.profile.DeviceProviderProfileManager
 import com.google.testing.platform.api.config.AndroidSdk
 import com.google.testing.platform.api.config.Config
 import com.google.testing.platform.api.config.ConfigBase
@@ -65,6 +66,7 @@ class GradleManagedAndroidDeviceLauncher(
     private lateinit var avdName: String
     private lateinit var dslName: String
     private lateinit var avdId: String
+    private lateinit var profileManager: DeviceProviderProfileManager
     private var enableDisplay: Boolean = false /*lateinit*/
     private var adbServerPort: Int = 0 /*lateinit*/
     private lateinit var device: AndroidDevice
@@ -118,6 +120,9 @@ class GradleManagedAndroidDeviceLauncher(
                 ).path,
                 customConfig.managedDevice.emulatorGpu,
                 customConfig.managedDevice.showEmulatorKernelLogging)
+        profileManager = DeviceProviderProfileManager.forOutputDirectory(
+            environment.outputDirectory
+        )
     }
 
     private fun makeDevice(): AndroidDevice {
@@ -158,8 +163,7 @@ class GradleManagedAndroidDeviceLauncher(
                     number of devices or request fewer devices.
                     """.trimIndent())
             }
-            // Need to close the emulator if we can't connect.
-            releaseDevice()
+            closeDevice()
             throw EmulatorTimeoutException("""
                     Gradle was unable to attach one or more devices to the adb server.
 
@@ -169,7 +173,7 @@ class GradleManagedAndroidDeviceLauncher(
         }
 
         if (!establishBootCheck(targetSerial)) {
-            releaseDevice()
+            closeDevice()
             throw EmulatorTimeoutException("""
                     Gradle was unable to boot one or more devices. If this issue persists,
                     delete existing devices using the "cleanManagedDevices" task and rerun
@@ -273,38 +277,53 @@ class GradleManagedAndroidDeviceLauncher(
     }
 
     override fun provideDevice(): DeviceController {
-        val deviceController: DeviceController
-        try {
-            deviceController = deviceControllerFactory.getController(
+        return profileManager.recordDeviceProvision {
+            val deviceController: DeviceController
+            try {
+                deviceController = deviceControllerFactory.getController(
                     this,
                     environment,
                     testSetup,
                     androidSdk,
                     AdbConfigProto.AdbConfig.parseFrom(customConfig.adbConfig.value),
                     context,
-            )
-        } catch (throwable: Throwable) {
-            throw DeviceProviderException(
+                )
+            } catch (throwable: Throwable) {
+                throw DeviceProviderException(
                     "Loading and configuring DeviceController failed, make sure the device controller is" +
                             " present as a part of the same jar the DeviceProvider is part of.",
                     DeviceProviderErrorSummary.UNDETERMINED,
                     throwable
-            )
-        }
+                )
+            }
 
-        // As a temporary workaround. We need to add the dslName to the
-        // properties here. b/183651101
-        // This will be overwritten if setDevice() is called again.
-        val device = makeDevice()
-        deviceController.setDevice(device)
-        device.properties = device.properties.copy(
-            map = device.properties.map +
-                mapOf(MANAGED_DEVICE_NAME_KEY to dslName)
-        )
-        return deviceController
+            // As a temporary workaround. We need to add the dslName to the
+            // properties here. b/183651101
+            // This will be overwritten if setDevice() is called again.
+            val device = makeDevice()
+            deviceController.setDevice(device)
+            device.properties = device.properties.copy(
+                map = device.properties.map +
+                        mapOf(MANAGED_DEVICE_NAME_KEY to dslName)
+            )
+            deviceController
+        }
     }
 
     override fun releaseDevice() {
+        profileManager.recordDeviceRelease {
+            closeDevice()
+        }
+    }
+
+    /**
+     * Closes the device without recording to the profiling record.
+     *
+     * This should be used when the needs to be closed when an error occurs allocating the device,
+     * so as to not pollute the profiling of device release, which records the time it takes for
+     * the device to be released after testing.
+     */
+    private fun closeDevice() {
         emulatorHandle.closeInstance()
         // On Windows, this may not kill the instance. Search for the serial
         // on adb and run a kill command from the adb. We don't want to

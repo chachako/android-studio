@@ -31,6 +31,7 @@ dependencies {
     implementation libs.com.android.tools.ddms.ddmlib
     implementation libs.protobuf
     implementation libs.com.android.tools.utp.androidDeviceProviderDdmlibProto
+    implementation project(":base:utp:android-device-provider-profile")
     implementation libs.kotlin_stdlib
     implementation libs.kotlin_coroutines_core
     implementation libs.unified_test_platform

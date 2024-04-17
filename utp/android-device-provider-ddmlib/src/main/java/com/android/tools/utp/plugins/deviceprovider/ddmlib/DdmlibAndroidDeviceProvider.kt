@@ -18,6 +18,7 @@ package com.android.tools.utp.plugins.deviceprovider.ddmlib
 
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.tools.utp.plugins.deviceprovider.ddmlib.proto.AndroidDeviceProviderDdmlibConfigProto
+import com.android.tools.utp.plugins.deviceprovider.profile.DeviceProviderProfileManager
 import com.google.testing.platform.api.config.AndroidSdk
 import com.google.testing.platform.api.config.Config
 import com.google.testing.platform.api.config.Environment
@@ -53,6 +54,7 @@ class DdmlibAndroidDeviceProvider() : AndroidDeviceProvider {
     private lateinit var apkPackageNameResolver: ApkPackageNameResolver
     private lateinit var ddmlibAndroidDeviceProviderConfig: AndroidDeviceProviderDdmlibConfigProto.DdmlibAndroidDeviceProviderConfig
     private lateinit var deviceProviderConfig: LocalAndroidDeviceProviderProto.LocalAndroidDeviceProvider
+    private lateinit var profileManager: DeviceProviderProfileManager
 
     constructor(deviceFinder: DdmlibAndroidDeviceFinder) : this() {
         this.deviceFinder = deviceFinder
@@ -95,6 +97,10 @@ class DdmlibAndroidDeviceProvider() : AndroidDeviceProvider {
             }
             deviceFinder = DdmlibAndroidDeviceFinder(adb)
         }
+
+        profileManager = DeviceProviderProfileManager.forOutputDirectory(
+            environment.outputDirectory
+        )
     }
 
     /**
@@ -111,19 +117,24 @@ class DdmlibAndroidDeviceProvider() : AndroidDeviceProvider {
     }
 
     override fun provideDevice(): DeviceController {
-        val deviceController = DdmlibAndroidDeviceController(
-            apkPackageNameResolver,
-            ddmlibAndroidDeviceProviderConfig.uninstallIncompatibleApks)
-        val device = deviceFinder.findDevice(deviceProviderConfig.serial)
+        return profileManager.recordDeviceProvision {
+            val deviceController = DdmlibAndroidDeviceController(
+                apkPackageNameResolver,
+                ddmlibAndroidDeviceProviderConfig.uninstallIncompatibleApks
+            )
+            val device = deviceFinder.findDevice(deviceProviderConfig.serial)
                 ?: throw DeviceProviderException(
-                        "Android device (${deviceProviderConfig.serial}) is not found.")
+                    "Android device (${deviceProviderConfig.serial}) is not found."
+                )
 
-        deviceController.setDevice(DdmlibAndroidDevice(device))
-        return deviceController
+            deviceController.setDevice(DdmlibAndroidDevice(device))
+            deviceController
+        }
     }
 
     override fun releaseDevice() {
         // No need to release the local device after usage since we didn't start it.
+        profileManager.recordDeviceRelease {}
     }
 
     override fun cancel(): Boolean = false

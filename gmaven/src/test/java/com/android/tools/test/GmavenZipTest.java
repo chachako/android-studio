@@ -112,6 +112,8 @@ public class GmavenZipTest {
                     "com/android/tools/utp/android-device-provider-ddmlib:sources",
                     "com/android/tools/utp/android-device-provider-gradle",
                     "com/android/tools/utp/android-device-provider-gradle:sources",
+                    "com/android/tools/utp/android-device-provider-profile",
+                    "com/android/tools/utp/android-device-provider-profile:sources",
                     "com/android/tools/utp/android-test-plugin-host-device-info",
                     "com/android/tools/utp/android-test-plugin-host-device-info:sources",
                     "com/android/tools/utp/android-test-plugin-host-emulator-control",

@@ -4118,6 +4118,32 @@ com/android/tools/utp/android-device-provider-gradle-proto
   gradle_managed_android_device_provider_config.proto
   gradle_managed_device_config.proto
 
+com/android/tools/utp/android-device-provider-profile
+  META-INF/
+  META-INF/MANIFEST.MF
+  META-INF/android-device-provider-profile.kotlin_module
+  com/
+  com/android/
+  com/android/tools/
+  com/android/tools/utp/
+  com/android/tools/utp/plugins/
+  com/android/tools/utp/plugins/deviceprovider/
+  com/android/tools/utp/plugins/deviceprovider/profile/
+
+com/android/tools/utp/android-device-provider-profile-proto
+  META-INF/
+  META-INF/MANIFEST.MF
+  NOTICE
+  android_device_provider_profile.proto
+  com/
+  com/android/
+  com/android/tools/
+  com/android/tools/utp/
+  com/android/tools/utp/plugins/
+  com/android/tools/utp/plugins/deviceprovider/
+  com/android/tools/utp/plugins/deviceprovider/profile/
+  com/android/tools/utp/plugins/deviceprovider/profile/proto/
+
 com/android/tools/utp/android-test-plugin-host-additional-test-output
   META-INF/
   META-INF/MANIFEST.MF

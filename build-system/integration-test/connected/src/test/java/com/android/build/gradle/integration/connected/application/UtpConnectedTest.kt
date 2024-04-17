@@ -52,6 +52,7 @@ class UtpConnectedTest : UtpTestBase() {
         private const val TEST_REPORT = "build/reports/androidTests/connected/debug/com.example.android.kotlin.html"
         private const val TEST_REPORT_FOR_DYNAMIC_FEATURE = "build/reports/androidTests/connected/debug/com.example.android.kotlin.feature.html"
         private const val TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/test-result.pb"
+        private const val UTP_PROFILE = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/profiling/device_provider_profile.pb"
         private const val UTP_LOG = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/utp.0.log"
         private const val AGGREGATED_TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/test-result.pb"
         private const val TEST_COV_XML = "build/reports/coverage/androidTest/debug/connected/report.xml"
@@ -79,6 +80,7 @@ class UtpConnectedTest : UtpTestBase() {
             testReportPath = "${moduleName}/$TEST_REPORT"
             testLogcatPath = "${moduleName}/$LOGCAT"
         }
+        utpProfilePath = "${moduleName}/$UTP_PROFILE"
         testResultPbPath = "${moduleName}/$TEST_RESULT_PB"
         aggTestResultPbPath = "${moduleName}/$AGGREGATED_TEST_RESULT_PB"
         testCoverageXmlPath = "${moduleName}/$TEST_COV_XML"
