@@ -22,7 +22,7 @@ import org.gradle.api.Incubating
  * Interface to turn tests on devices, `AndroidTest` being an example of device tests.
  */
 @Incubating
-interface DeviceTestBuilder {
+interface DeviceTestBuilder: GeneratesApkBuilder {
 
     /**
      * Set to `true` if the variant's has any device tests, false otherwise.
@@ -32,28 +32,7 @@ interface DeviceTestBuilder {
     @set: Incubating
     var enable: Boolean
 
-    /**
-     * Sets whether multi-dex is enabled for this variant.
-     *
-     * This can be null, in which case the default value is used.
-     *
-     * It is not safe to read the value of this property as other plugins that were applied
-     * later can change this value so there is no guarantee you would get the final value.
-     * To get the final value, use the [AndroidComponentsExtension.onVariants] API :
-     * ```kotlin
-     * onVariants { variant ->
-     *   variant.dexing.isMultiDexEnabled
-     * }
-     * ```
-     * Note the a [RuntimeException] will be thrown at Runtime if a java or groovy code tries
-     * to read the property value.
-     */
-    @get:Deprecated(
-        message="Other plugins can change this value, it is not safe to read it at this stage",
-        level = DeprecationLevel.ERROR
-    )
-    @set:Incubating
-    var enableMultiDex: Boolean?
+
 
     /**
      * Specifies host test code coverage data collection by configuring the JacocoPlugin.

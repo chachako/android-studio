@@ -82,7 +82,7 @@ open class DeviceTestImpl @Inject constructor(
     variantServices: VariantServices,
     taskCreationServices: TaskCreationServices,
     global: GlobalTaskCreationConfig,
-    deviceTestBuilder: DeviceTestBuilderImpl,
+    private val deviceTestBuilder: DeviceTestBuilderImpl,
 ) : TestComponentImpl<AndroidTestComponentDslInfo>(
     componentIdentity,
     buildFeatureValues,
@@ -110,7 +110,7 @@ open class DeviceTestImpl @Inject constructor(
         get() = mainVariant.minSdk
 
     override val targetSdk: AndroidVersion
-        get() = global.androidTestOptions.targetSdkVersion ?: getMainTargetSdkVersion()
+        get() = deviceTestBuilder.targetSdkVersion
 
     override val targetSdkVersion: AndroidVersion
         get() = targetSdk

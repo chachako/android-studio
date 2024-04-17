@@ -19,6 +19,7 @@ import com.android.build.api.variant.DeviceTestBuilder;
 import com.android.build.api.variant.PropertyAccessNotAllowedException;
 import com.android.build.gradle.internal.services.VariantBuilderServices;
 import com.android.build.gradle.options.ProjectOptions;
+import com.google.common.truth.Truth;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -27,14 +28,51 @@ import org.mockito.Mockito;
  * error in Kotlin.
  */
 public class DeviceTestBuilderImplTest {
+
     @Test(expected = PropertyAccessNotAllowedException.class)
     public void testGetMultidexEnabled() {
         ProjectOptions projectOptions = Mockito.mock(ProjectOptions.class);
         VariantBuilderServices variantBuilderServices = Mockito.mock(VariantBuilderServices.class);
+        GlobalVariantBuilderConfig global = Mockito.mock(GlobalVariantBuilderConfig.class);
+        VariantBuilderImpl variantBuilder = Mockito.mock(ApplicationVariantBuilderImpl.class);
+
         Mockito.when(variantBuilderServices.getProjectOptions()).thenReturn(projectOptions);
 
-        DeviceTestBuilder tested = new DeviceTestBuilderImpl(variantBuilderServices, false, false);
-        //noinspection deprecation
-        tested.getEnableMultiDex();
+        DeviceTestBuilder builder =
+                new DeviceTestBuilderImpl(
+                        variantBuilderServices, global, variantBuilder, false, false);
+        builder.getEnableMultiDex();
+    }
+
+    @Test
+    public void testTargetSdkSetters() {
+        ProjectOptions projectOptions = Mockito.mock(ProjectOptions.class);
+        VariantBuilderServices variantBuilderServices = Mockito.mock(VariantBuilderServices.class);
+        GlobalVariantBuilderConfig global = Mockito.mock(GlobalVariantBuilderConfig.class);
+        VariantBuilderImpl variantBuilder = Mockito.mock(ApplicationVariantBuilderImpl.class);
+        Mockito.when(variantBuilderServices.getProjectOptions()).thenReturn(projectOptions);
+
+        DeviceTestBuilder builder =
+                new DeviceTestBuilderImpl(
+                        variantBuilderServices, global, variantBuilder, false, false);
+
+        Truth.assertThat(builder.getTargetSdk()).isNull();
+        Truth.assertThat(builder.getTargetSdkPreview()).isNull();
+
+        builder.setTargetSdk(43);
+        Truth.assertThat(builder.getTargetSdk()).isEqualTo(43);
+        Truth.assertThat(builder.getTargetSdkPreview()).isNull();
+
+        builder.setTargetSdkPreview("M");
+        Truth.assertThat(builder.getTargetSdk()).isNull();
+        Truth.assertThat(builder.getTargetSdkPreview()).isEqualTo("M");
+
+        builder.setTargetSdkPreview("N");
+        Truth.assertThat(builder.getTargetSdk()).isNull();
+        Truth.assertThat(builder.getTargetSdkPreview()).isEqualTo("N");
+
+        builder.setTargetSdk(23);
+        Truth.assertThat(builder.getTargetSdk()).isEqualTo(23);
+        Truth.assertThat(builder.getTargetSdkPreview()).isNull();
     }
 }

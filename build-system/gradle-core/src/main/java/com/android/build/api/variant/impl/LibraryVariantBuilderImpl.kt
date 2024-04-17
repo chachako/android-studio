@@ -19,11 +19,9 @@ package com.android.build.api.variant.impl
 import com.android.build.api.component.analytics.AnalyticsEnabledLibraryVariantBuilder
 import com.android.build.api.variant.AndroidTestBuilder
 import com.android.build.api.variant.ComponentIdentity
-import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.LibraryVariantBuilder
 import com.android.build.api.variant.VariantBuilder
-import com.android.build.gradle.internal.core.dsl.AndroidTestComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.LibraryVariantDslInfo
 import com.android.build.gradle.internal.errors.DeprecationReporter
 import com.android.build.gradle.internal.services.ProjectServices
@@ -99,6 +97,8 @@ open class LibraryVariantBuilderImpl @Inject constructor(
         dslInfo.dslDefinedDeviceTests.map { deviceTest ->
             DeviceTestBuilderImpl(
                 variantBuilderServices,
+                globalVariantBuilderConfig,
+                this,
                 dslInfo.isAndroidTestMultiDexEnabled,
                 deviceTest.codeCoverageEnabled
             )

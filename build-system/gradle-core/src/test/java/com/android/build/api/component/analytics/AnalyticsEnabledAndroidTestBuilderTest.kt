@@ -67,11 +67,31 @@ class AnalyticsEnabledAndroidTestBuilderTest {
     @Test
     fun testEnableCodeCodeCoverage() {
         proxy.enableCodeCoverage = true
-
-        Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantAccessList.first().type
         ).isEqualTo(VariantMethodType.DEVICE_TEST_ENABLE_CODE_COVERAGE_VALUE)
         Mockito.verify(delegate, Mockito.times(1)).enableCodeCoverage = true
+    }
+
+    @Test
+    fun testTargetSdk() {
+        proxy.targetSdk = 23
+
+        Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantAccessList.first().type
+        ).isEqualTo(VariantMethodType.TARGET_SDK_VERSION_VALUE_VALUE)
+        Mockito.verify(delegate, Mockito.times(1)).targetSdk = 23
+    }
+
+    @Test
+    fun testTargetSdkPreview() {
+        proxy.targetSdkPreview = "M"
+
+        Truth.assertThat(stats.variantApiAccess.variantAccessCount).isEqualTo(1)
+        Truth.assertThat(
+            stats.variantApiAccess.variantAccessList.first().type
+        ).isEqualTo(VariantMethodType.TARGET_SDK_PREVIEW_VALUE)
+        Mockito.verify(delegate, Mockito.times(1)).targetSdkPreview = "M"
     }
 }

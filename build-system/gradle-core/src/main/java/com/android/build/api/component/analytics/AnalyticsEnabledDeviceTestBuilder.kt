@@ -41,6 +41,20 @@ open class AnalyticsEnabledDeviceTestBuilder(
                 VariantMethodType.ENABLE_MULTI_DEX_VALUE
             delegate.enableMultiDex = value
         }
+    override var targetSdk: Int?
+        get() = delegate.targetSdk
+        set(value) {
+            stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
+                VariantMethodType.TARGET_SDK_VERSION_VALUE_VALUE
+            delegate.targetSdk = value
+        }
+    override var targetSdkPreview: String?
+        get() = delegate.targetSdkPreview
+        set(value) {
+            stats.variantApiAccessBuilder.addVariantAccessBuilder().type =
+                VariantMethodType.TARGET_SDK_PREVIEW_VALUE
+            delegate.targetSdkPreview = value
+        }
 
 
     override var enableCodeCoverage: Boolean

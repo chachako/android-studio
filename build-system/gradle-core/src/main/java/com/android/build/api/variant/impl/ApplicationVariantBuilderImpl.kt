@@ -21,13 +21,10 @@ import com.android.build.api.variant.ApplicationAndroidResourcesBuilder
 import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.DependenciesInfoBuilder
-import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.PropertyAccessNotAllowedException
 import com.android.build.api.variant.VariantBuilder
-import com.android.build.gradle.internal.core.dsl.AndroidTestComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.ApplicationVariantDslInfo
-import com.android.build.gradle.internal.core.dsl.VariantDslInfo
 import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.services.VariantBuilderServices
 import com.android.builder.errors.IssueReporter
@@ -124,10 +121,13 @@ open class ApplicationVariantBuilderImpl @Inject constructor(
             _enableMultiDex = value
         }
 
+
     override val deviceTests: List<DeviceTestBuilderImpl> =
         dslInfo.dslDefinedDeviceTests.map { deviceTest ->
             DeviceTestBuilderImpl(
                 variantBuilderServices,
+                globalVariantBuilderConfig,
+                this,
                 _enableMultiDex,
                 deviceTest.codeCoverageEnabled
             )

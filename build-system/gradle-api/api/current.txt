@@ -2685,16 +2685,13 @@ package com.android.build.api.variant {
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.SigningConfig? signingConfig;
   }
 
-  @org.gradle.api.Incubating public interface DeviceTestBuilder {
+  @org.gradle.api.Incubating public interface DeviceTestBuilder extends com.android.build.api.variant.GeneratesApkBuilder {
     method @org.gradle.api.Incubating public boolean getEnable();
     method @Deprecated @org.gradle.api.Incubating public boolean getEnableCodeCoverage();
-    method @Deprecated public Boolean? getEnableMultiDex();
     method @org.gradle.api.Incubating public void setEnable(boolean);
     method @Deprecated @org.gradle.api.Incubating public void setEnableCodeCoverage(boolean);
-    method @Deprecated @org.gradle.api.Incubating public void setEnableMultiDex(Boolean?);
     property @org.gradle.api.Incubating public abstract boolean enable;
     property @Deprecated @org.gradle.api.Incubating public abstract boolean enableCodeCoverage;
-    property @Deprecated public abstract Boolean? enableMultiDex;
   }
 
   public interface DexPackagingOptions {

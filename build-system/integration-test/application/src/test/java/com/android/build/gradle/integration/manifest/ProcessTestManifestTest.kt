@@ -34,6 +34,59 @@ class ProcessTestManifestTest {
         .create()
 
     @Test
+    fun testInstrumentationApkTargetSdk() {
+        project.buildFile.appendText("""
+            android {
+                flavorDimensions "targetSdk"
+
+                productFlavors {
+                    sdk30 {
+                        dimension "targetSdk"
+                    }
+
+                    sdk32 {
+                        dimension "targetSdk"
+                    }
+                }
+            }
+            androidComponents {
+                beforeVariants(selector().withFlavor("targetSdk", "sdk30"), { variant ->
+                    variant.androidTest?.targetSdk = 30
+                })
+
+                beforeVariants(selector().withFlavor("targetSdk", "sdk32"), { variant ->
+                    variant.androidTest?.targetSdk = 32
+                })
+            }
+        """.trimIndent())
+
+        project.executor().run("assembleAndroidTest")
+        val sdk30ManifestFile = project.file("build/intermediates/packaged_manifests/sdk30DebugAndroidTest/processSdk30DebugAndroidTestManifest/AndroidManifest.xml")
+        assertThat(sdk30ManifestFile).contains("android:targetSdkVersion=\"30\"")
+
+        val sdk32ManifestFile = project.file("build/intermediates/packaged_manifests/sdk32DebugAndroidTest/processSdk32DebugAndroidTestManifest/AndroidManifest.xml")
+        assertThat(sdk32ManifestFile).contains("android:targetSdkVersion=\"32\"")
+    }
+
+    @Test
+    fun testInstrumentationApkTargetSdkPreview() {
+        project.buildFile.appendText("""
+            androidComponents {
+                beforeVariants(selector().withBuildType("debug"), { variant ->
+                    variant.androidTest?.targetSdk = 32
+                })
+                beforeVariants(selector().withBuildType("debug"), { variant ->
+                    variant.androidTest?.targetSdkPreview = "M"
+                })
+            }
+        """.trimIndent())
+
+        project.executor().run("assembleDebugAndroidTest")
+        val debugManifestFile = project.file("build/intermediates/packaged_manifests/debugAndroidTest/processDebugAndroidTestManifest/AndroidManifest.xml")
+        assertThat(debugManifestFile).contains("android:targetSdkVersion=\"M\"")
+    }
+
+    @Test
     fun build() {
         project.buildFile.appendText("""
             import com.android.build.api.variant.AndroidVersion

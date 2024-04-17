@@ -26,6 +26,8 @@ import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Incubating
 import org.junit.Rule
 import org.junit.Test
+import java.io.ByteArrayInputStream
+import java.io.InputStreamReader
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
@@ -103,7 +105,16 @@ class IncubatingApiTest {
         )
     }
 
+    @Test
+    fun `file does not contain do not submit text`() {
+        InputStreamReader(snapshotFileUrl.openStream()).use {
+            assertThat(it.readText()).doesNotContain(DO_NOT_SUBMIT)
+        }
+    }
+
     companion object {
+
+        private const val DO_NOT_SUBMIT = "DO NOT SUBMIT"
 
         private val snapshotFileUrl =
             Resources.getResource(DeprecatedApiTest::class.java, "incubating-api.txt")
@@ -136,7 +147,7 @@ class IncubatingApiTest {
                 { content -> transformFinalFileContent(
                     currentSnapshotContent = content,
                     snapshotFileUrl = snapshotFileUrl,
-                    currentKey = currentKey ?: "DO NOT SUBMIT",
+                    currentKey = currentKey ?: DO_NOT_SUBMIT,
                     keyPrefix = "https://issuetracker.google.com/",
                     keyOrdering = Comparator.comparingInt { it.toIntOrNull() ?: Int.MIN_VALUE })
                 },

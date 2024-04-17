@@ -3,8 +3,6 @@ Incubating Android Gradle Plugin API.
 ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 have associated tracking issues.
 -------------------------------------------------------------------------
-https://issuetracker.google.com/DO NOT SUBMIT
-  * com.android.build.api.variant.DeviceTest.getCodeCoverageEnabled: boolean ()
 https://issuetracker.google.com/328747466
   * com.android.build.api.artifact.SingleArtifact$MERGED_NATIVE_LIBS extends com.android.build.api.artifact.SingleArtifact
 https://issuetracker.google.com/328747467
@@ -620,11 +618,8 @@ https://issuetracker.google.com/328749317
   * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm.setReturnDefaultValues: void (boolean)
   * com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvmCompilation implements com.android.build.api.dsl.KotlinMultiplatformAndroidTestOnJvm, com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
 https://issuetracker.google.com/328749318
-  * com.android.build.api.variant.DeviceTestBuilder
   * com.android.build.api.variant.DeviceTestBuilder.getEnable: boolean ()
-  * com.android.build.api.variant.DeviceTestBuilder.getEnableMultiDex: java.lang.Boolean ()
   * com.android.build.api.variant.DeviceTestBuilder.setEnable: void (boolean)
-  * com.android.build.api.variant.DeviceTestBuilder.setEnableMultiDex: void (java.lang.Boolean)
 https://issuetracker.google.com/328749416
   * com.android.build.api.variant.VariantExtensionConfig
   * com.android.build.api.variant.VariantExtensionConfig.buildTypeExtension: T (java.lang.Class<T>)
@@ -716,6 +711,10 @@ https://issuetracker.google.com/335848584
 https://issuetracker.google.com/336296433
   * com.android.build.api.variant.DeviceTestBuilder.getEnableCodeCoverage: boolean ()
   * com.android.build.api.variant.DeviceTestBuilder.setEnableCodeCoverage: void (boolean)
+https://issuetracker.google.com/336737028
+  * com.android.build.api.variant.DeviceTestBuilder implements com.android.build.api.variant.GeneratesApkBuilder
 https://issuetracker.google.com/336985668
   * com.android.build.api.variant.HostTest.configureTestTask: void (kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test, kotlin.Unit>)
   * com.android.build.api.variant.UnitTest.configureTestTask: void (kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test, kotlin.Unit>)
+https://issuetracker.google.com/337766642
+  * com.android.build.api.variant.DeviceTest.getCodeCoverageEnabled: boolean ()

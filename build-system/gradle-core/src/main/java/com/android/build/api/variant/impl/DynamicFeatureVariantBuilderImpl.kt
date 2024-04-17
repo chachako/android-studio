@@ -83,6 +83,8 @@ open class DynamicFeatureVariantBuilderImpl @Inject constructor(
         dslInfo.dslDefinedDeviceTests.map { deviceTest ->
             DeviceTestBuilderImpl(
                 variantBuilderServices,
+                globalVariantBuilderConfig,
+                this,
                 _enableMultiDex,
                 deviceTest.codeCoverageEnabled
             )
