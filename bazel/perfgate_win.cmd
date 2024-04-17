@@ -29,7 +29,6 @@ for /f %%i in (%SCRIPTDIR%targets.win) do set TARGETS=!TARGETS! %%i
 @rem Run Bazel
 CALL %SCRIPTDIR%bazel.cmd ^
  --max_idle_secs=60 ^
- --output_base=%TMPDIR% ^
  test ^
  --keep_going ^
  --config=ci --config=ants ^
@@ -57,7 +56,6 @@ echo "<head><meta http-equiv="refresh" content="0; URL='https://fusion2.corp.goo
 @rem Extract test logs and perfgate data
 CALL %SCRIPTDIR%bazel.cmd ^
   --max_idle_secs=60 ^
- --output_base=%TMPDIR% ^
   run //tools/vendor/adt_infra_internal/rbe/logscollector:logs-collector ^
   --config=ci ^
   -- ^
