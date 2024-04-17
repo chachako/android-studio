@@ -17,16 +17,22 @@ package com.android.adblib.ddmlibcompatibility
 
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
+import com.android.adblib.DeviceState
 import com.android.adblib.adbLogger
 import com.android.adblib.connectedDevicesTracker
 import com.android.adblib.ddmlibcompatibility.debugging.AdbLibDeviceClientManager
 import com.android.adblib.ddmlibcompatibility.debugging.AdblibIDeviceWrapper
+import com.android.adblib.scope
 import com.android.adblib.utils.createChildScope
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.idevicemanager.IDeviceManager
 import com.android.ddmlib.idevicemanager.IDeviceManagerListener
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import java.util.IdentityHashMap
 import java.util.concurrent.atomic.AtomicReference
@@ -80,13 +86,27 @@ internal class AdbLibIDeviceManager(
                     initialDeviceListDone = true
 
                     if (addedIDevices.isNotEmpty()) {
-                        ddmlibEventQueue.post(scope, "devices added") {
+                        postAndWaitForCompletion(scope, "devices added") {
                             iDeviceManagerListener.addedDevices(addedIDevices)
+                        }
+                        for (addedConnectedDevice in added) {
+                            val iDevice = deviceMap.getValue(addedConnectedDevice)
+                            addedConnectedDevice.scope.launch {
+                                addedConnectedDevice.deviceInfoFlow.map { it.deviceState }.collect {
+                                    iDevice.deviceState = it
+                                    postAndWaitForCompletion(scope, "device state changed") {
+                                        iDeviceManagerListener.deviceStateChanged(iDevice)
+                                    }
+                                }
+                            }.invokeOnCompletion {
+                                // This will trigger when the device is removed. Ddmlib similarly
+                                // sets deviceState to DISCONNECTED in `DeviceMonitor.removeDevice`
+                                iDevice.deviceState = DeviceState.DISCONNECTED }
                         }
                     }
 
                     if (removedIDevices.isNotEmpty()) {
-                        ddmlibEventQueue.post(scope, "devices removed") {
+                        postAndWaitForCompletion(scope, "devices removed") {
                             iDeviceManagerListener.removedDevices(removedIDevices)
                         }
                     }
@@ -105,5 +125,17 @@ internal class AdbLibIDeviceManager(
 
     override fun hasInitialDeviceList(): Boolean {
         return initialDeviceListDone
+    }
+
+    private suspend fun postAndWaitForCompletion(scope: CoroutineScope, name: String, handler: () -> Unit) {
+        val processed = CompletableDeferred<Unit>(scope.coroutineContext.job)
+        ddmlibEventQueue.post(scope, name) {
+            try {
+                handler()
+            } finally {
+                processed.complete(Unit)
+            }
+        }
+        processed.await()
     }
 }

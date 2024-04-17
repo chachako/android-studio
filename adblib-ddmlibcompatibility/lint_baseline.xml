@@ -785,28 +785,6 @@
     <issue
         id="InconsistentThreadingAnnotation"
         message="Overridden method needs to have a threading annotation matching the super method&apos;s annotation `com.android.annotations.concurrency.WorkerThread`"
-        errorLine1="        override fun addedDevices(deviceList: MutableList&lt;IDevice>) {}"
-        errorLine2="                     ~~~~~~~~~~~~">
-        <location
-            file="test/src/com/android/adblib/ddmlibcompatibility/AdbLibIDeviceManagerTest.kt"
-            line="59"
-            column="22"/>
-    </issue>
-
-    <issue
-        id="InconsistentThreadingAnnotation"
-        message="Overridden method needs to have a threading annotation matching the super method&apos;s annotation `com.android.annotations.concurrency.WorkerThread`"
-        errorLine1="        override fun removedDevices(deviceList: MutableList&lt;IDevice>) {}"
-        errorLine2="                     ~~~~~~~~~~~~~~">
-        <location
-            file="test/src/com/android/adblib/ddmlibcompatibility/AdbLibIDeviceManagerTest.kt"
-            line="61"
-            column="22"/>
-    </issue>
-
-    <issue
-        id="InconsistentThreadingAnnotation"
-        message="Overridden method needs to have a threading annotation matching the super method&apos;s annotation `com.android.annotations.concurrency.WorkerThread`"
         errorLine1="    override fun processListUpdated("
         errorLine2="                 ~~~~~~~~~~~~~~~~~~">
         <location
