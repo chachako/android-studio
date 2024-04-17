@@ -6,7 +6,6 @@ maven_library(
     name = "android-device-provider-gradle",
     srcs = glob([
         "src/main/java/**/*.kt",
-        "src/main/java/**/*.java",
     ]),
     coordinates = "com.android.tools.utp:android-device-provider-gradle",
     resource_strip_prefix = "tools/base/utp/android-device-provider-gradle/src/main/resources/",
@@ -29,7 +28,6 @@ kotlin_test(
     name = "tests",
     srcs = glob([
         "src/test/java/**/*.kt",
-        "src/test/java/**/*.java",
     ]),
     jvm_flags = ["-Dtest.suite.jar=tests.jar"],
     resources = glob(["src/test/resources/**"]),
@@ -54,7 +52,6 @@ kotlin_test(
 filegroup(
     name = "agp_gradle_build_files",
     srcs = glob([
-        "src/main/**/*.java",
         "src/main/**/*.kt",
         "src/main/resources/**",
     ]) + [
