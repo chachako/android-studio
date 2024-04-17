@@ -16,6 +16,7 @@
 
 package com.android.tools.lint.checks.optional
 
+import com.android.SdkConstants.ATTR_VALUE
 import com.android.tools.lint.checks.BuiltinIssueRegistry
 import com.android.tools.lint.checks.TypedefDetector
 import com.android.tools.lint.client.api.JavaEvaluator
@@ -36,8 +37,11 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.getMethodName
 import com.android.tools.lint.detector.api.isUnconditionalReturn
 import com.android.utils.SdkUtils.constantNameToCamelCase
+import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiCompiledElement
 import com.intellij.psi.PsiField
+import com.intellij.psi.PsiLiteralValue
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNamedElement
 import org.jetbrains.uast.UAnnotated
@@ -120,10 +124,18 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
     annotationInfo: AnnotationInfo,
     usageInfo: AnnotationUsageInfo,
   ) {
-    val flag = getFlaggedApi(annotationInfo.annotation)
+    val compiled = usageInfo.referenced is PsiCompiledElement
+    val annotation = annotationInfo.annotation
+    val flag =
+      if (compiled) {
+        getFlaggedApiFromString(context, annotation)
+      } else {
+        getFlaggedApiFromSource(annotation)
+      }
+
     if (flag == null) {
       // Raw string?
-      val expression = annotationInfo.annotation.attributeValues.firstOrNull()?.expression ?: return
+      val expression = annotation.attributeValues.firstOrNull()?.expression ?: return
       if (expression is ULiteralExpression) {
         val flagString = ConstantEvaluator.evaluateString(context, expression, false)
         if (flagString != null) {
@@ -168,20 +180,14 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
 
     val referenced = element.tryResolve()
     val description =
-      if (referenced is PsiMethod) {
-        "Method `${referenced.name}()`"
-      } else if (element is UCallExpression) {
-        "Method `${getMethodName(element)}()`"
-      } else if (referenced is PsiField) {
-        "Field `${referenced.name}`"
-      } else if (referenced is PsiClass) {
-        "Class `${referenced.name}`"
-      } else if (element is UClassLiteralExpression) {
-        "Class `${element.expression?.sourcePsi?.text}`"
-      } else if (referenced is PsiNamedElement) {
-        "Reference `${referenced.name}`"
-      } else {
-        "This"
+      when {
+        referenced is PsiMethod -> "Method `${referenced.name}()`"
+        element is UCallExpression -> "Method `${getMethodName(element)}()`"
+        referenced is PsiField -> "Field `${referenced.name}`"
+        referenced is PsiClass -> "Class `${referenced.name}`"
+        element is UClassLiteralExpression -> "Class `${element.expression?.sourcePsi?.text}`"
+        referenced is PsiNamedElement -> "Reference `${referenced.name}`"
+        else -> "This"
       }
     val name = element.getParentOfType<UMethod>()?.name ?: "?"
     val message =
@@ -191,8 +197,44 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
   }
 
   /** Given a `@FlaggedApi` annotation, returns the resolved field. */
-  private fun getFlaggedApi(annotation: UAnnotation): PsiField? {
+  private fun getFlaggedApi(
+    context: JavaContext,
+    annotation: UAnnotation,
+    usageInfo: AnnotationUsageInfo,
+  ): PsiField? {
+    if (usageInfo.referenced is PsiCompiledElement) {
+      return getFlaggedApiFromString(context, annotation)
+    }
+
+    return getFlaggedApiFromSource(annotation)
+  }
+
+  /** Given a `@FlaggedApi` annotation, returns the resolved field. */
+  private fun getFlaggedApiFromSource(annotation: UAnnotation): PsiField? {
     return annotation.attributeValues.firstOrNull()?.expression?.tryResolve() as? PsiField
+  }
+
+  /**
+   * Given a `@FlaggedApi` annotation in bytecode, maps from the flag value back to the original
+   * flagged API field (this process is deterministic).
+   */
+  private fun getFlaggedApiFromString(context: JavaContext, annotation: UAnnotation): PsiField? {
+    val sourcePsi = annotation.sourcePsi
+    if (sourcePsi is PsiAnnotation) {
+      val value = sourcePsi.findAttributeValue(ATTR_VALUE) as? PsiLiteralValue
+      val flag = value?.value as? String ?: return null
+
+      val separator = flag.lastIndexOf('.')
+      if (separator != -1) {
+        val packageName = flag.substring(0, separator)
+        val className = "$packageName.Flags"
+        val cls = context.evaluator.findClass(className) ?: return null
+        val fieldName = "FLAG_" + flag.substring(separator + 1).uppercase()
+        return cls.findFieldByName(fieldName, true)
+      }
+    }
+
+    return null
   }
 
   /**
@@ -209,7 +251,7 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
       if (current is UAnnotated) {
         //noinspection AndroidLintExternalAnnotations
         for (annotation in current.uAnnotations) {
-          val api = getFlaggedApi(annotation) ?: continue
+          val api = getFlaggedApiFromSource(annotation) ?: continue
           if (api.isEquivalentTo(flag)) {
             return true
           }
@@ -226,7 +268,7 @@ class FlaggedApiDetector : Detector(), SourceCodeScanner {
           for (psiAnnotation in pkg.annotations) {
             val annotation =
               UastFacade.convertElement(psiAnnotation, null) as? UAnnotation ?: continue
-            val api = getFlaggedApi(annotation) ?: continue
+            val api = getFlaggedApiFromSource(annotation) ?: continue
             if (api.isEquivalentTo(flag)) {
               return true
             }

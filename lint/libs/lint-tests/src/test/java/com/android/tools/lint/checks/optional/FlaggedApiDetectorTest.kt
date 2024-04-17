@@ -24,6 +24,7 @@ import com.android.tools.lint.checks.infrastructure.LintDetectorTest
 import com.android.tools.lint.checks.infrastructure.TestFile
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestLintTask
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Issue
 import java.io.File
@@ -83,7 +84,7 @@ class FlaggedApiDetectorTest : LintDetectorTest() {
             package com.example.foobar;
 
             public class Flags {
-                public static final String FLAG_FOOBAR = "foobar";
+                public static final String FLAG_FOOBAR = "com.example.foobar.foobar";
                 public static boolean foobar() { return true; }
             }
             """
@@ -101,6 +102,121 @@ class FlaggedApiDetectorTest : LintDetectorTest() {
             int val = api.apiField; // ERROR 2
                           ~~~~~~~~
         src/test/pkg/Test.java:13: Error: Class MyApi is a flagged API and should be inside an if (Flags.foobar()) check (or annotate the surrounding method test with @FlaggedApi(Flags.FLAG_FOOBAR) to transfer requirement to caller) [FlaggedApi]
+            Object o = MyApi.class; // ERROR 3
+                       ~~~~~~~~~~~
+        3 errors, 0 warnings
+        """
+      )
+  }
+
+  fun testCompiled() {
+    lint()
+      .files(
+        compiled(
+          "libs/annotation.jar",
+          flaggedApiAnnotationStub,
+          0x81415584,
+          """
+          android/annotation/FlaggedApi.class:
+          H4sIAAAAAAAA/4WRwU4CMRCG/yLLKqigookHo/FA9OIePXja4BJJcJfsVhPj
+          wRRoNiWlS5ZCwqt58AF8KOOsJsKBxEP/Tjrf/O1MP7/ePwDc4sTFkYumi2MG
+          ZyH0XDI0r657Y7EQnhYm9RKbK5PeMVSTbJ4PZUdpYuodLdJUjvypuilYhtN4
+          bqyayGc1UwMtfWMyK6zKzIzhbM1P/CU8LvJUWrK+3JwPtJxIY/lyKgkq85d+
+          wFB5DPhDdM9Qa0dhwuOnNo9ienynG/TotO6HYcR93o3Ct9+Ci83msbTkTRFZ
+          t/5B+plWwyWBTrvnJwk1JMwoz9RonV5NhKGx8osGYzm0DOcbr1iNqcXAUKK1
+          RR/DytQvHIpKqPyoi23aPYp2iCm/wpGoolbIbiF7hewXUkejICQOcPgNDPA2
+          HOgBAAA=
+          """,
+        ),
+        compiled(
+          "libs/api.jar",
+          // Generated
+          java(
+              """
+              package com.android.aconfig.test;
+
+              public class Flags {
+                  public static final String FLAG_DISABLED_RO = "com.android.aconfig.test.disabled_ro";
+                  public static boolean disabledRo() {
+                      return true; // not the real implementation
+                  }
+              }
+              """
+            )
+            .indented(),
+          0xc07ff6ad,
+          """
+          com/android/aconfig/test/Flags.class:
+          H4sIAAAAAAAA/11PPUsDQRScl29jYmK0UVAQLNTirkyhCDExIhwGEklhEzZ3
+          67Hhsgt3e/4qGyvBwh/gjxLfLRHBYue9nZ158/br++MTQB/7TZTRrWO3jh6h
+          Ow4Gd4vR/WxwE9yOFtMJoResxIvwE6Fjf2ZTpeNLQntodGaFtnOR5LKBPULt
+          Smllrwnls/M5oTI0kSR0AqXlQ75eyvRRLBNmmpHKii6aGqd9Ympm8jSUY+Xe
+          x4mIM68IbaGBLcJxaNa+0FFqVOSL0OhnFftWZtZ3Ut76b8PJciVDSzhlj7fx
+          eBuPV3i83/hFanCCEv8eIByggirXGt9KqPOhIpyxycwRV+JavXgHvTnDNmPN
+          kWWWtdDeSA8dx0Mqr/90Be648Z0fKhia7H4BAAA=
+          """,
+        ),
+        compiled(
+          "libs/api.jar",
+          java(
+              """
+              package test.api;
+              import android.annotation.FlaggedApi;
+              import com.android.aconfig.test.Flags;
+
+              @FlaggedApi(Flags.FLAG_DISABLED_RO)
+              public class MyApi {
+                public void apiMethod() { }
+                public int apiField = 42;
+              }
+              """
+            )
+            .indented(),
+          0x6f573c19,
+          """
+          test/api/MyApi.class:
+          H4sIAAAAAAAA/0VQTUvDQBB926ZNm9a2foJ4EEFQc0iOHhShCIVCq6DiVbbZ
+          NW5Jd0uyKfizPIjgwR/gjxIni9TDDDNv3ns7O98/n18AzrEXwMNWG3Vs+9jx
+          scvQ4ks1UjITDGzM0LxUWtkrhvrp2SODd22EZOhPlJY35WIm8wc+ywhpk2wq
+          7YshXXBvyjyRI1UNgunrcKmiOV9xhoO7Ulu1kGO9UoUi4VBrY7lVRhcMhxOu
+          RW6UiPkajkcZT1MpyOOCobHiWUmmx4lZRH/kiCdGP6s0srKwkVBFtZB4yk0X
+          PlpdNNBk6FXDmHaM3ToMg2qhOOM6jW9nc5lYHNEVPLoK/bvSUFWjiiwot6k7
+          cT3QCT/AwkH4jtqboweUAxqCRJ6jd9aifceg+Kc2HeCToOve2ECvciW0TzEo
+          sPkLyuJbCJ8BAAA=
+          """,
+        ),
+        java(
+            """
+            package test.pkg;
+            import test.api.MyApi;
+            import com.android.aconfig.test.Flags;
+
+            public class Test {
+              public void test(MyApi api) {
+                if (Flags.disabledRo()) {
+                  api.apiMethod(); // OK
+                  int val = api.apiField; // OK
+                }
+                api.apiMethod(); // ERROR 1
+                int val = api.apiField; // ERROR 2
+                Object o = MyApi.class; // ERROR 3
+              }
+            }
+            """
+          )
+          .indented(),
+      )
+      .skipTestModes(TestMode.SOURCE_ONLY)
+      .run()
+      .expect(
+        """
+        src/test/pkg/Test.java:11: Error: Method apiMethod() is a flagged API and should be inside an if (Flags.disabledRo()) check (or annotate the surrounding method test with @FlaggedApi(Flags.FLAG_DISABLED_RO) to transfer requirement to caller) [FlaggedApi]
+            api.apiMethod(); // ERROR 1
+            ~~~~~~~~~~~~~~~
+        src/test/pkg/Test.java:12: Error: Field apiField is a flagged API and should be inside an if (Flags.disabledRo()) check (or annotate the surrounding method test with @FlaggedApi(Flags.FLAG_DISABLED_RO) to transfer requirement to caller) [FlaggedApi]
+            int val = api.apiField; // ERROR 2
+                          ~~~~~~~~
+        src/test/pkg/Test.java:13: Error: Class MyApi is a flagged API and should be inside an if (Flags.disabledRo()) check (or annotate the surrounding method test with @FlaggedApi(Flags.FLAG_DISABLED_RO) to transfer requirement to caller) [FlaggedApi]
             Object o = MyApi.class; // ERROR 3
                        ~~~~~~~~~~~
         3 errors, 0 warnings
@@ -990,7 +1106,7 @@ private val flaggedApiAnnotationStub: TestFile =
       import java.lang.annotation.Target;
 
       @Target({TYPE, METHOD, CONSTRUCTOR, FIELD, ANNOTATION_TYPE})
-      @Retention(RetentionPolicy.SOURCE)
+      @Retention(RetentionPolicy.CLASS)
       public @interface FlaggedApi {
           String value();
       }
