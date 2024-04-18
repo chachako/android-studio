@@ -27,8 +27,6 @@ import okhttp3.Response
 
 class FakeOkHttp3Client(private val networkInterceptorz: List<Interceptor>) : OkHttpClient() {
 
-  override fun networkInterceptors() = networkInterceptorz
-
   fun newCall(request: Request, fakeResponse: Response): FakeCall {
     return FakeCall(this, request, fakeResponse)
   }
@@ -61,7 +59,7 @@ class FakeOkHttp3Client(private val networkInterceptorz: List<Interceptor>) : Ok
             throw NotImplementedError("Not yet implemented")
           }
 
-          override fun withConnectTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
+          override fun withConnectTimeout(timeout: Int, unit: TimeUnit): Interceptor.Chain {
             throw NotImplementedError("Not yet implemented")
           }
 
@@ -69,7 +67,7 @@ class FakeOkHttp3Client(private val networkInterceptorz: List<Interceptor>) : Ok
             throw NotImplementedError("Not yet implemented")
           }
 
-          override fun withReadTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
+          override fun withReadTimeout(timeout: Int, unit: TimeUnit): Interceptor.Chain {
             throw NotImplementedError("Not yet implemented")
           }
 
@@ -77,7 +75,7 @@ class FakeOkHttp3Client(private val networkInterceptorz: List<Interceptor>) : Ok
             throw NotImplementedError("Not yet implemented")
           }
 
-          override fun withWriteTimeout(p0: Int, p1: TimeUnit): Interceptor.Chain {
+          override fun withWriteTimeout(timeout: Int, unit: TimeUnit): Interceptor.Chain {
             throw NotImplementedError("Not yet implemented")
           }
         }

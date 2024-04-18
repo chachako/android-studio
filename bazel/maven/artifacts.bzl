@@ -75,8 +75,8 @@ ARTIFACTS = [
     "com.squareup:javapoet:1.10.0",
     "com.squareup:javawriter:2.5.0",
     "com.squareup.okhttp:okhttp:2.5.0",
-    "com.squareup.okhttp3:mockwebserver:3.12.0",
-    "com.squareup.okhttp3:okhttp:3.12.0",
+    "com.squareup.okhttp3:mockwebserver:4.12.0",
+    "com.squareup.okhttp3:okhttp:4.12.0",
     "com.squareup.okio:okio:1.15.0",
     "com.squareup.okio:okio-jvm:3.0.0",
     "com.sun.activation:javax.activation:1.2.0",
@@ -393,7 +393,6 @@ DATA = [
     "androidx.privacysandbox.tools:tools-apigenerator:1.0.0-alpha08",
     "androidx.privacysandbox.tools:tools-apipackager:1.0.0-alpha08",
     "androidx.privacysandbox.tools:tools-core:1.0.0-alpha08",
-    "androidx.privacysandbox.tools:tools:1.0.0-alpha08",
     "androidx.privacysandbox.ui:ui-client:1.0.0-alpha07",
     "androidx.privacysandbox.ui:ui-core:1.0.0-alpha07",
     "androidx.privacysandbox.ui:ui-provider:1.0.0-alpha07",
@@ -942,6 +941,8 @@ DATA = [
 ] + [
     # Source JARs
     # keep sorted
+    "com.squareup.okhttp3:okhttp:jar:sources:4.12.0",
+    "com.squareup.okio:okio-jvm:jar:sources:3.6.0",
     "io.grpc:grpc-all:jar:sources:1.57.0",
     "io.grpc:grpc-api:jar:sources:1.57.0",
     "io.grpc:grpc-auth:jar:sources:1.57.0",

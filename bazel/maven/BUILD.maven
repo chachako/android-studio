@@ -2670,14 +2670,14 @@ maven_import(
 )
 
 maven_artifact(
-    name = "com.squareup.okhttp3.mockwebserver_3.12.0",
-    pom = "repository/com/squareup/okhttp3/mockwebserver/3.12.0/mockwebserver-3.12.0.pom",
+    name = "com.squareup.okhttp3.mockwebserver_4.12.0",
+    pom = "repository/com/squareup/okhttp3/mockwebserver/4.12.0/mockwebserver-4.12.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/squareup/okhttp3/mockwebserver/3.12.0",
-    parent = "com.squareup.okhttp3.parent_3.12.0",
+    repo_path = "com/squareup/okhttp3/mockwebserver/4.12.0",
     deps = [
-        "com.squareup.okhttp3.okhttp_3.12.0",
-        "junit.junit_4.12",
+        "com.squareup.okhttp3.okhttp_4.12.0",
+        "junit.junit_4.13.2",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.21",
     ],
     visibility = ["//visibility:public"],
 )
@@ -2685,32 +2685,33 @@ maven_artifact(
 maven_import(
     name = "com.squareup.okhttp3.mockwebserver",
     classifiers = [],
-    parent = "com.squareup.okhttp3.parent_3.12.0",
     jars = [
-        "repository/com/squareup/okhttp3/mockwebserver/3.12.0/mockwebserver-3.12.0.jar"
+        "repository/com/squareup/okhttp3/mockwebserver/4.12.0/mockwebserver-4.12.0.jar"
     ],
     exports = [
         "com.squareup.okhttp3.okhttp",
         "junit.junit",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
     ],
     original_deps = [
-        "com.squareup.okhttp3.okhttp_3.12.0",
-        "junit.junit_4.12",
+        "com.squareup.okhttp3.okhttp_4.12.0",
+        "junit.junit_4.13.2",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.21",
     ],
-    pom = "repository/com/squareup/okhttp3/mockwebserver/3.12.0/mockwebserver-3.12.0.pom",
+    pom = "repository/com/squareup/okhttp3/mockwebserver/4.12.0/mockwebserver-4.12.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/squareup/okhttp3/mockwebserver/3.12.0",
+    repo_path = "com/squareup/okhttp3/mockwebserver/4.12.0",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.squareup.okhttp3.okhttp_3.12.0",
-    pom = "repository/com/squareup/okhttp3/okhttp/3.12.0/okhttp-3.12.0.pom",
+    name = "com.squareup.okhttp3.okhttp_4.12.0",
+    pom = "repository/com/squareup/okhttp3/okhttp/4.12.0/okhttp-4.12.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/squareup/okhttp3/okhttp/3.12.0",
-    parent = "com.squareup.okhttp3.parent_3.12.0",
+    repo_path = "com/squareup/okhttp3/okhttp/4.12.0",
     deps = [
-        "com.squareup.okio.okio_1.15.0",
+        "com.squareup.okio.okio_3.6.0",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.21",
     ],
     visibility = ["//visibility:public"],
 )
@@ -2718,19 +2719,21 @@ maven_artifact(
 maven_import(
     name = "com.squareup.okhttp3.okhttp",
     classifiers = [],
-    parent = "com.squareup.okhttp3.parent_3.12.0",
     jars = [
-        "repository/com/squareup/okhttp3/okhttp/3.12.0/okhttp-3.12.0.jar"
+        "repository/com/squareup/okhttp3/okhttp/4.12.0/okhttp-4.12.0.jar"
     ],
     exports = [
         "com.squareup.okio.okio",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
     ],
     original_deps = [
-        "com.squareup.okio.okio_1.15.0",
+        "com.squareup.okio.okio_3.6.0",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.8.21",
     ],
-    pom = "repository/com/squareup/okhttp3/okhttp/3.12.0/okhttp-3.12.0.pom",
+    pom = "repository/com/squareup/okhttp3/okhttp/4.12.0/okhttp-4.12.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/squareup/okhttp3/okhttp/3.12.0",
+    repo_path = "com/squareup/okhttp3/okhttp/4.12.0",
+    srcjar = "repository/com/squareup/okhttp3/okhttp/4.12.0/okhttp-4.12.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
@@ -2767,13 +2770,13 @@ maven_import(
 )
 
 maven_artifact(
-    name = "com.squareup.okio.okio-jvm_3.0.0",
-    pom = "repository/com/squareup/okio/okio-jvm/3.0.0/okio-jvm-3.0.0.pom",
+    name = "com.squareup.okio.okio-jvm_3.6.0",
+    pom = "repository/com/squareup/okio/okio-jvm/3.6.0/okio-jvm-3.6.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/squareup/okio/okio-jvm/3.0.0",
+    repo_path = "com/squareup/okio/okio-jvm/3.6.0",
     deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.5.31",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.5.31",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.10",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.10",
     ],
     visibility = ["//visibility:public"],
 )
@@ -2782,42 +2785,49 @@ maven_import(
     name = "com.squareup.okio.okio-jvm",
     classifiers = [],
     jars = [
-        "repository/com/squareup/okio/okio-jvm/3.0.0/okio-jvm-3.0.0.jar"
+        "repository/com/squareup/okio/okio-jvm/3.6.0/okio-jvm-3.6.0.jar"
     ],
     exports = [
         "org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "org.jetbrains.kotlin.kotlin-stdlib-common",
     ],
     original_deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.5.31",
-        "org.jetbrains.kotlin.kotlin-stdlib-common_1.5.31",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.10",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.9.10",
     ],
-    pom = "repository/com/squareup/okio/okio-jvm/3.0.0/okio-jvm-3.0.0.pom",
+    pom = "repository/com/squareup/okio/okio-jvm/3.6.0/okio-jvm-3.6.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/squareup/okio/okio-jvm/3.0.0",
+    repo_path = "com/squareup/okio/okio-jvm/3.6.0",
+    srcjar = "repository/com/squareup/okio/okio-jvm/3.6.0/okio-jvm-3.6.0-sources.jar",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.squareup.okio.okio_1.17.5",
-    pom = "repository/com/squareup/okio/okio/1.17.5/okio-1.17.5.pom",
+    name = "com.squareup.okio.okio_3.6.0",
+    pom = "repository/com/squareup/okio/okio/3.6.0/okio-3.6.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/squareup/okio/okio/1.17.5",
-    parent = "com.squareup.okio.okio-parent_1.17.5",
+    repo_path = "com/squareup/okio/okio/3.6.0",
+    deps = [
+        "com.squareup.okio.okio-jvm_3.6.0",
+    ],
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "com.squareup.okio.okio",
     classifiers = [],
-    parent = "com.squareup.okio.okio-parent_1.17.5",
     jars = [
-        "repository/com/squareup/okio/okio/1.17.5/okio-1.17.5.jar"
+        "repository/com/squareup/okio/okio/3.6.0/okio-3.6.0.jar"
     ],
-    original_deps = [],
-    pom = "repository/com/squareup/okio/okio/1.17.5/okio-1.17.5.pom",
+    exports = [
+        "com.squareup.okio.okio-jvm",
+    ],
+    original_deps = [
+        "com.squareup.okio.okio-jvm_3.6.0",
+    ],
+    pom = "repository/com/squareup/okio/okio/3.6.0/okio-3.6.0.pom",
     repo_root_path = "repository",
-    repo_path = "com/squareup/okio/okio/1.17.5",
+    repo_path = "com/squareup/okio/okio/3.6.0",
     visibility = ["//visibility:public"],
 )
 
@@ -3702,9 +3712,9 @@ maven_import(
     ],
     exports = [
         "io.grpc.grpc-core",
-        "com.squareup.okio.okio",
     ],
     deps = [
+        "com.squareup.okio.okio",
         "com.google.guava.guava",
         "io.perfmark.perfmark-api",
     ],
@@ -43478,6 +43488,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.squareup.okio.okio-jvm_3.0.0",
+    pom = "repository/com/squareup/okio/okio-jvm/3.0.0/okio-jvm-3.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/squareup/okio/okio-jvm/3.0.0",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.5.31",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.5.31",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.squareup.okio.okio-jvm_3.1.0",
     pom = "repository/com/squareup/okio/okio-jvm/3.1.0/okio-jvm-3.1.0.pom",
     repo_root_path = "repository",
@@ -43531,6 +43553,15 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "com/squareup/okio/okio/1.15.0",
     parent = "com.squareup.okio.okio-parent_1.15.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.squareup.okio.okio_1.17.5",
+    pom = "repository/com/squareup/okio/okio/1.17.5/okio-1.17.5.pom",
+    repo_root_path = "repository",
+    repo_path = "com/squareup/okio/okio/1.17.5",
+    parent = "com.squareup.okio.okio-parent_1.17.5",
     visibility = ["//visibility:public"],
 )
 
@@ -52922,6 +52953,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.10",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.10/kotlin-stdlib-jdk7-1.9.10.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.10",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.21",
     pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.9.21/kotlin-stdlib-jdk7-1.9.21.pom",
     repo_root_path = "repository",
@@ -53297,6 +53339,18 @@ maven_artifact(
     deps = [
         "org.jetbrains.kotlin.kotlin-stdlib_1.9.0-Beta",
         "org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.0-Beta",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.10",
+    pom = "repository/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.10/kotlin-stdlib-jdk8-1.9.10.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.9.10",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.10",
+        "org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.9.10",
     ],
     visibility = ["//visibility:public"],
 )
@@ -57420,14 +57474,6 @@ maven_artifact(
     pom = "repository/com/squareup/dagger/dagger-parent/1.2.2/dagger-parent-1.2.2.pom",
     repo_root_path = "repository",
     repo_path = "com/squareup/dagger/dagger-parent/1.2.2",
-    parent = "org.sonatype.oss.oss-parent_7",
-)
-
-maven_artifact(
-    name = "com.squareup.okhttp3.parent_3.12.0",
-    pom = "repository/com/squareup/okhttp3/parent/3.12.0/parent-3.12.0.pom",
-    repo_root_path = "repository",
-    repo_path = "com/squareup/okhttp3/parent/3.12.0",
     parent = "org.sonatype.oss.oss-parent_7",
 )
 

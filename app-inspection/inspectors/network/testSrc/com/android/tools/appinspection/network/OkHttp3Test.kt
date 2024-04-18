@@ -26,11 +26,12 @@ import com.google.common.truth.Truth.assertThat
 import java.io.IOException
 import java.net.URL
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
-import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.BufferedSink
 import org.junit.Rule
 import org.junit.Test
@@ -74,7 +75,7 @@ internal class OkHttp3Test {
     val fakeResponse = createFakeResponse(request)
 
     val response = client.newCall(request, fakeResponse).execute()
-    response.body()!!.byteStream().use { it.readBytes() }
+    response.body!!.byteStream().use { it.readBytes() }
 
     assertThat(inspectorRule.connection.httpData).hasSize(6)
     val httpRequestStarted = inspectorRule.connection.httpData.first().httpRequestStarted
@@ -106,19 +107,19 @@ internal class OkHttp3Test {
     val requestBody =
       object : RequestBody() {
         override fun contentType(): MediaType {
-          return MediaType.parse("text/text")!!
+          return "text/text".toMediaType()
         }
 
-        override fun writeTo(bufferedSink: BufferedSink) {
+        override fun writeTo(sink: BufferedSink) {
           val requestBody = "request body"
-          bufferedSink.write(requestBody.toByteArray())
+          sink.write(requestBody.toByteArray())
         }
       }
     val request = Request.Builder().url(FAKE_URL).post(requestBody).build()
     val fakeResponse = createFakeResponse(request)
 
     val response = client.newCall(request, fakeResponse).execute()
-    response.body()!!.byteStream().use { it.readBytes() }
+    response.body!!.byteStream().use { it.readBytes() }
 
     assertThat(inspectorRule.connection.httpData).hasSize(8)
     val httpRequestStarted = inspectorRule.connection.httpData.first().httpRequestStarted
@@ -152,10 +153,10 @@ internal class OkHttp3Test {
     val fakeResponse = createFakeResponse(request)
     val response = client.newCall(request, fakeResponse).execute()
 
-    assertThat(response.code()).isEqualTo(404)
-    assertThat(response.headers()["Name"]).isEqualTo("Value")
+    assertThat(response.code).isEqualTo(404)
+    assertThat(response.headers["Name"]).isEqualTo("Value")
 
-    response.body()!!.byteStream().use { it.readBytes() }
+    response.body!!.byteStream().use { it.readBytes() }
     assertThat(
         inspectorRule.connection
           .findHttpEvent(NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.RESPONSE_PAYLOAD)!!
@@ -182,7 +183,7 @@ internal class OkHttp3Test {
     }
 
     val response = client.newCall(request, fakeResponse).execute()
-    response.body()!!.byteStream().use { it.readBytes() }
+    response.body!!.byteStream().use { it.readBytes() }
 
     val events = inspectorRule.connection.httpData.groupBy { it.connectionId }
 
@@ -196,7 +197,7 @@ internal class OkHttp3Test {
     }
 
     run {
-      // events for the follow up GET call that is successful
+      // events for the follow-up GET call that is successful
       val successEvents = events[1]!!
       assertThat(successEvents).hasSize(6)
       assertThat(successEvents[2].hasHttpResponseStarted()).isTrue()
@@ -227,6 +228,6 @@ private fun createFakeResponse(request: Request): Response {
     .protocol(Protocol.HTTP_2)
     .code(200)
     .message("")
-    .body(ResponseBody.create(MediaType.parse("text/text; charset=utf-8"), "Test"))
+    .body("Test".toResponseBody("text/text; charset=utf-8".toMediaType()))
     .build()
 }

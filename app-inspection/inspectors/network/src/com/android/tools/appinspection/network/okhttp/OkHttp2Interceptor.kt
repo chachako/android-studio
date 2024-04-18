@@ -28,7 +28,9 @@ import com.squareup.okhttp.Request
 import com.squareup.okhttp.Response
 import com.squareup.okhttp.ResponseBody
 import java.io.IOException
-import okio.Okio
+import okio.buffer
+import okio.sink
+import okio.source
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport.OKHTTP2
 
 class OkHttp2Interceptor(
@@ -82,7 +84,7 @@ class OkHttp2Interceptor(
     tracker.trackRequest(request.method(), request.headers().toMultimap(), OKHTTP2)
     if (request.body() != null) {
       val outputStream = tracker.trackRequestBody(createNullOutputStream())
-      val bufferedSink = Okio.buffer(Okio.sink(outputStream))
+      val bufferedSink = outputStream.sink().buffer()
       request.body().writeTo(bufferedSink)
       bufferedSink.close()
     }
@@ -108,7 +110,7 @@ class OkHttp2Interceptor(
       interceptedResponse.responseCode,
       interceptedResponse.responseHeaders,
     )
-    val source = Okio.buffer(Okio.source(tracker.trackResponseBody(interceptedResponse.body)))
+    val source = tracker.trackResponseBody(interceptedResponse.body).source().buffer()
     val body =
       ResponseBody.create(response.body().contentType(), response.body().contentLength(), source)
     if (interceptedResponse.responseHeaders.containsKey(null)) {

@@ -40,7 +40,7 @@ class FakeCall(
     return client.triggerInterceptor(request, response)
   }
 
-  override fun enqueue(p0: Callback) {}
+  override fun enqueue(responseCallback: Callback) {}
 
   override fun cancel() {}
 

@@ -27,8 +27,10 @@ import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.ResponseBody
-import okio.Okio
+import okhttp3.ResponseBody.Companion.asResponseBody
+import okio.buffer
+import okio.sink
+import okio.source
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport.OKHTTP3
 
 class OkHttp3Interceptor(
@@ -78,11 +80,11 @@ class OkHttp3Interceptor(
     val callstack = getOkHttpCallStack(request.javaClass.getPackage().name)
     // Do not track request if it was from this package
     if (shouldIgnoreRequest(callstack, this.javaClass.name)) return null
-    val tracker = trackerFactory.trackConnection(request.url().toString(), callstack)
-    tracker.trackRequest(request.method(), request.headers().toMultimap(), OKHTTP3)
-    request.body()?.let { body ->
+    val tracker = trackerFactory.trackConnection(request.url.toString(), callstack)
+    tracker.trackRequest(request.method, request.headers.toMultimap(), OKHTTP3)
+    request.body?.let { body ->
       val outputStream = tracker.trackRequestBody(createNullOutputStream())
-      val bufferedSink = Okio.buffer(Okio.sink(outputStream))
+      val bufferedSink = outputStream.sink().buffer()
       body.writeTo(bufferedSink)
       bufferedSink.close()
     }
@@ -95,34 +97,34 @@ class OkHttp3Interceptor(
     response: Response,
   ): Response {
     val fields = mutableMapOf<String?, List<String>>()
-    fields.putAll(response.headers().toMultimap())
-    fields[FIELD_RESPONSE_STATUS_CODE] = listOf(response.code().toString())
-    val body = response.body() ?: throw Exception("No response body found")
+    fields.putAll(response.headers.toMultimap())
+    fields[FIELD_RESPONSE_STATUS_CODE] = listOf(response.code.toString())
+    val body = response.body ?: throw Exception("No response body found")
 
     val interceptedResponse =
       interceptionRuleService.interceptResponse(
-        NetworkConnection(request.url().toString(), request.method()),
-        NetworkResponse(response.code(), fields, body.source().inputStream()),
+        NetworkConnection(request.url.toString(), request.method),
+        NetworkResponse(response.code, fields, body.source().inputStream()),
       )
 
     tracker.trackResponseHeaders(
       interceptedResponse.responseCode,
       interceptedResponse.responseHeaders,
     )
-    val source = Okio.buffer(Okio.source(tracker.trackResponseBody(interceptedResponse.body)))
-    val responseBody = ResponseBody.create(body.contentType(), body.contentLength(), source)
+    val source = tracker.trackResponseBody(interceptedResponse.body).source().buffer()
+    val responseBody = source.asResponseBody(body.contentType(), body.contentLength())
     if (interceptedResponse.responseHeaders.containsKey(null)) {
       throw Exception("OkHttp3 does not allow null in headers")
     }
     val headers =
-      Headers.of(
+      Headers.headersOf(
         *interceptedResponse.responseHeaders.entries
           .flatMap { entry -> entry.value.map { listOf(entry.key, it) } }
           .flatten()
           .filterNotNull()
           .toTypedArray()
       )
-    val code = headers[FIELD_RESPONSE_STATUS_CODE]?.toIntOrNull() ?: response.code()
+    val code = headers[FIELD_RESPONSE_STATUS_CODE]?.toIntOrNull() ?: response.code
     return response.newBuilder().headers(headers).code(code).body(responseBody).build()
   }
 }
