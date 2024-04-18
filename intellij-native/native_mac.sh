@@ -39,6 +39,12 @@ declare exit_code=0
   ${script_dir}/build-mac-fsnotifier.sh -o ${out_dir}/fsNotifier -d ${dist_dir} || ((exit_code++))
 )
 
+(
+  echo "Building xplat-launcher..."
+  ${script_dir}/build-mac-xplat-launcher.sh -o ${out_dir}/xplat-launcher -d ${dist_dir} || ((exit_code++))
+)
+
+
 ls -lha $dist_dir
 
 echo "All Done."

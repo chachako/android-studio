@@ -51,6 +51,9 @@ declare -r top=$(realpath "$(dirname "$0")/../../..")
 declare -r cmake_bin="$top/prebuilts/studio/sdk/darwin/cmake/3.22.1/bin/cmake"
 declare -x -r JDK_11_x64="$top/prebuilts/studio/jdk/jdk11/mac/Contents/Home"
 
+declare -r rust_version="1.77.1"
+declare -r rust_dir="$top/prebuilts/rust/darwin-x86/$rust_version"
+
 # Create directories
 declare -r out_dir=$(make_target_dir "${out_dir_option:-"out"}")
 if [[ -n "${dist_dir_option:-}" ]]; then
