@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteStatement
 import android.os.Build
 import androidx.inspection.ArtTooling
 import androidx.sqlite.inspection.SqliteInspectorProtocol
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Event
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Event.OneOfCase.DATABASE_POSSIBLY_CHANGED
 import com.android.testutils.CloseablesRule
 import com.android.tools.appinspection.common.testing.LogPrinterRule
@@ -38,8 +39,10 @@ import com.android.tools.appinspection.database.testing.asEntryHook
 import com.android.tools.appinspection.database.testing.asExitHook
 import com.android.tools.appinspection.database.testing.createInstance
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.junit.Ignore
+import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -47,7 +50,6 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
-import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.SQLiteMode
 import org.robolectric.junit.rules.CloseGuardRule
@@ -71,8 +73,6 @@ class InvalidationTest {
       .around(testEnvironment)
       .around(temporaryFolder)
       .around(LogPrinterRule())
-
-  private val shadowLooper = shadowOf(testEnvironment.getLooper())
 
   @Test
   fun test_execute_hook_methods() =
@@ -101,7 +101,6 @@ class InvalidationTest {
 
       testEnvironment.assertNoQueuedEvents()
       hook.first().asExitHook.onExit(null)
-      shadowLooper.runToNextTask()
       testEnvironment.receiveEvent().let { event ->
         assertThat(event.oneOfCase).isEqualTo(DATABASE_POSSIBLY_CHANGED)
         assertThat(event.databasePossiblyChanged)
@@ -111,9 +110,15 @@ class InvalidationTest {
     }
   }
 
+  // runTest is out of experimental status, but we are still using and old coroutine-test artifact
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
-  @Ignore("b/328819365") // Test was marked as flaky and is also ignored in the original repo
-  fun test_throttling(): Unit = runBlocking {
+  fun test_throttling() = runTest {
+    val testEnvironment =
+      closeablesRule.register(
+        SqliteInspectorTestEnvironment(ioCoroutineContextOverride = coroutineContext)
+      )
+    val events = mutableListOf<Event>()
     // Starting to track databases makes the inspector register hooks
     testEnvironment.sendCommand(MessageFactory.createTrackDatabasesCommand())
 
@@ -128,25 +133,31 @@ class InvalidationTest {
 
     // First invalidation triggering event
     hook.onExit(null)
-    shadowLooper.runToEndOfTasks()
-    val event1 = testEnvironment.receiveEvent()
+    events.add(testEnvironment.receiveEvent())
 
     // Shortly followed by many invalidation-triggering events
-    repeat(50) { hook.onExit(null) }
-    shadowLooper.runToEndOfTasks()
-    val event2 = testEnvironment.receiveEvent()
+    repeat(50) {
+      delay(100)
+      hook.onExit(null)
+    }
+    // 50 events with 100ms delay takes 5 seconds. Throttler delay is 1 seconds so we expect 6
+    // events.
+    repeat(6) { events.add(testEnvironment.receiveEvent()) }
 
     // Event validation
-    listOf(event1, event2).forEach { assertThat(it.oneOfCase).isEqualTo(DATABASE_POSSIBLY_CHANGED) }
+    events.forEach { assertThat(it.oneOfCase).isEqualTo(DATABASE_POSSIBLY_CHANGED) }
 
-    // Only two invalidation events received
-    shadowLooper.runToEndOfTasks()
     testEnvironment.assertNoQueuedEvents()
   }
 
+  // runTest is out of experimental status, but we are still using and old coroutine-test artifact
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
-  @Ignore("b/328819365") // Test was marked as flaky and is also ignored in the original repo
-  fun test_cursor_methods(): Unit = runBlocking {
+  fun test_cursor_methods(): Unit = runTest {
+    val testEnvironment =
+      closeablesRule.register(
+        SqliteInspectorTestEnvironment(ioCoroutineContextOverride = coroutineContext)
+      )
     // Starting to track databases makes the inspector register hooks
     testEnvironment.sendCommand(MessageFactory.createTrackDatabasesCommand())
 
@@ -188,7 +199,6 @@ class InvalidationTest {
         hooks.entryHookFor(closeMethodSignature).onEntry(cursor, emptyList())
 
         if (shouldCauseInvalidation) {
-          shadowLooper.runToEndOfTasks()
           testEnvironment.receiveEvent()
         }
         testEnvironment.assertNoQueuedEvents()
@@ -197,30 +207,8 @@ class InvalidationTest {
 
     // no crash for unknown cursor class
     hooks.entryHookFor(rawQueryMethodSignature).onEntry(null, listOf(null, "select * from t1"))
-    hooks
-      .exitHookFor(rawQueryMethodSignature)
-      .onExit(
-        object : AbstractCursor() {
-          override fun getLong(column: Int): Long = 0
-
-          override fun getCount(): Int = 0
-
-          override fun getColumnNames(): Array<String> = emptyArray()
-
-          override fun getShort(column: Int): Short = 0
-
-          override fun getFloat(column: Int): Float = 0f
-
-          override fun getDouble(column: Int): Double = 0.0
-
-          override fun isNull(column: Int): Boolean = false
-
-          override fun getInt(column: Int): Int = 0
-
-          override fun getString(column: Int): String = ""
-        }
-      )
-
+    val unsupportedCursor = closeablesRule.register(UnsupportedCursorType())
+    hooks.exitHookFor(rawQueryMethodSignature).onExit(unsupportedCursor)
     Unit
   }
 
@@ -228,7 +216,7 @@ class InvalidationTest {
     val db =
       Database("ignored", Table("t1", Column("c1", "int")))
         .createInstance(closeablesRule, temporaryFolder)
-    val cursor = db.rawQuery(query, null)
+    val cursor = closeablesRule.register(db.rawQuery(query, null))
     val context = RuntimeEnvironment.getApplication()
     context.deleteDatabase(db.path)
     return cursor as SQLiteCursor
@@ -241,4 +229,24 @@ class InvalidationTest {
   private fun List<Hook>.exitHookFor(m: String): ArtTooling.ExitHook<Any> =
     this.first { it.originMethod == m && it is Hook.ExitHook }.asExitHook
       as ArtTooling.ExitHook<Any>
+
+  private class UnsupportedCursorType : AbstractCursor() {
+    override fun getLong(column: Int): Long = 0
+
+    override fun getCount(): Int = 0
+
+    override fun getColumnNames(): Array<String> = emptyArray()
+
+    override fun getShort(column: Int): Short = 0
+
+    override fun getFloat(column: Int): Float = 0f
+
+    override fun getDouble(column: Int): Double = 0.0
+
+    override fun isNull(column: Int): Boolean = false
+
+    override fun getInt(column: Int): Int = 0
+
+    override fun getString(column: Int): String = ""
+  }
 }

@@ -15,9 +15,11 @@
  */
 package com.android.tools.appinspection.database
 
-import androidx.annotation.GuardedBy
-
-private const val NEVER: Long = -1
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.consumeEach
 
 /**
  * Throttler implementation ensuring that events are run not more frequently that specified
@@ -25,61 +27,30 @@ private const val NEVER: Long = -1
  * executed).
  *
  * Thread safe.
- *
- * TODO(aalbert): This can probably be eliminated by using coroutines with a channel/flow
  */
 internal class RequestCollapsingThrottler(
-  private val minIntervalMs: Long,
+  private val minInterval: Duration,
   private val action: Runnable,
-  private val executor: DeferredExecutor,
+  coroutineContext: CoroutineContext,
 ) {
-  private val lock = Any()
+  private val channel = Channel<Unit>(Channel.CONFLATED)
+  private val supervisor = SupervisorJob()
 
-  @GuardedBy("lock") private var pendingDispatch = false
-
-  @GuardedBy("lock") private var lastSubmitted = NEVER
+  init {
+    CoroutineScope(coroutineContext + supervisor).launch {
+      channel.consumeEach {
+        action.run()
+        delay(minInterval)
+      }
+    }
+  }
 
   fun submitRequest() {
-    synchronized(lock) {
-      if (pendingDispatch) {
-        return
-      }
-      pendingDispatch = true // about to schedule
-    }
-    val delayMs = minIntervalMs - sinceLast() // delayMs < 0 is OK
-    scheduleDispatch(delayMs)
+    channel.trySend(Unit)
   }
 
-  // TODO: switch to ListenableFuture to react on failures
-  private fun scheduleDispatch(delayMs: Long) {
-    executor.schedule(
-      {
-        try {
-          action.run()
-        } finally {
-          synchronized(lock) {
-            lastSubmitted = now()
-            pendingDispatch = false
-          }
-        }
-      },
-      delayMs,
-    )
+  fun dispose() {
+    channel.close()
+    supervisor.cancel()
   }
-
-  private fun sinceLast(): Long {
-    synchronized(lock) {
-      val lastSubmitted: Long = lastSubmitted
-      return if (lastSubmitted == NEVER) (minIntervalMs + 1) // more than minIntervalMs
-      else (now() - lastSubmitted)
-    }
-  }
-
-  internal fun interface DeferredExecutor {
-    fun schedule(command: Runnable, delayMs: Long)
-  }
-}
-
-private fun now(): Long {
-  return System.currentTimeMillis()
 }

@@ -29,6 +29,7 @@ import com.android.tools.appinspection.database.testing.issueQuery
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors.newCachedThreadPool
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
@@ -54,7 +55,8 @@ import org.robolectric.junit.rules.CloseGuardRule
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class CancellationQueryTest {
   private val countingExecutorService = CountingDelegatingExecutorService(newCachedThreadPool())
-  private val environment = SqliteInspectorTestEnvironment(countingExecutorService)
+  private val environment =
+    SqliteInspectorTestEnvironment(countingExecutorService, EmptyCoroutineContext)
   private val temporaryFolder = TemporaryFolder()
   private val closeablesRule = CloseablesRule()
 

@@ -20,10 +20,12 @@ import androidx.inspection.Connection
 import androidx.inspection.InspectorEnvironment
 import androidx.inspection.InspectorFactory
 import com.android.tools.appinspection.database.SqliteInspector
+import kotlin.coroutines.CoroutineContext
 
 /** An [InspectorFactory] that gives access to the created inspector. */
-internal class TestInspectorFactory : InspectorFactory<SqliteInspector>(SQLITE_INSPECTOR_ID) {
+internal class TestInspectorFactory(private val ioCoroutineContextOverride: CoroutineContext) :
+  InspectorFactory<SqliteInspector>(SQLITE_INSPECTOR_ID) {
 
   override fun createInspector(connection: Connection, environment: InspectorEnvironment) =
-    SqliteInspector(connection, environment, testMode = true)
+    SqliteInspector(connection, environment, ioCoroutineContextOverride, testMode = true)
 }

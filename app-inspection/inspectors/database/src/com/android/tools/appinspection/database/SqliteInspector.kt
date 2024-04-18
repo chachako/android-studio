@@ -70,7 +70,6 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.Row
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Table
 import androidx.sqlite.inspection.SqliteInspectorProtocol.TrackDatabasesCommand
 import androidx.sqlite.inspection.SqliteInspectorProtocol.TrackDatabasesResponse
-import com.android.tools.appinspection.database.RequestCollapsingThrottler.DeferredExecutor
 import com.android.tools.appinspection.database.SqliteInspectionExecutors.submit
 import com.android.tools.idea.protobuf.ByteString
 import java.io.File
@@ -80,6 +79,9 @@ import java.util.Collections
 import java.util.WeakHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Future
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.asCoroutineDispatcher
 
 private const val OPEN_DATABASE_COMMAND_SIG_API_11 =
   "openDatabase" +
@@ -112,7 +114,7 @@ private const val ALL_REFERENCES_RELEASE_COMMAND_SIGNATURE = "onAllReferencesRel
 private val SQLITE_STATEMENT_EXECUTE_METHODS_SIGNATURES: List<String> =
   mutableListOf("execute()V", "executeInsert()J", "executeUpdateDelete()I")
 
-private const val INVALIDATION_MIN_INTERVAL_MS = 1000
+private val INVALIDATION_MIN_INTERVAL = 1.seconds
 
 // Note: this only works on API26+ because of pragma_* functions
 // TODO: replace with a resource file
@@ -161,6 +163,8 @@ private val HIDDEN_TABLES = setOf("android_metadata", "sqlite_sequence")
 internal class SqliteInspector(
   connection: Connection,
   private val environment: InspectorEnvironment,
+  throttlerCoroutineContext: CoroutineContext =
+    environment.executors().io().asCoroutineDispatcher(),
   testMode: Boolean = false,
 ) : Inspector(connection) {
   @VisibleForTesting
@@ -177,6 +181,13 @@ internal class SqliteInspector(
       roomInvalidationRegistry,
       SqlDelightInvalidation.create(environment.artTooling()),
       SqlDelight2Invalidation.create(environment.artTooling()),
+    )
+
+  private val throttler =
+    RequestCollapsingThrottler(
+      INVALIDATION_MIN_INTERVAL,
+      ::dispatchDatabasePossiblyChangedEvent,
+      throttlerCoroutineContext,
     )
 
   override fun onReceiveCommand(data: ByteArray, callback: CommandCallback) {
@@ -217,6 +228,7 @@ internal class SqliteInspector(
     super.onDispose()
     databaseRegistry.dispose()
     databaseLockRegistry.dispose()
+    throttler.dispose()
   }
 
   private fun handleTrackDatabases(command: TrackDatabasesCommand, callback: CommandCallback) {
@@ -405,24 +417,9 @@ internal class SqliteInspector(
   }
 
   private fun registerInvalidationHooks(hookRegistry: EntryExitMatchingHookRegistry) {
-    /*
-     * Schedules a task using {@link mScheduledExecutor} and executes it on {@link mIOExecutor}.
-     */
-    val deferredExecutor = DeferredExecutor { command, delayMs ->
-
-      // TODO: handle errors from Future
-      environment.executors().handler().postDelayed({ ioExecutor.execute(command) }, delayMs)
-    }
-    val throttler =
-      RequestCollapsingThrottler(
-        INVALIDATION_MIN_INTERVAL_MS.toLong(),
-        { dispatchDatabasePossiblyChangedEvent() },
-        deferredExecutor,
-      )
-
-    registerInvalidationHooksSqliteStatement(throttler)
-    registerInvalidationHooksTransaction(throttler)
-    registerInvalidationHooksSQLiteCursor(throttler, hookRegistry)
+    registerInvalidationHooksSqliteStatement()
+    registerInvalidationHooksTransaction()
+    registerInvalidationHooksSQLiteCursor(hookRegistry)
   }
 
   /**
@@ -432,7 +429,7 @@ internal class SqliteInspector(
    * TODO: track if transaction committed or rolled back by observing if
    *   [ ][SQLiteDatabase.setTransactionSuccessful] was called
    */
-  private fun registerInvalidationHooksTransaction(throttler: RequestCollapsingThrottler) {
+  private fun registerInvalidationHooksTransaction() {
     environment.artTooling().registerExitHook<Any>(
       SQLiteDatabase::class.java,
       "endTransaction()V",
@@ -448,7 +445,7 @@ internal class SqliteInspector(
    * * [SQLiteStatement.executeInsert]
    * * [SQLiteStatement.executeUpdateDelete]
    */
-  private fun registerInvalidationHooksSqliteStatement(throttler: RequestCollapsingThrottler) {
+  private fun registerInvalidationHooksSqliteStatement() {
     for (method in SQLITE_STATEMENT_EXECUTE_METHODS_SIGNATURES) {
       environment.artTooling().registerExitHook<Any>(SQLiteStatement::class.java, method) { result
         ->
@@ -465,10 +462,7 @@ internal class SqliteInspector(
    * In order to access cursor's query, we also use [SQLiteDatabase.rawQueryWithFactory] which takes
    * a query String and constructs a cursor based on it.
    */
-  private fun registerInvalidationHooksSQLiteCursor(
-    throttler: RequestCollapsingThrottler,
-    hookRegistry: EntryExitMatchingHookRegistry,
-  ) {
+  private fun registerInvalidationHooksSQLiteCursor(hookRegistry: EntryExitMatchingHookRegistry) {
     // TODO: add active pruning via Cursor#close listener
 
     val trackedCursors = Collections.synchronizedMap(WeakHashMap<SQLiteCursor, Void?>())

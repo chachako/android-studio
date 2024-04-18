@@ -18,6 +18,7 @@ agent_deps = [
     "//tools/base/app-inspection/inspectors/common:app-inspection.inspectors.common",
     "//tools/base/bazel:studio-proto",
     "@maven//:androidx.annotation.annotation",
+    "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm",
 ]
 
 kotlin_library(
@@ -41,6 +42,7 @@ app_inspection_jar(
     bundle_srcs = [
         "//tools/base/app-inspection/inspectors/common:app-inspection.inspectors.common",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm",
     ],
     d8_flags = [
         "--min-api 26",  # Database inspector is only supported on O+ devices.
@@ -62,7 +64,8 @@ robolectric_test(
         "//tools/base/testutils:tools.testutils",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
-        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-test-jvm",
         "@maven//:org.robolectric.robolectric",
     ],
 )

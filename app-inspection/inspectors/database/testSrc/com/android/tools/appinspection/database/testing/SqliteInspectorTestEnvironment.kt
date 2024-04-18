@@ -22,15 +22,21 @@ import androidx.inspection.ArtTooling
 import androidx.inspection.testing.DefaultTestInspectorEnvironment
 import androidx.inspection.testing.InspectorTester
 import androidx.inspection.testing.TestInspectorExecutors
-import androidx.sqlite.inspection.SqliteInspectorProtocol.*
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Command
+import androidx.sqlite.inspection.SqliteInspectorProtocol.DatabaseOpenedEvent
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Event
+import androidx.sqlite.inspection.SqliteInspectorProtocol.QueryResponse
+import androidx.sqlite.inspection.SqliteInspectorProtocol.Response
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit.SECONDS
+import kotlin.coroutines.CoroutineContext
 import kotlin.test.fail
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import org.junit.rules.ExternalResource
@@ -38,13 +44,14 @@ import org.junit.rules.ExternalResource
 internal const val SQLITE_INSPECTOR_ID = "androidx.sqlite.inspection"
 
 class SqliteInspectorTestEnvironment(
-  private val ioExecutorOverride: ExecutorService = Executors.newFixedThreadPool(4)
-) : ExternalResource() {
+  private val ioExecutorOverride: ExecutorService = Executors.newFixedThreadPool(4),
+  ioCoroutineContextOverride: CoroutineContext = ioExecutorOverride.asCoroutineDispatcher(),
+) : ExternalResource(), AutoCloseable {
   private val artTooling = FakeArtTooling()
   private val job = Job()
   private val inspectorEnvironment =
     DefaultTestInspectorEnvironment(TestInspectorExecutors(job, ioExecutorOverride), artTooling)
-  private val inspectorFactory = TestInspectorFactory()
+  private val inspectorFactory = TestInspectorFactory(ioCoroutineContextOverride)
   private val inspectorTester: InspectorTester = runBlocking {
     InspectorTester(SQLITE_INSPECTOR_ID, inspectorEnvironment, inspectorFactory)
   }
@@ -60,7 +67,9 @@ class SqliteInspectorTestEnvironment(
     assertThat(ioExecutorOverride.awaitTermination(5, SECONDS)).isTrue()
   }
 
-  fun getLooper() = inspectorEnvironment.executors().handler().looper
+  override fun close() {
+    after()
+  }
 
   @OptIn(ExperimentalCoroutinesApi::class)
   fun assertNoQueuedEvents() {
