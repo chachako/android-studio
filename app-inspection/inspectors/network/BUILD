@@ -74,6 +74,7 @@ robolectric_test(
         "@maven//:com.google.guava.guava",
         "@maven//:com.google.truth.truth",
         "@maven//:junit.junit",
+        "@maven//:org.jetbrains.kotlin.kotlin-test",
         "@maven//:org.robolectric.robolectric",
     ],
 )

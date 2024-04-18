@@ -24,7 +24,9 @@ import com.android.tools.appinspection.network.testing.okhttp3.FakeOkHttp3Client
 import com.android.tools.appinspection.network.testing.receiveInterceptCommand
 import com.google.common.truth.Truth.assertThat
 import java.io.IOException
+import java.lang.IllegalStateException
 import java.net.URL
+import kotlin.test.fail
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol
@@ -44,6 +46,7 @@ import studio.network.inspection.NetworkInspectorProtocol
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.Header
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.HttpTransport
 import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.ResponseStarted
+import studio.network.inspection.NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.REQUEST_PAYLOAD
 import studio.network.inspection.NetworkInspectorProtocol.InterceptCommand
 
 private const val URL_PARAMS = "activity=OkHttp3Test"
@@ -133,10 +136,7 @@ internal class OkHttp3Test {
       )
     assertThat(httpRequestCompleted).isNotNull()
 
-    val requestPayload =
-      inspectorRule.connection.findHttpEvent(
-        NetworkInspectorProtocol.HttpConnectionEvent.UnionCase.REQUEST_PAYLOAD
-      )
+    val requestPayload = inspectorRule.connection.findHttpEvent(REQUEST_PAYLOAD)
     assertThat(requestPayload!!.requestPayload.payload.toStringUtf8()).isEqualTo("request body")
   }
 
@@ -167,6 +167,36 @@ internal class OkHttp3Test {
       .isEqualTo("InterceptedBody1")
 
     assertThat(inspectorRule.connection.httpData.last().httpClosed.completed).isTrue()
+  }
+
+  @Test
+  fun intercept_duplexRequest() {
+    val ruleAdded = createFakeRuleAddedEvent(FAKE_URL)
+    inspectorRule.inspector.receiveInterceptCommand(
+      InterceptCommand.newBuilder().apply { interceptRuleAdded = ruleAdded }.build()
+    )
+    val client = createFakeOkHttp3Client()
+
+    val request = Request.Builder().url(FAKE_URL).post(DuplexRequestBody()).build()
+    client.newCall(request, createFakeResponse(request)).execute()
+
+    val event = inspectorRule.connection.findHttpEvent(REQUEST_PAYLOAD) ?: fail("Payload not found")
+    assertThat(event.requestPayload.payload.toStringUtf8()).isEqualTo("Duplex body omitted")
+  }
+
+  @Test
+  fun intercept_oneShotRequest() {
+    val ruleAdded = createFakeRuleAddedEvent(FAKE_URL)
+    inspectorRule.inspector.receiveInterceptCommand(
+      InterceptCommand.newBuilder().apply { interceptRuleAdded = ruleAdded }.build()
+    )
+    val client = createFakeOkHttp3Client()
+
+    val request = Request.Builder().url(FAKE_URL).post(OneShotRequestBody()).build()
+    client.newCall(request, createFakeResponse(request)).execute()
+
+    val event = inspectorRule.connection.findHttpEvent(REQUEST_PAYLOAD) ?: fail("Payload not found")
+    assertThat(event.requestPayload.payload.toStringUtf8()).isEqualTo("One-shot body omitted")
   }
 
   @Test
@@ -219,6 +249,27 @@ internal class OkHttp3Test {
         emptyList(),
       )
     )
+  }
+
+  private abstract class FakeRequestBody : RequestBody() {
+
+    override fun contentType() = "text".toMediaType()
+
+    override fun contentLength() = 100L
+
+    override fun writeTo(sink: BufferedSink) {
+      throw IllegalStateException()
+    }
+  }
+
+  private class OneShotRequestBody : FakeRequestBody() {
+
+    override fun isOneShot() = true
+  }
+
+  private class DuplexRequestBody : FakeRequestBody() {
+
+    override fun isDuplex() = true
   }
 }
 

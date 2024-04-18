@@ -85,7 +85,11 @@ class OkHttp3Interceptor(
     request.body?.let { body ->
       val outputStream = tracker.trackRequestBody(createNullOutputStream())
       val bufferedSink = outputStream.sink().buffer()
-      body.writeTo(bufferedSink)
+      when {
+        body.isDuplex() -> bufferedSink.writeUtf8("Duplex body omitted")
+        body.isOneShot() -> bufferedSink.writeUtf8("One-shot body omitted")
+        else -> body.writeTo(bufferedSink)
+      }
       bufferedSink.close()
     }
     return tracker
