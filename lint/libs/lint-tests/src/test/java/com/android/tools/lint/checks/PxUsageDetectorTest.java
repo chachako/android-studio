@@ -395,6 +395,35 @@ public class PxUsageDetectorTest extends AbstractCheckTest {
                 .expectClean();
     }
 
+    public void testSuppressDimension() {
+        // 268575580: Allow suppressing on the dimension element instead
+        lint().files(
+                        xml(
+                                "res/values/dimens.xml",
+                                ""
+                                        + "\n"
+                                        + "<resources"
+                                        + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                                        + ">\n"
+                                        + "    <dimen name=\"bottom_bar_portrait_button_font_size\" tools:ignore=\"SpUsage\">16dp</dimen>\n"
+                                        + "</resources>\n"),
+                        xml(
+                                "res/layout/textsize2.xml",
+                                ""
+                                        + "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                                        + "    android:id=\"@+id/LinearLayout1\"\n"
+                                        + "    android:orientation=\"vertical\" >\n"
+                                        + "\n"
+                                        + "    <TextView\n"
+                                        + "        android:textSize=\"@dimen/bottom_bar_portrait_button_font_size\"\n"
+                                        + "        android:layout_width=\"wrap_content\"\n"
+                                        + "        android:layout_height=\"wrap_content\" />\n"
+                                        + "\n"
+                                        + "</LinearLayout>"))
+                .run()
+                .expectClean();
+    }
+
     public void testIsZero() {
         assertFalse(PxUsageDetector.isZero(""));
         assertTrue(PxUsageDetector.isZero("0"));

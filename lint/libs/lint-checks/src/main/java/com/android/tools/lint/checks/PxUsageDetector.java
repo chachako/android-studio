@@ -239,6 +239,16 @@ public class PxUsageDetector extends LayoutDetector {
                                     Location secondary =
                                             client.getXmlParser().getValueLocation(client, item);
                                     if (secondary != null) {
+                                        // Suppressed in the dimension file? (This is not the ideal
+                                        // place to do it;
+                                        // it will allow *all* usages of this dimension with text
+                                        // attributes.)
+                                        Object source = secondary.getSource();
+                                        if (source instanceof Node
+                                                && isSuppressed(context, DP_ISSUE, (Node) source)) {
+                                            return;
+                                        }
+
                                         secondary.setMessage(
                                                 "This dp dimension is used as a text size");
                                         location.setSecondary(secondary);
@@ -252,6 +262,17 @@ public class PxUsageDetector extends LayoutDetector {
                 }
             }
         }
+    }
+
+    private static boolean isSuppressed(
+            @NonNull XmlContext context, @NonNull Issue issue, @Nullable Node node) {
+        if (node == null) {
+            return false;
+        }
+        if (node.getNodeType() == Node.TEXT_NODE) {
+            node = node.getParentNode();
+        }
+        return context.getDriver().isSuppressed(context, issue, node);
     }
 
     // Returns true if number is 0, or 0.00, but not 1, 0.1, etc
