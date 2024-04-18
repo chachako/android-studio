@@ -44,12 +44,13 @@ gradlePlugin {
 }
 
 dependencies {
+    def composePreviewRendererModelVersion = findProperty("release")?.toBoolean() ? "0.0.1-alpha01" : "0.0.1-dev"
     compileOnly project(':base:gradle-api')
     compileOnly libs.com.android.tools.analyticsLibrary.protos
     compileOnly libs.com.android.tools.analyticsLibrary.shared
     compileOnly libs.com.android.tools.common
+    implementation("com.android.tools.compose:compose-preview-renderer-model:$composePreviewRendererModelVersion")
     implementation libs.com.android.tools.compose.composePreviewDetector
-    implementation libs.com.android.tools.compose.composePreviewRendererModel
     implementation libs.gson
     implementation libs.kxml
     testImplementation libs.junit

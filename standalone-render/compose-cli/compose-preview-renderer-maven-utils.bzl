@@ -1,5 +1,5 @@
 """
-This module merges deps for compose-preview-renderer.
+This module merges deps for standalone-render.compose-cli.
 """
 
 load("//tools/base/bazel:merge_archives.bzl", "run_singlejar")
@@ -36,3 +36,9 @@ def merge_deps(name, srcs):
         srcs = srcs,
         out = "%s.jar" % name,
     )
+
+def get_compose_preview_renderer_version():
+    return select({
+        "//tools/base/bazel:release": "0.0.1-alpha01",
+        "//conditions:default": "0.0.1-dev",
+    })
