@@ -22,7 +22,9 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.BufferedSink
 
 internal class OkHttp3 : AbstractHttpClient<Request.Builder>() {
   private val client = OkHttpClient()
@@ -43,6 +45,37 @@ internal class OkHttp3 : AbstractHttpClient<Request.Builder>() {
       client.newCall(request).execute().use { response ->
         return@withContext Result(response.code, response.body?.string() ?: "null")
       }
+    }
+  }
+
+  suspend fun doPostOneShot(url: String, data: ByteArray, type: String): Result {
+    return doRequest(url) {
+      val body =
+        object : DelegatingRequestBody(data.toRequestBody(type.toMediaType())) {
+          override fun isOneShot() = true
+        }
+      post(body)
+    }
+  }
+
+  suspend fun doPostDuplex(url: String, data: ByteArray, type: String): Result {
+    return doRequest(url) {
+      val body =
+        object : DelegatingRequestBody(data.toRequestBody(type.toMediaType())) {
+          override fun isDuplex() = true
+        }
+      post(body)
+    }
+  }
+
+  private abstract class DelegatingRequestBody(private val delegate: RequestBody) : RequestBody() {
+
+    override fun contentType() = delegate.contentType()
+
+    override fun contentLength() = delegate.contentLength()
+
+    override fun writeTo(sink: BufferedSink) {
+      delegate.writeTo(sink)
     }
   }
 }

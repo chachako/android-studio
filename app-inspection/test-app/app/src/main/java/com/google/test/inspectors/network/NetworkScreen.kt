@@ -69,11 +69,18 @@ fun NetworkScreen() {
 @Composable
 private fun NetworkScreen(actions: NetworkScreenActions) {
   ButtonGrid {
-    listOf(JavaNet, OkHttp2(), OkHttp3()).forEach { client ->
+    val okHttp3 = OkHttp3()
+    listOf(JavaNet, OkHttp2(), okHttp3).forEach { client ->
       button("${client.name} GET") { actions.doGet(client, "https://reqres.in/api/users") }
       button("${client.name} POST") {
         actions.doPost(client, "https://reqres.in/api/users", POST_DATA, JSON_TYPE)
       }
+    }
+    button("OKHTTP3 OneShot") {
+      actions.doPostOneShot(okHttp3, "https://reqres.in/api/users", POST_DATA, JSON_TYPE)
+    }
+    button("OKHTTP3 Duplex") {
+      actions.doPostDuplex(okHttp3, "https://reqres.in/api/users", POST_DATA, JSON_TYPE)
     }
     button("gRPC Proto") { actions.doProtoGrpc("Proto") }
     button("gRPC Json") { actions.doJsonGrpc("Json") }

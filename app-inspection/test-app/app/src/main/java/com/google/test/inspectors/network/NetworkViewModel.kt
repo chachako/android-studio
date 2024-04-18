@@ -56,6 +56,20 @@ internal class NetworkViewModel @Inject constructor(private val settingsDao: Set
     }
   }
 
+  override fun doPostOneShot(client: OkHttp3, url: String, data: ByteArray, type: String) {
+    scope.launch {
+      val result = client.doPostOneShot(url, data, type)
+      setSnack("${client.name} Result: ${result.rc}")
+    }
+  }
+
+  override fun doPostDuplex(client: OkHttp3, url: String, data: ByteArray, type: String) {
+    scope.launch {
+      val result = client.doPostDuplex(url, data, type)
+      setSnack("${client.name} Result: ${result.rc}")
+    }
+  }
+
   override fun doProtoGrpc(name: String) {
     scope.launch {
       val response = newGrpcClient().use { it.doProtoGrpc(protoRequest { this.name = name }) }
