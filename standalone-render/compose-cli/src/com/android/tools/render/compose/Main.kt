@@ -33,61 +33,64 @@ fun main(args: Array<String>) {
 
     val composeRendering = readComposeRenderingJson(File(args[0]).reader())
 
-    val composeRenderingResult = try {
-        val r = Renderer.createRenderer(
-            composeRendering.fontsPath,
-            composeRendering.resourceApkPath,
-            composeRendering.namespace,
-            composeRendering.classPath,
-            composeRendering.projectClassPath,
-            composeRendering.layoutlibPath,
-        )
-        val screenshotResults = mutableListOf<ComposeScreenshotResult>()
-        val requestToImageName = composeRendering.screenshots.mapNotNull { screenshot ->
-            screenshot.toPreviewElement()?.let { previewElement ->
-                RenderRequest(previewElement::applyTo) {
-                    previewElement.resolve().map { it.toPreviewXml().buildString() }
-                } to screenshot.imageName
-            }
-        }.toMap()
-
-        r.use { renderer ->
-            renderer.render(requestToImageName.keys.asSequence()) { request, i, result, usedPaths ->
-                val resultId = "${requestToImageName[request]}_$i"
-                val screenshotResult = try {
-                    val imagePath = result.renderedImage.copy?.let { image ->
-                        val imgFile =
-                            Path(composeRendering.outputFolder).resolve("$resultId.png")
-                                .toFile()
-
-                        imgFile.createNewFile()
-                        ImageIO.write(image, "png", imgFile)
-                        imgFile.absolutePath
-                    }
-                    val screenshotError = extractError(result)
-                    ComposeScreenshotResult(resultId, imagePath, screenshotError)
-                } catch (t: Throwable) {
-                    ComposeScreenshotResult(resultId, null, ScreenshotError(t))
-                }
-                screenshotResults.add(screenshotResult)
-                val classesUsed = Path(composeRendering.outputFolder).resolve("$resultId.classes.txt").toFile()
-                classesUsed.writer().use { writer ->
-                    usedPaths.forEach { path ->
-                        writer.write("$path\n")
-                    }
-                }
-            }
-        }
-        ComposeRenderingResult(null, screenshotResults)
-    } catch (t: Throwable) {
-        ComposeRenderingResult(t.stackTraceToString(), emptyList())
-    }
+    val composeRenderingResult = renderCompose(composeRendering)
 
     writeComposeRenderingResult(
         Path(composeRendering.outputFolder).resolve(composeRendering.resultsFileName).toFile().writer(),
         composeRenderingResult,
     )
 }
+
+fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = try {
+    val r = Renderer.createRenderer(
+        composeRendering.fontsPath,
+        composeRendering.resourceApkPath,
+        composeRendering.namespace,
+        composeRendering.classPath,
+        composeRendering.projectClassPath,
+        composeRendering.layoutlibPath,
+    )
+    val screenshotResults = mutableListOf<ComposeScreenshotResult>()
+    val requestToImageName = composeRendering.screenshots.mapNotNull { screenshot ->
+        screenshot.toPreviewElement()?.let { previewElement ->
+            RenderRequest(previewElement::applyTo) {
+                previewElement.resolve().map { it.toPreviewXml().buildString() }
+            } to screenshot.imageName
+        }
+    }.toMap()
+
+    r.use { renderer ->
+        renderer.render(requestToImageName.keys.asSequence()) { request, i, result, usedPaths ->
+            val resultId = "${requestToImageName[request]}_$i"
+            val screenshotResult = try {
+                val imagePath = result.renderedImage.copy?.let { image ->
+                    val imgFile =
+                        Path(composeRendering.outputFolder).resolve("$resultId.png")
+                            .toFile()
+
+                    imgFile.createNewFile()
+                    ImageIO.write(image, "png", imgFile)
+                    imgFile.absolutePath
+                }
+                val screenshotError = extractError(result)
+                ComposeScreenshotResult(resultId, imagePath, screenshotError)
+            } catch (t: Throwable) {
+                ComposeScreenshotResult(resultId, null, ScreenshotError(t))
+            }
+            screenshotResults.add(screenshotResult)
+            val classesUsed = Path(composeRendering.outputFolder).resolve("$resultId.classes.txt").toFile()
+            classesUsed.writer().use { writer ->
+                usedPaths.forEach { path ->
+                    writer.write("$path\n")
+                }
+            }
+        }
+    }
+    ComposeRenderingResult(null, screenshotResults)
+} catch (t: Throwable) {
+    ComposeRenderingResult(t.stackTraceToString(), emptyList())
+}
+
 
 private fun extractError(renderResult: RenderResult): ScreenshotError? {
     if (renderResult.renderResult.status == Result.Status.SUCCESS
