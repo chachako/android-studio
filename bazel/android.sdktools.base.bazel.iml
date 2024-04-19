@@ -104,7 +104,6 @@
     <orderEntry type="library" scope="PROVIDED" name="jacoco-core" level="project" />
     <orderEntry type="library" name="groovy" level="project" />
     <orderEntry type="library" name="gradle-api" level="project" />
-    <orderEntry type="module" module-name="android.sdktools.base.lint.cli" />
     <orderEntry type="library" scope="TEST" name="jimfs" level="project" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
     <orderEntry type="module-library">

@@ -48,7 +48,5 @@
     <orderEntry type="module" module-name="android.sdktools.base.sdk-common-base" />
     <orderEntry type="module" module-name="android.sdktools.base.sdklib-base" />
     <orderEntry type="module" module-name="android.sdktools.repository-base" />
-    <orderEntry type="module" module-name="android.sdktools.base.lint.lint-api-base" />
-    <orderEntry type="module" module-name="android.sdktools.base.lint.checks-base" />
   </component>
 </module>
