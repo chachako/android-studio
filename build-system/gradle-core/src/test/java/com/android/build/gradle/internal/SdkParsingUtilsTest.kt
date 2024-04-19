@@ -341,6 +341,9 @@ class SdkParsingUtilsTest {
             If you are already using the latest version of the Android Gradle plugin,
             you may need to wait until a newer version with support for compileSdk = 31 is available.
 
+            For more information refer to the compatibility table:
+            https://d.android.com/r/tools/api-level-support
+
             To suppress this warning, add/update
                 android.suppressUnsupportedCompileSdk=31
             to this project's gradle.properties.
@@ -365,6 +368,9 @@ class SdkParsingUtilsTest {
 
             If you are already using the latest preview version of the Android Gradle plugin,
             you may need to wait until a newer version with support for compileSdkPreview = "S" is available.
+
+            For more information refer to the compatibility table:
+            https://d.android.com/r/tools/api-level-support
 
             To suppress this warning, add/update
                 android.suppressUnsupportedCompileSdk=S
@@ -409,6 +415,9 @@ class SdkParsingUtilsTest {
 
             If you are already using the latest version of the Android Gradle plugin,
             you may need to wait until a newer version with support for compileSdk = 32 is available.
+
+            For more information refer to the compatibility table:
+            https://d.android.com/r/tools/api-level-support
 
             To suppress this warning, add/update
                 android.suppressUnsupportedCompileSdk=S,31,32
