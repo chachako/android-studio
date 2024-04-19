@@ -23,7 +23,6 @@ import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class LambdaSuperTest {
@@ -62,7 +61,6 @@ public class LambdaSuperTest {
     }
 
     @Test
-    @Ignore("b/263813997") // 263813997
     public void testSuspend() throws Exception {
         int actual = LambdasKt.testSuspend();
         Assert.assertEquals(
@@ -78,7 +76,6 @@ public class LambdaSuperTest {
     }
 
     @Test
-    @Ignore("b/263813997") // 263813997
     public void testAsyncAwait() throws Exception {
         int actual = LambdasKt.testAsyncAwait();
         Assert.assertEquals(
