@@ -173,6 +173,7 @@ ARTIFACTS = [
     "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1",
     "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4",
     "org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.6.4",
+    "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.6.4",
     "org.jetbrains:markdown:pom:0.2.1",
     "org.jspecify:jspecify:0.2.0",
     "org.mockito:mockito-core:5.6.0",
