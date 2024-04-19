@@ -1,5 +1,5 @@
 """
-This module merges deps for standalone-render.compose-cli.
+This module merges deps for compose-preview-renderer.
 """
 
 load("//tools/base/bazel:merge_archives.bzl", "run_singlejar")

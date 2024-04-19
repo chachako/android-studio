@@ -394,7 +394,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         "-alpha01"
             dependencies.add(
                 previewlibCliToolConfigurationName,
-                "com.android.tools:standalone-render.compose-cli:$version")
+                "com.android.tools.compose:compose-preview-renderer:$version")
         }
     }
 
