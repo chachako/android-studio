@@ -9318,6 +9318,65 @@ public class ApiDetectorTest extends AbstractCheckTest {
                 .expectClean();
     }
 
+    public void testIgnoreOverrides() {
+        lint().files(
+                        kotlin(
+                                ""
+                                        + "package test.pkg\n"
+                                        + "\n"
+                                        + "import android.content.res.Configuration\n"
+                                        + "import androidx.activity.ComponentActivity\n"
+                                        + "\n"
+                                        + "class ComponentTest : ComponentActivity() {\n"
+                                        + "    override fun onPictureInPictureModeChanged(\n"
+                                        + "        isInPictureInPictureMode: Boolean,\n"
+                                        + "        newConfig: Configuration\n"
+                                        + "    ) {\n"
+                                        + "        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)\n"
+                                        + "    }\n"
+                                        + "}"),
+                        java(
+                                ""
+                                        + "package test.pkg;\n"
+                                        + "\n"
+                                        + "import android.content.res.Configuration;\n"
+                                        + "\n"
+                                        + "import androidx.activity.ComponentActivity;\n"
+                                        + "import androidx.annotation.NonNull;\n"
+                                        + "\n"
+                                        + "public class JavaComponentTest extends ComponentActivity {\n"
+                                        + "    @Override\n"
+                                        + "    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, @NonNull Configuration newConfig) {\n"
+                                        + "        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);\n"
+                                        + "    }\n"
+                                        + "}\n"),
+                        // Stub
+                        java(
+                                ""
+                                        + "/*HIDE-FROM-DOCUMENTATION*/\n"
+                                        + "package androidx.activity;\n"
+                                        + "\n"
+                                        + "import android.app.Activity;\n"
+                                        + "import android.content.res.Configuration;\n"
+                                        + "import android.os.Build;\n"
+                                        + "\n"
+                                        + "import androidx.annotation.CallSuper;\n"
+                                        + "import androidx.annotation.NonNull;\n"
+                                        + "import androidx.annotation.RequiresApi;\n"
+                                        + "\n"
+                                        + "public class ComponentActivity extends Activity {\n"
+                                        + "    @RequiresApi(api = Build.VERSION_CODES.O)\n"
+                                        + "    @CallSuper\n"
+                                        + "    @Override\n"
+                                        + "    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode,\n"
+                                        + "                                              @NonNull Configuration newConfig) {\n"
+                                        + "   }\n"
+                                        + "}\n"),
+                        SUPPORT_ANNOTATIONS_JAR)
+                .run()
+                .expectClean();
+    }
+
     @Override
     protected TestLintClient createClient() {
         return super.createClient();

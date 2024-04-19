@@ -853,6 +853,15 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       }
     }
 
+    if (
+      element is UCallExpression &&
+        member is PsiMethod &&
+        isSuperCallFromOverride(evaluator, element, member)
+    ) {
+      // Don't flag calling super.X() in override fun X()
+      return
+    }
+
     val location: Location
     val fqcn: String?
     if (
@@ -898,6 +907,36 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
       }
 
     ApiVisitor(context).report(issue, element, location, type, fqcn, api, minSdk)
+  }
+
+  /**
+   * If you're simply calling super.X from method X, even if method X is in a higher API level than
+   * the minSdk, we're generally safe; that method should only be called by the framework on the
+   * right API levels. (There is a danger of somebody calling that method locally in other contexts,
+   * but this is hopefully unlikely.)
+   */
+  private fun isSuperCallFromOverride(
+    evaluator: JavaEvaluator,
+    call: UCallExpression,
+    method: PsiMethod,
+  ): Boolean {
+    val receiver = call.receiver
+    if (receiver is USuperExpression) {
+      val containingMethod = call.getContainingUMethod()?.javaPsi
+      if (
+        containingMethod != null &&
+          getInternalMethodName(method) == containingMethod.name &&
+          evaluator.areSignaturesEqual(method, containingMethod) &&
+          // We specifically exclude constructors from this check, because we
+          // do want to flag constructors requiring the new API level; it's
+          // highly likely that the constructor is called by local code, so
+          // you should specifically investigate this as a developer
+          !method.isConstructor
+      ) {
+        return true
+      }
+    }
+    return false
   }
 
   /**
@@ -1935,24 +1974,9 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
           }
         }
 
-        // If you're simply calling super.X from method X, even if method X is in a higher
-        // API level than the minSdk, we're generally safe; that method should only be
-        // called by the framework on the right API levels. (There is a danger of somebody
-        // calling that method locally in other contexts, but this is hopefully unlikely.)
-        if (receiver is USuperExpression) {
-          val containingMethod = call.getContainingUMethod()?.javaPsi
-          if (
-            containingMethod != null &&
-              name == containingMethod.name &&
-              evaluator.areSignaturesEqual(method, containingMethod) &&
-              // We specifically exclude constructors from this check, because we
-              // do want to flag constructors requiring the new API level; it's
-              // highly likely that the constructor is called by local code so
-              // you should specifically investigate this as a developer
-              !method.isConstructor
-          ) {
-            return
-          }
+        if (isSuperCallFromOverride(evaluator, call, method)) {
+          // Don't flag calling super.X() in override fun X()
+          return
         }
       }
 
