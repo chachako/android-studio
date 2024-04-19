@@ -157,7 +157,11 @@ class MultipreviewTest {
     }
 
     run {
-      val multipreview = buildMultipreview(settings, { it.startsWith("$PKG.filtered") }) { processor ->
+      val multipreview = buildMultipreview(
+          settings,
+          emptyMap(),
+          { it.startsWith("$PKG.filtered") },
+      ) { processor ->
         classStreams.forEach { processor.onClassBytecode(it) }
       }
 
@@ -257,6 +261,50 @@ class MultipreviewTest {
         multipreview.getAnnotations(sortedMethods[i])
           .sortedWith(AnnotationComparator)
           .toTypedArray()
+      )
+    }
+  }
+
+  @Test
+  fun testPrecomputedAnnotations() {
+    val classStreams = listOf(
+      DerivedAnnotation1Lvl1::class.java,
+      Class.forName("$PKG.AnnotatedMethods1Kt"),
+    ).map { loadClassBytecode(it) }
+
+    val annotations = mapOf(
+      DerivedAnnotationRepresentation(DerivedAnnotation1Lvl1::class.java.name) to object : AnnotationReferences {
+          override val baseAnnotations: MutableList<BaseAnnotationRepresentation>
+              get() = mutableListOf(
+                  BaseAnnotationRepresentation(emptyMap()),
+                  BaseAnnotationRepresentation(mapOf("paramName1" to "foo"))
+              )
+          override val derivedAnnotations: MutableSet<DerivedAnnotationRepresentation>
+              get() = mutableSetOf()
+      }
+    )
+
+    run {
+      val multipreview = buildMultipreview(settings, annotations = annotations) { processor ->
+        classStreams.forEach { processor.onClassBytecode(it) }
+      }
+
+      val sortedMethods = multipreview.methods.sortedWith(MethodComparator).toTypedArray()
+
+      assertArrayEquals(
+        arrayOf(
+          method("$PKG.AnnotatedMethods1Kt.method1"),
+          method("$PKG.AnnotatedMethods1Kt.method2"),
+        ),
+        sortedMethods
+      )
+
+      assertArrayEquals(
+        arrayOf(
+          BaseAnnotationRepresentation(emptyMap()),
+          BaseAnnotationRepresentation(mapOf("paramName1" to "foo")),
+        ),
+        multipreview.getAnnotations(sortedMethods[1]).sortedWith(AnnotationComparator).toTypedArray()
       )
     }
   }

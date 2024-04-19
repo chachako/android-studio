@@ -21,8 +21,14 @@ package com.android.tools.preview.multipreview
  * resolved instances of the base annotations.
  */
 interface Multipreview {
-
+  /** All the methods that are annotated by either base or derived annotations. */
   val methods: Set<MethodRepresentation>
 
+  /** All the derived annotations. */
+  val annotations: Map<DerivedAnnotationRepresentation, AnnotationReferences>
+
+  /**
+   * Get all the resolved annotations for the [method] as a set of parameterized base annotations.
+   */
   fun getAnnotations(method: MethodRepresentation): Set<BaseAnnotationRepresentation>
 }

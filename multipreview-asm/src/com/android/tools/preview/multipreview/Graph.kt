@@ -20,7 +20,14 @@ internal class Graph : Multipreview {
     return references
   }
 
+  fun addAnnotations(annotations: Map<DerivedAnnotationRepresentation, AnnotationReferences>) {
+    annotationNodes.putAll(annotations)
+  }
+
   override val methods: Set<MethodRepresentation> = methodNodes.keys
+
+  override val annotations: Map<DerivedAnnotationRepresentation, AnnotationReferences>
+        get() = annotationNodes
 
   /**
    * Cleans the graph off the redundant annotations (that are neither base nor derived annotations)

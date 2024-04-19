@@ -28,14 +28,17 @@ data class MultipreviewSettings(
 
 /**
  * Builds multipreview structure based on the [settings] and bytecode data from [provider] for
- * methods allowed by [methodsFilter].
+ * methods allowed by [methodsFilter]. Allows specifying additional precomputed [annotations] to
+ * speed up incremental processing.
  */
 fun buildMultipreview(
   settings: MultipreviewSettings,
+  annotations: Map<DerivedAnnotationRepresentation, AnnotationReferences> = emptyMap(),
   methodsFilter: MethodsFilter = MethodsFilter { true },
   provider: ClassBytecodeProvider,
 ): Multipreview {
   val multipreviewGraph = Graph()
+  multipreviewGraph.addAnnotations(annotations)
   provider.forEachClass {
     val cr = ClassReader(it)
     val classVisitor = if ((cr.access and Opcodes.ACC_ANNOTATION) != 0) {
@@ -71,9 +74,10 @@ private fun forEachClass(paths: Collection<String>, classProcessor: ClassProcess
 fun buildMultipreview(
   settings: MultipreviewSettings,
   paths: Collection<String>,
+  annotations: Map<DerivedAnnotationRepresentation, AnnotationReferences> = emptyMap(),
   methodsFilter: MethodsFilter = MethodsFilter { true }
 ): Multipreview {
-  return buildMultipreview(settings, methodsFilter) { processor ->
+  return buildMultipreview(settings, annotations, methodsFilter) { processor ->
     forEachClass(paths, processor::onClassBytecode)
   }
 }
