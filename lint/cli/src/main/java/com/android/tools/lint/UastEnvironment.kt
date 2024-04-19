@@ -49,6 +49,9 @@ import org.jetbrains.kotlin.platform.konan.NativePlatforms
 import org.jetbrains.kotlin.platform.wasm.WasmPlatforms
 import org.jetbrains.kotlin.util.Logger
 import org.jetbrains.uast.UastFacade
+import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
+import org.jetbrains.uast.kotlin.internal.CliKotlinUastResolveProviderService
+import org.jetbrains.uast.kotlin.internal.FirCliKotlinUastResolveProviderService
 
 /** JVM system property to enable FIR UAST or K2 UAST, as per the new compiler name */
 const val FIR_UAST_KEY = "lint.use.fir.uast"
@@ -157,9 +160,32 @@ interface UastEnvironment {
      */
     @JvmStatic
     fun create(config: Configuration): UastEnvironment {
+      disposeApplicationEnvironmentForTheOtherPluginIfExist(config)
       return when (config) {
         is FirUastEnvironment.Configuration -> FirUastEnvironment.create(config)
         is Fe10UastEnvironment.Configuration -> Fe10UastEnvironment.create(config)
+        else -> throw UnsupportedOperationException()
+      }
+    }
+
+    // TODO: once the migration is done, we don't need to worry about
+    //  duplicate services left in app env
+    private fun disposeApplicationEnvironmentForTheOtherPluginIfExist(config: Configuration) {
+      val appEnv = KotlinCoreEnvironment.applicationEnvironment ?: return
+      val uastResolveProviderService =
+        appEnv.application.getServiceIfCreated(BaseKotlinUastResolveProviderService::class.java)
+          ?: return
+      when (config) {
+        is FirUastEnvironment.Configuration -> { // K2
+          if (uastResolveProviderService is CliKotlinUastResolveProviderService) { // K1
+            disposeApplicationEnvironment()
+          }
+        }
+        is Fe10UastEnvironment.Configuration -> { // K1
+          if (uastResolveProviderService is FirCliKotlinUastResolveProviderService) { // K2
+            disposeApplicationEnvironment()
+          }
+        }
         else -> throw UnsupportedOperationException()
       }
     }

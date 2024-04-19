@@ -52,6 +52,7 @@ import org.jetbrains.kotlin.analysis.providers.KotlinAnnotationsResolverFactory
 import org.jetbrains.kotlin.analysis.providers.KotlinDeclarationProviderFactory
 import org.jetbrains.kotlin.analysis.providers.KotlinModificationTrackerFactory
 import org.jetbrains.kotlin.analysis.providers.KotlinPackageProviderFactory
+import org.jetbrains.kotlin.analysis.providers.impl.KotlinFakeClsStubsCache
 import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticAnnotationsResolverFactory
 import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticDeclarationProviderFactory
 import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticModificationTrackerFactory
@@ -364,25 +365,38 @@ private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironme
       DummyKtFe10ReferenceResolutionHelper,
     )
 
-    it.application.registerService(
-      BuiltInsVirtualFileProvider::class.java,
-      BuiltInsVirtualFileProviderCliImpl(appEnv.jarFileSystem as CoreJarFileSystem),
-    )
-    it.application.registerService(ClsKotlinBinaryClassCache::class.java)
-    it.application.registerService(
-      FileAttributeService::class.java,
-      DummyFileAttributeService::class.java,
-    )
+    KotlinCoreEnvironment.underApplicationLock {
+      if (it.application.getServiceIfCreated(KotlinFakeClsStubsCache::class.java) == null) {
+        it.application.registerService(KotlinFakeClsStubsCache::class.java)
+        it.application.registerService(
+          BuiltInsVirtualFileProvider::class.java,
+          BuiltInsVirtualFileProviderCliImpl(appEnv.jarFileSystem as CoreJarFileSystem),
+        )
+        it.application.registerService(ClsKotlinBinaryClassCache::class.java)
+        it.application.registerService(
+          FileAttributeService::class.java,
+          DummyFileAttributeService::class.java,
+        )
+      }
+    }
 
-    // Note that this app-level service should be initialized before any other entities attempt to
-    // instantiate [FilesScope]
-    // For FE1.0 UAST, the first attempt will be made during project env setup, so any place inside
-    // this app env setup is safe.
-    it.application.registerService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
-    it.application.registerService(
-      InternalPersistentJavaLanguageLevelReaderService::class.java,
-      InternalPersistentJavaLanguageLevelReaderService.DefaultImpl(),
-    )
+    if (it.application.getServiceIfCreated(VirtualFileSetFactory::class.java) == null) {
+      // Note that this app-level service should be initialized before any other entities
+      // attempt to instantiate [FilesScope]
+      // For FE1.0 UAST, the first attempt will be made during project env setup,
+      // so any place inside this app env setup is safe.
+      it.application.registerService(VirtualFileSetFactory::class.java, LintVirtualFileSetFactory)
+    }
+    if (
+      it.application.getServiceIfCreated(
+        InternalPersistentJavaLanguageLevelReaderService::class.java
+      ) == null
+    ) {
+      it.application.registerService(
+        InternalPersistentJavaLanguageLevelReaderService::class.java,
+        InternalPersistentJavaLanguageLevelReaderService.DefaultImpl(),
+      )
+    }
     reRegisterProgressManager(it.application)
   }
 }
