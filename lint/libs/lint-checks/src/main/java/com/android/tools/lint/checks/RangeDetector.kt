@@ -350,7 +350,7 @@ class RangeDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         // Try to resolve it; see if there's an annotation on the variable/parameter/field
         if (argument is UResolvable) {
           val referenceConstraint = getRangeConstraint(context, argument)
-          if (referenceConstraint != null) {
+          if (referenceConstraint != null && usageInfo.type != AnnotationUsageType.ASSIGNMENT_LHS) {
             val here = RangeConstraint.create(annotation)
             val error = getNonOverlapMessage(here, referenceConstraint, argument, usageInfo)
             if (error != null) {

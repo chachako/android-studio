@@ -1556,4 +1556,38 @@ src/test/pkg/ConstructorTest.java:14: Error: Value must be ≥ 5 (was 3) [Range]
       .run()
       .expectClean()
   }
+
+  fun test335003904() {
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import androidx.annotation.IntRange;
+
+            public class RangeTest {
+              private @IntRange(from = 0) int atLeastZero;
+              private @IntRange(from = -1) int atLeastMinusOne;
+
+              public void test() {
+                  atLeastMinusOne = atLeastZero; // OK
+                  atLeastZero = atLeastMinusOne; // ERROR
+                }
+            }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/RangeTest.java:11: Error: Value must be ≥ 0 but atLeastMinusOne can be -1 [Range]
+              atLeastZero = atLeastMinusOne; // ERROR
+                            ~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+        """
+      )
+  }
 }
