@@ -117,6 +117,7 @@ class ScreenshotTest {
         dependencies {
             testImplementation("junit:junit:4.13.2")
             implementation("androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}")
+            implementation("androidx.compose.ui:ui-tooling-preview:${TaskManager.COMPOSE_UI_VERSION}")
             implementation("androidx.compose.material:material:${TaskManager.COMPOSE_UI_VERSION}")
         }
         appendToBuildFile {
@@ -452,10 +453,14 @@ class ScreenshotTest {
     fun runPreviewScreenshotTestsWithMissingUiToolingDep() {
         val uiToolingDep =
             "implementation 'androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}'"
-        val uiToolingPreviewDep =
-            "implementation 'androidx.compose.ui:ui-tooling-preview:${TaskManager.COMPOSE_UI_VERSION}'"
-        TestFileUtils.searchAndReplace(appProject.buildFile, uiToolingDep, uiToolingPreviewDep)
 
+        // Verify that no exception is thrown when ui-tooling is added as an androidTestImplementation dependency
+        val androidTestImplementationDep = "androidTestImplementation 'androidx.compose.ui:ui-tooling:${TaskManager.COMPOSE_UI_VERSION}'"
+        TestFileUtils.searchAndReplace(appProject.buildFile, uiToolingDep, androidTestImplementationDep)
+        getExecutor().run(":app:previewScreenshotUpdateDebugAndroidTest")
+
+        // Verify that exception is thrown when ui-tooling dep is missing
+        TestFileUtils.searchAndReplace(appProject.buildFile, androidTestImplementationDep, "")
         val result =
             getExecutor().expectFailure().run(":app:previewScreenshotUpdateDebugAndroidTest")
         result.assertErrorContains("Missing required runtime dependency. Please add androidx.compose.ui:ui-tooling to your testing module's dependencies.")

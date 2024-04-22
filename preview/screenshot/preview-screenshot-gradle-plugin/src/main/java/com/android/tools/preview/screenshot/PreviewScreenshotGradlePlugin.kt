@@ -50,6 +50,9 @@ import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.jvm.toolchain.JavaToolchainService
 import java.util.Locale
 import java.util.UUID
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 
 private val minAgpVersion = AndroidPluginVersion(8, 4, 0).alpha(9)
 private val maxAgpVersion = AndroidPluginVersion(8,5,255)
@@ -256,6 +259,23 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.usesService(analyticsServiceProvider)
                     }
 
+                    // Rendering requires androidx.compose.ui:ui-tooling as a runtime dependency
+                    variant.runtimeConfiguration.checkUiToolingPresent { isPresent ->
+                        if (!isPresent) {
+                            val errorMessage = "Missing required runtime dependency. Please add androidx.compose.ui:ui-tooling to your testing module's dependencies."
+                            if (variant.deviceTests.isEmpty()) {
+                                throw RuntimeException(errorMessage)
+                            }
+                            else {
+                                variant.deviceTests[0].runtimeConfiguration.checkUiToolingPresent { isPresentInDeviceTests ->
+                                    if (!isPresentInDeviceTests) {
+                                        throw RuntimeException(errorMessage)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     variant.artifacts
                         .forScope(ScopedArtifacts.Scope.ALL)
                         .use(renderTaskProvider)
@@ -453,12 +473,25 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
 
     private fun AndroidPluginVersion.toVersionString(): String {
         val builder = StringBuilder("$major.$minor.$micro")
-        previewType?.let { builder.append("-$it")}
+        previewType?.let { builder.append("-$it") }
         if (preview > 0) {
             builder.append(preview.toString().padStart(2, '0'))
         }
         return builder.toString()
     }
+
+    private fun Configuration.checkUiToolingPresent(callback: (Boolean) -> Unit) {
+        incoming.afterResolve {
+            val isPresent = it.resolutionResult.allDependencies
+                .filterIsInstance<ResolvedDependencyResult>()
+                .map { result -> result.selected.id }
+                .filterIsInstance<ModuleComponentIdentifier>()
+                .any { identifier -> identifier.group == "androidx.compose.ui" && identifier.module == "ui-tooling"
+                }
+            callback(isPresent)
+        }
+    }
+
 }
 
 private const val previewlibCliToolConfigurationName = "_internal-screenshot-test-task-previewlib-cli"

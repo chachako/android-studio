@@ -143,11 +143,6 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
         projectClassPath.addAll(mainClasspathProject.get().map{it.asFile }.toList().map { it.absolutePath })
         projectClassPath.addAll(testClasspathProject.get().map{it.asFile }.toList().map { it.absolutePath })
 
-        // Rendering requires androidx.compose.ui:ui-tooling as a runtime dependency
-        val regex = Regex("ui-tooling-[0-9a-z.]+-runtime.jar")
-        if (classpathJars.none { regex.containsMatchIn(it) }) {
-            throw RuntimeException("Missing required runtime dependency. Please add androidx.compose.ui:ui-tooling to your testing module's dependencies.")
-        }
         val javaSecManagerArg: String? = if (JavaVersion.toVersion(javaLauncher.get().metadata.javaRuntimeVersion).isCompatibleWith(JavaVersion.VERSION_17))
             "-Djava.security.manager=allow"
         else
