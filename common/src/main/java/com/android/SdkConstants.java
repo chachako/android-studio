@@ -158,14 +158,14 @@ public final class SdkConstants {
     public static final String FN_BUILD_GRADLE = "build.gradle";
     /** An SDK Project's build.gradle Kotlin script file */
     public static final String FN_BUILD_GRADLE_KTS = "build.gradle.kts";
-    /** An SDK Project's build.gradle.something declarative file */
-    public static final String FN_BUILD_GRADLE_DECLARATIVE = "build.gradle.something";
+    /** An SDK Project's build.gradle.dcl declarative file */
+    public static final String FN_BUILD_GRADLE_DECLARATIVE = "build.gradle.dcl";
     /** An SDK Project's settings.gradle file */
     public static final String FN_SETTINGS_GRADLE = "settings.gradle";
     /** An SDK Project's settings.gradle Kotlin script file */
     public static final String FN_SETTINGS_GRADLE_KTS = "settings.gradle.kts";
-    /** An SDK Project's settings.gradle.something declarative file */
-    public static final String FN_SETTINGS_GRADLE_DECLARATIVE = "settings.gradle.something";
+    /** An SDK Project's settings.gradle.dcl declarative file */
+    public static final String FN_SETTINGS_GRADLE_DECLARATIVE = "settings.gradle.dcl";
     /** An SDK Project's gradle.properties file */
     public static final String FN_GRADLE_PROPERTIES = "gradle.properties";
     /** An SDK Project's Gradle cache config.properties file */
@@ -2141,7 +2141,7 @@ public final class SdkConstants {
     public static final String DOT_SRCJAR = ".srcjar";
     public static final String DOT_KLIB = ".klib";
     public static final String DOT_GRADLE = ".gradle";
-    public static final String DOT_SOMETHING = ".something";
+    public static final String DOT_DECLARATIVE = ".dcl";
     public static final String DOT_PROPERTIES = ".properties";
     public static final String DOT_JSON = ".json";
     public static final String DOT_PSD = ".psd";
@@ -2177,8 +2177,8 @@ public final class SdkConstants {
     public static final String EXT_GRADLE = "gradle";
     /** Extension of Kotlin gradle files, i.e. "gradle.kts" */
     public static final String EXT_GRADLE_KTS = "gradle.kts";
-    /** Extension of Kotlin gradle files, i.e. "gradle.something" */
-    public static final String EXT_GRADLE_SOMETHING = "gradle.something";
+    /** Extension of Kotlin gradle files, i.e. "gradle.dcl" */
+    public static final String EXT_GRADLE_DECLARATIVE = "gradle.dcl";
     /** Extension of jar files, i.e. "jar" */
     public static final String EXT_JAR = "jar";
     /** Extension of ZIP files, i.e. "zip" */

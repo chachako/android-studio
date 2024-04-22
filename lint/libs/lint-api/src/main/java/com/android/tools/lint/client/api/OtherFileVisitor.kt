@@ -17,11 +17,11 @@ package com.android.tools.lint.client.api
 
 import com.android.SdkConstants.ANDROID_MANIFEST_XML
 import com.android.SdkConstants.DOT_CLASS
+import com.android.SdkConstants.DOT_DECLARATIVE
 import com.android.SdkConstants.DOT_GRADLE
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_KTS
-import com.android.SdkConstants.DOT_SOMETHING
 import com.android.SdkConstants.DOT_XML
 import com.android.SdkConstants.FD_ASSETS
 import com.android.tools.lint.detector.api.Context
@@ -156,7 +156,7 @@ internal class OtherFileVisitor(private val detectors: List<Detector>) {
           if (
             file.name.endsWith(DOT_GRADLE) ||
               file.name.endsWith(DOT_KTS) ||
-              file.name.endsWith(DOT_SOMETHING)
+              file.name.endsWith(DOT_DECLARATIVE)
           ) {
             files.add(file)
           }

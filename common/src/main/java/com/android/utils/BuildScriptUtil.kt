@@ -19,7 +19,7 @@ package com.android.utils
 
 import com.android.SdkConstants.EXT_GRADLE
 import com.android.SdkConstants.EXT_GRADLE_KTS
-import com.android.SdkConstants.EXT_GRADLE_SOMETHING
+import com.android.SdkConstants.EXT_GRADLE_DECLARATIVE
 import com.android.SdkConstants.FN_BUILD_GRADLE
 import com.android.SdkConstants.FN_BUILD_GRADLE_DECLARATIVE
 import com.android.SdkConstants.FN_BUILD_GRADLE_KTS
@@ -77,17 +77,17 @@ fun findGradleSettingsFile(dirPath: File) : File {
 
 /**
  * Returns true if the file given by the [filePath] exists, is a file and ends with either ".gradle"
- * or ".gradle.kts" or ".gradle.something"
+ * or ".gradle.kts" or ".gradle.dcl"
  */
 fun isGradleScript(filePath: File) : Boolean = filePath.isFile && (
         filePath.path.endsWith(EXT_GRADLE) ||
         filePath.path.endsWith(EXT_GRADLE_KTS) ||
-        filePath.path.endsWith(EXT_GRADLE_SOMETHING)
+        filePath.path.endsWith(EXT_GRADLE_DECLARATIVE)
 )
 
 /**
  * Returns true if the file given by the [filePath] exists, is a file and has the name "build.gradle"
- * or "build.gradle.kts" or "build.gradle.something"
+ * or "build.gradle.kts" or "build.gradle.dcl"
  */
 fun isDefaultGradleBuildFile(filePath: File) : Boolean
   = filePath.isFile
@@ -97,7 +97,7 @@ fun isDefaultGradleBuildFile(filePath: File) : Boolean
 
 /**
  * Returns true if the file given by the [filePath] exists, is a file and has the name "settings.gradle"
- * or "settings.gradle.kts" or "settings.gradle.something"
+ * or "settings.gradle.kts" or "settings.gradle.dcl"
  */
 fun isGradleSettingsFile(filePath: File) : Boolean
   = filePath.isFile

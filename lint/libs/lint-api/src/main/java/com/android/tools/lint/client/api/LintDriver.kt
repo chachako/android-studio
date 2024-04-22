@@ -21,12 +21,12 @@ import com.android.SdkConstants.ATTR_IGNORE
 import com.android.SdkConstants.CLASS_CONSTRUCTOR
 import com.android.SdkConstants.CONSTRUCTOR_NAME
 import com.android.SdkConstants.DOT_CLASS
+import com.android.SdkConstants.DOT_DECLARATIVE
 import com.android.SdkConstants.DOT_GRADLE
 import com.android.SdkConstants.DOT_JAR
 import com.android.SdkConstants.DOT_JAVA
 import com.android.SdkConstants.DOT_KT
 import com.android.SdkConstants.DOT_KTS
-import com.android.SdkConstants.DOT_SOMETHING
 import com.android.SdkConstants.DOT_TOML
 import com.android.SdkConstants.DOT_VERSIONS_DOT_TOML
 import com.android.SdkConstants.FD_GRADLE
@@ -2079,7 +2079,7 @@ class LintDriver(
     val gradleKtsContexts =
       project.gradleBuildScripts
         .asSequence()
-        .filter { it.name.endsWith(DOT_KTS) || it.name.endsWith(DOT_SOMETHING) }
+        .filter { it.name.endsWith(DOT_KTS) || it.name.endsWith(DOT_DECLARATIVE) }
         .map { JavaContext(this, project, main, it) }
         .toList()
 
@@ -2235,13 +2235,13 @@ class LintDriver(
         path.endsWith(DOT_JAVA) ||
           path.endsWith(DOT_KT) ||
           path.endsWith(DOT_KTS) ||
-          path.endsWith(DOT_SOMETHING)
+          path.endsWith(DOT_DECLARATIVE)
       ) {
         val context = JavaContext(this, project, main, file)
 
         when {
           // Figure out if this file is a Gradle .kts context
-          path.endsWith(DOT_KTS) || path.endsWith(DOT_SOMETHING) -> {
+          path.endsWith(DOT_KTS) || path.endsWith(DOT_DECLARATIVE) -> {
             gradleKtsContexts.add(context)
           }
           // instrumented test context
