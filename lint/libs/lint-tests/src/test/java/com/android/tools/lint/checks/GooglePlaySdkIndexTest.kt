@@ -35,6 +35,7 @@ class GooglePlaySdkIndexTest {
         .addSdks(
           Sdk.newBuilder()
             .setIndexUrl("http://index.example.url/")
+            .setIndexAvailability(Sdk.IndexAvailability.AVAILABLE_IN_PUBLIC_SDK_INDEX)
             .addLibraries(
               Library.newBuilder()
                 .setLibraryId(
@@ -61,7 +62,10 @@ class GooglePlaySdkIndexTest {
                     .setIsLatestVersion(false)
                     .setVersionLabels(
                       LibraryVersionLabels.newBuilder()
-                        .setCriticalIssueInfo(LibraryVersionLabels.CriticalIssueInfo.newBuilder())
+                        .setCriticalIssueInfo(
+                          LibraryVersionLabels.CriticalIssueInfo.newBuilder()
+                            .setDescription("This is a custom message from sdk developer.")
+                        )
                     )
                 )
                 // Outdated
@@ -89,6 +93,7 @@ class GooglePlaySdkIndexTest {
         .addSdks(
           Sdk.newBuilder()
             .setIndexUrl("http://another.example.url/")
+            .setIndexAvailability(Sdk.IndexAvailability.AVAILABLE_IN_PUBLIC_SDK_INDEX)
             .addLibraries(
               Library.newBuilder()
                 .setLibraryId(
@@ -325,6 +330,7 @@ class GooglePlaySdkIndexTest {
         // No URL set (causes blank result for indexUrl)
         .addSdks(
           Sdk.newBuilder()
+            .setIndexAvailability(Sdk.IndexAvailability.NOT_AVAILABLE)
             .addLibraries(
               Library.newBuilder()
                 .setLibraryId(
@@ -387,6 +393,53 @@ class GooglePlaySdkIndexTest {
                 )
             )
         )
+        // URL set not in SDK Index
+        .addSdks(
+          Sdk.newBuilder()
+            .setIndexUrl("http://not.in.sdk.index.url/")
+            .setIndexAvailability(Sdk.IndexAvailability.NOT_AVAILABLE)
+            .addLibraries(
+              Library.newBuilder()
+                .setLibraryId(
+                  LibraryIdentifier.newBuilder()
+                    .setMavenId(
+                      LibraryIdentifier.MavenIdentifier.newBuilder()
+                        .setGroupId("not.in.sdk.index.url")
+                        .setArtifactId("not.in.sdk")
+                        .build()
+                    )
+                )
+                // Ok, latest, no issues
+                .addVersions(
+                  LibraryVersion.newBuilder().setVersionString("3.0.4").setIsLatestVersion(true)
+                )
+                // Policy issues with version range
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("3.0.3")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setPolicyIssuesInfo(
+                          LibraryVersionLabels.PolicyIssuesInfo.newBuilder()
+                            .addViolatedSdkPolicies(
+                              LibraryVersionLabels.PolicyIssuesInfo.SdkPolicy.SDK_POLICY_PERMISSIONS
+                            )
+                            // A closed range
+                            .addRecommendedVersions(
+                              LibraryVersionRange.newBuilder()
+                                .setLowerBound("2.0.0")
+                                .setUpperBound("3.0.1")
+                            )
+                            // An open range
+                            .addRecommendedVersions(
+                              LibraryVersionRange.newBuilder().setLowerBound("3.0.4")
+                            )
+                        )
+                    )
+                )
+            )
+        )
         .build()
     index =
       object : GooglePlaySdkIndex() {
@@ -417,7 +470,7 @@ class GooglePlaySdkIndexTest {
   @Test
   fun `policy issues shown if showPolicyIssues is enabled`() {
     index.showPolicyIssues = true
-    assertThat(countPolicyIssues()).isEqualTo(14)
+    assertThat(countPolicyIssues()).isEqualTo(15)
   }
 
   @Test
@@ -428,7 +481,7 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `errors and warnings shown correctly`() {
-    assertThat(countHasErrorOrWarning()).isEqualTo(16)
+    assertThat(countHasErrorOrWarning()).isEqualTo(17)
   }
 
   @Test

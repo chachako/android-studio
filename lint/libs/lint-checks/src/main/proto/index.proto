@@ -28,6 +28,26 @@ message Index {
 
 // Represents an SDK and its libraries.
 message Sdk {
+  // Opaque identifier for this SDK.
+  // Guaranteed to be present and unique within the same `Index`.
+  string id = 8;
+
+  enum IndexAvailability {
+    UNKNOWN_INDEX_AVAILABILITY = 0;
+    // The SDK is not available in the public SDK Index. Critical issues or
+    // developer notes are still present, but the `index_url` for this SDK
+    // will point to the root SDK Index page (https://play.google.com/sdks).
+    NOT_AVAILABLE = 1;
+
+    // This SDK has a dedicated page in the public SDK Index.
+    // The page is available in the `index_url` field.
+    AVAILABLE_IN_PUBLIC_SDK_INDEX = 2;
+  }
+
+  // Whether this SDK is available in the SDK Index.
+  // Required.
+  IndexAvailability index_availability = 7;
+
   // Libraries in this SDK, in no particular order.
   // Guaranteed to contain at least one library.
   // This library list is not exhaustive, libraries that don't have relevant
@@ -37,7 +57,9 @@ message Sdk {
   // Fully qualified URL pointing to the SDK Index page for this SDK.
   // Example:
   // https://play.google.com/sdks/details/com-google-android-gms-play-services-ads
-  // Might be empty if for example, the SDK is not published in the SDK Index.
+  // Required. Never empty.
+  // If the SDK doesn't have a dedicated page in the SDK Index this URL will
+  // point users to the root SDK Index page.
   string index_url = 2;
 
   // The name of the SDK.
@@ -153,6 +175,10 @@ message LibraryVersionLabels {
     // List of all the Google policies violated by the library version.
     // Always set.
     repeated SdkPolicy violated_sdk_policies = 1;
+
+    // Recommended alternative versions, since this one has policy issues.
+    // Not guaranteed to be set.
+    repeated LibraryVersionRange recommended_versions = 2;
   }
 }
 
