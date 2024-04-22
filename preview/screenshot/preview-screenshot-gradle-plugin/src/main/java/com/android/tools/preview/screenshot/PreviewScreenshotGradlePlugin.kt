@@ -332,6 +332,9 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.testLogging {
                             it.showStandardStreams = true
                         }
+                        // TODO(b/325320710): Use the standard test report when extension points for
+                        //  adding custom information become available
+                        task.reports { it.html.required.set(false) }
                         task.testClassesDirs = project.files(renderTaskProvider.flatMap { it.testClassesDirAll }) + project.files(renderTaskProvider.flatMap { it.testClasspathAll })
                         task.classpath = task.project.configurations.getByName(previewScreenshotTestEngineConfigurationName) + task.testClassesDirs
                     }

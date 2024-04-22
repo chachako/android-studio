@@ -315,24 +315,24 @@ class ScreenshotTest {
         // Validate previews matches screenshots
         getExecutor().run(":app:previewScreenshotDebugAndroidTest")
 
-        // Verify that test engine generated HTML reports and all tests pass
-        val indexHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
-        val classHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/classes/pkg.name.ExampleTest.html")
-        val class2HtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/classes/pkg.name.TopLevelPreviewTestKt.html")
-        val packageHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/packages/pkg.name.html")
+        // Verify that HTML reports are generated and all tests pass
+        val indexHtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/index.html")
+        val classHtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/pkg.name.ExampleTest.html")
+        val class2HtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/pkg.name.TopLevelPreviewTestKt.html")
+        val packageHtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/pkg.name.html")
         assertThat(indexHtmlReport).exists()
         assertThat(classHtmlReport).exists()
         val expectedOutput = listOf(
-            """<td class="success">simpleComposableTest</td>""",
-            """<td class="success">simpleComposableTest2</td>""",
-            """<td class="success">multiPreviewTest_{showBackground=true}</td>""",
-            """<td class="success">multiPreviewTest_{showBackground=false}</td>""",
-            """<td class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</td>""",
-            """<td class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</td>"""
+            """<h3 class="success">simpleComposableTest</h3>""",
+            """<h3 class="success">simpleComposableTest2</h3>""",
+            """<h3 class="success">multiPreviewTest_{showBackground=true}</h3>""",
+            """<h3 class="success">multiPreviewTest_{showBackground=false}</h3>""",
+            """<h3 class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
+            """<h3 class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>"""
         )
         var classHtmlReportText = classHtmlReport.readText()
         expectedOutput.forEach { assertThat(classHtmlReportText).contains(it) }
-        assertThat(class2HtmlReport.readText()).contains("""<td class="success">simpleComposableTest_3</td>""")
+        assertThat(class2HtmlReport.readText()).contains("""<h3 class="success">simpleComposableTest_3</h3>""")
         assertThat(packageHtmlReport).exists()
 
         // Assert that no diff images were generated because screenshot matched the reference image
@@ -352,16 +352,16 @@ class ScreenshotTest {
         assertThat(classHtmlReport).exists()
         val expectedOutputAfterChangingPreviews = listOf(
             "Failed tests",
-            """<td class="failures">simpleComposableTest</td>""",
-            """<td class="failures">simpleComposableTest2</td>""",
-            """<td class="failures">multiPreviewTest_{showBackground=true}</td>""",
-            """<td class="failures">multiPreviewTest_{showBackground=false}</td>""",
-            """<td class="failures">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</td>""",
-            """<td class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</td>"""
+            """<h3 class="failures">simpleComposableTest</h3>""",
+            """<h3 class="failures">simpleComposableTest2</h3>""",
+            """<h3 class="failures">multiPreviewTest_{showBackground=true}</h3>""",
+            """<h3 class="failures">multiPreviewTest_{showBackground=false}</h3>""",
+            """<h3 class="failures">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
+            """<h3 class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>"""
         )
         classHtmlReportText = classHtmlReport.readText()
         expectedOutputAfterChangingPreviews.forEach { assertThat(classHtmlReportText).contains(it) }
-        assertThat(class2HtmlReport.readText()).contains("""<td class="failures">simpleComposableTest_3</td>""")
+        assertThat(class2HtmlReport.readText()).contains("""<h3 class="failures">simpleComposableTest_3</h3>""")
         assertThat(packageHtmlReport).exists()
 
         assertThat(diffDir).exists()
@@ -437,7 +437,7 @@ class ScreenshotTest {
             .withFailOnWarning(false) // TODO(b/333398506): remove once fixed
             .run(":app:previewScreenshotDebugAndroidTest")
 
-        val indexHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotDebugAndroidTest/index.html")
+        val indexHtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/index.html")
         assertThat(indexHtmlReport).exists()
         assertThat(indexHtmlReport.readText()).contains("""<div class="counter">0</div>""")
 
@@ -497,19 +497,19 @@ class ScreenshotTest {
 
         getExecutor().run(":app:previewScreenshotAndroidTest")
 
-        // Verify that test engine generated HTML reports for each flavor and all tests pass
-        val flavor1IndexHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor1DebugAndroidTest/index.html")
-        val flavor2IndexHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor2DebugAndroidTest/index.html")
-        val flavor1ClassHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor1DebugAndroidTest/classes/pkg.name.TopLevelPreviewTestKt.html")
-        val flavor2ClassHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor2DebugAndroidTest/classes/pkg.name.TopLevelPreviewTestKt.html")
-        val flavor1PackageHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor1DebugAndroidTest/packages/pkg.name.html")
-        val flavor2PackageHtmlReport = appProject.buildDir.resolve("reports/tests/previewScreenshotFlavor2DebugAndroidTest/packages/pkg.name.html")
+        // Verify that HTML reports are generated for each flavor and all tests pass
+        val flavor1IndexHtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/flavor1/index.html")
+        val flavor2IndexHtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/flavor2/index.html")
+        val flavor1ClassHtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/flavor1/pkg.name.TopLevelPreviewTestKt.html")
+        val flavor2ClassHtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/flavor2/pkg.name.TopLevelPreviewTestKt.html")
+        val flavor1PackageHtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/flavor1/pkg.name.html")
+        val flavor2PackageHtmlReport = appProject.buildDir.resolve("reports/androidTests/preview/debug/flavor2/pkg.name.html")
         assertThat(flavor1IndexHtmlReport).exists()
         assertThat(flavor2IndexHtmlReport).exists()
         assertThat(flavor1ClassHtmlReport).exists()
         assertThat(flavor2ClassHtmlReport).exists()
         val expectedOutput = listOf(
-            """<td class="success">simpleComposableTest_3</td>""",
+            """<h3 class="success">simpleComposableTest_3</h3>""",
         )
         expectedOutput.forEach {
             assertThat(flavor1ClassHtmlReport.readText()).contains(it)
