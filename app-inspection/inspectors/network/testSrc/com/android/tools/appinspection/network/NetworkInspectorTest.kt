@@ -117,15 +117,19 @@ internal class NetworkInspectorTest {
 
     val (javaNet, okhttp, grpc) = networkInspector.registerHooks()
 
-    // Note that `AndroidChannelBuilder` is not hooked. This is because we didn't add a build
-    // dependency on `grpc-android`. The test still verifies that we attempt to hook it.
+    // Note that `AndroidChannelBuilder` and `OkHttpChannelBuilder` are not hooked. This is because
+    // we didn't add a build dependency on `grpc-android` and `grpc-okhttp`.
+    // The test still verifies that we attempt to hook it.
     assertThat(getLogLines())
       .containsExactly(
         "DEBUG: studio.inspectors: Instrumented java.net.URL",
         "DEBUG: studio.inspectors: Instrumented com.squareup.okhttp.OkHttpClient",
         "DEBUG: studio.inspectors: Instrumented okhttp3.OkHttpClient",
-        "DEBUG: studio.inspectors: Instrumented io.grpc.ManagedChannelBuilder",
-        "DEBUG: studio.inspectors: Could not load class io.grpc.android.AndroidChannelBuilder",
+        "DEBUG: studio.inspectors: Instrumented io.grpc.ManagedChannelBuilder#forAddress",
+        "DEBUG: studio.inspectors: Instrumented io.grpc.ManagedChannelBuilder#forTarget",
+        "DEBUG: studio.inspectors: Instrumented io.grpc.okhttp.OkHttpChannelBuilder#forAddress",
+        "DEBUG: studio.inspectors: Instrumented io.grpc.okhttp.OkHttpChannelBuilder#forTarget",
+        "DEBUG: studio.inspectors: Could not load class io.grpc.android.AndroidChannelBuilder#forTarget",
       )
     assertThat(javaNet).isTrue()
     assertThat(okhttp).isTrue()

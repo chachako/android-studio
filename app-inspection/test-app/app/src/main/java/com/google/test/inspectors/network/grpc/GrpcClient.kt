@@ -27,6 +27,7 @@ import com.google.test.inspectors.grpc.xml.XmlServiceCoroutineStub
 import io.grpc.ManagedChannelBuilder
 import io.grpc.android.AndroidChannelBuilder
 import io.grpc.internal.GrpcUtil
+import io.grpc.okhttp.OkHttpChannelBuilder
 import java.util.concurrent.TimeUnit.SECONDS
 
 internal class GrpcClient(host: String, port: Int, channelBuilderType: ChannelBuilderType) :
@@ -47,6 +48,14 @@ internal class GrpcClient(host: String, port: Int, channelBuilderType: ChannelBu
     ANDROID_FOR_TARGET("For Target (Android)") {
       override fun newBuilder(host: String, port: Int): ManagedChannelBuilder<*> =
         AndroidChannelBuilder.forTarget(GrpcUtil.authorityFromHostAndPort(host, port))
+    },
+    OKHTTP_FOR_ADDRESS("For Address (OKHTTP)") {
+      override fun newBuilder(host: String, port: Int): ManagedChannelBuilder<*> =
+        OkHttpChannelBuilder.forAddress(host, port)
+    },
+    OKHTTP_FOR_TARGET("For Target (OKHTTP)") {
+      override fun newBuilder(host: String, port: Int): ManagedChannelBuilder<*> =
+        OkHttpChannelBuilder.forTarget(GrpcUtil.authorityFromHostAndPort(host, port))
     },
     ;
 

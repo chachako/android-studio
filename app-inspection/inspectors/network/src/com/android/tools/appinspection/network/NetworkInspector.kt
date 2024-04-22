@@ -84,9 +84,18 @@ internal class NetworkInspector(
         "io.grpc.ManagedChannelBuilder",
         "forTarget(Ljava/lang/String;)Lio/grpc/ManagedChannelBuilder;",
       ),
+      // 'AndroidChannelBuilder.forAddress()' calls 'AndroidChannelBuilder.forTarget();
       GrpcHook(
         "io.grpc.android.AndroidChannelBuilder",
         "forTarget(Ljava/lang/String;)Lio/grpc/android/AndroidChannelBuilder;",
+      ),
+      GrpcHook(
+        "io.grpc.okhttp.OkHttpChannelBuilder",
+        "forAddress(Ljava/lang/String;I)Lio/grpc/okhttp/OkHttpChannelBuilder;",
+      ),
+      GrpcHook(
+        "io.grpc.okhttp.OkHttpChannelBuilder",
+        "forTarget(Ljava/lang/String;)Lio/grpc/okhttp/OkHttpChannelBuilder;",
       ),
     )
 
@@ -313,7 +322,6 @@ internal class NetworkInspector(
       val grpcInterceptor = GrpcInterceptor { GrpcTracker(connection) }
       instrumentExistingGrpcChannels(grpcInterceptor)
       instrumentGrpcChannelBuilder(grpcInterceptor)
-      Logger.debugHidden("Instrumented ${ManagedChannelBuilder::class.qualifiedName}")
       return true
     } catch (e: NoClassDefFoundError) {
       Logger.debug(
@@ -359,7 +367,7 @@ internal class NetworkInspector(
         try {
           javaClass.classLoader.loadClass(hook.className)
         } catch (e: ClassNotFoundException) {
-          Logger.debugHidden("Could not load class ${hook.className}")
+          Logger.debugHidden("Could not load class $hook")
           return@forEach
         }
       environment
@@ -372,6 +380,7 @@ internal class NetworkInspector(
             channelBuilder
           },
         )
+      Logger.debugHidden("Instrumented $hook")
     }
   }
 
@@ -395,7 +404,9 @@ internal class NetworkInspector(
     override fun authority(): String = delegate.authority()
   }
 
-  private class GrpcHook(val className: String, val method: String)
+  private class GrpcHook(val className: String, val method: String) {
+    override fun toString() = "$className#${method.substringBefore('(')}"
+  }
 
   private data class InspectorState(
     val speedDataCollectionStarted: Boolean,
