@@ -185,7 +185,7 @@ class ScreenshotTest {
                         SimpleComposable()
                     }
 
-                    @Preview(showBackground = true)
+                    @Preview(widthDp = 800, heightDp = 800)
                     @Composable
                     fun simpleComposableTest2() {
                         SimpleComposable()
@@ -270,9 +270,10 @@ class ScreenshotTest {
                   "methodFQN": "pkg.name.ExampleTest.simpleComposableTest2",
                   "methodParams": [],
                   "previewParams": {
-                    "showBackground": "true"
+                    "heightDp": "800",
+                    "widthDp": "800"
                   },
-                  "imageName": "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee"
+                  "imageName": "pkg.name.ExampleTest.simpleComposableTest2_b55c4b0c_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.simpleComposableTest",
@@ -303,7 +304,7 @@ class ScreenshotTest {
         val referenceScreenshotDir = appProject.projectDir.resolve("src/androidTest/screenshot/debug/").toPath()
         assertThat(referenceScreenshotDir.listDirectoryEntries().map { it.name }).containsExactly(
             "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee_0.png",
-            "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee_0.png",
+            "pkg.name.ExampleTest.simpleComposableTest2_b55c4b0c_da39a3ee_0.png",
             "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee_0.png",
             "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee_0.png",
             "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_0.png",
@@ -366,7 +367,7 @@ class ScreenshotTest {
         assertThat(diffDir).exists()
         assertThat(diffDir.listDirectoryEntries().map { it.name }).containsExactly(
             "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee_0.png",
-            "pkg.name.ExampleTest.simpleComposableTest2_3d8b4969_da39a3ee_0.png",
+            "pkg.name.ExampleTest.simpleComposableTest2_b55c4b0c_da39a3ee_0.png",
             "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee_0.png",
             "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee_0.png",
             "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_0.png",

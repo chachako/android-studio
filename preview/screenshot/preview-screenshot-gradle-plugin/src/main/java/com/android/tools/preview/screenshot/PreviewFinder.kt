@@ -121,7 +121,7 @@ private fun convertListMap(parameters: List<ParameterRepresentation>): List<Map<
 private fun convertMap(map: Map<String, Any?>): Map<String, String> =
     map.map { (key, value) ->
         key to (if (key == "provider") (value as Type).className else value.toString())
-    }.toMap()
+    }.toMap().toSortedMap()
 
 
 private fun calcHexString(digest: ByteArray): String {
