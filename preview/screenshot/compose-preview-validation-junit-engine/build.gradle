@@ -28,7 +28,7 @@ if (findProperty("release")?.toBoolean()) {
 dependencies {
     implementation 'org.junit.platform:junit-platform-engine:1.10.1'
     implementation libs.com.android.tools.compose.composePreviewDetector
-    implementation libs.com.android.tools.composecli.serialize
+    implementation libs.com.android.tools.compose.composePreviewRendererModel
     implementation libs.com.android.tools.common
     implementation libs.kxml
     testImplementation libs.junit

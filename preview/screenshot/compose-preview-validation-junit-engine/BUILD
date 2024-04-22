@@ -19,7 +19,7 @@ maven_library(
     deps = [
         "//tools/base/common:tools.common",
         "//tools/base/multipreview-asm:compose-preview-detector",
-        "//tools/base/standalone-render/compose-cli-serialize:standalone-render.compose-cli-serialize",
+        "//tools/base/standalone-render/compose-cli-serialize:compose-preview-renderer-model",
         "@maven//:net.sf.kxml.kxml2",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.junit.platform.junit-platform-engine",

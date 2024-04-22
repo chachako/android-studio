@@ -2,9 +2,9 @@ load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/common:version.bzl", "BASE_VERSION")
 
-# Build target to verify that standalone-render.compose-cli-serialize builds for tools/base
+# Build target to verify that compose-preview-renderer-model builds for tools/base
 kotlin_library(
-    name = "tools.standalone-render.compose-cli-serialize",
+    name = "tools.compose-preview-renderer-model",
     srcs = glob([
         "src/**/*.java",
         "src/**/*.kt",
@@ -15,31 +15,31 @@ kotlin_library(
     ],
 )
 
-# Build target to verify that standalone-render.compose-cli-serialize.tests tests succeeds for tools/base
+# Build target to verify that compose-preview-renderer-model.tests tests succeeds for tools/base
 kotlin_test(
-    name = "tools.standalone-render.compose-cli-serialize.tests",
+    name = "tools.compose-preview-renderer-model.tests",
     srcs = glob([
         "testSrc/**/*.kt",
         "testSrc/**/*.java",
     ]),
-    jvm_flags = ["-Dtest.suite.jar=tools.standalone-render.compose-cli-serialize.tests.jar"],
+    jvm_flags = ["-Dtest.suite.jar=tools.compose-preview-renderer-model.tests.jar"],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
-        ":tools.standalone-render.compose-cli-serialize",
+        ":tools.compose-preview-renderer-model",
         "//tools/base/testutils:tools.testutils",
         "@maven//:junit.junit",
     ],
 )
 
 maven_library(
-    name = "standalone-render.compose-cli-serialize",
+    name = "compose-preview-renderer-model",
     srcs = glob([
         "src/**/*.java",
         "src/**/*.kt",
     ]),
-    coordinates = "com.android.tools:standalone-render.compose-cli-serialize",
+    coordinates = "com.android.tools.compose:compose-preview-renderer-model",
     description = "Library to serialize and deserialize data to and from Compose rendering CLI",
-    module_name = "standalone-render.compose-cli-serialize",
+    module_name = "compose-preview-renderer-model",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/standalone-render/compose-cli-serialize",
     version = BASE_VERSION,
