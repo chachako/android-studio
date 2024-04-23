@@ -36,6 +36,12 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
   val avds = mutableListOf<AvdInfo>()
   val runningDevices = mutableSetOf<FakeEmulatorConsole>()
   var avdIndex = 1
+  var avdEditor: (AvdInfo) -> AvdInfo = { avdInfo: AvdInfo ->
+    avdInfo.copy(
+      properties =
+        avdInfo.properties + (AvdManager.AVD_INI_DISPLAY_NAME to avdInfo.displayName + " Edited")
+    )
+  }
 
   override suspend fun rescanAvds(): List<AvdInfo> = synchronized(avds) { avds.toList() }
 
@@ -70,6 +76,7 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
         AvdManager.AVD_INI_TAG_ID to tag.id,
         AvdManager.AVD_INI_TAG_DISPLAY to tag.display,
       ),
+      null,
       avdStatus,
     )
   }
@@ -77,12 +84,7 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
   override suspend fun editAvd(avdInfo: AvdInfo): AvdInfo? =
     synchronized(avds) {
       avds.remove(avdInfo)
-      val newAvdInfo =
-        avdInfo.copy(
-          properties =
-            avdInfo.properties +
-              (AvdManager.AVD_INI_DISPLAY_NAME to avdInfo.displayName + " Edited")
-        )
+      val newAvdInfo = avdEditor(avdInfo)
       avds += newAvdInfo
       return newAvdInfo
     }
@@ -154,6 +156,7 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
         avdInfo.dataFolderPath,
         avdInfo.systemImage,
         avdInfo.properties,
+        avdInfo.userSettings,
         AvdInfo.AvdStatus.OK,
       )
   }
@@ -190,7 +193,8 @@ fun AvdInfo.copy(
   folderPath: Path = this.dataFolderPath,
   systemImage: ISystemImage? = this.systemImage,
   properties: Map<String, String> = this.properties,
+  userSettings: Map<String, String?>? = this.userSettings,
   status: AvdInfo.AvdStatus = this.status,
-): AvdInfo = AvdInfo(name, iniFile, folderPath, systemImage, properties, status)
+): AvdInfo = AvdInfo(name, iniFile, folderPath, systemImage, properties, userSettings, status)
 
 const val LAUNCH_EXCEPTION_MESSAGE = "launch_exception_message"

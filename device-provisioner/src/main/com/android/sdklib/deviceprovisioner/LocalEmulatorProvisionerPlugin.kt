@@ -35,7 +35,7 @@ import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
-import com.android.sdklib.internal.avd.AvdManager
+import com.android.sdklib.internal.avd.AvdManager.USER_SETTINGS_INI_PREFERRED_ABI
 import com.android.sdklib.internal.avd.HardwareProperties
 import com.google.wireless.android.sdk.stats.DeviceInfo
 import com.intellij.icons.AllIcons
@@ -297,6 +297,10 @@ class LocalEmulatorProvisionerPlugin(
             logger.debug { "${logName()} Processing: $message" }
             when (message) {
               is AvdInfoUpdate -> {
+                if (!activeAvdInfo.isSameMetadata(message.avdInfo)) {
+                  activeAvdInfo = activeAvdInfo.copyMetadata(message.avdInfo)
+                  properties = properties.toBuilder().apply { setAvdInfo(activeAvdInfo) }.build()
+                }
                 if (connectedDevice == null) {
                   if (activeAvdInfo != message.avdInfo) {
                     activeAvdInfo = message.avdInfo
@@ -794,8 +798,7 @@ data class LocalEmulatorProperties(
       density = avdInfo.density
       resolution = avdInfo.resolution
       isDebuggable = !avdInfo.hasPlayStore()
-      preferredAbi =
-        avdInfo.parseUserSettingsFile(null)?.get(AvdManager.USER_SETTINGS_INI_PREFERRED_ABI)
+      preferredAbi = avdInfo.userSettings[USER_SETTINGS_INI_PREFERRED_ABI]
       avdConfigProperties.putAll(avdInfo.properties)
     }
 

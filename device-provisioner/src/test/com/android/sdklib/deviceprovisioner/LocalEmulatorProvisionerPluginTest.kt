@@ -387,6 +387,47 @@ class LocalEmulatorProvisionerPluginTest {
     job.cancel()
   }
 
+  // Some of the data for an AVD can be edited and updated while running.
+  // Check that it's fine to edit these properties while the AVD is offline or online.
+  @Test
+  fun editMetadata() = runBlockingWithTimeout {
+    val info = avdManager.makeAvdInfo(1, tag = SystemImageTags.GOOGLE_TV_TAG)
+    avdManager.createAvd(info)
+
+    val channel = Channel<DeviceState>()
+
+    yieldUntil { provisioner.devices.value.size == 1 }
+
+    val handle = provisioner.devices.value[0]
+    val job = launch { handle.stateFlow.collect { channel.send(it) } }
+
+    // Check if editing the AVD name works while offline.
+    val originalName = info.name
+    avdManager.avdEditor = { avdInfo: AvdInfo -> avdInfo.copy("New $originalName") }
+
+    handle.editAction?.edit()
+    channel.receiveUntilPassing { newState ->
+      assertThat((newState.properties as LocalEmulatorProperties).avdName)
+        .isEqualTo("New $originalName")
+    }
+
+    handle.activationAction?.activate()
+    channel.receiveUntilPassing { newState ->
+      assertThat(newState).isInstanceOf(Connected::class.java)
+    }
+
+    // Editing metadata while running shouldn't have problems.
+    avdManager.avdEditor = { avdInfo: AvdInfo -> avdInfo.copy("Final AVD name") }
+    handle.editAction?.edit()
+    channel.receiveUntilPassing { newState ->
+      assertThat((newState.properties as LocalEmulatorProperties).avdName)
+        .isEqualTo("Final AVD name")
+      assertThat(newState.error).isNull()
+    }
+
+    job.cancel()
+  }
+
   /** Verify that the device updates the expected number of times. */
   @Test
   fun updateCount() = runBlockingWithTimeout {
