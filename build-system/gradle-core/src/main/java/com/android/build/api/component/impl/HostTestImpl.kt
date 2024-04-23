@@ -21,6 +21,7 @@ import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.HostTest
 import com.android.build.api.variant.impl.HostTestBuilderImpl
+import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
@@ -35,8 +36,11 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import com.android.builder.core.ComponentType
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.testing.Test
 import javax.inject.Inject
 
 abstract class HostTestImpl @Inject constructor(
@@ -54,6 +58,8 @@ abstract class HostTestImpl @Inject constructor(
     taskCreationServices: TaskCreationServices,
     global: GlobalTaskCreationConfig,
     hostTestBuilder: HostTestBuilderImpl,
+    override val hostTestName: String,
+    override val type: ComponentType,
 ) : TestComponentImpl<HostTestComponentDslInfo>(
     componentIdentity,
     buildFeatureValues,
@@ -68,7 +74,7 @@ abstract class HostTestImpl @Inject constructor(
     internalServices,
     taskCreationServices,
     global
-), HostTest {
+), HostTest, HostTestCreationConfig {
 
     // ---------------------------------------------------------------------------------------------
     // PUBLIC API
@@ -113,4 +119,18 @@ abstract class HostTestImpl @Inject constructor(
      * There is no build config fields for host tests.
      */
     override val buildConfigCreationConfig: BuildConfigCreationConfig? = null
+
+    private val testTaskConfigActions = mutableListOf<(Test) -> Unit>()
+
+    @Synchronized
+    override fun configureTestTask(action: (Test) -> Unit) {
+        testTaskConfigActions.add(action)
+    }
+
+    @Synchronized
+    override fun runTestTaskConfigurationActions(testTaskProvider: TaskProvider<out Test>) {
+        testTaskConfigActions.forEach {
+            testTaskProvider.configure { testTask -> it(testTask) }
+        }
+    }
 }

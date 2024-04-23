@@ -24,7 +24,6 @@ import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.impl.AndroidResourcesImpl
 import com.android.build.api.variant.impl.HostTestBuilderImpl
-import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
@@ -38,8 +37,6 @@ import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
 import com.android.builder.core.ComponentTypeImpl
-import org.gradle.api.tasks.TaskProvider
-import org.gradle.api.tasks.testing.Test
 import javax.inject.Inject
 
 open class UnitTestImpl @Inject constructor(
@@ -72,7 +69,9 @@ open class UnitTestImpl @Inject constructor(
     taskCreationServices,
     global,
     hostTestBuilder,
-), HostTestCreationConfig, UnitTest {
+    HostTestBuilder.UNIT_TEST_TYPE,
+    ComponentTypeImpl.UNIT_TEST
+), UnitTest {
 
     /**
      * In unit tests, we don't produce an apk. However, we still need to set the target sdk version
@@ -101,22 +100,4 @@ open class UnitTestImpl @Inject constructor(
 
     override val androidResources: AndroidResourcesImpl =
             getAndroidResources(dslInfo.androidResourcesDsl!!.androidResources)
-
-    private val testTaskConfigActions = mutableListOf<(Test) -> Unit>()
-
-    @Synchronized
-    override fun configureTestTask(action: (Test) -> Unit) {
-        testTaskConfigActions.add(action)
-    }
-
-    @Synchronized
-    override fun runTestTaskConfigurationActions(testTaskProvider: TaskProvider<out Test>) {
-        testTaskConfigActions.forEach {
-            testTaskProvider.configure { testTask -> it(testTask) }
-        }
-    }
-
-    override val hostTestName: String = HostTestBuilder.UNIT_TEST_TYPE
-
-    override val type = ComponentTypeImpl.UNIT_TEST
 }

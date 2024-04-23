@@ -67,21 +67,6 @@ open class ScreenshotTestImpl @Inject constructor(
     taskCreationServices,
     global,
     hostTestBuilder,
-), HostTestCreationConfig {
-
-    private val testTaskConfigActions = mutableListOf<(Test) -> Unit>()
-
-    override fun configureTestTask(action: (Test) -> Unit) {
-        testTaskConfigActions.add(action)
-    }
-
-    override fun runTestTaskConfigurationActions(testTask: TaskProvider<out Test>) {
-        testTaskConfigActions.forEach {
-            testTask.configure { testTask -> it(testTask) }
-        }
-    }
-
-    override val hostTestName: String = HostTestBuilder.SCREENSHOT_TEST_TYPE
-
-    override val type = ComponentTypeImpl.SCREENSHOT_TEST
-}
+    HostTestBuilder.SCREENSHOT_TEST_TYPE,
+    ComponentTypeImpl.SCREENSHOT_TEST,
+), HostTestCreationConfig
