@@ -400,12 +400,20 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   }
 
   /** Generate a message for a library that has blocking critical issues */
-  fun generateBlockingCriticalMessage(groupId: String, artifactId: String, versionString: String) =
-    "[Prevents app release in Google Play Console] $groupId:$artifactId version $versionString has been reported as problematic by its author and will block publishing of your app to Play Console"
+  fun generateBlockingCriticalMessage(
+    groupId: String,
+    artifactId: String,
+    versionString: String,
+  ): String {
+    val note = getNoteFromDeveloper(groupId, artifactId, versionString)
+    return "[Prevents app release in Google Play Console] $groupId:$artifactId version $versionString has been reported as problematic by its author and will block publishing of your app to Play Console$note"
+  }
 
   /** Generate a message for a library that has non-blocking critical issues */
-  fun generateCriticalMessage(groupId: String, artifactId: String, versionString: String) =
-    "$groupId:$artifactId version $versionString has an associated message from its author"
+  fun generateCriticalMessage(groupId: String, artifactId: String, versionString: String): String {
+    val note = getNoteFromDeveloper(groupId, artifactId, versionString)
+    return "$groupId:$artifactId version $versionString has an associated message from its author$note"
+  }
 
   /** Generate a message for a library that has blocking outdated issues */
   fun generateBlockingOutdatedMessage(groupId: String, artifactId: String, versionString: String) =
@@ -506,5 +514,17 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
       result.addAll(types)
     }
     return result
+  }
+
+  private fun getNoteFromDeveloper(
+    groupId: String,
+    artifactId: String,
+    versionString: String,
+  ): String {
+    val labels = getLabels(groupId, artifactId, versionString) ?: return ""
+    val criticalIssue = labels.criticalIssueInfo ?: return ""
+    val message = criticalIssue.description
+    if (message.isNullOrBlank()) return ""
+    return ". Note: $message"
   }
 }
