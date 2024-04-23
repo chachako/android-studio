@@ -18,13 +18,18 @@ package com.google.test.inspectors.database
 
 import android.app.Application
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteDatabase.OPEN_READONLY
 import android.database.sqlite.SQLiteDatabase.OpenParams
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.viewModelScope
+import androidx.room.InvalidationTracker
+import androidx.room.Room
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.google.test.inspectors.Logger
+import com.google.test.inspectors.database.room.RoomDatabase
 import com.google.test.inspectors.ui.scafold.AppScaffoldViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -48,9 +53,23 @@ private const val NATIVE_DATABASE_CREATE =
   )
   """
 
+private val SYSTEM_TABLES =
+  listOf("sqlite_sequence", "room_master_table", "android_metadata").joinToString { "'$it'" }
+
+private val QUERY_TABLES =
+  """
+    SELECT name FROM sqlite_master
+      WHERE
+        type = 'table' AND
+        name NOT IN ($SYSTEM_TABLES)
+  """
+
 @HiltViewModel
 internal class DatabaseViewModel @Inject constructor(application: Application) :
   AppScaffoldViewModel(), DatabaseActions {
+
+  private val roomDatabase =
+    Room.databaseBuilder(application, RoomDatabase::class.java, "room-database.db").build()
 
   private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
     setSnack("Error: ${throwable.message}")
@@ -63,6 +82,13 @@ internal class DatabaseViewModel @Inject constructor(application: Application) :
   private val readWriteDatabaseFlow: MutableStateFlow<SQLiteDatabase?> = MutableStateFlow(null)
   @RequiresApi(28) private val readOnlyDatabaseOpenHelper = ReadOnlyDatabaseOpenHelper(application)
   private val readOnlyDatabaseFlow: MutableStateFlow<SQLiteDatabase?> = MutableStateFlow(null)
+
+  init {
+    scope.launch(IO) {
+      val roomTables = roomDatabase.openHelper.readableDatabase.use { it.getTables() }
+      roomDatabase.invalidationTracker.addObserver(RoomObserver(roomTables))
+    }
+  }
 
   val readWriteDatabaseState: StateFlow<Boolean> =
     readWriteDatabaseFlow.map { it != null }.stateIn(viewModelScope, WhileUiSubscribed, false)
@@ -127,5 +153,26 @@ internal class DatabaseViewModel @Inject constructor(application: Application) :
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}
+  }
+
+  private inner class RoomObserver(tables: Set<String>) :
+    InvalidationTracker.Observer(tables.toTypedArray()) {
+
+    override fun onInvalidated(tables: Set<String>) {
+      setSnack("Room tables [${tables.joinToString { it }}]  updated")
+      roomDatabase.openHelper.readableDatabase
+    }
+  }
+}
+
+private fun SupportSQLiteDatabase.getTables() = query(QUERY_TABLES).getValues()
+
+private fun Cursor.getValues(): Set<String> {
+  return use { cursor ->
+    buildSet {
+      while (cursor.moveToNext()) {
+        add(cursor.getString(0))
+      }
+    }
   }
 }
