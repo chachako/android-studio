@@ -44,7 +44,6 @@ class PreviewDiscoveryTaskTest {
         val resultsDir = tempDirRule.newFolder("results")
         val referenceImageDir = tempDirRule.newFolder("references")
         task.resultsDir.set(resultsDir)
-        task.referenceImageDir.set(referenceImageDir)
         task.previewsOutputFile.set(tempDirRule.newFile("previews_discovered.json"))
         task.analyticsService.set(object: AnalyticsService() {
             override val buildServiceRegistry: BuildServiceRegistry = mock(

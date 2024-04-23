@@ -172,7 +172,6 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                             task.previewsOutputFile.set(buildDir.file("$PREVIEW_INTERMEDIATES/$variantSegments/previews_discovered.json"))
                             task.previewsOutputFile.disallowChanges()
                             task.resultsDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments"))
-                            task.referenceImageDir.set(project.layout.projectDirectory.dir("src/androidTest/screenshot/$variantSegments"))
                             task.analyticsService.set(analyticsServiceProvider)
                             task.usesService(analyticsServiceProvider)
                         }

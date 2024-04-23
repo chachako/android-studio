@@ -64,16 +64,12 @@ abstract class PreviewDiscoveryTask: DefaultTask() {
     @get:OutputDirectory
     abstract val resultsDir: DirectoryProperty
 
-    @get:OutputDirectory
-    abstract val referenceImageDir: DirectoryProperty
-
     @get:Internal
     abstract val analyticsService: Property<AnalyticsService>
 
     @TaskAction
     fun run() = analyticsService.get().recordTaskAction(path) {
         Files.createDirectories(resultsDir.asFile.get().toPath())
-        Files.createDirectories(referenceImageDir.asFile.get().toPath())
 
         val outputFilePath = previewsOutputFile.get().asFile.toPath()
         val classpathJars = mutableListOf<String>()
