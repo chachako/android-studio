@@ -36,12 +36,18 @@ declare -r re_client="${top}/prebuilts/remoteexecution-client/latest"
     cp ${script_dir}/linux_tools.sh .
     mkdir -p ./tools/idea/native/ && cp -r ${top}/tools/idea/native/. ./tools/idea/native/
 
+    # ubuntu:14.04 have too old GCC version
+    # - that use -std=c90 by default
+    # - don't like `{0}` style initialization: https://stackoverflow.com/questions/1538943
+    # update compile flags for WSL tools, so that code compiles
+    sed -i -e 's/CFLAGS =/CFLAGS = -std=c99 -Wno-missing-field-initializers -Wno-missing-braces /g' ./tools/idea/native/WslTools/Makefile
+
     ${re_client}/rewrapper  --labels=type=tool --exec_strategy=remote \
     --cfg=$cfg \
     --inputs=. \
-    --output_files=dist/fsnotifier \
+    --output_files=dist/fsnotifier,dist/wslhash,dist/ttyfix,dist/wslproxy \
     -- ./linux_tools.sh out dist $build_number
   )
 )
 
-cp $out_dir/re_files/dist/fsnotifier $dist_dir/
+cp $out_dir/re_files/dist/* $dist_dir/
