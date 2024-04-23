@@ -111,6 +111,7 @@ internal class AdblibIDeviceWrapper(
     private val mAvdData = connectedDevice.scope.async { createAvdData() }
     private var mAvdName: String? = null
     private var mAvdPath: String? = null
+
     init {
         mAvdData.invokeOnCompletion { throwable ->
             if (throwable == null) {
@@ -121,6 +122,7 @@ internal class AdblibIDeviceWrapper(
             }
         }
     }
+
     private val mUserDataMap = UserDataMapImpl()
 
     /**
@@ -272,7 +274,14 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun getState(): DeviceState? {
-        return deviceState?.let { DeviceState.getState(it.state)}
+        return deviceState?.let {
+            // `DISCONNECTED` is not a device state returned from `adb devices` and so we should not
+            // use `DeviceState.getState` method which is not reliable in this case.
+            if (it == com.android.adblib.DeviceState.DISCONNECTED) {
+                return DeviceState.DISCONNECTED
+            }
+            DeviceState.getState(it.state)
+        }
     }
 
     @Deprecated("")

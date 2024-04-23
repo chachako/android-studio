@@ -119,6 +119,19 @@ class AdblibIDeviceWrapperTest {
     }
 
     @Test
+    fun getState_forDisconnectedDevice() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, _) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.OFFLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        adblibIDeviceWrapper.deviceState = com.android.adblib.DeviceState.DISCONNECTED
+
+        // Act / Assert
+        assertEquals(IDevice.DeviceState.DISCONNECTED, adblibIDeviceWrapper.state)
+    }
+
+    @Test
     fun toStringReturnsSerialNumber() = runBlockingWithTimeout {
         // Prepare
         val serialNumber = "kjdlkjsi837892"
