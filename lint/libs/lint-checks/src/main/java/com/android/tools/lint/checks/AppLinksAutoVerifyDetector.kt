@@ -16,23 +16,33 @@
 package com.android.tools.lint.checks
 
 import com.android.SdkConstants
+import com.android.SdkConstants.ANDROID_URI
+import com.android.SdkConstants.ATTR_HOST
+import com.android.SdkConstants.ATTR_PACKAGE
+import com.android.SdkConstants.ATTR_SCHEME
+import com.android.SdkConstants.TAG_ACTIVITY
+import com.android.SdkConstants.TAG_ACTIVITY_ALIAS
+import com.android.SdkConstants.TAG_APPLICATION
+import com.android.SdkConstants.TAG_INTENT_FILTER
+import com.android.SdkConstants.VALUE_TRUE
 import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.LintClient.Companion.isUnitTest
 import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.Detector
 import com.android.tools.lint.detector.api.Implementation
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.Issue.Companion.create
-import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
-import com.android.tools.lint.detector.api.XmlContext
 import com.android.tools.lint.detector.api.XmlScanner
-import com.android.xml.AndroidManifest
-import com.google.common.annotations.VisibleForTesting
-import com.google.common.collect.Lists
-import com.google.common.collect.Maps
+import com.android.utils.iterator
+import com.android.utils.subtag
+import com.android.xml.AndroidManifest.ATTRIBUTE_NAME
+import com.android.xml.AndroidManifest.NODE_ACTION
+import com.android.xml.AndroidManifest.NODE_CATEGORY
+import com.android.xml.AndroidManifest.NODE_DATA
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -42,193 +52,190 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
+import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.UnknownHostException
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import kotlin.text.Charsets.UTF_8
 import org.w3c.dom.Attr
-import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
-/** Check if the App Link which needs auto verification is correctly set. */
+/**
+ * Reports Android App Links for which the remote (HTTPS) Digital Asset Links JSON file is broken in
+ * some way. Note that this Detector performs network (HTTPS) requests.
+ */
 class AppLinksAutoVerifyDetector : Detector(), XmlScanner {
-  /* Maps website host url to a future task which will send HTTP request to fetch the JSON file
-   * and also return the status code during the fetching process. */
-  private val mFutures: MutableMap<String, Future<HttpResult>> = Maps.newHashMap()
 
-  /* Maps website host url to host attribute in AndroidManifest.xml. */
-  private val mJsonHost: MutableMap<String, Attr> = Maps.newHashMap()
+  override fun checkMergedProject(context: Context) {
+    if (context.mainProject.isLibrary) return
 
-  override fun visitDocument(context: XmlContext, document: Document) {
-    // This check sends http request. Only done in batch mode.
-
+    // Only run in batch mode. That is, only run from the command line or via
+    // "Inspect Code..." in the IDE.
     if (!context.scope.contains(Scope.ALL_JAVA_FILES)) {
       return
     }
+    // TODO: Enable running on-the-fly in the IDE, and add caching.
+    // TODO: When running on-the-fly, we will still only run on app modules.
+    //  But if the warnings are from other manifests, we can't show them,
+    //  so we should perhaps show the warning on the application tag, instead?
 
-    if (document.documentElement != null) {
-      val intents = getTags(document.documentElement, AndroidManifest.NODE_INTENT)
-      if (!needAutoVerification(intents)) {
-        return
+    val manifest = context.mainProject.mergedManifest?.documentElement ?: return
+    val application = manifest.subtag(TAG_APPLICATION) ?: return
+
+    // We need the application id to be able to check if it is correctly
+    // included in the Digital Asset Links JSON file.
+    val applicationId = manifest.getAttribute(ATTR_PACKAGE)
+    if (applicationId.isBlank()) return
+
+    val activities =
+      application.iterator().asSequence().filter {
+        it.tagName in arrayOf(TAG_ACTIVITY, TAG_ACTIVITY_ALIAS)
       }
 
-      for (intent in intents) {
-        val actionView =
-          hasNamedSubTag(intent, AndroidManifest.NODE_ACTION, "android.intent.action.VIEW")
-        val browsableCategory =
-          hasNamedSubTag(intent, AndroidManifest.NODE_CATEGORY, "android.intent.category.BROWSABLE")
-        if (!actionView || !browsableCategory) {
-          continue
-        }
-        mJsonHost.putAll(getJsonUrl(context, intent))
+    val intentFilters =
+      activities.flatMap { activity ->
+        activity.iterator().asSequence().filter { it.tagName == TAG_INTENT_FILTER }
       }
+
+    // At the time of writing, the documentation at:
+    // https://developer.android.com/training/app-links/verify-android-applinks#add-intent-filters
+    // suggests that the tags inside the intent-filter need to follow a very specific format:
+    //
+    // <!-- Make sure you explicitly set android:autoVerify to "true". -->
+    // <intent-filter android:autoVerify="true">
+    //     <action android:name="android.intent.action.VIEW" />
+    //     <category android:name="android.intent.category.DEFAULT" />
+    //     <category android:name="android.intent.category.BROWSABLE" />
+    //
+    //     <!-- If a user clicks on a shared link that uses the "http" scheme, your
+    //          app should be able to delegate that traffic to "https". -->
+    //     <data android:scheme="http" />
+    //     <data android:scheme="https" />
+    //
+    //     <!-- Include one or more domains that should be verified. -->
+    //     <data android:host="..." />
+    // </intent-filter>
+    //
+    // We should be somewhat strict about the format before doing network requests, and
+    // there should be other checks/warnings (without network requests) when the format is not
+    // followed.
+
+    val intentFiltersWithRequiredSubTags =
+      intentFilters.filter { intentFilter ->
+        intentFilter.getAttributeNS(ANDROID_URI, ATTRIBUTE_AUTO_VERIFY) == VALUE_TRUE &&
+          intentFilter.hasSubTagWithNameAttr(NODE_ACTION, "android.intent.action.VIEW") &&
+          intentFilter.hasSubTagWithNameAttr(NODE_CATEGORY, "android.intent.category.BROWSABLE") &&
+          intentFilter.hasSubTagWithNameAttr(NODE_CATEGORY, "android.intent.category.DEFAULT") &&
+          intentFilter.hasHttpOrHttpsSchemeSubTag()
+      }
+
+    val dataTags =
+      intentFiltersWithRequiredSubTags.flatMap { intentFilter ->
+        intentFilter.iterator().asSequence().filter { it.tagName == NODE_DATA }
+      }
+
+    val hostAttrs = dataTags.mapNotNull { it.getAttributeNodeNS(ANDROID_URI, ATTR_HOST) }
+
+    fun Attr.toHostRequest(): HostRequest? {
+      // `this` is a host attribute like android:host="*.example.com"
+      var host = this.value ?: return null
+      // Remove wildcard, if present.
+      host = host.removePrefix("*.")
+      if (host.isBlank()) return null
+      // We should not see placeholders because we have the merged manifest,
+      // but we ignore hosts with them, just in case.
+      if (host.contains(SdkConstants.MANIFEST_PLACEHOLDER_PREFIX)) return null
+
+      // TODO: We should handle resource references. For example:
+      //  <data android:host="@string/foo_domain" />
+
+      // The JSON file must be available via HTTPS.
+      return HostRequest(hostAttr = this, url = "https://${host}${JSON_RELATIVE_PATH}")
     }
 
-    val results = getJsonFileAsync(context.client)
+    val hostRequests = hostAttrs.mapNotNull { it.toHostRequest() }.distinctBy { it.url }
 
-    val packageName = context.project.getPackage()
-    for ((key, value) in results) {
-      if (value == null) {
-        continue
-      }
-      val host = mJsonHost[key] ?: continue
-      val jsonPath = key + JSON_RELATIVE_PATH
-      when (value.mStatus) {
-        HttpURLConnection.HTTP_OK -> {
-          val packageNames = getPackageNameFromJson(value.mJsonFile)
-          if (!packageNames.contains(packageName)) {
+    val results = hostRequests.getJsonFilesAsync(context.client)
+
+    for (result in results) {
+      when (result) {
+        // TODO: We could ignore network failures, like unknown host, which are most likely
+        //  transient failures?
+        is HostResult.HttpResponse -> {
+          val packageNames = getPackageNameFromJson(result.json)
+          if (!packageNames.contains(applicationId)) {
             reportError(
               context,
-              host,
-              context.getLocation(host),
-              String.format(
-                "This host does not support app links to your app. Checks the Digital Asset Links JSON file: %s",
-                jsonPath,
-              ),
+              result.request.hostAttr,
+              "This host does not support app links to your app. Checks the Digital Asset Links JSON file: ${result.request.url}",
             )
           }
         }
-        STATUS_HTTP_CONNECT_FAIL ->
+        is HostResult.HttpConnectFail,
+        is HostResult.OtherException -> {
           reportWarning(
             context,
-            host,
-            context.getLocation(host),
-            String.format("Connection to Digital Asset Links JSON file %s fails", jsonPath),
+            result.request.hostAttr,
+            "Connection to Digital Asset Links JSON file ${result.request.url} fails",
           )
-        STATUS_MALFORMED_URL ->
-          reportError(
-            context,
-            host,
-            context.getLocation(host),
-            String.format(
-              "Malformed URL of Digital Asset Links JSON file: %s. An unknown protocol is specified",
-              jsonPath,
-            ),
-          )
-        STATUS_UNKNOWN_HOST ->
-          reportWarning(
-            context,
-            host,
-            context.getLocation(host),
-            String.format(
-              "Unknown host: %s. Check if the host exists, and check your network connection",
-              key,
-            ),
-          )
-        STATUS_NOT_FOUND ->
-          reportError(
-            context,
-            host,
-            context.getLocation(host),
-            String.format("Digital Asset Links JSON file %s is not found on the host", jsonPath),
-          )
-        STATUS_WRONG_JSON_SYNTAX ->
-          reportError(
-            context,
-            host,
-            context.getLocation(host),
-            String.format("%s has incorrect JSON syntax", jsonPath),
-          )
-        STATUS_JSON_PARSE_FAIL ->
-          reportError(
-            context,
-            host,
-            context.getLocation(host),
-            String.format("Parsing JSON file %s fails", jsonPath),
-          )
-        HttpURLConnection.HTTP_MOVED_PERM,
-        HttpURLConnection.HTTP_MOVED_TEMP -> {}
-        else ->
-          reportWarning(
-            context,
-            host,
-            context.getLocation(host),
-            String.format(
-              "HTTP request for Digital Asset Links JSON file %1\$s fails. HTTP response code: %2\$s",
-              jsonPath,
-              value.mStatus,
-            ),
-          )
-      }
-    }
-  }
-
-  private fun reportWarning(context: XmlContext, node: Node, location: Location, message: String) {
-    val incident = Incident(ISSUE, node, location, message)
-    incident.overrideSeverity(Severity.WARNING)
-    context.report(incident)
-  }
-
-  private fun reportError(context: XmlContext, node: Node, location: Location, message: String) {
-    val incident = Incident(ISSUE, node, location, message)
-    incident.overrideSeverity(Severity.ERROR)
-    context.report(incident)
-  }
-
-  /**
-   * Gets all the Digital Asset Links JSON file asynchronously.
-   *
-   * @return The map between the host url and the HTTP result.
-   */
-  private fun getJsonFileAsync(client: LintClient): Map<String, HttpResult?> {
-    val executorService = Executors.newCachedThreadPool()
-    for ((key) in mJsonHost) {
-      val future =
-        executorService.submit<HttpResult> { getJson(client, key + JSON_RELATIVE_PATH, 0) }
-      mFutures[key] = future
-    }
-    executorService.shutdown()
-
-    val jsons: MutableMap<String, HttpResult?> = Maps.newHashMap()
-    for ((key, value) in mFutures) {
-      try {
-        jsons[key] = value.get()
-      } catch (e: Exception) {
-        if (isUnitTest) {
-          val cause = e.cause
-          if (cause is Error) {
-            throw (cause as Error?)!!
-          } else {
-            throw IllegalArgumentException("Network failure", cause)
-          }
         }
-        jsons[key] = null
+        is HostResult.MalformedUrl -> {
+          reportError(
+            context,
+            result.request.hostAttr,
+            "Malformed URL of Digital Asset Links JSON file: ${result.request.url}. An unknown protocol is specified",
+          )
+        }
+        is HostResult.UnknownHost -> {
+          reportWarning(
+            context,
+            result.request.hostAttr,
+            "Unknown host: ${result.request.url.removeSuffix(JSON_RELATIVE_PATH)}. Check if the host exists, and check your network connection",
+          )
+        }
+        is HostResult.NotFound -> {
+          reportError(
+            context,
+            result.request.hostAttr,
+            "Digital Asset Links JSON file ${result.request.url} is not found on the host",
+          )
+        }
+        is HostResult.JsonSyntaxEx -> {
+          reportError(
+            context,
+            result.request.hostAttr,
+            "${result.request.url} has incorrect JSON syntax",
+          )
+        }
+        is HostResult.JsonParseFail -> {
+          reportError(
+            context,
+            result.request.hostAttr,
+            "Parsing JSON file ${result.request.url} fails",
+          )
+        }
+        is HostResult.HttpResponseBad -> {
+          reportWarning(
+            context,
+            result.request.hostAttr,
+            "HTTP request for Digital Asset Links JSON file ${result.request.url} fails. HTTP response code: ${result.httpStatus}",
+          )
+        }
+        is HostResult.Timeout -> {
+          // Ignore for now.
+        }
+        is HostResult.HttpResponseBadContentType -> {
+          reportWarning(
+            context,
+            result.request.hostAttr,
+            "HTTP response for Digital Asset Links JSON file ${result.request.url} should have Content-Type application/json, but has ${result.contentType}",
+          )
+        }
       }
     }
-    return jsons
   }
-
-  /* For storing the result of getting Digital Asset Links Json File */
-  @VisibleForTesting
-  internal class HttpResult
-  @VisibleForTesting
-  constructor(
-    /* HTTP response code or others errors related to HTTP connection, JSON file parsing. */
-    val mStatus: Int,
-    val mJsonFile: JsonElement?,
-  )
 
   companion object {
     private val IMPLEMENTATION =
@@ -252,182 +259,155 @@ class AppLinksAutoVerifyDetector : Detector(), XmlScanner {
     private const val ATTRIBUTE_AUTO_VERIFY = "autoVerify"
     private const val JSON_RELATIVE_PATH = "/.well-known/assetlinks.json"
 
-    @VisibleForTesting val STATUS_HTTP_CONNECT_FAIL: Int = -1
-
-    @VisibleForTesting val STATUS_MALFORMED_URL: Int = -2
-
-    @VisibleForTesting val STATUS_UNKNOWN_HOST: Int = -3
-
-    @VisibleForTesting val STATUS_NOT_FOUND: Int = -4
-
-    @VisibleForTesting val STATUS_WRONG_JSON_SYNTAX: Int = -5
-
-    @VisibleForTesting val STATUS_JSON_PARSE_FAIL: Int = -6
-
-    /**
-     * Gets all the tag elements with a specific tag name, within a parent tag element.
-     *
-     * @param element The parent tag element.
-     * @return List of tag elements found.
-     */
-    private fun getTags(element: Element, tagName: String): List<Element> {
-      val tagList: MutableList<Element> = Lists.newArrayList()
-      if (element.tagName.equals(tagName, ignoreCase = true)) {
-        tagList.add(element)
-      } else {
-        val children = element.childNodes
-        for (i in 0 until children.length) {
-          val child = children.item(i)
-          if (child is Element) {
-            tagList.addAll(getTags(child, tagName))
-          }
-        }
+    /** Gets all the Digital Asset Links JSON files asynchronously. */
+    private fun Sequence<HostRequest>.getJsonFilesAsync(client: LintClient): List<HostResult> {
+      // TODO: this code was converted from Java; could perhaps be improved.
+      //  Should we be using Executors?
+      val executorService = Executors.newCachedThreadPool()
+      val futures = ArrayList<Future<HostResult>>()
+      for (hostRequest in this) {
+        futures.add(executorService.submit<HostResult> { getJson(client, hostRequest) })
       }
-      return tagList
-    }
+      executorService.shutdown()
 
-    /**
-     * Checks if auto verification is needed. i.e. any intent tag element's autoVerify attribute is
-     * set to true.
-     *
-     * @param intents The intent tag elements.
-     * @return true if auto verification is needed.
-     */
-    private fun needAutoVerification(intents: List<Element>): Boolean {
-      for (intent in intents) {
-        if (
-          intent.getAttributeNS(SdkConstants.ANDROID_URI, ATTRIBUTE_AUTO_VERIFY) ==
-            SdkConstants.VALUE_TRUE
-        ) {
-          return true
-        }
-      }
-      return false
-    }
-
-    /**
-     * Checks if the element has a sub tag with specific name and specific name attribute.
-     *
-     * @param element The tag element.
-     * @param tagName The name of the sub tag.
-     * @param nameAttrValue The value of the name attribute.
-     * @return If the element has such a sub tag.
-     */
-    private fun hasNamedSubTag(element: Element, tagName: String, nameAttrValue: String): Boolean {
-      val children = element.getElementsByTagName(tagName)
-      for (i in 0 until children.length) {
-        val e = children.item(i) as Element
-        if (
-          e.getAttributeNS(SdkConstants.ANDROID_URI, AndroidManifest.ATTRIBUTE_NAME) ==
-            nameAttrValue
-        ) {
-          return true
-        }
-      }
-      return false
-    }
-
-    /**
-     * Gets the urls of all the host from which Digital Asset Links JSON files will be fetched.
-     *
-     * @param intent The intent tag element.
-     * @return List of JSON file urls.
-     */
-    private fun getJsonUrl(context: XmlContext, intent: Element): Map<String, Attr> {
-      val schemes: MutableList<String> = Lists.newArrayList()
-      val hosts: MutableList<Attr> = Lists.newArrayList()
-      val dataTags = intent.getElementsByTagName(AndroidManifest.NODE_DATA)
-      for (k in 0 until dataTags.length) {
-        val dataTag = dataTags.item(k) as Element
-        val scheme = dataTag.getAttributeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_SCHEME)
-        if (scheme == "http" || scheme == "https") {
-          schemes.add(scheme)
-        }
-        if (dataTag.hasAttributeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_HOST)) {
-          val host = dataTag.getAttributeNodeNS(SdkConstants.ANDROID_URI, SdkConstants.ATTR_HOST)
-          hosts.add(host)
-        }
-      }
-      val urls: MutableMap<String, Attr> = Maps.newHashMap()
-      for (scheme in schemes) {
-        for (host in hosts) {
-          var hostname = host.value
-          if (hostname!!.startsWith(SdkConstants.MANIFEST_PLACEHOLDER_PREFIX)) {
-            hostname = resolvePlaceHolder(context, hostname)
-            if (hostname == null) {
-              continue
-            }
-          }
-          urls["$scheme://$hostname"] = host
-        }
-      }
-      return urls
-    }
-
-    private fun resolvePlaceHolder(context: XmlContext, hostname: String): String? {
-      assert(hostname.startsWith(SdkConstants.MANIFEST_PLACEHOLDER_PREFIX))
-      val variant = context.project.buildVariant
-      if (variant != null) {
-        val placeHolders = variant.manifestPlaceholders
-        val name =
-          hostname.substring(
-            SdkConstants.MANIFEST_PLACEHOLDER_PREFIX.length,
-            hostname.length - SdkConstants.MANIFEST_PLACEHOLDER_SUFFIX.length,
-          )
-        return placeHolders[name]
-      }
-      return null
-    }
-
-    /**
-     * Gets the Digital Asset Links JSON file on the website host.
-     *
-     * @param url The URL of the host on which JSON file will be fetched.
-     */
-    private fun getJson(client: LintClient, url: String, redirectsCount: Int): HttpResult {
-      try {
-        val urlObj = URL(url)
-        val urlConnection =
-          client.openConnection(urlObj, 3000) as? HttpURLConnection
-            ?: return HttpResult(STATUS_HTTP_CONNECT_FAIL, null)
-        val connection = urlConnection
+      val result = ArrayList<HostResult>()
+      for (future in futures) {
         try {
-          val status = connection.responseCode
-          if (
-            status == HttpURLConnection.HTTP_MOVED_PERM ||
-              status == HttpURLConnection.HTTP_MOVED_TEMP
-          ) {
-            if (redirectsCount < 3) {
-              val newUrl = connection.getHeaderField("Location")
-              if (newUrl != null && newUrl != url) {
-                return getJson(client, newUrl, redirectsCount + 1)
-              }
+          result.add(future.get())
+        } catch (e: Exception) {
+          if (isUnitTest) {
+            val cause = e.cause
+            if (cause is Error) {
+              throw cause
+            } else {
+              throw IllegalArgumentException("Network failure", cause)
             }
-            return HttpResult(status, null)
+          }
+          // Fallthrough.
+        }
+      }
+      return result
+    }
+
+    private class HostRequest(val hostAttr: Attr, val url: String)
+
+    private sealed interface HostResult {
+      val request: HostRequest
+
+      class HttpResponse(override val request: HostRequest, val json: JsonElement) : HostResult
+
+      class HttpResponseBad(
+        override val request: HostRequest,
+        val httpStatus: Int,
+        val response: String? = null,
+      ) : HostResult
+
+      class HttpResponseBadContentType(
+        override val request: HostRequest,
+        val httpStatus: Int,
+        val contentType: String?,
+        val response: String? = null,
+      ) : HostResult
+
+      class HttpConnectFail(override val request: HostRequest) : HostResult
+
+      class Timeout(override val request: HostRequest, val exception: SocketTimeoutException) :
+        HostResult
+
+      class MalformedUrl(override val request: HostRequest, val exception: MalformedURLException) :
+        HostResult
+
+      class UnknownHost(override val request: HostRequest, exception: UnknownHostException) :
+        HostResult
+
+      class NotFound(override val request: HostRequest, exception: FileNotFoundException) :
+        HostResult
+
+      class OtherException(override val request: HostRequest, exception: IOException) : HostResult
+
+      class JsonSyntaxEx(
+        override val request: HostRequest,
+        val exception: JsonSyntaxException,
+        val response: String,
+      ) : HostResult
+
+      class JsonParseFail(
+        override val request: HostRequest,
+        val exception: RuntimeException,
+        val response: String,
+      ) : HostResult
+    }
+
+    private fun reportWarning(context: Context, node: Node, message: String) {
+      val incident = Incident(ISSUE, node, context.getLocation(node), message)
+      incident.overrideSeverity(Severity.WARNING)
+      context.report(incident)
+    }
+
+    private fun reportError(context: Context, node: Node, message: String) {
+      val incident = Incident(ISSUE, node, context.getLocation(node), message)
+      context.report(incident)
+    }
+
+    private fun Element.hasSubTagWithNameAttr(tagName: String, nameAttrValue: String) =
+      this.iterator().asSequence().any {
+        it.tagName == tagName && it.getAttributeNS(ANDROID_URI, ATTRIBUTE_NAME) == nameAttrValue
+      }
+
+    private fun Element.hasHttpOrHttpsSchemeSubTag() =
+      this.iterator().asSequence().any {
+        it.tagName == NODE_DATA &&
+          it.getAttributeNS(ANDROID_URI, ATTR_SCHEME) in listOf("http", "https")
+      }
+
+    /** Gets the Digital Asset Links JSON file from the host. */
+    private fun getJson(client: LintClient, hostRequest: HostRequest): HostResult {
+      try {
+        val httpConnection =
+          client.openConnection(URL(hostRequest.url), 3000) as? HttpURLConnection
+            ?: return HostResult.HttpConnectFail(hostRequest)
+        try {
+          // There must not be any redirects.
+          httpConnection.instanceFollowRedirects = false
+          val status = httpConnection.responseCode
+
+          val inputStream =
+            httpConnection.inputStream ?: return HostResult.HttpResponseBad(hostRequest, status)
+          val response = inputStream.use { String(inputStream.readAllBytes(), UTF_8) }
+
+          // Check the status.
+          if (status != HttpURLConnection.HTTP_OK) {
+            return HostResult.HttpResponseBad(hostRequest, status, response)
           }
 
-          val inputStream = connection.inputStream ?: return HttpResult(status, null)
-          val response = String(inputStream.readAllBytes(), UTF_8)
-          inputStream.close()
+          // Check the Content-Type.
+          val contentType = httpConnection.getHeaderField("Content-Type")
+          if (contentType != "application/json") {
+            return HostResult.HttpResponseBadContentType(hostRequest, status, contentType, response)
+          }
+
+          // Try to parse JSON.
           try {
-            @Suppress("deprecation") val jsonFile = JsonParser().parse(response)
-            return HttpResult(status, jsonFile)
+            val json = JsonParser.parseString(response)
+            return HostResult.HttpResponse(hostRequest, json)
           } catch (e: JsonSyntaxException) {
-            return HttpResult(STATUS_WRONG_JSON_SYNTAX, null)
+            return HostResult.JsonSyntaxEx(hostRequest, e, response)
           } catch (e: RuntimeException) {
-            return HttpResult(STATUS_JSON_PARSE_FAIL, null)
+            return HostResult.JsonParseFail(hostRequest, e, response)
           }
         } finally {
-          connection.disconnect()
+          httpConnection.disconnect()
         }
+      } catch (e: SocketTimeoutException) {
+        return HostResult.Timeout(hostRequest, e)
       } catch (e: MalformedURLException) {
-        return HttpResult(STATUS_MALFORMED_URL, null)
+        return HostResult.MalformedUrl(hostRequest, e)
       } catch (e: UnknownHostException) {
-        return HttpResult(STATUS_UNKNOWN_HOST, null)
+        return HostResult.UnknownHost(hostRequest, e)
       } catch (e: FileNotFoundException) {
-        return HttpResult(STATUS_NOT_FOUND, null)
+        return HostResult.NotFound(hostRequest, e)
       } catch (e: IOException) {
-        return HttpResult(STATUS_HTTP_CONNECT_FAIL, null)
+        return HostResult.OtherException(hostRequest, e)
       }
     }
 
@@ -437,12 +417,11 @@ class AppLinksAutoVerifyDetector : Detector(), XmlScanner {
      * @param element The JsonElement of the json file.
      * @return All the package names.
      */
-    private fun getPackageNameFromJson(element: JsonElement?): List<String?> {
-      val packageNames: MutableList<String?> = Lists.newArrayList()
+    private fun getPackageNameFromJson(element: JsonElement): List<String> {
+      val packageNames = mutableListOf<String>()
       if (element is JsonArray) {
-        val jsonArray = element
-        for (i in 0 until jsonArray.size()) {
-          val app = jsonArray[i]
+        for (i in 0 until element.size()) {
+          val app = element[i]
           if (app is JsonObject) {
             val target = app.getAsJsonObject("target")
             if (target != null) {
