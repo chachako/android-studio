@@ -22,6 +22,7 @@ import androidx.inspection.ArtTooling
 import androidx.inspection.Connection
 import androidx.inspection.Inspector
 import androidx.inspection.InspectorEnvironment
+import com.android.tools.appinspection.common.threadLocal
 import com.android.tools.appinspection.network.grpc.GrpcInterceptor
 import com.android.tools.appinspection.network.httpurl.wrapURLConnection
 import com.android.tools.appinspection.network.okhttp.OkHttp2Interceptor
@@ -62,7 +63,7 @@ private const val GRPC_CHANNEL_FIELD_NAME = "interceptorChannel"
 
 internal class NetworkInspector(
   connection: Connection,
-  private val environment: InspectorEnvironment,
+  environment: InspectorEnvironment,
   private val trafficStatsProvider: TrafficStatsProvider = TrafficStatsProviderImpl(),
   private val speedDataIntervalMs: Long = POLL_INTERVAL_MS,
 ) : Inspector(connection) {
@@ -108,6 +109,14 @@ internal class NetworkInspector(
   private var okHttp2Interceptors: MutableList<Interceptor>? = null
 
   private val interceptionService = InterceptionRuleServiceImpl()
+
+  private val artTooling = environment.artTooling()
+
+  /**
+   * When hooking channel builders, keep track of depth of chained calls, so we only install the
+   * hook once. For example, `AndroidChannelBuilder` delegates to `OkHttpChannelBuilder`.
+   */
+  private var hookDepth by threadLocal { 0 }
 
   override fun onReceiveCommand(data: ByteArray, callback: CommandCallback) {
     val command = NetworkInspectorProtocol.Command.parseFrom(data)
@@ -180,7 +189,7 @@ internal class NetworkInspector(
     // The app can have multiple Application instances. In that case, we use the first non-null
     // uid, which is most likely from the Application created by Android.
     val uid =
-      environment.artTooling().findInstances(Application::class.java).firstNotNullOfOrNull {
+      artTooling.findInstances(Application::class.java).firstNotNullOfOrNull {
         runCatching { it.applicationInfo?.uid }.getOrNull()
       }
     if (uid == null) {
@@ -244,15 +253,13 @@ internal class NetworkInspector(
   }
 
   private fun registerJavaNetHooks(): Boolean {
-    environment
-      .artTooling()
-      .registerExitHook(
-        URL::class.java,
-        "openConnection()Ljava/net/URLConnection;",
-        ArtTooling.ExitHook<URLConnection> { urlConnection ->
-          wrapURLConnection(urlConnection, trackerService, interceptionService)
-        },
-      )
+    artTooling.registerExitHook(
+      URL::class.java,
+      "openConnection()Ljava/net/URLConnection;",
+      ArtTooling.ExitHook<URLConnection> { urlConnection ->
+        wrapURLConnection(urlConnection, trackerService, interceptionService)
+      },
+    )
     Logger.debugHidden("Instrumented ${URL::class.qualifiedName}")
     return true
   }
@@ -271,19 +278,17 @@ internal class NetworkInspector(
        * by the user to add their own interceptor, or by OkHttp internally to iterate through
        * all interceptors).
        */
-      environment
-        .artTooling()
-        .registerExitHook(
-          OkHttpClient::class.java,
-          "networkInterceptors()Ljava/util/List;",
-          ArtTooling.ExitHook<MutableList<Interceptor>> { list ->
-            if (list.none { it is OkHttp2Interceptor }) {
-              okHttp2Interceptors = list
-              list.add(0, OkHttp2Interceptor(trackerService, interceptionService))
-            }
-            list
-          },
-        )
+      artTooling.registerExitHook(
+        OkHttpClient::class.java,
+        "networkInterceptors()Ljava/util/List;",
+        ArtTooling.ExitHook<MutableList<Interceptor>> { list ->
+          if (list.none { it is OkHttp2Interceptor }) {
+            okHttp2Interceptors = list
+            list.add(0, OkHttp2Interceptor(trackerService, interceptionService))
+          }
+          list
+        },
+      )
       Logger.debugHidden("Instrumented ${OkHttpClient::class.qualifiedName}")
       instrumented = true
     } catch (e: NoClassDefFoundError) {
@@ -291,18 +296,16 @@ internal class NetworkInspector(
     }
 
     try {
-      environment
-        .artTooling()
-        .registerExitHook(
-          okhttp3.OkHttpClient::class.java,
-          "networkInterceptors()Ljava/util/List;",
-          ArtTooling.ExitHook<List<okhttp3.Interceptor>> { list ->
-            val interceptors = ArrayList<okhttp3.Interceptor>()
-            interceptors.add(OkHttp3Interceptor(trackerService, interceptionService))
-            interceptors.addAll(list)
-            interceptors
-          },
-        )
+      artTooling.registerExitHook(
+        okhttp3.OkHttpClient::class.java,
+        "networkInterceptors()Ljava/util/List;",
+        ArtTooling.ExitHook<List<okhttp3.Interceptor>> { list ->
+          val interceptors = ArrayList<okhttp3.Interceptor>()
+          interceptors.add(OkHttp3Interceptor(trackerService, interceptionService))
+          interceptors.addAll(list)
+          interceptors
+        },
+      )
       Logger.debugHidden("Instrumented ${okhttp3.OkHttpClient::class.qualifiedName}")
       instrumented = true
     } catch (e: NoClassDefFoundError) {
@@ -344,7 +347,7 @@ internal class NetworkInspector(
    * This is known to be brittle but there doesn't seem to be a robust way of doing this.
    */
   private fun instrumentExistingGrpcChannels(grpcInterceptor: GrpcInterceptor) {
-    environment.artTooling().findInstances(ManagedChannel::class.java).forEach {
+    artTooling.findInstances(ManagedChannel::class.java).forEach {
       if (it::class.java.name == GRPC_CHANNEL_CLASS_NAME) {
         try {
           val field = it::class.java.getDeclaredField(GRPC_CHANNEL_FIELD_NAME)
@@ -370,16 +373,18 @@ internal class NetworkInspector(
           Logger.debugHidden("Could not load class $hook")
           return@forEach
         }
-      environment
-        .artTooling()
-        .registerExitHook(
-          clazz,
-          hook.method,
-          ArtTooling.ExitHook<ManagedChannelBuilder<*>> { channelBuilder ->
+      artTooling.registerEntryHook(clazz, hook.method) { _, _ -> hookDepth++ }
+      artTooling.registerExitHook(
+        clazz,
+        hook.method,
+        ArtTooling.ExitHook<ManagedChannelBuilder<*>> { channelBuilder ->
+          hookDepth--
+          if (hookDepth == 0) {
             channelBuilder.intercept(grpcInterceptor)
-            channelBuilder
-          },
-        )
+          }
+          channelBuilder
+        },
+      )
       Logger.debugHidden("Instrumented $hook")
     }
   }
