@@ -86,7 +86,7 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
             }
         }
     }
-    ComposeRenderingResult(null, screenshotResults)
+    ComposeRenderingResult(null, screenshotResults.sortedBy {it.resultId})
 } catch (t: Throwable) {
     ComposeRenderingResult(t.stackTraceToString(), emptyList())
 }
