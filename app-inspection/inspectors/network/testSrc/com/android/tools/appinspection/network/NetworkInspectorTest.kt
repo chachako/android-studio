@@ -136,6 +136,7 @@ internal class NetworkInspectorTest {
         "DEBUG: studio.inspectors: Instrumented io.grpc.ManagedChannelBuilder#forTarget",
         "DEBUG: studio.inspectors: Instrumented io.grpc.okhttp.OkHttpChannelBuilder#forAddress",
         "DEBUG: studio.inspectors: Instrumented io.grpc.okhttp.OkHttpChannelBuilder#forTarget",
+        "DEBUG: studio.inspectors: Could not load class io.grpc.android.AndroidChannelBuilder#forAddress",
         "DEBUG: studio.inspectors: Could not load class io.grpc.android.AndroidChannelBuilder#forTarget",
       )
     assertThat(javaNet).isTrue()

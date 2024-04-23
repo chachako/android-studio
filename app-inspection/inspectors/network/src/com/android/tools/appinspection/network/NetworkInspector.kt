@@ -85,7 +85,10 @@ internal class NetworkInspector(
         "io.grpc.ManagedChannelBuilder",
         "forTarget(Ljava/lang/String;)Lio/grpc/ManagedChannelBuilder;",
       ),
-      // 'AndroidChannelBuilder.forAddress()' calls 'AndroidChannelBuilder.forTarget();
+      GrpcHook(
+        "io.grpc.android.AndroidChannelBuilder",
+        "forAddress(Ljava/lang/String;I)Lio/grpc/android/AndroidChannelBuilder;",
+      ),
       GrpcHook(
         "io.grpc.android.AndroidChannelBuilder",
         "forTarget(Ljava/lang/String;)Lio/grpc/android/AndroidChannelBuilder;",
