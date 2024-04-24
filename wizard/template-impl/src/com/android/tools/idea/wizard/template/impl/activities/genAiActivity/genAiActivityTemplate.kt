@@ -38,7 +38,7 @@ val genAiActivityTemplate
   get() = template {
     name = "Gemini API Starter"
     description = "Creates a starter app for using the Gemini API"
-    minApi = 26
+    minApi = 21
     constraints =
       listOf(
         TemplateConstraint.AndroidX,
