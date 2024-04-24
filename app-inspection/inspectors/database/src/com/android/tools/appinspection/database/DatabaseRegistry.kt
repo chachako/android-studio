@@ -17,12 +17,11 @@ package com.android.tools.appinspection.database
 
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteDatabase.OPEN_READWRITE
-import android.util.ArraySet
 import android.util.Log
 import androidx.annotation.GuardedBy
 import androidx.annotation.VisibleForTesting
+import java.util.concurrent.atomic.AtomicInteger
 
-private const val NOT_TRACKED = -1
 private const val SCORE_READ_ONLY = 0
 private const val SCORE_FORCED = 1
 private const val SCORE_BEST = 2
@@ -58,8 +57,7 @@ internal class DatabaseRegistry(
 
   private val lock = Any()
 
-  // Starting from '1' to distinguish from '0' which could stand for an unset parameter.
-  @GuardedBy("lock") private var nextId = 1
+  @GuardedBy("lock") private val nextId = AtomicInteger(1)
 
   @GuardedBy("lock") private var isForceOpenInProgress = false
 
@@ -168,7 +166,7 @@ internal class DatabaseRegistry(
         }
       } else {
         Log.v(HIDDEN_TAG, "Registering as offline: $path")
-        val id = nextId++
+        val id = nextId.getAndIncrement()
         pathToId[path] = id
         onClosedCallback.onDatabaseClosed(id, path)
       }
@@ -178,46 +176,25 @@ internal class DatabaseRegistry(
   fun isForcedConnection(database: SQLiteDatabase) =
     synchronized(lock) { forcedOpen.contains(database) }
 
-  /** Thread-safe */
+  /**
+   * Handles database-opened and database-closed signals from the API
+   *
+   * Thread-safe
+   */
   private fun handleDatabaseSignal(database: SQLiteDatabase) {
     synchronized(lock) {
-      var id = getIdForDatabase(database)
-      // TODO: revisit the text below since now we're synchronized on the same lock (lock)
-      //  as releaseReference() calls -- which most likely allows for simplifying invariants
-      // Guaranteed up to date:
-      // - either called in a secure context (e.g. before the newly created connection is
-      // returned from the creation; or with an already acquiredReference on it),
-      // - or called after the last reference was released which cannot be undone.
       val isOpen = database.isOpen
       if (isForceOpenInProgress && isOpen) {
         forcedOpen.add(database)
       }
+      val id = getIdForDatabase(database)
+      val before = getConnection(id)
+      registerReference(id, database)
+      val after = getConnection(id)
 
-      if (id == NOT_TRACKED) { // handling a transition: not tracked -> tracked
-        id = nextId++
-        registerReference(id, database)
-        when {
-          isOpen -> onOpenedCallback.onDatabaseOpened(id, database)
-          else -> onClosedCallback.onDatabaseClosed(id, database.pathForDatabase())
-        }
-      } else {
-        val openDatabases = buildList {
-          addAll(databases[id] ?: emptyList())
-          if (!isOpen) {
-            add(database)
-          }
-        }
-        val before = openDatabases.findBestConnection()
-        when (isOpen) {
-          true -> registerReference(id, database)
-          false -> unregisterReference(id, database)
-        }
-        val after = getConnection(id)
-
-        when {
-          after == null -> onClosedCallback.onDatabaseClosed(id, database.pathForDatabase())
-          after.getScore() != before?.getScore() -> onOpenedCallback.onDatabaseOpened(id, after)
-        }
+      when {
+        after == null -> onClosedCallback.onDatabaseClosed(id, database.pathForDatabase())
+        after.getScore() != before?.getScore() -> onOpenedCallback.onDatabaseOpened(id, after)
       }
 
       secureKeepOpenReference(id)
@@ -253,22 +230,16 @@ internal class DatabaseRegistry(
   private fun registerReference(id: Int, database: SQLiteDatabase) {
     val references =
       databases.getOrPut(id) {
-        ArraySet<SQLiteDatabase>(1).also { references ->
-          databases[id] = references
-          if (!database.isInMemoryDatabase()) {
-            pathToId[database.pathForDatabase()] = id
-          }
+        if (!database.isInMemoryDatabase()) {
+          pathToId[database.pathForDatabase()] = id
         }
+        mutableSetOf()
       }
-    // databases only tracks open instances
-    if (database.isOpen) {
-      references.add(database)
-    }
-  }
 
-  @GuardedBy("lock")
-  private fun unregisterReference(id: Int, database: SQLiteDatabase) {
-    databases[id]?.remove(database)
+    when (database.isOpen) {
+      true -> references.add(database)
+      false -> references.remove(database)
+    }
   }
 
   @GuardedBy("lock")
@@ -288,20 +259,12 @@ internal class DatabaseRegistry(
 
   @GuardedBy("lock")
   private fun getIdForDatabase(database: SQLiteDatabase): Int {
-    val databasePath = database.pathForDatabase()
-
-    val previousId = pathToId[databasePath]
-    if (previousId != null) {
-      return previousId
-    }
-
-    if (database.isInMemoryDatabase()) {
-      return databases.entries
-        .find { (_, databasesForKey) -> databasesForKey.contains(database) }
-        ?.key ?: NOT_TRACKED
-    }
-
-    return NOT_TRACKED
+    val id =
+      when (database.isInMemoryDatabase()) {
+        true -> findInMemoryReferenceKey(database)
+        false -> pathToId[database.pathForDatabase()]
+      }
+    return id ?: nextId.getAndIncrement()
   }
 
   internal fun interface OnDatabaseOpenedCallback {
@@ -344,6 +307,9 @@ internal class DatabaseRegistry(
       }
     }
   }
+
+  private fun findInMemoryReferenceKey(database: SQLiteDatabase): Int? =
+    databases.entries.find { (_, items) -> items.contains(database) }?.key
 
   private fun logDatabaseStatus(path: String) {
     if (!Log.isLoggable(HIDDEN_TAG, Log.VERBOSE)) {
