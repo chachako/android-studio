@@ -219,7 +219,7 @@ public class TestVariantFactory
 
     @NonNull
     @Override
-    public HostTestCreationConfig createScreenshotTest(
+    public HostTestCreationConfig createHostTest(
             @NonNull ComponentIdentity componentIdentity,
             @NonNull BuildFeatureValues buildFeatures,
             @NonNull HostTestComponentDslInfo dslInfo,
@@ -233,7 +233,9 @@ public class TestVariantFactory
             @NonNull VariantServices variantServices,
             @NonNull TaskCreationServices taskCreationServices,
             @NonNull GlobalTaskCreationConfig globalConfig,
-            @NonNull HostTestBuilderImpl hostTestBuilder) {
+            @NonNull HostTestBuilderImpl hostTestBuilder,
+            @NonNull String hostTestType,
+            boolean useBuiltInKotlinSupport) {
         throw new RuntimeException("cannot instantiate screenshot-test properties in test plugin");
     }
 

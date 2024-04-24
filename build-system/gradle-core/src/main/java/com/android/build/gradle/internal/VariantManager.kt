@@ -762,7 +762,7 @@ class VariantManager<
                 )
             } ?: throw IllegalArgumentException("Expected a HostTestBuilder instance for UNIT_TEST")
             ComponentTypeImpl.SCREENSHOT_TEST -> hostTestBuilder?.let {
-                variantFactory.createScreenshotTest(
+                variantFactory.createHostTest(
                     testComponentDslInfo.componentIdentity,
                     variantFactory.createHostTestBuildFeatureValues(
                         dslExtension.buildFeatures,
@@ -782,7 +782,9 @@ class VariantManager<
                     variantPropertiesApiServices,
                     taskCreationServices,
                     globalTaskCreationConfig,
-                    it
+                    it,
+                    HostTestBuilder.SCREENSHOT_TEST_TYPE,
+                    true,
                 )
             } ?: throw IllegalArgumentException("Expected a HostTestBuilder instance for UNIT_TEST")
             else -> throw IllegalStateException("Expected a test component type, but ${componentIdentity.name} has type $componentType")

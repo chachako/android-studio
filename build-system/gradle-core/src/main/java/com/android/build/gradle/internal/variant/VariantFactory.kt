@@ -117,7 +117,7 @@ interface VariantFactory<VariantBuilderT : VariantBuilder, VariantDslInfoT: Vari
         hostTestBuilder: HostTestBuilderImpl,
     ): HostTestCreationConfig
 
-    fun createScreenshotTest(
+    fun createHostTest(
             componentIdentity: ComponentIdentity,
             buildFeatures: BuildFeatureValues,
             dslInfo: HostTestComponentDslInfo,
@@ -132,6 +132,8 @@ interface VariantFactory<VariantBuilderT : VariantBuilder, VariantDslInfoT: Vari
             taskCreationServices: TaskCreationServices,
             globalConfig: GlobalTaskCreationConfig,
             hostTestBuilder: HostTestBuilderImpl,
+            hostTestName: String,
+            useBuiltInKotlinSupport: Boolean,
         ): HostTestCreationConfig
 
     fun createAndroidTest(

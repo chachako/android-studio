@@ -21,7 +21,7 @@ import com.android.annotations.Nullable;
 import com.android.build.VariantOutput;
 import com.android.build.api.artifact.impl.ArtifactsImpl;
 import com.android.build.api.component.impl.DeviceTestImpl;
-import com.android.build.api.component.impl.ScreenshotTestImpl;
+import com.android.build.api.component.impl.HostTestImpl;
 import com.android.build.api.component.impl.TestFixturesImpl;
 import com.android.build.api.component.impl.UnitTestImpl;
 import com.android.build.api.dsl.CommonExtension;
@@ -143,7 +143,7 @@ public abstract class BaseVariantFactory<
 
     @NonNull
     @Override
-    public HostTestCreationConfig createScreenshotTest(
+    public HostTestCreationConfig createHostTest(
             @NonNull ComponentIdentity componentIdentity,
             @NonNull BuildFeatureValues buildFeatures,
             @NonNull HostTestComponentDslInfo dslInfo,
@@ -157,9 +157,11 @@ public abstract class BaseVariantFactory<
             @NonNull VariantServices variantServices,
             @NonNull TaskCreationServices taskCreationServices,
             @NonNull GlobalTaskCreationConfig globalConfig,
-            @NonNull HostTestBuilderImpl hostTestBuilder) {
+            @NonNull HostTestBuilderImpl hostTestBuilder,
+            @NonNull String hostTestName,
+            boolean useBuiltInKotlinSupport) {
         return dslServices.newInstance(
-                ScreenshotTestImpl.class,
+                HostTestImpl.class,
                 componentIdentity,
                 createUnitTestBuildFeatures(buildFeatures), // TODO
                 dslInfo,
@@ -173,7 +175,9 @@ public abstract class BaseVariantFactory<
                 variantServices,
                 taskCreationServices,
                 globalConfig,
-                hostTestBuilder);
+                hostTestBuilder,
+                hostTestName,
+                useBuiltInKotlinSupport);
     }
 
     @NonNull

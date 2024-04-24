@@ -20,8 +20,6 @@ import com.android.SdkConstants
 import com.android.Version
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.component.impl.DeviceTestImpl
-import com.android.build.api.component.impl.ScreenshotTestImpl
-import com.android.build.api.component.impl.UnitTestImpl
 import com.android.build.api.dsl.AndroidResources
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.BuildFeatures
@@ -287,9 +285,13 @@ class ModelBuilder<
         // used by anything.
         val variantDimensionInfo = DimensionInformation.createFrom(variants)
         val androidTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<DeviceTestCreationConfig>())
-        val unitTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<UnitTestImpl>())
+        val unitTests = DimensionInformation.createFrom(variantModel.testComponents.filter {
+            it.componentType == ComponentTypeImpl.UNIT_TEST
+        })
         val testFixtures = DimensionInformation.createFrom(variants.mapNotNull { (it as? HasTestFixtures)?.testFixtures })
-        val screenshotTests = DimensionInformation.createFrom(variantModel.testComponents.filterIsInstance<ScreenshotTestImpl>())
+        val screenshotTests = DimensionInformation.createFrom(variantModel.testComponents.filter {
+            it.componentType == ComponentTypeImpl.SCREENSHOT_TEST
+        })
 
         // for now grab the first buildFeatureValues as they cannot be different.
         val buildFeatures = variantModel.buildFeatures
