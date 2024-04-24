@@ -168,11 +168,15 @@ class DatabaseLockingTest {
 
   @Test
   fun test_databaseAlreadyClosed() = runBlocking {
+    testEnvironment.sendCommand(createTrackDatabasesCommand())
+    val hooks = testEnvironment.consumeRegisteredHooks()
     // create a non-empty database
     val instance =
       database.createInstance(closeablesRule, temporaryFolder, writeAheadLoggingEnabled = true)
+    hooks.triggerOnOpenedExit(instance)
     val databaseId = testEnvironment.inspectDatabase(instance)
     instance.close()
+    hooks.triggerOnAllReferencesReleased(instance)
 
     // try to lock the database (expecting a failure)
     testEnvironment.sendCommand(acquireLockCommand(databaseId)).let { response ->

@@ -202,7 +202,7 @@ internal class DatabaseRegistry(
         }
       } else {
         val openDatabases = buildList {
-          addAll(getOpenDatabases(id))
+          addAll(databases[id] ?: emptyList())
           if (!isOpen) {
             add(database)
           }
@@ -226,12 +226,11 @@ internal class DatabaseRegistry(
   }
 
   /**
-   * Returns a currently active database reference if one is available. Null otherwise. Consumer of
-   * this method must release the reference when done using it. Thread-safe
+   * Returns a currently active database reference if one is available. Null otherwise. Thread-safe
    */
-  fun getConnection(databaseId: Int): SQLiteDatabase? {
+  fun getConnection(id: Int, filter: (SQLiteDatabase) -> Boolean = { true }): SQLiteDatabase? {
     synchronized(lock) {
-      return getConnectionImpl(databaseId)
+      return databases[id]?.filter(filter)?.findBestConnection()
     }
   }
 
@@ -248,11 +247,6 @@ internal class DatabaseRegistry(
         database.close()
       }
     }
-  }
-
-  @GuardedBy("lock")
-  private fun getConnectionImpl(databaseId: Int): SQLiteDatabase? {
-    return getOpenDatabases(databaseId).findBestConnection()
   }
 
   @GuardedBy("lock")
@@ -284,8 +278,7 @@ internal class DatabaseRegistry(
       return
     }
 
-    val best =
-      getOpenDatabases(id).filter { !isForcedConnection(it) }.findBestConnection() ?: return
+    val best = getConnection(id) { !isForcedConnection(it) } ?: return
     val kept = keepOpenReferences[id]
     if (kept == null || best.getScore() > kept.database.getScore()) {
       keepOpenReferences[id] = KeepOpenReference(best)
@@ -382,9 +375,6 @@ internal class DatabaseRegistry(
   }
 
   private class DbScore(val db: SQLiteDatabase, val score: Int)
-
-  @GuardedBy("lock")
-  private fun getOpenDatabases(id: Int) = databases[id]?.filter { it.isOpen } ?: emptySet()
 
   private fun Collection<SQLiteDatabase>.findBestConnection(): SQLiteDatabase? {
     // Assign a score to each candidate.
