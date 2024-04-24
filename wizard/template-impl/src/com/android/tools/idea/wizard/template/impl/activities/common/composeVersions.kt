@@ -15,5 +15,5 @@
  */
 package com.android.tools.idea.wizard.template.impl.activities.common
 
-internal const val COMPOSE_BOM_VERSION = "2023.08.00"
+internal const val COMPOSE_BOM_VERSION = "2024.04.01"
 internal const val COMPOSE_KOTLIN_COMPILER_VERSION = "1.5.1"

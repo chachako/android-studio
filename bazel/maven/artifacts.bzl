@@ -231,9 +231,10 @@ DATA = [
     "androidx.benchmark:benchmark-gradle-plugin:1.2.4",
     "androidx.cardview:cardview:1.0.0",
     "androidx.collection:collection:1.4.0",
-    "androidx.collection:collection-ktx:1.4.0",
+    "androidx.collection:collection-ktx:1.4.0",  # Compose BOM 2024.04.01
     "androidx.compose.animation:animation:1.3.0",
     "androidx.compose.animation:animation:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.animation:animation:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.animation:animation-android:1.6.5",  # Compose Desktop Lint checks
     "androidx.compose.animation:animation-core-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.animation:animation-core-android:1.6.5",  # Compose Desktop Lint checks
@@ -246,49 +247,56 @@ DATA = [
     "androidx.compose:compose-bom:pom:2022.10.00",
     "androidx.compose:compose-bom:pom:2023.03.00",
     "androidx.compose:compose-bom:pom:2023.06.00",
-    "androidx.compose:compose-bom:pom:2023.08.00",
+    "androidx.compose:compose-bom:pom:2024.04.01",
     "androidx.compose.foundation:foundation:1.3.0",
-    "androidx.compose.foundation:foundation:1.5.0",
     "androidx.compose.foundation:foundation:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.foundation:foundation:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.foundation:foundation-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.foundation:foundation-android:1.6.5",  # Compose Desktop Lint checks
+    "androidx.compose.foundation:foundation-layout:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.material:material:1.3.0",  # Needed by //tools/base/build-system/integration-test/...
     "androidx.compose.material:material:1.4.3",  # Necessary for Compose for TV.
-    "androidx.compose.material:material:1.5.0",
     "androidx.compose.material:material:1.5.0-alpha04",
+    "androidx.compose.material:material:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.material:material-android:1.6.5",  # Compose Desktop Lint checks
+    "androidx.compose.material:material-icons-core:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.material:material-icons-extended:1.3.0",
+    "androidx.compose.material:material-ripple:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.material3:material3:1.0.0",
     "androidx.compose.material3:material3:1.1.1",
+    "androidx.compose.material3:material3:1.2.1",  # Compose BOM 2024.04.01
     "androidx.compose.material3:material3-android:1.2.1",  # Compose Desktop Lint checks
+    "androidx.compose.runtime:runtime:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.runtime:runtime-android:1.6.5",  # Compose Desktop Lint checks
     "androidx.compose.runtime:runtime-livedata:1.3.0",
+    "androidx.compose.runtime:runtime-saveable:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.runtime:runtime-saveable-android:1.6.5",  # Compose Desktop Lint checks
     "androidx.compose.ui:ui:1.3.0",
-    "androidx.compose.ui:ui:1.5.0",
     "androidx.compose.ui:ui:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.ui:ui-android:1.6.5",  # Compose Desktop Lint checks
+    "androidx.compose.ui:ui-graphics:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.ui:ui-graphics-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-graphics-android:1.6.5",  # Compose Desktop Lint checks
     "androidx.compose.ui:ui-test-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-test-junit4:1.2.0",
     "androidx.compose.ui:ui-test-junit4:1.3.0",
-    "androidx.compose.ui:ui-test-junit4:1.5.0",
     "androidx.compose.ui:ui-test-junit4:1.5.0-alpha04",
     "androidx.compose.ui:ui-test-junit4:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-test-junit4:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.ui:ui-test-junit4-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-test-manifest:1.3.0",
-    "androidx.compose.ui:ui-test-manifest:1.5.0",
     "androidx.compose.ui:ui-test-manifest:1.5.0-alpha04",
     "androidx.compose.ui:ui-test-manifest:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-test-manifest:1.6.5",  # Compose Desktop Lint checks
+    "androidx.compose.ui:ui-test-manifest:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.ui:ui-tooling:1.2.0",  # Still needed from //tools/data-binding/compilationTests
     "androidx.compose.ui:ui-tooling:1.3.0",  # Still needed from //tools/base/build-system/integration-tests
     "androidx.compose.ui:ui-tooling:1.4.3",  # Still needed from //tools/adt/idea/integration:BuildAndRunKMPTest
-    "androidx.compose.ui:ui-tooling:1.5.0",
     "androidx.compose.ui:ui-tooling:1.5.0-alpha04",
     "androidx.compose.ui:ui-tooling:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-tooling:1.6.5",
+    "androidx.compose.ui:ui-tooling:1.6.6",  # Compose BOM 2024.04.01
     "androidx.compose.ui:ui-tooling-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-tooling-data-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-tooling-preview:1.5.0-beta01",  # Necessary for Compose for TV.

@@ -78,17 +78,17 @@ maven_repository(
         "@maven//:androidx.annotation.annotation-jvm_1.6.0",
         "@maven//:androidx.compose.animation.animation_1.5.0",
         "@maven//:androidx.compose.compiler.compiler_1.5.1",
-        "@maven//:androidx.compose.compose-bom_2023.08.00",
+        "@maven//:androidx.compose.compose-bom_2024.04.01",
         "@maven//:androidx.compose.foundation.foundation-layout_1.5.0",
         "@maven//:androidx.compose.foundation.foundation_1.5.0",
         "@maven//:androidx.compose.material.material-icons-core_1.5.0",
         "@maven//:androidx.compose.material.material-ripple_1.5.0",
-        "@maven//:androidx.compose.material.material_1.5.0",
-        "@maven//:androidx.compose.material3.material3_1.1.1",
+        "@maven//:androidx.compose.material.material_1.6.6",  # Compose BOM 2024.04.01
+        "@maven//:androidx.compose.material3.material3_1.2.1",  # Compose BOM 2024.04.01
         "@maven//:androidx.compose.ui.ui-graphics_1.5.0",
-        "@maven//:androidx.compose.ui.ui-test-manifest_1.5.0",
+        "@maven//:androidx.compose.ui.ui-test-manifest_1.6.6",  # Compose BOM 2024.04.01
         "@maven//:androidx.compose.ui.ui-tooling-preview_1.5.0",
-        "@maven//:androidx.compose.ui.ui-tooling_1.5.0",
+        "@maven//:androidx.compose.ui.ui-tooling_1.6.6",  # Compose BOM 2024.04.01
         "@maven//:androidx.compose.ui.ui_1.5.0",
         "@maven//:androidx.core.core-ktx_1.12.0",
         "@maven//:androidx.lifecycle.lifecycle-common-java8_2.6.2",
