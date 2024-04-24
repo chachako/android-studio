@@ -59,7 +59,6 @@ abstract class HostTestImpl @Inject constructor(
     global: GlobalTaskCreationConfig,
     hostTestBuilder: HostTestBuilderImpl,
     override val hostTestName: String,
-    override val type: ComponentType,
 ) : TestComponentImpl<HostTestComponentDslInfo>(
     componentIdentity,
     buildFeatureValues,

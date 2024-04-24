@@ -29,11 +29,6 @@ interface HostTestCreationConfig: TestComponentCreationConfig, HostTest {
      */
     val hostTestName: String
 
-    /**
-     * Define the [ComponentType] for this test.
-     */
-    val type: ComponentType
-
     fun runTestTaskConfigurationActions(testTask: TaskProvider<out Test>)
 
     override val isCodeCoverageEnabled: Boolean

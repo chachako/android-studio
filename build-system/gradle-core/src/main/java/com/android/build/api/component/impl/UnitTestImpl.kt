@@ -70,7 +70,6 @@ open class UnitTestImpl @Inject constructor(
     global,
     hostTestBuilder,
     HostTestBuilder.UNIT_TEST_TYPE,
-    ComponentTypeImpl.UNIT_TEST
 ), UnitTest {
 
     /**

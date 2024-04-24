@@ -159,6 +159,4 @@ open class KmpHostTestImpl @Inject constructor(
 
     override val hostTestName: String
         get() = HostTestBuilder.UNIT_TEST_TYPE
-    override val type
-        get() = ComponentTypeImpl.UNIT_TEST
 }

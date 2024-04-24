@@ -68,5 +68,4 @@ open class ScreenshotTestImpl @Inject constructor(
     global,
     hostTestBuilder,
     HostTestBuilder.SCREENSHOT_TEST_TYPE,
-    ComponentTypeImpl.SCREENSHOT_TEST,
 ), HostTestCreationConfig
