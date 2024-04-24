@@ -1,0 +1,12 @@
+
+/**
+ * A simple SqlDelight database that we use to test invalidation code
+ *
+ * We don't do much with this database except register a query listener.
+ */
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  name TEXT NOT NULL
+);
+
+INSERT INTO users (name) VALUES ('Foo');

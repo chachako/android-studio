@@ -5,6 +5,15 @@ plugins {
   alias(libs.plugins.kotlin.kapt)
   alias(libs.plugins.kotlinAndroid)
   alias(libs.plugins.ksp)
+  alias(libs.plugins.sqldelight)
+}
+
+sqldelight {
+  databases {
+    create("SqlDelightDatabase") {
+      packageName.set("com.google.test.inspectors")
+    }
+  }
 }
 
 android {
@@ -58,6 +67,7 @@ dependencies {
   implementation(libs.lifecycle.runtime.ktx)
   implementation(libs.material3)
   implementation(libs.okhttp)
+  implementation(libs.sqldelight)
   implementation(libs.okhttp3)
   implementation(libs.ui)
   implementation(libs.ui.graphics)

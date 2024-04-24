@@ -18,7 +18,6 @@ package com.google.test.inspectors.database
 
 import android.app.Application
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteDatabase.OPEN_READONLY
 import android.database.sqlite.SQLiteDatabase.OpenParams
@@ -28,7 +27,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.room.InvalidationTracker
 import androidx.room.Room
 import androidx.sqlite.db.SupportSQLiteDatabase
+import app.cash.sqldelight.Query
+import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.google.test.inspectors.Logger
+import com.google.test.inspectors.SqlDelightDatabase
 import com.google.test.inspectors.database.room.RoomDatabase
 import com.google.test.inspectors.ui.scafold.AppScaffoldViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -71,6 +74,9 @@ internal class DatabaseViewModel @Inject constructor(application: Application) :
   private val roomDatabase =
     Room.databaseBuilder(application, RoomDatabase::class.java, "room-database.db").build()
 
+  private val sqldelightDriver =
+    AndroidSqliteDriver(SqlDelightDatabase.Schema, application, "sqldelight-database.db")
+
   private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
     setSnack("Error: ${throwable.message}")
     Logger.error("Error: ${throwable.message}", throwable)
@@ -87,6 +93,10 @@ internal class DatabaseViewModel @Inject constructor(application: Application) :
     scope.launch(IO) {
       val roomTables = roomDatabase.openHelper.readableDatabase.use { it.getTables() }
       roomDatabase.invalidationTracker.addObserver(RoomObserver(roomTables))
+
+      sqldelightDriver.getTables().forEach {
+        sqldelightDriver.addListener(it, listener = SqlDelightListener(it))
+      }
     }
   }
 
@@ -155,24 +165,45 @@ internal class DatabaseViewModel @Inject constructor(application: Application) :
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {}
   }
 
-  private inner class RoomObserver(tables: Set<String>) :
+  private inner class RoomObserver(tables: List<String>) :
     InvalidationTracker.Observer(tables.toTypedArray()) {
 
     override fun onInvalidated(tables: Set<String>) {
       setSnack("Room tables [${tables.joinToString { it }}]  updated")
-      roomDatabase.openHelper.readableDatabase
+    }
+  }
+
+  private inner class SqlDelightListener(val table: String) : Query.Listener {
+    override fun queryResultsChanged() {
+      setSnack("SqlDelight table `$table` updated")
     }
   }
 }
 
-private fun SupportSQLiteDatabase.getTables() = query(QUERY_TABLES).getValues()
-
-private fun Cursor.getValues(): Set<String> {
-  return use { cursor ->
-    buildSet {
+private fun SupportSQLiteDatabase.getTables() =
+  query(QUERY_TABLES).use { cursor ->
+    buildList {
       while (cursor.moveToNext()) {
-        add(cursor.getString(0))
+        this.add(cursor.getString(0))
       }
     }
   }
-}
+
+private fun AndroidSqliteDriver.getTables() =
+  executeQuery(
+      null,
+      QUERY_TABLES,
+      { cursor ->
+        val tables = buildList {
+          while (cursor.next().value) {
+            val table = cursor.getString(0)
+            if (table != null) {
+              add(table)
+            }
+          }
+        }
+        QueryResult.Value(tables)
+      },
+      0,
+    )
+    .value
