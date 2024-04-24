@@ -20,6 +20,11 @@ $BAZEL query 'labels(jars,  //prebuilts/tools/common/m2/... except //prebuilts/t
     | sed "s|//prebuilts/tools/common/m2:repository|$top/prebuilts/tools/common/m2/repository|g" \
     >> $workdir/maven_file_refs.txt  || true
 
+$BAZEL query 'labels(aar,  //prebuilts/tools/common/m2/...  except //prebuilts/tools/common/m2:all)' \
+    | grep '//prebuilts/tools/common/m2'  \
+    | sed "s|//prebuilts/tools/common/m2:repository|$top/prebuilts/tools/common/m2/repository|g" \
+    >> $workdir/maven_file_refs.txt
+
 # Collect artifacts from //tools/base/bazel/maven/BUILD.maven
 $BAZEL query 'labels(srcs,  deps(@maven//...))' \
     | grep '@maven//:repository'  \
