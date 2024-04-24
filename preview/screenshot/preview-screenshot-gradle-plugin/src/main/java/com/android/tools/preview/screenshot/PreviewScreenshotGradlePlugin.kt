@@ -41,6 +41,8 @@ import java.lang.StringBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.attributes.Attribute
+import org.gradle.api.attributes.Usage
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.JavaBasePlugin
@@ -161,10 +163,11 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 extension.testOptions.unitTests.isIncludeAndroidResources = true
                 extension.experimentalProperties.put(ST_SOURCE_SET_ENABLED, true)
             }
-
             componentsExtension.onVariants { variant ->
                 if (variant is HasDeviceTests && variant.debuggable) {
                     val variantName = variant.name
+
+                    val screenshotTestComponent = variant.deviceTests.singleOrNull() ?: return@onVariants
 
                     val discoveryTaskProvider =
                         project.tasks.register(
@@ -177,17 +180,31 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                             task.resultsDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments"))
                             task.analyticsService.set(analyticsServiceProvider)
                             task.usesService(analyticsServiceProvider)
+
+                            val dependencyArtifacts = screenshotTestComponent.runtimeConfiguration.incoming.artifactView { it ->
+                                it.attributes.apply {
+                                    attribute(
+                                        Attribute.of("artifactType", String::class.java),
+                                        "android-classes"
+                                    )
+                                }
+                            }.artifacts
+
+                            task.dependencies.from(dependencyArtifacts.artifactFiles)
+                            task.dependencies.disallowChanges()
                         }
-                    variant.deviceTests.singleOrNull()?.artifacts
-                        ?.forScope(ScopedArtifacts.Scope.ALL)
-                        ?.use(discoveryTaskProvider)
-                        ?.toGet(
+
+                    screenshotTestComponent.artifacts
+                        .forScope(ScopedArtifacts.Scope.PROJECT)
+                        .use(discoveryTaskProvider)
+                        .toGet(
                             ScopedArtifact.CLASSES,
                             PreviewDiscoveryTask::testJars,
                             PreviewDiscoveryTask::testClassesDir,
                         )
+
                     variant.artifacts
-                        .forScope(ScopedArtifacts.Scope.ALL)
+                        .forScope(ScopedArtifacts.Scope.PROJECT)
                         .use(discoveryTaskProvider)
                         .toGet(
                             ScopedArtifact.CLASSES,

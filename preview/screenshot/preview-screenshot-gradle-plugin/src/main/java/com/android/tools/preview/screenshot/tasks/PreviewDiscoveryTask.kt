@@ -19,6 +19,7 @@ package com.android.tools.preview.screenshot.tasks
 import com.android.tools.preview.screenshot.findPreviewsAndSerialize
 import com.android.tools.preview.screenshot.services.AnalyticsService
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.file.DirectoryProperty
@@ -38,28 +39,34 @@ abstract class PreviewDiscoveryTask: DefaultTask() {
     abstract val previewsOutputFile: RegularFileProperty
 
     /**
-     * Full scope, including project scope and all dependencies. [ test ]
+     * Only project scope and  [ test ]
      */
     @get:Classpath
     abstract val testClassesDir: ListProperty<Directory>
 
     /**
-     * Full scope, including project scope and all dependencies. [ test ]
+     * Only project scope and  [ test ]
      */
     @get:Classpath
     abstract val testJars: ListProperty<RegularFile>
 
     /**
-     * Full scope, including project scope and all dependencies.
+     * Only project scope.
      */
     @get:Classpath
     abstract val mainClassesDir: ListProperty<Directory>
 
     /**
-     * Full scope, including project scope and all dependencies.
+     * Only project scope.
      */
     @get:Classpath
     abstract val mainJars: ListProperty<RegularFile>
+
+    /**
+     * Full scope, including project scope and all dependencies.
+     */
+    @get:Classpath
+    abstract val dependencies: ConfigurableFileCollection
 
     @get:OutputDirectory
     abstract val resultsDir: DirectoryProperty
@@ -71,13 +78,14 @@ abstract class PreviewDiscoveryTask: DefaultTask() {
     fun run() = analyticsService.get().recordTaskAction(path) {
         Files.createDirectories(resultsDir.asFile.get().toPath())
 
+        val runtimeDeps = mutableListOf<String>()
+        runtimeDeps.addAll(dependencies.files.map { it.absolutePath })
+        runtimeDeps.addAll(testClassesDir.get().map { it.asFile.absolutePath })
+        runtimeDeps.addAll(testJars.get().map { it.asFile.absolutePath })
+        runtimeDeps.addAll(mainClassesDir.get().map { it.asFile.absolutePath })
+        runtimeDeps.addAll(mainJars.get().map { it.asFile.absolutePath })
         val outputFilePath = previewsOutputFile.get().asFile.toPath()
-        val classpathJars = mutableListOf<String>()
-        classpathJars.addAll(testJars.get().map { it.asFile.absolutePath })
-        classpathJars.addAll(mainJars.get().map { it.asFile.absolutePath })
-        classpathJars.addAll(testClassesDir.get().map { it.asFile.absolutePath})
-        classpathJars.addAll(mainClassesDir.get().map { it.asFile.absolutePath})
-        // TODO: use a worker here
-        findPreviewsAndSerialize(classpathJars, outputFilePath, testClassesDir.get().map { it.asFile })
+
+        findPreviewsAndSerialize(runtimeDeps, outputFilePath, testClassesDir.get().map { it.asFile })
     }
 }

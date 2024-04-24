@@ -18,6 +18,8 @@ package com.android.tools.preview.screenshot.tasks
 
 import com.android.testutils.MockitoKt.mock
 import com.android.tools.preview.screenshot.services.AnalyticsService
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.services.BuildServiceRegistry
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
@@ -26,6 +28,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers
 import org.mockito.Mockito.withSettings
+import java.io.File
 
 class PreviewDiscoveryTaskTest {
     @get:Rule
@@ -41,10 +44,14 @@ class PreviewDiscoveryTaskTest {
 
     @Test
     fun testPreviewDiscovery() {
-        val resultsDir = tempDirRule.newFolder("results")
-        val referenceImageDir = tempDirRule.newFolder("references")
+        // create a new folder to hold the results
+        val rootForResult = tempDirRule.newFolder("results")
+
+        // uncreated paths for results
+        val resultsDir = File(rootForResult, "results")
         task.resultsDir.set(resultsDir)
-        task.previewsOutputFile.set(tempDirRule.newFile("previews_discovered.json"))
+        task.previewsOutputFile.set(File(rootForResult,"previews_discovered.json"))
+
         task.analyticsService.set(object: AnalyticsService() {
             override val buildServiceRegistry: BuildServiceRegistry = mock(
                 withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
@@ -54,7 +61,5 @@ class PreviewDiscoveryTaskTest {
         task.run()
 
         assert(resultsDir.isDirectory)
-        assert(referenceImageDir.isDirectory)
     }
-
 }
