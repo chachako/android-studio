@@ -12,9 +12,6 @@ APPROVED_FLAKY_TESTS = [
     "//tools/adt/idea/android-uitests:BasicLayoutEditTest",  # b/186225187
     "//tools/adt/idea/android-uitests:NewComposeProjectTest",  # b/186225189
     "//tools/adt/idea/android-uitests:CreateNewMobileProjectTest",  # b/192613920
-    "//tools/base/build-system/integration-test/application:kotlin-multiplatform-android-tests",  # b/329887373
-    "//tools/base/build-system/integration-test/lint:kotlin-multiplatform-tests",  # b/329887373
-    "//tools/base/build-system/integration-test/connected:KotlinMultiplatformAndroidConnectedTest",  # b/329887373
 ]
 
 FAILURE_MESSAGE = """Test target {} has flaky set to true.

@@ -742,7 +742,6 @@ gradle_integration_test(
         ],
     ),
     data = TEST_DATA,
-    flaky = True,  # b/329887373
     lint_baseline = "lint_baseline_kotlin_multiplatform_android_tests.xml",
     #keep sorted
     maven_repo_zips = [
