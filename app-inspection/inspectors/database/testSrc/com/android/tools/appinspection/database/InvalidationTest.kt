@@ -29,15 +29,7 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.Event
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Event.OneOfCase.DATABASE_POSSIBLY_CHANGED
 import com.android.testutils.CloseablesRule
 import com.android.tools.appinspection.common.testing.LogPrinterRule
-import com.android.tools.appinspection.database.testing.Column
-import com.android.tools.appinspection.database.testing.Database
-import com.android.tools.appinspection.database.testing.Hook
-import com.android.tools.appinspection.database.testing.MessageFactory
-import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
-import com.android.tools.appinspection.database.testing.Table
-import com.android.tools.appinspection.database.testing.asEntryHook
-import com.android.tools.appinspection.database.testing.asExitHook
-import com.android.tools.appinspection.database.testing.createInstance
+import com.android.tools.appinspection.database.testing.*
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -46,7 +38,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
@@ -63,7 +54,6 @@ import org.robolectric.junit.rules.CloseGuardRule
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class InvalidationTest {
   private val testEnvironment = SqliteInspectorTestEnvironment()
-  private val temporaryFolder = TemporaryFolder()
   private val closeablesRule = CloseablesRule()
 
   @get:Rule
@@ -71,7 +61,6 @@ class InvalidationTest {
     RuleChain.outerRule(CloseGuardRule())
       .around(closeablesRule)
       .around(testEnvironment)
-      .around(temporaryFolder)
       .around(LogPrinterRule())
 
   @Test
@@ -95,7 +84,7 @@ class InvalidationTest {
     testEnvironment.sendCommand(MessageFactory.createTrackDatabasesCommand())
 
     // Verification of hooks registration and triggering the DatabasePossiblyChangedEvent
-    testEnvironment.consumeRegisteredHooks().let { hooks ->
+    testEnvironment.getRegisteredHooks().let { hooks ->
       val hook = hooks.filter { hook -> hook.originMethod == method && hook.originClass == clazz }
       assertThat(hook).hasSize(1)
 
@@ -213,9 +202,7 @@ class InvalidationTest {
   }
 
   private fun cursorForQuery(query: String): SQLiteCursor {
-    val db =
-      Database("ignored", Table("t1", Column("c1", "int")))
-        .createInstance(closeablesRule, temporaryFolder)
+    val db = testEnvironment.openDatabase(Database("ignored", Table("t1", Column("c1", "int"))))
     val cursor = closeablesRule.register(db.rawQuery(query, null))
     val context = RuntimeEnvironment.getApplication()
     context.deleteDatabase(db.path)

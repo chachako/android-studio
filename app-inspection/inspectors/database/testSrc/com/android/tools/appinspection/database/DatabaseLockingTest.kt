@@ -27,7 +27,6 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.ReleaseDatabaseLockCom
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.ACQUIRE_DATABASE_LOCK
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.ERROR_OCCURRED
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.RELEASE_DATABASE_LOCK
-import com.android.testutils.CloseablesRule
 import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.testing.*
 import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesCommand
@@ -44,7 +43,6 @@ import kotlinx.coroutines.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -60,16 +58,10 @@ import org.robolectric.junit.rules.CloseGuardRule
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class DatabaseLockingTest {
   private val testEnvironment = SqliteInspectorTestEnvironment()
-  private val temporaryFolder = TemporaryFolder()
-  private val closeablesRule = CloseablesRule()
 
   @get:Rule
   val rule: RuleChain =
-    RuleChain.outerRule(CloseGuardRule())
-      .around(closeablesRule)
-      .around(testEnvironment)
-      .around(temporaryFolder)
-      .around(LogPrinterRule())
+    RuleChain.outerRule(CloseGuardRule()).around(testEnvironment).around(LogPrinterRule())
 
   private val database = Database("db1", Table("t1", listOf(Column("c1", "int"))))
   private val table = database.tables.single()
@@ -87,8 +79,7 @@ class DatabaseLockingTest {
 
   private fun test_locking(simultaneousLocks: Int) = runBlocking {
     // create a non-empty database
-    val instance =
-      database.createInstance(closeablesRule, temporaryFolder, writeAheadLoggingEnabled = true)
+    val instance = testEnvironment.openDatabase(database, writeAheadLoggingEnabled = true)
     val databaseId = testEnvironment.inspectDatabase(instance)
     insertValue(instance, value1)
     assertThat(getValueSum(instance)).isEqualTo(value1)
@@ -128,11 +119,8 @@ class DatabaseLockingTest {
 
   @Test
   fun test_lockIdsUniquePerDb() = runBlocking {
-    val dbIds =
-      listOf("db1", "db2", "db3").map {
-        val db = Database(it).createInstance(closeablesRule, temporaryFolder)
-        testEnvironment.inspectDatabase(db)
-      }
+    val dbs = listOf("db1", "db2", "db3").map { testEnvironment.openDatabase(Database(it)) }
+    val dbIds = testEnvironment.inspectDatabases(dbs)
     val lockIds =
       dbIds.map { testEnvironment.sendCommand(acquireLockCommand(it)).acquireDatabaseLock.lockId }
     assertThat(lockIds.toSet()).hasSize(dbIds.size)
@@ -146,8 +134,7 @@ class DatabaseLockingTest {
     withLockingTimeoutOverride(50L) {
       runBlocking {
         // create a non-empty database
-        val instance =
-          database.createInstance(closeablesRule, temporaryFolder, writeAheadLoggingEnabled = true)
+        val instance = testEnvironment.openDatabase(database, writeAheadLoggingEnabled = true)
         val databaseId = testEnvironment.inspectDatabase(instance)
         instance.beginTransaction() // guarantees a timeout
         try {
@@ -169,14 +156,9 @@ class DatabaseLockingTest {
   @Test
   fun test_databaseAlreadyClosed() = runBlocking {
     testEnvironment.sendCommand(createTrackDatabasesCommand())
-    val hooks = testEnvironment.consumeRegisteredHooks()
-    // create a non-empty database
-    val instance =
-      database.createInstance(closeablesRule, temporaryFolder, writeAheadLoggingEnabled = true)
-    hooks.triggerOnOpenedExit(instance)
-    val databaseId = testEnvironment.inspectDatabase(instance)
-    instance.close()
-    hooks.triggerOnAllReferencesReleased(instance)
+    val instance = testEnvironment.openDatabase(database, writeAheadLoggingEnabled = true)
+    val databaseId = testEnvironment.awaitDatabaseOpenedEvent(instance.displayName).databaseId
+    testEnvironment.closeDatabase(instance)
 
     // try to lock the database (expecting a failure)
     testEnvironment.sendCommand(acquireLockCommand(databaseId)).let { response ->
@@ -209,8 +191,7 @@ class DatabaseLockingTest {
   @Test
   fun test_keepDatabaseOpenWhileLocked() = runBlocking {
     // create a non-empty database
-    val instance =
-      database.createInstance(closeablesRule, temporaryFolder, writeAheadLoggingEnabled = true)
+    val instance = testEnvironment.openDatabase(database, writeAheadLoggingEnabled = true)
     val databaseId = testEnvironment.inspectDatabase(instance)
 
     // lock the database
@@ -237,10 +218,8 @@ class DatabaseLockingTest {
       runBlocking {
         // create and inspect two databases
         val (db1, db2) =
-          listOf("db1", "db2").map {
-            Database(it, table).createInstance(closeablesRule, temporaryFolder)
-          }
-        val (id1, id2) = listOf(db1, db2).map { testEnvironment.inspectDatabase(it) }
+          listOf("db1", "db2").map { testEnvironment.openDatabase(Database(it, table)) }
+        val (id1, id2) = testEnvironment.inspectDatabases(db1, db2)
 
         // lock the first database (app thread)
         applicationThread.submit { db1.beginTransaction() }.get(2, SECONDS)
@@ -274,9 +253,7 @@ class DatabaseLockingTest {
 
   @Test
   fun test_lockingPreventsOpen(): Unit = runBlocking {
-    val db = Database("db", table).createInstance(closeablesRule, temporaryFolder)
-    testEnvironment.sendCommand(createTrackDatabasesCommand())
-    val hooks = testEnvironment.consumeRegisteredHooks()
+    val db = testEnvironment.openDatabase(Database("db", table))
     val id = testEnvironment.inspectDatabase(db)
     val latch = CountDownLatch(1)
 
@@ -284,7 +261,7 @@ class DatabaseLockingTest {
     val lockId = testEnvironment.sendCommand(acquireLockCommand(id)).acquireDatabaseLock.lockId
     launch(Dispatchers.IO) {
       // Simulate opening a database while it's locked
-      hooks.triggerOnOpenedEntry(null, db.path)
+      testEnvironment.triggerOnOpenedEntry(db.path)
       latch.countDown()
     }
 
@@ -300,7 +277,7 @@ class DatabaseLockingTest {
   @Test
   fun test_appResumesAfterLockReleased(): Unit = runBlocking {
     // create database
-    val db = database.createInstance(closeablesRule, temporaryFolder)
+    val db = testEnvironment.openDatabase(database)
     val id = testEnvironment.inspectDatabase(db)
 
     // start a job inserting values at app thread
@@ -351,7 +328,7 @@ class DatabaseLockingTest {
   private fun test_endToEnd_inspector_lock_query_unlock(writeAheadLoggingEnabled: Boolean) =
     runBlocking {
       // create database
-      val db = database.createInstance(closeablesRule, temporaryFolder, writeAheadLoggingEnabled)
+      val db = testEnvironment.openDatabase(database, writeAheadLoggingEnabled)
       insertValue(db, value1)
       assertThat(getValueSum(db)).isEqualTo(value1)
 

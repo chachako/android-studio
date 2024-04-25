@@ -20,28 +20,14 @@ import android.app.Application
 import android.database.sqlite.SQLiteClosable
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
-import androidx.inspection.ArtTooling.ExitHook
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Event
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response
-import com.android.testutils.CloseablesRule
 import com.android.tools.appinspection.common.testing.LogPrinterRule
-import com.android.tools.appinspection.database.testing.CREATE_IN_MEMORY_DATABASE_COMMAND_SIGNATURE_API27
-import com.android.tools.appinspection.database.testing.Database
-import com.android.tools.appinspection.database.testing.Hook
+import com.android.tools.appinspection.database.testing.*
 import com.android.tools.appinspection.database.testing.MessageFactory.createKeepDatabasesOpenCommand
 import com.android.tools.appinspection.database.testing.MessageFactory.createKeepDatabasesOpenResponse
 import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesCommand
 import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesResponse
-import com.android.tools.appinspection.database.testing.OPEN_DATABASE_COMMAND_SIGNATURE_API11
-import com.android.tools.appinspection.database.testing.OPEN_DATABASE_COMMAND_SIGNATURE_API27
-import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
-import com.android.tools.appinspection.database.testing.absolutePath
-import com.android.tools.appinspection.database.testing.asExitHook
-import com.android.tools.appinspection.database.testing.createInstance
-import com.android.tools.appinspection.database.testing.displayName
-import com.android.tools.appinspection.database.testing.triggerOnAllReferencesReleased
-import com.android.tools.appinspection.database.testing.triggerOnOpenedExit
-import com.android.tools.appinspection.database.testing.triggerReleaseReference
 import com.google.common.truth.Truth.assertThat
 import java.io.File
 import kotlinx.coroutines.runBlocking
@@ -65,22 +51,20 @@ import org.robolectric.junit.rules.CloseGuardRule
 class TrackDatabasesTest {
   private val testEnvironment = SqliteInspectorTestEnvironment()
   private val temporaryFolder = TemporaryFolder()
-  private val closeablesRule = CloseablesRule()
 
   @get:Rule
   val rule: RuleChain =
     RuleChain.outerRule(CloseGuardRule())
-      .around(closeablesRule)
       .around(testEnvironment)
       .around(temporaryFolder)
       .around(LogPrinterRule())
 
   @Test
-  fun test_track_databases() = runBlocking {
+  fun test_track_databases(): Unit = runBlocking {
     val alreadyOpenDatabases =
       listOf(
-        Database("db1").createInstance(closeablesRule, temporaryFolder),
-        Database("db2").createInstance(closeablesRule, temporaryFolder),
+        testEnvironment.openDatabase(Database("db1")),
+        testEnvironment.openDatabase(Database("db2")),
       )
 
     testEnvironment.registerAlreadyOpenDatabases(alreadyOpenDatabases)
@@ -121,9 +105,7 @@ class TrackDatabasesTest {
     }
 
     val hookEntries =
-      testEnvironment.consumeRegisteredHooks().filter {
-        possibleSignatures.contains(it.originMethod)
-      }
+      testEnvironment.getRegisteredHooks().filter { possibleSignatures.contains(it.originMethod) }
     val exitHooks = hookEntries.filterIsInstance<Hook.ExitHook>()
     assertThat(exitHooks.map { it.originMethod }).containsExactlyElementsIn(exitHookSignatures)
     exitHooks.forEachIndexed { ix, entry ->
@@ -133,30 +115,19 @@ class TrackDatabasesTest {
 
       // verify that executing the registered hook will result in tracking events
       testEnvironment.assertNoQueuedEvents()
-      @Suppress("UNCHECKED_CAST") val exitHook = entry.asExitHook as ExitHook<SQLiteDatabase>
-      val database = Database("db3_$ix").createInstance(closeablesRule, temporaryFolder)
-      assertThat(exitHook.onExit(database)).isSameInstanceAs(database)
+      val database = testEnvironment.openDatabase(Database("db3_$ix"))
       testEnvironment.receiveEvent().let { event ->
         assertThat(event.databaseOpened.path).isEqualTo(database.displayName)
       }
     }
     val entryHooks = hookEntries.filterIsInstance<Hook.EntryHook>()
     assertThat(entryHooks.map { it.originMethod }).containsExactlyElementsIn(entryHookSignatures)
-
-    assertThat(testEnvironment.consumeRegisteredHooks()).isEmpty()
   }
 
   @Test
   fun test_track_databases_the_same_database_opened_multiple_times() = runBlocking {
     // given
     testEnvironment.sendCommand(createTrackDatabasesCommand())
-    val onOpenHook =
-      testEnvironment.consumeRegisteredHooks().first {
-        it is Hook.ExitHook && it.originMethod == OPEN_DATABASE_COMMAND_SIGNATURE_API11
-      }
-    @Suppress("UNCHECKED_CAST")
-    val onOpen = (onOpenHook.asExitHook as ExitHook<SQLiteDatabase>)::onExit
-
     val seenDbIds = mutableSetOf<Int>()
 
     fun checkDbOpenedEvent(event: Event, database: SQLiteDatabase) {
@@ -168,53 +139,46 @@ class TrackDatabasesTest {
 
     // file based db: first open
     val fileDbPath = "db1"
-    val fileDb = Database(fileDbPath).createInstance(closeablesRule, temporaryFolder)
-    onOpen(fileDb)
+    val fileDb = testEnvironment.openDatabase(Database(fileDbPath))
     checkDbOpenedEvent(testEnvironment.receiveEvent(), fileDb)
 
     // file based db: same instance
-    onOpen(fileDb)
     testEnvironment.assertNoQueuedEvents()
 
     // file based db: same path
-    onOpen(Database(fileDbPath).createInstance(closeablesRule, temporaryFolder))
+    testEnvironment.openDatabase(Database(fileDbPath))
     testEnvironment.assertNoQueuedEvents()
 
     // in-memory database: first open
-    val inMemDb = Database(null).createInstance(closeablesRule, temporaryFolder)
-    onOpen(inMemDb)
+    val inMemDb = testEnvironment.openDatabase(Database(null))
     checkDbOpenedEvent(testEnvironment.receiveEvent(), inMemDb)
 
     // in-memory database: same instance
-    onOpen(inMemDb)
     testEnvironment.assertNoQueuedEvents()
 
     // in-memory database: new instances (same path = :memory:)
     repeat(3) {
-      val db = Database(null).createInstance(closeablesRule, temporaryFolder)
+      val db = testEnvironment.openDatabase(Database(null))
       assertThat(db.path).isEqualTo(":memory:")
-      onOpen(db)
       checkDbOpenedEvent(testEnvironment.receiveEvent(), db)
     }
   }
 
   @Test
   fun test_track_databases_keep_db_open_toggle() = runBlocking {
-    // given
-    val hooks = startTracking()
-
     // without inspecting
-    Database("db1").createInstance(closeablesRule, temporaryFolder).let { db ->
+    testEnvironment.openDatabase(Database("db1")).let { db ->
       db.close()
       assertClosed(db)
     }
 
+    startTracking()
     // with inspecting (initially keepOpen = false)
     assertNoQueuedEvents()
     listOf("db2", null).forEach { path ->
-      openDatabase(path, hooks).let { db ->
+      testEnvironment.openDatabase(path).let { db ->
         val id = receiveOpenedEventId(db)
-        closeDatabase(db, hooks)
+        testEnvironment.closeDatabase(db)
         receiveClosedEvent(id, db.displayName)
         assertClosed(db)
       }
@@ -228,12 +192,12 @@ class TrackDatabasesTest {
     // with inspecting (now keepOpen = true)
     val dbs =
       listOf("db3", null).map { path ->
-        val db = openDatabase(path, hooks)
+        val db = testEnvironment.openDatabase(path)
         val id = receiveOpenedEventId(db)
         id to db
       }
     dbs.forEach { (_, db) ->
-      closeDatabase(db, hooks)
+      testEnvironment.closeDatabase(db)
       assertOpen(db) // keep-open has worked
     }
     assertNoQueuedEvents()
@@ -253,13 +217,13 @@ class TrackDatabasesTest {
 
     // keepOpen = false with a database with more than one reference
     issueKeepDatabasesOpenCommand(false)
-    openDatabase("db4", hooks).let { db ->
+    testEnvironment.openDatabase("db4").let { db ->
       db.acquireReference() // extra reference
 
-      closeDatabase(db, hooks)
+      testEnvironment.closeDatabase(db)
       assertOpen(db)
 
-      closeDatabase(db, hooks)
+      testEnvironment.closeDatabase(db)
       assertClosed(db)
     }
   }
@@ -267,13 +231,13 @@ class TrackDatabasesTest {
   @Test
   fun test_track_databases_force_open_implies_keep_open() = runBlocking {
     // given
-    val hooks = startTracking(forceOpen = true)
+    startTracking(forceOpen = true)
 
     assertNoQueuedEvents()
 
-    openDatabase("db2", hooks).let { db ->
+    testEnvironment.openDatabase("db2").let { db ->
       receiveOpenedEventId(db)
-      closeDatabase(db, hooks)
+      testEnvironment.closeDatabase(db)
       assertOpen(db)
     }
   }
@@ -281,13 +245,13 @@ class TrackDatabasesTest {
   @Test
   fun test_on_closed_notification() = runBlocking {
     // given
-    val hooks = startTracking()
+    startTracking()
 
     // simple flow
     assertNoQueuedEvents()
-    openDatabase("db1", hooks).let { db ->
+    testEnvironment.openDatabase("db1").let { db ->
       val id = receiveOpenedEventId(db)
-      closeDatabase(db, hooks)
+      testEnvironment.closeDatabase(db)
       receiveClosedEvent(id, db.displayName)
       assertClosed(db)
       assertNoQueuedEvents()
@@ -295,18 +259,18 @@ class TrackDatabasesTest {
 
     // test that doesn't fire on each db.closed()
     assertNoQueuedEvents()
-    openDatabase("db2", hooks).let { db ->
+    testEnvironment.openDatabase("db2").let { db ->
       val id = receiveOpenedEventId(db)
 
       db.acquireReference() // extra reference
 
       // pass 1
-      closeDatabase(db, hooks)
+      testEnvironment.closeDatabase(db)
       assertOpen(db)
       assertNoQueuedEvents()
 
       // pass 2
-      closeDatabase(db, hooks)
+      testEnvironment.closeDatabase(db)
       assertClosed(db)
       receiveClosedEvent(id, db.displayName)
       assertNoQueuedEvents()
@@ -315,8 +279,8 @@ class TrackDatabasesTest {
 
   @Test
   fun test_findInstances_closed() = runBlocking {
-    val db1a = Database("db1").createInstance(closeablesRule, temporaryFolder)
-    val db2 = Database("db2").createInstance(closeablesRule, temporaryFolder)
+    val db1a = testEnvironment.openDatabase(Database("db1"))
+    val db2 = testEnvironment.openDatabase(Database("db2"))
     assertOpen(db1a)
     assertOpen(db2)
     db1a.close()
@@ -324,50 +288,50 @@ class TrackDatabasesTest {
 
     // given
     testEnvironment.registerAlreadyOpenDatabases(listOf(db1a, db2))
-    val hooks = startTracking()
+    startTracking()
     val id1 = receiveClosedEventId(db1a)
     val id2 = receiveOpenedEventId(db2)
     assertNoQueuedEvents()
 
-    val db1b = openDatabase("db1", hooks)
+    val db1b = testEnvironment.openDatabase("db1")
     assertThat(receiveOpenedEventId(db1a)).isEqualTo(id1)
     assertNoQueuedEvents()
 
-    closeDatabase(db1b, hooks)
+    testEnvironment.closeDatabase(db1b)
     receiveClosedEvent(id1, db1a.displayName)
 
-    closeDatabase(db2, hooks)
+    testEnvironment.closeDatabase(db2)
     receiveClosedEvent(id2, db2.displayName)
   }
 
   @Test
   fun test_findInstances_disk() = runBlocking {
-    val db1a = Database("db1").createInstance(closeablesRule, temporaryFolder)
-    val db2 = Database("db2").createInstance(closeablesRule, temporaryFolder)
+    val db1a = testEnvironment.openDatabase(Database("db1"))
+    val db2 = testEnvironment.openDatabase(Database("db2"))
 
     testEnvironment.registerApplication(db1a, db2)
-    val hooks = startTracking()
+    startTracking()
 
     val id1 = receiveClosedEventId(db1a.absolutePath)
     val id2 = receiveClosedEventId(db2.absolutePath)
     assertNoQueuedEvents()
 
-    val db1b = openDatabase("db1", hooks)
+    val db1b = testEnvironment.openDatabase("db1")
     receiveOpenedEvent(id1, db1a.absolutePath)
     assertNoQueuedEvents()
 
-    openDatabase("db2", hooks)
+    testEnvironment.openDatabase("db2")
     receiveOpenedEvent(id2, db2.absolutePath)
     assertNoQueuedEvents()
 
-    closeDatabase(db1b, hooks)
+    testEnvironment.closeDatabase(db1b)
     receiveClosedEvent(id1, db1a.absolutePath)
     assertNoQueuedEvents()
   }
 
   @Test
   fun test_findInstances_disk_forceOpen(): Unit = runBlocking {
-    val db = Database("db1").createInstance(closeablesRule, temporaryFolder)
+    val db = testEnvironment.openDatabase(Database("db1"))
     testEnvironment.registerApplication(db)
     startTracking(forceOpen = true)
 
@@ -377,13 +341,13 @@ class TrackDatabasesTest {
   @Test
   fun test_findInstances_disk_forceOpenThenOpenNative(): Unit = runBlocking {
     val database = Database("db1")
-    val db = database.createInstance(closeablesRule, temporaryFolder)
+    val db = testEnvironment.openDatabase(database)
 
     testEnvironment.registerApplication(db)
-    val hooks = startTracking(forceOpen = true)
+    startTracking(forceOpen = true)
 
     // We have to simulate a call to the hooks
-    hooks.triggerOnOpenedExit(db)
+    testEnvironment.triggerOnOpenedExit(db)
 
     receiveOpenedEventId(db.displayName, isForced = true)
     receiveOpenedEventId(db.displayName, isForced = false)
@@ -392,15 +356,15 @@ class TrackDatabasesTest {
   @Test
   fun test_findInstances_disk_forceOpenThenOpenNativeAndClosed(): Unit = runBlocking {
     val database = Database("db1")
-    val db = database.createInstance(closeablesRule, temporaryFolder)
+    val db = testEnvironment.openDatabase(database)
 
     testEnvironment.registerApplication(db)
-    val hooks = startTracking(forceOpen = true)
+    startTracking(forceOpen = true)
 
     // We have to simulate a call to the hooks
-    hooks.triggerOnOpenedExit(db)
+    testEnvironment.triggerOnOpenedExit(db)
     db.close()
-    hooks.triggerOnAllReferencesReleased(db)
+    testEnvironment.triggerOnAllReferencesReleased(db)
 
     receiveOpenedEventId(db.displayName, isForced = true)
     receiveOpenedEventId(db.displayName, isForced = false)
@@ -409,7 +373,7 @@ class TrackDatabasesTest {
 
   @Test
   fun test_findInstances_disk_filters_helper_files() = runBlocking {
-    val db = Database("db1").createInstance(closeablesRule, temporaryFolder, false)
+    val db = testEnvironment.openDatabase(Database("db1"))
 
     val application =
       object : Application() {
@@ -425,12 +389,12 @@ class TrackDatabasesTest {
 
     testEnvironment.registerApplication(application)
     testEnvironment.registerAlreadyOpenDatabases(listOf(db))
-    val hooks = startTracking()
+    startTracking()
 
     val id = receiveOpenedEventId(db)
     assertNoQueuedEvents()
 
-    closeDatabase(db, hooks)
+    testEnvironment.closeDatabase(db)
     receiveClosedEvent(id, db.absolutePath)
     assertNoQueuedEvents()
   }
@@ -438,24 +402,24 @@ class TrackDatabasesTest {
   @Test
   fun test_on_closed_and_reopened() = runBlocking {
     // given
-    val hooks = startTracking()
+    startTracking()
 
     // simple flow
     val databaseName = "db1"
 
     assertNoQueuedEvents()
     var id: Int
-    openDatabase(databaseName, hooks).let { db ->
+    testEnvironment.openDatabase(databaseName).let { db ->
       id = receiveOpenedEventId(db)
-      closeDatabase(db, hooks)
+      testEnvironment.closeDatabase(db)
       receiveClosedEvent(id, db.displayName)
       assertClosed(db)
     }
     testEnvironment.assertNoQueuedEvents()
 
-    openDatabase(databaseName, hooks).let { db ->
+    testEnvironment.openDatabase(databaseName).let { db ->
       assertThat(receiveOpenedEventId(db)).isEqualTo(id)
-      closeDatabase(db, hooks)
+      testEnvironment.closeDatabase(db)
       receiveClosedEvent(id, db.displayName)
       assertClosed(db)
     }
@@ -465,8 +429,8 @@ class TrackDatabasesTest {
   @Test
   fun test_temporary_databases_same_path_different_database() {
     // given
-    val db1 = Database(null).createInstance(closeablesRule, temporaryFolder)
-    val db2 = Database(null).createInstance(closeablesRule, temporaryFolder)
+    val db1 = testEnvironment.openDatabase(Database(null))
+    val db2 = testEnvironment.openDatabase(Database(null))
     fun queryTableCount(db: SQLiteDatabase): Long =
       db.compileStatement("select count(*) from sqlite_master").simpleQueryForLong()
     assertThat(queryTableCount(db1)).isEqualTo(1) // android_metadata sole table
@@ -484,42 +448,42 @@ class TrackDatabasesTest {
 
   @Test
   fun test_three_references_edge_ones_closed() = runBlocking {
-    val hooks = startTracking()
+    startTracking()
 
-    val db1a = openDatabase("path1", hooks)
+    val db1a = testEnvironment.openDatabase("path1")
     val id1a = receiveOpenedEventId(db1a)
 
-    val db1b = openDatabase("path1", hooks)
+    val db1b = testEnvironment.openDatabase("path1")
     assertNoQueuedEvents()
 
-    val db1c = openDatabase("path1", hooks)
+    val db1c = testEnvironment.openDatabase("path1")
     assertNoQueuedEvents()
 
-    closeDatabase(db1a, hooks)
+    testEnvironment.closeDatabase(db1a)
     assertNoQueuedEvents()
 
-    closeDatabase(db1c, hooks)
+    testEnvironment.closeDatabase(db1c)
     assertNoQueuedEvents()
 
-    closeDatabase(db1b, hooks)
+    testEnvironment.closeDatabase(db1b)
     receiveClosedEvent(id1a, db1a.displayName)
   }
 
   @Test
   fun test_keep_open_while_user_attempts_to_close() = runBlocking {
-    val hooks = startTracking()
+    startTracking()
     assertNoQueuedEvents()
 
-    val db = openDatabase("db", hooks)
+    val db = testEnvironment.openDatabase("db")
     val id = receiveOpenedEventId(db)
     assertNoQueuedEvents()
 
     issueKeepDatabasesOpenCommand(true)
     assertNoQueuedEvents()
 
-    closeDatabase(db, hooks)
-    closeDatabase(db, hooks)
-    closeDatabase(db, hooks)
+    testEnvironment.closeDatabase(db)
+    testEnvironment.closeDatabase(db)
+    testEnvironment.closeDatabase(db)
     assertNoQueuedEvents()
 
     issueKeepDatabasesOpenCommand(false)
@@ -536,10 +500,10 @@ class TrackDatabasesTest {
    */
   @Test
   fun test_keep_open_keeps_count() = runBlocking {
-    val hooks = startTracking()
+    startTracking()
     assertNoQueuedEvents()
 
-    val db = openDatabase("db", hooks) // #dbRef=1 | #kpoRef=0 | #usrRef=1
+    val db = testEnvironment.openDatabase("db") // #dbRef=1 | #kpoRef=0 | #usrRef=1
     receiveOpenedEventId(db)
     assertThat(db.referenceCount).isEqualTo(1)
     assertNoQueuedEvents()
@@ -549,13 +513,13 @@ class TrackDatabasesTest {
     assertNoQueuedEvents()
 
     var count = 0
-    closeDatabase(db, hooks)
+    testEnvironment.closeDatabase(db)
     count++ // #dbRef=1 | #kpoRef=1 | #usrRef=0
     assertThat(db.referenceCount).isEqualTo(1)
-    closeDatabase(db, hooks)
+    testEnvironment.closeDatabase(db)
     count++ // #dbRef=1 | #kpoRef=2 | #usrRef=-1
     assertThat(db.referenceCount).isEqualTo(1)
-    closeDatabase(db, hooks)
+    testEnvironment.closeDatabase(db)
     count++ // #dbRef=1 | #kpoRef=3 | #usrRef=-2
     assertThat(db.referenceCount).isEqualTo(1)
     assertNoQueuedEvents()
@@ -567,7 +531,7 @@ class TrackDatabasesTest {
 
     issueKeepDatabasesOpenCommand(false) // #dbRef=1 | #kpoRef=0 | #usrRef=1
     repeat(count + 1) {
-      hooks.triggerReleaseReference(db)
+      testEnvironment.triggerReleaseReference(db)
       assertOpen(db)
     } // #dbRef=1 | #kpoRef=0 | #usrRef=1
     assertThat(db.referenceCount).isEqualTo(1)
@@ -583,13 +547,13 @@ class TrackDatabasesTest {
    */
   @Test
   fun test_keep_open_off_on_off() = runBlocking {
-    val hooks = startTracking()
+    startTracking()
     assertNoQueuedEvents()
 
     // keep-open = false (default)
 
-    val db1 = openDatabase("db1", hooks)
-    val db2 = openDatabase("db2", hooks)
+    val db1 = testEnvironment.openDatabase("db1")
+    val db2 = testEnvironment.openDatabase("db2")
 
     assertThat(db1.referenceCount).isEqualTo(1) // #dbRef=1 | #kpoRef=0 | #usrRef=1
     val id1 = receiveOpenedEventId(db1)
@@ -598,7 +562,7 @@ class TrackDatabasesTest {
     assertThat(db2.referenceCount).isEqualTo(1)
     assertNoQueuedEvents()
 
-    closeDatabase(db1, hooks) // #dbRef=0 | #kpoRef=0 | #usrRef=0
+    testEnvironment.closeDatabase(db1) // #dbRef=0 | #kpoRef=0 | #usrRef=0
     assertThat(db1.referenceCount).isEqualTo(0)
     assertThat(db2.referenceCount).isEqualTo(1)
     receiveClosedEvent(id1, db1.displayName)
@@ -611,7 +575,7 @@ class TrackDatabasesTest {
     assertThat(db2.referenceCount).isEqualTo(1) // #dbRef=1 | #kpoRef=0 | #usrRef=1
     assertNoQueuedEvents()
 
-    closeDatabase(db2, hooks) // #dbRef=1 | #kpoRef=1 | #usrRef=0
+    testEnvironment.closeDatabase(db2) // #dbRef=1 | #kpoRef=1 | #usrRef=0
     assertThat(db2.referenceCount).isEqualTo(1)
     assertNoQueuedEvents()
 
@@ -621,11 +585,11 @@ class TrackDatabasesTest {
     // keep-open = false
 
     issueKeepDatabasesOpenCommand(false)
-    hooks.triggerReleaseReference(db2) // #dbRef=1 | #kpoRef=0 | #usrRef=1
+    testEnvironment.triggerReleaseReference(db2) // #dbRef=1 | #kpoRef=0 | #usrRef=1
     assertThat(db2.referenceCount).isEqualTo(1)
     assertNoQueuedEvents()
 
-    closeDatabase(db2, hooks) // #dbRef=0 | #kpoRef=0 | #usrRef=0
+    testEnvironment.closeDatabase(db2) // #dbRef=0 | #kpoRef=0 | #usrRef=0
     assertThat(db2.referenceCount).isEqualTo(0)
     receiveClosedEvent(id2, db2.displayName)
     assertNoQueuedEvents()
@@ -646,22 +610,8 @@ class TrackDatabasesTest {
     testEnvironment.assertNoQueuedEvents()
   }
 
-  private suspend fun startTracking(forceOpen: Boolean = false): List<Hook> {
+  private suspend fun startTracking(forceOpen: Boolean = false) {
     testEnvironment.sendCommand(createTrackDatabasesCommand(forceOpen))
-    return testEnvironment.consumeRegisteredHooks()
-  }
-
-  private fun openDatabase(path: String?, hooks: List<Hook>): SQLiteDatabase =
-    Database(path).createInstance(closeablesRule, temporaryFolder).also {
-      hooks.triggerOnOpenedExit(it)
-    }
-
-  private fun closeDatabase(database: SQLiteDatabase, hooks: List<Hook>) {
-    hooks.triggerReleaseReference(database)
-    database.close()
-    if (!database.isOpen) {
-      hooks.triggerOnAllReferencesReleased(database)
-    }
   }
 
   private suspend fun issueKeepDatabasesOpenCommand(setEnabled: Boolean) {

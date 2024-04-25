@@ -24,7 +24,6 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode
 import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode.ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE
 import androidx.sqlite.inspection.SqliteInspectorProtocol.QueryResponse
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Row
-import com.android.testutils.CloseablesRule
 import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.testing.*
 import com.android.tools.appinspection.database.testing.MessageFactory.createGetSchemaCommand
@@ -37,7 +36,6 @@ import org.junit.ComparisonFailure
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -54,16 +52,10 @@ import org.robolectric.junit.rules.CloseGuardRule
 // TODO: add tests for invalid queries: union of unequal number of columns, syntax error, etc.
 class QueryTest {
   private val testEnvironment = SqliteInspectorTestEnvironment()
-  private val temporaryFolder = TemporaryFolder()
-  private val closeablesRule = CloseablesRule()
 
   @get:Rule
   val rule: RuleChain =
-    RuleChain.outerRule(CloseGuardRule())
-      .around(closeablesRule)
-      .around(testEnvironment)
-      .around(temporaryFolder)
-      .around(LogPrinterRule())
+    RuleChain.outerRule(CloseGuardRule()).around(testEnvironment).around(LogPrinterRule())
 
   private val table1: Table =
     Table(
@@ -148,8 +140,7 @@ class QueryTest {
 
   @Test
   fun test_error_invalid_query() = runBlocking {
-    val databaseId =
-      inspectDatabase(Database("db", table2).createInstance(closeablesRule, temporaryFolder))
+    val databaseId = inspectDatabase(testEnvironment.openDatabase(Database("db", table2)))
     val mistypedSelect = "selecttt"
     val command = "$mistypedSelect * from sqlite_master"
     val queryParams = null
@@ -167,8 +158,7 @@ class QueryTest {
 
   @Test
   fun test_error_wrong_param_count() = runBlocking {
-    val databaseId =
-      inspectDatabase(Database("db", table2).createInstance(closeablesRule, temporaryFolder))
+    val databaseId = inspectDatabase(testEnvironment.openDatabase(Database("db", table2)))
     val command = "select * from sqlite_master where name=?"
     val queryParams = listOf("'a'", "'b'") // one too many param
     val response = testEnvironment.sendCommand(createQueryCommand(databaseId, command, queryParams))
@@ -321,8 +311,7 @@ class QueryTest {
       )
 
     // when
-    val databaseId =
-      inspectDatabase(Database("db", table2).createInstance(closeablesRule, temporaryFolder))
+    val databaseId = inspectDatabase(testEnvironment.openDatabase(Database("db", table2)))
     insertValues.forEach { params -> issueQuery(databaseId, insertCommand, params) }
 
     // then
@@ -382,8 +371,10 @@ class QueryTest {
 
     // create a database
     val db =
-      Database("db_large_val", Table("table1", Column("c1", "blob")))
-        .createInstance(closeablesRule, temporaryFolder, writeAheadLoggingEnabled = true)
+      testEnvironment.openDatabase(
+        Database("db_large_val", Table("table1", Column("c1", "blob"))),
+        writeAheadLoggingEnabled = true,
+      )
 
     // populate the database
     val records = mutableListOf<ByteArray>()
@@ -472,7 +463,7 @@ class QueryTest {
     queryParams: List<String>? = null,
   ) = runBlocking {
     // given
-    val databaseInstance = database.createInstance(closeablesRule, temporaryFolder)
+    val databaseInstance = testEnvironment.openDatabase(database)
     values.forEach { (table, values) -> databaseInstance.insertValues(table, *values) }
     val databaseId = inspectDatabase(databaseInstance)
 
@@ -496,7 +487,7 @@ class QueryTest {
   fun test_create_table() = runBlocking {
     // given
     val database = Database("db1", table1, table2)
-    val databaseId = inspectDatabase(database.createInstance(closeablesRule, temporaryFolder))
+    val databaseId = inspectDatabase(testEnvironment.openDatabase(database))
     val initialTotalChanges = queryTotalChanges(databaseId)
 
     // when
@@ -514,7 +505,7 @@ class QueryTest {
     val database = Database("db1", table1, table2)
     val databaseId =
       inspectDatabase(
-        database.createInstance(closeablesRule, temporaryFolder).also {
+        testEnvironment.openDatabase(database).also {
           it.insertValues(table2, "1", "'1'")
           it.insertValues(table2, "2", "'2'")
         }
@@ -534,8 +525,7 @@ class QueryTest {
   fun test_alter_table() = runBlocking {
     // given
     val table = table2
-    val databaseId =
-      inspectDatabase(Database("db", table).createInstance(closeablesRule, temporaryFolder))
+    val databaseId = inspectDatabase(testEnvironment.openDatabase(Database("db", table)))
     val initialTotalChanges = queryTotalChanges(databaseId)
     val newColumn = Column("num", "NUM")
 
@@ -552,8 +542,7 @@ class QueryTest {
   fun test_insert_update_delete_changes() = runBlocking {
     // given
     val table = table2
-    val databaseId =
-      inspectDatabase(Database("db", table).createInstance(closeablesRule, temporaryFolder))
+    val databaseId = inspectDatabase(testEnvironment.openDatabase(Database("db", table)))
     var expectedTotalChanges = 1 // TODO: investigate why 1 and not 0
 
     val newValue = listOf("1", "a")
@@ -607,7 +596,7 @@ class QueryTest {
 
   @Test
   fun test_query_isNotForcedOpen() = runBlocking {
-    val database = Database("db1").createInstance(closeablesRule, temporaryFolder)
+    val database = testEnvironment.openDatabase(Database("db1"))
 
     testEnvironment.registerAlreadyOpenDatabases(listOf(database))
     testEnvironment.sendCommand(createTrackDatabasesCommand())
@@ -620,7 +609,7 @@ class QueryTest {
 
   @Test
   fun test_query_isForcedOpen() = runBlocking {
-    val database = Database("db1").createInstance(closeablesRule, temporaryFolder)
+    val database = testEnvironment.openDatabase(Database("db1"))
     testEnvironment.registerApplication(database)
     testEnvironment.sendCommand(createTrackDatabasesCommand(forceOpen = true))
     val databaseId = testEnvironment.awaitDatabaseOpenedEvent(database.displayName).databaseId
@@ -635,9 +624,7 @@ class QueryTest {
     fromCursor: (Cursor) -> T,
     fromCellValue: (CellValue) -> T,
   ) = runBlocking {
-    val db =
-      Database("db1", Table("t1", Column("c1", "INT")))
-        .createInstance(closeablesRule, temporaryFolder)
+    val db = testEnvironment.openDatabase(Database("db1", Table("t1", Column("c1", "INT"))))
     testEnvironment.registerAlreadyOpenDatabases(listOf(db))
     testEnvironment.sendCommand(createTrackDatabasesCommand())
     val id = testEnvironment.receiveEvent().databaseOpened.databaseId
@@ -665,10 +652,9 @@ class QueryTest {
   private suspend fun inspectDatabase(databaseInstance: SQLiteDatabase): Int {
     testEnvironment.registerAlreadyOpenDatabases(
       listOf(
-        Database("ignored_1")
-          .createInstance(closeablesRule, temporaryFolder), // extra testing value
+        testEnvironment.openDatabase(Database("ignored_1")), // extra testing value
         databaseInstance,
-        Database("ignored_2").createInstance(closeablesRule, temporaryFolder), // extra testing value
+        testEnvironment.openDatabase(Database("ignored_2")), // extra testing value
       )
     )
     testEnvironment.sendCommand(createTrackDatabasesCommand())

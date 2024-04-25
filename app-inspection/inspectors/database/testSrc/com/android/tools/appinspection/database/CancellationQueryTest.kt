@@ -17,14 +17,11 @@
 package com.android.tools.appinspection.database
 
 import android.os.Build
-import com.android.testutils.CloseablesRule
 import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.CountingDelegatingExecutorService.Event.FINISHED
 import com.android.tools.appinspection.database.CountingDelegatingExecutorService.Event.STARTED
 import com.android.tools.appinspection.database.testing.Database
 import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
-import com.android.tools.appinspection.database.testing.createInstance
-import com.android.tools.appinspection.database.testing.inspectDatabase
 import com.android.tools.appinspection.database.testing.issueQuery
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.ExecutorService
@@ -39,7 +36,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -55,32 +51,26 @@ import org.robolectric.junit.rules.CloseGuardRule
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class CancellationQueryTest {
   private val countingExecutorService = CountingDelegatingExecutorService(newCachedThreadPool())
-  private val environment =
+  private val testEnvironment =
     SqliteInspectorTestEnvironment(countingExecutorService, EmptyCoroutineContext)
-  private val temporaryFolder = TemporaryFolder()
-  private val closeablesRule = CloseablesRule()
 
   @get:Rule
   val rule: RuleChain =
-    RuleChain.outerRule(CloseGuardRule())
-      .around(closeablesRule)
-      .around(environment)
-      .around(temporaryFolder)
-      .around(LogPrinterRule())
+    RuleChain.outerRule(CloseGuardRule()).around(testEnvironment).around(LogPrinterRule())
 
   @Test
   fun test_query_cancellations() = runBlocking {
-    val db = Database("db", emptyList()).createInstance(closeablesRule, temporaryFolder)
-    db.enableWriteAheadLogging()
-    val databaseId = environment.inspectDatabase(db)
+    val db =
+      testEnvironment.openDatabase(Database("db", emptyList()), writeAheadLoggingEnabled = true)
+    val databaseId = testEnvironment.inspectDatabase(db)
     // very long-running query
     val job =
-      launch(Dispatchers.IO) { environment.issueQuery(databaseId, mandelbrotQuery(10000000)) }
+      launch(Dispatchers.IO) { testEnvironment.issueQuery(databaseId, mandelbrotQuery(10000000)) }
     // check that task with the query is actually started, but there is still no hard guarantee
     // that next query still won't win the race and execute query first.
     assertThat(countingExecutorService.events.receive()).isEqualTo(STARTED)
     // even though we have long-running query, other queries aren't blocked
-    val result = environment.issueQuery(databaseId, mandelbrotQuery(10))
+    val result = testEnvironment.issueQuery(databaseId, mandelbrotQuery(10))
     // drain events after query
     assertThat(countingExecutorService.events.receive()).isEqualTo(STARTED)
     assertThat(countingExecutorService.events.receive()).isEqualTo(FINISHED)

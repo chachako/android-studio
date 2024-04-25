@@ -19,7 +19,6 @@ package com.android.tools.appinspection.database
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.sqlite.inspection.SqliteInspectorProtocol.ErrorContent.ErrorCode.ERROR_NO_OPEN_DATABASE_WITH_REQUESTED_ID_VALUE
-import com.android.testutils.CloseablesRule
 import com.android.tools.appinspection.common.testing.LogPrinterRule
 import com.android.tools.appinspection.database.testing.*
 import com.android.tools.appinspection.database.testing.MessageFactory.createGetSchemaCommand
@@ -30,7 +29,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
-import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -46,16 +44,10 @@ import org.robolectric.junit.rules.CloseGuardRule
 @SQLiteMode(SQLiteMode.Mode.NATIVE)
 class GetSchemaTest {
   private val testEnvironment = SqliteInspectorTestEnvironment()
-  private val temporaryFolder = TemporaryFolder()
-  private val closeablesRule = CloseablesRule()
 
   @get:Rule
   val rule: RuleChain =
-    RuleChain.outerRule(CloseGuardRule())
-      .around(closeablesRule)
-      .around(testEnvironment)
-      .around(temporaryFolder)
-      .around(LogPrinterRule())
+    RuleChain.outerRule(CloseGuardRule()).around(testEnvironment).around(LogPrinterRule())
 
   @Test
   fun test_get_schema_complex_tables() {
@@ -156,13 +148,12 @@ class GetSchemaTest {
 
   @Test
   fun test_get_schema_auto_increment() = runBlocking {
-    val databaseId =
-      testEnvironment.inspectDatabase(
-        Database("db1").createInstance(closeablesRule, temporaryFolder).also {
-          it.execSQL("CREATE TABLE t1 (c2 INTEGER PRIMARY KEY AUTOINCREMENT)")
-          it.execSQL("INSERT INTO t1 VALUES(3)")
-        }
-      )
+    val db =
+      testEnvironment.openDatabase(Database("db1")).also {
+        it.execSQL("CREATE TABLE t1 (c2 INTEGER PRIMARY KEY AUTOINCREMENT)")
+        it.execSQL("INSERT INTO t1 VALUES(3)")
+      }
+    val databaseId = testEnvironment.inspectDatabase(db)
     testEnvironment.sendCommand(createGetSchemaCommand(databaseId)).let { response ->
       val tableNames = response.getSchema.tablesList.map { it.name }
       assertThat(tableNames).isEqualTo(listOf("t1"))
@@ -185,7 +176,7 @@ class GetSchemaTest {
 
   @Test
   fun test_get_scheme_isNotForcedOpen() = runBlocking {
-    val database = Database("db1").createInstance(closeablesRule, temporaryFolder)
+    val database = testEnvironment.openDatabase(Database("db1"))
 
     testEnvironment.registerAlreadyOpenDatabases(listOf(database))
     testEnvironment.sendCommand(createTrackDatabasesCommand())
@@ -198,7 +189,7 @@ class GetSchemaTest {
 
   @Test
   fun test_get_scheme_isForcedOpen() = runBlocking {
-    val database = Database("db1").createInstance(closeablesRule, temporaryFolder)
+    val database = testEnvironment.openDatabase(Database("db1"))
     testEnvironment.registerApplication(database)
     testEnvironment.sendCommand(createTrackDatabasesCommand(forceOpen = true))
     val databaseId = testEnvironment.awaitDatabaseOpenedEvent(database.displayName).databaseId
@@ -216,7 +207,7 @@ class GetSchemaTest {
 
     testEnvironment.registerAlreadyOpenDatabases(
       alreadyOpenDatabases.map {
-        it.createInstance(closeablesRule, temporaryFolder).also { db -> onDatabaseCreated(db) }
+        testEnvironment.openDatabase(it).also { db -> onDatabaseCreated(db) }
       }
     )
     testEnvironment.sendCommand(createTrackDatabasesCommand())
