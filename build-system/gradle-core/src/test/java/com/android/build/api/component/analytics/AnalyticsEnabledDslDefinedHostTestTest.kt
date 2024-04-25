@@ -63,15 +63,15 @@ class AnalyticsEnabledDslDefinedHostTestTest {
     }
 
     @Test
-    fun isCoverageEnabled() {
-        Mockito.`when`(delegate.isCodeCoverageEnabled).thenReturn(true)
-        Truth.assertThat(proxy.isCodeCoverageEnabled).isEqualTo(true)
+    fun codeCoverageEnabled() {
+        Mockito.`when`(delegate.codeCoverageEnabled).thenReturn(true)
+        Truth.assertThat(proxy.codeCoverageEnabled).isEqualTo(true)
 
         Truth.assertThat(stats.variantApiAccess.variantPropertiesAccessCount).isEqualTo(1)
         Truth.assertThat(
             stats.variantApiAccess.variantPropertiesAccessList.first().type
         ).isEqualTo(VariantPropertiesMethodType.HOST_TEST_CODE_COVERAGE_ENABLED_VALUE)
         Mockito.verify(delegate, Mockito.times(1))
-            .isCodeCoverageEnabled
+            .codeCoverageEnabled
     }
 }

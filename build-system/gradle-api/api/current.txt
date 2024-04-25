@@ -2891,8 +2891,8 @@ package com.android.build.api.variant {
 
   @org.gradle.api.Incubating public interface HostTest extends com.android.build.api.variant.TestComponent {
     method @org.gradle.api.Incubating public void configureTestTask(kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test,kotlin.Unit> action);
-    method @org.gradle.api.Incubating public boolean isCodeCoverageEnabled();
-    property @org.gradle.api.Incubating public abstract boolean isCodeCoverageEnabled;
+    method @org.gradle.api.Incubating public boolean getCodeCoverageEnabled();
+    property @org.gradle.api.Incubating public abstract boolean codeCoverageEnabled;
   }
 
   @org.gradle.api.Incubating public interface HostTestBuilder {

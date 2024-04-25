@@ -67,5 +67,5 @@ interface HostTest: TestComponent {
      * callback.
      */
     @get:Incubating
-    val isCodeCoverageEnabled: Boolean
+    val codeCoverageEnabled: Boolean
 }

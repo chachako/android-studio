@@ -705,7 +705,7 @@ https://issuetracker.google.com/331936874
 https://issuetracker.google.com/333537222
   * com.android.build.api.dsl.AndroidSourceDirectorySet.getDirectories: java.util.Set<java.lang.String> ()
 https://issuetracker.google.com/335848584
-  * com.android.build.api.variant.HostTest.isCodeCoverageEnabled: boolean ()
+  * com.android.build.api.variant.HostTest.getCodeCoverageEnabled: boolean ()
   * com.android.build.api.variant.HostTestBuilder.getEnableCodeCoverage: boolean ()
   * com.android.build.api.variant.HostTestBuilder.setEnableCodeCoverage: void (boolean)
 https://issuetracker.google.com/336296433

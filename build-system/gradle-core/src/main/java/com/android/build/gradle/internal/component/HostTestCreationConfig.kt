@@ -31,6 +31,6 @@ interface HostTestCreationConfig: TestComponentCreationConfig, HostTest {
 
     fun runTestTaskConfigurationActions(testTask: TaskProvider<out Test>)
 
-    override val isCodeCoverageEnabled: Boolean
+    override val codeCoverageEnabled: Boolean
 }
 

@@ -82,7 +82,7 @@ abstract class HostTestImpl @Inject constructor(
     // ---------------------------------------------------------------------------------------------
     // PUBLIC API
     // ---------------------------------------------------------------------------------------------
-    override val isCodeCoverageEnabled: Boolean = hostTestBuilder._enableCodeCoverage
+    override val codeCoverageEnabled: Boolean = hostTestBuilder._enableCodeCoverage
 
     final override val hostTestName: String
     final override val useBuiltInKotlinSupport: Boolean

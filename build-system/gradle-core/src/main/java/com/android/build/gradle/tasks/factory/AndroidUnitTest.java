@@ -197,7 +197,7 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
         @Override
         public void handleProvider(@NotNull TaskProvider<AndroidUnitTest> taskProvider) {
             super.handleProvider(taskProvider);
-            if (hostTestCreationConfig.isCodeCoverageEnabled()) {
+            if (hostTestCreationConfig.getCodeCoverageEnabled()) {
                 hostTestCreationConfig
                         .getArtifacts()
                         .setInitialProvider(
@@ -219,7 +219,7 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
 
             hostTestCreationConfig.onTestedVariant(
                     testedConfig -> {
-                        if (hostTestCreationConfig.isCodeCoverageEnabled()) {
+                        if (hostTestCreationConfig.getCodeCoverageEnabled()) {
                             task.getProject()
                                     .getPlugins()
                                     .withType(

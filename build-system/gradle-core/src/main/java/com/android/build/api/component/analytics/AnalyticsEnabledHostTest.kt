@@ -43,11 +43,11 @@ open class AnalyticsEnabledHostTest @Inject constructor(
         delegate.configureTestTask(action)
     }
 
-    override val isCodeCoverageEnabled: Boolean
+    override val codeCoverageEnabled: Boolean
         get() {
             stats.variantApiAccessBuilder.addVariantPropertiesAccessBuilder().type =
                 VariantPropertiesMethodType.HOST_TEST_CODE_COVERAGE_ENABLED_VALUE
-            return delegate.isCodeCoverageEnabled
+            return delegate.codeCoverageEnabled
         }
 
 }

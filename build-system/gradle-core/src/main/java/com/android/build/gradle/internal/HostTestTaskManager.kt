@@ -102,7 +102,7 @@ open class HostTestTaskManager(
         coverageTestTaskName: String,
         internalArtifactType: InternalArtifactType<RegularFile>
     ) {
-        if (hostTestCreationConfig.isCodeCoverageEnabled) {
+        if (hostTestCreationConfig.codeCoverageEnabled) {
             project.pluginManager.apply(JacocoPlugin::class.java)
         }
         val runTestsTask = taskFactory.register(
@@ -117,7 +117,7 @@ open class HostTestTaskManager(
             test.dependsOn(runTestsTask)
         }
 
-        if (hostTestCreationConfig.isCodeCoverageEnabled) {
+        if (hostTestCreationConfig.codeCoverageEnabled) {
             val ant = JacocoConfigurations.getJacocoAntTaskConfiguration(
                 project, getJacocoVersion(hostTestCreationConfig)
             )
