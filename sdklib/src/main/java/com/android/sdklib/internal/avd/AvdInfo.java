@@ -34,6 +34,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 import java.io.File;
 import java.nio.file.Path;
@@ -125,7 +126,9 @@ public final class AvdInfo {
         mSystemImage = systemImage;
         mProperties = properties == null ? ImmutableMap.of() : ImmutableMap.copyOf(properties);
         mUserSettings =
-                userSettings == null ? ImmutableMap.of() : ImmutableMap.copyOf(userSettings);
+                userSettings == null
+                        ? ImmutableMap.of()
+                        : ImmutableMap.copyOf(Maps.filterValues(userSettings, Objects::nonNull));
         mStatus = status;
         String psString = mProperties.get(AvdManager.AVD_INI_PLAYSTORE_ENABLED);
         mHasPlayStore = "true".equalsIgnoreCase(psString) || "yes".equalsIgnoreCase(psString);
