@@ -89,19 +89,32 @@ internal class AdbLibIDeviceManager(
                     initialDeviceListDone = true
 
                     if (addedIDevices.isNotEmpty()) {
+                        //Set current deviceState before triggering `iDeviceManagerListener.addedDevices`
+                        for (addedConnectedDevice in added) {
+                            val iDevice = deviceMap.getValue(addedConnectedDevice)
+                            iDevice.deviceState =
+                                addedConnectedDevice.deviceInfoFlow.value.deviceState
+                        }
                         postAndWaitForCompletion(scope, "devices added") {
                             iDeviceManagerListener.addedDevices(addedIDevices)
                         }
+
                         for (addedConnectedDevice in added) {
                             val iDevice = deviceMap.getValue(addedConnectedDevice)
                             addedConnectedDevice.scope.launch {
                                 addedConnectedDevice.deviceInfoFlow.map { it.deviceState }.collect {
-                                    iDevice.deviceState = it
-                                    // Match ddmlib behavior by not triggering device state change
-                                    // event for a `DISCONNECTED` device state value.
-                                    if (it != DeviceState.DISCONNECTED) {
-                                        postAndWaitForCompletion(scope, "device state changed") {
-                                            iDeviceManagerListener.deviceStateChanged(iDevice)
+                                    if (iDevice.deviceState != it) {
+                                        iDevice.deviceState = it
+
+                                        // Match ddmlib behavior by not triggering device state
+                                        // change event for a `DISCONNECTED` device state value.
+                                        if (it != DeviceState.DISCONNECTED) {
+                                            postAndWaitForCompletion(
+                                                scope,
+                                                "device state changed"
+                                            ) {
+                                                iDeviceManagerListener.deviceStateChanged(iDevice)
+                                            }
                                         }
                                     }
                                 }

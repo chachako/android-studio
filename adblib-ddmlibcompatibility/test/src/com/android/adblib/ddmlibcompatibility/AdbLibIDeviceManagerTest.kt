@@ -12,6 +12,7 @@ import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -73,13 +74,17 @@ class AdbLibIDeviceManagerTest {
             "sdk",
             DeviceState.HostConnectionType.USB
         )
-        fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
+        fakeDevice.deviceStatus = DeviceState.DeviceStatus.FASTBOOTD
 
         // Act / Assert
-        yieldUntil { deviceManager.devices.size == 1 && iDeviceManagerListener.events.size == 2 }
-        // Delay a little to check that no other state change events are being triggered
+        yieldUntil { deviceManager.devices.size == 1 }
+        // Wait a little for the `IDeviceManagerListener` events to get processed
         delay(100)
-        assertEquals(2, iDeviceManagerListener.events.size)
+        assertFalse(deviceManager.devices[0].isOnline)
+
+        fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
+        // Wait a little for the `IDeviceManagerListener` events to get processed
+        delay(100)
         assertTrue(deviceManager.devices[0].isOnline)
         assertArrayEquals(
             arrayOf(
@@ -111,7 +116,9 @@ class AdbLibIDeviceManagerTest {
         fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
 
         // Act / Assert
-        yieldUntil { deviceManager.devices.size == 1 && iDeviceManagerListener.events.size == 2 }
+        yieldUntil { deviceManager.devices.size == 1 }
+        // Wait a little for the `IDeviceManagerListener` events to get processed
+        delay(100)
         val device = deviceManager.devices[0]
         assertTrue(device.isOnline)
 
@@ -123,15 +130,11 @@ class AdbLibIDeviceManagerTest {
         assertArrayEquals(
             arrayOf(
                 TestIDeviceManagerListener.EventType.Added,
-                TestIDeviceManagerListener.EventType.StateChanged,
                 TestIDeviceManagerListener.EventType.Removed
             ), iDeviceManagerListener.events.toTypedArray()
         )
         // Assert that `DISCONNECTED` device state changed event didn't trigger
-        assertArrayEquals(
-            arrayOf(IDevice.DeviceState.ONLINE),
-            iDeviceManagerListener.deviceStateChangedValues.toTypedArray()
-        )
+        assertTrue(iDeviceManagerListener.deviceStateChangedValues.isEmpty())
     }
 
     @Test
@@ -158,7 +161,6 @@ class AdbLibIDeviceManagerTest {
             @WorkerThread
             override fun deviceStateChanged(device: IDevice) {
                 Thread.sleep(1)
-                println(device.isOnline)
                 synchronized(lock) {
                     totalCalls++
                     concurrentCalls++
