@@ -27,8 +27,12 @@ class PrivateKeyDetectorTest : AbstractCheckTest() {
     lint()
       .files(
         // Not a private key file
-        source("res/values/strings.xml", """
-                """,).indented(),
+        source(
+            "res/values/strings.xml",
+            """
+                """,
+          )
+          .indented(),
         // Private key file
         source(
             "res/private_key.pem",

@@ -50,7 +50,7 @@ enum class SourceSetType {
   UNIT_TESTS,
   UNKNOWN_TEST,
   TEST_FIXTURES,
-  INVALID
+  INVALID,
 }
 
 /**

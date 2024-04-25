@@ -641,7 +641,7 @@ protected constructor(
     COMPOSITE,
 
     /** This group represents separate fix alternatives the user can choose between */
-    ALTERNATIVES
+    ALTERNATIVES,
   }
 
   /** Builder for constructing a group of fixes */

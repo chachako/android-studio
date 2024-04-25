@@ -212,9 +212,11 @@ class DefaultEncodingDetectorTest {
                 """
           )
           .indented(),
-        gradle("""
+        gradle(
+          """
                 apply plugin: 'com.android.application'
-                """),
+                """
+        ),
       )
       .run()
       .expectClean()

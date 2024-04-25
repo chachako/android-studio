@@ -87,7 +87,7 @@ open class TestMode(
 
   enum class OutputKind {
     REPORT,
-    QUICKFIXES
+    QUICKFIXES,
   }
 
   /** Whether the project should be analyzed using partial analysis */

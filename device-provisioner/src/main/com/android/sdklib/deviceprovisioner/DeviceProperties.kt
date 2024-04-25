@@ -359,7 +359,7 @@ enum class DeviceType(val stringValue: String) {
 enum class ConnectionType {
   USB,
   WIFI,
-  NETWORK
+  NETWORK,
 }
 
 data class DeviceIcons(val handheld: Icon, val wear: Icon, val tv: Icon, val automotive: Icon) {

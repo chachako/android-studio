@@ -86,7 +86,7 @@ class CountingDelegatingExecutorService(private val executor: ExecutorService) :
   ExecutorService by executor {
   enum class Event {
     STARTED,
-    FINISHED
+    FINISHED,
   }
 
   private val channel = Channel<Event>(Channel.UNLIMITED)

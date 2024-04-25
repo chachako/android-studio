@@ -41,6 +41,7 @@ interface LintTomlDocument {
    * references.
    */
   fun getFile(): File
+
   /** The root map containing the top level key value pairs. */
   fun getRoot(): LintTomlMapValue
 
@@ -136,10 +137,13 @@ interface LintTomlArrayValue : LintTomlValue {
 interface LintTomlMapValue : LintTomlValue {
   /** Returns the values in the map */
   fun getMappedValues(): Map<String, LintTomlValue>
+
   /** Gets the named value (which is allowed to be dotted path */
   operator fun get(key: String): LintTomlValue?
+
   /** Gets the first value in the map */
   fun first(): LintTomlValue?
+
   /** Gets the last value in the map */
   fun last(): LintTomlValue?
 }

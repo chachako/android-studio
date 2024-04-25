@@ -112,7 +112,7 @@ interface DeviceError {
   enum class Severity {
     INFO,
     WARNING,
-    ERROR
+    ERROR,
   }
 
   val severity: Severity

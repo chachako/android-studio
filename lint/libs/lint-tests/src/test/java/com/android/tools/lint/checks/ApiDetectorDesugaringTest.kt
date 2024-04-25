@@ -368,17 +368,22 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
           )
           .indented(),
         // Make sure it's treated as a plain library
-        gradle("""
+        gradle(
+            """
           apply plugin: 'java'
-          """).indented(),
+          """
+          )
+          .indented(),
       )
 
     val main =
       project(
           manifest().minSdk(1),
-          gradle("""
+          gradle(
+            """
         android.compileOptions.coreLibraryDesugaringEnabled = true
-        """),
+        """
+          ),
         )
         .dependsOn(lib)
 

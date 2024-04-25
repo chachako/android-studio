@@ -761,8 +761,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   ) {
     COMPILE("compile", "implementation"),
     PROVIDED("provided", "compileOnly"),
-    APK("apk", "runtimeOnly"),
-    ;
+    APK("apk", "runtimeOnly");
 
     private val deprecatedSuffix: String = deprecatedName.usLocaleCapitalize()
     private val replacementSuffix: String = replacementName.usLocaleCapitalize()

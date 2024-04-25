@@ -103,7 +103,7 @@ class AppLinksAutoVerifyDetectorTest : AbstractCheckTest() {
       .networkData("http://links.dropbox.com/.well-known/assetlinks.json", 301, headers)
       .networkData(
         "https://links.dropbox.com/.well-known/assetlinks.json", // Not the real data from that
-                                                                 // link!
+        // link!
         // language=JSON
         """[{
   "relation": ["delegate_permission/common.handle_all_urls"],

@@ -28,6 +28,6 @@ interface BytecodeTestFile {
   enum class Type {
     BYTECODE_ONLY,
     SOURCE_AND_BYTECODE,
-    RESOURCE
+    RESOURCE,
   }
 }

@@ -225,6 +225,7 @@ class IntellijThreadDetector : Detector(), SourceCodeScanner {
   private fun UAnnotation.isThreadingAnnotation(): Boolean {
     return THREADING_ANNOTATIONS.contains(qualifiedName)
   }
+
   /** Attempts to infer the current thread context at the site of the given method call. */
   private fun getThreadContext(context: JavaContext, methodCall: UElement): List<String>? {
     val method =

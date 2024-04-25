@@ -1668,9 +1668,12 @@ class TranslationDetectorTest : AbstractCheckTest() {
                     </resources>
                     """,
         ),
-        xml("res/layout/foo.xml", """
+        xml(
+          "res/layout/foo.xml",
+          """
                     <View/>
-                    """,),
+                    """,
+        ),
         xml(
           "res/values-nb/strings.xml",
           """

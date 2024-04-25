@@ -563,6 +563,7 @@ class RestrictToDetector : AbstractAnnotationDetector(), SourceCodeScanner {
     const val VISIBILITY_PROTECTED = 4
     private const val VISIBILITY_NONE = 5
     private const val VISIBILITY_PUBLIC = 6
+
     // TODO: Kotlin "module" visibility
 
     fun getVisibility(member: PsiMember): Int {

@@ -252,9 +252,13 @@ class ActionsXmlDetectorTest : AbstractCheckTest() {
   fun testWrongParentAction() {
     lint()
       .files(
-        xml("res/xml/actions.xml", """
+        xml(
+            "res/xml/actions.xml",
+            """
                 <action />
-                """,).indented()
+                """,
+          )
+          .indented()
       )
       .run()
       .expect(

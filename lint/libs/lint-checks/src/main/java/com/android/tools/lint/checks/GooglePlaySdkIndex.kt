@@ -483,7 +483,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     // Exception while parsing decompressed data
     INDEX_PARSE_EXCEPTION,
     // Resulted Index was null after parsing
-    INDEX_PARSE_NULL_ERROR
+    INDEX_PARSE_NULL_ERROR,
   }
 
   protected class ReadDataResult(

@@ -162,7 +162,7 @@ enum class AnnotationOrigin {
    * also look for these annotations and include them, and their origin is then set to
    * [PROPERTY_DEFAULT].
    */
-  PROPERTY_DEFAULT
+  PROPERTY_DEFAULT,
 }
 
 /**

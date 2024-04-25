@@ -767,11 +767,14 @@ src/main/AndroidManifest.xml:10: Error: There should only be a single <uses-sdk>
                 """
           )
           .indented(),
-        xml("lint.xml", """
+        xml(
+            "lint.xml",
+            """
                 <lint>
 
                 </lint>
-                """,)
+                """,
+          )
           .indented(),
         gradle(""), // Trigger src/main/java source sets
       )

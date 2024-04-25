@@ -105,7 +105,7 @@ class KlibTestFile(
 
   private enum class KLibLanguage(val sourceFileTypes: Set<KClass<*>>) {
     Kotlin(setOf(KotlinTestFile::class)),
-    C(setOf(CTestFile::class, DefTestFile::class))
+    C(setOf(CTestFile::class, DefTestFile::class)),
   }
 }
 

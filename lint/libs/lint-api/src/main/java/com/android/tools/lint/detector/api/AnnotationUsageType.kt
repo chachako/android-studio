@@ -124,5 +124,5 @@ enum class AnnotationUsageType {
   EXTENDS,
 
   /** An annotated field is referenced. */
-  FIELD_REFERENCE
+  FIELD_REFERENCE,
 }

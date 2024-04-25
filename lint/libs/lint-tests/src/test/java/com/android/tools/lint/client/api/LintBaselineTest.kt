@@ -1088,10 +1088,12 @@ class LintBaselineTest {
     val root = temporaryFolder.newFolder().canonicalFile.absoluteFile
 
     val testFile =
-      kotlin("""
+      kotlin(
+          """
             package test.pkg
             val path = "/sdcard/path"
-            """)
+            """
+        )
         .indented()
 
     val outputBaseline = File(root, "baseline-out.xml")
@@ -1146,10 +1148,12 @@ class LintBaselineTest {
     val root = temporaryFolder.newFolder().canonicalFile.absoluteFile
 
     val testFile =
-      kotlin("""
+      kotlin(
+          """
             package test.pkg
             val path = "/sdcard/path"
-            """)
+            """
+        )
         .indented()
 
     val outputBaseline = File(root, "baseline-out.xml")
@@ -1203,10 +1207,12 @@ class LintBaselineTest {
     val root = temporaryFolder.newFolder().canonicalFile.absoluteFile
 
     val testFile =
-      kotlin("""
+      kotlin(
+          """
             package test.pkg
             val path = "/sdcard/path"
-            """)
+            """
+        )
         .indented()
 
     val existingBaseline = File(root, "baseline.xml")
@@ -2093,10 +2099,12 @@ class LintBaselineTest {
     val root = temporaryFolder.newFolder().canonicalFile.absoluteFile
 
     val testFile =
-      kotlin("""
+      kotlin(
+          """
             package test.pkg
             val path = "/sdcard/path"
-            """)
+            """
+        )
         .indented()
 
     val baseline = File(root, "lint-baseline.xml")
@@ -2229,9 +2237,13 @@ class LintBaselineTest {
 
     val root = temporaryFolder.newFolder().canonicalFile.absoluteFile
 
-    val testFile = kotlin("""
+    val testFile =
+      kotlin(
+          """
             package test.pkg
-            """).indented()
+            """
+        )
+        .indented()
 
     val baseline = File(root, "lint-baseline.xml")
     val project = lint().files(testFile).createProjects(root).single()

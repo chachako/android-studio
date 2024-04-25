@@ -164,7 +164,8 @@ class LintFixPerformerTest {
       file,
       source,
       fix,
-      expected = """
+      expected =
+        """
             First line.
             2nd line.
             Third line.""",
@@ -221,7 +222,8 @@ class LintFixPerformerTest {
       file,
       source,
       fix,
-      expected = """
+      expected =
+        """
         line: First!
         line: Second!
         line: Third!
@@ -696,7 +698,8 @@ class LintFixPerformerTest {
       file,
       source,
       fix,
-      expected = """
+      expected =
+        """
         import android.util.Log;
          class Test {
         }
@@ -726,7 +729,8 @@ class LintFixPerformerTest {
       fix1,
       fix2,
       fix3,
-      expected = """
+      expected =
+        """
             1st line.
             2nd line.
             3rd line.""",
@@ -1616,7 +1620,8 @@ class LintFixPerformerTest {
       file,
       source,
       fix,
-      expected = """
+      expected =
+        """
         class Test {
         }
         """,
@@ -1647,7 +1652,8 @@ class LintFixPerformerTest {
       file,
       source,
       fix,
-      expected = """
+      expected =
+        """
         class Test {
         }
         """,

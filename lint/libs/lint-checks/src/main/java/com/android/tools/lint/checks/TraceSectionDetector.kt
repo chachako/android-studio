@@ -190,7 +190,7 @@ class TraceSectionDetector : Detector(), SourceCodeScanner {
       FOUND_NOTHING,
       FOUND_RETURN,
       FOUND_EXCEPTION,
-      FOUND_SUSPEND
+      FOUND_SUSPEND,
     }
 
     private fun searchForMatchingTraceSection(

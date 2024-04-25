@@ -45,50 +45,59 @@ abstract class AnalysisApiServicesTestBase {
 
   // Usage from [InteroperabilityDetector] (built-in Lint detector)
   protected fun checkDynamicType() {
-    listOf(kotlin("""
+    listOf(
+        kotlin(
+          """
                 fun jsFun(p: String): dynamic
-                """)).use {
-      context ->
-      context.uastFile!!.accept(
-        object : AbstractUastVisitor() {
-          override fun visitMethod(node: UMethod): Boolean {
-            val returnTypeReference =
-              node.returnTypeReference?.sourcePsi as? KtTypeReference
-                ?: return super.visitMethod(node)
-
-            analyze(returnTypeReference) {
-              val ktType = returnTypeReference.getKtType()
-              assertTrue(ktType is KtDynamicType)
-            }
-
-            return super.visitMethod(node)
-          }
-        }
+                """
+        )
       )
-    }
+      .use { context ->
+        context.uastFile!!.accept(
+          object : AbstractUastVisitor() {
+            override fun visitMethod(node: UMethod): Boolean {
+              val returnTypeReference =
+                node.returnTypeReference?.sourcePsi as? KtTypeReference
+                  ?: return super.visitMethod(node)
+
+              analyze(returnTypeReference) {
+                val ktType = returnTypeReference.getKtType()
+                assertTrue(ktType is KtDynamicType)
+              }
+
+              return super.visitMethod(node)
+            }
+          }
+        )
+      }
   }
 
   // Usage from PsiModifierItem in Metalava
   protected fun checkInternalModifier() {
-    listOf(kotlin("""
+    listOf(
+        kotlin(
+          """
                 internal fun foo() {}
-                """)).use { context ->
-      context.uastFile!!.accept(
-        object : AbstractUastVisitor() {
-          override fun visitMethod(node: UMethod): Boolean {
-            val ktDeclaration = node.sourcePsi as? KtDeclaration ?: return super.visitMethod(node)
-
-            analyze(ktDeclaration) {
-              val symbol = ktDeclaration.getSymbol()
-              val visibility = (symbol as? KtSymbolWithVisibility)?.visibility
-              assertEquals(Visibilities.Internal, visibility)
-            }
-
-            return super.visitMethod(node)
-          }
-        }
+                """
+        )
       )
-    }
+      .use { context ->
+        context.uastFile!!.accept(
+          object : AbstractUastVisitor() {
+            override fun visitMethod(node: UMethod): Boolean {
+              val ktDeclaration = node.sourcePsi as? KtDeclaration ?: return super.visitMethod(node)
+
+              analyze(ktDeclaration) {
+                val symbol = ktDeclaration.getSymbol()
+                val visibility = (symbol as? KtSymbolWithVisibility)?.visibility
+                assertEquals(Visibilities.Internal, visibility)
+              }
+
+              return super.visitMethod(node)
+            }
+          }
+        )
+      }
   }
 
   // Usage from PsiParameterItem in Metalava
@@ -235,18 +244,23 @@ abstract class AnalysisApiServicesTestBase {
   }
 
   protected fun checkCancellation() {
-    listOf(kotlin("""
+    listOf(
+        kotlin(
+          """
           fun foo() { }
-               """)).use { context ->
-      context.uastFile!!.accept(
-        object : AbstractUastVisitor() {
-          override fun visitMethod(node: UMethod): Boolean {
-            assertTrue(ProgressManager.getInstance().isInNonCancelableSection)
-
-            return super.visitMethod(node)
-          }
-        }
+               """
+        )
       )
-    }
+      .use { context ->
+        context.uastFile!!.accept(
+          object : AbstractUastVisitor() {
+            override fun visitMethod(node: UMethod): Boolean {
+              assertTrue(ProgressManager.getInstance().isInNonCancelableSection)
+
+              return super.visitMethod(node)
+            }
+          }
+        )
+      }
   }
 }

@@ -400,7 +400,7 @@ class LintIssueDocGenerator(
     VENDOR("By vendor", "vendors"),
     SEVERITY("By severity", "severity"),
     YEAR("By year", "year"),
-    ARTIFACTS("Libraries", "libraries")
+    ARTIFACTS("Libraries", "libraries"),
   }
 
   private fun getXmlValue(element: Element?, vararg path: String): String? {
@@ -4015,6 +4015,6 @@ class LintIssueDocGenerator(
           "<script>window.alreadyProcessedMarkdeep||(document.body.style.visibility=\"visible\")</script>",
     ),
     MARKDOWN(".md"),
-    HTML(".html")
+    HTML(".html"),
   }
 }

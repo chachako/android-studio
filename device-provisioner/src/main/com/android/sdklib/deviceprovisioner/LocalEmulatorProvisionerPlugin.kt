@@ -98,6 +98,7 @@ class LocalEmulatorProvisionerPlugin(
   companion object {
     const val PLUGIN_ID = "LocalEmulator"
   }
+
   /**
    * An abstraction of the AvdManager / AvdManagerConnection classes to be injected, allowing for
    * testing and decoupling from Studio.
@@ -860,7 +861,7 @@ private data class TransitionRequest(
 
 enum class TransitionType {
   ACTIVATION,
-  DEACTIVATION
+  DEACTIVATION,
 }
 
 private data class TransitionResult(val result: Result<Any>) : LocalEmulatorMessage

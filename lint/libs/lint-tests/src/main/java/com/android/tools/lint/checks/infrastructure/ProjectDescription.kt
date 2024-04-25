@@ -457,6 +457,6 @@ class ProjectDescription : Comparable<ProjectDescription> {
   enum class Type {
     APP,
     LIBRARY,
-    JAVA
+    JAVA,
   }
 }

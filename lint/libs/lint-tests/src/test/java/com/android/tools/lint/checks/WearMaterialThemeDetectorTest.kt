@@ -20,11 +20,14 @@ class WearMaterialThemeDetectorTest : AbstractCheckTest() {
       .indented()
 
   private val materialWearStub =
-    kotlin("""
+    kotlin(
+        """
     package androidx.wear.compose.material
 
     class MaterialTheme
-  """).indented()
+  """
+      )
+      .indented()
 
   fun testJava() {
     //noinspection all // Sample code

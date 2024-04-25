@@ -817,7 +817,7 @@ class StringFormatDetector : ResourceXmlDetector(), SourceCodeScanner {
   enum class StringFormatType {
     FORMATTED,
     NOT_FORMATTED,
-    IGNORE
+    IGNORE,
   }
 
   data class FormatString(

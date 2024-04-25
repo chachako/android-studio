@@ -30,10 +30,12 @@ class LanguageLevelTest : AbstractCheckTest() {
     // Regression test for b/283693337
     lint()
       .files(
-        java("""
+        java(
+            """
             record Person(String name, int age) {
             }
-            """)
+            """
+          )
           .indented()
       )
       .javaLanguageLevel("17")
@@ -52,10 +54,12 @@ class LanguageLevelTest : AbstractCheckTest() {
     // Regression test for b/283693337
     lint()
       .files(
-        java("""
+        java(
+            """
           record Person(String name, int age) {
           }
-          """)
+          """
+          )
           .indented()
       )
       .javaLanguageLevel("11")

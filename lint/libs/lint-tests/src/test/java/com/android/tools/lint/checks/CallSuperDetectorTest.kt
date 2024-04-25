@@ -747,9 +747,11 @@ class CallSuperDetectorTest : AbstractCheckTest() {
           .indented(),
         compiled(
           "libs/lib1.jar",
-          kotlin("""
+          kotlin(
+              """
                     open class Middle : Base()
-                    """)
+                    """
+            )
             .indented(),
           0xb76b5946,
           """

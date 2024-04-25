@@ -32,7 +32,7 @@ enum class MessageType(val const: Int) {
   DATA(0x44415441), // ASCII "DATA"
   CLSE(0x434c5345), // ASCII "CLSE"
   KILL(0x4b494c4c), // ASCII "KILL"
-  REDY(0x52454459), // ASCII "REDY"
+  REDY(0x52454459) // ASCII "REDY"
   ;
 
   companion object {

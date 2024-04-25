@@ -55,5 +55,5 @@ enum class LocationType {
    * In a method call, includes the receiver and the method name, but not the arguments. If you want
    * to include the arguments as well, use [ALL].
    */
-  CALL_WITH_RECEIVER
+  CALL_WITH_RECEIVER,
 }

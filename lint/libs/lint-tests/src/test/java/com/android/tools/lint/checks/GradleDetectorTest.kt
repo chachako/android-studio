@@ -1576,11 +1576,13 @@ class GradleDetectorTest : AbstractCheckTest() {
   fun testSwitchToTomlEmptyVersions() {
     lint()
       .files(
-        gradleToml("""
+        gradleToml(
+            """
                 [versions]
 
                 [libraries]
-                """)
+                """
+          )
           .indented(),
         gradle(
             """
@@ -1626,10 +1628,12 @@ class GradleDetectorTest : AbstractCheckTest() {
   fun testVersionCatalogNotSuggestedInSettingsGradle() {
     lint()
       .files(
-        gradleToml("""
+        gradleToml(
+            """
                 [versions]
                 [libraries]
-                """)
+                """
+          )
           .indented(),
         kts(
             "settings.gradle.kts",

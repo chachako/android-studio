@@ -357,7 +357,7 @@ class LintDriver(
      * module, this stage aggregates all the stored incidents and produces a report (which in some
      * cases includes callbacks into the detectors to filter their provisionally reported results.)
      */
-    MERGE
+    MERGE,
   }
 
   /** The mode that the driver is currently running in. */

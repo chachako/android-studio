@@ -2224,9 +2224,13 @@ class UastTest : TestCase() {
   }
 
   fun testSamConstructorCallKind() {
-    val source = kotlin("""
+    val source =
+      kotlin(
+          """
             val r = java.lang.Runnable {  }
-            """).indented()
+            """
+        )
+        .indented()
 
     check(source) { file ->
       file.accept(

@@ -377,7 +377,7 @@ protected constructor(
      * Search both forwards and backwards from the end of the given line, and prefer the match that
      * is closest.
      */
-    EOL_NEAREST
+    EOL_NEAREST,
   }
 
   /**

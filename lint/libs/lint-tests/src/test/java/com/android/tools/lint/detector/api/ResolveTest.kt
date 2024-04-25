@@ -285,9 +285,11 @@ class ResolveTest : TestCase() {
                 """
           )
           .indented(),
-        java("""
+        java(
+            """
                 public interface I2<T extends I1<T>> {}
-                """)
+                """
+          )
           .indented(),
         kotlin(
             """

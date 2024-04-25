@@ -438,9 +438,12 @@ class JarFileIssueRegistryTest : AbstractCheckTest() {
 
     lint()
       .files(
-        source("res/values/strings.xml", """
+        source(
+            "res/values/strings.xml",
+            """
                 <resources/>
-                """,)
+                """,
+          )
           .indented()
       )
       .clientFactory { createGlobalLintJarClient(lintJar) }

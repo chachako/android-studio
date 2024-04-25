@@ -142,9 +142,12 @@ class LintClientTest {
           )
           .indented(),
         xml("res/values/empty.xml", ""),
-        kotlin("""
+        kotlin(
+            """
                 fun test() = TODO()
-                """).indented(),
+                """
+          )
+          .indented(),
       )
       .issues(TestXmlParsingDetector.ISSUE)
       .allowAbsolutePathsInMessages(true)

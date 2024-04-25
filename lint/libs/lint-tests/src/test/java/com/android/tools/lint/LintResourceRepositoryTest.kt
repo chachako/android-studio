@@ -690,9 +690,12 @@ class LintResourceRepositoryTest {
                 """,
           )
           .indented(),
-        kotlin("""
+        kotlin(
+            """
                 fun test() = TODO()
-                """).indented(),
+                """
+          )
+          .indented(),
       )
       .issues(RepositoryRecoveryDetector.ISSUE)
       .allowAbsolutePathsInMessages(true)

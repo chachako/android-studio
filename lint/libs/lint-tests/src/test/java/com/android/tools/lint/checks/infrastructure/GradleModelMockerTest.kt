@@ -373,9 +373,11 @@ dependencies {
   @Test
   fun testVectors() {
     val mocker =
-      createMocker("""android.defaultConfig.vectorDrawables {
+      createMocker(
+        """android.defaultConfig.vectorDrawables {
     useSupportLibrary = true
-}""")
+}"""
+      )
     val variant = mocker.getLintVariant()!!
 
     Truth.assertThat(variant.useSupportLibraryVectorDrawables).isTrue()

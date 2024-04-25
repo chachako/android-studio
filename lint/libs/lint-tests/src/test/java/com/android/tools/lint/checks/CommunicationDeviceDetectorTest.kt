@@ -304,10 +304,13 @@ private val audioManagerStub: TestFile =
     .indented()
 
 private val audioDeviceInfoStub: TestFile =
-  java("""
+  java(
+      """
     package android.media;
     public class AudioDeviceInfo {}
-    """).indented()
+    """
+    )
+    .indented()
 
 private val mediaModuleStub: ProjectDescription =
   project().files(audioManagerStub, audioDeviceInfoStub)

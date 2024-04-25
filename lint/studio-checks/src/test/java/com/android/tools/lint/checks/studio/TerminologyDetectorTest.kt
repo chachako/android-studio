@@ -348,10 +348,12 @@ class TerminologyDetectorTest {
         )
       }
     }
-    printer.print("""            }
+    printer.print(
+      """            }
         }
         // @formatter:on
-        // </editor-fold>""")
+        // </editor-fold>"""
+    )
 
     val generated = stringWriter.toString()
 

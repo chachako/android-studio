@@ -54,10 +54,12 @@ class AnnotationHandlerTest {
       .indented()
 
   private val kotlinAnnotation: TestFile =
-    kotlin("""
+    kotlin(
+        """
         package pkg.kotlin
         annotation class MyKotlinAnnotation
-        """)
+        """
+      )
       .indented()
 
   private val experimentalKotlinAnnotation: TestFile =

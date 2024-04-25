@@ -58,6 +58,7 @@ class LintJarVerifier(
     jarFile: File,
     skip: Boolean = false,
   ) : this(client, jarFile, jarFile.readBytes(), skip)
+
   /**
    * Is the class with the given [internal] class name part of an API we want to check for validity?
    */

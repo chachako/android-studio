@@ -1844,11 +1844,13 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
       .indented()
 
   private val parcelableStub: TestFile =
-    java("""
+    java(
+        """
         package android.os;
 
         public interface Parcelable {}
-        """)
+        """
+      )
       .indented()
 
   private val broadcastReceiverStub: TestFile =
@@ -1882,22 +1884,28 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
       .indented()
 
   private val intentSenderStub: TestFile =
-    java("""
+    java(
+      """
         package android.content;
         public class IntentSender {}
-        """)
+        """
+    )
 
   private val componentNameStub: TestFile =
-    java("""
+    java(
+      """
         package android.content;
         public class ComponentName {}
-        """)
+        """
+    )
 
   private val serviceConnectionStub: TestFile =
-    java("""
+    java(
+      """
         package android.content;
         public class ServiceConnection {}
-        """)
+        """
+    )
 
   private val serviceStub: TestFile =
     java(
@@ -1919,10 +1927,12 @@ class UnsafeIntentLaunchDetectorTest : AbstractCheckTest() {
     )
 
   private val iBinderStub: TestFile =
-    java("""
+    java(
+      """
         package android.os;
         public interface IBinder{}
-        """)
+        """
+    )
 
   private val pendingIntentStub: TestFile =
     java(

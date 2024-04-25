@@ -430,7 +430,7 @@ open class ControlFlowGraph<T : Any> private constructor() {
   enum class FollowBranch {
     BOTH,
     THEN,
-    ELSE
+    ELSE,
   }
 
   /** An edge in the control flow graph */

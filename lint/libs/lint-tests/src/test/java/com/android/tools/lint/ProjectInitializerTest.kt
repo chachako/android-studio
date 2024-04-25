@@ -1614,9 +1614,13 @@ class ProjectInitializerTest {
                 """,
             )
             .indented(),
-          xml("res/layout/layout.xml", """
+          xml(
+              "res/layout/layout.xml",
+              """
                 <merge/>
-                """,).indented(),
+                """,
+            )
+            .indented(),
         )
         .createProjects(root)
     val projectDir = projects[0]
