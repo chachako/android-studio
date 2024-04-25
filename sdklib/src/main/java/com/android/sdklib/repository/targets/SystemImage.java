@@ -52,7 +52,7 @@ public class SystemImage implements ISystemImage {
     private final List<String> mAbis;
 
     /** Translated ABIs (x86, armeabi-v7a, etc) of the system image. */
-    private final List<String> mTrabslatedAbis;
+    private final List<String> mTranslatedAbis;
 
     /** Skins contained in this system image, or in the platform/addon it's based on. */
     private final Path[] mSkins;
@@ -80,7 +80,7 @@ public class SystemImage implements ISystemImage {
         mTags = ImmutableList.copyOf(tags);
         mVendor = vendor;
         mAbis = ImmutableList.copyOf(abis);
-        mTrabslatedAbis = ImmutableList.copyOf(translatedAbis);
+        mTranslatedAbis = ImmutableList.copyOf(translatedAbis);
         mSkins = skins;
         mPackage = pkg;
         TypeDetails details = pkg.getTypeDetails();
@@ -132,7 +132,7 @@ public class SystemImage implements ISystemImage {
     @NonNull
     @Override
     public List<String> getTranslatedAbiTypes() {
-        return mTrabslatedAbis;
+        return mTranslatedAbis;
     }
 
     @NonNull
