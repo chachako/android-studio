@@ -15,6 +15,8 @@
  */
 package com.android.tools.idea.wizard.template
 
+import javax.swing.Icon
+
 /**
  * Represents an UI element.
  *
@@ -39,7 +41,7 @@ data class TextFieldWidget(val p: StringParameter): ParameterWidget<String>(p)
 /**
  * An ordinary text label.
  */
-data class LabelWidget(val text: String): Widget<String>
+data class LabelWidget(val text: String, val icon: Icon? = null): Widget<String>
 
 /**
  * Drop down menu for selecting a language (Kotlin or Java).
