@@ -350,7 +350,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         val variantSegments = variant.computePathSegments()
                         task.referenceImageDir.set(project.layout.projectDirectory.dir("src/androidTest/screenshot/$variantSegments"))
                         task.referenceImageDir.disallowChanges()
-                        task.previewFile.set(buildDir.file("$PREVIEW_INTERMEDIATES/$variantSegments/previews_discovered.json"))
+                        task.previewFile.set(discoveryTaskProvider.flatMap { it.previewsOutputFile })
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
                         task.resultsDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/results"))
                         task.diffImageDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/diffs"))
