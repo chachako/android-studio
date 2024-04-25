@@ -674,6 +674,18 @@ com/android/tools/common
   com/android/xml/
   com/android/xml/sax/
 
+com/android/tools/compose/compose-preview-detector
+  META-INF/
+  META-INF/MANIFEST.MF
+  META-INF/compose-preview-detector.kotlin_module
+  NOTICE
+  com/
+  com/android/
+  com/android/tools/
+  com/android/tools/preview/
+  com/android/tools/preview/multipreview/
+  com/android/tools/preview/multipreview/visitors/
+
 com/android/tools/ddms/ddmlib
   META-INF/
   META-INF/MANIFEST.MF

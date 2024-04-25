@@ -47,6 +47,7 @@
   com/android/tools/build:manifest-merger
   com/android/tools/chunkio:chunkio
   com/android/tools:common
+  com/android/tools/compose:compose-preview-detector
   com/android/tools/ddms:ddmlib
   com/android/tools:draw9patch
   com/android/tools:dvlib

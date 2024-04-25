@@ -551,6 +551,13 @@ com.android.tools.chunkio:chunkio
   pomName=ChunkIO
   description=annotations for use with chunkio-processor, and runtime supporting APIs
 
+com.android.tools.compose:compose-preview-detector
+  pomName=com.android.tools.compose.compose-preview-detector
+  description=Library to search for compose previews in the Java binary code.
+  dependencies:
+    org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
+    org.ow2.asm:asm (runtime)
+
 com.android.tools.ddms:ddmlib
   pomName=Android Tools ddmlib
   description=Library providing APIs to talk to Android devices

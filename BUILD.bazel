@@ -100,6 +100,7 @@ AGP_ARTIFACTS = [
     "//tools/base/lint:lint-checks-proto",
     "//tools/base/lint:tools.lint-model",
     "//tools/base/lint/libs/lint-typedef-remover",
+    "//tools/base/multipreview-asm:compose-preview-detector",
     "//tools/base/repository:tools.repository",
     "//tools/base/sdk-common:tools.sdk-common",
     "//tools/base/sdklib:tools.sdklib",
@@ -142,7 +143,6 @@ AGP_TEST_ARTIFACTS = [
     "//tools/base/lint/cli",  # TODO(b/143864616): Only used for tests
     "//tools/base/lint:tools.lint-api",  # TODO(b/143864616): Only used for tests
     "//tools/base/lint:tools.lint-checks",  # TODO(b/143864616): Only used for tests
-    "//tools/base/multipreview-asm:compose-preview-detector",  # Used for preview screenshot testing
     "//tools/base/preview/screenshot/compose-preview-validation-junit-engine",  # Used for preview screenshot testing
     "//tools/base/standalone-render/compose-cli:compose-preview-renderer",  # Used for preview screenshot testing
     "//tools/base/standalone-render/compose-cli-serialize:compose-preview-renderer-model",  # Used for preview screenshot testing
