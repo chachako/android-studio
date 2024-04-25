@@ -78,7 +78,10 @@ internal class AdbLibIDeviceManager(
                     val removed = deviceMap.keys.filter { !value.contains(it)}
                     val removedIDevices = mutableListOf<IDevice>()
                     for (key in removed) {
-                        deviceMap.remove(key)?.also { removedIDevices.add(it) }
+                        deviceMap.remove(key)?.also {
+                            it.deviceState = DeviceState.DISCONNECTED
+                            removedIDevices.add(it)
+                        }
                     }
 
                     deviceList.set(deviceMap.values.toList())
@@ -94,14 +97,15 @@ internal class AdbLibIDeviceManager(
                             addedConnectedDevice.scope.launch {
                                 addedConnectedDevice.deviceInfoFlow.map { it.deviceState }.collect {
                                     iDevice.deviceState = it
-                                    postAndWaitForCompletion(scope, "device state changed") {
-                                        iDeviceManagerListener.deviceStateChanged(iDevice)
+                                    // Match ddmlib behavior by not triggering device state change
+                                    // event for a `DISCONNECTED` device state value.
+                                    if (it != DeviceState.DISCONNECTED) {
+                                        postAndWaitForCompletion(scope, "device state changed") {
+                                            iDeviceManagerListener.deviceStateChanged(iDevice)
+                                        }
                                     }
                                 }
-                            }.invokeOnCompletion {
-                                // This will trigger when the device is removed. Ddmlib similarly
-                                // sets deviceState to DISCONNECTED in `DeviceMonitor.removeDevice`
-                                iDevice.deviceState = DeviceState.DISCONNECTED }
+                            }
                         }
                     }
 

@@ -12,7 +12,6 @@ import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
 import kotlinx.coroutines.delay
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -88,10 +87,14 @@ class AdbLibIDeviceManagerTest {
                 TestIDeviceManagerListener.EventType.StateChanged
             ), iDeviceManagerListener.events.toTypedArray()
         )
+        assertArrayEquals(
+            arrayOf(IDevice.DeviceState.ONLINE),
+            iDeviceManagerListener.deviceStateChangedValues.toTypedArray()
+        )
     }
 
     @Test
-    fun deviceIsOnlineSetToFalse_whenDeviceIsRemoved() = runBlockingWithTimeout {
+    fun removingOnlineDevice_doesNotTriggerDeviceChangeEventForDisconnectedValue() = runBlockingWithTimeout {
         // Prepare
         val deviceId = "dev1234"
         val iDeviceManagerListener = TestIDeviceManagerListener()
@@ -114,7 +117,21 @@ class AdbLibIDeviceManagerTest {
 
         fakeAdb.disconnectDevice(deviceId)
         yieldUntil { deviceManager.devices.size == 0 }
-        assertFalse(device.isOnline)
+        // Wait a little for the `IDeviceManagerListener` events to get processed
+        delay(100)
+        assertEquals(IDevice.DeviceState.DISCONNECTED, device.state)
+        assertArrayEquals(
+            arrayOf(
+                TestIDeviceManagerListener.EventType.Added,
+                TestIDeviceManagerListener.EventType.StateChanged,
+                TestIDeviceManagerListener.EventType.Removed
+            ), iDeviceManagerListener.events.toTypedArray()
+        )
+        // Assert that `DISCONNECTED` device state changed event didn't trigger
+        assertArrayEquals(
+            arrayOf(IDevice.DeviceState.ONLINE),
+            iDeviceManagerListener.deviceStateChangedValues.toTypedArray()
+        )
     }
 
     @Test
@@ -201,6 +218,8 @@ class AdbLibIDeviceManagerTest {
 
         val events = mutableListOf<EventType>()
 
+        val deviceStateChangedValues = mutableListOf<IDevice.DeviceState?>()
+
         @WorkerThread
         override fun addedDevices(deviceList: MutableList<IDevice>) {
             events.add(EventType.Added)
@@ -213,6 +232,7 @@ class AdbLibIDeviceManagerTest {
 
         @WorkerThread
         override fun deviceStateChanged(device: IDevice) {
+            deviceStateChangedValues.add(device.state)
             events.add(EventType.StateChanged)
         }
     }
