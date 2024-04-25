@@ -120,6 +120,10 @@ class DataBindingWithDynamicFeaturesTest(private val useAndroidX : Boolean) {
             assertThat(aApk).doesNotContainClass(it)
             assertThat(bApk).doesNotContainClass(it)
         }
+
+        baseApk.close()
+        aApk.close()
+        bApk.close()
     }
 
     private fun brClass(pkg: String): String {

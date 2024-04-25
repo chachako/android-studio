@@ -37,18 +37,26 @@ TEST_DATA = [
     "//tools/base/build-system:gradle-distrib",
     "//tools/base/build-system/integration-test:android_platform_for_tests",
     "//tools/base/build-system/integration-test:androidx_test_latest",
-    "//tools/base/build-system/integration-test:dagger_prebuilts",
     "//tools/base/build-system/integration-test:kotlin_gradle_plugin_prebuilts",
     "//tools/base/build-system/integration-test:support_library_latest",
-    "//tools/base/build-system/integration-test:test-projects/databinding",
-    "//tools/base/build-system/integration-test:test-projects/databindingAndDagger",
-    "//tools/base/build-system/integration-test:test-projects/databindingAndJetifier",
-    "//tools/base/build-system/integration-test:test-projects/databindingAndKotlin",
-    "//tools/base/build-system/integration-test:test-projects/databindingMultiModule",
-    "//tools/base/build-system/integration-test:test-projects/databindingWithDynamicFeatures",
     "//tools/data-binding:data_binding_runtime.zip",
     "//tools/data-binding:integration-test-projects",
     "//tools/data-binding:integration-test-projects-support",
+]
+
+REPOS = [
+    "tools/base/build-system/android_gradle_plugin.zip",
+    "tools/base/build-system/android_gradle_plugin_runtime_dependencies.manifest",
+    "tools/base/build-system/integration-test/databinding/prebuilts.manifest",
+    "tools/data-binding/data_binding_runtime.zip",
+    "tools/base/build-system/integration-test/support_library_latest.manifest",
+    "tools/base/build-system/integration-test/androidx_test_latest.manifest",
+    "tools/base/build-system/integration-test/kotlin_gradle_plugin_prebuilts.manifest",
+]
+
+DATA_BINDING_WITH_DYNAMIC_FEATURES_TESTS = [
+    "src/test/java/com/android/build/gradle/integration/databinding/DataBindingWithDynamicFeaturesTest.kt",
+    "src/test/java/com/android/build/gradle/integration/databinding/DataBindingMinifyDynamicFeaturesTest.kt",
 ]
 
 java_library(
@@ -60,35 +68,44 @@ java_library(
 
 kotlin_library(
     name = "kotlin_tests",
-    srcs = glob(["src/test/java/**/*.kt"]),
+    srcs = glob(
+        ["src/test/java/**/*.kt"],
+        exclude = DATA_BINDING_WITH_DYNAMIC_FEATURES_TESTS,
+    ),
+    deps = TEST_DEPS,
+)
+
+kotlin_library(
+    name = "kotlin_data_binding_with_dynamic_features_tests",
+    srcs = DATA_BINDING_WITH_DYNAMIC_FEATURES_TESTS,
     deps = TEST_DEPS,
 )
 
 coverage_java_test(
     name = "tests",
     timeout = "long",
-    data = TEST_DATA,
+    data = TEST_DATA + [
+        "//tools/base/build-system/integration-test:dagger_prebuilts",
+        "//tools/base/build-system/integration-test:test-projects/databinding",
+        "//tools/base/build-system/integration-test:test-projects/databindingAndDagger",
+        "//tools/base/build-system/integration-test:test-projects/databindingAndJetifier",
+        "//tools/base/build-system/integration-test:test-projects/databindingAndKotlin",
+        "//tools/base/build-system/integration-test:test-projects/databindingMultiModule",
+    ],
     jvm_flags = [
         "-Dtest.suite.jar=tests.jar",
         "-Dfile.encoding=UTF-8",
         "-Dsun.jnu.encoding=UTF-8",
         "-Dmaven.repo.local=/tmp/localMavenRepo",  # For gradle publishing, writing to ~/.m2
-        "-Dtest.android.build.gradle.integration.repos=" +
-        "tools/base/build-system/android_gradle_plugin.zip," +
-        "tools/base/build-system/android_gradle_plugin_runtime_dependencies.manifest," +
-        "tools/base/build-system/integration-test/databinding/prebuilts.manifest," +
-        "tools/data-binding/data_binding_runtime.zip," +
-        "tools/base/build-system/integration-test/support_library_latest.manifest," +
-        "tools/base/build-system/integration-test/androidx_test_latest.manifest," +
-        "tools/base/build-system/integration-test/dagger_prebuilts.manifest," +
-        "tools/base/build-system/integration-test/kotlin_gradle_plugin_prebuilts.manifest",
+        "-Dtest.android.build.gradle.integration.repos=" + ",".join(REPOS + [
+            "tools/base/build-system/integration-test/dagger_prebuilts.manifest",
+        ]),
     ],
-    shard_count = 10,  # Use 10 shards instead of 8 to prevent/reduce flakiness (b/311233515)
+    shard_count = 8,
     tags = [
         "block-network",
         "cpu:3",
         "gradle_integration",
-        "no_test_mac",  # b/69151132 Time out frequently when run on mac.
         "slow",
     ],
     test_class = "com.android.build.gradle.integration.BazelIntegrationTestsSuite",
@@ -98,6 +115,35 @@ coverage_java_test(
         "@maven//:junit.junit",
         ":java_tests",
         ":kotlin_tests",
+    ],
+)
+
+coverage_java_test(
+    name = "data_binding_with_dynamic_features_tests",
+    timeout = "long",
+    data = TEST_DATA + [
+        "//tools/base/build-system/integration-test:test-projects/databindingWithDynamicFeatures",
+    ],
+    jvm_flags = [
+        "-Dtest.suite.jar=tests.jar",
+        "-Dfile.encoding=UTF-8",
+        "-Dsun.jnu.encoding=UTF-8",
+        "-Dmaven.repo.local=/tmp/localMavenRepo",  # For gradle publishing, writing to ~/.m2
+        "-Dtest.android.build.gradle.integration.repos=" + ",".join(REPOS),
+    ],
+    shard_count = 1,
+    tags = [
+        "block-network",
+        "cpu:3",
+        "gradle_integration",
+        "slow",
+    ],
+    test_class = "com.android.build.gradle.integration.BazelIntegrationTestsSuite",
+    runtime_deps = [
+        # Need to put this on the classpath before TestRunner_deploy.jar which contains
+        # old JUnit classes. See https://github.com/bazelbuild/bazel/issues/2146.
+        "@maven//:junit.junit",
+        ":kotlin_data_binding_with_dynamic_features_tests",
     ],
 )
 
