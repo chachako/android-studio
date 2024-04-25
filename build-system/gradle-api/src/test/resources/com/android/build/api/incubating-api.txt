@@ -255,6 +255,11 @@ https://issuetracker.google.com/328748781
   * com.android.build.api.dsl.TestOptions.failureRetention: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.FailureRetention, kotlin.Unit>)
   * com.android.build.api.dsl.TestOptions.getFailureRetention: com.android.build.api.dsl.FailureRetention ()
 https://issuetracker.google.com/328748784
+  * com.android.build.api.variant.DeviceTest implements com.android.build.api.variant.GeneratesTestApk, com.android.build.api.variant.HasAndroidResources, com.android.build.api.variant.TestComponent
+  * com.android.build.api.variant.DeviceTest.getApplicationId: org.gradle.api.provider.Property<java.lang.String> ()
+  * com.android.build.api.variant.DeviceTest.getBuildConfigFields: org.gradle.api.provider.MapProperty<java.lang.String, ? extends com.android.build.api.variant.BuildConfigField<? extends java.io.Serializable>> ()
+  * com.android.build.api.variant.DeviceTest.getProguardFiles: org.gradle.api.provider.ListProperty<org.gradle.api.file.RegularFile> ()
+  * com.android.build.api.variant.DeviceTest.getSigningConfig: com.android.build.api.variant.SigningConfig ()
   * com.android.build.api.variant.HasDeviceTests
   * com.android.build.api.variant.HasDeviceTests.getDeviceTests: java.util.List<com.android.build.api.variant.DeviceTest> ()
 https://issuetracker.google.com/328748820
@@ -485,6 +490,9 @@ https://issuetracker.google.com/328749079
 https://issuetracker.google.com/328749082
   * com.android.build.api.variant.AarMetadata.getMinAgpVersion: org.gradle.api.provider.Property<java.lang.String> ()
 https://issuetracker.google.com/328749096
+  * com.android.build.api.dsl.AndroidTest
+  * com.android.build.api.dsl.AndroidTest.getEnableMinification: boolean ()
+  * com.android.build.api.dsl.AndroidTest.setEnableMinification: void (boolean)
   * com.android.build.api.dsl.LibraryBuildType.androidTest: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidTest, kotlin.Unit>)
   * com.android.build.api.dsl.LibraryBuildType.getAndroidTest: com.android.build.api.dsl.AndroidTest ()
 https://issuetracker.google.com/328749098
@@ -690,6 +698,7 @@ https://issuetracker.google.com/331936874
   * com.android.build.api.variant.HasHostTests.getHostTests: java.util.Map<java.lang.String, com.android.build.api.variant.HostTest> ()
   * com.android.build.api.variant.HasHostTestsBuilder
   * com.android.build.api.variant.HasHostTestsBuilder.getHostTests: java.util.Map<java.lang.String, com.android.build.api.variant.HostTestBuilder> ()
+  * com.android.build.api.variant.HostTest implements com.android.build.api.variant.TestComponent
   * com.android.build.api.variant.HostTestBuilder
   * com.android.build.api.variant.HostTestBuilder.getEnable: boolean ()
   * com.android.build.api.variant.HostTestBuilder.getType: java.lang.String ()
@@ -699,5 +708,9 @@ https://issuetracker.google.com/331936874
 https://issuetracker.google.com/333537222
   * com.android.build.api.dsl.AndroidSourceDirectorySet.getDirectories: java.util.Set<java.lang.String> ()
 https://issuetracker.google.com/335848584
+  * com.android.build.api.variant.HostTest.isCodeCoverageEnabled: boolean ()
   * com.android.build.api.variant.HostTestBuilder.getEnableCodeCoverage: boolean ()
   * com.android.build.api.variant.HostTestBuilder.setEnableCodeCoverage: void (boolean)
+https://issuetracker.google.com/336985668
+  * com.android.build.api.variant.HostTest.configureTestTask: void (kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test, kotlin.Unit>)
+  * com.android.build.api.variant.UnitTest.configureTestTask: void (kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test, kotlin.Unit>)

@@ -371,9 +371,9 @@ package com.android.build.api.dsl {
   }
 
   @org.gradle.api.Incubating public interface AndroidTest {
-    method public boolean getEnableMinification();
-    method public void setEnableMinification(boolean);
-    property public abstract boolean enableMinification;
+    method @org.gradle.api.Incubating public boolean getEnableMinification();
+    method @org.gradle.api.Incubating public void setEnableMinification(boolean);
+    property @org.gradle.api.Incubating public abstract boolean enableMinification;
   }
 
   public interface AnnotationProcessorOptions {

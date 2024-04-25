@@ -18,17 +18,28 @@
 
 package com.android.build.api
 
+import com.android.build.api.extension.DslExtensionTest
+import com.android.build.api.transform.SecondaryFileTest
 import com.google.common.base.Charsets
 import com.google.common.base.Splitter
 import com.google.common.io.Resources
 import com.google.common.reflect.ClassPath
 import java.net.URL
 
+val nonApiClasses = listOf(
+    DslExtensionTest::class,
+    SecondaryFileTest::class,
+    AndroidPluginVersionTest::class,
+    DeprecatedApiTest::class,
+    DeprecatedApiUpdater::class,
+    IncubatingApiTest::class,
+    IncubatingApiUpdater::class,
+    OperationRequestTest::class,
+    SourcesTest::class
+).map { it.qualifiedName }.toSet()
+
 fun filterNonApiClasses(classInfo: ClassPath.ClassInfo): Boolean =
-    !classInfo.simpleName.endsWith("Test") &&
-            classInfo.simpleName != "StableApiUpdater" &&
-            classInfo.simpleName != "DeprecatedApiUpdater" &&
-            classInfo.simpleName != "ApiTestUtils"
+    !nonApiClasses.contains(classInfo.name) && classInfo.name != "com.android.build.api.ApiTestUtils"
 
 
 internal fun transformFinalFileContent(currentSnapshotContent: List<String>, snapshotFileUrl: URL, currentKey: String, keyPrefix: String, keyOrdering: Comparator<String>):
