@@ -21,6 +21,7 @@ import com.android.tools.idea.wizard.template.Constraint.CLASS
 import com.android.tools.idea.wizard.template.Constraint.NONEMPTY
 import com.android.tools.idea.wizard.template.Constraint.UNIQUE
 import com.android.tools.idea.wizard.template.FormFactor
+import com.android.tools.idea.wizard.template.LabelWidget
 import com.android.tools.idea.wizard.template.LanguageWidget
 import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.PackageNameWidget
@@ -32,6 +33,7 @@ import com.android.tools.idea.wizard.template.WizardUiContext
 import com.android.tools.idea.wizard.template.impl.defaultPackageNameParameter
 import com.android.tools.idea.wizard.template.stringParameter
 import com.android.tools.idea.wizard.template.template
+import com.intellij.icons.AllIcons
 import java.io.File
 
 val genAiActivityTemplate
@@ -44,7 +46,7 @@ val genAiActivityTemplate
         TemplateConstraint.AndroidX,
         TemplateConstraint.Kotlin,
         TemplateConstraint.Material3,
-        TemplateConstraint.Compose
+        TemplateConstraint.Compose,
       )
 
     // TODO(b/312755227): Should probably be Category.Google, but needs to be Compose to use
@@ -77,9 +79,21 @@ val genAiActivityTemplate
       TextFieldWidget(apiKey),
       UrlLinkWidget(
         "Generate API key with Google AI Studio",
-        "https://makersuite.google.com/app/apikey"
+        "https://makersuite.google.com/app/apikey",
       ),
-      LanguageWidget()
+      // Blank lines to add space before the warning
+      LabelWidget(""),
+      LabelWidget(""),
+      LabelWidget(
+        "<b>The Google AI client SDK for Android is recommended for prototyping only.</b>",
+        icon = AllIcons.General.Warning,
+      ),
+      LabelWidget(
+          """If you plan to enable billing, we strongly recommend that you use a backend SDK to
+              | access the Google AI Gemini API. You risk potentially exposing your API key to
+              | malicious actors if you embed your API key directly in your Android app or fetch it
+              | remotely at runtime.""".trimMargin()
+      ),
     )
 
     thumb { File("genai-activity").resolve("template_genai_activity.png") }
@@ -89,7 +103,7 @@ val genAiActivityTemplate
         data as ModuleTemplateData,
         activityClass.value,
         packageName.value,
-        apiKey.value
+        apiKey.value,
       )
     }
   }
