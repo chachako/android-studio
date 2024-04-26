@@ -257,6 +257,7 @@ open class HostTestTaskManager(
 
             val javacTask = createJavacTask(hostTestCreationConfig)
             setJavaCompilerTask(javacTask, hostTestCreationConfig)
+            initializeAllScope(hostTestCreationConfig.artifacts)
         }
         maybeCreateTransformClassesWithAsmTask(hostTestCreationConfig)
 

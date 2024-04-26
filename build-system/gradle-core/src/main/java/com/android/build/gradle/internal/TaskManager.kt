@@ -20,6 +20,7 @@ import com.android.SdkConstants.DOT_JAR
 import com.android.build.api.artifact.Artifact.Single
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.artifact.impl.InternalScopedArtifact
 import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.dsl.Device
@@ -1136,42 +1137,7 @@ abstract class TaskManager(
 
         maybeCreateTransformClassesWithAsmTask(creationConfig)
 
-        // initialize the all classes scope
-        creationConfig.artifacts.forScope(ScopedArtifacts.Scope.ALL)
-            .getScopedArtifactsContainer(ScopedArtifact.CLASSES)
-            .initialScopedContent
-            .run {
-                from(
-                    creationConfig.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
-                        .getFinalArtifacts(ScopedArtifact.CLASSES)
-                )
-                from(
-                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)
-                        .getFinalArtifacts(ScopedArtifact.CLASSES)
-                )
-                from(
-                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
-                        .getFinalArtifacts(ScopedArtifact.CLASSES)
-                )
-            }
-
-        creationConfig.artifacts.forScope(ScopedArtifacts.Scope.ALL)
-            .getScopedArtifactsContainer(ScopedArtifact.JAVA_RES)
-            .initialScopedContent
-            .run {
-                from(
-                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)
-                        .getFinalArtifacts(ScopedArtifact.JAVA_RES)
-                )
-                from(
-                    creationConfig.artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
-                        .getFinalArtifacts(ScopedArtifact.JAVA_RES)
-                )
-                from(
-                    creationConfig.artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
-                        .getFinalArtifacts(ScopedArtifact.JAVA_RES)
-                )
-            }
+        initializeAllScope(creationConfig.artifacts)
 
         // New gradle-transform jacoco instrumentation support.
         if (creationConfig.codeCoverageEnabled &&
@@ -1225,6 +1191,49 @@ abstract class TaskManager(
             taskFactory.register(FeatureDexMergeTask.CreationAction(creationConfig))
         }
         createDexTasks(creationConfig, creationConfig.dexing.dexingType)
+    }
+
+    /**
+     * initialize the [ScopedArtifacts.Scope.ALL] scope from the project, sub-projects and external
+     * libraries.
+     */
+    internal fun initializeAllScope(artifacts: ArtifactsImpl) {
+        // initialize the all classes scope
+        artifacts.forScope(ScopedArtifacts.Scope.ALL)
+            .getScopedArtifactsContainer(ScopedArtifact.CLASSES)
+            .initialScopedContent
+            .run {
+                from(
+                    artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
+                from(
+                    artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
+                from(
+                    artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                        .getFinalArtifacts(ScopedArtifact.CLASSES)
+                )
+            }
+
+        artifacts.forScope(ScopedArtifacts.Scope.ALL)
+            .getScopedArtifactsContainer(ScopedArtifact.JAVA_RES)
+            .initialScopedContent
+            .run {
+                from(
+                    artifacts.forScope(InternalScopedArtifacts.InternalScope.SUB_PROJECTS)
+                        .getFinalArtifacts(ScopedArtifact.JAVA_RES)
+                )
+                from(
+                    artifacts.forScope(ScopedArtifacts.Scope.PROJECT)
+                        .getFinalArtifacts(ScopedArtifact.JAVA_RES)
+                )
+                from(
+                    artifacts.forScope(InternalScopedArtifacts.InternalScope.EXTERNAL_LIBS)
+                        .getFinalArtifacts(ScopedArtifact.JAVA_RES)
+                )
+            }
     }
 
     /**
