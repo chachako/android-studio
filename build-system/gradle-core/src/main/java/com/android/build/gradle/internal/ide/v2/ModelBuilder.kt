@@ -908,7 +908,7 @@ class ModelBuilder<
     }
 
     private fun getBytecodeTransformations(component: ComponentCreationConfig): List<BytecodeTransformation> {
-        val jacoco = (component as? ApkCreationConfig)?.useJacocoTransformInstrumentation == true
+        val jacoco = (component as? ApkCreationConfig)?.requiresJacocoTransformation == true
         val classesProject = component.artifacts.forScope(PROJECT).getScopedArtifactsContainer(
             ScopedArtifact.CLASSES
         ).artifactsAltered.get()

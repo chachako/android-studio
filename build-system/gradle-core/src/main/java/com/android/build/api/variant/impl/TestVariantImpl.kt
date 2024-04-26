@@ -208,7 +208,7 @@ open class TestVariantImpl @Inject constructor(
         }
     }
 
-    override val useJacocoTransformInstrumentation: Boolean
+    override val codeCoverageEnabled: Boolean
         get() = false
     override val packageJacocoRuntime: Boolean
         get() = false

@@ -1140,7 +1140,7 @@ abstract class TaskManager(
         initializeAllScope(creationConfig.artifacts)
 
         // New gradle-transform jacoco instrumentation support.
-        if (creationConfig.codeCoverageEnabled &&
+        if (creationConfig.requiresJacocoTransformation &&
             !creationConfig.componentType.isForTesting) {
             createJacocoTask(creationConfig)
         } else {
@@ -1837,7 +1837,7 @@ abstract class TaskManager(
                 .assetGenTask =
                 taskFactory.register(creationConfig.computeTaskNameInternal("generate", "Assets"))
         // Create anchor task for creating instrumentation test coverage reports
-        if (creationConfig is VariantCreationConfig && creationConfig.codeCoverageEnabled) {
+        if (creationConfig is VariantCreationConfig && creationConfig.requiresJacocoTransformation) {
             creationConfig
                     .taskContainer
                     .coverageReportTask = taskFactory.register(

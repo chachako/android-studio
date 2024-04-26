@@ -298,13 +298,6 @@ open class ApplicationVariantImpl @Inject constructor(
         internalServices,
     )
 
-    override val useJacocoTransformInstrumentation: Boolean
-        get() = codeCoverageEnabled
-
-    // Apps include the jacoco agent if test coverage is enabled
-    override val packageJacocoRuntime: Boolean
-        get() = codeCoverageEnabled
-
     override val isWearAppUnbundled: Boolean? = dslInfo.isWearAppUnbundled
 
     override val enableApiModeling: Boolean
