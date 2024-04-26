@@ -54,9 +54,9 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
         FileUtils.cleanOutputDir(referenceImageDir.get().asFile)
         //throw exception at the first encountered error
         val resultFile = renderTaskOutputDir.file("results.json").get().asFile
-        if (resultFile.exists()) {
-            val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
-            for (result in composeRenderingResult.screenshotResults) {
+        val results = readComposeRenderingResultJson(resultFile.reader()).screenshotResults
+        if (results.isNotEmpty()) {
+            for (result in results) {
                 saveReferenceImage(result)
             }
         } else {

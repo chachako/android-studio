@@ -77,6 +77,8 @@ class PreviewScreenshotUpdateTaskTest {
     fun testPreviewScreenshotUpdateWithNoPreviews() {
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderTaskOutputDir = tempDirRule.newFolder("rendered")
+        val resultsFile = File(renderTaskOutputDir, "results.json")
+        writeComposeRenderingResult(resultsFile.writer(), ComposeRenderingResult(null, listOf()))
         task.referenceImageDir.set(referenceImageDir)
         task.renderTaskOutputDir.set(renderTaskOutputDir)
         task.analyticsService.set(object: AnalyticsService() {
