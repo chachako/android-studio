@@ -28,6 +28,7 @@ import com.android.repository.impl.meta.PackageDisplayNameQualifier;
 import com.android.repository.impl.meta.TypeDetails;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.OptionalLibrary;
+import com.android.sdklib.SystemImageTags;
 import com.android.sdklib.devices.Abi;
 import com.android.sdklib.repository.IdDisplay;
 import java.util.AbstractList;
@@ -163,6 +164,11 @@ public final class DetailsTypes {
                 return 0;
             }
         }
+
+        @NonNull
+        default List<String> getAbis() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     /**
@@ -201,6 +207,15 @@ public final class DetailsTypes {
              * Gets the layout lib api level.
              */
             public abstract int getApi();
+        }
+
+        // TODO: http://b/338068018 - We stopped shipping system images in platforms after API 13.
+        //      Delete this override when we stop supporting API 13.
+        /** @return the native ABIs supported by the system image in the platform */
+        @NonNull
+        @Override
+        default List<String> getAbis() {
+            return Collections.singletonList(Abi.ARMEABI.toString());
         }
     }
 
@@ -266,6 +281,14 @@ public final class DetailsTypes {
             public abstract List<Library> getLibrary();
         }
 
+        @NonNull
+        @Override
+        default List<String> getAbis() {
+            Object abi =
+                    getTag().equals(SystemImageTags.GOOGLE_APIS_X86_TAG) ? Abi.X86 : Abi.ARMEABI;
+
+            return Collections.singletonList(abi.toString());
+        }
     }
 
     /**
@@ -308,6 +331,7 @@ public final class DetailsTypes {
          * Must include the result {@link #getAbi()} as the first item in the returned list.
          */
         @NonNull
+        @Override
         default List<String> getAbis() {
             // Default implementation supports pre-v4. Any version should either override #getAbi
             // or #getNativeAbis, so there should be no circular calls.
