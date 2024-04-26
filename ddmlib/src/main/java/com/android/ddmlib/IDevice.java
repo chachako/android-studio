@@ -124,6 +124,7 @@ public interface IDevice extends IShellEnabledDevice, IUserDataMap {
 
     /** The state of a device. */
     enum DeviceState {
+        AUTHORIZING("authorizing"), //$NON-NLS-1$
         BOOTLOADER("bootloader"), //$NON-NLS-1$
         /** bootloader mode with is-userspace = true though `adb reboot fastboot` */
         FASTBOOTD("fastbootd"), //$NON-NLS-1$
