@@ -4,10 +4,8 @@
 import os
 import os.path
 import platform as plat
-import re
 import subprocess
 import sys
-import multiprocessing
 
 
 def main():
@@ -26,12 +24,19 @@ def main():
   env = {}
   env['USE_BAZEL_VERSION'] = os.environ.get('USE_BAZEL_VERSION', '')
   bazel = [
-    os.path.join(workspace, 'prebuilts', 'tools', platform, 'bazel', 'bazelisk')
-    ]
+      os.path.join(
+          workspace, 'prebuilts', 'tools', platform, 'bazel', 'bazelisk'
+      )
+  ]
   # On linux bazel can sometimes hang due to RBE. So we kill it after
   # BAZEL_INVOCATION_TIMEOUT if set.
   if platform == 'linux-x86_64' and os.environ.get('BAZEL_INVOCATION_TIMEOUT'):
-    bazel = ['timeout', '-k', '1m', os.environ["BAZEL_INVOCATION_TIMEOUT"]] + bazel
+    bazel = [
+        'timeout',
+        '-k',
+        '1m',
+        os.environ['BAZEL_INVOCATION_TIMEOUT'],
+    ] + bazel
 
   args = sys.argv[1:]
   command = bazel_command(args)
@@ -41,16 +46,20 @@ def main():
   env['SHELL'] = os.environ.get('SHELL', '')
   env['HOME'] = os.environ.get('HOME', '')
   env['DISPLAY'] = os.environ.get('DISPLAY', '')
-  env['GOOGLE_APPLICATION_CREDENTIALS'] = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')
-  env['PATH'] = os.environ.get('PATH','')
+  env['GOOGLE_APPLICATION_CREDENTIALS'] = os.environ.get(
+      'GOOGLE_APPLICATION_CREDENTIALS', ''
+  )
+  env['PATH'] = os.environ.get('PATH', '')
   if 'GCE_METADATA_HOST' in os.environ:
     env['GCE_METADATA_HOST'] = os.environ.get('GCE_METADATA_HOST')
   if 'QA_ANDROID_SDK_ROOT' in os.environ:
     env['QA_ANDROID_SDK_ROOT'] = os.environ['QA_ANDROID_SDK_ROOT']
   if sys.platform == 'darwin':
     if not os.path.exists('/Library/Developer/CommandLineTools'):
-      print('/Library/Developer/CommandLineTools does not exist. Please install it with '
-            'xcode-select --install')
+      print(
+          '/Library/Developer/CommandLineTools does not exist. Please install'
+          ' it with xcode-select --install'
+      )
       sys.exit(1)
     # This is needed for bazel to set itself up, even though we aren't using gcc.
     env['CC'] = os.environ.get('GCC', '/usr/bin/gcc')
@@ -59,32 +68,48 @@ def main():
     # This isn't really the correct check, since --config=remote is just an alias for a bunch of other
     # settings. But in practice that's how you get into remote mode, so it should be good enough for now
     # at least.
-    if (command in ['build', 'test'] and
-        (not '--config=remote' in args and not '--config=dynamic' in args and not '--config=ci' in args)):
-      if (not os.path.exists('C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.26.28801') or
-              not os.path.exists('C:\\Program Files (x86)\\Windows Kits\\10\\lib\\10.0.18362.0')):
-        print('You must have MSVC Buildtools version 14.26.28801 and Windows SDK 10.0.18362.0 installed.\n'
-              'An installer for these is available at go/studio-msvc-tools.')
+    if command in ['build', 'test'] and (
+        not '--config=remote' in args
+        and not '--config=dynamic' in args
+        and not '--config=ci' in args
+    ):
+      if not os.path.exists(
+          'C:\\Program Files (x86)\\Microsoft Visual'
+          ' Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.26.28801'
+      ) or not os.path.exists(
+          'C:\\Program Files (x86)\\Windows Kits\\10\\lib\\10.0.18362.0'
+      ):
+        print(
+            'You must have MSVC Buildtools version 14.26.28801 and Windows SDK'
+            ' 10.0.18362.0 installed.\nAn installer for these is available at'
+            ' go/studio-msvc-tools.'
+        )
         sys.exit(1)
 
-    define_env(env, 'BAZEL_SH', 'C:\\tools\\msys64\\usr\\bin\\bash.exe',
-        '***NOTE***: Bazel for Windows currently hardcodes "C:\\tools\\msys64", but we\n' +
-        'could not find an installation of msys at this path on your machine.\n' +
-        'Move your installation there if you already have it or\n' +
-        'install it there from http://www.msys2.org.\n' +
-        'Make sure to change the path to C:\\tools\\msys64\n' +
-        '\n' +
-        'See also: https://github.com/bazelbuild/bazel/issues/2447')
+    define_env(
+        env,
+        'BAZEL_SH',
+        'C:\\tools\\msys64\\usr\\bin\\bash.exe',
+        '***NOTE***: Bazel for Windows currently hardcodes "C:\\tools\\msys64",'
+        ' but we\n'
+        + 'could not find an installation of msys at this path on your'
+        ' machine.\n'
+        + 'Move your installation there if you already have it or\n'
+        + 'install it there from http://www.msys2.org.\n'
+        + 'Make sure to change the path to C:\\tools\\msys64\n'
+        + '\n'
+        + 'See also: https://github.com/bazelbuild/bazel/issues/2447',
+    )
     # Bazel for windows requires a couple of extra env vars be set
     # SYSTEMROOT must be defined to run a win .exe; otherwise, subprocess.call
     # will hang.
     env['SYSTEMROOT'] = 'C:\\Windows'
-    env['TMP'] = os.environ.get('TMP','')
+    env['TMP'] = os.environ.get('TMP', '')
     env['USERPROFILE'] = os.environ.get('USERPROFILE', '')
     env['APPDATA'] = os.environ.get('APPDATA', '')
     env['LOCALAPPDATA'] = os.environ.get('LOCALAPPDATA', '')
 
-  else: # Linux
+  else:  # Linux
     env['CC'] = os.environ.get('GCC', '/usr/bin/gcc')
     env['SSH_AUTH_SOCK'] = os.environ.get('SSH_AUTH_SOCK', '')
     env['USER'] = os.environ.get('USER', '')
@@ -106,7 +131,10 @@ def define_env(env, var, value, msg=None):
     if msg:
       print(msg)
     else:
-      print('Make sure {} exists, or set "{}" manually to the correct value.'.format(value, var))
+      print(
+          'Make sure {} exists, or set "{}" manually to the correct value.'
+          .format(value, var)
+      )
     sys.exit(1)
 
 
@@ -118,20 +146,19 @@ def find_workspace(path):
     return None if parent == path else find_workspace(parent)
 
 
-"""
-Returns the command index, which is the first non-option argument.
-https://bazel.build/versions/master/docs/command-line-reference.html
-"""
 def bazel_command_index(args):
+  """Returns the command index, which is the first non-option argument.
+
+  https://bazel.build/versions/master/docs/command-line-reference.html
+  """
   for i in range(len(args)):
     if not args[i].startswith('-'):
       return i
   return None
 
-"""
-Returns the command itself, or None if not defined.
-"""
+
 def bazel_command(args):
+  """Returns the command itself, or None if not defined."""
   index = bazel_command_index(args)
   if index is None:
     return None
