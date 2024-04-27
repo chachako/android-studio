@@ -352,6 +352,17 @@ public class AvdManager {
     public static final String AVD_INI_ROLL_RADIUS = "hw.sensor.roll.radius";
     public static final String AVD_INI_ROLL_DIRECTION = "hw.sensor.roll.direction";
 
+    // Settings for Android Automotive instrument cluster display
+    public static final String AVD_INI_CLUSTER_WIDTH = "hw.display6.width";
+    public static final String AVD_INI_CLUSTER_HEIGHT = "hw.display6.height";
+    public static final String AVD_INI_CLUSTER_DENSITY = "hw.display6.density";
+    public static final String AVD_INI_CLUSTER_FLAG = "hw.display6.flag";
+    // Settings for Android Automotive distant display
+    public static final String AVD_INI_DISTANT_DISPLAY_WIDTH = "hw.display7.width";
+    public static final String AVD_INI_DISTANT_DISPLAY_HEIGHT = "hw.display7.height";
+    public static final String AVD_INI_DISTANT_DISPLAY_DENSITY = "hw.display7.density";
+    public static final String AVD_INI_DISTANT_DISPLAY_FLAG = "hw.display7.flag";
+
     /** AVD/user-settings.ini key for Preferred ABI */
     public static final String USER_SETTINGS_INI_PREFERRED_ABI = "abi.type.preferred";
 
