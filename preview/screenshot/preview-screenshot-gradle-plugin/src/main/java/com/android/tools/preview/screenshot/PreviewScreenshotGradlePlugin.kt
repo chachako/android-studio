@@ -257,7 +257,9 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         PreviewScreenshotRenderTask::class.java
                     ) { task ->
                         val variantSegments = variant.computePathSegments()
-                        task.outputDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/rendered"))
+                        val output = "$PREVIEW_OUTPUT/$variantSegments"
+                        task.outputDir.set(buildDir.dir("$output/rendered"))
+                        task.resultsFile.set(buildDir.file("$output/results.json"))
 
                         // need to use project.providers as a workaround to gradle issue: https://github.com/gradle/gradle/issues/12388
                         task.sdkFontsDir.set(project.providers.provider {
@@ -343,6 +345,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         val variantSegments = variant.computePathSegments()
                         task.referenceImageDir.set(project.layout.projectDirectory.dir("src/androidTest/screenshot/$variantSegments"))
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
+                        task.renderTaskResultFile.set(renderTaskProvider.flatMap { it.resultsFile })
                         task.description = "Update screenshots for the $variantName build."
                         task.group = JavaBasePlugin.VERIFICATION_GROUP
                         task.analyticsService.set(analyticsServiceProvider)
@@ -359,6 +362,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.referenceImageDir.disallowChanges()
                         task.previewFile.set(discoveryTaskProvider.flatMap { it.previewsOutputFile })
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
+                        task.renderTaskOutputFile.set(renderTaskProvider.flatMap { it.resultsFile })
                         task.resultsDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/results"))
                         task.diffImageDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/diffs"))
                         task.diffImageDir.disallowChanges()

@@ -49,6 +49,7 @@ class PreviewScreenshotValidationTaskTest {
         val resultsDir = tempDirRule.newFile("results")
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderOutputDir = tempDirRule.newFolder("rendered")
+        val renderOutputFile = tempDirRule.newFile("results.json")
         val previewsFile = tempDirRule.newFile("previews_discovered.json")
 
         // Copy the same image to rendered output and reference images
@@ -75,7 +76,7 @@ class PreviewScreenshotValidationTaskTest {
         task.previewFile.set(previewsFile)
         task.referenceImageDir.set(referenceImageDir)
         task.diffImageDir.set(diffDir)
-        task.renderTaskOutputDir.set(renderOutputDir)
+        task.renderTaskOutputFile.set(renderOutputFile)
         task.resultsDir.set(resultsDir)
 
         val analyticsService = spy(object: AnalyticsService() {

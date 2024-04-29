@@ -23,9 +23,11 @@ import com.android.utils.FileUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
@@ -46,6 +48,10 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val renderTaskOutputDir: DirectoryProperty
 
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val renderTaskResultFile: RegularFileProperty
+
     @get:Internal
     abstract val analyticsService: Property<AnalyticsService>
 
@@ -53,7 +59,7 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
     fun run() = analyticsService.get().recordTaskAction(path) {
         FileUtils.cleanOutputDir(referenceImageDir.get().asFile)
         //throw exception at the first encountered error
-        val resultFile = renderTaskOutputDir.file("results.json").get().asFile
+        val resultFile = renderTaskResultFile.get().asFile
         val results = readComposeRenderingResultJson(resultFile.reader()).screenshotResults
         if (results.isNotEmpty()) {
             for (result in results) {
@@ -69,9 +75,9 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
         val renderedFile = File(composeScreenshot.imagePath!!)
         if (composeScreenshot.error != null) {
             if (!renderedFile.exists()) {
-                throw GradleException("Rendering failed for ${composeScreenshot.resultId}. Error: ${composeScreenshot.error!!.message}. Check ${renderTaskOutputDir.file("results.json").get().asFile.absolutePath} for additional info")
+                throw GradleException("Rendering failed for ${composeScreenshot.resultId}. Error: ${composeScreenshot.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
             } else {
-                logger.warn("Rendering preview ${composeScreenshot.resultId} encountered some problems: ${composeScreenshot.error!!.message}. Check ${renderTaskOutputDir.file("results.json").get().asFile.absolutePath} for additional info")
+                logger.warn("Rendering preview ${composeScreenshot.resultId} encountered some problems: ${composeScreenshot.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
             }
         }
         val referenceImagePath = referenceImageDir.asFile.get().toPath().resolve("${composeScreenshot.resultId}.png")

@@ -29,7 +29,6 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.mockito.Answers
 import org.mockito.Mockito.withSettings
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -48,7 +47,7 @@ class PreviewScreenshotUpdateTaskTest {
     fun testPreviewScreenshotUpdate() {
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderTaskOutputDir = tempDirRule.newFolder("rendered")
-        val resultsFile = File(renderTaskOutputDir, "results.json")
+        val resultsFile = tempDirRule.newFile("results.json")
         val path1 = Paths.get(renderTaskOutputDir.absolutePath).resolve("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0.png")
         val path2 = Paths.get(renderTaskOutputDir.absolutePath).resolve("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0.png")
         val path3 = Paths.get(renderTaskOutputDir.absolutePath).resolve("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1.png")
@@ -62,6 +61,7 @@ class PreviewScreenshotUpdateTaskTest {
         Files.createFile(path3)
         task.referenceImageDir.set(referenceImageDir)
         task.renderTaskOutputDir.set(renderTaskOutputDir)
+        task.renderTaskResultFile.set(resultsFile)
         task.analyticsService.set(object: AnalyticsService() {
             override val buildServiceRegistry: BuildServiceRegistry = mock(
                 withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
@@ -77,10 +77,11 @@ class PreviewScreenshotUpdateTaskTest {
     fun testPreviewScreenshotUpdateWithNoPreviews() {
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderTaskOutputDir = tempDirRule.newFolder("rendered")
-        val resultsFile = File(renderTaskOutputDir, "results.json")
+        val resultsFile = tempDirRule.newFile("results.json")
         writeComposeRenderingResult(resultsFile.writer(), ComposeRenderingResult(null, listOf()))
         task.referenceImageDir.set(referenceImageDir)
         task.renderTaskOutputDir.set(renderTaskOutputDir)
+        task.renderTaskResultFile.set(resultsFile)
         task.analyticsService.set(object: AnalyticsService() {
             override val buildServiceRegistry: BuildServiceRegistry = mock(
                 withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))

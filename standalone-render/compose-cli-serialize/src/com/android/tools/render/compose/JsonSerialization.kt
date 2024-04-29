@@ -33,7 +33,7 @@ private const val METHOD_FQN = "methodFQN"
 private const val METHOD_PARAMS = "methodParams"
 private const val IMAGE_NAME = "imageName"
 private const val PREVIEW_PARAMS = "previewParams"
-private const val RESULTS_FILE_NAME = "resultsFileName"
+private const val RESULTS_FILE_PATH = "resultsFilePath"
 
 private const val RESULT_ID = "resultId"
 private const val GLOBAL_ERROR = "globalError"
@@ -59,7 +59,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
     var namespace: String? = null
     var resourceApkPath: String? = null
     var screenshots: List<ComposeScreenshot>? = null
-    var resultsFileName: String? = null
+    var resultsFilePath: String? = null
     JsonReader(jsonReader).use {  reader ->
         reader.beginObject()
         while (reader.hasNext()) {
@@ -86,8 +86,8 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
                 SCREENSHOTS -> {
                     screenshots = readComposeScreenshots(reader)
                 }
-                RESULTS_FILE_NAME -> {
-                    resultsFileName = reader.nextString()
+                RESULTS_FILE_PATH -> {
+                    resultsFilePath = reader.nextString()
                 }
                 else -> {
                     val fieldValue = reader.nextString()
@@ -108,7 +108,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
         namespace ?: throw IllegalArgumentException("Namespace is missing"),
         resourceApkPath ?: throw IllegalArgumentException("Resource APK path is missing"),
         screenshots ?: emptyList(),
-        resultsFileName ?: "results.json"
+        resultsFilePath ?: throw IllegalArgumentException("Results file path is missing"),
     )
 }
 
@@ -200,7 +200,7 @@ fun writeComposeRenderingToJson(
         writer.name(RESOURCE_APK_PATH).value(composeRendering.resourceApkPath)
         writer.name(SCREENSHOTS)
         writeComposeScreenshots(writer, composeRendering.screenshots)
-        writer.name(RESULTS_FILE_NAME).value(composeRendering.resultsFileName)
+        writer.name(RESULTS_FILE_PATH).value(composeRendering.resultsFilePath)
         writer.endObject()
     }
 }

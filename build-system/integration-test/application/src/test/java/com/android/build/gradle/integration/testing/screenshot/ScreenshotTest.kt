@@ -435,7 +435,7 @@ class ScreenshotTest {
         val referenceScreenshotDir = appProject.projectDir.resolve("src/androidTest/screenshot/debug/").toPath()
         assertThat(referenceScreenshotDir.listDirectoryEntries()).isEmpty()
 
-        val resultsJson = appProject.buildDir.resolve("outputs/androidTest-results/preview/debug/rendered/results.json")
+        val resultsJson = appProject.buildDir.resolve("outputs/androidTest-results/preview/debug/results.json")
         assertThat(resultsJson.readText()).contains(""""screenshotResults": []""")
 
         getExecutor()

@@ -83,6 +83,9 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     @get:OutputFile
     abstract val cliToolArgumentsFile: RegularFileProperty
 
+    @get:OutputFile
+    abstract val resultsFile: RegularFileProperty
+
     @get:Classpath
     abstract val layoutlibJar: ConfigurableFileCollection
 
@@ -129,9 +132,10 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     @TaskAction
     fun run() = analyticsService.get().recordTaskAction(path) {
         FileUtils.cleanOutputDir(outputDir.get().asFile)
+        FileUtils.deleteIfExists(resultsFile.get().asFile)
         if (readComposeScreenshotsJson(previewsDiscovered.get().asFile.reader()).isEmpty()) {
             // No previews discovered to render
-            writeComposeRenderingResult(outputDir.file("results.json").get().asFile.writer(), ComposeRenderingResult(null, listOf()))
+            writeComposeRenderingResult(resultsFile.get().asFile.writer(), ComposeRenderingResult(null, listOf()))
             return@recordTaskAction
         }
 
@@ -162,7 +166,8 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             namespace.get(),
             getResourcesApk(),
             cliToolArgumentsFile.get().asFile,
-            previewsDiscovered.get().asFile
+            previewsDiscovered.get().asFile,
+            resultsFile.get().asFile.absolutePath
         )
 
         // invoke CLI tool
@@ -172,8 +177,8 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
         workerQueue.submit(PreviewRenderWorkAction::class.java) { parameters ->
             parameters.cliToolArgumentsFile.set(cliToolArgumentsFile)
             parameters.toolJarPath.setFrom(screenshotCliJar)
-            parameters.outputDir.set(outputDir)
             parameters.layoutlibJar.setFrom(layoutlibJar)
+            parameters.resultsFile.set(resultsFile)
         }
 
     }

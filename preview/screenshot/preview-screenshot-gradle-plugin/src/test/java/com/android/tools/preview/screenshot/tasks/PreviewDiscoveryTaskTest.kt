@@ -18,8 +18,6 @@ package com.android.tools.preview.screenshot.tasks
 
 import com.android.testutils.MockitoKt.mock
 import com.android.tools.preview.screenshot.services.AnalyticsService
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.services.BuildServiceRegistry
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before

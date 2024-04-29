@@ -36,7 +36,7 @@ fun main(args: Array<String>) {
     val composeRenderingResult = renderCompose(composeRendering)
 
     writeComposeRenderingResult(
-        Path(composeRendering.outputFolder).resolve(composeRendering.resultsFileName).toFile().writer(),
+        File(composeRendering.resultsFilePath).writer(),
         composeRenderingResult,
     )
 }

@@ -41,7 +41,7 @@ class PerfMainTest {
     @Rule
     val chain: RuleChain = RuleChain.outerRule(tmpFolder).around(gradleProject)
 
-    private fun createSettingsFile(outputFolder: File, screenshots: List<ComposeScreenshot>): File {
+    private fun createSettingsFile(outputFolder: File, resultsFile: File, screenshots: List<ComposeScreenshot>): File {
         gradleProject.executeGradleTask(":app:assembleDebug")
         gradleProject.executeGradleTask(":app:bundleDebugClassesToCompileJar")
         gradleProject.executeGradleTask(":app:debugExtractClasspath", "--init-script", "initscript.gradle")
@@ -58,6 +58,7 @@ class PerfMainTest {
             "com.example.composeapplication",
             apk.absolutePathString(),
             screenshots,
+            resultsFile.absolutePath
         )
 
         val jsonSettings = tmpFolder.newFile()
@@ -180,14 +181,15 @@ class PerfMainTest {
         goldenName: String,
     ) {
         val outputFolder = tmpFolder.newFolder()
-        val jsonSettings = createSettingsFile(outputFolder, screenshots)
+        val resultsFile = tmpFolder.newFile("results.json")
+        val jsonSettings = createSettingsFile(outputFolder, resultsFile, screenshots)
 
         computeAndRecordMetric(timeMetricName, memoryMetricName) {
             val metric = ComposeRenderingMetric()
             metric.beforeTest()
             runComposeCliRender(jsonSettings)
             metric.afterTest()
-            val result = readComposeRenderingResultJson(outputFolder.resolve("results.json").bufferedReader())
+            val result = readComposeRenderingResultJson(resultsFile.bufferedReader())
             assertNull(result.globalError)
             result.screenshotResults.forEach {
                 assertNull(it.error)

@@ -51,6 +51,10 @@ abstract class PreviewScreenshotValidationTask : Test() {
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
     abstract val previewFile: RegularFileProperty
 
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val renderTaskOutputFile: RegularFileProperty
+
     @get:OutputDirectory
     abstract val resultsDir: DirectoryProperty
 
@@ -74,7 +78,7 @@ abstract class PreviewScreenshotValidationTask : Test() {
         setTestEngineParam("previews-discovered", previewFile.get().asFile.absolutePath)
         setTestEngineParam("referenceImageDirPath", referenceImageDir.get().asFile.absolutePath)
         setTestEngineParam("diffImageDirPath", diffImageDir.get().asFile.absolutePath)
-        setTestEngineParam("renderTaskOutputDirPath", renderTaskOutputDir.get().asFile.absolutePath)
+        setTestEngineParam("renderResultsFilePath", renderTaskOutputFile.get().asFile.absolutePath)
         setTestEngineParam("resultsDirPath", resultsDir.get().asFile.absolutePath)
         super.useJUnitPlatform()
     }

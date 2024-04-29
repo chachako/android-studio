@@ -19,9 +19,7 @@ package com.android.tools.preview.screenshot.tasks
 import com.android.tools.render.compose.readComposeRenderingResultJson
 import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.Property
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import java.net.URLClassLoader
@@ -38,7 +36,7 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
         abstract val layoutlibJar: ConfigurableFileCollection
         abstract val cliToolArgumentsFile: RegularFileProperty
         abstract val toolJarPath: ConfigurableFileCollection
-        abstract val outputDir: DirectoryProperty
+        abstract val resultsFile: RegularFileProperty
     }
 
     override fun execute() {
@@ -64,7 +62,7 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
     }
 
     private fun verifyRender() {
-        val resultFile = parameters.outputDir.file("results.json").get().asFile
+        val resultFile = parameters.resultsFile.get().asFile
         if (!resultFile.exists()) {
             throw GradleException("There was an error with the rendering process.")
         }

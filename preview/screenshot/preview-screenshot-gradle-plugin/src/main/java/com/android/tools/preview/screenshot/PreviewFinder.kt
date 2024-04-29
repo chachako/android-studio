@@ -43,7 +43,8 @@ fun configureInput (
     namespace: String,
     resourceApkPath: String,
     cliToolArgumentsFile: File,
-    previewsFile: File
+    previewsFile: File,
+    resultsFilePath: String
 ) {
     if (!File(outputFolder).exists()) {
         Files.createDirectories(Path.of(outputFolder))
@@ -57,7 +58,8 @@ fun configureInput (
         projectClassPath,
         namespace,
         resourceApkPath,
-        previews
+        previews,
+        resultsFilePath
     )
     writeComposeRenderingToJson(cliToolArgumentsFile.writer(), composeRendering)
 }

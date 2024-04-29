@@ -67,7 +67,9 @@ class PreviewFinderTest {
             "namespace",
             "resourceApkPath",
             cliToolArgumentsFile,
-            previewsFile)
+            previewsFile,
+            "resultsFilePath"
+            )
         assertEquals("""
             {
               "fontsPath": "fontsPath",
@@ -93,7 +95,7 @@ class PreviewFinderTest {
                   "imageName": "com.example.agptest.ExampleInstrumentedTest.previewThere_3d8b4969_da39a3ee"
                 }
               ],
-              "resultsFileName": "results.json"
+              "resultsFilePath": "resultsFilePath"
             }
         """.trimIndent(),
                 cliToolArgumentsFile.readText())
