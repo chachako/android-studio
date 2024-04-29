@@ -42,7 +42,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.attributes.Attribute
-import org.gradle.api.attributes.Usage
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.JavaBasePlugin
@@ -110,7 +109,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             if (screenshotSourcesetEnabled.toString().lowercase(Locale.US) != "true") {
                 error(
                     """
-                    Please enable screenshotTest source set first to run the screenshot test plugin.
+                    Please enable screenshotTest source set first to apply the screenshot test plugin.
                     Add "$ST_SOURCE_SET_ENABLED=true" to gradle.properties
                     """.trimIndent()
                 )
@@ -161,7 +160,15 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 // TODO(b/330377509): Remove the unit test isIncludeAndroidResources option once the screenshotTest source set is in use.
                 val extension = project.extensions.getByType(CommonExtension::class.java)
                 extension.testOptions.unitTests.isIncludeAndroidResources = true
-                extension.experimentalProperties.put(ST_SOURCE_SET_ENABLED, true)
+                val screenshotSourceSetEnabledInModule = extension.experimentalProperties[ST_SOURCE_SET_ENABLED]
+                if (screenshotSourceSetEnabledInModule.toString().lowercase(Locale.US) != "true") {
+                    error(
+                        """
+                    Please enable screenshotTest source set in module first to apply the screenshot test plugin.
+                    Add "experimentalProperties["$ST_SOURCE_SET_ENABLED"] = true" to the android block of the module's build file: ${project.buildFile.toURI()}
+                    """.trimIndent()
+                    )
+                }
             }
             componentsExtension.onVariants { variant ->
                 if (variant is HasDeviceTests && variant.debuggable) {
@@ -181,7 +188,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                             task.analyticsService.set(analyticsServiceProvider)
                             task.usesService(analyticsServiceProvider)
 
-                            val dependencyArtifacts = screenshotTestComponent.runtimeConfiguration.incoming.artifactView { it ->
+                            val dependencyArtifacts = screenshotTestComponent.runtimeConfiguration.incoming.artifactView {
                                 it.attributes.apply {
                                     attribute(
                                         Attribute.of("artifactType", String::class.java),

@@ -140,6 +140,7 @@ class ScreenshotTest {
                 kotlin {
                     jvmToolchain(17)
                 }
+                experimentalProperties["android.experimental.enableScreenshotTest"] = true
 
             }
             """.trimIndent()
