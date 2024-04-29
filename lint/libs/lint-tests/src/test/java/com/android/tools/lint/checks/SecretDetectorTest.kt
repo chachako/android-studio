@@ -64,7 +64,7 @@ class SecretDetectorTest : AbstractCheckTest() {
                                                  ~~~
           src/com/pkg/keydemo/test.kt:9: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
             val model2 = GenerativeModel("name", "AIzadGhpcyBpcyBhbm90aGVy_IHQ-akd==")
-                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           0 errors, 2 warnings
           """
       )
@@ -174,7 +174,7 @@ class SecretDetectorTest : AbstractCheckTest() {
                                                                    ~
           src/com/pkg/keydemo/test.kt:8: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
             val model1 = GenerativeModel("name", "AIzadGhpcyBpcyBhbm90aGVy_IHQ-akd==")
-                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           src/com/pkg/keydemo/test.kt:10: Warning: This argument looks like an API key that has come from source code; API keys should not be included in source code [SecretInSource]
             val model3 = GenerativeModel("name", KEY)
                                                  ~~~

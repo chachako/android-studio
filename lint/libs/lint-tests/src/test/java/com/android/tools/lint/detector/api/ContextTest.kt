@@ -239,9 +239,7 @@ class ContextTest : AbstractCheckTest() {
     }
   }
 
-  // TODO(b/293581088): UAST of Kotlin strings (PSI: KtStringTemplateExpression) with 1 child is
-  //  somewhat broken until "kotlin.uast.force.uinjectionhost" defaults to true.
-  fun ignoreTestLocationOfKotlinString() {
+  fun testLocationOfKotlinString() {
     val tripleQuotes = "\"\"\""
     lint()
       .files(
@@ -302,14 +300,7 @@ class ContextTest : AbstractCheckTest() {
 
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
       val arg = node.getArgumentForParameter(0)
-      context.report(
-        Incident(
-          ISSUE,
-          "Argument to foo",
-          context.getLocation(node.getArgumentForParameter(0)),
-          arg,
-        )
-      )
+      context.report(Incident(ISSUE, "Argument to foo", context.getLocation(arg), arg))
     }
 
     companion object {

@@ -614,7 +614,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         """
                 build.gradle.kts:3: Warning: Use the existing version catalog reference (libs.androidx.appCompat) instead [UseTomlInstead]
                     implementation("androidx.appcompat:appcompat:1.5.1")
-                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
                 """
       )
@@ -738,7 +738,7 @@ class GradleDetectorTest : AbstractCheckTest() {
                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         build.gradle.kts:5: Warning: Use version catalog instead [UseTomlInstead]
           testImplementation("com.google.truth:truth:1.1.3")
-                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         0 errors, 3 warnings
         """
       )
@@ -1025,7 +1025,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         """
         build.gradle.kts:2: Warning: Use version catalog instead [UseTomlInstead]
           implementation("com.android.tools.lint:lint-checks:31.1.0-alpha04")
-                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         0 errors, 1 warnings
         """
       )
@@ -1102,7 +1102,7 @@ class GradleDetectorTest : AbstractCheckTest() {
         """
                 build.gradle.kts:2: Warning: Use version catalog instead [UseTomlInstead]
                     implementation("androidx.fragment:fragment:1.5.1")
-                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 0 errors, 1 warnings
                 """
       )
@@ -3565,10 +3565,10 @@ class GradleDetectorTest : AbstractCheckTest() {
         "        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
         "build.gradle.kts:8: Warning: A newer version of com.android.tools.build:gradle than 3.2.1 is available: 3.5.0 [AndroidGradlePluginVersion]\n" +
         "        classpath(\"com.android.tools.build:gradle:3.2.1\")\n" +
-        "                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+        "                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
         "build.gradle.kts:9: Warning: A newer version of com.android.tools.build:gradle than 3.3.0-alpha04 is available: 3.5.0 [AndroidGradlePluginVersion]\n" +
         "        classpath(\"com.android.tools.build:gradle:3.3.0-alpha04\")\n" +
-        "                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+        "                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
         "1 errors, 2 warnings\n"
 
     lint()
@@ -4539,13 +4539,13 @@ class GradleDetectorTest : AbstractCheckTest() {
         """
                 build.gradle.kts:3: Warning: 'android' is deprecated; use 'com.android.application' instead [GradleDeprecated]
                     id("android") version "2.3.3"
-                        ~~~~~~~
+                       ~~~~~~~~~
                 build.gradle.kts:4: Warning: 'android' is deprecated; use 'com.android.application' instead [GradleDeprecated]
                     id("android") version "2.3.3" apply true
-                        ~~~~~~~
+                       ~~~~~~~~~
                 build.gradle.kts:30: Warning: A newer version of com.android.support.constraint:constraint-layout than 1.0.0-alpha8 is available: 1.0.3-alpha8 [GradleDependency]
                     compile("com.android.support.constraint:constraint-layout:1.0.0-alpha8")
-                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 build.gradle.kts:12: Warning: The value of minSdkVersion is too low. It can be incremented without noticeably reducing the number of supported devices. [MinSdkTooLow]
                         minSdkVersion(7)
                         ~~~~~~~~~~~~~~~~
@@ -7197,10 +7197,10 @@ class GradleDetectorTest : AbstractCheckTest() {
         """
                 build.gradle.kts:7: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
                    implementation("com.android.support:multidex:1.0.0")
-                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 build.gradle.kts:8: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
                    implementation("com.android.support:multidex:1.0.0@aar")
-                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 build.gradle.kts:9: Warning: A newer version of com.android.support:multidex than 1.0.0 is available: 1.0.1 [GradleDependency]
                    implementation("com.android.support:multidex:＄multiDexVersion")
                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

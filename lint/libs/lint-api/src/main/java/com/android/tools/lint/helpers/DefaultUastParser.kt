@@ -25,7 +25,6 @@ import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.UastLintUtils
-import com.android.tools.lint.detector.api.isPolyadicFromStringTemplate
 import com.intellij.lang.Language
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.io.FileUtilRt
@@ -279,9 +278,6 @@ open class DefaultUastParser(
       val location = Location.create(ioFile, text, element.startOffset, element.endOffset)
       location.setSource(element)
       return location
-    } else if (isPolyadicFromStringTemplate(element) && element.operands.size == 1) {
-      val literal = element.operands[0]
-      return getLocation(context, literal).withSource(literal)
     } else {
       val psiElement = element.sourcePsi
       if (psiElement != null) {

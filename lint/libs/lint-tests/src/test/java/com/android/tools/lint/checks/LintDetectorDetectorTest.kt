@@ -374,7 +374,7 @@ class LintDetectorDetectorTest {
                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 src/test/pkg/MyKotlinLintDetector.kt:60: Error: Lint issue IDs should use capitalized camel case, such as MyIssueId [LintImplIdFormat]
                                 id = "badlyCapitalized id",
-                                      ~~~~~~~~~~~~~~~~~~~
+                                     ~~~~~~~~~~~~~~~~~~~~~
                 src/test/pkg/MyJavaLintDetector.java:70: Warning: "LinearLayout" looks like a code reference; surround with backtics in string to display as symbol, e.g. `LinearLayout` [LintImplTextFormat]
                             "Wrong use of LinearLayout.");
                                           ~~~~~~~~~~~~

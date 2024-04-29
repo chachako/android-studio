@@ -53,10 +53,10 @@ class FileEndsWithDetectorTest : AbstractCheckTest() {
                                ~~~~~~~~~~~~~~~~
             src/test.kt:7: Warning: File.extension does not include the leading dot; did you mean "json" ? [FileEndsWithExt]
             fun File.isJson() = extension == ".json"
-                                              ~~~~~
+                                             ~~~~~~~
             src/test.kt:8: Warning: File.extension does not include the leading dot; did you mean "webp" ? [FileEndsWithExt]
             fun isWebp(path: File) = path.extension.startsWith(".webp")
-                                                                ~~~~~
+                                                               ~~~~~~~
             0 errors, 3 warnings
             """
       )
@@ -119,13 +119,13 @@ class FileEndsWithDetectorTest : AbstractCheckTest() {
                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             src/test.kt:7: Warning: File.extension does not include the leading dot; did you mean "webp" ? [FileEndsWithExt]
             fun isWebp1(path: File) = path.parentFile.extension.startsWith(".webp") // ERROR 4
-                                                                            ~~~~~
+                                                                           ~~~~~~~
             src/test.kt:8: Warning: File.extension does not include the leading dot; did you mean "webp" ? [FileEndsWithExt]
             fun isWebp2(path: File) = path.parentFile.parentFile.extension.startsWith(".webp") // ERROR 5
-                                                                                       ~~~~~
+                                                                                      ~~~~~~~
             src/test.kt:9: Warning: File.extension does not include the leading dot; did you mean "webp" ? [FileEndsWithExt]
             fun isWebp3(path: File) = path.parentFile!!.extension.startsWith(".webp") // ERROR 6
-                                                                              ~~~~~
+                                                                             ~~~~~~~
             0 errors, 6 warnings
             """
       )
