@@ -23,6 +23,7 @@ data class ComposeRendering(
     val fontsPath: String?,
     val layoutlibPath: String,
     val outputFolder: String,
+    val metaDataFolder: String,
     val classPath: List<String>,
     val projectClassPath: List<String>,
     val namespace: String,

@@ -41,7 +41,7 @@ class PerfMainTest {
     @Rule
     val chain: RuleChain = RuleChain.outerRule(tmpFolder).around(gradleProject)
 
-    private fun createSettingsFile(outputFolder: File, resultsFile: File, screenshots: List<ComposeScreenshot>): File {
+    private fun createSettingsFile(outputFolder: File, resultsFile: File, metaDataFolder: File, screenshots: List<ComposeScreenshot>): File {
         gradleProject.executeGradleTask(":app:assembleDebug")
         gradleProject.executeGradleTask(":app:bundleDebugClassesToCompileJar")
         gradleProject.executeGradleTask(":app:debugExtractClasspath", "--init-script", "initscript.gradle")
@@ -53,6 +53,7 @@ class PerfMainTest {
             TestUtils.getSdk().absolutePathString(),
             TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib").absolutePathString(),
             outputFolder.absolutePath,
+            metaDataFolder.absolutePath,
             classPath,
             emptyList(),
             "com.example.composeapplication",
@@ -181,8 +182,9 @@ class PerfMainTest {
         goldenName: String,
     ) {
         val outputFolder = tmpFolder.newFolder()
+        val metaDatafolder = tmpFolder.newFolder()
         val resultsFile = tmpFolder.newFile("results.json")
-        val jsonSettings = createSettingsFile(outputFolder, resultsFile, screenshots)
+        val jsonSettings = createSettingsFile(outputFolder, resultsFile, metaDatafolder, screenshots)
 
         computeAndRecordMetric(timeMetricName, memoryMetricName) {
             val metric = ComposeRenderingMetric()

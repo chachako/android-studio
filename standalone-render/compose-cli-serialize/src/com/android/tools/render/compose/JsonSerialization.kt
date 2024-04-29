@@ -24,6 +24,7 @@ import java.io.Writer
 private const val FONTS_PATH = "fontsPath"
 private const val LAYOUTLIB_PATH = "layoutlibPath"
 private const val OUTPUT_FOLDER = "outputFolder"
+private const val META_DATA_FOLDER = "metaDataFolder"
 private const val CLASS_PATH = "classPath"
 private const val PROJECT_CLASS_PATH = "projectClassPath"
 private const val NAMESPACE = "namespace"
@@ -54,6 +55,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
     var fontsPath: String? = null
     var layoutlibPath: String? = null
     var outputFolder: String? = null
+    var metaDataFolder: String? = null
     val classPath = mutableListOf<String>()
     val projectClassPath = mutableListOf<String>()
     var namespace: String? = null
@@ -67,6 +69,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
                 FONTS_PATH -> { fontsPath = reader.nextString() }
                 LAYOUTLIB_PATH -> { layoutlibPath = reader.nextString() }
                 OUTPUT_FOLDER -> { outputFolder = reader.nextString() }
+                META_DATA_FOLDER -> { metaDataFolder = reader.nextString() }
                 CLASS_PATH -> {
                     reader.beginArray()
                     while (reader.hasNext()) {
@@ -103,6 +106,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
         fontsPath,
         layoutlibPath ?: throw IllegalArgumentException("Layoutlib path is missing"),
         outputFolder ?: throw IllegalArgumentException("Output folder path is missing"),
+        metaDataFolder ?: throw IllegalArgumentException("Meta Data folder path is missing"),
         classPath,
         projectClassPath,
         namespace ?: throw IllegalArgumentException("Namespace is missing"),
@@ -188,6 +192,7 @@ fun writeComposeRenderingToJson(
         composeRendering.fontsPath?.let { writer.name(FONTS_PATH).value(it) }
         writer.name(LAYOUTLIB_PATH).value(composeRendering.layoutlibPath)
         writer.name(OUTPUT_FOLDER).value(composeRendering.outputFolder)
+        writer.name(META_DATA_FOLDER).value(composeRendering.metaDataFolder)
         writer.name(CLASS_PATH)
         writer.beginArray()
         composeRendering.classPath.forEach { writer.value(it) }

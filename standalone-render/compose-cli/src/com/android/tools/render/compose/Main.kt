@@ -78,7 +78,7 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
                 ComposeScreenshotResult(resultId, null, ScreenshotError(t))
             }
             screenshotResults.add(screenshotResult)
-            val classesUsed = Path(composeRendering.outputFolder).resolve("$resultId.classes.txt").toFile()
+            val classesUsed = Path(composeRendering.metaDataFolder).resolve("$resultId.classes.txt").toFile()
             classesUsed.writer().use { writer ->
                 usedPaths.forEach { path ->
                     writer.write("$path\n")

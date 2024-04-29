@@ -260,6 +260,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         val output = "$PREVIEW_OUTPUT/$variantSegments"
                         task.outputDir.set(buildDir.dir("$output/rendered"))
                         task.resultsFile.set(buildDir.file("$output/results.json"))
+                        task.metaDataDir.set(buildDir.dir("$output/meta-data"))
 
                         // need to use project.providers as a workaround to gradle issue: https://github.com/gradle/gradle/issues/12388
                         task.sdkFontsDir.set(project.providers.provider {

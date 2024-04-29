@@ -29,6 +29,7 @@ class JsonSerializationTest {
               "fontsPath": "/path/to/fonts",
               "layoutlibPath": "/path/to/layout/lib",
               "outputFolder": "/path/to/output/folder",
+              "metaDataFolder": "/path/to/meta-data/folder",
               "classPath": [
                 "/path/to/lib1.jar",
                 "/path/to/lib2.jar",
@@ -59,6 +60,7 @@ class JsonSerializationTest {
             "/path/to/fonts",
             "/path/to/layout/lib",
             "/path/to/output/folder",
+            "/path/to/meta-data/folder",
             listOf("/path/to/lib1.jar", "/path/to/lib2.jar", "/path/to/classes"),
             listOf("/path/to/lib1.jar", "/path/to/lib2.jar", "/path/to/classes"),
             "com.my.package",
@@ -159,6 +161,7 @@ class JsonSerializationTest {
             "/path/to/fonts",
             "/path/to/layout/lib",
             "/path/to/output/folder",
+            "/path/to/meta-data/folder",
             listOf("/path/to/lib1.jar", "/path/to/lib2.jar", "/path/to/classes"),
             listOf("/path/to/lib1.jar", "/path/to/lib2.jar", "/path/to/classes"),
             "com.my.package",

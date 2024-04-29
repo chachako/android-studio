@@ -95,6 +95,9 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
 
+    @get:OutputDirectory
+    abstract val metaDataDir: DirectoryProperty
+
     @get:Input
     abstract val namespace: Property<String>
 
@@ -163,6 +166,7 @@ abstract class PreviewScreenshotRenderTask : DefaultTask(), VerificationTask {
             fontsDir,
             layoutlibDataDir.singleFile.absolutePath + "/",
             outputDir.get().asFile.absolutePath,
+            metaDataDir.get().asFile.absolutePath,
             namespace.get(),
             getResourcesApk(),
             cliToolArgumentsFile.get().asFile,

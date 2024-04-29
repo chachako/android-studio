@@ -64,6 +64,7 @@ class PreviewFinderTest {
             "fontsPath",
             "layoutlibpath",
             "outputFolder",
+            "metaDataFolder",
             "namespace",
             "resourceApkPath",
             cliToolArgumentsFile,
@@ -75,6 +76,7 @@ class PreviewFinderTest {
               "fontsPath": "fontsPath",
               "layoutlibPath": "layoutlibpath",
               "outputFolder": "outputFolder",
+              "metaDataFolder": "metaDataFolder",
               "classPath": [
                 "path/to/classes.jar",
                 "path/to/R.jar"
