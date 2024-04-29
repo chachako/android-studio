@@ -54,6 +54,7 @@ import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.checks.infrastructure.dos2unix
 import com.android.tools.lint.client.api.LintBaseline.Companion.isSamePathSuffix
+import com.android.tools.lint.client.api.LintBaseline.Companion.pathStartsWith
 import com.android.tools.lint.client.api.LintBaseline.Companion.prefixMatchLength
 import com.android.tools.lint.client.api.LintBaseline.Companion.sameWithAbsolutePath
 import com.android.tools.lint.client.api.LintBaseline.Companion.stringsEquivalent
@@ -277,6 +278,40 @@ class LintBaselineTest {
     assertTrue(isSamePathSuffix("abc\\def\\foo", "..\\..\\abc\\def\\foo"))
     assertTrue(isSamePathSuffix("abc\\def\\foo", "def\\foo"))
     assertFalse(isSamePathSuffix("foo", "bar"))
+  }
+
+  @Test
+  fun testPrefix() {
+    assertTrue("".pathStartsWith(""))
+
+    assertFalse("123".pathStartsWith("1234"))
+    assertTrue("1234".pathStartsWith("1234"))
+    assertTrue("abc/def".pathStartsWith("abc"))
+    assertFalse("abc/def".pathStartsWith("ab"))
+
+    assertTrue("/abc/def".pathStartsWith(""))
+    assertTrue("/abc/def".pathStartsWith("/"))
+    assertTrue("/abc/def".pathStartsWith("\\"))
+    assertTrue("\\abc/def".pathStartsWith("/"))
+
+    assertFalse("/abc/def".pathStartsWith("/ab"))
+
+    assertTrue("/abc/def".pathStartsWith("/abc"))
+    assertTrue("/abc/def".pathStartsWith("\\abc"))
+    assertTrue("\\abc/def".pathStartsWith("/abc"))
+    assertTrue("\\abc\\def".pathStartsWith("/abc"))
+
+    assertFalse("/abc/def".pathStartsWith("/def"))
+
+    assertFalse("/abc/def".pathStartsWith("/abc/de"))
+
+    assertTrue("/abc/def".pathStartsWith("/abc/def"))
+    assertTrue("/abc/def".pathStartsWith("/abc\\def"))
+    assertTrue("/abc\\def".pathStartsWith("/abc/def"))
+    assertFalse("/abc/def".pathStartsWith("/abc/dee"))
+
+    assertTrue("/abc/def/".pathStartsWith("/abc/def"))
+    assertTrue("/abc/def\\".pathStartsWith("/abc/def"))
   }
 
   @Test

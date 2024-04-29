@@ -34,6 +34,7 @@ import com.android.tools.lint.detector.api.TextFormat
 import com.android.tools.lint.detector.api.describeCounts
 import com.android.utils.CharSequenceReader
 import com.android.utils.XmlUtils.toXmlAttributeValue
+import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Lists
 import com.google.common.collect.Maps
@@ -78,6 +79,19 @@ class LintBaseline(
   private val messageToEntry = ArrayListMultimap.create<String, Entry>(100, 20)
 
   private val idToMessages = HashMap<String, MutableSet<String>>(30)
+
+  private val gradleCachePaths: List<String> = run {
+    val gradleHome = client.pathVariables["GRADLE_USER_HOME"] ?: return@run emptyList()
+    val paths = mutableListOf<String>()
+    paths.add("${gradleHome.path}${File.separator}caches${File.separator}")
+    try {
+      val gradleHomeCanon = gradleHome.canonicalFile
+      if (gradleHome.path != gradleHomeCanon.path) {
+        paths.add("${gradleHomeCanon.path}${File.separator}caches${File.separator}")
+      }
+    } catch (_: Exception) {}
+    paths
+  }
 
   /**
    * Whether we should write the baseline file when the baseline is closed, if the baseline file
@@ -279,6 +293,13 @@ class LintBaseline(
 
     val file = location.file
     val path = file.path
+    // This code previously called PathVariables.toPathStringIfMatched on `path` and `entry.path` in
+    // order to see if they started with "$GRADLE_USER_HOME", within the loop below. But this has
+    // poor perf (and redundant re-computation for `path`) when there are many entries and many path
+    // variables. So we instead explicitly just look for the Gradle caches directory prefix, when
+    // necessary, and avoid re-computing this for `path` inside the loop.
+    val pathWithinGradleCaches =
+      lazy(LazyThreadSafetyMode.NONE) { tryGetPathWithinGradleCaches(path) }
     val issueId = issue.id
     for (entry in entries) {
       entry ?: continue
@@ -287,7 +308,11 @@ class LintBaseline(
           IssueRegistry.isDeletedIssueId(entry.issueId) &&
             IssueRegistry.getNewId(entry.issueId) == issueId
       ) {
-        if (isSamePathSuffix(path, entry.path) || isSameGradleCachePath(client, path, entry.path)) {
+        if (
+          isSamePathSuffix(path, entry.path) ||
+            (pathWithinGradleCaches.value != null &&
+              isSimilarGradleCachePath(pathWithinGradleCaches.value!!, entry.path))
+        ) {
           // Remove all linked entries. We don't loop through all the locations;
           // they're allowed to vary over time, we just assume that all entries
           // for the same warning should be cleared.
@@ -317,6 +342,61 @@ class LintBaseline(
     }
 
     return false
+  }
+
+  /**
+   * Returns true if [otherPath] is within the Gradle caches directory and both paths differ by 0 or
+   * 1 parts.
+   *
+   * For example:
+   * ```
+   * pathWithinGradleCaches :       "transforms-3/111/transformed/lib-2.8.1/jars/classes.jar"
+   * otherPath: "/gradle_home/caches/transforms-3/222/transformed/lib-2.8.1/jars/classes.jar"
+   * ```
+   *
+   * would return true. See https://issuetracker.google.com/238892319
+   *
+   * [pathWithinGradleCaches] must have already been simplified via [tryGetPathWithinGradleCaches].
+   * [otherPath] should be a full path.
+   */
+  private fun isSimilarGradleCachePath(
+    pathWithinGradleCaches: CharSequence,
+    otherPath: String,
+  ): Boolean {
+    val otherPathWithinGradleCaches = tryGetPathWithinGradleCaches(otherPath) ?: return false
+    // Gradle cache paths have an ID somewhere in them that changes across test runs/machines
+    // Like transforms-3/ID/transformed/leakcanary-android-core-2.8.1/jars/classes.jar
+    // or artifacts-4/group/name/ID/jars/name-version.jar
+    // We don't want to be too tightly coupled to exactly where this ID shows up in the path,
+    // so we take the two paths and see if they differ by either zero or one directory names.
+
+    val chunks =
+      listOf(pathWithinGradleCaches, otherPathWithinGradleCaches).map { it.split("/", "\\") }
+    if (chunks[0].size != chunks[1].size) return false
+
+    var diffFound = false
+    for (i in chunks[0].indices) {
+      if (chunks[0][i] != chunks[1][i]) {
+        if (diffFound) return false
+        diffFound = true
+      }
+    }
+
+    return true
+  }
+
+  /**
+   * If [path] starts with the Gradle caches directory then returns [path] with that prefix removed
+   * (in other words, returns a relative path within the Gradle caches directory). Otherwise,
+   * returns null.
+   */
+  private fun tryGetPathWithinGradleCaches(path: String): CharSequence? {
+    for (gradleCachePath in gradleCachePaths) {
+      if (path.pathStartsWith(gradleCachePath)) {
+        return path.subSequence(gradleCachePath.length, path.length)
+      }
+    }
+    return null
   }
 
   /**
@@ -758,42 +838,6 @@ class LintBaseline(
       }
     }
 
-    /**
-     * If a path like
-     * "$GRADLE_USER_HOME/caches/transforms-3/4366a02f2b10003dc48387e903833c2d/transformed/leakcanary-android-core-2.8.1/jars/classes.jar"
-     * makes it into the baseline, we should compare the part of the path string inside the cache
-     * instead of the whole path which can change on each test run/machine. See b/238892319
-     */
-    fun isSameGradleCachePath(client: LintClient, path1: String, path2: String): Boolean {
-      val gradleCachePath = "${"$"}GRADLE_USER_HOME/caches/"
-      val cacheRelativePaths =
-        listOf(path1, path2).map { path ->
-          // First we see if the path lies inside $GRADLE_USER_HOME/caches/
-          val pathWithPathVariables =
-            client.pathVariables.toPathStringIfMatched(path) ?: return false
-          if (!pathWithPathVariables.startsWith(gradleCachePath)) return false
-          pathWithPathVariables.removePrefix(gradleCachePath)
-        }
-
-      // Gradle cache paths have an ID somewhere in them that changes across test runs/machines
-      // Like caches/transforms-3/ID/transformed/leakcanary-android-core-2.8.1/jars/classes.jar
-      // or caches/artifacts-4/group/name/ID/jars/name-version.jar
-      // We don't want to be too tightly coupled to exactly where this ID shows up in the path,
-      // so we take the two paths and see if they differ by either zero or one directory names.
-      val chunks = cacheRelativePaths.map { it.split("/") }
-      if (chunks[0].size != chunks[1].size) return false
-
-      var diffFound = false
-      for (i in chunks[0].indices) {
-        if (chunks[0][i] != chunks[1][i]) {
-          if (diffFound) return false
-          diffFound = true
-        }
-      }
-
-      return true
-    }
-
     /** Like path.endsWith(suffix), but considers \\ and / identical. */
     fun isSamePathSuffix(path: String, suffix: String): Boolean {
       var i = path.length - 1
@@ -831,6 +875,45 @@ class LintBaseline(
       }
 
       return true
+    }
+
+    /**
+     * Similar to String.startsWith, but considers / and \ identical, and returns false if the last
+     * part of [prefix] is only a prefix of the corresponding part in [this].
+     *
+     * For example, "/abc/de" is not a prefix of "/abc/def".
+     */
+    @VisibleForTesting
+    fun String.pathStartsWith(prefix: String): Boolean {
+      // Prefix cannot be longer.
+      if (prefix.length > this.length) return false
+      if (prefix.isEmpty()) return true
+
+      // From 0 to prefix.length, all characters must match.
+      // Convert \ to / before comparing.
+      var i = 0
+      while (i < prefix.length) {
+        var p = prefix[i]
+        if (p == '\\') p = '/'
+
+        var t = this[i]
+        if (t == '\\') t = '/'
+
+        if (p != t) return false
+
+        ++i
+      }
+
+      // We could return true, but we avoid returning true for partial parts:
+      //  this:   /abc/def
+      //  prefix: /abc/de
+
+      // If prefix ends in / then we are done.
+      if (prefix[i - 1] == '/' || prefix[i - 1] == '\\') return true
+      // If same length then done.
+      if (prefix.length == this.length) return true
+      // Otherwise, next character must be /.
+      return this[i] == '/' || this[i] == '\\'
     }
 
     private fun getDisplayPath(client: LintClient, project: Project?, file: File): String {
