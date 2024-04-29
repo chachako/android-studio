@@ -74,6 +74,44 @@ class DesugarCompileOnlyDependencyTest {
         }
     }
 
+    /** Regression test for bug 335449140. */
+    @Test
+    fun `desugar library having compileOnly dependency with ASM instrumentation enabled`() {
+        project.buildFile.appendText("\n" +
+            """
+            import com.android.build.api.instrumentation.*
+            import org.objectweb.asm.ClassVisitor
+
+            abstract class AsmClassVisitorFactoryImpl implements AsmClassVisitorFactory<InstrumentationParameters> {
+
+                ClassVisitor createClassVisitor(ClassContext classContext, ClassVisitor nextClassVisitor) {
+                    TODO("Not yet implemented")
+                }
+
+                boolean isInstrumentable(ClassData classData) {
+                    return false
+                }
+            }
+
+            androidComponents {
+                onVariants(selector().all(), {
+                    it.instrumentation.transformClassesWith(AsmClassVisitorFactoryImpl.class, InstrumentationScope.ALL) {}
+                    it.instrumentation.setAsmFramesComputationMode(FramesComputationMode.COPY_FRAMES)
+                })
+            }
+            """.trimIndent()
+        )
+        project.executor()
+            .with(BooleanOption.USE_FULL_CLASSPATH_FOR_DEXING_TRANSFORM, true)
+            .run("assembleDebug")
+        project.getApk(GradleTestProject.ApkType.DEBUG).use { apk ->
+            assertThat(apk)
+                .hasClass(ImplOfInterfaceWithDefaultMethod::class.java)
+                .that()
+                .hasMethod("myDefaultMethod")
+        }
+    }
+
 }
 
 @Suppress("unused") // Used in this test

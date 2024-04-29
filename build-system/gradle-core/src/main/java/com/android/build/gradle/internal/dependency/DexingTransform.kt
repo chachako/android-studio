@@ -384,10 +384,21 @@ abstract class DexingWithClasspathTransform : BaseDexingTransform<BaseDexingTran
 }
 
 /**
- * Dexing transform which uses the full classpath. This classpath consists of all external artifacts
- * ([com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope.EXTERNAL])
- * in addition to the input artifact's dependencies provided by Gradle through
- * [org.gradle.api.artifacts.transform.InputArtifactDependencies].
+ * Dexing transform which uses the full classpath (to address bugs such as b/230454566).
+ *
+ * Normally we can obtain this full classpath by querying for CLASSES with scope
+ * [com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactScope.ALL]. However, this
+ * would impact build performance, especially for incremental builds where `PROJECT` classes often
+ * change, causing all dexing transforms to rerun.
+ *
+ * To mitigate this performance impact while keeping the build correct, the full classpath will
+ * consist of the following instead:
+ *   1. All external artifacts ([Parameters.externalArtifacts])
+ *   2. The input artifact's dependencies provided by Gradle ([inputArtifactDependencies]) -- This
+ *   will ensure that if some of the input artifact's dependencies have `PROJECT` scope (i.e., they
+ *   are not part of [Parameters.externalArtifacts]), they will still be included in the full
+ *   classpath. (The downside is that if some of the input artifact's dependencies have `EXTERNAL`
+ *   scope, they will overlap with [Parameters.externalArtifacts], but that is fine.)
  */
 @CacheableTransform
 abstract class DexingWithFullClasspathTransform :
@@ -589,7 +600,10 @@ object DexingRegistration {
                     creationConfig.variantDependencies.getArtifactCollection(
                         AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH,
                         AndroidArtifacts.ArtifactScope.EXTERNAL,
-                        inputArtifactType
+                        inputArtifactType,
+                        attributes = AsmClassesTransform.getAttributesForConfig(creationConfig).takeIf {
+                            component.dependenciesClassesAreInstrumented
+                        }
                     ).artifactFiles
                 )
             }
