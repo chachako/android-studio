@@ -16,6 +16,7 @@
 
 package com.android.sdklib.internal.avd;
 
+import static com.android.sdklib.internal.avd.AvdManager.USER_SETTINGS_INI_PREFERRED_ABI;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -391,6 +392,47 @@ public final class AvdManagerTest {
         assertFalse(
                 "Expected NO snapshots.img in " + mAvdFolder,
                 Files.exists(mAvdFolder.resolve("snapshots.img")));
+    }
+
+    @Test
+    public void createAvdWithNullValueUserSettings() {
+        Map<String, String> userSettings = new HashMap<>();
+        userSettings.put(USER_SETTINGS_INI_PREFERRED_ABI, null);
+        mAvdManager.createAvd(
+                mAvdFolder,
+                name.getMethodName(),
+                mSystemImageAosp,
+                null,
+                null,
+                null,
+                null,
+                userSettings,
+                null,
+                false,
+                false,
+                false);
+
+        Path avdConfigFile = mAvdFolder.resolve("config.ini");
+        assertTrue("Expected config.ini in " + mAvdFolder, CancellableFileIo.exists(avdConfigFile));
+        Map<String, String> properties =
+                AvdManager.parseIniFile(new PathFileWrapper(avdConfigFile), null);
+        assertFalse(CancellableFileIo.exists(mAvdFolder.resolve("boot.prop")));
+        assertEquals(
+                "system-images/android-23/default/x86/".replace('/', File.separatorChar),
+                properties.get("image.sysdir.1"));
+        assertNull(properties.get("snapshot.present"));
+        assertFalse(
+                "Expected NO " + AvdManager.USERDATA_IMG + " in " + mAvdFolder,
+                CancellableFileIo.exists(mAvdFolder.resolve(AvdManager.USERDATA_IMG)));
+        assertFalse(
+                "Expected NO " + AvdManager.USERDATA_QEMU_IMG + " in " + mAvdFolder,
+                CancellableFileIo.exists(mAvdFolder.resolve(AvdManager.USERDATA_QEMU_IMG)));
+        assertFalse(
+                "Expected NO snapshots.img in " + mAvdFolder,
+                CancellableFileIo.exists(mAvdFolder.resolve("snapshots.img")));
+        Path userSettingsIniFile = AvdInfo.getUserSettingsPath(mAvdFolder);
+        assertTrue(
+                "Expected user-settings.ini in " + mAvdFolder, Files.exists(userSettingsIniFile));
     }
 
     @Test
