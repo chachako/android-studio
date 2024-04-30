@@ -22,6 +22,7 @@ import com.android.ddmlib.SyncException
 import com.android.fakeadbserver.DeviceFileState
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import org.hamcrest.CoreMatchers
@@ -158,6 +159,28 @@ class AdblibIDeviceWrapperTest {
         // Note that `serialNumber` above matches an emulator pattern and as a result a call to
         // `createAvdData` triggers `connectedDevice.session.openEmulatorConsole` which throws
         // a `java.io.IOException: Error connecting channel to address 'localhost/127.0.0.1:64178'`.
+        assertNull(adblibIDeviceWrapper.avdData.get())
+        assertNull(adblibIDeviceWrapper.avdName)
+        assertNull(adblibIDeviceWrapper.avdPath)
+    }
+
+    @Test
+    fun avdIsQueriedOnlyWhenDeviceGoesOnline() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, fakeDevice) = createConnectedDevice(
+            "device1", DeviceState.DeviceStatus.OFFLINE
+        )
+        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+
+        // Assert: AvdData `ListenableFuture` doesn't get set while device is not online
+        delay(50)
+        assertFalse(adblibIDeviceWrapper.avdData.isDone)
+        assertNull(adblibIDeviceWrapper.avdName)
+        assertNull(adblibIDeviceWrapper.avdPath)
+
+        // Act / Assert
+        fakeDevice.deviceStatus = DeviceState.DeviceStatus.ONLINE
+        yieldUntil { adblibIDeviceWrapper.avdData.isDone }
         assertNull(adblibIDeviceWrapper.avdData.get())
         assertNull(adblibIDeviceWrapper.avdName)
         assertNull(adblibIDeviceWrapper.avdPath)

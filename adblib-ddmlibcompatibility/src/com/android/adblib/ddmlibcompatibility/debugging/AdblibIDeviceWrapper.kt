@@ -69,6 +69,7 @@ import com.android.sdklib.AndroidVersion
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.asListenableFuture
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -108,7 +109,16 @@ internal class AdblibIDeviceWrapper(
             .createDeviceClientManager(bridge, this)
 
     /** Name and path of the AVD  */
-    private val mAvdData = connectedDevice.scope.async { createAvdData() }
+    private val mAvdData = connectedDevice.scope.async {
+        // Wait until the device goes online before creating avd data.
+        // Note that extra care should be taken when using `connectedDevice.deviceInfoFlow.deviceState` vs
+        // using `AdblibIDeviceWrapper.deviceState`. In this case it's ok to use the former as
+        // all we care about is populating avd data as soon as possible.
+        connectedDevice.deviceInfoFlow.first {
+            it.deviceState == com.android.adblib.DeviceState.ONLINE
+        }
+        createAvdData()
+    }
     private var mAvdName: String? = null
     private var mAvdPath: String? = null
 
