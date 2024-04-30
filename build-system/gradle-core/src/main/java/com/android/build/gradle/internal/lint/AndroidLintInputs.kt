@@ -231,7 +231,8 @@ abstract class LintTool {
         workerExecutor: WorkerExecutor,
         mainClass: String,
         arguments: List<String>,
-        lintMode: LintMode
+        lintMode: LintMode,
+        useK2Uast: Boolean,
     ) {
         submit(
             workerExecutor,
@@ -240,8 +241,9 @@ abstract class LintTool {
             android = true,
             fatalOnly = false,
             await = false,
+            lintMode = lintMode,
             hasBaseline = false,
-            lintMode = lintMode
+            useK2Uast = useK2Uast,
         )
     }
 
@@ -254,6 +256,7 @@ abstract class LintTool {
         await: Boolean,
         lintMode: LintMode,
         hasBaseline: Boolean,
+        useK2Uast: Boolean,
         returnValueOutputFile: File? = null
     ) {
         val workQueue = if (runInProcess.get()) {
@@ -281,6 +284,7 @@ abstract class LintTool {
             parameters.returnValueOutputFile.set(returnValueOutputFile)
             parameters.lintMode.set(lintMode)
             parameters.hasBaseline.set(hasBaseline)
+            parameters.useK2Uast.set(useK2Uast)
         }
         if (await) {
             workQueue.await()

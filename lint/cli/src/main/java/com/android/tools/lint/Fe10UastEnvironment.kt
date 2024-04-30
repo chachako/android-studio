@@ -69,7 +69,6 @@ import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.diagnostics.Diagnostic
-import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.references.KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.idea.references.ReadWriteAccessChecker
 import org.jetbrains.kotlin.library.KotlinLibrary
@@ -83,7 +82,6 @@ import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
 import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisHandlerExtension
 import org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingCompilerConfigurationComponentRegistrar
 import org.jetbrains.kotlin.util.slicedMap.WritableSlice
-import org.jetbrains.uast.UastFacade
 import org.jetbrains.uast.UastLanguagePlugin
 import org.jetbrains.uast.kotlin.BaseKotlinUastResolveProviderService
 import org.jetbrains.uast.kotlin.KotlinUastLanguagePlugin
@@ -348,11 +346,6 @@ private fun configureAnalysisApiServices(
 
 private fun configureFe10ApplicationEnvironment(appEnv: CoreApplicationEnvironment) {
   configureApplicationEnvironment(appEnv) {
-    // TODO: once the migration is done, we don't need to worry about sticky plugin cache anymore.
-    val cachedPlugin = UastFacade.findPlugin(KotlinLanguage.INSTANCE)
-    if (cachedPlugin !is KotlinUastLanguagePlugin) {
-      UastFacade.clearCachedPlugin()
-    }
     it.addExtension(UastLanguagePlugin.extensionPointName, KotlinUastLanguagePlugin())
 
     it.application.registerService(

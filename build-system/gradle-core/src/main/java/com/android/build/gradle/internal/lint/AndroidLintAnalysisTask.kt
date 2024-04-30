@@ -136,14 +136,15 @@ abstract class AndroidLintAnalysisTask : NonIncrementalTask() {
         lintTool.lintClassLoaderBuildService.get().shouldDispose = true
         writeLintModelFile()
         lintTool.submit(
-            mainClass = "com.android.tools.lint.Main",
             workerExecutor = workerExecutor,
+            mainClass = "com.android.tools.lint.Main",
             arguments = generateCommandLineArguments(),
             android = android.get(),
             fatalOnly = fatalOnly.get(),
             await = false,
             lintMode = LintMode.ANALYSIS,
-            hasBaseline = projectInputs.lintOptions.baseline.orNull != null
+            hasBaseline = projectInputs.lintOptions.baseline.orNull != null,
+            useK2Uast = useK2Uast.get(),
         )
     }
 
