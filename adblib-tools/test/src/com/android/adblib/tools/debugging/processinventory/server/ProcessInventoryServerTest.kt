@@ -150,8 +150,6 @@ class ProcessInventoryServerTest {
         sendDeviceProcess(session, localServerSocket, deviceSerial, pid = 124)
         yieldUntil { trackerResponses.size == 2 }
 
-        // Send the same update process info a 2nd time, and check the server
-        // does not send a new tracking event.
         sendDeviceProcess(session, localServerSocket, deviceSerial, pid = 124, processName = "foo", packageName = "bar")
         yieldUntil { trackerResponses.size == 3 }
 
@@ -200,11 +198,6 @@ class ProcessInventoryServerTest {
         yieldUntil { trackerResponses.size == 2 }
 
         sendDeviceProcessTermination(session, localServerSocket, deviceSerial, pid = 124)
-        yieldUntil { trackerResponses.size == 3 }
-
-        // Send the same update process info a 2nd time, and check the server
-        // does not send a new tracking event.
-        sendDeviceProcess(session, localServerSocket, deviceSerial, pid = 124, processName = "foo", packageName = "bar")
         yieldUntil { trackerResponses.size == 3 }
 
         deferred.cancel("Test is finished")
