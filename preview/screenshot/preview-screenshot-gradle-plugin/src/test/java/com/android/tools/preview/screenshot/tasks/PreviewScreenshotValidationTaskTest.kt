@@ -40,7 +40,7 @@ class PreviewScreenshotValidationTaskTest {
     @Before
     fun setUp() {
         val project = ProjectBuilder.builder().withProjectDir(tempDirRule.newFolder()).build()
-        task = project.tasks.create("previewScreenshotDebugAndroidTest", PreviewScreenshotValidationTask::class.java)
+        task = project.tasks.create("testDebugScreenshotTest", PreviewScreenshotValidationTask::class.java)
     }
 
     @Test

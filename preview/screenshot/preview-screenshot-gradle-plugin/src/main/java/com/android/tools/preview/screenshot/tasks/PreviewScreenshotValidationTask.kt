@@ -59,9 +59,6 @@ abstract class PreviewScreenshotValidationTask : Test() {
     abstract val resultsDir: DirectoryProperty
 
     @get:Internal
-    abstract val reportFilePath: DirectoryProperty
-
-    @get:Internal
     abstract val analyticsService: Property<AnalyticsService>
 
     @TaskAction

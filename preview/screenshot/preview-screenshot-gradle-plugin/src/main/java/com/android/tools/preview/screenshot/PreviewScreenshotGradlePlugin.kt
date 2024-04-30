@@ -23,10 +23,8 @@ import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.variant.AndroidComponentsExtension
-import com.android.build.api.variant.ApplicationVariant
-import com.android.build.api.variant.HasDeviceTests
-import com.android.build.api.variant.HasUnitTest
-import com.android.build.api.variant.LibraryVariant
+import com.android.build.api.variant.HasHostTests
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.api.AndroidBasePlugin
@@ -42,7 +40,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.attributes.Attribute
-import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPluginExtension
@@ -55,8 +52,10 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 
-private val minAgpVersion = AndroidPluginVersion(8, 4, 0).alpha(9)
-private val maxAgpVersion = AndroidPluginVersion(8,5,255)
+private val minAgpVersion = AndroidPluginVersion(8, 5, 0).alpha(8)
+//temporarily added target version so that integration tests running on release version 8.5.0-alpha08 can run successfully
+private val targetAgpVersion = AndroidPluginVersion(8, 5, 0).beta(1)
+private val maxAgpVersion = AndroidPluginVersion(8,5    ,255)
 
 /**
  * An entry point for Screenshot plugin that adds support for screenshot testing on Compose Previews
@@ -105,6 +104,13 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     """.trimIndent()
                 )
             }
+            if (agpVersion < targetAgpVersion) {
+                project.logger.warn(
+                    """
+                    For best experience, please use ${targetAgpVersion.toVersionString()}. Current version is $agpVersion.
+                    """.trimIndent()
+                )
+            }
             val screenshotSourcesetEnabled = project.findProperty(ST_SOURCE_SET_ENABLED)
             if (screenshotSourcesetEnabled.toString().lowercase(Locale.US) != "true") {
                 error(
@@ -130,7 +136,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
               project.configurations.getByName(layoutlibResourcesConfigurationName))
 
             val updateAllTask = project.tasks.register(
-                "previewScreenshotUpdateAndroidTest",
+                "updateScreenshotTest",
                 Task::class.java
             ) { task ->
                 task.description = "Update screenshots for all variants."
@@ -138,7 +144,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
             }
 
             val validateAllTask = project.tasks.register(
-                "previewScreenshotAndroidTest",
+                "validateScreenshotTest",
                 Task::class.java
             ) { task ->
                 task.description = "Run screenshot tests for all variants."
@@ -171,11 +177,10 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 }
             }
             componentsExtension.onVariants { variant ->
-                if (variant is HasDeviceTests && variant.debuggable) {
+                if (variant is HasHostTests && variant.debuggable) {
                     val variantName = variant.name
-
-                    val screenshotTestComponent = variant.deviceTests.singleOrNull() ?: return@onVariants
-
+                    val screenshotTestComponent = variant.hostTests[HostTestBuilder.SCREENSHOT_TEST_TYPE] ?: return@onVariants
+                    val referenceImagePath = "src/$variantName/screenshotTest/reference"
                     val discoveryTaskProvider =
                         project.tasks.register(
                             "${variantName}PreviewDiscovery",
@@ -224,33 +229,19 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     val artifactsImplClass = classLoader.loadClass(ARTIFACT_IMPL)
                     val analyticsEnabledArtifactsClass = classLoader.loadClass(ANALYTICS_ENABLED_ARTIFACTS)
                     val analyticsEnabledArtifactsGetDelegateMethod = analyticsEnabledArtifactsClass.getMethod("getDelegate")
-                    val processedResClass = classLoader.loadClass("${INTERNAL_ARTIFACT_TYPE}\$PROCESSED_RES")
                     val apkForLocalTestClass = classLoader.loadClass("${INTERNAL_ARTIFACT_TYPE}\$APK_FOR_LOCAL_TEST")
                     val artifactsImplGet = artifactsImplClass.getDeclaredMethod("get", Artifact.Single::class.java)
-                    val resourceDirProvider = if (variant is ApplicationVariant) {
-                        val artifacts = variant.artifacts
-                        val artifactImplObject = when {
-                            artifactsImplClass.isInstance(artifacts) -> artifacts
-                            analyticsEnabledArtifactsClass.isInstance(artifacts) -> analyticsEnabledArtifactsGetDelegateMethod.invoke(artifacts)
-                            else -> throw RuntimeException("Unexpected artifact type ${artifacts.javaClass}")
-                        }
-                        val instance = processedResClass.getField("INSTANCE").get(null)
-                        // ArtifactsImpl::get(InternalArtifactType.PROCESSED_RES)
-                        @Suppress("UNCHECKED_CAST")
-                        artifactsImplGet.invoke(artifactImplObject, instance) as? Provider<Directory>
-                    } else null
-                    val resourceFileProvider = if (variant is LibraryVariant) {
-                        val artifacts = (variant as HasUnitTest).unitTest!!.artifacts
-                        val artifactImplObject: Any = when {
-                            artifactsImplClass.isInstance(artifacts) -> artifacts
-                            analyticsEnabledArtifactsClass.isInstance(artifacts) -> analyticsEnabledArtifactsGetDelegateMethod.invoke(artifacts)
-                            else -> throw RuntimeException("Unexpected artifact type ${artifacts.javaClass}")
-                        }
-                        val instance = apkForLocalTestClass.getField("INSTANCE").get(null)
-                        // ArtifactsImpl::get(InternalArtifactType.APK_FOR_LOCAL_TEST)
-                        @Suppress("UNCHECKED_CAST")
-                        artifactsImplGet.invoke(artifactImplObject, instance) as? Provider<RegularFile>
-                    } else null
+
+                    val artifacts = screenshotTestComponent.artifacts
+                    val artifactImplObject = when {
+                        artifactsImplClass.isInstance(artifacts) -> artifacts
+                        analyticsEnabledArtifactsClass.isInstance(artifacts) -> analyticsEnabledArtifactsGetDelegateMethod.invoke(artifacts)
+                        else -> throw RuntimeException("Unexpected artifact type ${artifacts.javaClass}")
+                    }
+                    val instance = apkForLocalTestClass.getField("INSTANCE").get(null)
+                    // ArtifactsImpl::get(InternalArtifactType.APK_FOR_LOCAL_TEST)
+                    @Suppress("UNCHECKED_CAST")
+                    val resourceFileProvider = artifactsImplGet.invoke(artifactImplObject, instance) as? Provider<RegularFile>
 
                     val renderTaskProvider = project.tasks.register(
                         "${variantName}PreviewScreenshotRender",
@@ -272,7 +263,6 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.layoutlibJar.from(task.project.configurations.getByName(
                             layoutlibJarConfigurationName))
                         task.layoutlibDataDir.setFrom(layoutlibDataFromMaven.layoutlibDataDirectory)
-                        resourceDirProvider?.let { task.resourcesDir.set(it) }
                         resourceFileProvider?.let { task.resourceFile.set(it) }
 
                         task.namespace.set(variant.namespace)
@@ -289,15 +279,10 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     // Rendering requires androidx.compose.ui:ui-tooling as a runtime dependency
                     variant.runtimeConfiguration.checkUiToolingPresent { isPresent ->
                         if (!isPresent) {
-                            val errorMessage = "Missing required runtime dependency. Please add androidx.compose.ui:ui-tooling to your testing module's dependencies."
-                            if (variant.deviceTests.isEmpty()) {
-                                throw RuntimeException(errorMessage)
-                            }
-                            else {
-                                variant.deviceTests[0].runtimeConfiguration.checkUiToolingPresent { isPresentInDeviceTests ->
-                                    if (!isPresentInDeviceTests) {
-                                        throw RuntimeException(errorMessage)
-                                    }
+                            val errorMessage = "Missing required runtime dependency. Please add androidx.compose.ui:ui-tooling as a screenshotTestImplementation dependency."
+                            screenshotTestComponent.runtimeConfiguration.checkUiToolingPresent { isPresentInScreenshotTests ->
+                                if (!isPresentInScreenshotTests) {
+                                    throw RuntimeException(errorMessage)
                                 }
                             }
                         }
@@ -312,10 +297,10 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                             PreviewScreenshotRenderTask::mainClassesDirAll,
                         )
 
-                    variant.deviceTests.singleOrNull()?.artifacts
-                        ?.forScope(ScopedArtifacts.Scope.ALL)
-                        ?.use(renderTaskProvider)
-                        ?.toGet(
+                    screenshotTestComponent.artifacts
+                        .forScope(ScopedArtifacts.Scope.ALL)
+                        .use(renderTaskProvider)
+                        .toGet(
                             ScopedArtifact.CLASSES,
                             PreviewScreenshotRenderTask::testClasspathAll,
                             PreviewScreenshotRenderTask::testClassesDirAll,
@@ -330,21 +315,20 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                                     PreviewScreenshotRenderTask::mainClassesDirProject,
                             )
 
-                    variant.deviceTests.singleOrNull()?.artifacts
-                            ?.forScope(ScopedArtifacts.Scope.PROJECT)
-                            ?.use(renderTaskProvider)
-                            ?.toGet(
+                    screenshotTestComponent.artifacts
+                            .forScope(ScopedArtifacts.Scope.PROJECT)
+                            .use(renderTaskProvider)
+                            .toGet(
                                     ScopedArtifact.CLASSES,
                                     PreviewScreenshotRenderTask::testClasspathProject,
                                     PreviewScreenshotRenderTask::testClassesDirProject,
                             )
 
                     val updateTask = project.tasks.register(
-                        "previewScreenshotUpdate${variantName.capitalized()}AndroidTest",
+                        "update${variantName.capitalized()}ScreenshotTest",
                         PreviewScreenshotUpdateTask::class.java
                     ) { task ->
-                        val variantSegments = variant.computePathSegments()
-                        task.referenceImageDir.set(project.layout.projectDirectory.dir("src/androidTest/screenshot/$variantSegments"))
+                        task.referenceImageDir.set(project.layout.projectDirectory.dir(referenceImagePath))
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
                         task.renderTaskResultFile.set(renderTaskProvider.flatMap { it.resultsFile })
                         task.description = "Update screenshots for the $variantName build."
@@ -355,11 +339,11 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     updateAllTask.configure { it.dependsOn(updateTask) }
 
                     val previewScreenshotValidationTask = project.tasks.register(
-                        "previewScreenshot${variantName.capitalized()}AndroidTest",
+                        "validate${variantName.capitalized()}ScreenshotTest",
                         PreviewScreenshotValidationTask::class.java
                     ) { task ->
                         val variantSegments = variant.computePathSegments()
-                        task.referenceImageDir.set(project.layout.projectDirectory.dir("src/androidTest/screenshot/$variantSegments"))
+                        task.referenceImageDir.set(project.layout.projectDirectory.dir(referenceImagePath))
                         task.referenceImageDir.disallowChanges()
                         task.previewFile.set(discoveryTaskProvider.flatMap { it.previewsOutputFile })
                         task.renderTaskOutputDir.set(renderTaskProvider.flatMap { it.outputDir })
@@ -367,8 +351,6 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         task.resultsDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/results"))
                         task.diffImageDir.set(buildDir.dir("$PREVIEW_OUTPUT/$variantSegments/diffs"))
                         task.diffImageDir.disallowChanges()
-                        task.reportFilePath.set(buildDir.dir("$PREVIEW_REPORTS/$variantSegments"))
-                        task.reportFilePath.disallowChanges()
                         task.analyticsService.set(analyticsServiceProvider)
                         task.usesService(analyticsServiceProvider)
                         task.description = "Run screenshot tests for the $variantName build."
@@ -532,6 +514,6 @@ private const val ARTIFACT_IMPL = "com.android.build.api.artifact.impl.Artifacts
 private const val ANALYTICS_ENABLED_ARTIFACTS = "com.android.build.api.component.analytics.AnalyticsEnabledArtifacts"
 private const val INTERNAL_ARTIFACT_TYPE = "com.android.build.gradle.internal.scope.InternalArtifactType"
 
-private const val PREVIEW_OUTPUT = "outputs/androidTest-results/preview"
+private const val PREVIEW_OUTPUT = "outputs/screenshotTest-results/preview"
 private const val PREVIEW_INTERMEDIATES = "intermediates/preview"
-private const val PREVIEW_REPORTS = "reports/androidTests/preview"
+private const val PREVIEW_REPORTS = "reports/screenshotTest/preview"
