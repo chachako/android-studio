@@ -227,6 +227,100 @@ class ForbiddenStudioCallDetectorTest {
   }
 
   @Test
+  fun testAddDependencyCheck() {
+    studioLint()
+      .files(
+        kotlin(
+            """
+                    package test.pkg
+                    import com.android.tools.idea.gradle.dsl.api.dependencies.DependenciesModel
+                    import com.android.tools.idea.gradle.dsl.api.settings.PluginsModel
+
+                    fun test1(model: DependenciesModel) {
+                       model.addArtifact("api", "com.example:example:1.0", listOf())
+                    }
+
+                    fun test2(model: DependenciesModel) {
+                       model.addPlatformArtifact("api", "com.example:example:1.0", false)
+                    }
+
+                    fun test3(model: PluginsModel) {
+                       model.applyPlugin("some.plugin")
+                    }
+                    """
+          )
+          .indented(),
+        java(
+            """
+                   package com.android.tools.idea.gradle.dsl.api.dependencies;
+                   import com.android.tools.idea.gradle.dsl.api.ext.ReferenceTo;
+                   import com.android.tools.idea.gradle.dsl.api.dependencies.ArtifactDependencySpec;
+                   import java.util.List;
+                   public interface DependenciesModel {
+                      void addArtifact(String configurationName, String compactNotation);
+                      void addArtifact(String configurationName,
+                                       String compactNotation,
+                                       List<ArtifactDependencySpec> excludes);
+                      void addArtifact(String configurationName,
+                                       ReferenceTo reference,
+                                       List<ArtifactDependencySpec> excludes);
+                      void addArtifact(String configurationName, ReferenceTo reference);
+                      void addArtifact(String configurationName, ArtifactDependencySpec dependency);
+                      void addArtifact(String configurationName,
+                                       ArtifactDependencySpec dependency,
+                                       List<ArtifactDependencySpec> excludes);
+                      void addPlatformArtifact(String configurationName, String compactNotation, boolean enforced);
+                      void addPlatformArtifact(String configurationName, ReferenceTo reference, boolean enforced);
+                      void addPlatformArtifact(String configurationName, ArtifactDependencySpec dependency, boolean enforced);
+                    }
+                    """
+          )
+          .indented(),
+        java(
+            """
+          package com.android.tools.idea.gradle.dsl.api.ext;
+          public final class ReferenceTo { }
+        """
+          )
+          .indented(),
+        java(
+            """
+          package com.android.tools.idea.gradle.dsl.api.dependencies;
+          public interface ArtifactDependencySpec { }
+        """
+          )
+          .indented(),
+        java(
+            """
+          package com.android.tools.idea.gradle.dsl.api.settings;
+          public interface PluginsModel {
+            PluginModel applyPlugin(@NotNull String plugin);
+            PluginModel applyPlugin(String plugin, String version);
+            PluginModel applyPlugin(@NotNull String plugin, @Nullable String version, @Nullable Boolean apply);
+          }
+        """
+          )
+          .indented(),
+      )
+      .issues(ForbiddenStudioCallDetector.ADD_DEPENDENCY)
+      .run()
+      .expect(
+        """
+                src/test/pkg/test.kt:6: Error: Do not use addArtifact or addPlatformArtifact, prefer DependenciesHelper [AddDependencyUsage]
+                   model.addArtifact("api", "com.example:example:1.0", listOf())
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/test.kt:10: Error: Do not use addArtifact or addPlatformArtifact, prefer DependenciesHelper [AddDependencyUsage]
+                   model.addPlatformArtifact("api", "com.example:example:1.0", false)
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                src/test/pkg/test.kt:14: Error: Do not use PluginsModel.applyPlugin, prefer DependenciesHelper [AddDependencyUsage]
+                   model.applyPlugin("some.plugin")
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~
+                3 errors, 0 warnings
+                """
+      )
+  }
+
+  @Test
   fun testAddToStdlibMultipleImports() {
     studioLint()
       .files(

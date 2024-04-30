@@ -80,6 +80,7 @@ class StudioIssueRegistry : IssueRegistry() {
       ForbiddenStudioCallDetector.INTERN,
       ForbiddenStudioCallDetector.FILES_COPY,
       ForbiddenStudioCallDetector.MOCKITO_WHEN,
+      ForbiddenStudioCallDetector.ADD_DEPENDENCY,
       ForkJoinPoolDetector.COMMON_FJ_POOL,
       ForkJoinPoolDetector.NEW_FJ_POOL,
       GradleApiUsageDetector.ISSUE,

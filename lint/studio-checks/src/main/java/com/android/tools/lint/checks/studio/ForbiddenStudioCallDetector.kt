@@ -105,6 +105,26 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
         platforms = STUDIO_PLATFORMS,
         implementation = IMPLEMENTATION,
       )
+
+    @JvmField
+    val ADD_DEPENDENCY =
+      Issue.create(
+        id = "AddDependencyUsage",
+        briefDescription = "Consider using DependenciesHelper for adding dependencies",
+        explanation =
+          """
+            Often adding artifacts or plugins to project require changing catalog file. \
+            There are some specific cases when catalog should be omitted. All this logic \
+            lives inside `DependenciesHelper` so prefer using it instead of adding artifact \
+            (with `DependenciesModel.addArtifact/addPlatformArtifact`) or \
+            plugin (with `PluginsModel.applyPlugin`) directly.
+                """,
+        category = CORRECTNESS,
+        enabledByDefault = false,
+        severity = Severity.ERROR,
+        platforms = STUDIO_PLATFORMS,
+        implementation = IMPLEMENTATION,
+      )
   }
 
   override fun getApplicableUastTypes() = listOf(UCallExpression::class.java)
@@ -127,7 +147,8 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
     }
   }
 
-  override fun getApplicableMethodNames(): List<String> = listOf("intern", "copy", "when")
+  override fun getApplicableMethodNames(): List<String> =
+    listOf("intern", "copy", "when", "addArtifact", "applyPlugin", "addPlatformArtifact")
 
   override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
     // String#intern
@@ -179,6 +200,36 @@ class ForbiddenStudioCallDetector : Detector(), SourceCodeScanner {
         context.getCallLocation(node, includeReceiver = false, includeArguments = true),
         "Do not use `Mockito.when` from Kotlin; use `MocktioKt.whenever` instead",
         fix,
+      )
+    }
+    // DependenciesModel#addArtifact/addPlatformArtifact
+    if (
+      (method.name == "addArtifact" || method.name == "addPlatformArtifact") &&
+        context.evaluator.isMemberInClass(
+          method,
+          "com.android.tools.idea.gradle.dsl.api.dependencies.DependenciesModel",
+        )
+    ) {
+      context.report(
+        ADD_DEPENDENCY,
+        node,
+        context.getCallLocation(node, includeReceiver = false, includeArguments = true),
+        "Do not use `addArtifact` or `addPlatformArtifact`, prefer `DependenciesHelper`",
+      )
+    }
+    // PluginsModel#applyPlugin
+    if (
+      (method.name == "applyPlugin" || method.name == "addPlatformArtifact") &&
+        context.evaluator.isMemberInClass(
+          method,
+          "com.android.tools.idea.gradle.dsl.api.settings.PluginsModel",
+        )
+    ) {
+      context.report(
+        ADD_DEPENDENCY,
+        node,
+        context.getCallLocation(node, includeReceiver = false, includeArguments = true),
+        "Do not use `PluginsModel.applyPlugin`, prefer `DependenciesHelper`",
       )
     }
   }
