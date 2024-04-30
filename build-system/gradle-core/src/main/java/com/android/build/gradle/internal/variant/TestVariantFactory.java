@@ -233,9 +233,7 @@ public class TestVariantFactory
             @NonNull VariantServices variantServices,
             @NonNull TaskCreationServices taskCreationServices,
             @NonNull GlobalTaskCreationConfig globalConfig,
-            @NonNull HostTestBuilderImpl hostTestBuilder,
-            @NonNull String hostTestType,
-            boolean useBuiltInKotlinSupport) {
+            @NonNull HostTestBuilderImpl hostTestBuilder) {
         throw new RuntimeException("cannot instantiate screenshot-test properties in test plugin");
     }
 

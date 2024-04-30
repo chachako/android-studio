@@ -55,6 +55,7 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
+import com.android.builder.core.ComponentTypeImpl
 import com.android.utils.appendCapitalized
 import com.android.utils.capitalizeAndAppend
 import com.google.common.collect.ImmutableMap
@@ -156,7 +157,9 @@ abstract class VariantImpl<DslInfoT: VariantDslInfo>(
     )
     @Suppress("DEPRECATION")
     override val unitTest: UnitTest?
-        get() = hostTests().firstOrNull() { it is UnitTest } as? UnitTest
+        get() = hostTests().firstOrNull() {
+            it.componentType == ComponentTypeImpl.UNIT_TEST
+        } as? UnitTest
 
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API

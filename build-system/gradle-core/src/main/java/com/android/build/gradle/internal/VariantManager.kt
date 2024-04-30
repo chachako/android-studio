@@ -23,6 +23,7 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.TestedExtension
 import com.android.build.api.extension.impl.VariantApiOperationsRegistrar
+import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.HasDeviceTests
 import com.android.build.api.variant.HasDeviceTestsBuilder
 import com.android.build.api.variant.HasHostTests
@@ -585,8 +586,7 @@ class VariantManager<
         testedComponentInfo: VariantComponentInfo<VariantBuilderT, VariantDslInfoT, VariantT>,
         componentType: ComponentType,
         testFixturesEnabled: Boolean,
-        deviceTestBuilder: DeviceTestBuilderImpl? = null,
-        hostTestBuilder: HostTestBuilderImpl? = null,
+        testBuilder: Any,
     ): TestComponentCreationConfig {
 
         // handle test variant
@@ -628,16 +628,10 @@ class VariantManager<
             }
         }
 
-        // TODO: Eventually, we must get rid of screenshot_test component type and specific types
-        val testComponentDslInfo = when(componentType) {
-            ComponentTypeImpl.UNIT_TEST ->
-                variantDslInfoBuilder.createUnitTestComponentDslInfo(
-                    hostTestBuilder?._enableCodeCoverage ?: false)
-            ComponentTypeImpl.SCREENSHOT_TEST ->
-                variantDslInfoBuilder.createScreenshotTestComponentDslInfo(
-                    hostTestBuilder?._enableCodeCoverage ?: false)
-            else ->
-                variantDslInfoBuilder.createDslInfo()
+        val testComponentDslInfo = when(testBuilder) {
+            is HostTestBuilder -> variantDslInfoBuilder.createHostTestComponentDslInfo()
+            is DeviceTestBuilder -> variantDslInfoBuilder.createAndroidTestComponentDslInfo()
+            else -> throw RuntimeException("Unknown test builder instance ${testBuilder.javaClass.name}")
         }
 
         createCompoundSourceSets(productFlavorDataList, variantDslInfoBuilder)
@@ -714,13 +708,13 @@ class VariantManager<
 
         val testComponent = when(componentType) {
             // this is ANDROID_TEST
-            ComponentTypeImpl.ANDROID_TEST -> deviceTestBuilder?.let {
+            ComponentTypeImpl.ANDROID_TEST ->
                 variantFactory.createAndroidTest(
                     testComponentDslInfo.componentIdentity,
                     variantFactory.createAndroidTestBuildFeatureValues(
-                            dslExtension.buildFeatures,
-                            dslExtension.dataBinding,
-                            dslServices.projectOptions
+                        dslExtension.buildFeatures,
+                        dslExtension.dataBinding,
+                        dslServices.projectOptions
                     ),
                     testComponentDslInfo as AndroidTestComponentDslInfo,
                     variantDependencies,
@@ -733,11 +727,10 @@ class VariantManager<
                     variantPropertiesApiServices,
                     taskCreationServices,
                     globalTaskCreationConfig,
-                    it,
+                    testBuilder as DeviceTestBuilderImpl,
                 )
-            } ?: throw IllegalStateException("Expected a test component type, but ${componentIdentity.name} has type $componentType")
             // this is UNIT_TEST
-            ComponentTypeImpl.UNIT_TEST -> hostTestBuilder?.let {
+            ComponentTypeImpl.UNIT_TEST ->
                 variantFactory.createUnitTest(
                     testComponentDslInfo.componentIdentity,
                     variantFactory.createHostTestBuildFeatureValues(
@@ -758,10 +751,9 @@ class VariantManager<
                     variantPropertiesApiServices,
                     taskCreationServices,
                     globalTaskCreationConfig,
-                    it,
+                    testBuilder as HostTestBuilderImpl,
                 )
-            } ?: throw IllegalArgumentException("Expected a HostTestBuilder instance for UNIT_TEST")
-            ComponentTypeImpl.SCREENSHOT_TEST -> hostTestBuilder?.let {
+            ComponentTypeImpl.SCREENSHOT_TEST ->
                 variantFactory.createHostTest(
                     testComponentDslInfo.componentIdentity,
                     variantFactory.createHostTestBuildFeatureValues(
@@ -782,11 +774,8 @@ class VariantManager<
                     variantPropertiesApiServices,
                     taskCreationServices,
                     globalTaskCreationConfig,
-                    it,
-                    HostTestBuilder.SCREENSHOT_TEST_TYPE,
-                    true,
+                    testBuilder as HostTestBuilderImpl,
                 )
-            } ?: throw IllegalArgumentException("Expected a HostTestBuilder instance for UNIT_TEST")
             else -> throw IllegalStateException("Expected a test component type, but ${componentIdentity.name} has type $componentType")
         }
 
@@ -899,8 +888,7 @@ class VariantManager<
                                 variantInfo,
                                 ComponentTypeImpl.ANDROID_TEST,
                                 testFixturesEnabledForVariant,
-                                deviceTestBuilder = deviceTestBuilder as DeviceTestBuilderImpl,
-                                hostTestBuilder = null,
+                                deviceTestBuilder,
                             )
                             addTestComponent(androidTest)
                             (variant as InternalHasDeviceTests).deviceTests.add(androidTest as DeviceTestImpl)
@@ -916,8 +904,7 @@ class VariantManager<
                                 variantInfo,
                                 (hostTestBuilder as HostTestBuilderImpl).componentType,
                                 testFixturesEnabledForVariant,
-                                deviceTestBuilder = null,
-                                hostTestBuilder = hostTestBuilder
+                                hostTestBuilder
                             )
                             addTestComponent(testComponent)
                             (variant as HasHostTestsCreationConfig)

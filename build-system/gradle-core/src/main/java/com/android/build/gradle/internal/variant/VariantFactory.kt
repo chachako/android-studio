@@ -20,7 +20,6 @@ import com.android.build.api.dsl.BuildFeatures
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.DataBinding
 import com.android.build.api.variant.ComponentIdentity
-import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.VariantBuilder
 import com.android.build.api.variant.impl.DeviceTestBuilderImpl
 import com.android.build.api.variant.impl.GlobalVariantBuilderConfig
@@ -132,8 +131,6 @@ interface VariantFactory<VariantBuilderT : VariantBuilder, VariantDslInfoT: Vari
             taskCreationServices: TaskCreationServices,
             globalConfig: GlobalTaskCreationConfig,
             hostTestBuilder: HostTestBuilderImpl,
-            hostTestName: String,
-            useBuiltInKotlinSupport: Boolean,
         ): HostTestCreationConfig
 
     fun createAndroidTest(

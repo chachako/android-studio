@@ -17,13 +17,17 @@
 package com.android.build.api.component.impl
 
 import com.android.build.api.artifact.impl.ArtifactsImpl
+import com.android.build.api.component.UnitTest
+import com.android.build.api.component.impl.features.AndroidResourcesCreationConfigImpl
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.ComponentIdentity
 import com.android.build.api.variant.HostTest
 import com.android.build.api.variant.HostTestBuilder
+import com.android.build.api.variant.impl.AndroidResourcesImpl
 import com.android.build.api.variant.impl.HostTestBuilderImpl
 import com.android.build.gradle.internal.component.HostTestCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
+import com.android.build.gradle.internal.component.features.AndroidResourcesCreationConfig
 import com.android.build.gradle.internal.component.features.BuildConfigCreationConfig
 import com.android.build.gradle.internal.component.features.ManifestPlaceholdersCreationConfig
 import com.android.build.gradle.internal.core.VariantSources
@@ -37,7 +41,7 @@ import com.android.build.gradle.internal.services.VariantServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.VariantPathHelper
-import com.android.builder.core.ComponentType
+import com.android.builder.core.ComponentTypeImpl
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
@@ -59,8 +63,6 @@ abstract class HostTestImpl @Inject constructor(
     taskCreationServices: TaskCreationServices,
     global: GlobalTaskCreationConfig,
     hostTestBuilder: HostTestBuilderImpl,
-    override val hostTestName: String,
-    override val useBuiltInKotlinSupport: Boolean,
 ) : TestComponentImpl<HostTestComponentDslInfo>(
     componentIdentity,
     buildFeatureValues,
@@ -75,12 +77,15 @@ abstract class HostTestImpl @Inject constructor(
     internalServices,
     taskCreationServices,
     global
-), HostTest, HostTestCreationConfig {
+), HostTest, HostTestCreationConfig, UnitTest {
 
     // ---------------------------------------------------------------------------------------------
     // PUBLIC API
     // ---------------------------------------------------------------------------------------------
     override val isCodeCoverageEnabled: Boolean = hostTestBuilder._enableCodeCoverage
+
+    final override val hostTestName: String
+    final override val useBuiltInKotlinSupport: Boolean
 
     // ---------------------------------------------------------------------------------------------
     // INTERNAL API
@@ -91,9 +96,6 @@ abstract class HostTestImpl @Inject constructor(
 
     override val applicationId: Provider<String> =
         internalServices.providerOf(String::class.java, dslInfo.applicationId)
-
-    override val targetSdkVersion: AndroidVersion
-        get() = getMainTargetSdkVersion()
 
     /**
      * Return the default runner as with host tests, there is no dexing. However, aapt2 requires
@@ -132,6 +134,65 @@ abstract class HostTestImpl @Inject constructor(
     override fun runTestTaskConfigurationActions(testTaskProvider: TaskProvider<out Test>) {
         testTaskConfigActions.forEach {
             testTaskProvider.configure { testTask -> it(testTask) }
+        }
+    }
+
+    /**
+     * In unit tests, we don't produce an apk. However, we still need to set the target sdk version
+     * in the test manifest as robolectric depends on it.
+     */
+    override val targetSdkVersion: AndroidVersion
+        get() = when(dslInfo.componentType) {
+            ComponentTypeImpl.UNIT_TEST -> {
+                /**
+                 * In unit tests, we don't produce an apk. However, we still need to set the
+                 * target sdk version in the test manifest as robolectric depends on it.
+                 */
+                global.unitTestOptions.targetSdkVersion ?: getMainTargetSdkVersion()
+            }
+            ComponentTypeImpl.SCREENSHOT_TEST -> {
+                getMainTargetSdkVersion()
+            }
+            else -> throw RuntimeException("Invalid component type ${dslInfo.componentType}")
+        }
+
+    override val androidResourcesCreationConfig: AndroidResourcesCreationConfig? by lazy(
+        LazyThreadSafetyMode.NONE
+    ) {
+        // in case of unit tests, we add the R jar even if android resources are
+        // disabled (includeAndroidResources) as we want to be able to compile against
+        // the values inside.
+        if (buildFeatures.androidResources ||
+            (dslInfo.componentType == ComponentTypeImpl.UNIT_TEST &&  mainVariant.buildFeatures.androidResources)) {
+            AndroidResourcesCreationConfigImpl(
+                this,
+                dslInfo,
+                dslInfo.androidResourcesDsl!!,
+                internalServices,
+            )
+        } else {
+            null
+        }
+    }
+
+
+    override val androidResources: AndroidResourcesImpl =
+        getAndroidResources(dslInfo.androidResourcesDsl!!.androidResources)
+
+
+    init {
+        when(dslInfo.componentType) {
+            ComponentTypeImpl.UNIT_TEST -> {
+                hostTestName = HostTestBuilder.UNIT_TEST_TYPE
+                useBuiltInKotlinSupport = false
+            }
+            ComponentTypeImpl.SCREENSHOT_TEST -> {
+                hostTestName = HostTestBuilder.SCREENSHOT_TEST_TYPE
+                useBuiltInKotlinSupport = true
+            }
+            else -> throw IllegalStateException(
+                "Expected a test component type, but ${componentIdentity.name} has type " +
+                        "$dslInfo.componentType")
         }
     }
 }

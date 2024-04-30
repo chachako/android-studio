@@ -31,7 +31,6 @@ import com.android.build.gradle.internal.core.dsl.LibraryVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.TestFixturesComponentDslInfo
 import com.android.build.gradle.internal.core.dsl.TestProjectVariantDslInfo
 import com.android.build.gradle.internal.core.dsl.TestedVariantDslInfo
-import com.android.build.gradle.internal.core.dsl.HostTestComponentDslInfo
 import com.android.build.gradle.internal.dsl.ApplicationPublishingImpl
 import com.android.build.gradle.internal.dsl.DefaultConfig
 import com.android.build.gradle.internal.dsl.InternalApplicationExtension
@@ -248,11 +247,8 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *, *>, DslInf
         )
     }
 
-    // TODO : Move this back to VariantManager once we don't have a screenshot test specific version
-    internal fun createUnitTestComponentDslInfo(
-        isCodeCoverageEnabled: Boolean,
-    ): HostTestComponentDslInfo {
-        return UnitTestComponentDslInfoImpl(
+    internal fun createHostTestComponentDslInfo(): HostTestComponentDslInfoImpl {
+        return HostTestComponentDslInfoImpl(
             componentIdentity = createComponentIdentity(),
             componentType = componentType,
             defaultConfig = defaultConfig,
@@ -265,23 +261,7 @@ class DslInfoBuilder<CommonExtensionT: CommonExtension<*, *, *, *, *, *>, DslInf
         )
     }
 
-    internal fun createScreenshotTestComponentDslInfo(
-        isCodeCoverageEnabled: Boolean,
-    ): HostTestComponentDslInfoImpl {
-        return ScreenshotTestComponentDslInfoImpl(
-            componentIdentity = createComponentIdentity(),
-            componentType = componentType,
-            defaultConfig = defaultConfig,
-            buildTypeObj = buildType,
-            productFlavorList = flavors.map { it.first },
-            services = variantServices,
-            buildDirectory = buildDirectory,
-            mainVariantDslInfo = productionVariant!!,
-            extension = extension as InternalTestedExtension<*, *, *, *, *, *>
-        )
-    }
-
-    private fun createAndroidTestComponentDslInfo(): AndroidTestComponentDslInfo {
+    internal fun createAndroidTestComponentDslInfo(): AndroidTestComponentDslInfo {
         return AndroidTestComponentDslInfoImpl(
             componentIdentity = createComponentIdentity(),
             componentType = componentType,
