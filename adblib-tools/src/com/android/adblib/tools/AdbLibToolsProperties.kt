@@ -160,14 +160,6 @@ object AdbLibToolsProperties {
     )
 
     /**
-     * If true then we use app boot stage signal when available (i.e. in API 34+)
-     */
-    val SUPPORT_STAG_PACKETS = AdbSessionHost.BooleanProperty(
-        name = "$NAME_PREFIX.support.stag.packets",
-        defaultValue = false
-    )
-
-    /**
      * When reading packets from [SharedJdwpSession], this is the maximum payload length of JDWP
      * packets that are eagerly read into memory "by default".
      * For JDWP packets with larger payload, the payload is connected to the underlying socket,

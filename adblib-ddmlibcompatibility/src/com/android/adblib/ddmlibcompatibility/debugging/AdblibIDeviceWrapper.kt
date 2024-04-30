@@ -346,8 +346,6 @@ internal class AdblibIDeviceWrapper(
         val availableFeatures: Set<String> =
             try {
                 runBlockingLegacy {
-                    // TODO: This query is cached and doesn't retry on failures which is
-                    // different from the `DeviceImpl` behavior.
                     connectedDevice.availableFeatures()
                 }
             } catch (e: IOException) {
