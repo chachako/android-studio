@@ -16,10 +16,10 @@
 package com.android;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import com.android.testutils.TestUtils;
+import com.google.common.truth.Truth;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -39,12 +39,12 @@ public class SdkConstantsTest {
         assertFalse(pattern.matcher("classesA.dex").matches());
     }
 
-    // Ensure the OLD_GRADLE_VERSION is the same version set in the supported-version.properties
+    // Ensure the AGP versions are the same version set in the supported-version.properties
     // file for consistency.
     @Test
-    public void testOldGradleVersionAlignmentWithSupportVersionProperties() throws Exception {
+    public void testAGPVersionAlignmentWithSupportVersionProperties() throws Exception {
         Path dir = TestUtils.resolveWorkspacePath("tools/base/build-system");
-        // Loading the property file to compare with GRADLE_LATEST_VERSION
+        // Loading the property file to compare with AGP versions
         Properties property = new Properties();
         try (FileInputStream inputStream =
                 new FileInputStream(dir.resolve("supported-versions.properties").toFile())) {
@@ -52,7 +52,35 @@ public class SdkConstantsTest {
         } catch (IOException e) {
             throw new Exception("Error loading properties file: " + e.getMessage());
         }
-        String gradle_minimum = property.getProperty("gradle_minimum");
-        assertEquals(SdkConstants.GRADLE_LATEST_VERSION, gradle_minimum);
+        String gradleMinimum = property.getProperty("gradle_minimum");
+        String buildToolsMinimum = property.getProperty("build_tools_minimum");
+        String ndkDefault = property.getProperty("ndk_default");
+
+        Path propertyFilePath = dir.resolve("supported-versions.properties");
+
+        assertVersionConsistency(
+                gradleMinimum,
+                SdkConstants.GRADLE_LATEST_VERSION,
+                property.get("gradle_name"),
+                propertyFilePath);
+        assertVersionConsistency(
+                buildToolsMinimum,
+                SdkConstants.CURRENT_BUILD_TOOLS_VERSION,
+                property.get("build_tools_name"),
+                propertyFilePath);
+        assertVersionConsistency(
+                ndkDefault,
+                SdkConstants.NDK_DEFAULT_VERSION,
+                property.get("ndk_name"),
+                propertyFilePath);
+    }
+
+    private void assertVersionConsistency(
+            String actual, String expected, Object propertyName, Path propertiesFile) {
+        String updatePropertiesMsg =
+                String.format(
+                        " The version of the %s property in '%s' (a version source for developers.android.com) is not consistent. The version in the property file is %s, has been changed to %s elsewhere. Consider updating the %s to %s, if this change is intended.",
+                        propertyName, propertiesFile, expected, actual, propertyName, actual);
+        Truth.assertWithMessage(updatePropertiesMsg).that(actual).isEqualTo(expected);
     }
 }
