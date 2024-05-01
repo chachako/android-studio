@@ -58,12 +58,9 @@ function copy_bazel_artifacts() {(
   cp -a ${bin_dir}/tools/vendor/google/asfp/studio/asfp_build_manifest.textproto ${artifacts_dir}/asfp_build_manifest.textproto
   cp -a ${bin_dir}/tools/vendor/google/asfp/studio/asfp-linux-deb.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/asfp/studio/asfp.deb ${artifacts_dir}
-  cp -a ${bin_dir}/tools/vendor/google/aswb/android-studio-with-blaze.deb ${artifacts_dir}
+  cp -a ${bin_dir}/tools/vendor/google/aswb/android-studio-with-blaze-channel.deb ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/aswb/android-studio-with-blaze.mac.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/aswb/android-studio-with-blaze.mac_arm.zip ${artifacts_dir}
-  cp -a ${bin_dir}/tools/vendor/google/aswb/aswb.linux.zip ${artifacts_dir}
-  cp -a ${bin_dir}/tools/vendor/google/aswb/aswb.mac.zip ${artifacts_dir}
-  cp -a ${bin_dir}/tools/vendor/google/aswb/aswb.mac_arm.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/skia/skiaparser.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/skia/skia_test_support.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/vendor/google/ml/aiplugin*.zip ${artifacts_dir}
