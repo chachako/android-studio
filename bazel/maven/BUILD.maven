@@ -12543,6 +12543,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.annotation.annotation_1.7.0",
+    pom = "repository/androidx/annotation/annotation/1.7.0/annotation-1.7.0.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/annotation/annotation/1.7.0",
+    deps = [
+        "androidx.annotation.annotation-jvm_1.7.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.7.10",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.annotation.annotation_1.8.0-alpha01",
     pom = "repository/androidx/annotation/annotation/1.8.0-alpha01/annotation-1.8.0-alpha01.pom",
     repo_root_path = "repository",
@@ -13088,6 +13100,19 @@ maven_artifact(
     repo_path = "androidx/collection/collection/1.2.0",
     deps = [
         "androidx.annotation.annotation_1.1.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.collection.collection_1.4.0",
+    pom = "repository/androidx/collection/collection/1.4.0/collection-1.4.0.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/collection/collection/1.4.0",
+    deps = [
+        "androidx.annotation.annotation_1.7.0",
+        "androidx.collection.collection-jvm_1.4.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
     ],
     visibility = ["//visibility:public"],
 )
@@ -14380,6 +14405,21 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.compose.runtime.runtime-android_1.6.5",
+    pom = "repository/androidx/compose/runtime/runtime-android/1.6.5/runtime-android-1.6.5.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/runtime/runtime-android/1.6.5",
+    deps = [
+        "androidx.collection.collection-jvm_1.4.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.22",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-android_1.7.1",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.7.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.compose.runtime.runtime-android_1.5.0",
     pom = "repository/androidx/compose/runtime/runtime-android/1.5.0/runtime-android-1.5.0.pom",
     repo_root_path = "repository",
@@ -14760,6 +14800,18 @@ maven_artifact(
     repo_path = "androidx/compose/runtime/runtime/1.5.0",
     deps = [
         "androidx.compose.runtime.runtime-android_1.5.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.compose.runtime.runtime_1.6.5",
+    pom = "repository/androidx/compose/runtime/runtime/1.6.5/runtime-1.6.5.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/runtime/runtime/1.6.5",
+    deps = [
+        "androidx.compose.runtime.runtime-android_1.6.5",
+        "org.jetbrains.kotlinx.kotlinx-coroutines-core_1.7.1",
     ],
     visibility = ["//visibility:public"],
 )
@@ -16053,6 +16105,19 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.compose.ui.ui-tooling-preview-android_1.6.5",
+    pom = "repository/androidx/compose/ui/ui-tooling-preview-android/1.6.5/ui-tooling-preview-android-1.6.5.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/ui/ui-tooling-preview-android/1.6.5",
+    deps = [
+        "androidx.annotation.annotation_1.2.0",
+        "androidx.compose.runtime.runtime-android_1.6.5",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.22",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.compose.ui.ui-tooling-preview-android_1.5.0",
     pom = "repository/androidx/compose/ui/ui-tooling-preview-android/1.5.0/ui-tooling-preview-android-1.5.0.pom",
     repo_root_path = "repository",
@@ -16149,6 +16214,18 @@ maven_artifact(
     deps = [
         "androidx.compose.runtime.runtime_1.5.0",
         "androidx.compose.ui.ui-tooling-preview-android_1.5.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.compose.ui.ui-tooling-preview_1.6.5",
+    pom = "repository/androidx/compose/ui/ui-tooling-preview/1.6.5/ui-tooling-preview-1.6.5.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/ui/ui-tooling-preview/1.6.5",
+    deps = [
+        "androidx.compose.runtime.runtime_1.6.5",
+        "androidx.compose.ui.ui-tooling-preview-android_1.6.5",
     ],
     visibility = ["//visibility:public"],
 )

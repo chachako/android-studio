@@ -330,8 +330,7 @@ public class VariantDependenciesBuilder {
         runtimeAttributes.attribute(
                 CATEGORY_ATTRIBUTE, factory.named(Category.class, Category.LIBRARY));
 
-        // only apply this treatment if KGP is not applied
-        if (!projectOptions.get(BooleanOption.DISABLE_KOTLIN_ATTRIBUTE_SETUP) && !kgpApplied()) {
+        if (shouldConfigureKotlinPlatformAttribute(projectOptions, componentType)) {
             configureKotlinPlatformAttribute(List.of(compileClasspath, runtimeClasspath), project);
         }
 
@@ -701,6 +700,18 @@ public class VariantDependenciesBuilder {
                 projectOptions,
                 isLibraryConstraintApplied,
                 isSelfInstrumenting);
+    }
+
+    // TODO(b/338596003) Update this method to handle built-in kotlin support
+    private boolean shouldConfigureKotlinPlatformAttribute(
+            ProjectOptions projectOptions, ComponentType componentType) {
+        if (projectOptions.get(BooleanOption.DISABLE_KOTLIN_ATTRIBUTE_SETUP)) {
+            return false;
+        }
+        if (componentType.isForScreenshotPreview() || componentType.isTestFixturesComponent()) {
+            return true;
+        }
+        return !kgpApplied();
     }
 
     private boolean kgpApplied() {
