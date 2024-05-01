@@ -26,6 +26,7 @@ import com.android.tools.preview.multipreview.testclasses.NotPreviewAnnotation
 import com.android.tools.preview.multipreview.testclasses.RecursiveAnnotation1
 import com.android.tools.preview.multipreview.testclasses.RecursiveAnnotation2
 import com.android.tools.preview.multipreview.testclasses.WithPermittedClasses
+import com.android.tools.preview.multipreview.visitors.MethodsFilter
 import org.junit.Test
 import org.objectweb.asm.Type
 import org.junit.Assert.assertArrayEquals
@@ -131,7 +132,7 @@ class MultipreviewTest {
     ).map { loadClassBytecode(it) }
 
     buildMultipreview(settings) { processor ->
-      classStreams.forEach { processor.onClassBytecode(it) }
+      classStreams.forEach { processor.onClassBytecode("/foo/bar", it) }
     }
   }
 
@@ -144,7 +145,7 @@ class MultipreviewTest {
 
     run {
       val multipreview = buildMultipreview(settings) { processor ->
-        classStreams.forEach { processor.onClassBytecode(it) }
+        classStreams.forEach { processor.onClassBytecode("/foo/bar", it) }
       }
 
       assertArrayEquals(
@@ -160,9 +161,10 @@ class MultipreviewTest {
       val multipreview = buildMultipreview(
           settings,
           emptyMap(),
+          PathFilter.ALLOW_ALL,
           { it.startsWith("$PKG.filtered") },
       ) { processor ->
-        classStreams.forEach { processor.onClassBytecode(it) }
+        classStreams.forEach { processor.onClassBytecode("/foo/bar", it) }
       }
 
       assertArrayEquals(
@@ -171,6 +173,48 @@ class MultipreviewTest {
         ),
         multipreview.methods.sortedWith(MethodComparator).toTypedArray()
       )
+    }
+  }
+  @Test
+  fun testMethodsFiltering_withPath() {
+    val classStreams = listOf(
+        Class.forName("$PKG.SimpleAnnotatedMethodKt"),
+        Class.forName("$PKG.filtered.FilteredMethodsKt")
+    ).map { it.name to loadClassBytecode(it) }
+
+    val class2path = mapOf(
+        "$PKG.SimpleAnnotatedMethodKt" to "path1",
+        "$PKG.filtered.FilteredMethodsKt" to "path2",
+    )
+    run {
+        val multipreview = buildMultipreview(settings) { processor ->
+            classStreams.forEach { processor.onClassBytecode(class2path[it.first]!!, it.second) }
+        }
+
+        assertArrayEquals(
+            arrayOf(
+                method("$PKG.SimpleAnnotatedMethodKt.simpleMethod"),
+                method("$PKG.filtered.FilteredMethodsKt.filteredMethod"),
+            ),
+            multipreview.methods.sortedWith(MethodComparator).toTypedArray()
+        )
+    }
+
+    run {
+        val multipreview = buildMultipreview(
+            settings,
+            emptyMap(),
+            PathFilter.allowForSet(setOf("path1")),
+        ) { processor ->
+            classStreams.forEach { processor.onClassBytecode(class2path[it.first]!!, it.second) }
+        }
+
+        assertArrayEquals(
+            arrayOf(
+                method("$PKG.SimpleAnnotatedMethodKt.simpleMethod"),
+            ),
+            multipreview.methods.sortedWith(MethodComparator).toTypedArray()
+        )
     }
   }
 
@@ -234,7 +278,7 @@ class MultipreviewTest {
     ).map { loadClassBytecode(it) }
 
     buildMultipreview(settings) { processor ->
-      classStreams.forEach { processor.onClassBytecode(it) }
+      classStreams.forEach { processor.onClassBytecode("/foo/bar", it) }
     }
   }
 
@@ -246,7 +290,7 @@ class MultipreviewTest {
     val classesBytecode = classes.map { loadClassBytecode(it) }
 
     val multipreview = buildMultipreview(settings) { processor ->
-      classesBytecode.forEach(processor::onClassBytecode)
+      classesBytecode.forEach { processor.onClassBytecode("/foo/bar", it) }
     }
 
     val sortedMethods = multipreview.methods.sortedWith(MethodComparator).toTypedArray()
@@ -286,7 +330,7 @@ class MultipreviewTest {
 
     run {
       val multipreview = buildMultipreview(settings, annotations = annotations) { processor ->
-        classStreams.forEach { processor.onClassBytecode(it) }
+        classStreams.forEach { processor.onClassBytecode("/foo/bar", it) }
       }
 
       val sortedMethods = multipreview.methods.sortedWith(MethodComparator).toTypedArray()

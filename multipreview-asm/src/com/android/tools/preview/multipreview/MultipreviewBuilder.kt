@@ -10,8 +10,11 @@ import java.io.File
 
 /** Consumer interface processing class bytecode. */
 fun interface ClassProcessor {
-
-  fun onClassBytecode(classByteCode: ByteArray)
+  /**
+   * @param path path of the file, containing that class, used for filtering
+   * @param classByteCode class bytecode bytes
+   */
+  fun onClassBytecode(path: String, classByteCode: ByteArray)
 }
 
 /** Consumer feeding class bytecode to the [processor]. */
@@ -28,26 +31,30 @@ data class MultipreviewSettings(
 
 /**
  * Builds multipreview structure based on the [settings] and bytecode data from [provider] for
- * methods allowed by [methodsFilter]. Allows specifying additional precomputed [annotations] to
- * speed up incremental processing.
+ * methods allowed by [pathMethodsFilter] and [methodsFilter]. Allows specifying additional
+ * precomputed [annotations] to speed up incremental processing.
  */
 fun buildMultipreview(
   settings: MultipreviewSettings,
   annotations: Map<DerivedAnnotationRepresentation, AnnotationReferences> = emptyMap(),
+  pathMethodsFilter: PathFilter = PathFilter.ALLOW_ALL,
   methodsFilter: MethodsFilter = MethodsFilter { true },
   provider: ClassBytecodeProvider,
 ): Multipreview {
   val multipreviewGraph = Graph()
   multipreviewGraph.addAnnotations(annotations)
-  provider.forEachClass {
-    val cr = ClassReader(it)
+  provider.forEachClass { path, bytes ->
+    val cr = ClassReader(bytes)
+    val className = cr.className.classPathToName
     val classVisitor = if ((cr.access and Opcodes.ACC_ANNOTATION) != 0) {
-      val recorder = multipreviewGraph.addAnnotationNode(DerivedAnnotationRepresentation(cr.className.classPathToName))
+      val recorder = multipreviewGraph.addAnnotationNode(DerivedAnnotationRepresentation(className))
       AnnotationClassVisitor(settings.baseAnnotation, recorder)
-    } else {
+    } else if (pathMethodsFilter.allowMethodsForPath(path)) {
       MethodsClassVisitor(settings, cr.className.classPathToName, multipreviewGraph, methodsFilter)
+    } else {
+      null
     }
-    cr.accept(classVisitor, 0)
+    classVisitor?.let { v -> cr.accept(v, 0) }
   }
   multipreviewGraph.prune()
   return multipreviewGraph
@@ -59,13 +66,13 @@ private fun forEachClass(paths: Collection<String>, classProcessor: ClassProcess
           ZipFile(path).use { zipFile ->
               zipFile.stream().filter { it.name.endsWith(".class") }.forEach {
                   zipFile.getInputStream(it).use { stream ->
-                      classProcessor.onClassBytecode(stream.readAllBytes())
+                      classProcessor.onClassBytecode(path, stream.readAllBytes())
                   }
               }
           }
       } else if (File(path).isDirectory) {
           File(path).walk().filter { it.name.endsWith(".class") }.forEach {
-              classProcessor.onClassBytecode(it.readBytes())
+              classProcessor.onClassBytecode(path, it.readBytes())
           }
       }
   }
@@ -75,9 +82,10 @@ fun buildMultipreview(
   settings: MultipreviewSettings,
   paths: Collection<String>,
   annotations: Map<DerivedAnnotationRepresentation, AnnotationReferences> = emptyMap(),
+  pathFilter: PathFilter = PathFilter.ALLOW_ALL,
   methodsFilter: MethodsFilter = MethodsFilter { true }
 ): Multipreview {
-  return buildMultipreview(settings, annotations, methodsFilter) { processor ->
+  return buildMultipreview(settings, annotations, pathFilter, methodsFilter) { processor ->
     forEachClass(paths, processor::onClassBytecode)
   }
 }
