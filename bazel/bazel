@@ -25,8 +25,14 @@ def main():
 
   env = {}
   env['USE_BAZEL_VERSION'] = os.environ.get('USE_BAZEL_VERSION', '')
-  bazel = os.path.join(workspace, 'prebuilts', 'tools', platform, 'bazel',
-                       'bazelisk')
+  bazel = [
+    os.path.join(workspace, 'prebuilts', 'tools', platform, 'bazel', 'bazelisk')
+    ]
+  # On linux bazel can sometimes hang due to RBE. So we kill it after
+  # BAZEL_INVOCATION_TIMEOUT if set.
+  if platform == 'linux-x86_64' and os.environ.get('BAZEL_INVOCATION_TIMEOUT'):
+    bazel = ['timeout', '-k', '1m', os.environ["BAZEL_INVOCATION_TIMEOUT"]] + bazel
+
   args = sys.argv[1:]
   command = bazel_command(args)
 
@@ -83,7 +89,7 @@ def main():
     env['SSH_AUTH_SOCK'] = os.environ.get('SSH_AUTH_SOCK', '')
     env['USER'] = os.environ.get('USER', '')
 
-  sys.exit(subprocess.call([bazel] + args, env=env))
+  sys.exit(subprocess.call(bazel + args, env=env))
 
 
 def define_env(env, var, value, msg=None):

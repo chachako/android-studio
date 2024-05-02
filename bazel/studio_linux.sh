@@ -26,6 +26,8 @@ readonly SCRIPT_NAME="$(basename "$0")"
 
 readonly CONFIG_OPTIONS="--config=ci"
 
+export BAZEL_INVOCATION_TIMEOUT="2h"
+
 ####################################
 # Copies bazel artifacts to an output directory named 'artifacts'.
 # Globals:

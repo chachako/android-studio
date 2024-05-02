@@ -2,6 +2,7 @@
 # Invoked by Android Build Launchcontrol for continuous builds.
 
 readonly BAZEL_EXITCODE_TEST_FAILURES=3
+export BAZEL_INVOCATION_TIMEOUT="2h"
 
 readonly dist_dir="$1"
 readonly build_number="$2"
