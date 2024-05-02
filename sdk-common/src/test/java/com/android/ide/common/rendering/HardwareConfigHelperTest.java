@@ -1,8 +1,5 @@
 package com.android.ide.common.rendering;
 
-import static com.android.ide.common.rendering.HardwareConfigHelper.getGenericLabel;
-import static com.android.ide.common.rendering.HardwareConfigHelper.getNexusLabel;
-import static com.android.ide.common.rendering.HardwareConfigHelper.getNexusMenuLabel;
 import static com.android.ide.common.rendering.HardwareConfigHelper.isAutomotive;
 import static com.android.ide.common.rendering.HardwareConfigHelper.isDesktop;
 import static com.android.ide.common.rendering.HardwareConfigHelper.isGeneric;
@@ -10,7 +7,6 @@ import static com.android.ide.common.rendering.HardwareConfigHelper.isMobile;
 import static com.android.ide.common.rendering.HardwareConfigHelper.isNexus;
 import static com.android.ide.common.rendering.HardwareConfigHelper.isTv;
 import static com.android.ide.common.rendering.HardwareConfigHelper.isWear;
-import static com.android.ide.common.rendering.HardwareConfigHelper.sortNexusListByRank;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -25,7 +21,6 @@ import com.android.utils.StdLogger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 
@@ -46,10 +41,6 @@ public final class HardwareConfigHelperTest {
         assertSame(n1.getId(), n1.getName());
         assertEquals("Nexus One", n1.getDisplayName());
         assertTrue(isNexus(n1));
-
-        assertEquals("Nexus One (3.7\", 480 × 800, hdpi)", getNexusLabel(n1));
-        assertEquals("3.7, 480 × 800, hdpi (Nexus One)", getNexusMenuLabel(n1));
-        assertFalse(isGeneric(n1));
     }
 
     @Test
@@ -62,15 +53,9 @@ public final class HardwareConfigHelperTest {
         assertEquals("Nexus 7 (2012)", n7.getDisplayName());
         assertEquals("Nexus 7", n7b.getDisplayName());
 
-        assertEquals("Nexus 7 (2012) (7.0\", 800 × 1280, tvdpi)", getNexusLabel(n7));
-        assertEquals("7.0, 800 × 1280, tvdpi (Nexus 7 2012)", getNexusMenuLabel(n7));
-
         assertTrue(isNexus(n7));
         assertTrue(isNexus(n7b));
-        assertTrue(HardwareConfigHelper.nexusRank(n7b) > HardwareConfigHelper.nexusRank(n7));
 
-        assertEquals("Nexus 7 (2012) (7.0\", 800 × 1280, tvdpi)", getNexusLabel(n7));
-        assertEquals("Nexus 7 (7.0\", 1200 × 1920, xhdpi)", getNexusLabel(n7b));
         assertFalse(isGeneric(n7));
     }
 
@@ -82,7 +67,6 @@ public final class HardwareConfigHelperTest {
         assertEquals("2.7\" QVGA", qvga.getDisplayName());
         assertEquals("2.7in QVGA", qvga.getId());
         assertFalse(isNexus(qvga));
-        assertEquals(" 2.7\" QVGA (240 × 320, ldpi)", getGenericLabel(qvga));
         assertTrue(isGeneric(qvga));
         assertFalse(isNexus(qvga));
     }
@@ -121,8 +105,6 @@ public final class HardwareConfigHelperTest {
         assertFalse(isTv(round));
         assertFalse(isMobile(round));
         assertFalse(isAutomotive(round));
-        assertEquals("Wear OS Small Round (1.2\", 384 × 384, xhdpi)", getNexusLabel(round));
-        assertEquals("384 × 384, xhdpi (Small Round)", getNexusMenuLabel(round));
 
         Device tv1080p = deviceManager.getDevice("tv_1080p", "Google");
         assertNotNull(tv1080p);
@@ -131,8 +113,6 @@ public final class HardwareConfigHelperTest {
         assertFalse(isMobile(tv1080p));
         assertFalse(isAutomotive(tv1080p));
         assertFalse(tv1080p.isScreenRound());
-        assertEquals("Television (1080p) (55.0\", 1920 × 1080, xhdpi)", getNexusLabel(tv1080p));
-        assertEquals("1080p, 1920 × 1080, xhdpi (TV)", getNexusMenuLabel(tv1080p));
 
         Device tv720p = deviceManager.getDevice("tv_720p", "Google");
         assertNotNull(tv720p);
@@ -149,34 +129,6 @@ public final class HardwareConfigHelperTest {
         assertFalse(isMobile(tv4k));
         assertFalse(isAutomotive(tv4k));
         assertFalse(tv4k.isScreenRound());
-    }
-
-    @Test
-    public void nexusRank() {
-        List<Device> devices = Lists.newArrayList();
-        DeviceManager deviceManager = getDeviceManager();
-        for (String id : new String[] { "Nexus 7 2013", "Nexus 5", "Nexus 10", "Nexus 4", "Nexus 7",
-                                        "Galaxy Nexus", "Nexus S", "Nexus One"}) {
-            Device device = deviceManager.getDevice(id, "Google");
-            assertNotNull(device);
-            devices.add(device);
-        }
-        sortNexusListByRank(devices);
-        Collections.reverse(devices);
-        List<String> ids = Lists.newArrayList();
-        for (Device device : devices) {
-            ids.add(device.getId());
-        }
-        assertEquals(Arrays.asList(
-                "Nexus One",
-                "Nexus S",
-                "Galaxy Nexus",
-                "Nexus 7",
-                "Nexus 10",
-                "Nexus 4",
-                "Nexus 7 2013",
-                "Nexus 5"
-        ), ids);
     }
 
     @Test
@@ -229,7 +181,6 @@ public final class HardwareConfigHelperTest {
             assertTrue(isAutomotive(automotive));
             assertFalse(automotive.isScreenRound());
             assertFalse(isGeneric(automotive));
-            assertEquals(label.get(i), getGenericLabel(automotive));
         }
     }
 
@@ -245,6 +196,5 @@ public final class HardwareConfigHelperTest {
         assertTrue(isDesktop(desktop_medium));
         assertFalse(desktop_medium.isScreenRound());
         assertFalse(isGeneric(desktop_medium));
-        assertEquals("Medium Desktop (3840 × 2160, xhdpi)", getGenericLabel(desktop_medium));
     }
 }
