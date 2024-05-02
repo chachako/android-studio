@@ -680,7 +680,7 @@ def iml_module(
         target_compatible_with = target_compatible_with,
     )
 
-    if srcs.javas + srcs.kotlins:
+    if srcs.javas + srcs.kotlins and not compatible_intellij_platforms:
         coverage_baseline(
             name = name,
             srcs = srcs.javas + srcs.kotlins,
