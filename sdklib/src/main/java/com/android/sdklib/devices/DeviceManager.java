@@ -15,6 +15,18 @@
  */
 package com.android.sdklib.devices;
 
+import static com.android.sdklib.devices.Device.isAutomotive;
+import static com.android.sdklib.devices.Device.isAutomotiveDistantDisplay;
+import static com.android.sdklib.devices.Device.isRollable;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_CLUSTER_DENSITY;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_CLUSTER_FLAG;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_CLUSTER_HEIGHT;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_CLUSTER_WIDTH;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_DISPLAY_SETTINGS_FILE;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_DISTANT_DISPLAY_DENSITY;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_DISTANT_DISPLAY_FLAG;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_DISTANT_DISPLAY_HEIGHT;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_DISTANT_DISPLAY_WIDTH;
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_FOLD_AT_POSTURE;
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE;
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE_ANGLES_POSTURE_DEFINITIONS;
@@ -26,6 +38,16 @@ import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE_SUB_TYPE;
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_HINGE_TYPE;
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_POSTURE_LISTS;
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_RAM_SIZE;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_RESIZABLE_CONFIG;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL_COUNT;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL_DEFAULTS;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL_DIRECTION;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL_PERCENTAGES_POSTURE_DEFINITIONS;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL_RADIUS;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL_RANGES;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL_RESIZE_1_AT_POSTURE;
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL_RESIZE_2_AT_POSTURE;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
@@ -631,6 +653,47 @@ public class DeviceManager {
 
         props.put(AvdManager.AVD_INI_DEVICE_NAME, d.getId());
         props.put(AvdManager.AVD_INI_DEVICE_MANUFACTURER, d.getManufacturer());
+
+        // Special-case hacks to support specific device types.
+
+        if (d.getId().equals("13.5in Freeform")) {
+            props.put(AVD_INI_DISPLAY_SETTINGS_FILE, "freeform");
+        }
+        if (isRollable(d.getId())) {
+            props.put(AVD_INI_ROLL, "yes");
+            props.put(AVD_INI_ROLL_COUNT, "1");
+            props.put(AVD_INI_HINGE_TYPE, "3");
+            props.put(AVD_INI_ROLL_RANGES, "58.55-100");
+            props.put(AVD_INI_ROLL_DEFAULTS, "67.5");
+            props.put(AVD_INI_ROLL_RADIUS, "3");
+            props.put(AVD_INI_ROLL_DIRECTION, "1");
+            props.put(AVD_INI_ROLL_RESIZE_1_AT_POSTURE, "1");
+            props.put(AVD_INI_ROLL_RESIZE_2_AT_POSTURE, "2");
+            props.put(AVD_INI_POSTURE_LISTS, "1, 2, 3");
+            props.put(
+                    AVD_INI_ROLL_PERCENTAGES_POSTURE_DEFINITIONS,
+                    "58.55-76.45, 76.45-94.35, 94.35-100");
+        }
+        if (d.getId().equals("resizable")) {
+            props.put(
+                    AVD_INI_RESIZABLE_CONFIG,
+                    "phone-0-1080-2400-420, foldable-1-2208-1840-420, tablet-2-1920-1200-240, desktop-3-1920-1080-160");
+        }
+        // TODO: Remove hard coded config when the runtime configuration is available (b/337978287,
+        // b/337980217)
+        if (isAutomotive(d)) {
+            props.put(AVD_INI_CLUSTER_WIDTH, "400");
+            props.put(AVD_INI_CLUSTER_HEIGHT, "600");
+            props.put(AVD_INI_CLUSTER_DENSITY, "120");
+            props.put(AVD_INI_CLUSTER_FLAG, "0");
+        }
+        if (isAutomotiveDistantDisplay(d)) {
+            props.put(AVD_INI_DISTANT_DISPLAY_WIDTH, "3000");
+            props.put(AVD_INI_DISTANT_DISPLAY_HEIGHT, "600");
+            props.put(AVD_INI_DISTANT_DISPLAY_DENSITY, "120");
+            props.put(AVD_INI_DISTANT_DISPLAY_FLAG, "0");
+        }
+
         return props;
     }
 
