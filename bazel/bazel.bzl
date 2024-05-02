@@ -542,6 +542,7 @@ def iml_module(
         test_shard_count = None,
         split_test_targets = None,
         tags = None,
+        compatible_intellij_platforms = None,
         test_tags = None,
         test_agents = [],
         iml_files = None,
@@ -630,6 +631,14 @@ def iml_module(
     srcs = split_srcs(srcs, resources, exclude)
     split_test_srcs = split_srcs(test_srcs, test_resources, exclude)
 
+    # Use target_compatible_with to configure which platforms this module
+    # compiles against.
+    target_compatible_with = None
+    if compatible_intellij_platforms != None:
+        compatible_platforms = {"@intellij//:" + v: [] for v in compatible_intellij_platforms}
+        compatible_platforms["//conditions:default"] = ["@platforms//:incompatible"]
+        target_compatible_with = select(compatible_platforms)
+
     # if jvm_target is specified, use JDK that compiles to that target
     # otherwise use default JDK, controlled by `java_language_version_17` flag
     if jvm_target == "8":
@@ -668,6 +677,7 @@ def iml_module(
         test_friends = test_friends,
         data = data,
         test_class = test_class,
+        target_compatible_with = target_compatible_with,
     )
 
     if srcs.javas + srcs.kotlins:
@@ -684,6 +694,7 @@ def iml_module(
         iml_module = ":" + name,
         testonly = True,
         visibility = visibility,
+        target_compatible_with = target_compatible_with,
     )
 
     lint_srcs = srcs.javas + srcs.kotlins + srcs.resources
@@ -704,6 +715,7 @@ def iml_module(
             external_annotations = ["//tools/base/external-annotations:annotations.zip"],
             tags = lint_tags,
             timeout = lint_timeout if lint_timeout else None,
+            target_compatible_with = target_compatible_with,
         )
 
     if not test_srcs:
@@ -733,6 +745,7 @@ def iml_module(
             timeout = test_timeout,
             exec_properties = exec_properties,
             visibility = visibility,
+            target_compatible_with = target_compatible_with,
         )
 
         if generate_k2_tests:
@@ -753,6 +766,7 @@ def iml_module(
                 timeout = test_timeout,
                 exec_properties = exec_properties,
                 visibility = visibility,
+                target_compatible_with = target_compatible_with,
             )
 
     else:
@@ -1121,4 +1135,13 @@ def split_srcs(src_dirs, res_dirs, exclude):
         javas = javas,
         kotlins = kotlins,
         forms = forms,
+    )
+
+def iml_alias(name, default, overrides = {}, **kwargs):
+    actual = {"@intellij//:" + k: v for (k, v) in overrides.items()}
+    actual["//conditions:default"] = default
+    native.alias(
+        name = name,
+        actual = select(actual),
+        **kwargs
     )

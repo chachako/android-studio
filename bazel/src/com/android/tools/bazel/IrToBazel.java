@@ -22,8 +22,8 @@ import com.android.tools.bazel.ir.IrNode;
 import com.android.tools.bazel.ir.IrProject;
 import com.android.tools.bazel.model.BazelRule;
 import com.android.tools.bazel.model.FileGroup;
+import com.android.tools.bazel.model.ImlAlias;
 import com.android.tools.bazel.model.ImlModule;
-import com.android.tools.bazel.model.JavaLibrary;
 import com.android.tools.bazel.model.JvmImport;
 import com.android.tools.bazel.model.Package;
 import com.android.tools.bazel.model.UnmanagedRule;
@@ -61,11 +61,10 @@ public class IrToBazel {
                 "intellij");
 
         // Map from file path to the bazel rule that provides it. Usually java_imports.
-        Map<String, BazelRule> jarRules = Maps.newHashMap();
-        Map<String, JavaLibrary> libraries = Maps.newHashMap();
+        Map<IrModule, BazelRule> moduleRefs = Maps.newHashMap();
         Map<IrLibrary, JvmImport> imports = Maps.newHashMap();
         Map<String, FileGroup> groups = Maps.newHashMap();
-        Map<IrModule, ImlModule> rules = new HashMap<>();
+        Map<IrModule, ImlModule> modules = new HashMap<>();
         Map<String, UnmanagedRule> unmanaged = new HashMap<>();
         Map<String, JvmImport> reuse = Maps.newHashMap();
 
@@ -73,7 +72,6 @@ public class IrToBazel {
         for (IrModule bazelModule : bazelProject.modules) {
             String name = bazelModule.getName();
             String rel = workspace.relativize(bazelModule.getBaseDir()).toString();
-
             Package pkg = bazel.findPackage(rel);
             if (pkg == null) {
                 throw new RuntimeException(
@@ -82,9 +80,18 @@ public class IrToBazel {
                                 + " (does it not have a BUILD file yet?)");
             }
             name = config.nameRule(pkg.getName(), rel, name);
-            // Modules in different projects use the same name and different project attributes.
-            ImlModule iml = new ImlModule(pkg, name);
-            rules.put(bazelModule, iml);
+
+            ImlModule iml;
+            if (name.endsWith(".sdkcompat")) {
+                iml = new ImlModule(pkg, name + ".main");
+                ImlAlias alias = new ImlAlias(pkg, name);
+                alias.setDefault(iml);
+                moduleRefs.put(bazelModule, alias);
+            } else {
+                iml = new ImlModule(pkg, name);
+                moduleRefs.put(bazelModule, iml);
+            }
+            modules.put(bazelModule, iml);
 
             for (File file : bazelModule.getImls()) {
                 iml.addModuleFile(pkg.getRelativePath(file));
@@ -129,9 +136,9 @@ public class IrToBazel {
             File librariesDir = new File(projectDir, ".idea/libraries");
             Package librariesPkg = bazel
                     .findPackage(workspace.relativize(librariesDir.toPath()).toString());
-            ImlModule imlModule = rules.get(module);
+            ImlModule imlModule = modules.get(module);
             for (IrModule friend : module.getTestFriends()) {
-                imlModule.addTestFriend(rules.get(friend));
+                imlModule.addTestFriend(modules.get(friend));
             }
 
             for (IrModule.Dependency<? extends IrNode> dependency : module
@@ -292,7 +299,7 @@ public class IrToBazel {
                 } else if (dependency.dependency instanceof IrModule) {
                     scopes.add(0, ImlModule.Tag.MODULE);
                     imlModule.addDependency(
-                            rules.get(dependency.dependency), dependency.exported, scopes);
+                            moduleRefs.get(dependency.dependency), dependency.exported, scopes);
                 }
             }
         }

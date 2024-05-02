@@ -9,8 +9,8 @@ def setup_intellij_platforms():
         ),
         remote_platform(
             name = "intellij_ce_2023_3",
-            url = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea/ideaIC/2023.3.5/ideaIC-2023.3.5.zip",
-            sha256 = "ffa6c0f98bbf67286eefb8bfad0026029edcd334463fffc17f369d9a90156992",
+            url = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea/ideaIC/233.11799.241/ideaIC-233.11799.241.zip",
+            sha256 = "eb9993202e137a3cbea81fcd42235ed5519055ab1aa58c3b0b724fb68c22f6d3",
         ),
         remote_platform(
             name = "intellij_ce_2024_1",
