@@ -23,6 +23,7 @@ import com.android.build.gradle.internal.testing.ConnectedDevice
 import com.android.builder.testing.api.DeviceConfigProvider
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
+import com.android.bundle.Devices
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.internal.FakeAdbTestRule
@@ -33,6 +34,8 @@ import com.android.utils.ILogger
 import com.android.utils.StdLogger
 import com.google.common.collect.ImmutableList
 import org.gradle.api.Project
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -114,12 +117,8 @@ class InstallVariantViaBundleTaskTest(private val sdkVersion: AndroidVersion) {
                 get() = project.objects.property(String::class.java).value("workerKey")
             override val analyticsService: Property<AnalyticsService>
                 get() = FakeGradleProperty(FakeNoOpAnalyticsService())
-            override val privacySandboxSdkApksFiles: ListProperty<File>
-                get() = project.objects.listProperty(File::class.java)
-                    .also { it.addAll(privacySandboxSdkApksFiles) }
-            override val privacySandboxSdkApksFromSplits: ListProperty<File>
-                get() = project.objects.listProperty(File::class.java)
-
+            override val privacySandboxSdkApksFiles: ConfigurableFileCollection
+                get() = project.objects.fileCollection().from(privacySandboxSdkApksFiles)
         }
 
     @Test
@@ -235,7 +234,7 @@ class InstallVariantViaBundleTaskTest(private val sdkVersion: AndroidVersion) {
         override fun createDeviceProvider(iLogger: ILogger): DeviceProvider =
             InstallVariantTaskTest.FakeDeviceProvider(ImmutableList.of(deviceConnector))
 
-        override fun getApkFiles(apkBundles: Collection<Path>, device: DeviceConfigProvider)
+        override fun getApkFiles(apkBundles: Collection<Path>, deviceSpec: Devices.DeviceSpec)
                 : List<Path> {
             return ImmutableList.copyOf(outputPaths)
         }

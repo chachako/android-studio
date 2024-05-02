@@ -2511,6 +2511,22 @@ package com.android.build.api.variant {
     property public abstract org.gradle.api.provider.ListProperty<java.lang.String> classNames;
   }
 
+  @org.gradle.api.Incubating public interface ApkInstallGroup {
+    method @org.gradle.api.Incubating public java.util.List<org.gradle.api.file.RegularFile> getApks();
+    method @org.gradle.api.Incubating public String getDescription();
+    property @org.gradle.api.Incubating public abstract java.util.List<org.gradle.api.file.RegularFile> apks;
+    property @org.gradle.api.Incubating public abstract String description;
+  }
+
+  @org.gradle.api.Incubating public interface ApkOutput {
+    method @org.gradle.api.Incubating public java.util.List<com.android.build.api.variant.ApkInstallGroup> getApkInstallGroups();
+    property @org.gradle.api.Incubating public abstract java.util.List<com.android.build.api.variant.ApkInstallGroup> apkInstallGroups;
+  }
+
+  @org.gradle.api.Incubating public interface ApkOutputProviders {
+    method @org.gradle.api.Incubating public <TaskT extends org.gradle.api.Task> void provideApkOutputToTask(org.gradle.api.tasks.TaskProvider<TaskT> taskProvider, kotlin.jvm.functions.Function1<? super TaskT,? extends org.gradle.api.provider.Property<com.android.build.api.variant.ApkOutput>> taskInput, com.android.build.api.variant.DeviceSpec deviceSpec);
+  }
+
   public interface ApkPackaging extends com.android.build.api.variant.Packaging {
     method public com.android.build.api.variant.DexPackagingOptions getDex();
     method public com.android.build.api.variant.JniLibsApkPackaging getJniLibs();
@@ -2537,6 +2553,7 @@ package com.android.build.api.variant {
     method public org.gradle.api.provider.Property<java.lang.String> getApplicationId();
     method @org.gradle.api.Incubating public com.android.build.api.variant.BundleConfig getBundleConfig();
     method public com.android.build.api.variant.DependenciesInfo getDependenciesInfo();
+    method @org.gradle.api.Incubating public com.android.build.api.variant.ApkOutputProviders getOutputProviders();
     method public java.util.List<com.android.build.api.variant.VariantOutput> getOutputs();
     method public com.android.build.api.variant.TestedApkPackaging getPackaging();
     method public com.android.build.api.variant.SigningConfig getSigningConfig();
@@ -2544,6 +2561,7 @@ package com.android.build.api.variant {
     property public abstract org.gradle.api.provider.Property<java.lang.String> applicationId;
     property @org.gradle.api.Incubating public abstract com.android.build.api.variant.BundleConfig bundleConfig;
     property public abstract com.android.build.api.variant.DependenciesInfo dependenciesInfo;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.variant.ApkOutputProviders outputProviders;
     property public abstract java.util.List<com.android.build.api.variant.VariantOutput> outputs;
     property public abstract com.android.build.api.variant.TestedApkPackaging packaging;
     property public abstract com.android.build.api.variant.SigningConfig signingConfig;
@@ -2708,6 +2726,44 @@ package com.android.build.api.variant {
     property public abstract boolean includeInBundle;
     property @Deprecated public abstract boolean includedInApk;
     property @Deprecated public abstract boolean includedInBundle;
+  }
+
+  @org.gradle.api.Incubating public final class DeviceSpec {
+    method public java.util.List<java.lang.String> getAbis();
+    method public int getApiLevel();
+    method public String? getCodeName();
+    method public String? getName();
+    method public int getScreenDensity();
+    method public boolean getSupportsPrivacySandbox();
+    property public final java.util.List<java.lang.String> abis;
+    property public final int apiLevel;
+    property public final String? codeName;
+    property public final String? name;
+    property public final int screenDensity;
+    property public final boolean supportsPrivacySandbox;
+  }
+
+  @org.gradle.api.Incubating public static final class DeviceSpec.Builder {
+    ctor public DeviceSpec.Builder();
+    method public com.android.build.api.variant.DeviceSpec build();
+    method public java.util.List<java.lang.String> getAbis();
+    method public int getApiLevel();
+    method public String? getCodeName();
+    method public String? getName();
+    method public int getScreenDensity();
+    method public boolean getSupportsPrivacySandbox();
+    method public com.android.build.api.variant.DeviceSpec.Builder setAbis(java.util.List<java.lang.String> abis);
+    method public com.android.build.api.variant.DeviceSpec.Builder setApiLevel(int apiLevel);
+    method public com.android.build.api.variant.DeviceSpec.Builder setCodeName(String? codeName);
+    method public com.android.build.api.variant.DeviceSpec.Builder setName(String? name);
+    method public com.android.build.api.variant.DeviceSpec.Builder setScreenDensity(int screenDensity);
+    method public com.android.build.api.variant.DeviceSpec.Builder setSupportsPrivacySandbox(boolean supportsPrivacySandbox);
+    property public final java.util.List<java.lang.String> abis;
+    property public final int apiLevel;
+    property public final String? codeName;
+    property public final String? name;
+    property public final int screenDensity;
+    property public final boolean supportsPrivacySandbox;
   }
 
   @org.gradle.api.Incubating public interface DeviceTest extends com.android.build.api.variant.GeneratesTestApk com.android.build.api.variant.HasAndroidResources com.android.build.api.variant.TestComponent {

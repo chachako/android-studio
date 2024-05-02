@@ -16,9 +16,13 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.api.variant.impl.BuiltArtifactsImpl
+import com.android.build.gradle.internal.LoggerWrapper
+import com.android.build.gradle.internal.fixtures.FakeFileCollection
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectory
 import com.android.build.gradle.internal.fixtures.FakeGradleDirectoryProperty
 import com.android.build.gradle.internal.fixtures.FakeLogger
+import com.android.build.gradle.internal.utils.ApkSources
+import com.android.build.gradle.internal.utils.DefaultDeviceApkOutput
 import com.android.builder.testing.api.DeviceConnector
 import com.android.builder.testing.api.DeviceProvider
 import com.android.ddmlib.AndroidDebugBridge
@@ -26,12 +30,10 @@ import com.android.ddmlib.internal.FakeAdbTestRule
 import com.android.fakeadbserver.DeviceState
 import com.android.fakeadbserver.services.PackageManager
 import com.android.sdklib.AndroidVersion
-import com.android.testutils.MockLog
 import com.android.utils.StdLogger
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.google.common.truth.Truth.assertThat
-import org.gradle.api.logging.Logger
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -39,7 +41,6 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import java.io.BufferedOutputStream
@@ -115,26 +116,31 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
     fun checkDependencyApkInstallation() {
         createMainApkListingFile()
         val splitApk = getSdkSupportSplitApk()
+        val deviceApkOutput = DefaultDeviceApkOutput(
+            ApkSources(
+                FakeGradleDirectoryProperty(FakeGradleDirectory(temporaryFolder.root)),
+                FakeFileCollection(getPrivacySandboxSdkApks()),
+                FakeGradleDirectoryProperty(FakeGradleDirectory(splitApk)),
+                FakeGradleDirectoryProperty(FakeGradleDirectory(privacySandboxLegacyApkSplitsDirectory)),
+                FakeGradleDirectoryProperty(null)
+            ),
+            ImmutableSet.of(), AndroidVersion.DEFAULT, "variant", "project", LoggerWrapper(logger)
+        )
+
         InstallVariantTask.install(
+            deviceApkOutput,
             "project",
             "variant",
             FakeDeviceProvider(ImmutableList.of(deviceConnector)),
-            AndroidVersion.DEFAULT,
-            FakeGradleDirectory(temporaryFolder.root),
-            getPrivacySandboxSdkApks(),
-            FakeGradleDirectoryProperty(FakeGradleDirectory(splitApk)),
-            FakeGradleDirectoryProperty(FakeGradleDirectory(privacySandboxLegacyApkSplitsDirectory)),
             ImmutableSet.of(),
-            ImmutableList.of(),
             4000,
             logger,
-            FakeGradleDirectoryProperty(null),
         )
 
 
         val packageInstalls =
             deviceState.abbLogs.filter { it.startsWith("package\u0000install-write") }
-        if (sandboxSupported) {
+        if (deviceConnector.supportsPrivacySandbox) {
             assertThat(logger.lifeCycles).containsExactly(
                 "Installing Privacy Sandbox APK '{}' on '{}' for {}:{}",
                 "Installing Privacy Sandbox APK '{}' on '{}' for {}:{}",
@@ -158,20 +164,25 @@ class InstallVariantTaskTest(private val deviceVersion: AndroidVersion) {
 
     private fun checkSingleApk(deviceConnector: DeviceConnector) {
         createMainApkListingFile()
+        val deviceApkOutput = DefaultDeviceApkOutput(
+            ApkSources(
+                FakeGradleDirectoryProperty(FakeGradleDirectory(temporaryFolder.root)),
+                FakeFileCollection(ImmutableSet.of<File>()),
+                FakeGradleDirectoryProperty(null),
+                FakeGradleDirectoryProperty(null),
+                FakeGradleDirectoryProperty(null)
+            ),
+            ImmutableSet.of(), AndroidVersion.DEFAULT, "variant", "project", LoggerWrapper(logger)
+        )
+
         InstallVariantTask.install(
-                "project",
-                "variant",
+                deviceApkOutput,
+            "project",
+            "variant",
                 FakeDeviceProvider(ImmutableList.of(deviceConnector)),
-                AndroidVersion.DEFAULT,
-                FakeGradleDirectory(temporaryFolder.root),
                 ImmutableSet.of(),
-                FakeGradleDirectoryProperty(null),
-                FakeGradleDirectoryProperty(null),
-                ImmutableSet.of(),
-                ImmutableList.of(),
                 4000,
-                logger,
-                FakeGradleDirectoryProperty(null),
+                logger
         )
         assert(deviceState.pmLogs.any {
             it.startsWith("install -r -t") && it.contains("main.apk")
