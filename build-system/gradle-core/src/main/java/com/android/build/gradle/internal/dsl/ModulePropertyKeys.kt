@@ -40,7 +40,13 @@ sealed interface ModulePropertyKey<OutputT> {
          * A [Dependency] providing apipackager artifact.
          */
         ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER(
-                StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER.propertyName)
+                StringOption.ANDROID_PRIVACY_SANDBOX_SDK_API_PACKAGER.propertyName),
+
+        /**
+         * A [Dependency] providing kotlin compiler embeddable artifact (used for compling sources
+         * produced by the Privacy Sandbox apigenerator.
+         */
+        ANDROID_PRIVACY_SANDBOX_SDK_KOTLIN_COMPILER_EMBEDDABLE(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_KOTLIN_COMPILER_EMBEDDABLE.propertyName),
         ;
 
         override fun getValue(properties: Map<String, Any>): List<Dependency>? {

@@ -527,9 +527,17 @@ class DependencyConfigurator(
                     // For kotlin compilation
                     params.bootstrapClasspath.from(bootstrapCreationConfig.fullBootClasspath)
 
-                    val kotlinCompiler = project.configurations.detachedConfiguration(
-                        project.dependencies.create(MavenCoordinates.ORG_JETBRAINS_KOTLIN_KOTLIN_COMPILER_EMBEDDABLE.toString())
-                    )
+                    val kotlinEmbeddableCompiler =
+                        ModulePropertyKey.Dependencies.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.getValue(
+                            experimentalProperties
+                        )?.single()
+                    val kotlinCompiler: Configuration =
+                        project.configurations.detachedConfiguration(
+                            kotlinEmbeddableCompiler ?: project.dependencies.create(
+                                projectServices.projectOptions.get(StringOption.ANDROID_PRIVACY_SANDBOX_SDK_KOTLIN_COMPILER_EMBEDDABLE)
+                                    ?: MavenCoordinates.ORG_JETBRAINS_KOTLIN_KOTLIN_COMPILER_EMBEDDABLE.toString()
+                            )
+                        )
                     kotlinCompiler.isCanBeConsumed = false
                     kotlinCompiler.isCanBeResolved = true
                     params.kotlinCompiler.from(kotlinCompiler)
