@@ -18,13 +18,16 @@ package com.android.tools.preview.screenshot.tasks
 
 import com.android.tools.preview.screenshot.services.AnalyticsService
 import com.android.tools.render.compose.readComposeScreenshotsJson
+import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -36,7 +39,8 @@ import org.gradle.api.tasks.testing.Test
  */
 @CacheableTask
 abstract class PreviewScreenshotValidationTask : Test() {
-    @get:InputDirectory
+    @get:Optional
+    @get:InputFiles // using InputFiles to allow nonexistent reference image directory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val referenceImageDir: DirectoryProperty
 
@@ -72,6 +76,9 @@ abstract class PreviewScreenshotValidationTask : Test() {
     }
 
     override fun useJUnitPlatform() {
+        if (referenceImageDir.orNull?.asFile?.exists() != true){
+            throw GradleException("Reference images missing. Please run the update<variant>ScreenshotTest task to generate the reference images.")
+        }
         setTestEngineParam("previews-discovered", previewFile.get().asFile.absolutePath)
         setTestEngineParam("referenceImageDirPath", referenceImageDir.get().asFile.absolutePath)
         setTestEngineParam("diffImageDirPath", diffImageDir.get().asFile.absolutePath)

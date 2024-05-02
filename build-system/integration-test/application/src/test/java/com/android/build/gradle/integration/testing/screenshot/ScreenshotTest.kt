@@ -471,6 +471,13 @@ class ScreenshotTest {
     }
 
     @Test
+    fun runScreenshotTestWithMissingRefImageDir() {
+        val result =
+            getExecutor().expectFailure().run(":app:validateDebugScreenshotTest")
+        result.assertErrorContains("Reference images missing. Please run the update<variant>ScreenshotTest task to generate the reference images.")
+    }
+
+    @Test
     fun runPreviewScreenshotTestsOnMultipleFlavors() {
         TestFileUtils.appendToFile(
             appProject.buildFile,
