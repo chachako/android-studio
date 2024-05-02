@@ -254,7 +254,7 @@ def kotlin_library(
             srcs = srcs,
             baseline = lint_baseline,
             deps = collections.uniq((deps or []) + (exports or []) + (lint_classpath or [])),
-            custom_rules = ["//tools/base/lint:studio-checks.lint-rules.jar"] + lint_custom_rules,
+            custom_rules = ["//tools/base/lint:studio-checks.lint-rules.jar", "//tools/base/lint/studio-checks/compose-desktop-checks"] + lint_custom_rules,
             tags = ["no_windows"],
             is_test_sources = lint_is_test_sources,
             extra_args = lint_extra_args,

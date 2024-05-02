@@ -1,0 +1,91 @@
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
+load("//tools/base/bazel:merge_archives.bzl", "merge_jars")
+load("//tools/base/bazel:utils.bzl", "replace_manifest")
+load(":aar_lint.bzl", "aar_lint")
+
+ANDROIDX__VERSION = "1.4.3"
+
+# AndroidX lint check composed from
+# https://cs.android.com/search?q=lintPublish%20file:compose%2F%20file:build.gradle&ss=androidx%2Fplatform%2Fframeworks%2Fsupport&start=1
+# bazel query @maven//...  | grep compose
+
+aar_lint(
+    name = "compose_runtime_lint",
+    dep = "@maven//:androidx.compose.runtime.runtime_" + ANDROIDX__VERSION,
+)
+
+aar_lint(
+    name = "compose_ui_lint",
+    dep = "@maven//:androidx.compose.ui.ui_" + ANDROIDX__VERSION,
+)
+
+aar_lint(
+    name = "compose_ui_graphics_lint",
+    dep = "@maven//:androidx.compose.ui.ui-graphics_" + ANDROIDX__VERSION,
+)
+
+aar_lint(
+    name = "compose_runtime_saveable_lint",
+    dep = "@maven//:androidx.compose.runtime.runtime-saveable_" + ANDROIDX__VERSION,
+)
+
+aar_lint(
+    name = "compose_material_lint",
+    dep = "@maven//:androidx.compose.material.material_" + ANDROIDX__VERSION,
+)
+
+aar_lint(
+    name = "compose_animation_lint",
+    dep = "@maven//:androidx.compose.animation.animation_" + ANDROIDX__VERSION,
+)
+
+aar_lint(
+    name = "compose_animation_core_lint",
+    dep = "@maven//:androidx.compose.animation.animation-core_" + ANDROIDX__VERSION,
+)
+
+aar_lint(
+    name = "compose_foundation_lint",
+    dep = "@maven//:androidx.compose.foundation.foundation_" + ANDROIDX__VERSION,
+)
+
+kotlin_library(
+    name = "compose-desktop-registry",
+    srcs = ["ComposeDesktopIssueRegistry.kt"],
+    lint_enabled = False,
+    deps = [
+        ":compose_animation_core_lint",
+        ":compose_animation_lint",
+        ":compose_foundation_lint",
+        ":compose_material_lint",
+        ":compose_runtime_lint",
+        ":compose_runtime_saveable_lint",
+        ":compose_ui_graphics_lint",
+        ":compose_ui_lint",
+        "//tools/base/lint:tools.lint-api",
+    ],
+)
+
+merge_jars(
+    name = "androidx-checks-merged",
+    out = "androidx-checks-merged.jar",
+    allow_duplicates = True,
+    jars = [
+        ":compose-desktop-registry",
+        ":compose_runtime_lint",
+        ":compose_ui_lint",
+        ":compose_ui_graphics_lint",
+        ":compose_runtime_saveable_lint",
+        ":compose_material_lint",
+        ":compose_animation_lint",
+        ":compose_animation_core_lint",
+        ":compose_foundation_lint",
+    ],
+)
+
+replace_manifest(
+    name = "compose-desktop-checks",
+    manifest = "MANIFEST.MF",
+    original_jar = ":androidx-checks-merged",
+    visibility = ["//visibility:public"],
+)
