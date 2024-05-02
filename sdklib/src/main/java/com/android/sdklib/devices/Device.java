@@ -660,4 +660,66 @@ public final class Device {
             }};
     }
 
+    public static boolean isRollable(@NonNull String deviceId) {
+        // TODO: b/304585541 - Declare this in XML
+        return deviceId.equals("7.4in Rollable");
+    }
+
+    public static boolean isPhone(@NonNull Device device) {
+        return device.getTagId() == null && !hasTabletScreen(device);
+    }
+
+    public static boolean isTablet(@NonNull Device device) {
+        return device.getTagId() == null && hasTabletScreen(device);
+    }
+
+    // TODO: http://b/326289372 -  Declare this in XML
+    private static boolean hasTabletScreen(@NonNull Device device) {
+        Screen screen = device.getDefaultHardware().getScreen();
+        return screen.getDiagonalLength() >= MINIMUM_TABLET_SIZE && !screen.isFoldable();
+    }
+
+    /** Whether the given device is a wear device */
+    public static boolean isWear(@Nullable Device device) {
+        return device != null && "android-wear".equals(device.getTagId());
+    }
+
+    /** Whether the given device is an Android Things device */
+    public static boolean isThings(@Nullable Device device) {
+        return device != null && "android-things".equals(device.getTagId());
+    }
+
+    /** Whether the given device is a TV device */
+    public static boolean isTv(@Nullable Device device) {
+        return device != null
+                && ("android-tv".equals(device.getTagId())
+                        || "google-tv".equals(device.getTagId()));
+    }
+
+    /** Whether the given device is an Automotive device */
+    public static boolean isAutomotive(@Nullable Device device) {
+        return device != null
+                && ("android-automotive".equals(device.getTagId())
+                        || "android-automotive-playstore".equals(device.getTagId())
+                        || "android-automotive-distantdisplay".equals(device.getTagId()));
+    }
+
+    /** Whether the given automotive device has distant display */
+    public static boolean isAutomotiveDistantDisplay(@Nullable Device device) {
+        return device != null && "android-automotive-distantdisplay".equals(device.getTagId());
+    }
+
+    /** Whether the given device is a PC device */
+    public static boolean isDesktop(@Nullable Device device) {
+        return device != null && "android-desktop".equals(device.getTagId());
+    }
+
+    /** Whether the given device appears to be a mobile device (e.g. not wear, tv, auto, etc) */
+    public static boolean isMobile(@Nullable Device device) {
+        return !isTv(device)
+                && !isWear(device)
+                && !isThings(device)
+                && !isAutomotive(device)
+                && !isDesktop(device);
+    }
 }

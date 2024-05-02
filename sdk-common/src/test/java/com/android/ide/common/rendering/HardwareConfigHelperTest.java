@@ -1,12 +1,12 @@
 package com.android.ide.common.rendering;
 
-import static com.android.ide.common.rendering.HardwareConfigHelper.isAutomotive;
-import static com.android.ide.common.rendering.HardwareConfigHelper.isDesktop;
 import static com.android.ide.common.rendering.HardwareConfigHelper.isGeneric;
-import static com.android.ide.common.rendering.HardwareConfigHelper.isMobile;
 import static com.android.ide.common.rendering.HardwareConfigHelper.isNexus;
-import static com.android.ide.common.rendering.HardwareConfigHelper.isTv;
-import static com.android.ide.common.rendering.HardwareConfigHelper.isWear;
+import static com.android.sdklib.devices.Device.isAutomotive;
+import static com.android.sdklib.devices.Device.isDesktop;
+import static com.android.sdklib.devices.Device.isMobile;
+import static com.android.sdklib.devices.Device.isTv;
+import static com.android.sdklib.devices.Device.isWear;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -135,7 +135,7 @@ public final class HardwareConfigHelperTest {
     public void screenSize() {
         List<Device> devices = Lists.newArrayList();
         DeviceManager deviceManager = getDeviceManager();
-        for (String id : new String[] { "Nexus 7 2013", "Nexus 5", "Nexus 10"}) {
+        for (String id : new String[] {"Nexus 7 2013", "Nexus 5", "Nexus 10"}) {
             Device device = deviceManager.getDevice(id, "Google");
             assertNotNull(device);
             devices.add(device);
@@ -145,11 +145,7 @@ public final class HardwareConfigHelperTest {
         for (Device device : devices) {
             ids.add(device.getId());
         }
-        assertEquals(Arrays.asList(
-                "Nexus 5",
-                "Nexus 7 2013",
-                "Nexus 10"
-        ), ids);
+        assertEquals(Arrays.asList("Nexus 5", "Nexus 7 2013", "Nexus 10"), ids);
     }
 
     @Test
