@@ -22,7 +22,6 @@ merge_deps(
     name = "bundled_deps",
     srcs = [
         ":tools.compose-preview-renderer",
-        "//prebuilts/studio/layoutlib/data:layoutlib",  # Should be runtime
         "//prebuilts/tools/common/lint-psi/intellij-core",
         "//tools/adt/idea/compose-designer:ui-animation-tooling-internal",
         "//tools/adt/idea/layoutlib:tools.layoutlib",
@@ -127,6 +126,7 @@ kotlin_test(
         "//prebuilts/studio/layoutlib:build.prop",
         "//prebuilts/studio/layoutlib/data",
         "//prebuilts/studio/layoutlib/data:framework_res.jar",
+        "//prebuilts/studio/layoutlib/data:layoutlib",
         "//prebuilts/studio/layoutlib/data:native_libs",
         "//prebuilts/studio/layoutlib/data/fonts",
         "//prebuilts/studio/layoutlib/data/icu",
