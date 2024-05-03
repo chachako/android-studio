@@ -24,8 +24,7 @@ abstract class ProcessState(val pid: Int) {
 
     abstract val profileable: Boolean
 
-    open val architecture: String
-        get() = ""
+    abstract val architecture: String
 
     open var commandLine: String = ""
 }

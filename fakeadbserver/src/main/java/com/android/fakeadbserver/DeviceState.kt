@@ -178,7 +178,7 @@ class DeviceState internal constructor(
         isWaiting: Boolean
     ): ClientState {
         synchronized(mProcessStates) {
-            val clientState = ClientState(pid, uid, processName, packageName, isWaiting)
+            val clientState = ClientState(pid, uid, processName, packageName, isWaiting, cpuAbi)
             mProcessStates[pid] = clientState
             clientChangeHub.clientListChanged()
             clientChangeHub.appProcessListChanged()

@@ -26,7 +26,12 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param isWaiting whether this client is waiting for a debugger connection or not.
  */
 class ClientState internal constructor(
-    pid: Int, val uid: Int, val processName: String, val packageName: String, isWaiting: Boolean
+    pid: Int,
+    val uid: Int,
+    val processName: String,
+    val packageName: String,
+    isWaiting: Boolean,
+    override val architecture: String
 ) : ProcessState(pid) {
 
     val viewsState = ClientViewsState()
