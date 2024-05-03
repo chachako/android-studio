@@ -100,7 +100,11 @@ class AdblibIDeviceWrapperTest {
         val (connectedDevice, _) = createConnectedDevice(
             "device1", DeviceState.DeviceStatus.FASTBOOTD
         )
-        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val adblibIDeviceWrapper =
+            AdblibIDeviceWrapper(
+                connectedDevice,
+                bridge,
+                deviceState = { null })
 
         // Act / Assert
         assertNull(adblibIDeviceWrapper.state)
@@ -112,8 +116,11 @@ class AdblibIDeviceWrapperTest {
         val (connectedDevice, _) = createConnectedDevice(
             "device1", DeviceState.DeviceStatus.OFFLINE
         )
-        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
-        adblibIDeviceWrapper.deviceState = com.android.adblib.DeviceState.FASTBOOTD
+        val adblibIDeviceWrapper =
+            AdblibIDeviceWrapper(
+                connectedDevice,
+                bridge,
+                deviceState = { com.android.adblib.DeviceState.FASTBOOTD })
 
         // Act / Assert
         assertEquals(IDevice.DeviceState.FASTBOOTD, adblibIDeviceWrapper.state)
@@ -125,8 +132,11 @@ class AdblibIDeviceWrapperTest {
         val (connectedDevice, _) = createConnectedDevice(
             "device1", DeviceState.DeviceStatus.OFFLINE
         )
-        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
-        adblibIDeviceWrapper.deviceState = com.android.adblib.DeviceState.DISCONNECTED
+        val adblibIDeviceWrapper =
+            AdblibIDeviceWrapper(
+                connectedDevice,
+                bridge,
+                deviceState = { com.android.adblib.DeviceState.DISCONNECTED })
 
         // Act / Assert
         assertEquals(IDevice.DeviceState.DISCONNECTED, adblibIDeviceWrapper.state)
@@ -170,7 +180,11 @@ class AdblibIDeviceWrapperTest {
         val (connectedDevice, fakeDevice) = createConnectedDevice(
             "device1", DeviceState.DeviceStatus.OFFLINE
         )
-        val adblibIDeviceWrapper = AdblibIDeviceWrapper(connectedDevice, bridge)
+        val adblibIDeviceWrapper =
+            AdblibIDeviceWrapper(
+                connectedDevice,
+                bridge,
+                deviceState = { connectedDevice.deviceInfo.deviceState })
 
         // Assert: AvdData `ListenableFuture` doesn't get set while device is not online
         delay(50)
@@ -1036,10 +1050,10 @@ class AdblibIDeviceWrapperTest {
         connectedDevice: ConnectedDevice,
         bridge: AndroidDebugBridge
     ): AdblibIDeviceWrapper {
-        return AdblibIDeviceWrapper(connectedDevice, bridge).also {
-            it.deviceState =
-                connectedDevice.deviceInfo.deviceState
-        }
+        return AdblibIDeviceWrapper(
+            connectedDevice,
+            bridge,
+            deviceState = { connectedDevice.deviceInfo.deviceState })
     }
 
     private class MyUserDataClass(val key: IUserDataMap.Key<MyUserDataClass>)

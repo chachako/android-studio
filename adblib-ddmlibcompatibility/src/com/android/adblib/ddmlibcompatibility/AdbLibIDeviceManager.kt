@@ -26,6 +26,7 @@ import com.android.adblib.scope
 import com.android.adblib.utils.createChildScope
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
+import com.android.ddmlib.IUserDataMap
 import com.android.ddmlib.idevicemanager.IDeviceManager
 import com.android.ddmlib.idevicemanager.IDeviceManagerListener
 import kotlinx.coroutines.CompletableDeferred
@@ -69,7 +70,13 @@ internal class AdbLibIDeviceManager(
                     val added = value.filter { !deviceMap.containsKey(it) }
                     val addedIDevices = mutableListOf<IDevice>()
                     for (key in added) {
-                        val iDevice = AdblibIDeviceWrapper(key, bridge)
+                        val deviceStateHolder = DeviceStateHolder()
+                        val iDevice =
+                            AdblibIDeviceWrapper(
+                                key,
+                                bridge,
+                                deviceStateHolder::value
+                            ).also { it.computeUserDataIfAbsent(deviceStateHolderKey) { _ -> deviceStateHolder } }
                         deviceMap[key] = iDevice
                         addedIDevices.add(iDevice)
                     }
@@ -79,7 +86,7 @@ internal class AdbLibIDeviceManager(
                     val removedIDevices = mutableListOf<IDevice>()
                     for (key in removed) {
                         deviceMap.remove(key)?.also {
-                            it.deviceState = DeviceState.DISCONNECTED
+                            it.deviceStateHolder.update(DeviceState.DISCONNECTED)
                             removedIDevices.add(it)
                         }
                     }
@@ -92,8 +99,7 @@ internal class AdbLibIDeviceManager(
                         //Set current deviceState before triggering `iDeviceManagerListener.addedDevices`
                         for (addedConnectedDevice in added) {
                             val iDevice = deviceMap.getValue(addedConnectedDevice)
-                            iDevice.deviceState =
-                                addedConnectedDevice.deviceInfoFlow.value.deviceState
+                            iDevice.deviceStateHolder.update(addedConnectedDevice.deviceInfoFlow.value.deviceState)
                         }
                         postAndWaitForCompletion(scope, "devices added") {
                             iDeviceManagerListener.addedDevices(addedIDevices)
@@ -103,18 +109,15 @@ internal class AdbLibIDeviceManager(
                             val iDevice = deviceMap.getValue(addedConnectedDevice)
                             addedConnectedDevice.scope.launch {
                                 addedConnectedDevice.deviceInfoFlow.map { it.deviceState }.collect {
-                                    if (iDevice.deviceState != it) {
-                                        iDevice.deviceState = it
-
-                                        // Match ddmlib behavior by not triggering device state
-                                        // change event for a `DISCONNECTED` device state value.
-                                        if (it != DeviceState.DISCONNECTED) {
-                                            postAndWaitForCompletion(
-                                                scope,
-                                                "device state changed"
-                                            ) {
-                                                iDeviceManagerListener.deviceStateChanged(iDevice)
-                                            }
+                                    val stateChanged = iDevice.deviceStateHolder.update(it)
+                                    // Match ddmlib behavior by not triggering device state
+                                    // change event for a `DISCONNECTED` device state value.
+                                    if (stateChanged && it != DeviceState.DISCONNECTED) {
+                                        postAndWaitForCompletion(
+                                            scope,
+                                            "device state changed"
+                                        ) {
+                                            iDeviceManagerListener.deviceStateChanged(iDevice)
                                         }
                                     }
                                 }
@@ -154,5 +157,41 @@ internal class AdbLibIDeviceManager(
             }
         }
         processed.await()
+    }
+
+    private val IDevice.deviceStateHolder: DeviceStateHolder
+        get() {
+            return getUserDataOrNull(deviceStateHolderKey)
+                ?: throw AssertionError("IDevice instance should have a DeviceStateHolder value")
+        }
+
+    companion object {
+
+        private val deviceStateHolderKey = IUserDataMap.Key<DeviceStateHolder>()
+    }
+
+    /**
+     * Control the value of deviceState, so that the listeners of the device change events
+     * properly observe device state changes.
+     */
+    private class DeviceStateHolder {
+
+        @Volatile
+        private var _value: DeviceState? = null
+
+        val value: DeviceState?
+            get() {
+                return _value
+            }
+
+        fun update(newValue: DeviceState): Boolean {
+            // `DeviceState.DISCONNECTED` is a final state, so do not change away from it
+            return if (_value != newValue && _value != DeviceState.DISCONNECTED) {
+                _value = newValue
+                true
+            } else {
+                false
+            }
+        }
     }
 }

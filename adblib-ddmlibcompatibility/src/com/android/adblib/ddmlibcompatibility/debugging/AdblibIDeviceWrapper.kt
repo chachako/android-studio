@@ -25,6 +25,7 @@ import com.android.adblib.RemoteFileMode
 import com.android.adblib.SocketSpec
 import com.android.adblib.adbLogger
 import com.android.adblib.availableFeatures
+import com.android.adblib.ddmlibcompatibility.AdbLibIDeviceManager
 import com.android.adblib.ddmlibcompatibility.IDeviceUsageTrackerImpl
 import com.android.adblib.rootAndWait
 import com.android.adblib.scope
@@ -63,6 +64,7 @@ import com.android.ddmlib.ServiceInfo
 import com.android.ddmlib.SimpleConnectedSocket
 import com.android.ddmlib.SyncException
 import com.android.ddmlib.SyncService
+import com.android.ddmlib.idevicemanager.IDeviceManagerListener
 import com.android.ddmlib.internal.UserDataMapImpl
 import com.android.ddmlib.log.LogReceiver
 import com.android.sdklib.AndroidVersion
@@ -89,10 +91,17 @@ import kotlin.coroutines.cancellation.CancellationException
 /**
  * Implementation of [IDevice] that entirely relies on adblib services, i.e. does not depend on
  * implementation details of ddmlib.
+ *
+ * @param deviceState the device state that should be exposed via [IDevice.getState] (or other
+ * public methods of [IDevice]). Note the value may be out of sync with the value
+ * of [ConnectedDevice] state, because the device state values exposed through public entry points
+ * need to be updated deterministically when [IDeviceManagerListener.deviceStateChanged] events are
+ * invoked by [AdbLibIDeviceManager].
  */
 internal class AdblibIDeviceWrapper(
     private val connectedDevice: ConnectedDevice,
     bridge: AndroidDebugBridge,
+    private val deviceState: () -> com.android.adblib.DeviceState?
 ) : IDevice {
 
     private val logger = adbLogger(connectedDevice.session)
@@ -111,9 +120,9 @@ internal class AdblibIDeviceWrapper(
     /** Name and path of the AVD  */
     private val mAvdData = connectedDevice.scope.async {
         // Wait until the device goes online before creating avd data.
-        // Note that extra care should be taken when using `connectedDevice.deviceInfoFlow.deviceState` vs
-        // using `AdblibIDeviceWrapper.deviceState`. In this case it's ok to use the former as
-        // all we care about is populating avd data as soon as possible.
+        // Note that extra care should be taken when using `connectedDevice.deviceInfoFlow.deviceState`
+        // instead of `AdblibIDeviceWrapper.deviceStateProvider`. In this case it's ok to use
+        // the former as all we care about is populating avd data as soon as possible.
         connectedDevice.deviceInfoFlow.first {
             it.deviceState == com.android.adblib.DeviceState.ONLINE
         }
@@ -134,13 +143,6 @@ internal class AdblibIDeviceWrapper(
     }
 
     private val mUserDataMap = UserDataMapImpl()
-
-    /**
-     * Note that we do not get the deviceState value from the `connectedDevice` so that
-     * the listeners of `IDeviceChangeListener.deviceChanged(device, CHANGE_STATE)` would not
-     * be getting unpredictable device state values, and would in fact observe state transitions.
-     */
-    internal var deviceState : com.android.adblib.DeviceState? = null
 
     override fun getName(): String {
         return iDeviceSharedImpl.name
@@ -284,7 +286,7 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun getState(): DeviceState? {
-        return deviceState?.let {
+        return deviceState()?.let {
             // `DISCONNECTED` is not a device state returned from `adb devices` and so we should not
             // use `DeviceState.getState` method which is not reliable in this case.
             if (it == com.android.adblib.DeviceState.DISCONNECTED) {
@@ -382,7 +384,7 @@ internal class AdblibIDeviceWrapper(
 
     override fun isOnline(): Boolean =
         logUsage(IDeviceUsageTracker.Method.IS_ONLINE) {
-            deviceState == com.android.adblib.DeviceState.ONLINE
+            deviceState() == com.android.adblib.DeviceState.ONLINE
         }
 
     override fun isEmulator(): Boolean {
@@ -390,11 +392,11 @@ internal class AdblibIDeviceWrapper(
     }
 
     override fun isOffline(): Boolean {
-        return deviceState == com.android.adblib.DeviceState.OFFLINE
+        return deviceState() == com.android.adblib.DeviceState.OFFLINE
     }
 
     override fun isBootLoader(): Boolean {
-        return deviceState == com.android.adblib.DeviceState.BOOTLOADER
+        return deviceState() == com.android.adblib.DeviceState.BOOTLOADER
     }
 
     override fun hasClients(): Boolean {
