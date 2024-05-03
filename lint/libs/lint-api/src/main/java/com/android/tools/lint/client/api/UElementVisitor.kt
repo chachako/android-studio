@@ -30,10 +30,8 @@ import com.android.tools.lint.detector.api.interprocedural.CallGraphVisitor
 import com.android.tools.lint.detector.api.interprocedural.ClassHierarchyVisitor
 import com.android.tools.lint.detector.api.interprocedural.IntraproceduralDispatchReceiverVisitor
 import com.google.common.base.Joiner
-import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Lists
 import com.google.common.collect.Maps
-import com.google.common.collect.Multimap
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.Computable
 import com.intellij.psi.PsiClass
@@ -124,7 +122,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
   private val referenceDetectors =
     Maps.newHashMapWithExpectedSize<String, MutableList<VisitingDetector>>(12)
   private val resourceFieldDetectors = ArrayList<VisitingDetector>()
-  private val allDetectors: MutableList<VisitingDetector>
+  private val allDetectors = ArrayList<VisitingDetector>(detectors.size)
   private val nodePsiTypeDetectors =
     Maps.newHashMapWithExpectedSize<Class<out UElement>, MutableList<VisitingDetector>>(25)
   private val superClassDetectors = HashMap<String, MutableList<VisitingDetector>>(40)
@@ -132,98 +130,59 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
   private val callGraphDetectors = ArrayList<SourceCodeScanner>()
 
   init {
-    allDetectors = ArrayList(detectors.size)
 
-    var annotationScanners: Multimap<String, SourceCodeScanner>? = null
+    val annotationScanners = HashMap<String, MutableList<SourceCodeScanner>>()
+
+    fun <K, V> Iterable<K>.associateWith(target: V, grouping: MutableMap<K, MutableList<V>>) {
+      for (k in this) grouping.getOrPut(k) { ArrayList(SAME_TYPE_COUNT) }.add(target)
+    }
 
     for (detector in detectors) {
       val uastScanner = detector as SourceCodeScanner
       val v = VisitingDetector(detector, uastScanner)
       allDetectors.add(v)
 
-      val names = detector.getApplicableMethodNames()
-      if (names != null) {
+      detector.getApplicableMethodNames()?.let { names ->
         // not supported in Java visitors; adding a method invocation node is trivial
         // for that case.
         assert(names !== XmlScannerConstants.ALL)
-
-        for (name in names) {
-          val list = methodDetectors.computeIfAbsent(name) { ArrayList(SAME_TYPE_COUNT) }
-          list.add(v)
-        }
+        names.associateWith(v, methodDetectors)
       }
 
-      val applicableSuperClasses = detector.applicableSuperClasses()
-      if (applicableSuperClasses != null) {
-        for (fqn in applicableSuperClasses) {
-          val list = superClassDetectors.computeIfAbsent(fqn) { ArrayList(SAME_TYPE_COUNT) }
-          list.add(v)
-        }
-      }
+      detector.applicableSuperClasses()?.associateWith(v, superClassDetectors)
+      detector.getApplicableUastTypes()?.associateWith(v, nodePsiTypeDetectors)
 
-      val nodePsiTypes = detector.getApplicableUastTypes()
-      if (nodePsiTypes != null) {
-        for (type in nodePsiTypes) {
-          val list = nodePsiTypeDetectors.computeIfAbsent(type) { ArrayList(SAME_TYPE_COUNT) }
-          list.add(v)
-        }
-      }
-
-      val types = detector.getApplicableConstructorTypes()
-      if (types != null) {
+      detector.getApplicableConstructorTypes()?.let { types ->
         // not supported in Java visitors; adding a method invocation node is trivial
         // for that case.
         assert(types !== XmlScannerConstants.ALL)
-        for (type in types) {
-          var list: MutableList<VisitingDetector>? = constructorDetectors[type]
-          if (list == null) {
-            list = ArrayList(SAME_TYPE_COUNT)
-            constructorDetectors[type] = list
-          }
-          list.add(v)
-        }
+        types.associateWith(v, constructorDetectors)
       }
 
-      val referenceNames = detector.getApplicableReferenceNames()
-      if (referenceNames != null) {
+      detector.getApplicableReferenceNames()?.let { referenceNames ->
         // not supported in Java visitors; adding a method invocation node is trivial
         // for that case.
         assert(referenceNames !== XmlScannerConstants.ALL)
-
-        for (name in referenceNames) {
-          val list = referenceDetectors.computeIfAbsent(name) { ArrayList(SAME_TYPE_COUNT) }
-          list.add(v)
-        }
+        referenceNames.associateWith(v, referenceDetectors)
       }
 
       if (detector.appliesToResourceRefs()) {
         resourceFieldDetectors.add(v)
       }
 
-      val annotations = detector.applicableAnnotations()
-      if (annotations != null) {
-        if (annotationScanners == null) {
-          annotationScanners = ArrayListMultimap.create()
-        }
-        for (annotation in annotations) {
-          annotationScanners!!.put(annotation, uastScanner)
-        }
-      }
+      detector.applicableAnnotations()?.associateWith(uastScanner, annotationScanners)
 
       if (uastScanner.isCallGraphRequired()) {
         callGraphDetectors.add(uastScanner)
       }
     }
 
-    val relevantAnnotations: Set<String>?
-    if (annotationScanners != null) {
-      annotationHandler = AnnotationHandler(driver, annotationScanners)
-      relevantAnnotations = annotationHandler.relevantAnnotations
-    } else {
-      annotationHandler = null
-      relevantAnnotations = null
-    }
-    parser.evaluator.setRelevantAnnotations(relevantAnnotations)
+    annotationHandler =
+      when {
+        annotationScanners.isEmpty() -> null
+        else -> AnnotationHandler(driver, annotationScanners)
+      }
+    parser.evaluator.setRelevantAnnotations(annotationHandler?.relevantAnnotations)
   }
 
   fun visitFile(context: JavaContext) {

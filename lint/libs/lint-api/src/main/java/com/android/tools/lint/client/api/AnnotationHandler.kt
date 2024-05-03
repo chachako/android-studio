@@ -60,7 +60,6 @@ import com.android.tools.lint.detector.api.asCall
 import com.android.tools.lint.detector.api.hasImplicitDefaultConstructor
 import com.android.tools.lint.detector.api.isKotlin
 import com.android.tools.lint.detector.api.resolveOperator
-import com.google.common.collect.Multimap
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.psi.JavaRecursiveElementVisitor
 import com.intellij.psi.PsiAnonymousClass
@@ -136,10 +135,10 @@ import org.jetbrains.uast.visitor.AbstractUastVisitor
 /** Looks up annotations on method calls and enforces the various things they express. */
 internal class AnnotationHandler(
   private val driver: LintDriver,
-  private val scanners: Multimap<String, SourceCodeScanner>,
+  private val scanners: Map<String, Collection<SourceCodeScanner>>,
 ) {
 
-  val relevantAnnotations: Set<String> = HashSet<String>(scanners.keys())
+  val relevantAnnotations: Set<String> = HashSet(scanners.keys)
 
   init {
     driver.skipAnnotations?.forEach { (relevantAnnotations as MutableSet).add(it) }
@@ -575,14 +574,14 @@ internal class AnnotationHandler(
       usageInfo.index = index
       val signature = info.qualifiedName
       val uastScanners = scanners.get(signature)
-      if (uastScanners.isNotEmpty()) {
+      if (!uastScanners.isNullOrEmpty()) {
         checkAnnotations(context, uastScanners, signature, argument, type, info, usageInfo)
       }
 
       // Also check just the name; we allow annotation checkers to just match by basename
       val name = signature.substringAfterLast('.')
       val simpleNameScanners = scanners.get(name)
-      if (simpleNameScanners.isNotEmpty()) {
+      if (!simpleNameScanners.isNullOrEmpty()) {
         checkAnnotations(context, simpleNameScanners, signature, argument, type, info, usageInfo)
       }
     }
