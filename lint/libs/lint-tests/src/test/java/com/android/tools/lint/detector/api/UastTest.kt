@@ -69,13 +69,16 @@ import org.jetbrains.uast.UForEachExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULocalVariable
 import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.UPostfixExpression
 import org.jetbrains.uast.UPrefixExpression
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
+import org.jetbrains.uast.UThisExpression
 import org.jetbrains.uast.UastCallKind
+import org.jetbrains.uast.analysis.KotlinExtensionConstants
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.toUElementOfType
@@ -918,6 +921,104 @@ class UastTest : TestCase() {
           }
         }
       )
+    }
+  }
+
+  fun disabledTestThisResolve() {
+    // TODO(https://issuetracker.google.com/338553901): Invoking resolve() on a UThisExpression that
+    //  references a lambda receiver (and then converting to a UElement) should yield the implicit
+    //  UParameter named `<this>` from the appropriate parent lambda expression. However, this does
+    //  not work in K1 or K2 when the lambda expression also has an explicit parameter; `this`
+    //  instead resolves to the first explicit lambda parameter.
+    //  AnalysisApiLintUtilsKt.getThisParameter shows an approach to always correctly get the
+    //  implicit parameter named `<this>` from a lambda expression. This approach could probably be
+    //  used in the upstream fix.
+    val source =
+      kotlin(
+          """
+            fun foo(p: Any.(Any) -> Any) { }
+
+            class Hello {
+              fun hello() {
+                val a = Any()
+                a.apply {
+                  this // 0
+                }
+                a.apply a@ {
+                  this // 1
+                  this@a // 2
+                  this@Hello // 3
+                }
+                a.let {
+                  this // 4
+                }
+                foo {
+                  this // 5
+                }
+                foo b@ {
+                  this // 6
+                  this@b // 7
+                  this@Hello // 8
+                }
+                foo { thing ->
+                  this // 9
+                }
+                foo c@ { thing ->
+                  this // 10
+                  this@c // 11
+                  this@Hello // 12
+                }
+                foo { it ->
+                  this // 13
+                }
+                foo d@ { it ->
+                  this // 14
+                  this@d // 15
+                  this@Hello // 16
+                }
+              }
+            }"""
+        )
+        .indented()
+
+    check(source) { file ->
+      val resolved = mutableListOf<UElement>()
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitThisExpression(node: UThisExpression): Boolean {
+            val r = node.resolve()
+            resolved.add(r!!.toUElement()!!)
+            return super.visitThisExpression(node)
+          }
+        }
+      )
+
+      fun isUParameterNamedThis(element: UElement) =
+        element is UParameter && element.name == KotlinExtensionConstants.LAMBDA_THIS_PARAMETER_NAME
+      fun isUClassNamedHello(element: UElement) = element is UClass && element.name == "Hello"
+
+      // Each `this` expression from the code above (numbered 0, 1, 2, etc.) should resolve to
+      // either the UClass named `Hello` or the UParameter named `<this>` from the parent lambda
+      // expression. Expressions like `this@Hello` should resolve to the UClass. Expressions like
+      // `this` or `this@d` should resolve to a UParameter.
+
+      assertTrue(isUParameterNamedThis(resolved[0]))
+      assertTrue(isUParameterNamedThis(resolved[1]))
+      assertTrue(isUParameterNamedThis(resolved[2]))
+      assertTrue(isUClassNamedHello(resolved[3]))
+      assertTrue(isUClassNamedHello(resolved[4]))
+      assertTrue(isUParameterNamedThis(resolved[5]))
+      assertTrue(isUParameterNamedThis(resolved[6]))
+      assertTrue(isUParameterNamedThis(resolved[7]))
+      assertTrue(isUClassNamedHello(resolved[8]))
+      assertTrue(isUParameterNamedThis(resolved[9]))
+      assertTrue(isUParameterNamedThis(resolved[10]))
+      assertTrue(isUParameterNamedThis(resolved[11]))
+      assertTrue(isUClassNamedHello(resolved[12]))
+      assertTrue(isUParameterNamedThis(resolved[13]))
+      assertTrue(isUParameterNamedThis(resolved[14]))
+      assertTrue(isUParameterNamedThis(resolved[15]))
+      assertTrue(isUClassNamedHello(resolved[16]))
     }
   }
 
