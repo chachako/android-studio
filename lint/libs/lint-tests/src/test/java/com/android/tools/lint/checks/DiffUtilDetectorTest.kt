@@ -514,6 +514,37 @@ class DiffUtilDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun test338232684() {
+    // Regression test for https://issuetracker.google.com/issues/338232684
+    lint()
+      .files(
+        kotlin(
+            """
+            import androidx.recyclerview.widget.DiffUtil
+
+            sealed class MessagePreview {
+              // MessagePreview explicitly requires equals() impls
+              abstract override fun equals(other: Any?): Boolean
+              abstract val ts: Int
+              abstract val threadTs: Long
+            }
+
+            private fun <T : MessagePreview> createDiffCallback() =
+              object : DiffUtil.ItemCallback<T>() {
+                override fun areItemsTheSame(oldItem: T, newItem: T): Boolean =
+                  oldItem.ts == newItem.ts && oldItem.threadTs == newItem.threadTs
+
+                override fun areContentsTheSame(oldItem: T, newItem: T): Boolean = oldItem == newItem
+              }
+          """
+          )
+          .indented(),
+        *diffUtilStubs,
+      )
+      .run()
+      .expectClean()
+  }
+
   override fun getDetector(): Detector {
     return DiffUtilDetector()
   }
