@@ -404,42 +404,30 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
       if (type is PsiClassType) {
         val resolved = type.resolve()
         if (resolved != null) {
-          checkClass(node, null, resolved)
+          for (detector in getRelevantDetectors(resolved)) {
+            detector.uastScanner.visitClass(context, node)
+          }
         }
       }
-
       return super.visitLambdaExpression(node)
     }
 
     override fun visitClass(node: UClass): Boolean {
       val result = super.visitClass(node)
-      checkClass(null, node, node)
+      for (detector in getRelevantDetectors(node)) {
+        detector.uastScanner.visitClass(context, node)
+      }
       return result
     }
 
-    private fun checkClass(lambda: ULambdaExpression?, uClass: UClass?, node: PsiClass) {
-      if (node is PsiTypeParameter) return // See Javadoc for SourceCodeScanner.visitClass.
-
-      val superClasses = InheritanceUtil.getSuperClasses(node)
-      superClasses.add(node) // Include self.
-
-      // The current class may inherit from multiple superclasses listed by a
-      // single detector, so we need to avoid double-visiting.
-      val detectorsUsed = mutableSetOf<VisitingDetector>()
-
-      for (superClass in superClasses) {
-        val fqName = superClass.qualifiedName ?: continue
-        val detectors = superClassDetectors[fqName] ?: continue
-        for (detector in detectors) {
-          if (!detectorsUsed.add(detector)) continue
-          if (uClass != null) {
-            detector.uastScanner.visitClass(context, uClass)
-          } else {
-            check(lambda != null)
-            detector.uastScanner.visitClass(context, lambda)
-          }
-        }
-      }
+    private fun getRelevantDetectors(klass: PsiClass): Sequence<VisitingDetector> {
+      if (klass is PsiTypeParameter)
+        return sequenceOf() // See Javadoc for SourceCodeScanner.visitClass.
+      val superClasses = InheritanceUtil.getSuperClasses(klass).asSequence()
+      return (superClasses + klass) // Include self.
+        .mapNotNull { it.qualifiedName?.let(superClassDetectors::get) }
+        .flatten()
+        .distinct()
     }
   }
 
