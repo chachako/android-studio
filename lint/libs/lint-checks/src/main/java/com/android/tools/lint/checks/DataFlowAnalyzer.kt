@@ -59,12 +59,12 @@ import org.jetbrains.uast.ULabeledExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULocalVariable
 import org.jetbrains.uast.UMethod
-import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UPolyadicExpression
 import org.jetbrains.uast.UPostfixExpression
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.UReferenceExpression
+import org.jetbrains.uast.UResolvable
 import org.jetbrains.uast.UReturnExpression
 import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.USwitchClauseExpression
@@ -297,40 +297,10 @@ abstract class DataFlowAnalyzer(
     }
   }
 
-  private fun UThisExpression.resolveToThisParam(): UParameter? {
-    // We only handle <this> parameters in Kotlin code.
-    if (this.lang != KotlinLanguage.INSTANCE) return null
-
-    // We only care about "this" expressions within lambda expressions.
-    if (this.getParentOfType<ULambdaExpression>() == null) return null
-
-    // Try to resolve the "this" expression to a parent lambda expression, using UAST.
-
-    // TODO(b/308627646): UAST bug: this.resolve() only works if the "this" expression has a label
-    //  (e.g. this@apply or this@ClassName). But the first PSI child is a KtNameReferenceExpression,
-    //  which can be converted to a USimpleNameReferenceExpression
-    //  (KotlinUSimpleReferenceExpression); resolve always seems to work for this element, for both
-    //  labelled and unlabelled "this" expressions.
-    val referenceExpression =
-      this.sourcePsi?.children?.firstOrNull()?.toUElementOfType<USimpleNameReferenceExpression>()
-        ?: return null
-    val lambdaExpression =
-      referenceExpression.resolve()?.toUElement() as? ULambdaExpression ?: return null
-
-    return lambdaExpression.getThisParameter(baseKotlinUastResolveProviderService)
-  }
-
   private fun isTracked(element: UElement): Boolean {
     if (instances.contains(element)) return true
-    if (element is UReferenceExpression)
+    if (element is UResolvable && (element is UReferenceExpression || element is UThisExpression))
       return element.resolve()?.let { references.contains(it) } == true
-
-    // Special handling of "this" expressions.
-    if (element is UThisExpression) {
-      val thisParam = element.resolveToThisParam() ?: return false
-      return instances.contains(thisParam) ||
-        thisParam.javaPsi?.let { references.contains(it) } == true
-    }
 
     return false
   }
