@@ -83,7 +83,7 @@ function run_bazel_test() {
     --max_idle_secs=60 \
     test \
     ${CONFIG_OPTIONS} --config=ants \
-    --jvmopt='-Didea.kotlin.plugin.use.k2=true -Dlint.use.fir.uast=true -Didea.kotlin.plugin.plugin.ids.to.ignore.k2.compatibility=com.google.tools.ij.aiplugin' \
+    --jvmopt='-Didea.kotlin.plugin.use.k2=true -Dlint.use.fir.uast=true' \
     --worker_max_instances=${worker_instances} \
     --invocation_id=${invocation_id} \
     --build_tag_filters=${build_tag_filters} \
