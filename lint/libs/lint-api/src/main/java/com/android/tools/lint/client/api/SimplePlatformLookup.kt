@@ -491,7 +491,7 @@ internal class SimplePlatformLookup(private val sdkHome: File) : PlatformLookup 
 
     override fun hasRenderingLibrary(): Boolean = unsupported()
 
-    override fun getSkins(): Array<Path> = unsupported()
+    override fun getSkins(): List<Path> = unsupported()
 
     override fun getDefaultSkin(): Path = unsupported()
 

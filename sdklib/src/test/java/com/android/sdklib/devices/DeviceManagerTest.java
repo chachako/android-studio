@@ -486,7 +486,7 @@ public class DeviceManagerTest {
                         IdDisplay.create("OEM", "Tag 1 OEM"),
                         Collections.singletonList(Abi.X86.toString()),
                         Collections.emptyList(),
-                        new Path[] {},
+                        Collections.emptyList(),
                         p);
 
         sdkManager.makeSystemImageFolder(imageWithDevice, "tag-1");
@@ -822,7 +822,7 @@ public class DeviceManagerTest {
                         IdDisplay.create("Google", "Google"),
                         Collections.singletonList(Abi.X86.toString()),
                         Collections.emptyList(),
-                        new Path[] {},
+                        Collections.emptyList(),
                         p);
         sdkManager.makeSystemImageFolder(imageWithDevice22, "wearos_small_round");
 
@@ -838,7 +838,7 @@ public class DeviceManagerTest {
                         IdDisplay.create("Google", "Google"),
                         Collections.singletonList(Abi.ARMEABI.toString()),
                         Collections.emptyList(),
-                        new Path[] {},
+                        Collections.emptyList(),
                         p);
         sdkManager.makeSystemImageFolder(imageWithDevice25, "wearos_small_round");
 

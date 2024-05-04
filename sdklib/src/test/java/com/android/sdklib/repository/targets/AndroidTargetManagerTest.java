@@ -35,7 +35,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -165,13 +164,11 @@ public class AndroidTargetManagerTest extends TestCase {
         assertEquals(
                 sdkRoot.resolve("platforms/android-23") + File.separator, target.getLocation());
         assertNull(target.getParent());
-        assertTrue(
-                Arrays.deepEquals(
-                        new Path[] {
-                            sdkRoot.resolve("platforms/android-23/skins/HVGA"),
-                            sdkRoot.resolve("platforms/android-23/skins/WVGA800")
-                        },
-                        target.getSkins()));
+        assertEquals(
+                ImmutableList.of(
+                        sdkRoot.resolve("platforms/android-23/skins/HVGA"),
+                        sdkRoot.resolve("platforms/android-23/skins/WVGA800")),
+                target.getSkins());
         assertEquals(
                 ImmutableList.of(sdkRoot.resolve("platforms/android-23/android.jar").toString()),
                 target.getBootClasspath());

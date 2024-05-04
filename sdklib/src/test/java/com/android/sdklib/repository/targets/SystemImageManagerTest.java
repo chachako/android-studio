@@ -15,13 +15,13 @@
  */
 package com.android.sdklib.repository.targets;
 
-import static org.junit.Assert.assertArrayEquals;
 
 import com.android.annotations.NonNull;
 import com.android.repository.testframework.FakeProgressIndicator;
 import com.android.sdklib.ISystemImage;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.testutils.file.InMemoryFileSystems;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import java.nio.file.Path;
 import java.util.Iterator;
@@ -56,13 +56,13 @@ public class SystemImageManagerTest extends TestCase {
 
         ISystemImage platform13 = resultIter.next();
         verifyPlatform13(platform13, sdkRoot);
-        assertEquals(2, platform13.getSkins().length);
+        assertEquals(2, platform13.getSkins().size());
 
         verifySysImg23(resultIter.next(), sdkRoot);
 
         ISystemImage google13 = resultIter.next();
         verifyGoogleAddon13(google13);
-        assertEquals(2, google13.getSkins().length);
+        assertEquals(2, google13.getSkins().size());
 
         ISystemImage google23 = resultIter.next();
         verifyGoogleApisSysImg23(google23, sdkRoot);
@@ -104,12 +104,10 @@ public class SystemImageManagerTest extends TestCase {
         assertEquals("x86", img.getPrimaryAbiType());
         assertNull(img.getAddonVendor());
         assertEquals(sdkRoot.resolve("system-images/android-23/default/x86/"), img.getLocation());
-        assertEquals(2, img.getSkins().length);
-        assertArrayEquals(
-                new Path[] {
-                    sdkRoot.resolve("system-images/android-23/default/x86/skins/res1/"),
-                    sdkRoot.resolve("system-images/android-23/default/x86/skins/res2/")
-                },
+        assertEquals(
+                ImmutableList.of(
+                        sdkRoot.resolve("system-images/android-23/default/x86/skins/res1/"),
+                        sdkRoot.resolve("system-images/android-23/default/x86/skins/res2/")),
                 img.getSkins());
         assertEquals("default", img.getTag().getId());
     }

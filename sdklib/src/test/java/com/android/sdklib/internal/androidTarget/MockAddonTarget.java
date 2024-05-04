@@ -128,8 +128,8 @@ public class MockAddonTarget implements IAndroidTarget {
 
     @Override
     @NonNull
-    public Path[] getSkins() {
-        return new Path[0];
+    public List<Path> getSkins() {
+        return ImmutableList.of();
     }
 
     @Override

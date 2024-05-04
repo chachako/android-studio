@@ -46,7 +46,7 @@ internal class StandaloneAndroidTarget(
     override fun getOptionalLibraries(): MutableList<OptionalLibrary> = mutableListOf()
     override fun getAdditionalLibraries(): MutableList<OptionalLibrary> = mutableListOf()
     override fun hasRenderingLibrary(): Boolean = true
-    override fun getSkins(): Array<Path> = arrayOf()
+    override fun getSkins(): List<Path> = emptyList()
     override fun getDefaultSkin(): Path? = null
     override fun getPlatformLibraries(): Array<String> = arrayOf()
     override fun getProperty(name: String?): String = ""
