@@ -18,7 +18,6 @@ package com.android.processmonitor.monitor.adblib
 import com.android.adblib.AdbSession
 import com.android.adblib.ConnectedDevice
 import com.android.adblib.connectedDevicesTracker
-import com.android.adblib.device
 import com.android.adblib.serialNumber
 import com.android.adblib.testing.FakeAdbLoggerFactory
 import com.android.adblib.testingutils.FakeAdbServerProviderRule
@@ -29,7 +28,9 @@ import com.android.processmonitor.common.ProcessEvent.ProcessRemoved
 import com.android.processmonitor.testutils.toChannel
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -142,10 +143,9 @@ class JdwpProcessTrackerTest {
         }
 
     private suspend fun AdbSession.waitForDevice(serialNumber: String): ConnectedDevice {
-        connectedDevicesTracker.connectedDevices.first {
-            it.findDevice(serialNumber) != null
-        }
-        return connectedDevicesTracker.device(serialNumber)
+        return connectedDevicesTracker.connectedDevices.map { it.findDevice(serialNumber) }
+            .filterNotNull()
+            .first()
     }
 }
 
