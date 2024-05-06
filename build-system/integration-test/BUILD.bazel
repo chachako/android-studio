@@ -1,5 +1,5 @@
 load("//tools/base/bazel:maven.bzl", "maven_repository")
-load("//tools/base/build-system/integration-test:common-dependencies.bzl", "KGP_FOR_TESTS")
+load("//tools/base/build-system/integration-test:common-dependencies.bzl", "KGP_FOR_TESTS", "KGP_VERSION_FOR_TESTS")
 
 [
     filegroup(
@@ -124,9 +124,9 @@ maven_repository(
 maven_repository(
     name = "ksp_gradle_plugin",
     artifacts = [
-        "@maven//:com.google.devtools.ksp.symbol-processing_2.0.0-RC1-1.0.20",
-        "@maven//:com.google.devtools.ksp.com.google.devtools.ksp.gradle.plugin_2.0.0-RC1-1.0.20",
-        "@maven//:com.google.devtools.ksp.symbol-processing-gradle-plugin_2.0.0-RC1-1.0.20",
+        "@maven//:com.google.devtools.ksp.symbol-processing_" + KGP_VERSION_FOR_TESTS + "-1.0.20",
+        "@maven//:com.google.devtools.ksp.com.google.devtools.ksp.gradle.plugin_" + KGP_VERSION_FOR_TESTS + "-1.0.20",
+        "@maven//:com.google.devtools.ksp.symbol-processing-gradle-plugin_" + KGP_VERSION_FOR_TESTS + "-1.0.20",
     ],
     visibility = ["//visibility:public"],
 )

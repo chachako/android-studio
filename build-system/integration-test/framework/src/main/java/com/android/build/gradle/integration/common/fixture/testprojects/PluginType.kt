@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.common.fixture.testprojects
 
 import com.android.Version
+import com.android.testutils.TestUtils
 
 sealed class PluginType(
     val id: String,
@@ -69,7 +70,7 @@ sealed class PluginType(
             isKotlin = true,
             useNewDsl = true,
             last = true,
-            version = "2.0.0-RC1-1.0.20"
+            version = "${TestUtils.KOTLIN_VERSION_FOR_TESTS}-1.0.20"
     )
     object KOTLIN_MPP: PluginType(
         id = "org.jetbrains.kotlin.multiplatform",
