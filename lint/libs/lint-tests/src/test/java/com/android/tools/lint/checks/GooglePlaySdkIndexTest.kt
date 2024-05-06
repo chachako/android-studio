@@ -15,6 +15,7 @@
  */
 package com.android.tools.lint.checks
 
+import com.android.ide.common.repository.GoogleMavenRepository
 import com.android.ide.common.repository.NetworkCache
 import com.android.tools.lint.detector.api.LintFix
 import com.google.common.truth.Truth.assertThat
@@ -23,6 +24,8 @@ import java.io.InputStream
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 
 class GooglePlaySdkIndexTest {
   private lateinit var proto: Index
@@ -483,6 +486,38 @@ class GooglePlaySdkIndexTest {
                 )
             )
         )
+        // First party libraries
+        .addSdks(
+          Sdk.newBuilder()
+            .setIndexUrl("http://google.com")
+            .addLibraries(
+              Library.newBuilder()
+                .setLibraryId(
+                  LibraryIdentifier.newBuilder()
+                    .setMavenId(
+                      LibraryIdentifier.MavenIdentifier.newBuilder()
+                        .setGroupId("android.arch.core")
+                        .setArtifactId("common")
+                        .build()
+                    )
+                )
+                .addVersions(
+                  LibraryVersion.newBuilder()
+                    .setVersionString("1.1.1")
+                    .setIsLatestVersion(false)
+                    .setVersionLabels(
+                      LibraryVersionLabels.newBuilder()
+                        .setOutdatedIssueInfo(
+                          LibraryVersionLabels.OutdatedIssueInfo.newBuilder()
+                            // Add recommended version to make sure the note is not added
+                            .addRecommendedVersions(
+                              LibraryVersionRange.newBuilder().setLowerBound("1.1.2")
+                            )
+                        )
+                    )
+                )
+            )
+        )
         .build()
     index =
       object : GooglePlaySdkIndex() {
@@ -496,13 +531,15 @@ class GooglePlaySdkIndexTest {
 
         override fun error(throwable: Throwable, message: String?) {}
       }
-    index.initialize(ByteArrayInputStream(proto.toByteArray()))
+    val mockMaven = mock(GoogleMavenRepository::class.java)
+    `when`(mockMaven.hasGroupId("android.arch.core")).thenReturn(true)
+    index.initialize(ByteArrayInputStream(proto.toByteArray()), mockMaven)
     assertThat(index.getLastReadSource()).isEqualTo(NetworkCache.DataSourceType.TEST_DATA)
   }
 
   @Test
   fun `outdated issues shown`() {
-    assertThat(countOutdatedIssues()).isEqualTo(3)
+    assertThat(countOutdatedIssues()).isEqualTo(4)
   }
 
   @Test
@@ -524,7 +561,7 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `errors and warnings shown correctly`() {
-    assertThat(countHasErrorOrWarning()).isEqualTo(17)
+    assertThat(countHasErrorOrWarning()).isEqualTo(18)
   }
 
   @Test
@@ -562,7 +599,7 @@ class GooglePlaySdkIndexTest {
 
         override fun error(throwable: Throwable, message: String?) {}
       }
-    offlineIndex.initialize()
+    offlineIndex.initialize(null)
     assertThat(offlineIndex.isReady()).isTrue()
     assertThat(offlineIndex.getLastReadSource()).isEqualTo(NetworkCache.DataSourceType.DEFAULT_DATA)
   }
@@ -706,6 +743,16 @@ class GooglePlaySdkIndexTest {
         "These versions have not been reviewed by Google Play. They could contain vulnerabilities or policy violations. " +
         "Carefully evaluate any third-party SDKs before integrating them into your app."
     assertThat(index.generateOutdatedMessage("no.url.group", "no.url.artifact", "1.0.0"))
+      .isEqualTo(expectedMessage)
+  }
+
+  @Test
+  fun `Outdated issue with recommended versions for first party`() {
+    val expectedMessage =
+      "android.arch.core:common version 1.1.1 has been reported as outdated by its author.\n" +
+        "The library author recommends using versions:\n" +
+        "  - 1.1.2 or higher\n"
+    assertThat(index.generateOutdatedMessage("android.arch.core", "common", "1.1.1"))
       .isEqualTo(expectedMessage)
   }
 
