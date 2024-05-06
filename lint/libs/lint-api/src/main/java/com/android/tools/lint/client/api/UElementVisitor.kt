@@ -434,525 +434,270 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
   private open inner class DispatchPsiVisitor : AbstractUastVisitor() {
 
     override fun visitAnnotation(node: UAnnotation): Boolean {
-      val list = nodePsiTypeDetectors[UAnnotation::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitAnnotation(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitAnnotation)
       return super.visitAnnotation(node)
     }
 
     override fun visitArrayAccessExpression(node: UArrayAccessExpression): Boolean {
-      val list = nodePsiTypeDetectors[UArrayAccessExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitArrayAccessExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitArrayAccessExpression)
       return super.visitArrayAccessExpression(node)
     }
 
     override fun visitBinaryExpression(node: UBinaryExpression): Boolean {
-      val list = nodePsiTypeDetectors[UBinaryExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitBinaryExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitBinaryExpression)
       return super.visitBinaryExpression(node)
     }
 
     override fun visitBinaryExpressionWithType(node: UBinaryExpressionWithType): Boolean {
-      val list = nodePsiTypeDetectors[UBinaryExpressionWithType::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitBinaryExpressionWithType(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitBinaryExpressionWithType)
       return super.visitBinaryExpressionWithType(node)
     }
 
     override fun visitBlockExpression(node: UBlockExpression): Boolean {
-      val list = nodePsiTypeDetectors[UBlockExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitBlockExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitBlockExpression)
       return super.visitBlockExpression(node)
     }
 
     override fun visitBreakExpression(node: UBreakExpression): Boolean {
-      val list = nodePsiTypeDetectors[UBreakExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitBreakExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitBreakExpression)
       return super.visitBreakExpression(node)
     }
 
     override fun visitCallExpression(node: UCallExpression): Boolean {
-      val list = nodePsiTypeDetectors[UCallExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitCallExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitCallExpression)
       return super.visitCallExpression(node)
     }
 
     override fun visitCallableReferenceExpression(node: UCallableReferenceExpression): Boolean {
-      val list = nodePsiTypeDetectors[UCallableReferenceExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitCallableReferenceExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitCallableReferenceExpression)
       return super.visitCallableReferenceExpression(node)
     }
 
     override fun visitCatchClause(node: UCatchClause): Boolean {
-      val list = nodePsiTypeDetectors[UCatchClause::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitCatchClause(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitCatchClause)
       return super.visitCatchClause(node)
     }
 
     override fun visitClass(node: UClass): Boolean {
-      val list = nodePsiTypeDetectors[UClass::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitClass(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitClass)
       return super.visitClass(node)
     }
 
     override fun visitClassLiteralExpression(node: UClassLiteralExpression): Boolean {
-      val list = nodePsiTypeDetectors[UClassLiteralExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitClassLiteralExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitClassLiteralExpression)
       return super.visitClassLiteralExpression(node)
     }
 
     override fun visitContinueExpression(node: UContinueExpression): Boolean {
-      val list = nodePsiTypeDetectors[UContinueExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitContinueExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitContinueExpression)
       return super.visitContinueExpression(node)
     }
 
     override fun visitDeclaration(node: UDeclaration): Boolean {
-      val list = nodePsiTypeDetectors[UDeclaration::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitDeclaration(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitDeclaration)
       return super.visitDeclaration(node)
     }
 
     override fun visitDeclarationsExpression(node: UDeclarationsExpression): Boolean {
-      val list = nodePsiTypeDetectors[UDeclarationsExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitDeclarationsExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitDeclarationsExpression)
       return super.visitDeclarationsExpression(node)
     }
 
     override fun visitDoWhileExpression(node: UDoWhileExpression): Boolean {
-      val list = nodePsiTypeDetectors[UDoWhileExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitDoWhileExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitDoWhileExpression)
       return super.visitDoWhileExpression(node)
     }
 
     override fun visitElement(node: UElement): Boolean {
-      val list = nodePsiTypeDetectors[UElement::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitElement(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitElement)
       return super.visitElement(node)
     }
 
     override fun visitEnumConstant(node: UEnumConstant): Boolean {
-      val list = nodePsiTypeDetectors[UEnumConstant::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitEnumConstant(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitEnumConstant)
       return super.visitEnumConstant(node)
     }
 
     override fun visitExpression(node: UExpression): Boolean {
-      val list = nodePsiTypeDetectors[UExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitExpression)
       return super.visitExpression(node)
     }
 
     override fun visitExpressionList(node: UExpressionList): Boolean {
-      val list = nodePsiTypeDetectors[UExpressionList::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitExpressionList(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitExpressionList)
       return super.visitExpressionList(node)
     }
 
     override fun visitField(node: UField): Boolean {
-      val list = nodePsiTypeDetectors[UField::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitField(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitField)
       return super.visitField(node)
     }
 
     override fun visitFile(node: UFile): Boolean {
-      val list = nodePsiTypeDetectors[UFile::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitFile(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitFile)
       return super.visitFile(node)
     }
 
     override fun visitForEachExpression(node: UForEachExpression): Boolean {
-      val list = nodePsiTypeDetectors[UForEachExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitForEachExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitForEachExpression)
       return super.visitForEachExpression(node)
     }
 
     override fun visitForExpression(node: UForExpression): Boolean {
-      val list = nodePsiTypeDetectors[UForExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitForExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitForExpression)
       return super.visitForExpression(node)
     }
 
     override fun visitIfExpression(node: UIfExpression): Boolean {
-      val list = nodePsiTypeDetectors[UIfExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitIfExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitIfExpression)
       return super.visitIfExpression(node)
     }
 
     override fun visitImportStatement(node: UImportStatement): Boolean {
-      val list = nodePsiTypeDetectors[UImportStatement::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitImportStatement(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitImportStatement)
       return super.visitImportStatement(node)
     }
 
     override fun visitInitializer(node: UClassInitializer): Boolean {
-      val list = nodePsiTypeDetectors[UClassInitializer::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitInitializer(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitInitializer)
       return super.visitInitializer(node)
     }
 
     override fun visitLabeledExpression(node: ULabeledExpression): Boolean {
-      val list = nodePsiTypeDetectors[ULabeledExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitLabeledExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitLabeledExpression)
       return super.visitLabeledExpression(node)
     }
 
     override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
-      val list = nodePsiTypeDetectors[ULambdaExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitLambdaExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitLambdaExpression)
       return super.visitLambdaExpression(node)
     }
 
     override fun visitLiteralExpression(node: ULiteralExpression): Boolean {
-      val list = nodePsiTypeDetectors[ULiteralExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitLiteralExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitLiteralExpression)
       return super.visitLiteralExpression(node)
     }
 
     override fun visitLocalVariable(node: ULocalVariable): Boolean {
-      val list = nodePsiTypeDetectors[ULocalVariable::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitLocalVariable(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitLocalVariable)
       return super.visitLocalVariable(node)
     }
 
     override fun visitMethod(node: UMethod): Boolean {
-      val list = nodePsiTypeDetectors[UMethod::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitMethod(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitMethod)
       return super.visitMethod(node)
     }
 
     override fun visitNamedExpression(node: UNamedExpression): Boolean {
-      val list = nodePsiTypeDetectors[UNamedExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitNamedExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitNamedExpression)
       return super.visitNamedExpression(node)
     }
 
     override fun visitObjectLiteralExpression(node: UObjectLiteralExpression): Boolean {
-      val list = nodePsiTypeDetectors[UObjectLiteralExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitObjectLiteralExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitObjectLiteralExpression)
       return super.visitObjectLiteralExpression(node)
     }
 
     override fun visitParameter(node: UParameter): Boolean {
-      val list = nodePsiTypeDetectors[UParameter::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitParameter(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitParameter)
       return super.visitParameter(node)
     }
 
     override fun visitParenthesizedExpression(node: UParenthesizedExpression): Boolean {
-      val list = nodePsiTypeDetectors[UParenthesizedExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitParenthesizedExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitParenthesizedExpression)
       return super.visitParenthesizedExpression(node)
     }
 
     override fun visitPolyadicExpression(node: UPolyadicExpression): Boolean {
-      val list = nodePsiTypeDetectors[UPolyadicExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitPolyadicExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitPolyadicExpression)
       return super.visitPolyadicExpression(node)
     }
 
     override fun visitPostfixExpression(node: UPostfixExpression): Boolean {
-      val list = nodePsiTypeDetectors[UPostfixExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitPostfixExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitPostfixExpression)
       return super.visitPostfixExpression(node)
     }
 
     override fun visitPrefixExpression(node: UPrefixExpression): Boolean {
-      val list = nodePsiTypeDetectors[UPrefixExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitPrefixExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitPrefixExpression)
       return super.visitPrefixExpression(node)
     }
 
     override fun visitQualifiedReferenceExpression(node: UQualifiedReferenceExpression): Boolean {
-      val list = nodePsiTypeDetectors[UQualifiedReferenceExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitQualifiedReferenceExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitQualifiedReferenceExpression)
       return super.visitQualifiedReferenceExpression(node)
     }
 
     override fun visitReturnExpression(node: UReturnExpression): Boolean {
-      val list = nodePsiTypeDetectors[UReturnExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitReturnExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitReturnExpression)
       return super.visitReturnExpression(node)
     }
 
     override fun visitSimpleNameReferenceExpression(node: USimpleNameReferenceExpression): Boolean {
-      val list = nodePsiTypeDetectors[USimpleNameReferenceExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitSimpleNameReferenceExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitSimpleNameReferenceExpression)
       return super.visitSimpleNameReferenceExpression(node)
     }
 
     override fun visitSuperExpression(node: USuperExpression): Boolean {
-      val list = nodePsiTypeDetectors[USuperExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitSuperExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitSuperExpression)
       return super.visitSuperExpression(node)
     }
 
     override fun visitSwitchClauseExpression(node: USwitchClauseExpression): Boolean {
-      val list = nodePsiTypeDetectors[USwitchClauseExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitSwitchClauseExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitSwitchClauseExpression)
       return super.visitSwitchClauseExpression(node)
     }
 
     override fun visitSwitchExpression(node: USwitchExpression): Boolean {
-      val list = nodePsiTypeDetectors[USwitchExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitSwitchExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitSwitchExpression)
       return super.visitSwitchExpression(node)
     }
 
     override fun visitThisExpression(node: UThisExpression): Boolean {
-      val list = nodePsiTypeDetectors[UThisExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitThisExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitThisExpression)
       return super.visitThisExpression(node)
     }
 
     override fun visitThrowExpression(node: UThrowExpression): Boolean {
-      val list = nodePsiTypeDetectors[UThrowExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitThrowExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitThrowExpression)
       return super.visitThrowExpression(node)
     }
 
     override fun visitTryExpression(node: UTryExpression): Boolean {
-      val list = nodePsiTypeDetectors[UTryExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitTryExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitTryExpression)
       return super.visitTryExpression(node)
     }
 
     override fun visitTypeReferenceExpression(node: UTypeReferenceExpression): Boolean {
-      val list = nodePsiTypeDetectors[UTypeReferenceExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitTypeReferenceExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitTypeReferenceExpression)
       return super.visitTypeReferenceExpression(node)
     }
 
     override fun visitUnaryExpression(node: UUnaryExpression): Boolean {
-      val list = nodePsiTypeDetectors[UUnaryExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitUnaryExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitUnaryExpression)
       return super.visitUnaryExpression(node)
     }
 
     override fun visitVariable(node: UVariable): Boolean {
-      val list = nodePsiTypeDetectors[UVariable::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitVariable(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitVariable)
       return super.visitVariable(node)
     }
 
     override fun visitWhileExpression(node: UWhileExpression): Boolean {
-      val list = nodePsiTypeDetectors[UWhileExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitWhileExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitWhileExpression)
       return super.visitWhileExpression(node)
     }
 
     @Suppress("UnstableApiUsage")
     override fun visitYieldExpression(node: UYieldExpression): Boolean {
-      val list = nodePsiTypeDetectors[UYieldExpression::class.java]
-      if (list != null) {
-        for (v in list) {
-          v.visitor.visitYieldExpression(node)
-        }
-      }
+      eachDetectorVisit(node, UElementHandler::visitYieldExpression)
       return super.visitYieldExpression(node)
     }
+
+    private inline fun <reified Node : UElement> eachDetectorVisit(
+      node: Node,
+      visit: UElementHandler.(Node) -> Unit,
+    ) = nodePsiTypeDetectors[Node::class.java]?.forEach { it.visitor.visit(node) }
   }
 
   /**
