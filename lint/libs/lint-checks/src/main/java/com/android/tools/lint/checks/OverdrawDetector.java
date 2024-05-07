@@ -502,7 +502,7 @@ public class OverdrawDetector extends LayoutDetector implements SourceCodeScanne
         @Override
         public boolean visitClass(UClass node) {
             // Don't go into inner classes
-            if (cls.equals(node.getPsi())) {
+            if (cls.equals(node.getJavaPsi())) {
                 return true;
             }
 

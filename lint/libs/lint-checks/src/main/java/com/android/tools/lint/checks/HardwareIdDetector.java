@@ -264,7 +264,7 @@ public class HardwareIdDetector extends Detector implements SourceCodeScanner {
                 return;
             }
             FindMethodCallVisitor methodCallVisitor =
-                    new FindMethodCallVisitor(context, surroundingMethod.getPsi(), paramIndex);
+                    new FindMethodCallVisitor(context, surroundingMethod.getJavaPsi(), paramIndex);
             surroundingClass.accept(methodCallVisitor);
         }
     }

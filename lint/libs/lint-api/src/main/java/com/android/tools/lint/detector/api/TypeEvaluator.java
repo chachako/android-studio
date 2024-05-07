@@ -123,7 +123,7 @@ public class TypeEvaluator {
         }
 
         if (resolved instanceof UMethod) {
-            return ((UMethod) resolved).getPsi().getReturnType();
+            return ((UMethod) resolved).getJavaPsi().getReturnType();
         } else if (resolved instanceof UVariable) {
             UVariable variable = (UVariable) resolved;
             UElement lastAssignment = UastLintUtils.findLastAssignment(variable, node);

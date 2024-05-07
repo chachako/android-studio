@@ -195,7 +195,7 @@ public class ResourceEvaluatorTest {
     }
 
     private static void assertNoErrors(UFile uFile) {
-        assertNoErrors(uFile.getPsi());
+        assertNoErrors(uFile.getSourcePsi());
     }
 
     private static void assertNoErrors(PsiFile psiFile) {
