@@ -706,7 +706,7 @@ class GooglePlaySdkIndexTest {
   @Test
   fun `There is a note if description is present in blocking critical`() {
     val expectedMessage =
-      "[Prevents app release in Google Play Console] log4j:log4j version 1.2.16 has been reported as problematic by its author and will block publishing of your app to Play Console. Note: This is a custom message from sdk developer."
+      "**[Prevents app release in Google Play Console]** log4j:log4j version 1.2.16 has been reported as problematic by its author and will block publishing of your app to Play Console.\n**Note:** This is a custom message from sdk developer."
     assertThat(index.generateBlockingCriticalMessage("log4j", "log4j", "1.2.16"))
       .isEqualTo(expectedMessage)
   }
@@ -714,14 +714,14 @@ class GooglePlaySdkIndexTest {
   @Test
   fun `There is a note if description is present in non blocking critical`() {
     val expectedMessage =
-      "log4j:log4j version 1.2.16 has an associated message from its author. Note: This is a custom message from sdk developer."
+      "log4j:log4j version 1.2.16 has an associated message from its author.\n**Note:** This is a custom message from sdk developer."
     assertThat(index.generateCriticalMessage("log4j", "log4j", "1.2.16")).isEqualTo(expectedMessage)
   }
 
   @Test
   fun `Note not present if description is not present in blocking critical`() {
     val expectedMessage =
-      "[Prevents app release in Google Play Console] log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console"
+      "**[Prevents app release in Google Play Console]** log4j:log4j version 1.2.13 has been reported as problematic by its author and will block publishing of your app to Play Console"
     assertThat(index.generateBlockingCriticalMessage("log4j", "log4j", "1.2.13"))
       .isEqualTo(expectedMessage)
   }
@@ -849,7 +849,7 @@ class GooglePlaySdkIndexTest {
     index.showPolicyIssues = true
     val expectedBlockingMessages =
       policyTypes.map { policyType ->
-        "[Prevents app release in Google Play Console] com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console$recommendedVersions"
+        "**[Prevents app release in Google Play Console]** com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console$recommendedVersions"
       }
     assertThat(
         index.generateBlockingPolicyMessages("com.example.ads.third.party", "example", version)
