@@ -185,12 +185,14 @@ internal fun String.toSafeKey(): String {
     val sb = StringBuilder()
     this[0].lowercaseChar().let { c -> sb.append(if (c.isLowerCase()) c else 'x') }
     for (c in this.substring(1)) {
+        val afterSeparator = sb[sb.length-1].isSeparator()
         when {
+            c.isDigit() && afterSeparator -> sb.append('x')
             c.isSafe() -> sb.append(c)
             c.lowercaseChar().isSafe() -> sb.append(c.lowercaseChar())
-            c.isSeparator() -> if (!sb[sb.length-1].isSeparator()) sb.append(c)
-            c == '.' -> if (!sb[sb.length-1].isSeparator()) sb.append('-')
-            else -> if (!sb[sb.length-1].isSeparator()) sb.append('_')
+            c.isSeparator() -> if (!afterSeparator) sb.append(c)
+            c == '.' -> if (!afterSeparator) sb.append('-')
+            else -> if (!afterSeparator) sb.append('_')
         }
     }
     if (sb.length == 1 || sb[sb.length-1].isSeparator()) sb.append('z')
