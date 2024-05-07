@@ -273,6 +273,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
       return null
     }
     val sdk = getSdk(groupId, artifactId) ?: return null
+    if (sdk.sdk.indexAvailability == Sdk.IndexAvailability.NOT_AVAILABLE) return null
     return sdk.sdk.indexUrl
   }
 

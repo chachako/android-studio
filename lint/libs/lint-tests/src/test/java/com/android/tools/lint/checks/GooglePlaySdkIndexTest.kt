@@ -530,7 +530,8 @@ class GooglePlaySdkIndexTest {
   @Test
   fun `links are present when indexUrl is not blank`() {
     for (sdk in proto.sdksList) {
-      val expectedUrl = sdk.indexUrl
+      val isFromIndex = sdk.indexAvailability != Sdk.IndexAvailability.NOT_AVAILABLE
+      val expectedUrl = if (isFromIndex) sdk.indexUrl else null
       for (library in sdk.librariesList) {
         val group = library.libraryId.mavenId.groupId
         val artifact = library.libraryId.mavenId.artifactId
