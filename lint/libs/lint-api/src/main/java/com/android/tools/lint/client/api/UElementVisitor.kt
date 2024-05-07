@@ -296,15 +296,12 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
   }
 
   fun visitGroups(projectContext: Context, allContexts: List<JavaContext>) {
-    if (
-      allContexts.isNotEmpty() &&
-        allDetectors.stream().anyMatch { it.uastScanner.isCallGraphRequired() }
-    ) {
+    if (allContexts.isNotEmpty() && callGraphDetectors.isNotEmpty()) {
       val callGraph =
         projectContext.client.runReadAction(
           Computable { generateCallGraph(projectContext, parser, allContexts) }
         )
-      if (callGraph != null && callGraphDetectors.isNotEmpty()) {
+      if (callGraph != null) {
         for (scanner in callGraphDetectors) {
           projectContext.client.runReadAction {
             ProgressManager.checkCanceled()
