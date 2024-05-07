@@ -62,7 +62,7 @@ private fun RecipeExecutor.commonComposeRecipe(
     addDependency(mavenCoordinate = "androidx.wear.compose:compose-material:$wearComposeVersion")
     addDependency(mavenCoordinate = "androidx.wear.compose:compose-foundation:$wearComposeVersion")
 
-    addDependency(mavenCoordinate = "androidx.activity:activity-compose:1.7.2")
+    addDependency(mavenCoordinate = "androidx.activity:activity-compose:+")
 
     addDependency(mavenCoordinate = "androidx.core:core-splashscreen:1.0.1")
 
