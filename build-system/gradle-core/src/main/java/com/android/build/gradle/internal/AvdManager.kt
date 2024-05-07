@@ -269,6 +269,16 @@ class AvdManager(
     }
 
     /**
+     * Deletes the tracking file for open managed devices
+     *
+     * This deletes the tracking file for all managed devices. It does not check if managed
+     * devices are currently running. Should be used if the tracking file becomes stale.
+     */
+    fun deleteDeviceLockTrackingFile() {
+        deviceLockManager.deleteLockFile()
+    }
+
+    /**
      * Closes all active emulators having the given idPrefix.
      */
     fun closeOpenEmulators(idPrefix: String) {

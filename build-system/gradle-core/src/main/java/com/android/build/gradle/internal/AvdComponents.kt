@@ -137,6 +137,11 @@ abstract class AvdComponentsBuildService @Inject constructor(
             parameters.androidLocationsService.get().prefsLocation.resolve("gradle").resolve("avd"))
     }
 
+    /**
+     * Deletes the device tracking file to reset stale device locks.
+     */
+    fun deleteManagedDeviceTrackingFile() = avdManager.get().deleteDeviceLockTrackingFile()
+
     fun avdProvider(
         imageProvider: Provider<Directory>,
         imageHash: String,
