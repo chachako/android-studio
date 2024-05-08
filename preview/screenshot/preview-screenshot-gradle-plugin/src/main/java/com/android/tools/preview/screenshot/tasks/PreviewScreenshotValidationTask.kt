@@ -66,25 +66,24 @@ abstract class PreviewScreenshotValidationTask : Test() {
     abstract val analyticsService: Property<AnalyticsService>
 
     @TaskAction
-    fun run() = analyticsService.get().recordTaskAction(path) {
-        val screenshots = readComposeScreenshotsJson(previewFile.get().asFile.reader())
-        if (screenshots.isNotEmpty()) {
-            analyticsService.get().recordPreviewScreenshotTestRun(
-                totalTestCount = screenshots.size,
-            )
+    override fun executeTests() {
+        analyticsService.get().recordTaskAction(path) {
+            val screenshots = readComposeScreenshotsJson(previewFile.get().asFile.reader())
+            if (screenshots.isNotEmpty()) {
+                analyticsService.get().recordPreviewScreenshotTestRun(
+                    totalTestCount = screenshots.size,
+                )
+            }
+            if (referenceImageDir.orNull?.asFile?.exists() != true){
+                throw GradleException("Reference images missing. Please run the update<variant>ScreenshotTest task to generate the reference images.")
+            }
+            setTestEngineParam("previews-discovered", previewFile.get().asFile.absolutePath)
+            setTestEngineParam("referenceImageDirPath", referenceImageDir.get().asFile.absolutePath)
+            setTestEngineParam("diffImageDirPath", diffImageDir.get().asFile.absolutePath)
+            setTestEngineParam("renderResultsFilePath", renderTaskOutputFile.get().asFile.absolutePath)
+            setTestEngineParam("resultsDirPath", resultsDir.get().asFile.absolutePath)
+            super.executeTests()
         }
-    }
-
-    override fun useJUnitPlatform() {
-        if (referenceImageDir.orNull?.asFile?.exists() != true){
-            throw GradleException("Reference images missing. Please run the update<variant>ScreenshotTest task to generate the reference images.")
-        }
-        setTestEngineParam("previews-discovered", previewFile.get().asFile.absolutePath)
-        setTestEngineParam("referenceImageDirPath", referenceImageDir.get().asFile.absolutePath)
-        setTestEngineParam("diffImageDirPath", diffImageDir.get().asFile.absolutePath)
-        setTestEngineParam("renderResultsFilePath", renderTaskOutputFile.get().asFile.absolutePath)
-        setTestEngineParam("resultsDirPath", resultsDir.get().asFile.absolutePath)
-        super.useJUnitPlatform()
     }
 }
 

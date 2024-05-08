@@ -19,6 +19,7 @@ package com.android.tools.preview.screenshot.tasks
 import com.android.testutils.MockitoKt.eq
 import com.android.testutils.MockitoKt.mock
 import com.android.tools.preview.screenshot.services.AnalyticsService
+import org.gradle.api.GradleException
 import org.gradle.api.services.BuildServiceRegistry
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
@@ -30,6 +31,7 @@ import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.withSettings
+import kotlin.test.assertFailsWith
 
 class PreviewScreenshotValidationTaskTest {
     @get:Rule
@@ -40,7 +42,7 @@ class PreviewScreenshotValidationTaskTest {
     @Before
     fun setUp() {
         val project = ProjectBuilder.builder().withProjectDir(tempDirRule.newFolder()).build()
-        task = project.tasks.create("testDebugScreenshotTest", PreviewScreenshotValidationTask::class.java)
+        task = project.tasks.create("validateDebugScreenshotTest", PreviewScreenshotValidationTask::class.java)
     }
 
     @Test
@@ -72,9 +74,7 @@ class PreviewScreenshotValidationTaskTest {
             .copyTo(referenceImageDir.resolve("$previewImageName.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
         javaClass.getResourceAsStream("circle.png")!!
             .copyTo(renderOutputDir.resolve("${previewImageName}_0.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
-
         task.previewFile.set(previewsFile)
-        task.referenceImageDir.set(referenceImageDir)
         task.diffImageDir.set(diffDir)
         task.renderTaskOutputFile.set(renderOutputFile)
         task.resultsDir.set(resultsDir)
@@ -89,7 +89,9 @@ class PreviewScreenshotValidationTaskTest {
         })
         task.analyticsService.set(analyticsService)
 
-        task.run()
+        assertFailsWith<GradleException>("Reference images missing. Please run the update<variant>ScreenshotTest task to generate the reference images.") {
+            task.executeTests()
+        }
 
         verify(analyticsService).recordPreviewScreenshotTestRun(eq(1))
     }
