@@ -20,14 +20,55 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
-class ComposeHelloWorldTest {
+@RunWith(Parameterized::class)
+class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean) {
+
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "useComposeCompilerGradlePlugin_{0}")
+        fun parameters() = listOf(true, false)
+    }
 
     @JvmField
     @Rule
     val project = GradleTestProject.builder().fromTestProject("composeHelloWorld").create()
+
+    @Before
+    fun before() {
+        if (!useComposeCompilerGradlePlugin) {
+            TestFileUtils.searchAndReplace(
+                project.buildFile,
+                "kotlinVersion",
+                "kotlinVersionForCompose"
+            )
+            TestFileUtils.searchAndReplace(
+                project.buildFile,
+                "classpath \"org.jetbrains.kotlin:compose-compiler-gradle-plugin",
+                "// classpath \"org.jetbrains.kotlin:compose-compiler-gradle-plugin"
+            )
+            TestFileUtils.searchAndReplace(
+                project.getSubproject("app").buildFile,
+                "apply plugin: 'org.jetbrains.kotlin.plugin.compose'",
+                ""
+            )
+            TestFileUtils.appendToFile(
+                project.getSubproject("app").buildFile,
+                """
+                    android {
+                        composeOptions {
+                            kotlinCompilerExtensionVersion = "${"$"}{libs.versions.composeCompilerVersion.get()}"
+                        }
+                    }
+                """.trimIndent()
+            )
+        }
+    }
 
     @Test
     fun appAndTestsBuildSuccessfully() {

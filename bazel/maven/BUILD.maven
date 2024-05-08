@@ -49560,6 +49560,19 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlin.compose-compiler-gradle-plugin_2.0.0-RC2",
+    pom = "repository/org/jetbrains/kotlin/compose-compiler-gradle-plugin/2.0.0-RC2/compose-compiler-gradle-plugin-2.0.0-RC2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/compose-compiler-gradle-plugin/2.0.0-RC2",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-gradle-plugin-model_2.0.0-RC2",
+        "org.jetbrains.kotlin.kotlin-gradle-plugin_2.0.0-RC2",
+        "org.jetbrains.kotlin.kotlin-gradle-plugins-bom_2.0.0-RC2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlin.jvm-abi-gen_1.9.21",
     pom = "repository/org/jetbrains/kotlin/jvm-abi-gen/1.9.21/jvm-abi-gen-1.9.21.pom",
     repo_root_path = "repository",
@@ -50907,6 +50920,14 @@ maven_artifact(
         "org.jetbrains.intellij.deps.trove4j_1.0.20200330",
         "org.jetbrains.kotlinx.kotlinx-coroutines-core-jvm_1.5.0",
     ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-compose-compiler-plugin-embeddable_2.0.0-RC2",
+    pom = "repository/org/jetbrains/kotlin/kotlin-compose-compiler-plugin-embeddable/2.0.0-RC2/kotlin-compose-compiler-plugin-embeddable-2.0.0-RC2.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-compose-compiler-plugin-embeddable/2.0.0-RC2",
     visibility = ["//visibility:public"],
 )
 
