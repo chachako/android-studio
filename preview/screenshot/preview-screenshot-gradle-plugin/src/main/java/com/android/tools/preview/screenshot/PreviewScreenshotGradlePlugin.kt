@@ -52,9 +52,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 
-private val minAgpVersion = AndroidPluginVersion(8, 5, 0).alpha(8)
-//temporarily added target version so that integration tests running on release version 8.5.0-alpha08 can run successfully
-private val targetAgpVersion = AndroidPluginVersion(8, 5, 0).beta(1)
+private val minAgpVersion = AndroidPluginVersion(8, 5, 0).beta(1)
 private val maxAgpVersion = AndroidPluginVersion(8,6    ,255)
 
 /**
@@ -101,13 +99,6 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                     """
                     Preview screenshot plugin requires Android Gradle plugin version between ${minAgpVersion.toVersionString()} and ${maxAgpVersion.major}.${maxAgpVersion.minor}.
                     Current version is $agpVersion.
-                    """.trimIndent()
-                )
-            }
-            if (agpVersion < targetAgpVersion) {
-                project.logger.warn(
-                    """
-                    For best experience, please use ${targetAgpVersion.toVersionString()}. Current version is $agpVersion.
                     """.trimIndent()
                 )
             }
