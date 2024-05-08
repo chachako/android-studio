@@ -214,8 +214,7 @@ abstract class BundleAar : Zip(), VariantAwareTask {
             taskProvider: TaskProvider<BundleAar>
         ) {
             super.handleProvider(taskProvider)
-            val propertyProvider = { task: BundleAar -> task.archiveFile }
-            creationConfig.artifacts.setInitialProvider(taskProvider,BundleAar::mappedOutput, propertyProvider)
+            creationConfig.artifacts.setInitialProvider(taskProvider,BundleAar::mappedOutput, BundleAar::getArchiveFile)
                 .atLocation(creationConfig.paths.aarLocation)
                 .withName(creationConfig.aarOutputFileName)
                 .on(SingleArtifact.AAR)
@@ -248,10 +247,8 @@ abstract class BundleAar : Zip(), VariantAwareTask {
                         creationConfig.artifacts.buildDirectory,
                         creationConfig.name
                     )
-            val propertyProvider = { task: BundleAar -> task.archiveFile }
-
             creationConfig.artifacts
-                .setInitialProvider(taskProvider, BundleAar::mappedOutput, propertyProvider)
+                .setInitialProvider(taskProvider, BundleAar::mappedOutput, BundleAar::getArchiveFile)
                     .atLocation(outputFile)
                     .withName("out-${testFixturesClassifier}.aar")
                     .on(InternalArtifactType.LOCAL_AAR_FOR_LINT)
@@ -296,9 +293,8 @@ abstract class BundleAar : Zip(), VariantAwareTask {
                         creationConfig.artifacts.buildDirectory,
                         creationConfig.name
                     )
-            val propertyProvider = { task: BundleAar -> task.archiveFile }
             creationConfig.artifacts
-                .setInitialProvider(taskProvider, BundleAar::mappedOutput, propertyProvider)
+                .setInitialProvider(taskProvider, BundleAar::mappedOutput, BundleAar::getArchiveFile)
                 .withName("out.aar")
                 .atLocation(outputFile)
                 .on(InternalArtifactType.LOCAL_AAR_FOR_LINT)
@@ -334,7 +330,7 @@ abstract class BundleAar : Zip(), VariantAwareTask {
             creationConfig.taskContainer.bundleLibraryTask = taskProvider
 
             creationConfig.let {
-                it.artifacts.setInitialProvider(taskProvider, BundleAar::mappedOutput) { task: BundleAar -> task.archiveFile }
+                it.artifacts.setInitialProvider(taskProvider, BundleAar::mappedOutput, BundleAar::getArchiveFile)
                     .atLocation(it.paths.aarLocation)
                     .withName(it.aarOutputFileName)
                     .on(SingleArtifact.AAR)
@@ -440,9 +436,8 @@ abstract class BundleAar : Zip(), VariantAwareTask {
                         creationConfig.artifacts.buildDirectory,
                         creationConfig.name
                     )
-            val propertyProvider = { task: BundleAar -> task.archiveFile }
             creationConfig.artifacts
-                .setInitialProvider(taskProvider, BundleAar::mappedOutput, propertyProvider)
+                .setInitialProvider(taskProvider, BundleAar::mappedOutput, BundleAar::getArchiveFile)
                 .withName("out.aar")
                 .atLocation(outputFile)
                 .on(InternalArtifactType.LOCAL_AAR_FOR_LINT)

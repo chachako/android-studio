@@ -55,13 +55,11 @@ abstract class SourceJarTask : Jar(), VariantAwareTask {
             taskProvider: TaskProvider<SourceJarTask>
         ) {
             super.handleProvider(taskProvider)
-
-            val propertyProvider = { task: SourceJarTask ->
-                val property = task.project.objects.fileProperty()
-                property.set(task.archiveFile)
-                property
-            }
-            creationConfig.artifacts.setInitialProvider(taskProvider, propertyProvider)
+            creationConfig.artifacts.setInitialProvider(taskProvider,
+                // since the path to the file is set in the configure below, pass an empty property.
+                { it.project.objects.fileProperty() },
+                SourceJarTask::getArchiveFile
+            )
                 .on(InternalArtifactType.SOURCE_JAR)
         }
 

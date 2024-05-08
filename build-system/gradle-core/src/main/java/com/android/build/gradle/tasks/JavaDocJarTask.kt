@@ -55,13 +55,12 @@ abstract class JavaDocJarTask : Jar(), VariantAwareTask {
         override fun handleProvider(taskProvider: TaskProvider<JavaDocJarTask>) {
             super.handleProvider(taskProvider)
 
-            val propertyProvider = { task: JavaDocJarTask ->
-                val property = task.project.objects.fileProperty()
-                property.set(task.archiveFile)
-                property
-            }
-            creationConfig.artifacts.setInitialProvider(taskProvider, propertyProvider)
-                .on(InternalArtifactType.JAVA_DOC_JAR)
+            creationConfig.artifacts.setInitialProvider(
+                taskProvider,
+                // since the path is set in the configure below, we can pass an empty property.
+                { it.project.objects.fileProperty() },
+                JavaDocJarTask::getArchiveFile
+            ).on(InternalArtifactType.JAVA_DOC_JAR)
         }
 
         override fun configure(task: JavaDocJarTask) {
