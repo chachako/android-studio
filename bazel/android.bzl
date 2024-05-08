@@ -206,6 +206,7 @@ ANDROID_LINKOPTS = select_android(
         "-pie",
         "-Wl,--gc-sections",
         "-Wl,--as-needed",
+        "-Wl,-z,max-page-size=16384",
     ],
     [],
 ) + select_target_android_host_unx(
