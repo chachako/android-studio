@@ -27,8 +27,10 @@ import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.intellij.psi.PsiMethod
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.idea.references.mainReference
+import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.kotlin.psi.KtDoubleColonExpression
+import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtLambdaExpression
-import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.psi.KtThisExpression
 import org.jetbrains.kotlin.psi.KtTreeVisitor
 import org.jetbrains.uast.UCallExpression
@@ -72,18 +74,29 @@ class BuildListDetector : Detector(), SourceCodeScanner {
       lambda.accept(
         @Suppress("LintImplPsiEquals")
         object : KtTreeVisitor<Void>() {
-          override fun visitReferenceExpression(
-            expression: KtReferenceExpression,
+          override fun visitCallExpression(expression: KtCallExpression, data: Void?): Void? {
+            // .add(xyz)
+            checkImplicitReceiver(expression)
+            return super.visitCallExpression(expression, data)
+          }
+
+          override fun visitDoubleColonExpression(
+            expression: KtDoubleColonExpression,
             data: Void?,
           ): Void? {
-            analyze(expression) {
-              val receiverVal = getImplicitReceiverValue(expression)
+            // ::add, this::add, list::add, etc.
+            checkImplicitReceiver(expression)
+            return super.visitDoubleColonExpression(expression, data)
+          }
+
+          private fun checkImplicitReceiver(ktExpression: KtExpression) {
+            analyze(ktExpression) {
+              val receiverVal = getImplicitReceiverValue(ktExpression)
               val psi = receiverVal?.getImplicitReceiverPsi()
               if (psi == literal) {
                 isAdding = true
               }
             }
-            return super.visitReferenceExpression(expression, data)
           }
 
           override fun visitThisExpression(expression: KtThisExpression, data: Void?): Void? {
