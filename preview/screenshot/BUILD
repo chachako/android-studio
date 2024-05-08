@@ -7,7 +7,7 @@ maven_repository(
     artifacts = [
         "//tools/base/common:tools.common",
         "//tools/base/multipreview-asm:compose-preview-detector",
-        "//tools/base/preview/screenshot/compose-preview-validation-junit-engine",
+        "//tools/base/preview/screenshot/screenshot-validation-junit-engine",
         "//tools/base/standalone-render/compose-cli:compose-preview-renderer",
         "//tools/base/standalone-render/compose-cli-serialize:compose-preview-renderer-model",
     ],
