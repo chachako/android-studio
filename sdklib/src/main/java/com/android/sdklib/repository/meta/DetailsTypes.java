@@ -166,19 +166,38 @@ public final class DetailsTypes {
         }
 
         @NonNull
-        default List<String> getAbis() {
-            throw new UnsupportedOperationException();
-        }
+        List<String> getAbis();
+
+        @NonNull
+        List<String> getTranslatedAbis();
     }
 
     /**
-     * Trivial details type for source packages.
+     * A package for Android platform source code
      *
-     * TODO: delete this and make ApiDetails concrete in the schema
+     * <p>TODO: delete this and make ApiDetails concrete in the schema
      */
     @XmlTransient
     public interface SourceDetailsType extends ApiDetailsType {
+        /**
+         * @throws UnsupportedOperationException always. Source code will never run binaries and
+         *     thus have no ABIS.
+         */
+        @NonNull
+        @Override
+        default List<String> getAbis() {
+            throw new UnsupportedOperationException();
+        }
 
+        /**
+         * @throws UnsupportedOperationException always. Source code will never run binaries and
+         *     thus have no ABIS.
+         */
+        @NonNull
+        @Override
+        default List<String> getTranslatedAbis() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     /**
@@ -216,6 +235,12 @@ public final class DetailsTypes {
         @Override
         default List<String> getAbis() {
             return Collections.singletonList(Abi.ARMEABI.toString());
+        }
+
+        @NonNull
+        @Override
+        default List<String> getTranslatedAbis() {
+            return Collections.emptyList();
         }
     }
 
@@ -289,6 +314,12 @@ public final class DetailsTypes {
 
             return Collections.singletonList(abi.toString());
         }
+
+        @NonNull
+        @Override
+        default List<String> getTranslatedAbis() {
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -351,6 +382,7 @@ public final class DetailsTypes {
          * include anything in {@link #getAbis()}.
          */
         @NonNull
+        @Override
         default List<String> getTranslatedAbis() {
             return Collections.emptyList();
         }
