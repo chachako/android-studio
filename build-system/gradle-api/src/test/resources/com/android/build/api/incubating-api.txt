@@ -16,7 +16,7 @@ https://issuetracker.google.com/328747928
   * com.android.build.api.dsl.BundleTexture.getDefaultFormat: java.lang.String ()
   * com.android.build.api.dsl.BundleTexture.setDefaultFormat: void (java.lang.String)
 https://issuetracker.google.com/328748002
-  * com.android.build.api.artifact.SingleArtifact$APK_FROM_BUNDLE extends com.android.build.api.artifact.SingleArtifact implements com.android.build.api.artifact.Artifact$Transformable
+  * com.android.build.api.artifact.SingleArtifact$APK_FROM_BUNDLE extends com.android.build.api.artifact.SingleArtifact
 https://issuetracker.google.com/328748006
   * com.android.build.api.dsl.TestOptions.getDeviceGroups: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.DeviceGroup> ()
   * com.android.build.api.dsl.TestOptions.getDevices: org.gradle.api.ExtensiblePolymorphicDomainObjectContainer<com.android.build.api.dsl.Device> ()
