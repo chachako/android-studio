@@ -77,7 +77,6 @@ public final class AvdInfo {
     @NonNull private final ImmutableMap<String, String> mUserSettings;
     @NonNull private final AvdStatus mStatus;
     @Nullable private final ISystemImage mSystemImage;
-    private final boolean mHasPlayStore;
 
     /**
      * Creates a new valid AVD info. Values are immutable.
@@ -130,8 +129,6 @@ public final class AvdInfo {
                         ? ImmutableMap.of()
                         : ImmutableMap.copyOf(Maps.filterValues(userSettings, Objects::nonNull));
         mStatus = status;
-        String psString = mProperties.get(AvdManager.AVD_INI_PLAYSTORE_ENABLED);
-        mHasPlayStore = "true".equalsIgnoreCase(psString) || "yes".equalsIgnoreCase(psString);
     }
 
     /** Returns a stable ID for the AVD that doesn't change even if the device is renamed */
@@ -194,7 +191,8 @@ public final class AvdInfo {
 
     /** Returns true if this AVD supports Google Play Store */
     public boolean hasPlayStore() {
-        return mHasPlayStore;
+        String psString = mProperties.get(AvdManager.AVD_INI_PLAYSTORE_ENABLED);
+        return "true".equalsIgnoreCase(psString) || "yes".equalsIgnoreCase(psString);
     }
 
     @NonNull
@@ -449,8 +447,7 @@ public final class AvdInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AvdInfo avdInfo = (AvdInfo) o;
-        return mHasPlayStore == avdInfo.mHasPlayStore
-                && mName.equals(avdInfo.mName)
+        return mName.equals(avdInfo.mName)
                 && mIniFile.equals(avdInfo.mIniFile)
                 && mFolderPath.equals(avdInfo.mFolderPath)
                 && mProperties.equals(avdInfo.mProperties)
@@ -469,7 +466,6 @@ public final class AvdInfo {
         hashCode = 31 * hashCode + mUserSettings.hashCode();
         hashCode = 31 * hashCode + mStatus.hashCode();
         hashCode = 31 * hashCode + Objects.hashCode(mSystemImage);
-        hashCode = 31 * hashCode + Objects.hashCode(mHasPlayStore);
 
         return hashCode;
     }
@@ -498,9 +494,6 @@ public final class AvdInfo {
                 + separator
                 + "mSystemImage = "
                 + mSystemImage
-                + separator
-                + "mHasPlayStore = "
-                + mHasPlayStore
                 + separator;
     }
 }
