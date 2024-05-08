@@ -49,36 +49,16 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
     return makeAvdInfo(avdIndex++).also { createAvd(it) }
   }
 
-  fun createAvd(avdInfo: AvdInfo) {
-    synchronized(avds) { avds += avdInfo }
-  }
-
   fun makeAvdInfo(
     index: Int,
     androidVersion: AndroidVersion = LocalEmulatorProvisionerPluginTest.API_LEVEL,
     hasPlayStore: Boolean = true,
     avdStatus: AvdInfo.AvdStatus = AvdInfo.AvdStatus.OK,
     tag: IdDisplay = SystemImageTags.DEFAULT_TAG,
-  ): AvdInfo {
-    val basePath = avdRoot.resolve("avd_$index")
-    return AvdInfo(
-      "fake_avd_$index",
-      basePath.resolve("config.ini"),
-      basePath,
-      null,
-      mapOf(
-        AvdManager.AVD_INI_DEVICE_MANUFACTURER to LocalEmulatorProvisionerPluginTest.MANUFACTURER,
-        AvdManager.AVD_INI_DEVICE_NAME to LocalEmulatorProvisionerPluginTest.MODEL,
-        AvdManager.AVD_INI_ANDROID_API to androidVersion.apiStringWithoutExtension,
-        AvdManager.AVD_INI_ABI_TYPE to LocalEmulatorProvisionerPluginTest.ABI.toString(),
-        AvdManager.AVD_INI_DISPLAY_NAME to "Fake Device $index",
-        AvdManager.AVD_INI_PLAYSTORE_ENABLED to hasPlayStore.toString(),
-        AvdManager.AVD_INI_TAG_ID to tag.id,
-        AvdManager.AVD_INI_TAG_DISPLAY to tag.display,
-      ),
-      null,
-      avdStatus,
-    )
+  ): AvdInfo = makeAvdInfo(avdRoot, index, androidVersion, hasPlayStore, avdStatus, tag)
+
+  fun createAvd(avdInfo: AvdInfo) {
+    synchronized(avds) { avds += avdInfo }
   }
 
   override suspend fun editAvd(avdInfo: AvdInfo): AvdInfo? =
@@ -198,3 +178,32 @@ fun AvdInfo.copy(
 ): AvdInfo = AvdInfo(name, iniFile, folderPath, systemImage, properties, userSettings, status)
 
 const val LAUNCH_EXCEPTION_MESSAGE = "launch_exception_message"
+
+fun makeAvdInfo(
+  avdRoot: Path,
+  index: Int,
+  androidVersion: AndroidVersion = LocalEmulatorProvisionerPluginTest.API_LEVEL,
+  hasPlayStore: Boolean = true,
+  avdStatus: AvdInfo.AvdStatus = AvdInfo.AvdStatus.OK,
+  tag: IdDisplay = SystemImageTags.DEFAULT_TAG,
+): AvdInfo {
+  val basePath = avdRoot.resolve("avd_$index")
+  return AvdInfo(
+    "fake_avd_$index",
+    basePath.resolve("config.ini"),
+    basePath,
+    null,
+    mapOf(
+      AvdManager.AVD_INI_DEVICE_MANUFACTURER to LocalEmulatorProvisionerPluginTest.MANUFACTURER,
+      AvdManager.AVD_INI_DEVICE_NAME to LocalEmulatorProvisionerPluginTest.MODEL,
+      AvdManager.AVD_INI_ANDROID_API to androidVersion.apiStringWithoutExtension,
+      AvdManager.AVD_INI_ABI_TYPE to LocalEmulatorProvisionerPluginTest.ABI.toString(),
+      AvdManager.AVD_INI_DISPLAY_NAME to "Fake Device $index",
+      AvdManager.AVD_INI_PLAYSTORE_ENABLED to hasPlayStore.toString(),
+      AvdManager.AVD_INI_TAG_ID to tag.id,
+      AvdManager.AVD_INI_TAG_DISPLAY to tag.display,
+    ),
+    null,
+    avdStatus,
+  )
+}
