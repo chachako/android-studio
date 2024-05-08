@@ -130,50 +130,33 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
   private val callGraphDetectors = ArrayList<SourceCodeScanner>()
 
   init {
-
-    val annotationScanners = HashMap<String, MutableList<SourceCodeScanner>>()
-
     fun <K, V> Iterable<K>.associateWith(target: V, grouping: MutableMap<K, MutableList<V>>) {
       for (k in this) grouping.getOrPut(k) { ArrayList(SAME_TYPE_COUNT) }.add(target)
     }
 
+    fun <X : List<String>> X.ensureNotAll(): X = apply {
+      // not supported in Java visitors; adding a method invocation node is trivial
+      // for that case.
+      assert(this !== XmlScannerConstants.ALL)
+    }
+
+    val annotationScanners = HashMap<String, MutableList<SourceCodeScanner>>()
+
     for (detector in detectors) {
       val uastScanner = detector as SourceCodeScanner
       val v = VisitingDetector(detector, uastScanner)
+
       allDetectors.add(v)
+      if (detector.appliesToResourceRefs()) resourceFieldDetectors.add(v)
+      if (uastScanner.isCallGraphRequired()) callGraphDetectors.add(uastScanner)
 
-      detector.getApplicableMethodNames()?.let { names ->
-        // not supported in Java visitors; adding a method invocation node is trivial
-        // for that case.
-        assert(names !== XmlScannerConstants.ALL)
-        names.associateWith(v, methodDetectors)
-      }
-
-      detector.applicableSuperClasses()?.associateWith(v, superClassDetectors)
-      detector.getApplicableUastTypes()?.associateWith(v, nodePsiTypeDetectors)
-
-      detector.getApplicableConstructorTypes()?.let { types ->
-        // not supported in Java visitors; adding a method invocation node is trivial
-        // for that case.
-        assert(types !== XmlScannerConstants.ALL)
-        types.associateWith(v, constructorDetectors)
-      }
-
-      detector.getApplicableReferenceNames()?.let { referenceNames ->
-        // not supported in Java visitors; adding a method invocation node is trivial
-        // for that case.
-        assert(referenceNames !== XmlScannerConstants.ALL)
-        referenceNames.associateWith(v, referenceDetectors)
-      }
-
-      if (detector.appliesToResourceRefs()) {
-        resourceFieldDetectors.add(v)
-      }
-
-      detector.applicableAnnotations()?.associateWith(uastScanner, annotationScanners)
-
-      if (uastScanner.isCallGraphRequired()) {
-        callGraphDetectors.add(uastScanner)
+      with(detector) {
+        getApplicableMethodNames()?.ensureNotAll()?.associateWith(v, methodDetectors)
+        applicableSuperClasses()?.associateWith(v, superClassDetectors)
+        getApplicableUastTypes()?.associateWith(v, nodePsiTypeDetectors)
+        getApplicableConstructorTypes()?.ensureNotAll()?.associateWith(v, constructorDetectors)
+        getApplicableReferenceNames()?.ensureNotAll()?.associateWith(v, referenceDetectors)
+        applicableAnnotations()?.associateWith(uastScanner, annotationScanners)
       }
     }
 
