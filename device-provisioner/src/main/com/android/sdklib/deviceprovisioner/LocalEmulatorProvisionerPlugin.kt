@@ -445,7 +445,7 @@ class LocalEmulatorProvisionerPlugin(
                 }
               }
               is CheckTimeout -> {
-                if (pendingTransition != null && pendingTransition.timeout > clock.now()) {
+                if (pendingTransition != null && pendingTransition.timeout <= clock.now()) {
                   val action =
                     when (pendingTransition.transitionType) {
                       TransitionType.ACTIVATION -> "connect"
