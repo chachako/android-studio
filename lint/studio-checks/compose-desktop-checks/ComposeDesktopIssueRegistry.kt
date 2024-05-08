@@ -24,12 +24,14 @@ class ComposeDesktopIssueRegistry : IssueRegistry() {
     override val api: Int = com.android.tools.lint.detector.api.CURRENT_API
 
     override val issues: List<Issue> = (androidx.compose.runtime.lint.RuntimeIssueRegistry().issues
-            + androidx.compose.ui.lint.UiIssueRegistry().issues
-            + androidx.compose.ui.graphics.lint.UiGraphicsIssueRegistry().issues
-            + androidx.compose.runtime.saveable.lint.RuntimeSaveableIssueRegistry().issues
-            + androidx.compose.material.lint.MaterialIssueRegistry().issues
-            + androidx.compose.animation.lint.AnimationIssueRegistry().issues
             + androidx.compose.animation.core.lint.AnimationCoreIssueRegistry().issues
+            + androidx.compose.animation.lint.AnimationIssueRegistry().issues
             + androidx.compose.foundation.lint.FoundationIssueRegistry().issues
+            + androidx.compose.material.lint.MaterialIssueRegistry().issues
+            + androidx.compose.material3.lint.Material3IssueRegistry().issues
+            + androidx.compose.runtime.saveable.lint.RuntimeSaveableIssueRegistry().issues
+            + androidx.compose.ui.graphics.lint.UiGraphicsIssueRegistry().issues
+            + androidx.compose.ui.lint.UiIssueRegistry().issues
+            + androidx.compose.ui.test.manifest.lint.TestManifestIssueRegistry().issues
             ).filter { !it.isAndroidSpecific() }
 }
