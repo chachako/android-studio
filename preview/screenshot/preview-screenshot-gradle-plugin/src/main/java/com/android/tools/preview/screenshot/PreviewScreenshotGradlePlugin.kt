@@ -55,7 +55,7 @@ import org.gradle.api.artifacts.result.ResolvedDependencyResult
 private val minAgpVersion = AndroidPluginVersion(8, 5, 0).alpha(8)
 //temporarily added target version so that integration tests running on release version 8.5.0-alpha08 can run successfully
 private val targetAgpVersion = AndroidPluginVersion(8, 5, 0).beta(1)
-private val maxAgpVersion = AndroidPluginVersion(8,5    ,255)
+private val maxAgpVersion = AndroidPluginVersion(8,6    ,255)
 
 /**
  * An entry point for Screenshot plugin that adds support for screenshot testing on Compose Previews
