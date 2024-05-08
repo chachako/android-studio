@@ -33,6 +33,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
 import org.objectweb.asm.Type
+import java.util.jar.JarFile
 
 fun configureInput (
     classPath: List<String>,
@@ -66,14 +67,14 @@ fun configureInput (
     writeComposeRenderingToJson(cliToolArgumentsFile.writer(), composeRendering)
 }
 
-fun findPreviewsAndSerialize(classPath: List<String>, outputFile: Path, testDirectories: List<File>) {
+fun findPreviewsAndSerialize(classPath: List<String>, outputFile: Path, testDirectories: List<File>, testJars: List<File>) {
     val settings = MultipreviewSettings(
         "androidx.compose.ui.tooling.preview.Preview",
         "androidx.compose.ui.tooling.preview.PreviewParameter"
     )
     val multipreview = buildMultipreview(settings, classPath) {
         val className = getClassName(it)
-        classExistsIn(className, testDirectories)
+        classExistsIn(className, testDirectories, testJars)
     }
     val previews =  multipreview.methods.flatMap { method ->
         multipreview.getAnnotations(method).map { baseAnnotation ->
@@ -84,12 +85,19 @@ fun findPreviewsAndSerialize(classPath: List<String>, outputFile: Path, testDire
 }
 
 // TODO: move this check to MethodFilter interface b/330334806
-fun classExistsIn(className: String, directories: List<File>): Boolean {
-    val classFilePath = className.replace('.', separatorChar) + ".class"
-    for (directory in directories) {
-        val potentialClassFile = File(directory, classFilePath)
+fun classExistsIn(className: String, dirs: List<File>, jars: List<File>): Boolean {
+    val classFilePath = className.replace('.', '/') + ".class"
+    for (dir in dirs) {
+        val potentialClassFile = File(dir, classFilePath)
         if (potentialClassFile.exists()) {
-            return true // class found in test Directory
+            return true
+        }
+    }
+    for (jar in jars) {
+        JarFile(jar).use {
+            if (it.getJarEntry(classFilePath) != null) {
+                return true
+            }
         }
     }
     return false

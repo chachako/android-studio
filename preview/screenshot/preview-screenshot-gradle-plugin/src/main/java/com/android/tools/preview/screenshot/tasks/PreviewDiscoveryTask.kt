@@ -31,6 +31,7 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 import java.nio.file.Files
 
 abstract class PreviewDiscoveryTask: DefaultTask() {
@@ -84,8 +85,9 @@ abstract class PreviewDiscoveryTask: DefaultTask() {
         runtimeDeps.addAll(testJars.get().map { it.asFile.absolutePath })
         runtimeDeps.addAll(mainClassesDir.get().map { it.asFile.absolutePath })
         runtimeDeps.addAll(mainJars.get().map { it.asFile.absolutePath })
+
         val outputFilePath = previewsOutputFile.get().asFile.toPath()
 
-        findPreviewsAndSerialize(runtimeDeps, outputFilePath, testClassesDir.get().map { it.asFile })
+        findPreviewsAndSerialize(runtimeDeps, outputFilePath, testClassesDir.get().map { it.asFile }, testJars.get().map { it.asFile })
     }
 }
