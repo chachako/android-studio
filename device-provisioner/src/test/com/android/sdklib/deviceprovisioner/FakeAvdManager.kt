@@ -131,7 +131,6 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
   override suspend fun downloadAvdSystemImage(avdInfo: AvdInfo) {
     avds[avds.indexOf(avdInfo)] =
       AvdInfo(
-        avdInfo.name,
         avdInfo.iniFile,
         avdInfo.dataFolderPath,
         avdInfo.systemImage,
@@ -168,14 +167,13 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
 }
 
 fun AvdInfo.copy(
-  name: String = this.name,
   iniFile: Path = this.iniFile,
   folderPath: Path = this.dataFolderPath,
   systemImage: ISystemImage? = this.systemImage,
   properties: Map<String, String> = this.properties,
   userSettings: Map<String, String?>? = this.userSettings,
   status: AvdInfo.AvdStatus = this.status,
-): AvdInfo = AvdInfo(name, iniFile, folderPath, systemImage, properties, userSettings, status)
+): AvdInfo = AvdInfo(iniFile, folderPath, systemImage, properties, userSettings, status)
 
 const val LAUNCH_EXCEPTION_MESSAGE = "launch_exception_message"
 
@@ -187,11 +185,9 @@ fun makeAvdInfo(
   avdStatus: AvdInfo.AvdStatus = AvdInfo.AvdStatus.OK,
   tag: IdDisplay = SystemImageTags.DEFAULT_TAG,
 ): AvdInfo {
-  val basePath = avdRoot.resolve("avd_$index")
   return AvdInfo(
-    "fake_avd_$index",
-    basePath.resolve("config.ini"),
-    basePath,
+    avdRoot.resolve("fake_avd_${index}.ini"),
+    avdRoot.resolve("fake_avd_${index}.avd"),
     null,
     mapOf(
       AvdManager.AVD_INI_DEVICE_MANUFACTURER to LocalEmulatorProvisionerPluginTest.MANUFACTURER,

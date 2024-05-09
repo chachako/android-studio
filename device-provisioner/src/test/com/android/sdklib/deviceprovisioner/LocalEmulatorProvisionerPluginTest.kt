@@ -27,6 +27,7 @@ import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
 import com.android.sdklib.internal.avd.AvdManager
+import com.android.sdklib.internal.avd.AvdManager.USER_SETTINGS_INI_PREFERRED_ABI
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.DeviceInfo
 import com.google.wireless.android.sdk.stats.DeviceInfo.ApplicationBinaryInterface
@@ -403,7 +404,9 @@ class LocalEmulatorProvisionerPluginTest {
 
     // Check if editing the AVD name works while offline.
     val originalName = info.name
-    avdManager.avdEditor = { avdInfo: AvdInfo -> avdInfo.copy("New $originalName") }
+    avdManager.avdEditor = { avdInfo: AvdInfo ->
+      avdInfo.copy(avdInfo.iniFile.resolveSibling("New $originalName"))
+    }
 
     handle.editAction?.edit()
     channel.receiveUntilPassing { newState ->
@@ -417,11 +420,13 @@ class LocalEmulatorProvisionerPluginTest {
     }
 
     // Editing metadata while running shouldn't have problems.
-    avdManager.avdEditor = { avdInfo: AvdInfo -> avdInfo.copy("Final AVD name") }
+    avdManager.avdEditor = { avdInfo: AvdInfo ->
+      avdInfo.copy(userSettings = mapOf(USER_SETTINGS_INI_PREFERRED_ABI to "arm64-v8a"))
+    }
     handle.editAction?.edit()
     channel.receiveUntilPassing { newState ->
-      assertThat((newState.properties as LocalEmulatorProperties).avdName)
-        .isEqualTo("Final AVD name")
+      assertThat((newState.properties as LocalEmulatorProperties).preferredAbi)
+        .isEqualTo("arm64-v8a")
       assertThat(newState.error).isNull()
     }
 

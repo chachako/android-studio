@@ -16,6 +16,7 @@
 package com.android.sdklib.internal.avd;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+
 import static java.util.stream.Collectors.joining;
 
 import com.android.SdkConstants;
@@ -52,10 +53,12 @@ import com.android.utils.GrabProcessOutput.IProcessOutput;
 import com.android.utils.GrabProcessOutput.Wait;
 import com.android.utils.ILogger;
 import com.android.utils.PathUtils;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closeables;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -276,7 +279,9 @@ public class AvdManager {
      * AVD/config.ini key name representing whether to boot from a snapshot
      */
     public static final String AVD_INI_FORCE_COLD_BOOT_MODE = "fastboot.forceColdBoot";
-    public static final String AVD_INI_FORCE_CHOSEN_SNAPSHOT_BOOT_MODE = "fastboot.forceChosenSnapshotBoot";
+
+    public static final String AVD_INI_FORCE_CHOSEN_SNAPSHOT_BOOT_MODE =
+            "fastboot.forceChosenSnapshotBoot";
     public static final String AVD_INI_FORCE_FAST_BOOT_MODE = "fastboot.forceFastBoot";
     public static final String AVD_INI_CHOSEN_SNAPSHOT_FILE = "fastboot.chosenSnapshotFile";
 
@@ -335,7 +340,8 @@ public class AvdManager {
     public static final String AVD_INI_HINGE_DEFAULTS = "hw.sensor.hinge.defaults";
     public static final String AVD_INI_HINGE_AREAS = "hw.sensor.hinge.areas";
     public static final String AVD_INI_POSTURE_LISTS = "hw.sensor.posture_list";
-    public static final String AVD_INI_FOLD_AT_POSTURE = "hw.sensor.hinge.fold_to_displayRegion.0.1_at_posture";
+    public static final String AVD_INI_FOLD_AT_POSTURE =
+            "hw.sensor.hinge.fold_to_displayRegion.0.1_at_posture";
     public static final String AVD_INI_HINGE_ANGLES_POSTURE_DEFINITIONS =
             "hw.sensor.hinge_angles_posture_definitions";
 
@@ -921,7 +927,6 @@ public class AvdManager {
                 newAvdInfo =
                         createAvdInfoObject(
                                 systemImage,
-                                avdName,
                                 removePrevious,
                                 editExisting,
                                 iniFile,
@@ -971,8 +976,8 @@ public class AvdManager {
     }
 
     /**
-     * Duplicates an existing AVD. Update the 'config.ini' and 'hw-qemu.ini' files to reference the
-     * new name and path.
+     * Duplicates an existing AVD. Update the 'config.ini' and 'hardware-qemu.ini' files to
+     * reference the new name and path.
      *
      * @param origAvd the AVD to be duplicated
      * @param newAvdName name of the new copy
@@ -1021,8 +1026,7 @@ public class AvdManager {
                             newAvdName, destAvdFolder, false, systemImage.getAndroidVersion());
 
             // Create an AVD object from these files
-            return new AvdInfo(
-                    newAvdName, iniFile, destAvdFolder, systemImage, configVals, userSettingsVals);
+            return new AvdInfo(iniFile, destAvdFolder, systemImage, configVals, userSettingsVals);
         } catch (AndroidLocationsException | IOException e) {
             mLog.warning("Exception while duplicating an AVD: %1$s", e);
             return null;
@@ -1110,9 +1114,9 @@ public class AvdManager {
     }
 
     /**
-     * Creates the ini file for an AVD.
+     * Creates the metadata ini file for an AVD.
      *
-     * @param name of the AVD.
+     * @param name the basename of the metadata ini file of the AVD.
      * @param avdFolder path for the data folder of the AVD.
      * @param removePrevious True if an existing ini file should be removed.
      * @throws AndroidLocationsException if there's a problem getting android root directory.
@@ -1162,7 +1166,7 @@ public class AvdManager {
     }
 
     /**
-     * Creates the ini file for an AVD.
+     * Creates the metadata ini file for an AVD.
      *
      * @param info of the AVD.
      * @throws AndroidLocationsException if there's a problem getting android root directory.
@@ -1267,7 +1271,6 @@ public class AvdManager {
                 // update AVD info
                 AvdInfo info =
                         new AvdInfo(
-                                avdInfo.getName(),
                                 avdInfo.getIniFile(),
                                 paramFolderPath,
                                 avdInfo.getSystemImage(),
@@ -1294,7 +1297,6 @@ public class AvdManager {
                 // update AVD info
                 AvdInfo info =
                         new AvdInfo(
-                                newName,
                                 avdInfo.getIniFile(),
                                 avdInfo.getDataFolderPath(),
                                 avdInfo.getSystemImage(),
@@ -1433,12 +1435,7 @@ public class AvdManager {
         }
         if (avdPath == null || !(CancellableFileIo.isDirectory(mBaseAvdFolder.resolve(avdPath)))) {
             // Corrupted .ini file
-            String avdName = iniPath.getFileName().toString();
-            if (avdName.endsWith(".ini")) {
-                avdName = avdName.substring(0, avdName.length() - 4);
-            }
-            return new AvdInfo(
-                    avdName, iniPath, iniPath, null, null, null, AvdStatus.ERROR_CORRUPTED_INI);
+            return new AvdInfo(iniPath, iniPath, null, null, null, AvdStatus.ERROR_CORRUPTED_INI);
         }
 
         PathFileWrapper configIniFile;
@@ -1459,13 +1456,6 @@ public class AvdManager {
             configIniFile = null;
         } else {
             properties = parseIniFile(configIniFile, mLog);
-        }
-
-        // get name
-        String name = iniPath.getFileName().toString();
-        Matcher matcher = INI_NAME_PATTERN.matcher(name);
-        if (matcher.matches()) {
-            name = matcher.group(1);
         }
 
         // Check if the value of image.sysdir.1 is valid.
@@ -1568,8 +1558,7 @@ public class AvdManager {
 
         Map<String, String> userSettings = AvdInfo.parseUserSettingsFile(avdPath, mLog);
 
-        AvdInfo info =
-                new AvdInfo(name, iniPath, avdPath, sysImage, properties, userSettings, status);
+        AvdInfo info = new AvdInfo(iniPath, avdPath, sysImage, properties, userSettings, status);
 
         if (updateHashV2) {
             try {
@@ -1749,7 +1738,6 @@ public class AvdManager {
         // other errors.
         AvdInfo newAvd =
                 new AvdInfo(
-                        avd.getName(),
                         avd.getIniFile(),
                         avd.getDataFolderPath(),
                         avd.getSystemImage(),
@@ -2063,7 +2051,6 @@ public class AvdManager {
      * Creates an AvdInfo object from the new AVD.
      *
      * @param systemImage the system image of the AVD
-     * @param avdName the name of the AVD
      * @param removePrevious true if the existing AVD should be deleted
      * @param editExisting true if modifying an existing AVD
      * @param iniFile the .ini file of this AVD
@@ -2074,7 +2061,6 @@ public class AvdManager {
     @NonNull
     private AvdInfo createAvdInfoObject(
             @NonNull ISystemImage systemImage,
-            @NonNull String avdName,
             boolean removePrevious,
             boolean editExisting,
             @NonNull Path iniFile,
@@ -2085,8 +2071,7 @@ public class AvdManager {
             throws AvdMgrException {
 
         // create the AvdInfo object, and add it to the list
-        AvdInfo theAvdInfo =
-                new AvdInfo(avdName, iniFile, avdFolder, systemImage, values, userSettings);
+        AvdInfo theAvdInfo = new AvdInfo(iniFile, avdFolder, systemImage, values, userSettings);
 
         synchronized (mAllAvdList) {
             if (oldAvdInfo != null && (removePrevious || editExisting)) {

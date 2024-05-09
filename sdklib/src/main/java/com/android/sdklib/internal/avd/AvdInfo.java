@@ -30,15 +30,18 @@ import com.android.sdklib.devices.Device;
 import com.android.sdklib.repository.IdDisplay;
 import com.android.sdklib.repository.targets.SystemImage;
 import com.android.utils.ILogger;
+
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -64,7 +67,6 @@ public final class AvdInfo {
         ERROR_CORRUPTED_INI
     }
 
-    @NonNull private final String mName;
     @NonNull private final Path mIniFile;
     @NonNull private final Path mFolderPath;
     @NonNull private final ImmutableMap<String, String> mProperties;
@@ -77,20 +79,20 @@ public final class AvdInfo {
      *
      * <p>Such an AVD is available and can be used. The error string is set to null.
      *
-     * @param name The name of the AVD (for display or reference)
-     * @param iniFile The path to the config.ini file
-     * @param folderPath The path to the data directory
+     * @param iniFile The path to the AVD's metadata ini file. This is not the config.ini that
+     *     resides within folderPath, but the file that resides parallel to the AVD's data folder in
+     *     the AVD base folder.
+     * @param folderPath The path to the data directory, normally with an ".avd" suffix
      * @param systemImage The system image.
      * @param properties The configuration properties. If null, an empty map will be created.
      */
     public AvdInfo(
-            @NonNull String name,
             @NonNull Path iniFile,
             @NonNull Path folderPath,
             @NonNull ISystemImage systemImage,
             @Nullable Map<String, String> properties,
             @Nullable Map<String, String> userSettings) {
-        this(name, iniFile, folderPath, systemImage, properties, userSettings, AvdStatus.OK);
+        this(iniFile, folderPath, systemImage, properties, userSettings, AvdStatus.OK);
     }
 
     /**
@@ -98,22 +100,21 @@ public final class AvdInfo {
      *
      * <p>Such an AVD is not complete and cannot be used. The error string must be non-null.
      *
-     * @param name The name of the AVD (for display or reference)
-     * @param iniFile The path to the config.ini file
-     * @param folderPath The path to the data directory
+     * @param iniFile The path to the AVD's metadata ini file. This is not the config.ini that
+     *     resides within folderPath, but the file that resides parallel to the AVD's data folder in
+     *     the AVD base folder.
+     * @param folderPath The path to the data directory, normally with an ".avd" suffix
      * @param systemImage The system image. Can be null if the image wasn't found.
      * @param properties The configuration properties. If null, an empty map will be created.
      * @param status The {@link AvdStatus} of this AVD. Cannot be null.
      */
     public AvdInfo(
-            @NonNull String name,
             @NonNull Path iniFile,
             @NonNull Path folderPath,
             @Nullable ISystemImage systemImage,
             @Nullable Map<String, String> properties,
             @Nullable Map<String, String> userSettings,
             @NonNull AvdStatus status) {
-        mName = name;
         mIniFile = iniFile;
         mFolderPath = folderPath;
         mSystemImage = systemImage;
@@ -134,14 +135,17 @@ public final class AvdInfo {
     /** Returns the name of the AVD. Do not use this as a device ID; use getId instead. */
     @NonNull
     public String getName() {
-        return mName;
+        String iniFilename = getIniFile().getFileName().toString();
+        return iniFilename.toLowerCase(Locale.ROOT).endsWith(".ini")
+                ? iniFilename.substring(0, iniFilename.length() - 4)
+                : iniFilename;
     }
 
     /** Returns the name of the AVD for use in UI. */
     @NonNull
     public String getDisplayName() {
         String name = getProperties().get(AvdManager.AVD_INI_DISPLAY_NAME);
-        return name == null ? mName.replace('_', ' ') : name;
+        return name == null ? getName().replace('_', ' ') : name;
     }
 
     /** Returns the path of the AVD data directory. */
@@ -304,7 +308,7 @@ public final class AvdInfo {
     }
 
     /**
-     * Helper method that returns the .ini {@link File} for a given AVD name.
+     * Helper method that returns the .ini {@link Path} for a given AVD name.
      *
      * <p>The default is {@code getBaseAvdFolder()/avdname.ini}.
      *
@@ -396,7 +400,7 @@ public final class AvdInfo {
                                 ? ""
                                 : (getTag().getDisplay() + " "),
                         getAbiType(),
-                        mName);
+                        getDisplayName());
             case ERROR_DEVICE_MISSING:
                 return String.format("%1$s %2$s no longer exists as a device",
                         mProperties.get(AvdManager.AVD_INI_DEVICE_MANUFACTURER),
@@ -410,17 +414,13 @@ public final class AvdInfo {
         return null;
     }
 
-    public boolean isSameMetadata(@Nullable Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AvdInfo avdInfo = (AvdInfo) o;
-        return mName.equals(avdInfo.mName) && mUserSettings.equals(avdInfo.mUserSettings);
+    public boolean isSameMetadata(@NonNull AvdInfo avdInfo) {
+        return mUserSettings.equals(avdInfo.mUserSettings);
     }
 
     @NonNull
     public AvdInfo copyMetadata(@NonNull AvdInfo other) {
         return new AvdInfo(
-                other.getName(),
                 getIniFile(),
                 getDataFolderPath(),
                 getSystemImage(),
@@ -434,8 +434,7 @@ public final class AvdInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AvdInfo avdInfo = (AvdInfo) o;
-        return mName.equals(avdInfo.mName)
-                && mIniFile.equals(avdInfo.mIniFile)
+        return mIniFile.equals(avdInfo.mIniFile)
                 && mFolderPath.equals(avdInfo.mFolderPath)
                 && mProperties.equals(avdInfo.mProperties)
                 && mUserSettings.equals(avdInfo.mUserSettings)
@@ -445,9 +444,8 @@ public final class AvdInfo {
 
     @Override
     public int hashCode() {
-        int hashCode = mName.hashCode();
+        int hashCode = mIniFile.hashCode();
 
-        hashCode = 31 * hashCode + mIniFile.hashCode();
         hashCode = 31 * hashCode + mFolderPath.hashCode();
         hashCode = 31 * hashCode + mProperties.hashCode();
         hashCode = 31 * hashCode + mUserSettings.hashCode();
@@ -455,32 +453,5 @@ public final class AvdInfo {
         hashCode = 31 * hashCode + Objects.hashCode(mSystemImage);
 
         return hashCode;
-    }
-
-    @NonNull
-    public String toDebugString() {
-        String separator = System.lineSeparator();
-
-        return "mName = "
-                + mName
-                + separator
-                + "mIniFile = "
-                + mIniFile
-                + separator
-                + "mFolderPath = "
-                + mFolderPath
-                + separator
-                + "mProperties = "
-                + mProperties
-                + separator
-                + "mUserSettings = "
-                + mUserSettings
-                + separator
-                + "mStatus = "
-                + mStatus
-                + separator
-                + "mSystemImage = "
-                + mSystemImage
-                + separator;
     }
 }
