@@ -148,4 +148,51 @@ class PreviewFinderTest {
         val result = classExistsIn(className, dirs, jars)
         assertEquals(false, result)
     }
+
+    @Test
+    fun testSortListOfSortedMaps() {
+        val inputList = listOf(
+            sortedMapOf(Pair("provider", "b")),
+            sortedMapOf(),
+            sortedMapOf(Pair("provider", "a")),
+            sortedMapOf(Pair("a", "b")))
+
+        val sortedList = sortListOfSortedMaps(inputList)
+
+        val expectedList = listOf(
+            sortedMapOf(),
+            sortedMapOf(Pair("a", "b")),
+            sortedMapOf(Pair("provider", "a")),
+            sortedMapOf(Pair("provider", "b"))
+        )
+        assertEquals(expectedList, sortedList)
+    }
+
+    @Test
+    fun testSortListOfSortedMapsWithMultipleKeys() {
+        val inputList = listOf(
+            sortedMapOf(Pair("c", "d"), Pair("provider", "a")),
+            sortedMapOf(Pair("z", "z"), Pair("provider", "b")),
+            sortedMapOf(Pair("provider", "b")),
+            sortedMapOf(Pair("provider", "a"), Pair("z", "z")),
+            sortedMapOf(Pair("provider", "a"), Pair("z", "y")),
+            sortedMapOf(Pair("a", "b"), Pair("b", "z")),
+            sortedMapOf(Pair("a", "b"), Pair("b", "a")),
+            sortedMapOf(Pair("a", "b")),
+            sortedMapOf())
+
+        val sortedList = sortListOfSortedMaps(inputList)
+
+        val expectedList = listOf(
+            sortedMapOf(),
+            sortedMapOf(Pair("a", "b")),
+            sortedMapOf(Pair("a", "b"), Pair("b", "a")),
+            sortedMapOf(Pair("a", "b"), Pair("b", "z")),
+            sortedMapOf(Pair("c", "d"), Pair("provider", "a")),
+            sortedMapOf(Pair("provider", "a"), Pair("z", "y")),
+            sortedMapOf(Pair("provider", "a"), Pair("z", "z")),
+            sortedMapOf(Pair("provider", "b")),
+            sortedMapOf(Pair("provider", "b"), Pair("z", "z")))
+        assertEquals(expectedList, sortedList)
+    }
 }

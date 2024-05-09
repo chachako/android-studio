@@ -159,7 +159,7 @@ class ScreenshotTest {
             """.trimIndent()
         )
         addFile(
-                "src/main/java/com/SimplePreviewParameterProvider.kt", """
+                "src/main/java/com/ParameterProviders.kt", """
                 package pkg.name
 
                 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -167,6 +167,12 @@ class ScreenshotTest {
                 class SimplePreviewParameterProvider : PreviewParameterProvider<String> {
                     override val values = sequenceOf(
                         "Primary text", "Secondary text"
+                    )
+                }
+
+                class AnotherPreviewParameterProvider : PreviewParameterProvider<String> {
+                    override val values = sequenceOf(
+                        "text 1", "text 2"
                     )
                 }
             """.trimIndent()
@@ -206,6 +212,16 @@ class ScreenshotTest {
                         @PreviewParameter(SimplePreviewParameterProvider::class) data: String
                     ) {
                        SimpleComposable(data)
+                    }
+
+                    @Preview
+                    @Composable
+                    fun multipleParameterProviderTest(
+                        @PreviewParameter(SimplePreviewParameterProvider::class) data: String,
+                        @PreviewParameter(AnotherPreviewParameterProvider::class) text: String = "!"
+                    ) {
+                       val stringToDisplay = data + " " + text
+                       SimpleComposable(stringToDisplay)
                     }
                 }
 
@@ -259,6 +275,19 @@ class ScreenshotTest {
                   "imageName": "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee"
                 },
                 {
+                  "methodFQN": "pkg.name.ExampleTest.multipleParameterProviderTest",
+                  "methodParams": [
+                    {
+                      "provider": "pkg.name.AnotherPreviewParameterProvider"
+                    },
+                    {
+                      "provider": "pkg.name.SimplePreviewParameterProvider"
+                    }
+                  ],
+                  "previewParams": {},
+                  "imageName": "pkg.name.ExampleTest.multipleParameterProviderTest_da39a3ee_b3bbe100"
+                },
+                {
                   "methodFQN": "pkg.name.ExampleTest.parameterProviderTest",
                   "methodParams": [
                     {
@@ -309,6 +338,8 @@ class ScreenshotTest {
             "pkg.name.ExampleTest.simpleComposableTest2_b55c4b0c_da39a3ee_0.png",
             "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee_0.png",
             "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee_0.png",
+            "pkg.name.ExampleTest.multipleParameterProviderTest_da39a3ee_b3bbe100_1.png",
+            "pkg.name.ExampleTest.multipleParameterProviderTest_da39a3ee_b3bbe100_0.png",
             "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_0.png",
             "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_1.png",
             "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee_0.png"
@@ -329,6 +360,10 @@ class ScreenshotTest {
             """<h3 class="success">simpleComposableTest2</h3>""",
             """<h3 class="success">multiPreviewTest_{showBackground=true}</h3>""",
             """<h3 class="success">multiPreviewTest_{showBackground=false}</h3>""",
+            """<h3 class="success">multipleParameterProviderTest_[{provider=pkg.name.AnotherPreviewParameterProvider},""",
+            """{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
+            """<h3 class="success">multipleParameterProviderTest_[{provider=pkg.name.AnotherPreviewParameterProvider},""",
+            """{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>""",
             """<h3 class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
             """<h3 class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>"""
         )
@@ -344,7 +379,7 @@ class ScreenshotTest {
         // Update previews to be different from the references
         val testFile = appProject.projectDir.resolve("src/main/java/com/Example.kt")
         TestFileUtils.searchAndReplace(testFile, "Hello World", "HelloWorld ")
-        val previewParameterProviderFile = appProject.projectDir.resolve("src/main/java/com/SimplePreviewParameterProvider.kt")
+        val previewParameterProviderFile = appProject.projectDir.resolve("src/main/java/com/ParameterProviders.kt")
         TestFileUtils.searchAndReplace(previewParameterProviderFile, "Primary text", " Primarytext")
 
         // Rerun validation task - modified tests should fail and diffs are generated
@@ -358,6 +393,10 @@ class ScreenshotTest {
             """<h3 class="failures">simpleComposableTest2</h3>""",
             """<h3 class="failures">multiPreviewTest_{showBackground=true}</h3>""",
             """<h3 class="failures">multiPreviewTest_{showBackground=false}</h3>""",
+            """<h3 class="success">multipleParameterProviderTest_[{provider=pkg.name.AnotherPreviewParameterProvider},""",
+            """{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
+            """<h3 class="success">multipleParameterProviderTest_[{provider=pkg.name.AnotherPreviewParameterProvider},""",
+            """{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>""",
             """<h3 class="failures">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
             """<h3 class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>"""
         )
