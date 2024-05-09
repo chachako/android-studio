@@ -17,7 +17,7 @@ merged_zip(
     name = "preview_screenshot_maven_repo",
     srcs = [
         ":maven_dependencies.zip",
-        "//tools/base/preview/screenshot/preview-screenshot-gradle-plugin:preview_screenshot-gradle-plugin.zip",
+        "//tools/base/preview/screenshot/screenshot-test-gradle-plugin:screenshot-test-gradle-plugin.zip",
     ],
     visibility = [
         "//tools/base/build-system/integration-test:__subpackages__",

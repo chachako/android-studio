@@ -86,7 +86,7 @@ class ScreenshotTest {
 
     private fun SubProjectBuilder.setupProject() {
         plugins.add(PluginType.KOTLIN_ANDROID)
-        plugins.add(PluginType.Custom("com.android.tools.preview.screenshot"))
+        plugins.add(PluginType.Custom("com.android.compose.screenshot"))
         appendToBuildFile {
             val customJarName = UUID.randomUUID().toString()
             val customJar = temporaryFolder.newFile(customJarName)
@@ -99,7 +99,7 @@ class ScreenshotTest {
             buildscript {
                 apply from: "../../commonBuildScript.gradle"
                 dependencies {
-                    classpath "com.android.tools.preview.screenshot:preview-screenshot-gradle-plugin:+"
+                    classpath "com.android.compose.screenshot:screenshot-test-gradle-plugin:+"
 
                     // Gradle will use a separate classloader for a project only when it has a
                     // different set of classpath dependencies. So here we add an empty jar file.
