@@ -356,7 +356,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
     @Test
     fun startProcessMonitoringLogsUsageStats() = runBlockingWithTimeout {
         // Prepare
-        val (_, _, firstProcess) = createJdwpProcess(waitForDebugger = false)
+        val (_, device, firstProcess) = createJdwpProcess(waitForDebugger = false)
         setHostPropertyValue(
             firstProcess.device.session.host,
             AdbLibToolsProperties.PROCESS_PROPERTIES_READ_TIMEOUT,
@@ -413,6 +413,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
                 previousFailureType = null
             ), loggedEvents!![0].jdwpProcessPropertiesCollector
         )
+        assertEquals(device, loggedEvents[0].device)
         assertEquals(
             JdwpProcessPropertiesCollectorEvent(
                 isSuccess = true,
@@ -421,6 +422,7 @@ class JdwpProcessTest : AdbLibToolsTestBase() {
                 previousFailureType = AdbUsageTracker.JdwpProcessPropertiesCollectorFailureType.NO_RESPONSE
             ), loggedEvents[1].jdwpProcessPropertiesCollector
         )
+        assertEquals(device, loggedEvents[1].device)
     }
 
     private suspend fun createJdwpProcess(

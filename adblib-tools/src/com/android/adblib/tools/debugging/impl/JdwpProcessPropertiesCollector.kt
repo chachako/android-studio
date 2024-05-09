@@ -183,7 +183,7 @@ internal class JdwpProcessPropertiesCollector(
         }
     }
 
-    private fun logUsage(
+    private suspend fun logUsage(
         isSuccess: Boolean,
         throwable: Throwable?,
         previouslyFailedCount: Int,
