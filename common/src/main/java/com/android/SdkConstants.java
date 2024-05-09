@@ -917,6 +917,9 @@ public final class SdkConstants {
     public static final String CLASS_COMPOSE_VIEW_ADAPTER =
             "androidx.compose.ui.tooling.ComposeViewAdapter";
 
+    public static final String CLASS_TILE_SERVICE_VIEW_ADAPTER =
+            "androidx.wear.tiles.tooling.TileServiceViewAdapter";
+
     public static final String ATTR_COMPOSABLE_NAME = "composableName";
 
     public static final String PACKAGE_COMPOSE_ANIMATION = "androidx.compose.animation.core";
