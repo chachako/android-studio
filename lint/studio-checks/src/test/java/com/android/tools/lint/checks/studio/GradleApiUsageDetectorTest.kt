@@ -80,16 +80,16 @@ class GradleApiUsageDetectorTest {
       .run()
       .expect(
         """
-                    src/test/pkg/Test.java:8: Error: Avoid using org.gradle.api.Project.exec as it is incompatible with Gradle instant execution. [ProjectExecOperations]
+                    src/test/pkg/Test.java:8: Error: Avoid using org.gradle.api.Project.exec as it is incompatible with Gradle configuration cache. [ProjectExecOperations]
                             project.exec(); // WARN
                                     ~~~~
-                    src/test/pkg/Test.java:9: Error: Avoid using org.gradle.api.Project.exec as it is incompatible with Gradle instant execution. [ProjectExecOperations]
+                    src/test/pkg/Test.java:9: Error: Avoid using org.gradle.api.Project.exec as it is incompatible with Gradle configuration cache. [ProjectExecOperations]
                             defaultProject.exec(); // WARN
                                            ~~~~
-                    src/test/pkg/Test.java:10: Error: Avoid using org.gradle.api.Project.exec as it is incompatible with Gradle instant execution. [ProjectExecOperations]
+                    src/test/pkg/Test.java:10: Error: Avoid using org.gradle.api.Project.exec as it is incompatible with Gradle configuration cache. [ProjectExecOperations]
                             java.util.function.Function<?, ?> f = defaultProject::exec; // WARN
                                                                   ~~~~~~~~~~~~~~~~~~~~
-                    src/test/pkg/Test.java:11: Error: Avoid using org.gradle.api.Project.exec as it is incompatible with Gradle instant execution. [ProjectExecOperations]
+                    src/test/pkg/Test.java:11: Error: Avoid using org.gradle.api.Project.exec as it is incompatible with Gradle configuration cache. [ProjectExecOperations]
                             org.gradle.api.Project::exec; // WARN
                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     4 errors, 0 warnings

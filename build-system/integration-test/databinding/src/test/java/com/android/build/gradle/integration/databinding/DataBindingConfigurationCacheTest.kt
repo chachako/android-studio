@@ -23,7 +23,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class DataBindingInstantExecutionTest {
+class DataBindingConfigurationCacheTest {
 
     @get:Rule
     val project = GradleTestProject.builder()

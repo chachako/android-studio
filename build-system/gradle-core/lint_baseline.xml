@@ -113,7 +113,7 @@
 
     <issue
         id="ProjectExecOperations"
-        message="Avoid using `org.gradle.api.Project.exec` as it is incompatible with Gradle instant execution."
+        message="Avoid using `org.gradle.api.Project.exec` as it is incompatible with Gradle configuration cache."
         errorLine1="            project.exec(action)"
         errorLine2="                    ~~~~">
         <location

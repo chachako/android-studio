@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.integration.instantexecution
+package com.android.build.gradle.integration.configurationcache
 
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
@@ -29,7 +29,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class BasicInstantExecutionTest {
+class BasicConfigurationCacheTest {
 
     private val app = MinimalSubProject.app("com.app")
     private val lib = MinimalSubProject.lib("com.lib")
