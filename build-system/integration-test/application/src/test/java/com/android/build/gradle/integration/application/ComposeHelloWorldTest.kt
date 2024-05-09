@@ -17,9 +17,11 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -128,5 +130,18 @@ class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean)
                     "ScreenshotTestKt.class"
                 )
         assertThat(screenshotTestClassFile).exists()
+    }
+
+    @Test
+    fun testErrorWhenComposeCompilerPluginNotAppliedWithKotlin2() {
+        Assume.assumeTrue(useComposeCompilerGradlePlugin)
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("app").buildFile,
+            "apply plugin: 'org.jetbrains.kotlin.plugin.compose'",
+            ""
+        )
+        val result = project.executor().expectFailure().run("assembleDebug")
+        ScannerSubject.assertThat(result.stderr)
+            .contains("Starting in Kotlin 2.0, the Compose Compiler Gradle plugin is required")
     }
 }

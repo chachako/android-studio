@@ -48,6 +48,8 @@ import com.android.build.gradle.internal.tasks.factory.TaskManagerConfig
 import com.android.build.gradle.internal.utils.KOTLIN_KAPT_PLUGIN_ID
 import com.android.build.gradle.internal.utils.addComposeArgsToKotlinCompile
 import com.android.build.gradle.internal.utils.configureKotlinCompileTasks
+import com.android.build.gradle.internal.utils.getProjectKotlinPluginKotlinVersion
+import com.android.build.gradle.internal.utils.isComposeCompilerPluginApplied
 import com.android.build.gradle.internal.utils.isKotlinPluginAppliedInTheSameClassloader
 import com.android.build.gradle.internal.utils.recordKgpPropertiesForAnalytics
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -343,6 +345,26 @@ abstract class VariantTaskManager<VariantBuilderT : VariantBuilder, VariantT : V
         recordKgpPropertiesForAnalytics(project, allPropertiesList)
         if (!composeIsEnabled) {
             return
+        }
+
+        // Report an error if kotlin version is 2.0+ and the compose compiler gradle plugin is
+        // not applied. Report an error instead of throwing an exception so that sync can
+        // finish.
+        val kotlinVersion = getProjectKotlinPluginKotlinVersion(project)
+        if (kotlinVersion != null
+            && kotlinVersion.major >= 2
+            && !isComposeCompilerPluginApplied(project)) {
+                globalConfig
+                    .services
+                    .issueReporter
+                    .reportError(
+                        IssueReporter.Type.GENERIC,
+                        """
+                            Starting in Kotlin 2.0, the Compose Compiler Gradle plugin is required
+                            when compose is enabled. See the following link for more information:
+                            https://d.android.com/r/studio-ui/compose-compiler
+                        """.trimIndent()
+                    )
         }
 
         // any override coming from the DSL.

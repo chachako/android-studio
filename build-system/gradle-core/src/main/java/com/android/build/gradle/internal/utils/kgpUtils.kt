@@ -45,6 +45,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 const val KOTLIN_ANDROID_PLUGIN_ID = "org.jetbrains.kotlin.android"
 const val KOTLIN_KAPT_PLUGIN_ID = "org.jetbrains.kotlin.kapt"
+const val COMPOSE_COMPILER_PLUGIN_ID = "org.jetbrains.kotlin.plugin.compose"
 const val KSP_PLUGIN_ID = "com.google.devtools.ksp"
 const val KOTLIN_MPP_PLUGIN_ID = "org.jetbrains.kotlin.multiplatform"
 private val KOTLIN_MPP_PLUGIN_IDS = listOf("kotlin-multiplatform", KOTLIN_MPP_PLUGIN_ID)
@@ -133,6 +134,9 @@ fun isKotlinAndroidPluginApplied(project: Project) =
 
 fun isKotlinKaptPluginApplied(project: Project) =
         project.pluginManager.hasPlugin(KOTLIN_KAPT_PLUGIN_ID)
+
+fun isComposeCompilerPluginApplied(project: Project) =
+    project.pluginManager.hasPlugin(COMPOSE_COMPILER_PLUGIN_ID)
 
 fun isKspPluginApplied(project: Project) =
     project.pluginManager.hasPlugin(KSP_PLUGIN_ID)
