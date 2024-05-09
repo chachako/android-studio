@@ -346,6 +346,10 @@ message SessionMetaData {
   SessionType type = 6;
   // See SdkConstans.CPU_ARCH_* as provided by the BeginSessionRequest.
   string process_abi = 7;
+  // Session's task type indicating the type of task the session is underlying.
+  ProfilerTaskType task_type = 8;
+  // Flag indicating whether the task starting point is the process start.
+  bool is_startup_task = 9;
 }
 
 message Stream {
@@ -427,7 +431,7 @@ message SessionData {
     string process_abi = 10;
     // Session's task type indicating the type of task the session is underlying.
     ProfilerTaskType task_type = 11;
-    // Flag indicating whether the task is done on startup of the process or not.
+    // Flag indicating whether the task starting point is the process start.
     bool is_startup_task = 12;
   }
 
