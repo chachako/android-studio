@@ -57,13 +57,13 @@ public class UnitTest {
     public void idsAreConsistent() throws Exception {
         Map<String, Integer> seenIds = new HashMap<>();
 
-        for (Field field : android.support.v7.appcompat.R.id.class.getFields()) {
+        for (Field field : androidx.appcompat.R.id.class.getFields()) {
             String name = field.getName();
             int appCompatId = (Integer) field.get(null);
             seenIds.put(name, appCompatId);
         }
 
-        for (Field field : android.support.constraint.R.id.class.getFields()) {
+        for (Field field : androidx.constraintlayout.widget.R.id.class.getFields()) {
             String name = field.getName();
             int constraintId = (Integer) field.get(null);
 
@@ -79,14 +79,8 @@ public class UnitTest {
 
     @Test
     public void stylablesArePresent() throws Exception {
-        int[] stylable = android.support.v7.appcompat.R.styleable.AppCompatTheme;
-        int child =
-                android.support
-                        .v7
-                        .appcompat
-                        .R
-                        .styleable
-                        .AppCompatTheme_listPreferredItemPaddingRight;
+        int[] stylable = androidx.appcompat.R.styleable.AppCompatTheme;
+        int child = androidx.appcompat.R.styleable.AppCompatTheme_listPreferredItemPaddingRight;
         assertTrue(stylable.length > 0);
         assertTrue(child >= 0);
     }

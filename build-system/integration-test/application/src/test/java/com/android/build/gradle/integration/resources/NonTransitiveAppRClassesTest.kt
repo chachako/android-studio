@@ -69,12 +69,16 @@ class NonTransitiveAppRClassesTest {
         MultiModuleTestProject.builder()
             .subproject(":lib", lib)
             .subproject(":app", app)
-            .dependency(lib, "com.android.support:design:$SUPPORT_LIB_VERSION")
+            .dependency(lib, "com.google.android.material:material:1.9.0")
             .dependency(app, lib)
             .build()
 
     @get:Rule
-    val project = GradleTestProject.builder().fromTestApp(testApp).create()
+    val project = GradleTestProject.builder().fromTestApp(testApp)
+        .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+        // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+        .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+        .create()
 
     @Test
     fun runtimeRClassFlowTestWithNonTransitive() {
@@ -102,7 +106,7 @@ class NonTransitiveAppRClassesTest {
         TestFileUtils.searchAndReplace(
             project.file("lib/src/main/java/com/example/lib/Example.java"),
             "com.example.lib.R.string.appbar_scrolling_view_behavior",
-            "android.support.design.R.string.appbar_scrolling_view_behavior"
+            "com.google.android.material.R.string.appbar_scrolling_view_behavior"
         )
 
         // Changing just the code lib shouldn't be enough anymore - build should still fail because
@@ -122,7 +126,7 @@ class NonTransitiveAppRClassesTest {
         TestFileUtils.searchAndReplace(
             project.file("app/src/main/java/com/example/app/Example.java"),
             "com.example.app.R.string.appbar_scrolling_view_behavior",
-            "android.support.design.R.string.appbar_scrolling_view_behavior"
+            "com.google.android.material.R.string.appbar_scrolling_view_behavior"
         )
 
         // Finally, everything should build with the fixed non-transitive R references.

@@ -96,10 +96,13 @@ maven_repository(
     # keep sorted
     artifacts = [
         "@maven//:android.arch.lifecycle.livedata_1.1.1",
-        "@maven//:com.android.support.constraint.constraint-layout_1.0.2",
+        "@maven//:androidx.appcompat.appcompat_1.6.1",
+        "@maven//:androidx.constraintlayout.constraintlayout_2.1.4",
+        "@maven//:androidx.core.core-ktx_1.9.0",
         "@maven//:com.google.guava.guava_19.0",
         "@maven//:commons-logging.commons-logging_1.1.1",
         "@maven//:org.jdeferred.jdeferred-android-aar_1.2.3",
+        "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core_1.6.1",
         "@maven//:org.mockito.mockito-core_5.6.0",
         "@maven//:org.robolectric.android-all-instrumented_7.0.0_r1-robolectric-r1-i4",
         "@maven//:org.robolectric.robolectric_4.8.2",

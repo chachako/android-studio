@@ -35,6 +35,7 @@ public class SeparateTestWithAarDependencyConnectedTest {
             GradleTestProject.builder()
                     .fromTestProject("separateTestModule")
                     .addGradleProperties(BooleanOption.USE_ANDROID_X.getPropertyName() + "=true")
+                    .addGradleProperties(BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.getPropertyName() + "=false")
                     .create();
 
     @ClassRule public static final ExternalResource EMULATOR = EmulatorUtils.getEmulator();

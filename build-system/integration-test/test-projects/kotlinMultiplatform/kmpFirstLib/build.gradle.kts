@@ -34,9 +34,15 @@ kotlin {
 
     sourceSets.getByName("androidInstrumentedTest") {
       dependencies {
-        implementation("androidx.test:runner:1.4.0-alpha06")
-        implementation("androidx.test:core:1.4.0-alpha06")
-        implementation("androidx.test.ext:junit:1.1.2")
+        implementation("androidx.test:runner:1.4.0-alpha06", {
+            exclude(group="com.google.guava", module="listenablefuture")
+        })
+        implementation("androidx.test:core:1.4.0-alpha06", {
+            exclude(group="com.google.guava", module="listenablefuture")
+        })
+        implementation("androidx.test.ext:junit:1.1.2", {
+            exclude(group="com.google.guava", module="listenablefuture")
+        })
       }
     }
 
@@ -60,7 +66,9 @@ kotlin {
 
     sourceSets.getByName("commonMain") {
         dependencies {
-            implementation("com.google.guava:guava:19.0")
+            implementation("com.google.guava:guava:19.0", {
+                exclude(group="com.google.guava", module="listenablefuture")
+            })
         }
     }
 }

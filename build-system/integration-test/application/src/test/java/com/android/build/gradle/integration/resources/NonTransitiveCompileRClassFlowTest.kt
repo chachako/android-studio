@@ -44,7 +44,7 @@ class NonTransitiveCompileRClassFlowTest {
             """package com.example.lib1;
                     public class Example {
                         public static final int LIB1_STRING = R.string.lib1String;
-                        public static final int SUPPORT_LIB_STRING = android.support.design.R.string.appbar_scrolling_view_behavior;
+                        public static final int SUPPORT_LIB_STRING = com.google.android.material.R.string.appbar_scrolling_view_behavior;
                     }"""
         )
 
@@ -63,7 +63,7 @@ class NonTransitiveCompileRClassFlowTest {
                     public class Example {
                         public static final int LIB2_STRING = R.string.lib2String;
                         public static final int LIB1_STRING = com.example.lib1.R.string.lib1String;
-                        public static final int SUPPORT_LIB_STRING = android.support.design.R.string.appbar_scrolling_view_behavior;
+                        public static final int SUPPORT_LIB_STRING = com.google.android.material.R.string.appbar_scrolling_view_behavior;
                     }"""
         )
 
@@ -90,13 +90,17 @@ class NonTransitiveCompileRClassFlowTest {
             .subproject(":lib1", lib1)
             .subproject(":lib2", lib2)
             .subproject(":app", app)
-            .dependency(lib1, "com.android.support:design:$SUPPORT_LIB_VERSION")
+            .dependency(lib1, "com.google.android.material:material:1.9.0")
             .dependency(lib2, lib1)
             .dependency(app, lib2)
             .build()
 
     @get:Rule
-    val project = GradleTestProject.builder().fromTestApp(testApp).create()
+    val project = GradleTestProject.builder().fromTestApp(testApp)
+        .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+        // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+        .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+        .create()
 
     @Test
     fun runtimeRClassFlowTestWithNonTransitive() {

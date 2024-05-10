@@ -66,10 +66,10 @@ public class DataBindingIntegrationTestAppsConnectedTest {
             // b/177370256
             // params.add(new Object[] {"ViewBindingTestApp", useAndroidX});
 
-            params.add(new Object[] {"AppWithDataBindingInTests", useAndroidX});
             params.add(new Object[] {"ProguardedAppWithTest", useAndroidX});
             params.add(new Object[] {"IndependentLibrary", useAndroidX});
         }
+        params.add(new Object[] {"AppWithDataBindingInTests", true});
         params.add(new Object[] {"KotlinTestApp", true});
         params.add(new Object[] {"ViewBindingWithDataBindingTestApp", true});
         // b/177370256 Support version works fine
@@ -105,6 +105,7 @@ public class DataBindingIntegrationTestAppsConnectedTest {
                 .with(
                         BooleanOption.USE_NON_FINAL_RES_IDS,
                         !"ProguardedAppWithTest".equals(projectName))
+                .with(BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES, false)
                 .run("connectedCheck");
     }
 }

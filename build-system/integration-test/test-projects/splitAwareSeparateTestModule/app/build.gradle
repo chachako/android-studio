@@ -25,8 +25,8 @@ android {
 
   dependencies {
     implementation 'junit:junit:4.12'
-    implementation "com.android.support.test:runner:${project.testSupportLibVersion}"
-    implementation "com.android.support.test:rules:${project.testSupportLibVersion}"
+    implementation "androidx.test:runner:1.4.0-alpha06"
+    implementation "androidx.test:rules:1.4.0-alpha06"
   }
 }
 

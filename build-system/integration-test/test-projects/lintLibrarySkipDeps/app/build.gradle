@@ -28,7 +28,9 @@ android {
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    api "com.android.support:appcompat-v7:${libs.versions.supportLibVersion.get()}"
+    api('androidx.appcompat:appcompat:1.6.1', {
+        exclude group: 'com.google.guava', module: 'listenablefuture'
+    })
     testImplementation 'junit:junit:4.12'
     api project(':javalib')
     api project(':mylibrary')

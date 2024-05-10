@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.connected.library
 
+import com.android.build.gradle.integration.common.fixture.ANDROIDX_TEST_ESPRESSO_ESPRESSO_CORE_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProjectBuilder
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.connected.utils.getEmulator
@@ -56,7 +57,9 @@ class KotlinMultiplatformAndroidConnectedTest {
             """
                 kotlin.sourceSets.getByName("androidInstrumentedTest").dependencies {
                     implementation("androidx.core:core-ktx:1.1.0")
-                    implementation("androidx.test.espresso:espresso-core:3.2.0")
+                    implementation("androidx.test.espresso:espresso-core:$ANDROIDX_TEST_ESPRESSO_ESPRESSO_CORE_VERSION", {
+                        exclude(group="com.google.guava", module="listenablefuture")
+                    })
                 }
             """.trimIndent()
         )

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.resources
 
+import com.android.build.gradle.integration.common.fixture.COM_GOOGLE_ANDROID_MATERIAL_MATERIAL_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
@@ -41,7 +42,7 @@ class CompileRClassFlowTest {
             """package com.example.lib1;
                     public class Example {
                         public static final int LIB1_STRING = R.string.lib1String;
-                        public static final int SUPPORT_LIB_STRING = android.support.design.R.string.appbar_scrolling_view_behavior;
+                        public static final int SUPPORT_LIB_STRING = com.google.android.material.R.string.appbar_scrolling_view_behavior;
                     }"""
         )
 
@@ -58,7 +59,7 @@ class CompileRClassFlowTest {
                     public class Example {
                         public static final int LIB2_STRING = R.string.lib2String;
                         public static final int LIB1_STRING = com.example.lib1.R.string.lib1String;
-                        public static final int SUPPORT_LIB_STRING = android.support.design.R.string.appbar_scrolling_view_behavior;
+                        public static final int SUPPORT_LIB_STRING = com.google.android.material.R.string.appbar_scrolling_view_behavior;
                     }"""
         )
 
@@ -88,7 +89,7 @@ class CompileRClassFlowTest {
             .subproject(":lib1", lib1)
             .subproject(":lib2", lib2)
             .subproject(":app", app)
-            .dependency(lib1, "com.android.support:design:$SUPPORT_LIB_VERSION")
+            .dependency(lib1, "com.google.android.material:material:$COM_GOOGLE_ANDROID_MATERIAL_MATERIAL_VERSION")
             .dependency(lib2, lib1)
             .dependency(app, lib2)
             .build()
@@ -113,9 +114,10 @@ class CompileRClassFlowTest {
         val result = project.executor()
                 .expectFailure()
                 .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
+            .with(BooleanOption.USE_ANDROID_X, true)
             .run(tasks)
         assertThat(result.stderr)
-            .contains("public static final int SUPPORT_LIB_STRING = android.support.design.R.string.appbar_scrolling_view_behavior;\n")
+            .contains("public static final int SUPPORT_LIB_STRING = com.google.android.material.R.string.appbar_scrolling_view_behavior;\n")
 
         // Given an updated project where the library on to the compile classpath:
         // (Done by having an 'api' rather than 'implementation' dependency in lib1, so lib2
@@ -129,12 +131,14 @@ class CompileRClassFlowTest {
         // then the build should succeed:
         project.executor()
                 .with(BooleanOption.USE_NON_FINAL_RES_IDS, false)
+                .with(BooleanOption.USE_ANDROID_X, true)
                 .run(tasks)
 
         // Ids should be used as constants though
         val result2 = project.executor()
                 .expectFailure()
                 .with(BooleanOption.USE_NON_FINAL_RES_IDS, true)
+                .with(BooleanOption.USE_ANDROID_X, true)
                 .run(tasks)
         assertThat(result2.stderr)
                 .contains("Example.java:10: error: constant expression required")
@@ -159,6 +163,7 @@ class CompileRClassFlowTest {
         // Non-constant use should be OK though
         project.executor()
                 .with(BooleanOption.USE_NON_FINAL_RES_IDS, true)
+                .with(BooleanOption.USE_ANDROID_X, true)
                 .run(tasks)
 
     }

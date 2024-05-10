@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.resources
 
+import com.android.build.gradle.integration.common.fixture.ANDROIDX_APPCOMPAT_APPCOMPAT_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.TEST_SUPPORT_LIB_VERSION
@@ -32,7 +33,7 @@ class NonNamespacedApplicationLightRClassesTest {
         .appendToBuild(
             """
                 dependencies {
-                    implementation 'com.android.support:appcompat-v7:$SUPPORT_LIB_VERSION'
+                    implementation 'androidx.appcompat:appcompat:$ANDROIDX_APPCOMPAT_APPCOMPAT_VERSION'
                 }
                 """
         )
@@ -46,7 +47,7 @@ class NonNamespacedApplicationLightRClassesTest {
             """package com.example.lib;
                     public class Example {
                         public static int LOCAL_RES = R.string.lib_string;
-                        public static int DEP_RES = android.support.v7.appcompat.R.attr.actionBarDivider;
+                        public static int DEP_RES = androidx.appcompat.R.attr.actionBarDivider;
                     }
                     """)
 
@@ -72,7 +73,7 @@ class NonNamespacedApplicationLightRClassesTest {
                     public class Example {
                         public static int LOCAL_RES = R.string.app_string;
                         public static int LIB_RES = com.example.lib.R.string.lib_string;
-                        public static int DEP_RES = android.support.v7.appcompat.R.attr.actionBarDivider;
+                        public static int DEP_RES = androidx.appcompat.R.attr.actionBarDivider;
 
                         public int test(int resId) {
                             switch(resId) {
@@ -101,7 +102,7 @@ class NonNamespacedApplicationLightRClassesTest {
                             int LOCAL_RES = com.example.app.test.R.string.test_app_string;
                             int APP_RES = R.string.app_string;
                             int LIB_RES = com.example.lib.R.string.lib_string;
-                            int DEP_RES = android.support.v7.appcompat.R.attr.actionBarDivider;
+                            int DEP_RES = androidx.appcompat.R.attr.actionBarDivider;
                         }
                     }
                     """)
@@ -121,7 +122,11 @@ class NonNamespacedApplicationLightRClassesTest {
             .build()
 
     @get:Rule
-    val project = GradleTestProject.builder().fromTestApp(testApp).create()
+    val project = GradleTestProject.builder().fromTestApp(testApp)
+        .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+        // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+        .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+        .create()
 
     @Test
     fun testResourcesCompiled() {

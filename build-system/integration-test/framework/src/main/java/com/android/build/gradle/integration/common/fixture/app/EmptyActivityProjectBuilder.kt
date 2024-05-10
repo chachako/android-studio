@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.common.fixture.app
 
+import com.android.build.gradle.integration.common.fixture.ANDROIDX_APPCOMPAT_APPCOMPAT_VERSION
 import com.android.build.gradle.integration.common.fixture.ANDROIDX_CONSTRAINT_LAYOUT_VERSION
 import com.android.build.gradle.integration.common.fixture.ANDROIDX_VERSION
 import com.android.build.gradle.integration.common.fixture.BaseGradleExecutor
@@ -126,7 +127,7 @@ class EmptyActivityProjectBuilder {
                     addDependency(dependency = "project(\"${it.path}\")")
                 }
                 addDependency(
-                    dependency = "'androidx.appcompat:appcompat:1.6.1'"
+                    dependency = "'androidx.appcompat:appcompat:$ANDROIDX_APPCOMPAT_APPCOMPAT_VERSION'"
                 )
                 addDependency(
                     dependency = "'androidx.constraintlayout:constraintlayout:" +

@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.integration.resources
 
+import com.android.build.gradle.integration.common.fixture.ANDROIDX_APPCOMPAT_APPCOMPAT_VERSION
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
@@ -54,7 +55,7 @@ class NamespacedApplicationLightRClassesTest {
             """package com.example.lib;
                     public class Example {
                         public static int LOCAL_RES = R.string.lib_string;
-                        public static int DEP_RES = android.support.v7.appcompat.R.attr.actionBarDivider;
+                        public static int DEP_RES = androidx.appcompat.R.attr.actionBarDivider;
                     }
                     """)
 
@@ -71,7 +72,7 @@ class NamespacedApplicationLightRClassesTest {
                     public class Example {
                         public static int LOCAL_RES = R.string.app_string;
                         public static int LIB_RES = com.example.lib.R.string.lib_string;
-                        public static int DEP_RES = android.support.v7.appcompat.R.attr.actionBarDivider;
+                        public static int DEP_RES = androidx.appcompat.R.attr.actionBarDivider;
                     }
                     """)
 
@@ -80,12 +81,16 @@ class NamespacedApplicationLightRClassesTest {
             .subproject(":lib", lib)
             .subproject(":app", app)
             .dependency(app, lib)
-            .dependency(app, "com.android.support:appcompat-v7:$SUPPORT_LIB_VERSION")
-            .dependency(lib, "com.android.support:appcompat-v7:$SUPPORT_LIB_VERSION")
+            .dependency(app, "androidx.appcompat:appcompat:$ANDROIDX_APPCOMPAT_APPCOMPAT_VERSION")
+            .dependency(lib, "androidx.appcompat:appcompat:$ANDROIDX_APPCOMPAT_APPCOMPAT_VERSION")
             .build()
 
     @get:Rule
-    val project = GradleTestProject.builder().fromTestApp(testApp).create()
+    val project = GradleTestProject.builder().fromTestApp(testApp)
+        .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+        // Enforcing unique package names to prevent regressions. Remove when b/116109681 fixed.
+        .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=true")
+        .create()
 
     @Test
     fun testResourcesCompiled() {

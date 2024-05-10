@@ -34,6 +34,8 @@ class AutoNamespaceTest {
     @get:Rule
     val project = GradleTestProject.builder()
         .fromTestProject("namespacedApp")
+        .addGradleProperties("${BooleanOption.USE_ANDROID_X.propertyName}=true")
+        .addGradleProperties("${BooleanOption.ENFORCE_UNIQUE_PACKAGE_NAMES.propertyName}=false")
         .create()
 
     @Test
