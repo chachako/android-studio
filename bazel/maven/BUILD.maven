@@ -13084,6 +13084,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.collection.collection-ktx_1.4.0",
+    pom = "repository/androidx/collection/collection-ktx/1.4.0/collection-ktx-1.4.0.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/collection/collection-ktx/1.4.0",
+    deps = [
+        "androidx.collection.collection-jvm_1.4.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.collection.collection_1.0.0",
     pom = "repository/androidx/collection/collection/1.0.0/collection-1.0.0.pom",
     repo_root_path = "repository",
@@ -16671,6 +16682,27 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.compose.ui.ui-tooling-android_1.6.5",
+    pom = "repository/androidx/compose/ui/ui-tooling-android/1.6.5/ui-tooling-android-1.6.5.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/ui/ui-tooling-android/1.6.5",
+    deps = [
+        "androidx.activity.activity-compose_1.7.0",
+        "androidx.annotation.annotation_1.1.0",
+        "androidx.compose.animation.animation-android_1.6.5",
+        "androidx.compose.material.material_1.0.0",
+        "androidx.compose.runtime.runtime-android_1.6.5",
+        "androidx.compose.ui.ui_1.6.5",
+        "androidx.compose.ui.ui-tooling-data_1.6.5",
+        "androidx.compose.ui.ui-tooling-preview_1.6.5",
+        "androidx.lifecycle.lifecycle-common_2.6.1",
+        "androidx.savedstate.savedstate-ktx_1.2.1",
+        "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.22",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.compose.ui.ui-tooling-android_1.5.0",
     pom = "repository/androidx/compose/ui/ui-tooling-android/1.5.0/ui-tooling-android-1.5.0.pom",
     repo_root_path = "repository",
@@ -16708,6 +16740,20 @@ maven_artifact(
         "androidx.lifecycle.lifecycle-common_2.6.1",
         "androidx.savedstate.savedstate-ktx_1.2.1",
         "org.jetbrains.kotlin.kotlin-stdlib-common_1.8.21",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.compose.ui.ui-tooling-data-android_1.6.5",
+    pom = "repository/androidx/compose/ui/ui-tooling-data-android/1.6.5/ui-tooling-data-android-1.6.5.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/ui/ui-tooling-data-android/1.6.5",
+    deps = [
+        "androidx.annotation.annotation_1.1.0",
+        "androidx.compose.runtime.runtime-android_1.6.5",
+        "androidx.compose.ui.ui_1.6.5",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
     ],
     visibility = ["//visibility:public"],
 )
@@ -16817,6 +16863,19 @@ maven_artifact(
         "androidx.compose.runtime.runtime_1.5.0",
         "androidx.compose.ui.ui_1.5.0",
         "androidx.compose.ui.ui-tooling-data-android_1.5.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.compose.ui.ui-tooling-data_1.6.5",
+    pom = "repository/androidx/compose/ui/ui-tooling-data/1.6.5/ui-tooling-data-1.6.5.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/ui/ui-tooling-data/1.6.5",
+    deps = [
+        "androidx.compose.runtime.runtime_1.6.5",
+        "androidx.compose.ui.ui_1.6.5",
+        "androidx.compose.ui.ui-tooling-data-android_1.6.5",
     ],
     visibility = ["//visibility:public"],
 )
@@ -17054,6 +17113,21 @@ maven_artifact(
         "androidx.compose.ui.ui_1.5.0-beta01",
         "androidx.compose.ui.ui-tooling-data_1.5.0-beta01",
         "androidx.compose.ui.ui-tooling-preview_1.5.0-beta01",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "androidx.compose.ui.ui-tooling_1.6.5",
+    pom = "repository/androidx/compose/ui/ui-tooling/1.6.5/ui-tooling-1.6.5.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/compose/ui/ui-tooling/1.6.5",
+    deps = [
+        "androidx.compose.runtime.runtime_1.6.5",
+        "androidx.compose.ui.ui_1.6.5",
+        "androidx.compose.ui.ui-tooling-android_1.6.5",
+        "androidx.compose.ui.ui-tooling-data_1.6.5",
+        "androidx.compose.ui.ui-tooling-preview_1.6.5",
     ],
     visibility = ["//visibility:public"],
 )
@@ -44056,6 +44130,15 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.guava.guava_16.0.1",
+    pom = "repository/com/google/guava/guava/16.0.1/guava-16.0.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/guava/guava/16.0.1",
+    parent = "com.google.guava.guava-parent_16.0.1",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.guava.guava_17.0",
     pom = "repository/com/google/guava/guava/17.0/guava-17.0.pom",
     repo_root_path = "repository",
@@ -58840,6 +58923,14 @@ maven_artifact(
     pom = "repository/com/google/guava/guava-parent/15.0/guava-parent-15.0.pom",
     repo_root_path = "repository",
     repo_path = "com/google/guava/guava-parent/15.0",
+    parent = "org.sonatype.oss.oss-parent_7",
+)
+
+maven_artifact(
+    name = "com.google.guava.guava-parent_16.0.1",
+    pom = "repository/com/google/guava/guava-parent/16.0.1/guava-parent-16.0.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/guava/guava-parent/16.0.1",
     parent = "org.sonatype.oss.oss-parent_7",
 )
 

@@ -231,6 +231,7 @@ DATA = [
     "androidx.benchmark:benchmark-gradle-plugin:1.2.4",
     "androidx.cardview:cardview:1.0.0",
     "androidx.collection:collection:1.4.0",
+    "androidx.collection:collection-ktx:1.4.0",
     "androidx.compose.animation:animation:1.3.0",
     "androidx.compose.animation:animation:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.animation:animation-android:1.6.5",  # Compose Desktop Lint checks
@@ -287,6 +288,7 @@ DATA = [
     "androidx.compose.ui:ui-tooling:1.5.0",
     "androidx.compose.ui:ui-tooling:1.5.0-alpha04",
     "androidx.compose.ui:ui-tooling:1.5.0-beta01",  # Necessary for Compose for TV.
+    "androidx.compose.ui:ui-tooling:1.6.5",
     "androidx.compose.ui:ui-tooling-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-tooling-data-android:1.5.0-beta01",  # Necessary for Compose for TV.
     "androidx.compose.ui:ui-tooling-preview:1.5.0-beta01",  # Necessary for Compose for TV.
