@@ -20,6 +20,7 @@ import com.android.adblib.tools.debugging.AtomicStateFlow
 import com.android.adblib.tools.debugging.ExternalJdwpProcessPropertiesCollector
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.JdwpSessionProxyStatus
+import com.android.adblib.tools.debugging.mergeWith
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.StateFlow
@@ -45,7 +46,7 @@ internal class ExternalPropertiesCollectorHandler(
 
             localPropertiesStateFlow.update { localProperties ->
                 // merge external properties with local properties
-                val newProperties = localProperties.mergeWith(externalProperties)
+                val newProperties = localProperties.mergeWithRemote(externalProperties)
 
                 // Stop local property collector so that it does not hog a JDWP session
                 if (newProperties.completed) {
@@ -64,7 +65,7 @@ internal class ExternalPropertiesCollectorHandler(
      * only if the destination field value is the "default" value of that field, i.e. this method
      * does not overwrite fields of [this] that are already initialized.
      */
-    private fun JdwpProcessProperties.mergeWith(other: JdwpProcessProperties): JdwpProcessProperties {
+    private fun JdwpProcessProperties.mergeWithRemote(other: JdwpProcessProperties): JdwpProcessProperties {
         // Special case: If the external collector tells us the process is waiting for
         // a debugger to connect, we need to use the socket address/port of that collector
         // locally, because that is the only valid address/port that can be used to
@@ -91,41 +92,9 @@ internal class ExternalPropertiesCollectorHandler(
             jdwpSessionProxyStatus = localProxyStatusStateFlow.value
         }
 
-        @Suppress("DEPRECATION")
-        return copy(
-            processName = other.processName.mergeWith(processName),
-            userId = other.userId.mergeWith(userId),
-            packageName = other.packageName.mergeWith(packageName),
-            vmIdentifier = other.vmIdentifier.mergeWith(vmIdentifier),
-            abi = other.abi.mergeWith(abi),
-            jvmFlags = other.jvmFlags.mergeWith(jvmFlags),
-            isNativeDebuggable = other.isNativeDebuggable.mergeWith(isNativeDebuggable),
-            waitCommandReceived = other.waitCommandReceived.mergeWith(waitCommandReceived),
-            features = other.features.mergeWith(features),
-            completed = other.completed.mergeWith(completed),
-            exception = other.exception.mergeWith(exception),
+        return this.mergeWith(other).copy(
             isWaitingForDebugger = isWaitingForDebugger,
-            jdwpSessionProxyStatus = jdwpSessionProxyStatus,
+            jdwpSessionProxyStatus = jdwpSessionProxyStatus
         )
-    }
-
-    private fun String?.mergeWith(other: String?): String? {
-        return this ?: other
-    }
-
-    private fun Throwable?.mergeWith(other: Throwable?): Throwable? {
-        return this ?: other
-    }
-
-    private fun Int?.mergeWith(other: Int?): Int? {
-        return this ?: other
-    }
-
-    private fun Boolean.mergeWith(other: Boolean): Boolean {
-        return if (this) true else other
-    }
-
-    private fun List<String>.mergeWith(other: List<String>): List<String> {
-        return this.ifEmpty { other }
     }
 }

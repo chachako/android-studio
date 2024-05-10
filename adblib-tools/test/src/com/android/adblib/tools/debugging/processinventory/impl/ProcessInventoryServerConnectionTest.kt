@@ -33,6 +33,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import org.junit.Assert
@@ -47,6 +48,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent.CopyOnWriteArrayList
 
 class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
+
 
     @Test
     fun testProcessListIsEmptyWhenStarting(): Unit = CoroutineTestUtils.runBlockingWithTimeout {
@@ -112,11 +114,11 @@ class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
         val device = waitForOnlineConnectedDevice(session, deviceState.deviceId)
 
         // Act
-        val processList = CopyOnWriteArrayList<List<JdwpProcessProperties>>()
+        val processListSnapshots = CopyOnWriteArrayList<List<JdwpProcessProperties>>()
         val job = async {
             serverConnection.withConnectionForDevice(device) {
                 processListStateFlow.collect {
-                    processList.add(it)
+                    processListSnapshots.add(it)
                 }
             }
         }
@@ -140,11 +142,18 @@ class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
             sendProcessProperties(localProperties)
         }
 
-        yieldUntil { processList.isNotEmpty() && processList.last().size == 1 }
+        yieldUntil {
+            processListSnapshots.run {
+                isNotEmpty() &&
+                        last().size == 1 &&
+                        last().first().completed &&
+                        last().first().isWaitingForDebugger
+            }
+        }
         job.cancel()
 
         // Assert
-        val lastList = processList.last()
+        val lastList = processListSnapshots.last()
         assertEquals(1, lastList.size)
         assertEquals(localProperties, lastList[0])
     }
@@ -162,11 +171,11 @@ class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
         val device = waitForOnlineConnectedDevice(session, deviceState.deviceId)
 
         // Act
-        val processList = CopyOnWriteArrayList<List<JdwpProcessProperties>>()
+        val processListSnapshots = CopyOnWriteArrayList<List<JdwpProcessProperties>>()
         val job = async {
             serverConnection.withConnectionForDevice(device) {
                 processListStateFlow.collect {
-                    processList.add(it)
+                    processListSnapshots.add(it)
                 }
             }
         }
@@ -194,11 +203,18 @@ class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
             sendProcessProperties(localProperties)
         }
 
-        yieldUntil { processList.isNotEmpty() && processList.last().size == 1 }
+        yieldUntil {
+            processListSnapshots.run {
+                isNotEmpty() &&
+                        last().size == 1 &&
+                        last().first().completed &&
+                        last().first().jdwpSessionProxyStatus.isExternalDebuggerAttached
+            }
+        }
         job.cancel()
 
         // Assert
-        val lastList = processList.last()
+        val lastList = processListSnapshots.last()
         val localPropertiesWithoutProxySocketAddress = localProperties.copy(
             jdwpSessionProxyStatus = JdwpSessionProxyStatus(
                 socketAddress = null,
@@ -222,11 +238,11 @@ class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
         val device = waitForOnlineConnectedDevice(session, deviceState.deviceId)
 
         // Act
-        val processList = CopyOnWriteArrayList<List<JdwpProcessProperties>>()
+        val processListSnapshots = CopyOnWriteArrayList<List<JdwpProcessProperties>>()
         val job = async {
             serverConnection.withConnectionForDevice(device) {
                 processListStateFlow.collect {
-                    processList.add(it)
+                    processListSnapshots.add(it)
                 }
             }
         }
@@ -248,17 +264,24 @@ class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
             isWaitingForDebugger = true,
             features = listOf("feat1", "feat2"),
             completed = true,
-            exception = null //Exception("Cancelled")
+            exception = null
         )
         serverConnection.withConnectionForDevice(device) {
             sendProcessProperties(localProperties)
         }
 
-        yieldUntil { processList.isNotEmpty() && processList.last().size == 1 }
+        yieldUntil {
+            processListSnapshots.run {
+                isNotEmpty() &&
+                        last().size == 1 &&
+                        last().first().completed &&
+                        last().first().jdwpSessionProxyStatus.socketAddress != null
+            }
+        }
         job.cancel()
 
         // Assert
-        val lastList = processList.last()
+        val lastList = processListSnapshots.last()
         assertEquals(1, lastList.size)
         assertEquals(localProperties, lastList[0])
     }
@@ -276,11 +299,11 @@ class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
         val device = waitForOnlineConnectedDevice(session, deviceState.deviceId)
 
         // Act
-        val processList = CopyOnWriteArrayList<List<JdwpProcessProperties>>()
+        val processListSnapshots = CopyOnWriteArrayList<List<JdwpProcessProperties>>()
         val job = async {
             serverConnection.withConnectionForDevice(device) {
                 processListStateFlow.collect {
-                    processList.add(it)
+                    processListSnapshots.add(it)
                 }
             }
         }
@@ -291,12 +314,12 @@ class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
         }
 
         yieldUntil {
-            processList.isNotEmpty() && processList.last().size == 3
+            processListSnapshots.isNotEmpty() && processListSnapshots.last().size == 3
         }
         job.cancel()
 
         // Assert
-        val lastList = processList.last()
+        val lastList = processListSnapshots.last()
         assertEquals(3, lastList.size)
         assertNotNull(lastList.firstOrNull { it.pid == 10 })
         assertNotNull(lastList.firstOrNull { it.pid == 11 })
@@ -758,19 +781,22 @@ class ProcessInventoryServerConnectionTest : AdbLibToolsTestBase() {
         }
 
         return waitNonNull {
-            // Check all state flow contain a `JdwpProperties` instance that match the predicate
-            val allDone = processListFlows.map { stateFlow ->
-                stateFlow.value
-            }.all { propertiesList ->
-                propertiesList.firstOrNull {
-                    predicate(it)
-                } != null
-            }
-            if (!allDone) {
-                null
-            } else {
+            coroutineScope {
+                // Wait for all flows of lists to have any element in their list
+                // matching `predicate`
+                val asyncLists = processListFlows.map { flow ->
+                    async {
+                        flow.first { list ->
+                            list.any {
+                                predicate(it)
+                            }
+                        }
+                    }
+                }
+                val lists = asyncLists.awaitAll()
+
                 // Return the first one (this should always succeed given `allDone` is `true`)
-                processListFlows.first().value.first { predicate(it) }
+                lists.first().first { predicate(it) }
             }
         }
     }

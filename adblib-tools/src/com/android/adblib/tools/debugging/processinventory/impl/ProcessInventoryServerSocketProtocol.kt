@@ -89,14 +89,26 @@ internal class ProcessInventoryServerSocketProtocol(
             deviceSerial: String,
             processInfo: ProcessInventoryServerProto.JdwpProcessInfo
         ): ProcessInventoryServerProto.Response {
-            return sendDeviceProcessInfoUpdates(deviceSerial, listOf(processInfo), emptyList())
+            return sendDeviceProcessInfoUpdates(deviceSerial, listOf(processInfo), emptyList(), emptyList())
+        }
+
+        /**
+         * Invokes the [ProcessInventoryServerProto.Request.UpdateDeviceRequestPayload] service
+         * on the server given a device [deviceSerial], returning a
+         * [ProcessInventoryServerProto.Response] with "ok" status.
+         */
+        suspend fun sendDeviceDebuggerProxyInfo(
+            deviceSerial: String,
+            debuggerProxyInfo: ProcessInventoryServerProto.JdwpProcessDebuggerProxyInfo
+        ): ProcessInventoryServerProto.Response {
+            return sendDeviceProcessInfoUpdates(deviceSerial, emptyList(), listOf(debuggerProxyInfo), emptyList())
         }
 
         suspend fun sendDeviceProcessInfoList(
             deviceSerial: String,
             processInfoUpdateList: List<ProcessInventoryServerProto.JdwpProcessInfo>,
         ): ProcessInventoryServerProto.Response {
-            return sendDeviceProcessInfoUpdates(deviceSerial, processInfoUpdateList, emptyList())
+            return sendDeviceProcessInfoUpdates(deviceSerial, processInfoUpdateList, emptyList(), emptyList())
         }
 
         /**
@@ -108,12 +120,13 @@ internal class ProcessInventoryServerSocketProtocol(
             deviceSerial: String,
             pid: Int
         ): ProcessInventoryServerProto.Response {
-            return sendDeviceProcessInfoUpdates(deviceSerial, emptyList(), listOf(pid))
+            return sendDeviceProcessInfoUpdates(deviceSerial, emptyList(), emptyList(), listOf(pid))
         }
 
-        private suspend fun sendDeviceProcessInfoUpdates(
+        suspend fun sendDeviceProcessInfoUpdates(
             deviceSerial: String,
             processInfoUpdateList: List<ProcessInventoryServerProto.JdwpProcessInfo>,
+            debuggerProxyInfoUpdateList: List<ProcessInventoryServerProto.JdwpProcessDebuggerProxyInfo>,
             removedProcessList: List<Int>
         ): ProcessInventoryServerProto.Response {
             val request = ProcessInventoryServerProto.Request
@@ -129,6 +142,10 @@ internal class ProcessInventoryServerSocketProtocol(
                                     processInfoUpdateList.map {
                                         ProcessInventoryServerProto.ProcessUpdate.newBuilder()
                                             .setProcessUpdated(it)
+                                            .build()
+                                    } + debuggerProxyInfoUpdateList.map {
+                                        ProcessInventoryServerProto.ProcessUpdate.newBuilder()
+                                            .setDebuggerProxyInfo(it)
                                             .build()
                                     } + removedProcessList.map {
                                         ProcessInventoryServerProto.ProcessUpdate.newBuilder()

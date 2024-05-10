@@ -25,9 +25,11 @@ import com.android.adblib.scope
 import com.android.adblib.serialNumber
 import com.android.adblib.tools.debugging.JdwpProcessProperties
 import com.android.adblib.tools.debugging.JdwpSessionProxyStatus
+import com.android.adblib.tools.debugging.mergeWith
 import com.android.adblib.tools.debugging.processinventory.AdbLibToolsProcessInventoryServerProperties
 import com.android.adblib.tools.debugging.processinventory.impl.ProcessInventoryServerConnection.ConnectionForDevice
 import com.android.adblib.tools.debugging.processinventory.protos.ProcessInventoryServerProto
+import com.android.adblib.tools.debugging.processinventory.protos.ProcessInventoryServerProto.ProcessUpdate
 import com.android.adblib.tools.debugging.processinventory.server.ProcessInventoryServer
 import com.android.adblib.tools.debugging.processinventory.server.ProcessInventoryServerConfiguration
 import com.android.adblib.tools.debugging.utils.logIOCompletionErrors
@@ -116,10 +118,10 @@ private class ProcessInventoryServerConnectionForDevice(
     private val logger = adbLogger(session)
         .withPrefix("${device.session} - $device - ${config.clientDescription} - ")
 
+    private val scope = device.scope.createChildScope(isSupervisor = true)
+
     private val processPropertiesListMutableStateFlow =
         MutableStateFlow<List<JdwpProcessProperties>>(emptyList())
-
-    private val scope = device.scope.createChildScope(isSupervisor = true)
 
     override val processListStateFlow = processPropertiesListMutableStateFlow.asStateFlow()
 
@@ -144,10 +146,14 @@ private class ProcessInventoryServerConnectionForDevice(
             logger.debug { "Sending process properties $properties on socket $socketChannel" }
             val protocolChannel = ProcessInventoryServerSocketProtocol(session, socketChannel)
                 .forClient(config.clientDescription)
-            val response =
-                protocolChannel.sendDeviceProcessInfo(
+
+            val processInfo = properties.toJdwpProcessInfoProto()
+            val debuggerProxyInfo = properties.toJdwpProcessDebuggerProxyInfoProto()
+            val response = protocolChannel.sendDeviceProcessInfoUpdates(
                     device.serialNumber,
-                    properties.toJdwpProcessInfoProto()
+                    listOf(processInfo),
+                    listOf(debuggerProxyInfo),
+                    emptyList()
                 )
             logger.debug { "Sent process properties: $response" }
         }
@@ -170,6 +176,8 @@ private class ProcessInventoryServerConnectionForDevice(
      * [JdwpProcessProperties].
      */
     private suspend fun trackProcessesFromServer() {
+        val processMap = mutableMapOf<Int, JdwpProcessProperties>()
+
         // Note: This is a long-running connection that should remain active as long
         // as the device is connected. If the server becomes unavailable, a new connection
         // is opened automatically (until the device is disconnected)
@@ -182,17 +190,22 @@ private class ProcessInventoryServerConnectionForDevice(
             // If a new server has just been started, send it the full list of known
             // processes
             if (newServerInstance) {
-                val currentList = processListStateFlow.value
+                val currentList = processMap.values
                 if (currentList.isNotEmpty()) {
                     logger.debug {
                         "New server has started, sending list of" +
                                 " ${currentList.size} know processes to socket $socketChannel"
                     }
-                    protocolChannel.sendDeviceProcessInfoList(
+                    protocolChannel.sendDeviceProcessInfoUpdates(
                         device.serialNumber,
-                        currentList.map {
+                        processInfoUpdateList = currentList.map {
                             it.toJdwpProcessInfoProto()
-                        })
+                        },
+                        debuggerProxyInfoUpdateList = currentList.map {
+                            it.toJdwpProcessDebuggerProxyInfoProto()
+                        },
+                        removedProcessList = emptyList()
+                    )
                 }
             }
 
@@ -203,46 +216,77 @@ private class ProcessInventoryServerConnectionForDevice(
                 } else {
                     null
                 }
-            }.collect { updates ->
-                val updated = mutableListOf<JdwpProcessProperties>()
-                val removed = mutableSetOf<Int>()
-
-                updates.processUpdateList.forEach { update ->
-                    if (update.hasProcessUpdated()) {
-                        val properties = update.processUpdated.toJdwpProcessProperties()
-                        logger.debug { "Process ${properties.pid} has been updated: $properties" }
-                        updated.add(properties)
-                    } else if (update.hasProcessTerminatedPid()) {
-                        val pid = update.processTerminatedPid
-                        logger.debug { "Process $pid has exited" }
-                        removed.add(pid)
-                    }
-                }
-
-                // Create a new list (i.e. map) with "updated" processes,
-                // excluding the "removed" items
-                val newMap = mutableMapOf<Int, JdwpProcessProperties>()
-                processPropertiesListMutableStateFlow.value
-                    .filter {
-                        !removed.contains(it.pid)
-                    }.forEach {
-                        newMap[it.pid] = it
-                    }
-                updated.forEach { processProperties ->
-                    newMap[processProperties.pid] = processProperties
-                }
-
-                newMap.values.sortedBy { it.pid }.also { newList ->
-                    logger.debug { "Updating process properties flow to ${newList.size} items" }
-                    logger.verbose { "New properties list: $newList" }
-
-                    // Only update if `close` has not been called, since we don't want to overwrite
-                    // the `closed` state (i.e. empty list)
-                    scope.ensureActive()
-                    processPropertiesListMutableStateFlow.value = newList
+            }.collect { processUpdates ->
+                processUpdates.processUpdateList.forEach { processUpdate ->
+                    applyProcessUpdate(processMap, processUpdate)
                 }
             }
         }
+    }
+
+    private fun applyProcessUpdate(
+        processMap: MutableMap<Int, JdwpProcessProperties>,
+        update: ProcessUpdate
+    ) {
+        when {
+            update.hasProcessUpdated() -> {
+                // We got a new set of process properties, merge them into our current ones
+                val processInfo = update.processUpdated
+                logger.debug { "Process ${processInfo.pid} has been updated: $processInfo" }
+
+                processMap.updateProcess(processInfo.pid) { currentProperties ->
+                    currentProperties.mergeWith(processInfo.toJdwpProcessProperties())
+                }
+            }
+
+            update.hasDebuggerProxyInfo() -> {
+                val debuggerProxyInfo = update.debuggerProxyInfo
+                logger.debug { "Debugger proxy for process ${debuggerProxyInfo.pid} has been updated: $debuggerProxyInfo" }
+
+                processMap.updateProcess(debuggerProxyInfo.pid) { currentProperties ->
+                    currentProperties.mergeWith(debuggerProxyInfo)
+                }
+            }
+
+            update.hasProcessTerminatedPid() -> {
+                val pid = update.processTerminatedPid
+                logger.debug { "Process $pid has exited" }
+
+                processMap.remove(pid)
+            }
+        }
+
+        // Only update if `close` has not been called, since we don't want to overwrite
+        // the `closed` state (i.e. empty list)
+        scope.ensureActive()
+        processPropertiesListMutableStateFlow.value = processMap.values.toList()
+    }
+
+    private fun MutableMap<Int, JdwpProcessProperties>.updateProcess(
+        pid: Int,
+        update: (JdwpProcessProperties) -> JdwpProcessProperties
+    ) {
+        this[pid] = update(this.computeIfAbsent(pid) { JdwpProcessProperties(it) })
+    }
+
+    private fun JdwpProcessProperties.mergeWith(
+        proxyInfo: ProcessInventoryServerProto.JdwpProcessDebuggerProxyInfo
+    ): JdwpProcessProperties {
+        val source = this
+        return copy(
+            isWaitingForDebugger = if (proxyInfo.hasWaitingForDebugger()) proxyInfo.waitingForDebugger else source.isWaitingForDebugger,
+            jdwpSessionProxyStatus = source.jdwpSessionProxyStatus.mergeWith(proxyInfo)
+        )
+    }
+
+    private fun JdwpSessionProxyStatus.mergeWith(
+        proxyInfo: ProcessInventoryServerProto.JdwpProcessDebuggerProxyInfo
+    ): JdwpSessionProxyStatus {
+        val source = this
+        return JdwpSessionProxyStatus(
+            isExternalDebuggerAttached = if (proxyInfo.hasIsExternalDebuggerAttached()) proxyInfo.isExternalDebuggerAttached else source.isExternalDebuggerAttached,
+            socketAddress = if (proxyInfo.hasSocketAddress()) proxyInfo.socketAddress.toInetSocketAddress() else source.socketAddress
+        )
     }
 
     /**
@@ -253,6 +297,8 @@ private class ProcessInventoryServerConnectionForDevice(
         val source = this
         return JdwpProcessProperties(
             pid = source.pid,
+            completed = if (source.completed) source.completed else false,
+            exception = if (source.hasCompletedException()) source.completedException.toThrowable() else null,
             processName = if (source.hasProcessName()) source.processName else null,
             packageName = if (source.hasPackageName()) source.packageName else null,
             userId = if (source.hasUserId()) source.userId else null,
@@ -262,10 +308,6 @@ private class ProcessInventoryServerConnectionForDevice(
             isNativeDebuggable = if (source.hasNativeDebuggable()) source.nativeDebuggable else false,
             waitCommandReceived = if (source.hasWaitPacketReceived()) source.waitPacketReceived else false,
             features = if (source.hasFeatures()) source.features.featureList else emptyList(),
-            completed = if (source.hasCollectionStatus()) source.collectionStatus.completed else false,
-            exception = if (source.hasCollectionStatus() && source.collectionStatus.hasException()) source.collectionStatus.exception.toThrowable() else null,
-            isWaitingForDebugger = if (source.hasExternalDebuggerStatus()) source.externalDebuggerStatus.waitingForDebugger else false,
-            jdwpSessionProxyStatus = if (source.hasExternalDebuggerStatus()) source.externalDebuggerStatus.toJdwpSessionProxyStatus() else JdwpSessionProxyStatus()
         )
     }
 
@@ -275,40 +317,12 @@ private class ProcessInventoryServerConnectionForDevice(
      */
     private fun JdwpProcessProperties.toJdwpProcessInfoProto(): ProcessInventoryServerProto.JdwpProcessInfo {
         val source = this
-
-        val collectionStatus = ProcessInventoryServerProto.JdwpProcessInfo.CollectionStatus
-            .newBuilder()
-            .also { proto ->
-                source.completed.also { proto.completed = it }
-                source.exception?.also { proto.exception = it.toExceptionProto() }
-            }
-
-        val debuggerStatus = ProcessInventoryServerProto.JdwpProcessInfo.JavaDebuggerStatus
-            .newBuilder()
-            .also { proto ->
-                source.isWaitingForDebugger.also { proto.waitingForDebugger = it }
-                source.jdwpSessionProxyStatus.isExternalDebuggerAttached.also {
-                    proto.debuggerIsAttached =
-                        it
-                }
-                // We send the proxy address only if we are in the "waiting for debugger" state
-                // as this is the only use case we need to expose our internal proxy externally
-                // for external instances to connect to (since the JDWP process is stuck in
-                // the "WAIT" state)
-                if (source.isWaitingForDebugger) {
-                    source.jdwpSessionProxyStatus.socketAddress?.also {
-                        proto.socketAddress =
-                            it.toInetSocketAddressProto()
-                    }
-                }
-            }
-
         return ProcessInventoryServerProto.JdwpProcessInfo
             .newBuilder()
             .also { proto ->
                 source.pid.also { proto.pid = it }
-                proto.setCollectionStatus(collectionStatus)
-                proto.setExternalDebuggerStatus(debuggerStatus)
+                source.completed.also { proto.completed = it }
+                source.exception?.also { proto.completedException = it.toExceptionProto() }
                 source.processName?.also { proto.processName = it }
                 source.packageName?.also { proto.packageName = it }
                 source.userId?.also { proto.userId = it }
@@ -324,6 +338,31 @@ private class ProcessInventoryServerConnectionForDevice(
                 }
             }
             .build()
+    }
+
+    /**
+     * Converts a [JdwpProcessProperties] from a local [JdwpProcessProperties] to a
+     * [ProcessInventoryServerProto.JdwpProcessDebuggerProxyInfo] for sending to the inventory server.
+     */
+    private fun JdwpProcessProperties.toJdwpProcessDebuggerProxyInfoProto(): ProcessInventoryServerProto.JdwpProcessDebuggerProxyInfo {
+        val source = this
+        return ProcessInventoryServerProto.JdwpProcessDebuggerProxyInfo
+            .newBuilder()
+            .also { proto ->
+                proto.pid = source.pid
+                proto.waitingForDebugger = source.isWaitingForDebugger
+                // We send the proxy address only if we are in the "waiting for debugger" state
+                // as this is the only use case we need to expose our internal proxy externally
+                // for external instances to connect to (since the JDWP process is stuck in
+                // the "WAIT" state)
+                if (source.isWaitingForDebugger) {
+                    source.jdwpSessionProxyStatus.socketAddress?.also {
+                        proto.socketAddress = it.toInetSocketAddressProto()
+                    }
+                }
+                proto.isExternalDebuggerAttached =
+                    source.jdwpSessionProxyStatus.isExternalDebuggerAttached
+            }.build()
     }
 
     private fun List<String>.toFeaturesProto(): ProcessInventoryServerProto.JdwpProcessInfo.Features {
@@ -413,13 +452,5 @@ private class ProcessInventoryServerConnectionForDevice(
                 proto.tcpPort = source.port
             }
             .build()
-    }
-
-    private fun ProcessInventoryServerProto.JdwpProcessInfo.JavaDebuggerStatus.toJdwpSessionProxyStatus(): JdwpSessionProxyStatus {
-        val sourceProto = this
-        return JdwpSessionProxyStatus(
-            socketAddress = if (sourceProto.hasSocketAddress()) sourceProto.socketAddress.toInetSocketAddress() else null,
-            isExternalDebuggerAttached = sourceProto.debuggerIsAttached,
-        )
     }
 }

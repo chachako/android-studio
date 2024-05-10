@@ -141,3 +141,52 @@ data class JdwpSessionProxyStatus(
      */
     val isExternalDebuggerAttached: Boolean = false,
 )
+
+internal fun JdwpProcessProperties.mergeWith(other: JdwpProcessProperties): JdwpProcessProperties {
+    val source = this
+    @Suppress("DEPRECATION")
+    return source.copy(
+        processName = source.processName.mergeWith(other.processName),
+        userId = source.userId.mergeWith(other.userId),
+        packageName = source.packageName.mergeWith(other.packageName),
+        vmIdentifier = source.vmIdentifier.mergeWith(other.vmIdentifier),
+        abi = source.abi.mergeWith(other.abi),
+        jvmFlags = source.jvmFlags.mergeWith(other.jvmFlags),
+        isNativeDebuggable = source.isNativeDebuggable.mergeWith(other.isNativeDebuggable),
+        waitCommandReceived = source.waitCommandReceived.mergeWith(other.waitCommandReceived),
+        features = source.features.mergeWith(other.features),
+        completed = source.completed.mergeWith(other.completed),
+        exception = source.exception.mergeWith(other.exception),
+        isWaitingForDebugger = source.isWaitingForDebugger.mergeWith(other.isWaitingForDebugger),
+        jdwpSessionProxyStatus = source.jdwpSessionProxyStatus.mergeWith(
+            other.jdwpSessionProxyStatus
+        ),
+    )
+}
+
+private fun JdwpSessionProxyStatus.mergeWith(other: JdwpSessionProxyStatus): JdwpSessionProxyStatus {
+    return JdwpSessionProxyStatus(
+        isExternalDebuggerAttached = this.isExternalDebuggerAttached.mergeWith(other.isExternalDebuggerAttached),
+        socketAddress = this.socketAddress ?: other.socketAddress
+    )
+}
+
+private fun String?.mergeWith(other: String?): String? {
+    return this ?: other
+}
+
+private fun Throwable?.mergeWith(other: Throwable?): Throwable? {
+    return this ?: other
+}
+
+private fun Int?.mergeWith(other: Int?): Int? {
+    return this ?: other
+}
+
+private fun Boolean.mergeWith(other: Boolean): Boolean {
+    return if (this) true else other
+}
+
+private fun List<String>.mergeWith(other: List<String>): List<String> {
+    return this.ifEmpty { other }
+}

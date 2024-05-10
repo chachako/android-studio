@@ -35,13 +35,13 @@ package adblib.tools.protos;
  * "Response" packets are sent to the socket until the socket closes.
  */
 message Request {
-    /**
+    /*
      * An arbitrary string describing/identifying the client making the request. This string
      * is only used for logging and diagnostics.
      */
     string client_description = 1;
 
-    /**
+    /*
      * The request payload, depending on the request [type]
      */
     oneof payload {
@@ -49,7 +49,7 @@ message Request {
         UpdateDeviceRequestPayload update_device_request_payload = 11;
     }
 
-    /**
+    /*
      * Ask the server to start emitting `TrackDeviceResponsePayload` responses as process updates
      * are sent to the server.
      */
@@ -57,7 +57,7 @@ message Request {
         DeviceId device_id = 1;
     }
 
-    /**
+    /*
      * Request to notify of updates to one or more processes, including "process termination"
      */
     message UpdateDeviceRequestPayload {
@@ -68,20 +68,20 @@ message Request {
 }
 
 message Response {
-    /**
+    /*
      * An arbitrary string describing/identifying the server instance, used only for logging and
      * diagnostic. The name is transient, i.e. a server restart may (a probably will) result in
      * a new value.
      */
     string server_description = 1;
 
-    /**
+    /*
      * Whether the request was successful, i.e. whether the [payload] field contains
      * the reply
      */
     bool ok = 2;
 
-    /**
+    /*
      * If [ok] is `false`, an optional error message
      */
     optional string error_message = 3;
@@ -91,7 +91,7 @@ message Response {
         UpdateDeviceResponsePayload update_device_response_payload = 12;
     }
 
-    /**
+    /*
      * The list of process changes since the last response was sent.
      *
      * Note: This response is sent multiple times until the connection is closed.
@@ -105,11 +105,11 @@ message Response {
     }
 }
 
-/**
+/*
  * A device identifier as stored in the 'ProcessInventoryServer'
  */
 message DeviceId {
-    /**
+    /*
      * An identifier of the ADB/adblib session used to distinguish between device
      * serial numbers on different ADB connections.
      *
@@ -118,7 +118,7 @@ message DeviceId {
      */
     string adb_session_id = 1;
 
-    /**
+    /*
      * The device serial number, identifying a device for a given adb_session_id
      */
     string serial_number = 2;
@@ -141,76 +141,130 @@ message ProcessUpdate {
         JdwpProcessInfo process_updated = 1;
         // A previously known process has exited
         int32 process_terminated_pid = 2;
+        // The JDWP debugger proxy status has changed
+        JdwpProcessDebuggerProxyInfo debugger_proxy_info = 3;
     }
 }
 
 message JdwpProcessInfo {
+    /*
+     * The JDWP process ID, always present
+     */
     int32 pid = 1;
-    CollectionStatus collection_status = 2;
-    JavaDebuggerStatus external_debugger_status = 3;
 
+    /*
+     * Whether all properties have been collected.
+     */
+    bool completed = 2;
+
+    /*
+     * Description of the last error encountered when collecting process properties, or `null`
+     * if no error occurred. Once [collection_completed] is `true`, this value never changes.
+     */
+    optional Exception completed_exception = 3;
+
+    /*
+     * The process name that uniquely identifies the process on the device, or `null` if the process
+     * name is not known (yet) due to debugger latency or an error connecting to the process and
+     * retrieving data about it.
+     *
+     * The process name is often equal to [packageName], except when a `android:process`
+     * process name entry is specified in the
+     * [AndroidManifest.xml](https://developer.android.com/guide/topics/manifest/application-element)
+     * file.
+     */
     optional string process_name = 4;
+
+    /*
+     * The package name of the process, or `null` if the value is not known yet or if the device
+     * does not support retrieving this information (R+ only)
+     */
     optional string package_name = 5;
+
+    /*
+     * The User ID this process is running in context of, or `null` if the value is not known yet or
+     * the device does not support retrieving this information (R+ only).
+     */
     optional int32 user_id = 6;
+
+    /*
+     * The ABI identifier, or `null` if the value is not known yet.
+     */
     optional string abi = 7;
+
+    /*
+     * The Android VM identifier, or `null` if the value is not known yet.
+     */
     optional string vm_identifier = 8;
+
+    /*
+     * The JVM flags, or `null` if the value is not known yet.
+     */
     optional string jvm_flags = 9;
+
+    /*
+     * Whether legacy native debugging is supported.
+     */
     optional bool native_debuggable = 10;
+
+    /*
+     * Whether the DDMS `WAIT` packet was received for this process.
+     * The default value is `false`. Once the value is `true`, it never changes back
+     * to `false`.
+     */
     optional bool wait_packet_received = 11;
-    optional Features features = 13;
 
-    message CollectionStatus {
-        /**
-         * Whether all properties have been collected.
-         */
-        bool completed = 1;
-
-        /**
-         * Description of the last error encountered when collecting process properties, or `null`
-         * if no error occurred. Once [collection_completed] is `true`, this value never changes.
-         */
-        Exception exception = 2;
-    }
-
-    message JavaDebuggerStatus {
-        /**
-         * Whether the JDWP session is currently open waiting for a Java Debugger
-         * to connect to the address specified in [socket_address].
-         *
-         * Typically, this value is `true` when a process a received a `WAIT` packet from
-         * from the Android platform, i.e. [wait_packet_received] is `true`. Usually, this
-         * is the result of starting a process with `am start -D`.
-         *
-         * Note the value is reset to `false` once a Java debugger has connected to
-         * the [socket_address] address, and never set to `true` again.
-         */
-        bool waiting_for_debugger = 1;
-
-        /**
-         * Whether a Java debugger is currently connected to [socket_address], i.e. whether
-         * a JDWP session is active for this JDWP process.
-         */
-        bool debugger_is_attached = 2;
-
-        /**
-         * The [InetSocketAddress] a Java debugger can connect to start a JDWP debugging session.
-         */
-        optional InetSocketAddress socket_address = 3;
-    }
+    /*
+     * List of features reported by the [DdmsFeatChunk] packet
+     */
+    optional Features features = 12;
 
     message Features {
         repeated string feature = 1;
     }
 }
 
-/**
+message JdwpProcessDebuggerProxyInfo {
+    /*
+     * The JDWP process ID, always present
+     */
+    int32 pid = 1;
+
+    /*
+     * Whether the JDWP session is currently open waiting for a Java Debugger
+     * to connect to the address specified in [socket_address].
+     *
+     * Typically, this value is `true` when a process a received a `WAIT` packet from
+     * from the Android platform, i.e. [wait_packet_received] is `true`. Usually, this
+     * is the result of starting a process with `am start -D`.
+     *
+     * Note the value is reset to `false` once a Java debugger has connected to
+     * the [socket_address] address, and never set to `true` again.
+     */
+    optional bool waiting_for_debugger = 2;
+
+    /*
+     * The [InetSocketAddress] a Java debugger can connect to start a JDWP debugging session.
+     * The field is only set when [waiting_for_debugger] is `true`, as it is the only case
+     * an existing JDWP session needs to be re-used via the proxy at this address. In other
+     * case, a new JDWP session can be opened by any adblib instance.
+     */
+    optional InetSocketAddress socket_address = 3;
+
+    /*
+     * Whether a Java debugger is currently connected to this JDWP proxy.
+     */
+    optional bool is_external_debugger_attached = 4;
+}
+
+/*
  * See https://docs.oracle.com/javase/8/docs/api/java/net/InetSocketAddress.html
  * See https://docs.oracle.com/javase/8/docs/api/java/net/InetAddress.html
  */
 message InetSocketAddress {
-    /** host name if known ('localhost' for local machine) */
+    /* host name if known ('localhost' for local machine) */
     optional string hostname = 1;
-    /** bytes of the IP address, either 4-bytes for ipv4 or 16-bytes for ipv6 */
+    /* bytes of the IP address, either 4-bytes for ipv4 or 16-bytes for ipv6 */
     bytes ip_address = 2;
     int32 tcp_port = 3;
 }
