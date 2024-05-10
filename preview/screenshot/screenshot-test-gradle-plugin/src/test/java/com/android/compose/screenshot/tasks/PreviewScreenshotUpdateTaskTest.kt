@@ -20,6 +20,7 @@ import com.android.testutils.MockitoKt.mock
 import com.android.compose.screenshot.services.AnalyticsService
 import com.android.tools.render.compose.ComposeRenderingResult
 import com.android.tools.render.compose.ComposeScreenshotResult
+import com.android.tools.render.compose.ScreenshotError
 import com.android.tools.render.compose.writeComposeRenderingResult
 import org.gradle.api.services.BuildServiceRegistry
 import org.gradle.testfixtures.ProjectBuilder
@@ -31,6 +32,8 @@ import org.mockito.Answers
 import org.mockito.Mockito.withSettings
 import java.nio.file.Files
 import java.nio.file.Paths
+import org.gradle.api.GradleException
+import kotlin.test.assertFailsWith
 
 class PreviewScreenshotUpdateTaskTest {
     @get:Rule
@@ -90,5 +93,32 @@ class PreviewScreenshotUpdateTaskTest {
 
         task.run()
         assert(referenceImageDir.listFiles().isEmpty())
+    }
+
+    @Test
+    fun testPreviewScreenshotUpdateWithErrors() {
+        val referenceImageDir = tempDirRule.newFolder("references")
+        val renderTaskOutputDir = tempDirRule.newFolder("rendered")
+        val resultsFile = tempDirRule.newFile("results.json")
+        val path1 = Paths.get(renderTaskOutputDir.absolutePath).resolve("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0.png")
+        val path2 = Paths.get(renderTaskOutputDir.absolutePath).resolve("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0.png")
+        val composeRenderingResult = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", path1.toString(), null ),
+            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0", path2.toString(), null ),
+            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1", null, ScreenshotError("ERROR", "MESSAGE", "STACK_TRACE", listOf(), listOf(), listOf())))
+        writeComposeRenderingResult(resultsFile.writer(), ComposeRenderingResult(null, composeRenderingResult))
+        Files.createFile(path1)
+        Files.createFile(path2)
+        task.referenceImageDir.set(referenceImageDir)
+        task.renderTaskOutputDir.set(renderTaskOutputDir)
+        task.renderTaskResultFile.set(resultsFile)
+        task.analyticsService.set(object: AnalyticsService() {
+            override val buildServiceRegistry: BuildServiceRegistry = mock(
+                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override fun getParameters(): Params = mock()
+        })
+        val composeScreenshot = composeRenderingResult[2]
+        assertFailsWith<GradleException>("Rendering failed for ${composeScreenshot.resultId}. Error: ${composeScreenshot.error!!.message}. Check ${resultsFile.absolutePath} for additional info") {
+        task.run()
+        }
     }
 }
