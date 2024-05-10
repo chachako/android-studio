@@ -38,8 +38,6 @@ import com.android.SdkConstants.SUPPRESS_ALL
 import com.android.SdkConstants.SUPPRESS_LINT
 import com.android.SdkConstants.TOOLS_URI
 import com.android.SdkConstants.VALUE_TRUE
-import com.android.ide.common.gradle.Dependency
-import com.android.ide.common.gradle.Version
 import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.resources.ResourceRepository
 import com.android.ide.common.resources.configuration.FolderConfiguration.QUALIFIER_SPLITTER
@@ -127,7 +125,6 @@ import java.util.Deque
 import java.util.EnumMap
 import java.util.EnumSet
 import java.util.IdentityHashMap
-import java.util.function.Predicate
 import java.util.regex.Pattern
 import kotlin.system.measureTimeMillis
 import org.codehaus.groovy.ast.ASTNode
@@ -3046,13 +3043,6 @@ class LintDriver(
 
     override fun getGeneratedResourceFolders(project: Project): List<File> {
       return delegate.getGeneratedResourceFolders(project)
-    }
-
-    override fun getHighestKnownVersion(
-      dependency: Dependency,
-      filter: Predicate<Version>?,
-    ): Version? {
-      return delegate.getHighestKnownVersion(dependency, filter)
     }
 
     override fun readBytes(resourcePath: PathString): ByteArray {

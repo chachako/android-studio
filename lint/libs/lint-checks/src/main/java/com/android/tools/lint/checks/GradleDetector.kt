@@ -1058,10 +1058,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
             newerVersion = newerVersion maxAgpOrNull findCachedNewerVersion(dependency, filter)
           }
 
-          // Compare with IDE's repository cache, if available.
-          newerVersion =
-            newerVersion maxAgpOrNull context.client.getHighestKnownVersion(dependency, filter)
-
           // Don't just offer the latest available version, but if that is more than
           // a micro-level different, and there is a newer micro version of the
           // version that the user is currently using, offer that one as well as it
@@ -1243,9 +1239,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
     // Compare with what's in the Gradle cache.
     newerVersion = newerVersion maxOrNull findCachedNewerVersion(dependency, filter)
-
-    // Compare with IDE's repository cache, if available.
-    newerVersion = newerVersion maxOrNull context.client.getHighestKnownVersion(dependency, filter)
 
     // If it's available in maven.google.com, fetch latest available version.
     newerVersion = newerVersion maxOrNull getGoogleMavenRepoVersion(context, dependency, filter)

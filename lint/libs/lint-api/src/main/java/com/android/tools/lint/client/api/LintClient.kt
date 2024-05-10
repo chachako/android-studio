@@ -32,10 +32,7 @@ import com.android.SdkConstants.LIBS_FOLDER
 import com.android.SdkConstants.PLATFORM_LINUX
 import com.android.SdkConstants.RES_FOLDER
 import com.android.SdkConstants.SRC_FOLDER
-import com.android.ide.common.gradle.Dependency
-import com.android.ide.common.gradle.Version
 import com.android.ide.common.repository.AgpVersion
-import com.android.ide.common.repository.GradleCoordinate
 import com.android.ide.common.resources.ResourceItem
 import com.android.ide.common.resources.ResourceRepository
 import com.android.ide.common.resources.configuration.FolderConfiguration
@@ -91,7 +88,6 @@ import java.net.URLConnection
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.util.Locale
-import java.util.function.Predicate
 import kotlin.math.max
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
@@ -1489,22 +1485,6 @@ abstract class LintClient {
   @Suppress("MemberVisibilityCanBePrivate")
   protected val sourceNodeCache: MutableMap<Node, Pair<File, out Node>> =
     Maps.newIdentityHashMap<Node, Pair<File, out Node>>()
-
-  @Suppress("DeprecatedCallableAddReplaceWith")
-  @Deprecated("Use the Dependency version")
-  open fun getHighestKnownVersion(
-    coordinate: GradleCoordinate,
-    filter: Predicate<Version>?,
-  ): Version? = getHighestKnownVersion(Dependency.parse(coordinate.toString()), filter)
-
-  /**
-   * Looks up the highest known version of the given library if possible, possibly applying the
-   * given [filter]
-   */
-  open fun getHighestKnownVersion(dependency: Dependency, filter: Predicate<Version>?): Version? {
-    // Overridden in Studio to consult SDK manager's cache
-    return null
-  }
 
   /**
    * For the given node from a merged manifest, find the corresponding source manifest node, if
