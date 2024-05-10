@@ -57,10 +57,10 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
 
     @TaskAction
     fun run() = analyticsService.get().recordTaskAction(path) {
-        FileUtils.cleanOutputDir(referenceImageDir.get().asFile)
-        //throw exception at the first encountered error
         val resultFile = renderTaskResultFile.get().asFile
         val results = readComposeRenderingResultJson(resultFile.reader()).screenshotResults
+        verifyRender(results)
+        FileUtils.cleanOutputDir(referenceImageDir.get().asFile)
         if (results.isNotEmpty()) {
             for (result in results) {
                 saveReferenceImage(result)
@@ -70,17 +70,24 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
         }
     }
 
-    private fun saveReferenceImage(composeScreenshot: ComposeScreenshotResult) {
-
-        val renderedFile = composeScreenshot.imagePath?.let{ File(it) }
-        if (composeScreenshot.error != null) {
-            if (renderedFile != null && renderedFile.exists()) {
-                logger.warn("Rendering preview ${composeScreenshot.resultId} encountered some problems: ${composeScreenshot.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
-            } else {
-                throw GradleException("Rendering failed for ${composeScreenshot.resultId}. Error: ${composeScreenshot.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
+    private fun verifyRender(results: List<ComposeScreenshotResult>) {
+        if (results.isNotEmpty()) {
+            for (result in results) {
+                if (result.imagePath == null || !File(result.imagePath).exists())
+                    throw GradleException("Cannot update reference images. Rendering failed for ${result.resultId}. Error: ${result.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
             }
         }
-        val referenceImagePath = referenceImageDir.asFile.get().toPath().resolve("${composeScreenshot.resultId}.png")
-        FileUtils.copyFile(renderedFile, referenceImagePath.toFile())
+    }
+
+    private fun saveReferenceImage(composeScreenshot: ComposeScreenshotResult) {
+        val renderedFile = composeScreenshot.imagePath?.let{ File(it) }
+        if (renderedFile != null && renderedFile.exists()) {
+            if (composeScreenshot.error != null) {
+                logger.warn("Rendering preview ${composeScreenshot.resultId} encountered some problems: ${composeScreenshot.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
+            }
+
+            val referenceImagePath = referenceImageDir.asFile.get().toPath().resolve("${composeScreenshot.resultId}.png")
+            FileUtils.copyFile(renderedFile, referenceImagePath.toFile())
+        }
     }
 }
