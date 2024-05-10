@@ -963,12 +963,21 @@ public class AvdManager {
             createAvdSkin(skinFolder, skinName, configValues);
             createAvdSdCard(sdcard, editExisting, configValues, avdFolder);
 
-            if (hardwareConfig == null) {
-                hardwareConfig = new HashMap<>();
+            // Add the hardware config to the config file. We copy values from the following
+            // sources, in order, with later sources overriding earlier ones:
+            // 1. The hardware.ini file supplied by the system image, if present
+            // 2. The hardware.ini file supplied by the skin, if present
+            // 3. The hardwareConfig argument (i.e. user-supplied settings)
+            // 4. The system image CPU architecture
+            addSystemImageHardwareConfig(systemImage, configValues);
+            addSkinHardwareConfig(skinFolder, configValues);
+            if (hardwareConfig != null) {
+                configValues.putAll(hardwareConfig);
             }
-            writeCpuArch(systemImage, hardwareConfig, mLog);
+            addCpuArch(systemImage, configValues, mLog);
 
-            addHardwareConfig(systemImage, skinFolder, avdFolder, hardwareConfig, configValues);
+            // Finally write configValues to config.ini
+            writeIniFile(avdFolder.resolve(CONFIG_INI), configValues, true);
 
             if (userSettings != null) {
                 try {
@@ -1674,6 +1683,7 @@ public class AvdManager {
                 new OutputStreamWriter(Files.newOutputStream(iniFile), charset)) {
             if (addEncoding) {
                 // Write down the charset we're using in case we want to use it later.
+                values = new HashMap<>(values);
                 values.put(AVD_INI_ENCODING, charset.name());
             }
 
@@ -2026,15 +2036,16 @@ public class AvdManager {
     }
 
     /**
-     * Write the CPU architecture to a new AVD
+     * Add the CPU architecture of the system image to the AVD configuration.
+     *
      * @param systemImage the system image of the AVD
      * @param values settings for the AVD
      * @param log receives error messages
      */
-    private void writeCpuArch(
-            @NonNull ISystemImage        systemImage,
-            @NonNull Map<String,String>  values,
-            @NonNull ILogger             log)
+    private void addCpuArch(
+            @NonNull ISystemImage systemImage,
+            @NonNull Map<String, String> values,
+            @NonNull ILogger log)
             throws AvdMgrException {
 
         String abiType = systemImage.getPrimaryAbiType();
@@ -2226,34 +2237,13 @@ public class AvdManager {
     }
 
     /**
-     * Add the hardware configuration to an AVD
+     * Read the system image's hardware.ini into the provided Map.
      *
      * @param systemImage the system image of the AVD
-     * @param skinFolder where the skin is
-     * @param avdFolder where the AVDs live
-     * @param hardwareConfig map of configuration values
-     * @param values settings for the resulting AVD
+     * @param values mutable Map to add the values to
      */
-    private void addHardwareConfig(
-            @NonNull ISystemImage systemImage,
-            @Nullable Path skinFolder,
-            @NonNull Path avdFolder,
-            @Nullable Map<String, String> hardwareConfig,
-            @Nullable Map<String, String> values)
-            throws IOException {
-
-        // add the hardware config to the config file.
-        // priority order is:
-        // - values provided by the user
-        // - values provided by the skin
-        // - values provided by the sys img
-        // In order to follow this priority, we'll add the lowest priority values first and then
-        // override by higher priority values.
-        // In the case of a platform with override values from the user, the skin value might
-        // already be there, but it's ok.
-
-        HashMap<String, String> finalHardwareValues = new HashMap<>();
-
+    private void addSystemImageHardwareConfig(
+            @NonNull ISystemImage systemImage, @NonNull Map<String, String> values) {
         PathFileWrapper sysImgHardwareFile =
                 new PathFileWrapper(systemImage.getLocation().resolve(HARDWARE_INI));
         if (sysImgHardwareFile.exists()) {
@@ -2261,9 +2251,19 @@ public class AvdManager {
                     ProjectProperties.parsePropertyFile(sysImgHardwareFile, mLog);
 
             if (imageHardwardConfig != null) {
-                finalHardwareValues.putAll(imageHardwardConfig);
+                values.putAll(imageHardwardConfig);
             }
         }
+    }
+
+    /**
+     * Read the skin's hardware.ini into the provided Map.
+     *
+     * @param skinFolder where the skin is
+     * @param values mutable Map to add the values to
+     */
+    private void addSkinHardwareConfig(
+            @Nullable Path skinFolder, @Nullable Map<String, String> values) {
 
         // get the hardware properties for this skin
         if (skinFolder != null) {
@@ -2274,24 +2274,10 @@ public class AvdManager {
                         ProjectProperties.parsePropertyFile(skinHardwareFile, mLog);
 
                 if (skinHardwareConfig != null) {
-                    finalHardwareValues.putAll(skinHardwareConfig);
+                    values.putAll(skinHardwareConfig);
                 }
             }
         }
-
-        // put the hardware provided by the user.
-        if (hardwareConfig != null) {
-            finalHardwareValues.putAll(hardwareConfig);
-        }
-
-        // Finally add hardware properties
-        if (values == null) {
-            values = new HashMap<>();
-        }
-        values.putAll(finalHardwareValues);
-
-        Path configIniFile = avdFolder.resolve(CONFIG_INI);
-        writeIniFile(configIniFile, values, true);
     }
 
     /**

@@ -16,6 +16,8 @@
 
 package com.android.sdklib.internal.avd;
 
+import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ENCODING;
+import static com.android.sdklib.internal.avd.AvdManager.SDCARD_MIN_BYTE_SIZE;
 import static com.android.sdklib.internal.avd.AvdManager.USER_SETTINGS_INI_PREFERRED_ABI;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -41,6 +43,7 @@ import com.android.testutils.file.InMemoryFileSystems;
 import com.android.testutils.truth.PathSubject;
 import com.android.utils.NullLogger;
 import com.android.utils.PathUtils;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -567,6 +570,57 @@ public final class AvdManagerTest {
         assertEquals("Google Play", properties.get("tag.display"));
         assertEquals("google_apis_playstore,tablet", properties.get("tag.ids"));
         assertEquals("Google Play,Tablet", properties.get("tag.displaynames"));
+    }
+
+    @Test
+    public void moveAvd() {
+        Map<String, String> hardwareConfig =
+                ImmutableMap.of("ro.build.display.id", "sdk-eng 4.3 JB_MR2 774058 test-keys");
+        Map<String, String> userSettings = ImmutableMap.of("abi.type.preferred", "x86");
+        Map<String, String> bootProps = ImmutableMap.of("ro.emulator.circular", "true");
+
+        AvdInfo avdInfo =
+                mAvdManager.createAvd(
+                        mAvdFolder,
+                        name.getMethodName(),
+                        mSystemImagePlay,
+                        null,
+                        "pixel_6",
+                        (SDCARD_MIN_BYTE_SIZE >> 10) + "K",
+                        hardwareConfig,
+                        userSettings,
+                        bootProps,
+                        true,
+                        false,
+                        false);
+
+        assertTrue(Files.exists(mAvdFolder.resolve("boot.prop")));
+        assertTrue(Files.exists(mAvdFolder.resolve("user-settings.ini")));
+
+        String newAvdName = avdInfo.getName() + "_2";
+        Path newAvdPath = avdInfo.getDataFolderPath().getParent().resolve(newAvdName);
+        assertThat(mAvdManager.moveAvd(avdInfo, newAvdName, newAvdPath)).isTrue();
+
+        assertFalse(Files.isDirectory(mAvdFolder));
+        assertTrue(Files.isDirectory(newAvdPath));
+
+        Map<String, String> movedBootProps =
+                AvdManager.parseIniFile(new PathFileWrapper(newAvdPath.resolve("boot.prop")), null);
+        movedBootProps.remove(AVD_INI_ENCODING);
+        assertThat(movedBootProps).isEqualTo(bootProps);
+
+        Map<String, String> movedUserSettings =
+                AvdManager.parseIniFile(
+                        new PathFileWrapper(newAvdPath.resolve("user-settings.ini")), null);
+        movedUserSettings.remove(AVD_INI_ENCODING);
+        assertThat(movedUserSettings).isEqualTo(userSettings);
+
+        Map<String, String> movedConfig =
+                AvdManager.parseIniFile(
+                        new PathFileWrapper(newAvdPath.resolve("config.ini")), null);
+        movedConfig.remove(AVD_INI_ENCODING);
+        assertThat(movedConfig)
+                .containsEntry("ro.build.display.id", "sdk-eng 4.3 JB_MR2 774058 test-keys");
     }
 
     @Test
