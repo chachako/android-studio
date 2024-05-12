@@ -50,7 +50,7 @@ import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiParenthesizedExpression
 import com.intellij.psi.PsiReferenceExpression
 import java.util.Locale
-import org.jetbrains.kotlin.asJava.elements.KtLightFieldForSourceDeclarationSupport
+import org.jetbrains.kotlin.asJava.elements.KtLightField
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UAnonymousClass
@@ -365,7 +365,7 @@ private fun isAppContext(cls: PsiClass, field: PsiField): Boolean {
     // com.google.android.apps.common.inject.annotation.ApplicationContext;
     // see b/159130139
     return true
-  } else if (field is KtLightFieldForSourceDeclarationSupport) {
+  } else if (field is KtLightField) {
     val origin = field.kotlinOrigin
     if (
       origin != null &&
