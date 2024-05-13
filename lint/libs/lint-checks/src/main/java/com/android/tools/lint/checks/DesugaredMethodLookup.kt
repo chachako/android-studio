@@ -30,7 +30,7 @@ import java.util.Arrays
 import org.jetbrains.annotations.TestOnly
 
 /** This class provides lookup for R8 method descriptors of its backported methods. */
-class DesugaredMethodLookup(private val methodDescriptors: Array<String>, val names: Set<String>) {
+class DesugaredMethodLookup(val methodDescriptors: Array<String>, val names: Set<String>) {
   constructor(
     methodDescriptors: Array<String>
   ) : this(methodDescriptors, extractNames(methodDescriptors))
@@ -341,9 +341,9 @@ class DesugaredMethodLookup(private val methodDescriptors: Array<String>, val na
     }
 
     /** Creates a new [DesugaredMethodLookup] for the given collection of files. */
-    private fun createDesugaredMethodLookup(files: Collection<File>): DesugaredMethodLookup {
+    fun createDesugaredMethodLookup(files: Collection<File>): DesugaredMethodLookup {
       assert(files.isNotEmpty())
-      val lines = ArrayList<String>(1024)
+      var lines = ArrayList<String>(1024)
       for (file in files) {
         file.forEachLine {
           if (it.isNotBlank()) {
@@ -352,6 +352,24 @@ class DesugaredMethodLookup(private val methodDescriptors: Array<String>, val na
         }
       }
       lines.sort()
+
+      if (files.size > 1 && lines.isNotEmpty()) {
+        val filtered = ArrayList<String>(lines.size)
+        var prev = ""
+        for (line in lines) {
+          if (prev.indexOf('#') == -1) {
+            // last line was a class; see if this line is a member of that class; if so, drop it
+            if (line.startsWith(prev) && line.length > prev.length && line[prev.length] == '#') {
+              // Skip this line (and don't update prev; there could be more members of this class
+              continue
+            }
+          }
+          filtered.add(line)
+          prev = line
+        }
+        lines = filtered
+      }
+
       // make sure the files aren't Windows line separator encoded or that the line sequence methods
       // handles it gracefully
       assert(lines.isNotEmpty() && !lines[0].endsWith('\r'))

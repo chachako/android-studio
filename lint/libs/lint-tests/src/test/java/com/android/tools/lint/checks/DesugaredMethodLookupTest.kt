@@ -42,6 +42,52 @@ class DesugaredMethodLookupTest {
   }
 
   @Test
+  fun `test merging desugaring files for bug 327670482`() {
+    val desc1 =
+      "" +
+        "java/util/Map#ofEntries([Ljava/util/Map\$Entry;)Ljava/util/Map;\n" +
+        "java/util/Objects#checkFromIndexSize(JJJ)J\n" +
+        "java/util/Objects#checkFromToIndex(JJJ)J\n" +
+        "java/util/Objects#checkIndex(JJ)J\n" +
+        "java/util/Set#copyOf(Ljava/util/Collection;)Ljava/util/Set;\n" +
+        "java/util/Set#of()Ljava/util/Set;\n"
+
+    val desc2 =
+      "" +
+        "java/util/Map\$Entry#comparingByValue(Ljava/util/Comparator;)Ljava/util/Comparator;\n" +
+        "java/util/Objects\n" +
+        "java/util/Optional\n" +
+        "java/util/OptionalDouble\n"
+
+    val file1 = temporaryFolder.newFile().apply { writeText(desc1) }
+    val file2 = temporaryFolder.newFile().apply { writeText(desc2) }
+    try {
+      val lookup = DesugaredMethodLookup.createDesugaredMethodLookup(listOf(file1, file2))
+      assertEquals(
+        "" +
+          "java/util/Map#ofEntries([Ljava/util/Map\$Entry;)Ljava/util/Map;\n" +
+          "java/util/Map\$Entry#comparingByValue(Ljava/util/Comparator;)Ljava/util/Comparator;\n" +
+          "java/util/Objects\n" +
+          "java/util/Optional\n" +
+          "java/util/OptionalDouble\n" +
+          "java/util/Set#copyOf(Ljava/util/Collection;)Ljava/util/Set;\n" +
+          "java/util/Set#of()Ljava/util/Set;",
+        lookup.methodDescriptors.joinToString("\n"),
+      )
+      assertTrue(lookup.isDesugaredClass("java/util/Objects"))
+      assertTrue(
+        lookup.isDesugaredMethod(
+          "java/util/Objects",
+          "requireNonNullElse",
+          "(Ljava.lang.Object;Ljava.lang.Object;)",
+        )
+      )
+    } finally {
+      DesugaredMethodLookup.reset()
+    }
+  }
+
+  @Test
   fun `test desugaring works with inner classes`() {
     val desc1 =
       "" +
