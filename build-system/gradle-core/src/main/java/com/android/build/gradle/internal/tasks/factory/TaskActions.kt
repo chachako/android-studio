@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.tasks.factory
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.scope.MutableTaskContainer
 import com.android.build.gradle.internal.services.getBuildService
+import com.android.build.gradle.internal.tasks.AndroidVariantTask
 import com.android.build.gradle.internal.tasks.BaseTask
 import com.android.build.gradle.internal.tasks.VariantAwareTask
 import com.android.build.gradle.internal.tasks.configureVariantProperties
@@ -50,6 +51,10 @@ abstract class TaskCreationAction<TaskT : Task> : TaskInformation<TaskT>, PreCon
     }
 
     override fun handleProvider(taskProvider: TaskProvider<TaskT>) {
+        // default does nothing
+    }
+
+    override fun configure(task: TaskT) {
         // default does nothing
     }
 }
@@ -97,6 +102,16 @@ abstract class VariantTaskCreationAction<TaskT, CreationConfigT: ComponentCreati
         if (task is BaseTask) {
             task.projectPath.setDisallowChanges(creationConfig.services.projectInfo.path)
         }
+    }
+}
+
+/** [TaskCreationAction] for an [AndroidVariantTask]. */
+abstract class AndroidVariantTaskCreationAction<TaskT: AndroidVariantTask> : TaskCreationAction<TaskT>() {
+
+    override fun configure(task: TaskT) {
+        super.configure(task)
+
+        task.configureVariantProperties("", task.project.gradle.sharedServices)
     }
 }
 

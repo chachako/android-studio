@@ -42,7 +42,7 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedCon
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.RUNTIME_CLASSPATH
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType.GENERATED_PROGUARD_FILE
-import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.AndroidVariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.OptimizationTaskCreationActionImpl
@@ -219,7 +219,7 @@ abstract class ProguardConfigurableTask(
     internal constructor(
         private val creationConfig: CreationConfigT,
         private val addCompileRClass: Boolean
-    ): TaskCreationAction<TaskT>() {
+    ): AndroidVariantTaskCreationAction<TaskT>() {
 
         private val classes: FileCollection
         private val referencedClasses: FileCollection
@@ -276,10 +276,8 @@ abstract class ProguardConfigurableTask(
         override fun configure(
             task: TaskT
         ) {
-            task.configureVariantProperties(
-                "",
-                creationConfig.services.buildServiceRegistry
-            )
+            super.configure(task)
+
             task.projectPath.setDisallowChanges(creationConfig.services.projectInfo.path)
             task.componentType.set(ComponentTypeImpl.BASE_APK)
             task.includeFeaturesInScopes.set(false)
