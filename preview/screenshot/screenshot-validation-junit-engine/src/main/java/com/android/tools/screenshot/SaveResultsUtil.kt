@@ -16,7 +16,6 @@
 
 package com.android.tools.screenshot
 
-import com.android.SdkConstants
 import org.kxml2.io.KXmlSerializer
 import java.io.BufferedOutputStream
 import java.io.File
@@ -58,8 +57,8 @@ fun saveResults(
 ) {
     val stream = createOutputResultStream(filePath)
     val serializer = KXmlSerializer()
-    serializer.setOutput(stream, SdkConstants.UTF_8)
-    serializer.startDocument(SdkConstants.UTF_8, null)
+    serializer.setOutput(stream, Charsets.UTF_8.name())
+    serializer.startDocument(Charsets.UTF_8.name(), null)
     serializer.setFeature(
         FEATURE, true
     )

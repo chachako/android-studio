@@ -17,8 +17,6 @@ maven_library(
     }),
     visibility = ["//visibility:public"],
     deps = [
-        "//tools/base/common:tools.common",
-        "//tools/base/multipreview-asm:compose-preview-detector",
         "//tools/base/standalone-render/compose-cli-serialize:compose-preview-renderer-model",
         "@maven//:net.sf.kxml.kxml2",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
