@@ -150,8 +150,11 @@ public final class AndroidVersion implements Comparable<AndroidVersion>, Seriali
     public static final int MIN_RECOMMENDED_API = 22;
     public static final int MIN_RECOMMENDED_WEAR_API = 25;
 
-    /** Frist version to support Foldable device */
+    /** First version to support foldable devices */
     public static final int MIN_FOLDABLE_DEVICE_API = 29;
+
+    /** First version of the Android Emulator system image to support foldable devices */
+    public static final int MIN_EMULATOR_FOLDABLE_DEVICE_API = 34;
 
     /** First version to support freeform display */
     public static final int MIN_FREEFORM_DEVICE_API = 30;
