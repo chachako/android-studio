@@ -198,7 +198,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   fun testWrongNamespace() {
     val expected =
       """
-            AndroidManifest.xml:12: Error: Validation nodes should be in the tools: namespace to ensure they are removed from the manifest at build time [TestAppLink]
+            AndroidManifest.xml:15: Error: Validation nodes should be in the tools: namespace to ensure they are removed from the manifest at build time [TestAppLink]
                         <validation />
                          ~~~~~~~~~~
             1 errors, 0 warnings
@@ -215,6 +215,9 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application>
                         <activity>
                             <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                                 <data android:scheme="http"
                                     android:host="example.com"
                                     android:pathPrefix="/gizmos" />
@@ -235,7 +238,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   fun testMissingTestUrl() {
     val expected =
       """
-            AndroidManifest.xml:12: Error: Expected testUrl attribute [AppLinkUrlError]
+            AndroidManifest.xml:15: Error: Expected testUrl attribute [AppLinkUrlError]
                         <tools:validation />
                         ~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
@@ -252,6 +255,9 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application>
                         <activity>
                             <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                                 <data android:scheme="http"
                                     android:host="example.com"
                                     android:pathPrefix="/gizmos" />
@@ -272,13 +278,13 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   fun testBadTestUrl() {
     val expected =
       """
-            AndroidManifest.xml:11: Error: Invalid test URL: no protocol: no-protocol [TestAppLink]
+            AndroidManifest.xml:14: Error: Invalid test URL: no protocol: no-protocol [TestAppLink]
                         <tools:validation testUrl="no-protocol"/>
                                                    ~~~~~~~~~~~
-            AndroidManifest.xml:12: Error: Invalid test URL: unknown protocol: unknown-protocol [TestAppLink]
+            AndroidManifest.xml:15: Error: Invalid test URL: unknown protocol: unknown-protocol [TestAppLink]
                         <tools:validation testUrl="unknown-protocol://example.com/gizmos/foo/bar"/>
                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            AndroidManifest.xml:13: Error: Invalid test URL: Invalid host: [FEDC:BA98:7654:3210:GEDC:BA98:7654:3210] [TestAppLink]
+            AndroidManifest.xml:16: Error: Invalid test URL: Invalid host: [FEDC:BA98:7654:3210:GEDC:BA98:7654:3210] [TestAppLink]
                         <tools:validation testUrl="http://[FEDC:BA98:7654:3210:GEDC:BA98:7654:3210]:80/index.html"/>
                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             3 errors, 0 warnings
@@ -294,6 +300,9 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application>
                         <activity>
                             <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                                 <data android:scheme="http"
                                     android:host="example.com"
                                     android:pathPrefix="/gizmos" />
@@ -316,13 +325,13 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   fun testValidation1() {
     val expected =
       """
-            AndroidManifest.xml:14: Error: Test URL did not match path prefix /gizmos, path literal /literal/path [TestAppLink]
+            AndroidManifest.xml:17: Error: Test URL did not match path prefix /gizmos, path literal /literal/path [TestAppLink]
                         <tools:validation testUrl="http://example.com/notmatch/foo/bar"/>
                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            AndroidManifest.xml:15: Error: Test URL did not match host example.com [TestAppLink]
+            AndroidManifest.xml:18: Error: Test URL did not match host example.com [TestAppLink]
                         <tools:validation testUrl="http://notmatch.com/gizmos/foo/bar"/>
                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            AndroidManifest.xml:16: Error: Test URL did not match scheme http [TestAppLink]
+            AndroidManifest.xml:19: Error: Test URL did not match scheme http [TestAppLink]
                         <tools:validation testUrl="https://example.com/gizmos/foo/bar"/>
                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             3 errors, 0 warnings
@@ -339,6 +348,9 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application>
                         <activity>
                             <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                                 <data android:scheme="http"
                                     android:host="example.com"
                                     android:pathPrefix="/gizmos" />
@@ -404,7 +416,7 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   fun testHostWildcardMatching() {
     val expected =
       """
-            AndroidManifest.xml:12: Error: Test URL did not match host *.example.com [TestAppLink]
+            AndroidManifest.xml:15: Error: Test URL did not match host *.example.com [TestAppLink]
                         <tools:validation testUrl="http://example.com/path/foo/bar"/>
                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             1 errors, 0 warnings
@@ -421,6 +433,9 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application>
                         <activity>
                             <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                                 <data android:scheme="http"
                                     android:host="*.example.com"
                                     android:pathPrefix="/path" />
@@ -443,10 +458,10 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
   fun testPortMatching() {
     val expected =
       """
-            AndroidManifest.xml:25: Error: Test URL did not match port none or did not match port 85 or did not match host android.com [TestAppLink]
+            AndroidManifest.xml:34: Error: Test URL did not match port none or did not match port 85 or did not match host android.com [TestAppLink]
                         <tools:validation testUrl="http://example.com:80/path/foo/bar"/>
                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            AndroidManifest.xml:29: Error: Test URL did not match host example.com or did not match port 86 [TestAppLink]
+            AndroidManifest.xml:38: Error: Test URL did not match host example.com or did not match port 86 [TestAppLink]
                         <tools:validation testUrl="http://android.com/path/foo/bar"/>
                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             2 errors, 0 warnings
@@ -463,17 +478,26 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application>
                         <activity>
                             <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                                 <data android:scheme="http"
                                       android:host="example.com"
                                       android:pathPrefix="/path" />
                             </intent-filter>
                             <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                                 <data android:scheme="http"
                                       android:host="example.com"
                                       android:port="85"
                                       android:pathPrefix="/path" />
                             </intent-filter>
                             <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                                 <data android:scheme="http"
                                       android:host="android.com"
                                       android:port="86"
@@ -1546,6 +1570,9 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application>
                         <activity>
                             <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                                 <data android:scheme="@={Schemes.default}"
                                     android:host="@{Hosts.lookup}"
                                     android:pathPrefix="@{Prefixes.lookup}" />
@@ -1686,6 +1713,9 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
                     <application>
                         <activity>
                             <intent-filter android:autoVerify="true">
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
                                 <data
                                     android:scheme="http"
                                     android:host="example.com"
@@ -1754,5 +1784,124 @@ class AppLinksValidDetectorTest : AbstractCheckTest() {
       .isEqualTo("Test URL did not match path prefix /gizmos, path literal /literal/path")
     assertThat(testElement(URL("http://notmatch.com/gizmos/foo/bar"), infos))
       .isEqualTo("Test URL did not match host example.com")
+  }
+
+  fun testAutoVerifyMissingAttributes() {
+    lint()
+      .files(
+        xml(
+            "AndroidManifest.xml",
+            """
+                <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    package="com.example.helloworld" >
+
+                    <application
+                        android:allowBackup="true"
+                        android:icon="@mipmap/ic_launcher"
+                        android:label="@string/app_name"
+                        android:theme="@style/AppTheme" >
+                        <activity
+                            android:name=".FullscreenActivity"
+                            android:configChanges="orientation|keyboardHidden|screenSize"
+                            android:label="@string/title_activity_fullscreen"
+                            android:theme="@style/FullscreenTheme" >
+
+                            <intent-filter android:autoVerify="true"> <!-- Fine -->
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:scheme="https" />
+
+                                <data android:host="example.com" />
+                                <data android:pathPrefix="/gizmos" />
+                            </intent-filter>
+
+                            <intent-filter android:autoVerify="true"> <!-- Missing VIEW -->
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:scheme="https" />
+
+                                <data android:host="example.com" />
+                                <data android:pathPrefix="/gizmos" />
+                            </intent-filter>
+
+                            <intent-filter android:autoVerify="true"> <!-- Missing DEFAULT -->
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:scheme="https" />
+
+                                <data android:host="example.com" />
+                                <data android:pathPrefix="/gizmos" />
+                            </intent-filter>
+
+                            <intent-filter android:autoVerify="true"> <!-- Missing BROWSABLE -->
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+
+                                <data android:scheme="http" />
+                                <data android:scheme="https" />
+
+                                <data android:host="example.com" />
+                                <data android:pathPrefix="/gizmos" />
+                            </intent-filter>
+
+                            <intent-filter android:autoVerify="true"> <!-- Missing http -->
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="other" />
+
+                                <data android:host="example.com" />
+                                <data android:pathPrefix="/gizmos" />
+                            </intent-filter>
+
+                            <intent-filter android:autoVerify="true"> <!-- Missing host -->
+                                <action android:name="android.intent.action.VIEW" />
+                                <category android:name="android.intent.category.DEFAULT" />
+                                <category android:name="android.intent.category.BROWSABLE" />
+
+                                <data android:scheme="http" />
+                                <data android:scheme="https" />
+
+                            </intent-filter>
+                        </activity>
+                    </application>
+
+                </manifest>
+                """,
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+          AndroidManifest.xml:27: Error: Missing required elements/attributes for Android App Links [AppLinkUrlError]
+                      <intent-filter android:autoVerify="true"> <!-- Missing VIEW -->
+                      ^
+          AndroidManifest.xml:38: Error: Missing required elements/attributes for Android App Links [AppLinkUrlError]
+                      <intent-filter android:autoVerify="true"> <!-- Missing DEFAULT -->
+                      ^
+          AndroidManifest.xml:49: Error: Activity supporting ACTION_VIEW is not set as BROWSABLE [AppLinkUrlError]
+                      <intent-filter android:autoVerify="true"> <!-- Missing BROWSABLE -->
+                      ^
+          AndroidManifest.xml:49: Error: Missing required elements/attributes for Android App Links [AppLinkUrlError]
+                      <intent-filter android:autoVerify="true"> <!-- Missing BROWSABLE -->
+                      ^
+          AndroidManifest.xml:60: Error: Missing required elements/attributes for Android App Links [AppLinkUrlError]
+                      <intent-filter android:autoVerify="true"> <!-- Missing http -->
+                      ^
+          AndroidManifest.xml:71: Error: Missing required elements/attributes for Android App Links [AppLinkUrlError]
+                      <intent-filter android:autoVerify="true"> <!-- Missing host -->
+                      ^
+          6 errors, 0 warnings
+        """
+      )
   }
 }

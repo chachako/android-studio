@@ -17,6 +17,7 @@ package com.android.tools.lint.checks
 
 import com.android.SdkConstants.ANDROID_NS_NAME
 import com.android.SdkConstants.ANDROID_URI
+import com.android.SdkConstants.ATTR_AUTO_VERIFY
 import com.android.SdkConstants.ATTR_EXPORTED
 import com.android.SdkConstants.ATTR_HOST
 import com.android.SdkConstants.ATTR_MIME_TYPE
@@ -29,6 +30,7 @@ import com.android.SdkConstants.PREFIX_RESOURCE_REF
 import com.android.SdkConstants.PREFIX_THEME_REF
 import com.android.SdkConstants.TAG_ACTIVITY
 import com.android.SdkConstants.TAG_ACTIVITY_ALIAS
+import com.android.SdkConstants.TAG_CATEGORY
 import com.android.SdkConstants.TAG_DATA
 import com.android.SdkConstants.TAG_INTENT_FILTER
 import com.android.SdkConstants.TOOLS_URI
@@ -36,6 +38,7 @@ import com.android.SdkConstants.VALUE_TRUE
 import com.android.ide.common.rendering.api.ResourceNamespace
 import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
+import com.android.tools.lint.client.api.LintClient
 import com.android.tools.lint.client.api.ResourceRepositoryScope
 import com.android.tools.lint.detector.api.Category
 import com.android.tools.lint.detector.api.Detector
@@ -53,7 +56,9 @@ import com.android.tools.lint.detector.api.isManifestPlaceHolderExpression
 import com.android.tools.lint.detector.api.resolvePlaceHolders
 import com.android.utils.CharSequences
 import com.android.utils.XmlUtils
+import com.android.utils.iterator
 import com.android.xml.AndroidManifest
+import com.android.xml.AndroidManifest.ATTRIBUTE_NAME
 import com.android.xml.AndroidManifest.NODE_DATA
 import com.google.common.base.Joiner
 import com.google.common.collect.Lists
@@ -367,6 +372,7 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     }
     var isHttp = false
     var implicitSchemes = false
+    var hasSubstitutedScheme = false
     if (schemes == null) {
       if (hasMimeType) {
         // Per documentation
@@ -380,17 +386,47 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       }
     } else {
       for (scheme in schemes) {
-        if ("http" == scheme || "https" == scheme) {
-          isHttp = true
-          break
+        when {
+          "http" == scheme || "https" == scheme -> isHttp = true
+          isSubstituted(scheme) -> hasSubstitutedScheme = true
         }
       }
     }
 
     // Validation
     if (context != null) {
-      // At least one scheme must be specified
+      // autoVerify means this is an Android App Link:
+      // https://developer.android.com/training/app-links#android-app-links
+      if (isAutoVerify(intent)) {
+        // Report an error if required elements/attributes are missing.
+        if (
+          !actionView ||
+            !hasCategoryDefault(intent) ||
+            !browsable ||
+            (!isHttp && !hasSubstitutedScheme) ||
+            hosts == null
+        ) {
+          // If we are in Studio then add quick-fix data so that Studio adds the
+          // "Launch App Links Assistant" quick-fix.
+          val fix =
+            if (LintClient.isStudio) {
+              fix().data(KEY_SHOW_APP_LINKS_ASSISTANT, true)
+            } else {
+              null
+            }
+
+          reportUrlError(
+            context,
+            intent,
+            context.getLocation(intent),
+            "Missing required elements/attributes for Android App Links",
+            fix,
+          )
+        }
+      }
+
       val hasScheme = schemes != null
+      // If there are hosts, paths, or ports, then there should be a scheme.
       if (!hasScheme && (hosts != null || paths != null || ports != null)) {
         val fix = LintFix.create().set(ANDROID_URI, ATTR_SCHEME, "http").build()
         reportUrlError(
@@ -494,6 +530,15 @@ class AppLinksValidDetector : Detector(), XmlScanner {
     }
     return false
   }
+
+  private fun isAutoVerify(intentFilter: Element) =
+    intentFilter.getAttributeNS(ANDROID_URI, ATTR_AUTO_VERIFY) == VALUE_TRUE
+
+  private fun hasCategoryDefault(intentFilter: Element) =
+    intentFilter.iterator().asSequence().any {
+      it.tagName == TAG_CATEGORY &&
+        it.getAttributeNS(ANDROID_URI, ATTRIBUTE_NAME) == "android.intent.category.DEFAULT"
+    }
 
   private fun addAttribute(
     context: XmlContext?,
@@ -885,6 +930,8 @@ class AppLinksValidDetector : Detector(), XmlScanner {
       )
 
     private const val TAG_VALIDATION = "validation"
+
+    const val KEY_SHOW_APP_LINKS_ASSISTANT = "SHOW_APP_LINKS_ASSISTANT"
 
     // <scheme>://<host>:<port>[<path>|<pathPrefix>|<pathPattern>]
     private val INTENT_FILTER_DATA_SORT_REFERENCE =
