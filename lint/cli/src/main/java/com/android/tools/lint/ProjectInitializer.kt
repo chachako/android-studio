@@ -1267,18 +1267,8 @@ private class ManualProject(
       }
     }
 
-    val capacity =
-      contexts.size + testContexts.size + generatedContexts.size + gradleKtsContexts.size
-    val allContexts = ArrayList<JavaContext>(capacity)
-    allContexts.addAll(contexts)
-    allContexts.addAll(testContexts)
-    allContexts.addAll(generatedContexts)
-    allContexts.addAll(gradleKtsContexts)
-
-    val parser = client.getUastParser(this)
     return UastParser.UastSourceList(
-      parser,
-      allContexts,
+      client.getUastParser(this),
       contexts,
       testContexts,
       emptyList(),

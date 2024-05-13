@@ -2095,31 +2095,15 @@ class LintDriver(
     testFixturesContexts: List<JavaContext>,
     generatedContexts: List<JavaContext>,
     gradleKtsContexts: List<JavaContext>,
-  ): UastSourceList {
-    val capacity =
-      contexts.size +
-        testContexts.size +
-        generatedContexts.size +
-        gradleKtsContexts.size +
-        testFixturesContexts.size
-    val allContexts = ArrayList<JavaContext>(capacity)
-    allContexts.addAll(contexts)
-    allContexts.addAll(testContexts)
-    allContexts.addAll(testFixturesContexts)
-    allContexts.addAll(generatedContexts)
-    allContexts.addAll(gradleKtsContexts)
-
-    val parser = client.getUastParser(currentProject)
-    return UastSourceList(
-      parser,
-      allContexts,
+  ): UastSourceList =
+    UastSourceList(
+      client.getUastParser(currentProject),
       contexts,
       testContexts,
       testFixturesContexts,
       generatedContexts,
       gradleKtsContexts,
     )
-  }
 
   private fun prepareUast(sourceList: UastSourceList) {
     val parser = sourceList.parser

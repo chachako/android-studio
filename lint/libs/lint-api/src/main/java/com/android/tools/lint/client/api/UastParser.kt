@@ -171,7 +171,9 @@ abstract class UastParser {
   abstract fun getNameLocation(context: JavaContext, element: UElement): Location
 
   /** The lists of production and test files for Kotlin and Java to parse and process. */
-  class UastSourceList(
+  class UastSourceList
+  @Deprecated("Do not pass allContexts")
+  constructor(
     val parser: UastParser,
     val allContexts: List<JavaContext>,
     val srcContexts: List<JavaContext>,
@@ -179,5 +181,27 @@ abstract class UastParser {
     val testFixturesContexts: List<JavaContext>,
     val generatedContexts: List<JavaContext>,
     val gradleKtsContexts: List<JavaContext>,
-  )
+  ) {
+    @Suppress("DEPRECATION")
+    constructor(
+      parser: UastParser,
+      srcContexts: List<JavaContext>,
+      testContexts: List<JavaContext>,
+      testFixturesContexts: List<JavaContext>,
+      generatedContexts: List<JavaContext>,
+      gradleKtsContexts: List<JavaContext>,
+    ) : this(
+      parser,
+      concat(srcContexts, testContexts, testFixturesContexts, generatedContexts, gradleKtsContexts),
+      srcContexts,
+      testContexts,
+      testFixturesContexts,
+      generatedContexts,
+      gradleKtsContexts,
+    )
+  }
+
+  companion object {
+    private fun <T> concat(vararg lists: List<T>): List<T> = lists.flatMap { it }
+  }
 }
