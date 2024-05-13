@@ -235,13 +235,13 @@ public class AvdManager {
      */
     public static final String AVD_INI_SDCARD_PATH = "sdcard.path"; //$NON-NLS-1$
     /**
-     * AVD/config.ini key name representing the size of the SD card.
-     * This property is for UI purposes only. It is not used by the emulator.
+     * AVD/config.ini key name representing the size of the SD card. This property is for UI
+     * purposes only. It is not used by the emulator.
      *
-     * @see #SDCARD_SIZE_PATTERN
-     * @see #parseSdcardSize(String, String[])
+     * @see SdCards#SDCARD_SIZE_PATTERN
+     * @see SdCards#parseSdCard
      */
-    public static final String AVD_INI_SDCARD_SIZE = "sdcard.size"; //$NON-NLS-1$
+    public static final String AVD_INI_SDCARD_SIZE = "sdcard.size"; // $NON-NLS-1$
     /**
      * AVD/config.ini key name representing the first path where the emulator looks
      * for system images. Typically this is the path to the add-on system image or
@@ -417,22 +417,6 @@ public class AvdManager {
     private static final Pattern IMAGE_NAME_PATTERN = Pattern.compile("(.+)\\.img$", //$NON-NLS-1$
             Pattern.CASE_INSENSITIVE);
 
-    /**
-     * Pattern for matching SD Card sizes, e.g. "4K" or "16M".
-     * Callers should use {@link #parseSdcardSize(String, String[])} instead of using this directly.
-     */
-    private static final Pattern SDCARD_SIZE_PATTERN = Pattern.compile("(\\d+)([KMG])"); //$NON-NLS-1$
-
-    /**
-     * Minimal size of an SDCard image file in bytes. Currently 9 MiB.
-     */
-
-    public static final long SDCARD_MIN_BYTE_SIZE = 9<<20;
-    /**
-     * Maximal size of an SDCard image file in bytes. Currently 1023 GiB.
-     */
-    public static final long SDCARD_MAX_BYTE_SIZE = 1023L<<30;
-
     /** The sdcard string represents a valid number but the size is outside of the allowed range. */
     public static final int SDCARD_SIZE_NOT_IN_RANGE = 0;
     /** The sdcard string looks like a size number+suffix but the number failed to decode. */
@@ -489,71 +473,6 @@ public class AvdManager {
     @NonNull
     public Path getBaseAvdFolder() {
         return mBaseAvdFolder;
-    }
-
-    /**
-     * Parse the sdcard string to decode the size.
-     * Returns:
-     * <ul>
-     * <li> The size in bytes > 0 if the sdcard string is a valid size in the allowed range.
-     * <li> {@link #SDCARD_SIZE_NOT_IN_RANGE} (0)
-     *          if the sdcard string is a valid size NOT in the allowed range.
-     * <li> {@link #SDCARD_SIZE_INVALID} (-1)
-     *          if the sdcard string is number that fails to parse correctly.
-     * <li> {@link #SDCARD_NOT_SIZE_PATTERN} (-2)
-     *          if the sdcard string is not a number, in which case it's probably a file path.
-     * </ul>
-     *
-     * @param sdcard The sdcard string, which can be a file path, a size string or something else.
-     * @param parsedStrings If non-null, an array of 2 strings. The first string will be
-     *  filled with the parsed numeric size and the second one will be filled with the
-     *  parsed suffix. This is filled even if the returned size is deemed out of range or
-     *  failed to parse. The values are null if the sdcard is not a size pattern.
-     * @return A size in byte if > 0, or {@link #SDCARD_SIZE_NOT_IN_RANGE},
-     *  {@link #SDCARD_SIZE_INVALID} or {@link #SDCARD_NOT_SIZE_PATTERN} as error codes.
-     */
-    public static long parseSdcardSize(@NonNull String sdcard, @Nullable String[] parsedStrings) {
-
-        if (parsedStrings != null) {
-            assert parsedStrings.length == 2;
-            parsedStrings[0] = null;
-            parsedStrings[1] = null;
-        }
-
-        Matcher m = SDCARD_SIZE_PATTERN.matcher(sdcard);
-        if (m.matches()) {
-            if (parsedStrings != null) {
-                assert parsedStrings.length == 2;
-                parsedStrings[0] = m.group(1);
-                parsedStrings[1] = m.group(2);
-            }
-
-            // get the sdcard values for checks
-            try {
-                long sdcardSize = Long.parseLong(m.group(1));
-
-                String sdcardSizeModifier = m.group(2);
-                if ("K".equals(sdcardSizeModifier)) {           //$NON-NLS-1$
-                    sdcardSize <<= 10;
-                } else if ("M".equals(sdcardSizeModifier)) {    //$NON-NLS-1$
-                    sdcardSize <<= 20;
-                } else if ("G".equals(sdcardSizeModifier)) {    //$NON-NLS-1$
-                    sdcardSize <<= 30;
-                }
-
-                if (sdcardSize < SDCARD_MIN_BYTE_SIZE ||
-                        sdcardSize > SDCARD_MAX_BYTE_SIZE) {
-                    return SDCARD_SIZE_NOT_IN_RANGE;
-                }
-
-                return sdcardSize;
-            } catch (NumberFormatException e) {
-                // This could happen if the number is too large to fit in a long.
-                return SDCARD_SIZE_INVALID;
-            }
-        }
-
-        return SDCARD_NOT_SIZE_PATTERN;
     }
 
     /**
@@ -879,7 +798,7 @@ public class AvdManager {
             @NonNull ISystemImage systemImage,
             @Nullable Path skinFolder,
             @Nullable String skinName,
-            @Nullable String sdcard,
+            @Nullable SdCard sdcard,
             @Nullable Map<String, String> hardwareConfig,
             @Nullable Map<String, String> userSettings,
             @Nullable Map<String, String> bootProps,
@@ -961,7 +880,13 @@ public class AvdManager {
                     AVD_INI_ARC, Boolean.toString(SystemImageTags.CHROMEOS_TAG.equals(tag)));
 
             createAvdSkin(skinFolder, skinName, configValues);
-            createAvdSdCard(sdcard, editExisting, configValues, avdFolder);
+
+            if (sdcard != null) {
+                configValues.putAll(sdcard.configEntries());
+            }
+            if (sdcard instanceof InternalSdCard) {
+                createAvdSdCard((InternalSdCard) sdcard, editExisting, avdFolder);
+            }
 
             // Add the hardware config to the config file. We copy values from the following
             // sources, in order, with later sources overriding earlier ones:
@@ -1805,61 +1730,6 @@ public class AvdManager {
     }
 
     /**
-     * Invokes the tool to create a new SD card image file.
-     *
-     * @param toolLocation The path to the mksdcard tool.
-     * @param size The size of the new SD Card, compatible with {@link #SDCARD_SIZE_PATTERN}.
-     * @param location The path of the new sdcard image file to generate.
-     * @return True if the sdcard could be created.
-     */
-    @VisibleForTesting
-    protected boolean createSdCard(String toolLocation, String size, String location) {
-        try {
-            String[] command = new String[3];
-            command[0] = toolLocation;
-            command[1] = size;
-            command[2] = location;
-            Process process = Runtime.getRuntime().exec(command);
-
-            final ArrayList<String> errorOutput = new ArrayList<>();
-            final ArrayList<String> stdOutput = new ArrayList<>();
-
-            int status = GrabProcessOutput.grabProcessOutput(
-                    process,
-                    Wait.WAIT_FOR_READERS,
-                    new IProcessOutput() {
-                        @Override
-                        public void out(@Nullable String line) {
-                            if (line != null) {
-                                stdOutput.add(line);
-                            }
-                        }
-
-                        @Override
-                        public void err(@Nullable String line) {
-                            if (line != null) {
-                                errorOutput.add(line);
-                            }
-                        }
-                    });
-
-            if (status == 0) {
-                return true;
-            } else {
-                for (String error : errorOutput) {
-                    mLog.warning("%1$s", error);
-                }
-            }
-
-        } catch (InterruptedException | IOException e) {
-            // pass, print error below
-        }
-
-        mLog.warning("Failed to create the SD card.");
-        return false;
-    }
-
-    /**
      * Removes an {@link AvdInfo} from the internal list.
      *
      * @param avdInfo The {@link AvdInfo} to remove.
@@ -2125,65 +1995,29 @@ public class AvdManager {
     }
 
     /**
-     * Creates an SD card for the AVD
+     * Creates an SD card for the AVD. Any existing card will be replaced with a new one, unless the
+     * card is already the right size and editExisting is set.
      *
-     * @param sdcard either a size indicator or the name of a file
+     * @param sdcard the spec of the card to create
      * @param editExisting true if modifying an existing AVD
-     * @param values settings for the AVD
      * @param avdFolder where the AVDs live
      */
     private void createAvdSdCard(
-            @Nullable String sdcard,
-            boolean editExisting,
-            @NonNull Map<String, String> values,
-            @NonNull Path avdFolder)
+            @NonNull InternalSdCard sdcard, boolean editExisting, @NonNull Path avdFolder)
             throws AvdMgrException {
 
-        if (sdcard == null || sdcard.isEmpty()) {
+        if (!mBaseAvdFolder.getFileSystem().equals(FileSystems.getDefault())) {
+            // We don't have a real filesystem, so we won't be able to run the tool. Skip.
             return;
         }
 
-        // Sdcard is possibly a size. In that case we create a file called 'sdcard.img'
-        // in the AVD folder, and do not put any value in config.ini.
-
-        long sdcardSize = parseSdcardSize(sdcard, null);
-
-        if (sdcardSize == SDCARD_SIZE_NOT_IN_RANGE) {
-            mLog.warning("SD Card size must be in the range 9 MiB..1023 GiB.");
-            throw new AvdMgrException();
-        }
-
-        if (sdcardSize == SDCARD_SIZE_INVALID) {
-            mLog.warning("Unable to parse SD Card size");
-            throw new AvdMgrException();
-        }
-
-        if (sdcardSize == SDCARD_NOT_SIZE_PATTERN) {
-            Path sdcardFile = mBaseAvdFolder.resolve(sdcard);
-            if (!CancellableFileIo.isRegularFile(sdcardFile)) {
-                mLog.warning(
-                        "'%1$s' is not recognized as a valid sdcard value.\n"
-                                + "Value should be:\n"
-                                + "1. path to an sdcard.\n"
-                                + "2. size of the sdcard to create: <size>[K|M]",
-                        sdcard);
-                throw new AvdMgrException();
-            }
-            // sdcard value is an external sdcard, so we put its path into the config.ini
-            values.put(AVD_INI_SDCARD_PATH, sdcard);
-            return;
-        }
-
-        // create the sdcard.
         Path sdcardFile = avdFolder.resolve(SDCARD_IMG);
-
-        boolean runMkSdcard = true;
         try {
-            if (CancellableFileIo.size(sdcardFile) == sdcardSize && editExisting) {
+            if (CancellableFileIo.size(sdcardFile) == sdcard.getSize() && editExisting) {
                 // There's already an sdcard file with the right size and we're
                 // not overriding it... so don't remove it.
-                runMkSdcard = false;
                 mLog.info("SD Card already present with same size, was not changed.\n");
+                return;
             }
         } catch (NoSuchFileException ignore) {
         } catch (IOException exception) {
@@ -2191,49 +2025,39 @@ public class AvdManager {
             wrapper.initCause(exception);
             throw wrapper;
         }
-        if (!mBaseAvdFolder.getFileSystem().equals(FileSystems.getDefault())) {
-            // We don't have a real filesystem, so we won't be able to run the tool. Skip.
-            runMkSdcard = false;
+
+        String path = sdcardFile.toAbsolutePath().toString();
+
+        // execute mksdcard with the proper parameters.
+        LoggerProgressIndicatorWrapper progress =
+                new LoggerProgressIndicatorWrapper(mLog) {
+                    @Override
+                    public void logVerbose(@NonNull String s) {
+                        // Skip verbose messages
+                    }
+                };
+        LocalPackage p = mSdkHandler.getLocalPackage(SdkConstants.FD_EMULATOR, progress);
+        if (p == null) {
+            progress.logWarning(
+                    String.format(
+                            "Unable to find %1$s in the %2$s component",
+                            SdkConstants.mkSdCardCmdName(), SdkConstants.FD_EMULATOR));
+            throw new AvdMgrException();
+        }
+        Path mkSdCard = p.getLocation().resolve(SdkConstants.mkSdCardCmdName());
+
+        if (!CancellableFileIo.isRegularFile(mkSdCard)) {
+            mLog.warning("'%1$s' is missing from the SDK tools folder.", mkSdCard.getFileName());
+            throw new AvdMgrException();
         }
 
-        if (runMkSdcard) {
-            String path = sdcardFile.toAbsolutePath().toString();
-
-            // execute mksdcard with the proper parameters.
-            LoggerProgressIndicatorWrapper progress =
-                    new LoggerProgressIndicatorWrapper(mLog) {
-                        @Override
-                        public void logVerbose(@NonNull String s) {
-                            // Skip verbose messages
-                        }
-                    };
-            LocalPackage p = mSdkHandler.getLocalPackage(SdkConstants.FD_EMULATOR, progress);
-            if (p == null) {
-                progress.logWarning(
-                        String.format(
-                                "Unable to find %1$s in the %2$s component",
-                                SdkConstants.mkSdCardCmdName(), SdkConstants.FD_EMULATOR));
-                throw new AvdMgrException();
-            }
-            Path mkSdCard = p.getLocation().resolve(SdkConstants.mkSdCardCmdName());
-
-            if (!CancellableFileIo.isRegularFile(mkSdCard)) {
-                mLog.warning(
-                        "'%1$s' is missing from the SDK tools folder.", mkSdCard.getFileName());
-                throw new AvdMgrException();
-            }
-
-            if (!createSdCard(mkSdCard.toAbsolutePath().toString(), sdcard, path)) {
-                // mksdcard output has already been displayed, no need to
-                // output anything else.
-                mLog.warning("Failed to create sdcard in the AVD folder.");
-                throw new AvdMgrException();
-            }
+        if (!SdCards.createSdCard(
+                mLog, mkSdCard.toAbsolutePath().toString(), sdcard.sizeSpec(), path)) {
+            // mksdcard output has already been displayed, no need to
+            // output anything else.
+            mLog.warning("Failed to create sdcard in the AVD folder.");
+            throw new AvdMgrException();
         }
-
-        // add a property containing the size of the sdcard for display purpose
-        // only when the dev does 'android list avd'
-        values.put(AVD_INI_SDCARD_SIZE, sdcard);
     }
 
     /**

@@ -17,8 +17,8 @@
 package com.android.sdklib.internal.avd;
 
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ENCODING;
-import static com.android.sdklib.internal.avd.AvdManager.SDCARD_MIN_BYTE_SIZE;
 import static com.android.sdklib.internal.avd.AvdManager.USER_SETTINGS_INI_PREFERRED_ABI;
+import static com.android.sdklib.internal.avd.SdCards.SDCARD_MIN_BYTE_SIZE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -586,7 +586,7 @@ public final class AvdManagerTest {
                         mSystemImagePlay,
                         null,
                         "pixel_6",
-                        (SDCARD_MIN_BYTE_SIZE >> 10) + "K",
+                        new InternalSdCard(SDCARD_MIN_BYTE_SIZE),
                         hardwareConfig,
                         userSettings,
                         bootProps,
@@ -715,7 +715,7 @@ public final class AvdManagerTest {
                         mSystemImagePlay,
                         null,
                         null,
-                        "100M", // SD card size
+                        new InternalSdCard(100 << 20), // SD card size
                         origAvdConfig,
                         origAvdConfig,
                         null,
@@ -746,7 +746,7 @@ public final class AvdManagerTest {
                         mSystemImagePlay,
                         null,
                         null,
-                        "222M", // Different SD card size
+                        new InternalSdCard(222 << 20), // Different SD card size
                         newAvdConfig,
                         null,
                         null,

@@ -46,6 +46,8 @@ import com.android.sdklib.internal.avd.AvdNetworkSpeed;
 import com.android.sdklib.internal.avd.EmulatedProperties;
 import com.android.sdklib.internal.avd.GpuMode;
 import com.android.sdklib.internal.avd.HardwareProperties;
+import com.android.sdklib.internal.avd.SdCard;
+import com.android.sdklib.internal.avd.SdCards;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.IdDisplay;
 import com.android.sdklib.repository.meta.DetailsTypes;
@@ -878,6 +880,10 @@ class AvdManagerCli extends CommandLineParser {
                     errorAndExit("Skin " + skinName + " not found at " + skinPath);
                 }
             }
+
+            String sdCardParam = getParamSdCard();
+            SdCard sdCard = sdCardParam == null ? null : SdCards.parseSdCard(sdCardParam);
+
             @SuppressWarnings("unused") // newAvdInfo is never read, yet useful for debugging
             AvdInfo newAvdInfo =
                     avdManager.createAvd(
@@ -886,7 +892,7 @@ class AvdManagerCli extends CommandLineParser {
                             img,
                             skinPath,
                             skinName,
-                            getParamSdCard(),
+                            sdCard,
                             hardwareConfig,
                             null,
                             device == null ? null : device.getBootProps(),
