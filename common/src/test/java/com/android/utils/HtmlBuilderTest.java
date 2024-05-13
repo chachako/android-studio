@@ -76,11 +76,9 @@ public class HtmlBuilderTest extends TestCase {
         builder.add("Plain").newline();
         builder.beginList().listItem().add("item 1").listItem().add("item 2").endList();
 
-        assertEquals("Plain<BR/>" +
-                     "<DL>" +
-                     "<DD>-&NBSP;item 1" +
-                     "<DD>-&NBSP;item 2" +
-                     "</DL>", builder.getHtml());
+        assertEquals(
+                "Plain<BR/>" + "<DL>" + "<DD>-&nbsp;item 1" + "<DD>-&nbsp;item 2" + "</DL>",
+                builder.getHtml());
     }
 
     public void testAddLinkWithBeforeAndAfterText() {

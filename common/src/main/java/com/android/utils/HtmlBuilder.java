@@ -359,7 +359,7 @@ public class HtmlBuilder {
     public HtmlBuilder listItem() {
         if (USE_DD_LISTS) {
             mStringBuilder.append("<DD>");
-            mStringBuilder.append("-&NBSP;");
+            mStringBuilder.append("-&nbsp;");
         } else {
             mStringBuilder.append("<LI>");
         }
