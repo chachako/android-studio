@@ -329,41 +329,19 @@ public class HtmlBuilder {
         return this;
     }
 
-    /**
-     * The JEditorPane HTML renderer creates really ugly bulleted lists; the
-     * size is hardcoded to use a giant heavy bullet. So, use a definition
-     * list instead.
-     */
-    private static final boolean USE_DD_LISTS = true;
-
     public HtmlBuilder beginList() {
-        if (USE_DD_LISTS) {
-            mStringBuilder.append("<DL>");
-        } else {
-            mStringBuilder.append("<UL>");
-        }
-
+        mStringBuilder.append("<DL>");
         return this;
     }
 
     public HtmlBuilder endList() {
-        if (USE_DD_LISTS) {
-            mStringBuilder.append("</DL>");
-        } else {
-            mStringBuilder.append("</UL>");
-        }
-
+        mStringBuilder.append("</DL>");
         return this;
     }
 
     public HtmlBuilder listItem() {
-        if (USE_DD_LISTS) {
-            mStringBuilder.append("<DD>");
-            mStringBuilder.append("-&nbsp;");
-        } else {
-            mStringBuilder.append("<LI>");
-        }
-
+        mStringBuilder.append("<DD>");
+        mStringBuilder.append("-&nbsp;");
         return this;
     }
 
