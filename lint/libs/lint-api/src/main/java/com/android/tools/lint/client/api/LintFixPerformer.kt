@@ -55,19 +55,15 @@ import com.android.tools.lint.detector.api.LintFix.ReplaceString.Companion.INSER
 import com.android.tools.lint.detector.api.LintFix.SetAttribute
 import com.android.tools.lint.detector.api.Location
 import com.android.tools.lint.detector.api.Severity
-import com.android.utils.PositionXmlParser
 import com.android.utils.XmlUtils
 import com.intellij.openapi.util.TextRange
 import java.io.File
-import java.io.IOException
-import javax.xml.parsers.ParserConfigurationException
 import kotlin.math.max
 import kotlin.math.min
 import org.w3c.dom.Attr
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
-import org.xml.sax.SAXException
 
 /** Support for applying quickfixes directly. */
 abstract class LintFixPerformer(
@@ -75,8 +71,6 @@ abstract class LintFixPerformer(
   /** Should applied fixes be limited to those marked as safe to be applied automatically? */
   private val requireAutoFixable: Boolean = false,
 ) {
-  abstract fun getSourceText(file: File): CharSequence
-
   abstract fun log(severity: Severity, message: String)
 
   private fun getFileData(fileMap: MutableMap<File, PendingEditFile>, file: File): PendingEditFile {
@@ -88,47 +82,15 @@ abstract class LintFixPerformer(
       }
   }
 
-  fun createFileProvider() = FileProvider()
+  /** Abstracts file I/O that could have different implementations depending on context. */
+  interface FileProvider {
+    fun getFileContents(file: PendingEditFile): String
 
-  inner class FileProvider {
-    private val files = mutableMapOf<PendingEditFile, String>()
-    private val documents = mutableMapOf<PendingEditFile, Document>()
+    fun getXmlDocument(file: PendingEditFile): Document?
 
-    fun getFileContents(file: PendingEditFile): String {
-      return files[file] ?: getSourceText(file.file).toString().also { files[file] = it }
-    }
+    fun createBinaryFile(fileData: PendingEditFile, contents: ByteArray)
 
-    fun getXmlDocument(file: PendingEditFile): Document? {
-      return documents[file]
-        ?: createXmlDocument(file).also {
-          if (it != null) {
-            documents[file] = it
-          }
-        }
-    }
-
-    /** If this file represents an XML file, returns the XML DOM of the initial content. */
-    private fun createXmlDocument(file: PendingEditFile): Document? {
-      try {
-        val contents = getFileContents(file)
-        client.getXmlDocument(file.file, contents)?.let {
-          return it
-        }
-        return PositionXmlParser.parse(contents)
-      } catch (e: ParserConfigurationException) {
-        handleXmlError(e, file)
-      } catch (e: SAXException) {
-        handleXmlError(e, file)
-      } catch (e: IOException) {
-        handleXmlError(e, file)
-      }
-      return null
-    }
-
-    // because Kotlin does not have multi-catch:
-    private fun handleXmlError(e: Throwable, file: PendingEditFile) {
-      log(Severity.WARNING, "Ignoring $file: Failed to parse XML: $e")
-    }
+    fun deleteFile(fileData: PendingEditFile)
   }
 
   private fun registerFix(
@@ -142,8 +104,7 @@ abstract class LintFixPerformer(
     }
   }
 
-  fun fix(incidents: List<Incident>): Boolean {
-    val fileProvider = FileProvider()
+  fun fix(incidents: List<Incident>, fileProvider: FileProvider): Boolean {
     val files = findApplicableFixes(fileProvider, incidents)
     return applyEdits(fileProvider, files)
   }
@@ -151,7 +112,7 @@ abstract class LintFixPerformer(
   fun registerFixes(
     incident: Incident,
     fixes: List<LintFix>,
-    fileProvider: FileProvider = createFileProvider(),
+    fileProvider: FileProvider,
   ): List<PendingEditFile> {
     val fileMap = mutableMapOf<File, PendingEditFile>()
     for (fix in fixes) {
@@ -258,15 +219,10 @@ abstract class LintFixPerformer(
     }
   }
 
-  fun fix(incident: Incident, fixes: List<LintFix>): Boolean {
-    val fileProvider = FileProvider()
+  fun fix(incident: Incident, fixes: List<LintFix>, fileProvider: FileProvider): Boolean {
     val fileMap = registerFixes(incident, fixes, fileProvider)
     return applyEdits(fileProvider, fileMap)
   }
-
-  protected abstract fun createBinaryFile(fileData: PendingEditFile, contents: ByteArray)
-
-  protected abstract fun deleteFile(fileData: PendingEditFile)
 
   protected open fun applyEdits(
     fileData: PendingEditFile,
@@ -297,11 +253,11 @@ abstract class LintFixPerformer(
 
     for (fileData in files) {
       if (fileData.createBytes != null) {
-        createBinaryFile(fileData, fileData.createBytes!!)
+        fileProvider.createBinaryFile(fileData, fileData.createBytes!!)
         editedFileCount++
         continue
       } else if (fileData.delete) {
-        deleteFile(fileData)
+        fileProvider.deleteFile(fileData)
         editedFileCount++
         continue
       }
@@ -954,7 +910,7 @@ abstract class LintFixPerformer(
   fun computeEdits(
     incident: Incident,
     lintFix: LintFix,
-    fileProvider: FileProvider = createFileProvider(),
+    fileProvider: FileProvider,
   ): List<PendingEditFile> {
     val fileMap = mutableMapOf<File, PendingEditFile>()
     registerFix(fileProvider, fileMap, incident, lintFix)
@@ -1340,7 +1296,7 @@ abstract class LintFixPerformer(
     }
   }
 
-  inner class PendingEditFile(val file: File) {
+  class PendingEditFile(val file: File) {
 
     /** List of edits to perform in this file */
     val edits: MutableList<PendingEdit> = mutableListOf()

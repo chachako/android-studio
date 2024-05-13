@@ -19,13 +19,19 @@ package com.android.tools.lint
 import com.android.SdkConstants
 import com.android.tools.lint.client.api.LintFixPerformer
 import com.android.tools.lint.client.api.LintFixPerformer.Companion.skipCommentsAndWhitespace
+import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.LintFix
 import com.android.tools.lint.detector.api.Severity
+import com.android.utils.PositionXmlParser
 import java.io.File
+import java.io.IOException
 import java.io.PrintWriter
 import java.util.TreeMap
+import javax.xml.parsers.ParserConfigurationException
 import kotlin.math.min
 import org.jetbrains.annotations.VisibleForTesting
+import org.w3c.dom.Document
+import org.xml.sax.SAXException
 
 /** Support for applying quickfixes directly. */
 open class LintCliFixPerformer(
@@ -46,7 +52,7 @@ open class LintCliFixPerformer(
    */
   private val shortenAll: Boolean = includeMarkers,
 ) : LintFixPerformer(client, requireAutoFixable) {
-  override fun getSourceText(file: File): CharSequence {
+  fun getSourceText(file: File): CharSequence {
     return client.getSourceText(file)
   }
 
@@ -67,12 +73,16 @@ open class LintCliFixPerformer(
     }
   }
 
-  override fun createBinaryFile(fileData: PendingEditFile, contents: ByteArray) {
-    writeFile(fileData.file, contents)
+  fun fix(incidents: List<Incident>): Boolean {
+    return super.fix(incidents, LintCliFileProvider())
   }
 
-  override fun deleteFile(fileData: PendingEditFile) {
-    writeFile(fileData.file, null)
+  fun fix(incident: Incident, fixes: List<LintFix>): Boolean {
+    return super.fix(incident, fixes, LintCliFileProvider())
+  }
+
+  fun computeEdits(incident: Incident, lintFix: LintFix): List<PendingEditFile> {
+    return super.computeEdits(incident, lintFix, LintCliFileProvider())
   }
 
   override fun applyEdits(
@@ -515,6 +525,55 @@ open class LintCliFixPerformer(
       staticImports.clear()
     }
     return info
+  }
+
+  inner class LintCliFileProvider : FileProvider {
+    private val files = mutableMapOf<PendingEditFile, String>()
+    private val documents = mutableMapOf<PendingEditFile, Document>()
+
+    override fun getFileContents(file: PendingEditFile): String {
+      return files[file] ?: getSourceText(file.file).toString().also { files[file] = it }
+    }
+
+    override fun getXmlDocument(file: PendingEditFile): Document? {
+      return documents[file]
+        ?: createXmlDocument(file).also {
+          if (it != null) {
+            documents[file] = it
+          }
+        }
+    }
+
+    override fun createBinaryFile(fileData: PendingEditFile, contents: ByteArray) {
+      writeFile(fileData.file, contents)
+    }
+
+    override fun deleteFile(fileData: PendingEditFile) {
+      writeFile(fileData.file, null)
+    }
+
+    /** If this file represents an XML file, returns the XML DOM of the initial content. */
+    private fun createXmlDocument(file: PendingEditFile): Document? {
+      try {
+        val contents = getFileContents(file)
+        client.getXmlDocument(file.file, contents)?.let {
+          return it
+        }
+        return PositionXmlParser.parse(contents)
+      } catch (e: Exception) {
+        when (e) {
+          is ParserConfigurationException,
+          is SAXException,
+          is IOException -> handleXmlError(e, file)
+          else -> throw e
+        }
+      }
+      return null
+    }
+
+    private fun handleXmlError(e: Throwable, file: PendingEditFile) {
+      client.log(Severity.WARNING, e, "Ignoring $file: Failed to parse XML: $e")
+    }
   }
 }
 
