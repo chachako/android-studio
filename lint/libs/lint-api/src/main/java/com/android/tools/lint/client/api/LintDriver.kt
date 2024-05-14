@@ -96,7 +96,6 @@ import com.android.utils.SdkUtils.isBitmapFile
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Objects
 import com.google.common.base.Splitter
-import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Iterables
 import com.google.common.collect.Sets
 import com.intellij.openapi.application.ApplicationManager
@@ -378,13 +377,7 @@ class LintDriver(
       return projects[0]
     }
     val path = file.path
-    for (project in projects) {
-      if (path.startsWith(project.dir.path)) {
-        return project
-      }
-    }
-
-    return null
+    return projects.find { project -> path.startsWith(project.dir.path) }
   }
 
   /**
@@ -702,13 +695,7 @@ class LintDriver(
       val extraRegistries =
         JarFileIssueRegistry.get(client, jarFiles, currentProject ?: projects.firstOrNull(), this)
       if (extraRegistries.isNotEmpty()) {
-        val registries = ArrayList<IssueRegistry>(jarFiles.size + 1)
-        // Include the builtin checks too
-        registries.add(registry)
-        for (extraRegistry in extraRegistries) {
-          registries.add(extraRegistry)
-        }
-        registry = CompositeIssueRegistry(registries)
+        registry = CompositeIssueRegistry(listOf(registry) + extraRegistries)
       }
     }
   }
@@ -769,10 +756,7 @@ class LintDriver(
     // compute applicable issues for each detector in the list of detectors
     // to be repeated
     val issues = registry.issues
-    val issueMap = ArrayListMultimap.create<Class<out Detector>, Issue>(issues.size, 3)
-    for (issue in issues) {
-      issueMap.put(issue.implementation.detectorClass, issue)
-    }
+    val issueMap = issues.groupBy { it.implementation.detectorClass }
 
     val detectorToScope = HashMap<Class<out Detector>, EnumSet<Scope>>()
     val scopeToDetectors: MutableMap<Scope, MutableList<Detector>> =
@@ -786,8 +770,8 @@ class LintDriver(
     val configuration = project.getConfiguration(this)
     for (detector in detectors) {
       val detectorClass = detector.javaClass
-      val detectorIssues = issueMap.get(detectorClass)
-      if (detectorIssues.isNotEmpty()) {
+      val detectorIssues = issueMap[detectorClass]
+      if (!detectorIssues.isNullOrEmpty()) {
         var add = false
         for (issue in detectorIssues) {
           // The reason we have to check whether the detector is enabled
@@ -814,16 +798,8 @@ class LintDriver(
 
         if (add) {
           detectorList.add(detector)
-          val union = detectorToScope[detector.javaClass]
-          if (union != null) {
-            for (s in union) {
-              var list: MutableList<Detector>? = scopeToDetectors[s]
-              if (list == null) {
-                list = ArrayList()
-                scopeToDetectors[s] = list
-              }
-              list.add(detector)
-            }
+          detectorToScope[detector.javaClass]?.forEach { s ->
+            scopeToDetectors.getOrPut(s, ::ArrayList).add(detector)
           }
         }
       }
@@ -855,84 +831,22 @@ class LintDriver(
   /** Development diagnostics only, run with assertions on. */
   private fun validateScopeList() {
     if (assertionsEnabled()) {
-      val resourceFileDetectors = scopeDetectors[Scope.RESOURCE_FILE]
-      if (resourceFileDetectors != null) {
-        for (detector in resourceFileDetectors) {
-          assert(detector is XmlScanner) { detector }
-        }
-      }
-
-      val manifestDetectors = scopeDetectors[Scope.MANIFEST]
-      if (manifestDetectors != null) {
-        for (detector in manifestDetectors) {
-          assert(detector is XmlScanner) { detector }
-        }
-      }
-
-      val javaCodeDetectors = scopeDetectors[Scope.ALL_JAVA_FILES]
-      if (javaCodeDetectors != null) {
-        for (detector in javaCodeDetectors) {
-          assert(detector is SourceCodeScanner) { detector }
-        }
-      }
-
-      val javaFileDetectors = scopeDetectors[Scope.JAVA_FILE]
-      if (javaFileDetectors != null) {
-        for (detector in javaFileDetectors) {
-          assert(detector is SourceCodeScanner) { detector }
-        }
-      }
-
-      val classDetectors = scopeDetectors[Scope.CLASS_FILE]
-      if (classDetectors != null) {
-        for (detector in classDetectors) {
-          assert(detector is ClassScanner) { detector }
-        }
-      }
-
-      val classCodeDetectors = scopeDetectors[Scope.ALL_CLASS_FILES]
-      if (classCodeDetectors != null) {
-        for (detector in classCodeDetectors) {
-          assert(detector is ClassScanner) { detector }
-        }
-      }
-
-      val tomlDetectors = scopeDetectors[Scope.TOML_FILE]
-      if (tomlDetectors != null) {
-        for (detector in tomlDetectors) {
-          assert(detector is TomlScanner) { detector }
-        }
-      }
-
-      val gradleDetectors = scopeDetectors[Scope.GRADLE_FILE]
-      if (gradleDetectors != null) {
-        for (detector in gradleDetectors) {
-          assert(detector is GradleScanner) { detector }
-        }
-      }
-
-      val otherDetectors = scopeDetectors[Scope.OTHER]
-      if (otherDetectors != null) {
-        for (detector in otherDetectors) {
-          assert(detector is OtherFileScanner) { detector }
-        }
-      }
-
-      val dirDetectors = scopeDetectors[Scope.RESOURCE_FOLDER]
-      if (dirDetectors != null) {
-        for (detector in dirDetectors) {
-          assert(detector is ResourceFolderScanner) { detector }
-        }
-      }
-
-      val binaryDetectors = scopeDetectors[Scope.BINARY_RESOURCE_FILE]
-      if (binaryDetectors != null) {
-        for (detector in binaryDetectors) {
-          assert(detector is BinaryResourceScanner) { detector }
-        }
-      }
+      validate<XmlScanner>(Scope.RESOURCE_FILE)
+      validate<XmlScanner>(Scope.MANIFEST)
+      validate<SourceCodeScanner>(Scope.ALL_JAVA_FILES)
+      validate<SourceCodeScanner>(Scope.JAVA_FILE)
+      validate<ClassScanner>(Scope.CLASS_FILE)
+      validate<ClassScanner>(Scope.ALL_CLASS_FILES)
+      validate<TomlScanner>(Scope.TOML_FILE)
+      validate<GradleScanner>(Scope.GRADLE_FILE)
+      validate<OtherFileScanner>(Scope.OTHER)
+      validate<ResourceFolderScanner>(Scope.RESOURCE_FOLDER)
+      validate<BinaryResourceScanner>(Scope.BINARY_RESOURCE_FILE)
     }
   }
+
+  private inline fun <reified T> validate(scope: Scope) =
+    scopeDetectors[scope]?.forEach { assert(it is T) }
 
   private fun registerProjectFile(
     fileToProject: MutableMap<File, Project>,
@@ -951,13 +865,9 @@ class LintDriver(
 
     // Ensure that we have absolute paths such that if you lint
     //  "foo bar" in "baz" we can show baz/ as the root
-    val absolute = ArrayList<File>(relativeFiles.size)
-    for (file in relativeFiles) {
-      absolute.add(file.absoluteFile)
-    }
     // Always use absoluteFiles so that we can check the file's getParentFile()
     // which is null if the file is not absolute.
-    @Suppress("UnnecessaryVariable") val files = absolute
+    val files = relativeFiles.mapNotNull(File::getAbsoluteFile)
 
     if (request.srcRoot != null) {
       sharedRoot = request.srcRoot
@@ -1305,14 +1215,7 @@ class LintDriver(
         client.runReadAction {
           val detectors = scopeDetectors[Scope.MANIFEST]
           if (detectors != null) {
-            val xmlDetectors = ArrayList<XmlScanner>(detectors.size)
-            for (detector in detectors) {
-              if (detector is XmlScanner) {
-                xmlDetectors.add(detector)
-              }
-            }
-
-            val v = ResourceVisitor(client, xmlDetectors, null)
+            val v = ResourceVisitor(client, detectors.filterIsInstance<XmlScanner>(), null)
             fireEvent(EventType.SCANNING_FILE, context)
             v.visitFile(context)
             fileCount++
@@ -1336,23 +1239,9 @@ class LintDriver(
         val checks =
           union(scopeDetectors[Scope.RESOURCE_FILE], scopeDetectors[Scope.ALL_RESOURCE_FILES])
             ?: emptyList()
-        var haveXmlChecks = checks.isNotEmpty()
-        val xmlDetectors: MutableList<XmlScanner>
-        if (haveXmlChecks) {
-          xmlDetectors = ArrayList(checks.size)
-          for (detector in checks) {
-            if (detector is XmlScanner) {
-              xmlDetectors.add(detector)
-            }
-          }
-          haveXmlChecks = xmlDetectors.isNotEmpty()
-        } else {
-          xmlDetectors = mutableListOf()
-        }
+        val xmlDetectors = checks.filterIsInstance<XmlScanner>()
         if (
-          haveXmlChecks ||
-            dirChecks != null && dirChecks.isNotEmpty() ||
-            binaryChecks != null && binaryChecks.isNotEmpty()
+          xmlDetectors.isNotEmpty() || !dirChecks.isNullOrEmpty() || !binaryChecks.isNullOrEmpty()
         ) {
           val files = project.subset
           if (files != null) {
@@ -1437,12 +1326,7 @@ class LintDriver(
         return null
       }
 
-      val tomlScanners = ArrayList<TomlScanner>(detectors.size)
-      for (detector in detectors) {
-        if (detector is TomlScanner) {
-          tomlScanners.add(detector)
-        }
-      }
+      val tomlScanners = detectors.filterIsInstance<TomlScanner>()
       if (tomlScanners.isEmpty()) {
         return null
       }
@@ -1516,17 +1400,11 @@ class LintDriver(
             }
           }
 
-      val gradleScanners = ArrayList<GradleScanner>(detectors.size)
-      val customVisitedGradleScanners = ArrayList<GradleScanner>(detectors.size)
-      for (detector in detectors) {
-        if (detector is GradleScanner) {
-          if (detector.customVisitor) {
-            customVisitedGradleScanners.add(detector)
-          } else {
-            gradleScanners.add(detector)
-          }
-        }
-      }
+      val (customVisitedGradleScanners, gradleScanners) =
+        detectors
+          .asSequence()
+          .filterIsInstance<GradleScanner>()
+          .partition(GradleScanner::customVisitor)
       if (gradleScanners.isEmpty() && customVisitedGradleScanners.isEmpty()) {
         return
       }
@@ -1760,16 +1638,12 @@ class LintDriver(
   }
 
   private fun checkIndividualClassFiles(project: Project, main: Project?, files: List<File>) {
-    val classFiles = ArrayList<File>(files.size)
     val classFolders = project.javaClassFolders
-    if (classFolders.isNotEmpty()) {
-      for (file in files) {
-        val path = file.path
-        if (file.isFile && path.endsWith(DOT_CLASS)) {
-          classFiles.add(file)
-        }
+    val classFiles =
+      when {
+        classFolders.isNotEmpty() -> files.filter { it.isFile && it.path.endsWith(DOT_CLASS) }
+        else -> listOf()
       }
-    }
 
     val classDetectors = scopeDetectors[Scope.CLASS_FILE]
     if (!classDetectors.isNullOrEmpty()) {
@@ -2182,19 +2056,13 @@ class LintDriver(
   }
 
   private fun filterTestScanners(scanners: List<Detector>): List<Detector> {
-    val testScanners = ArrayList<Detector>(scanners.size)
     // Compute intersection of Java and test scanners
     var sourceScanners: Collection<Detector> =
       scopeDetectors[Scope.TEST_SOURCES] ?: return emptyList()
     if (sourceScanners.size > 15 && scanners.size > 15) {
       sourceScanners = Sets.newHashSet(sourceScanners) // switch from list to set
     }
-    for (check in scanners) {
-      if (sourceScanners.contains(check)) {
-        testScanners.add(check)
-      }
-    }
-    return testScanners
+    return scanners.filter(sourceScanners::contains)
   }
 
   private fun findUastSources(project: Project, main: Project?, files: List<File>): UastSourceList {
@@ -2293,21 +2161,8 @@ class LintDriver(
       currentFolderType = type
 
       // Determine which XML resource detectors apply to the given folder type
-      val applicableXmlChecks = ArrayList<XmlScanner>(checks.size)
-      for (check in checks) {
-        if (check.appliesTo(type)) {
-          applicableXmlChecks.add(check)
-        }
-      }
-      var applicableBinaryChecks: MutableList<Detector>? = null
-      if (binaryChecks != null) {
-        applicableBinaryChecks = ArrayList(binaryChecks.size)
-        for (check in binaryChecks) {
-          if (check.appliesTo(type)) {
-            applicableBinaryChecks.add(check)
-          }
-        }
-      }
+      val applicableXmlChecks = checks.filter { it.appliesTo(type) }
+      val applicableBinaryChecks = binaryChecks?.filter { it.appliesTo(type) }
 
       // If the list of detectors hasn't changed, then just use the current visitor!
       if (
@@ -2321,10 +2176,7 @@ class LintDriver(
       currentXmlDetectors = applicableXmlChecks
       currentBinaryDetectors = applicableBinaryChecks
 
-      if (
-        applicableXmlChecks.isEmpty() &&
-          (applicableBinaryChecks == null || applicableBinaryChecks.isEmpty())
-      ) {
+      if (applicableXmlChecks.isEmpty() && applicableBinaryChecks.isNullOrEmpty()) {
         currentVisitor = null
         return null
       }
@@ -3445,14 +3297,8 @@ class LintDriver(
     return false
   }
 
-  fun isSuppressed(context: JavaContext?, issue: Issue, clause: UCatchClause): Boolean {
-    for (parameter in clause.parameters) {
-      if (isSuppressed(context, issue, parameter as UElement)) {
-        return true
-      }
-    }
-    return false
-  }
+  fun isSuppressed(context: JavaContext?, issue: Issue, clause: UCatchClause): Boolean =
+    clause.parameters.any { isSuppressed(context, issue, it as UElement) }
 
   fun isSuppressed(context: JavaContext?, issue: Issue, scope: PsiElement?): Boolean {
     scope ?: return false
