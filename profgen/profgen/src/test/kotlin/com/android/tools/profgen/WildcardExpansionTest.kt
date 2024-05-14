@@ -52,6 +52,11 @@ class WildcardExpansionTest {
         runTest("HSPLHello;->void*()V", "HSPLHello;->voidMethod()V", classFileResources)
         runTest("HSPLHello;->void**()V", "HSPLHello;->voidMethod()V", classFileResources)
         runTest(
+            """
+                PLHello;->voidMethod()V
+                HSPLHello;->voidMethod()V
+            """.trimIndent(), "HSPLHello;->voidMethod()V", classFileResources)
+        runTest(
             "HSP**->**(**)**",
             """
                 HSPLHello;-><init>()V
