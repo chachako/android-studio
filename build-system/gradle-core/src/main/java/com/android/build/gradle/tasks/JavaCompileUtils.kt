@@ -462,7 +462,7 @@ private fun checkDeprecatedSourceAndTarget(
             2. Set a higher source/target version
             3. Use a lower version of the JDK running the build (if you're not using Java toolchain)
         For more details on how to configure these settings, see https://developer.android.com/build/jdks.
-        """.trimIndent() + suppressWarningMessage?.let { "\n" + it }
+        """.trimIndent() + (suppressWarningMessage?.let { "\n" + it } ?: "")
 
     val data = "javacVersion=$javacVersion,sourceCompatibility=$sourceCompatibility,targetCompatibility=$targetCompatibility"
 
