@@ -49,6 +49,7 @@ public class AdbInstaller extends Installer {
         DO_NO_RETRY
     };
 
+    // Operations on channelsProvider and its channels need to be synchronized
     private final AdbInstallerChannelManager channelsProvider;
     private final Mode mode;
 
@@ -164,65 +165,64 @@ public class AdbInstaller extends Installer {
             Deploy.InstallerRequest request, OnFail onFail, long timeOutMs) throws IOException {
         Deploy.InstallerResponse response = null;
 
-        AdbInstallerChannel channel = channelsProvider.getChannel(adb, getVersion());
+        synchronized (channelsProvider) {
+            AdbInstallerChannel channel = channelsProvider.getChannel(adb, getVersion());
 
-        channel.lock();
-        try {
-            if (channel.writeRequest(request, timeOutMs)) {
-                response = channel.readResponse(timeOutMs);
+            try {
+                if (channel.writeRequest(request, timeOutMs)) {
+                    response = channel.readResponse(timeOutMs);
+                }
+            } catch (TimeoutException e) {
+                // If something timed out, don't call into ddmlib to prepare and push the binary
+                // again (ddmlib default timeout if 30mn). Fail now.
+                String msg = String.format("Device '%s' timed out", adb.getName());
+                throw new IOException(msg);
             }
-        } catch (TimeoutException e) {
-            // If something timed out, don't call into ddmlib to prepare and push the binary
-            // again (ddmlib default timeout if 30mn). Fail now.
-            String msg = String.format("Device '%s' timed out", adb.getName());
-            throw new IOException(msg);
-        } finally {
-            channel.unlock();
-        }
 
-        // Handle the case where the executable is not present on the device.
-        // In this case, the
-        // shell invocation will return something that is not parsable by protobuffer. Most
-        // likely "/system/bin/sh: /data/local/tmp/.studio/bin/installer: not found".
-        if (response == null) {
-            if (onFail == OnFail.DO_NO_RETRY) {
-                // This is the second time this error happens. Aborting.
-                throw new IOException("Invalid installer response");
+            // Handle the case where the executable is not present on the device.
+            // In this case, the
+            // shell invocation will return something that is not parsable by protobuffer. Most
+            // likely "/system/bin/sh: /data/local/tmp/.studio/bin/installer: not found".
+            if (response == null) {
+                if (onFail == OnFail.DO_NO_RETRY) {
+                    // This is the second time this error happens. Aborting.
+                    throw new IOException("Invalid installer response");
+                }
+                channelsProvider.reset(adb);
+                prepare();
+                return sendInstallerRequest(request, OnFail.DO_NO_RETRY, timeOutMs);
             }
-            channelsProvider.reset(adb);
-            prepare();
-            return sendInstallerRequest(request, OnFail.DO_NO_RETRY, timeOutMs);
-        }
 
-        // Parse response.
-        if (response.getStatus() == Deploy.InstallerResponse.Status.ERROR_WRONG_VERSION) {
-            if (onFail == OnFail.DO_NO_RETRY) {
-                // This is the second time this error happens. Aborting.
-                throw new IOException("Unrecoverable installer WRONG_VERSION error. Aborting");
+            // Parse response.
+            if (response.getStatus() == Deploy.InstallerResponse.Status.ERROR_WRONG_VERSION) {
+                if (onFail == OnFail.DO_NO_RETRY) {
+                    // This is the second time this error happens. Aborting.
+                    throw new IOException("Unrecoverable installer WRONG_VERSION error. Aborting");
+                }
+                channelsProvider.reset(adb);
+                prepare();
+                return sendInstallerRequest(request, OnFail.DO_NO_RETRY, timeOutMs);
             }
-            channelsProvider.reset(adb);
-            prepare();
-            return sendInstallerRequest(request, OnFail.DO_NO_RETRY, timeOutMs);
-        }
 
-        Deploy.InstallerResponse.Status status = response.getStatus();
-        if (status != Deploy.InstallerResponse.Status.OK) {
-            int statusNumber = status.getNumber();
-            String errorMsg = response.getErrorMessage();
-            String msg =
-                    String.format(
-                            Locale.US,
-                            "Bad InstallerResponse msg='%s', status=%d",
-                            errorMsg,
-                            statusNumber);
-            throw new IOException(msg);
-        }
+            Deploy.InstallerResponse.Status status = response.getStatus();
+            if (status != Deploy.InstallerResponse.Status.OK) {
+                int statusNumber = status.getNumber();
+                String errorMsg = response.getErrorMessage();
+                String msg =
+                        String.format(
+                                Locale.US,
+                                "Bad InstallerResponse msg='%s', status=%d",
+                                errorMsg,
+                                statusNumber);
+                throw new IOException(msg);
+            }
 
-        if (mode == Mode.ONE_SHOT) {
-            channelsProvider.reset(adb);
-        }
+            if (mode == Mode.ONE_SHOT) {
+                channelsProvider.reset(adb);
+            }
 
-        return response;
+            return response;
+        }
     }
 
     private void prepare() throws IOException {
@@ -336,10 +336,11 @@ public class AdbInstaller extends Installer {
     // would be read without change to recovery.
     //
     // To solve this issue, we reset the connection to the daemon.
-    protected void onAsymetry(Deploy.InstallerRequest req, Deploy.InstallerResponse resp)
-            throws IOException {
+    protected void onAsymetry(Deploy.InstallerRequest req, Deploy.InstallerResponse resp) {
         try {
-            channelsProvider.reset(adb);
+            synchronized (channelsProvider) {
+                channelsProvider.reset(adb);
+            }
         } catch (IOException e) {
             // ignore
         }

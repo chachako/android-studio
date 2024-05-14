@@ -74,7 +74,6 @@ class AdbInstallerChannel implements AutoCloseable {
      * @throws IOException If not enough data could be read from the socket before timeout.
      */
     private void read(ByteBuffer buffer, long timeOutMs) throws IOException {
-        checkLock();
         long deadline = System.currentTimeMillis() + timeOutMs;
         while (true) {
             // Everything was received
@@ -115,7 +114,6 @@ class AdbInstallerChannel implements AutoCloseable {
      *     remotely closed
      */
     private void write(ByteBuffer buffer, long timeOutMs) throws IOException, TimeoutException {
-        checkLock();
         long deadline = System.currentTimeMillis() + timeOutMs;
         while (true) {
             // Everything was sent
@@ -145,20 +143,6 @@ class AdbInstallerChannel implements AutoCloseable {
     @Override
     public void close() throws IOException {
         channel.close();
-    }
-
-    public void lock() {
-        lock.lock();
-    }
-
-    public void unlock() {
-        lock.unlock();
-    }
-
-    public void checkLock() {
-        if (!lock.isHeldByCurrentThread()) {
-            throw new IllegalStateException("Channel lock must be acquired before read/write");
-        }
     }
 
     boolean writeRequest(Deploy.InstallerRequest request, long timeOutMs) throws TimeoutException {

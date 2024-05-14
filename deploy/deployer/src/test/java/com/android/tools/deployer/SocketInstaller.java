@@ -49,7 +49,6 @@ public class SocketInstaller extends Installer implements AutoCloseable {
                             SocketChannelWithTimeouts.wrap(HostInstaller.spawn(path)), logger);
         }
         try {
-            channel.lock();
             channel.writeRequest(request, timeOutMs);
             Deploy.InstallerResponse resp = channel.readResponse(timeOutMs);
             if (resp == null) {
@@ -59,8 +58,6 @@ public class SocketInstaller extends Installer implements AutoCloseable {
             return resp;
         } catch (TimeoutException e) {
             e.printStackTrace();
-        } finally {
-            channel.unlock();
         }
         throw new IOException(
                 "Unable to complete request '" + request.getRequestCase().name() + "'");
