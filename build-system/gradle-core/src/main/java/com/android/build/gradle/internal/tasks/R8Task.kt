@@ -407,7 +407,7 @@ abstract class R8Task @Inject constructor(
                     }
                 }
             }
-            if (creationConfig is VariantCreationConfig) {
+            if (creationConfig is VariantCreationConfig && !creationConfig.debuggable) {
                 creationConfig.artifacts
                     .use(taskProvider)
                     .wiredWithFiles(R8Task::inputArtProfile, R8Task::outputArtProfile)
@@ -428,9 +428,11 @@ abstract class R8Task @Inject constructor(
                         ModulePropertyKey.BooleanWithDefault.ART_PROFILE_R8_REWRITING.getValue(it)
                     }
                 )
-                task.inputProfileForDexStartupOptimization.set(
-                    artifacts.get(InternalArtifactType.MERGED_STARTUP_PROFILE)
-                )
+                if (!creationConfig.debuggable) {
+                    task.inputProfileForDexStartupOptimization.set(
+                        artifacts.get(InternalArtifactType.MERGED_STARTUP_PROFILE)
+                    )
+                }
             } else {
                 task.artProfileRewriting.set(false)
             }

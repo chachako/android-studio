@@ -81,6 +81,46 @@ class ArtProfileBaselineTest {
         testMultipleLibrariesAndOptionalApplicationArtProfileMerging(true)
     }
 
+    // Regression test for b/339313346
+    @Test
+    fun testStartupProfileTaskNotRunForDebug() {
+        project.getSubproject(":app").also {
+            it.buildFile.appendText(
+                """
+                        android {
+                            defaultConfig {
+                                minSdkVersion = 28
+                            }
+                        }
+                    """.trimIndent()
+            )
+        }
+
+        val mainStartupProfileFileContent =
+            """
+                    HSPLcom/google/Foo;->mainMethod(II)I
+                    HSPLcom/google/Foo;->mainMethod-name-with-hyphens(II)I
+                """.trimIndent()
+
+        val debugStartupProfileFileContent =
+            """
+                    HSPLcom/google/Foo;->debugMethod(II)I
+                    HSPLcom/google/Foo;->debugMethod-name-with-hyphens(II)I
+                """.trimIndent()
+
+        FileUtils.createFile(
+            project.file("app/src/main/baselineProfiles/startup-prof.txt"), mainStartupProfileFileContent
+        )
+        FileUtils.createFile(
+            project.file("app/src/debug/baselineProfiles/startup-prof.txt"),
+            debugStartupProfileFileContent
+        )
+
+        val result = project.executor().run(":app:assembleRelease", ":app:assembleDebug")
+        Truth.assertThat(result.didWorkTasks).contains(":app:mergeReleaseStartupProfile")
+        Truth.assertThat(result.didWorkTasks).doesNotContain(":app:mergeDebugStartupProfile")
+    }
+
     private fun testMultipleLibrariesAndOptionalApplicationArtProfileMerging(addOldBaselineProfile: Boolean) {
         val app = project.getSubproject(":app").also {
             it.buildFile.appendText(

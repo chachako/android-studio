@@ -65,7 +65,6 @@ class MinifyCacheabilityTest {
             ":processMinifiedMainManifest",
             ":processMinifiedManifest",
             ":processMinifiedManifestForPackage",
-            ":expandMinifiedArtProfileWildcards"
         ).plus(
             if (BooleanOption.GENERATE_MANIFEST_CLASS.defaultValue) {
                 setOf(":generateMinifiedManifestClass")
@@ -86,9 +85,7 @@ class MinifyCacheabilityTest {
             ":mergeMinifiedJniLibFolders",
             ":mergeMinifiedShaders",
             ":processMinifiedJavaRes",
-            ":mergeMinifiedArtProfile", /** Intentionally not cacheable see [com.android.build.gradle.internal.tasks.MergeArtProfileTask] */
             ":mergeMinifiedGeneratedProguardFiles", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.MergeGeneratedProguardFilesCreationAction] */
-            ":mergeMinifiedStartupProfile", /** Intentionally not cacheable see [com.android.build.gradle.internal.tasks.MergeStartupProfileTask] */
             ":packageMinified",
             ":validateSigningMinified", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.ValidateSigningTask] */
             ":writeMinifiedAppMetadata", /** Intentionally not cacheable. See [com.android.build.gradle.internal.tasks.AppMetadataTask] */

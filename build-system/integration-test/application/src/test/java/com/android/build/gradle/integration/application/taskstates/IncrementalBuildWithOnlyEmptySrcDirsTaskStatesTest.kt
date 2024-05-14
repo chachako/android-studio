@@ -61,7 +61,6 @@ class IncrementalBuildWithOnlyEmptySrcDirsTaskStatesTest {
                             ":app:mergeDebugJniLibFolders",
                             ":app:mergeDebugResources",
                             ":app:mergeDebugShaders",
-                            ":app:mergeDebugStartupProfile",
                             ":app:mergeDexDebug",
                             ":app:mergeExtDexDebug",
                             ":app:packageDebug",
