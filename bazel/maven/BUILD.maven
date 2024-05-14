@@ -4180,41 +4180,41 @@ maven_import(
 )
 
 maven_artifact(
-    name = "io.netty.netty-all_4.1.72.Final",
-    pom = "repository/io/netty/netty-all/4.1.72.Final/netty-all-4.1.72.Final.pom",
+    name = "io.netty.netty-all_4.1.93.Final",
+    pom = "repository/io/netty/netty-all/4.1.93.Final/netty-all-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-all/4.1.72.Final",
+    repo_path = "io/netty/netty-all/4.1.93.Final",
     deps = [
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-codec_4.1.72.Final",
-        "io.netty.netty-codec-dns_4.1.72.Final",
-        "io.netty.netty-codec-haproxy_4.1.72.Final",
-        "io.netty.netty-codec-http_4.1.72.Final",
-        "io.netty.netty-codec-http2_4.1.72.Final",
-        "io.netty.netty-codec-memcache_4.1.72.Final",
-        "io.netty.netty-codec-mqtt_4.1.72.Final",
-        "io.netty.netty-codec-redis_4.1.72.Final",
-        "io.netty.netty-codec-smtp_4.1.72.Final",
-        "io.netty.netty-codec-socks_4.1.72.Final",
-        "io.netty.netty-codec-stomp_4.1.72.Final",
-        "io.netty.netty-codec-xml_4.1.72.Final",
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-handler_4.1.72.Final",
-        "io.netty.netty-tcnative-classes_2.0.46.Final",
-        "io.netty.netty-handler-proxy_4.1.72.Final",
-        "io.netty.netty-resolver_4.1.72.Final",
-        "io.netty.netty-resolver-dns_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-rxtx_4.1.72.Final",
-        "io.netty.netty-transport-sctp_4.1.72.Final",
-        "io.netty.netty-transport-udt_4.1.72.Final",
-        "io.netty.netty-transport-classes-epoll_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
-        "io.netty.netty-transport-classes-kqueue_4.1.72.Final",
-        "io.netty.netty-resolver-dns-classes-macos_4.1.72.Final",
-        "io.netty.netty-transport-native-epoll_4.1.72.Final",
-        "io.netty.netty-transport-native-kqueue_4.1.72.Final",
-        "io.netty.netty-resolver-dns-native-macos_4.1.72.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-codec_4.1.93.Final",
+        "io.netty.netty-codec-dns_4.1.93.Final",
+        "io.netty.netty-codec-haproxy_4.1.93.Final",
+        "io.netty.netty-codec-http_4.1.93.Final",
+        "io.netty.netty-codec-http2_4.1.93.Final",
+        "io.netty.netty-codec-memcache_4.1.93.Final",
+        "io.netty.netty-codec-mqtt_4.1.93.Final",
+        "io.netty.netty-codec-redis_4.1.93.Final",
+        "io.netty.netty-codec-smtp_4.1.93.Final",
+        "io.netty.netty-codec-socks_4.1.93.Final",
+        "io.netty.netty-codec-stomp_4.1.93.Final",
+        "io.netty.netty-codec-xml_4.1.93.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-handler_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
+        "io.netty.netty-handler-proxy_4.1.93.Final",
+        "io.netty.netty-handler-ssl-ocsp_4.1.93.Final",
+        "io.netty.netty-resolver_4.1.93.Final",
+        "io.netty.netty-resolver-dns_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-rxtx_4.1.93.Final",
+        "io.netty.netty-transport-sctp_4.1.93.Final",
+        "io.netty.netty-transport-udt_4.1.93.Final",
+        "io.netty.netty-transport-classes-epoll_4.1.93.Final",
+        "io.netty.netty-transport-classes-kqueue_4.1.93.Final",
+        "io.netty.netty-resolver-dns-classes-macos_4.1.93.Final",
+        "io.netty.netty-transport-native-epoll_4.1.93.Final",
+        "io.netty.netty-transport-native-kqueue_4.1.93.Final",
+        "io.netty.netty-resolver-dns-native-macos_4.1.93.Final",
     ],
     visibility = ["//visibility:public"],
 )
@@ -4223,7 +4223,7 @@ maven_import(
     name = "io.netty.netty-all",
     classifiers = [],
     jars = [
-        "repository/io/netty/netty-all/4.1.72.Final/netty-all-4.1.72.Final.jar"
+        "repository/io/netty/netty-all/4.1.93.Final/netty-all-4.1.93.Final.jar"
     ],
     exports = [
         "io.netty.netty-buffer",
@@ -4241,8 +4241,9 @@ maven_import(
         "io.netty.netty-codec-xml",
         "io.netty.netty-common",
         "io.netty.netty-handler",
-        "io.netty.netty-tcnative-classes",
+        "io.netty.netty-transport-native-unix-common",
         "io.netty.netty-handler-proxy",
+        "io.netty.netty-handler-ssl-ocsp",
         "io.netty.netty-resolver",
         "io.netty.netty-resolver-dns",
         "io.netty.netty-transport",
@@ -4250,7 +4251,6 @@ maven_import(
         "io.netty.netty-transport-sctp",
         "io.netty.netty-transport-udt",
         "io.netty.netty-transport-classes-epoll",
-        "io.netty.netty-transport-native-unix-common",
         "io.netty.netty-transport-classes-kqueue",
         "io.netty.netty-resolver-dns-classes-macos",
     ],
@@ -4263,40 +4263,40 @@ maven_import(
         "io.netty.netty-resolver-dns-native-macos.osx-aarch_64",
     ],
     original_deps = [
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-codec_4.1.72.Final",
-        "io.netty.netty-codec-dns_4.1.72.Final",
-        "io.netty.netty-codec-haproxy_4.1.72.Final",
-        "io.netty.netty-codec-http_4.1.72.Final",
-        "io.netty.netty-codec-http2_4.1.72.Final",
-        "io.netty.netty-codec-memcache_4.1.72.Final",
-        "io.netty.netty-codec-mqtt_4.1.72.Final",
-        "io.netty.netty-codec-redis_4.1.72.Final",
-        "io.netty.netty-codec-smtp_4.1.72.Final",
-        "io.netty.netty-codec-socks_4.1.72.Final",
-        "io.netty.netty-codec-stomp_4.1.72.Final",
-        "io.netty.netty-codec-xml_4.1.72.Final",
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-handler_4.1.72.Final",
-        "io.netty.netty-tcnative-classes_2.0.46.Final",
-        "io.netty.netty-handler-proxy_4.1.72.Final",
-        "io.netty.netty-resolver_4.1.72.Final",
-        "io.netty.netty-resolver-dns_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-rxtx_4.1.72.Final",
-        "io.netty.netty-transport-sctp_4.1.72.Final",
-        "io.netty.netty-transport-udt_4.1.72.Final",
-        "io.netty.netty-transport-classes-epoll_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
-        "io.netty.netty-transport-classes-kqueue_4.1.72.Final",
-        "io.netty.netty-resolver-dns-classes-macos_4.1.72.Final",
-        "io.netty.netty-transport-native-epoll_4.1.72.Final",
-        "io.netty.netty-transport-native-kqueue_4.1.72.Final",
-        "io.netty.netty-resolver-dns-native-macos_4.1.72.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-codec_4.1.93.Final",
+        "io.netty.netty-codec-dns_4.1.93.Final",
+        "io.netty.netty-codec-haproxy_4.1.93.Final",
+        "io.netty.netty-codec-http_4.1.93.Final",
+        "io.netty.netty-codec-http2_4.1.93.Final",
+        "io.netty.netty-codec-memcache_4.1.93.Final",
+        "io.netty.netty-codec-mqtt_4.1.93.Final",
+        "io.netty.netty-codec-redis_4.1.93.Final",
+        "io.netty.netty-codec-smtp_4.1.93.Final",
+        "io.netty.netty-codec-socks_4.1.93.Final",
+        "io.netty.netty-codec-stomp_4.1.93.Final",
+        "io.netty.netty-codec-xml_4.1.93.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-handler_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
+        "io.netty.netty-handler-proxy_4.1.93.Final",
+        "io.netty.netty-handler-ssl-ocsp_4.1.93.Final",
+        "io.netty.netty-resolver_4.1.93.Final",
+        "io.netty.netty-resolver-dns_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-rxtx_4.1.93.Final",
+        "io.netty.netty-transport-sctp_4.1.93.Final",
+        "io.netty.netty-transport-udt_4.1.93.Final",
+        "io.netty.netty-transport-classes-epoll_4.1.93.Final",
+        "io.netty.netty-transport-classes-kqueue_4.1.93.Final",
+        "io.netty.netty-resolver-dns-classes-macos_4.1.93.Final",
+        "io.netty.netty-transport-native-epoll_4.1.93.Final",
+        "io.netty.netty-transport-native-kqueue_4.1.93.Final",
+        "io.netty.netty-resolver-dns-native-macos_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-all/4.1.72.Final/netty-all-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-all/4.1.93.Final/netty-all-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-all/4.1.72.Final",
+    repo_path = "io/netty/netty-all/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
@@ -4332,16 +4332,16 @@ maven_import(
 )
 
 maven_artifact(
-    name = "io.netty.netty-codec-dns_4.1.72.Final",
-    pom = "repository/io/netty/netty-codec-dns/4.1.72.Final/netty-codec-dns-4.1.72.Final.pom",
+    name = "io.netty.netty-codec-dns_4.1.93.Final",
+    pom = "repository/io/netty/netty-codec-dns/4.1.93.Final/netty-codec-dns-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-dns/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-codec-dns/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-codec_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-codec_4.1.93.Final",
     ],
     visibility = ["//visibility:public"],
 )
@@ -4349,9 +4349,9 @@ maven_artifact(
 maven_import(
     name = "io.netty.netty-codec-dns",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-codec-dns/4.1.72.Final/netty-codec-dns-4.1.72.Final.jar"
+        "repository/io/netty/netty-codec-dns/4.1.93.Final/netty-codec-dns-4.1.93.Final.jar"
     ],
     exports = [
         "io.netty.netty-common",
@@ -4360,37 +4360,37 @@ maven_import(
         "io.netty.netty-codec",
     ],
     original_deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-codec_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-codec_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-codec-dns/4.1.72.Final/netty-codec-dns-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-codec-dns/4.1.93.Final/netty-codec-dns-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-dns/4.1.72.Final",
+    repo_path = "io/netty/netty-codec-dns/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-codec-haproxy_4.1.72.Final",
-    pom = "repository/io/netty/netty-codec-haproxy/4.1.72.Final/netty-codec-haproxy-4.1.72.Final.pom",
+    name = "io.netty.netty-codec-haproxy_4.1.93.Final",
+    pom = "repository/io/netty/netty-codec-haproxy/4.1.93.Final/netty-codec-haproxy-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-haproxy/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-codec-haproxy/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-codec-haproxy",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-codec-haproxy/4.1.72.Final/netty-codec-haproxy-4.1.72.Final.jar"
+        "repository/io/netty/netty-codec-haproxy/4.1.93.Final/netty-codec-haproxy-4.1.93.Final.jar"
     ],
     original_deps = [],
-    pom = "repository/io/netty/netty-codec-haproxy/4.1.72.Final/netty-codec-haproxy-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-codec-haproxy/4.1.93.Final/netty-codec-haproxy-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-haproxy/4.1.72.Final",
+    repo_path = "io/netty/netty-codec-haproxy/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
@@ -4484,94 +4484,94 @@ maven_import(
 )
 
 maven_artifact(
-    name = "io.netty.netty-codec-memcache_4.1.72.Final",
-    pom = "repository/io/netty/netty-codec-memcache/4.1.72.Final/netty-codec-memcache-4.1.72.Final.pom",
+    name = "io.netty.netty-codec-memcache_4.1.93.Final",
+    pom = "repository/io/netty/netty-codec-memcache/4.1.93.Final/netty-codec-memcache-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-memcache/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-codec-memcache/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-codec-memcache",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-codec-memcache/4.1.72.Final/netty-codec-memcache-4.1.72.Final.jar"
+        "repository/io/netty/netty-codec-memcache/4.1.93.Final/netty-codec-memcache-4.1.93.Final.jar"
     ],
     original_deps = [],
-    pom = "repository/io/netty/netty-codec-memcache/4.1.72.Final/netty-codec-memcache-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-codec-memcache/4.1.93.Final/netty-codec-memcache-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-memcache/4.1.72.Final",
+    repo_path = "io/netty/netty-codec-memcache/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-codec-mqtt_4.1.72.Final",
-    pom = "repository/io/netty/netty-codec-mqtt/4.1.72.Final/netty-codec-mqtt-4.1.72.Final.pom",
+    name = "io.netty.netty-codec-mqtt_4.1.93.Final",
+    pom = "repository/io/netty/netty-codec-mqtt/4.1.93.Final/netty-codec-mqtt-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-mqtt/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-codec-mqtt/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-codec-mqtt",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-codec-mqtt/4.1.72.Final/netty-codec-mqtt-4.1.72.Final.jar"
+        "repository/io/netty/netty-codec-mqtt/4.1.93.Final/netty-codec-mqtt-4.1.93.Final.jar"
     ],
     original_deps = [],
-    pom = "repository/io/netty/netty-codec-mqtt/4.1.72.Final/netty-codec-mqtt-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-codec-mqtt/4.1.93.Final/netty-codec-mqtt-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-mqtt/4.1.72.Final",
+    repo_path = "io/netty/netty-codec-mqtt/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-codec-redis_4.1.72.Final",
-    pom = "repository/io/netty/netty-codec-redis/4.1.72.Final/netty-codec-redis-4.1.72.Final.pom",
+    name = "io.netty.netty-codec-redis_4.1.93.Final",
+    pom = "repository/io/netty/netty-codec-redis/4.1.93.Final/netty-codec-redis-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-redis/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-codec-redis/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-codec-redis",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-codec-redis/4.1.72.Final/netty-codec-redis-4.1.72.Final.jar"
+        "repository/io/netty/netty-codec-redis/4.1.93.Final/netty-codec-redis-4.1.93.Final.jar"
     ],
     original_deps = [],
-    pom = "repository/io/netty/netty-codec-redis/4.1.72.Final/netty-codec-redis-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-codec-redis/4.1.93.Final/netty-codec-redis-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-redis/4.1.72.Final",
+    repo_path = "io/netty/netty-codec-redis/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-codec-smtp_4.1.72.Final",
-    pom = "repository/io/netty/netty-codec-smtp/4.1.72.Final/netty-codec-smtp-4.1.72.Final.pom",
+    name = "io.netty.netty-codec-smtp_4.1.93.Final",
+    pom = "repository/io/netty/netty-codec-smtp/4.1.93.Final/netty-codec-smtp-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-smtp/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-codec-smtp/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-codec-smtp",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-codec-smtp/4.1.72.Final/netty-codec-smtp-4.1.72.Final.jar"
+        "repository/io/netty/netty-codec-smtp/4.1.93.Final/netty-codec-smtp-4.1.93.Final.jar"
     ],
     original_deps = [],
-    pom = "repository/io/netty/netty-codec-smtp/4.1.72.Final/netty-codec-smtp-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-codec-smtp/4.1.93.Final/netty-codec-smtp-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-smtp/4.1.72.Final",
+    repo_path = "io/netty/netty-codec-smtp/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
@@ -4616,48 +4616,48 @@ maven_import(
 )
 
 maven_artifact(
-    name = "io.netty.netty-codec-stomp_4.1.72.Final",
-    pom = "repository/io/netty/netty-codec-stomp/4.1.72.Final/netty-codec-stomp-4.1.72.Final.pom",
+    name = "io.netty.netty-codec-stomp_4.1.93.Final",
+    pom = "repository/io/netty/netty-codec-stomp/4.1.93.Final/netty-codec-stomp-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-stomp/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-codec-stomp/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-codec-stomp",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-codec-stomp/4.1.72.Final/netty-codec-stomp-4.1.72.Final.jar"
+        "repository/io/netty/netty-codec-stomp/4.1.93.Final/netty-codec-stomp-4.1.93.Final.jar"
     ],
     original_deps = [],
-    pom = "repository/io/netty/netty-codec-stomp/4.1.72.Final/netty-codec-stomp-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-codec-stomp/4.1.93.Final/netty-codec-stomp-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-stomp/4.1.72.Final",
+    repo_path = "io/netty/netty-codec-stomp/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-codec-xml_4.1.72.Final",
-    pom = "repository/io/netty/netty-codec-xml/4.1.72.Final/netty-codec-xml-4.1.72.Final.pom",
+    name = "io.netty.netty-codec-xml_4.1.93.Final",
+    pom = "repository/io/netty/netty-codec-xml/4.1.93.Final/netty-codec-xml-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-xml/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-codec-xml/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-codec-xml",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-codec-xml/4.1.72.Final/netty-codec-xml-4.1.72.Final.jar"
+        "repository/io/netty/netty-codec-xml/4.1.93.Final/netty-codec-xml-4.1.93.Final.jar"
     ],
     original_deps = [],
-    pom = "repository/io/netty/netty-codec-xml/4.1.72.Final/netty-codec-xml-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-codec-xml/4.1.93.Final/netty-codec-xml-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-codec-xml/4.1.72.Final",
+    repo_path = "io/netty/netty-codec-xml/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
@@ -4768,6 +4768,29 @@ maven_import(
 )
 
 maven_artifact(
+    name = "io.netty.netty-handler-ssl-ocsp_4.1.93.Final",
+    pom = "repository/io/netty/netty-handler-ssl-ocsp/4.1.93.Final/netty-handler-ssl-ocsp-4.1.93.Final.pom",
+    repo_root_path = "repository",
+    repo_path = "io/netty/netty-handler-ssl-ocsp/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
+    visibility = ["//visibility:public"],
+)
+
+maven_import(
+    name = "io.netty.netty-handler-ssl-ocsp",
+    classifiers = [],
+    parent = "io.netty.netty-parent_4.1.93.Final",
+    jars = [
+        "repository/io/netty/netty-handler-ssl-ocsp/4.1.93.Final/netty-handler-ssl-ocsp-4.1.93.Final.jar"
+    ],
+    original_deps = [],
+    pom = "repository/io/netty/netty-handler-ssl-ocsp/4.1.93.Final/netty-handler-ssl-ocsp-4.1.93.Final.pom",
+    repo_root_path = "repository",
+    repo_path = "io/netty/netty-handler-ssl-ocsp/4.1.93.Final",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "io.netty.netty-handler_4.1.93.Final",
     pom = "repository/io/netty/netty-handler/4.1.93.Final/netty-handler-4.1.93.Final.pom",
     repo_root_path = "repository",
@@ -4814,15 +4837,15 @@ maven_import(
 )
 
 maven_artifact(
-    name = "io.netty.netty-resolver-dns-classes-macos_4.1.72.Final",
-    pom = "repository/io/netty/netty-resolver-dns-classes-macos/4.1.72.Final/netty-resolver-dns-classes-macos-4.1.72.Final.pom",
+    name = "io.netty.netty-resolver-dns-classes-macos_4.1.93.Final",
+    pom = "repository/io/netty/netty-resolver-dns-classes-macos/4.1.93.Final/netty-resolver-dns-classes-macos-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-resolver-dns-classes-macos/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-resolver-dns-classes-macos/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-resolver-dns_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-resolver-dns_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
     ],
     visibility = ["//visibility:public"],
 )
@@ -4830,9 +4853,9 @@ maven_artifact(
 maven_import(
     name = "io.netty.netty-resolver-dns-classes-macos",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-resolver-dns-classes-macos/4.1.72.Final/netty-resolver-dns-classes-macos-4.1.72.Final.jar"
+        "repository/io/netty/netty-resolver-dns-classes-macos/4.1.93.Final/netty-resolver-dns-classes-macos-4.1.93.Final.jar"
     ],
     exports = [
         "io.netty.netty-common",
@@ -4840,24 +4863,24 @@ maven_import(
         "io.netty.netty-transport-native-unix-common",
     ],
     original_deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-resolver-dns_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-resolver-dns_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-resolver-dns-classes-macos/4.1.72.Final/netty-resolver-dns-classes-macos-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-resolver-dns-classes-macos/4.1.93.Final/netty-resolver-dns-classes-macos-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-resolver-dns-classes-macos/4.1.72.Final",
+    repo_path = "io/netty/netty-resolver-dns-classes-macos/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-resolver-dns-native-macos_4.1.72.Final",
-    pom = "repository/io/netty/netty-resolver-dns-native-macos/4.1.72.Final/netty-resolver-dns-native-macos-4.1.72.Final.pom",
+    name = "io.netty.netty-resolver-dns-native-macos_4.1.93.Final",
+    pom = "repository/io/netty/netty-resolver-dns-native-macos/4.1.93.Final/netty-resolver-dns-native-macos-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-resolver-dns-native-macos/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-resolver-dns-native-macos/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     deps = [
-        "io.netty.netty-resolver-dns-classes-macos_4.1.72.Final",
+        "io.netty.netty-resolver-dns-classes-macos_4.1.93.Final",
     ],
     visibility = ["//visibility:public"],
 )
@@ -4865,55 +4888,55 @@ maven_artifact(
 maven_import(
     name = "io.netty.netty-resolver-dns-native-macos.osx-aarch_64",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-resolver-dns-native-macos/4.1.72.Final/netty-resolver-dns-native-macos-4.1.72.Final-osx-aarch_64.jar"
+        "repository/io/netty/netty-resolver-dns-native-macos/4.1.93.Final/netty-resolver-dns-native-macos-4.1.93.Final-osx-aarch_64.jar"
     ],
     deps = [
         "io.netty.netty-resolver-dns-classes-macos",
     ],
     original_deps = [
-        "io.netty.netty-resolver-dns-classes-macos_4.1.72.Final",
+        "io.netty.netty-resolver-dns-classes-macos_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-resolver-dns-native-macos/4.1.72.Final/netty-resolver-dns-native-macos-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-resolver-dns-native-macos/4.1.93.Final/netty-resolver-dns-native-macos-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-resolver-dns-native-macos/4.1.72.Final",
+    repo_path = "io/netty/netty-resolver-dns-native-macos/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-resolver-dns-native-macos.osx-x86_64",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-resolver-dns-native-macos/4.1.72.Final/netty-resolver-dns-native-macos-4.1.72.Final-osx-x86_64.jar"
+        "repository/io/netty/netty-resolver-dns-native-macos/4.1.93.Final/netty-resolver-dns-native-macos-4.1.93.Final-osx-x86_64.jar"
     ],
     exports = [
         "io.netty.netty-resolver-dns-classes-macos",
     ],
     original_deps = [
-        "io.netty.netty-resolver-dns-classes-macos_4.1.72.Final",
+        "io.netty.netty-resolver-dns-classes-macos_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-resolver-dns-native-macos/4.1.72.Final/netty-resolver-dns-native-macos-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-resolver-dns-native-macos/4.1.93.Final/netty-resolver-dns-native-macos-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-resolver-dns-native-macos/4.1.72.Final",
+    repo_path = "io/netty/netty-resolver-dns-native-macos/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-resolver-dns_4.1.72.Final",
-    pom = "repository/io/netty/netty-resolver-dns/4.1.72.Final/netty-resolver-dns-4.1.72.Final.pom",
+    name = "io.netty.netty-resolver-dns_4.1.93.Final",
+    pom = "repository/io/netty/netty-resolver-dns/4.1.93.Final/netty-resolver-dns-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-resolver-dns/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-resolver-dns/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-resolver_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-codec_4.1.72.Final",
-        "io.netty.netty-codec-dns_4.1.72.Final",
-        "io.netty.netty-handler_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-resolver_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-codec_4.1.93.Final",
+        "io.netty.netty-codec-dns_4.1.93.Final",
+        "io.netty.netty-handler_4.1.93.Final",
     ],
     visibility = ["//visibility:public"],
 )
@@ -4921,9 +4944,9 @@ maven_artifact(
 maven_import(
     name = "io.netty.netty-resolver-dns",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-resolver-dns/4.1.72.Final/netty-resolver-dns-4.1.72.Final.jar"
+        "repository/io/netty/netty-resolver-dns/4.1.93.Final/netty-resolver-dns-4.1.93.Final.jar"
     ],
     exports = [
         "io.netty.netty-common",
@@ -4935,17 +4958,17 @@ maven_import(
         "io.netty.netty-handler",
     ],
     original_deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-resolver_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-codec_4.1.72.Final",
-        "io.netty.netty-codec-dns_4.1.72.Final",
-        "io.netty.netty-handler_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-resolver_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-codec_4.1.93.Final",
+        "io.netty.netty-codec-dns_4.1.93.Final",
+        "io.netty.netty-handler_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-resolver-dns/4.1.72.Final/netty-resolver-dns-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-resolver-dns/4.1.93.Final/netty-resolver-dns-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-resolver-dns/4.1.72.Final",
+    repo_path = "io/netty/netty-resolver-dns/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
@@ -4981,39 +5004,16 @@ maven_import(
 )
 
 maven_artifact(
-    name = "io.netty.netty-tcnative-classes_2.0.46.Final",
-    pom = "repository/io/netty/netty-tcnative-classes/2.0.46.Final/netty-tcnative-classes-2.0.46.Final.pom",
+    name = "io.netty.netty-transport-classes-epoll_4.1.93.Final",
+    pom = "repository/io/netty/netty-transport-classes-epoll/4.1.93.Final/netty-transport-classes-epoll-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-tcnative-classes/2.0.46.Final",
-    parent = "io.netty.netty-tcnative-parent_2.0.46.Final",
-    visibility = ["//visibility:public"],
-)
-
-maven_import(
-    name = "io.netty.netty-tcnative-classes",
-    classifiers = [],
-    parent = "io.netty.netty-tcnative-parent_2.0.46.Final",
-    jars = [
-        "repository/io/netty/netty-tcnative-classes/2.0.46.Final/netty-tcnative-classes-2.0.46.Final.jar"
-    ],
-    original_deps = [],
-    pom = "repository/io/netty/netty-tcnative-classes/2.0.46.Final/netty-tcnative-classes-2.0.46.Final.pom",
-    repo_root_path = "repository",
-    repo_path = "io/netty/netty-tcnative-classes/2.0.46.Final",
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "io.netty.netty-transport-classes-epoll_4.1.72.Final",
-    pom = "repository/io/netty/netty-transport-classes-epoll/4.1.72.Final/netty-transport-classes-epoll-4.1.72.Final.pom",
-    repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-classes-epoll/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-transport-classes-epoll/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
     ],
     visibility = ["//visibility:public"],
 )
@@ -5021,9 +5021,9 @@ maven_artifact(
 maven_import(
     name = "io.netty.netty-transport-classes-epoll",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-transport-classes-epoll/4.1.72.Final/netty-transport-classes-epoll-4.1.72.Final.jar"
+        "repository/io/netty/netty-transport-classes-epoll/4.1.93.Final/netty-transport-classes-epoll-4.1.93.Final.jar"
     ],
     exports = [
         "io.netty.netty-common",
@@ -5032,28 +5032,28 @@ maven_import(
         "io.netty.netty-transport-native-unix-common",
     ],
     original_deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-transport-classes-epoll/4.1.72.Final/netty-transport-classes-epoll-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-transport-classes-epoll/4.1.93.Final/netty-transport-classes-epoll-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-classes-epoll/4.1.72.Final",
+    repo_path = "io/netty/netty-transport-classes-epoll/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-transport-classes-kqueue_4.1.72.Final",
-    pom = "repository/io/netty/netty-transport-classes-kqueue/4.1.72.Final/netty-transport-classes-kqueue-4.1.72.Final.pom",
+    name = "io.netty.netty-transport-classes-kqueue_4.1.93.Final",
+    pom = "repository/io/netty/netty-transport-classes-kqueue/4.1.93.Final/netty-transport-classes-kqueue-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-classes-kqueue/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-transport-classes-kqueue/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
     ],
     visibility = ["//visibility:public"],
 )
@@ -5061,9 +5061,9 @@ maven_artifact(
 maven_import(
     name = "io.netty.netty-transport-classes-kqueue",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-transport-classes-kqueue/4.1.72.Final/netty-transport-classes-kqueue-4.1.72.Final.jar"
+        "repository/io/netty/netty-transport-classes-kqueue/4.1.93.Final/netty-transport-classes-kqueue-4.1.93.Final.jar"
     ],
     exports = [
         "io.netty.netty-common",
@@ -5072,29 +5072,29 @@ maven_import(
         "io.netty.netty-transport-native-unix-common",
     ],
     original_deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-transport-classes-kqueue/4.1.72.Final/netty-transport-classes-kqueue-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-transport-classes-kqueue/4.1.93.Final/netty-transport-classes-kqueue-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-classes-kqueue/4.1.72.Final",
+    repo_path = "io/netty/netty-transport-classes-kqueue/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-transport-native-epoll_4.1.72.Final",
-    pom = "repository/io/netty/netty-transport-native-epoll/4.1.72.Final/netty-transport-native-epoll-4.1.72.Final.pom",
+    name = "io.netty.netty-transport-native-epoll_4.1.93.Final",
+    pom = "repository/io/netty/netty-transport-native-epoll/4.1.93.Final/netty-transport-native-epoll-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-native-epoll/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-transport-native-epoll/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
-        "io.netty.netty-transport-classes-epoll_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
+        "io.netty.netty-transport-classes-epoll_4.1.93.Final",
     ],
     visibility = ["//visibility:public"],
 )
@@ -5102,9 +5102,9 @@ maven_artifact(
 maven_import(
     name = "io.netty.netty-transport-native-epoll.linux-aarch_64",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-transport-native-epoll/4.1.72.Final/netty-transport-native-epoll-4.1.72.Final-linux-aarch_64.jar"
+        "repository/io/netty/netty-transport-native-epoll/4.1.93.Final/netty-transport-native-epoll-4.1.93.Final-linux-aarch_64.jar"
     ],
     deps = [
         "io.netty.netty-common",
@@ -5114,24 +5114,24 @@ maven_import(
         "io.netty.netty-transport-classes-epoll",
     ],
     original_deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
-        "io.netty.netty-transport-classes-epoll_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
+        "io.netty.netty-transport-classes-epoll_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-transport-native-epoll/4.1.72.Final/netty-transport-native-epoll-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-transport-native-epoll/4.1.93.Final/netty-transport-native-epoll-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-native-epoll/4.1.72.Final",
+    repo_path = "io/netty/netty-transport-native-epoll/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-transport-native-epoll.linux-x86_64",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-transport-native-epoll/4.1.72.Final/netty-transport-native-epoll-4.1.72.Final-linux-x86_64.jar"
+        "repository/io/netty/netty-transport-native-epoll/4.1.93.Final/netty-transport-native-epoll-4.1.93.Final-linux-x86_64.jar"
     ],
     exports = [
         "io.netty.netty-transport-classes-epoll",
@@ -5143,30 +5143,30 @@ maven_import(
         "io.netty.netty-transport-native-unix-common",
     ],
     original_deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
-        "io.netty.netty-transport-classes-epoll_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
+        "io.netty.netty-transport-classes-epoll_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-transport-native-epoll/4.1.72.Final/netty-transport-native-epoll-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-transport-native-epoll/4.1.93.Final/netty-transport-native-epoll-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-native-epoll/4.1.72.Final",
+    repo_path = "io/netty/netty-transport-native-epoll/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-transport-native-kqueue_4.1.72.Final",
-    pom = "repository/io/netty/netty-transport-native-kqueue/4.1.72.Final/netty-transport-native-kqueue-4.1.72.Final.pom",
+    name = "io.netty.netty-transport-native-kqueue_4.1.93.Final",
+    pom = "repository/io/netty/netty-transport-native-kqueue/4.1.93.Final/netty-transport-native-kqueue-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-native-kqueue/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-transport-native-kqueue/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
-        "io.netty.netty-transport-classes-kqueue_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
+        "io.netty.netty-transport-classes-kqueue_4.1.93.Final",
     ],
     visibility = ["//visibility:public"],
 )
@@ -5174,9 +5174,9 @@ maven_artifact(
 maven_import(
     name = "io.netty.netty-transport-native-kqueue.osx-aarch_64",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-transport-native-kqueue/4.1.72.Final/netty-transport-native-kqueue-4.1.72.Final-osx-aarch_64.jar"
+        "repository/io/netty/netty-transport-native-kqueue/4.1.93.Final/netty-transport-native-kqueue-4.1.93.Final-osx-aarch_64.jar"
     ],
     deps = [
         "io.netty.netty-common",
@@ -5186,24 +5186,24 @@ maven_import(
         "io.netty.netty-transport-classes-kqueue",
     ],
     original_deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
-        "io.netty.netty-transport-classes-kqueue_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
+        "io.netty.netty-transport-classes-kqueue_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-transport-native-kqueue/4.1.72.Final/netty-transport-native-kqueue-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-transport-native-kqueue/4.1.93.Final/netty-transport-native-kqueue-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-native-kqueue/4.1.72.Final",
+    repo_path = "io/netty/netty-transport-native-kqueue/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-transport-native-kqueue.osx-x86_64",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-transport-native-kqueue/4.1.72.Final/netty-transport-native-kqueue-4.1.72.Final-osx-x86_64.jar"
+        "repository/io/netty/netty-transport-native-kqueue/4.1.93.Final/netty-transport-native-kqueue-4.1.93.Final-osx-x86_64.jar"
     ],
     exports = [
         "io.netty.netty-transport-classes-kqueue",
@@ -5215,15 +5215,15 @@ maven_import(
         "io.netty.netty-transport-native-unix-common",
     ],
     original_deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-        "io.netty.netty-transport-native-unix-common_4.1.72.Final",
-        "io.netty.netty-transport-classes-kqueue_4.1.72.Final",
+        "io.netty.netty-common_4.1.93.Final",
+        "io.netty.netty-buffer_4.1.93.Final",
+        "io.netty.netty-transport_4.1.93.Final",
+        "io.netty.netty-transport-native-unix-common_4.1.93.Final",
+        "io.netty.netty-transport-classes-kqueue_4.1.93.Final",
     ],
-    pom = "repository/io/netty/netty-transport-native-kqueue/4.1.72.Final/netty-transport-native-kqueue-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-transport-native-kqueue/4.1.93.Final/netty-transport-native-kqueue-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-native-kqueue/4.1.72.Final",
+    repo_path = "io/netty/netty-transport-native-kqueue/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
@@ -5265,71 +5265,71 @@ maven_import(
 )
 
 maven_artifact(
-    name = "io.netty.netty-transport-rxtx_4.1.72.Final",
-    pom = "repository/io/netty/netty-transport-rxtx/4.1.72.Final/netty-transport-rxtx-4.1.72.Final.pom",
+    name = "io.netty.netty-transport-rxtx_4.1.93.Final",
+    pom = "repository/io/netty/netty-transport-rxtx/4.1.93.Final/netty-transport-rxtx-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-rxtx/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-transport-rxtx/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-transport-rxtx",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-transport-rxtx/4.1.72.Final/netty-transport-rxtx-4.1.72.Final.jar"
+        "repository/io/netty/netty-transport-rxtx/4.1.93.Final/netty-transport-rxtx-4.1.93.Final.jar"
     ],
     original_deps = [],
-    pom = "repository/io/netty/netty-transport-rxtx/4.1.72.Final/netty-transport-rxtx-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-transport-rxtx/4.1.93.Final/netty-transport-rxtx-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-rxtx/4.1.72.Final",
+    repo_path = "io/netty/netty-transport-rxtx/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-transport-sctp_4.1.72.Final",
-    pom = "repository/io/netty/netty-transport-sctp/4.1.72.Final/netty-transport-sctp-4.1.72.Final.pom",
+    name = "io.netty.netty-transport-sctp_4.1.93.Final",
+    pom = "repository/io/netty/netty-transport-sctp/4.1.93.Final/netty-transport-sctp-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-sctp/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-transport-sctp/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-transport-sctp",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-transport-sctp/4.1.72.Final/netty-transport-sctp-4.1.72.Final.jar"
+        "repository/io/netty/netty-transport-sctp/4.1.93.Final/netty-transport-sctp-4.1.93.Final.jar"
     ],
     original_deps = [],
-    pom = "repository/io/netty/netty-transport-sctp/4.1.72.Final/netty-transport-sctp-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-transport-sctp/4.1.93.Final/netty-transport-sctp-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-sctp/4.1.72.Final",
+    repo_path = "io/netty/netty-transport-sctp/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "io.netty.netty-transport-udt_4.1.72.Final",
-    pom = "repository/io/netty/netty-transport-udt/4.1.72.Final/netty-transport-udt-4.1.72.Final.pom",
+    name = "io.netty.netty-transport-udt_4.1.93.Final",
+    pom = "repository/io/netty/netty-transport-udt/4.1.93.Final/netty-transport-udt-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-udt/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    repo_path = "io/netty/netty-transport-udt/4.1.93.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
 maven_import(
     name = "io.netty.netty-transport-udt",
     classifiers = [],
-    parent = "io.netty.netty-parent_4.1.72.Final",
+    parent = "io.netty.netty-parent_4.1.93.Final",
     jars = [
-        "repository/io/netty/netty-transport-udt/4.1.72.Final/netty-transport-udt-4.1.72.Final.jar"
+        "repository/io/netty/netty-transport-udt/4.1.93.Final/netty-transport-udt-4.1.93.Final.jar"
     ],
     original_deps = [],
-    pom = "repository/io/netty/netty-transport-udt/4.1.72.Final/netty-transport-udt-4.1.72.Final.pom",
+    pom = "repository/io/netty/netty-transport-udt/4.1.93.Final/netty-transport-udt-4.1.93.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-udt/4.1.72.Final",
+    repo_path = "io/netty/netty-transport-udt/4.1.93.Final",
     visibility = ["//visibility:public"],
 )
 
@@ -47000,16 +47000,11 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "io.netty.netty-transport-native-unix-common_4.1.72.Final",
-    pom = "repository/io/netty/netty-transport-native-unix-common/4.1.72.Final/netty-transport-native-unix-common-4.1.72.Final.pom",
+    name = "io.netty.netty-tcnative-classes_2.0.46.Final",
+    pom = "repository/io/netty/netty-tcnative-classes/2.0.46.Final/netty-tcnative-classes-2.0.46.Final.pom",
     repo_root_path = "repository",
-    repo_path = "io/netty/netty-transport-native-unix-common/4.1.72.Final",
-    parent = "io.netty.netty-parent_4.1.72.Final",
-    deps = [
-        "io.netty.netty-common_4.1.72.Final",
-        "io.netty.netty-buffer_4.1.72.Final",
-        "io.netty.netty-transport_4.1.72.Final",
-    ],
+    repo_path = "io/netty/netty-tcnative-classes/2.0.46.Final",
+    parent = "io.netty.netty-tcnative-parent_2.0.46.Final",
     visibility = ["//visibility:public"],
 )
 
