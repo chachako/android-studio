@@ -485,6 +485,84 @@ gradle_integration_test(
 )
 
 gradle_integration_test(
+    name = "app-dependencies-tests",
+    timeout = "long",
+    srcs = glob(
+        [
+            "src/test/java/com/android/build/gradle/integration/dependencies/app/*.java",
+            "src/test/java/com/android/build/gradle/integration/dependencies/app/*.kt",
+        ],
+        exclude = CONNECTED_TESTS,
+    ),
+    data = TEST_DATA,
+    maven_repo_zips = [
+        "//tools/base/build-system:android_gradle_plugin",
+    ],
+    maven_repos = [
+        "//tools/base/build-system:android_gradle_plugin_runtime_dependencies",
+        "//tools/base/build-system/integration-test:androidx_latest",
+        "//tools/base/build-system/integration-test:support_library_latest",
+        "//tools/base/build-system/integration-test:kotlin_gradle_plugin_prebuilts",
+        "//tools/base/build-system/integration-test/application:prebuilts",
+    ],
+    resources = glob(["src/test/resources/**"]),
+    shard_count = 4,
+    deps = TEST_DEPS,
+)
+
+gradle_integration_test(
+    name = "lib-dependencies-tests",
+    timeout = "long",
+    srcs = glob(
+        [
+            "src/test/java/com/android/build/gradle/integration/dependencies/lib/*.java",
+            "src/test/java/com/android/build/gradle/integration/dependencies/lib/*.kt",
+        ],
+        exclude = CONNECTED_TESTS,
+    ),
+    data = TEST_DATA,
+    maven_repo_zips = [
+        "//tools/base/build-system:android_gradle_plugin",
+    ],
+    maven_repos = [
+        "//tools/base/build-system:android_gradle_plugin_runtime_dependencies",
+        "//tools/base/build-system/integration-test:androidx_latest",
+        "//tools/base/build-system/integration-test:support_library_latest",
+        "//tools/base/build-system/integration-test:kotlin_gradle_plugin_prebuilts",
+        "//tools/base/build-system/integration-test/application:prebuilts",
+    ],
+    resources = glob(["src/test/resources/**"]),
+    shard_count = 2,
+    deps = TEST_DEPS,
+)
+
+gradle_integration_test(
+    name = "test-dependencies-tests",
+    timeout = "long",
+    srcs = glob(
+        [
+            "src/test/java/com/android/build/gradle/integration/dependencies/test/*.java",
+            "src/test/java/com/android/build/gradle/integration/dependencies/test/*.kt",
+        ],
+        exclude = CONNECTED_TESTS,
+    ),
+    data = TEST_DATA,
+    maven_repo_zips = [
+        "//tools/base/build-system:android_gradle_plugin",
+    ],
+    maven_repos = [
+        "//tools/base/build-system:android_gradle_plugin_runtime_dependencies",
+        "//tools/base/build-system/integration-test:androidx_latest",
+        "//tools/base/build-system/integration-test:support_library_latest",
+        "//tools/base/build-system/integration-test:kotlin_gradle_plugin_prebuilts",
+        "//tools/base/build-system/integration-test/application:prebuilts",
+    ],
+    resources = glob(["src/test/resources/**"]),
+    shard_count = 2,
+    deps = TEST_DEPS,
+)
+
+gradle_integration_test(
     name = "library-tests",
     timeout = "long",
     srcs = glob(
