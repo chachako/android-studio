@@ -22,7 +22,6 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
-import java.net.URLClassLoader
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -45,20 +44,9 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
     }
 
     private fun render() {
-        val classpath = listOf(parameters.layoutlibJar, parameters.toolJarPath)
-        val classLoader = getClassloader(classpath)
-        invokeMainMethod(listOf(parameters.cliToolArgumentsFile.get().asFile.absolutePath), classLoader)
-    }
-
-    private fun invokeMainMethod(arguments: List<String>, classLoader: ClassLoader) {
-        val cls = classLoader.loadClass(MAIN_CLASS)
+        val cls = PreviewRenderWorkAction.javaClass.classLoader.loadClass(MAIN_CLASS)
         val method = cls.getMethod(MAIN_METHOD, Array<String>::class.java)
-        method.invoke(null, arguments.toTypedArray())
-    }
-
-    private fun getClassloader(classpath: List<ConfigurableFileCollection>): ClassLoader {
-        val urls = classpath.flatMap { it.files }.map { it.toURI().toURL() }
-        return URLClassLoader(urls.toTypedArray())
+        method(null, arrayOf(parameters.cliToolArgumentsFile.get().asFile.absolutePath))
     }
 
     private fun verifyRender() {
