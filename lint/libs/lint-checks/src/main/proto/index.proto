@@ -75,6 +75,9 @@ message Sdk {
   // URL with data safety information for this SDK.
   // May be empty.
   string data_safety_url = 6;
+
+  // Indicates whether this SDK is owned by Google.
+  bool is_google_owned = 9;
 }
 
 // Represents a library in the SDK Index.
