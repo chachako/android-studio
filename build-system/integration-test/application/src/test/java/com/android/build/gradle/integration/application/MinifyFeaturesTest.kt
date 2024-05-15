@@ -725,7 +725,7 @@ class MinifyFeaturesTest {
         Truth.assertThat(Iterables.getOnlyElement(syncIssues)!!.message)
             .contains(
                 ("BuildType 'minified' is both debuggable and has 'isMinifyEnabled' set to true.\n"
-                        + "Debuggable builds are no longer name minified and all code optimizations and obfuscation will be disabled.")
+                        + "All code optimizations and obfuscation are disabled for debuggable builds.")
             )
     }
 
@@ -750,7 +750,7 @@ class MinifyFeaturesTest {
                 IssueReporter.Severity.WARNING.severity to
                         IssueReporter.Type.GENERIC.type to
                         "BuildType 'minified' is both debuggable and has 'isMinifyEnabled' set to true.\n"
-                        + "Debuggable builds are no longer name minified and all code optimizations and obfuscation will be disabled."))
+                        + "All code optimizations and obfuscation are disabled for debuggable builds."))
     }
 
     @Test
