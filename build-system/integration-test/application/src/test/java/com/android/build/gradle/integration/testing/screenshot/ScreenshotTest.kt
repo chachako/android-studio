@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.testing.screenshot
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.LoggingLevel
 import com.android.build.gradle.integration.common.fixture.ProfileCapturer
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.SubProjectBuilder
@@ -35,6 +36,7 @@ import com.android.tools.build.gradle.internal.profile.GradleTaskExecutionType
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.GradleBuildProfileSpan.ExecutionType
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -55,15 +57,24 @@ class ScreenshotTest {
             plugins.add(PluginType.ANDROID_APP)
             setupProject()
         }
-        subProject("lib") {
+        subProject("lib1") {
             plugins.add(PluginType.ANDROID_LIB)
             setupProject()
         }
+
+        // All of these libraries will share the same class loader.
+        // See b/340362066 for more details.
+        repeat(2) {
+            subProject("lib2_$it") {
+                plugins.add(PluginType.ANDROID_LIB)
+                setupProject(addEmptyJarToClassPath = false)
+            }
+        }
     }
-            .withKotlinGradlePlugin(true)
-            .withKotlinVersion(KOTLIN_VERSION_FOR_COMPOSE_TESTS)
-            .enableProfileOutput()
-            .create()
+        .withKotlinGradlePlugin(true)
+        .withKotlinVersion(KOTLIN_VERSION_FOR_COMPOSE_TESTS)
+        .enableProfileOutput()
+        .create()
 
     @Before
     fun tweakBuildScriptForRootProject() {
@@ -85,26 +96,34 @@ class ScreenshotTest {
     private val appProject: GradleTestProject
         get() = project.getSubproject("app")
 
-    private fun SubProjectBuilder.setupProject() {
+    private fun SubProjectBuilder.setupProject(addEmptyJarToClassPath: Boolean = true) {
         plugins.add(PluginType.KOTLIN_ANDROID)
         plugins.add(PluginType.Custom("com.android.compose.screenshot"))
         appendToBuildFile {
-            val customJarName = UUID.randomUUID().toString()
-            val customJar = temporaryFolder.newFile(customJarName)
-            JarOutputStream(FileOutputStream(customJar)).use {
-                it.putNextEntry(JarEntry(customJarName))
-                it.write(customJarName.toByteArray())
-                it.closeEntry()
+            val customJar = if (addEmptyJarToClassPath) {
+                val customJarName = UUID.randomUUID().toString()
+                val customJar = temporaryFolder.newFile(customJarName)
+                JarOutputStream(FileOutputStream(customJar)).use {
+                    it.putNextEntry(JarEntry(customJarName))
+                    it.write(customJarName.toByteArray())
+                    it.closeEntry()
+                }
+                customJar
+            } else {
+                null
             }
+
             """
             buildscript {
                 apply from: "../../commonBuildScript.gradle"
                 dependencies {
                     classpath "com.android.compose.screenshot:screenshot-test-gradle-plugin:+"
 
-                    // Gradle will use a separate classloader for a project only when it has a
-                    // different set of classpath dependencies. So here we add an empty jar file.
-                    classpath files('${customJar.invariantSeparatorsPath}')
+                    ${if(customJar != null) {"""
+                        // Gradle will use a separate classloader for a project only when it has a
+                        // different set of classpath dependencies. So here we add an empty jar file.
+                        classpath files('${customJar.invariantSeparatorsPath}')
+                    """} else {""}}
                 }
             }
             println("Class loader for AGP API = " + com.android.build.api.variant.AndroidComponentsExtension.class.getClassLoader().hashCode())
@@ -256,6 +275,7 @@ class ScreenshotTest {
     private fun getExecutor(): GradleTaskExecutor =
         project.executor()
             .with(BooleanOption.USE_ANDROID_X, true)
+            .withLoggingLevel(LoggingLevel.LIFECYCLE)
 
     @Test
     fun discoverPreviews() {
@@ -450,6 +470,14 @@ class ScreenshotTest {
         verifyClassLoaderSetup(getExecutor().run("validateDebugScreenshotTest"))
     }
 
+    @Test
+    @Ignore("b/340362066")
+    fun runUpdateScreenshotTestWithMultiModuleProjectBySingleWorker() {
+        // Set the max workers to 1 to let Gradle reuse the same worker daemon process for
+        // running PreviewRenderWorkAction more than once. See b/340362066 for more details.
+        getExecutor().withArguments(listOf("--max-workers", "1")).run("updateScreenshotTest")
+    }
+
     private fun verifyClassLoaderSetup(result: GradleBuildResult) {
         val taskLogs = mutableSetOf<String>()
         result.stdout.forEachLine {
@@ -459,7 +487,7 @@ class ScreenshotTest {
         }
         assertThat(taskLogs)
                 .named("Log lines that should contain different class loader hashes")
-                .hasSize(2)
+                .hasSize(3)
     }
 
     @Test
