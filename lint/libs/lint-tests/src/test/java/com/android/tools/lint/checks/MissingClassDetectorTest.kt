@@ -972,14 +972,14 @@ class MissingClassDetectorTest : AbstractCheckTest() {
             "res/layout/user_prefs_fragment.xml",
             """
                     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-                        class="course.examples.dataManagement.ViewAndUpdatePreferencesActivity"
+                        class="course.examples.DataManagement.ViewAndUpdatePreferencesActivity"
                         android:id="@+id/userPreferenceFragment">
                     </fragment>
                     """,
           )
           .indented(),
         java(
-            "src/course/examples/dataManagement/ViewAndUpdatePreferencesActivity.java",
+            "src/course/examples/DataManagement/ViewAndUpdatePreferencesActivity.java",
             """
                     package course.examples.DataManagement;
                     public class ViewAndUpdatePreferencesActivity {
@@ -992,7 +992,7 @@ class MissingClassDetectorTest : AbstractCheckTest() {
       .expect(
         """
                 res/layout/user_prefs_fragment.xml:2: Error: ViewAndUpdatePreferencesActivity must be a fragment [Instantiatable]
-                    class="course.examples.dataManagement.ViewAndUpdatePreferencesActivity"
+                    class="course.examples.DataManagement.ViewAndUpdatePreferencesActivity"
                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 1 errors, 0 warnings
                 """
