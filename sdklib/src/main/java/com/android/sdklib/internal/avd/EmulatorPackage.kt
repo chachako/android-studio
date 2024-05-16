@@ -26,11 +26,13 @@ import com.android.sdklib.PathFileWrapper
 import com.android.sdklib.SystemImageTags
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.HardwareProperties.HardwareProperty
+import com.android.sdklib.internal.project.ProjectProperties
 import com.android.sdklib.repository.AndroidSdkHandler
 import com.android.sdklib.repository.IdDisplay
 import com.android.sdklib.repository.targets.SystemImage
 import com.android.utils.ILogger
 import com.google.common.collect.ImmutableList
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.function.Predicate
 
@@ -52,6 +54,29 @@ class EmulatorPackage(private val emulator: LocalPackage) {
     val propertiesPath =
       emulator.location.resolve(SdkConstants.FD_LIB).resolve(SdkConstants.FN_HARDWARE_INI)
     return HardwareProperties.parseHardwareDefinitions(PathFileWrapper(propertiesPath), logger)
+  }
+
+  @JvmOverloads
+  fun getEmulatorFeatures(
+    logger: ILogger,
+    channel: EmulatorFeaturesChannel = EmulatorFeaturesChannel.RELEASE,
+  ): Set<String>? {
+    // Fall back from less-stable channels to more-stable channels
+    if (channel >= EmulatorFeaturesChannel.CANARY)
+      getEmulatorFeatures(EmulatorFeaturesChannel.CANARY.featuresFile, logger)?.let {
+        return it
+      }
+    return getEmulatorFeatures(EmulatorFeaturesChannel.RELEASE.featuresFile, logger)
+  }
+
+  private fun getEmulatorFeatures(featuresFile: String, logger: ILogger): Set<String>? {
+    val featuresPath = emulator.location.resolve(SdkConstants.FD_LIB).resolve(featuresFile)
+    if (Files.exists(featuresPath)) {
+      return ProjectProperties.parsePropertyFile(PathFileWrapper(featuresPath), logger)
+        ?.filter { it.value == "on" }
+        ?.keys
+    }
+    return null
   }
 
   private fun getBinaryLocation(filename: String): Path? {
@@ -90,6 +115,17 @@ class EmulatorPackage(private val emulator: LocalPackage) {
   fun hasStudioParamsSupport(): Boolean {
     return version >= Revision.parseRevision("26.1.0")
   }
+}
+
+enum class EmulatorFeaturesChannel(val featuresFile: String) {
+  RELEASE(SdkConstants.FN_ADVANCED_FEATURES),
+  CANARY(SdkConstants.FN_ADVANCED_FEATURES_CANARY),
+}
+
+object EmulatorAdvancedFeatures {
+  const val FAST_BOOT = "FastSnapshotV1"
+  const val SCREEN_RECORDING = "ScreenRecording"
+  const val VIRTUAL_SCENE = "VirtualScene"
 }
 
 fun AndroidSdkHandler.getEmulatorPackage(progress: ProgressIndicator): EmulatorPackage? =

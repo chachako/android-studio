@@ -68,4 +68,39 @@ class EmulatorPackageTest {
     assertThat(property.abstract).isEqualTo("CPU Architecture")
     assertThat(property.description).isEqualTo("The CPU Architecture to emulator")
   }
+
+  @Test
+  fun advancedFeatures() {
+    emulatorPath
+      .resolve(SdkConstants.FD_LIB)
+      .resolve(SdkConstants.FN_ADVANCED_FEATURES)
+      .recordExistingFile(
+        """
+            RefCountPipe = on
+            ForceSwiftshader = off
+            Wifi = on
+        """
+          .trimIndent()
+      )
+
+    emulatorPackage.getEmulatorFeatures(NullLogger(), EmulatorFeaturesChannel.CANARY).let {
+      assertThat(it).doesNotContain("ForceSwiftshader")
+      assertThat(it).contains("RefCountPipe")
+    }
+
+    emulatorPath
+      .resolve(SdkConstants.FD_LIB)
+      .resolve(SdkConstants.FN_ADVANCED_FEATURES_CANARY)
+      .recordExistingFile(
+        """
+            ForceSwiftshader = on
+        """
+          .trimIndent()
+      )
+
+    emulatorPackage.getEmulatorFeatures(NullLogger(), EmulatorFeaturesChannel.CANARY).let {
+        assertThat(it).contains("ForceSwiftshader")
+        assertThat(it).doesNotContain("RefCountPipe")
+    }
+  }
 }
