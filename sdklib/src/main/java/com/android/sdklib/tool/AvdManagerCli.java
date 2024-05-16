@@ -44,6 +44,8 @@ import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.internal.avd.AvdNetworkLatency;
 import com.android.sdklib.internal.avd.AvdNetworkSpeed;
 import com.android.sdklib.internal.avd.EmulatedProperties;
+import com.android.sdklib.internal.avd.EmulatorPackage;
+import com.android.sdklib.internal.avd.EmulatorPackages;
 import com.android.sdklib.internal.avd.GpuMode;
 import com.android.sdklib.internal.avd.HardwareProperties;
 import com.android.sdklib.internal.avd.SdCard;
@@ -1067,26 +1069,24 @@ class AvdManagerCli extends CommandLineParser {
     private Map<String, String> defaultHardwareConfig() {
         // Get the defaults of all the user-modifiable properties.
         // The file is in the emulator component
-        LocalPackage emulatorPackage = mSdkHandler.getLocalPackage(SdkConstants.FD_EMULATOR,
-                                                                   new ProgressIndicatorAdapter() { });
+        EmulatorPackage emulatorPackage =
+                EmulatorPackages.getEmulatorPackage(mSdkHandler, new ProgressIndicatorAdapter() { });
         if (emulatorPackage == null) {
             errorAndExit("\"emulator\" package must be installed!");
         }
-        Path libDir = emulatorPackage.getLocation().resolve(SdkConstants.FD_LIB);
-        Path hardwareDefs = libDir.resolve(SdkConstants.FN_HARDWARE_INI);
+
         Map<String, HardwareProperties.HardwareProperty> hwMap =
-                HardwareProperties.parseHardwareDefinitions(
-                        new PathFileWrapper(hardwareDefs), mSdkLog);
+                emulatorPackage.getHardwareProperties(mSdkLog);
+        if (hwMap == null) {
+            errorAndExit("\"hardware-properties.ini\" could not be read");
+        }
 
         // Get the generic default values
         Map<String, String> hwConfigMap = defaultEmulatorPropertiesMap();
 
-        HardwareProperties.HardwareProperty[] hwProperties = hwMap.values().toArray(
-          new HardwareProperties.HardwareProperty[0]);
-
         // Loop through all the HardwareProperties and get the
         // values specified for this device.
-        for (HardwareProperties.HardwareProperty property : hwProperties) {
+        for (HardwareProperties.HardwareProperty property : hwMap.values()) {
             String defaultValue = property.getDefault();
             if (defaultValue != null && !defaultValue.isEmpty()) {
                 hwConfigMap.put(property.getName(), defaultValue);
@@ -1129,20 +1129,13 @@ class AvdManagerCli extends CommandLineParser {
 
         // get the list of possible hardware properties
         // The file is in the emulator component
-        LocalPackage emulatorPackage =
-                mSdkHandler.getLocalPackage(
-                        SdkConstants.FD_EMULATOR,
-                        new ProgressIndicatorAdapter() {
-                            // don't log anything
-                        });
+        EmulatorPackage emulatorPackage =
+                EmulatorPackages.getEmulatorPackage(mSdkHandler, new ProgressIndicatorAdapter() {});
         if (emulatorPackage == null) {
             errorAndExit("\"emulator\" package must be installed!");
         }
-        Path libDir = emulatorPackage.getLocation().resolve(SdkConstants.FD_LIB);
-        Path hardwareDefs = libDir.resolve(SdkConstants.FN_HARDWARE_INI);
         Map<String, HardwareProperties.HardwareProperty> hwMap =
-                HardwareProperties.parseHardwareDefinitions(
-                        new PathFileWrapper(hardwareDefs), mSdkLog);
+                emulatorPackage.getHardwareProperties(mSdkLog);
 
         HashMap<String, String> map = new HashMap<>();
 

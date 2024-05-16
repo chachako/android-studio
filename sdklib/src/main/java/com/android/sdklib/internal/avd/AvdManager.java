@@ -2036,18 +2036,18 @@ public class AvdManager {
                         // Skip verbose messages
                     }
                 };
-        LocalPackage p = mSdkHandler.getLocalPackage(SdkConstants.FD_EMULATOR, progress);
+        EmulatorPackage p = EmulatorPackages.getEmulatorPackage(mSdkHandler, progress);
         if (p == null) {
-            progress.logWarning(
+            mLog.warning("Emulator package is not installed");
+            throw new AvdMgrException();
+        }
+
+        Path mkSdCard = p.getMkSdCardBinary();
+        if (mkSdCard == null || !CancellableFileIo.isRegularFile(mkSdCard)) {
+            mLog.warning(
                     String.format(
                             "Unable to find %1$s in the %2$s component",
                             SdkConstants.mkSdCardCmdName(), SdkConstants.FD_EMULATOR));
-            throw new AvdMgrException();
-        }
-        Path mkSdCard = p.getLocation().resolve(SdkConstants.mkSdCardCmdName());
-
-        if (!CancellableFileIo.isRegularFile(mkSdCard)) {
-            mLog.warning("'%1$s' is missing from the SDK tools folder.", mkSdCard.getFileName());
             throw new AvdMgrException();
         }
 
