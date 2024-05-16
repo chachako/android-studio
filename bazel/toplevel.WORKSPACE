@@ -50,7 +50,7 @@ register_toolchains("@windows_toolchains//:python_toolchain")
 
 local_repository(
     name = "bazel_skylib",
-    path = "prebuilts/tools/common/external-src-archives/bazel-skylib/bazel-skylib-1.0.2",
+    path = "prebuilts/tools/common/external-src-archives/bazel-skylib/bazel-skylib-1.6.1",
 )
 
 local_repository(
