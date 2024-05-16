@@ -19,9 +19,11 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
+import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.tasks.AarMetadataReader
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask
+import com.android.testutils.TestUtils
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -125,7 +127,8 @@ internal class FusedLibraryMergeArtifactTaskTest {
 
     @Test
     fun testAarMetadataMerging() {
-        val fusedLibraryAar = getFusedLibraryAar()
+        val fusedLib1 = project.getSubproject("fusedLib1")
+        var fusedLibraryAar = getFusedLibraryAar()
         fusedLibraryAar?.let { aarFile ->
             ZipFile(aarFile).use {
                 val mergedAarMetadata =
@@ -143,6 +146,32 @@ internal class FusedLibraryMergeArtifactTaskTest {
                 assertThat(aarMetadataReader.minCompileSdk).isEqualTo("18")
                 // Value from androidLib1
                 assertThat(aarMetadataReader.minCompileSdkExtension).isEqualTo("2")
+            }
+        }
+
+        TestFileUtils.searchAndReplace(fusedLib1.buildFile,
+            "android {",
+            "android {\n aarMetadata.minAgpVersion = \"8.4-alpha02\"\naarMetadata.minCompileSdk=9"
+        )
+
+        fusedLibraryAar = getFusedLibraryAar()
+        fusedLibraryAar?.let { aarFile ->
+            ZipFile(aarFile).use {
+                val mergedAarMetadata =
+                    it.getEntry("META-INF/com/android/build/gradle/aar-metadata.properties")
+                assertThat(mergedAarMetadata).isNotNull()
+                val metadataContents = it.getInputStream(mergedAarMetadata)
+                val aarMetadataReader = AarMetadataReader(metadataContents)
+                // Value constant from AGP
+                assertThat(aarMetadataReader.aarFormatVersion).isEqualTo("1.0")
+                // Value constant from AGP
+                assertThat(aarMetadataReader.aarMetadataVersion).isEqualTo("1.0")
+                // Value from aarMetadata DSL
+                assertThat(aarMetadataReader.minAgpVersion).isEqualTo("8.4-alpha02")
+                // Value from aarMetadata DSL
+                assertThat(aarMetadataReader.minCompileSdk).isEqualTo("9")
+                // Default value
+                assertThat(aarMetadataReader.minCompileSdkExtension).isEqualTo("0")
             }
         }
     }

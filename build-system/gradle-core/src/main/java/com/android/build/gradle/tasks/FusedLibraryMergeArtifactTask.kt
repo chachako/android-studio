@@ -48,6 +48,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
@@ -81,10 +82,14 @@ abstract class FusedLibraryMergeArtifactTask : NonIncrementalTask() {
     @get:Optional
     abstract val outputFile: RegularFileProperty
 
+    @get:Nested
+    abstract val aarMetadataInputs: AarMetadataInputs
+
     override fun doTaskAction() {
         workerExecutor.noIsolation().submit(FusedLibraryMergeArtifactWorkAction::class.java) {
             it.initializeFromAndroidVariantTask(this)
             it.artifactType.set(artifactType)
+            it.aarMetadataInputs = aarMetadataInputs
             it.input.setFrom(artifactFiles)
             it.output.setDisallowChanges(
                     if (outputDir.isPresent) outputDir else outputFile
@@ -93,6 +98,7 @@ abstract class FusedLibraryMergeArtifactTask : NonIncrementalTask() {
     }
 
     abstract class FusedLibraryMergeArtifactParams : ProfileAwareWorkAction.Parameters() {
+        abstract var aarMetadataInputs: AarMetadataInputs
         abstract val artifactType: Property<ArtifactType>
         abstract val input: ConfigurableFileCollection
         abstract val output: Property<FileSystemLocation>
@@ -106,7 +112,10 @@ abstract class FusedLibraryMergeArtifactTask : NonIncrementalTask() {
                 val inputFiles = input.files.toList()
                 when (val currentArtifactType = artifactType.get()) {
                     ArtifactType.AAR_METADATA -> {
-                        writeMergedMetadata(inputFiles, output.get().asFile)
+                        writeMergedMetadata(inputFiles, output.get().asFile,
+                            aarMetadataInputs.minAgpVersion.orNull,
+                            aarMetadataInputs.minCompileSdk.orNull,
+                            aarMetadataInputs.minCompileSdkExtension.orNull)
                     }
                     ArtifactType.ASSETS -> {
                         val aarOutputAssetsOutputDir = output.get().asFile
@@ -173,6 +182,16 @@ abstract class FusedLibraryMergeArtifactTask : NonIncrementalTask() {
                     )
             )
             task.artifactType.setDisallowChanges(androidArtifactType)
+
+            creationConfig.aarMetadata.minAgpVersion?.let {
+                task.aarMetadataInputs.minAgpVersion.setDisallowChanges(it)
+            }
+            creationConfig.aarMetadata.minCompileSdk?.let {
+                task.aarMetadataInputs.minCompileSdk.setDisallowChanges(it)
+            }
+            creationConfig.aarMetadata.minCompileSdkExtension?.let {
+                task.aarMetadataInputs.minCompileSdkExtension.setDisallowChanges(it)
+            }
         }
 
     }
@@ -219,6 +238,21 @@ abstract class FusedLibraryMergeArtifactTask : NonIncrementalTask() {
             task.artifactType.setDisallowChanges(androidArtifactType)
         }
 
+    }
+
+    abstract class AarMetadataInputs {
+
+        @get:Input
+        @get:Optional
+        abstract val minCompileSdk: Property<Int>
+
+        @get:Input
+        @get:Optional
+        abstract val minCompileSdkExtension: Property<Int>
+
+        @get:Input
+        @get:Optional
+        abstract val minAgpVersion: Property<String>
     }
 
     companion object {

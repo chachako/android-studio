@@ -718,3 +718,6 @@ https://issuetracker.google.com/336985668
   * com.android.build.api.variant.UnitTest.configureTestTask: void (kotlin.jvm.functions.Function1<? super org.gradle.api.tasks.testing.Test, kotlin.Unit>)
 https://issuetracker.google.com/337766642
   * com.android.build.api.variant.DeviceTest.getCodeCoverageEnabled: boolean ()
+https://issuetracker.google.com/341235113
+  * com.android.build.api.dsl.FusedLibraryExtension.aarMetadata: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AarMetadata, kotlin.Unit>)
+  * com.android.build.api.dsl.FusedLibraryExtension.getAarMetadata: com.android.build.api.dsl.AarMetadata ()
