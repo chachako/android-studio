@@ -18,6 +18,7 @@ import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IDevice.PROP_DEVICE_DENSITY
 import com.android.ddmlib.IUserDataMap
+import com.android.ddmlib.MultiLineReceiver
 import com.android.ddmlib.SyncException
 import com.android.fakeadbserver.DeviceFileState
 import com.android.fakeadbserver.DeviceState
@@ -25,6 +26,7 @@ import com.android.fakeadbserver.devicecommandhandlers.SyncCommandHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 import org.hamcrest.CoreMatchers
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -42,6 +44,7 @@ import java.nio.file.Files
 import java.nio.file.attribute.FileTime
 import java.nio.file.attribute.PosixFilePermission.OWNER_READ
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.io.path.readBytes
 import kotlin.time.DurationUnit
@@ -252,6 +255,62 @@ class AdblibIDeviceWrapperTest {
         // Echo command outputs an additional newline
         assertEquals(2, listReceiver.lines.size)
         assertEquals("a\\nb", listReceiver.lines[0])
+    }
+
+    @Test
+    fun executeShellCommandCanBeCancelledByReceiver() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, deviceState) = createConnectedDevice("device1")
+        val adblibIDeviceWrapper = createAdblibIDeviceWrapper(connectedDevice, bridge)
+        // Create the receiver that is interested in only a one message
+        val listReceiver = object : MultiLineReceiver() {
+
+            val lines = mutableListOf<String>()
+            var firstMessageProcessed = false
+            override fun processNewLines(lines: Array<out String>) {
+                this.lines.addAll(lines)
+                firstMessageProcessed = true
+            }
+
+            override fun isCancelled(): Boolean {
+                return firstMessageProcessed
+            }
+        }
+
+        // Act:
+        // Note that the `logcat -v long` command never exits, but our custom receiver will
+        // cancel the command by having `isCancelled` return `true` after processing a first message
+        launch {
+            delay(100)
+            deviceState.addLogcatMessage("first logcat message\n")
+        }
+        adblibIDeviceWrapper.executeShellCommand("logcat -v long", listReceiver)
+
+        // Assert
+        assertEquals(1, listReceiver.lines.size)
+        assertEquals("first logcat message", listReceiver.lines[0])
+    }
+
+    @Test
+    fun executeShellCommandThrowsTimeoutExceptionIfInactive() = runBlockingWithTimeout {
+        // Prepare
+        val (connectedDevice, _) = createConnectedDevice("device1")
+        val adblibIDeviceWrapper = createAdblibIDeviceWrapper(connectedDevice, bridge)
+        val listReceiver = ListReceiver()
+        exceptionRule.expect(TimeoutException::class.java)
+        exceptionRule.expectMessage("Command has been inactive for more than 1000 millis")
+
+        // Act
+        // Logcat command never exits, and so this should timeout due to no output after one second
+        adblibIDeviceWrapper.executeShellCommand(
+            "logcat -v long",
+            listReceiver,
+            maxTimeToOutputResponse = 1000,
+            TimeUnit.MILLISECONDS
+        )
+
+        // Assert
+        fail("Should not reach")
     }
 
     @Test

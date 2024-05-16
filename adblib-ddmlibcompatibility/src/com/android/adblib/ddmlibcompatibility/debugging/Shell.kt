@@ -34,14 +34,19 @@ import com.android.ddmlib.AdbHelper
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.IShellOutputReceiver
 import com.android.ddmlib.TimeoutException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -92,7 +97,7 @@ internal suspend fun executeShellCommand(
     // Note: We know there is only one item in the flow (Unit), because our
     //       ShellCollector implementation forwards buffers directly to
     //       the IShellOutputReceiver
-    shellCommand.execute().single()
+    shellCommand.execute().singleCancellableByReceiver(receiver)
 }
 
 private fun setShellProtocol(shellCommand: ShellCommand<*>, adbService: AdbHelper.AdbService) {
@@ -153,7 +158,7 @@ internal suspend fun executeAbbCommand(
     // Note: We know there is only one item in the flow (Unit), because our
     //       ShellCollector implementation forwards buffers directly to
     //       the IShellOutputReceiver
-    abbCommand.execute().single()
+    abbCommand.execute().singleCancellableByReceiver(receiver)
 }
 
 private fun setAbbProtocol(abbCommand: AbbCommand<*>, adbService: AdbHelper.AdbService) {
@@ -162,6 +167,40 @@ private fun setAbbProtocol(abbCommand: AbbCommand<*>, adbService: AdbHelper.AdbS
         AdbHelper.AdbService.SHELL -> throw IllegalArgumentException("SHELL is not supported by AbbCommand")
         AdbHelper.AdbService.EXEC -> throw IllegalArgumentException("EXEC is not supported by AbbCommand")
         AdbHelper.AdbService.ABB_EXEC -> abbCommand.forceExecProtocol()
+    }
+}
+
+/**
+ * Returns `Flow<T>.single()`, but cancels its execution if
+ * `IShellOutputReceiver.isCancelled` returns `true` in the meantime.
+ */
+private suspend fun <T> Flow<T>.singleCancellableByReceiver(receiver: IShellOutputReceiver) {
+    coroutineScope {
+        val shellExecuteJob = async {
+            single()
+        }
+
+        val monitorJob = launch {
+            while(true) {
+                if (receiver.isCancelled) {
+                    shellExecuteJob.cancel()
+                    break
+                }
+                delay(50)
+            }
+        }
+
+        try {
+            shellExecuteJob.await()
+        } catch (e: CancellationException) {
+            if (receiver.isCancelled) {
+                // Do not propagate cancellation requested by the `receiver`
+            } else {
+                throw e
+            }
+        } finally {
+            monitorJob.cancel()
+        }
     }
 }
 

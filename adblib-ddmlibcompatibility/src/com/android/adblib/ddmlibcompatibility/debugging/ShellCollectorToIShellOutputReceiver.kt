@@ -17,6 +17,7 @@ package com.android.adblib.ddmlibcompatibility.debugging
 
 import com.android.adblib.ShellCollector
 import com.android.ddmlib.IShellOutputReceiver
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.FlowCollector
 import java.nio.ByteBuffer
 
@@ -34,7 +35,7 @@ class ShellCollectorToIShellOutputReceiver(private val receiver: IShellOutputRec
 
     override suspend fun collect(collector: FlowCollector<Unit>, stdout: ByteBuffer) {
         if (receiver.isCancelled) {
-            cancelCoroutine("IShellOutputReceiver was cancelled during shell command execution")
+            throw CancellationException("IShellOutputReceiver was cancelled during shell command execution")
         }
         buf.convert(stdout)
         receiver.addOutput(buf.bytes, buf.offset, buf.count)
@@ -64,10 +65,5 @@ class ShellCollectorToIShellOutputReceiver(private val receiver: IShellOutputRec
                 this.bytes = bytes
             }
         }
-    }
-
-    private fun cancelCoroutine(message: String? = null) {
-        // Note: This is the Kotlin coroutine cancellation exception
-        throw kotlinx.coroutines.CancellationException(message)
     }
 }
