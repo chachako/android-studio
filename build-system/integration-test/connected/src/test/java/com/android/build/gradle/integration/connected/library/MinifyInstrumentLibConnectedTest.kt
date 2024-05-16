@@ -17,8 +17,12 @@
 package com.android.build.gradle.integration.connected.library
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.truth.TruthHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.integration.connected.utils.getEmulator
+import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.internal.scope.getOutputDir
+import com.google.common.truth.Truth.assertThat
 import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
@@ -64,7 +68,6 @@ class MinifyInstrumentLibConnectedTest {
         TestFileUtils.appendToFile(
             testProguardFile,
             """
-                -keep class android.support.test.runner.AndroidJUnitRunner {*;}
                 -keep class android.support.test.runner.lifecycle.Stage {*;}
                 -keep class android.support.test.runner.AndroidJUnit4 {*;}
                 -keep class com.android.tests.basic.StringGetterTest {
@@ -80,6 +83,21 @@ class MinifyInstrumentLibConnectedTest {
             "android.buildTypes.debug.testProguardFiles('$testProguardFileName')"
         )
         project.executor().run("lib:connectedAndroidTest")
+        // aapt generated keep rules from android test manifest are consumed by R8, regression test
+        // for b/328649293
+        val androidTestManifest = InternalArtifactType.PACKAGED_MANIFESTS.getOutputDir(libProject.buildDir)
+            .resolve("debugAndroidTest/processDebugAndroidTestManifest/AndroidManifest.xml")
+        assertThat(libProject.projectDir.resolve(androidTestManifest).readText()).contains(
+            """
+                android:name="android.support.test.runner.AndroidJUnitRunner"
+            """.trimIndent()
+        )
+        val aaptRule = InternalArtifactType.AAPT_PROGUARD_FILE.getOutputDir(libProject.buildDir)
+            .resolve("debugAndroidTest/processDebugAndroidTestResources/aapt_rules.txt")
+        assertThat(libProject.projectDir.resolve(aaptRule).readText()).contains("""
+             -keep class android.support.test.runner.AndroidJUnitRunner { <init>(); }
+        """.trimIndent())
+        TruthHelper.assertThat(libProject.testApk).containsClass("Landroid/support/test/runner/AndroidJUnitRunner;")
     }
 
     companion object {
