@@ -25,7 +25,8 @@ import org.gradle.api.JavaVersion
 
 internal class AndroidProjectBuilderImpl(
     internal val subProject: SubProjectBuilderImpl,
-    override var namespace: String
+    override var namespace: String,
+    internal val extensionSuffix: String
 ): AndroidProjectBuilder {
 
     override var applicationId: String? = null
@@ -131,7 +132,7 @@ internal class AndroidProjectBuilderImpl(
 
     fun writeBuildFile(sb: StringBuilder, appliedPlugins: Collection<PluginType>) {
 
-        sb.append("android {\n")
+        sb.append("android$extensionSuffix {\n")
 
         sb.append("    namespace = \"$namespace\"\n")
         if (!appliedPlugins.contains(PluginType.FUSED_LIBRARY)) {

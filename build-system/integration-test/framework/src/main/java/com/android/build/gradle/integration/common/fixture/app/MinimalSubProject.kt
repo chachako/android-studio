@@ -37,6 +37,7 @@ class MinimalSubProject private constructor(
     val namespace: String?,
     private val isMultiplatform: Boolean = false,
     val requiredPlugins: List<String> = listOf(),
+    androidExtension: String = "android",
 ) :
     GradleProject(path) {
 
@@ -49,18 +50,18 @@ class MinimalSubProject private constructor(
             buildScript += if (isMultiplatform) {
                 "kotlin.androidLibrary.compileSdk = ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}\n"
             } else {
-                "\nandroid.compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}" +
-                        "\nandroid.defaultConfig.minSdkVersion $SUPPORT_LIB_MIN_SDK\n"
+                "\n$androidExtension.compileSdkVersion ${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION}" +
+                        "\n$androidExtension.defaultConfig.minSdkVersion $SUPPORT_LIB_MIN_SDK\n"
             }
         }
         if (addVersionCodeToBuildFile) {
-            buildScript += "\nandroid.defaultConfig.versionCode 1\n"
+            buildScript += "\n$androidExtension.defaultConfig.versionCode 1\n"
         }
         namespace?.let {
             buildScript += if (isMultiplatform) {
                 "\nkotlin.androidLibrary.namespace = \"$it\"\n"
             } else {
-                "\nandroid.namespace \"$it\"\n"
+                "\n$androidExtension.namespace \"$it\"\n"
             }
         }
         addFile(TestSourceFile("build.gradle", buildScript))
@@ -107,7 +108,7 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = true,
                 addVersionCodeToBuildFile = true,
                 addManifestFile = true,
-                namespace = namespace
+                namespace = namespace,
             )
         }
 
@@ -119,7 +120,7 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = true,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = true,
-                namespace = namespace
+                namespace = namespace,
             )
         }
 
@@ -130,7 +131,7 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = true,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = true,
-                namespace = namespace
+                namespace = namespace,
             )
         }
 
@@ -141,7 +142,7 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = true,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = true,
-                namespace = namespace
+                namespace = namespace,
             )
         }
 
@@ -152,7 +153,7 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = true,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = true,
-                namespace = namespace
+                namespace = namespace,
             )
         }
 
@@ -163,7 +164,7 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = false,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = false,
-                namespace = null
+                namespace = null,
             )
         }
 
@@ -174,7 +175,7 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = false,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = false,
-                namespace = null
+                namespace = null,
             )
         }
 
@@ -185,7 +186,7 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = false,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = false,
-                namespace = null
+                namespace = null,
             )
         }
 
@@ -196,7 +197,8 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = false,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = false,
-                namespace = namespace
+                namespace = namespace,
+                androidExtension = "androidFusedLibrary"
             )
         }
 
@@ -207,7 +209,7 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = false,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = false,
-                namespace = namespace
+                namespace = namespace,
             )
         }
 
@@ -215,12 +217,12 @@ class MinimalSubProject private constructor(
             return MinimalSubProject(
                 path = null,
                 plugin = "com.android.kotlin.multiplatform.library",
-                requiredPlugins = listOf("org.jetbrains.kotlin.multiplatform"),
                 addCompileAndSdkVersionToBuildFile = true,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = false,
                 namespace = namespace,
-                isMultiplatform = true
+                isMultiplatform = true,
+                requiredPlugins = listOf("org.jetbrains.kotlin.multiplatform"),
             )
         }
 
@@ -231,7 +233,7 @@ class MinimalSubProject private constructor(
                 addCompileAndSdkVersionToBuildFile = false,
                 addVersionCodeToBuildFile = false,
                 addManifestFile = false,
-                namespace = null
+                namespace = null,
             )
         }
     }

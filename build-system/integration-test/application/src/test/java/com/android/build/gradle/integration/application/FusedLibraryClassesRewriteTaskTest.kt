@@ -69,7 +69,7 @@ internal class FusedLibraryClassesRewriteTaskTest {
         }
         subProject(":fusedLib1") {
             plugins.add(PluginType.FUSED_LIBRARY)
-            appendToBuildFile { """android.namespace="com.example.fusedLib1" """ }
+            appendToBuildFile { """androidFusedLibrary.namespace="com.example.fusedLib1" """ }
             dependencies {
                 include(project(":androidLib2"))
             }

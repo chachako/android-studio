@@ -109,7 +109,7 @@ class FusedLibraryMergeResourcesTaskTest {
         }
         subProject(":fusedLib1") {
             plugins.add(PluginType.FUSED_LIBRARY)
-            android {
+            androidFusedLibrary {
                 namespace = "com.example.fusedLib1"
                 minSdk = 1
             }

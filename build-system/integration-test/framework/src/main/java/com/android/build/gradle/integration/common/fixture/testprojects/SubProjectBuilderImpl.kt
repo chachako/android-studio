@@ -39,21 +39,11 @@ internal class SubProjectBuilderImpl(override val path: String) : SubProjectBuil
     private val wrappedLibraries = mutableListOf<Pair<String, ByteArray>>()
 
     override fun android(action: AndroidProjectBuilder.() -> Unit) {
-        if (!plugins.containsAndroid()) {
-            error("Cannot configure android for project '$path', so Android plugin applied")
-        }
+        androidAction(action)
+    }
 
-        if (android == null) {
-            val pkgName = if (path == ":") {
-                "pkg.name"
-            } else {
-                "pkg.name${path.replace(':', '.')}"
-            }
-
-            android = AndroidProjectBuilderImpl(this, pkgName)
-        }
-
-        android?.let { action(it) }
+    override fun androidFusedLibrary(action: AndroidProjectBuilder.() -> Unit) {
+        androidAction(action, "FusedLibrary")
     }
 
     override fun androidComponents(action: AndroidComponentsBuilder.() -> Unit) {
@@ -164,5 +154,26 @@ internal class SubProjectBuilderImpl(override val path: String) : SubProjectBuil
         }
 
         File(projectDir, "build.gradle${buildFileType.extension}").writeText(sb.toString())
+    }
+
+    private fun androidAction(
+        action: AndroidProjectBuilder.() -> Unit,
+        extensionSuffix: String = ""
+    ) {
+        if (!plugins.containsAndroid()) {
+            error("Cannot configure android for project '$path', so Android plugin applied")
+        }
+
+        if (android == null) {
+            val pkgName = if (path == ":") {
+                "pkg.name"
+            } else {
+                "pkg.name${path.replace(':', '.')}"
+            }
+
+            android = AndroidProjectBuilderImpl(this, pkgName, extensionSuffix)
+        }
+
+        android?.let { action(it) }
     }
 }

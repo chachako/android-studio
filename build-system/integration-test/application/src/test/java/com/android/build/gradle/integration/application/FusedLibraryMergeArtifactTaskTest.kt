@@ -111,7 +111,7 @@ internal class FusedLibraryMergeArtifactTaskTest {
         }
         subProject(":fusedLib1") {
             plugins.add(PluginType.FUSED_LIBRARY)
-            android {
+            androidFusedLibrary {
                 namespace = "com.example.fusedLib1"
                 minSdk = 19
             }
@@ -150,8 +150,8 @@ internal class FusedLibraryMergeArtifactTaskTest {
         }
 
         TestFileUtils.searchAndReplace(fusedLib1.buildFile,
-            "android {",
-            "android {\n aarMetadata.minAgpVersion = \"8.4-alpha02\"\naarMetadata.minCompileSdk=9"
+            "androidFusedLibrary {",
+            "androidFusedLibrary {\n aarMetadata.minAgpVersion = \"8.4-alpha02\"\naarMetadata.minCompileSdk=9"
         )
 
         fusedLibraryAar = getFusedLibraryAar()

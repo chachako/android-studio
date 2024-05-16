@@ -91,7 +91,7 @@ class FusedLibraryTest(
         }
         it.appendToBuild(
                 """
-                android {
+                androidFusedLibrary {
                     minSdk = $DEFAULT_MIN_SDK_VERSION
                 }
                 """.trimIndent()

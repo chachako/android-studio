@@ -144,6 +144,13 @@ interface SubProjectBuilder {
     fun android(action: AndroidProjectBuilder.() -> Unit)
 
     /**
+     * Configures the androidFusedLibrary section of the project.
+     *
+     * This will fails if the Android Fused Library is not applied.
+     */
+    fun androidFusedLibrary(action: AndroidProjectBuilder.() -> Unit)
+
+    /**
      * Configures the androidcomponents section of the project.
      *
      * This will fails if no android plugins were added.
