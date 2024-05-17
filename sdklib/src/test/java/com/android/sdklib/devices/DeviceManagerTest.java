@@ -176,7 +176,8 @@ public class DeviceManagerTest {
                         "Pixel 7 Pro",
                         "Pixel 7a",
                         "Pixel 8",
-                        "Pixel 8 Pro");
+                        "Pixel 8 Pro",
+                        "Pixel 8a");
 
         assertThat(dm.getDevice("Nexus One", "Google").getDisplayName()).isEqualTo("Nexus One");
 
@@ -256,7 +257,8 @@ public class DeviceManagerTest {
                         "Pixel 7 Pro",
                         "Pixel 7a",
                         "Pixel 8",
-                        "Pixel 8 Pro");
+                        "Pixel 8 Pro",
+                        "Pixel 8a");
     }
 
     @Test
@@ -384,7 +386,8 @@ public class DeviceManagerTest {
                         "Pixel 7 Pro",
                         "Pixel 7a",
                         "Pixel 8",
-                        "Pixel 8 Pro");
+                        "Pixel 8 Pro",
+                        "Pixel 8a");
 
         assertThat(listDisplayNames(dm2.getDevices(DeviceManager.ALL_DEVICES)))
                 .containsExactly(
@@ -463,7 +466,8 @@ public class DeviceManagerTest {
                         "Pixel 7 Pro",
                         "Pixel 7a",
                         "Pixel 8",
-                        "Pixel 8 Pro");
+                        "Pixel 8 Pro",
+                        "Pixel 8a");
     }
 
     @Test
@@ -585,7 +589,8 @@ public class DeviceManagerTest {
                         "Pixel 7 Pro",
                         "Pixel 7a",
                         "Pixel 8",
-                        "Pixel 8 Pro");
+                        "Pixel 8 Pro",
+                        "Pixel 8a");
 
         assertThat(listDisplayNames(dm.getDevices(DeviceManager.ALL_DEVICES)))
                 .containsExactly(
@@ -664,7 +669,8 @@ public class DeviceManagerTest {
                         "Pixel 7 Pro",
                         "Pixel 7a",
                         "Pixel 8",
-                        "Pixel 8 Pro");
+                        "Pixel 8 Pro",
+                        "Pixel 8a");
     }
 
     @Test
