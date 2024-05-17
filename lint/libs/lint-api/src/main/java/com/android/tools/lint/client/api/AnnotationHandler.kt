@@ -1139,56 +1139,64 @@ internal class AnnotationHandler(
     if (length == 0) {
       return annotations
     }
-    for (annotation in annotations) {
-      val signature = annotation.qualifiedName ?: continue
-      val name = signature.substringAfterLast('.')
-      val relevant = relevantAnnotations.contains(signature) || relevantAnnotations.contains(name)
-      if (relevant) {
-        // Common case: there's just one annotation; no need to create a list copy
-        if (length == 1) {
-          return annotations
+    val visitedAnnotations = mutableSetOf<UAnnotation>()
+    val wave = mutableListOf<List<UAnnotation>>()
+    wave.add(annotations)
+    while (wave.isNotEmpty() && result == null) {
+      val annotationsAtWave = wave.removeFirst()
+      for (annotation in annotationsAtWave) {
+        if (!visitedAnnotations.add(annotation)) continue
+        val signature = annotation.qualifiedName ?: continue
+        val name = signature.substringAfterLast('.')
+        val relevant = relevantAnnotations.contains(signature) || relevantAnnotations.contains(name)
+        if (relevant) {
+          // Common case: there's just one annotation; no need to create a list copy
+          if (length == 1) {
+            return annotations
+          }
+          if (result == null) {
+            result = ArrayList(2)
+          }
+          result.add(annotation)
+          continue
+        } else if (signature.startsWith("java.") || signature.startsWith("kotlin.")) {
+          // @Override, @SuppressWarnings etc. Ignore, because they're not a possible typedef match,
+          // which
+          // is the only remaining thing we're looking for.
+          continue
+        } else if (isPlatformAnnotation(signature)) {
+          if (result == null) {
+            result = ArrayList(2)
+          }
+          result.add(annotation.fromPlatformAnnotation(signature))
+          continue
         }
-        if (result == null) {
-          result = ArrayList(2)
-        }
-        result.add(annotation)
-        continue
-      } else if (signature.startsWith("java.") || signature.startsWith("kotlin.")) {
-        // @Override, @SuppressWarnings etc. Ignore, because they're not a possible typedef match,
-        // which
-        // is the only remaining thing we're looking for.
-        continue
-      } else if (isPlatformAnnotation(signature)) {
-        if (result == null) {
-          result = ArrayList(2)
-        }
-        result.add(annotation.fromPlatformAnnotation(signature))
-        continue
-      }
 
-      // Special case @IntDef and @StringDef: These are used on annotations
-      // themselves. For example, you create a new annotation named @foo.bar.Baz,
-      // annotate it with @IntDef, and then use @foo.bar.Baz in your signatures.
-      // Here we want to map from @foo.bar.Baz to the corresponding int def.
-      // Don't need to compute this if performing @IntDef or @StringDef lookup
-      val cls = annotation.resolve()
-      if (cls == null || !cls.isAnnotationType) {
-        continue
-      }
-      val metaAnnotations = evaluator.getAnnotations(cls, inHierarchy = false)
-      for (j in metaAnnotations.indices) {
-        val inner = metaAnnotations[j]
-        val innerName = inner.qualifiedName ?: continue
-        if (relevantAnnotations.contains(innerName)) {
-          if (result == null) {
-            result = ArrayList(2)
+        // Special case @IntDef and @StringDef: These are used on annotations
+        // themselves. For example, you create a new annotation named @foo.bar.Baz,
+        // annotate it with @IntDef, and then use @foo.bar.Baz in your signatures.
+        // Here we want to map from @foo.bar.Baz to the corresponding int def.
+        // Don't need to compute this if performing @IntDef or @StringDef lookup
+        val cls = annotation.resolve()
+        if (cls == null || !cls.isAnnotationType) {
+          continue
+        }
+        val metaAnnotations = evaluator.getAnnotations(cls, inHierarchy = false)
+        wave.add(metaAnnotations)
+        for (j in metaAnnotations.indices) {
+          val inner = metaAnnotations[j]
+          val innerName = inner.qualifiedName ?: continue
+          if (relevantAnnotations.contains(innerName)) {
+            if (result == null) {
+              result = ArrayList(2)
+            }
+            result.add(inner)
+          } else if (isPlatformAnnotation(innerName)) {
+            if (result == null) {
+              result = ArrayList(2)
+            }
+            result.add(inner.fromPlatformAnnotation(innerName))
           }
-          result.add(inner)
-        } else if (isPlatformAnnotation(innerName)) {
-          if (result == null) {
-            result = ArrayList(2)
-          }
-          result.add(inner.fromPlatformAnnotation(innerName))
         }
       }
     }

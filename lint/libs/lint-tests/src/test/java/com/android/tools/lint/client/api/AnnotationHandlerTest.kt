@@ -1800,7 +1800,10 @@ class AnnotationHandlerTest {
           src/Test.java:5: Error: DEFINITION usage associated with @MyJavaAnnotation on PARAMETER [_AnnotationIssue]
               void unsafeExperimentalAnnotationStep1(@ExperimentalJavaAnnotation int foo) {}
                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          2 errors, 0 warnings
+          src/Test.java:6: Error: DEFINITION usage associated with @MyJavaAnnotation on PARAMETER [_AnnotationIssue]
+              void unsafeExperimentalAnnotationStep2(@AnnotatedJavaAnnotation int foo) {}
+                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          3 errors, 0 warnings
         """
       )
   }
