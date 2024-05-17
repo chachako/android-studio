@@ -278,7 +278,6 @@ abstract class ProguardConfigurableTask(
         ) {
             super.configure(task)
 
-            task.projectPath.setDisallowChanges(creationConfig.services.projectInfo.path)
             task.componentType.set(ComponentTypeImpl.BASE_APK)
             task.includeFeaturesInScopes.set(false)
 

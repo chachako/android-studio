@@ -21,10 +21,13 @@ import com.android.build.gradle.internal.tasks.AppPreBuildTask
 import com.android.build.gradle.internal.tasks.BaseTask
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.GeneratePrivacySandboxSdkRuntimeConfigFile
+import com.android.build.gradle.internal.tasks.AndroidGlobalTask
 import com.android.build.gradle.internal.tasks.NewIncrementalTask
 import com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.TestPreBuildTask
+import com.android.build.gradle.internal.tasks.UnsafeOutputsGlobalTask
+import com.android.build.gradle.internal.tasks.UnsafeOutputsTask
 import com.android.buildanalyzer.common.TaskCategory
 import org.gradle.api.Task
 import com.google.common.reflect.ClassPath
@@ -40,14 +43,17 @@ class BuildAnalyzerTest {
     // Another reason is that it does not fall into any TaskCategory,
     // and the task will not show up in Build Analyzer anyway.
     private val expectedTasksWithoutAnnotations = listOf(
-            AppPreBuildTask::class.java,
-            TestPreBuildTask::class.java,
+            BaseTask::class.java,
             AndroidVariantTask::class.java,
             NewIncrementalTask::class.java,
             NonIncrementalTask::class.java,
-            PackageAndroidArtifact::class.java,
-            BaseTask::class.java,
+            UnsafeOutputsTask::class.java,
+            AndroidGlobalTask::class.java,
             NonIncrementalGlobalTask::class.java,
+            UnsafeOutputsGlobalTask::class.java,
+            AppPreBuildTask::class.java,
+            TestPreBuildTask::class.java,
+            PackageAndroidArtifact::class.java,
             BuildPrivacySandboxSdkApks::class.java,
             GeneratePrivacySandboxAsar::class.java,
             GeneratePrivacySandboxSdkRuntimeConfigFile::class.java,

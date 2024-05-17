@@ -27,6 +27,8 @@ import com.android.build.gradle.internal.dsl.decorator.AndroidPluginDslDecorator
 import com.android.build.gradle.internal.fixtures.FakeProviderFactory;
 import com.android.build.gradle.internal.services.DslServices;
 import com.android.build.gradle.internal.services.FakeServices;
+import com.android.build.gradle.internal.tasks.AndroidGlobalTask;
+import com.android.build.gradle.internal.tasks.UnsafeOutputsGlobalTask;
 import com.android.build.gradle.options.BooleanOption;
 import com.android.build.gradle.options.IntegerOption;
 import com.android.build.gradle.options.OptionalBooleanOption;
@@ -34,6 +36,7 @@ import com.android.build.gradle.options.ProjectOptions;
 import com.android.build.gradle.options.StringOption;
 import com.android.tools.build.gradle.internal.profile.VariantApiArtifactType;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.TypeToken;
 import com.google.protobuf.Descriptors;
@@ -47,6 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import kotlin.Unit;
@@ -55,6 +59,15 @@ import org.gradle.api.Task;
 import org.junit.Test;
 
 public class AnalyticsUtilTest {
+
+    /**
+     * Base tasks that concrete task classes extend from (not exhaustive).
+     *
+     * These will be ignored in {@link #checkHaveAllEnumValues} because they are not concrete tasks
+     * that AGP creates, so they don't need to have the corresponding analytic enums.
+     */
+    private static final Set<String> baseTasks =
+            ImmutableSet.of(AndroidGlobalTask.class.getName(), UnsafeOutputsGlobalTask.class.getName());
 
     @Test
     public void checkAllTasksHaveEnumValues() throws IOException {
@@ -224,13 +237,12 @@ public class AnalyticsUtilTest {
 
         TypeToken<T> taskInterface = TypeToken.of(itemClass);
         List<Class<T>> missingTasks =
-                classPath
-                        .getTopLevelClassesRecursive("com.android.build")
-                        .stream()
+                classPath.getTopLevelClassesRecursive("com.android.build").stream()
                         .map(classInfo -> (Class<T>) classInfo.load())
                         .filter(
                                 clazz ->
                                         TypeToken.of(clazz).getTypes().contains(taskInterface)
+                                                && !baseTasks.contains(clazz.getName())
                                                 && (!Modifier.isAbstract(clazz.getModifiers())
                                                         || checkAbstractClasses)
                                                 && mapsToUnknownProtoValue(clazz, mappingFunction))

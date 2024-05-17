@@ -111,14 +111,15 @@ class TaskMethodModifiersAndAnnotationsTest {
     }
 
     @Test
-    fun `check for tasks that don't extend AndroidVariantTask`() {
-
-        val doesNotExtendAndroidVariantTask = tasks.filter { !VariantAwareTask::class.java.isAssignableFrom(it) }.map { it.name }
+    fun `check for tasks that don't extend AndroidVariantTask or AndroidGlobalTask`() {
+        val doesNotExtendAndroidVariantTaskOrGlobalTask = tasks.filter {
+            !VariantAwareTask::class.java.isAssignableFrom(it)
+                    && !AndroidGlobalTask::class.java.isAssignableFrom(it)
+        }.map { it.name }
         assertWithMessage("All Agp tasks should generally extend NonIncrementalTask, NonIncrementalGlobalTask or NewIncrementalTask, " +
                 "or manually implement VariantAwareTask if using a Gradle task type.")
         // Don't add new tasks to this list
-        assertThat(doesNotExtendAndroidVariantTask).containsExactly(
-                "com.android.build.gradle.internal.lint.AndroidLintGlobalTask",
+        assertThat(doesNotExtendAndroidVariantTaskOrGlobalTask).containsExactly(
                 "com.android.build.gradle.internal.tasks.AndroidReportTask",
                 "com.android.build.gradle.internal.tasks.BaseTask",
                 "com.android.build.gradle.internal.tasks.DependencyReportTask",
@@ -179,7 +180,6 @@ class TaskMethodModifiersAndAnnotationsTest {
                 "com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestTask::setDisplayEmulatorOption",
                 "com.android.build.gradle.internal.tasks.ManagedDeviceInstrumentationTestTask::setIgnoreFailures",
                 "com.android.build.gradle.internal.tasks.NdkTask::setNdkConfig",
-                "com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask::setVariantName",
                 "com.android.build.gradle.internal.tasks.PackageRenderscriptTask::setVariantName",
                 "com.android.build.gradle.internal.tasks.ProcessJavaResTask::setVariantName",
                 "com.android.build.gradle.internal.tasks.SigningReportTask::setComponents",
