@@ -478,7 +478,7 @@ class ScreenshotTest {
         assertThat(resultsJson.readText()).contains(""""screenshotResults": []""")
 
         getExecutor()
-            .withFailOnWarning(false) // TODO(b/333398506): remove once fixed
+            .expectFailure() // Gradle test tasks fail when no tests are executed starting in Gradle 9.0
             .run(":app:validateDebugScreenshotTest")
 
         val indexHtmlReport = appProject.buildDir.resolve("reports/screenshotTest/preview/debug/index.html")
