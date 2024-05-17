@@ -16,6 +16,7 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.detector.api.asCall
+import com.android.tools.lint.detector.api.callNeverReturns
 import com.android.tools.lint.detector.api.findCommonParent
 import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isKotlin
@@ -1459,20 +1460,9 @@ open class ControlFlowGraph<T : Any> private constructor() {
             flushPending(node)
             val resolved = node.resolve()
             if (resolved != null) {
-              val name = resolved.name
-              when (name) {
-                "error" -> {
-                  if (resolved.containingClass?.qualifiedName == STDLIB_ERROR_CLASS) {
-                    handleThrow(node, null)
-                    return super.visitCallExpression(node)
-                  }
-                }
-                "TODO" -> {
-                  if (resolved.containingClass?.qualifiedName == STDLIB_TODO_CLASS) {
-                    handleThrow(node, null)
-                    return super.visitCallExpression(node)
-                  }
-                }
+              if (callNeverReturns(node)) {
+                handleThrow(node, null)
+                return super.visitCallExpression(node)
               }
             }
 

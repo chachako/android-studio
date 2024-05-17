@@ -35,6 +35,7 @@ import com.android.tools.lint.detector.api.PartialResult
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.android.tools.lint.detector.api.callNeverReturns
 import com.android.tools.lint.detector.api.resolveManifestName
 import com.android.utils.next
 import com.android.utils.subtag
@@ -45,7 +46,6 @@ import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.ULiteralExpression
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UReturnExpression
-import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.UThrowExpression
 import org.jetbrains.uast.skipParenthesizedExprDown
 import org.w3c.dom.Element
@@ -166,7 +166,7 @@ class ProviderPermissionDetector : Detector(), SourceCodeScanner {
     val expressions = if (body is UBlockExpression) body.expressions else listOf(body)
     val first = expressions.firstOrNull()?.skipParenthesizedExprDown()
     return expressions.size > 1 ||
-      !(first.isThrowExpression() || first.isReturnLiteral() || first.isError() || first.isTodo())
+      !(first.isThrowExpression() || first.isReturnLiteral() || first.isNeverReturningCall())
   }
 
   private fun UExpression?.isThrowExpression(): Boolean {
@@ -177,22 +177,13 @@ class ProviderPermissionDetector : Detector(), SourceCodeScanner {
     return this is UReturnExpression && this.returnExpression is ULiteralExpression
   }
 
-  private fun UExpression?.isError(): Boolean {
-    return this.getConstructorName() == "error"
-  }
-
-  private fun UExpression?.isTodo(): Boolean {
-    return this.getConstructorName() == "TODO"
-  }
-
   private fun UExpression?.getInsideReturnOrThis(): UExpression? {
     return (this as? UReturnExpression)?.returnExpression?.skipParenthesizedExprDown() ?: this
   }
 
-  private fun UExpression?.getConstructorName(): String? {
-    return ((this.getInsideReturnOrThis() as? UCallExpression)?.classReference
-        as? USimpleNameReferenceExpression)
-      ?.identifier
+  private fun UExpression?.isNeverReturningCall(): Boolean {
+    val call = this.getInsideReturnOrThis() as? UCallExpression ?: return false
+    return callNeverReturns(call)
   }
 
   private fun UMethod.isProviderAbstractWriteMethod(): Boolean {

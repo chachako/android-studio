@@ -35,18 +35,22 @@ import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiParameter
 import com.intellij.psi.PsiType
+import com.intellij.psi.PsiTypes
 import com.intellij.psi.PsiVariable
 import com.intellij.psi.PsiWildcardType
 import com.intellij.psi.util.InheritanceUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
+import org.jetbrains.kotlin.analysis.api.calls.symbol
 import org.jetbrains.kotlin.asJava.elements.FakeFileForLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.kotlin.asJava.elements.KtLightParameter
 import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
+import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtFile
@@ -1018,12 +1022,36 @@ fun UExpression.isUnconditionalReturn(): Boolean {
 
   if (statement is UReturnExpression || statement is UThrowExpression) {
     return true
-  } else if (statement is UCallExpression) {
-    val methodName = getMethodName(statement)
-    // Look for Kotlin runtime library methods that unconditionally exit
-    if ("error" == methodName || "TODO" == methodName) {
-      return true
+  } else if (statement is UCallExpression && callNeverReturns(statement)) {
+    return true
+  }
+
+  return false
+}
+
+/**
+ * Returns true if this [call] node calls a method known to never return, such as Kotlin's standard
+ * library method "error", and JUnit fail methods.
+ */
+fun callNeverReturns(call: UCallExpression): Boolean {
+  val sourcePsi = call.sourcePsi
+  if (sourcePsi is KtCallExpression) {
+    analyze(sourcePsi) {
+      val callInfo = sourcePsi.resolveCall()
+      if (callInfo != null) {
+        val returnType = callInfo.singleFunctionCallOrNull()?.symbol?.returnType
+        if (returnType != null && returnType.isNothing) {
+          return true
+        }
+      }
     }
+  }
+
+  // Methods named "fail" are typically also not returning. Not checking
+  // exact containing class here since there are many varieties across
+  // testing frameworks and even local customizations.
+  if (getMethodName(call) == "fail" && call.resolve()?.returnType == PsiTypes.voidType()) {
+    return true
   }
 
   return false

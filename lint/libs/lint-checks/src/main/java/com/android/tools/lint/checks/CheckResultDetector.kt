@@ -29,6 +29,7 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.UImplicitCallExpression
 import com.android.tools.lint.detector.api.UastLintUtils.Companion.getAnnotationStringValue
+import com.android.tools.lint.detector.api.callNeverReturns
 import com.android.tools.lint.detector.api.findSelector
 import com.android.tools.lint.detector.api.isBelow
 import com.android.tools.lint.detector.api.isIncorrectImplicitReturnInLambda
@@ -218,11 +219,7 @@ class CheckResultDetector : AbstractAnnotationDetector(), SourceCodeScanner {
       val nextStatement = statement.nextStatement()?.findSelector()
 
       if (nextStatement is UCallExpression) {
-        val methodName = nextStatement.methodName
-        // (Ideally we'd look for the Kotlin type `Nothing` here instead of checking
-        // for methods named error and TODO, but UAST does not expose Kotlin types,
-        // only the mapped types (e.g. both Unit and Nothing maps to void).
-        if (methodName == "fail" || methodName == "error" || methodName == "TODO") {
+        if (callNeverReturns(nextStatement)) {
           return true
         }
       } else if (

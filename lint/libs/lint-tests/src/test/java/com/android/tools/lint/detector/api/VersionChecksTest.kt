@@ -3765,6 +3765,16 @@ class VersionChecksTest : AbstractCheckTest() {
                         }
                         val actionBar = getActionBar() // OK
                     }
+
+                    fun testCustomMethod() {
+                        if (SDK_INT < 11) {
+                            willThrow()
+                        }
+                        val actionBar = getActionBar() // OK
+                    }
+
+                    private fun willThrow(): Nothing {
+                    }
                 }
                 """
           )
