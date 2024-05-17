@@ -1802,7 +1802,129 @@ class AnnotationHandlerTest {
                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           2 errors, 0 warnings
         """
-          .trimIndent()
+      )
+  }
+
+  @Test
+  fun testAnnotationOnConstructor() {
+    // Test from b/340894674
+    // and https://youtrack.jetbrains.com/issue/IDEA-353636
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+            import java.lang.annotation.ElementType;
+            import java.lang.annotation.Target;
+            import pkg.java.MyJavaAnnotation;
+
+            @MyJavaAnnotation
+            @Target({ElementType.TYPE, ElementType.CONSTRUCTOR})
+            public @interface ExperimentalJavaAnnotationOnConstructor {}
+          """
+          )
+          .indented(),
+        java(
+            """
+            package test.pkg;
+            import java.lang.annotation.ElementType;
+            import java.lang.annotation.Target;
+            import pkg.java.MyJavaAnnotation;
+
+            @MyJavaAnnotation
+            @Target(ElementType.METHOD)
+            public @interface ExperimentalJavaAnnotationOnMethod {}
+          """
+          )
+          .indented(),
+        java(
+            """
+            package pkg1;
+            import test.pkg.ExperimentalJavaAnnotationOnConstructor;
+            import test.pkg.ExperimentalJavaAnnotationOnMethod;
+
+            @ExperimentalJavaAnnotationOnConstructor
+            public class JavaClass {
+                @ExperimentalJavaAnnotationOnConstructor
+                @ExperimentalJavaAnnotationOnMethod
+                public JavaClass(String x) {}
+
+                @ExperimentalJavaAnnotationOnConstructor
+                public JavaClass(int x) {
+                    this(String.valueOf(x));
+                }
+
+                @ExperimentalJavaAnnotationOnMethod
+                public JavaClass(String x, String y) {
+                    this(x + y);
+                }
+
+                @ExperimentalJavaAnnotationOnConstructor
+                @ExperimentalJavaAnnotationOnMethod
+                static void staticFunctionWithBoth() {}
+
+                @ExperimentalJavaAnnotationOnConstructor
+                static void staticFunctionWitConstructor() {}
+
+                @ExperimentalJavaAnnotationOnMethod
+                static void staticFunctionWitMethod() {}
+            }
+          """
+          )
+          .indented(),
+        kotlin(
+            """
+            package pkg2
+            import test.pkg.ExperimentalJavaAnnotationOnConstructor
+            import test.pkg.ExperimentalJavaAnnotationOnMethod
+
+            @ExperimentalJavaAnnotationOnConstructor
+            class KotlinClass(val x: String) {
+                @ExperimentalJavaAnnotationOnConstructor
+                @ExperimentalJavaAnnotationOnMethod
+                constructor(val x: Int) : this(x.toString())
+
+                @ExperimentalJavaAnnotationOnConstructor
+                constructor(val x: String, val y: String) : this(x + y)
+
+                @ExperimentalJavaAnnotationOnMethod
+                constructor(val x: String, val y: Int) : this(x + y.toString())
+
+                @ExperimentalJavaAnnotationOnConstructor
+                @ExperimentalJavaAnnotationOnMethod
+                fun both() {}
+
+                @ExperimentalJavaAnnotationOnConstructor
+                fun onConstructor() {}
+
+                @ExperimentalJavaAnnotationOnMethod
+                fun onMethod() {}
+            }
+          """
+          )
+          .indented(),
+        javaAnnotation,
+      )
+      .run()
+      .expect(
+        """
+          src/pkg1/JavaClass.java:13: Error: METHOD_CALL usage associated with @MyJavaAnnotation on METHOD [_AnnotationIssue]
+                  this(String.valueOf(x));
+                  ~~~~~~~~~~~~~~~~~~~~~~~
+          src/pkg1/JavaClass.java:18: Error: METHOD_CALL usage associated with @MyJavaAnnotation on METHOD [_AnnotationIssue]
+                  this(x + y);
+                  ~~~~~~~~~~~
+          src/pkg2/KotlinClass.kt:9: Error: METHOD_CALL usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+              constructor(val x: Int) : this(x.toString())
+                                        ~~~~~~~~~~~~~~~~~~
+          src/pkg2/KotlinClass.kt:12: Error: METHOD_CALL usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+              constructor(val x: String, val y: String) : this(x + y)
+                                                          ~~~~~~~~~~~
+          src/pkg2/KotlinClass.kt:15: Error: METHOD_CALL usage associated with @MyJavaAnnotation on CLASS [_AnnotationIssue]
+              constructor(val x: String, val y: Int) : this(x + y.toString())
+                                                       ~~~~~~~~~~~~~~~~~~~~~~
+          5 errors, 0 warnings
+        """
       )
   }
 
