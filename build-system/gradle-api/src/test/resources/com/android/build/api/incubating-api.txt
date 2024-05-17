@@ -135,9 +135,6 @@ https://issuetracker.google.com/328748494
   * com.android.build.api.variant.HasTestFixturesBuilder.setEnableTestFixtures: void (boolean)
   * com.android.build.api.variant.TestFixtures implements com.android.build.api.variant.GeneratesAar, com.android.build.api.variant.HasAndroidResources, com.android.build.api.variant.Component
   * com.android.build.api.variant.TestVariant.getTestedApks: org.gradle.api.provider.Provider<org.gradle.api.file.Directory> ()
-https://issuetracker.google.com/328748510
-  * com.android.build.api.artifact.MultipleArtifactTypeOutOperationRequest
-  * com.android.build.api.artifact.MultipleArtifactTypeOutOperationRequest.toListenTo: void (ArtifactTypeT)
 https://issuetracker.google.com/328748512
   * com.android.build.api.dsl.BundleTexture.getEnableSplit: java.lang.Boolean ()
   * com.android.build.api.dsl.BundleTexture.setEnableSplit: void (java.lang.Boolean)
@@ -483,8 +480,6 @@ https://issuetracker.google.com/328749058
   * com.android.build.api.variant.HasDeviceTestsBuilder.getDeviceTests: java.util.List<com.android.build.api.variant.DeviceTestBuilder> ()
 https://issuetracker.google.com/328749059
   * com.android.build.api.variant.Variant.getNestedComponents: java.util.List<com.android.build.api.variant.Component> ()
-https://issuetracker.google.com/328749076
-  * com.android.build.api.artifact.TaskBasedOperation.wiredWithMultiple: com.android.build.api.artifact.MultipleArtifactTypeOutOperationRequest<FileTypeT> (kotlin.jvm.functions.Function1<? super TaskT, ? extends org.gradle.api.provider.ListProperty<FileTypeT>>)
 https://issuetracker.google.com/328749079
   * com.android.build.api.dsl.ManagedDevices.getLocalDevices: org.gradle.api.NamedDomainObjectContainer<com.android.build.api.dsl.ManagedVirtualDevice> ()
 https://issuetracker.google.com/328749082
