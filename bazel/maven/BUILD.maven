@@ -49297,39 +49297,48 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "org.gradle.gradle-base-annotations_8.8-20240328140806+0000",
-    pom = "repository/org/gradle/gradle-base-annotations/8.8-20240328140806+0000/gradle-base-annotations-8.8-20240328140806+0000.pom",
+    name = "org.gradle.gradle-declarative-dsl-api_8.9-20240529002035+0000",
+    pom = "repository/org/gradle/gradle-declarative-dsl-api/8.9-20240529002035+0000/gradle-declarative-dsl-api-8.9-20240529002035+0000.pom",
     repo_root_path = "repository",
-    repo_path = "org/gradle/gradle-base-annotations/8.8-20240328140806+0000",
+    repo_path = "org/gradle/gradle-declarative-dsl-api/8.9-20240529002035+0000",
     deps = [
-        "com.google.code.findbugs.jsr305_3.0.2",
+        "org.gradle.gradle-java-language-extensions_8.9-20240529002035+0000",
     ],
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "org.gradle.gradle-declarative-dsl-api_8.8-20240328140806+0000",
-    pom = "repository/org/gradle/gradle-declarative-dsl-api/8.8-20240328140806+0000/gradle-declarative-dsl-api-8.8-20240328140806+0000.pom",
+    name = "org.gradle.gradle-declarative-dsl-core_8.9-20240529002035+0000",
+    pom = "repository/org/gradle/gradle-declarative-dsl-core/8.9-20240529002035+0000/gradle-declarative-dsl-core-8.9-20240529002035+0000.pom",
     repo_root_path = "repository",
-    repo_path = "org/gradle/gradle-declarative-dsl-api/8.8-20240328140806+0000",
+    repo_path = "org/gradle/gradle-declarative-dsl-core/8.9-20240529002035+0000",
     deps = [
-        "org.gradle.gradle-base-annotations_8.8-20240328140806+0000",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "org.gradle.gradle-declarative-dsl-core_8.8-20240328140806+0000",
-    pom = "repository/org/gradle/gradle-declarative-dsl-core/8.8-20240328140806+0000/gradle-declarative-dsl-core-8.8-20240328140806+0000.pom",
-    repo_root_path = "repository",
-    repo_path = "org/gradle/gradle-declarative-dsl-core/8.8-20240328140806+0000",
-    deps = [
-        "org.jetbrains.kotlin.kotlin-compiler-embeddable_1.9.22",
-        "org.jetbrains.kotlin.kotlin-stdlib_1.9.22",
-        "org.gradle.gradle-declarative-dsl-api_8.8-20240328140806+0000",
-        "org.jetbrains.kotlin.kotlin-reflect_1.9.22",
+        "org.gradle.gradle-declarative-dsl-tooling-models_8.9-20240529002035+0000",
+        "org.jetbrains.kotlin.kotlin-compiler-embeddable_1.9.23",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.23",
+        "org.gradle.gradle-declarative-dsl-api_8.9-20240529002035+0000",
+        "org.jetbrains.kotlin.kotlin-reflect_1.9.23",
         "org.jetbrains.kotlinx.kotlinx-serialization-core-jvm_1.6.2",
         "org.jetbrains.kotlinx.kotlinx-serialization-json-jvm_1.6.2",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.gradle.gradle-declarative-dsl-tooling-models_8.9-20240529002035+0000",
+    pom = "repository/org/gradle/gradle-declarative-dsl-tooling-models/8.9-20240529002035+0000/gradle-declarative-dsl-tooling-models-8.9-20240529002035+0000.pom",
+    repo_root_path = "repository",
+    repo_path = "org/gradle/gradle-declarative-dsl-tooling-models/8.9-20240529002035+0000",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.gradle.gradle-java-language-extensions_8.9-20240529002035+0000",
+    pom = "repository/org/gradle/gradle-java-language-extensions/8.9-20240529002035+0000/gradle-java-language-extensions-8.9-20240529002035+0000.pom",
+    repo_root_path = "repository",
+    repo_path = "org/gradle/gradle-java-language-extensions/8.9-20240529002035+0000",
+    deps = [
+        "com.google.code.findbugs.jsr305_3.0.2",
     ],
     visibility = ["//visibility:public"],
 )
@@ -51257,10 +51266,22 @@ maven_artifact(
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.22",
     deps = [
-        "org.jetbrains.kotlin.kotlin-stdlib_1.9.22",
-        "org.jetbrains.kotlin.kotlin-script-runtime_1.9.22",
-        "org.jetbrains.kotlin.kotlin-reflect_1.6.10",
         "org.jetbrains.kotlin.kotlin-daemon-embeddable_1.9.22",
+        "org.jetbrains.intellij.deps.trove4j_1.0.20200330",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-compiler-embeddable_1.9.23",
+    pom = "repository/org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.23/kotlin-compiler-embeddable-1.9.23.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-compiler-embeddable/1.9.23",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.23",
+        "org.jetbrains.kotlin.kotlin-script-runtime_1.9.23",
+        "org.jetbrains.kotlin.kotlin-reflect_1.6.10",
+        "org.jetbrains.kotlin.kotlin-daemon-embeddable_1.9.23",
         "org.jetbrains.intellij.deps.trove4j_1.0.20200330",
     ],
     visibility = ["//visibility:public"],
@@ -51938,6 +51959,14 @@ maven_artifact(
     pom = "repository/org/jetbrains/kotlin/kotlin-daemon-embeddable/1.9.22/kotlin-daemon-embeddable-1.9.22.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-daemon-embeddable/1.9.22",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-daemon-embeddable_1.9.23",
+    pom = "repository/org/jetbrains/kotlin/kotlin-daemon-embeddable/1.9.23/kotlin-daemon-embeddable-1.9.23.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-daemon-embeddable/1.9.23",
     visibility = ["//visibility:public"],
 )
 
@@ -53887,6 +53916,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-reflect_1.9.23",
+    pom = "repository/org/jetbrains/kotlin/kotlin-reflect/1.9.23/kotlin-reflect-1.9.23.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-reflect/1.9.23",
+    deps = [
+        "org.jetbrains.kotlin.kotlin-stdlib_1.9.23",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.kotlin.kotlin-reflect_2.0.0-RC2",
     pom = "repository/org/jetbrains/kotlin/kotlin-reflect/2.0.0-RC2/kotlin-reflect-2.0.0-RC2.pom",
     repo_root_path = "repository",
@@ -54030,6 +54070,14 @@ maven_artifact(
     pom = "repository/org/jetbrains/kotlin/kotlin-script-runtime/1.9.22/kotlin-script-runtime-1.9.22.pom",
     repo_root_path = "repository",
     repo_path = "org/jetbrains/kotlin/kotlin-script-runtime/1.9.22",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "org.jetbrains.kotlin.kotlin-script-runtime_1.9.23",
+    pom = "repository/org/jetbrains/kotlin/kotlin-script-runtime/1.9.23/kotlin-script-runtime-1.9.23.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/kotlin/kotlin-script-runtime/1.9.23",
     visibility = ["//visibility:public"],
 )
 
