@@ -865,6 +865,11 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
       annotationHandler?.visitObjectLiteralExpression(mContext, node)
       return super.visitObjectLiteralExpression(node)
     }
+
+    override fun visitParameter(node: UParameter): Boolean {
+      annotationHandler?.visitParameter(mContext, node)
+      return super.visitParameter(node)
+    }
   }
 
   companion object {

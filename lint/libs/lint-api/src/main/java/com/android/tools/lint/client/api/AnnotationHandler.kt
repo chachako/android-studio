@@ -110,6 +110,7 @@ import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UObjectLiteralExpression
+import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UQualifiedReferenceExpression
 import org.jetbrains.uast.UReferenceExpression
@@ -318,6 +319,13 @@ internal class AnnotationHandler(
     }
   }
 
+  fun visitParameter(context: JavaContext, node: UParameter) {
+    val annotations = mutableListOf<AnnotationInfo>()
+    val psiParameter = node.javaPsi as? PsiParameter ?: return
+    annotations.addAnnotations(context.evaluator, psiParameter, PARAMETER, inHierarhcy = false)
+    checkAnnotations(context, node, DEFINITION, psiParameter, annotations)
+  }
+
   /**
    * Adds all the relevant annotations associated with this modifier list owner, and returns the
    * number of annotations added.
@@ -327,8 +335,9 @@ internal class AnnotationHandler(
     owner: PsiModifierListOwner,
     source: AnnotationOrigin,
     prepend: Boolean = false,
+    inHierarhcy: Boolean = true,
   ): Int {
-    val annotations = getRelevantAnnotations(evaluator, owner)
+    val annotations = getRelevantAnnotations(evaluator, owner, inHierarhcy)
     val count = addAnnotations(owner, annotations, source, prepend)
     if (source == PARAMETER || source == METHOD || source == FIELD) {
       return addDefaultAnnotations(evaluator, owner) + count
@@ -450,8 +459,9 @@ internal class AnnotationHandler(
   private fun getRelevantAnnotations(
     evaluator: JavaEvaluator,
     owner: PsiModifierListOwner,
+    inHierarchy: Boolean = true,
   ): List<UAnnotation> {
-    val allAnnotations = evaluator.getAnnotations(owner, inHierarchy = true)
+    val allAnnotations = evaluator.getAnnotations(owner, inHierarchy)
     return filterRelevantAnnotations(evaluator, allAnnotations)
   }
 

@@ -40,8 +40,13 @@ import org.jetbrains.uast.UMethod
 import org.junit.Test
 
 class AnnotationHandlerTest {
-  private fun lint() =
-    TestLintTask.lint().sdkHome(getSdk().toFile()).issues(MyAnnotationDetector.TEST_ISSUE)
+  private fun lint(includesDefinition: Boolean = false) =
+    TestLintTask.lint()
+      .sdkHome(getSdk().toFile())
+      .issues(
+        if (includesDefinition) MyAnnotationDetectorDefinitionToo.TEST_ISSUE
+        else MyAnnotationDetector.TEST_ISSUE
+      )
 
   private val javaAnnotation: TestFile =
     java(
@@ -1606,7 +1611,7 @@ class AnnotationHandlerTest {
         kotlin(
             """
                 package test.pkg
-                import pkg.kotlin.MyKotlinAnnotation;
+                import pkg.kotlin.MyKotlinAnnotation
 
                 class Kotlin {
                     internal open inner class Parent @MyKotlinAnnotation constructor() {
@@ -1747,16 +1752,68 @@ class AnnotationHandlerTest {
       )
   }
 
+  @Test
+  fun testMetaAnnotationOnValueParameter() {
+    // Test from b/313699428
+    lint(includesDefinition = true)
+      .files(
+        java(
+            """
+            package test.pkg;
+            import pkg.java.MyJavaAnnotation;
+
+            @MyJavaAnnotation
+            public @interface ExperimentalJavaAnnotation {}
+          """
+          )
+          .indented(),
+        java(
+            """
+            package test.pkg;
+
+            @ExperimentalJavaAnnotation
+            @Retention(RetentionPolicy.CLASS)
+            public @interface AnnotatedJavaAnnotation {}
+          """
+          )
+          .indented(),
+        java(
+            """
+            import test.pkg.AnnotatedJavaAnnotation;
+            import test.pkg.ExperimentalJavaAnnotation;
+
+            class Test {
+                void unsafeExperimentalAnnotationStep1(@ExperimentalJavaAnnotation int foo) {}
+                void unsafeExperimentalAnnotationStep2(@AnnotatedJavaAnnotation int foo) {}
+            }
+          """
+          )
+          .indented(),
+        javaAnnotation,
+      )
+      .run()
+      .expect(
+        """
+          src/test/pkg/ExperimentalJavaAnnotation.java:4: Error: DEFINITION usage associated with @MyJavaAnnotation on SELF [_AnnotationIssue]
+          @MyJavaAnnotation
+          ~~~~~~~~~~~~~~~~~
+          src/Test.java:5: Error: DEFINITION usage associated with @MyJavaAnnotation on PARAMETER [_AnnotationIssue]
+              void unsafeExperimentalAnnotationStep1(@ExperimentalJavaAnnotation int foo) {}
+                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          2 errors, 0 warnings
+        """
+          .trimIndent()
+      )
+  }
+
   // Simple detector which just flags annotation references
   @SuppressWarnings("ALL")
-  class MyAnnotationDetector : Detector(), Detector.UastScanner {
+  abstract class MyAnnotationDetectorBase : Detector(), Detector.UastScanner {
     override fun applicableAnnotations(): List<String> {
       return listOf("pkg.java.MyJavaAnnotation", "pkg.kotlin.MyKotlinAnnotation")
     }
 
-    override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
-      return type != AnnotationUsageType.DEFINITION
-    }
+    abstract val testIssue: Issue
 
     override fun visitAnnotationUsage(
       context: JavaContext,
@@ -1769,7 +1826,7 @@ class AnnotationHandlerTest {
         // Regression test for https://issuetracker.google.com/191286558: Make sure we can report
         // incidents on annotations from package info files without throwing an exception
         context.report(
-          TEST_ISSUE,
+          testIssue,
           context.getLocation(annotation),
           "Incident reported on package annotation",
         )
@@ -1780,8 +1837,16 @@ class AnnotationHandlerTest {
         "`${usageInfo.type.name}` usage associated with `@$name` on ${annotationInfo.origin}"
       val locationType = if (element is UMethod) LocationType.NAME else LocationType.ALL
       val location = context.getLocation(element, locationType)
-      context.report(TEST_ISSUE, element, location, message)
+      context.report(testIssue, element, location, message)
     }
+  }
+
+  class MyAnnotationDetector : MyAnnotationDetectorBase() {
+    override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
+      return type != AnnotationUsageType.DEFINITION
+    }
+
+    override val testIssue: Issue = TEST_ISSUE
 
     companion object {
       @JvmField val TEST_CATEGORY = Category.create(Category.CORRECTNESS, "Test Category", 0)
@@ -1797,6 +1862,32 @@ class AnnotationHandlerTest {
           priority = 10,
           severity = Severity.ERROR,
           implementation = Implementation(MyAnnotationDetector::class.java, Scope.JAVA_FILE_SCOPE),
+        )
+    }
+  }
+
+  class MyAnnotationDetectorDefinitionToo : MyAnnotationDetectorBase() {
+    override fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean {
+      return true
+    }
+
+    override val testIssue: Issue = TEST_ISSUE
+
+    companion object {
+      @JvmField val TEST_CATEGORY = Category.create(Category.CORRECTNESS, "Test Category", 0)
+
+      @Suppress("SpellCheckingInspection")
+      @JvmField
+      val TEST_ISSUE =
+        Issue.create(
+          id = "_AnnotationIssue",
+          briefDescription = "Blahblah",
+          explanation = "Blahdiblah",
+          category = TEST_CATEGORY,
+          priority = 10,
+          severity = Severity.ERROR,
+          implementation =
+            Implementation(MyAnnotationDetectorDefinitionToo::class.java, Scope.JAVA_FILE_SCOPE),
         )
     }
   }

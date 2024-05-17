@@ -16,9 +16,6 @@
 
 package com.android.tools.lint.detector.api
 
-import org.jetbrains.uast.UClass
-import org.jetbrains.uast.UMethod
-
 enum class AnnotationUsageType {
   /**
    * An actual annotation on an element. For example, if a detector registers an interest in
