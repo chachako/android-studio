@@ -1460,6 +1460,7 @@ public class AvdManager {
 
         if (!configIniFile.exists()) {
             mLog.warning("Missing file '%1$s'.", configIniFile.getOsLocation());
+            configIniFile = null;
         } else {
             properties = parseIniFile(configIniFile, mLog);
         }
@@ -1472,7 +1473,6 @@ public class AvdManager {
         }
 
         // Check if the value of image.sysdir.1 is valid.
-        boolean validImageSysdir = true;
         String imageSysDir = null;
         ISystemImage sysImage = null;
         if (properties != null) {
@@ -1527,16 +1527,10 @@ public class AvdManager {
 
         AvdStatus status;
 
-        if (avdPath == null) {
-            status = AvdStatus.ERROR_PATH;
-        } else if (configIniFile == null) {
+        if (configIniFile == null) {
             status = AvdStatus.ERROR_CONFIG;
         } else if (properties == null || imageSysDir == null) {
             status = AvdStatus.ERROR_PROPERTIES;
-        } else if (!validImageSysdir) {
-            status = AvdStatus.ERROR_IMAGE_DIR;
-        } else if (deviceStatus == DeviceStatus.CHANGED) {
-            status = AvdStatus.ERROR_DEVICE_CHANGED;
         } else if (deviceStatus == DeviceStatus.MISSING) {
             status = AvdStatus.ERROR_DEVICE_MISSING;
         } else if (sysImage == null) {

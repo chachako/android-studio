@@ -666,10 +666,7 @@ internal class LocalEmulatorDeviceHandle(
             icon = AllIcons.Actions.Download,
             enabled = false,
           )
-          .enabledIf {
-            (it.error as? AvdDeviceError)?.status in
-              setOf(AvdStatus.ERROR_IMAGE_DIR, AvdStatus.ERROR_IMAGE_MISSING)
-          }
+          .enabledIf { (it.error as? AvdDeviceError)?.status == AvdStatus.ERROR_IMAGE_MISSING }
 
       override suspend fun repair() {
         avdManager.downloadAvdSystemImage(avdInfo)

@@ -52,16 +52,10 @@ public final class AvdInfo {
     public enum AvdStatus {
         /** No error */
         OK,
-        /** Missing 'path' property in the ini file */
-        ERROR_PATH,
         /** Missing config.ini file in the AVD data folder */
         ERROR_CONFIG,
         /** Unable to parse config.ini */
         ERROR_PROPERTIES,
-        /** System Image folder in config.ini doesn't exist */
-        ERROR_IMAGE_DIR,
-        /** The {@link Device} this AVD is based on has changed from its original configuration*/
-        ERROR_DEVICE_CHANGED,
         /** The {@link Device} this AVD is based on is no longer available */
         ERROR_DEVICE_MISSING,
         /** the {@link SystemImage} this AVD is based on is no longer available */
@@ -390,14 +384,11 @@ public final class AvdInfo {
     @Nullable
     public String getErrorMessage() {
         switch (mStatus) {
-            case ERROR_PATH:
-                return String.format("Missing AVD 'path' property in %1$s", getIniFile());
             case ERROR_CONFIG:
                 return String.format("Missing config.ini file in %1$s", mFolderPath);
             case ERROR_PROPERTIES:
                 return String.format("Failed to parse properties from %1$s",
                         getConfigFile());
-            case ERROR_IMAGE_DIR:
             case ERROR_IMAGE_MISSING:
                 return String.format(
                         "Missing system image for %s%s %s.",
@@ -406,10 +397,6 @@ public final class AvdInfo {
                                 : (getTag().getDisplay() + " "),
                         getAbiType(),
                         mName);
-            case ERROR_DEVICE_CHANGED:
-                return String.format("%1$s %2$s configuration has changed since AVD creation",
-                        mProperties.get(AvdManager.AVD_INI_DEVICE_MANUFACTURER),
-                        mProperties.get(AvdManager.AVD_INI_DEVICE_NAME));
             case ERROR_DEVICE_MISSING:
                 return String.format("%1$s %2$s no longer exists as a device",
                         mProperties.get(AvdManager.AVD_INI_DEVICE_MANUFACTURER),
