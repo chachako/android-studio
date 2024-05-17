@@ -28,10 +28,41 @@ base {
     archivesName = 'screenshot-test-gradle-plugin'
 }
 
-if (findProperty("release")?.toBoolean()) {
-    version = '0.0.1-alpha01'
+if (findProperty('hybrid-build-embedded-in-bazel')?.toBoolean()) {
+    version = getProperty('SCREENSHOT_TEST_PLUGIN_VERSION')
 } else {
-    version = '0.0.1-dev'
+    Properties properties = new Properties()
+    File versionRootDir = rootDir
+    String relativeVersionPath = 'base/preview/screenshot/release_version.bzl'
+    File versionProperties = new File(versionRootDir, relativeVersionPath)
+    versionProperties.withReader { properties.load(it) }
+    if (findProperty('release')?.toBoolean()) {
+        version = properties.getProperty('SCREENSHOT_TEST_PLUGIN_VERSION_RELEASE').replaceAll('"', '')
+    } else {
+        version = properties.getProperty('SCREENSHOT_TEST_PLUGIN_VERSION_DEV').replaceAll('"', '')
+    }
+}
+
+def generateVersionPropertiesResourceFile = tasks.register('generateVersionPropertiesResourceFile') {
+    def resourceFile = project.layout.buildDirectory.file("generated/resources/version.properties")
+    outputs.file(resourceFile)
+
+    doLast {
+        resourceFile.get().asFile.parentFile.mkdirs()
+        resourceFile.get().asFile.withWriter { writer ->
+            writer.writeLine("buildVersion=$version")
+        }
+    }
+}
+sourcesJar.dependsOn generateVersionPropertiesResourceFile
+processResources.dependsOn generateVersionPropertiesResourceFile
+
+sourceSets {
+    main {
+        resources {
+            srcDir(project.layout.buildDirectory.file("generated/resources"))
+        }
+    }
 }
 
 gradlePlugin {
@@ -44,12 +75,11 @@ gradlePlugin {
 }
 
 dependencies {
-    def composePreviewRendererModelVersion = findProperty("release")?.toBoolean() ? "0.0.1-alpha01" : "0.0.1-dev"
     compileOnly project(':base:gradle-api')
     compileOnly libs.com.android.tools.analyticsLibrary.protos
     compileOnly libs.com.android.tools.analyticsLibrary.shared
     compileOnly libs.com.android.tools.common
-    implementation("com.android.tools.compose:compose-preview-renderer-model:$composePreviewRendererModelVersion")
+    implementation("com.android.tools.compose:compose-preview-renderer-model:$version")
     implementation libs.com.android.tools.compose.composePreviewDetector
     implementation libs.gson
     implementation libs.kxml

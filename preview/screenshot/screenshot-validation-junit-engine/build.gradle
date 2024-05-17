@@ -18,17 +18,22 @@ apply plugin: 'com.android.tools.java-library'
 apply plugin: 'com.android.tools.kotlin'
 apply plugin: 'com.android.tools.publish'
 
+Properties properties = new Properties()
+File versionRootDir = rootDir
+String relativeVersionPath = 'base/preview/screenshot/release_version.bzl'
+File versionProperties = new File(versionRootDir, relativeVersionPath)
+versionProperties.withReader { properties.load(it) }
+
 group = 'com.android.tools.screenshot'
-if (findProperty("release")?.toBoolean()) {
-    version = '0.0.1-alpha01'
+if (findProperty('release')?.toBoolean()) {
+    version = properties.getProperty('SCREENSHOT_TEST_PLUGIN_VERSION_RELEASE').replaceAll('"', '')
 } else {
-    version = '0.0.1-dev'
+    version = properties.getProperty('SCREENSHOT_TEST_PLUGIN_VERSION_DEV').replaceAll('"', '')
 }
 
 dependencies {
-    def composePreviewRendererModelVersion = findProperty("release")?.toBoolean() ? "0.0.1-alpha01" : "0.0.1-dev"
     implementation 'org.junit.platform:junit-platform-engine:1.10.1'
-    implementation("com.android.tools.compose:compose-preview-renderer-model:$composePreviewRendererModelVersion")
+    implementation("com.android.tools.compose:compose-preview-renderer-model:$version")
     implementation libs.kxml
     testImplementation libs.junit
     testImplementation libs.truth

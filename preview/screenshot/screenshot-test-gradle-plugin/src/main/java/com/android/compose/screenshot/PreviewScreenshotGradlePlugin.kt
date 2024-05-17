@@ -17,7 +17,6 @@
 package com.android.compose.screenshot
 
 import com.android.SdkConstants
-import com.android.Version
 import com.android.build.api.AndroidPluginVersion
 import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.ScopedArtifact
@@ -47,6 +46,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.jvm.toolchain.JavaToolchainService
 import java.util.Locale
+import java.util.Properties
 import java.util.UUID
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
@@ -88,6 +88,16 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
         private const val LAYOUTLIB_VERSION = "14.0.4"
         private const val LAYOUTLIB_RUNTIME_VERSION = "14.0.6"
         private const val LAYOUTLIB_RESOURCES_VERSION = "14.0.4"
+
+        val SCREENSHOT_TEST_PLUGIN_VERSION: String by lazy {
+            requireNotNull(PreviewScreenshotGradlePlugin::class.java.getResourceAsStream("/version.properties"))
+                .buffered().use { stream ->
+                    Properties().let { properties ->
+                        properties.load(stream)
+                        properties.getProperty("buildVersion")
+                    }
+                }
+        }
     }
 
     override fun apply(project: Project) {
@@ -389,11 +399,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 isCanBeConsumed = false
                 description = "A configuration to resolve screenshot test engine dependencies."
             }
-            val engineVersion = "0.0.1" +
-                    if (Version.ANDROID_GRADLE_PLUGIN_VERSION.endsWith("-dev"))
-                        "-dev"
-                    else
-                        "-alpha01"
+            val engineVersion = SCREENSHOT_TEST_PLUGIN_VERSION
             dependencies.add(previewScreenshotTestEngineConfigurationName, "org.junit.platform:junit-platform-launcher")
             dependencies.add(
                 previewScreenshotTestEngineConfigurationName,
@@ -411,11 +417,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                 isCanBeConsumed = false
                 description = "A configuration to resolve render CLI tool dependencies."
             }
-            val version = "0.0.1" +
-                    if (Version.ANDROID_GRADLE_PLUGIN_VERSION.endsWith("-dev"))
-                        "-dev"
-                    else
-                        "-alpha01"
+            val version = SCREENSHOT_TEST_PLUGIN_VERSION
             dependencies.add(
                 previewlibCliToolConfigurationName,
                 "com.android.tools.compose:compose-preview-renderer:$version")

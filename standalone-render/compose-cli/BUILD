@@ -1,6 +1,7 @@
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library", "maven_repository")
-load(":compose-preview-renderer-maven-utils.bzl", "merge_deps", "get_compose_preview_renderer_version")
+load("//tools/base/preview/screenshot:version.bzl", "SCREENSHOT_TEST_PLUGIN_VERSION")
+load(":compose-preview-renderer-maven-utils.bzl", "merge_deps")
 
 kotlin_library(
     name = "tools.compose-preview-renderer",
@@ -66,7 +67,7 @@ maven_library(
     coordinates = "com.android.tools.compose:compose-preview-renderer",
     description = "Compose screenshot rendering tools",
     module_name = "compose-preview-renderer",
-    version = get_compose_preview_renderer_version(),
+    version = SCREENSHOT_TEST_PLUGIN_VERSION,
     visibility = ["//visibility:public"],
 )
 

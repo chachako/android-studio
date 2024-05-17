@@ -1,7 +1,6 @@
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
-load("//tools/base/common:version.bzl", "BASE_VERSION")
-load("//tools/base/standalone-render/compose-cli:compose-preview-renderer-maven-utils.bzl", "get_compose_preview_renderer_version")
+load("//tools/base/preview/screenshot:version.bzl", "SCREENSHOT_TEST_PLUGIN_VERSION")
 
 # Build target to verify that compose-preview-renderer-model builds for tools/base
 kotlin_library(
@@ -43,7 +42,7 @@ maven_library(
     module_name = "compose-preview-renderer-model",
     notice = "NOTICE",
     resource_strip_prefix = "tools/base/standalone-render/compose-cli-serialize",
-    version = get_compose_preview_renderer_version(),
+    version = SCREENSHOT_TEST_PLUGIN_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "@maven//:com.google.code.gson.gson",

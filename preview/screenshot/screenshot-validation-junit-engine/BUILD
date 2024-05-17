@@ -1,7 +1,6 @@
 load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
-
-TEST_ENGINE_VERSION = "0.0.1"
+load("//tools/base/preview/screenshot:version.bzl", "SCREENSHOT_TEST_PLUGIN_VERSION")
 
 maven_library(
     name = "screenshot-validation-junit-engine",
@@ -11,10 +10,7 @@ maven_library(
     coordinates = "com.android.tools.screenshot:screenshot-validation-junit-engine",
     resource_strip_prefix = "tools/base/preview/screenshot/screenshot-validation-junit-engine/src/main/resources/",
     resources = glob(["src/main/resources/**"]),
-    version = select({
-        "//tools/base/bazel:release": TEST_ENGINE_VERSION + "-alpha01",
-        "//conditions:default": TEST_ENGINE_VERSION + "-dev",
-    }),
+    version = SCREENSHOT_TEST_PLUGIN_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/standalone-render/compose-cli-serialize:compose-preview-renderer-model",
