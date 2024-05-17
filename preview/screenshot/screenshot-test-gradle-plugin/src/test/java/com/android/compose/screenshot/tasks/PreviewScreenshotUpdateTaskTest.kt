@@ -126,4 +126,27 @@ class PreviewScreenshotUpdateTaskTest {
         }
         assert(referenceImageDir.listFiles().size == 2)
     }
+
+    @Test
+    fun testPreviewScreenshotUpdateWithEmptyPreview() {
+        val referenceImageDir = tempDirRule.newFolder("references")
+        val renderTaskOutputDir = tempDirRule.newFolder("rendered")
+        val resultsFile = tempDirRule.newFile("results.json")
+        val path1 = Paths.get(renderTaskOutputDir.absolutePath).resolve("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0.png")
+        val composeRenderingResult = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", path1.toString(), ScreenshotError("SUCCESS", "Nothing to render in Preview. Cannot generate image", "", listOf(), listOf(), listOf())) )
+        writeComposeRenderingResult(resultsFile.writer(), ComposeRenderingResult(null, composeRenderingResult))
+        task.referenceImageDir.set(referenceImageDir)
+        task.renderTaskOutputDir.set(renderTaskOutputDir)
+        task.renderTaskResultFile.set(resultsFile)
+        task.analyticsService.set(object: AnalyticsService() {
+            override val buildServiceRegistry: BuildServiceRegistry = mock(
+                withSettings().defaultAnswer(Answers.RETURNS_DEEP_STUBS))
+            override fun getParameters(): Params = mock()
+        })
+        val composeScreenshot = composeRenderingResult[0]
+        assertFailsWith<GradleException>("Cannot update reference images. Rendering failed for ${composeScreenshot.resultId}. Error: ${composeScreenshot.error!!.message}. Check ${resultsFile.absolutePath} for additional info") {
+            task.run()
+        }
+        assert(referenceImageDir.listFiles().isEmpty())
+    }
 }

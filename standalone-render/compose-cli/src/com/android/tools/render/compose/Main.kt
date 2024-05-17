@@ -72,7 +72,7 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
                     ImageIO.write(image, "png", imgFile)
                     imgFile.absolutePath
                 }
-                val screenshotError = extractError(result)
+                val screenshotError = extractError(result, imagePath)
                 ComposeScreenshotResult(resultId, imagePath, screenshotError)
             } catch (t: Throwable) {
                 ComposeScreenshotResult(resultId, null, ScreenshotError(t))
@@ -92,14 +92,18 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
 }
 
 
-private fun extractError(renderResult: RenderResult): ScreenshotError? {
+private fun extractError(renderResult: RenderResult, imagePath: String?): ScreenshotError? {
     if (renderResult.renderResult.status == Result.Status.SUCCESS
-        && !renderResult.logger.hasErrors()) {
+        && !renderResult.logger.hasErrors() && imagePath != null) {
         return null
+    }
+    val errorMessage = when {
+        imagePath == null && renderResult.renderResult.status == Result.Status.SUCCESS -> "Nothing to render in Preview. Cannot generate image"
+        else -> renderResult.renderResult.errorMessage ?: ""
     }
     return ScreenshotError(
         renderResult.renderResult.status.name,
-        renderResult.renderResult.errorMessage ?: "",
+        errorMessage,
         renderResult.renderResult.exception?.stackTraceToString() ?: "",
         renderResult.logger.messages.map { RenderProblem(it.html, it.throwable?.stackTraceToString()) },
         renderResult.logger.brokenClasses.map { BrokenClass(it.key, it.value.stackTraceToString()) },

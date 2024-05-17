@@ -73,8 +73,9 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
     private fun verifyRender(results: List<ComposeScreenshotResult>) {
         if (results.isNotEmpty()) {
             for (result in results) {
-                if (result.imagePath == null || !File(result.imagePath).exists())
+                if (result.imagePath == null || !File(result.imagePath).exists()) {
                     throw GradleException("Cannot update reference images. Rendering failed for ${result.resultId}. Error: ${result.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
+                }
             }
         }
     }
