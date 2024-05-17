@@ -23,7 +23,9 @@ import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_DISTANT_DISPLAY
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_DISTANT_DISPLAY_WIDTH;
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_RESIZABLE_CONFIG;
 import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL;
+
 import static com.google.common.truth.Truth.assertThat;
+
 import static java.util.stream.Collectors.toList;
 
 import com.android.repository.impl.meta.TypeDetails;
@@ -41,15 +43,17 @@ import com.android.sdklib.repository.IdDisplay;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import com.android.sdklib.repository.targets.SystemImage;
 import com.android.testutils.NoErrorsOrWarningsLogger;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
 
 public class DeviceManagerTest {
 
@@ -140,6 +144,7 @@ public class DeviceManagerTest {
                         "Automotive (1080p landscape)",
                         "Automotive Portrait",
                         "Automotive Distant Display",
+                        "Automotive Distant Display with Google Play",
                         "Automotive Ultrawide",
                         "Automotive Large Portrait",
                         "Galaxy Nexus",
@@ -221,6 +226,7 @@ public class DeviceManagerTest {
                         "Automotive (1080p landscape)",
                         "Automotive Portrait",
                         "Automotive Distant Display",
+                        "Automotive Distant Display with Google Play",
                         "Automotive Ultrawide",
                         "Automotive Large Portrait",
                         "Galaxy Nexus",
@@ -350,6 +356,7 @@ public class DeviceManagerTest {
                         "Automotive (1080p landscape)",
                         "Automotive Portrait",
                         "Automotive Distant Display",
+                        "Automotive Distant Display with Google Play",
                         "Automotive Ultrawide",
                         "Automotive Large Portrait",
                         "Galaxy Nexus",
@@ -429,6 +436,7 @@ public class DeviceManagerTest {
                         "Automotive (1080p landscape)",
                         "Automotive Portrait",
                         "Automotive Distant Display",
+                        "Automotive Distant Display with Google Play",
                         "Automotive Ultrawide",
                         "Automotive Large Portrait",
                         "Galaxy Nexus",
@@ -553,6 +561,7 @@ public class DeviceManagerTest {
                         "Automotive (1080p landscape)",
                         "Automotive Portrait",
                         "Automotive Distant Display",
+                        "Automotive Distant Display with Google Play",
                         "Automotive Ultrawide",
                         "Automotive Large Portrait",
                         "Galaxy Nexus",
@@ -632,6 +641,7 @@ public class DeviceManagerTest {
                         "Automotive (1080p landscape)",
                         "Automotive Portrait",
                         "Automotive Distant Display",
+                        "Automotive Distant Display with Google Play",
                         "Automotive Ultrawide",
                         "Automotive Large Portrait",
                         "Galaxy Nexus",
