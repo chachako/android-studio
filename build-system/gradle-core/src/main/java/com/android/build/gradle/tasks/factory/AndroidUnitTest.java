@@ -44,12 +44,11 @@ import com.android.build.gradle.tasks.AndroidAnalyticsTestListener;
 import com.android.build.gradle.tasks.GenerateTestConfig;
 import com.android.buildanalyzer.common.TaskCategory;
 import com.android.builder.core.ComponentType;
+
 import com.google.common.collect.ImmutableList;
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.Callable;
+
 import kotlin.Unit;
+
 import org.gradle.api.artifacts.ArtifactCollection;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
@@ -77,6 +76,11 @@ import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 import org.gradle.testing.jacoco.plugins.JacocoPluginExtension;
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 /** Patched version of {@link Test} that we need to use for local host tests support. */
 // TODO(b/330843002): This class should be renamed after the bug is fixed.
@@ -328,6 +332,10 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
                                     task.getName()));
 
             testOptions.applyConfiguration(task);
+
+            // Robolectric specific: add JVM flag to allow unit tests to run when using Java 17+.
+            // Ref b/248929512.
+            task.jvmArgs((ImmutableList.of("--add-opens=java.base/java.io=ALL-UNNAMED")));
 
             task.dependencies =
                     creationConfig
