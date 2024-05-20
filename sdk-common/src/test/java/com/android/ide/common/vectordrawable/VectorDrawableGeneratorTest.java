@@ -16,12 +16,18 @@
 package com.android.ide.common.vectordrawable;
 
 import static com.android.io.Images.readImage;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.ide.common.util.GeneratorTester;
 import com.android.testutils.TestResources;
+
+import junit.framework.TestCase;
+
+import org.junit.Assert;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,8 +38,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.regex.Pattern;
-import junit.framework.TestCase;
-import org.junit.Assert;
 
 /** Tests for {@link Svg2Vector} and {@link VdPreview} classes. */
 public class VectorDrawableGeneratorTest extends TestCase {
@@ -1031,6 +1035,10 @@ public class VectorDrawableGeneratorTest extends TestCase {
 
     public void testClipPathOrder() throws Exception {
         checkSvgConversion("ic_clip_path_ordering");
+    }
+
+    public void testSvgNestedUse() throws Exception {
+        checkSvgConversion("test_nested_use");
     }
 
     // XML files start here.
