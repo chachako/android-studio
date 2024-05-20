@@ -24,7 +24,6 @@ def coroutines_app_dex(name, coroutines_libs, meta_inf_resources = []):
     )
     dex_library(
         name = name + "_dex",
-        dexer = "D8",
         # Test dex compiles with a non-release build.
         # Also make it desugar as much as possible with API 23.
         flags = [

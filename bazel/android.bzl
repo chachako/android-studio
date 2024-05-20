@@ -161,26 +161,15 @@ def aidl_library(name, srcs = [], visibility = None, tags = [], deps = []):
         deps = deps,
     )
 
-def dex_library(name, jars = [], output = None, visibility = None, tags = [], flags = [], dexer = "D8"):
-    if dexer == "DX":
-        cmd = "$(location //prebuilts/studio/sdk:dx-preview) --dex --output=./$@ ./$(SRCS)"
-        tools = ["//prebuilts/studio/sdk:dx-preview"]
-    else:
-        cmd = "$(location //prebuilts/r8:d8) --output ./$@ " + " ".join(flags) + " ./$(SRCS)"
-        tools = ["//prebuilts/r8:d8"]
-
-    if output == None:
-        outs = [name + ".jar"]
-    else:
-        outs = [output]
+def dex_library(name, jars = [], output = None, visibility = None, tags = [], flags = []):
     native.genrule(
         name = name,
         srcs = jars,
-        outs = outs,
+        outs = [output] if output != None else [name + ".jar"],
         visibility = visibility,
         tags = tags,
-        cmd = cmd,
-        tools = tools,
+        cmd = "$(location //prebuilts/r8:d8) --output ./$@ " + " ".join(flags) + " ./$(SRCS)",
+        tools = ["//prebuilts/r8:d8"],
     )
 
 ANDROID_COPTS = select_android(

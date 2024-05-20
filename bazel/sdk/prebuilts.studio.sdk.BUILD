@@ -8,18 +8,6 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-java_import(
-    name = "dxlib-preview",
-    jars = sdk_path(["build-tools/26.0.0/lib/dx.jar"]),
-)
-
-java_binary(
-    name = "dx-preview",
-    main_class = "com.android.dx.command.Main",
-    visibility = ["//visibility:public"],
-    runtime_deps = [":dxlib-preview"],
-)
-
 filegroup(
     name = "build-tools/latest",
     srcs = [":build-tools/34.0.0"],

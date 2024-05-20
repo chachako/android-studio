@@ -33,7 +33,6 @@ kotlin_library(
 
 dex_library(
     name = "test-classes-dex",
-    dexer = "D8",
     flags = ["--min-api 26"],
     jars = [
         ":test-classes-binary_deploy.jar",

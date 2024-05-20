@@ -103,7 +103,6 @@ def app_inspection_jar(
 
     dex_library(
         name = name + "-bundled_dexed",
-        dexer = "D8",
         flags = d8_flags,
         jars = [
             ":" + name + "-bundled",

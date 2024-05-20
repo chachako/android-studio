@@ -18,7 +18,6 @@ java_library(
 # we should definitely move this as part of dex_library instead.
 dex_library(
     name = "test-inspector-sources_dexed",
-    dexer = "D8",
     jars = [
         ":test-inspector-sources_undexed",
         "//tools/base/app-inspection/tests/test-inspector/api:test-inspector-api",

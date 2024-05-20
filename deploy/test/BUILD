@@ -102,7 +102,6 @@ java_test(
 
 dex_library(
     name = "original_dex",
-    dexer = "D8",
     # Test dex compiles with a non-release build.
     # Also make it desugar as much as possible with API 23.
     flags = [
@@ -136,7 +135,6 @@ kotlin_library(
 
 dex_library(
     name = "swapped_dex",
-    dexer = "D8",
     flags = [
         "--file-per-class",
         "--debug",

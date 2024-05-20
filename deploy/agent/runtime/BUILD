@@ -115,7 +115,6 @@ coverage_java_test(
 
 dex_library(
     name = "runtime",
-    dexer = "D8",
     flags = ["--min-api 26"],
     jars = [
         ":instrument_java",
@@ -129,7 +128,6 @@ dex_library(
 # Contains all Live Edit classes that need to be loaded by the application class loader.
 dex_library(
     name = "live_edit_app_jar",
-    dexer = "D8",
     flags = ["--min-api 26"],
     jars = [
         ":liveedit_lambdalib_java",

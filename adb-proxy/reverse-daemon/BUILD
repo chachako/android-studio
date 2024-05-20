@@ -15,7 +15,6 @@ kotlin_library(
 
 dex_library(
     name = "reverse_daemon_apk",
-    dexer = "D8",
     jars = [
         ":reverse_daemon_lib",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
