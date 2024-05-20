@@ -22,7 +22,7 @@ cc_library(
         "export/slicer/*.h",
     ]),
     copts = select({
-        "@//tools/base/bazel:windows": [],
+        "@platforms//os:windows": [],
         "//conditions:default": ["-std=c++11"],
     }),
     includes = ["export"],

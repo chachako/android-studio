@@ -41,7 +41,7 @@ android_cc_binary(
     ],
     # Cross compiling from windows doesn't produce a stripped binary.
     binary = select({
-        "//tools/base/bazel:windows": ":transport_main",
+        "@platforms//os:windows": ":transport_main",
         "//conditions:default": ":transport_main.stripped",
     }),
     filename = "transport",

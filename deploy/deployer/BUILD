@@ -11,7 +11,7 @@ iml_module(
         "no_mac",
     ],
     test_data = glob(["src/test/resource/**"]) + select({
-        "//tools/base/bazel:windows": [],
+        "@platforms//os:windows": [],
         "//conditions:default": [
             "//tools/base/deploy/installer:test-installer",
             "//tools/base/deploy/installer/tests:artifacts",
@@ -111,7 +111,7 @@ coverage_java_test(
         "//tools/base/deploy/sites:Sites.java",
     ],
     data = glob(["src/test/resource/**"]) + select({
-        "//tools/base/bazel:windows": [],
+        "@platforms//os:windows": [],
         "//conditions:default": [
             "//tools/base/deploy/installer:test-installer",
             "//tools/base/deploy/installer/tests:artifacts",

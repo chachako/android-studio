@@ -10,7 +10,7 @@ config_setting(
     name = "macos-arm64",
     constraint_values = [
         "@platforms//os:macos",
-        "@platforms//cpu:arm64",
+        "@platforms//cpu:aarch64",
     ],
 )
 

@@ -29,7 +29,7 @@ java_library(
     resource_strip_prefix = "tools/base/app-inspection/tests/test-inspector",
     resources = glob(["META-INF/**"]) +  ## this need only to run tests on the linux host
                 select({
-                    "//tools/base/bazel:windows": [],
+                    "@platforms//os:windows": [],
                     "//conditions:default": [":hostlib"],
                 }),
 )
@@ -41,7 +41,7 @@ merge_jars(
         ":test-inspector-sources_dexed",
         ":test-inspector-resources",
     ] + select({
-        "//tools/base/bazel:windows": [],
+        "@platforms//os:windows": [],
         "//conditions:default": [":inspectorjni"],
     }),
 )
@@ -76,7 +76,7 @@ jni_library(
     tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = select({
-        "//tools/base/bazel:windows": [],
+        "@platforms//os:windows": [],
         "//conditions:default": [":libtest_jni.so.stripped"],
     }),
 )

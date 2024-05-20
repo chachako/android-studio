@@ -300,7 +300,7 @@ platform_filegroup(
 filegroup(
     name = "emulator",
     srcs = select({
-        "//tools/base/bazel:darwin_arm64": [":emulator-arm64"],
+        "//tools/base/bazel/platforms:macos-arm64": [":emulator-arm64"],
         "//conditions:default": [":emulator-x86_64"],
     }),
     visibility = ["//visibility:public"],

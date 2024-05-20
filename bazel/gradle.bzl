@@ -222,6 +222,6 @@ def gradle_test(
         repos = repos,
         repo_zips = repo_zips,
         max_workers = max_workers,
-        is_windows = select({"//tools/base/bazel:windows": True, "//conditions:default": False}),
+        is_windows = select({"@platforms//os:windows": True, "//conditions:default": False}),
         **kwargs
     )

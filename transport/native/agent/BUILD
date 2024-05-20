@@ -80,7 +80,7 @@ android_cc_binary(
     ],
     # Cross compiling from windows doesn't produce a stripped binary.
     binary = select({
-        "//tools/base/bazel:windows": ":libjvmtiagent.so",
+        "@platforms//os:windows": ":libjvmtiagent.so",
         "//conditions:default": ":libjvmtiagent.so.stripped",
     }),
     filename = "libjvmtiagent.so",

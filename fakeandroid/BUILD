@@ -38,8 +38,8 @@ sh_binary(
     name = "art-runner",
     srcs = ["//prebuilts/tools/linux-x86_64/art"],
     data = select({
-        "//tools/base/bazel:darwin": [],
-        "//tools/base/bazel:windows": [],
+        "@platforms//os:macos": [],
+        "@platforms//os:windows": [],
         "//conditions:default": [
             ":android-mock-dex",
             ":app-launcher-dex",

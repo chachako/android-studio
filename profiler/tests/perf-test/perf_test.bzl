@@ -24,14 +24,14 @@ def perf_test(
         srcs = [test_app + "_undexed_deploy.jar"],
         outs = [name + "_transformed_undexed_deploy.jar"],
         cmd = select({
-            "//tools/base/bazel:darwin": "cp ./$< ./$@",
-            "//tools/base/bazel:windows": "cp ./$< ./$@",
+            "//tools/base/bazel/platforms:macos-x86_64": "cp ./$< ./$@",
+            "@platforms//os:windows": "cp ./$< ./$@",
             "//conditions:default": "$(location //tools/base/profiler/tests/profiler-transform-main:profilers-transform-main) ./$< ./$@",
         }),
         executable = 1,
         tools = select({
-            "//tools/base/bazel:darwin": [],
-            "//tools/base/bazel:windows": [],
+            "//tools/base/bazel/platforms:macos-x86_64": [],
+            "@platforms//os:windows": [],
             "//conditions:default": [
                 "//tools/base/profiler/tests/profiler-transform-main:profilers-transform-main",
             ],

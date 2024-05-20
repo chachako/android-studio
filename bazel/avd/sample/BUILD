@@ -8,7 +8,7 @@ avd(
     name = "emulator_test_device",
     image = select({
         # For now, we tie the choice of Emulator ABI to the host ABI. However, we should split this.
-        "//tools/base/bazel:darwin_arm64": "@system_image_android-33_default_arm64//:arm64-android-33-images",
+        "//tools/base/bazel/platforms:macos-arm64": "@system_image_android-33_default_arm64//:arm64-android-33-images",
         "//conditions:default": DEFAULT_AVD_IMAGE,
     }),
 )

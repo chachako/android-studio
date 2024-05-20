@@ -372,57 +372,6 @@ java_jarjar(
 )
 
 config_setting(
-    name = "host_linux",
-    values = {"host_cpu": "linux"},
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "host_darwin_arm64",
-    values = {"host_cpu": "darwin_arm64"},
-    visibility = ["//visibility:public"],
-)
-
-# N.B. this is macOS with x86_64 specifically.
-config_setting(
-    name = "host_darwin",
-    values = {"host_cpu": "darwin"},
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "host_windows",
-    values = {"host_cpu": "x64_windows"},
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "darwin_arm64",
-    values = {"cpu": "darwin_arm64"},
-    visibility = ["//visibility:public"],
-)
-
-# N.B. this is macOS with x86_64 specifically.
-config_setting(
-    name = "darwin",
-    values = {"cpu": "darwin"},
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "macos",
-    constraint_values = [
-        "@platforms//os:macos",
-    ],
-)
-
-config_setting(
-    name = "windows",
-    values = {"cpu": "x64_windows"},
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
     name = "android_cpu_x86",
     values = {"cpu": "x86"},
     visibility = ["//visibility:public"],
@@ -486,8 +435,8 @@ selects.config_setting_group(
 selects.config_setting_group(
     name = "host_un*x",
     match_any = [
-        ":host_linux",
-        ":host_darwin",
+        "@platforms//os:linux",
+        "@platforms//os:macos",
     ],
     visibility = ["//visibility:public"],
 )

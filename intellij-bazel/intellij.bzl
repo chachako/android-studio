@@ -85,7 +85,7 @@ def intellij_plugin(name, plugin_id, platforms, **kwargs):
         name = name,
         plugin = ":%s" % plugin_id,
         platforms = select({
-            "//tools/base/bazel:windows": ["studio-sdk"],
+            "@platforms//os:windows": ["studio-sdk"],
             "//conditions:default": platforms,
         }),
     )

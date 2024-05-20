@@ -45,7 +45,7 @@ merge_jars(
     name = "studio-profiler",
     out = "studio-profiler.jar",
     jars = ["libstudio-profiler-core.jar"] + select({
-        "//tools/base/bazel:windows": [],
+        "@platforms//os:windows": [],
         "//conditions:default": ["//tools/base/profiler/native/agent:supportjni"],
     }),
 )

@@ -47,7 +47,7 @@ jni_library(
     tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = select({
-        "//tools/base/bazel:windows": [],
+        "@platforms//os:windows": [],
         "//conditions:default": [":libsupportjni.so.stripped"],
     }),
 )

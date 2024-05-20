@@ -7,11 +7,11 @@ cc_library(
     name = "utils",
     srcs = glob(["**/*.h"]) + [
         "activity_manager.cc",
+        "agent_task.cc",
         "background_queue.cc",
         "bash_command.cc",
         "current_process.cc",
         "daemon_config.cc",
-        "agent_task.cc",
         "fd_utils.cc",
         "file_cache.cc",
         "file_reader.cc",
@@ -34,7 +34,15 @@ cc_library(
         "trace.cc",
         "uid_fetcher.cc",
     ] + selects.with_or({
-        ("//tools/base/bazel:darwin", "//tools/base/bazel:darwin_arm64"): [
+        # TODO(b/339912196) This will be fixed in Bazel 7 with Anroid platforms.
+        ("@//tools/base/bazel:android_cpu_x86", "@//tools/base/bazel:android_cpu_x86_64", "@//tools/base/bazel:android_cpu_arm", "@//tools/base/bazel:android_cpu_arm_64"): [
+            "clock.cc",
+            "current_process.linux.cc",
+            "filesystem_notifier.cc",
+            "thread_name.cc",
+            "uid_fetcher.linux.cc",
+        ],
+        "@platforms//os:macos": [
             "clock.mac.cc",
             "current_process.mac.cc",
             "filesystem_notifier.mac.cc",

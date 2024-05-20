@@ -30,9 +30,9 @@ def platform_filegroup(name, visibility = ["//visibility:public"]):
 def sdk_glob(include, exclude = []):
     return select({
         # TODO(b/224811729): Use native binaries for darwin_arm64.
-        "//tools/base/bazel:darwin_arm64": _sdk_glob("darwin", include, exclude),
-        "//tools/base/bazel:darwin": _sdk_glob("darwin", include, exclude),
-        "//tools/base/bazel:windows": _sdk_glob("windows", include, exclude),
+        "//tools/base/bazel/platforms:macos-arm64": _sdk_glob("darwin", include, exclude),
+        "//tools/base/bazel/platforms:macos-x86_64": _sdk_glob("darwin", include, exclude),
+        "@platforms//os:windows": _sdk_glob("windows", include, exclude),
         "//conditions:default": _sdk_glob("linux", include, exclude),
     })
 

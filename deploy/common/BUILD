@@ -45,7 +45,7 @@ cc_library(
         ["-std=c++11"],
         [],
     ) + select({
-        "//tools/base/bazel:host_windows": [],
+        "@platforms//os:windows": [],
         "//conditions:default": ["-std=c++11"],
     }),
     tags = ["no_windows"],
