@@ -42,16 +42,6 @@ def _sdk_glob(platform, include, exclude):
         exclude = [platform + "/" + name for name in exclude],
     )
 
-# A path to a file from the current platform Android SDK.
-def sdk_path(paths):
-    return select({
-        # TODO(b/224811729): Use native binaries for darwin_arm64.
-        "//tools/base/bazel:host_darwin_arm64": ["darwin/" + path for path in paths],
-        "//tools/base/bazel:host_darwin": ["darwin/" + path for path in paths],
-        "//tools/base/bazel:host_windows": ["windows/" + path for path in paths],
-        "//conditions:default": ["linux/" + path for path in paths],
-    })
-
 def expand_template_impl(ctx):
     jar_name = calculate_jar_name_for_sdk_package(ctx.attr.classpath_jar.files.to_list()[0].short_path)
     lib_path = "%APP_HOME%\\lib\\" if ctx.attr.is_windows else "$APP_HOME/lib/"

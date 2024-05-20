@@ -1,4 +1,4 @@
-load("//tools/base/bazel/sdk:sdk_utils.bzl", "platform_filegroup", "sdk_glob", "sdk_path")
+load("//tools/base/bazel/sdk:sdk_utils.bzl", "platform_filegroup", "sdk_glob")
 
 filegroup(
     name = "licenses",
@@ -197,7 +197,7 @@ filegroup(
 # Note: these stubbed classes will not be available at runtime.
 java_import(
     name = "platforms/latest_jar",
-    jars = sdk_path(["platforms/android-34/android.jar"]),
+    jars = ["@androidsdk//:platforms/android-34/android.jar"],
     neverlink = 1,
     visibility = [
         "//tools/adt/idea/streaming/screen-sharing-agent:__pkg__",
@@ -216,7 +216,7 @@ java_import(
 java_import(
     name = "platforms/latest_runtime_jar",
     testonly = 1,
-    jars = sdk_path(["platforms/android-34/android.jar"]),
+    jars = ["@androidsdk//:platforms/android-34/android.jar"],
     visibility = [
         "//tools/base/app-inspection/inspectors:__subpackages__",
         "//tools/base/dynamic-layout-inspector/agent:__subpackages__",
