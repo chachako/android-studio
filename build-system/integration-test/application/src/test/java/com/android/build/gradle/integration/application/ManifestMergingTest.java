@@ -43,12 +43,6 @@ import org.junit.Test;
 public class ManifestMergingTest {
 
     @Rule
-    public GradleTestProject simpleManifestMergingTask = GradleTestProject.builder()
-            .withName("simpleManifestMergingTask")
-            .fromTestProject("simpleManifestMergingTask")
-            .create();
-
-    @Rule
     public GradleTestProject libsTest = GradleTestProject.builder()
             .withName("libsTest")
             .fromTestProject("libsTest")
@@ -66,11 +60,6 @@ public class ManifestMergingTest {
                     .withName("navigation")
                     .fromTestProject("navigation")
                     .create();
-
-    @Test
-    public void simpleManifestMerger() throws Exception {
-        simpleManifestMergingTask.execute("clean", "manifestMerger");
-    }
 
     @Test
     public void checkManifestMergingForLibraries() throws Exception {
