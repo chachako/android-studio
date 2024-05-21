@@ -180,7 +180,7 @@ interface SourceCodeScanner : FileScanner {
   fun appliesToResourceRefs(): Boolean
 
   /**
-   * Called for any resource references (such as `R.layout.main` found in Java code, provided this
+   * Called for any resource references (such as `R.layout.main`) found in Java code, provided this
    * detector returned `true` from [.appliesToResourceRefs].
    *
    * @param context the lint scanning context
@@ -201,8 +201,8 @@ interface SourceCodeScanner : FileScanner {
   /**
    * Returns a list of fully qualified names for super classes that this detector cares about. If
    * not null, this detector will **only** be called if the current class is a subclass of one of
-   * the specified superclasses. Lint will invoke [visitClass] (and sometimes [visitClass] when it
-   * encounters subclasses and lambdas for these types.
+   * the specified superclasses. Lint will invoke [visitClass] when it encounters subclasses and
+   * lambdas for these types.
    *
    * @return a list of fully qualified names
    */
@@ -225,7 +225,7 @@ interface SourceCodeScanner : FileScanner {
 
   /**
    * Like [visitClass], but used for lambdas in SAM (single abstract method) types. For example, if
-   * you have have this method:
+   * you have this method:
    * ```
    * void enqueue(Runnable runnable) { ... }
    * ...
@@ -264,7 +264,7 @@ interface SourceCodeScanner : FileScanner {
    * Returns whether this detector cares about an annotation usage of the given type. Most detectors
    * are interested in all types except for [AnnotationUsageType.BINARY] and
    * [AnnotationUsageType.EQUALITY], which only apply for annotations that are expressing a "type",
-   * e.g. it would be suspicious to combine (compare, add, etc) resources of different type.
+   * e.g. it would be suspicious to combine (compare, add, etc.) resources of different type.
    */
   fun isApplicableAnnotationUsage(type: AnnotationUsageType): Boolean
 
@@ -371,7 +371,7 @@ interface SourceCodeScanner : FileScanner {
    * @param annotation the annotation this detector is interested in
    * @param qualifiedName the annotation's qualified name
    * @param method the method, if any
-   * @param referenced the referenced referenced element (method, field, etc), if any
+   * @param referenced the referenced element (method, field, etc.), if any
    * @param annotations the annotations to check. These are the annotations you've registered an
    *   interest in with [.applicableAnnotations], whether they were specified as a parameter
    *   annotation, method annotation, class annotation or package annotation. The various
@@ -422,8 +422,8 @@ interface SourceCodeScanner : FileScanner {
 
   /**
    * Create a parse tree visitor to process the parse tree. All [SourceCodeScanner] detectors must
-   * provide a visitor, unless they either return true from [appliesToResourceRefs] or return non
-   * null from [getApplicableMethodNames].
+   * provide a visitor, unless they either return true from [appliesToResourceRefs] or return
+   * non-null from [getApplicableMethodNames].
    *
    * If you return specific AST node types from [getApplicableUastTypes], then the visitor will
    * **only** be called for the specific requested node types. This is more efficient, since it
