@@ -129,27 +129,18 @@ def _name(file):
 
 def aidl_library(name, srcs = [], visibility = None, tags = [], deps = []):
     """Builds a Java library out of .aidl files."""
-
-    tools = [
-        "//prebuilts/studio/sdk:build-tools/latest",
-        "//prebuilts/studio/sdk:build-tools/latest/aidl",
-        "//prebuilts/studio/sdk:platforms/latest/framework.aidl",
-    ]
     gen_dir = name + "_gen_aidl"
     for src in srcs:
         gen_name = name + "_gen_" + _name(src).replace(".", "_")
         java_file = _aidl_to_java(src, gen_dir)
-        cmd = ("LD_LIBRARY_PATH=$(location //prebuilts/studio/sdk:build-tools/latest/aidl)/../lib64" +
-               " $(location //prebuilts/studio/sdk:build-tools/latest/aidl)" +
-               " -p$(location //prebuilts/studio/sdk:platforms/latest/framework.aidl)" +
-               " $< -o$(RULEDIR)/" + gen_dir)
+        cmd = "$(location @androidsdk//:aidl_binary) $< -o$(RULEDIR)/" + gen_dir
         native.genrule(
             name = gen_name,
             srcs = [src],
             outs = [java_file],
             tags = tags,
             cmd = cmd,
-            tools = tools,
+            tools = ["@androidsdk//:aidl_binary"],
         )
 
     intermediates = [_aidl_to_java(src, gen_dir) for src in srcs]

@@ -15,14 +15,6 @@ filegroup(
 )
 
 filegroup(
-    name = "build-tools/latest/aidl",
-    srcs = sdk_glob(
-        include = ["build-tools/34.0.0/aidl"],
-    ),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
     name = "build-tools/34.0.0",
     srcs = glob(
         include = ["*/build-tools/34.0.0/**"],
@@ -174,14 +166,6 @@ filegroup(
 filegroup(
     name = "platforms/latest-preview",
     srcs = [":platforms/android-34"],  # Currently there isn't a preview available
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "platforms/latest/framework.aidl",
-    srcs = sdk_glob(
-        include = ["platforms/android-34/framework.aidl"],
-    ),
     visibility = ["//visibility:public"],
 )
 
