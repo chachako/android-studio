@@ -64,7 +64,7 @@ _android_cc_binary = rule(
 def android_cc_binary(name, binary, abis, filename, **kwargs):
     outs = []
     for abi in abis:
-        outs += [name + "/" + abi + "/" + filename]
+        outs.append(name + "/" + abi + "/" + filename)
     _android_cc_binary(
         name = name,
         abis = abis,
@@ -82,7 +82,7 @@ jni_library = rule(
         ),
         "_zipper": attr.label(
             default = Label("@bazel_tools//tools/zip:zipper"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
     },
@@ -115,12 +115,6 @@ def _aidl_to_java(filename, output_dir):
         filename = filename[:-len(".aidl")] + ".java"
     segments = filename.split("/")
     return output_dir + "/" + "/".join(segments[segments.index("aidl") + 1:])
-
-def _parent_directory(file):
-    """Returns the name of the directory containg the file."""
-
-    segments = file.split("/")
-    return "/".join(segments[:-1])
 
 def _name(file):
     """Returns the name of the file."""
