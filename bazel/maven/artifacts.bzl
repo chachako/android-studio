@@ -13,6 +13,7 @@ ARTIFACTS = [
     "com.android.tools:desugar_jdk_libs_configuration:1.1.5",
     "com.android.tools:desugar_jdk_libs_configuration_nio:2.0.2",
     "com.android.tools:desugar_jdk_libs_nio:2.0.2",
+    "com.android.tools:r8:8.2.47",
     "com.android.tools.smali:smali-baksmali:3.0.3",
     "com.android.tools.smali:smali-dexlib2:3.0.3",
     "com.fasterxml:aalto-xml:1.3.0",
