@@ -56,7 +56,11 @@ setlocal
   call %SCRIPTDIR%/../bazel.cmd ^
   --max_idle_secs=60 ^
   test ^
-  --config=ci ^
+  --keep_going ^
+  --test_strategy=exclusive ^
+  --strategy=TestRunner=local ^
+  --config=local ^
+  --config=sponge ^
   --config=ants ^
   --tool_tag=qa_studio_win.cmd ^
   --build_tag_filters=%TESTTAGFILTERS% ^
