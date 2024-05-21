@@ -139,13 +139,13 @@ class BlameFileTest {
         "ADDED from \${ROOT}/app/src/main/AndroidManifest.xml:12:9-18:20\n" +
         "\tandroid:name\n" +
         "\t\tADDED from \${ROOT}/app/src/main/AndroidManifest.xml:12:19-47\n" +
-        "intent-filter#activity#test.pkg.myapplication.MainActivity+action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER\n" +
+        "intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER\n" +
         "ADDED from \${ROOT}/app/src/main/AndroidManifest.xml:13:13-17:29\n" +
-        "action#intent-filter#activity#test.pkg.myapplication.MainActivity+action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER+android.intent.action.MAIN\n" +
+        "action#android.intent.action.MAIN\n" +
         "ADDED from \${ROOT}/app/src/main/AndroidManifest.xml:14:17-69\n" +
         "\tandroid:name\n" +
         "\t\tADDED from \${ROOT}/app/src/main/AndroidManifest.xml:14:25-66\n" +
-        "category#intent-filter#activity#test.pkg.myapplication.MainActivity+action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER+android.intent.category.LAUNCHER\n" +
+        "category#android.intent.category.LAUNCHER\n" +
         "ADDED from \${ROOT}/app/src/main/AndroidManifest.xml:16:17-77\n" +
         "\tandroid:name\n" +
         "\t\tADDED from \${ROOT}/app/src/main/AndroidManifest.xml:16:27-74\n" +

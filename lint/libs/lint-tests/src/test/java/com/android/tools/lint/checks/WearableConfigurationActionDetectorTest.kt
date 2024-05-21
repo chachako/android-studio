@@ -484,7 +484,7 @@ class WearableConfigurationActionDetectorTest : AbstractCheckTest() {
       .run()
       .expect(
         """
-            src/main/AndroidManifest.xml:36: Warning: Duplicate watch face configuration activities found [WearableActionDuplicate]
+            src/main/AndroidManifest.xml:20: Warning: Duplicate watch face configuration activities found [WearableActionDuplicate]
                     <action android:name="androidx.wear.watchface.editor.action.WATCH_FACE_EDITOR" />
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             0 errors, 1 warnings

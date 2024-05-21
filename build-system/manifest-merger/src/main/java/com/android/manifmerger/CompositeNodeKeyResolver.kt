@@ -40,13 +40,11 @@ internal open class CompositeNodeKeyResolver(val nodeType: String) : NodeKeyReso
     private val dataAttributeNames = ImmutableList.of(
             SdkConstants.ATTR_SCHEME,
             SdkConstants.ATTR_HOST,
+            SdkConstants.ATTR_MIME_TYPE,
             SdkConstants.ATTR_PORT,
             SdkConstants.ATTR_PATH,
             SdkConstants.ATTR_PATH_PATTERN,
-            SdkConstants.ATTR_PATH_PREFIX,
-            SdkConstants.ATTR_PATH_SUFFIX,
-            SdkConstants.ATTR_PATH_ADVANCED_PATTERN,
-            SdkConstants.ATTR_MIME_TYPE)
+            SdkConstants.ATTR_PATH_PREFIX)
 
     override val keyAttributesNames: ImmutableList<String>
         get() {

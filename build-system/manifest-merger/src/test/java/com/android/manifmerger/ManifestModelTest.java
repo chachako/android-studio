@@ -263,9 +263,8 @@ public class ManifestModelTest extends TestCase {
                 activityXmlElement.getAllNodesByType(ManifestModel.NodeTypes.INTENT_FILTER).get(0);
         assertThat(intentFilterXmlElement.getKey())
                 .isEqualTo(
-                        "activity#"
-                                + "com.example.app1.MainActivity"
-                                + "+action:name:android.intent.action.VIEW"
+                        ""
+                                + "action:name:android.intent.action.VIEW"
                                 + "+category:name:android.intent.category.BROWSABLE"
                                 + "+category:name:android.intent.category.DEFAULT"
                                 + "+data:host:www.example.com"

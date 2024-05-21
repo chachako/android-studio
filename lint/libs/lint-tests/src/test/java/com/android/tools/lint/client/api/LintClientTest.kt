@@ -16,18 +16,11 @@
 package com.android.tools.lint.client.api
 
 import com.android.SdkConstants
-import com.android.SdkConstants.TAG_ACTION
-import com.android.SdkConstants.TAG_ACTIVITY
-import com.android.SdkConstants.TAG_CATEGORY
-import com.android.SdkConstants.TAG_DATA
-import com.android.SdkConstants.TAG_INTENT_FILTER
-import com.android.SdkConstants.TAG_QUERIES
 import com.android.resources.ResourceFolderType
 import com.android.testutils.TestUtils
 import com.android.tools.lint.LintCliClient
 import com.android.tools.lint.checks.infrastructure.ProjectDescription
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
-import com.android.tools.lint.checks.infrastructure.TestFiles.manifest
 import com.android.tools.lint.checks.infrastructure.TestFiles.xml
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
 import com.android.tools.lint.checks.infrastructure.TestMode
@@ -48,9 +41,6 @@ import com.android.tools.lint.detector.api.ResourceXmlDetector
 import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.XmlContext
-import com.android.tools.lint.detector.api.XmlScanner
-import com.android.utils.iterator
-import com.android.utils.visitElements
 import com.google.common.truth.Truth.assertThat
 import com.intellij.psi.PsiMethod
 import java.io.File
@@ -252,238 +242,6 @@ class LintClientTest {
       )
   }
 
-  @Test
-  fun testMergedManifestIntentFilterLocations() {
-    // Test for https://issuetracker.google.com/335824315
-    //
-    // Previously, intent-filters and their action, category, and data elements did not have correct
-    // merged manifest info such that their locations were inaccurate, even just with a single app
-    // manifest file. For example, all VIEW actions would map back to the first VIEW action element.
-    // This test ensures these elements have correct locations, although duplicate intent-filters
-    // under the same activity will still map back to the first instance.
-    lint()
-      .projects(
-        ProjectDescription(
-            // Add 100 newline characters, so the reported elements from this manifest show at the
-            // end (because reported incidents are sorted).
-            manifest(
-              "\n".repeat(100) +
-                """
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.app.mylib">
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.SEND" />
-            <data android:mimeType="image/gif" />
-        </intent>
-    </queries>
-    <application>
-        <activity android:name=".LibActivity" android:exported="true">
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http"/>
-                <data android:scheme="https" />
-                <data android:host="example.com"/>
-                <data android:pathPrefix="/prefix"/>
-            </intent-filter>
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http"/>
-                <data android:scheme="https" />
-                <data android:host="example2.com"/>
-                <data android:pathPrefix="/prefix"/>
-            </intent-filter>
-        </activity>
-      </application>
-</manifest>
-"""
-            )
-          )
-          .name("lib"),
-        ProjectDescription(
-            manifest(
-              """
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.app.myapp">
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.SEND" />
-            <data android:mimeType="image/jpeg" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.SEND" />
-            <data android:mimeType="image/png" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.SEND" />
-            <data android:mimeType="image/png" />
-        </intent>
-    </queries>
-    <application>
-      <activity android:name="com.app.mylib.LibActivity" android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.SEND" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <data android:scheme="file" />
-        </intent-filter>
-        <intent-filter>
-            <action android:name="android.intent.action.SEND" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <data android:scheme="file" />
-        </intent-filter>
-      </activity>
-      <activity android:name=".OtherActivity" android:exported="true">
-          <intent-filter>
-              <action android:name="android.intent.action.SEND" />
-              <category android:name="android.intent.category.DEFAULT" />
-              <data android:scheme="file" />
-          </intent-filter>
-      </activity>
-    </application>
-</manifest>
-"""
-            )
-          )
-          .name("app")
-          .dependsOn("lib"),
-      )
-      .issues(TestIntentFilterDetector.ISSUE)
-      .allowMissingSdk()
-      .run()
-      .expect(
-        // As explained above, due to duplicate intent filters (at the same nesting level)
-        // - the second action SEND and data mimeType="image/png" elements (under queries) appear to
-        //   be reported twice
-        // - the first action SEND, category DEFAULT, and data scheme="file" elements (under
-        //   activity com.app.mylib.LibActivity) appear to be reported twice
-        //
-        // Duplicate intent filters across different activities are still distinguished (as
-        // demonstrated by .OtherActivity).
-        """
-AndroidManifest.xml:3: Error: Element [TestIntentFilterLoggerDetector]
-    <queries>
-     ~~~~~~~
-AndroidManifest.xml:5: Error: Element [TestIntentFilterLoggerDetector]
-            <action android:name="android.intent.action.SEND" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:6: Error: Element [TestIntentFilterLoggerDetector]
-            <data android:mimeType="image/jpeg" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:9: Error: Element [TestIntentFilterLoggerDetector]
-            <action android:name="android.intent.action.SEND" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:9: Error: Element [TestIntentFilterLoggerDetector]
-            <action android:name="android.intent.action.SEND" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:10: Error: Element [TestIntentFilterLoggerDetector]
-            <data android:mimeType="image/png" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:10: Error: Element [TestIntentFilterLoggerDetector]
-            <data android:mimeType="image/png" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:18: Error: Element [TestIntentFilterLoggerDetector]
-      <activity android:name="com.app.mylib.LibActivity" android:exported="true">
-       ~~~~~~~~
-AndroidManifest.xml:19: Error: Element [TestIntentFilterLoggerDetector]
-        <intent-filter>
-         ~~~~~~~~~~~~~
-AndroidManifest.xml:19: Error: Element [TestIntentFilterLoggerDetector]
-        <intent-filter>
-         ~~~~~~~~~~~~~
-AndroidManifest.xml:20: Error: Element [TestIntentFilterLoggerDetector]
-            <action android:name="android.intent.action.SEND" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:20: Error: Element [TestIntentFilterLoggerDetector]
-            <action android:name="android.intent.action.SEND" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:21: Error: Element [TestIntentFilterLoggerDetector]
-            <category android:name="android.intent.category.DEFAULT" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:21: Error: Element [TestIntentFilterLoggerDetector]
-            <category android:name="android.intent.category.DEFAULT" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:22: Error: Element [TestIntentFilterLoggerDetector]
-            <data android:scheme="file" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:22: Error: Element [TestIntentFilterLoggerDetector]
-            <data android:scheme="file" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:30: Error: Element [TestIntentFilterLoggerDetector]
-      <activity android:name=".OtherActivity" android:exported="true">
-       ~~~~~~~~
-AndroidManifest.xml:31: Error: Element [TestIntentFilterLoggerDetector]
-          <intent-filter>
-           ~~~~~~~~~~~~~
-AndroidManifest.xml:32: Error: Element [TestIntentFilterLoggerDetector]
-              <action android:name="android.intent.action.SEND" />
-              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:33: Error: Element [TestIntentFilterLoggerDetector]
-              <category android:name="android.intent.category.DEFAULT" />
-              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-AndroidManifest.xml:34: Error: Element [TestIntentFilterLoggerDetector]
-              <data android:scheme="file" />
-              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:105: Error: Element [TestIntentFilterLoggerDetector]
-            <action android:name="android.intent.action.SEND" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:106: Error: Element [TestIntentFilterLoggerDetector]
-            <data android:mimeType="image/gif" />
-            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:111: Error: Element [TestIntentFilterLoggerDetector]
-            <intent-filter android:autoVerify="true">
-             ~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:112: Error: Element [TestIntentFilterLoggerDetector]
-                <action android:name="android.intent.action.VIEW" />
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:113: Error: Element [TestIntentFilterLoggerDetector]
-                <category android:name="android.intent.category.DEFAULT" />
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:114: Error: Element [TestIntentFilterLoggerDetector]
-                <category android:name="android.intent.category.BROWSABLE" />
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:115: Error: Element [TestIntentFilterLoggerDetector]
-                <data android:scheme="http"/>
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:116: Error: Element [TestIntentFilterLoggerDetector]
-                <data android:scheme="https" />
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:117: Error: Element [TestIntentFilterLoggerDetector]
-                <data android:host="example.com"/>
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:118: Error: Element [TestIntentFilterLoggerDetector]
-                <data android:pathPrefix="/prefix"/>
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:120: Error: Element [TestIntentFilterLoggerDetector]
-            <intent-filter android:autoVerify="true">
-             ~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:121: Error: Element [TestIntentFilterLoggerDetector]
-                <action android:name="android.intent.action.VIEW" />
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:122: Error: Element [TestIntentFilterLoggerDetector]
-                <category android:name="android.intent.category.DEFAULT" />
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:123: Error: Element [TestIntentFilterLoggerDetector]
-                <category android:name="android.intent.category.BROWSABLE" />
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:124: Error: Element [TestIntentFilterLoggerDetector]
-                <data android:scheme="http"/>
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:125: Error: Element [TestIntentFilterLoggerDetector]
-                <data android:scheme="https" />
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:126: Error: Element [TestIntentFilterLoggerDetector]
-                <data android:host="example2.com"/>
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-../lib/AndroidManifest.xml:127: Error: Element [TestIntentFilterLoggerDetector]
-                <data android:pathPrefix="/prefix"/>
-                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-39 errors, 0 warnings
-"""
-      )
-  }
-
   /** Detector used by [testGetXmlDocument] */
   @SuppressWarnings("ALL")
   class TestXmlParsingDetector : Detector(), Detector.UastScanner, Detector.XmlScanner {
@@ -589,45 +347,6 @@ AndroidManifest.xml:34: Error: Element [TestIntentFilterLoggerDetector]
               TestXmlFakeIssueDetector::class.java,
               EnumSet.of(Scope.ALL_RESOURCE_FILES),
             ),
-        )
-    }
-  }
-
-  /** Detector used by [testMergedManifestIntentFilterLocations] */
-  class TestIntentFilterDetector : Detector(), XmlScanner {
-
-    override fun checkMergedProject(context: Context) {
-      val manifest = context.mainProject.mergedManifest?.documentElement ?: return
-      manifest.visitElements {
-        if (
-          it.tagName in
-            arrayOf(
-              TAG_ACTIVITY,
-              TAG_INTENT_FILTER,
-              TAG_QUERIES,
-              TAG_CATEGORY,
-              TAG_ACTION,
-              TAG_DATA,
-            )
-        ) {
-          context.report(ISSUE, context.getLocation(it), "Element")
-        }
-        false
-      }
-    }
-
-    companion object {
-      @JvmField
-      val ISSUE =
-        Issue.create(
-          id = "TestIntentFilterLoggerDetector",
-          briefDescription = "Fake lint check for testing intent filter locations",
-          explanation = "Reports intent filter elements",
-          category = Category.TESTING,
-          priority = 10,
-          severity = Severity.ERROR,
-          implementation =
-            Implementation(TestIntentFilterDetector::class.java, Scope.MANIFEST_SCOPE),
         )
     }
   }

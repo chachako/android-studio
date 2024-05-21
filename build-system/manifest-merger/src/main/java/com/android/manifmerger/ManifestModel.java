@@ -172,6 +172,7 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
      * A {@link NodeKeyResolver} capable of extracting the element key first in an "android:name"
      * attribute and if not value found there, in the "android:glEsVersion" attribute.
      */
+    @Nullable
     private static final NodeKeyResolver NAME_AND_GLESVERSION_KEY_RESOLVER =
             new NodeKeyResolver() {
                 private final NodeKeyResolver nameAttrResolver = DEFAULT_NAME_ATTRIBUTE_RESOLVER;
@@ -275,11 +276,7 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
          * href=http://developer.android.com/guide/topics/manifest/action-element.html>Action Xml
          * documentation</a>}
          */
-        ACTION(
-                MergeType.MERGE,
-                new CombinedNodeKeyResolver(
-                        ImmutableList.of(
-                                new ParentNodeKeyResolver(), DEFAULT_NAME_ATTRIBUTE_RESOLVER))),
+        ACTION(MergeType.MERGE, DEFAULT_NAME_ATTRIBUTE_RESOLVER),
 
         /**
          * Activity (contained in application)
@@ -351,11 +348,7 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
          * href=http://developer.android.com/guide/topics/manifest/category-element.html>Category
          * Xml documentation</a>}
          */
-        CATEGORY(
-                MergeType.MERGE,
-                new CombinedNodeKeyResolver(
-                        ImmutableList.of(
-                                new ParentNodeKeyResolver(), DEFAULT_NAME_ATTRIBUTE_RESOLVER))),
+        CATEGORY(MergeType.MERGE, DEFAULT_NAME_ATTRIBUTE_RESOLVER),
 
         /**
          * Compatible-screens (contained in manifest) <br>
@@ -371,29 +364,7 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
          * href=http://developer.android.com/guide/topics/manifest/data-element.html>Data Xml
          * documentation</a>}
          */
-        DATA(
-                MergeType.MERGE,
-                new CombinedNodeKeyResolver(
-                        ImmutableList.of(
-                                new ParentNodeKeyResolver(),
-                                new AttributeBasedNodeKeyResolver(
-                                        ANDROID_URI, SdkConstants.ATTR_SCHEME),
-                                new AttributeBasedNodeKeyResolver(
-                                        ANDROID_URI, SdkConstants.ATTR_HOST),
-                                new AttributeBasedNodeKeyResolver(
-                                        ANDROID_URI, SdkConstants.ATTR_PORT),
-                                new AttributeBasedNodeKeyResolver(
-                                        ANDROID_URI, SdkConstants.ATTR_PATH),
-                                new AttributeBasedNodeKeyResolver(
-                                        ANDROID_URI, SdkConstants.ATTR_PATH_PATTERN),
-                                new AttributeBasedNodeKeyResolver(
-                                        ANDROID_URI, SdkConstants.ATTR_PATH_PREFIX),
-                                new AttributeBasedNodeKeyResolver(
-                                        ANDROID_URI, SdkConstants.ATTR_PATH_SUFFIX),
-                                new AttributeBasedNodeKeyResolver(
-                                        ANDROID_URI, SdkConstants.ATTR_PATH_ADVANCED_PATTERN),
-                                new AttributeBasedNodeKeyResolver(
-                                        ANDROID_URI, SdkConstants.ATTR_MIME_TYPE)))),
+        DATA(MergeType.MERGE, DEFAULT_NO_KEY_NODE_RESOLVER),
 
         /**
          * Grant-uri-permission (contained in intent-filter)
@@ -431,9 +402,7 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
          */
         INTENT(
                 MergeType.ALWAYS,
-                new CombinedNodeKeyResolver(
-                        ImmutableList.of(
-                                new ParentNodeKeyResolver(), IntentNodeKeyResolver.INSTANCE)),
+                IntentNodeKeyResolver.INSTANCE,
                 MULTIPLE_DECLARATION_FOR_SAME_KEY_ALLOWED),
 
         /**
@@ -444,9 +413,7 @@ public class ManifestModel implements DocumentModel<ManifestModel.NodeTypes> {
          */
         INTENT_FILTER(
                 MergeType.ALWAYS,
-                new CombinedNodeKeyResolver(
-                        ImmutableList.of(
-                                new ParentNodeKeyResolver(), IntentFilterNodeKeyResolver.INSTANCE)),
+                IntentFilterNodeKeyResolver.INSTANCE,
                 MULTIPLE_DECLARATION_FOR_SAME_KEY_ALLOWED),
 
         /**

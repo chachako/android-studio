@@ -41,5 +41,5 @@
 @result-same-as-main
 
 @errors
-ERROR:Attribute action#intent-filter#activity#.Main\+action:name:\$\{packageName\}.foo\+\$\{packageName\}.foo@name at ManifestMerger2Test0_main.xml:26:25-58 requires a placeholder substitution but no value for <packageName> is provided.
+ERROR:Attribute action#\$\{packageName\}.foo@name at ManifestMerger2Test0_main.xml:26:25-58 requires a placeholder substitution but no value for <packageName> is provided.
 ERROR:Main AndroidManifest.xml at ManifestMerger2Test0_main.xml manifest:package attribute is not declared
