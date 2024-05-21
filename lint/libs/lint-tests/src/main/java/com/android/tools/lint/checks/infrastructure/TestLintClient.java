@@ -1871,19 +1871,8 @@ public class TestLintClient extends LintCliClient {
         Map<String, Integer> mockNetworkErrorCodes = task.mockNetworkErrorCodes;
         Map<String, Map<String, List<String>>> mockNetworkHeaderFields =
                 task.mockNetworkHeaderFields;
-        Map<String, IOException> mockNetworkExceptions = task.mockNetworkExceptions;
-        if (mockNetworkData != null
-                || mockNetworkErrorCodes != null
-                || mockNetworkExceptions != null) {
+        if (mockNetworkData != null || mockNetworkErrorCodes != null) {
             String query = url.toExternalForm();
-            // Exceptions:
-            if (mockNetworkExceptions != null) {
-                IOException exception = mockNetworkExceptions.get(query);
-                if (exception != null) {
-                    throw exception;
-                }
-            }
-            // Other:
             Integer response =
                     mockNetworkErrorCodes != null ? mockNetworkErrorCodes.get(query) : null;
             byte[] bytes = mockNetworkData != null ? mockNetworkData.get(query) : null;
@@ -1906,7 +1895,7 @@ public class TestLintClient extends LintCliClient {
 
                         @Override
                         public InputStream getInputStream() {
-                            if (bytes == null) {
+                            if (response != null) {
                                 return null;
                             }
                             return new ByteArrayInputStream(bytes);

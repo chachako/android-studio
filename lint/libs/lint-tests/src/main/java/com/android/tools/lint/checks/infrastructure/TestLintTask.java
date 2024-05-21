@@ -132,7 +132,6 @@ public class TestLintTask {
     Map<String, byte[]> mockNetworkData;
     Map<String, Integer> mockNetworkErrorCodes;
     Map<String, Map<String, List<String>>> mockNetworkHeaderFields;
-    Map<String, IOException> mockNetworkExceptions;
     boolean allowNetworkAccess;
     boolean allowDuplicates;
     boolean showSecondaryLintContent = false;
@@ -1345,21 +1344,6 @@ public class TestLintTask {
             mockNetworkHeaderFields = Maps.newHashMap();
         }
         mockNetworkHeaderFields.put(url, headers);
-        return this;
-    }
-
-    /**
-     * Provides mock {@link IOException} for if a detector calls {@link
-     * LintClient#openConnection(URL, int)}.
-     *
-     * @return this, for constructor chaining
-     */
-    @NonNull
-    public TestLintTask networkData(@NonNull String url, @NonNull IOException exception) {
-        if (mockNetworkExceptions == null) {
-            mockNetworkExceptions = Maps.newHashMap();
-        }
-        mockNetworkExceptions.put(url, exception);
         return this;
     }
 
