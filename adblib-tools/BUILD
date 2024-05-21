@@ -1,6 +1,8 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
+load("//tools/base/bazel:maven.bzl", "maven_library")
 load("//tools/base/bazel:proto.bzl", "java_proto_library")
+load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
 # managed by go/iml_to_build
 iml_module(
@@ -23,25 +25,32 @@ iml_module(
 # Build adblib.tools as a standalone library, with side effect of ensuring that it does
 # not use unwanted dependencies from "studio-sdk" in the iml_module rule above
 # Build with: bazel build //tools/base/adblib-tools:adblib.tools
-kotlin_library(
+maven_library(
     name = "adblib.tools",
     srcs = glob([
         "src/com/android/adblib/tools/*.kt",
         "src/com/android/adblib/tools/debugging/**/*.kt",
         "src/com/android/adblib/tools/tcpserver/**/*.kt",
     ]),
+    bundled_deps = [
+        # See rule at end of this file
+        ":adblib-tools-proto",
+    ],
+    coordinates = "com.android.tools.adblib:adblib-tools",
+    description = "Tooling for the library used to communicate with Android devices",
     friends = [
         "//tools/base/adblib:adblib",
     ],
     lint_baseline = "lint_baseline_tools.xml",
+    module_name = "adblib.tools",
+    notice = "LICENSE",
     resource_strip_prefix = "tools/base/adblib.tools",
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/adblib",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
-        # See rule at end of this file
-        ":adblib-tools-proto",
     ],
 )
 

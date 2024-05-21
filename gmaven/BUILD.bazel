@@ -33,6 +33,20 @@ maven_repository(
     include_transitive_deps = False,
 )
 
+# Gmaven artifacts that are not used by the gradle builds and
+# require our vendor repositories to be built
+maven_repository(
+    name = "gmaven_with_vendor",
+    #keep sorted
+    artifacts = [
+        "//tools/base/adblib:adblib",
+        "//tools/base/adblib-ddmlibcompatibility:adblib.ddmlibcompatibility",
+        "//tools/base/adblib-tools:adblib.tools",
+        "//tools/base/deploy/deployer:deployer.runner.maven",
+    ],
+    include_transitive_deps = False,
+)
+
 genrule(
     name = "maven_artifact_list",
     srcs = [":gmaven"],
@@ -90,6 +104,7 @@ filegroup(
 merged_zip(
     name = "gmaven",
     srcs = [
+        ":gmaven_with_vendor.zip",
         ":zips_without_vendor",
         "//tools/data-binding:data_binding_runtime.zip",
     ],

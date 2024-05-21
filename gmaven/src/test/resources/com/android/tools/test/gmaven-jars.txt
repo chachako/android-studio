@@ -74,6 +74,57 @@ com/android/signflinger
   com/android/
   com/android/signflinger/
 
+com/android/tools/adblib/adblib
+  LICENSE
+  META-INF/
+  META-INF/MANIFEST.MF
+  META-INF/unnamed.kotlin_module
+  com/
+  com/android/
+  com/android/adblib/
+  com/android/adblib/impl/
+  com/android/adblib/impl/channels/
+  com/android/adblib/impl/services/
+  com/android/adblib/testing/
+  com/android/adblib/utils/
+  com/android/server/
+  com/android/server/adb/
+  com/android/server/adb/protos/
+
+com/android/tools/adblib/adblib-ddmlibcompatibility
+  LICENSE
+  META-INF/
+  META-INF/MANIFEST.MF
+  META-INF/unnamed.kotlin_module
+  com/
+  com/android/
+  com/android/adblib/
+  com/android/adblib/ddmlibcompatibility/
+  com/android/adblib/ddmlibcompatibility/debugging/
+
+com/android/tools/adblib/adblib-tools
+  LICENSE
+  META-INF/
+  META-INF/MANIFEST.MF
+  META-INF/adblib.tools.kotlin_module
+  com/
+  com/android/
+  com/android/adblib/
+  com/android/adblib/tools/
+  com/android/adblib/tools/debugging/
+  com/android/adblib/tools/debugging/impl/
+  com/android/adblib/tools/debugging/packets/
+  com/android/adblib/tools/debugging/packets/ddms/
+  com/android/adblib/tools/debugging/packets/ddms/chunks/
+  com/android/adblib/tools/debugging/packets/impl/
+  com/android/adblib/tools/debugging/processinventory/
+  com/android/adblib/tools/debugging/processinventory/impl/
+  com/android/adblib/tools/debugging/processinventory/protos/
+  com/android/adblib/tools/debugging/processinventory/server/
+  com/android/adblib/tools/debugging/utils/
+  com/android/adblib/tools/tcpserver/
+  com/android/adblib/tools/tcpserver/impl/
+
 com/android/tools/analytics-library/crash
   META-INF/
   META-INF/MANIFEST.MF
@@ -164,6 +215,43 @@ com/android/tools/annotations
   com/android/
   com/android/annotations/
   com/android/annotations/concurrency/
+
+com/android/tools/apkdeployer/apkdeployer
+  LICENSE
+  META-INF/
+  META-INF/MANIFEST.MF
+  com/
+  com/android/
+  com/android/tools/
+  com/android/tools/deploy/
+  com/android/tools/deploy/proto/
+  com/android/tools/deployer/
+  com/android/tools/deployer/model/
+  com/android/tools/deployer/model/component/
+  com/android/tools/deployer/tasks/
+  com/android/tools/idea/
+  com/android/tools/idea/protobuf/
+  com/android/tools/idea/protobuf/compiler/
+  com/android/tools/idea/protobuf/util/
+  com/android/tools/manifest/
+  com/android/tools/manifest/parser/
+  com/android/tools/manifest/parser/components/
+  com/android/tools/tracer/
+  google/
+  google/protobuf/
+  tools/
+  tools/base/
+  tools/base/deploy/
+  tools/base/deploy/installer/
+  tools/base/deploy/installer/android-installer/
+  tools/base/deploy/installer/android-installer/arm64-v8a/
+  tools/base/deploy/installer/android-installer/arm64-v8a/installer
+  tools/base/deploy/installer/android-installer/armeabi-v7a/
+  tools/base/deploy/installer/android-installer/armeabi-v7a/installer
+  tools/base/deploy/installer/android-installer/x86/
+  tools/base/deploy/installer/android-installer/x86/installer
+  tools/base/deploy/installer/android-installer/x86_64/
+  tools/base/deploy/installer/android-installer/x86_64/installer
 
 com/android/tools/apkparser/apkanalyzer
   META-INF/

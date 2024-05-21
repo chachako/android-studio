@@ -25,6 +25,9 @@
   com/android/settings:com.android.settings.gradle.plugin
   com/android:signflinger
   com/android/test:com.android.test.gradle.plugin
+  com/android/tools/adblib:adblib
+  com/android/tools/adblib:adblib-ddmlibcompatibility
+  com/android/tools/adblib:adblib-tools
   com/android/tools/analytics-library:crash
   com/android/tools/analytics-library:inspector
   com/android/tools/analytics-library:protos
@@ -33,6 +36,7 @@
   com/android/tools/analytics-library:testing
   com/android/tools/analytics-library:tracker
   com/android/tools:annotations
+  com/android/tools/apkdeployer:apkdeployer
   com/android/tools/apkparser:apkanalyzer
   com/android/tools/apkparser:binary-resources
   com/android/tools/build:aapt2

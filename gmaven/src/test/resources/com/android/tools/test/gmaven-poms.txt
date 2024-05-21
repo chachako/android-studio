@@ -299,6 +299,33 @@ com.android.tools:testutils
     org.mockito:mockito-core (runtime)
     org.ow2.asm:asm (runtime)
 
+com.android.tools.adblib:adblib
+  pomName=com.android.tools.adblib.adblib
+  description=Library used to communicate with Android devices
+  dependencies:
+    org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
+    org.jetbrains.kotlinx:kotlinx-coroutines-core (runtime)
+    com.google.protobuf:protobuf-java (runtime)
+
+com.android.tools.adblib:adblib-ddmlibcompatibility
+  pomName=com.android.tools.adblib.adblib-ddmlibcompatibility
+  description=Compatibility library between ddmlib and adblib
+  dependencies:
+    com.android.tools.adblib:adblib (runtime)
+    com.android.tools.adblib:adblib-tools (runtime)
+    com.android.tools.ddms:ddmlib (runtime)
+    org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
+    org.jetbrains.kotlinx:kotlinx-coroutines-core (runtime)
+    org.jetbrains.kotlinx:kotlinx-coroutines-guava (runtime)
+
+com.android.tools.adblib:adblib-tools
+  pomName=com.android.tools.adblib.adblib-tools
+  description=Tooling for the library used to communicate with Android devices
+  dependencies:
+    com.android.tools.adblib:adblib (runtime)
+    org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
+    org.jetbrains.kotlinx:kotlinx-coroutines-core (runtime)
+
 com.android.tools.analytics-library:crash
   pomName=Android Tools Analytics Crash Library
   description=Helper Library for uploading crash reports.
@@ -374,6 +401,23 @@ com.android.tools.analytics-library:tracker
     com.google.guava:guava (runtime)
     com.google.protobuf:protobuf-java (runtime)
     org.jetbrains.kotlin:kotlin-stdlib-jdk8 (runtime)
+
+com.android.tools.apkdeployer:apkdeployer
+  pomName=com.android.tools.apkdeployer.apkdeployer
+  description=Library used to deploy Android applications
+  dependencies:
+    com.android.tools.adblib:adblib (runtime)
+    com.android.tools.adblib:adblib-tools (runtime)
+    com.android.tools:annotations (runtime)
+    com.android.tools.apkparser:binary-resources (runtime)
+    com.android.tools:common (runtime)
+    com.android.tools.ddms:ddmlib (runtime)
+    com.android:zipflinger (runtime)
+    com.android.tools:r8 (runtime)
+    com.google.guava:guava (runtime)
+    com.google.protobuf:protobuf-java (runtime)
+    org.jetbrains:annotations (runtime)
+    org.xerial:sqlite-jdbc (runtime)
 
 com.android.tools.apkparser:apkanalyzer
   pomName=Apk Analyzer library

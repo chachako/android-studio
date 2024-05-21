@@ -1,5 +1,10 @@
+load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
 load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:coverage.bzl", "coverage_java_library", "coverage_java_test")
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library")
+load("//tools/base/bazel:maven.bzl", "maven_library")
+load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
 # managed by go/iml_to_build
 iml_module(
@@ -85,6 +90,80 @@ coverage_java_library(
     ],
 )
 
+# TODO(b/367746725): Remove this when we no longer depend on the jarjar'd proto definitions
+kotlin_library(
+    name = "remove-protos-lib",
+    srcs = ["src/build/RemoveProtos.kt"],
+    deps = [
+        "//tools/base/zipflinger",
+    ],
+)
+
+java_binary(
+    name = "remove-protos",
+    main_class = "com.android.tools.deploy.RemoveProtosKt",
+    runtime_deps = [":remove-protos-lib"],
+)
+
+run_binary(
+    name = "studio-proto-for-maven",
+    srcs = [
+        "//tools/base/bazel:studio-proto",
+    ],
+    outs = ["studio-proto-for-maven.jar"],
+    args = [
+        "$(location //tools/base/bazel:studio-proto)",
+        "$(location studio-proto-for-maven.jar)",
+    ],
+    tool = ":remove-protos",
+)
+
+java_import(
+    name = "studio-proto-jar-for-maven",
+    jars = [":studio-proto-for-maven"],
+)
+
+maven_library(
+    name = "deployer.runner.maven",
+    srcs = glob(
+        ["src/main/**/*.java"],
+        exclude = ["src/main/java/com/android/tools/deployer/JdiBasedClassRedefiner.java"],
+    ),
+    # All the dependencies that aren't maven libraries need to be included
+    # in bundled_deps to package them into the jar.
+    bundled_deps = [
+        ":java_version",
+        ":studio-proto-jar-for-maven",
+        "//tools/base/deploy/proto:deploy_java_proto",
+        "//tools/base/deploy/sites:java_sites",
+        "//tools/base/manifest-parser:tools.manifest-parser",
+        "//tools/base/tracer:tools.tracer",
+    ],
+    coordinates = "com.android.tools.apkdeployer:apkdeployer",
+    description = "Library used to deploy Android applications",
+    manifest_lines = [
+        "Main-Class: com.android.tools.deployer.DeployerRunner",
+    ],
+    notice = "LICENSE",
+    resources = ["//tools/base/deploy/installer:android-installer"],
+    version = BUILD_VERSION,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tools/base/adblib",
+        "//tools/base/adblib-tools:adblib.tools",
+        "//tools/base/annotations",
+        "//tools/base/apkparser:tools.binary-resources",
+        "//tools/base/common:tools.common",
+        "//tools/base/ddmlib:tools.ddmlib",
+        "//tools/base/zipflinger",
+        "@maven//:com.android.tools.r8",
+        "@maven//:com.google.guava.guava",
+        "@maven//:com.google.protobuf.protobuf-java",
+        "@maven//:org.jetbrains.annotations",
+        "@maven//:org.xerial.sqlite-jdbc",
+    ],
+)
+
 java_binary(
     name = "deployer.runner",
     data = ["//tools/base/tracer:trace_agent"],
@@ -151,8 +230,6 @@ coverage_java_test(
         "@maven//:org.mockito.mockito-core",
     ],
 )
-
-load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
 
 # managed by go/iml_to_build
 jvm_import(

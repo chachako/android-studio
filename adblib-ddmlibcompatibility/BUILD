@@ -1,5 +1,7 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
+load("//tools/base/bazel:maven.bzl", "maven_library")
+load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
 # managed by go/iml_to_build
 iml_module(
@@ -22,23 +24,27 @@ iml_module(
 # Build adblib.ddmlibcompatibility as a standalone library, with side effect of ensuring that
 # the library does not use unwanted dependencies from "studio-sdk" in the iml_module rule above
 # Build with: bazel build //tools/base/adblib-ddmlibcompatibility:adblib.ddmlibcompatibility
-kotlin_library(
+maven_library(
     name = "adblib.ddmlibcompatibility",
     # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "src/**/*.kt",
         "src/**/*.java",
     ]),
+    coordinates = "com.android.tools.adblib:adblib-ddmlibcompatibility",
+    description = "Compatibility library between ddmlib and adblib",
     friends = [
         "//tools/base/adblib:adblib",
         "//tools/base/adblib-tools:adblib.tools",
     ],
+    notice = "LICENSE",
     resource_strip_prefix = "tools/base/adblib.ddmlibcompatibility",
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/adblib",
         "//tools/base/adblib-tools:adblib.tools",
-        "//tools/base/ddmlib:ddmlib-base",
+        "//tools/base/ddmlib:tools.ddmlib",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-core",
         "@maven//:org.jetbrains.kotlinx.kotlinx-coroutines-guava",
