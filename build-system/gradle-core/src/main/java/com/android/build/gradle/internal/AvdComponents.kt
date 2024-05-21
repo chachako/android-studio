@@ -85,7 +85,8 @@ abstract class AvdComponentsBuildService @Inject constructor(
             AvdSnapshotHandler(
                 parameters.showEmulatorKernelLogging.get(),
                 snapshotTimeoutSecs,
-                adbHelper
+                adbHelper,
+                emulatorDirectory
             ),
             ManagedVirtualDeviceLockManager(
                 locationsService,
@@ -95,7 +96,8 @@ abstract class AvdComponentsBuildService @Inject constructor(
         )
     }
 
-    val lockManager: ManagedVirtualDeviceLockManager = avdManager.get().deviceLockManager
+    val lockManager: ManagedVirtualDeviceLockManager
+        get() = avdManager.get().deviceLockManager
 
     /**
      * Returns the location of the shared avd folder.

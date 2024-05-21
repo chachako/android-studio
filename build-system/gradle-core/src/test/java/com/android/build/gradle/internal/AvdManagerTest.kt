@@ -213,12 +213,9 @@ class AvdManagerTest {
 
     @Test
     fun testSnapshotCreation() {
-        `when`(snapshotHandler.getEmulatorExecutable(versionedSdkLoader.emulatorDirectoryProvider))
-            .thenReturn(FileOpUtils.toFile(emulatorFolder.resolve("emulator")))
         `when`(
             snapshotHandler.checkSnapshotLoadable(
                 anyString(),
-                any(File::class.java),
                 any(File::class.java),
                 anyString(),
                 any(ILogger::class.java),
@@ -238,7 +235,6 @@ class AvdManagerTest {
             .generateSnapshot(
                 anyString(),
                 any(File::class.java),
-                any(File::class.java),
                 anyString(),
                 any(com.android.sdklib.internal.avd.AvdManager::class.java),
                 any(ILogger::class.java))
@@ -246,12 +242,9 @@ class AvdManagerTest {
 
     @Test
     fun testSnapshotSkippedIfValid() {
-        `when`(snapshotHandler.getEmulatorExecutable(versionedSdkLoader.emulatorDirectoryProvider))
-            .thenReturn(FileOpUtils.toFile(emulatorFolder.resolve("emulator")))
         `when`(
             snapshotHandler.checkSnapshotLoadable(
                 anyString(),
-                any(File::class.java),
                 any(File::class.java),
                 anyString(),
                 any(ILogger::class.java),
@@ -269,7 +262,6 @@ class AvdManagerTest {
         verify(snapshotHandler, times(0))
             .generateSnapshot(
                 anyString(),
-                any(File::class.java),
                 any(File::class.java),
                 anyString(),
                 any(com.android.sdklib.internal.avd.AvdManager::class.java),

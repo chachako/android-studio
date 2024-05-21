@@ -198,12 +198,9 @@ class AvdManager(
         // It fails to generate a snapshot image if you try to create a snapshot for two
         // AVD with a same name simultaneously. https://issuetracker.google.com/issues/206798666
         runWithMultiProcessLocking(deviceName) {
-            val emulatorProvider = versionedSdkLoader.get().emulatorDirectoryProvider
-            val emulatorExecutable = snapshotHandler.getEmulatorExecutable(emulatorProvider)
 
             if (snapshotHandler.checkSnapshotLoadable(
                     deviceName,
-                    emulatorExecutable,
                     avdFolder,
                     emulatorGpuFlag,
                     logger
@@ -216,7 +213,6 @@ class AvdManager(
             deviceLockManager.lock(1).use {
                 snapshotHandler.generateSnapshot(
                     deviceName,
-                    emulatorExecutable,
                     avdFolder,
                     emulatorGpuFlag,
                     avdManager,
