@@ -19,6 +19,7 @@ package com.android.sdklib;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Objects;
@@ -90,11 +91,13 @@ public final class AndroidVersion implements Comparable<AndroidVersion>, Seriali
     }
 
     /**
-     * Starting Android "T", every new release has a base <a
+     * Starting with Android "S", every new release has a base <a
      * href="https://developer.android.com/guide/sdk-extensions">SDK extension</a> version, i.e. the
      * minimum SDK extension version number supported by that release.
      */
     public enum ApiBaseExtension {
+        S(31, 1),
+        S_V2(32, 1),
         TIRAMISU(33, 3),
         UPSIDE_DOWN_CAKE(34, 7);
 
