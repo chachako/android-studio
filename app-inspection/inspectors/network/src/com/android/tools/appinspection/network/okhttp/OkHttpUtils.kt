@@ -15,7 +15,11 @@
  */
 package com.android.tools.appinspection.network.okhttp
 
+import com.android.tools.appinspection.common.logError
 import java.io.OutputStream
+
+private const val LINK_ERROR_MESSAGE =
+  "Could not track an %s due to a missing method, which could happen if your project uses proguard to remove unused code or uses an outdated version of OkHttp"
 
 /** Scans the current stack trace and returns the section that comes after OkHttp packages. */
 fun getOkHttpCallStack(okHttpPackage: String): String {
@@ -64,3 +68,10 @@ fun createNullOutputStream(): OutputStream {
 /**  */
 fun shouldIgnoreRequest(callstack: String, className: String): Boolean =
   callstack.contains(className)
+
+fun logInterceptionError(e: Throwable, description: String) {
+  when (e) {
+    is LinkageError -> logError(LINK_ERROR_MESSAGE.format(description), e)
+    else -> logError("Could not track an $description", e)
+  }
+}

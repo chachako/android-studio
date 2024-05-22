@@ -15,7 +15,6 @@
  */
 package com.android.tools.appinspection.network.okhttp
 
-import com.android.tools.appinspection.common.logError
 import com.android.tools.appinspection.network.HttpTrackerFactory
 import com.android.tools.appinspection.network.rules.FIELD_RESPONSE_STATUS_CODE
 import com.android.tools.appinspection.network.rules.InterceptionRuleService
@@ -43,14 +42,8 @@ class OkHttp2Interceptor(
     var tracker: HttpConnectionTracker? = null
     try {
       tracker = trackRequest(request)
-    } catch (ex: Exception) {
-      logError("Could not track an OkHttp2 request", ex)
-    } catch (error: NoSuchMethodError) {
-      logError(
-        "Could not track an OkHttp2 request due to a missing method, which could" +
-          " happen if your project uses proguard to remove unused code",
-        error,
-      )
+    } catch (e: Throwable) {
+      logInterceptionError(e, "OkHttp2")
     }
     var response: Response
     response =
@@ -64,14 +57,8 @@ class OkHttp2Interceptor(
       if (tracker != null) {
         response = trackResponse(tracker, request, response)
       }
-    } catch (ex: Exception) {
-      logError("Could not track an OkHttp2 response", ex)
-    } catch (error: NoSuchMethodError) {
-      logError(
-        "Could not track an OkHttp2 response due to a missing method, which could" +
-          " happen if your project uses proguard to remove unused code",
-        error,
-      )
+    } catch (e: Throwable) {
+      logInterceptionError(e, "OkHttp2")
     }
     return response
   }
