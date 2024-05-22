@@ -145,12 +145,11 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
     val annotationScanners = HashMap<String, MutableList<SourceCodeScanner>>()
 
     for (detector in detectors) {
-      val uastScanner = detector as SourceCodeScanner
-      val v = VisitingDetector(detector, uastScanner)
+      val v = VisitingDetector(detector as SourceCodeScanner)
 
       allDetectors.add(v)
       if (detector.appliesToResourceRefs()) resourceFieldDetectors.add(v)
-      if (uastScanner.isCallGraphRequired()) callGraphDetectors.add(uastScanner)
+      if (detector.isCallGraphRequired()) callGraphDetectors.add(detector)
 
       with(detector) {
         getApplicableMethodNames()?.ensureNotAll()?.associateWith(v, methodDetectors)
@@ -158,7 +157,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
         getApplicableUastTypes()?.associateWith(v, nodePsiTypeDetectors)
         getApplicableConstructorTypes()?.ensureNotAll()?.associateWith(v, constructorDetectors)
         getApplicableReferenceNames()?.ensureNotAll()?.associateWith(v, referenceDetectors)
-        applicableAnnotations()?.associateWith(uastScanner, annotationScanners)
+        applicableAnnotations()?.associateWith(detector, annotationScanners)
       }
     }
 
@@ -188,7 +187,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
         client.runReadAction {
           for (v in allDetectors) {
             v.setContext(context)
-            v.detector.beforeCheckFile(context)
+            v.uastScanner.beforeCheckFile(context)
           }
         }
 
@@ -225,7 +224,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
         client.runReadAction {
           for (v in allDetectors) {
             ProgressManager.checkCanceled()
-            v.detector.afterCheckFile(context)
+            v.uastScanner.afterCheckFile(context)
           }
         }
       } finally {
@@ -313,14 +312,14 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
     }
   }
 
-  private class VisitingDetector(val detector: Detector, val uastScanner: SourceCodeScanner) {
+  private class VisitingDetector(val uastScanner: SourceCodeScanner) {
     private var mVisitor: UElementHandler? = null
     private var mContext: JavaContext? = null
 
     val visitor: UElementHandler
       get() {
         if (mVisitor == null) {
-          mVisitor = detector.createUastHandler(mContext!!)
+          mVisitor = uastScanner.createUastHandler(mContext!!)
           if (mVisitor == null) {
             mVisitor = UElementHandler.NONE
           }
