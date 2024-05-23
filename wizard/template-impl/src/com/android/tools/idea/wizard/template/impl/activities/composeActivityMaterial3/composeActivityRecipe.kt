@@ -18,9 +18,8 @@ package com.android.tools.idea.wizard.template.impl.activities.composeActivityMa
 
 import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.RecipeExecutor
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_BOM_VERSION
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_KOTLIN_COMPILER_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotlinDependencies
+import com.android.tools.idea.wizard.template.impl.activities.common.addComposeDependencies
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifest
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.res.values.themesXml
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.src.app_package.mainActivityKt
@@ -43,15 +42,8 @@ fun RecipeExecutor.composeActivityRecipe(
   addDependency(mavenCoordinate = "androidx.activity:activity-compose:+")
 
   // Add Compose dependencies, using the BOM to set versions
-  addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION")
-  addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION", "androidTestImplementation")
+  addComposeDependencies(moduleData)
 
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-graphics")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling", configuration = "debugImplementation")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-manifest", configuration="debugImplementation")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-junit4", configuration="androidTestImplementation")
   addDependency(mavenCoordinate = "androidx.compose.material3:material3")
 
   generateManifest(
@@ -80,8 +72,6 @@ fun RecipeExecutor.composeActivityRecipe(
 
   requireJavaVersion("1.8", true)
   setBuildFeature("compose", true)
-  // Note: kotlinCompilerVersion default is declared in TaskManager.COMPOSE_KOTLIN_COMPILER_VERSION
-  setComposeOptions(kotlinCompilerExtensionVersion = COMPOSE_KOTLIN_COMPILER_VERSION)
 
   open(srcOut.resolve("${activityClass}.kt"))
 }

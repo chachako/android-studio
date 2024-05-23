@@ -19,8 +19,8 @@ package com.android.tools.idea.wizard.template.impl.activities.composeWearActivi
 import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.RecipeExecutor
 import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_BOM_VERSION
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_KOTLIN_COMPILER_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotlinDependencies
+import com.android.tools.idea.wizard.template.impl.activities.common.addComposeDependencies
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifest
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.complication.complicationServiceKt
 import com.android.tools.idea.wizard.template.impl.activities.composeWearActivity.res.values.complicationStringsXml
@@ -46,14 +46,7 @@ private fun RecipeExecutor.commonComposeRecipe(
     addAllKotlinDependencies(moduleData)
 
     // Add Compose dependencies, using the BOM to set versions
-    addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$composeBomVersion")
-    addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$composeBomVersion", "androidTestImplementation")
-
-    addDependency(mavenCoordinate = "androidx.compose.ui:ui")
-    addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview")
-    addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling", configuration = "debugImplementation")
-    addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-manifest", configuration = "debugImplementation")
-    addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-junit4", configuration = "androidTestImplementation")
+    addComposeDependencies(moduleData, composeBomVersion)
 
     // Add Compose Wear dependencies; the Compose BOM doesn't include Wear.
     val wearComposeVersionVarName =
@@ -119,8 +112,6 @@ private fun RecipeExecutor.commonComposeRecipe(
 
     requireJavaVersion("1.8", true)
     setBuildFeature("compose", true)
-    // Note: kotlinCompilerVersion default is declared in TaskManager.COMPOSE_KOTLIN_COMPILER_VERSION
-    setComposeOptions(kotlinCompilerExtensionVersion = COMPOSE_KOTLIN_COMPILER_VERSION)
 }
 
 fun RecipeExecutor.composeWearActivityRecipe(

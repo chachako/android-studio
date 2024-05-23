@@ -18,8 +18,8 @@ package com.android.tools.idea.wizard.template.impl.activities.composeTvActivity
 import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.RecipeExecutor
 import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_BOM_VERSION
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_KOTLIN_COMPILER_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotlinDependencies
+import com.android.tools.idea.wizard.template.impl.activities.common.addComposeDependencies
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifestStrings
 import com.android.tools.idea.wizard.template.impl.activities.composeTvActivity.res.values.themesXml
 import com.android.tools.idea.wizard.template.impl.activities.composeTvActivity.src.app_package.mainActivityKt
@@ -44,13 +44,7 @@ fun RecipeExecutor.composeTvActivityRecipe(
   addDependency("androidx.appcompat:appcompat:+")
 
   // Add Compose dependencies, using the BOM to set versions
-  addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$composeBomVersion")
-  addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$composeBomVersion", "androidTestImplementation")
-
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling", configuration = "debugImplementation")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-manifest", configuration = "debugImplementation")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-junit4", configuration = "androidTestImplementation")
+  addComposeDependencies(moduleData, composeBomVersion)
 
   // Add Compose for TV dependencies; the Compose BOM does not include Compose for TV.
   addDependency(mavenCoordinate = "androidx.tv:tv-foundation:+")
@@ -90,7 +84,6 @@ fun RecipeExecutor.composeTvActivityRecipe(
 
   requireJavaVersion("1.8", true)
   setBuildFeature("compose", true)
-  setComposeOptions(kotlinCompilerExtensionVersion = COMPOSE_KOTLIN_COMPILER_VERSION)
 
   open(srcOut.resolve(mainActivity))
 }

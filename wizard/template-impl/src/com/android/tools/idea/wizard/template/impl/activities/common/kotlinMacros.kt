@@ -28,6 +28,19 @@ fun RecipeExecutor.addAllKotlinDependencies(data: ModuleTemplateData, revision: 
   }
 }
 
+fun RecipeExecutor.addComposeDependencies(data: ModuleTemplateData, composeBomVersion: String = COMPOSE_BOM_VERSION) {
+  applyPlugin("org.jetbrains.kotlin.plugin.compose", data.projectTemplateData.kotlinVersion)
+  addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$composeBomVersion")
+  addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$composeBomVersion", "androidTestImplementation")
+
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-graphics")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling", configuration = "debugImplementation")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-manifest", configuration="debugImplementation")
+  addDependency(mavenCoordinate = "androidx.compose.ui:ui-test-junit4", configuration="androidTestImplementation")
+}
+
 fun RecipeExecutor.addMaterialDependency(useAndroidX: Boolean) {
   if (useAndroidX) {
     // Material 2 dependencies are now pinned to 1.4.0

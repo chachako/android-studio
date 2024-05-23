@@ -17,9 +17,8 @@ package com.android.tools.idea.wizard.template.impl.activities.genAiActivity
 
 import com.android.tools.idea.wizard.template.ModuleTemplateData
 import com.android.tools.idea.wizard.template.RecipeExecutor
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_BOM_VERSION
-import com.android.tools.idea.wizard.template.impl.activities.common.COMPOSE_KOTLIN_COMPILER_VERSION
 import com.android.tools.idea.wizard.template.impl.activities.common.addAllKotlinDependencies
+import com.android.tools.idea.wizard.template.impl.activities.common.addComposeDependencies
 import com.android.tools.idea.wizard.template.impl.activities.common.addSecretsGradlePlugin
 import com.android.tools.idea.wizard.template.impl.activities.common.generateManifest
 import com.android.tools.idea.wizard.template.impl.activities.composeActivityMaterial3.res.values.themesXml
@@ -47,27 +46,8 @@ fun RecipeExecutor.genAiActivityRecipe(
   addDependency(mavenCoordinate = "androidx.activity:activity-compose:+")
 
   // Add Compose dependencies, using the BOM to set versions
-  addPlatformDependency(mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION")
-  addPlatformDependency(
-    mavenCoordinate = "androidx.compose:compose-bom:$COMPOSE_BOM_VERSION",
-    "androidTestImplementation"
-  )
+  addComposeDependencies(moduleData)
 
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui")
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-graphics")
-  addDependency(
-    mavenCoordinate = "androidx.compose.ui:ui-tooling",
-    configuration = "debugImplementation"
-  )
-  addDependency(mavenCoordinate = "androidx.compose.ui:ui-tooling-preview")
-  addDependency(
-    mavenCoordinate = "androidx.compose.ui:ui-test-manifest",
-    configuration = "debugImplementation"
-  )
-  addDependency(
-    mavenCoordinate = "androidx.compose.ui:ui-test-junit4",
-    configuration = "androidTestImplementation"
-  )
   addDependency(mavenCoordinate = "androidx.compose.material3:material3")
 
   addDependency(mavenCoordinate = "com.google.ai.client.generativeai:generativeai:0.2.2")
@@ -109,7 +89,6 @@ fun RecipeExecutor.genAiActivityRecipe(
   setBuildFeature("compose", true)
   // Required in Gradle 8+ for generating the BuildConfig class used by the secrets plugin
   setBuildFeature("buildConfig", true)
-  setComposeOptions(kotlinCompilerExtensionVersion = COMPOSE_KOTLIN_COMPILER_VERSION)
 
   open(srcOut.resolve("${activityClass}.kt"))
 }
