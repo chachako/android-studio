@@ -29,7 +29,6 @@ import com.android.io.StreamException;
 import com.android.prefs.AbstractAndroidLocations;
 import com.android.prefs.AndroidLocationsException;
 import com.android.repository.api.ConsoleProgressIndicator;
-import com.android.repository.api.LocalPackage;
 import com.android.repository.api.ProgressIndicator;
 import com.android.repository.io.FileOpUtils;
 import com.android.sdklib.AndroidTargetHash;
@@ -776,9 +775,7 @@ public class AvdManager {
      *     AvdManager.AvdInfo.getAvdFolder}.
      * @param avdName the name of the AVD
      * @param systemImage the system image of the AVD
-     * @param skinFolder the skin folder path to use, if specified. Can be null.
-     * @param skinName the name of the skin. Can be null. Must have been verified by caller. Can be
-     *     a size in the form "NNNxMMM" or a directory name matching skinFolder.
+     * @param skin the skin to use, if specified. Can be null.
      * @param sdcard the parameter value for the sdCard. Can be null. This is either a path to an
      *     existing sdcard image or a sdcard size (\d+, \d+K, \dM).
      * @param hardwareConfig the hardware setup for the AVD. Can be null to use defaults.
@@ -796,8 +793,7 @@ public class AvdManager {
             @NonNull Path avdFolder,
             @NonNull String avdName,
             @NonNull ISystemImage systemImage,
-            @Nullable Path skinFolder,
-            @Nullable String skinName,
+            @Nullable Skin skin,
             @Nullable SdCard sdcard,
             @Nullable Map<String, String> hardwareConfig,
             @Nullable Map<String, String> userSettings,
@@ -879,8 +875,6 @@ public class AvdManager {
             configValues.put(
                     AVD_INI_ARC, Boolean.toString(SystemImageTags.CHROMEOS_TAG.equals(tag)));
 
-            createAvdSkin(skinFolder, skinName, configValues);
-
             if (sdcard != null) {
                 configValues.putAll(sdcard.configEntries());
             }
@@ -895,7 +889,9 @@ public class AvdManager {
             // 3. The hardwareConfig argument (i.e. user-supplied settings)
             // 4. The system image CPU architecture
             addSystemImageHardwareConfig(systemImage, configValues);
-            addSkinHardwareConfig(skinFolder, configValues);
+            if (skin != null) {
+                addSkin(skin, configValues);
+            }
             if (hardwareConfig != null) {
                 configValues.putAll(hardwareConfig);
             }
@@ -1936,57 +1932,46 @@ public class AvdManager {
         }
     }
 
-    /**
-     * Links a skin with the new AVD
-     *
-     * @param skinFolder where the skin is
-     * @param skinName the name of the skin
-     * @param values settings for the AVD
-     */
-    private void createAvdSkin(
-            @Nullable Path skinFolder,
-            @Nullable String skinName,
-            @NonNull Map<String, String> values)
-            throws AvdMgrException {
+  /** Adds parameters for the given skin to the AVD config. */
+  private void addSkin(@NonNull Skin skin, @NonNull Map<String, String> values) throws AvdMgrException {
+    String skinName = skin.getName();
+    String skinPath;
 
-        // Now the skin.
-        String skinPath = null;
-
-        if (skinFolder == null && skinName != null &&
-                NUMERIC_SKIN_SIZE.matcher(skinName).matches()) {
-            // Numeric skin size. Set both skinPath and skinName to the same size.
-            skinPath = skinName;
-
-        } else if (skinFolder != null && skinName == null) {
-            // Skin folder is specified, but not skin name. Adjust it.
-            skinName = skinFolder.getFileName().toString();
+    if (skin instanceof OnDiskSkin) {
+        Path path = ((OnDiskSkin) skin).getPath();
+        if (CancellableFileIo.notExists(path)) {
+            mLog.warning("Skin '%1$s' does not exist at %2$s.", skinName, path);
+            throw new AvdMgrException();
         }
 
-        if (skinFolder != null) {
-            // skin does not exist!
-            if (CancellableFileIo.notExists(skinFolder)) {
-                mLog.warning("Skin '%1$s' does not exist at %2$s.", skinName, skinFolder);
-                throw new AvdMgrException();
-            }
+        // If the skin path is in the sdk, use the relative path
+        if (path.startsWith(mSdkHandler.getLocation())) {
+            skinPath = mSdkHandler.getLocation().relativize(path).toString();
+        } else {
+            skinPath = path.toString();
+        }
 
-            // if skinFolder is in the sdk, use the relative path
-            if (skinFolder.startsWith(mSdkHandler.getLocation())) {
-                skinPath = mSdkHandler.getLocation().relativize(skinFolder).toString();
-            } else {
-                // Skin isn't in the sdk. Just use the absolute path.
-                skinPath = skinFolder.toAbsolutePath().toString();
+        // If the skin contains a hardware.ini, add its contents to the AVD config.
+        PathFileWrapper skinHardwareFile = new PathFileWrapper(path.resolve(HARDWARE_INI));
+        if (skinHardwareFile.exists()) {
+            Map<String, String> skinHardwareConfig =
+                    ProjectProperties.parsePropertyFile(skinHardwareFile, mLog);
+
+            if (skinHardwareConfig != null) {
+                values.putAll(skinHardwareConfig);
             }
         }
-
-        // Set skin.name for display purposes in the AVD manager and
-        // set skin.path for use by the emulator.
-        if (skinName != null) {
-            values.put(AVD_INI_SKIN_NAME, skinName);
-        }
-        if (skinPath != null) {
-            values.put(AVD_INI_SKIN_PATH, skinPath);
-        }
+    } else if (skin instanceof GenericSkin) {
+        skinPath = skinName;
+    } else {
+        throw new IllegalArgumentException("Unknown skin type");
     }
+
+    // Set skin.name for display purposes in the AVD manager and
+    // set skin.path for use by the emulator.
+    values.put(AVD_INI_SKIN_NAME, skinName);
+    values.put(AVD_INI_SKIN_PATH, skinPath);
+  }
 
     /**
      * Creates an SD card for the AVD. Any existing card will be replaced with a new one, unless the
@@ -2070,30 +2055,6 @@ public class AvdManager {
 
             if (imageHardwardConfig != null) {
                 values.putAll(imageHardwardConfig);
-            }
-        }
-    }
-
-    /**
-     * Read the skin's hardware.ini into the provided Map.
-     *
-     * @param skinFolder where the skin is
-     * @param values mutable Map to add the values to
-     */
-    private void addSkinHardwareConfig(
-            @Nullable Path skinFolder, @Nullable Map<String, String> values) {
-
-        // get the hardware properties for this skin
-        if (skinFolder != null) {
-            PathFileWrapper skinHardwareFile =
-                    new PathFileWrapper(skinFolder.resolve(HARDWARE_INI));
-            if (skinHardwareFile.exists()) {
-                Map<String, String> skinHardwareConfig =
-                        ProjectProperties.parsePropertyFile(skinHardwareFile, mLog);
-
-                if (skinHardwareConfig != null) {
-                    values.putAll(skinHardwareConfig);
-                }
             }
         }
     }

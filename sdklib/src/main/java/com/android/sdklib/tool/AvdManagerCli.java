@@ -48,8 +48,10 @@ import com.android.sdklib.internal.avd.EmulatorPackage;
 import com.android.sdklib.internal.avd.EmulatorPackages;
 import com.android.sdklib.internal.avd.GpuMode;
 import com.android.sdklib.internal.avd.HardwareProperties;
+import com.android.sdklib.internal.avd.OnDiskSkin;
 import com.android.sdklib.internal.avd.SdCard;
 import com.android.sdklib.internal.avd.SdCards;
+import com.android.sdklib.internal.avd.Skin;
 import com.android.sdklib.repository.AndroidSdkHandler;
 import com.android.sdklib.repository.IdDisplay;
 import com.android.sdklib.repository.meta.DetailsTypes;
@@ -874,12 +876,14 @@ class AvdManagerCli extends CommandLineParser {
             }
             updateUninitializedDynamicParameters(hardwareConfig);
             String skinName = getParamSkin();
-            Path skinPath = null;
+            Skin skin = null;
             if (skinName != null) {
-                skinPath =
+                Path skinPath =
                         mSdkHandler.getLocation().resolve(SdkConstants.FD_SKINS).resolve(skinName);
                 if (Files.notExists(skinPath)) {
                     errorAndExit("Skin " + skinName + " not found at " + skinPath);
+                } else {
+                    skin = new OnDiskSkin(skinPath);
                 }
             }
 
@@ -892,8 +896,7 @@ class AvdManagerCli extends CommandLineParser {
                             avdFolder,
                             avdName,
                             img,
-                            skinPath,
-                            skinName,
+                            skin,
                             sdCard,
                             hardwareConfig,
                             null,

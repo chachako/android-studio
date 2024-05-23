@@ -163,7 +163,6 @@ class AvdManager(
                 systemImage,
                 null,
                 null,
-                null,
                 hardwareConfig,
                 null,
                 device.bootProps,
