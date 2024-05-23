@@ -5,8 +5,6 @@ LARGE_MACHINE_ALLOWLIST = [
     # These targets requires a large (min 16 GB) amount of memory to run.
     "@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark2000Memory",
     "@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__Benchmark2000Cpu",
-    "@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__BenchmarkMultiApp190Memory",
-    "@//tools/adt/idea/sync-memory-tests:intellij.android.sync-memory-tests_tests__BenchmarkMultiApp190Cpu",
 ]
 
 LARGE_MACHINE_FAILURE_MESSAGE = """'{}' is trying to use large machines.
