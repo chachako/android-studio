@@ -21,7 +21,7 @@ import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.TestDescriptor.Type
 import org.junit.platform.engine.support.descriptor.MethodSource
 
-internal class TestMethodTestDescriptor(uniqueId: UniqueId, val methodName: String, val className: String) :
+internal class TestMethodTestDescriptor(uniqueId: UniqueId, val methodName: String, val className: String, val previewName: String?) :
     AbstractTestDescriptor(uniqueId, methodName, MethodSource.from(className, methodName)) {
 
     override fun getType(): Type = Type.TEST

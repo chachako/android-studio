@@ -188,26 +188,26 @@ class ScreenshotTest {
                 import androidx.compose.runtime.Composable
 
                 class ExampleTest {
-                    @Preview(showBackground = true)
+                    @Preview(name = "simpleComposable", showBackground = true)
                     @Composable
                     fun simpleComposableTest() {
                         SimpleComposable()
                     }
 
-                    @Preview(widthDp = 800, heightDp = 800)
+                    @Preview(name = "simpleComposable", widthDp = 800, heightDp = 800)
                     @Composable
                     fun simpleComposableTest2() {
                         SimpleComposable()
                     }
 
-                    @Preview(showBackground = true)
-                    @Preview(showBackground = false)
+                    @Preview(name = "with_Background", showBackground = true)
+                    @Preview(name = "withoutBackground", showBackground = false)
                     @Composable
                     fun multiPreviewTest() {
                         SimpleComposable()
                     }
 
-                    @Preview
+                    @Preview(name = "simplePreviewParameterProvider")
                     @Composable
                     fun parameterProviderTest(
                         @PreviewParameter(SimplePreviewParameterProvider::class) data: String
@@ -223,6 +223,12 @@ class ScreenshotTest {
                     ) {
                        val stringToDisplay = data + " " + text
                        SimpleComposable(stringToDisplay)
+                    }
+
+                    @Preview(name = "invalid/File/Name")
+                    @Composable
+                    fun previewNameCannotBeUsedAsFileNameTest() {
+                        SimpleComposable()
                     }
                 }
 
@@ -263,17 +269,19 @@ class ScreenshotTest {
                   "methodFQN": "pkg.name.ExampleTest.multiPreviewTest",
                   "methodParams": [],
                   "previewParams": {
+                    "name": "with_Background",
                     "showBackground": "true"
                   },
-                  "imageName": "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee"
+                  "imageName": "pkg.name.ExampleTest.multiPreviewTest_with_Background_e1f26d19_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.multiPreviewTest",
                   "methodParams": [],
                   "previewParams": {
+                    "name": "withoutBackground",
                     "showBackground": "false"
                   },
-                  "imageName": "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee"
+                  "imageName": "pkg.name.ExampleTest.multiPreviewTest_withoutBackground_5676c0a6_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.multipleParameterProviderTest",
@@ -295,25 +303,37 @@ class ScreenshotTest {
                       "provider": "pkg.name.SimplePreviewParameterProvider"
                     }
                   ],
-                  "previewParams": {},
-                  "imageName": "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523"
+                  "previewParams": {
+                    "name": "simplePreviewParameterProvider"
+                  },
+                  "imageName": "pkg.name.ExampleTest.parameterProviderTest_simplePreviewParameterProvider_e3342a25_77e30523"
+                },
+                {
+                  "methodFQN": "pkg.name.ExampleTest.previewNameCannotBeUsedAsFileNameTest",
+                  "methodParams": [],
+                  "previewParams": {
+                    "name": "invalid/File/Name"
+                  },
+                  "imageName": "pkg.name.ExampleTest.previewNameCannotBeUsedAsFileNameTest_b249e5c1_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.simpleComposableTest2",
                   "methodParams": [],
                   "previewParams": {
                     "heightDp": "800",
+                    "name": "simpleComposable",
                     "widthDp": "800"
                   },
-                  "imageName": "pkg.name.ExampleTest.simpleComposableTest2_b55c4b0c_da39a3ee"
+                  "imageName": "pkg.name.ExampleTest.simpleComposableTest2_simpleComposable_05ad9183_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.simpleComposableTest",
                   "methodParams": [],
                   "previewParams": {
+                    "name": "simpleComposable",
                     "showBackground": "true"
                   },
-                  "imageName": "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee"
+                  "imageName": "pkg.name.ExampleTest.simpleComposableTest_simpleComposable_7759f1e3_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3",
@@ -335,14 +355,15 @@ class ScreenshotTest {
 
         val referenceScreenshotDir = appProject.projectDir.resolve("src/debug/screenshotTest/reference").toPath()
         assertThat(referenceScreenshotDir.listDirectoryEntries().map { it.name }).containsExactly(
-            "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee_0.png",
-            "pkg.name.ExampleTest.simpleComposableTest2_b55c4b0c_da39a3ee_0.png",
-            "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee_0.png",
-            "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee_0.png",
+            "pkg.name.ExampleTest.simpleComposableTest_simpleComposable_7759f1e3_da39a3ee_0.png",
+            "pkg.name.ExampleTest.simpleComposableTest2_simpleComposable_05ad9183_da39a3ee_0.png",
+            "pkg.name.ExampleTest.multiPreviewTest_with_Background_e1f26d19_da39a3ee_0.png",
+            "pkg.name.ExampleTest.multiPreviewTest_withoutBackground_5676c0a6_da39a3ee_0.png",
             "pkg.name.ExampleTest.multipleParameterProviderTest_da39a3ee_b3bbe100_1.png",
             "pkg.name.ExampleTest.multipleParameterProviderTest_da39a3ee_b3bbe100_0.png",
-            "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_0.png",
-            "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_1.png",
+            "pkg.name.ExampleTest.parameterProviderTest_simplePreviewParameterProvider_e3342a25_77e30523_1.png",
+            "pkg.name.ExampleTest.parameterProviderTest_simplePreviewParameterProvider_e3342a25_77e30523_0.png",
+            "pkg.name.ExampleTest.previewNameCannotBeUsedAsFileNameTest_b249e5c1_da39a3ee_0.png",
             "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee_0.png"
         )
 
@@ -357,16 +378,17 @@ class ScreenshotTest {
         assertThat(indexHtmlReport).exists()
         assertThat(classHtmlReport).exists()
         val expectedOutput = listOf(
-            """<h3 class="success">simpleComposableTest</h3>""",
-            """<h3 class="success">simpleComposableTest2</h3>""",
-            """<h3 class="success">multiPreviewTest_{showBackground=true}</h3>""",
-            """<h3 class="success">multiPreviewTest_{showBackground=false}</h3>""",
+            """<h3 class="success">simpleComposableTest_simpleComposable</h3>""",
+            """<h3 class="success">simpleComposableTest2_simpleComposable</h3>""",
+            """<h3 class="success">multiPreviewTest_with_Background_{showBackground=true}</h3>""",
+            """<h3 class="success">multiPreviewTest_withoutBackground_{showBackground=false}</h3>""",
             """<h3 class="success">multipleParameterProviderTest_[{provider=pkg.name.AnotherPreviewParameterProvider},""",
             """{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
             """<h3 class="success">multipleParameterProviderTest_[{provider=pkg.name.AnotherPreviewParameterProvider},""",
             """{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>""",
-            """<h3 class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
-            """<h3 class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>"""
+            """<h3 class="success">previewNameCannotBeUsedAsFileNameTest_invalid/File/Name</h3>""",
+            """<h3 class="success">parameterProviderTest_simplePreviewParameterProvider_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
+            """<h3 class="success">parameterProviderTest_simplePreviewParameterProvider_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>"""
         )
         var classHtmlReportText = classHtmlReport.readText()
         expectedOutput.forEach { assertThat(classHtmlReportText).contains(it) }
@@ -390,16 +412,17 @@ class ScreenshotTest {
         assertThat(classHtmlReport).exists()
         val expectedOutputAfterChangingPreviews = listOf(
             "Failed tests",
-            """<h3 class="failures">simpleComposableTest</h3>""",
-            """<h3 class="failures">simpleComposableTest2</h3>""",
-            """<h3 class="failures">multiPreviewTest_{showBackground=true}</h3>""",
-            """<h3 class="failures">multiPreviewTest_{showBackground=false}</h3>""",
+            """<h3 class="failures">simpleComposableTest_simpleComposable</h3>""",
+            """<h3 class="failures">simpleComposableTest2_simpleComposable</h3>""",
+            """<h3 class="failures">multiPreviewTest_with_Background_{showBackground=true}</h3>""",
+            """<h3 class="failures">multiPreviewTest_withoutBackground_{showBackground=false}</h3>""",
             """<h3 class="success">multipleParameterProviderTest_[{provider=pkg.name.AnotherPreviewParameterProvider},""",
             """{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
             """<h3 class="success">multipleParameterProviderTest_[{provider=pkg.name.AnotherPreviewParameterProvider},""",
             """{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>""",
-            """<h3 class="failures">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
-            """<h3 class="success">parameterProviderTest_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>"""
+            """<h3 class="failures">previewNameCannotBeUsedAsFileNameTest_invalid/File/Name</h3>""",
+            """<h3 class="failures">parameterProviderTest_simplePreviewParameterProvider_[{provider=pkg.name.SimplePreviewParameterProvider}]_0</h3>""",
+            """<h3 class="success">parameterProviderTest_simplePreviewParameterProvider_[{provider=pkg.name.SimplePreviewParameterProvider}]_1</h3>"""
         )
         classHtmlReportText = classHtmlReport.readText()
         expectedOutputAfterChangingPreviews.forEach { assertThat(classHtmlReportText).contains(it) }
@@ -408,11 +431,12 @@ class ScreenshotTest {
 
         assertThat(diffDir).exists()
         assertThat(diffDir.listDirectoryEntries().map { it.name }).containsExactly(
-            "pkg.name.ExampleTest.simpleComposableTest_3d8b4969_da39a3ee_0.png",
-            "pkg.name.ExampleTest.simpleComposableTest2_b55c4b0c_da39a3ee_0.png",
-            "pkg.name.ExampleTest.multiPreviewTest_3d8b4969_da39a3ee_0.png",
-            "pkg.name.ExampleTest.multiPreviewTest_a45d2556_da39a3ee_0.png",
-            "pkg.name.ExampleTest.parameterProviderTest_da39a3ee_77e30523_0.png",
+            "pkg.name.ExampleTest.simpleComposableTest_simpleComposable_7759f1e3_da39a3ee_0.png",
+            "pkg.name.ExampleTest.simpleComposableTest2_simpleComposable_05ad9183_da39a3ee_0.png",
+            "pkg.name.ExampleTest.multiPreviewTest_with_Background_e1f26d19_da39a3ee_0.png",
+            "pkg.name.ExampleTest.multiPreviewTest_withoutBackground_5676c0a6_da39a3ee_0.png",
+            "pkg.name.ExampleTest.parameterProviderTest_simplePreviewParameterProvider_e3342a25_77e30523_0.png",
+            "pkg.name.ExampleTest.previewNameCannotBeUsedAsFileNameTest_b249e5c1_da39a3ee_0.png",
             "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee_0.png"
         )
     }

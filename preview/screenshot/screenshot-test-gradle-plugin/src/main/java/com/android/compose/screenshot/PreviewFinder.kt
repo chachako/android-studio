@@ -35,6 +35,10 @@ import java.security.MessageDigest
 import org.objectweb.asm.Type
 import java.util.SortedMap
 import java.util.jar.JarFile
+import java.util.logging.Level
+import java.util.logging.Logger
+
+private val logger = Logger.getLogger("PreviewFinder")
 
 fun configureInput (
     classPath: List<String>,
@@ -194,6 +198,21 @@ fun sortListOfSortedMaps(listToSort: List<SortedMap<String, String>>): List<Sort
 }
 
 private fun calcImageName(method: MethodRepresentation, annotation: BaseAnnotationRepresentation): String {
+    var imageName = method.methodFqn
+    if (annotation.parameters.containsKey("name")) {
+        val previewName = annotation.parameters["name"].toString()
+        val invalidCharacters = Regex("""[\u0000-\u001F\\/:*?"<>|]+""")
+        if (invalidCharacters.containsMatchIn(previewName)) {
+            logger.log(
+                Level.WARNING,
+                "Preview name $previewName contains characters that are not valid in file " +
+                        "names. It will be included in the test name in the HTML test report but " +
+                        "ignored in image file names for screenshot test results."
+            )
+        } else {
+            imageName += "_${previewName}"
+        }
+    }
     val digest = MessageDigest.getInstance("SHA-1")
     annotation.parameters.keys.sorted().forEach {
         digest.update(it.toByteArray(StandardCharsets.UTF_8))
@@ -207,5 +226,5 @@ private fun calcImageName(method: MethodRepresentation, annotation: BaseAnnotati
         }
     }
     val methodParamHash = calcHexString(digest.digest())
-    return "${method.methodFqn}_${previewSettingsHash}_$methodParamHash"
+    return "${imageName}_${previewSettingsHash}_$methodParamHash"
 }
