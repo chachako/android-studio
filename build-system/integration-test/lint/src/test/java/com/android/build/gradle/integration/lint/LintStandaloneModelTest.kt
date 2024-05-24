@@ -27,11 +27,21 @@ import org.junit.Test
 
 class LintStandaloneModelTest {
 
+    private val javaToolchain = """
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(17)
+            }
+        }
+    """.trimIndent()
+
     private val javaLib1 =
         MinimalSubProject.javaLibrary()
             .appendToBuild(
                 """
                     apply plugin: 'com.android.lint'
+
+                    $javaToolchain
 
                     dependencies {
                         compileOnly 'com.google.guava:guava:19.0'
@@ -41,8 +51,8 @@ class LintStandaloneModelTest {
                 """.trimIndent()
             )
 
-    private val javaLib2 = MinimalSubProject.javaLibrary()
-    private val javaLib3 = MinimalSubProject.javaLibrary()
+    private val javaLib2 = MinimalSubProject.javaLibrary().appendToBuild(javaToolchain)
+    private val javaLib3 = MinimalSubProject.javaLibrary().appendToBuild(javaToolchain)
 
     @get:Rule
     val project: GradleTestProject =
