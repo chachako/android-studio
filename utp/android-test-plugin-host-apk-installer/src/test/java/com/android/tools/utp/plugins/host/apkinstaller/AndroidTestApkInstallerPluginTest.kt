@@ -134,7 +134,6 @@ class AndroidTestApkInstallerPluginTest {
         private val fixtureId1 = createTestFixtureId("1")
         private val testApkPaths = listOf("base.apk", "feature.apk")
         private val additionalInstallOptions = listOf("-unit", "-test")
-        private val apkPackageNames = listOf("com.test.base", "com.test.test")
         private val mockDeviceApiLevel = "21"
         private val mockDeviceSerial = "mock-4445"
         private val installTimeout = 1
@@ -584,63 +583,29 @@ class AndroidTestApkInstallerPluginTest {
 
     @Test
     fun uninstallSuccessTest() {
-        apkPackageNames.forEach {
-            `when`(mockDeviceController.uninstall(it)).thenReturn(CommandResult(0, listOf("test")))
-        }
         `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
-        createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
-            addApksToInstallBuilder().apply {
-                uninstallAfterTest = true
-                addAllApksPackageName(apkPackageNames)
-            }.build()
-        }.build(), testArtifactsPath).apply {
-            afterAll(TestSuiteResultProto.TestSuiteResult.getDefaultInstance(),
-                    mockDeviceController)
-        }
-        apkPackageNames.forEach {
-            verify(mockLogger).info("Uninstalling $it for " +
-                    "device $mockDeviceSerial.")
-            verify(mockDeviceController).uninstall(it)
-        }
-    }
-    @Test
-    fun uninstallFailTest() {
-        val uninstallFailOutput = listOf("test")
-        `when`(mockDeviceController.getDevice().serial).thenReturn(mockDeviceSerial)
-        apkPackageNames.forEach {
-            `when`(mockDeviceController.uninstall(it)).thenReturn(CommandResult(1, uninstallFailOutput))
-        }
-        createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
-            addApksToInstallBuilder().apply {
-                uninstallAfterTest = true
-                addAllApksPackageName(apkPackageNames)
-            }.build()
-        }.build(), testArtifactsPath).apply {
-            afterAll(TestSuiteResultProto.TestSuiteResult.getDefaultInstance(),
-                    mockDeviceController)
-        }
-        apkPackageNames.forEach {
-            verify(mockLogger).info("Uninstalling $it for " +
-                    "device $mockDeviceSerial.")
-            verify(mockLogger).warning("Device $mockDeviceSerial " +
-                    "failed to uninstall test APK $it.\n${uninstallFailOutput}")
-        }
-    }
-
-    @Test
-    fun noUninstallTest() {
-        createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
-            addApksToInstallBuilder().apply {
-                addAllApksPackageName(apkPackageNames)
-            }.build()
-        }.build()).apply {
-            afterAll(TestSuiteResultProto.TestSuiteResult.getDefaultInstance(),
-                    mockDeviceController)
+        `when`(mockSubprocessComponent.subprocess().executeAsync(
+            eq(listOf("/Android/Sdk/aapt", "dump", "badging", "base.apk")),
+            anyMap(),
+            any(),
+            eq(null),
+        )).then {
+            it.getArgument<(String)->Unit>(2)(
+                "package: name='com.example.myapplication'")
+            mock<Handle>()
         }
 
-        apkPackageNames.forEach {
-            verify(mockDeviceController, never()).uninstall(it)
-        }
+        val plugin = createPlugin(AndroidApkInstallerConfig.newBuilder().apply {
+            addApksToInstallBuilder().apply {
+                uninstallAfterTest = true
+                addApkPaths("base.apk")
+            }.build()
+        }.build(), testArtifactsPath)
+
+        plugin.afterAll(TestSuiteResultProto.TestSuiteResult.getDefaultInstance(),
+            mockDeviceController)
+
+        verify(mockDeviceController).uninstall("com.example.myapplication")
     }
 
     @Test

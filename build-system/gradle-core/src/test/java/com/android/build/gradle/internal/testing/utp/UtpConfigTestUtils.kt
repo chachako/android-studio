@@ -278,8 +278,6 @@ fun assertRunnerConfigProto(
                   $forceCompilationString
                 }
                 $uninstallAfterTest
-                apks_package_name: "com.example.application"
-                apks_package_name: "com.example.application.test"
                 $forceReinstallBeforeTest
               }
               apks_to_install {

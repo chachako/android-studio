@@ -19,13 +19,15 @@ package com.android.build.gradle.integration.connected.application
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
 import com.android.build.gradle.integration.connected.utils.getEmulator
 import com.android.build.gradle.integration.utp.UtpTestBase
+import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject.assertThat
-import java.io.IOException
+import com.android.tools.perflogger.Benchmark
 import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Test
-import com.android.tools.perflogger.Benchmark;
+import java.io.IOException
+
 /**
  * Connected tests using UTP test executor.
  */
@@ -36,17 +38,19 @@ class UtpConnectedTest : UtpTestBase() {
         @ClassRule
         @JvmField
         val EMULATOR = getEmulator()
+        private const val DEVICE_NAME = "emulator-5554 - 13"
 
-        private const val TEST_RESULT_XML = "build/outputs/androidTest-results/connected/debug/TEST-emulator-5554 - 13-_"
-        private const val LOGCAT = "build/outputs/androidTest-results/connected/debug/emulator-5554 - 13/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
-        private const val LOGCAT_FOR_DYNAMIC_FEATURE = "build/outputs/androidTest-results/connected/debug/emulator-5554 - 13/logcat-com.example.android.kotlin.feature.ExampleInstrumentedTest-useAppContext.txt"
+        private const val TEST_RESULT_XML = "build/outputs/androidTest-results/connected/debug/TEST-$DEVICE_NAME-_"
+        private const val LOGCAT = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/logcat-com.example.android.kotlin.ExampleInstrumentedTest-useAppContext.txt"
+        private const val LOGCAT_FOR_DYNAMIC_FEATURE = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/logcat-com.example.android.kotlin.feature.ExampleInstrumentedTest-useAppContext.txt"
         private const val TEST_REPORT = "build/reports/androidTests/connected/debug/com.example.android.kotlin.html"
         private const val TEST_REPORT_FOR_DYNAMIC_FEATURE = "build/reports/androidTests/connected/debug/com.example.android.kotlin.feature.html"
-        private const val TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/emulator-5554 - 13/test-result.pb"
+        private const val TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/test-result.pb"
+        private const val UTP_LOG = "build/outputs/androidTest-results/connected/debug/$DEVICE_NAME/utp.0.log"
         private const val AGGREGATED_TEST_RESULT_PB = "build/outputs/androidTest-results/connected/debug/test-result.pb"
         private const val TEST_COV_XML = "build/reports/coverage/androidTest/debug/connected/report.xml"
         private const val ENABLE_UTP_TEST_REPORT_PROPERTY = "com.android.tools.utp.GradleAndroidProjectResolverExtension.enable"
-        private const val TEST_ADDITIONAL_OUTPUT = "build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/emulator-5554 - 13"
+        private const val TEST_ADDITIONAL_OUTPUT = "build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/$DEVICE_NAME"
     }
 
     @Before
@@ -79,18 +83,18 @@ class UtpConnectedTest : UtpTestBase() {
     @Throws(Exception::class)
     fun connectedAndroidTestWithUtpTestResultListener() {
         val benchmark: Benchmark = Benchmark.Builder("connectedAndroidTestWithUtpTestResultListener").setProject("Android Studio Gradle").build()
-        val startTime: Long = java.lang.System.currentTimeMillis()
+        val startTime: Long = System.currentTimeMillis()
         selectModule("app", false)
         val initScriptPath = TestUtils.resolveWorkspacePath(
                 "tools/adt/idea/utp/addGradleAndroidTestListener.gradle")
 
-        var testExecutionStartTime: Long = java.lang.System.currentTimeMillis()
+        var testExecutionStartTime: Long = System.currentTimeMillis()
         val result = project.executor()
                 .withArgument("--init-script")
                 .withArgument(initScriptPath.toString())
                 .withArgument("-P${ENABLE_UTP_TEST_REPORT_PROPERTY}=true")
                 .run(testTaskName)
-        var testExecutionTime = java.lang.System.currentTimeMillis() - testExecutionStartTime
+        var testExecutionTime = System.currentTimeMillis() - testExecutionStartTime
         connectedAndroidTestWithUtpBenchmark.log("connectedAndroidTestWithUtpTestResultListenerExecution_time", testExecutionTime)
 
         result.stdout.use {
@@ -107,13 +111,13 @@ class UtpConnectedTest : UtpTestBase() {
         assertThat(project.file(testReportPath)).doesNotExist()
         assertThat(project.file(testResultPbPath)).doesNotExist()
 
-        testExecutionStartTime = java.lang.System.currentTimeMillis()
+        testExecutionStartTime = System.currentTimeMillis()
         val resultWithConfigCache = project.executor()
                 .withArgument("--init-script")
                 .withArgument(initScriptPath.toString())
                 .withArgument("-P${ENABLE_UTP_TEST_REPORT_PROPERTY}=true")
                 .run(testTaskName)
-        testExecutionTime = java.lang.System.currentTimeMillis() - testExecutionStartTime
+        testExecutionTime = System.currentTimeMillis() - testExecutionStartTime
         connectedAndroidTestWithUtpBenchmark.log("connectedAndroidTestWithUtpTestResultListenerWithConfigCacheExecution_time", testExecutionTime)
 
         resultWithConfigCache.stdout.use {
@@ -122,7 +126,7 @@ class UtpConnectedTest : UtpTestBase() {
         }
         assertThat(project.file(testReportPath)).exists()
         assertThat(project.file(testResultPbPath)).exists()
-        val timeTaken = java.lang.System.currentTimeMillis() - startTime
+        val timeTaken = System.currentTimeMillis() - startTime
         benchmark.log("connectedAndroidTestWithUtpTestResultListener_time", timeTaken)
     }
 
@@ -130,17 +134,17 @@ class UtpConnectedTest : UtpTestBase() {
     @Throws(Exception::class)
     fun connectedAndroidTestWithUtpTestResultListenerAndTestReportingDisabled() {
         val benchmark: Benchmark = Benchmark.Builder("connectedAndroidTestWithUtpTestResultListenerAndTestReportingDisabled").setProject("Android Studio Gradle").build()
-        val startTime: Long = java.lang.System.currentTimeMillis()
+        val startTime: Long = System.currentTimeMillis()
         selectModule("app", false)
         val initScriptPath = TestUtils.resolveWorkspacePath(
                 "tools/adt/idea/utp/addGradleAndroidTestListener.gradle")
 
-        val testExecutionStartTime: Long = java.lang.System.currentTimeMillis()
+        val testExecutionStartTime: Long = System.currentTimeMillis()
         val result = project.executor()
                 .withArgument("--init-script")
                 .withArgument(initScriptPath.toString())
                 .run(testTaskName)
-        val testExecutionTime = java.lang.System.currentTimeMillis() - testExecutionStartTime
+        val testExecutionTime = System.currentTimeMillis() - testExecutionStartTime
         connectedAndroidTestWithUtpBenchmark.log("connectedAndroidTestWithUtpTestResultListenerAndTestReportingDisabledExecution_time", testExecutionTime)
 
         result.stdout.use {
@@ -149,7 +153,25 @@ class UtpConnectedTest : UtpTestBase() {
         }
         assertThat(project.file(testReportPath)).exists()
         assertThat(project.file(testResultPbPath)).exists()
-        val timeTaken = java.lang.System.currentTimeMillis() - startTime
+        val timeTaken = System.currentTimeMillis() - startTime
         benchmark.log("connectedAndroidTestWithUtpTestResultListenerAndTestReportingDisabled_time", timeTaken)
+    }
+
+    @Test
+    fun connectedAndroidTestShouldUninstallAppsAfterTest() {
+        selectModule("library", isDynamicFeature = false)
+
+        project.executor().run(testTaskName)
+
+        val utpLogFile = project.file("library/$UTP_LOG")
+        assertThat(utpLogFile).exists()
+        assertThat(utpLogFile).contains("Uninstalling com.example.android.kotlin.library.test")
+
+        project.executor()
+            .with(BooleanOption.ANDROID_TEST_LEAVE_APKS_INSTALLED_AFTER_RUN, true)
+            .run(testTaskName)
+
+        assertThat(utpLogFile).exists()
+        assertThat(utpLogFile).doesNotContain("Uninstalling com.example.android.kotlin.library.test")
     }
 }

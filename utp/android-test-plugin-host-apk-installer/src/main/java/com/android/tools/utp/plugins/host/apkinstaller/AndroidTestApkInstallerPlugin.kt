@@ -171,11 +171,13 @@ class AndroidTestApkInstallerPlugin(
 
     override fun configure(context: Context) {
         val config = context.config
-        this.pluginConfig = config.parseConfig() ?: AndroidApkInstallerConfig.getDefaultInstance()
+        pluginConfig = config.parseConfig() ?: AndroidApkInstallerConfig.getDefaultInstance()
         installables = config.setup.installables
 
         subprocessComponent = subprocessComponentFactory(context)
         aaptPath = config.androidSdk.aaptPath
+
+        logger.info("Configuring AndroidTestApkInstallerPlugin: $pluginConfig")
     }
 
     private fun apkInstallErrorMessage(
@@ -349,14 +351,15 @@ class AndroidTestApkInstallerPlugin(
     ) {
         pluginConfig.apksToInstallList.forEach { installableApk ->
             if (installableApk.uninstallAfterTest) {
-                installableApk.apksPackageNameList.forEach { apkPackage ->
+                installableApk.apkPathsList.forEach { apkPath ->
+                    val apkPackage = getPackageNameFromApk(apkPath) ?: return@forEach
                     logger.info("Uninstalling $apkPackage for " +
-                            "device ${deviceController.getDevice().serial}.")
+                        "device ${deviceController.getDevice().serial}.")
                     deviceController.uninstall(apkPackage).let { result ->
                         // Status code 0 signifies success
                         if (result.statusCode != 0) {
                             logger.warning("Device ${deviceController.getDevice().serial} " +
-                                    "failed to uninstall test APK $apkPackage.\n${result.output}")
+                                "failed to uninstall test APK $apkPackage.\n${result.output}")
                         }
                     }
                 }
