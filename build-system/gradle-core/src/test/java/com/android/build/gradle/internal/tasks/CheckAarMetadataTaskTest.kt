@@ -92,6 +92,7 @@ class CheckAarMetadataTaskTest {
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
         task.projectPath.set(":app")
         task.coreLibraryDesugaringEnabled.set(true)
+        task.checkCoreLibraryDesugaring.set(true)
         task.taskAction()
     }
 
@@ -123,6 +124,7 @@ class CheckAarMetadataTaskTest {
         task.disableCompileSdkChecks.set(false)
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
@@ -167,6 +169,7 @@ class CheckAarMetadataTaskTest {
         task.disableCompileSdkChecks.set(false)
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
@@ -211,6 +214,7 @@ class CheckAarMetadataTaskTest {
         task.agpVersion.set("7.2.0")
         task.maxRecommendedStableCompileSdkVersionForThisAgp.set(30)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
@@ -267,6 +271,7 @@ class CheckAarMetadataTaskTest {
         task.agpVersion.set("7.2.0")
         task.maxRecommendedStableCompileSdkVersionForThisAgp.set(30)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
@@ -325,6 +330,7 @@ class CheckAarMetadataTaskTest {
         task.agpVersion.set("7.2.0")
         task.maxRecommendedStableCompileSdkVersionForThisAgp.set(30)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
@@ -382,6 +388,7 @@ class CheckAarMetadataTaskTest {
         task.platformSdkApiLevel.set(47)
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.projectPath.set(":app")
         task.taskAction()
     }
@@ -413,6 +420,7 @@ class CheckAarMetadataTaskTest {
         task.disableCompileSdkChecks.set(false)
         task.agpVersion.set("3.0.0-beta1")
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.projectPath.set(":app")
         try {
             task.taskAction()
@@ -457,6 +465,7 @@ class CheckAarMetadataTaskTest {
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
         task.projectPath.set(":app")
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.taskAction()
     }
 
@@ -487,6 +496,7 @@ class CheckAarMetadataTaskTest {
         task.compileSdkVersion.set("android-28")
         task.disableCompileSdkChecks.set(false)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.agpVersion.set("7.2.0")
         task.projectPath.set(":app")
         try {
@@ -536,6 +546,7 @@ class CheckAarMetadataTaskTest {
         task.compileSdkVersion.set("android-28-ext1")
         task.disableCompileSdkChecks.set(false)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.agpVersion.set("3.0.0")
         task.projectPath.set(":app")
         task.taskAction()
@@ -567,6 +578,7 @@ class CheckAarMetadataTaskTest {
         task.compileSdkVersion.set("android-28")
         task.disableCompileSdkChecks.set(false)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.platformSdkExtension.set(1)
         task.agpVersion.set("3.0.0")
         task.projectPath.set(":app")
@@ -599,6 +611,7 @@ class CheckAarMetadataTaskTest {
         task.compileSdkVersion.set("android-28")
         task.disableCompileSdkChecks.set(false)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.agpVersion.set("3.0.0")
         task.projectPath.set(":app")
         try {
@@ -645,6 +658,7 @@ class CheckAarMetadataTaskTest {
         task.compileSdkVersion.set("android-27")
         task.disableCompileSdkChecks.set(false)
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         task.agpVersion.set("3.0.0-beta1")
         task.projectPath.set(":app")
         task.maxRecommendedStableCompileSdkVersionForThisAgp.set(30)
@@ -716,6 +730,7 @@ class CheckAarMetadataTaskTest {
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
         task.projectPath.set(":app")
         task.coreLibraryDesugaringEnabled.set(false)
+        task.checkCoreLibraryDesugaring.set(false)
         try {
             task.taskAction()
         } catch (e: RuntimeException) {
@@ -760,6 +775,7 @@ class CheckAarMetadataTaskTest {
         task.agpVersion.set(Version.ANDROID_GRADLE_PLUGIN_VERSION)
         task.projectPath.set(":app")
         task.coreLibraryDesugaringEnabled.set(true)
+        task.checkCoreLibraryDesugaring.set(true)
         task.desugarJdkLibDependencyGraph.set(
             FakeResolvedComponentResult(
                 dependencies = mutableSetOf(FakeResolvedDependencyResult(

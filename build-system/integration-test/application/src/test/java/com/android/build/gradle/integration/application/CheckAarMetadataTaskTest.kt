@@ -620,6 +620,60 @@ class CheckAarMetadataTaskTest {
         )
     }
 
+    @Test
+    fun testCheckingCoreLibraryDesugaringForLibraryConsumer() {
+        project.executor().run("clean")
+        addAarWithPossiblyInvalidAarMetadataToAppProject(
+            aarFormatVersion = AarMetadataTask.AAR_FORMAT_VERSION,
+            aarMetadataVersion = AarMetadataTask.AAR_METADATA_VERSION,
+            coreLibraryDesugaringEnabled = "true",
+        )
+        // convert the app module to be a library module which consumes the lib aar
+        TestFileUtils.searchAndReplace(
+            project.getSubproject("app").buildFile,
+            "com.android.application",
+            "com.android.library"
+        )
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                android {
+                    testOptions {
+                        unitTests {
+                            setIncludeAndroidResources(true) // used for unit test
+                        }
+                    }
+                }
+            """.trimIndent()
+        )
+        TestFileUtils.searchAndReplace(
+            project.settingsFile,
+            ":app",
+            ":lib2"
+        )
+        TestFileUtils.appendToFile(
+            project.settingsFile,
+            "project(':lib2').projectDir = file('app')"
+        )
+        // Unit test is exempted from having core library desugaring enabled, regression test for
+        // b/341002194
+        project.executor().run(":lib2:checkDebugUnitTestAarMetadata")
+        // Android test is enforced to have core library desugaring enabled
+        val result = project.executor().expectFailure().run(
+            ":lib2:checkDebugAndroidTestAarMetadata")
+        ScannerSubject.assertThat(result.stderr).contains(
+            """
+                An issue was found when checking AAR metadata:
+
+                  1.  Dependency 'library.aar' requires core library desugaring to be enabled
+                      for :lib2.
+
+                      See https://developer.android.com/studio/write/java8-support.html for more
+                      details.
+            """.trimIndent()
+        )
+    }
+
     private fun addAarWithPossiblyInvalidAarMetadataToAppProject(
         aarFormatVersion: String?,
         aarMetadataVersion: String?,
