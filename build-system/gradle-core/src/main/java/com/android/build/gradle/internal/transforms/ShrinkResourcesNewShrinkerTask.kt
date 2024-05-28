@@ -128,23 +128,12 @@ abstract class ShrinkResourcesNewShrinkerTask : NonIncrementalTask() {
 
             parameters.usePreciseShrinking.set(usePreciseShrinking)
 
-            parameters.outputFile.set(
-                File(
-                    directory.asFile,
-                    outputsHandler.get().getOutputNameForSplit(
-                        prefix = "resources",
-                        suffix = "stripped.ap_",
-                        outputType = builtArtifact.outputType,
-                        filters = builtArtifact.filters
-                    )
-                )
-            )
             parameters.shrunkProtoFile.set(
                 File(
                     directory.asFile,
                     outputsHandler.get().getOutputNameForSplit(
-                        prefix = "resources",
-                        suffix = "proto-stripped.ap_",
+                        prefix = "shrunk-resources",
+                        suffix = "proto-format.ap_",
                         outputType = builtArtifact.outputType,
                         filters = builtArtifact.filters
                     )
@@ -160,8 +149,8 @@ abstract class ShrinkResourcesNewShrinkerTask : NonIncrementalTask() {
                     File(
                         directory.asFile,
                         outputsHandler.get().getOutputNameForSplit(
-                            prefix = "original",
-                            suffix = "proto.ap_",
+                            prefix = "original-resources",
+                            suffix = "proto-format.ap_",
                             outputType = builtArtifact.outputType,
                             filters = builtArtifact.filters
                         )
@@ -182,7 +171,7 @@ abstract class ShrinkResourcesNewShrinkerTask : NonIncrementalTask() {
 
             parameters.aapt2ServiceKey.set(aapt.registerAaptService())
 
-            parameters.outputFile.get().asFile
+            return@submit parameters.shrunkProtoFile.get().asFile
         }
     }
 
@@ -204,7 +193,7 @@ abstract class ShrinkResourcesNewShrinkerTask : NonIncrementalTask() {
                 )
                 .toTransformMany(
                     InternalArtifactType.PROCESSED_RES,
-                    InternalArtifactType.SHRUNK_PROCESSED_RES
+                    InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT
                 )
         }
 
@@ -255,7 +244,6 @@ abstract class ShrinkProtoResourcesParams : DecoratedWorkParameters {
     abstract val usePreciseShrinking: Property<Boolean>
     abstract val requiresInitialConversionToProto: Property<Boolean>
 
-    abstract val outputFile: RegularFileProperty
     abstract val shrunkProtoFile: RegularFileProperty
 
     abstract val originalProtoFile: RegularFileProperty
@@ -283,9 +271,6 @@ abstract class ShrinkProtoResourcesAction @Inject constructor() :
         val originalFile = parameters.originalFile.get().asFile
         val originalProtoFile = parameters.originalProtoFile.get().asFile
         val shrunkProtoFile = parameters.shrunkProtoFile.get().asFile
-        val shrunkFile = parameters.outputFile.get().asFile
-
-        FileUtils.mkdirs(shrunkFile.parentFile)
 
         if (parameters.requiresInitialConversionToProto.get()) {
             getAaptDaemon(aapt2ServiceKey).use {
@@ -343,36 +328,13 @@ abstract class ShrinkProtoResourcesAction @Inject constructor() :
                     LinkedResourcesFormat.PROTO
                 )
 
-                // There is no need to convert file back because resource shrinker was unable to
-                // decrease resources size and we can just use original.
-                if (shrunkProtoFile.length() < originalProtoFile.length()) {
-                    getAaptDaemon(aapt2ServiceKey).use {
-                        it.convert(
-                            AaptConvertConfig(
-                                inputFile = shrunkProtoFile,
-                                outputFile = shrunkFile,
-                                convertToProtos = false
-                            ),
-                            LoggerWrapper(logger)
-                        )
-                    }
-
-                    // After our processing we received file which is bigger than original -
-                    // rollback to original one.
-                    if (originalFile.length() < shrunkFile.length()) {
-                        Files.copy(originalFile, shrunkFile)
-                    }
-                } else {
-                    Files.copy(originalFile, shrunkFile)
-                }
-
                 // Dump some stats
                 if (shrinker.unusedResourceCount > 0) {
-                    val before = originalFile.length()
-                    val after = shrunkFile.length()
+                    val before = shrunkProtoFile.length()
+                    val after = shrunkProtoFile.length()
                     val percent = ((before - after) * 100 / before).toInt()
 
-                    val stat = "Removed unused resources: Binary resource data reduced from " +
+                    val stat = "Removed unused resources: Proto resource data reduced from " +
                             "${toKbString(before)}KB to ${toKbString(after)}KB. Removed $percent%"
                     logger.info(stat)
                 }

@@ -21,9 +21,10 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.DEBUG
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType.Companion.RELEASE
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
+import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.shrinker.DummyContent.TINY_PNG
 import com.android.build.shrinker.DummyContent.TINY_PROTO_CONVERTED_TO_BINARY_XML
-import com.android.build.shrinker.DummyContent.TINY_PROTO_XML
 import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject.assertThat
@@ -136,13 +137,13 @@ class ResourceShrinkerTest {
 
         assertThat(getZipPaths(project.getOriginalResources()))
             .containsAtLeastElementsIn(removedFiles)
-        assertThat(getZipPaths(project.getShrunkResources())).containsNoneIn(removedFiles)
+        assertThat(getZipPaths(project.getShrunkProtoResources())).containsNoneIn(removedFiles)
 
         // Check that unused resources are removed in project with web views and all web view
         // resources are marked as used.
         assertThat(getZipPaths(project.getOriginalResources()))
             .containsAtLeastElementsIn(removedFiles)
-        assertThat(getZipPaths(project.getShrunkResources())).containsNoneIn(removedFiles)
+        assertThat(getZipPaths(project.getShrunkProtoResources())).containsNoneIn(removedFiles)
 
         onlyInOriginal(
             project.getSubproject("webview"), arrayOf(
@@ -202,7 +203,7 @@ class ResourceShrinkerTest {
         splitName: String? = null
     ) {
         var originalResources = project.getOriginalResources(splitName)
-        var shrunkResources = project.getShrunkResources(splitName)
+        var shrunkResources = project.getShrunkProtoResources(splitName)
         onlyInOriginal(originalResources, shrunkResources, removed)
     }
 
@@ -595,43 +596,19 @@ class ResourceShrinkerTest {
 
     private fun GradleTestProject.getOriginalResources(splitName: String? = null) =
             if (splitName!=null) {
-                getIntermediateFile(
-                        "shrunk_processed_res",
-                        "release",
-                        "shrinkReleaseRes",
-                        listOfNotNull(
-                                "original",
-                                splitName,
-                                "release",
-                                "proto.ap_"
-                        ).joinToString("-")
-                )
+                InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
+                    .resolve("release/shrinkReleaseRes/original-resources-$splitName-release-proto-format.ap_")
             } else {
                 getIntermediateFile("linked_res_for_bundle", "release", "bundleReleaseResources", "bundled-res.ap_")
             }
 
-    private fun GradleTestProject.getShrunkResources(splitName: String? = null) =
-            getIntermediateFile(
-                    "shrunk_processed_res",
-                    "release",
-                    "shrinkReleaseRes",
-                    listOfNotNull(
-                            "resources",
-                            splitName,
-                            "release",
-                            "proto",
-                            "stripped.ap_"
-                    ).joinToString("-")
-            )
+    private fun GradleTestProject.getShrunkProtoResources(splitName: String? = null): File =
+        InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
+            .resolve("release/shrinkReleaseRes")
+            .resolve(listOfNotNull("shrunk-resources", splitName, "release", "proto-format.ap_").joinToString("-"))
 
-    private fun GradleTestProject.getShrunkBinaryResources(splitName: String? = null) =
-            getIntermediateFile(
-                    "shrunk_processed_res",
-                    "release",
-                    "shrinkReleaseRes",
-                    listOfNotNull("resources",
-                            splitName,
-                            "release",
-                            "stripped.ap_").joinToString("-")
-            )
+    private fun GradleTestProject.getShrunkBinaryResources(splitName: String? = null): File =
+        InternalArtifactType.SHRUNK_RESOURCES_BINARY_FORMAT.getOutputDir(buildDir)
+            .resolve("release/convertReleaseProtoResources")
+            .resolve(listOfNotNull("shrunk-resources", splitName, "release", "binary-format.ap_").joinToString("-"))
 }

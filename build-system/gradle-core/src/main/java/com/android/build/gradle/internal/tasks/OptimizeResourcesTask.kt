@@ -50,7 +50,6 @@ import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import java.io.File
 import javax.inject.Inject
@@ -143,7 +142,7 @@ abstract class OptimizeResourcesTask : NonIncrementalTask() {
 
             transformationRequest = if (resourceShrinkingEnabled) {
                 operationRequest.toTransformMany(
-                    InternalArtifactType.SHRUNK_PROCESSED_RES,
+                    InternalArtifactType.SHRUNK_RESOURCES_BINARY_FORMAT,
                     InternalArtifactType.OPTIMIZED_PROCESSED_RES)
             } else {
                 operationRequest.toTransformMany(

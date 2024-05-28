@@ -217,10 +217,16 @@ InternalArtifactType<T : FileSystemLocation>(
     object LOCAL_ONLY_PARTIAL_SYMBOL_DIRECTORY: InternalArtifactType<Directory>(DIRECTORY), Replaceable
     // public.txt output This file might not exist if the project does not declare any public resources.
     object PUBLIC_RES: InternalArtifactType<RegularFile>(FILE), Replaceable
-    object SHRUNK_PROCESSED_RES: InternalArtifactType<Directory>(DIRECTORY), Replaceable, ContainsMany
+
+    /** Shrunk resources in proto format. */
+    object SHRUNK_RESOURCES_PROTO_FORMAT: InternalArtifactType<Directory>(DIRECTORY), ContainsMany
+
+    /** Shrunk resources in binary format. */
+    object SHRUNK_RESOURCES_BINARY_FORMAT: InternalArtifactType<Directory>(DIRECTORY), ContainsMany
+
     // linked res for the unified bundle
     object LINKED_RES_FOR_BUNDLE: InternalArtifactType<RegularFile>(FILE), Replaceable
-    object LEGACY_SHRUNK_LINKED_RES_FOR_BUNDLE: InternalArtifactType<RegularFile>(FILE), Replaceable
+
     object COMPILED_LOCAL_RESOURCES: InternalArtifactType<Directory>(DIRECTORY), Replaceable
     object STABLE_RESOURCE_IDS_FILE: InternalArtifactType<RegularFile>(FILE)
 

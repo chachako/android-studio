@@ -20,6 +20,7 @@ import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.shrinker.DummyContent
 import com.android.build.gradle.internal.scope.InternalArtifactType.MERGED_RES
 import com.android.build.gradle.internal.scope.getOutputDir
@@ -274,12 +275,9 @@ class CompileLibraryResourcesTest {
         project.executor().with(BooleanOption.PRECOMPILE_DEPENDENCIES_RESOURCES, true)
             .run(":app:assembleRelease")
 
-        val compressed = project.getSubproject(":app").getIntermediateFile(
-            "shrunk_processed_res",
-            "release",
-            "shrinkReleaseRes",
-            "resources-release-stripped.ap_"
-        )
+        val compressed = InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT
+            .getOutputDir(project.getSubproject(":app").buildDir)
+            .resolve("release/shrinkReleaseRes/shrunk-resources-release-proto-format.ap_")
 
         assertThat(compressed.isFile).isTrue()
 
