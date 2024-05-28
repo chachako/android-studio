@@ -165,10 +165,6 @@ fun pickPluginVariableName(
     return generateWithSuffix(fullName + "X", reserved, transform)
 }
 
-private fun maybeLowCamelTransform(name: String):String =
-    if (name.contains("-")) CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, name)
-    else name
-
 @VisibleForTesting
 internal fun String.toSafeKey(): String {
     fun Char.isSafe() = isLowerCase() || isDigit()
