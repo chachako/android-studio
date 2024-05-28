@@ -17,18 +17,18 @@
 package com.android.build.gradle.internal.fixtures
 
 import com.android.build.gradle.internal.dependency.FilterShrinkerRulesTransform
-import com.android.build.gradle.internal.dependency.VersionedCodeShrinker
+import com.android.build.gradle.internal.dependency.ShrinkerVersion
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 
 class FakeFilterShrinkerRulesParameters constructor(
     @Internal val name:String? = "project_name",
-    @get:Input val codeShrinker: VersionedCodeShrinker
+    @get:Input val codeShrinker: ShrinkerVersion
 ): FilterShrinkerRulesTransform.Parameters {
     override val projectName: Property<String>
         get() = FakeGradleProperty(name)
 
-    override val shrinker: Property<VersionedCodeShrinker>
+    override val shrinker: Property<ShrinkerVersion>
         get() = FakeGradleProperty(codeShrinker)
 }

@@ -39,7 +39,7 @@ abstract class FilterShrinkerRulesTransform :
     TransformAction<FilterShrinkerRulesTransform.Parameters> {
     interface Parameters : GenericTransformParameters {
         @get:Input
-        val shrinker: Property<VersionedCodeShrinker>
+        val shrinker: Property<ShrinkerVersion>
     }
 
     @get:InputArtifact
@@ -111,7 +111,7 @@ private val configDirRegex = """r8(?:-from-([^:@]+?))?(?:-upto-([^:@]+?))?""".to
 @VisibleForTesting
 internal fun configDirMatchesVersion(
     dirName: String,
-    versionedShrinker: VersionedCodeShrinker
+    versionedShrinker: ShrinkerVersion
 ): Boolean {
     configDirRegex.matchEntire(dirName.lowercase(Locale.US))?.let { matchResult ->
         val (from, upto) = matchResult.destructured

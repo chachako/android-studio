@@ -19,27 +19,27 @@ package com.android.build.gradle.internal.dependency
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
-class VersionedCodeShrinkerTest {
+class ShrinkerVersionTest {
 
     @Test
     fun testParseVersionString(){
-        var version = VersionedCodeShrinker.parseVersionString("ProGuard, version 6.0.1")
+        var version = ShrinkerVersion.parseVersionString("ProGuard, version 6.0.1")
         assertThat(version).isEqualTo("6.0.1")
 
-        version = VersionedCodeShrinker.parseVersionString("ProGuard, version 6.0.1-dev")
+        version = ShrinkerVersion.parseVersionString("ProGuard, version 6.0.1-dev")
         assertThat(version).isEqualTo("6.0.1-dev")
 
-        version = VersionedCodeShrinker.parseVersionString("ProGuard, version 6.0.1 FOO")
+        version = ShrinkerVersion.parseVersionString("ProGuard, version 6.0.1 FOO")
         assertThat(version).isEqualTo("6.0.1")
 
-        version = VersionedCodeShrinker.parseVersionString("ProGuard, version 6.0.1 FOO")
+        version = ShrinkerVersion.parseVersionString("ProGuard, version 6.0.1 FOO")
         assertThat(version).isEqualTo("6.0.1")
 
-        version = VersionedCodeShrinker.parseVersionString(
+        version = ShrinkerVersion.parseVersionString(
             "1.6.51 (build 94162e from go/r8bot (luci-r8-ci-archive-0-t0i8))")
         assertThat(version).isEqualTo("1.6.51")
 
-        version = VersionedCodeShrinker.parseVersionString(
+        version = ShrinkerVersion.parseVersionString(
             "1.6.51-dev (build 94162e from go/r8bot (luci-r8-ci-archive-0-t0i8))")
         assertThat(version).isEqualTo("1.6.51-dev")
     }

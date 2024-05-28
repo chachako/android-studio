@@ -57,7 +57,7 @@ import com.android.build.gradle.internal.dependency.MultiVariantProductFlavorRul
 import com.android.build.gradle.internal.dependency.PlatformAttrTransform
 import com.android.build.gradle.internal.dependency.RecalculateStackFramesTransform.Companion.registerGlobalRecalculateStackFramesTransform
 import com.android.build.gradle.internal.dependency.RecalculateStackFramesTransform.Companion.registerRecalculateStackFramesTransformForComponent
-import com.android.build.gradle.internal.dependency.VersionedCodeShrinker
+import com.android.build.gradle.internal.dependency.ShrinkerVersion
 import com.android.build.gradle.internal.dependency.registerDexingOutputSplitTransform
 import com.android.build.gradle.internal.dsl.BaseFlavor
 import com.android.build.gradle.internal.dsl.BuildType
@@ -947,7 +947,7 @@ class DependencyConfigurator(
                                 AndroidArtifacts.ArtifactType.FILTERED_PROGUARD_RULES.type
                         )
                 reg.parameters { params: FilterShrinkerRulesTransform.Parameters ->
-                    params.shrinker.set(VersionedCodeShrinker.create())
+                    params.shrinker.set(ShrinkerVersion.create())
                     params.projectName.set(project.name)
                 }
             }
