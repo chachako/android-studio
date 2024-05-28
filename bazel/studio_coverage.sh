@@ -81,6 +81,7 @@ fi
   ${auth_options} \
   --test_tag_filters=-no_linux,-no_test_linux,-perfgate \
   --define agent_coverage=true \
+  --remote_download_regex=".*.coverage.baseline.srcs" \
   "${extra_test_flags[@]}" \
   -- \
   @cov//:all.suite \
