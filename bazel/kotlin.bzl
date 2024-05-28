@@ -106,6 +106,7 @@ def kotlin_test(
         lint_enabled = True,
         javacopts = [],
         **kwargs):
+    target_compatible_with = kwargs.get("target_compatible_with", None)
     kotlin_library(
         name = name + ".testlib",
         srcs = srcs,
@@ -121,6 +122,7 @@ def kotlin_test(
         friends = friends,
         kotlinc_opts = kotlinc_opts,
         javacopts = javacopts,
+        target_compatible_with = target_compatible_with,
     )
 
     coverage_java_test(
@@ -135,6 +137,7 @@ def kotlin_test(
     native.test_suite(
         name = name,
         tests = [name + ".test"],
+        visibility = visibility,
     )
 
 # Creates actions to generate the sources jar
