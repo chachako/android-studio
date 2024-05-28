@@ -69,10 +69,6 @@ _git = [
 
 # Vendor repository mapped to git repositories.
 _vendor_git = [
-    {
-        "name": "androidndk",
-        "api_level": 26,
-    },
     # Use the Android SDK specified by the ANDROID_HOME variable (specified in
     # platform_specific.bazelrc)
     {
@@ -247,9 +243,7 @@ def setup_external_repositories(prefix = ""):
 def _setup_git_repos(repos, prefix = ""):
     for _repo in repos:
         repo = dict(_repo)
-        if repo["name"] == "androidndk":
-            native.android_ndk_repository(**repo)
-        elif repo["name"] == "androidsdk":
+        if repo["name"] == "androidsdk":
             native.android_sdk_repository(**repo)
         else:
             repo["path"] = prefix + repo["path"]

@@ -25,6 +25,14 @@ new_local_repository(
     path = "prebuilts/studio/jdk/jdk8",
 )
 
+# rules_android_ndk must come before loading vendor.bzl, because it is
+# configured as a vendor dependency and can only be configured with a valid
+# ANDROID_NDK path.
+local_repository(
+    name = "rules_android_ndk",
+    path = "prebuilts/tools/common/external-src-archives/bazelbuild-rules_android_ndk/1ed5be3",
+)
+
 vendor_repository(
     name = "vendor",
     bzl = "@//tools/base/bazel:vendor.bzl",
