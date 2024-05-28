@@ -13,12 +13,18 @@ py_library(
 )
 
 py_library(
+    name = "studio",
+    srcs = ["studio.py"],
+    deps = [":bazel"],
+)
+
+py_library(
     name = "ci_lib",
     srcs = ["ci.py"],
-    imports = ["."],
     deps = [
         ":bazel",
         ":query_checks",
+        ":studio",
     ],
 )
 
@@ -26,10 +32,10 @@ py_binary(
     name = "ci",
     srcs = ["ci.py"],
     data = glob(["data/*"]),
-    imports = ["."],
     deps = [
         ":bazel",
         ":query_checks",
+        ":studio",
     ],
 )
 

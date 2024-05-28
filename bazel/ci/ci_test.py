@@ -3,7 +3,8 @@
 from absl.testing import absltest
 import bazel
 import ci
-import query_checks
+
+from tools.base.bazel.ci import query_checks
 
 
 class CITest(absltest.TestCase):

@@ -2,13 +2,15 @@
 
 import argparse
 import os
+import platform
 import uuid
 import subprocess
 import sys
 from typing import Callable, List
 
-import bazel
-import query_checks
+from tools.base.bazel.ci import bazel
+from tools.base.bazel.ci import query_checks
+from tools.base.bazel.ci import studio
 
 
 class CI:
@@ -72,20 +74,34 @@ def studio_build_checks(ci: CI):
   ci.run(validate_coverage_graph)
 
 
+def studio_linux(ci: CI):
+  ci.run(studio.studio_linux)
+
+
+def studio_win(ci: CI):
+  ci.run(studio.studio_win)
+
+
 def main():
   """Runs the CI target command."""
   parser = argparse.ArgumentParser()
   parser.add_argument("target", help="The name of the CI target")
   args = parser.parse_args()
 
-  bazel_path = os.path.join(find_workspace(), "tools/base/bazel/bazel")
+  bazel_name = "bazel.cmd" if platform.system() == "Windows" else "bazel"
+  bazel_path = os.path.join(find_workspace(), f"tools/base/bazel/{bazel_name}")
   build_env = bazel.BuildEnv(bazel_path=bazel_path)
   ci = CI(build_env=build_env)
 
-  if args.target == "studio-build-checks":
-    studio_build_checks(ci)
-  else:
-    raise NotImplementedError(f'target: "{args.target}" does not exist')
+  match args.target:
+    case "studio-build-checks":
+      studio_build_checks(ci)
+    case "studio-linux":
+      studio_linux(ci)
+    case "studio-win":
+      studio_win(ci)
+    case _:
+      raise NotImplementedError(f'target: "{args.target}" does not exist')
 
   if ci.has_errors():
     ci.print_errors()

@@ -50,6 +50,10 @@ def main():
       'GOOGLE_APPLICATION_CREDENTIALS', ''
   )
   env['PATH'] = os.environ.get('PATH', '')
+  env['BUILD_NUMBER'] = os.environ.get('BUILD_NUMBER', '')
+  env['BUILD_TARGET_NAME'] = os.environ.get('BUILD_TARGET_NAME', '')
+  env['DIST_DIR'] = os.environ.get('DIST_DIR', '')
+  env['TMPDIR'] = os.environ.get('TMPDIR', '')
   if 'GCE_METADATA_HOST' in os.environ:
     env['GCE_METADATA_HOST'] = os.environ.get('GCE_METADATA_HOST')
   if 'QA_ANDROID_SDK_ROOT' in os.environ:

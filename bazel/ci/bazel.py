@@ -13,7 +13,7 @@ class BuildEnv:
   bazel_path: str
 
   def __init__(self, bazel_path: str):
-    self.build_number = os.environ.get("BUILD_NUMBER", "")
+    self.build_number = os.environ.get("BUILD_NUMBER", "SNAPSHOT")
     self.build_target_name = os.environ.get("BUILD_TARGET_NAME", "")
     self.dist_dir = os.environ.get("DIST_DIR", "")
     self.tmp_dir = os.environ.get("TMPDIR", "")
@@ -59,3 +59,17 @@ class BazelCmd:
     args.extend(query_args)
 
     return subprocess.run(args, capture_output=True, check=True, cwd=os.environ.get('BUILD_WORKSPACE_DIRECTORY'))
+
+
+  def test(self, capture_output: bool, *build_args) -> subprocess.CompletedProcess:
+    """Run a 'bazel test' command.
+
+    Raises:
+      CalledProcessError: If the build fails.
+    """
+    args = [self.build_env.bazel_path]
+    args.extend(self.startup_options)
+    args.append('test')
+    args.extend(build_args)
+
+    return subprocess.run(args, capture_output=capture_output, check=False, cwd=os.environ.get('BUILD_WORKSPACE_DIRECTORY'))
