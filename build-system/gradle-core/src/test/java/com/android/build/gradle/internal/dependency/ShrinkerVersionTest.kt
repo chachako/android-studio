@@ -22,25 +22,16 @@ import org.junit.Test
 class ShrinkerVersionTest {
 
     @Test
-    fun testParseVersionString(){
-        var version = ShrinkerVersion.parseVersionString("ProGuard, version 6.0.1")
-        assertThat(version).isEqualTo("6.0.1")
-
-        version = ShrinkerVersion.parseVersionString("ProGuard, version 6.0.1-dev")
-        assertThat(version).isEqualTo("6.0.1-dev")
-
-        version = ShrinkerVersion.parseVersionString("ProGuard, version 6.0.1 FOO")
-        assertThat(version).isEqualTo("6.0.1")
-
-        version = ShrinkerVersion.parseVersionString("ProGuard, version 6.0.1 FOO")
-        assertThat(version).isEqualTo("6.0.1")
-
-        version = ShrinkerVersion.parseVersionString(
-            "1.6.51 (build 94162e from go/r8bot (luci-r8-ci-archive-0-t0i8))")
-        assertThat(version).isEqualTo("1.6.51")
-
-        version = ShrinkerVersion.parseVersionString(
-            "1.6.51-dev (build 94162e from go/r8bot (luci-r8-ci-archive-0-t0i8))")
-        assertThat(version).isEqualTo("1.6.51-dev")
+    fun testParseVersionString() {
+        listOf(
+            "ProGuard, version 6.0.1" to "6.0.1",
+            "ProGuard, version 6.0.1-dev" to "6.0.1-dev",
+            "ProGuard, version 6.0.1 FOO" to "6.0.1",
+            "ProGuard, version 6.0.1 FOO" to "6.0.1",
+            "1.6.51 (build 94162e from go/r8bot (luci-r8-ci-archive-0-t0i8))" to "1.6.51",
+            "1.6.51-dev (build 94162e from go/r8bot (luci-r8-ci-archive-0-t0i8))" to "1.6.51-dev"
+        ).onEach { (input, output) ->
+            assertThat(ShrinkerVersion.parse(input)!!.asString()).isEqualTo(output)
+        }
     }
 }

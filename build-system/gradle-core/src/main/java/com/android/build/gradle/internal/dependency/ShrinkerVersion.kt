@@ -16,30 +16,25 @@
 
 package com.android.build.gradle.internal.dependency
 
-import com.android.build.gradle.internal.LoggerWrapper
-import com.android.builder.dexing.getR8Version
-import com.google.common.annotations.VisibleForTesting
+import com.android.ide.common.gradle.Version
 import java.io.Serializable
 
-data class ShrinkerVersion(val version: String) : Serializable {
+data class ShrinkerVersion(private val version: Version) : Serializable, Comparable<ShrinkerVersion> {
+
+    fun asString(): String = version.toString()
+
+    override fun compareTo(other: ShrinkerVersion): Int = version.compareTo(other.version)
+
     companion object {
-        @JvmStatic
-        fun create() = ShrinkerVersion(parseVersionString(getR8Version()))
+
+        val R8 by lazy { parse(com.android.tools.r8.Version.getVersionString())!! }
 
         private val versionPattern = """[^\s.]+(?:\.[^\s.]+)+""".toRegex()
 
-        @VisibleForTesting
-        internal fun parseVersionString(version: String): String {
-            val matcher = versionPattern.find(version)
-            return if (matcher != null) {
-                LoggerWrapper.getLogger(ShrinkerVersion::class.java)
-                    .verbose("Parsed shrinker version: ${matcher.groupValues[0]}")
-                matcher.groupValues[0]
-            } else {
-                LoggerWrapper.getLogger(ShrinkerVersion::class.java)
-                    .warning("Cannot parse shrinker version, assuming 0.0.0")
-                "0.0.0"
-            }
-        }
+        fun parse(version: String): ShrinkerVersion? =
+            versionPattern.find(version)
+                ?.let { matchResult -> matchResult.groupValues[0] }
+                ?.let { Version.parse(it) }
+                ?.let { ShrinkerVersion(it) }
     }
 }

@@ -947,7 +947,7 @@ class DependencyConfigurator(
                                 AndroidArtifacts.ArtifactType.FILTERED_PROGUARD_RULES.type
                         )
                 reg.parameters { params: FilterShrinkerRulesTransform.Parameters ->
-                    params.shrinker.set(ShrinkerVersion.create())
+                    params.shrinker.set(ShrinkerVersion.R8)
                     params.projectName.set(project.name)
                 }
             }
