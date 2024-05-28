@@ -42,6 +42,7 @@ import java.io.FileOutputStream
 import java.util.UUID
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
+import kotlin.io.path.deleteExisting
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 
@@ -460,8 +461,32 @@ class ScreenshotTest {
     }
 
     @Test
-    fun runPreviewScreenshotTestWithNoPreviewsToTest() {
-        // Comment out preview tests
+    fun runPreviewScreenshotTestWithNoSourceFiles() {
+        // Delete test classes so that there are no source files in screenshotTest source set
+        appProject.projectDir.resolve("src/screenshotTest/java/com/ExampleTest.kt").toPath().deleteExisting()
+        appProject.projectDir.resolve("src/screenshotTest/java/com/TopLevelPreviewTest.kt").toPath().deleteExisting()
+
+        getExecutor().run(":app:updateDebugScreenshotTest")
+
+        val referenceScreenshotDir = appProject.projectDir.resolve("src/debug/screenshotTest/reference").toPath()
+        assertThat(referenceScreenshotDir.listDirectoryEntries()).isEmpty()
+
+        val resultsJson = appProject.buildDir.resolve("outputs/screenshotTest-results/preview/debug/results.json")
+        assertThat(resultsJson.readText()).contains(""""screenshotResults": []""")
+
+        // Validation and reporting is skipped when there are no source files
+        val result2 = getExecutor().run(":app:validateDebugScreenshotTest")
+        assertThat(result2.skippedTasks).containsAtLeastElementsIn(
+            listOf(":app:validateDebugScreenshotTest", ":app:debugScreenshotReport")
+        )
+
+        val indexHtmlReport = appProject.buildDir.resolve("reports/screenshotTest/preview/debug/index.html")
+        assertThat(indexHtmlReport).doesNotExist()
+    }
+
+    @Test
+    fun runPreviewScreenshotTestWithSourceFilesAndNoPreviewsToTest() {
+        // Comment out preview tests so that source files exist with no previews to test
         val testFile1 = appProject.projectDir.resolve("src/screenshotTest/java/com/ExampleTest.kt")
         TestFileUtils.replaceLine(testFile1, 1, "/*")
         TestFileUtils.replaceLine(testFile1, testFile1.readLines().size, "*/")
@@ -477,19 +502,16 @@ class ScreenshotTest {
         val resultsJson = appProject.buildDir.resolve("outputs/screenshotTest-results/preview/debug/results.json")
         assertThat(resultsJson.readText()).contains(""""screenshotResults": []""")
 
-        getExecutor()
-            .expectFailure() // Gradle test tasks fail when no tests are executed starting in Gradle 9.0
+        // Gradle test tasks fail when there are source files but no tests are executed starting in Gradle 9.0
+        val result1 = getExecutor()
+            .expectFailure()
             .run(":app:validateDebugScreenshotTest")
+        assertThat(result1.skippedTasks).containsAtLeastElementsIn(
+            listOf(":app:debugScreenshotReport")
+        )
 
         val indexHtmlReport = appProject.buildDir.resolve("reports/screenshotTest/preview/debug/index.html")
-        assertThat(indexHtmlReport).exists()
-        assertThat(indexHtmlReport.readText()).contains("""<div class="counter">0</div>""")
-
-        // Uncomment preview tests
-        TestFileUtils.replaceLine(testFile1, 1, "")
-        TestFileUtils.replaceLine(testFile1, testFile1.readLines().size, "")
-        TestFileUtils.replaceLine(testFile2, 1, "")
-        TestFileUtils.replaceLine(testFile2, testFile2.readLines().size, "")
+        assertThat(indexHtmlReport).doesNotExist()
     }
 
     @Test
