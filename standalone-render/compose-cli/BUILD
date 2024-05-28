@@ -77,6 +77,7 @@ maven_repository(
     artifacts = [
         "@maven//:androidx.activity.activity-compose_1.8.0",
         "@maven//:androidx.annotation.annotation-jvm_1.6.0",
+        "@maven//:androidx.collection.collection-ktx_1.4.0",
         "@maven//:androidx.compose.animation.animation_1.5.0",
         "@maven//:androidx.compose.compiler.compiler_1.5.1",
         "@maven//:androidx.compose.compose-bom_2024.04.01",
