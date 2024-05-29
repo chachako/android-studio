@@ -69,7 +69,7 @@ class Renderer private constructor(
 
         val moduleClassLoaderManager = StandaloneModuleClassLoaderManager(classPath, projectClassPath)
 
-        framework = StandaloneFramework(stopExecutor = false)
+        framework = StandaloneFramework(!isForTest)
 
         val resourceIdManager = ApkResourceIdManager()
         resourceApkPath?.let {
@@ -211,7 +211,13 @@ class Renderer private constructor(
     }
 
     override fun close() {
-        framework.close()
+        try {
+            RenderService.shutdownRenderExecutor()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        } finally {
+            framework.close()
+        }
     }
 
     companion object {
