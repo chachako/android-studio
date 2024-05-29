@@ -111,15 +111,20 @@ class TaskMethodModifiersAndAnnotationsTest {
     }
 
     @Test
-    fun `check for tasks that don't extend AndroidVariantTask or AndroidGlobalTask`() {
-        val doesNotExtendAndroidVariantTaskOrGlobalTask = tasks.filter {
-            !VariantAwareTask::class.java.isAssignableFrom(it)
-                    && !AndroidGlobalTask::class.java.isAssignableFrom(it)
+    fun `check for tasks that don't implement VariantTask or GlobalTask`() {
+        val doesNotImplementVariantOrGlobalTask = tasks.filter {
+            !VariantTask::class.java.isAssignableFrom(it)
+                    && !GlobalTask::class.java.isAssignableFrom(it)
         }.map { it.name }
-        assertWithMessage("All Agp tasks should generally extend NonIncrementalTask, NonIncrementalGlobalTask or NewIncrementalTask, " +
-                "or manually implement VariantAwareTask if using a Gradle task type.")
-        // Don't add new tasks to this list
-        assertThat(doesNotExtendAndroidVariantTaskOrGlobalTask).containsExactly(
+        assertWithMessage(
+            "All AGP tasks should generally extend ${NewIncrementalTask::class.java.simpleName}," +
+                    " ${NonIncrementalTask::class.java.simpleName}," +
+                    " or ${NonIncrementalGlobalTask::class.java.simpleName}," +
+                    " or manually implement ${VariantTask::class.java.simpleName}/${GlobalTask::class.java.simpleName}" +
+                    " if using a Gradle task type."
+        )
+            .that(doesNotImplementVariantOrGlobalTask).containsExactly(
+                // Don't add new tasks to this list
                 "com.android.build.gradle.internal.tasks.AndroidReportTask",
                 "com.android.build.gradle.internal.tasks.BaseTask",
                 "com.android.build.gradle.internal.tasks.DependencyReportTask",
@@ -131,7 +136,7 @@ class TaskMethodModifiersAndAnnotationsTest {
                 "com.android.build.gradle.tasks.FusedLibraryBundleClasses",
                 "com.android.build.gradle.tasks.FusedLibraryMergeClasses",
                 "com.android.build.gradle.tasks.PrivacySandboxSdkGenerateJarStubsTask",
-        )
+            )
     }
 
     @Test

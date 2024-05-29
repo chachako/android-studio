@@ -30,8 +30,8 @@ import com.android.build.gradle.internal.profile.TaskMetadata
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.services.getBuildServiceName
-import com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask
-import com.android.build.gradle.internal.tasks.VariantAwareTask
+import com.android.build.gradle.internal.tasks.VariantTask
+import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.workeractions.DecoratedWorkParameters
 import com.android.build.gradle.internal.workeractions.WorkActionAdapter
@@ -109,7 +109,7 @@ class TaskBasedOperationsImplTest {
         profileDir = tmpDir.newFolder("profile_proto")
     }
 
-    abstract class SynchronousTask @Inject constructor(val workers: WorkerExecutor): VariantAwareTask, DefaultTask() {
+    abstract class SynchronousTask @Inject constructor(val workers: WorkerExecutor): VariantTask, DefaultTask() {
 
         @get:InputFiles
         abstract val inputDir: DirectoryProperty
@@ -183,7 +183,7 @@ class TaskBasedOperationsImplTest {
 
     abstract class InternalApiTask @Inject constructor(
         var workers: WorkerExecutor
-    ): VariantAwareTask, NonIncrementalGlobalTask() {
+    ): NonIncrementalTask() {
 
         @get:InputFiles
         abstract val inputDir: DirectoryProperty

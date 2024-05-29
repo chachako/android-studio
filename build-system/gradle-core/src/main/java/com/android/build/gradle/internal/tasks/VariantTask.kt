@@ -19,15 +19,12 @@ package com.android.build.gradle.internal.tasks
 import com.android.build.gradle.internal.profile.AnalyticsService
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.utils.setDisallowChanges
-import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildServiceRegistry
 import org.gradle.api.tasks.Internal
 
-/**
- * A task associated with a variant name.
- */
-interface VariantAwareTask {
+/** Represents a variant-specific task. */
+interface VariantTask {
 
     /** the name of the variant */
     var variantName: String
@@ -36,7 +33,14 @@ interface VariantAwareTask {
     val analyticsService: Property<AnalyticsService>
 }
 
-fun VariantAwareTask.configureVariantProperties(
+/** Represents a global (non variant-specific) task. */
+interface GlobalTask {
+
+    @get:Internal
+    val analyticsService: Property<AnalyticsService>
+}
+
+fun VariantTask.configureVariantProperties(
     variantName: String,
     serviceRegistry: BuildServiceRegistry
 ) {

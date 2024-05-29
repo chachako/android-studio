@@ -21,7 +21,7 @@ import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.getOutputPath
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
-import com.android.build.gradle.internal.tasks.VariantAwareTask
+import com.android.build.gradle.internal.tasks.VariantTask
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.buildanalyzer.common.TaskCategory
 import org.gradle.api.attributes.DocsType
@@ -36,7 +36,7 @@ import org.gradle.work.DisableCachingByDefault
  */
 @DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.JAVA_DOC)
-abstract class JavaDocJarTask : Jar(), VariantAwareTask {
+abstract class JavaDocJarTask : Jar(), VariantTask {
 
     @Internal
     override lateinit var variantName: String
