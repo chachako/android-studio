@@ -46,8 +46,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Command
-import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.DisableBitmapScreenshotCommand
-import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.DisableBitmapScreenshotResponse
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Event
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.GetPropertiesCommand
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.GetPropertiesResponse
@@ -62,6 +60,8 @@ import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorVie
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.UpdateScreenshotTypeCommand
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.UpdateScreenshotTypeResponse
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.WindowRootsEvent
+import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.EnableBitmapScreenshotCommand
+import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.EnableBitmapScreenshotResponse
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.io.PrintStream
@@ -142,8 +142,8 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
                 command.captureSnapshotCommand,
                 callback
             )
-            Command.SpecializedCase.DISABLE_BITMAP_SCREENSHOT_COMMAND -> handleDisableBitmapScreenshotCommand(
-                command.disableBitmapScreenshotCommand,
+            Command.SpecializedCase.ENABLE_BITMAP_SCREENSHOT_COMMAND -> handleEnableBitmapScreenshotCommand(
+                command.enableBitmapScreenshotCommand,
                 callback
             )
             else -> error("Unexpected view inspector command case: ${command.specializedCase}")
@@ -369,7 +369,7 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
                     // critical code, necessary for the inspector to function.
                     // TODO in the future we might want to refactor this, to be able to execute
                     //  a number of indipendent actions when registerFrameCommitCallback is called.
-                    if (!state.disableBitmapScreenshot) {
+                    if (state.enableBitmapScreenshot) {
                         captureBitmapScreenshot(rootView, captureOutputStream)
                     }
                 }
@@ -515,15 +515,15 @@ class ViewLayoutInspector(connection: Connection, private val environment: Inspe
         }
     }
 
-    private fun handleDisableBitmapScreenshotCommand(
-        disableBitmapScreenshotCommand: DisableBitmapScreenshotCommand,
+    private fun handleEnableBitmapScreenshotCommand(
+        enableBitmapScreenshotCommand: EnableBitmapScreenshotCommand,
         callback: CommandCallback
     ) {
         synchronized(state.lock) {
-            state.disableBitmapScreenshot = disableBitmapScreenshotCommand.disable
+            state.enableBitmapScreenshot = enableBitmapScreenshotCommand.enable
         }
         callback.reply {
-            disableBitmapScreenshotResponse = DisableBitmapScreenshotResponse.getDefaultInstance()
+            enableBitmapScreenshotResponse = EnableBitmapScreenshotResponse.getDefaultInstance()
         }
     }
 

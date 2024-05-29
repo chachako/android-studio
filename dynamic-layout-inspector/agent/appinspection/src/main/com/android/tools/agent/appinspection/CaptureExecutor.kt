@@ -248,8 +248,8 @@ class CaptureExecutor(
             y = rootOffset[1]
         }.build()
 
-        // only send a screenshot if bitmaps are not disabled or if the current screenshot type is SKP
-        if (!state.disableBitmapScreenshot || screenshotSettings.type == LayoutInspectorViewProtocol.Screenshot.Type.SKP) {
+        // only send a screenshot if bitmaps are enabled or if the current screenshot type is SKP
+        if (state.enableBitmapScreenshot || screenshotSettings.type == LayoutInspectorViewProtocol.Screenshot.Type.SKP) {
             this.screenshot = LayoutInspectorViewProtocol.Screenshot.newBuilder().apply {
                 type = screenshotSettings.type
                 bytes = screenshot

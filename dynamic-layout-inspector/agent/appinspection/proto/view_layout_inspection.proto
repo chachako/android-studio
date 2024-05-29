@@ -303,10 +303,10 @@ message CaptureSnapshotResponse {
     WindowRootsEvent window_roots = 2;
 }
 
-message DisableBitmapScreenshotCommand {
-    bool disable = 1;
+message EnableBitmapScreenshotCommand {
+    bool enable = 1;
 }
-message DisableBitmapScreenshotResponse {
+message EnableBitmapScreenshotResponse {
 }
 
 // An event sent for metrics logging purposes when the inspector passes certain
@@ -378,7 +378,7 @@ message Command {
         GetPropertiesCommand get_properties_command = 3;
         UpdateScreenshotTypeCommand update_screenshot_type_command = 4;
         CaptureSnapshotCommand capture_snapshot_command = 5;
-        DisableBitmapScreenshotCommand disable_bitmap_screenshot_command = 6;
+        EnableBitmapScreenshotCommand enable_bitmap_screenshot_command = 6;
     }
 }
 
@@ -389,7 +389,7 @@ message Response {
         GetPropertiesResponse get_properties_response = 3;
         UpdateScreenshotTypeResponse update_screenshot_type_response = 4;
         CaptureSnapshotResponse capture_snapshot_response = 5;
-        DisableBitmapScreenshotResponse disable_bitmap_screenshot_response = 6;
+        EnableBitmapScreenshotResponse enable_bitmap_screenshot_response = 6;
     }
 }
 

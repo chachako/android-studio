@@ -1103,8 +1103,17 @@ abstract class ViewLayoutInspectorTestBase {
                 continuous = true
             }
         }.build()
+        val enableBitmapScreenshotCommand = Command.newBuilder().apply {
+            enableBitmapScreenshotCommandBuilder.apply {
+                enable = true
+            }
+        }.build()
         viewInspector.onReceiveCommand(
             startFetchCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
+        viewInspector.onReceiveCommand(
+            enableBitmapScreenshotCommand.toByteArray(),
             inspectorRule.commandCallback
         )
 
@@ -1208,8 +1217,8 @@ abstract class ViewLayoutInspectorTestBase {
         WindowManagerGlobal.getInstance().rootViews.addAll(listOf(mainScreen, floatingDialog))
 
         val bitmapCapturingCommand = Command.newBuilder().apply {
-            disableBitmapScreenshotCommandBuilder.apply {
-                disable = false
+            enableBitmapScreenshotCommandBuilder.apply {
+                enable = true
             }
         }.build()
         viewInspector.onReceiveCommand(
@@ -1310,8 +1319,8 @@ abstract class ViewLayoutInspectorTestBase {
         WindowManagerGlobal.getInstance().rootViews.addAll(listOf(mainScreen, floatingDialog))
 
         val disableBitmapCapturingCommand = Command.newBuilder().apply {
-            disableBitmapScreenshotCommandBuilder.apply {
-                disable = true
+            enableBitmapScreenshotCommandBuilder.apply {
+                enable = false
             }
         }.build()
         viewInspector.onReceiveCommand(
@@ -1350,8 +1359,8 @@ abstract class ViewLayoutInspectorTestBase {
 
         // re-enable capturing bitmaps
         val enableBitmapCapturingCommand = Command.newBuilder().apply {
-            disableBitmapScreenshotCommandBuilder.apply {
-                disable = false
+            enableBitmapScreenshotCommandBuilder.apply {
+                enable = true
             }
         }.build()
         viewInspector.onReceiveCommand(
@@ -1419,8 +1428,8 @@ abstract class ViewLayoutInspectorTestBase {
         run {
             // disable capturing bitmap screenshots
             val disableBitmapCapturingCommand = Command.newBuilder().apply {
-                disableBitmapScreenshotCommandBuilder.apply {
-                    disable = true
+                enableBitmapScreenshotCommandBuilder.apply {
+                    enable = false
                 }
             }.build()
             viewInspector.onReceiveCommand(
@@ -1646,6 +1655,18 @@ abstract class ViewLayoutInspectorTestBase {
         }
         WindowManagerGlobal.getInstance().rootViews.addAll(listOf(root))
         run {
+            // enable capturing bitmap screenshots
+            val disableBitmapCapturingCommand = Command.newBuilder().apply {
+                enableBitmapScreenshotCommandBuilder.apply {
+                    enable = true
+                }
+            }.build()
+            viewInspector.onReceiveCommand(
+                disableBitmapCapturingCommand.toByteArray(),
+                inspectorRule.commandCallback
+            )
+            responseQueue.take()
+
             val startFetchCommand = Command.newBuilder().apply {
                 startFetchCommandBuilder.apply {
                     continuous = true
@@ -1744,6 +1765,18 @@ abstract class ViewLayoutInspectorTestBase {
             setAttachInfo(View.AttachInfo())
         }
         WindowManagerGlobal.getInstance().rootViews.addAll(listOf(root))
+
+        // enable capturing bitmap screenshots
+        val disableBitmapCapturingCommand = Command.newBuilder().apply {
+            enableBitmapScreenshotCommandBuilder.apply {
+                enable = true
+            }
+        }.build()
+        viewInspector.onReceiveCommand(
+            disableBitmapCapturingCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
+        responseQueue.take()
 
         val startFetchCommand = Command.newBuilder().apply {
             startFetchCommandBuilder.apply {
@@ -1963,8 +1996,17 @@ abstract class ViewLayoutInspectorTestBase {
                 continuous = true
             }
         }.build()
+        val enableBitmapScreenshotCommand = Command.newBuilder().apply {
+            enableBitmapScreenshotCommandBuilder.apply {
+                enable = true
+            }
+        }.build()
         viewInspector.onReceiveCommand(
             startFetchCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
+        viewInspector.onReceiveCommand(
+            enableBitmapScreenshotCommand.toByteArray(),
             inspectorRule.commandCallback
         )
 
@@ -2031,8 +2073,17 @@ abstract class ViewLayoutInspectorTestBase {
                 continuous = true
             }
         }.build()
+        val enableBitmapScreenshotCommand = Command.newBuilder().apply {
+            enableBitmapScreenshotCommandBuilder.apply {
+                enable = true
+            }
+        }.build()
         viewInspector.onReceiveCommand(
             startFetchCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
+        viewInspector.onReceiveCommand(
+            enableBitmapScreenshotCommand.toByteArray(),
             inspectorRule.commandCallback
         )
 

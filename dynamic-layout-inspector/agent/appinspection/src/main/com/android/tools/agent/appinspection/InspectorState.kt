@@ -18,8 +18,6 @@ package com.android.tools.agent.appinspection
 
 import android.view.View
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol
-import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.AppContext
-import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Configuration
 import com.android.tools.idea.layoutinspector.view.inspection.LayoutInspectorViewProtocol.Screenshot
 import kotlinx.coroutines.CompletableDeferred
 import java.io.OutputStream
@@ -59,12 +57,12 @@ class InspectorState {
     var snapshotRequests: MutableMap<Long, SnapshotRequest> = ConcurrentHashMap()
 
     /**
-     * When true, if [ScreenshotSettings.type] is [Screenshot.Type.BITMAP],
+     * When false, if [ScreenshotSettings.type] is [Screenshot.Type.BITMAP],
      * the screenshot is not captured and [LayoutEvent#screenshot] is not sent.
      *
      * This setting does nothing when [ScreenshotSettings.type] is [Screenshot.Type.SKP].
      */
-    var disableBitmapScreenshot: Boolean = false
+    var enableBitmapScreenshot: Boolean = false
 }
 
 /**
