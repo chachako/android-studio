@@ -18,22 +18,25 @@ package com.android.tools.deployer;
 import com.android.ddmlib.AdbInitOptions;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
+import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.deployer.devices.FakeDevice;
 import com.android.tools.deployer.rules.ApiLevel;
 import com.android.tools.deployer.rules.FakeDeviceConnection;
 import com.android.tools.deployer.tasks.LiveUpdateDeployer;
 import com.android.utils.ILogger;
-import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @RunWith(ApiLevel.class)
 public class LiveUpdateDeployerTest {
@@ -57,7 +60,11 @@ public class LiveUpdateDeployerTest {
 
         LiveUpdateDeployer.UpdateLiveEditsParam param =
                 new LiveUpdateDeployer.UpdateLiveEditsParam(
-                        classes, supportClasses, Lists.newArrayList(), true, true);
+                        classes,
+                        supportClasses,
+                        Set.of(),
+                        Deploy.LiveEditRequest.InvalidateMode.SAVE_AND_LOAD,
+                        true);
         AndroidDebugBridge.init(AdbInitOptions.DEFAULT);
         AndroidDebugBridge bridge = AndroidDebugBridge.createBridge();
         while (!bridge.hasInitialDeviceList()) {

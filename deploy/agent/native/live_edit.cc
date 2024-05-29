@@ -220,19 +220,19 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
     PrimeClass(jvmti, jni, support_class.class_name());
   }
 
+  // If we're going to restart the activity, there's no need to do any save/load
+  // or group invalidation logic.
+  if (req.invalidate_mode() == proto::LiveEditRequest::RESTART_ACTIVITY) {
+    resp.set_status(proto::AgentLiveEditResponse::OK);
+    return resp;
+  }
+
   Recompose recompose(jvmti, jni);
   jobject reloader = recompose.GetComposeHotReload();
   if (reloader) {
     if (!CheckVersion(recompose, reloader, resp)) {
       return resp;
     }
-
-    // This is a temp solution. If the new compose flag is set, we would
-    // use the new recompose API. Otherwise we just recompose everything.
-
-    // TODO: Rename composable proto field.
-    //       It should be called 'usePartialRecompose'.
-    bool usePartialRecomposition = req.composable();
 
     // When the recompose API is stable, we will only call the new API
     // and never call whole program recompose.
@@ -242,7 +242,9 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
         recompose.LoadStateAndCompose(reloader, state);
         InfoEvent("Recomposed after priming (likely automatic mode)");
     } else {  // No newlyPrimedClasses
-      if (usePartialRecomposition) {
+      auto invalidate_mode = req.invalidate_mode();
+
+      if (invalidate_mode == proto::LiveEditRequest::INVALIDATE_GROUPS) {
         std::string error = "";
         std::vector<jint> group_ids(req.group_ids().begin(),
                                     req.group_ids().end());
@@ -253,12 +255,12 @@ proto::AgentLiveEditResponse LiveEdit(jvmtiEnv* jvmti, JNIEnv* jni,
         std::ostringstream out;
 
         for (const int id : group_ids) {
-          out << " 0x" << std::hex << id;
+          out << " " << id;
         }
 
         Log::V("InvalidateGroupsWithKey %s", out.str().c_str());
-      } else {
-        // Perform a full reset.
+      } else if (invalidate_mode == proto::LiveEditRequest::SAVE_AND_LOAD) {
+        // Perform a full invalidation of the group tree.
         jobject state = recompose.SaveStateAndDispose(reloader);
         recompose.LoadStateAndCompose(reloader, state);
       }

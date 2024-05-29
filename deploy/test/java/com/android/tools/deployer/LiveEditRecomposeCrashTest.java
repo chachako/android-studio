@@ -17,12 +17,14 @@ package com.android.tools.deployer;
 
 import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.idea.protobuf.ByteString;
-import java.io.IOException;
-import java.util.Collection;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.io.IOException;
+import java.util.Collection;
 
 @RunWith(Parameterized.class)
 public class LiveEditRecomposeCrashTest extends LiveEditTestBase {
@@ -53,7 +55,7 @@ public class LiveEditRecomposeCrashTest extends LiveEditTestBase {
                 Deploy.LiveEditRequest.newBuilder()
                         .addTargetClasses(clazz)
                         .setPackageName(PACKAGE)
-                        .setComposable(true)
+                        .setInvalidateMode(Deploy.LiveEditRequest.InvalidateMode.INVALIDATE_GROUPS)
                         .addGroupIds(0x1111)
                         .build();
         Deploy.AgentLiveEditResponse response = sendUpdateRequest(request);
@@ -82,7 +84,7 @@ public class LiveEditRecomposeCrashTest extends LiveEditTestBase {
                 Deploy.LiveEditRequest.newBuilder()
                         .addTargetClasses(clazz)
                         .setPackageName(PACKAGE)
-                        .setComposable(true)
+                        .setInvalidateMode(Deploy.LiveEditRequest.InvalidateMode.INVALIDATE_GROUPS)
                         .addGroupIds(0x1112)
                         .build();
         response = sendUpdateRequest(request);

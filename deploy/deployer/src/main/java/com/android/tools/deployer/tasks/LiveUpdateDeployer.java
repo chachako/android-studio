@@ -21,6 +21,7 @@ import com.android.tools.deployer.AdbClient;
 import com.android.tools.deployer.Installer;
 import com.android.tools.idea.protobuf.ByteString;
 import com.android.utils.ILogger;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The purpose of this class is to provide a facet to updating Live Literals on the device.
@@ -69,8 +71,8 @@ public class LiveUpdateDeployer {
 
     /** Inputs for Live Edit updates. */
     public static class UpdateLiveEditsParam {
-        public final boolean isComposable;
-        public final List<Integer> groupIds;
+        public final Deploy.LiveEditRequest.InvalidateMode invalidateMode;
+        public final Set<Integer> groupIds;
         public final Map<String, byte[]> classes;
         public final Map<String, byte[]> supportClasses;
         final boolean debugModeEnabled;
@@ -82,13 +84,13 @@ public class LiveUpdateDeployer {
         public UpdateLiveEditsParam(
                 Map<String, byte[]> classes,
                 Map<String, byte[]> supportClasses,
-                List<Integer> groupIds,
-                boolean isComposable,
+                Set<Integer> groupIds,
+                Deploy.LiveEditRequest.InvalidateMode invalidateMode,
                 boolean debugModeEnabled) {
             this.classes = classes;
             this.supportClasses = supportClasses;
             this.groupIds = groupIds;
-            this.isComposable = isComposable;
+            this.invalidateMode = invalidateMode;
             this.debugModeEnabled = debugModeEnabled;
         }
     }
@@ -315,7 +317,7 @@ public class LiveUpdateDeployer {
         requestBuilder.addAllProcessIds(pids);
         requestBuilder.setArch(arch);
         requestBuilder.setPackageName(packageName);
-        requestBuilder.setComposable(param.isComposable);
+        requestBuilder.setInvalidateMode(param.invalidateMode);
         requestBuilder.addAllGroupIds(param.groupIds);
 
         for (String name : param.classes.keySet()) {

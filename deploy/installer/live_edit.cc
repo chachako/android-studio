@@ -17,6 +17,7 @@
 #include "tools/base/deploy/installer/live_edit.h"
 
 #include "tools/base/deploy/installer/binary_extract.h"
+#include "tools/base/deploy/installer/command_cmd.h"
 
 namespace deploy {
 
@@ -89,6 +90,13 @@ void LiveEditCommand::Run(proto::InstallerResponse* response) {
     } else {
       le_response->set_status(proto::LiveEditResponse::AGENT_ERROR);
     }
+  }
+
+  CmdCommand cmd(workspace_);
+  std::string error;
+  if (request_.invalidate_mode() == proto::LiveEditRequest::RESTART_ACTIVITY &&
+      !cmd.UpdateAppInfo("all", request_.package_name(), &error)) {
+    le_response->set_status(proto::LiveEditResponse::AGENT_ERROR);
   }
 }
 

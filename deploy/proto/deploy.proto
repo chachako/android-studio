@@ -769,6 +769,13 @@ message InstallServerResponse {
 }
 
 message LiveEditRequest {
+  enum InvalidateMode {
+    UNKNOWN = 0;
+    INVALIDATE_GROUPS = 1;
+    SAVE_AND_LOAD = 2;
+    RESTART_ACTIVITY = 3;
+  }
+
   // The classes that the user changed during LiveEdit.
   repeated LiveEditClass target_classes = 1;
 
@@ -776,9 +783,7 @@ message LiveEditRequest {
   // changed (lambdas, Compose classes, etc.)
   repeated LiveEditClass support_classes = 2;
 
-  // Signal rather or not the target method is a composable
-  // and should a function recompose be triggered.
-  bool composable = 3;
+  InvalidateMode invalidate_mode = 3;
 
   string package_name = 4;
   Arch arch = 5;
