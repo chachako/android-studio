@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.testprojects.PluginTy
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
 import com.android.testutils.TestUtils
 import com.google.common.truth.Truth
+import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -154,6 +155,40 @@ class SourceSetsTest {
         Truth.assertThat(result.didWorkTasks.contains(":api-use:debugReproTask")).isTrue()
         Truth.assertThat(result.stdout.findAll("ReproducerTask called !").count())
             .isEqualTo(1)
+    }
+    @Test
+    fun testOldAndNewVariantApiSourcesAccess() {
+
+        val subProject = project.getSubproject("api-use")
+
+        File(subProject.projectDir, "extra-assets/debug").mkdirs()
+        File(subProject.projectDir, "extra-assets/debug/file.txt").writeText(
+            "some asset"
+        )
+        subProject.buildFile.appendText(
+            """
+               androidComponents {
+                    onVariants(selector().all(), {
+                        // do nothing, just request it
+                        it.sources.assets
+                    })
+                }
+
+                android.applicationVariants.all {
+                    android.sourceSets.getByName(name).assets.srcDir(
+                        layout.projectDirectory.dir(java.nio.file.Paths.get("extra-assets", name).toString())
+                    )
+                }
+            """.trimIndent()
+        )
+        val result = project.executor()
+            .run("clean", ":api-use:mergeDebugAssets")
+        Truth.assertThat(result.failedTasks).isEmpty()
+        // check the file got merged
+        Truth.assertThat(
+            File(project.projectDir,
+                "api-use/build/intermediates/assets/debug/mergeDebugAssets/file.txt").exists()
+        ).isTrue()
     }
 
     /**
