@@ -30,6 +30,7 @@ import com.android.tools.deploy.interpreter.MethodDescription;
 import com.android.tools.deploy.interpreter.ObjectValue;
 import com.android.tools.deploy.interpreter.Throw;
 import com.android.tools.deploy.interpreter.Value;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -390,7 +391,19 @@ class AndroidEval implements Eval {
     @Override
     public Value newArray(Type type, int length) {
         try {
+            // ASM's getElementType of a multidimensional array returns the type of
+            // the element of zero dimension, not the type of an entry within that array.
+            // IE int[][][] -> int
             Class<?> elementClass = typeToClass(type.getElementType());
+
+            // If this is a multidimensional array, we need to created a class type of array
+            // of elementClass of dimension minus 1.
+            for (int dim = type.getDimensions() - 1; dim != 0; dim--) {
+
+                // There doesn't seem to be Java API to fetch an array type of a given class type.
+                // We can only create a temp array and call getClass() on it.
+                elementClass = Array.newInstance(elementClass, 0).getClass();
+            }
             return makeValue(Array.newInstance(elementClass, length), type);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
