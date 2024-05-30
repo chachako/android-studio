@@ -382,7 +382,7 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
 
     @SuppressWarnings("UnknownLanguage")
     @NonNull
-    public static TestFile kts(@NonNull @Language("kotlin-script") String source) {
+    public static TestFile kts(@NonNull @Language("kts") String source) {
         //noinspection LanguageMismatch
         return TestFiles.kotlin(FN_BUILD_GRADLE_KTS, source);
     }
@@ -390,7 +390,7 @@ public abstract class LintDetectorTest extends BaseLintDetectorTest {
     @SuppressWarnings("UnknownLanguage")
     @NonNull
     public static TestFile kts(
-            @NonNull String to, @NonNull @Language("kotlin-script") String source) {
+            @NonNull String to, @NonNull @Language("kts") String source) {
         //noinspection LanguageMismatch
         return TestFiles.kotlin(to, source);
     }
