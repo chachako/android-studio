@@ -326,6 +326,55 @@ class BytecodeRClassWriterTest {
         }
     }
 
+    @Test
+    fun checkAndroidStyleableAttrsNotRepackagedInSdks() {
+        val rJar = mTemporaryFolder.newFile("R.jar")
+        val additionalRJar = mTemporaryFolder.newFile("additionalR.jar")
+        val androidSymbols =
+            SymbolTable.builder()
+                .tablePackage("android")
+                .add(Symbol.attributeSymbol("background", 0x1010109))
+                .add(Symbol.attributeSymbol("foreground", 0x10100d4))
+                .build()
+
+        val libSymbols =
+            SymbolTable.builder()
+                .tablePackage("com.example.sdk")
+                .add(
+                    Symbol.styleableSymbol(
+                        "styles",
+                        ImmutableList.of(0x1010109, 0x10100d4, 0x1000e, 0x7f000002),
+                        ImmutableList.of(
+                            "android_background",
+                            "android_foreground",
+                            "lib_attr",
+                            "sdk_attr"
+                        )
+                    )
+                )
+                .build()
+
+        exportToCompiledJava(
+            listOf(androidSymbols, libSymbols),
+            rJar.toPath(),
+            rPackage = "com.example.sdk"
+        )
+        writeRPackages(mapOf("com.example.sdk" to 0x82), additionalRJar.toPath())
+
+        URLClassLoader(arrayOf(rJar.toURI().toURL(), additionalRJar.toURI().toURL()), null).use {
+            rJarClassLoader ->
+            val actualFields = loadFields(rJarClassLoader, "com.example.sdk.R\$styleable")
+            assertThat(actualFields)
+                .containsExactly(
+                    "int[] styles = [16843017,16842964,65550,132]",
+                    "int styles_android_background = 0",
+                    "int styles_android_foreground = 1",
+                    "int styles_lib_attr = 2",
+                    "int styles_sdk_attr = 3"
+                )
+        }
+    }
+
     private fun loadFields(classLoader: ClassLoader, name: String) =
             classLoader.loadClass(name)
                     .fields
