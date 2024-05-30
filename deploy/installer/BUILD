@@ -8,13 +8,28 @@ load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "ANDROID_LINKOPTS", "and
 # central place where we do any sort of hashing using Bin2C.
 genrule(
     name = "version",
-    srcs = [
-        # This should be a list of all binaries that determine our current version.
-        "//tools/base/deploy/agent/native:android-libswap/arm64-v8a/android-libswap.so",
-        "//tools/base/deploy/installer:android-installer_raw/arm64-v8a/android-installer_raw",
-        "//tools/base/deploy/installer:android-install-server/arm64-v8a/android-install-server",
-        "//tools/base/debuggers/native/coroutine/agent:coroutine_debugger_agent/arm64-v8a/coroutine_debugger_agent.so",
-    ],
+    srcs = select({
+        # android_cc_binary does not build on Windows. Instead, calculate a version
+        # from installer source files. This is not sufficient but keeps Version.java available
+        # on the build graph.
+        "@platforms//os:windows": glob([
+            "*.h",
+            "*.cc",
+            "executor/*.h",
+            "executor/*.cc",
+            "overlay/*.h",
+            "overlay/*.cc",
+            "server/*.h",
+            "server/*.cc",
+        ]),
+        "//conditions:default": [
+            # This should be a list of all binaries that determine our current version.
+            "//tools/base/deploy/agent/native:android-libswap/arm64-v8a/android-libswap.so",
+            "//tools/base/deploy/installer:android-installer_raw/arm64-v8a/android-installer_raw",
+            "//tools/base/deploy/installer:android-install-server/arm64-v8a/android-install-server",
+            "//tools/base/debuggers/native/coroutine/agent:coroutine_debugger_agent/arm64-v8a/coroutine_debugger_agent.so",
+        ],
+    }),
     outs = [
         "Version.java",
         "version.raw",
@@ -23,7 +38,6 @@ genrule(
         "$(location //tools/base/bazel:bin2c) -lang=java -embed=false -variable=com.android.tools.deployer.Version -output=$(location Version.java) $(SRCS) && " +
         # Raw
         "$(location //tools/base/bazel:bin2c) -lang=raw -output=$(location version.raw) $(SRCS)",
-    tags = ["no_windows"],
     tools = [
         "//tools/base/bazel:bin2c",
     ],
