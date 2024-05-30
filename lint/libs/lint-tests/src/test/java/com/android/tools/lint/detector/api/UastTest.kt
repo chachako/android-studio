@@ -3848,4 +3848,181 @@ class UastTest : TestCase() {
     // Test and anonymous Object
     assertEquals(2, count)
   }
+
+  fun testMethodsBelongToValueClass_source() {
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            val <T> V<T>.value: T? get() = getOrNull()
+            fun <T> force(v: V<T>) = v.isNull()
+          """
+        ),
+        kotlin(
+          """
+            @JvmInline
+            value class V<out T>(
+              val value: Any?
+            ) {
+              inline fun getOrNull(): T? {
+                return value as? T
+              }
+
+              fun isNull(): Boolean = value == null
+            }
+          """
+        ),
+      )
+    var getOrNullCheck = true
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+            val expectedMethod = if (getOrNullCheck) "getOrNull" else "isNull"
+            assertEquals(expectedMethod, resolved?.name)
+
+            val containingClass = resolved?.containingClass
+            assertEquals("V", containingClass?.name)
+
+            getOrNullCheck = false
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
+
+  fun testMethodsBelongToValueClass_binary() {
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            val <T> V<T>.value: T? get() = getOrNull()
+            fun <T> force(v: V<T>) = v.isNull()
+          """
+        ),
+        bytecode(
+          "libs/lib.jar",
+          kotlin(
+              """
+            @JvmInline
+            value class V<out T>(
+              val value: Any?
+            ) {
+              inline fun getOrNull(): T? {
+                return value as? T
+              }
+
+              fun isNull(): Boolean = value == null
+            }
+          """
+            )
+            .indented(),
+          0x94e1a4f6,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S5RYtBiAABz6lUC
+                JAAAAA==
+                """,
+          """
+                V.class:
+                H4sIAAAAAAAA/41V3VMTVxT/3c3X7hLC8k2itbZSDKEaQFsV8QvUGopohcYi
+                be0SVlhINnTvJuNLZ5g+tP0L+uBjX3zhwc60yNSZTooPzvR/6b/Q9tzNTYgh
+                OD7knnvPnvM73yd///vHnwDOwmFg2QgYQ3JyYWJ23Syb6bzprKbvLK9bOe/i
+                5YMsBqOZF0GQQV21vKyZL1kMPcnhVnqDs0V3Nb1uecuuaTs8bTpO0TM9u0j3
+                uVI+by7nLRILlasoXQcxotCga1DQxhD01mzOEJjNkk6MjN9xBcgpu7CZZxhK
+                HtRu6VR/K8GFBfrSPWgPPhpsBmYZMm26q6MMbTZv+NDbCugBQ7tXnPdc21l9
+                S8+qwsKzZt5Uyc6vWG4EcYbwpO3Y3mWKPzmcjeIIjupI4B0qQzbp5++SindJ
+                zNzctJwVhlPJgyYOWpUWKM/v4X0BeKJJ81B/GzU/EJpDDEeT028WTArBYfK5
+                lqLm1pGORjGCD4XsqSj6MaBTA6QpsWsmX5surlhvKgBVS63J+cnKRHEGZ3WE
+                8FEUYxgXYOeolta3JTPPJdTJFlCtq6uXnOXiY18tiouICLhJhmMbRS9vO+n1
+                ciFtO57lOmY+nXFEONzO8QiocqrpWjeE1SiuYkLHFVyj5i96a5ZLhav6E8UF
+                8UnBjUPiy4pIqOxGjqbIc0s5r+jKICZbT/TbDsaJN01r0ROdT1JqLfpDJomm
+                U3TnJyKGOZqeMkO0IdU0RcrmmDjGGfpmG7I2Uy5kHHqIjdBZ+3Db8swV0zOJ
+                pxTKAVphTByaOEDoG8R/bIuXAF4h4H8qW0O6MqDolS1dMcShhunSJqkqaYyo
+                ou79eHWgspUKq5Utgx1n48qoMtXTpRqBRHCAjSovd1lla++XcFANGqGZhKEm
+                lFFtXDX06udbL38O+F/bjOhMl9EuuOcrW7f2flB9doyUDKODlAwSZT6v0+ia
+                aTe6BZD/7jF6SaaP3v11mQEjfq+75gNxVIolEVTDRmTvJxaoOvW9EqQI4iJo
+                SiRbYCIdWn13UT9VdxXtruzpDY/hyL2S49kFK+OUbW7T4r22X14Sqo5Lxyzl
+                f65UWLbcBbGcxU4u5sx81nRt8ZbM9nnPzG3cNjflW5u3Vx3TK7l0H2y2c9d0
+                zYJFE/GaQX2+WHJz1k1b6MelTvaAZzSwCvW7CK5L/BUQtegVJqoSjaGT7hGS
+                eUSvtOgIoqHUb4g+o4uCVSkMBLBGZ7QqgHZSxWtQcXTAICkBtECaClE9MJla
+                fIXQffbMR7DpNMD+I0+UCEJkjc66DYVOYaPP11bJ4W7fmo4e+gHrvkedTVZ7
+                SZ75Vq9I9/XUK0SCTxEMbNethqCoV1lDOFpDODUDmtiVEuwcmRLf4i+QWHyO
+                Y13HdzCY2sFJY3gHRE8/85O6DxKXIEysXgkyJD1SRUJ3Mdqso8o8amKvSp0J
+                aTgmMqfeDzxFeAcfb/ux276OMkNZm2rEidVt06Zubfv89qG2aWFKnTlZt6Mj
+                f0F5glBge6QCZQeXUg93MeUzgvueBKFoRr1ipCW9ELdpv9UYrterMyaxNeHP
+                yC5u7jtUVdekQ+LmqxuK2INS/XKtpVLPcSs18juivzY1qNKApdexdNn1GjLU
+                ekEf67hMjZJqLojiS9dababeap8S3aBfhFX7zohjFrelayepx/yWegFlkdy7
+                04yq4a5ANTrF/51UOtE8a6zFfMXxWb02p2UCwilK3lRz8sK4J3MfxrwfcEAG
+                EUDepysoEP2ObgtEPycb2SUEMrifwRcZLOIBXbGUwZf4agmM42s8XEKCI8bx
+                DYfJoXFkOAyOMEeE47rPnOa4wDHBsczRwXHGZ45xjHPkOHo5+jhGfGY/x8D/
+                BVL5rEYLAAA=
+                """,
+        ),
+      )
+    var getOrNullCheck = true
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+            var expectedMethod = if (getOrNullCheck) "getOrNull" else "isNull"
+            if (useFirUast()) {
+              expectedMethod += "-impl"
+            }
+            assertEquals(expectedMethod, resolved?.name)
+
+            val containingClass = resolved?.containingClass
+            val expectedClass = if (useFirUast()) "V" else "Object"
+            assertEquals(expectedClass, containingClass?.name)
+
+            getOrNullCheck = false
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
+
+  fun testMethodsBelongToResultValueClass() {
+    // b/343519623
+    val source =
+      kotlin(
+        "main.kt",
+        """
+          val <T> Result<T>.value: T? get() = getOrNull()
+          fun <T> force(r: Result<T>) = r.getOrThrow()
+        """,
+      )
+    var getOrNullCheck = true
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+            val expectedMethod =
+              if (getOrNullCheck) {
+                if (useFirUast()) "getOrNull-impl" else "getOrNull"
+              } else "getOrThrow"
+            assertEquals(expectedMethod, resolved?.name)
+
+            val containingClass = resolved?.containingClass
+            val expectedClass =
+              if (getOrNullCheck) {
+                if (useFirUast()) "Result" else "Object"
+              } else "ResultKt"
+            assertEquals(expectedClass, containingClass?.name)
+
+            getOrNullCheck = false
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
 }
