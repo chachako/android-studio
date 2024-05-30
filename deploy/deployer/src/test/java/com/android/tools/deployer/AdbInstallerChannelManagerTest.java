@@ -25,17 +25,19 @@ import com.android.tools.deployer.devices.FakeDevice;
 import com.android.tools.deployer.rules.ApiLevel;
 import com.android.tools.deployer.rules.FakeDeviceConnection;
 import com.android.utils.ILogger;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @RunWith(ApiLevel.class)
 public class AdbInstallerChannelManagerTest {
@@ -115,10 +117,12 @@ public class AdbInstallerChannelManagerTest {
         IDevice device = getDevice(bridge);
         AdbClient client = new AdbClient(device, logger);
 
-        AdbInstallerChannelManager manager =
-                new AdbInstallerChannelManager(logger, AdbInstaller.Mode.DAEMON);
-        AdbInstallerChannel c1 = manager.getChannel(client, device.getSerialNumber());
-        AdbInstallerChannel c2 = manager.getChannel(client, device.getSerialNumber());
+        AdbInstallerChannel c1 =
+                AdbInstallerChannelManager.getChannel(
+                        client, device.getSerialNumber(), logger, AdbInstaller.Mode.DAEMON);
+        AdbInstallerChannel c2 =
+                AdbInstallerChannelManager.getChannel(
+                        client, device.getSerialNumber(), logger, AdbInstaller.Mode.DAEMON);
         Assert.assertTrue("Channel was not cached", c1 == c2);
     }
 

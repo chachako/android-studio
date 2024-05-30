@@ -19,6 +19,7 @@ import com.android.ddmlib.AdbCommandRejectedException;
 import com.android.ddmlib.SimpleConnectedSocket;
 import com.android.ddmlib.TimeoutException;
 import com.android.utils.ILogger;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,15 +28,11 @@ import java.util.List;
 public class AdbInstallerChannelManager {
 
     private static final HashMap<String, AdbInstallerChannel> channels = new HashMap<>();
-    private final ILogger logger;
-    private final AdbInstaller.Mode mode;
 
-    AdbInstallerChannelManager(ILogger logger, AdbInstaller.Mode mode) {
-        this.logger = logger;
-        this.mode = mode;
-    }
+    private AdbInstallerChannelManager() {}
 
-    public synchronized AdbInstallerChannel getChannel(AdbClient client, String version)
+    public static AdbInstallerChannel getChannel(
+            AdbClient client, String version, ILogger logger, AdbInstaller.Mode mode)
             throws IOException {
         String deviceId = client.getSerial();
 
@@ -51,13 +48,14 @@ public class AdbInstallerChannelManager {
 
         if (!channels.containsKey(deviceId)) {
             logger.info("Created SocketChannel to '" + deviceId + "'");
-            AdbInstallerChannel channel = createChannel(client, version);
+            AdbInstallerChannel channel = createChannel(client, version, logger, mode);
             channels.put(deviceId, channel);
         }
         return channels.get(deviceId);
     }
 
-    private synchronized AdbInstallerChannel createChannel(AdbClient client, String version)
+    private static AdbInstallerChannel createChannel(
+            AdbClient client, String version, ILogger logger, AdbInstaller.Mode mode)
             throws IOException {
         SimpleConnectedSocket channel = null;
         List<String> parameters = new ArrayList<>();
@@ -76,7 +74,7 @@ public class AdbInstallerChannelManager {
         return new AdbInstallerChannel(channel, logger);
     }
 
-    public synchronized void reset(AdbClient client) throws IOException {
+    public static void reset(AdbClient client, ILogger logger) throws IOException {
         String serial = client.getSerial();
         logger.info("Reset SocketChannel to '" + serial + "'");
         try (AdbInstallerChannel c = channels.get(serial)) {

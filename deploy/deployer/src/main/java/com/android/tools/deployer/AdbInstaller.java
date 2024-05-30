@@ -19,7 +19,9 @@ import com.android.annotations.NonNull;
 import com.android.tools.deploy.proto.Deploy;
 import com.android.tools.tracer.Trace;
 import com.android.utils.ILogger;
+
 import com.google.common.base.Charsets;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -49,10 +51,7 @@ public class AdbInstaller extends Installer {
         DO_NO_RETRY
     };
 
-    // Operations on channelsProvider and its channels need to be synchronized
-    private final AdbInstallerChannelManager channelsProvider;
     private final Mode mode;
-
     public enum Mode {
         DAEMON, // Instruct the installer binary on device to keep input fd open and answer
         // requests as they come.
@@ -78,7 +77,6 @@ public class AdbInstaller extends Installer {
         this.adb = adb;
         this.installersFolder = installersFolder;
         this.metrics = metrics;
-        this.channelsProvider = new AdbInstallerChannelManager(logger, mode);
         this.mode = mode;
     }
 
@@ -165,8 +163,9 @@ public class AdbInstaller extends Installer {
             Deploy.InstallerRequest request, OnFail onFail, long timeOutMs) throws IOException {
         Deploy.InstallerResponse response = null;
 
-        synchronized (channelsProvider) {
-            AdbInstallerChannel channel = channelsProvider.getChannel(adb, getVersion());
+        synchronized (AdbInstallerChannelManager.class) {
+            AdbInstallerChannel channel =
+                    AdbInstallerChannelManager.getChannel(adb, getVersion(), logger, mode);
 
             try {
                 if (channel.writeRequest(request, timeOutMs)) {
@@ -188,7 +187,7 @@ public class AdbInstaller extends Installer {
                     // This is the second time this error happens. Aborting.
                     throw new IOException("Invalid installer response");
                 }
-                channelsProvider.reset(adb);
+                AdbInstallerChannelManager.reset(adb, logger);
                 prepare();
                 return sendInstallerRequest(request, OnFail.DO_NO_RETRY, timeOutMs);
             }
@@ -199,7 +198,7 @@ public class AdbInstaller extends Installer {
                     // This is the second time this error happens. Aborting.
                     throw new IOException("Unrecoverable installer WRONG_VERSION error. Aborting");
                 }
-                channelsProvider.reset(adb);
+                AdbInstallerChannelManager.reset(adb, logger);
                 prepare();
                 return sendInstallerRequest(request, OnFail.DO_NO_RETRY, timeOutMs);
             }
@@ -218,7 +217,7 @@ public class AdbInstaller extends Installer {
             }
 
             if (mode == Mode.ONE_SHOT) {
-                channelsProvider.reset(adb);
+                AdbInstallerChannelManager.reset(adb, logger);
             }
 
             return response;
@@ -338,8 +337,8 @@ public class AdbInstaller extends Installer {
     // To solve this issue, we reset the connection to the daemon.
     protected void onAsymetry(Deploy.InstallerRequest req, Deploy.InstallerResponse resp) {
         try {
-            synchronized (channelsProvider) {
-                channelsProvider.reset(adb);
+            synchronized (AdbInstallerChannelManager.class) {
+                AdbInstallerChannelManager.reset(adb, logger);
             }
         } catch (IOException e) {
             // ignore
