@@ -107,7 +107,7 @@
 <tbody class="grid" style="width: 100%%">
 <tr>
 <td style="width: 33.33%%">Reference image missing</td>
-<td style="width: 33.33%%">Error displaying image at Timeout</td>
+<td style="width: 33.33%%">Timeout</td>
 <td style="width: 33.33%%">No diff</td>
 </tr>
 </tbody>
@@ -156,7 +156,7 @@
 <tbody class="grid" style="width: 100%%">
 <tr>
 <td style="width: 33.33%%">Reference image missing</td>
-<td style="width: 33.33%%">Error displaying image at Timeout</td>
+<td style="width: 33.33%%">Timeout</td>
 <td style="width: 33.33%%">No diff</td>
 </tr>
 </tbody>

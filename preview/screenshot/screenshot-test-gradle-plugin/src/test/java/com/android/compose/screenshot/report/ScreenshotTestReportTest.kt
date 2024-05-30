@@ -161,35 +161,35 @@ class ScreenshotTestReportTest {
               </properties>
               <testcase name="useAppContext1" classname="com.example.myapplication.ExampleInstrumentedTest" time="3.272">
               <success>Reference Images saved</success>
-              <images>
-              <reference path="${reference.absolutePath}"/>
-              <actual path="${actual.absolutePath}"/>
-              <diff message="Images match"/>
-              </images>
+              <properties>
+              <property name="reference" value="${reference.absolutePath}"/>
+              <property name="actual" value="${actual.absolutePath}"/>
+              <property name="diff" value="Images match"/>
+              </properties>
               </testcase>
               <testcase name="useAppContext2" classname="com.example.myapplication.ExampleInstrumentedTest" time="1.551">
               <failure>Images don't match</failure>
-              <images>
-              <reference path="${reference.absolutePath}"/>
-              <actual path="${actual.absolutePath}"/>
-              <diff path="${diff.absolutePath}"/>
-              </images>
+              <properties>
+              <property name="reference" value="${reference.absolutePath}"/>
+              <property name="actual" value="${actual.absolutePath}"/>
+              <property name="diff" value="${diff.absolutePath}"/>
+              </properties>
               </testcase>
               <testcase name="useAppContext3" classname="com.example.myapplication.ExampleInstrumentedTest" time="2.112">
               <failure>Images don't match</failure>
-              <images>
-              <reference path="${reference.absolutePath}"/>
-              <actual path="${actual.absolutePath}"/>
-              <diff message="Size Mismatch. Reference image: 5x5 Actual image: 4x5"/>
-              </images>
+              <properties>
+              <property name="reference" value="${reference.absolutePath}"/>
+              <property name="actual" value="${actual.absolutePath}"/>
+              <property name="diff" value="Size Mismatch. Reference image: 5x5 Actual image: 4x5"/>
+              </properties>
               </testcase>
               <testcase name="useAppContext4" classname="com.example.myapplication.ExampleInstrumentedTest" time="0.234">
               <failure>No Reference Image</failure>
-              <images>
-              <reference message="Reference image does not exist"/>
-              <actual path="${actual.absolutePath}"/>
-              <diff message="No diff"/>
-              </images>
+              <properties>
+              <property name="reference" value="Reference image does not exist"/>
+              <property name="actual" value="${actual.absolutePath}"/>
+              <property name="diff" value="No diff"/>
+              </properties>
               </testcase>
             </testsuite>
         """.trimIndent())
@@ -218,19 +218,19 @@ class ScreenshotTestReportTest {
               </properties>
               <testcase name="useAppContext2" classname="com.example.myapplication.ExampleInstrumentedTest" time="1.551">
               <failure>Render failure: ClassNotFoundException: com.xxx.example.Class</failure>
-              <images>
-              <reference path="${reference.absolutePath}"/>
-              <actual message="Render failure: ClassNotFoundException: com.xxx.example.Class"/>
-              <diff message="No diff"/>
-              </images>
+              <properties>
+              <property name="reference" value="${reference.absolutePath}"/>
+              <property name="actual" value="Render failure: ClassNotFoundException: com.xxx.example.Class"/>
+              <property name="diff" value="No diff"/>
+              </properties>
               </testcase>
               <testcase name="useAppContext3" classname="com.example.myapplication.ExampleInstrumentedTest" time="2.112">
               <failure>Timeout</failure>
-              <images>
-              <reference message="Reference image missing"/>
-              <actual path="Timeout"/>
-              <diff message="No diff"/>
-              </images>
+              <properties>
+              <property name="reference" value="Reference image missing"/>
+              <property name="actual" value="Timeout"/>
+              <property name="diff" value="No diff"/>
+              </properties>
               </testcase>
             </testsuite>
         """.trimIndent())

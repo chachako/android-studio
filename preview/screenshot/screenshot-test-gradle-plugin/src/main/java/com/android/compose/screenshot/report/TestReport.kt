@@ -34,15 +34,11 @@ import javax.xml.xpath.XPathFactory
 /**
  * Custom test reporter based on Gradle's DefaultTestReport
  */
-class TestReport(resultDir: File, reportDir: File) {
+class TestReport(private val resultDir: File, private val reportDir: File) {
 
     private val htmlRenderer: HtmlReportRenderer = HtmlReportRenderer()
-    private val resultDir: File
-    private val reportDir: File?
 
     init {
-        this.resultDir = resultDir
-        this.reportDir = reportDir
         htmlRenderer.requireResource(javaClass.getResource("report.js")!!)
         htmlRenderer.requireResource(javaClass.getResource("base-style.css")!!)
         htmlRenderer.requireResource(javaClass.getResource("style.css")!!)
@@ -105,33 +101,34 @@ class TestReport(resultDir: File, reportDir: File) {
 
                 // block to parse screenshot test images/texts
                 var ssImages: ScreenshotTestImages? = null
-                val images = testCase.getElementsByTagName("images")
-                for (j in 0 until images.length) {
-                    val image = images.item(j) as Element
-                    var referenceImage: Image? = null
-                    var actualImage: Image? = null
-                    var diffImage: Image? = null
-                    val references = image.getElementsByTagName("reference")
-                    val actuals = image.getElementsByTagName("actual")
-                    val diffs = image.getElementsByTagName("diff")
-                    for (k in 0 until references.length) {
-                        val reference = references.item(k) as Element
-                        val path = reference.getAttribute("path")
-                        val message = reference.getAttribute("message")
-                        referenceImage = Image(path, message)
+                val imagePropertyList = testCase.getElementsByTagName("properties")
+                var referenceImage: Image?
+                var actualImage: Image?
+                var diffImage: Image?
+                for (j in 0 until imagePropertyList.length) {
+                    val image = imagePropertyList.item(j) as Element
+                    val xPath = XPathFactory.newInstance().newXPath()
+                    val ref = xPath.evaluate("property[@name='reference']/@value", image)
+                    val actual = xPath.evaluate("property[@name='actual']/@value", image)
+                    val diff = xPath.evaluate("property[@name='diff']/@value", image)
+                    referenceImage = if (isImage(ref)) {
+                        Image(ref, "")
+                    } else {
+                        Image("", ref)
                     }
-                    for (k in 0 until actuals.length) {
-                        val reference = actuals.item(k) as Element
-                        val path = reference.getAttribute("path")
-                        val message = reference.getAttribute("message")
-                        actualImage = Image(path, message)
+
+                    actualImage = if (isImage(actual)) {
+                        Image(actual, "")
+                    } else {
+                        Image("", actual)
                     }
-                    for (k in 0 until diffs.length) {
-                        val reference = diffs.item(k) as Element
-                        val path = reference.getAttribute("path")
-                        val message = reference.getAttribute("message")
-                        diffImage = Image(path, message)
+
+                    diffImage = if (isImage(diff)) {
+                        Image(diff, "")
+                    } else {
+                        Image("", diff)
                     }
+
                     ssImages = ScreenshotTestImages(
                             referenceImage,
                             actualImage,
@@ -175,6 +172,10 @@ class TestReport(resultDir: File, reportDir: File) {
                 // cannot happen
             }
         }
+    }
+
+    private fun isImage(path: String?): Boolean {
+        return path != null && path.endsWith(".png")
     }
 
     private fun generateFilesForScreenshotTest(

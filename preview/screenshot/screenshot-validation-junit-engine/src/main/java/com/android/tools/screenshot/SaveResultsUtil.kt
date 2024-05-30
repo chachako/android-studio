@@ -33,10 +33,7 @@ const val FAILURE = "failure"
 const val FAILURES = "failures"
 const val FEATURE = "http://xmlpull.org/v1/doc/features.html#indent-output"
 const val REFERENCE = "reference"
-const val IMAGES = "images"
-const val MESSAGE = "message"
 const val NAME = "name"
-const val PATH = "path"
 const val PERIOD = "."
 const val PROPERTIES = "properties"
 const val PROPERTY = "property"
@@ -132,25 +129,28 @@ private fun printImages(
     serializer.startTag(NAMESPACE, tag)
     serializer.text(stack)
     serializer.endTag(NAMESPACE, tag)
-    serializer.startTag(NAMESPACE, IMAGES)
-    serializer.startTag(NAMESPACE, REFERENCE)
-    result.referenceImage!!.path?.let { serializer.attribute(NAMESPACE, PATH, it.toString()) }
-    result.referenceImage.message?.let { serializer.attribute(NAMESPACE, MESSAGE, it) }
-    serializer.endTag(NAMESPACE, REFERENCE)
+    serializer.startTag(NAMESPACE, PROPERTIES)
+    serializer.startTag(NAMESPACE, PROPERTY)
+    serializer.attribute(NAMESPACE, NAME, REFERENCE)
+    result.referenceImage!!.path?.let { serializer.attribute(NAMESPACE, VALUE, it.toString()) }
+    result.referenceImage.message?.let { serializer.attribute(NAMESPACE, VALUE, it) }
+    serializer.endTag(NAMESPACE, PROPERTY)
     if (result.actualImage != null) {
-        serializer.startTag(NAMESPACE, ACTUAL)
-        result.actualImage.path?.let { serializer.attribute(NAMESPACE, PATH, it.toString()) }
-        result.actualImage.message?.let { serializer.attribute(NAMESPACE, MESSAGE, it) }
-        serializer.endTag(NAMESPACE, ACTUAL)
+        serializer.startTag(NAMESPACE, PROPERTY)
+        serializer.attribute(NAMESPACE, NAME, ACTUAL)
+        result.actualImage.path?.let { serializer.attribute(NAMESPACE, VALUE, it.toString()) }
+        result.actualImage.message?.let { serializer.attribute(NAMESPACE, VALUE, it) }
+        serializer.endTag(NAMESPACE, PROPERTY)
     }
     if (result.diffImage != null) {
-        serializer.startTag(NAMESPACE, DIFF)
-        result.diffImage.path?.let { serializer.attribute(NAMESPACE, PATH, it.toString()) }
-        result.diffImage.message?.let { serializer.attribute(NAMESPACE, MESSAGE, it) }
-        serializer.endTag(NAMESPACE, DIFF)
+        serializer.startTag(NAMESPACE, PROPERTY)
+        serializer.attribute(NAMESPACE, NAME, DIFF)
+        result.diffImage.path?.let { serializer.attribute(NAMESPACE, VALUE, it.toString()) }
+        result.diffImage.message?.let { serializer.attribute(NAMESPACE, VALUE, it) }
+        serializer.endTag(NAMESPACE, PROPERTY)
     }
 
-    serializer.endTag(NAMESPACE, IMAGES)
+    serializer.endTag(NAMESPACE, PROPERTIES)
 }
 
 private fun getPropertiesAttributes(xmlProperties: List<String>?): Map<String, String> {

@@ -3,29 +3,29 @@
   <properties />
   <testcase name="previewTest1" classname="package" time="2.0">
     <success>Reference image saved</success>
-    <images>
-      <reference path="referencePath" />
-    </images>
+    <properties>
+      <property name="reference" value="referencePath" />
+    </properties>
   </testcase>
   <testcase name="previewTest1" classname="package" time="2.0">
     <success>Reference image saved</success>
-    <images>
-      <reference path="referencePath" />
-    </images>
+    <properties>
+      <property name="reference" value="referencePath" />
+    </properties>
   </testcase>
   <testcase name="previewTest3" classname="package" time="0.0">
     <failure>Render error</failure>
-    <images>
-      <reference path="referencePath" />
-      <actual message="Render error: Class XYZ not found" />
-    </images>
+    <properties>
+      <property name="reference" value="referencePath" />
+      <property name="actual" value="Render error: Class XYZ not found" />
+    </properties>
   </testcase>
   <testcase name="previewTest2" classname="package" time="2.0">
     <failure>Images don't match</failure>
-    <images>
-      <reference path="referencePath" />
-      <actual path="actualPath" />
-      <diff path="diffPath" />
-    </images>
+    <properties>
+      <property name="reference" value="referencePath" />
+      <property name="actual" value="actualPath" />
+      <property name="diff" value="diffPath" />
+    </properties>
   </testcase>
 </testsuite>
