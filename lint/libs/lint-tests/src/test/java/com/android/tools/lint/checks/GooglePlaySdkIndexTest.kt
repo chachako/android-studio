@@ -558,15 +558,8 @@ class GooglePlaySdkIndexTest {
   }
 
   @Test
-  fun `policy issues shown if showPolicyIssues is enabled`() {
-    index.showPolicyIssues = true
+  fun `policy issues shown`() {
     assertThat(countPolicyIssues()).isEqualTo(16)
-  }
-
-  @Test
-  fun `policy issues not shown if showPolicyIssues is not enabled`() {
-    index.showPolicyIssues = false
-    assertThat(countPolicyIssues()).isEqualTo(0)
   }
 
   @Test
@@ -616,7 +609,6 @@ class GooglePlaySdkIndexTest {
 
   @Test
   fun `No violation type policy issue message`() {
-    index.showPolicyIssues = true
     assertThat(index.generatePolicyMessages("logj4", "logj4", "1.2.14"))
       .isEqualTo(
         listOf(
@@ -868,7 +860,6 @@ class GooglePlaySdkIndexTest {
     policyTypes: List<String>,
     recommendedVersions: String = "",
   ) {
-    index.showPolicyIssues = true
     val expectedBlockingMessages =
       policyTypes.map { policyType ->
         "**[Prevents app release in Google Play Console]** com.example.ads.third.party:example version $version has $policyType issues that will block publishing of your app to Play Console$recommendedVersions"

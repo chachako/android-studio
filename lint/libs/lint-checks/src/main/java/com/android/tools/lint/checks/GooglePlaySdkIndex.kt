@@ -36,7 +36,6 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   companion object {
     const val SDK_INDEX_SNAPSHOT_TEST_BASE_URL_ENV_VAR = "SDK_INDEX_TEST_BASE_URL"
     private const val DEFAULT_SDK_INDEX_SNAPSHOT_BASE_URL = "https://dl.google.com/play-sdk/index/"
-    const val DEFAULT_SHOW_POLICY_ISSUES = true
     const val GOOGLE_PLAY_SDK_INDEX_SNAPSHOT_FILE = "snapshot.gz"
     const val GOOGLE_PLAY_SDK_INDEX_SNAPSHOT_RESOURCE = "sdk-index-offline-snapshot.proto.gz"
     val GOOGLE_PLAY_SDK_INDEX_SNAPSHOT_URL =
@@ -66,7 +65,6 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
   private var status: GooglePlaySdkIndexStatus = GooglePlaySdkIndexStatus.NOT_READY
   private val libraryToSdk = HashMap<String, LibraryToSdk>()
   private var googleMaven: GoogleMavenRepository? = null
-  var showPolicyIssues = DEFAULT_SHOW_POLICY_ISSUES
 
   /**
    * Read Index snapshot (locally if it is not old and remotely if old and network is available) and
@@ -174,7 +172,7 @@ abstract class GooglePlaySdkIndex(cacheDir: Path? = null) :
     if (isNonCompliant) {
       logNonCompliant(groupId, artifactId, versionString, buildFile)
     }
-    return showPolicyIssues && isNonCompliant
+    return isNonCompliant
   }
 
   /**
