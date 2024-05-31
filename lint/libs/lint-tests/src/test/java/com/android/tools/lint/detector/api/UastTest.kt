@@ -4025,4 +4025,96 @@ class UastTest : TestCase() {
       )
     }
   }
+
+  fun testResolutionToConstructorWithGenericInBinary() {
+    // b/343257595
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            import test.pkg.*
+
+            fun test() {
+              val x = Foo()
+              val y = FooWithGeneric<Int>(42)
+              val z = FooWithGeneric<String>(42)
+            }
+          """
+        ),
+        bytecode(
+          "libs/lib.jar",
+          kotlin(
+              """
+              package test.pkg
+
+              class Foo
+
+              class FooWithGeneric<T>(
+                val value: T? = null,
+                val flag: Boolean = false,
+              ) {
+                constructor(p: Any) : this(p as? T, true)
+              }
+            """
+            )
+            .indented(),
+          0x9eb7ed78,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S5RYtBiAABz6lUC
+                JAAAAA==
+                """,
+          """
+                test/pkg/Foo.class:
+                H4sIAAAAAAAA/01Qu04CQRQ9dxYWWVdevsBXrRYuEDuNiZqQkKyaqKGhGmCD
+                w2PHsAOx5Fv8AysTC0Ms/Sjj3ZXC5uQ87tzHfP98fAI4xT7BNUFkvOdh32to
+                nQERCgM5k95Ihn3vrjMIuiYDi2Cfq1CZC4J1eNRykYbtIIUMIWWeVETI+f8b
+                nRGK/lCbkQq9m8DInjSSPTGeWTyYYsjGAAIN2X9Rsaoy69UIB4u544iycESB
+                2WJeXszrokpX6a9XWxREXFWn+K3No06Ghpe41r2AkPdVGNxOx51g8ig7I3ZK
+                vu7KUUtOVKyXpvOgp5Nu0FCxqNxPQ6PGQUtFitPLMNRGGqXDCDUIvnG5Znwy
+                Y5mVl2ggffyOlTcmAhVGOzEt7DC6fwXIwkny3QS3sZf8O2GVM7cNq4m1JnJN
+                5FFgimITJay3QRE2sMl5BCfCVgT7F16fV820AQAA
+                """,
+          """
+                test/pkg/FooWithGeneric.class:
+                H4sIAAAAAAAA/31T30/bVhT+ruPYjknAySBA+NHSshHCVgPrtq5QtsLGFCl0
+                E2RMg6dLcIOJsZF9E+1pyuP+hb3ueQ+rtIppD1O0x/1R0851TNpCVlm658c9
+                5zvfOff4n3///AvAQ+wwTAonEvZlq2nvBsF3rjj7yvGd0G3oYAzlzfrj2jnv
+                cNvjftP++uTcaYiNrdsuBuumT4fKoG26viu2GIrl20lHy4cMerle72uLtSBs
+                2ueOOAm560c29/1AcOEGpD9rex4/8RwqlCovH2ahwTSRxghDusO9tsNQuF0g
+                ixxGM1AwxqA+93iTgR1lkUdBOt8hpzhzI4bp2v8Mgcp9OYx4tdYKhOf69nnn
+                wnZ94YQ+9+wvnOe87YkdIizCdkME4R4PW0640Sesm1R0isFoOuKwz3m8vDxs
+                lunyMg2FZkORuzFtavqIYWIIFzm5+2+bXCDk8AiNXRpYYJgfRr3qi5Ay3Uak
+                4z4Vapw5jVaS+g0P+YVDgQxLQwi85jmQIM243XfxnolFLMnGJ2Xjy9RE3FT+
+                enZ7juCnXHDyKRedFC0kk0dGHiC6LfL/4EprlbTTNYafet2iqUwpZq9rKpY8
+                DJWUEZLaVK9bUY1e12LryqqyPWYUC5qVKpH+9y+aYqnbMwXTUKx0SZ1ij3rd
+                gkGGRtd6fG3s5weWQfAl1chY5v7EIJ78JpXK0cWIlZV81olinUmmGi3Ng5Zg
+                yBy4TZ+LdkhPO7Pf9oV74VT9jhu5tLpPXz0KLd5OcEpBYzXXd561L06csC7X
+                W25x0ODeIQ9daSfOxZtYgyd5AzR3IHijtccvkzTzIGiHDWfXlcZ0gnF4iw3W
+                6HnSNGYFBfnDkHwcWyvYIKlRhxmSBfnfJDYtM1LYJOt7ipNPNFa5Qray8hJW
+                ZfYlxl/EAE/iNJXONJ0awegEn8YWee720zCBonxv0mRpFmuy0DUJA5/JpVAS
+                FrBk9UmyZPU9ApHMJ+fUH39GmtXm0lKmnlRWZq8w3WfxOZ0qFEOP+ZQoXfLR
+                6DNIjhIni2QRJtUtYSZpzJYrKCMrv8P6bdCOFju1uIVsPyBpoU939o2Z5TGH
+                +YTr64Djv94A1IcAykbvUJRMfkqsFJK5lcK9P1CurKiD9q5B5HglSLEfOBhs
+                DgvxYOUYdUnhboJtJsSWqKKsm6mwlMauUHkRB7wilEmwUkmPKaIj5afYJvkt
+                xbxPEB8cI1XFgyrsKlaxRirWq/gQD4/BInyEj48xGqEY4ZMIjyIsRLgTIRch
+                H5t6hLkI8xFKEWYijP4HpofXVKMGAAA=
+                """,
+        ),
+      )
+    val expectedClassNames = mutableListOf("Foo", "FooWithGeneric", "FooWithGeneric")
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+            assertTrue(resolved!!.isConstructor)
+            assertEquals(expectedClassNames.removeFirst(), resolved.name)
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
 }
