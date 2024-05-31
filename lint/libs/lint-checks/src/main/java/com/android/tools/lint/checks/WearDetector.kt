@@ -46,7 +46,7 @@ open class WearDetector : Detector() {
         else context.project.mergedManifest?.documentElement
       )
 
-    private fun containsWearFeature(manifest: Element?): Boolean {
+    fun containsWearFeature(manifest: Element?): Boolean {
       if (manifest == null) {
         return false
       }

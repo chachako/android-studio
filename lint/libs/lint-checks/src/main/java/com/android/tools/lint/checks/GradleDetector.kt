@@ -18,7 +18,6 @@ package com.android.tools.lint.checks
 import com.android.SdkConstants
 import com.android.SdkConstants.ANDROID_URI
 import com.android.SdkConstants.ATTR_TARGET_SDK_VERSION
-import com.android.SdkConstants.DOT_TOML
 import com.android.SdkConstants.GRADLE_PLUGIN_MINIMUM_VERSION
 import com.android.SdkConstants.GRADLE_PLUGIN_RECOMMENDED_VERSION
 import com.android.SdkConstants.PLATFORM_WINDOWS
@@ -68,7 +67,6 @@ import com.android.tools.lint.detector.api.XmlScanner
 import com.android.tools.lint.detector.api.getLanguageLevel
 import com.android.tools.lint.detector.api.guessGradleLocation
 import com.android.tools.lint.detector.api.isNumberString
-import com.android.tools.lint.detector.api.minSdkLessThan
 import com.android.tools.lint.detector.api.readUrlData
 import com.android.tools.lint.detector.api.readUrlDataAsString
 import com.android.tools.lint.model.LintModelArtifactType
@@ -632,12 +630,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           if (dependencyFromVc != null) {
             dependencyString = dependencyFromVc.coordinates
             libTomlValue = dependencyFromVc.tomlValue
-
-            // We deliberately skipped checking this dependency from TOML files since we
-            // only want to check it from the context of a usage in a Gradle file; do it now.
-            if (dependencyString.startsWith("androidx.credentials:credentials:")) {
-              checkCredentialDependency(context, valueCookie, statementCookie)
-            }
           }
         }
 
@@ -1034,11 +1026,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         // Play services
 
         checkPlayServices(context, dependency, version, cookie, statementCookie)
-      }
-      "androidx.credentials" -> {
-        if (artifactId == "credentials") {
-          checkCredentialDependency(context, cookie, statementCookie)
-        }
       }
       "com.android.base",
       "com.android.application",
@@ -1654,37 +1641,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
       return true
     }
     return false
-  }
-
-  private fun checkCredentialDependency(context: Context, valueCookie: Any, statementCookie: Any) {
-    // This check doesn't make sense when looking at a TOML file; this only
-    // creates the declaration of a dependency, but not an actual usage of
-    // it. And in particular, the TOML file isn't associated with any one
-    // particular module, so "depends on" will return false since the root
-    // project doesn't have any dependencies.
-    //
-    // Instead, we should only do this check from Gradle contexts. But with
-    // TOML we have to work a little harder; right now, we only process
-    // dependencies that specify Maven coordinates as strings; here we'll need
-    // to resolve these as part of the checks.
-    if (context is TomlContext) {
-      // (Instead we'll call this from a GradleContext after resolving
-      // libs references.)
-      return
-    }
-
-    if (context.project.dependsOn("androidx.credentials:credentials-play-services-auth") == true) {
-      return
-    }
-
-    val cookie = if (context.file.path.endsWith(DOT_TOML)) statementCookie else valueCookie
-    report(
-      context,
-      cookie,
-      CREDENTIAL_DEP,
-      "In Android 13 or lower, `credentials-play-services-auth` is required when using `androidx.credentials:credentials`",
-      constraint = minSdkLessThan(34),
-    )
   }
 
   private fun checkPlayServices(
@@ -2726,26 +2682,6 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         priority = 4,
         severity = Severity.INFORMATIONAL,
         implementation = IMPLEMENTATION_WITH_TOML,
-      )
-
-    @JvmField
-    val CREDENTIAL_DEP =
-      Issue.create(
-        id = "CredentialDependency",
-        briefDescription = "`credentials-play-services-auth` is Required",
-        explanation =
-          """
-          The dependency `androidx.credentials:credentials-play-services-auth` is required \
-          to get support from Play services for the  Credential Manager API to work. \
-          For Android 14 or higher, this is optional. Please check release notes for the \
-          latest version.
-          """,
-        moreInfo = "https://developer.android.com/jetpack/androidx/releases/credentials",
-        category = Category.CORRECTNESS,
-        priority = 5,
-        severity = Severity.WARNING,
-        implementation = IMPLEMENTATION_WITH_TOML,
-        androidSpecific = true,
       )
 
     /**
