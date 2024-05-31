@@ -47,7 +47,7 @@ class JsonSerializationTest {
                   "methodFQN": "com.my.package.ClKt.Method1",
                   "methodParams": [],
                   "previewParams": {},
-                  "imageName": "/path/to/image/pattern/name"
+                  "previewId": "/path/to/image/pattern/name"
                 }
               ],
               "resultsFilePath": "/path/to/my_results.json"
@@ -96,7 +96,7 @@ class JsonSerializationTest {
                     "name": "Dark theme",
                     "uiMode": "32"
                   },
-                  "imageName": "/path/to/image/pattern/name"
+                  "previewId": "/path/to/image/pattern/name"
                 },
                 {
                   "methodFQN": "com.my.package.Cl2Kt.Method3",
@@ -104,7 +104,7 @@ class JsonSerializationTest {
                   "previewParams": {
                     "name": "Light theme"
                   },
-                  "imageName": "/path/to/image/pattern/name"
+                  "previewId": "/path/to/image/pattern/name"
                 },
                 {
                   "methodFQN": "com.my.package.Cl3Kt.Method5",
@@ -114,7 +114,7 @@ class JsonSerializationTest {
                     }
                   ],
                   "previewParams": {},
-                  "imageName": "/path/to/image/pattern/name"
+                  "previewId": "/path/to/image/pattern/name"
                 }
               ]
             }
@@ -240,11 +240,12 @@ class JsonSerializationTest {
             {
               "screenshotResults": [
                 {
-                  "resultId": "resultId1",
-                  "imagePath": "/path/to/image.png"
+                  "previewId": "previewId1",
+                  "imageName": "image1.png"
                 },
                 {
-                  "resultId": "resultId2",
+                  "previewId": "previewId2",
+                  "imageName": "image2.png",
                   "error": {
                       "status": "ERROR_RENDER_TASK",
                       "message": "Error message",
@@ -255,7 +256,7 @@ class JsonSerializationTest {
                   }
                 },
                 {
-                  "resultId": "resultId3",
+                  "previewId": "previewId3",
                   "error": {
                       "status": "SUCCESS",
                       "message": "",
@@ -277,7 +278,7 @@ class JsonSerializationTest {
                       ],
                       "missingClasses": ["com.foo.Bar"]
                   },
-                  "imagePath": "/path/to/image3.png"
+                  "imageName": "image3.png"
                 }
               ]
             }
@@ -288,8 +289,8 @@ class JsonSerializationTest {
         val expectedComposeRenderingResult = ComposeRenderingResult(
             null,
             listOf(
-                ComposeScreenshotResult("resultId1", "/path/to/image.png", null),
-                ComposeScreenshotResult("resultId2", null, ScreenshotError(
+                ComposeScreenshotResult("previewId1", "image1.png", null),
+                ComposeScreenshotResult("previewId2", "image2.png", ScreenshotError(
                     "ERROR_RENDER_TASK",
                     "Error message",
                     """
@@ -301,7 +302,7 @@ class JsonSerializationTest {
                     emptyList(),
                     emptyList(),
                 )),
-                ComposeScreenshotResult("resultId3", "/path/to/image3.png", ScreenshotError(
+                ComposeScreenshotResult("previewId3", "image3.png", ScreenshotError(
                     "SUCCESS", "", "",
                     listOf(
                         RenderProblem("<html>Some error description</html>", null),
@@ -353,8 +354,8 @@ class JsonSerializationTest {
         val composeRenderingResult = ComposeRenderingResult(
             null,
             listOf(
-                ComposeScreenshotResult("resultId1", "/path/to/image.png", null),
-                ComposeScreenshotResult("resultId2", null, ScreenshotError(
+                ComposeScreenshotResult("previewId1", "image.png", null),
+                ComposeScreenshotResult("previewId2", "image2.png", ScreenshotError(
                     "ERROR_RENDER_TASK",
                     "Error message",
                     """
@@ -366,7 +367,7 @@ class JsonSerializationTest {
                     emptyList(),
                     emptyList(),
                 )),
-                ComposeScreenshotResult("resultId3", "/path/to/image3.png", ScreenshotError(
+                ComposeScreenshotResult("previewId3", "image3.png", ScreenshotError(
                     "SUCCESS", "", "",
                     listOf(
                         RenderProblem("<html>Some error description</html>", null),

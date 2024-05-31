@@ -128,7 +128,7 @@ private fun serializePreviews(
             calcImageName(method, annotation)
         )
     }
-    writeComposeScreenshotsToJson(fileWriter, composeScreenshots.sortedBy { it.imageName })
+    writeComposeScreenshotsToJson(fileWriter, composeScreenshots.sortedBy { it.previewId })
 }
 
 /**

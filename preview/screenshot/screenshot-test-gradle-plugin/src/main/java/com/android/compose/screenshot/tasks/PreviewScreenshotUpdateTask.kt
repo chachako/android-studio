@@ -73,21 +73,22 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
     private fun verifyRender(results: List<ComposeScreenshotResult>) {
         if (results.isNotEmpty()) {
             for (result in results) {
-                if (result.imagePath == null || !File(result.imagePath).exists()) {
-                    throw GradleException("Cannot update reference images. Rendering failed for ${result.resultId}. Error: ${result.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
-                }
+                if (!File(renderTaskOutputDir.get().asFile, result.imageName).exists())
+                    throw GradleException("Cannot update reference images. Rendering failed for ${result.imageName.substringBeforeLast(".")}. " +
+                            "Error: ${result.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
             }
         }
     }
 
     private fun saveReferenceImage(composeScreenshot: ComposeScreenshotResult) {
-        val renderedFile = composeScreenshot.imagePath?.let{ File(it) }
-        if (renderedFile != null && renderedFile.exists()) {
+        val renderedFile = File(renderTaskOutputDir.get().asFile, composeScreenshot.imageName)
+        if (renderedFile.exists()) {
             if (composeScreenshot.error != null) {
-                logger.warn("Rendering preview ${composeScreenshot.resultId} encountered some problems: ${composeScreenshot.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
+                logger.warn("Rendering preview ${composeScreenshot.imageName.substringBeforeLast(".")} encountered some problems: ${composeScreenshot.error!!.message}. " +
+                        "Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
             }
 
-            val referenceImagePath = referenceImageDir.asFile.get().toPath().resolve("${composeScreenshot.resultId}.png")
+            val referenceImagePath = referenceImageDir.asFile.get().toPath().resolve(composeScreenshot.imageName)
             FileUtils.copyFile(renderedFile, referenceImagePath.toFile())
         }
     }

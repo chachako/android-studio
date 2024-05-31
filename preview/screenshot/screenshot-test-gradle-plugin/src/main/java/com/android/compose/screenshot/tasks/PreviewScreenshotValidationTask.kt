@@ -81,6 +81,7 @@ abstract class PreviewScreenshotValidationTask : Test() {
             setTestEngineParam("referenceImageDirPath", referenceImageDir.get().asFile.absolutePath)
             setTestEngineParam("diffImageDirPath", diffImageDir.get().asFile.absolutePath)
             setTestEngineParam("renderResultsFilePath", renderTaskOutputFile.get().asFile.absolutePath)
+            setTestEngineParam("renderTaskOutputDir", renderTaskOutputDir.get().asFile.absolutePath)
             setTestEngineParam("resultsDirPath", resultsDir.get().asFile.absolutePath)
             super.executeTests()
         }

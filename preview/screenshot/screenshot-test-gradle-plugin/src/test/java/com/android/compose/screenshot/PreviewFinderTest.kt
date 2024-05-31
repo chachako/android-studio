@@ -57,7 +57,7 @@ class PreviewFinderTest {
                   "previewParams": {
                     "showBackground": "true"
                   },
-                  "imageName": "com.example.agptest.ExampleInstrumentedTest.previewThere_3d8b4969_da39a3ee"
+                  "previewId": "com.example.agptest.ExampleInstrumentedTest.previewThere_3d8b4969_da39a3ee"
                 }
               ]
             }
@@ -97,7 +97,7 @@ class PreviewFinderTest {
                   "previewParams": {
                     "showBackground": "true"
                   },
-                  "imageName": "com.example.agptest.ExampleInstrumentedTest.previewThere_3d8b4969_da39a3ee"
+                  "previewId": "com.example.agptest.ExampleInstrumentedTest.previewThere_3d8b4969_da39a3ee"
                 }
               ],
               "resultsFilePath": "resultsFilePath"

@@ -21,5 +21,5 @@ data class ComposeScreenshot(
     val methodFQN: String,
     val methodParams: List<Map<String, String>>,
     val previewParams: Map<String, String>,
-    val imageName: String
+    val previewId: String
 )

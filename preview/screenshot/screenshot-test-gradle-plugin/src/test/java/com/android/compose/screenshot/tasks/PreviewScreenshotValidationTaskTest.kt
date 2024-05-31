@@ -55,7 +55,7 @@ class PreviewScreenshotValidationTaskTest {
         val previewsFile = tempDirRule.newFile("previews_discovered.json")
 
         // Copy the same image to rendered output and reference images
-        val previewImageName = "com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee"
+        val previewId = "com.example.project.ExampleInstrumentedTest.GreetingPreview_3d8b4969_da39a3ee"
         previewsFile.writeText("""
             {
               "screenshots": [
@@ -65,15 +65,15 @@ class PreviewScreenshotValidationTaskTest {
                   "previewParams": {
                     "showBackground": "true"
                   },
-                  "imageName": "$previewImageName"
+                  "previewId": "$previewId"
                 }
               ]
             }
         """.trimIndent())
         javaClass.getResourceAsStream("circle.png")!!
-            .copyTo(referenceImageDir.resolve("$previewImageName.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
+            .copyTo(referenceImageDir.resolve("$previewId.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
         javaClass.getResourceAsStream("circle.png")!!
-            .copyTo(renderOutputDir.resolve("${previewImageName}_0.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
+            .copyTo(renderOutputDir.resolve("${previewId}_0.png").canonicalFile.apply { parentFile!!.mkdirs() }.outputStream())
         task.previewFile.set(previewsFile)
         task.diffImageDir.set(diffDir)
         task.renderTaskOutputFile.set(renderOutputFile)

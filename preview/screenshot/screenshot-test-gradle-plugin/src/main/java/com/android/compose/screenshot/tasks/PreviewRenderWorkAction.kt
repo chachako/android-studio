@@ -16,12 +16,14 @@
 
 package com.android.compose.screenshot.tasks
 
+import com.android.tools.render.compose.readComposeRenderingJson
 import com.android.tools.render.compose.readComposeRenderingResultJson
 import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
+import java.io.File
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -55,8 +57,9 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
             throw GradleException("There was an error with the rendering process.")
         }
         val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
+        val outputFolder = readComposeRenderingJson(parameters.cliToolArgumentsFile.get().asFile.reader()).outputFolder
         val renderingErrors =
-            composeRenderingResult.screenshotResults.count { it.imagePath == null && it.error != null && it.error!!.status != "SUCCESS" }
+            composeRenderingResult.screenshotResults.count { !File(outputFolder, it.imageName).exists() || (it.error != null && it.error!!.status != "SUCCESS") }
         if (composeRenderingResult.globalError != null || renderingErrors > 0) {
             throw GradleException("Rendering failed for one or more previews. For more details, check ${resultFile.absolutePath}")
         }

@@ -20,6 +20,7 @@ import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import java.io.Reader
 import java.io.Writer
+import java.lang.IllegalArgumentException
 
 private const val FONTS_PATH = "fontsPath"
 private const val LAYOUTLIB_PATH = "layoutlibPath"
@@ -32,14 +33,13 @@ private const val RESOURCE_APK_PATH = "resourceApkPath"
 private const val SCREENSHOTS = "screenshots"
 private const val METHOD_FQN = "methodFQN"
 private const val METHOD_PARAMS = "methodParams"
-private const val IMAGE_NAME = "imageName"
 private const val PREVIEW_PARAMS = "previewParams"
 private const val RESULTS_FILE_PATH = "resultsFilePath"
 
-private const val RESULT_ID = "resultId"
+private const val PREVIEW_ID = "previewId"
 private const val GLOBAL_ERROR = "globalError"
 private const val SCREENSHOT_RESULTS = "screenshotResults"
-private const val IMAGE_PATH = "imagePath"
+private const val IMAGE_NAME = "imageName"
 private const val SCREENSHOT_ERROR = "error"
 private const val STATUS = "status"
 private const val MESSAGE = "message"
@@ -119,7 +119,7 @@ fun readComposeRenderingJson(jsonReader: Reader): ComposeRendering {
 private fun readComposeScreenshot(reader: JsonReader): ComposeScreenshot {
     var methodFQN: String? = null
     val methodParams = mutableListOf<Map<String, String>>()
-    var imageName: String? = null
+    var previewId: String? = null
     val previewParams = mutableMapOf<String, String>()
     reader.beginObject()
     while (reader.hasNext()) {
@@ -138,7 +138,7 @@ private fun readComposeScreenshot(reader: JsonReader): ComposeScreenshot {
                 }
                 reader.endArray()
             }
-            IMAGE_NAME -> { imageName = reader.nextString() }
+            PREVIEW_ID -> { previewId = reader.nextString() }
             PREVIEW_PARAMS -> {
                 reader.beginObject()
                 while (reader.hasNext()) {
@@ -153,7 +153,7 @@ private fun readComposeScreenshot(reader: JsonReader): ComposeScreenshot {
         methodFQN ?: throw IllegalArgumentException("FQN of a method is missing"),
         methodParams,
         previewParams,
-        imageName ?: throw IllegalArgumentException("Output image name is missing")
+        previewId ?: throw IllegalArgumentException("Preview Id is missing")
     )
 }
 
@@ -229,7 +229,7 @@ private fun writeComposeScreenshot(writer: JsonWriter, screenshot: ComposeScreen
         writer.name(it.key).value(it.value)
     }
     writer.endObject()
-    writer.name(IMAGE_NAME).value(screenshot.imageName)
+    writer.name(PREVIEW_ID).value(screenshot.previewId)
     writer.endObject()
 }
 
@@ -334,14 +334,14 @@ private fun readScreenshotError(reader: JsonReader): ScreenshotError {
 }
 
 private fun readComposeScreenshotResult(reader: JsonReader): ComposeScreenshotResult {
-    var imagePath: String? = null
+    var imageName: String? = null
     var screenshotError: ScreenshotError? = null
-    var resultId: String? = null
+    var previewId: String? = null
     reader.beginObject()
     while (reader.hasNext()) {
         when (reader.nextName()) {
-            RESULT_ID -> { resultId = reader.nextString() }
-            IMAGE_PATH -> { imagePath = reader.nextString() }
+            PREVIEW_ID -> { previewId = reader.nextString() }
+            IMAGE_NAME -> { imageName = reader.nextString() }
             SCREENSHOT_ERROR -> {
                 screenshotError = readScreenshotError(reader)
             }
@@ -349,8 +349,8 @@ private fun readComposeScreenshotResult(reader: JsonReader): ComposeScreenshotRe
     }
     reader.endObject()
     return ComposeScreenshotResult(
-        resultId ?: throw IllegalArgumentException("Result ID is missing"),
-        imagePath,
+        previewId ?: throw IllegalArgumentException("Preview Id is missing"),
+        imageName ?: throw IllegalArgumentException("Image name missing"),
         screenshotError
     )
 }
@@ -388,9 +388,9 @@ private fun writeComposeScreenshotResultToJson(
     screenshotResult: ComposeScreenshotResult,
 ) {
     writer.beginObject()
-    writer.name(RESULT_ID).value(screenshotResult.resultId)
-    screenshotResult.imagePath?.let {
-        writer.name(IMAGE_PATH).value(it)
+    writer.name(PREVIEW_ID).value(screenshotResult.previewId)
+    screenshotResult.imageName?.let {
+        writer.name(IMAGE_NAME).value(it)
     }
     screenshotResult.error?.let { screenshotError ->
         writer.name(SCREENSHOT_ERROR)

@@ -292,7 +292,7 @@ class ScreenshotTest {
                     "name": "with_Background",
                     "showBackground": "true"
                   },
-                  "imageName": "pkg.name.ExampleTest.multiPreviewTest_with_Background_e1f26d19_da39a3ee"
+                  "previewId": "pkg.name.ExampleTest.multiPreviewTest_with_Background_e1f26d19_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.multiPreviewTest",
@@ -301,7 +301,7 @@ class ScreenshotTest {
                     "name": "withoutBackground",
                     "showBackground": "false"
                   },
-                  "imageName": "pkg.name.ExampleTest.multiPreviewTest_withoutBackground_5676c0a6_da39a3ee"
+                  "previewId": "pkg.name.ExampleTest.multiPreviewTest_withoutBackground_5676c0a6_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.multipleParameterProviderTest",
@@ -314,7 +314,7 @@ class ScreenshotTest {
                     }
                   ],
                   "previewParams": {},
-                  "imageName": "pkg.name.ExampleTest.multipleParameterProviderTest_da39a3ee_b3bbe100"
+                  "previewId": "pkg.name.ExampleTest.multipleParameterProviderTest_da39a3ee_b3bbe100"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.parameterProviderTest",
@@ -326,7 +326,7 @@ class ScreenshotTest {
                   "previewParams": {
                     "name": "simplePreviewParameterProvider"
                   },
-                  "imageName": "pkg.name.ExampleTest.parameterProviderTest_simplePreviewParameterProvider_e3342a25_77e30523"
+                  "previewId": "pkg.name.ExampleTest.parameterProviderTest_simplePreviewParameterProvider_e3342a25_77e30523"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.previewNameCannotBeUsedAsFileNameTest",
@@ -334,7 +334,7 @@ class ScreenshotTest {
                   "previewParams": {
                     "name": "invalid/File/Name"
                   },
-                  "imageName": "pkg.name.ExampleTest.previewNameCannotBeUsedAsFileNameTest_b249e5c1_da39a3ee"
+                  "previewId": "pkg.name.ExampleTest.previewNameCannotBeUsedAsFileNameTest_b249e5c1_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.simpleComposableTest2",
@@ -344,7 +344,7 @@ class ScreenshotTest {
                     "name": "simpleComposable",
                     "widthDp": "800"
                   },
-                  "imageName": "pkg.name.ExampleTest.simpleComposableTest2_simpleComposable_05ad9183_da39a3ee"
+                  "previewId": "pkg.name.ExampleTest.simpleComposableTest2_simpleComposable_05ad9183_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.ExampleTest.simpleComposableTest",
@@ -353,7 +353,7 @@ class ScreenshotTest {
                     "name": "simpleComposable",
                     "showBackground": "true"
                   },
-                  "imageName": "pkg.name.ExampleTest.simpleComposableTest_simpleComposable_7759f1e3_da39a3ee"
+                  "previewId": "pkg.name.ExampleTest.simpleComposableTest_simpleComposable_7759f1e3_da39a3ee"
                 },
                 {
                   "methodFQN": "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3",
@@ -361,7 +361,7 @@ class ScreenshotTest {
                   "previewParams": {
                     "showBackground": "true"
                   },
-                  "imageName": "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee"
+                  "previewId": "pkg.name.TopLevelPreviewTestKt.simpleComposableTest_3_3d8b4969_da39a3ee"
                 }
               ]
             }
