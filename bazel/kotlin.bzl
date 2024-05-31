@@ -41,10 +41,18 @@ def kotlin_compile(ctx, name, srcs, deps, friend_jars, out, out_ijar, java_runti
 
     args = ctx.actions.args()
 
+    # The target language/API level is constrained by the minimum kotlin-stdlib version we link to
+    # at runtime. For Android Studio, that kotlin-stdlib version is determined by IntelliJ [1]. For
+    # AGP, the kotlin-stdlib version corresponds to Gradle's "Embedded Kotlin version" [2]; make
+    # sure to match the Gradle version with the minimum requirements specified by AGP [3].
+    #
+    # [1] tools/idea/.idea/libraries/kotlin_stdlib.xml
+    # [2] https://docs.gradle.org/current/userguide/compatibility.html#kotlin
+    # [3] https://developer.android.com/build/releases/gradle-plugin#updating-gradle
+    args.add("-api-version", "1.9")
+    args.add("-language-version", "1.9")
     args.add("-module-name", name)
     args.add("-nowarn")  # Mirrors the default javac opts.
-    args.add("-api-version", "1.8")
-    args.add("-language-version", "1.8")
     args.add("-Xjvm-default=all-compatibility")
     args.add("-no-stdlib")
     args.add("-Xsam-conversions=class")  # Needed for Gradle configuration caching (see b/202512551).

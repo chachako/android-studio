@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-631cb02770fdb16fe18add3f26874406b02436e51d360a8de07a182217872041
+2a1c300ed85649332655a8811b142564b8321f020ef4df169795038385a80cba
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -560,6 +560,7 @@ com.android.builder.model.v2.dsl.SigningConfig.getStorePassword: java.lang.Strin
 com.android.builder.model.v2.dsl.SigningConfig.isSigningReady: boolean ()
 com.android.builder.model.v2.ide.AaptOptions implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.ide.AaptOptions$Namespacing extends java.lang.Enum
+com.android.builder.model.v2.ide.AaptOptions$Namespacing.getEntries: kotlin.enums.EnumEntries<com.android.builder.model.v2.ide.AaptOptions$Namespacing> ()
 com.android.builder.model.v2.ide.AaptOptions$Namespacing.valueOf: com.android.builder.model.v2.ide.AaptOptions$Namespacing (java.lang.String)
 com.android.builder.model.v2.ide.AaptOptions$Namespacing.values: com.android.builder.model.v2.ide.AaptOptions$Namespacing[] ()
 com.android.builder.model.v2.ide.AaptOptions.getNamespacing: com.android.builder.model.v2.ide.AaptOptions$Namespacing ()
@@ -591,6 +592,7 @@ com.android.builder.model.v2.ide.AndroidArtifact.getTestInfo: com.android.builde
 com.android.builder.model.v2.ide.AndroidArtifact.isSigned: boolean ()
 com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags
 com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag extends java.lang.Enum
+com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag.getEntries: kotlin.enums.EnumEntries<com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag> ()
 com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag.getLegacyDefault: boolean ()
 com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag.getValue$default: boolean (com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag, com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags, java.lang.Boolean, int, java.lang.Object)
 com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags$BooleanFlag.getValue: boolean (com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags, java.lang.Boolean)
@@ -643,9 +645,11 @@ com.android.builder.model.v2.ide.BundleInfo.getBundleTaskName: java.lang.String 
 com.android.builder.model.v2.ide.BundleInfo.getBundleTaskOutputListingFile: java.io.File ()
 com.android.builder.model.v2.ide.BytecodeTransformation extends java.lang.Enum
 com.android.builder.model.v2.ide.BytecodeTransformation.getDescription: java.lang.String ()
+com.android.builder.model.v2.ide.BytecodeTransformation.getEntries: kotlin.enums.EnumEntries<com.android.builder.model.v2.ide.BytecodeTransformation> ()
 com.android.builder.model.v2.ide.BytecodeTransformation.valueOf: com.android.builder.model.v2.ide.BytecodeTransformation (java.lang.String)
 com.android.builder.model.v2.ide.BytecodeTransformation.values: com.android.builder.model.v2.ide.BytecodeTransformation[] ()
 com.android.builder.model.v2.ide.CodeShrinker extends java.lang.Enum
+com.android.builder.model.v2.ide.CodeShrinker.getEntries: kotlin.enums.EnumEntries<com.android.builder.model.v2.ide.CodeShrinker> ()
 com.android.builder.model.v2.ide.CodeShrinker.valueOf: com.android.builder.model.v2.ide.CodeShrinker (java.lang.String)
 com.android.builder.model.v2.ide.CodeShrinker.values: com.android.builder.model.v2.ide.CodeShrinker[] ()
 com.android.builder.model.v2.ide.ComponentInfo
@@ -688,6 +692,7 @@ com.android.builder.model.v2.ide.LibraryInfo.getGroup: java.lang.String ()
 com.android.builder.model.v2.ide.LibraryInfo.getName: java.lang.String ()
 com.android.builder.model.v2.ide.LibraryInfo.getVersion: java.lang.String ()
 com.android.builder.model.v2.ide.LibraryType extends java.lang.Enum
+com.android.builder.model.v2.ide.LibraryType.getEntries: kotlin.enums.EnumEntries<com.android.builder.model.v2.ide.LibraryType> ()
 com.android.builder.model.v2.ide.LibraryType.valueOf: com.android.builder.model.v2.ide.LibraryType (java.lang.String)
 com.android.builder.model.v2.ide.LibraryType.values: com.android.builder.model.v2.ide.LibraryType[] ()
 com.android.builder.model.v2.ide.LintOptions implements com.android.builder.model.v2.AndroidModel
@@ -735,6 +740,7 @@ com.android.builder.model.v2.ide.ProjectInfo implements com.android.builder.mode
 com.android.builder.model.v2.ide.ProjectInfo.getBuildId: java.lang.String ()
 com.android.builder.model.v2.ide.ProjectInfo.getProjectPath: java.lang.String ()
 com.android.builder.model.v2.ide.ProjectType extends java.lang.Enum
+com.android.builder.model.v2.ide.ProjectType.getEntries: kotlin.enums.EnumEntries<com.android.builder.model.v2.ide.ProjectType> ()
 com.android.builder.model.v2.ide.ProjectType.valueOf: com.android.builder.model.v2.ide.ProjectType (java.lang.String)
 com.android.builder.model.v2.ide.ProjectType.values: com.android.builder.model.v2.ide.ProjectType[] ()
 com.android.builder.model.v2.ide.SourceProvider implements com.android.builder.model.v2.AndroidModel
@@ -769,6 +775,7 @@ com.android.builder.model.v2.ide.SyncIssue.getSeverity: int ()
 com.android.builder.model.v2.ide.SyncIssue.getType: int ()
 com.android.builder.model.v2.ide.TestInfo implements com.android.builder.model.v2.AndroidModel
 com.android.builder.model.v2.ide.TestInfo$Execution extends java.lang.Enum
+com.android.builder.model.v2.ide.TestInfo$Execution.getEntries: kotlin.enums.EnumEntries<com.android.builder.model.v2.ide.TestInfo$Execution> ()
 com.android.builder.model.v2.ide.TestInfo$Execution.valueOf: com.android.builder.model.v2.ide.TestInfo$Execution (java.lang.String)
 com.android.builder.model.v2.ide.TestInfo$Execution.values: com.android.builder.model.v2.ide.TestInfo$Execution[] ()
 com.android.builder.model.v2.ide.TestInfo.getAdditionalRuntimeApks: java.util.Collection<java.io.File> ()
@@ -840,6 +847,7 @@ com.android.builder.model.v2.models.BasicAndroidProject.getProjectType: com.andr
 com.android.builder.model.v2.models.BasicAndroidProject.getVariants: java.util.Collection<com.android.builder.model.v2.ide.BasicVariant> ()
 com.android.builder.model.v2.models.ClasspathParameterConfig extends java.lang.Enum
 com.android.builder.model.v2.models.ClasspathParameterConfig.applyTo: void (com.android.builder.model.v2.models.ModelBuilderParameter)
+com.android.builder.model.v2.models.ClasspathParameterConfig.getEntries: kotlin.enums.EnumEntries<com.android.builder.model.v2.models.ClasspathParameterConfig> ()
 com.android.builder.model.v2.models.ClasspathParameterConfig.valueOf: com.android.builder.model.v2.models.ClasspathParameterConfig (java.lang.String)
 com.android.builder.model.v2.models.ClasspathParameterConfig.values: com.android.builder.model.v2.models.ClasspathParameterConfig[] ()
 com.android.builder.model.v2.models.ModelBuilderParameter
@@ -894,6 +902,7 @@ com.android.builder.model.v2.models.ndk.NativeAbi.getName: java.lang.String ()
 com.android.builder.model.v2.models.ndk.NativeAbi.getSourceFlagsFile: java.io.File ()
 com.android.builder.model.v2.models.ndk.NativeAbi.getSymbolFolderIndexFile: java.io.File ()
 com.android.builder.model.v2.models.ndk.NativeBuildSystem extends java.lang.Enum
+com.android.builder.model.v2.models.ndk.NativeBuildSystem.getEntries: kotlin.enums.EnumEntries<com.android.builder.model.v2.models.ndk.NativeBuildSystem> ()
 com.android.builder.model.v2.models.ndk.NativeBuildSystem.valueOf: com.android.builder.model.v2.models.ndk.NativeBuildSystem (java.lang.String)
 com.android.builder.model.v2.models.ndk.NativeBuildSystem.values: com.android.builder.model.v2.models.ndk.NativeBuildSystem[] ()
 com.android.builder.model.v2.models.ndk.NativeModelBuilderParameter implements java.io.Serializable

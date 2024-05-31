@@ -772,6 +772,7 @@ com.android.build.gradle.internal.dsl.AbiSplitOptions.<init>: com.android.build.
 com.android.build.gradle.internal.dsl.AbiSplitOptions.getAbiFilters: com.google.common.collect.ImmutableSet<java.lang.String> (java.util.Set<java.lang.String>)
 com.android.build.gradle.internal.dsl.AbstractPublishing
 com.android.build.gradle.internal.dsl.AbstractPublishing$Type extends java.lang.Enum
+com.android.build.gradle.internal.dsl.AbstractPublishing$Type.getEntries: kotlin.enums.EnumEntries<com.android.build.gradle.internal.dsl.AbstractPublishing$Type> ()
 com.android.build.gradle.internal.dsl.AbstractPublishing$Type.valueOf: com.android.build.gradle.internal.dsl.AbstractPublishing$Type (java.lang.String)
 com.android.build.gradle.internal.dsl.AbstractPublishing$Type.values: com.android.build.gradle.internal.dsl.AbstractPublishing$Type[] ()
 com.android.build.gradle.internal.dsl.AbstractPublishing.<init>: com.android.build.gradle.internal.dsl.AbstractPublishing<T> (com.android.build.gradle.internal.services.DslServices)
@@ -1047,6 +1048,7 @@ com.android.build.gradle.internal.dsl.BuildType extends com.android.builder.core
 com.android.build.gradle.internal.dsl.BuildType$Companion
 com.android.build.gradle.internal.dsl.BuildType$Companion.<init>: com.android.build.gradle.internal.dsl.BuildType$Companion (kotlin.jvm.internal.DefaultConstructorMarker)
 com.android.build.gradle.internal.dsl.BuildType$PostProcessingConfiguration extends java.lang.Enum
+com.android.build.gradle.internal.dsl.BuildType$PostProcessingConfiguration.getEntries: kotlin.enums.EnumEntries<com.android.build.gradle.internal.dsl.BuildType$PostProcessingConfiguration> ()
 com.android.build.gradle.internal.dsl.BuildType$PostProcessingConfiguration.valueOf: com.android.build.gradle.internal.dsl.BuildType$PostProcessingConfiguration (java.lang.String)
 com.android.build.gradle.internal.dsl.BuildType$PostProcessingConfiguration.values: com.android.build.gradle.internal.dsl.BuildType$PostProcessingConfiguration[] ()
 com.android.build.gradle.internal.dsl.BuildType.<init>: com.android.build.gradle.internal.dsl.BuildType (java.lang.String, com.android.build.gradle.internal.services.DslServices, com.android.builder.core.ComponentType)
