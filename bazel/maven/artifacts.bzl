@@ -657,6 +657,7 @@ DATA = [
     "com.google.auto.service:auto-service:1.0-rc2",
     "com.google.auto.value:auto-value:1.4-rc1",
     "com.google.auto.value:auto-value:1.6.2",
+    "com.google.auto.value:auto-value-annotations:1.7.4",
     "com.google.code.gson:gson:2.2.4",
     "com.google.code.gson:gson:2.6.2",
     "com.google.crypto.tink:tink:1.3.0-rc2",
@@ -719,6 +720,7 @@ DATA = [
     "com.google.testing.platform:launcher:0.0.8-alpha07",
     "com.google.testing.platform:launcher:0.0.8-alpha08",
     "com.google.truth:truth:0.44",
+    "com.google.truth:truth:1.1.2",
     "com.googlecode.jarjar:jarjar:1.3",
     "com.jakewharton.auto.value:auto-value-annotations:1.2-update1",
     "com.jakewharton:butterknife:7.0.1",
@@ -958,6 +960,7 @@ DATA = [
     "org.junit:junit-bom:pom:5.9.3",
     "org.junit.platform:junit-platform-engine:1.10.1",
     "org.junit.platform:junit-platform-launcher:1.10.1",
+    "org.mockito:mockito-core:4.3.1",
     "org.mockito:mockito-core:5.6.0",
     "org.robolectric:android-all-instrumented:7.0.0_r1-robolectric-r1-i4",  # Runtime for Android N
     "org.robolectric:android-all-instrumented:9-robolectric-4913185-2-i4",  # Runtime for Android P
