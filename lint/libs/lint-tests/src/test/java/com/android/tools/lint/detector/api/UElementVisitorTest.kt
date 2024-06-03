@@ -17,9 +17,11 @@ package com.android.tools.lint.detector.api
 
 import com.android.tools.lint.checks.AbstractCheckTest
 import com.android.tools.lint.client.api.UElementHandler
+import org.jetbrains.uast.UBinaryExpressionWithPattern
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UNamedExpression
+import org.jetbrains.uast.UPatternExpression
 
 class UElementVisitorTest : AbstractCheckTest() {
 
@@ -112,10 +114,41 @@ class UElementVisitorTest : AbstractCheckTest() {
       )
   }
 
+  fun testPatternExpressions() {
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+            public class JavaTest {
+                public void testInstanceofMatching(Object obj) {
+                    if (obj instanceof String s) {
+                    }
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/JavaTest.java:4: Warning: Visited pattern expression s [_TestIssueId]
+                if (obj instanceof String s) {
+                                   ~~~~~~~~
+        src/test/pkg/JavaTest.java:4: Warning: Visited pattern expression with type s [_TestIssueId]
+                if (obj instanceof String s) {
+                    ~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 2 warnings
+        """
+      )
+  }
+
   override fun getDetector(): Detector = TestDetector()
 
   override fun getIssues(): List<Issue> = listOf(TEST_ISSUE)
 
+  @Suppress("UnstableApiUsage")
   class TestDetector : Detector(), SourceCodeScanner {
     override fun applicableSuperClasses(): List<String> =
       listOf("test.pkg.Test.I1", "test.pkg.Test.I2")
@@ -130,13 +163,35 @@ class UElementVisitorTest : AbstractCheckTest() {
     }
 
     override fun getApplicableUastTypes(): List<Class<out UElement>> {
-      return listOf(UNamedExpression::class.java)
+      return listOf(
+        UNamedExpression::class.java,
+        UPatternExpression::class.java,
+        UBinaryExpressionWithPattern::class.java,
+      )
     }
 
     override fun createUastHandler(context: JavaContext): UElementHandler {
       return object : UElementHandler() {
         override fun visitNamedExpression(node: UNamedExpression) {
           context.report(TEST_ISSUE, node, context.getNameLocation(node), "Visited `${node.name}`")
+        }
+
+        override fun visitBinaryExpressionWithPattern(node: UBinaryExpressionWithPattern) {
+          context.report(
+            TEST_ISSUE,
+            node,
+            context.getNameLocation(node),
+            "Visited pattern expression with type `${node.patternExpression?.variable?.name}`",
+          )
+        }
+
+        override fun visitPatternExpression(node: UPatternExpression) {
+          context.report(
+            TEST_ISSUE,
+            node,
+            context.getNameLocation(node),
+            "Visited pattern expression `${node.variable?.name}`",
+          )
         }
       }
     }

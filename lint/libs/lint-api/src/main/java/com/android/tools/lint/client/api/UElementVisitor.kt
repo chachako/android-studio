@@ -43,6 +43,7 @@ import org.jetbrains.kotlin.psi.KtImportDirective
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
+import org.jetbrains.uast.UBinaryExpressionWithPattern
 import org.jetbrains.uast.UBinaryExpressionWithType
 import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UBreakExpression
@@ -75,6 +76,7 @@ import org.jetbrains.uast.UNamedExpression
 import org.jetbrains.uast.UObjectLiteralExpression
 import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.UParenthesizedExpression
+import org.jetbrains.uast.UPatternExpression
 import org.jetbrains.uast.UPolyadicExpression
 import org.jetbrains.uast.UPostfixExpression
 import org.jetbrains.uast.UPrefixExpression
@@ -631,6 +633,18 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
     override fun visitYieldExpression(node: UYieldExpression): Boolean {
       eachDetectorVisit(node, UElementHandler::visitYieldExpression)
       return super.visitYieldExpression(node)
+    }
+
+    @Suppress("UnstableApiUsage")
+    override fun visitBinaryExpressionWithPattern(node: UBinaryExpressionWithPattern): Boolean {
+      eachDetectorVisit(node, UElementHandler::visitBinaryExpressionWithPattern)
+      return super.visitBinaryExpressionWithPattern(node)
+    }
+
+    @Suppress("UnstableApiUsage")
+    override fun visitPatternExpression(node: UPatternExpression): Boolean {
+      eachDetectorVisit(node, UElementHandler::visitPatternExpression)
+      return super.visitPatternExpression(node)
     }
 
     private inline fun <reified Node : UElement> eachDetectorVisit(

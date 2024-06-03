@@ -20,6 +20,7 @@ import com.android.tools.lint.detector.api.Detector.UastScanner
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UArrayAccessExpression
 import org.jetbrains.uast.UBinaryExpression
+import org.jetbrains.uast.UBinaryExpressionWithPattern
 import org.jetbrains.uast.UBinaryExpressionWithType
 import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UBreakExpression
@@ -52,6 +53,7 @@ import org.jetbrains.uast.UNamedExpression
 import org.jetbrains.uast.UObjectLiteralExpression
 import org.jetbrains.uast.UParameter
 import org.jetbrains.uast.UParenthesizedExpression
+import org.jetbrains.uast.UPatternExpression
 import org.jetbrains.uast.UPolyadicExpression
 import org.jetbrains.uast.UPostfixExpression
 import org.jetbrains.uast.UPrefixExpression
@@ -298,6 +300,11 @@ open class UElementHandler {
   open fun visitYieldExpression(node: UYieldExpression) {
     error(UYieldExpression::class.java)
   }
+
+  @Suppress("UnstableApiUsage")
+  open fun visitBinaryExpressionWithPattern(node: UBinaryExpressionWithPattern) {}
+
+  @Suppress("UnstableApiUsage") open fun visitPatternExpression(node: UPatternExpression) {}
 
   companion object {
     val NONE: UElementHandler =
