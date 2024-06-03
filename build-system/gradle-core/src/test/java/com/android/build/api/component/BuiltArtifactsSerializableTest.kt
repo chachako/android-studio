@@ -45,8 +45,8 @@ class BuiltArtifactsSerializableTest {
                 val propertyArguments = classProperty.returnType.arguments
                 if (propertyArguments.isEmpty()) {
                     val propertyType = classProperty.returnType.javaType
-                    if (propertyType is Class<*> && !isPrimitiveClass(propertyType)) {
-                        // Validate that the class is serializable
+                    if (propertyType is Class<*> && !propertyType.isPrimitive) {
+                        // Validate that the class is Serializable
                         if (!Serializable::class.java.isAssignableFrom(propertyType)) {
                             typesNotSerializable.add("$propertyType in $clazz")
                         }
@@ -75,25 +75,11 @@ class BuiltArtifactsSerializableTest {
                 validateProperties(arguments, typesNotSerializable, clazz)
             }
             val propertyType = property.type?.javaType
-            if (propertyType != null && propertyType is Class<*> && !isPrimitiveClass(propertyType)) {
+            if (propertyType != null && propertyType is Class<*> && !propertyType.isPrimitive) {
                 if (!Serializable::class.java.isAssignableFrom(propertyType)) {
                     typesNotSerializable.add("$propertyType in $clazz")
                 }
             }
         }
-    }
-
-    private fun isPrimitiveClass(type: Class<*>): Boolean {
-        val primitiveWrapperTypes = setOf(
-            "java.lang.Integer",
-            "java.lang.Double",
-            "java.lang.Boolean",
-            "java.lang.Float",
-            "java.lang.Long",
-            "java.lang.Short",
-            "java.lang.Byte",
-            "java.lang.Character"
-        )
-        return type.isPrimitive || type.name in primitiveWrapperTypes
     }
 }
