@@ -75,7 +75,7 @@ public final class SdkConstants {
      * safely recommend during its development cycle.
      */
     public static final AndroidVersion MAX_SUPPORTED_ANDROID_PLATFORM_VERSION =
-            new AndroidVersion(34);
+            new AndroidVersion(35);
 
     /** Property in local.properties file that specifies the path of the Android NDK. */
     public static final String NDK_DIR_PROPERTY = "ndk.dir";
