@@ -27,10 +27,10 @@ import com.android.SdkConstants.TAG_LOCATION
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
 import com.android.tools.lint.detector.api.Location
-import com.android.tools.lint.detector.api.Position
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.TextFormat
+import com.android.tools.lint.detector.api.copySafe
 import com.android.tools.lint.detector.api.describeCounts
 import com.android.utils.CharSequenceReader
 import com.android.utils.XmlUtils.toXmlAttributeValue
@@ -271,7 +271,7 @@ class LintBaseline(
     }
 
     val entries = messageToEntry[message]
-    if (entries == null || entries.isEmpty()) {
+    if (entries.isEmpty()) {
       // Sometimes messages are changed in lint; try to gracefully handle this via #sameMessage
       val messages = idToMessages[issue.id]
       if (
@@ -324,7 +324,7 @@ class LintBaseline(
             val currMessage = curr.message
             messageToEntry.remove(currMessage, curr)
             val remaining = messageToEntry[currMessage]
-            if (remaining == null || remaining.isEmpty()) {
+            if (remaining.isEmpty()) {
               idToMessages[issue.id]?.remove(currMessage)
             }
             curr = curr.next
@@ -652,27 +652,22 @@ class LintBaseline(
   }
 
   /**
-   * Lightweight wrapper for a [Location] to avoid holding on to locations for too long, since for
-   * example the [Location.source] field (but also fields in subclasses of [Location] and
-   * [Position]) can reference large data structures like PSI.
-   */
-  class LightLocation(location: Location) {
-    val file: File = location.file
-    val line: Int = location.start?.line ?: -1
-    val column: Int = location.start?.column ?: -1
-    val secondary: LightLocation? = location.secondary?.let { LightLocation(it) }
-  }
-
-  /**
    * Entries that have been reported during this lint run. We only create these when we need to
    * write a baseline file (since we need to sort them before writing out the result file, to ensure
    * stable files.)
    */
-  class ReportedEntry(val incident: Incident) : Comparable<ReportedEntry> {
-    val issue: Issue = incident.issue
-    val project: Project? = incident.project
-    val location: LightLocation = LightLocation(incident.location)
-    val message: String = incident.message
+  class ReportedEntry(incident: Incident) : Comparable<ReportedEntry> {
+    val incident = incident.copySafe().apply { project = incident.project }
+    internal val issue: Issue
+      get() = incident.issue
+
+    internal val project: Project?
+      get() = incident.project
+
+    internal val location: Location
+      get() = incident.location
+
+    internal val message: String = incident.message
 
     override fun compareTo(other: ReportedEntry): Int {
       // Sort by category, then by priority, then by id,
@@ -699,8 +694,8 @@ class LintBaseline(
         return fileDelta
       }
 
-      val line = location.line
-      val otherLine = other.location.line
+      val line = location.start?.line ?: -1
+      val otherLine = other.location.start?.line ?: -1
 
       if (line != otherLine) {
         return line - otherLine
@@ -733,7 +728,7 @@ class LintBaseline(
       // This handles the case where you have a huge XML document without newlines,
       // such that all the errors end up on the same line.
       if (line != -1 && otherLine != -1) {
-        delta = location.column - other.location.column
+        delta = (location.start?.column ?: -1) - (other.location.start?.column ?: -1)
         if (delta != 0) {
           return delta
         }
@@ -755,7 +750,7 @@ class LintBaseline(
       writeAttribute(writer, 2, ATTR_MESSAGE, message)
 
       writer.write(">\n")
-      var currentLocation: LightLocation? = location
+      var currentLocation: Location? = location
       while (currentLocation != null) {
         //
         //
@@ -781,7 +776,7 @@ class LintBaseline(
             preferRelativeOverAbsolute = true,
           )
         writeAttribute(writer, 3, ATTR_FILE, path)
-        val line = currentLocation.line
+        val line = currentLocation.start?.line ?: -1
         if (line >= 0 && !omitLineNumbers) {
           // +1: Line numbers internally are 0-based, report should be
           // 1-based.

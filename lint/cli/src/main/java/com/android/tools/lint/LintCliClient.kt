@@ -438,19 +438,7 @@ open class LintCliClient : LintClient {
    */
   @VisibleForTesting
   fun writeBaselineFile(stats: LintStats, file: File, writeEmptyBaseline: Boolean): Int {
-    val entries =
-      // If writing to an existing baseline
-      driver.baseline?.entriesToWrite
-        ?:
-        // If creating a new baseline
-        definiteIncidents.map { LintBaseline.ReportedEntry(it) }
-
-    // Sort the entries and check if they belong in baselines
-    val incidentsToWrite =
-      entries
-        .sorted()
-        .filter { LintBaseline.shouldBaseline(it.incident.issue.id) }
-        .map { it.incident }
+    val incidentsToWrite = getBaselineIncidents()
 
     if (writeEmptyBaseline || incidentsToWrite.isNotEmpty()) {
       val dir = file.parentFile
@@ -468,6 +456,25 @@ open class LintCliClient : LintClient {
       Files.deleteIfExists(file.toPath())
     }
     return ERRNO_INTERNAL_CONTINUE
+  }
+
+  /** * Returns the set of incidents to be written into the baseline file. */
+  @VisibleForTesting
+  fun getBaselineIncidents(): List<Incident> {
+    val entries =
+      // If writing to an existing baseline
+      driver.baseline?.entriesToWrite
+        ?:
+        // If creating a new baseline
+        definiteIncidents.map { LintBaseline.ReportedEntry(it) }
+
+    // Sort the entries and check if they belong in baselines
+    val incidentsToWrite =
+      entries
+        .sorted()
+        .filter { LintBaseline.shouldBaseline(it.incident.issue.id) }
+        .map { it.incident }
+    return incidentsToWrite
   }
 
   protected open fun sortResults() {

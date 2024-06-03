@@ -23,8 +23,6 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import java.io.File
-import java.util.Comparator
-import java.util.HashSet
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UMethod
@@ -360,7 +358,7 @@ class Incident(
 
   override fun hashCode(): Int {
     var result = message.hashCode()
-    result = 31 * result + file.hashCode()
+    result = 31 * result + file.path.hashCode()
     return result
   }
 
@@ -431,4 +429,54 @@ fun Incident(context: Context, issue: Issue): Incident {
   incident.context = context
   incident.severity = issue.defaultSeverity
   return incident
+}
+
+/**
+ * Creates a copy of this [Incident] which can be stored for a longer duration; this is intended for
+ * example when holding on to incidents for quick fixes, to be written to baselines, etc -- where we
+ * copy everything needed for those purposes, but not state such as [Incident.scope] pointers which
+ * can hold on to massive amounts of memory, [Incident.clientProperties], and so on.
+ */
+fun Incident.copySafe(): Incident {
+  val location = location.copySafe()
+  return Incident(
+      issue = issue,
+      message = message,
+      location = location.copySafe(),
+      scope = null,
+      fix = fix,
+    )
+    .also {
+      it.severity = severity
+      it.applicableVariants = applicableVariants
+      it.fix?.clearUnsafe()
+      // Deliberately not copying clientProperties, project and scope
+    }
+}
+
+/**
+ * This method copies out the actual positions, messages and linked locations, but omits
+ * [Location.clientData] and [Location.source].
+ */
+private fun Location.copySafe(): Location {
+  val location =
+    if (start != null && end != null) {
+      Location.create(file, start, end)
+    } else {
+      Location.create(file)
+    }
+  location.message = message
+  location.setSelfExplanatory(this.isSelfExplanatory())
+  secondary?.let { location.secondary = it.copySafe() }
+  return location
+}
+
+private fun LintFix.clearUnsafe() {
+  if (this is LintFix.LintFixGroup) {
+    for (fix in fixes) {
+      fix.clearUnsafe()
+    }
+    return
+  }
+  range = range?.copySafe()
 }

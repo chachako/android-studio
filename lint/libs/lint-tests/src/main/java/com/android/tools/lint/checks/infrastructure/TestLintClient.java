@@ -80,6 +80,7 @@ import com.android.tools.lint.detector.api.Context;
 import com.android.tools.lint.detector.api.Desugaring;
 import com.android.tools.lint.detector.api.GradleContext;
 import com.android.tools.lint.detector.api.Incident;
+import com.android.tools.lint.detector.api.IncidentKt;
 import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.JavaContext;
 import com.android.tools.lint.detector.api.Lint;
@@ -1054,6 +1055,8 @@ public class TestLintClient extends LintCliClient {
         if (fix != null) {
             checkFix(fix, incident);
         }
+
+        incident = IncidentKt.copySafe(incident);
 
         super.report(context, incident, format);
 

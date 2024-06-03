@@ -18,6 +18,7 @@ package com.android.tools.lint.client.api
 
 import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject
+import com.android.tools.lint.LintCliClient
 import com.android.tools.lint.LintCliFlags.ERRNO_CREATED_BASELINE
 import com.android.tools.lint.LintCliFlags.ERRNO_ERRORS
 import com.android.tools.lint.LintCliFlags.ERRNO_SUCCESS
@@ -60,6 +61,7 @@ import com.android.tools.lint.client.api.LintBaseline.Companion.sameWithAbsolute
 import com.android.tools.lint.client.api.LintBaseline.Companion.stringsEquivalent
 import com.android.tools.lint.client.api.LintBaseline.Companion.suffixMatchLength
 import com.android.tools.lint.client.api.LintBaseline.Companion.tokenPrecededBy
+import com.android.tools.lint.detector.api.Context
 import com.android.tools.lint.detector.api.DefaultPosition
 import com.android.tools.lint.detector.api.Incident
 import com.android.tools.lint.detector.api.Issue
@@ -74,6 +76,7 @@ import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.incremental.createDirectory
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -1213,7 +1216,28 @@ class LintBaselineTest {
         project.path,
       ),
       { it.replace(root.path, "ROOT") },
-      null,
+      // Make sure we don't hold on to any instance state in the baseline
+      object : LintListener {
+        override fun update(
+          driver: LintDriver,
+          type: LintListener.EventType,
+          project: Project?,
+          context: Context?,
+        ) {
+          if (type == LintListener.EventType.COMPLETED) {
+            val clientField = driver.javaClass.getDeclaredField("realClient")
+            clientField.isAccessible = true
+            val client = clientField.get(driver) as LintCliClient
+            val incidents = client.getBaselineIncidents()
+            for (incident in incidents) {
+              assertNull(incident.scope)
+              assertNull(incident.clientProperties)
+              assertNull(incident.location.originalSource)
+              assertNull(incident.fix?.range?.originalSource)
+            }
+          }
+        }
+      },
     )
 
     @Language("XML")
