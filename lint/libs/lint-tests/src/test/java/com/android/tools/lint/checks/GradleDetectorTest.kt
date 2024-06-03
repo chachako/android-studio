@@ -7402,6 +7402,58 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  // regression test for b/109956042
+  fun testDetektCliVersions() {
+    lint()
+      .files(
+        gradle(
+            """
+            dependencies {
+              implementation "io.gitlab.arturbosch.detekt:detekt-cli:1.0.0.RC7"
+            }
+          """
+          )
+          .indented()
+      )
+      .issues(DEPENDENCY)
+      .run()
+      .expect(
+        """
+        build.gradle:2: Warning: A newer version of io.gitlab.arturbosch.detekt:detekt-cli than 1.0.0.RC7 is available: 1.0.0.RC7-2 [GradleDependency]
+          implementation "io.gitlab.arturbosch.detekt:detekt-cli:1.0.0.RC7"
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        0 errors, 1 warnings
+      """
+          .trimIndent()
+      )
+      .expectFixDiffs(
+        """
+        Fix for build.gradle line 2: Change to 1.0.0.RC7-2:
+        @@ -2 +2
+        -   implementation "io.gitlab.arturbosch.detekt:detekt-cli:1.0.0.RC7"
+        +   implementation "io.gitlab.arturbosch.detekt:detekt-cli:1.0.0.RC7-2"
+      """
+          .trimIndent()
+      )
+  }
+
+  fun testDetektCliVersions_UpToDate() {
+    lint()
+      .files(
+        gradle(
+            """
+            dependencies {
+              implementation "io.gitlab.arturbosch.detekt:detekt-cli:1.0.0.RC7-2"
+            }
+          """
+          )
+          .indented()
+      )
+      .issues(DEPENDENCY)
+      .run()
+      .expectClean()
+  }
+
   fun testExpiredTargetSdkInManifest() {
     val calendar = Calendar.getInstance()
     ManifestDetector.calendar = calendar
@@ -7810,6 +7862,8 @@ class GradleDetectorTest : AbstractCheckTest() {
             "caches/modules-2/files-2.1/commons-codec/commons-codec/1.13/sample",
             "caches/modules-2/files-2.1/commons-beanutils/commons-beanutils/20030211.134440/sample",
             "caches/modules-2/files-2.1/commons-beanutils/commons-beanutils/1.9/sample",
+            "caches/modules-2/files-2.1/io.gitlab.arturbosch.detekt/detekt-cli/1.0.0.RC7/sample",
+            "caches/modules-2/files-2.1/io.gitlab.arturbosch.detekt/detekt-cli/1.0.0.RC7-2/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.1/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.2.1/sample",
             "caches/modules-2/files-2.1/org.apache.httpcomponents/httpcomponents-core/4.2.5/sample",
