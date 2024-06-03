@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.application;
 
 import static com.android.testutils.truth.PathSubject.assertThat;
+
 import static org.junit.Assert.assertEquals;
 
 import com.android.SdkConstants;
@@ -25,17 +26,21 @@ import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
+import com.android.build.gradle.options.BooleanOption;
 import com.android.build.gradle.options.IntegerOption;
 import com.android.build.gradle.options.OptionalBooleanOption;
 import com.android.utils.FileUtils;
+
 import com.google.common.truth.Truth;
+
+import org.junit.Rule;
+import org.junit.Test;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-import org.junit.Rule;
-import org.junit.Test;
 
 /**
  * Integration tests for manifest merging.
@@ -142,13 +147,13 @@ public class ManifestMergingTest {
         TestFileUtils.appendToFile(
                 appProject.getBuildFile(),
                 "android{\n"
-                        + "    compileSdkVersion 24\n"
-                        + "    defaultConfig{\n"
-                        + "        minSdkVersion 15\n"
-                        + "        //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion\n"
-                        + "        targetSdkVersion 'N'\n"
-                        + "    }\n"
-                        + "}");
+                    + "    compileSdkVersion 24\n"
+                    + "    defaultConfig{\n"
+                    + "        minSdkVersion 15\n"
+                    + "        //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion\n"
+                    + "        targetSdkVersion 'N'\n"
+                    + "    }\n"
+                    + "}");
         libsTest.executor().run("clean", ":app:build");
         assertThat(
                         appProject.file(
@@ -175,13 +180,13 @@ public class ManifestMergingTest {
         TestFileUtils.appendToFile(
                 appProject.getBuildFile(),
                 "android{\n"
-                        + "    compileSdkVersion 24\n"
-                        + "    defaultConfig{\n"
-                        + "        minSdkVersion 'N'\n"
-                        + "        //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion\n"
-                        + "        targetSdkVersion 15\n"
-                        + "    }\n"
-                        + "}");
+                    + "    compileSdkVersion 24\n"
+                    + "    defaultConfig{\n"
+                    + "        minSdkVersion 'N'\n"
+                    + "        //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion\n"
+                    + "        targetSdkVersion 15\n"
+                    + "    }\n"
+                    + "}");
         libsTest.execute("clean", ":app:assembleDebug");
         assertThat(
                         appProject.file(
@@ -198,13 +203,13 @@ public class ManifestMergingTest {
         TestFileUtils.appendToFile(
                 flavors.getBuildFile(),
                 "android {\n"
-                        + "    compileSdkVersion 24\n"
-                        + "    defaultConfig {\n"
-                        + "        minSdkVersion 15\n"
-                        + "        //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion\n"
-                        + "        targetSdkVersion 24\n"
-                        + "    }\n"
-                        + "}");
+                    + "    compileSdkVersion 24\n"
+                    + "    defaultConfig {\n"
+                    + "        minSdkVersion 15\n"
+                    + "        //noinspection ExpiringTargetSdkVersion,ExpiredTargetSdkVersion\n"
+                    + "        targetSdkVersion 24\n"
+                    + "    }\n"
+                    + "}");
         flavors.executor()
                 .with(IntegerOption.IDE_TARGET_DEVICE_API, 22)
                 .run("clean", "assembleF1FaDebug");
@@ -362,11 +367,11 @@ public class ManifestMergingTest {
         FileUtils.createFile(
                 navigation.getSubproject("app").file("src/main/res/layout/additional.xml"),
                 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-                        + "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
-                        + "    android:layout_width=\"fill_parent\"\n"
-                        + "    android:layout_height=\"fill_parent\"\n"
-                        + "    android:orientation=\"vertical\" >\n"
-                        + "</LinearLayout>");
+                    + "<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                    + "    android:layout_width=\"fill_parent\"\n"
+                    + "    android:layout_height=\"fill_parent\"\n"
+                    + "    android:orientation=\"vertical\" >\n"
+                    + "</LinearLayout>");
 
         navigation.executor().run(":app:assembleDebug");
 
@@ -469,7 +474,18 @@ public class ManifestMergingTest {
         GradleBuildResult buildResult = flavors.executor().run("clean", "assembleF1FaDebug");
         ScannerSubject.assertThat(buildResult.getStdout())
                 .contains(
-                        "package=\"com.android.tests.flavors\" found in source AndroidManifest.xml");
+                        "package=\"com.android.tests.flavors\" found in source"
+                                + " AndroidManifest.xml");
+
+        // Validate that the warning is not present with SUPPRESS_MANIFEST_PACKAGE_WARNING flag
+        buildResult =
+                flavors.executor()
+                        .with(BooleanOption.SUPPRESS_MANIFEST_PACKAGE_WARNING, true)
+                        .run("clean", "assembleF1FaDebug");
+        ScannerSubject.assertThat(buildResult.getStdout())
+                .doesNotContain(
+                        "package=\"com.android.tests.flavors\" found in source"
+                                + " AndroidManifest.xml");
     }
 
     @Test
@@ -511,10 +527,10 @@ public class ManifestMergingTest {
         TestFileUtils.appendToFile(
                 flavors.getBuildFile(),
                 "androidComponents {\n"
-                        + "  onVariants(selector().all(),  { variant ->\n"
-                        + "    variant.sources.manifests.addStaticManifestFile(\"AndroidManifest.xml\")\n"
-                        + "  })\n"
-                        + "}\n");
+                    + "  onVariants(selector().all(),  { variant ->\n"
+                    + "    variant.sources.manifests.addStaticManifestFile(\"AndroidManifest.xml\")\n"
+                    + "  })\n"
+                    + "}\n");
 
         flavors.executor().run("clean", "assembleF1FaDebug");
 
@@ -531,7 +547,8 @@ public class ManifestMergingTest {
     public void checkAddedGeneratedManifestWithVariantApi() throws Exception {
         String manifest =
                 "<?xml version=\\\"1.0\\\" encoding=\\\"utf-8\\\"?>\\n"
-                        + "<manifest xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"\\n"
+                        + "<manifest"
+                        + " xmlns:android=\\\"http://schemas.android.com/apk/res/android\\\"\\n"
                         + " android:versionCode=\\\"123\\\"/>";
         String manifestCreatorTask =
                 "abstract class ManifestCreatorTask extends DefaultTask {\n"
@@ -539,7 +556,8 @@ public class ManifestMergingTest {
                         + "   abstract RegularFileProperty getOutputManifest()\n"
                         + "   @TaskAction\n"
                         + "   void taskAction() { \n"
-                        + "      println(\"Writes to \" + getOutputManifest().get().getAsFile().getAbsolutePath())\n"
+                        + "      println(\"Writes to \" +"
+                        + " getOutputManifest().get().getAsFile().getAbsolutePath())\n"
                         + "      def myFile = getOutputManifest().get().getAsFile()\n"
                         + "      myFile.write('"
                         + manifest
@@ -552,13 +570,19 @@ public class ManifestMergingTest {
                 manifestCreatorTask
                         + " androidComponents {\n"
                         + "                    onVariants(selector().all()) { variant ->\n"
-                        + "                    // use addGeneratedSourceDirectory for adding generated resources\n"
-                        + "                    TaskProvider<ManifestCreatorTask> manifestCreatorTask =\n"
-                        + "                        project.tasks.register('create' + variant.getName() + 'Manifest', ManifestCreatorTask.class){\n"
-                        + "                            getOutputManifest().set(new File(project.layout.buildDirectory.asFile.get(), \"AndroidManifest.xml\"))\n"
+                        + "                    // use addGeneratedSourceDirectory for adding"
+                        + " generated resources\n"
+                        + "                    TaskProvider<ManifestCreatorTask>"
+                        + " manifestCreatorTask =\n"
+                        + "                        project.tasks.register('create' +"
+                        + " variant.getName() + 'Manifest', ManifestCreatorTask.class){\n"
+                        + "                            getOutputManifest().set(new"
+                        + " File(project.layout.buildDirectory.asFile.get(),"
+                        + " \"AndroidManifest.xml\"))\n"
                         + "                        }\n"
                         + "\n"
-                        + "                    variant.sources.manifests.addGeneratedManifestFile(\n"
+                        + "                   "
+                        + " variant.sources.manifests.addGeneratedManifestFile(\n"
                         + "                            manifestCreatorTask,\n"
                         + "                            { it.getOutputManifest() })\n"
                         + "                   }}\n");

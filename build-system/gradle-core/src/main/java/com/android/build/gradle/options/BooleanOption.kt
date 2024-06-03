@@ -306,6 +306,16 @@ enum class BooleanOption(
         FeatureStage.Experimental
     ),
 
+    /**
+     * Suppresses the warning shown when package attribute is present in the main manifest, and is
+     * equal to the component's namespace.
+     */
+    SUPPRESS_MANIFEST_PACKAGE_WARNING(
+        "android.experimental.suppressManifestPackageWarning",
+        false,
+        FeatureStage.Experimental
+    ),
+
     /* ------------------------
      * SOFTLY-ENFORCED FEATURES
      */
