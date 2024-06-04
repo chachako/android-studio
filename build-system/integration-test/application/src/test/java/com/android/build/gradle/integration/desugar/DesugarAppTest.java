@@ -254,7 +254,7 @@ public class DesugarAppTest {
                         + "android.defaultConfig.minSdkVersion 20");
         Files.write(
                 project.getBuildFile().toPath().resolveSibling("rules"),
-                "-keep class **HelloWorld".getBytes());
+                "-keep class **HelloWorld { <init>(); }".getBytes());
 
         getProjectExecutor().run("assembleDebug");
 

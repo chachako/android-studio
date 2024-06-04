@@ -139,7 +139,9 @@ class AarPublishTest {
         }
         librarySubproject.projectDir.resolve("proguard-rules.pro").writeText(
             """
-            -keep class com.example.Foo
+            -keep class com.example.Foo {
+              <init>();
+            }
         """.trimIndent()
         )
         project.execute("library:assembleRelease")
