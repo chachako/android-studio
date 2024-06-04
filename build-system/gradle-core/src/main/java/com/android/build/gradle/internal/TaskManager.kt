@@ -511,10 +511,9 @@ abstract class TaskManager(
             flags: Set<MergeResources.Flag>,
             taskProviderCallback: TaskProviderCallback<MergeResources>?
     ): TaskProvider<MergeResources> {
-        val mergedNotCompiledDir = if (alsoOutputNotCompiledResources) File(
-                creationConfig.services.projectInfo.getIntermediatesDir()
-                        .toString() + "/merged-not-compiled-resources/"
-                        + creationConfig.dirName) else null
+        val mergedNotCompiledDir = if (alsoOutputNotCompiledResources)
+                creationConfig.services.projectInfo.intermediatesDirectory.map { it.dir("merged-not-compiled-resources").dir(creationConfig.dirName) }
+            else null
         val mergeResourcesTask: TaskProvider<MergeResources> = taskFactory.register(
                 MergeResources.CreationAction(
                         creationConfig,

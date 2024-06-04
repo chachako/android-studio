@@ -314,13 +314,19 @@ open class BasicModuleModelMock {
 
         val buildDir = File(appFolder, "build")
         val buildDirProperty = mock(DirectoryProperty::class.java, throwUnmocked)
-        val buildDirProvider = mock(Provider::class.java) as Provider<File>
+        val buildDirProvider = mock(Provider::class.java, throwUnmocked) as Provider<File>
         doReturn(buildDirProperty).`when`(projectInfo).buildDirectory
         doReturn(buildDirProvider).`when`(buildDirProperty).asFile
         doReturn(buildDir).`when`(buildDirProvider).get()
 
 
         val intermediates = File(buildDir, "intermediates")
+        val intermediatesDir = mock(Directory::class.java, throwUnmocked)
+        val intermediatesProvider = mock(Provider::class.java, throwUnmocked) as Provider<Directory>
+        doReturn(intermediatesProvider).`when`(projectInfo).intermediatesDirectory
+        doReturn(intermediatesDir).`when`(intermediatesProvider).get()
+        doReturn(intermediates).`when`(intermediatesDir).asFile
+
         val abiSplitOptions = mock(
             AbiSplitOptions::class.java,
             throwUnmocked
@@ -333,7 +339,7 @@ open class BasicModuleModelMock {
         val prefabArtifactCollection = mock(ArtifactCollection::class.java, throwUnmocked)
         val prefabFileCollection = mock(FileCollection::class.java, throwUnmocked)
 
-        doReturn(intermediates).`when`(projectInfo).getIntermediatesDir()
+
         doReturn(join(buildDir, "build.gradle")).`when`(projectInfo).buildFile
         doReturn(projectRootDir).`when`(projectInfo).rootDir
         doReturn(appName).`when`(projectInfo).path
@@ -368,7 +374,7 @@ open class BasicModuleModelMock {
 
         doReturn(variantExternalNativeBuild).`when`(this.variantImpl).externalNativeBuild
 
-        val nativeBuildCreationConfig = Mockito.mock(NativeBuildCreationConfig::class.java)
+        val nativeBuildCreationConfig = mock(NativeBuildCreationConfig::class.java)
 
         doReturn(mergedNdkConfig).`when`(nativeBuildCreationConfig).ndkConfig
         doReturn(variantExperimentalProperties).`when`(nativeBuildCreationConfig).externalNativeExperimentalProperties

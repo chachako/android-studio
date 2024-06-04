@@ -66,16 +66,38 @@ import java.io.File
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.ANDROID_RESOURCES)
 abstract class ProcessAndroidAppResourcesTask : NonIncrementalTask() {
 
-    @get:InputFiles @get:Optional @get:PathSensitive(PathSensitivity.RELATIVE) lateinit var aaptFriendlyManifestFileDirectory: Provider<Directory> private set
-    @get:InputFiles @get:PathSensitive(PathSensitivity.RELATIVE) lateinit var manifestFileDirectory: Provider<Directory> private set
-    @get:InputFiles @get:PathSensitive(PathSensitivity.NAME_ONLY) abstract val thisSubProjectStaticLibrary: RegularFileProperty
-    @get:InputFiles @get:PathSensitive(PathSensitivity.NONE) lateinit var libraryDependencies: FileCollection private set
+    @get:InputFiles
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    lateinit var aaptFriendlyManifestFileDirectory: Provider<Directory>
+        private set
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    lateinit var manifestFileDirectory: Provider<Directory>
+        private set
 
-    @get:InputFiles @get:PathSensitive(PathSensitivity.NONE) lateinit var sharedLibraryDependencies: FileCollection private set
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract val thisSubProjectStaticLibrary: RegularFileProperty
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    lateinit var libraryDependencies: FileCollection
+        private set
 
-    @get:OutputDirectory lateinit var aaptIntermediateDir: File private set
-    @get:OutputDirectory abstract val rClassSource: DirectoryProperty
-    @get:OutputFile abstract val resourceApUnderscoreDirectory: DirectoryProperty
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    lateinit var sharedLibraryDependencies: FileCollection
+        private set
+
+    @get:OutputDirectory
+    lateinit var aaptIntermediateDir: Provider<Directory>
+        private set
+
+    @get:OutputDirectory
+    abstract val rClassSource: DirectoryProperty
+
+    @get:OutputFile
+    abstract val resourceApUnderscoreDirectory: DirectoryProperty
 
     @get:Nested
     abstract val aapt2: Aapt2Input
@@ -104,7 +126,7 @@ abstract class ProcessAndroidAppResourcesTask : NonIncrementalTask() {
                 sourceOutputDir = rClassSource.get().asFile,
                 resourceOutputApk = resourceApUnderscoreDirectory.get().file("res.apk").asFile,
                 componentType = ComponentTypeImpl.LIBRARY,
-                intermediateDir = aaptIntermediateDir)
+                intermediateDir = aaptIntermediateDir.get().asFile)
 
         val aapt2ServiceKey = aapt2.registerAaptService()
         workerExecutor.noIsolation().submit(Aapt2LinkRunnable::class.java) {
@@ -168,9 +190,7 @@ abstract class ProcessAndroidAppResourcesTask : NonIncrementalTask() {
                             AndroidArtifacts.ArtifactScope.ALL,
                             AndroidArtifacts.ArtifactType.RES_SHARED_STATIC_LIBRARY)
 
-            task.aaptIntermediateDir =
-                    FileUtils.join(
-                            creationConfig.services.projectInfo.getIntermediatesDir(), "res-process-intermediate", creationConfig.dirName)
+            task.aaptIntermediateDir = creationConfig.services.projectInfo.intermediatesDirectory.map { it.dir("res-process-intermediate").dir(creationConfig.dirName) }
 
             task.androidJarInput.initialize(creationConfig)
             if (creationConfig is ApkCreationConfig) {

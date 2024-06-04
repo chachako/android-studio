@@ -200,7 +200,7 @@ fun tryCreateConfigurationParameters(
         buildStagingFolder,
         projectInfo.buildDirectory.asFile.get()
     )
-    val cxxCacheFolder = join(projectInfo.getIntermediatesDir(), "cxx")
+    val cxxCacheFolder = join(projectInfo.intermediatesDirectory.get().asFile, "cxx")
     fun option(option: BooleanOption) = variant.services.projectOptions.get(option)
     fun option(option: StringOption) = variant.services.projectOptions.get(option)
 
@@ -294,7 +294,7 @@ fun tryCreateConfigurationParameters(
         ndkPathFromDsl = globalConfig.ndkPath,
         cmakeVersion = globalConfig.externalNativeBuild.cmake.version,
         splitsAbiFilterSet = globalConfig.splits.abiFilters.toSet(),
-        intermediatesFolder = projectInfo.getIntermediatesDir(),
+        intermediatesFolder = projectInfo.intermediatesDirectory.get().asFile,
         gradleModulePathName = projectInfo.path,
         isBuildOnlyTargetAbiEnabled = option(BUILD_ONLY_TARGET_ABI),
         ideBuildTargetAbi = option(IDE_BUILD_TARGET_ABI),

@@ -112,11 +112,6 @@ class ProjectInfo(private val project: Project) {
         return buildDirectory.dir("reports/tests")
     }
 
-    @Deprecated("Use the version that returns a provider")
-    fun getIntermediatesDir(): File {
-        return File(buildDirectory.asFile.get(), SdkConstants.FD_INTERMEDIATES)
-    }
-
     fun getOutputsDir(): Provider<Directory> {
         return buildDirectory.dir(SdkConstants.FD_OUTPUTS)
     }
