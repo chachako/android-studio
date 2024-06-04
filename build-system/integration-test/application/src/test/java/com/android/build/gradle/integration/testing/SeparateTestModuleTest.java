@@ -5,25 +5,30 @@ import static com.android.build.gradle.integration.common.fixture.TestVersions.T
 import static com.android.build.gradle.integration.common.truth.ApkSubject.assertThat;
 import static com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat;
 import static com.android.testutils.truth.PathSubject.assertThat;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject;
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.ApkType;
 import com.android.build.gradle.integration.common.fixture.ModelContainerV2;
+import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.options.BooleanOption;
 import com.android.builder.model.v2.ide.TestedTargetVariant;
 import com.android.builder.model.v2.ide.Variant;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
+
 import com.google.common.collect.Iterables;
 import com.google.common.truth.Truth;
-import java.io.IOException;
-import java.nio.file.Files;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * Test for setup with 2 modules: app and test-app Checking the manifest merging for the test
@@ -56,7 +61,8 @@ public class SeparateTestModuleTest {
                 "\n"
                         + "android {\n"
                         + "  defaultConfig {\n"
-                        + "    testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'\n"
+                        + "    testInstrumentationRunner"
+                        + " 'android.support.test.runner.AndroidJUnitRunner'\n"
                         + "    minSdkVersion 16\n"
                         + "    targetSdkVersion 16\n"
                         + "  }\n"
@@ -171,18 +177,38 @@ public class SeparateTestModuleTest {
         assertThat(result.getTasks()).doesNotContain(":test:lintVitalNodebug");
     }
 
+    // Test for b/324637676
+    // Validate failure when library module is the test target
+    @Test
+    public void validateLibraryTestTarget() throws Exception {
+        TestFileUtils.searchAndReplace(
+                project.getSubproject(":test").getBuildFile(),
+                "targetProjectPath ':app'",
+                "targetProjectPath ':lib'");
+
+        GradleBuildResult result = project.executor().expectFailure().run(":test:assembleDebug");
+        ScannerSubject.assertThat(result.getStderr())
+                .contains(
+                        "The tested application ID could not be computed. Please ensure that the"
+                                + " test module specifies a valid module in"
+                                + " \"targetProjectPath\". Currently, library modules are not"
+                                + " supported as a target project.");
+    }
+
     private void addInstrumentationToManifest() throws IOException {
         GradleTestProject testProject = project.getSubproject("test");
         FileUtils.deleteIfExists(testProject.file("src/main/AndroidManifest.xml"));
         String manifestContent =
                 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-                        + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n"
-                        + "      <instrumentation android:name=\"android.test.InstrumentationTestRunner\"\n"
-                        + "                       android:targetPackage=\"com.android.tests.basic\"\n"
-                        + "                       android:handleProfiling=\"false\"\n"
-                        + "                       android:functionalTest=\"false\"\n"
-                        + "                       android:label=\"Tests for com.android.tests.basic\"/>\n"
-                        + "</manifest>\n";
+                    + "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n"
+                    + "      <instrumentation"
+                    + " android:name=\"android.test.InstrumentationTestRunner\"\n"
+                    + "                       android:targetPackage=\"com.android.tests.basic\"\n"
+                    + "                       android:handleProfiling=\"false\"\n"
+                    + "                       android:functionalTest=\"false\"\n"
+                    + "                       android:label=\"Tests for"
+                    + " com.android.tests.basic\"/>\n"
+                    + "</manifest>\n";
         Files.write(
                 testProject.file("src/main/AndroidManifest.xml").toPath(),
                 manifestContent.getBytes());

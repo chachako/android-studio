@@ -228,9 +228,16 @@ open class TestVariantImpl @Inject constructor(
                 AndroidArtifacts.ArtifactScope.PROJECT,
                 AndroidArtifacts.ArtifactType.MANIFEST_METADATA
             ).elements.map {
-                val manifestDirectory = it.single().asFile
-                BuiltArtifactsLoaderImpl.loadFromDirectory(manifestDirectory)?.applicationId
-                    ?: throw RuntimeException("Cannot find merged manifest at '$manifestDirectory', please file a bug.\"")
+                if (it.isEmpty()) {
+                    throw RuntimeException("The tested application ID could not be computed. " +
+                        "Please ensure that the test module specifies a valid module in " +
+                        "\"targetProjectPath\". Currently, library modules are not supported as " +
+                        "a target project.")
+                } else {
+                    val manifestDirectory = it.single().asFile
+                    BuiltArtifactsLoaderImpl.loadFromDirectory(manifestDirectory)?.applicationId
+                        ?: throw RuntimeException("Cannot find merged manifest at '$manifestDirectory', please file a bug.\"")
+                }
             }
     }
 
