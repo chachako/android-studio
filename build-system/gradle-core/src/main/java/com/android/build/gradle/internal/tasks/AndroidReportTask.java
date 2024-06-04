@@ -33,14 +33,15 @@ import com.android.build.gradle.internal.utils.HasConfigurableValuesKt;
 import com.android.buildanalyzer.common.TaskCategory;
 import com.android.builder.core.ComponentType;
 import com.android.utils.FileUtils;
+
 import com.google.common.collect.Lists;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.plugins.JavaBasePlugin;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
@@ -49,6 +50,10 @@ import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.logging.ConsoleRenderer;
 import org.gradle.work.DisableCachingByDefault;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 /** Task doing test report aggregation. */
 @DisableCachingByDefault
@@ -185,10 +190,10 @@ public abstract class AndroidReportTask extends DefaultTask implements AndroidTe
 
             ProjectInfo projectInfo = creationConfig.getServices().getProjectInfo();
 
-            final String defaultReportsDir =
-                    projectInfo.getReportsDir().getAbsolutePath() + "/" + FD_ANDROID_TESTS;
-            final String defaultResultsDir =
-                    projectInfo.getOutputsDir().getAbsolutePath() + "/" + FD_ANDROID_RESULTS;
+            final Provider<Directory> defaultReportsDir =
+                    projectInfo.getReportsDir().map(it -> it.dir(FD_ANDROID_TESTS));
+            final Provider<Directory> defaultResultsDir =
+                    projectInfo.getOutputsDir().map(it -> it.dir(FD_ANDROID_RESULTS));
 
             final String subfolderName =
                     taskKind == TaskKind.CONNECTED ? "/connected/" : "/devices/";
@@ -205,7 +210,7 @@ public abstract class AndroidReportTask extends DefaultTask implements AndroidTe
                                         String rootLocation =
                                                 dir != null && !dir.isEmpty()
                                                         ? dir
-                                                        : defaultResultsDir;
+                                                        : defaultResultsDir.get().toString();
                                         return projectInfo
                                                 .getProjectDirectory()
                                                 .dir(rootLocation + subfolderName + FD_FLAVORS_ALL);
@@ -223,7 +228,7 @@ public abstract class AndroidReportTask extends DefaultTask implements AndroidTe
                                         String rootLocation =
                                                 dir != null && !dir.isEmpty()
                                                         ? dir
-                                                        : defaultReportsDir;
+                                                        : defaultReportsDir.get().toString();
                                         return projectInfo
                                                 .getProjectDirectory()
                                                 .dir(rootLocation + subfolderName + FD_FLAVORS_ALL);

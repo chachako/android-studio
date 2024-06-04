@@ -59,11 +59,13 @@ import com.android.utils.FileUtils.join
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileContents
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
+import org.gradle.api.provider.Provider
 import org.gradle.api.provider.SetProperty
 import org.mockito.Mockito
 import org.mockito.Mockito.doReturn
@@ -311,6 +313,13 @@ open class BasicModuleModelMock {
         doReturn(appFolder).`when`(appFolderDirectory).asFile
 
         val buildDir = File(appFolder, "build")
+        val buildDirProperty = mock(DirectoryProperty::class.java, throwUnmocked)
+        val buildDirProvider = mock(Provider::class.java) as Provider<File>
+        doReturn(buildDirProperty).`when`(projectInfo).buildDirectory
+        doReturn(buildDirProvider).`when`(buildDirProperty).asFile
+        doReturn(buildDir).`when`(buildDirProvider).get()
+
+
         val intermediates = File(buildDir, "intermediates")
         val abiSplitOptions = mock(
             AbiSplitOptions::class.java,
@@ -325,7 +334,6 @@ open class BasicModuleModelMock {
         val prefabFileCollection = mock(FileCollection::class.java, throwUnmocked)
 
         doReturn(intermediates).`when`(projectInfo).getIntermediatesDir()
-        doReturn(buildDir).`when`(projectInfo).getBuildDir()
         doReturn(join(buildDir, "build.gradle")).`when`(projectInfo).buildFile
         doReturn(projectRootDir).`when`(projectInfo).rootDir
         doReturn(appName).`when`(projectInfo).path

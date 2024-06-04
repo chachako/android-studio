@@ -282,7 +282,7 @@ abstract class LintPlugin : Plugin<Project> {
                     it,
                     artifacts,
                     null,
-                    project.buildDir.resolve("reports")
+                    projectServices.projectInfo.buildDirectory.dir("reports")
                 )
             }
 

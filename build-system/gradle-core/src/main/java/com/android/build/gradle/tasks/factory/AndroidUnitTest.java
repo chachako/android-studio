@@ -312,24 +312,22 @@ public abstract class AndroidUnitTest extends Test implements VariantAwareTask {
             JUnitXmlReport xmlReport = testTaskReports.getJunitXml();
             xmlReport
                     .getOutputLocation()
-                    .set(
-                            new File(
-                                    creationConfig
-                                            .getServices()
-                                            .getProjectInfo()
-                                            .getTestResultsFolder(),
-                                    task.getName()));
+                    .fileProvider(
+                            creationConfig
+                                    .getServices()
+                                    .getProjectInfo()
+                                    .getTestResultsFolder()
+                                    .map(it -> it.dir(task.getName()).getAsFile()));
 
             DirectoryReport htmlReport = testTaskReports.getHtml();
             htmlReport
                     .getOutputLocation()
-                    .set(
-                            new File(
-                                    creationConfig
-                                            .getServices()
-                                            .getProjectInfo()
-                                            .getTestReportFolder(),
-                                    task.getName()));
+                    .fileProvider(
+                            creationConfig
+                                    .getServices()
+                                    .getProjectInfo()
+                                    .getTestReportFolder()
+                                    .map(it -> it.dir(task.getName()).getAsFile()));
 
             testOptions.applyConfiguration(task);
 

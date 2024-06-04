@@ -41,10 +41,19 @@ import com.android.builder.model.SyncIssue;
 import com.android.builder.profile.NameAnonymizer;
 import com.android.builder.profile.NameAnonymizerSerializer;
 import com.android.utils.FileUtils;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.wireless.android.sdk.stats.GradleBuildProfile;
+
+import org.gradle.api.Project;
+import org.gradle.testfixtures.ProjectBuilder;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -53,12 +62,6 @@ import java.security.CodeSource;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.function.Supplier;
-import org.gradle.api.Project;
-import org.gradle.testfixtures.ProjectBuilder;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
 /**
  * Base class for Junit-4 based tests that need to manually instantiate tasks to test them.
@@ -132,7 +135,7 @@ public class TaskTestUtils {
         TaskCreationServices taskCreationServices = mock(TaskCreationServices.class);
         ProjectInfo projectInfo = mock(ProjectInfo.class);
         when(taskCreationServices.getProjectInfo()).thenReturn(projectInfo);
-        when(projectInfo.getBuildDir()).thenReturn(new File("build dir"));
+        when(projectInfo.getBuildDirectory().getAsFile().get()).thenReturn(new File("build dir"));
         ImmutableMap<String, Boolean> properties =
                 ImmutableMap.of(
                         BooleanOption.LEGACY_TRANSFORM_TASK_FORCE_NON_INCREMENTAL.getPropertyName(),

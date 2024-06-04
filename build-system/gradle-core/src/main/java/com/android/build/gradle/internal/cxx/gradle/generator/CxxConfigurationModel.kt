@@ -114,7 +114,6 @@ data class CxxConfigurationParameters(
     val configureScript: File?,
     val buildStagingFolder: File?,
     val moduleRootFolder: File,
-    val buildDir: File,
     val rootDir: File,
     val buildFile: File,
     val isDebuggable: Boolean,
@@ -199,7 +198,7 @@ fun tryCreateConfigurationParameters(
         buildSystem,
         projectInfo.projectDirectory.asFile,
         buildStagingFolder,
-        projectInfo.getBuildDir()
+        projectInfo.buildDirectory.asFile.get()
     )
     val cxxCacheFolder = join(projectInfo.getIntermediatesDir(), "cxx")
     fun option(option: BooleanOption) = variant.services.projectOptions.get(option)
@@ -225,7 +224,7 @@ fun tryCreateConfigurationParameters(
     val chromeTraceJsonFolder = if (enableProfileJson) {
         val profileDir = option(PROFILE_OUTPUT_DIR)
             ?.let { variant.services.file(it) }
-            ?: variant.services.projectInfo.rootBuildDir.resolve(PROFILE_DIRECTORY)
+            ?: variant.services.projectInfo.rootBuildDirectory.asFile.get().resolve(PROFILE_DIRECTORY)
         profileDir.resolve(ChromeTracingProfileConverter.EXTRA_CHROME_TRACE_DIRECTORY)
     } else {
         null
@@ -284,7 +283,6 @@ fun tryCreateConfigurationParameters(
         configureScript = configureScript,
         buildStagingFolder = buildStagingFolder,
         moduleRootFolder = projectInfo.projectDirectory.asFile,
-        buildDir = projectInfo.getBuildDir(),
         rootDir = projectInfo.rootDir,
         buildFile = projectInfo.buildFile,
         isDebuggable = variant.debuggable,

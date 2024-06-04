@@ -462,27 +462,27 @@ abstract class AndroidLintTask : NonIncrementalTask() {
                 taskProvider: TaskProvider<AndroidLintTask>,
                 artifacts: ArtifactsImpl,
                 variantName: String?,
-                reportsDirectory: File,
+                reportsDirectory: Provider<Directory>,
             ) {
                 val name = "lint-results" + if (variantName != null) "-$variantName" else ""
                 artifacts
                     .setInitialProvider(taskProvider, AndroidLintTask::textReportOutputFile)
-                    .atLocation(reportsDirectory.absolutePath)
+                    .atLocation(reportsDirectory)
                     .withName("$name.txt")
                     .on(InternalArtifactType.LINT_TEXT_REPORT)
                 artifacts
                     .setInitialProvider(taskProvider, AndroidLintTask::htmlReportOutputFile)
-                    .atLocation(reportsDirectory.absolutePath)
+                    .atLocation(reportsDirectory)
                     .withName("$name.html")
                     .on(InternalArtifactType.LINT_HTML_REPORT)
                 artifacts
                     .setInitialProvider(taskProvider, AndroidLintTask::xmlReportOutputFile)
-                    .atLocation(reportsDirectory.absolutePath)
+                    .atLocation(reportsDirectory)
                     .withName("$name.xml")
                     .on(InternalArtifactType.LINT_XML_REPORT)
                 artifacts
                     .setInitialProvider(taskProvider, AndroidLintTask::sarifReportOutputFile)
-                    .atLocation(reportsDirectory.absolutePath)
+                    .atLocation(reportsDirectory)
                     .withName("$name.sarif")
                     .on(InternalArtifactType.LINT_SARIF_REPORT)
             }
