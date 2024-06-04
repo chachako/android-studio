@@ -459,6 +459,7 @@ DATA = [
     "androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.1",
     "androidx.wear.watchface:watchface-guava:1.1.0",
     "androidx.wear:wear:1.2.0",
+    "androidx.wear:wear-tooling-preview:1.0.0",
     "com.android.application:com.android.application.gradle.plugin:pom:7.2.0",
     "com.android.application:com.android.application.gradle.plugin:pom:7.4.1",
     "com.android.application:com.android.application.gradle.plugin:pom:7.4.2",

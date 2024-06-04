@@ -26140,6 +26140,18 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "androidx.wear.wear-tooling-preview_1.0.0",
+    pom = "repository/androidx/wear/wear-tooling-preview/1.0.0/wear-tooling-preview-1.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "androidx/wear/wear-tooling-preview/1.0.0",
+    deps = [
+        "androidx.annotation.annotation_1.6.0",
+        "org.jetbrains.kotlin.kotlin-stdlib_1.8.22",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "androidx.wear.wear_1.2.0",
     pom = "repository/androidx/wear/wear/1.2.0/wear-1.2.0.pom",
     repo_root_path = "repository",
