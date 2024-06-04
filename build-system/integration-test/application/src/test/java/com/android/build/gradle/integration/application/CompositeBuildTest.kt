@@ -100,4 +100,12 @@ class CompositeBuildTest {
             app.getApkAsFile(GradleTestProject.ApkType.DEBUG)
         ) { it.exists() }
     }
+
+    /**
+     * Regression test for b/327670497
+     */
+    @Test
+    fun lintDebug() {
+        app.execute(":lintDebug")
+    }
 }
