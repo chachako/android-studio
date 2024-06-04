@@ -1536,7 +1536,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         suffix.endsWith("-android") -> android
         else -> neither
       }
-    } else if (artifactId == "kotlinx-coroutines-core") {
+    } else if (groupId == "org.jetbrains.kotlinx" && artifactId.contains("kotlinx-coroutines")) {
       val suffix = version.toString()
       return when {
         suffix.contains("-native-mt-2") ->
