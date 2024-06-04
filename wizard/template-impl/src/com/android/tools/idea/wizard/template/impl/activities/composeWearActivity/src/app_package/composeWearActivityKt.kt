@@ -56,7 +56,7 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
 import androidx.wear.tooling.preview.devices.WearDevices
-${renderIf(applicationPackage != null) { "import ${escapeKotlinIdentifier(applicationPackage.toString())}.R" }}
+import ${escapeKotlinIdentifier(applicationPackage)}.R
 import ${escapeKotlinIdentifier(packageName)}.presentation.theme.${themeName}
 
 class $activityClass : ComponentActivity() {
