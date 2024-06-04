@@ -61,6 +61,8 @@ private fun RecipeExecutor.commonComposeRecipe(
     val wearComposeVersion = getExtVar(wearComposeVersionVarName, "1.2.1")
     addDependency(mavenCoordinate = "androidx.wear.compose:compose-material:$wearComposeVersion")
     addDependency(mavenCoordinate = "androidx.wear.compose:compose-foundation:$wearComposeVersion")
+    // Add Wear Tooling Preview dependency, which is not included in the wear BOM
+    addDependency(mavenCoordinate = "androidx.wear:wear-tooling-preview:1.0.0")
 
     addDependency(mavenCoordinate = "androidx.activity:activity-compose:+")
 
