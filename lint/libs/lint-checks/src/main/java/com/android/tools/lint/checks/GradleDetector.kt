@@ -1959,6 +1959,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
 
   override fun visitTomlDocument(context: TomlContext, document: LintTomlDocument) {
     // Look for version catalogs
+    val versionNodeDependencySet = mutableSetOf<Pair<LintTomlValue, Dependency>>()
     val libraries = document.getValue(VC_LIBRARIES) as? LintTomlMapValue
     if (libraries != null) {
       val versions = document.getValue(VC_VERSIONS) as? LintTomlMapValue
@@ -1967,10 +1968,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         val (coordinate, versionNode) = getLibraryFromTomlEntry(versions, library) ?: continue
         val dependency = Dependency.parse(coordinate)
         dependencyToElement[library] = dependency
-        // Check dependencies without the PSI read lock, because we
-        // may need to make network requests to retrieve version info.
-        context.driver.runLaterOutsideReadAction {
-          checkDependency(context, dependency, false, versionNode, library)
+        if (!versionNodeDependencySet.contains(versionNode to dependency)) {
+          versionNodeDependencySet.add(versionNode to dependency)
+          // Check dependencies without the PSI read lock, because we
+          // may need to make network requests to retrieve version info.
+          context.driver.runLaterOutsideReadAction {
+            checkDependency(context, dependency, false, versionNode, library)
+          }
         }
       }
       checkDuplication(context, dependencyToElement) { dep: Dependency ->
@@ -1988,10 +1992,13 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
         val gradleCoordinate = "$group:$group.gradle.plugin:${coordinate.substringAfterLast(':')}"
         val dependency = Dependency.parse(gradleCoordinate)
         dependencyToElement[plugin] = dependency
-        // Check dependencies without the PSI read lock, because we
-        // may need to make network requests to retrieve version info.
-        context.driver.runLaterOutsideReadAction {
-          checkDependency(context, dependency, false, versionNode, plugin)
+        if (!versionNodeDependencySet.contains(versionNode to dependency)) {
+          versionNodeDependencySet.add(versionNode to dependency)
+          // Check dependencies without the PSI read lock, because we
+          // may need to make network requests to retrieve version info.
+          context.driver.runLaterOutsideReadAction {
+            checkDependency(context, dependency, false, versionNode, plugin)
+          }
         }
       }
       checkDuplication(context, dependencyToElement) { dep: Dependency -> dep.group ?: "" }

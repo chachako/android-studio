@@ -7758,6 +7758,81 @@ class GradleDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testNoDuplicateTomlVersionNotifications() {
+    lint()
+      .files(
+        gradleToml(
+            """
+          [versions]
+          kotlin = "1.7.10"
+
+          [libraries]
+          kotlin-plugin = { group = "org.jetbrains.kotlin.android", name = "org.jetbrains.kotlin.android.gradle.plugin", version.ref = "kotlin" }
+
+          [plugins]
+          kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+        """
+          )
+          .indented(),
+        gradle(
+            """
+            plugins {
+              alias(libs.plugins.kotlin)
+            }
+          """
+          )
+          .indented(),
+      )
+      .issues(DEPENDENCY, REMOTE_VERSION)
+      .networkData(
+        "https://search.maven.org/solrsearch/select?q=g:%22org.jetbrains.kotlin.android%22+AND+a:%22org.jetbrains.kotlin.android.gradle.plugin%22&core=gav&wt=json",
+        "",
+      )
+      .networkData(
+        "https://plugins.gradle.org/m2/org/jetbrains/kotlin/android/org.jetbrains.kotlin.android.gradle.plugin/maven-metadata.xml",
+        // language=XML
+        """
+              <metadata>
+                <groupId>org.jetbrains.kotlin.android</groupId>
+                <artifactId>org.jetbrains.kotlin.android.gradle.plugin</artifactId>
+                <version>1.9.0</version>
+                <versioning>
+                  <latest>1.9.0</latest>
+                  <release>1.9.0</release>
+                  <versions>
+                    <version>1.7.0</version>
+                    <version>1.7.10</version>
+                    <version>1.8.0</version>
+                    <version>1.8.10</version>
+                    <version>1.9.0</version>
+                  </versions>
+                  <lastUpdated>20230421150929</lastUpdated>
+                </versioning>
+              </metadata>
+              """
+          .trimIndent(),
+      )
+      .run()
+      .expect(
+        """
+        ../gradle/libs.versions.toml:2: Warning: A newer version of org.jetbrains.kotlin.android than 1.7.10 is available: 1.9.0 [NewerVersionAvailable]
+        kotlin = "1.7.10"
+                 ~~~~~~~~
+        0 errors, 1 warnings
+      """
+          .trimIndent()
+      )
+      .expectFixDiffs(
+        """
+        Fix for gradle/libs.versions.toml line 2: Change to 1.9.0:
+        @@ -2 +2
+        - kotlin = "1.7.10"
+        + kotlin = "1.9.0"
+      """
+          .trimIndent()
+      )
+  }
+
   // -------------------------------------------------------------------------------------------
   // Test infrastructure below here
   // -------------------------------------------------------------------------------------------
