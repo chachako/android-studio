@@ -21,6 +21,13 @@ else
   readonly BUILD_TYPE="POSTSUBMIT"
 fi
 
+if [[ "${BUILD_KOTLIN_K2}" == "true" ]]
+then
+  readonly IS_K2="true"
+else
+  readonly IS_K2="false"
+fi
+
 readonly SCRIPT_DIR="$(dirname "$0")"
 readonly SCRIPT_NAME="$(basename "$0")"
 
@@ -111,6 +118,14 @@ function run_bazel_test() {
   local test_tag_filters=-no_linux,-no_test_linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate,-very_flaky
   local target_name="studio-linux"
 
+  if [[ "${IS_K2}" == "true" ]]; then
+    # Skip all explicitly generated K2 tests, because all tests will be run with
+    # the K2 flag regardless, making the generated K2 test targets redundant with
+    # their ordinarily-non-K2 counterparts.
+    test_tag_filters=${test_tag_filters},-no_k2,-kotlin-plugin-k2
+    target_name="studio-linux-k2"
+  fi
+
   declare -a conditional_flags
   if [[ " ${ARGV[@]} " =~ " --detect_flakes " ]];
   then
@@ -131,6 +146,11 @@ function run_bazel_test() {
     conditional_flags+=(--nocache_test_results)
   fi
 
+  if [[ "${IS_K2}" == "true" ]]; then
+    conditional_flags+=(--bes_keywords=k2)
+    conditional_flags+=(--jvmopt='-Didea.kotlin.plugin.use.k2=true -Dlint.use.fir.uast=true')
+  fi
+
   # Generate a UUID for use as the bazel test invocation id
   local -r invocation_id="$(uuidgen)"
 
@@ -144,6 +164,37 @@ function run_bazel_test() {
   # iml_to_build_consistency_test see https://github.com/bazelbuild/bazel/issues/6038
   # This has the side effect of running it twice, but as it only takes a few seconds that seems ok.
   local -r extra_test_flags=(--runs_per_test=//tools/base/bazel:iml_to_build_consistency_test@2)
+
+  local -a extra_targets
+  if [[ "${IS_K2}" != "true" ]]; then
+    extra_targets+=(
+      //tools/adt/idea/studio:android-studio
+      //tools/adt/idea/studio:updater_deploy.jar
+      //tools/vendor/google/aswb:aswb.linux.zip
+      //tools/vendor/google/aswb:aswb.mac.zip
+      //tools/vendor/google/aswb:aswb.mac_arm.zip
+      //tools/adt/idea/native/installer:android-studio-bundle-data
+      //tools/base/profiler/native/trace_processor_daemon
+      //tools/base/deploy/deployer:deployer.runner_deploy.jar
+      //tools/base/preview/screenshot:preview_screenshot_maven_repo.zip
+      //tools/adt/idea/studio:test_studio
+      //tools/vendor/google/game-tools/packaging:packaging-linux
+      //tools/vendor/google/game-tools/packaging:packaging-win
+      //tools/base/deploy/service:deploy.service_deploy.jar
+      //tools/base/ddmlib:tools.ddmlib
+      //tools/base/ddmlib:incfs
+      //tools/base/lint/libs/lint-tests:lint-tests
+      //tools/base/bazel:local_maven_repository_generator_deploy.jar
+      //tools/base/build-system:documentation.zip
+      //tools/vendor/google/adrt:android-studio-cros-skeleton.zip
+      //tools/vendor/google/adrt:android-studio-nsis-prebuilt.zip
+      //tools/vendor/google/asfp/studio:asfp
+      //tools/vendor/google/asfp/studio:asfp-linux-deb.zip
+      //tools/vendor/google/asfp/studio:asfp.deb
+      //tools/vendor/intel:android-studio-intel-haxm.zip
+      //tools/vendor/google/ml:aiplugin
+    )
+  fi
 
   # Run Bazel
   "${SCRIPT_DIR}/bazel" \
@@ -171,31 +222,7 @@ function run_bazel_test() {
     "${extra_test_flags[@]}" \
     "${conditional_flags[@]}" \
     -- \
-    //tools/adt/idea/studio:android-studio \
-    //tools/adt/idea/studio:updater_deploy.jar \
-    //tools/vendor/google/aswb:aswb.linux.zip \
-    //tools/vendor/google/aswb:aswb.mac.zip \
-    //tools/vendor/google/aswb:aswb.mac_arm.zip \
-    //tools/adt/idea/native/installer:android-studio-bundle-data \
-    //tools/base/profiler/native/trace_processor_daemon \
-    //tools/base/deploy/deployer:deployer.runner_deploy.jar \
-    //tools/base/preview/screenshot:preview_screenshot_maven_repo.zip \
-    //tools/adt/idea/studio:test_studio \
-    //tools/vendor/google/game-tools/packaging:packaging-linux \
-    //tools/vendor/google/game-tools/packaging:packaging-win \
-    //tools/base/deploy/service:deploy.service_deploy.jar \
-    //tools/base/ddmlib:tools.ddmlib \
-    //tools/base/ddmlib:incfs \
-    //tools/base/lint/libs/lint-tests:lint-tests \
-    //tools/base/bazel:local_maven_repository_generator_deploy.jar \
-    //tools/base/build-system:documentation.zip \
-    //tools/vendor/google/adrt:android-studio-cros-skeleton.zip \
-    //tools/vendor/google/adrt:android-studio-nsis-prebuilt.zip \
-    //tools/vendor/google/asfp/studio:asfp \
-    //tools/vendor/google/asfp/studio:asfp-linux-deb.zip \
-    //tools/vendor/google/asfp/studio:asfp.deb \
-    //tools/vendor/intel:android-studio-intel-haxm.zip \
-    //tools/vendor/google/ml:aiplugin \
+    "${extra_targets[@]}" \
     $(< "${SCRIPT_DIR}/targets")
 }
 
@@ -260,6 +287,9 @@ fi
 if [[ " ${ARGV[@]} " =~ " --very_flaky " ]];
 then
   readonly IS_FLAKY_RUN=1
+  readonly SKIP_BAZEL_ARTIFACTS=1
+fi
+if [[ "${IS_K2}" == "true" ]]; then
   readonly SKIP_BAZEL_ARTIFACTS=1
 fi
 
