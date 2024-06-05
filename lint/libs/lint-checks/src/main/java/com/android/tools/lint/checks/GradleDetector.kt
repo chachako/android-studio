@@ -632,6 +632,12 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           if (dependencyFromVc != null) {
             dependencyString = dependencyFromVc.coordinates
             libTomlValue = dependencyFromVc.tomlValue
+
+            // We deliberately skipped checking this dependency from TOML files since we
+            // only want to check it from the context of a usage in a Gradle file; do it now.
+            if (dependencyString.startsWith("androidx.credentials:credentials:")) {
+              checkCredentialDependency(context, valueCookie, statementCookie)
+            }
           }
         }
 
@@ -1651,6 +1657,22 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
   }
 
   private fun checkCredentialDependency(context: Context, valueCookie: Any, statementCookie: Any) {
+    // This check doesn't make sense when looking at a TOML file; this only
+    // creates the declaration of a dependency, but not an actual usage of
+    // it. And in particular, the TOML file isn't associated with any one
+    // particular module, so "depends on" will return false since the root
+    // project doesn't have any dependencies.
+    //
+    // Instead, we should only do this check from Gradle contexts. But with
+    // TOML we have to work a little harder; right now, we only process
+    // dependencies that specify Maven coordinates as strings; here we'll need
+    // to resolve these as part of the checks.
+    if (context is TomlContext) {
+      // (Instead we'll call this from a GradleContext after resolving
+      // libs references.)
+      return
+    }
+
     if (context.project.dependsOn("androidx.credentials:credentials-play-services-auth") == true) {
       return
     }

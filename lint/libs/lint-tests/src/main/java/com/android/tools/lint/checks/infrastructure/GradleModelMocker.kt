@@ -25,6 +25,11 @@ import com.android.sdklib.AndroidVersion
 import com.android.sdklib.SdkVersionInfo
 import com.android.tools.lint.LintCliFlags
 import com.android.tools.lint.checks.DesugaredMethodLookup
+import com.android.tools.lint.checks.VC_LIBRARIES
+import com.android.tools.lint.checks.VC_VERSIONS
+import com.android.tools.lint.checks.getLibraryFromTomlEntry
+import com.android.tools.lint.client.api.LintTomlMapValue
+import com.android.tools.lint.client.api.LintTomlValue
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.model.DefaultLintModelDependency
 import com.android.tools.lint.model.DefaultLintModelDependencyGraph
@@ -885,6 +890,9 @@ constructor(
       value = key.substring(index + 1)
     } else if (key.indexOf(' ').also { index = it } != -1) {
       value = key.substring(index + 1)
+    } else if (key.indexOf('(').also { index = it } != -1) {
+      val end = key.indexOf(')', index + 1)
+      value = key.substring(index + 1, if (end == -1) key.length else end)
     }
     return if (value.indexOf('$') == -1) value else doInterpolations(value)
   }
@@ -983,6 +991,7 @@ constructor(
     )
       return
 
+    var tomlDependencies: Map<String, String>? = null
     var key = if (context.isEmpty()) line else "$context.$line"
     val m = configurationPattern.matcher(key)
     when {
@@ -993,10 +1002,20 @@ constructor(
       m.matches() -> {
         val artifactName = m.group(1)
         var declaration = getUnquotedValue(key)
-        declaration =
-          declaration.removeSuffix(
-            "!!"
-          ) // Strip Gradle 'strict' version syntax (see b/257726238 and b/259279612).
+        // Strip Gradle 'strict' version syntax (see b/257726238 and b/259279612).
+        declaration = declaration.removeSuffix("!!")
+
+        if (declaration.startsWith("libs.")) {
+          val dependencies =
+            tomlDependencies ?: getTomlDependencies().also { tomlDependencies = it }
+          declaration =
+            dependencies[declaration]
+              ?: run {
+                warn("Unrecognized version catalog reference in $line")
+                ""
+              }
+        }
+
         if (Component.tryParse(declaration) != null) {
           // Only add dependencies here if we have a recognizable component (gromp:artifact:version)
           // syntax
@@ -1345,6 +1364,39 @@ constructor(
         warn("ignored line: $line, context=$context")
       }
     }
+  }
+
+  private fun LintTomlValue.toGradleName(): String {
+    return "libs" +
+      (getFullKey() ?: "").removePrefix("libraries").replace('-', '.').replace('_', '.')
+  }
+
+  private fun getTomlDependencies(): Map<String, String> {
+    // Version catalog usage
+    val toml = File(projectDir.parentFile, "gradle/libs.versions.toml")
+    if (toml.isFile) {
+      val parser = TestLintClient().getTomlParser()
+      val document =
+        parser.parse(toml, toml.readText()) { severity, location, message ->
+          warn("$severity in TOML file: $message at $location")
+        }
+      val versions = (document.getValue(VC_VERSIONS) as? LintTomlMapValue)
+      val libraries =
+        (document.getValue(VC_LIBRARIES) as? LintTomlMapValue)?.getMappedValues()
+          ?: return emptyMap()
+
+      val result = mutableMapOf<String, String>()
+      for ((_, value: LintTomlValue) in libraries) {
+        val (coordinate, _) = getLibraryFromTomlEntry(versions, value) ?: continue
+        result[value.toGradleName()] = coordinate
+      }
+
+      return result
+    } else {
+      warn("Library reference in Gradle file but version catalog not found ($toml)")
+    }
+
+    return emptyMap()
   }
 
   private fun parseSeverityOverrideDsl(severity: Severity, dsl: String) {
@@ -1998,7 +2050,7 @@ constructor(
   companion object {
 
     private val configurationPattern =
-      Pattern.compile("^dependencies\\.(|test|androidTest)([Cc]ompile|[Ii]mplementation)[ (].*")
+      Pattern.compile("^dependencies\\.(|test|androidTest)([Cc]ompile|[Ii]mplementation)[ (].*[)]?")
     private var libraryVersion = 0
 
     private fun normalize(line: String): String {
