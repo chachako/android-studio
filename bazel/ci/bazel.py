@@ -34,42 +34,45 @@ class BazelCmd:
     self.build_env = build_env
 
   def build(self, *build_args) -> subprocess.CompletedProcess:
-    """Run a 'bazel build' command.
+    """Runs a 'bazel build' command."""
+    return self._run(True, False, "build", *build_args)
+
+  def test(self, *test_args) -> subprocess.CompletedProcess:
+    """Runs a 'bazel test' command."""
+    return self._run(False, False, "test", *test_args)
+
+  def run(self, *run_args) -> subprocess.CompletedProcess:
+    """Runs a 'bazel run' command.
 
     Raises:
-      CalledProcessError: If the build fails.
+      CalledProcessError: If the command fails.
     """
-    args = [self.build_env.bazel_path]
-    args.extend(self.startup_options)
-    args.append('build')
-    args.extend(build_args)
-
-    return subprocess.run(args, capture_output=True, check=False, cwd=os.environ.get('BUILD_WORKSPACE_DIRECTORY'))
-
+    return self._run(False, True, "run", *run_args)
 
   def query(self, *query_args) -> subprocess.CompletedProcess:
-    """Run a 'bazel query' command.
+    """Runs a 'bazel query' command.
 
     Raises:
       CalledProcessError: If the query fails.
     """
-    args = [self.build_env.bazel_path]
-    args.extend(self.startup_options)
-    args.append("query")
-    args.extend(query_args)
+    return self._run(True, True, "query", *query_args)
 
-    return subprocess.run(args, capture_output=True, check=True, cwd=os.environ.get('BUILD_WORKSPACE_DIRECTORY'))
-
-
-  def test(self, capture_output: bool, *build_args) -> subprocess.CompletedProcess:
-    """Run a 'bazel test' command.
+  def info(self, *info_args) -> subprocess.CompletedProcess:
+    """Runs a 'bazel info' command.
 
     Raises:
-      CalledProcessError: If the build fails.
+      CalledProcessError: If the command fails.
     """
-    args = [self.build_env.bazel_path]
-    args.extend(self.startup_options)
-    args.append('test')
-    args.extend(build_args)
+    return self._run(True, True, "info", *info_args)
 
-    return subprocess.run(args, capture_output=capture_output, check=False, cwd=os.environ.get('BUILD_WORKSPACE_DIRECTORY'))
+  def _run(self, capture_output: bool, check: bool, *args: List[str]) -> subprocess.CompletedProcess:
+    """Runs a Bazel command with the given args."""
+    cmd = [self.build_env.bazel_path]
+    cmd.extend(self.startup_options)
+    cmd.extend(args)
+    return subprocess.run(
+        cmd,
+        capture_output=capture_output,
+        check=check,
+        cwd=os.environ.get('BUILD_WORKSPACE_DIRECTORY'),
+    )

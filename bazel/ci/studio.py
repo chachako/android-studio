@@ -1,12 +1,20 @@
 """Implements studio_* presubmit and postsubmit checks."""
 
+import dataclasses
 import enum
 import os
 import pathlib
+import shutil
+import tempfile
 from typing import Sequence
 import uuid
 
 from tools.base.bazel.ci import bazel
+
+
+_BAZEL_EXITCODE_SUCCESS = 0
+_BAZEL_EXITCODE_TEST_FAILURES = 3
+_BAZEL_EXITCODE_NO_TESTS_FOUND = 4
 
 
 class BuildType(enum.Enum):
@@ -25,10 +33,22 @@ class BuildType(enum.Enum):
     build_type = BuildType.POSTSUBMIT
 
 
+@dataclasses.dataclass(frozen=True)
+class BazelTestResult:
+  """Represents the output of a bazel test."""
+  exit_code: int
+  bes_path: pathlib.Path
+
+
 def studio_linux(build_env: bazel.BuildEnv):
   """Runs Linux pre/postsubmit tests."""
+  # If DIST_DIR does not exist, create one.
+  if not build_env.dist_dir:
+    build_env.dist_dir = tempfile.mkdtemp('dist-dir')
+  dist_path = pathlib.Path(build_env.dist_dir)
+
   as_build_number = build_env.build_number.replace('P', '0')
-  profile_path = os.path.join(build_env.dist_dir, f'profile-{build_env.build_number}.json.gz')
+  profile_path = dist_path / f'profile-{build_env.build_number}.json.gz'
 
   flags = [
       '--build_manual_tests',
@@ -80,12 +100,32 @@ def studio_linux(build_env: bazel.BuildEnv):
       '//tools/vendor/google3/aswb/java/com/google/devtools/intellij/g3plugins:aswb_build_test',
   ]
 
-  run_bazel_test(build_env, flags, targets)
+  test_result = run_bazel_test(build_env, flags, targets)
+
+  # If an uncommon exit code happens, copy extra worker logs.
+  if test_result.exit_code > 9:
+    copy_worker_logs(build_env)
+
+  # TODO(b/342237310): Implement --very_flaky.
+
+  workspace_path = pathlib.Path(os.environ.get('BUILD_WORKSPACE_DIRECTORY'))
+  shutil.copy2(
+      workspace_path / 'tools/base/build-system/supported-versions.properties',
+      dist_path / 'agp-supported-versions.properties',
+  )
+  collect_logs(build_env, test_result.bes_path)
+
+  # TODO(b/342237310): Copy artifacts.
 
 
 def studio_win(build_env: bazel.BuildEnv):
   """Runs Windows pre/postsubmit tests."""
-  profile_path = os.path.join(build_env.dist_dir, f'winprof{build_env.build_number}.json.gz')
+  # If DIST_DIR does not exist, create one.
+  if not build_env.dist_dir:
+    build_env.dist_dir = tempfile.mkdtemp('dist-dir')
+  dist_path = pathlib.Path(build_env.dist_dir)
+
+  profile_path = dist_path / f'winprof{build_env.build_number}.json.gz'
 
   flags = [
       f'--profile={profile_path}',
@@ -105,21 +145,25 @@ def studio_win(build_env: bazel.BuildEnv):
       '-//tools/vendor/google/aswb/...',
   ]
 
-  run_bazel_test(build_env, flags, targets)
+  test_result = run_bazel_test(build_env, flags, targets)
+
+  collect_logs(build_env, test_result.bes_path)
+
+  # TODO(b/342237310): Copy artifacts.
 
 
 def run_bazel_test(
     build_env: bazel.BuildEnv,
     flags: Sequence[str] = [],
     targets: Sequence[str] = [],
-) -> int:
+) -> BazelTestResult:
   """Runs the bazel test invocation."""
   flags = flags.copy()
-  dist_dir = pathlib.Path(build_env.dist_dir)
+  dist_path = pathlib.Path(build_env.dist_dir)
   invocation_id = str(uuid.uuid4())
 
   build_type = BuildType.from_build_number(build_env.build_number)
-  bes_path = dist_dir / f'bazel-{build_env.build_number}.bes'
+  bes_path = dist_path / f'bazel-{build_env.build_number}.bes'
 
   worker_instances = '2' if build_type == BuildType.LOCAL else 'auto'
   if build_type == BuildType.POSTSUBMIT:
@@ -130,10 +174,10 @@ def run_bazel_test(
 
   # TODO(b/342237310): Implement --very_flaky.
 
-  if dist_dir.exists():
-    sponge_redirect_path = dist_dir / 'upsalite_test_results.html'
+  if dist_path.exists():
+    sponge_redirect_path = dist_path / 'upsalite_test_results.html'
     sponge_redirect_path.write_text(f'<head><meta http-equiv="refresh" content="0; url=\'https://fusion2.corp.google.com/invocations/{invocation_id}\'" /></head>')
-    sponge_invocations_path = dist_dir / 'sponge-invocations.txt'
+    sponge_invocations_path = dist_path / 'sponge-invocations.txt'
     sponge_invocations_path.write_text(invocation_id)
 
   flags.extend([
@@ -156,8 +200,46 @@ def run_bazel_test(
   ])
 
   bazel_cmd = bazel.BazelCmd(build_env)
-  result = bazel_cmd.test(False, *flags, '--', *targets)
+  bazel_cmd.startup_options = ['--max_idle_secs=60']
+  result = bazel_cmd.test(*flags, '--', *targets)
 
-  # TODO(b/342237310): returncode will always be 0, so properly handle non-zero
-  # exit codes in bazel_cmd.test().
-  return result.returncode
+  return BazelTestResult(
+      exit_code=result.returncode,
+      bes_path=bes_path,
+  )
+
+
+def copy_worker_logs(build_env: bazel.BuildEnv) -> None:
+  """Copies worker logs into output."""
+  bazel_cmd = bazel.BazelCmd(build_env)
+  result = bazel_cmd.info('output_base')
+  src_path = pathlib.Path(result.stdout.decode('utf-8').strip())
+  dest_path = pathlib.Path(build_env.dist_dir) / 'bazel_logs'
+  dest_path.mkdir(parents=True, exist_ok=True)
+  for path in src_path.glob('*.log'):
+    shutil.copy2(path, dest_path / path.name)
+
+
+def collect_logs(build_env: bazel.BuildEnv, bes_path: pathlib.Path) -> None:
+  """Runs the log collector."""
+  build_type = BuildType.from_build_number(build_env.build_number)
+  dist_path = pathlib.Path(build_env.dist_dir)
+  error_log_path = dist_path / 'logs/build_error.log'
+  perfgate_data_path = dist_path / 'perfgate_data.zip'
+
+  args = [
+      '//tools/vendor/adt_infra_internal/rbe/logscollector:logs-collector',
+      '--config=ci',
+      '--',
+      '-bes',
+      str(bes_path),
+      '-error_log',
+      str(error_log_path),
+      '-module_info',
+      str(dist_path),
+  ]
+  if build_type == BuildType.POSTSUBMIT:
+    args.append(f'-perfzip {perfgate_data_path}')
+
+  bazel_cmd = bazel.BazelCmd(build_env)
+  bazel_cmd.run(*args)
