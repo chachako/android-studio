@@ -57,9 +57,10 @@ cc_binary(
     ],
     linkopts = ANDROID_LINKOPTS,
     linkshared = 1,
-    tags = [
-        "no_windows",
-    ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//tools/base/deploy:__subpackages__"],
     deps = [
         ":jvmti_android",
@@ -132,9 +133,5 @@ android_cc_binary(
     name = "android-libswap",
     binary = ":libswap.so.stripped",
     filename = "android-libswap.so",
-    target_compatible_with = select({
-        "@platforms//os:windows": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     visibility = ["//tools/base/deploy:__subpackages__"],
 )

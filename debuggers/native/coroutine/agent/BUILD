@@ -24,9 +24,5 @@ android_cc_binary(
     name = "coroutine_debugger_agent",
     binary = ":coroutine_debugger_agent.so.stripped",
     filename = "coroutine_debugger_agent.so",
-    target_compatible_with = select({
-        "@platforms//os:windows": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     visibility = ["//visibility:public"],
 )

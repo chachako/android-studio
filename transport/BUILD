@@ -39,10 +39,6 @@ android_cc_binary(
         "//conditions:default": ":transport_main.stripped",
     }),
     filename = "transport",
-    target_compatible_with = select({
-        "@platforms//os:windows": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     visibility = ["//visibility:public"],
 )
 

@@ -78,9 +78,5 @@ android_cc_binary(
         "//conditions:default": ":libjvmtiagent.so.stripped",
     }),
     filename = "libjvmtiagent.so",
-    target_compatible_with = select({
-        "@platforms//os:windows": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     visibility = ["//visibility:public"],
 )

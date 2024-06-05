@@ -8,28 +8,13 @@ load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "ANDROID_LINKOPTS", "and
 # central place where we do any sort of hashing using Bin2C.
 genrule(
     name = "version",
-    srcs = select({
-        # android_cc_binary does not build on Windows. Instead, calculate a version
-        # from installer source files. This is not sufficient but keeps Version.java available
-        # on the build graph.
-        "@platforms//os:windows": glob([
-            "*.h",
-            "*.cc",
-            "executor/*.h",
-            "executor/*.cc",
-            "overlay/*.h",
-            "overlay/*.cc",
-            "server/*.h",
-            "server/*.cc",
-        ]),
-        "//conditions:default": [
-            # This should be a list of all binaries that determine our current version.
-            "//tools/base/deploy/agent/native:android-libswap/arm64-v8a/android-libswap.so",
-            "//tools/base/deploy/installer:android-installer_raw/arm64-v8a/android-installer_raw",
-            "//tools/base/deploy/installer:android-install-server/arm64-v8a/android-install-server",
-            "//tools/base/debuggers/native/coroutine/agent:coroutine_debugger_agent/arm64-v8a/coroutine_debugger_agent.so",
-        ],
-    }),
+    srcs = [
+        # This should be a list of all binaries that determine our current version.
+        "//tools/base/deploy/agent/native:android-libswap/arm64-v8a/android-libswap.so",
+        "//tools/base/deploy/installer:android-installer_raw/arm64-v8a/android-installer_raw",
+        "//tools/base/deploy/installer:android-install-server/arm64-v8a/android-install-server",
+        "//tools/base/debuggers/native/coroutine/agent:coroutine_debugger_agent/arm64-v8a/coroutine_debugger_agent.so",
+    ],
     outs = [
         "Version.java",
         "version.raw",
@@ -137,7 +122,6 @@ genrule(
            -p install_server=$(location :install-server) \
            -p version=$(location :version.raw);
     """,
-    tags = ["no_windows"],
     tools = [
         "//tools/base/bazel:bin2c",
         "//tools/base/bazel:matryoshka",
@@ -219,7 +203,10 @@ cc_library(
         ".",
     ],
     linkopts = ANDROID_LINKOPTS,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/bazel/native/matryoshka:libmatryoshka",
@@ -244,7 +231,10 @@ cc_binary(
     ),
     copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         ":installer_lib",
@@ -279,7 +269,10 @@ cc_binary(
     ),
     copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/deploy/common:common_lib",
@@ -292,10 +285,6 @@ android_cc_binary(
     name = "android-installer_raw",
     binary = ":installer.stripped",
     filename = "android-installer_raw",
-    target_compatible_with = select({
-        "@platforms//os:windows": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     visibility = ["//tools/base/deploy:__subpackages__"],
 )
 
@@ -303,10 +292,6 @@ android_cc_binary(
     name = "android-install-server",
     binary = ":install-server.stripped",
     filename = "android-install-server",
-    target_compatible_with = select({
-        "@platforms//os:windows": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     visibility = ["//tools/base/deploy:__subpackages__"],
 )
 
@@ -331,7 +316,10 @@ cc_test(
         ":executor_test_helper",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":installer_lib",
         "@googletest//:gtest_main",

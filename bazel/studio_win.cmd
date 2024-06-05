@@ -94,6 +94,7 @@ setlocal
   %CONDITIONAL_FLAGS% ^
   -- ^
   //tools/base/profiler/native/trace_processor_daemon ^
+  //tools/adt/idea/studio:android-studio ^
   %TARGETS%
 endlocal & set /a EXITCODE=%ERRORLEVEL%
 
