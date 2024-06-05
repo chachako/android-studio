@@ -33,14 +33,13 @@ import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.internal.aapt.AaptOptions
 import com.android.builder.internal.aapt.AaptPackageConfig
-import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableList
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -88,8 +87,7 @@ abstract class LinkLibraryAndroidResourcesTask : NonIncrementalTask() {
     abstract val mergeOnly: Property<Boolean>
 
     @get:OutputDirectory
-    lateinit var aaptIntermediateDir: Provider<Directory>
-        private set
+    abstract val aaptIntermediateDir: DirectoryProperty
 
     @get:OutputFile
     abstract val staticLibApk: RegularFileProperty
@@ -188,8 +186,10 @@ abstract class LinkLibraryAndroidResourcesTask : NonIncrementalTask() {
                 )
             }
 
-            task.aaptIntermediateDir =
-                creationConfig.services.projectInfo.intermediatesDirectory.map { it.dir("res-link-intermediate").dir(creationConfig.dirName) }
+            task.aaptIntermediateDir.setDisallowChanges(
+                creationConfig.services.projectInfo.intermediatesDirectory
+                    .map { it.dir("res-link-intermediate").dir(creationConfig.dirName) }
+            )
 
             task.namespace.setDisallowChanges(creationConfig.namespace)
 

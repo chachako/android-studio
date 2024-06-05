@@ -30,11 +30,11 @@ import com.android.build.gradle.internal.tasks.NonIncrementalTask
 import com.android.build.gradle.internal.tasks.factory.features.AndroidResourcesTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.AndroidResourcesTaskCreationActionImpl
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.builder.core.ComponentTypeImpl
 import com.android.builder.internal.aapt.AaptOptions
 import com.android.builder.internal.aapt.AaptPackageConfig
-import com.android.utils.FileUtils
 import com.google.common.collect.ImmutableList
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
@@ -90,8 +90,7 @@ abstract class ProcessAndroidAppResourcesTask : NonIncrementalTask() {
         private set
 
     @get:OutputDirectory
-    lateinit var aaptIntermediateDir: Provider<Directory>
-        private set
+    abstract val aaptIntermediateDir: DirectoryProperty
 
     @get:OutputDirectory
     abstract val rClassSource: DirectoryProperty
@@ -190,7 +189,10 @@ abstract class ProcessAndroidAppResourcesTask : NonIncrementalTask() {
                             AndroidArtifacts.ArtifactScope.ALL,
                             AndroidArtifacts.ArtifactType.RES_SHARED_STATIC_LIBRARY)
 
-            task.aaptIntermediateDir = creationConfig.services.projectInfo.intermediatesDirectory.map { it.dir("res-process-intermediate").dir(creationConfig.dirName) }
+            task.aaptIntermediateDir.setDisallowChanges(
+                creationConfig.services.projectInfo.intermediatesDirectory
+                    .map { it.dir("res-process-intermediate").dir(creationConfig.dirName) }
+            )
 
             task.androidJarInput.initialize(creationConfig)
             if (creationConfig is ApkCreationConfig) {

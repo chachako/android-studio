@@ -33,9 +33,7 @@ import com.android.build.gradle.internal.utils.HasConfigurableValuesKt;
 import com.android.buildanalyzer.common.TaskCategory;
 import com.android.builder.core.ComponentType;
 import com.android.utils.FileUtils;
-
 import com.google.common.collect.Lists;
-
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.Directory;
@@ -50,7 +48,6 @@ import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.internal.logging.ConsoleRenderer;
 import org.gradle.work.DisableCachingByDefault;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -196,43 +193,39 @@ public abstract class AndroidReportTask extends DefaultTask implements AndroidTe
                     projectInfo.getOutputsDir().map(it -> it.dir(FD_ANDROID_RESULTS));
 
             final String subfolderName =
-                    taskKind == TaskKind.CONNECTED ? "/connected/" : "/devices/";
+                    taskKind == TaskKind.CONNECTED ? "connected" : "devices";
 
             HasConfigurableValuesKt.setDisallowChanges(
-                    task.getResultsDir(),
-                    task.getProject()
-                            .provider(
-                                    () -> {
-                                        String dir =
-                                                creationConfig
-                                                        .getAndroidTestOptions()
-                                                        .getResultsDir();
-                                        String rootLocation =
-                                                dir != null && !dir.isEmpty()
-                                                        ? dir
-                                                        : defaultResultsDir.get().toString();
-                                        return projectInfo
-                                                .getProjectDirectory()
-                                                .dir(rootLocation + subfolderName + FD_FLAVORS_ALL);
-                                    }));
+                task.getResultsDir(),
+                defaultResultsDir.map(defaultDir -> {
+                    String dir = creationConfig
+                        .getAndroidTestOptions()
+                        .getResultsDir();
+                    String rootLocation =
+                            dir != null && !dir.isEmpty()
+                                    ? dir
+                                    : defaultDir.toString();
+                    return projectInfo
+                        .getProjectDirectory()
+                        .dir(rootLocation).dir(subfolderName).dir(FD_FLAVORS_ALL);
+                })
+            );
 
             HasConfigurableValuesKt.setDisallowChanges(
-                    task.getReportsDir(),
-                    task.getProject()
-                            .provider(
-                                    () -> {
-                                        String dir =
-                                                creationConfig
-                                                        .getAndroidTestOptions()
-                                                        .getReportDir();
-                                        String rootLocation =
-                                                dir != null && !dir.isEmpty()
-                                                        ? dir
-                                                        : defaultReportsDir.get().toString();
-                                        return projectInfo
-                                                .getProjectDirectory()
-                                                .dir(rootLocation + subfolderName + FD_FLAVORS_ALL);
-                                    }));
+                task.getReportsDir(),
+                defaultReportsDir.map(defaultDir -> {
+                    String dir = creationConfig
+                        .getAndroidTestOptions()
+                        .getResultsDir();
+                    String rootLocation =
+                            dir != null && !dir.isEmpty()
+                                    ? dir
+                                    : defaultDir.toString();
+                    return projectInfo
+                        .getProjectDirectory()
+                        .dir(rootLocation).dir(subfolderName).dir(FD_FLAVORS_ALL);
+                })
+            );
         }
     }
 }
