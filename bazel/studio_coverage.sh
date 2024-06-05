@@ -61,6 +61,9 @@ fi
   build \
   --config=rcache \
   --build_tag_filters="coverage-sources" \
+  --build_metadata=ab_build_id="${build_number}" \
+  --build_metadata=ab_target=studio-coverage \
+  --build_metadata=cov_phase=baseline-coverage-sources \
   -- \
   //tools/... \
   || exit $?
@@ -77,6 +80,7 @@ fi
   --build_metadata=ANDROID_TEST_INVESTIGATE="http://ab/tests/bazel/${invocation_id}" \
   --build_metadata=ab_build_id="${build_number}" \
   --build_metadata=ab_target=studio-coverage \
+  --build_metadata=cov_phase=tests-and-baseline \
   --jvmopt="-Dstudio.is.coverage.build=true" \
   ${auth_options} \
   --test_tag_filters=-no_linux,-no_test_linux,-perfgate \
@@ -103,6 +107,9 @@ fi
   --config=release \
   --invocation_id=${report_invocation_id} \
   --jobs=HOST_CPUS*.5 \
+  --build_metadata=ab_build_id="${build_number}" \
+  --build_metadata=ab_target=studio-coverage \
+  --build_metadata=cov_phase=generate-lcov \
   ${auth_options} \
   -- \
   @cov//:all.lcov \
