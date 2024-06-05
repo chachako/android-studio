@@ -2312,4 +2312,202 @@ class TypedefDetectorTest : AbstractCheckTest() {
       )
     )
   }
+
+  fun testParameterCompatibility() {
+    // Regression test for b/343519613
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import androidx.annotation.IntDef;
+
+            public abstract class Playground {
+                @IntDef({FirstIntDef.CONST_0})
+                public @interface FirstIntDef {
+                    int CONST_0 = 0;
+                }
+
+                @IntDef({SecondIntDef.ANOTHER_0})
+                public @interface SecondIntDef {
+                    int ANOTHER_0 = 0;
+                }
+
+                public abstract int test(@FirstIntDef int first, @SecondIntDef int second);
+
+                public int swappedIndirection(@FirstIntDef int first, @SecondIntDef int second) {
+                    test(first, second); // OK
+                    return test(
+                            second, // ERROR 1
+                            first   // ERROR 2
+                    );
+                }
+
+                public int conditionalIfUsage(@FirstIntDef int first, @SecondIntDef int second) {
+                    if (safe(first) || safe(second)) {
+                      test(second, first); // safe because it's been guarded in some way
+                    }
+                }
+
+                public int reassignment(@FirstIntDef int first, @SecondIntDef int second, int something) {
+                    first = something;
+                    if (something == 3) {
+                      second = something;
+                    }
+                    test(second, first); // safe because the reassignment means annotation on variable may not apply
+                }
+            }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/Playground.java:21: Error: Must be one of: FirstIntDef.CONST_0 [WrongConstant]
+                        second, // ERROR 1
+                        ~~~~~~
+        src/test/pkg/Playground.java:22: Error: Must be one of: SecondIntDef.ANOTHER_0 [WrongConstant]
+                        first   // ERROR 2
+                        ~~~~~
+        2 errors, 0 warnings
+        """
+      )
+  }
+
+  fun testVariableChecked() {
+    lint()
+      .files(
+        java(
+            // Extracted from AndroidX'
+            // camera/camera-camera2/src/main/java/androidx/camera/camera2/internal/compat/CameraAccessExceptionCompat.java
+            """
+            package test.pkg;
+
+            import android.hardware.camera2.CameraAccessException;
+
+            import androidx.annotation.IntDef;
+            import androidx.annotation.RestrictTo;
+
+            import java.lang.annotation.Retention;
+            import java.lang.annotation.RetentionPolicy;
+            import java.util.Arrays;
+            import java.util.Collections;
+            import java.util.HashSet;
+            import java.util.Set;
+
+            public class CameraAccessExceptionCompat {
+                public static final int CAMERA_IN_USE = 4;
+                public static final int MAX_CAMERAS_IN_USE = 5;
+                public static final int CAMERA_DISABLED = 1;
+                public static final int CAMERA_DISCONNECTED = 2;
+                public static final int CAMERA_ERROR = 3;
+                static final Set<Integer> PLATFORM_ERRORS =
+                        Collections.unmodifiableSet(new HashSet<>(Arrays.asList(CAMERA_IN_USE,
+                                MAX_CAMERAS_IN_USE, CAMERA_DISABLED, CAMERA_DISCONNECTED, CAMERA_ERROR)));
+                public static final int CAMERA_UNAVAILABLE_DO_NOT_DISTURB = 10001;
+                public static final int CAMERA_CHARACTERISTICS_CREATION_ERROR = 10002;
+
+                private final CameraAccessException mCameraAccessException;
+
+                @RestrictTo(RestrictTo.Scope.LIBRARY)
+                @Retention(RetentionPolicy.SOURCE)
+                @IntDef(value = {
+                        CAMERA_IN_USE,
+                        MAX_CAMERAS_IN_USE,
+                        CAMERA_DISABLED,
+                        CAMERA_DISCONNECTED,
+                        CAMERA_ERROR,
+                        CAMERA_UNAVAILABLE_DO_NOT_DISTURB,
+                        CAMERA_CHARACTERISTICS_CREATION_ERROR
+                })
+                public @interface AccessError {
+                }
+
+                public CameraAccessExceptionCompat(@AccessError int reason) {
+                    mCameraAccessException = PLATFORM_ERRORS.contains(reason)
+                            ? new CameraAccessException(reason) : null;
+                }
+            }
+
+            /*
+                In the platform, CameraAccessException(String) is defined like this:
+                @Retention(RetentionPolicy.SOURCE)
+                @IntDef(prefix = { "CAMERA_", "MAX_CAMERAS_IN_USE" }, value = {
+                        CAMERA_IN_USE,
+                        MAX_CAMERAS_IN_USE,
+                        CAMERA_DISABLED,
+                        CAMERA_DISCONNECTED,
+                        CAMERA_ERROR
+                })
+                public @interface AccessError {}
+
+                public CameraAccessException(@AccessError int problem) { ... }
+
+                The above code is safe since we're filtering on PLATFORM_ERRORS.contains, but
+                this is hard for lint to check... This means we need to make sure there's
+                no "checking" of the value if we're going to assert this!
+             */
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expectClean()
+  }
+
+  fun testSwitchCheck() {
+    lint()
+      .files(
+        java(
+            // Extracted from AndroidX'
+            // appcompat/appcompat/src/main/java/androidx/appcompat/app/AppCompatDelegateImpl.java
+            """
+            package test.pkg;
+
+            import androidx.annotation.IntDef;
+
+            import java.lang.annotation.Retention;
+            import java.lang.annotation.RetentionPolicy;
+
+            public class ReturnCheck {
+                public static final int MODE_NIGHT_FOLLOW_SYSTEM = -1;
+                public static final int MODE_NIGHT_AUTO_TIME = 0;
+                public static final int MODE_NIGHT_NO = 1;
+                public static final int MODE_NIGHT_YES = 2;
+                public static final int MODE_NIGHT_AUTO_BATTERY = 3;
+                public static final int MODE_NIGHT_UNSPECIFIED = -100;
+
+                @IntDef({MODE_NIGHT_NO, MODE_NIGHT_YES, MODE_NIGHT_AUTO_TIME, MODE_NIGHT_FOLLOW_SYSTEM,
+                        MODE_NIGHT_UNSPECIFIED, MODE_NIGHT_AUTO_BATTERY})
+                @Retention(RetentionPolicy.SOURCE)
+                public @interface NightMode {}
+
+                @IntDef({MODE_NIGHT_NO, MODE_NIGHT_YES, MODE_NIGHT_FOLLOW_SYSTEM})
+                @Retention(RetentionPolicy.SOURCE)
+                @interface ApplyableNightMode {}
+
+                @ApplyableNightMode
+                int mapNightMode(@NightMode final int mode) {
+                    switch (mode) {
+                        case MODE_NIGHT_NO:
+                        case MODE_NIGHT_YES:
+                        case MODE_NIGHT_FOLLOW_SYSTEM:
+                            // FALLTHROUGH since these are all valid modes to return
+                            return mode; // OK
+                        default: throw new IllegalStateException("Error");
+                    }
+                }
+            }
+            """
+          )
+          .indented(),
+        SUPPORT_ANNOTATIONS_JAR,
+      )
+      .run()
+      .expectClean()
+  }
 }

@@ -64,6 +64,8 @@ import org.jetbrains.uast.UPrefixExpression
 import org.jetbrains.uast.UReferenceExpression
 import org.jetbrains.uast.UResolvable
 import org.jetbrains.uast.UReturnExpression
+import org.jetbrains.uast.USimpleNameReferenceExpression
+import org.jetbrains.uast.USwitchExpression
 import org.jetbrains.uast.UVariable
 import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.UastBinaryOperator.Companion.IDENTITY_NOT_EQUALS
@@ -76,7 +78,9 @@ import org.jetbrains.uast.skipParenthesizedExprUp
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.util.isArrayInitializer
+import org.jetbrains.uast.util.isAssignment
 import org.jetbrains.uast.util.isNewArrayWithInitializer
+import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
   override fun applicableAnnotations(): List<String> =
@@ -273,6 +277,20 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
               lastAssignment,
               errorNode ?: argument,
               flag,
+              usageInfo,
+            )
+          } else if (
+            usageInfo.type != AnnotationUsageType.VARIABLE_REFERENCE &&
+              usageInfo.type != AnnotationUsageType.FIELD_REFERENCE &&
+              context.evaluator.getAnnotations(resolved, true).any { isAnnotatedWithTypeDef(it) }
+          ) {
+            checkTypeDefConstant(
+              context,
+              annotation,
+              argument,
+              errorNode ?: argument,
+              flag,
+              resolved,
               usageInfo,
             )
           }
@@ -536,6 +554,16 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         return
       }
 
+      // noinspection LintImplPsiEquals
+      if (
+        value is PsiVariable &&
+          argument is UReferenceExpression &&
+          argument.resolve() == value &&
+          variableIsChecked(argument, value)
+      ) {
+        return
+      }
+
       reportTypeDef(
         context,
         argument,
@@ -547,6 +575,68 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         unmatched,
       )
     }
+  }
+
+  /**
+   * For a given variable [reference] (which is declared in [variable] and has an associated typedef
+   * annotation), returns true if that variable is "checked" in some way such that the broad typedef
+   * may not apply (e.g. it's inside an if statement where we have checked the variable value as
+   * part of the condition, or the variable has been reassigned, etc).
+   */
+  @Suppress("LintImplPsiEquals")
+  private fun variableIsChecked(reference: UElement, variable: PsiVariable): Boolean {
+    val method = reference.getParentOfType<UMethod>()
+    var isChecked = false
+    method?.accept(
+      object : AbstractUastVisitor() {
+        private var foundStart = false
+        private var foundTarget = false
+
+        override fun visitVariable(node: UVariable): Boolean {
+          if (node.javaPsi == variable) {
+            foundStart = true
+          }
+          return super.visitVariable(node)
+        }
+
+        override fun visitSimpleNameReferenceExpression(
+          node: USimpleNameReferenceExpression
+        ): Boolean {
+          if (node == reference) {
+            foundTarget = true
+          } else if (foundStart && !foundTarget) {
+            val resolved = node.resolve()
+            if (resolved == variable) {
+              var parent = node.uastParent
+              if (
+                parent is UBinaryExpression && parent.isAssignment() && parent.leftOperand == node
+              ) {
+                isChecked = true
+              } else {
+                var prev: UElement = node
+                while (parent != null) {
+                  if (parent is UIfExpression) {
+                    if (prev == parent.condition) {
+                      isChecked = true
+                      break
+                    }
+                  } else if (parent is USwitchExpression) {
+                    if (prev == parent.expression) {
+                      isChecked = true
+                      break
+                    }
+                  }
+                  prev = parent
+                  parent = parent.uastParent ?: break
+                }
+              }
+            }
+          }
+          return super.visitSimpleNameReferenceExpression(node)
+        }
+      }
+    )
+    return isChecked
   }
 
   /** Returns PsiFields or constant values (ints or Strings) */
@@ -833,6 +923,15 @@ class TypedefDetector : AbstractAnnotationDetector(), SourceCodeScanner {
         return isTypeDef(toAndroidxAnnotation(qualifiedName))
       }
       return false
+    }
+
+    /** Returns true if this [annotation] is an annotation annotated with `@IntDef` et al. */
+    @Suppress("ExternalAnnotations")
+    fun isAnnotatedWithTypeDef(annotation: UAnnotation): Boolean {
+      return annotation.resolve()?.annotations?.any { resolvedAnnotation ->
+        val qualifiedName = resolvedAnnotation.qualifiedName ?: ""
+        isTypeDef(qualifiedName)
+      } == true
     }
 
     fun findTypeDef(annotations: List<UAnnotation>): UAnnotation? {
