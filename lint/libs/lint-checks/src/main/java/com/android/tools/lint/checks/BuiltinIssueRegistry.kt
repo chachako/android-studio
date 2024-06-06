@@ -107,6 +107,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           CheckResultDetector.CHECK_RESULT,
           ChildCountDetector.ADAPTER_VIEW_ISSUE,
           ChildCountDetector.SCROLLVIEW_ISSUE,
+          ChildInNonViewGroupDetector.CHILD_IN_NON_VIEW_GROUP_ISSUE,
           ChromeOsDetector.NON_RESIZEABLE_ACTIVITY,
           ChromeOsDetector.PERMISSION_IMPLIES_UNSUPPORTED_HARDWARE,
           ChromeOsDetector.SETTING_ORIENTATION_ON_ACTIVITY,
