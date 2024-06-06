@@ -6,7 +6,7 @@ import os
 import pathlib
 import shutil
 import tempfile
-from typing import Sequence
+from typing import Iterable, Sequence, Tuple
 import uuid
 
 from tools.base.bazel.ci import bazel
@@ -115,7 +115,54 @@ def studio_linux(build_env: bazel.BuildEnv):
   )
   collect_logs(build_env, test_result.bes_path)
 
-  # TODO(b/342237310): Copy artifacts.
+  if test_result.exit_code in {
+      _BAZEL_EXITCODE_SUCCESS,
+      _BAZEL_EXITCODE_TEST_FAILURES,
+      _BAZEL_EXITCODE_NO_TESTS_FOUND
+  }:
+    (dist_path / 'artifacts').mkdir(parents=True, exist_ok=True)
+    copy_artifacts(
+        build_env,
+        [
+            ('tools/adt/idea/studio/android-studio.linux.zip', 'artifacts'),
+            ('tools/adt/idea/studio/android-studio.win.zip', 'artifacts'),
+            ('tools/adt/idea/studio/android-studio.mac.zip', 'artifacts'),
+            ('tools/adt/idea/studio/android-studio.mac_arm.zip', 'artifacts'),
+            ('tools/adt/idea/studio/android-studio_build_manifest.textproto', 'artifacts'),
+            ('tools/adt/idea/studio/android-studio_update_message.html', 'artifacts'),
+            ('tools/adt/idea/studio/updater_deploy.jar', 'artifacts/android-studio-updater.jar'),
+            ('tools/adt/idea/native/installer/android-studio-bundle-data.zip', 'artifacts'),
+            ('tools/vendor/google/adrt/android-studio-cros-skeleton.zip', 'artifacts'),
+            ('tools/vendor/google/adrt/android-studio-nsis-prebuilt.zip', 'artifacts'),
+            ('tools/vendor/intel/android-studio-intel-haxm.zip', 'artifacts'),
+            ('tools/vendor/google/asfp/studio/asfp.linux.zip', 'artifacts'),
+            ('tools/vendor/google/asfp/studio/asfp_build_manifest.textproto', 'artifacts/asfp_build_manifest.textproto'),
+            ('tools/vendor/google/asfp/studio/asfp-linux-deb.zip', 'artifacts'),
+            ('tools/vendor/google/asfp/studio/asfp.deb', 'artifacts'),
+            ('tools/vendor/google/aswb/android-studio-with-blaze-channel.deb', 'artifacts'),
+            ('tools/vendor/google/aswb/android-studio-with-blaze.mac.zip', 'artifacts'),
+            ('tools/vendor/google/aswb/android-studio-with-blaze.mac_arm.zip', 'artifacts'),
+            ('tools/vendor/google/skia/skiaparser.zip', 'artifacts'),
+            ('tools/vendor/google/skia/skia_test_support.zip', 'artifacts'),
+            ('tools/vendor/google/ml/aiplugin*.zip', 'artifacts'),
+
+            ('tools/base/sdklib/commandlinetools_*.zip', 'artifacts'),
+            ('tools/base/ddmlib/tools.ddmlib.jar', 'artifacts/ddmlib.jar'),
+            ('tools/base/annotations/annotations.jar', 'artifacts'),
+            ('tools/base/common/tools.common.jar', 'artifacts'),
+            ('tools/base/ddmlib/libincfs.jar', 'artifacts'),
+            ('tools/base/lint/libs/lint-tests/lint-tests.jar', 'artifacts'),
+            ('tools/base/deploy/deployer/deployer.runner_deploy.jar', 'artifacts/deployer.jar'),
+            ('tools/base/profiler/native/trace_processor_daemon/trace_processor_daemon', 'artifacts'),
+            ('tools/vendor/google/game-tools/packaging/game-tools-linux.tar.gz', 'artifacts'),
+            ('tools/vendor/google/game-tools/packaging/game-tools-win.zip', 'artifacts'),
+            ('tools/base/deploy/service/deploy.service_deploy.jar', 'artifacts'),
+            ('tools/base/gmaven/gmaven.zip', 'artifacts/gmaven_repo.zip'),
+            ('tools/base/build-system/documentation.zip', 'artifacts/android_gradle_plugin_reference_docs.zip'),
+            ('tools/base/firebase/testlab/testlab-gradle-plugin/testlab-gradle-plugin.zip', 'artifacts'),
+            ('tools/base/preview/screenshot/preview_screenshot_maven_repo.zip', 'artifacts'),
+        ],
+    )
 
 
 def studio_win(build_env: bazel.BuildEnv):
@@ -148,8 +195,16 @@ def studio_win(build_env: bazel.BuildEnv):
   test_result = run_bazel_test(build_env, flags, targets)
 
   collect_logs(build_env, test_result.bes_path)
+  copy_artifacts(
+      build_env,
+      [
+          ('tools/vendor/google/skia/skiaparser.zip', ''),
+          ('tools/vendor/google/skia/skia_test_support.zip', ''),
+          ('tools/base/profiler/native/trace_processor_daemon/trace_processor_daemon.exe', ''),
+      ],
+  )
 
-  # TODO(b/342237310): Copy artifacts.
+  # TODO(b/342237310): Build Windows installer.
 
 
 def run_bazel_test(
@@ -243,3 +298,21 @@ def collect_logs(build_env: bazel.BuildEnv, bes_path: pathlib.Path) -> None:
 
   bazel_cmd = bazel.BazelCmd(build_env)
   bazel_cmd.run(*args)
+
+
+def copy_artifacts(build_env: bazel.BuildEnv, files: Iterable[Tuple[str,str]]) -> None:
+  """Copies artifacts to the dist dir.
+
+  Args:
+    files: Iterable of tuples consisting of (src, dest).
+           src is relative to the bazel-bin output and can be a glob.
+           dest is relative to dist_dir and can be either a file or directory.
+  """
+  dist_path = pathlib.Path(build_env.dist_dir)
+  bazel_cmd = bazel.BazelCmd(build_env)
+  result = bazel_cmd.info('--config=ci', 'bazel-bin')
+  bin_path = pathlib.Path(result.stdout.decode('utf-8').strip())
+
+  for src_glob, dest in files:
+    for src in bin_path.glob(src_glob):
+      shutil.copy2(src, dist_path / dest)
