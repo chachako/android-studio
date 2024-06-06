@@ -27615,6 +27615,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.android.support.support-v4_24.0.0",
+    pom = "repository/com/android/support/support-v4/24.0.0/support-v4-24.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/android/support/support-v4/24.0.0",
+    deps = [
+        "com.android.support.support-annotations_24.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.android.support.support-v4_25.4.0",
     pom = "repository/com/android/support/support-v4/25.4.0/support-v4-25.4.0.pom",
     repo_root_path = "repository",
@@ -27670,17 +27681,6 @@ maven_artifact(
         "com.android.support.support-core-utils_28.0.0",
         "com.android.support.support-core-ui_28.0.0",
         "com.android.support.support-fragment_28.0.0",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-maven_artifact(
-    name = "com.android.support.support-v4_24.0.0",
-    pom = "repository/com/android/support/support-v4/24.0.0/support-v4-24.0.0.pom",
-    repo_root_path = "repository",
-    repo_path = "com/android/support/support-v4/24.0.0",
-    deps = [
-        "com.android.support.support-annotations_24.0.0",
     ],
     visibility = ["//visibility:public"],
 )
@@ -42513,6 +42513,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.android.gms.play-services-ads-lite_9.8.0",
+    pom = "repository/com/google/android/gms/play-services-ads-lite/9.8.0/play-services-ads-lite-9.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-ads-lite/9.8.0",
+    deps = [
+        "com.google.android.gms.play-services-basement_9.8.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.android.gms.play-services-ads_20.6.0",
     pom = "repository/com/google/android/gms/play-services-ads/20.6.0/play-services-ads-20.6.0.pom",
     repo_root_path = "repository",
@@ -42546,6 +42557,21 @@ maven_artifact(
         "com.google.android.gms.play-services-appset_16.0.1",
         "com.google.android.gms.play-services-basement_18.0.0",
         "com.google.android.gms.play-services-tasks_18.0.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.gms.play-services-ads_9.8.0",
+    pom = "repository/com/google/android/gms/play-services-ads/9.8.0/play-services-ads-9.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-ads/9.8.0",
+    deps = [
+        "com.google.android.gms.play-services-ads-lite_9.8.0",
+        "com.google.android.gms.play-services-base_9.8.0",
+        "com.google.android.gms.play-services-clearcut_9.8.0",
+        "com.google.android.gms.play-services-basement_9.8.0",
+        "com.google.android.gms.play-services-gass_9.8.0",
     ],
     visibility = ["//visibility:public"],
 )
@@ -42647,6 +42673,18 @@ maven_artifact(
         "androidx.fragment.fragment_1.0.0",
         "com.google.android.gms.play-services-basement_18.0.0",
         "com.google.android.gms.play-services-tasks_18.0.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.gms.play-services-base_9.8.0",
+    pom = "repository/com/google/android/gms/play-services-base/9.8.0/play-services-base-9.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-base/9.8.0",
+    deps = [
+        "com.google.android.gms.play-services-basement_9.8.0",
+        "com.google.android.gms.play-services-tasks_9.8.0",
     ],
     visibility = ["//visibility:public"],
 )
@@ -42768,6 +42806,40 @@ maven_artifact(
         "androidx.collection.collection_1.0.0",
         "androidx.core.core_1.2.0",
         "androidx.fragment.fragment_1.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.gms.play-services-basement_9.8.0",
+    pom = "repository/com/google/android/gms/play-services-basement/9.8.0/play-services-basement-9.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-basement/9.8.0",
+    deps = [
+        "com.android.support.support-v4_24.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.gms.play-services-clearcut_9.8.0",
+    pom = "repository/com/google/android/gms/play-services-clearcut/9.8.0/play-services-clearcut-9.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-clearcut/9.8.0",
+    deps = [
+        "com.google.android.gms.play-services-base_9.8.0",
+        "com.google.android.gms.play-services-basement_9.8.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.gms.play-services-gass_9.8.0",
+    pom = "repository/com/google/android/gms/play-services-gass/9.8.0/play-services-gass-9.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-gass/9.8.0",
+    deps = [
+        "com.google.android.gms.play-services-basement_9.8.0",
     ],
     visibility = ["//visibility:public"],
 )
@@ -43026,6 +43098,17 @@ maven_artifact(
     repo_path = "com/google/android/gms/play-services-tasks/18.0.1",
     deps = [
         "com.google.android.gms.play-services-basement_18.0.0",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
+    name = "com.google.android.gms.play-services-tasks_9.8.0",
+    pom = "repository/com/google/android/gms/play-services-tasks/9.8.0/play-services-tasks-9.8.0.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/gms/play-services-tasks/9.8.0",
+    deps = [
+        "com.google.android.gms.play-services-basement_9.8.0",
     ],
     visibility = ["//visibility:public"],
 )
