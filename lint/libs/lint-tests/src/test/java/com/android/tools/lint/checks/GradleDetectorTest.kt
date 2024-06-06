@@ -5899,6 +5899,46 @@ class GradleDetectorTest : AbstractCheckTest() {
       .expectFixDiffs(fixDiff)
   }
 
+  fun testCompileDeprecationOnFiles() {
+    val expected =
+      """
+            build.gradle:9: Warning: compile is deprecated; replace with implementation [GradleDeprecatedConfiguration]
+                compile files('libs/luaj-jse-3.0.2.jar')
+                ~~~~~~~
+            0 errors, 1 warnings"""
+
+    val expectedFix =
+      """
+            Autofix for build.gradle line 9: Replace 'compile' with 'implementation':
+            @@ -9 +9
+            -     compile files('libs/luaj-jse-3.0.2.jar')
+            +     implementation files('libs/luaj-jse-3.0.2.jar')
+            """
+
+    lint()
+      .files(
+        gradle(
+            """
+                        buildscript {
+                            dependencies {
+                                classpath 'com.android.tools.build:gradle:3.0.0'
+                            }
+                        }
+                        apply plugin: 'com.android.application'
+
+                        dependencies {
+                            compile files('libs/luaj-jse-3.0.2.jar')
+                        }
+                    """
+          )
+          .indented()
+      )
+      .issues(DEPRECATED_CONFIGURATION)
+      .run()
+      .expect(expected)
+      .expectFixDiffs(expectedFix)
+  }
+
   fun testAnnotationProcessorOnCompilePath() {
     val expected =
       """

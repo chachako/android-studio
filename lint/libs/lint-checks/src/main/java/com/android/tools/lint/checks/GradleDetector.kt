@@ -516,6 +516,7 @@ open class GradleDetector : Detector(), GradleScanner, TomlScanner, XmlScanner {
           val message = "Avoid using absolute paths in .gradle files"
           report(context, valueCookie, PATH, message)
         }
+        checkDeprecatedConfigurations(property, context, propertyCookie)
       } else {
         var dependencyString = getStringLiteralValue(value, valueCookie)
         if (
