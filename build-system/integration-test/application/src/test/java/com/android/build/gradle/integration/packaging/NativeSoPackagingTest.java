@@ -19,6 +19,8 @@ package com.android.build.gradle.integration.packaging;
 import static com.android.build.gradle.integration.common.fixture.TemporaryProjectModification.doTest;
 import static com.android.build.gradle.integration.common.truth.TruthHelper.assertThatApk;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.build.gradle.integration.common.fixture.GradleBuildResult;
@@ -28,16 +30,29 @@ import com.android.build.gradle.integration.common.truth.ScannerSubject;
 import com.android.build.gradle.integration.common.truth.TruthHelper;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.build.gradle.internal.dsl.ModulePropertyKey;
+import com.android.build.gradle.options.StringOption;
+import com.android.bundle.Config;
 import com.android.testutils.TestUtils;
+import com.android.testutils.apk.Aab;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
+
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import java.io.File;
-import java.util.Scanner;
+
+import kotlin.io.FilesKt;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Scanner;
 
 /** test for packaging of asset files. */
 public class NativeSoPackagingTest {
@@ -563,6 +578,42 @@ public class NativeSoPackagingTest {
     }
 
     // ---- SO ALIGNMENT ----
+    private void checkBundleAlignment(
+            Config.UncompressNativeLibraries.PageAlignment expectedPageAlignment) throws Exception {
+        File apkSelectConfig = project.file("apkSelectConfig.json");
+        FilesKt.writeText(
+                apkSelectConfig,
+                "{\"sdk_version\":34,\"sdk_runtime\":{\"supported\":\"true\"},\"screen_density\":420,\"supported_abis\":[\"x86_64\",\"x86\",\"arm64-v8a\"],\"supported_locales\":[\"en\"]}",
+                StandardCharsets.UTF_8);
+        project.executor()
+                .with(StringOption.IDE_APK_SELECT_CONFIG, apkSelectConfig.getAbsolutePath())
+                .run(":app:bundleDebug", ":app:extractApksFromBundleForDebug");
+        try (Aab appBundle = appProject.getBundle(GradleTestProject.ApkType.DEBUG)) {
+            try (InputStream bundleConfigStream =
+                    new BufferedInputStream(
+                            java.nio.file.Files.newInputStream(
+                                    appBundle.getEntry("BundleConfig.pb")))) {
+                Config.BundleConfig config = Config.BundleConfig.parseFrom(bundleConfigStream);
+                assertThat(config.getOptimizations().getUncompressNativeLibraries().getAlignment())
+                        .named("bundleConfig optimizations.uncompress_native_libraries.alignment")
+                        .isEqualTo(expectedPageAlignment);
+            }
+        }
+        File extractedApks =
+                appProject.getIntermediateFile(
+                        "extracted_apks", "debug", "extractApksFromBundleForDebug");
+        try (Apk extractedBase =
+                new Apk(
+                        Arrays.stream(Objects.requireNonNull(extractedApks.listFiles()))
+                                .filter(it -> it.getName().startsWith("base-master"))
+                                .findFirst()
+                                .orElseThrow())) {
+            PackagingTests.checkZipAlignWithPageAlignedSoFiles(
+                    extractedBase); // TODO (b/310027241): validate using the relevant page size
+            // once zipalign is updated
+        }
+    }
+
     // TODO (b/310027241): validate using the relevant page size once zipalign is updated
     @Test
     public void testSharedObjectFilesAlignment4k() throws Exception {
@@ -582,6 +633,7 @@ public class NativeSoPackagingTest {
         execute("app:assembleDebug");
         checkApk(appProject, "libapp.so", "app:abcd");
         PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"));
+        checkBundleAlignment(Config.UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_4K);
     }
 
     @Test
@@ -595,6 +647,7 @@ public class NativeSoPackagingTest {
 
         checkApk(appProject, "libapp.so", "app:abcd");
         PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"));
+        checkBundleAlignment(Config.UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_16K);
     }
 
     @Test
@@ -616,6 +669,7 @@ public class NativeSoPackagingTest {
 
         checkApk(appProject, "libapp.so", "app:abcd");
         PackagingTests.checkZipAlignWithPageAlignedSoFiles(appProject.getApk("debug"));
+        checkBundleAlignment(Config.UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_64K);
     }
 
     @Test
@@ -636,6 +690,12 @@ public class NativeSoPackagingTest {
         TestUtils.waitForFileSystemTick();
         GradleBuildResult result = project.executor().expectFailure().run("app:assembleDebug");
         ScannerSubject.assertThat(result.getStderr())
+                .contains(
+                        "Invalid value for "
+                                + flag.getKey()
+                                + ". Supported values are \"4k\", \"16k\", and \"64k\".");
+        GradleBuildResult result2 = project.executor().expectFailure().run("app:bundleDebug");
+        ScannerSubject.assertThat(result2.getStderr())
                 .contains(
                         "Invalid value for "
                                 + flag.getKey()

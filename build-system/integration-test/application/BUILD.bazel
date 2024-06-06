@@ -27,6 +27,7 @@ TEST_DEPS = [
     "//tools/base/sdklib:tools.sdklib",
     "//tools/base/testutils:tools.testutils",
     "//tools/base/zipflinger",
+    "@maven//:com.android.tools.build.bundletool",
     "@maven//:com.android.tools.smali.smali-dexlib2",
     "@maven//:org.jetbrains.dokka.dokka-core",
     "@maven//:org.ow2.asm.asm",
