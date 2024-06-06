@@ -337,10 +337,12 @@ private fun readComposeScreenshotResult(reader: JsonReader): ComposeScreenshotRe
     var imageName: String? = null
     var screenshotError: ScreenshotError? = null
     var previewId: String? = null
+    var methodFQN: String? = null
     reader.beginObject()
     while (reader.hasNext()) {
         when (reader.nextName()) {
             PREVIEW_ID -> { previewId = reader.nextString() }
+            METHOD_FQN -> { methodFQN = reader.nextString() }
             IMAGE_NAME -> { imageName = reader.nextString() }
             SCREENSHOT_ERROR -> {
                 screenshotError = readScreenshotError(reader)
@@ -350,6 +352,7 @@ private fun readComposeScreenshotResult(reader: JsonReader): ComposeScreenshotRe
     reader.endObject()
     return ComposeScreenshotResult(
         previewId ?: throw IllegalArgumentException("Preview Id is missing"),
+        methodFQN ?: throw IllegalArgumentException("Method FQN is missing"),
         imageName ?: throw IllegalArgumentException("Image name missing"),
         screenshotError
     )
@@ -389,6 +392,7 @@ private fun writeComposeScreenshotResultToJson(
 ) {
     writer.beginObject()
     writer.name(PREVIEW_ID).value(screenshotResult.previewId)
+    writer.name(METHOD_FQN).value(screenshotResult.methodFQN)
     screenshotResult.imageName?.let {
         writer.name(IMAGE_NAME).value(it)
     }

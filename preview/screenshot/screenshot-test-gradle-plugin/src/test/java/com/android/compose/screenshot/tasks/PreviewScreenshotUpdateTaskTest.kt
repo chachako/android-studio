@@ -53,9 +53,13 @@ class PreviewScreenshotUpdateTaskTest {
         val path1 = "com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0.png"
         val path2 = "com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0.png"
         val path3 = "com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1.png"
-        val composeResults = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", path1.toString(), null ),
-            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0", path2.toString(), null ),
-            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1", path3.toString(), null ))
+        val composeResults = listOf(
+            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", "com.example.agptest.ExampleInstrumentedTest.preview",
+            path1, null ),
+            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0", "com.example.agptest.ExampleInstrumentedTest.preview1",
+                path2, null ),
+            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1", "com.example.agptest.ExampleInstrumentedTest.preview1",
+                path3, null ))
         val result = ComposeRenderingResult(globalError = null, screenshotResults = composeResults)
         writeComposeRenderingResult(resultsFile.writer(), result)
         Files.createFile(renderTaskOutputDir.toPath().resolve(path1))
@@ -103,9 +107,9 @@ class PreviewScreenshotUpdateTaskTest {
         val path2 = "com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0.png"
         val path1Ref = "com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0.png"
         val path2Ref = "com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0.png"
-        val composeRenderingResult = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", path1.toString(), null ),
-            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96", path2.toString(), null ),
-            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96", "com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1.png", ScreenshotError("ERROR", "MESSAGE", "STACK_TRACE", listOf(), listOf(), listOf())))
+        val composeRenderingResult = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", "com.example.agptest.ExampleInstrumentedTest.preview", path1, null ),
+            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0", "com.example.agptest.ExampleInstrumentedTest.preview1", path2, null ),
+            ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1", "com.example.agptest.ExampleInstrumentedTest.preview1","com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1.png", ScreenshotError("ERROR", "MESSAGE", "STACK_TRACE", listOf(), listOf(), listOf())))
         writeComposeRenderingResult(resultsFile.writer(), ComposeRenderingResult(null, composeRenderingResult))
         Files.createFile(renderTaskOutputDir.toPath().resolve(path1))
         Files.createFile(renderTaskOutputDir.toPath().resolve(path2))
@@ -132,7 +136,8 @@ class PreviewScreenshotUpdateTaskTest {
         val renderTaskOutputDir = tempDirRule.newFolder("rendered")
         val resultsFile = tempDirRule.newFile("results.json")
         val path1 = "com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0.png"
-        val composeRenderingResult = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", path1.toString(), ScreenshotError("SUCCESS", "Nothing to render in Preview. Cannot generate image", "", listOf(), listOf(), listOf())) )
+        val composeRenderingResult = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", "com.example.agptest.ExampleInstrumentedTest.preview",
+            path1, ScreenshotError("SUCCESS", "Nothing to render in Preview. Cannot generate image", "", listOf(), listOf(), listOf())) )
         writeComposeRenderingResult(resultsFile.writer(), ComposeRenderingResult(null, composeRenderingResult))
         task.referenceImageDir.set(referenceImageDir)
         task.renderTaskOutputDir.set(renderTaskOutputDir)

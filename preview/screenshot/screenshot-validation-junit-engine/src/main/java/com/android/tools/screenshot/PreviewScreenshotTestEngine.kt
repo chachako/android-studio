@@ -80,13 +80,17 @@ class PreviewScreenshotTestEngine : TestEngine {
                 } else {
                     testMethodSet.add(
                         Tests.TestMethod(methodName,
-                            getScreenshotResultsForMethod(className, methodName, screenshots, screenshotResults).size > 1,
+                            screenshotResults.filter {
+                                it.methodFQN == "$className.${methodName}"
+                            }.size > 1,
                             previewNameList))
                 }
             } else {
                 testMap[className] = mutableSetOf(
                     Tests.TestMethod(methodName,
-                        getScreenshotResultsForMethod(className, methodName, screenshots, screenshotResults).size > 1,
+                        screenshotResults.filter {
+                            it.methodFQN == "$className.${methodName}"
+                        }.size > 1,
                         previewNameList))
             }
         }
@@ -104,12 +108,13 @@ class PreviewScreenshotTestEngine : TestEngine {
     }
 
     override fun execute(request: ExecutionRequest) {
-        val listener = request.engineExecutionListener
-        val resultsToSave = mutableListOf<PreviewResult>()
         if (request.rootTestDescriptor.children.isEmpty()) return
+
         val resultFile = File(parameters.renderResultsFilePath)
         val screenshotResults = readComposeRenderingResultJson(resultFile.reader()).screenshotResults
         val composeScreenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(parameters.previewsDiscovered).reader())
+        val listener = request.engineExecutionListener
+        val resultsToSave = mutableListOf<PreviewResult>()
 
         for (classDescriptor in request.rootTestDescriptor.children) {
             listener.executionStarted(classDescriptor)
@@ -138,7 +143,11 @@ class PreviewScreenshotTestEngine : TestEngine {
         }
     }
 
-    private fun compareImages(composeScreenshot: ComposeScreenshotResult, testDisplayName: String, startTime: Long): PreviewResult {
+    private fun compareImages(
+        composeScreenshot: ComposeScreenshotResult,
+        testDisplayName: String,
+        startTime: Long
+    ): PreviewResult {
         // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
         var referencePath = File(parameters.referenceImageDirPath).toPath().resolve(composeScreenshot.imageName)
         var referenceMessage: String? = null
@@ -181,12 +190,14 @@ class PreviewScreenshotTestEngine : TestEngine {
             is Verify.AnalysisResult.Failed -> {
                 code = 1
             }
+
             is Verify.AnalysisResult.Passed -> {
                 if (result.imageDiff.highlights == null) {
                     diffPath = null
                     diffMessage = "Images match!"
                 }
             }
+
             is Verify.AnalysisResult.MissingReference -> {
                 referencePath = null
                 diffPath = null
@@ -194,13 +205,15 @@ class PreviewScreenshotTestEngine : TestEngine {
                 diffMessage = "No diff available"
                 code = 1
             }
+
             is Verify.AnalysisResult.SizeMismatch -> {
                 diffMessage = result.message
                 diffPath = null
                 code = 1
             }
         }
-        return result.toPreviewResponse(code, testDisplayName,
+        return result.toPreviewResponse(
+            code, testDisplayName,
             getDurationInSeconds(startTime),
             ImageDetails(referencePath, referenceMessage),
             ImageDetails(actualPath, null),
@@ -216,7 +229,12 @@ class PreviewScreenshotTestEngine : TestEngine {
         return (System.currentTimeMillis() - startTimeMillis) / 1000F
     }
 
-    private fun reportResult(listener: EngineExecutionListener, screenshot: ComposeScreenshotResult, testDescriptor: TestDescriptor, testDisplayName: String): PreviewResult {
+    private fun reportResult(
+        listener: EngineExecutionListener,
+        screenshot: ComposeScreenshotResult,
+        testDescriptor: TestDescriptor,
+        testDisplayName: String
+    ): PreviewResult {
         val startTime = System.currentTimeMillis()
         listener.executionStarted(testDescriptor)
         val imageComparison = compareImages(screenshot, testDisplayName, startTime)
@@ -227,42 +245,6 @@ class PreviewScreenshotTestEngine : TestEngine {
         return imageComparison
     }
 
-    private fun getPreviewIdWithoutSuffix(previewId: String, previewName: String?): String {
-        val previewIdWithoutHash = previewId.substringBeforeLast('_').substringBeforeLast('_')
-        return if (previewName.isNullOrEmpty()) previewIdWithoutHash else previewIdWithoutHash.removeSuffix("_${previewName}")
-    }
-
-    /**
-     * Returns a list of [ComposeScreenshotResult]s that are generated from a test method
-     *
-     * The provided list of screenshot results is filtered by matching the provided class name
-     * and method name against a ComposeScreenshotResult's previewId with the preview name and
-     * hash suffix removed.
-     *
-     * @param className the name of the class containing the test method
-     * @param methodName the name of the test method
-     * @param allScreenshots a list of all discovered ComposeScreenshots
-     * @param allScreenshotResults a list of all discovered ComposeScreenshotResults
-     */
-    private fun getScreenshotResultsForMethod(className: String, methodName: String, allScreenshots: List<ComposeScreenshot>, allScreenshotResults: List<ComposeScreenshotResult>): List<ComposeScreenshotResult> {
-        val screenshotResults = mutableListOf<ComposeScreenshotResult>()
-        val matchingComposeScreenshotPreviewNames = allScreenshots.filter { it.methodFQN == "$className.$methodName" }.map {
-            if (it.previewParams.containsKey("name") && isPreviewNameValidFileName(it.previewParams["name"].toString())) {
-                it.previewParams["name"]
-            } else {
-                ""
-            }}.distinct()
-        matchingComposeScreenshotPreviewNames.forEach {previewName ->
-            screenshotResults.addAll(allScreenshotResults.filter { getPreviewIdWithoutSuffix(it.previewId, previewName) == "$className.${methodName}" })
-        }
-        return screenshotResults.toList()
-    }
-
-    private fun isPreviewNameValidFileName(previewName: String): Boolean {
-        val invalidCharacters = Regex("""[\u0000-\u001F\\/:*?"<>|]+""")
-        return !(invalidCharacters.containsMatchIn(previewName))
-    }
-
     private fun runTestMethodThatGeneratesASingleScreenshotTest(methodDescriptor: TestMethodTestDescriptor,
         listener: EngineExecutionListener,
         screenshotResults: List<ComposeScreenshotResult>): PreviewResult {
@@ -271,7 +253,7 @@ class PreviewScreenshotTestEngine : TestEngine {
         val previewName: String? = methodDescriptor.previewName
         val screenshots =
             screenshotResults.filter {
-                getPreviewIdWithoutSuffix(it.previewId, previewName) == "$className.${methodName}"
+                it.methodFQN == "$className.${methodName}"
             }
         var displayName = "$className.${methodName}"
         if (!previewName.isNullOrEmpty()) { displayName += "_$previewName"}
@@ -287,8 +269,11 @@ class PreviewScreenshotTestEngine : TestEngine {
         listener.executionStarted(methodDescriptor)
         val className: String = methodDescriptor.className
         val methodName: String = methodDescriptor.methodName
-        val methodScreenshotResults = getScreenshotResultsForMethod(className, methodName, composeScreenshots, screenshotResults)
-        for ((run, screenshot) in methodScreenshotResults.withIndex()) {
+        val screenshots =
+            screenshotResults.filter {
+                it.methodFQN == "$className.${methodName}"
+            }
+        for ((run, screenshot) in screenshots.withIndex()) {
             val currentComposePreview = composeScreenshots.single {
                 it.methodFQN == "$className.$methodName" && screenshot.imageName.contains(it.previewId)
             }

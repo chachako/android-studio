@@ -55,19 +55,21 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
         composeRendering.layoutlibPath,
     )
     val screenshotResults = mutableListOf<ComposeScreenshotResult>()
-    val requestToPreviewId = composeRendering.screenshots.mapNotNull { screenshot ->
+    val requestToScreenshotInfo = composeRendering.screenshots.mapNotNull { screenshot ->
         screenshot.toPreviewElement()?.let { previewElement ->
             RenderRequest(previewElement::applyTo) {
                 previewElement.resolve().map { it.toPreviewXml().buildString() }
-            } to screenshot.previewId
+            } to ScreenshotInfo(screenshot.previewId, screenshot.methodFQN)
         }
     }.toMap()
 
     r.use { renderer ->
-        renderer.render(requestToPreviewId.keys.asSequence()) { request, config, i, result, usedPaths ->
-            val previewId = requestToPreviewId[request]!!
+        renderer.render(requestToScreenshotInfo.keys.asSequence()) { request, config, i, result, usedPaths ->
+            val requestToScreenshotInfoValue = requestToScreenshotInfo[request]!!
+            val previewId = requestToScreenshotInfoValue.previewId
             val resultId = "${previewId}_$i"
             val imageName = "$resultId.png"
+            val methodFQN = requestToScreenshotInfoValue.methodFQN
             val screenshotResult = try {
                 val imageRendered = result.renderedImage.copy
                 imageRendered?.let { image ->
@@ -94,10 +96,9 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
                     ImageIO.write(shapedImage, "png", imgFile)
                 }
                 val screenshotError = extractError(result, imageRendered, composeRendering.outputFolder)
-                ComposeScreenshotResult(previewId, imageName, screenshotError)
-
+                ComposeScreenshotResult(previewId, methodFQN, imageName, screenshotError)
             } catch (t: Throwable) {
-                ComposeScreenshotResult(previewId, imageName, ScreenshotError(t))
+                ComposeScreenshotResult(previewId, methodFQN, imageName, ScreenshotError(t))
             }
             screenshotResults.add(screenshotResult)
             val classesUsed = Path(composeRendering.metaDataFolder).resolve("$resultId.classes.txt").toFile()
@@ -132,3 +133,5 @@ private fun extractError(renderResult: RenderResult, imageRendered: BufferedImag
         renderResult.logger.missingClasses.toList(),
     )
 }
+
+data class ScreenshotInfo(val previewId: String, val methodFQN: String)
