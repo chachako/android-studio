@@ -68,6 +68,7 @@ fun createProjectServices(
         project.dependencies,
         project.extensions.extraProperties,
         project.tasks::register,
+        project.pluginManager,
     )
 
 @JvmOverloads

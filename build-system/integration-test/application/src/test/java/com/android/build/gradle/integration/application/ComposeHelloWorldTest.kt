@@ -19,7 +19,12 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.internal.utils.COMPOSE_COMPILER_PLUGIN_ID
+import com.android.builder.model.SyncIssue
+import com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags
+import com.android.builder.model.v2.models.ProjectSyncIssues
 import com.android.testutils.truth.PathSubject.assertThat
+import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assume
 import org.junit.Before
@@ -56,13 +61,16 @@ class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean)
             )
             TestFileUtils.searchAndReplace(
                 project.getSubproject("app").buildFile,
-                "apply plugin: 'org.jetbrains.kotlin.plugin.compose'",
+                "apply plugin: '$COMPOSE_COMPILER_PLUGIN_ID'",
                 ""
             )
             TestFileUtils.appendToFile(
                 project.getSubproject("app").buildFile,
                 """
                     android {
+                        buildFeatures {
+                            compose true
+                        }
                         composeOptions {
                             kotlinCompilerExtensionVersion = "${"$"}{libs.versions.composeCompilerVersion.get()}"
                         }
@@ -137,11 +145,50 @@ class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean)
         Assume.assumeTrue(useComposeCompilerGradlePlugin)
         TestFileUtils.searchAndReplace(
             project.getSubproject("app").buildFile,
-            "apply plugin: 'org.jetbrains.kotlin.plugin.compose'",
+            "apply plugin: '$COMPOSE_COMPILER_PLUGIN_ID'",
             ""
+        )
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                android {
+                    buildFeatures {
+                        compose true
+                    }
+                }
+            """.trimIndent()
         )
         val result = project.executor().expectFailure().run("assembleDebug")
         ScannerSubject.assertThat(result.stderr)
             .contains("Starting in Kotlin 2.0, the Compose Compiler Gradle plugin is required")
+    }
+
+    @Test
+    fun testModel() {
+        val appModel = project.modelV2().ignoreSyncIssues().fetchModels().container.getProject(":app")
+        assertThat(
+            appModel.androidProject?.flags?.getFlagValue(AndroidGradlePluginProjectFlags.BooleanFlag.JETPACK_COMPOSE.name)).isTrue()
+    }
+
+    @Test
+    fun testSyncIssue() {
+        Assume.assumeTrue(useComposeCompilerGradlePlugin)
+        TestFileUtils.appendToFile(
+            project.getSubproject("app").buildFile,
+            """
+                android {
+                    buildFeatures {
+                        compose false
+                    }
+                }
+            """.trimIndent()
+        )
+        val result = project.modelV2().ignoreSyncIssues(SyncIssue.SEVERITY_WARNING).fetchModels()
+        val syncIssues: ProjectSyncIssues? = result.container.getProject(":app").issues
+        val syncIssue = syncIssues?.syncIssues?.filter {
+            it.type == SyncIssue.TYPE_INCONSISTENT_BUILD_FEATURE_SETTING
+        }?.single()
+        assertThat(syncIssue).isNotNull()
+        assertThat(syncIssue?.data).contains("buildFeatures.compose")
     }
 }

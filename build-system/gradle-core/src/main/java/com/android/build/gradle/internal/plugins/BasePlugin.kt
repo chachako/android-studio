@@ -696,7 +696,7 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
 
         // create the build feature object that will be re-used everywhere
         val buildFeatureValues = variantFactory.createBuildFeatureValues(
-            extension.buildFeatures, projectServices.projectOptions
+            extension.buildFeatures, projectServices
         )
 
         // create all registered custom source sets from the user on each AndroidSourceSet

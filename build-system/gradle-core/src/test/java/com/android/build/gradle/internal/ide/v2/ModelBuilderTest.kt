@@ -237,7 +237,7 @@ class ModelBuilderTest {
             {
                 BuildFeatureValuesImpl(
                     dslServices.newInstance(ApplicationBuildFeaturesImpl::class.java),
-                    dslServices.projectOptions
+                    Mockito.mock(ProjectServices::class.java)
                 )
             },
             AndroidProjectTypes.PROJECT_TYPE_APP,

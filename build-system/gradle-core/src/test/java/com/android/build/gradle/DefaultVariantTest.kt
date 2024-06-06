@@ -23,6 +23,7 @@ import com.android.build.gradle.internal.component.VariantCreationConfig
 import com.android.build.gradle.internal.core.dsl.impl.computeName
 import com.android.build.gradle.internal.dsl.ApplicationBuildFeaturesImpl
 import com.android.build.gradle.internal.scope.BuildFeatureValuesImpl
+import com.android.build.gradle.internal.services.ProjectServices
 import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationConfig
 import com.android.build.gradle.internal.variant.AbstractVariantInputModelTest
 import com.android.build.gradle.internal.variant.TestVariantInputModel
@@ -555,7 +556,7 @@ class DefaultVariantTest: AbstractVariantInputModelTest<String>() {
             {
                 BuildFeatureValuesImpl(
                     dslServices.newInstance(ApplicationBuildFeaturesImpl::class.java),
-                    dslServices.projectOptions
+                    Mockito.mock(ProjectServices::class.java)
                 )
             },
             AndroidProjectTypes.PROJECT_TYPE_APP,
