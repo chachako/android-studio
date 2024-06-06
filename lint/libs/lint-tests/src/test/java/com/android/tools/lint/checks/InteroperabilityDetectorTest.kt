@@ -459,6 +459,136 @@ class InteroperabilityDetectorTest : AbstractCheckTest() {
     PLATFORM_NULLNESS.setEnabledByDefault(false)
   }
 
+  fun testTypeUseNullness() {
+    lint()
+      .files(
+        java(
+            """
+              package test.annotation;
+              import java.lang.annotation.ElementType.TYPE_USE;
+              import java.lang.annotation.Target;
+              @Target(TYPE_USE)
+              public @interface NonNull {}
+            """
+          )
+          .indented(),
+        java(
+            """
+              package test.annotation;
+              import java.lang.annotation.ElementType.TYPE_USE;
+              import java.lang.annotation.Target;
+              @Target(TYPE_USE)
+              public @interface Nullable {}
+            """
+          )
+          .indented(),
+        java(
+            """
+              package test.pkg;
+              import test.annotation.NonNull;
+              import test.annotation.Nullable;
+              public class Foo {
+                  public java.lang.@NonNull String okString() { return ""; }
+                  public java.util.@Nullable List<String> okList() { return null; }
+                  public int @Nullable [] okArray() { return null; }
+                  public String @Nullable [][] ok2dArray() { return null; }
+
+                  public String errorString() { return ""; }
+                  public java.util.List<@NonNull String> errorList() { return null; }
+                  public int[] errorArray() { return null; }
+                  public String[] @Nullable [] error2dArray() { return null; }
+              }
+            """
+          )
+          .indented(),
+        java(
+            """
+              package test.pkg;
+              import test.annotation.NonNull;
+              import test.annotation.Nullable;
+              public class OkToStringAndEquals {
+                  public java.lang.@NonNull String toString() { return ""; }
+                  public boolean equals(java.lang.@Nullable Object other) { return false; }
+              }
+            """
+          )
+          .indented(),
+        java(
+            """
+              package test.pkg;
+              import test.annotation.NonNull;
+              import test.annotation.Nullable;
+              public class ErrorToStringAndEquals {
+                  public java.lang.@Nullable String toString() { return ""; }
+                  public boolean equals(java.lang.@NonNull Object other) { return false; }
+              }
+            """
+          )
+          .indented(),
+      )
+      .issues(PLATFORM_NULLNESS)
+      .run()
+      .expect(
+        """
+          src/test/pkg/ErrorToStringAndEquals.java:5: Warning: Unexpected @Nullable: toString should never return null [UnknownNullness]
+              public java.lang.@Nullable String toString() { return ""; }
+                               ~~~~~~~~~
+          src/test/pkg/ErrorToStringAndEquals.java:6: Warning: Unexpected @NonNull: The equals contract allows the parameter to be null [UnknownNullness]
+              public boolean equals(java.lang.@NonNull Object other) { return false; }
+                                              ~~~~~~~~
+          src/test/pkg/Foo.java:10: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
+              public String errorString() { return ""; }
+                     ~~~~~~
+          src/test/pkg/Foo.java:11: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
+              public java.util.List<@NonNull String> errorList() { return null; }
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          src/test/pkg/Foo.java:12: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
+              public int[] errorArray() { return null; }
+                     ~~~~~
+          src/test/pkg/Foo.java:13: Warning: Unknown nullability; explicitly declare as @Nullable or @NonNull to improve Kotlin interoperability; see https://developer.android.com/kotlin/interop#nullability_annotations [UnknownNullness]
+              public String[] @Nullable [] error2dArray() { return null; }
+                     ~~~~~~~~~~~~~~~~~~~~~
+          0 errors, 6 warnings
+        """
+      )
+      .expectFixDiffs(
+        """
+          Fix for src/test/pkg/Foo.java line 10: Annotate @NonNull:
+          @@ -10 +10
+          -     public String errorString() { return ""; }
+          +     @androidx.annotation.NonNull public String errorString() { return ""; }
+          Fix for src/test/pkg/Foo.java line 10: Annotate @Nullable:
+          @@ -10 +10
+          -     public String errorString() { return ""; }
+          +     @androidx.annotation.Nullable public String errorString() { return ""; }
+          Fix for src/test/pkg/Foo.java line 11: Annotate @NonNull:
+          @@ -11 +11
+          -     public java.util.List<@NonNull String> errorList() { return null; }
+          +     @androidx.annotation.NonNull public java.util.List<@NonNull String> errorList() { return null; }
+          Fix for src/test/pkg/Foo.java line 11: Annotate @Nullable:
+          @@ -11 +11
+          -     public java.util.List<@NonNull String> errorList() { return null; }
+          +     @androidx.annotation.Nullable public java.util.List<@NonNull String> errorList() { return null; }
+          Fix for src/test/pkg/Foo.java line 12: Annotate @NonNull:
+          @@ -12 +12
+          -     public int[] errorArray() { return null; }
+          +     @androidx.annotation.NonNull public int[] errorArray() { return null; }
+          Fix for src/test/pkg/Foo.java line 12: Annotate @Nullable:
+          @@ -12 +12
+          -     public int[] errorArray() { return null; }
+          +     @androidx.annotation.Nullable public int[] errorArray() { return null; }
+          Fix for src/test/pkg/Foo.java line 13: Annotate @NonNull:
+          @@ -13 +13
+          -     public String[] @Nullable [] error2dArray() { return null; }
+          +     @androidx.annotation.NonNull public String[] @Nullable [] error2dArray() { return null; }
+          Fix for src/test/pkg/Foo.java line 13: Annotate @Nullable:
+          @@ -13 +13
+          -     public String[] @Nullable [] error2dArray() { return null; }
+          +     @androidx.annotation.Nullable public String[] @Nullable [] error2dArray() { return null; }
+        """
+      )
+  }
+
   fun testPropertyAccess() {
     lint()
       .files(

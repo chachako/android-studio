@@ -635,24 +635,29 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
         return
       }
 
-      for (annotation in context.evaluator.getAllAnnotations(node as UAnnotated, false)) {
-        val name = annotation.qualifiedName ?: continue
+      // Check annotations present on the item or on the type. The annotations from the item are
+      // UAnnotations and the annotations from the type are PsiAnnotations, so extract the name
+      // and location from each kind of annotation to make one list to loop over.
+      val allAnnotations =
+        context.evaluator.getAllAnnotations(node as UAnnotated, false).map {
+          Pair(it.qualifiedName) { context.getLocation(it) }
+        } + type.annotations.map { Pair(it.qualifiedName) { context.getLocation(it) } }
+      for ((name, location) in allAnnotations) {
+        name ?: continue
 
         if (isNullableAnnotation(name)) {
           if (isToStringMethod(node)) {
-            val location = context.getLocation(annotation)
             val message = "Unexpected `@Nullable`: `toString` should never return null"
-            context.report(PLATFORM_NULLNESS, node as UElement, location, message)
+            context.report(PLATFORM_NULLNESS, node as UElement, location(), message)
           }
           return
         }
 
         if (isNonNullAnnotation(name)) {
           if (isEqualsParameter(node)) {
-            val location = context.getLocation(annotation)
             val message =
               "Unexpected @NonNull: The `equals` contract allows the parameter to be null"
-            context.report(PLATFORM_NULLNESS, node as UElement, location, message)
+            context.report(PLATFORM_NULLNESS, node as UElement, location(), message)
           }
           return
         }
