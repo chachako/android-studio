@@ -18,8 +18,13 @@ package com.android.build.gradle.integration.desugar
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
+import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.builder.model.v2.models.AndroidProject
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class D8DesugarMethodsTest {
 
@@ -35,6 +40,50 @@ class D8DesugarMethodsTest {
         val expectedMethods = "java/lang/Boolean#compare(ZZ)I"
         val d8BackportedMethods = model!!.variants.first().desugaredMethods
             .find { it.name.contains("D8BackportedDesugaredMethods.txt") }
-        d8BackportedMethods!!.readLines().contains(expectedMethods)
+        assertTrue {
+            d8BackportedMethods!!.readLines().contains(expectedMethods)
+        }
+    }
+
+
+    @Test
+    fun testMethodListAffectedByMinSdk() {
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            "android.defaultConfig.minSdk = 24"
+        )
+        var model = project.modelV2().fetchModels().container.getProject(":").androidProject
+        val requireNonNullElseGetMethod =
+            "java/util/Objects#requireNonNullElseGet(Ljava/lang/Object;Ljava/util/function/Supplier;)Ljava/lang/Object;"
+        // check requireNonNullElseGetMethod exist in backported list when minSdk is 24 for all
+        // variants
+        var desugaredMethodsForDebug = getDesugaredMethods(model, "debug")
+        var desugaredMethodsForRelease =  getDesugaredMethods(model, "release")
+        assertTrue { desugaredMethodsForDebug!!.readLines().contains(requireNonNullElseGetMethod) }
+        assertTrue { desugaredMethodsForRelease!!.readLines().contains(requireNonNullElseGetMethod) }
+        // set minSdk to 23 for release variant and ensure requireNonNullElseGetMethod doesn't exist
+        TestFileUtils.appendToFile(
+            project.buildFile,
+            """
+                def releaseSelector = androidComponents.selector().withBuildType("release")
+
+                androidComponents.beforeVariants(releaseSelector) { variantBuilder ->
+                    variantBuilder.minSdk = 23
+                }
+            """.trimIndent()
+        )
+        model = project.modelV2().fetchModels().container.getProject(":").androidProject
+        desugaredMethodsForDebug = getDesugaredMethods(model, "debug")
+        desugaredMethodsForRelease = getDesugaredMethods(model, "release")
+        assertTrue { desugaredMethodsForDebug!!.readLines().contains(requireNonNullElseGetMethod) }
+        assertFalse {
+            desugaredMethodsForRelease!!.readLines().contains(requireNonNullElseGetMethod)
+        }
+    }
+
+    private fun getDesugaredMethods(model: AndroidProject?, variantName: String): File? {
+        check(model != null) { "model should not be null" }
+        return model.variants.first { it.name == variantName }.desugaredMethods
+            .find { it.name.contains("D8BackportedDesugaredMethods.txt") }
     }
 }

@@ -21,6 +21,7 @@ import com.android.build.api.attributes.AgpVersionAttr
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.attributes.BuildTypeAttr.Companion.ATTRIBUTE
 import com.android.build.api.attributes.ProductFlavorAttr
+import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.component.ConsumableCreationConfig
 import com.android.build.gradle.internal.component.VariantCreationConfig
@@ -79,6 +80,7 @@ import com.android.build.gradle.internal.tasks.AsarToApksTransform
 import com.android.build.gradle.internal.tasks.AsarTransform
 import com.android.build.gradle.internal.tasks.factory.BootClasspathConfig
 import com.android.build.gradle.internal.utils.ATTR_ENABLE_CORE_LIBRARY_DESUGARING
+import com.android.build.gradle.internal.utils.ATTR_LINT_MIN_SDK
 import com.android.build.gradle.internal.utils.D8BackportedMethodsGenerator
 import com.android.build.gradle.internal.utils.D8_DESUGAR_METHODS
 import com.android.build.gradle.internal.utils.getDesugarLibConfigFiles
@@ -900,33 +902,43 @@ class DependencyConfigurator(
 
             val d8Version = Version.getVersionString()
 
-            // register d8 backported methods generatore when desugaring enabled
-            project.dependencies.registerTransform(
-                D8BackportedMethodsGenerator::class.java
-            ) { spec ->
-                spec.parameters { parameters ->
-                    parameters.d8Version.set(d8Version)
-                    parameters.desugarLibConfigFiles.setFrom(getDesugarLibConfigFiles(services))
-                    parameters.bootclasspath.from(bootClasspath)
-                }
-                spec.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
-                spec.from.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, TRUE.toString())
-                spec.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, D8_DESUGAR_METHODS)
-                spec.to.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, TRUE.toString())
-            }
+            allComponents
+                .mapTo(linkedSetOf()) { it.minSdk.apiLevel }
+                .forEach { minSdkVersion ->
+                    // register d8 backported methods generatore when desugaring enabled
+                    project.dependencies.registerTransform(
+                        D8BackportedMethodsGenerator::class.java
+                    ) { spec ->
+                        spec.parameters { parameters ->
+                            parameters.minSdkVersion.set(minSdkVersion)
+                            parameters.d8Version.set(d8Version)
+                            parameters.desugarLibConfigFiles.setFrom(getDesugarLibConfigFiles(services))
+                            parameters.bootclasspath.from(bootClasspath)
+                        }
+                        spec.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
+                        spec.from.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, TRUE.toString())
+                        spec.from.attribute(ATTR_LINT_MIN_SDK, minSdkVersion.toString())
+                        spec.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, D8_DESUGAR_METHODS)
+                        spec.to.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, TRUE.toString())
+                        spec.to.attribute(ATTR_LINT_MIN_SDK, minSdkVersion.toString())
+                    }
 
-            // register d8 backported methods generator when desugaring disabled
-            project.dependencies.registerTransform(
-                D8BackportedMethodsGenerator::class.java
-            ) { spec ->
-                spec.parameters { parameters ->
-                    parameters.d8Version.set(d8Version)
+                    // register d8 backported methods generator when desugaring disabled
+                    project.dependencies.registerTransform(
+                        D8BackportedMethodsGenerator::class.java
+                    ) { spec ->
+                        spec.parameters { parameters ->
+                            parameters.minSdkVersion.set(minSdkVersion)
+                            parameters.d8Version.set(d8Version)
+                        }
+                        spec.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
+                        spec.from.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, FALSE.toString())
+                        spec.from.attribute(ATTR_LINT_MIN_SDK, minSdkVersion.toString())
+                        spec.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, D8_DESUGAR_METHODS)
+                        spec.to.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, FALSE.toString())
+                        spec.to.attribute(ATTR_LINT_MIN_SDK, minSdkVersion.toString())
+                    }
                 }
-                spec.from.attribute(ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.JAR_TYPE)
-                spec.from.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, FALSE.toString())
-                spec.to.attribute(ARTIFACT_TYPE_ATTRIBUTE, D8_DESUGAR_METHODS)
-                spec.to.attribute(ATTR_ENABLE_CORE_LIBRARY_DESUGARING, FALSE.toString())
-            }
         }
 
         if (projectOptions[BooleanOption.ENABLE_PROGUARD_RULES_EXTRACTION]
