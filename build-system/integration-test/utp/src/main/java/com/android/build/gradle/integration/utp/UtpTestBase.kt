@@ -18,6 +18,8 @@ package com.android.build.gradle.integration.utp
 
 import com.android.build.gradle.integration.common.fixture.GradleTaskExecutor
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
+import com.android.build.gradle.integration.common.fixture.LoggingLevel
+import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.utp.plugins.host.device.info.proto.AndroidTestDeviceInfoProto.AndroidTestDeviceInfo
@@ -51,7 +53,7 @@ abstract class UtpTestBase {
         .create()
 
     open val executor: GradleTaskExecutor
-        get() = project.executor()
+        get() = project.executor().withLoggingLevel(LoggingLevel.LIFECYCLE)
 
     abstract fun selectModule(moduleName: String, isDynamicFeature: Boolean)
 
@@ -228,7 +230,7 @@ abstract class UtpTestBase {
 
     @Test
     @Throws(Exception::class)
-    fun connectedAndroidTestWithAdditionalTestOutputUsingTestStorageService() {
+    fun additionalTestOutputWithTestStorageService() {
         selectModule("app", false)
         enableTestStorageService("app")
 
@@ -280,6 +282,44 @@ abstract class UtpTestBase {
             .contains("output message4")
         assertThat(project.file("${testAdditionalOutputPath}/subdir/white space/myTestStorageOutputFile5"))
             .contains("output message5")
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun additionalTestOutputWithoutTestStorageService() {
+        selectModule("app", false)
+
+        val testSrc = """
+            package com.example.helloworld
+
+            import androidx.test.ext.junit.runners.AndroidJUnit4
+            import org.junit.Test
+            import org.junit.runner.RunWith
+            import java.io.File
+
+            @RunWith(AndroidJUnit4::class)
+            class AdditionalTestOutputExampleTest {
+                @Test
+                fun writeFileWithoutTestStorageService() {
+                    val dir = File("/sdcard/Android/media/com.example.android.kotlin/additional_test_output").also {
+                        it.mkdirs()
+                    }
+                    File(dir,"myTestFile1").apply {
+                        createNewFile()
+                        writeText("output message 1")
+                    }
+                }
+            }
+        """.trimIndent()
+        val exampleTest = project.projectDir
+            .toPath()
+            .resolve("app/src/androidTest/java/com/example/helloworld/AdditionalTestOutputExampleTest.kt")
+        Files.createDirectories(exampleTest.parent)
+        Files.write(exampleTest, testSrc.toByteArray())
+
+        executor.run(testTaskName)
+
+        assertThat(project.file("${testAdditionalOutputPath}/myTestFile1")).contains("output message 1")
     }
 
     @Test

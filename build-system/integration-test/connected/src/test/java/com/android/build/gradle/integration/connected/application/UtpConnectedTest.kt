@@ -17,16 +17,21 @@
 package com.android.build.gradle.integration.connected.application
 
 import com.android.build.gradle.integration.common.truth.ScannerSubject.Companion.assertThat
+import com.android.build.gradle.integration.common.utils.SdkHelper
 import com.android.build.gradle.integration.connected.utils.getEmulator
 import com.android.build.gradle.integration.utp.UtpTestBase
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.tools.perflogger.Benchmark
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.ClassRule
+import org.junit.Ignore
 import org.junit.Test
+import java.io.Closeable
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 /**
  * Connected tests using UTP test executor.
@@ -173,5 +178,65 @@ class UtpConnectedTest : UtpTestBase() {
 
         assertThat(utpLogFile).exists()
         assertThat(utpLogFile).doesNotContain("Uninstalling com.example.android.kotlin.library.test")
+    }
+
+    @Ignore("b/344670382")
+    @Test
+    fun additionalTestOutputWithTestStorageServiceInSecondaryUser() {
+        SecondaryUser().use {
+            additionalTestOutputWithTestStorageService()
+        }
+    }
+
+    @Ignore("b/344670382")
+    @Test
+    fun additionalTestOutputWithoutTestStorageServiceInSecondaryUser() {
+        SecondaryUser().use {
+            additionalTestOutputWithoutTestStorageService()
+        }
+    }
+
+    /**
+     * Creates a secondary user on device and makes it a current user.
+     * After closing this class, it deletes the secondary user and makes the primary user to the
+     * current user. Please see https://source.android.com/docs/devices/admin/multi-user-testing.
+     */
+    private class SecondaryUser : Closeable {
+        companion object {
+            private fun createSecondaryUser(): Int {
+                val process = ProcessBuilder(
+                    SdkHelper.getAdb().absolutePath, "-s", "emulator-5554",
+                    "shell", "pm", "create-user", "utpTestUser", "--ephemeral").start()
+                assertThat(process.waitFor(1, TimeUnit.MINUTES)).isTrue()
+                val processOutput = process.inputStream.bufferedReader().use { it.readText() }
+                val regexToExtractUserId = Regex(pattern = "Success: created user id (?<userId>\\d+)")
+                return requireNotNull(regexToExtractUserId.find(processOutput)?.groups?.get("userId")?.value?.toInt())
+            }
+
+            private fun switchCurrentUser(userId: Int) {
+                val process = ProcessBuilder(
+                    SdkHelper.getAdb().absolutePath, "-s", "emulator-5554",
+                    "shell", "am", "switch-user", userId.toString()).start()
+                assertThat(process.waitFor(1, TimeUnit.MINUTES)).isTrue()
+            }
+
+            private fun removeUser(userId: Int) {
+                val process = ProcessBuilder(
+                    SdkHelper.getAdb().absolutePath, "-s", "emulator-5554",
+                    "shell", "pm", "remove-user", userId.toString()).start()
+                assertThat(process.waitFor(1, TimeUnit.MINUTES)).isTrue()
+            }
+        }
+
+        val secondaryUserId = createSecondaryUser()
+
+        init {
+            switchCurrentUser(secondaryUserId)
+        }
+
+        override fun close() {
+            switchCurrentUser(0)  // Switch back to the primary user (userId = 0).
+            removeUser(secondaryUserId)
+        }
     }
 }
