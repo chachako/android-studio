@@ -75,8 +75,7 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
         createEmptyDirectoryOnDevice(deviceController)
 
         if (deviceController.isTestServiceInstalled()) {
-            val apiLevel = (deviceController.getDevice().properties as? AndroidDeviceProperties)
-                ?.deviceApiLevel?.toIntOrNull() ?: 0
+            val apiLevel = getApiLevel(deviceController) ?: 0
             if (apiLevel >= 30) {
                 // Grant MANAGE_EXTERNAL_STORAGE permission to androidx.test.services so that it
                 // can write test artifacts in external storage.
@@ -84,6 +83,11 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
                     "appops set androidx.test.services MANAGE_EXTERNAL_STORAGE allow")
             }
         }
+    }
+
+    private fun getApiLevel(deviceController: DeviceController): Int? {
+        return (deviceController.getDevice().properties as? AndroidDeviceProperties)
+            ?.deviceApiLevel?.toIntOrNull()
     }
 
     /**
@@ -279,9 +283,23 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
         deviceController: DeviceController,
         deviceDir: String,
         hostDir: String) {
+        logger.info("Copying files from device to host: $deviceDir to $hostDir")
+
+        val apiLevel = getApiLevel(deviceController) ?: 0
+        if (apiLevel >= 28) {
+            val currentAndroidUser = getCurrentAndroidUser(deviceController)
+            if (currentAndroidUser != "0") {
+                logger.info("Copying files using content provider.")
+                copyFilesFromDeviceToHostUsingContentProvider(deviceController, deviceDir, hostDir, currentAndroidUser)
+                return
+            }
+        }
+
         if (!deviceController.isDirectory(deviceDir)) {
+            logger.info("$deviceDir is not a directory")
             return
         }
+
         // Note: "ls -1" doesn't work on API level 21.
         deviceController.deviceShellAndCheckSuccess("ls \"${deviceDir}\" | cat")
             .output
@@ -289,6 +307,7 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
             .forEach {
                 val deviceFilePath = "${deviceDir}/${it}"
                 val hostFilePath = "${hostDir}${File.separator}${it}"
+                logger.info("Copying $deviceFilePath to $hostFilePath")
                 if (deviceController.isDirectory(deviceFilePath)) {
                     File(hostFilePath).let {
                         if (!it.exists()) {
@@ -303,6 +322,58 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
                     }.build())
                 }
             }
+    }
+
+    private fun copyFilesFromDeviceToHostUsingContentProvider(
+        deviceController: DeviceController,
+        deviceDir: String,
+        hostDir: String,
+        androidUser: String) {
+        // Media store's file index might not be up-to-date. b/345801721.
+        logger.info("Updating MediaStore's file index")
+        deviceController.deviceShellAndCheckSuccess(
+            "am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://$deviceDir")
+
+        val normalizedDeviceDir = replaceSystemPath(deviceDir, androidUser)
+        val regex = Regex("""_id=(\d+), _data=(.*)""")
+        deviceController.deviceShellAndCheckSuccess(
+            "content query --uri content://media/external/file --user $androidUser --projection _id:_data " +
+                "--where \"mime_type IS NOT NULL AND _data LIKE '$normalizedDeviceDir%'\"").output.forEach {
+            val matchResult = regex.find(it) ?: return@forEach
+            val (id, path) = matchResult.destructured
+            val hostFile = File(hostDir + File.separator + path.removePrefix(normalizedDeviceDir))
+            hostFile.parentFile.let { parentFile ->
+                if (!parentFile.exists()) {
+                    parentFile.mkdirs()
+                }
+            }
+            logger.info("Copying $path to ${hostFile.absolutePath}")
+            val result = deviceController.deviceShellAndCheckSuccess(
+                "content read --user $androidUser --uri content://media/external/file/$id")
+            hostFile.outputStream().use { fileOutputStream ->
+                result.byteOutputStream.copyTo(fileOutputStream)
+            }
+        }
+    }
+
+    // Replaces system path from the given device dir and returns a user-specific path.
+    // Please see https://source.android.com/docs/devices/admin/multi-user-testing#device-paths
+    private fun replaceSystemPath(deviceDir: String, androidUser: String): String {
+        if (deviceDir.lowercase().startsWith("/sdcard/")) {
+            return "/storage/emulated/$androidUser/" + deviceDir.substring("/sdcard/".length)
+        }
+        if (deviceDir.lowercase().startsWith("/data/data/")) {
+            return "/data/user/$androidUser/" + deviceDir.substring("/data/data/".length)
+        }
+        return deviceDir
+    }
+
+    private fun getCurrentAndroidUser(deviceController: DeviceController): String {
+        val currentUser = deviceController.deviceShellAndCheckSuccess("am get-current-user")
+            .output.joinToString("").trim()
+        return currentUser.ifBlank {
+            "0"  // Default primary android user.
+        }
     }
 
     override fun canRun(): Boolean = true

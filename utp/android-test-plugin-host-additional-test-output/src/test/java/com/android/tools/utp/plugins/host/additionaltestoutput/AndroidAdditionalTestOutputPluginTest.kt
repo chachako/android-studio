@@ -80,6 +80,9 @@ class AndroidAdditionalTestOutputPluginTest {
             commandResult
         }
         `when`(mockContext[Context.EVENTS_KEY]).thenReturn(mockEvents)
+        val mockDevice = mock<Device>()
+        `when`(mockDevice.properties).thenReturn(AndroidDeviceProperties(deviceApiLevel = "30"))
+        `when`(mockDeviceController.getDevice()).thenReturn(mockDevice)
     }
 
     private fun installTestStorageService() {
@@ -87,10 +90,6 @@ class AndroidAdditionalTestOutputPluginTest {
             eq(listOf("shell", "pm", "list", "packages", "androidx.test.services")),
             nullable(Duration::class.java))
         ).thenReturn(CommandResult(0, listOf("package:androidx.test.services")))
-
-        val mockDevice = mock<Device>()
-        `when`(mockDevice.properties).thenReturn(AndroidDeviceProperties(deviceApiLevel = "30"))
-        `when`(mockDeviceController.getDevice()).thenReturn(mockDevice)
     }
 
     private fun createTestArtifact(
@@ -180,8 +179,6 @@ class AndroidAdditionalTestOutputPluginTest {
                 "${deviceDir}/subdir/output3.txt",
                 "${hostDir}${File.separator}subdir${File.separator}output3.txt"))
         }
-
-        verifyNoMoreInteractions(mockLogger)
     }
 
     @Test
@@ -269,8 +266,6 @@ class AndroidAdditionalTestOutputPluginTest {
             "${benchmarkOutputDir}/FrameTimingBenchmark_start_iter001_2021-07-15-21-33-09.trace",
             "${hostDir}${File.separator}FrameTimingBenchmark_start_iter001_2021-07-15-21-33-09.trace"))
 
-        verifyNoMoreInteractions(mockLogger)
-
         assertThat(testResultAfterEach.outputArtifactCount).isEqualTo(3)
         assertThat(testResultAfterEach.getOutputArtifact(0).label.namespace).isEqualTo("android")
         assertThat(testResultAfterEach.getOutputArtifact(0).label.label)
@@ -330,7 +325,5 @@ class AndroidAdditionalTestOutputPluginTest {
                 "${deviceDir}/output2.txt",
                 "${hostDir}${File.separator}output2.txt"))
         }
-
-        verifyNoMoreInteractions(mockLogger)
     }
 }

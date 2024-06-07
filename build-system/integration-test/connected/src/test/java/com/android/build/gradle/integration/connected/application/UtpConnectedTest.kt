@@ -27,7 +27,6 @@ import com.android.tools.perflogger.Benchmark
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.ClassRule
-import org.junit.Ignore
 import org.junit.Test
 import java.io.Closeable
 import java.io.IOException
@@ -180,7 +179,6 @@ class UtpConnectedTest : UtpTestBase() {
         assertThat(utpLogFile).doesNotContain("Uninstalling com.example.android.kotlin.library.test")
     }
 
-    @Ignore("b/344670382")
     @Test
     fun additionalTestOutputWithTestStorageServiceInSecondaryUser() {
         SecondaryUser().use {
@@ -188,7 +186,6 @@ class UtpConnectedTest : UtpTestBase() {
         }
     }
 
-    @Ignore("b/344670382")
     @Test
     fun additionalTestOutputWithoutTestStorageServiceInSecondaryUser() {
         SecondaryUser().use {
