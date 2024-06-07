@@ -22,6 +22,7 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.MinimalSubProject
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.testutils.truth.PathSubject
 import com.android.utils.FileUtils
@@ -221,6 +222,19 @@ class NavigationPlaceholderTest {
                     expectedMetaDataLibValue = "libFoo"
                 )
             )
+    }
+
+    // b/206665657 this test is to ensure that the correct error is thrown when a non-XML file is
+    // present in the navigation folder
+    @Test
+    fun testNonXmlFile() {
+        val txtFile =
+            project.getSubproject("app").file("src/main/res/navigation/text_file.txt")
+        txtFile.createNewFile()
+        txtFile.writeText("text")
+
+        val result = project.executor().expectFailure().run(":app:packageDebugResources")
+        ScannerSubject.assertThat(result.stderr).contains("The file name must end with .xml")
     }
 
     private fun getExpectedMergedManifestContent(
