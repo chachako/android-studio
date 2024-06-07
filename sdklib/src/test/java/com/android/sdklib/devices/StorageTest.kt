@@ -82,6 +82,7 @@ class StorageTest {
   @Test
   fun getStorageFromString() {
     assertThat(Storage.getStorageFromString("4")).isEqualTo(Storage(4, Storage.Unit.MiB))
+    assertThat(Storage.getStorageFromString("4", Storage.Unit.KiB)).isEqualTo(Storage(4, Storage.Unit.KiB))
     assertThat(Storage.getStorageFromString("5B")).isEqualTo(Storage(5, Storage.Unit.B))
     assertThat(Storage.getStorageFromString("5 B")).isEqualTo(Storage(5, Storage.Unit.B))
     assertThat(Storage.getStorageFromString("6 KB")).isEqualTo(Storage(6, Storage.Unit.KiB))
