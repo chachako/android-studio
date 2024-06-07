@@ -377,6 +377,7 @@ bool_flag(
 
 config_setting(
     name = "android_flto",
+    constraint_values = ["@platforms//os:android"],
     flag_values = {
         ":enable-android-flto": "True",
     },
