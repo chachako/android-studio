@@ -19,26 +19,18 @@ package com.android.build.gradle.integration.privacysandbox
 import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSampleProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.ide.common.signing.KeystoreHelper
-import com.android.testutils.TestUtils
-import com.android.testutils.apk.Apk
 import com.android.testutils.apk.Dex
 import com.android.testutils.apk.Zip
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject
-import com.android.tools.apk.analyzer.AaptInvoker
 import com.android.utils.FileUtils
-import com.android.utils.StdLogger
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
-import java.nio.file.Files
 import java.util.Objects
-import java.util.zip.ZipFile
-import kotlin.io.path.name
 import kotlin.io.path.readText
 
 /** Integration tests for the privacy sandbox SDK */
@@ -339,5 +331,22 @@ class PrivacySandboxSdkTest {
             ""
         )
         executor().run(":privacy-sandbox-sdk:generatePrivacySandboxProguardRules")
+    }
+
+    @Test
+    fun testTargetSdkVersion() {
+        project.getSubproject(":privacy-sandbox-sdk").buildFile.appendText("\nandroid.targetSdk 33")
+        executor().run(":privacy-sandbox-sdk:assemble")
+        val sdkProject = project.getSubproject(":privacy-sandbox-sdk")
+        val asbManifest = sdkProject.getIntermediateFile(
+            "merged_manifest", "single", "mergeManifest", "AndroidManifest.xml")
+        val manifestLines = asbManifest.readLines()
+        assertThat(manifestLines).containsAtLeastElementsIn(
+            listOf(
+                "    <uses-sdk",
+                "        android:minSdkVersion=\"23\"",
+                "        android:targetSdkVersion=\"33\" />"
+            )
+        )
     }
 }

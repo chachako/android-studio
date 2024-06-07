@@ -43,6 +43,7 @@ interface PrivacySandboxSdkVariantScope {
     val mergeSpec: Spec<ComponentIdentifier>
     val compileSdkVersion: String
     val minSdkVersion: ApiVersion
+    val targetSdkVersion: ApiVersion
     val bootClasspath: Provider<List<RegularFile>>
     val bundle: PrivacySandboxSdkBundleImpl
     val services: TaskCreationServices
