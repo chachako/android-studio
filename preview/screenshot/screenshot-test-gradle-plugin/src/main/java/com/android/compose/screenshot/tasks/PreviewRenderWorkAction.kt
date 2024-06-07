@@ -44,7 +44,7 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
     }
 
     private fun render() {
-        val cls = PreviewRenderWorkAction.javaClass.classLoader.loadClass(MAIN_CLASS)
+        val cls = PreviewRenderWorkAction::class.java.classLoader.loadClass(MAIN_CLASS)
         val method = cls.getMethod(MAIN_METHOD, Array<String>::class.java)
         method(null, arrayOf(parameters.cliToolArgumentsFile.get().asFile.absolutePath))
     }
