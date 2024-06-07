@@ -16,11 +16,13 @@
 package com.android.tools.lint.checks
 
 import com.android.tools.lint.detector.api.asCall
+import com.android.tools.lint.detector.api.belongsToJvmPrimitiveType
 import com.android.tools.lint.detector.api.callNeverReturns
 import com.android.tools.lint.detector.api.findCommonParent
 import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isKotlin
 import com.android.tools.lint.detector.api.isScopingFunction
+import com.android.tools.lint.detector.api.resolveOperatorUnlessJvmPrimitiveType
 import com.intellij.psi.CommonClassNames.JAVA_LANG_EXCEPTION
 import com.intellij.psi.CommonClassNames.JAVA_LANG_RUNTIME_EXCEPTION
 import com.intellij.psi.CommonClassNames.JAVA_LANG_THROWABLE
@@ -795,6 +797,10 @@ open class ControlFlowGraph<T : Any> private constructor() {
           "equals" -> return true
         }
 
+        if (method.belongsToJvmPrimitiveType()) {
+          return true
+        }
+
         if (isScopingFunction(method)) {
           return true
         }
@@ -821,7 +827,10 @@ open class ControlFlowGraph<T : Any> private constructor() {
           is UParenthesizedExpression -> return isSafe(element.expression)
           is UastEmptyExpression -> return true
           is UPolyadicExpression -> {
-            if (element is UBinaryExpression && element.resolveOperator() != null) {
+            if (
+              element is UBinaryExpression &&
+                element.resolveOperatorUnlessJvmPrimitiveType() != null
+            ) {
               return false
             }
             return element.operands.all(::isSafe)

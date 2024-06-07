@@ -64,9 +64,9 @@ import org.jetbrains.kotlin.psi.KtThisExpression
 import org.jetbrains.kotlin.psi.psiUtil.parameterIndex
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnnotation
+import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
-import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UDeclaration
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
@@ -1094,4 +1094,12 @@ private fun getDepth(element: UElement): Int {
     parent = parent.uastParent
   }
   return depth
+}
+
+fun PsiMember.belongsToJvmPrimitiveType(): Boolean {
+  return containingClass?.qualifiedName?.let { getPrimitiveType(it) } != null
+}
+
+fun UBinaryExpression.resolveOperatorUnlessJvmPrimitiveType(): PsiMethod? {
+  return resolveOperator()?.takeIf { !it.belongsToJvmPrimitiveType() }
 }
