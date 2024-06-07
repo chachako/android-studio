@@ -1878,6 +1878,7 @@ package com.android.build.api.dsl {
     method @Deprecated @org.gradle.api.Incubating public String? getNamespace();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.PrivacySandboxSdkOptimization getOptimization();
     method @org.gradle.api.Incubating public com.android.build.api.dsl.SigningConfig getSigningConfig();
+    method @org.gradle.api.Incubating public Integer? getTargetSdk();
     method @org.gradle.api.Incubating public void optimization(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PrivacySandboxSdkOptimization,kotlin.Unit> action);
     method @org.gradle.api.Incubating public void setBuildToolsVersion(String);
     method @org.gradle.api.Incubating public void setCompileSdk(Integer?);
@@ -1886,6 +1887,7 @@ package com.android.build.api.dsl {
     method @org.gradle.api.Incubating public void setMinSdk(Integer?);
     method @org.gradle.api.Incubating public void setMinSdkPreview(String?);
     method @Deprecated @org.gradle.api.Incubating public void setNamespace(String?);
+    method @org.gradle.api.Incubating public void setTargetSdk(Integer?);
     method @org.gradle.api.Incubating public void signingConfig(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig,kotlin.Unit> action);
     property @org.gradle.api.Incubating public abstract String buildToolsVersion;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.PrivacySandboxSdkBundle bundle;
@@ -1898,6 +1900,7 @@ package com.android.build.api.dsl {
     property @Deprecated @org.gradle.api.Incubating public abstract String? namespace;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.PrivacySandboxSdkOptimization optimization;
     property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.SigningConfig signingConfig;
+    property @org.gradle.api.Incubating public abstract Integer? targetSdk;
   }
 
   @org.gradle.api.Incubating public interface PrivacySandboxSdkOptimization {

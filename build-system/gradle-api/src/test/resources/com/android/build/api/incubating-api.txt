@@ -314,6 +314,7 @@ https://issuetracker.google.com/328748877
   * com.android.build.api.dsl.PrivacySandboxSdkExtension.getNamespace: java.lang.String ()
   * com.android.build.api.dsl.PrivacySandboxSdkExtension.getOptimization: com.android.build.api.dsl.PrivacySandboxSdkOptimization ()
   * com.android.build.api.dsl.PrivacySandboxSdkExtension.getSigningConfig: com.android.build.api.dsl.SigningConfig ()
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.getTargetSdk: java.lang.Integer ()
   * com.android.build.api.dsl.PrivacySandboxSdkExtension.optimization: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.PrivacySandboxSdkOptimization, kotlin.Unit>)
   * com.android.build.api.dsl.PrivacySandboxSdkExtension.setBuildToolsVersion: void (java.lang.String)
   * com.android.build.api.dsl.PrivacySandboxSdkExtension.setCompileSdk: void (java.lang.Integer)
@@ -322,6 +323,7 @@ https://issuetracker.google.com/328748877
   * com.android.build.api.dsl.PrivacySandboxSdkExtension.setMinSdk: void (java.lang.Integer)
   * com.android.build.api.dsl.PrivacySandboxSdkExtension.setMinSdkPreview: void (java.lang.String)
   * com.android.build.api.dsl.PrivacySandboxSdkExtension.setNamespace: void (java.lang.String)
+  * com.android.build.api.dsl.PrivacySandboxSdkExtension.setTargetSdk: void (java.lang.Integer)
   * com.android.build.api.dsl.PrivacySandboxSdkExtension.signingConfig: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.SigningConfig, kotlin.Unit>)
   * com.android.build.api.dsl.PrivacySandboxSdkOptimization
   * com.android.build.api.dsl.PrivacySandboxSdkOptimization.getKeepRules: com.android.build.api.dsl.PrivacySandboxKeepRules ()
