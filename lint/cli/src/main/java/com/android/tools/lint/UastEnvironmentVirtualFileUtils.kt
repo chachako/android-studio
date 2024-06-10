@@ -28,6 +28,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
+import org.jetbrains.kotlin.analysis.project.structure.builder.KtBinaryModuleBuilder
 import org.jetbrains.kotlin.analysis.project.structure.builder.KtSourceModuleBuilder
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreProjectEnvironment
 import org.jetbrains.kotlin.idea.KotlinFileType
@@ -49,7 +50,10 @@ internal fun getSourceFilePaths(
 ): PathCollection =
   getFilePaths(javaSourceRoots, sourceFileExtensions::contains, includeDirectoryRoot)
 
-internal fun getFilePaths(
+/**
+ * Return a [PathCollection] of paths beneath [roots], whose extensions satisfy [isExtensionWanted]
+ */
+private fun getFilePaths(
   roots: Collection<File>,
   isExtensionWanted: (String?) -> Boolean,
   includeDirectoryRoot: Boolean = false,
@@ -84,6 +88,22 @@ internal fun getFilePaths(
     when (root) {
       is VirtualFileWrapper -> fromVirtualFile(root.file)
       else -> fromFile(root)
+    }
+  }
+  return PathCollection(physicalPaths, virtualFiles)
+}
+
+/**
+ * Recover [PathCollection] from [File]s, some of which may have been created from [asFile]. This
+ * prevents failure from extracting a [Path] our of a non-physical file.
+ */
+internal fun Iterable<File>.toPathCollection(): PathCollection {
+  val physicalPaths = hashSetOf<Path>()
+  val virtualFiles = hashSetOf<VirtualFile>()
+  for (file in this) {
+    when (file) {
+      is VirtualFileWrapper -> virtualFiles.add(file.file)
+      else -> physicalPaths.add(Paths.get(file.path))
     }
   }
   return PathCollection(physicalPaths, virtualFiles)
@@ -136,6 +156,8 @@ internal class PathCollection(
 ) {
   fun isEmpty(): Boolean = physical.isEmpty() && virtual.isEmpty()
 
+  fun isNotEmpty(): Boolean = !isEmpty()
+
   /** Retain the paths that can be retrieved as [F] satisfying [keepFile] */
   inline fun <reified F : PsiFileSystemItem> filter(
     kotlinCoreProjectEnvironment: KotlinCoreProjectEnvironment,
@@ -157,11 +179,19 @@ internal class PathCollection(
       }
     return PathCollection(physical.filter(keepPhysical), virtual.filter(keepVirtual))
   }
+
+  operator fun plus(paths: Collection<Path>): PathCollection =
+    PathCollection((physical.asSequence() + paths.asSequence()).distinct().toList(), virtual)
 }
 
 internal fun KtSourceModuleBuilder.addSourcePaths(paths: PathCollection) {
   addSourceRoots(paths.physical)
   addSourceVirtualFiles(paths.virtual)
+}
+
+internal fun KtBinaryModuleBuilder.addBinaryPaths(paths: PathCollection) {
+  addBinaryRoots(paths.physical)
+  addBinaryVirtualFiles(paths.virtual)
 }
 
 private val sourceFileExtensions =

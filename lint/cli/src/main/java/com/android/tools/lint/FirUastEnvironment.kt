@@ -184,16 +184,18 @@ private fun createAnalysisSession(
           fun KtModuleBuilder.addModuleDependencies(moduleName: String) {
             val classPaths =
               if (mPlatform.has<JvmPlatform>()) {
-                // Include boot classpath in [config.classPaths], except for non-JVM modules
-                m.classpathRoots + config.classPaths
-              } else {
-                m.classpathRoots
-              }
+                  // Include boot classpath in [config.classPaths], except for non-JVM modules
+                  m.classpathRoots + config.classPaths
+                } else {
+                  m.classpathRoots
+                }
+                .toPathCollection()
+
             if (classPaths.isNotEmpty()) {
               addRegularDependency(
                 buildKtLibraryModule {
                   platform = mPlatform
-                  addBinaryRoots(classPaths.map(File::toPath))
+                  addBinaryPaths(classPaths)
                   libraryName = "Library for $moduleName"
                 }
               )
@@ -216,14 +218,13 @@ private fun createAnalysisSession(
             val (moduleKlibPathsRegular, moduleKlibPathsDependsOn) =
               m.klibs.keys.partition { m.klibs[it] == Project.DependencyKind.Regular }
 
-            fun buildKlibModule(klibs: Collection<Path>, name: String) = buildKtLibraryModule {
+            fun buildKlibModule(klibs: PathCollection, name: String) = buildKtLibraryModule {
               platform = mPlatform
-              addBinaryRoots(klibs)
+              addBinaryPaths(klibs)
               libraryName = name
             }
 
-            val klibRegularDeps =
-              (moduleKlibPathsRegular.map(File::toPath) + configKlibPaths).distinct()
+            val klibRegularDeps = moduleKlibPathsRegular.toPathCollection() + configKlibPaths
             if (klibRegularDeps.isNotEmpty()) {
               addRegularDependency(
                 buildKlibModule(klibRegularDeps, "Regular klibs for $moduleName")
@@ -233,7 +234,7 @@ private fun createAnalysisSession(
             if (moduleKlibPathsDependsOn.isNotEmpty()) {
               addDependsOnDependency(
                 buildKlibModule(
-                  moduleKlibPathsDependsOn.map(File::toPath),
+                  moduleKlibPathsDependsOn.toPathCollection(),
                   "dependsOn klibs for $moduleName",
                 )
               )
