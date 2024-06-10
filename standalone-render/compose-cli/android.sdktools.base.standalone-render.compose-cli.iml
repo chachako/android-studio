@@ -16,5 +16,15 @@
     <orderEntry type="library" name="intellij-core" level="project" />
     <orderEntry type="module" module-name="android.sdktools.base.standalone-render.compose-cli-serialize" />
     <orderEntry type="module" module-name="android.sdktools.base.layoutlib-api-base" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../../adt/idea/compose-designer/lib/ui-animation-tooling-internal.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module" module-name="android.sdktools.base.sdklib-base" />
   </component>
 </module>

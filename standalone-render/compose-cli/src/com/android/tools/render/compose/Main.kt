@@ -17,10 +17,13 @@
 package com.android.tools.render.compose
 
 import com.android.ide.common.rendering.api.Result
+import com.android.sdklib.devices.screenShape
 import com.android.tools.preview.applyTo
 import com.android.tools.render.RenderRequest
 import com.android.tools.render.Renderer
 import com.android.tools.rendering.RenderResult
+import java.awt.AlphaComposite
+import java.awt.Dimension
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import kotlin.io.path.Path
@@ -61,19 +64,34 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
     }.toMap()
 
     r.use { renderer ->
-        renderer.render(requestToPreviewId.keys.asSequence()) { request, i, result, usedPaths ->
+        renderer.render(requestToPreviewId.keys.asSequence()) { request, config, i, result, usedPaths ->
             val previewId = requestToPreviewId[request]!!
             val resultId = "${previewId}_$i"
             val imageName = "$resultId.png"
             val screenshotResult = try {
                 val imageRendered = result.renderedImage.copy
                 imageRendered?.let { image ->
+                    val screenShape = config.device?.screenShape(0.0, 0.0, Dimension(image.width, image.height))
+                    val shapedImage = screenShape?.let { shape ->
+                        val newImage = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB)
+                        val g = newImage.createGraphics()
+                        try {
+                            g.composite = AlphaComposite.Clear
+                            g.fillRect(0, 0, image.width, image.height)
+                            g.composite = AlphaComposite.Src
+                            g.clip = shape
+                            g.drawImage(image, 0, 0, null)
+                        } finally {
+                            g.dispose()
+                        }
+                        newImage
+                    } ?: image
                     val imgFile =
-                        Path(composeRendering.outputFolder).resolve("$imageName")
+                        Path(composeRendering.outputFolder).resolve(imageName)
                             .toFile()
 
                     imgFile.createNewFile()
-                    ImageIO.write(image, "png", imgFile)
+                    ImageIO.write(shapedImage, "png", imgFile)
                 }
                 val screenshotError = extractError(result, imageRendered, composeRendering.outputFolder)
                 ComposeScreenshotResult(previewId, imageName, screenshotError)

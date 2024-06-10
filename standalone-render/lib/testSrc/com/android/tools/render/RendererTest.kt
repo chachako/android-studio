@@ -99,7 +99,7 @@ class RendererTest {
             emptyList(),
             layoutlibPath.absolutePathString(),
         ).use {
-            it.render(sequenceOf(request)) { _, _, result, _ ->
+            it.render(sequenceOf(request)) { _, _, _, result, _ ->
                 assertNull("A single RenderResult is expected", outputImage)
                 outputImage = result.renderedImage.copy
             }
@@ -135,7 +135,7 @@ class RendererTest {
             emptyList(),
             "",
         ).use {
-            it.render(sequenceOf(RenderRequest({}) { sequenceOf("") })) { _, _, result, _ ->
+            it.render(sequenceOf(RenderRequest({}) { sequenceOf("") })) { _, _, _, result, _ ->
                 renderResults.add(result)
             }
         }
@@ -173,7 +173,7 @@ class RendererTest {
             emptyList(),
             layoutlibPath.absolutePathString(),
         ).use {
-            it.render(sequenceOf(RenderRequest({}) { sequenceOf(layout) })) { _, _, result, _ ->
+            it.render(sequenceOf(RenderRequest({}) { sequenceOf(layout) })) { _, _, _, result, _ ->
                 renderResults.add(result)
             }
         }

@@ -151,7 +151,7 @@ class Renderer private constructor(
      */
     fun render(
         renderRequests: Sequence<RenderRequest>,
-        onRenderResult: (RenderRequest, Int, RenderResult, Set<String>) -> Unit,
+        onRenderResult: (RenderRequest, Configuration, Int, RenderResult, Set<String>) -> Unit,
     ) {
         renderRequests.forEach { request ->
             request.configurationModifier(configuration)
@@ -202,7 +202,7 @@ class Renderer private constructor(
                     Disposer.dispose(disposable)
                 }
                 try {
-                    onRenderResult(request, i, result, usedPaths)
+                    onRenderResult(request, configuration, i, result, usedPaths)
                 } catch (t: Throwable) {
                     t.printStackTrace()
                 }
