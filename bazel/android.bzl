@@ -154,11 +154,9 @@ ANDROID_COPTS = select_android(
     [
         "-fPIC",
         "-std=c++17",
+        "-flto",
     ],
-) + select({
-    "//tools/base/bazel:android_flto": ["-flto"],
-    "//conditions:default": [],
-})
+)
 
 ANDROID_LINKOPTS = select_android(
     [
@@ -170,8 +168,6 @@ ANDROID_LINKOPTS = select_android(
         "-Wl,--gc-sections",
         "-Wl,--as-needed",
         "-Wl,-z,max-page-size=16384",
+        "-flto",
     ],
-) + select({
-    "//tools/base/bazel:android_flto": ["-flto"],
-    "//conditions:default": [],
-})
+)

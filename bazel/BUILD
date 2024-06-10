@@ -371,19 +371,6 @@ java_jarjar(
 )
 
 bool_flag(
-    name = "enable-android-flto",
-    build_setting_default = True,
-)
-
-config_setting(
-    name = "android_flto",
-    constraint_values = ["@platforms//os:android"],
-    flag_values = {
-        ":enable-android-flto": "True",
-    },
-)
-
-bool_flag(
     name = "studio-release",
     build_setting_default = False,
 )

@@ -28,7 +28,7 @@ build:windows --features=static_link_msvcrt
 build:windows --dynamic_local_strategy=worker,local
 # Workaround for b/277781554 where bazel fails to clean up python zips
 build:windows --nobuild_python_zip
-build:windows --//tools/base/bazel:enable-android-flto=False
+
 #
 # Mac
 #
