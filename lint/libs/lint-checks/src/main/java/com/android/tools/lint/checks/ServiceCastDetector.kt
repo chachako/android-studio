@@ -13,550 +13,423 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.lint.checks
 
-package com.android.tools.lint.checks;
-
-import static com.android.SdkConstants.CLASS_ACTIVITY;
-import static com.android.SdkConstants.CLASS_APPLICATION;
-import static com.android.SdkConstants.CLASS_CONTEXT;
-import static com.android.SdkConstants.CLASS_VIEW;
-import static com.android.tools.lint.detector.api.Constraints.minSdkLessThan;
-import static com.android.tools.lint.detector.api.Lint.getMethodName;
-import static org.jetbrains.uast.UastUtils.skipParenthesizedExprDown;
-import static org.jetbrains.uast.UastUtils.skipParenthesizedExprUp;
-
-import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.tools.lint.client.api.JavaEvaluator;
-import com.android.tools.lint.detector.api.Category;
-import com.android.tools.lint.detector.api.Detector;
-import com.android.tools.lint.detector.api.Implementation;
-import com.android.tools.lint.detector.api.Incident;
-import com.android.tools.lint.detector.api.Issue;
-import com.android.tools.lint.detector.api.JavaContext;
-import com.android.tools.lint.detector.api.LintFix;
-import com.android.tools.lint.detector.api.Scope;
-import com.android.tools.lint.detector.api.Severity;
-import com.android.tools.lint.detector.api.SourceCodeScanner;
-import com.android.tools.lint.detector.api.UastLintUtils;
-import com.google.common.annotations.VisibleForTesting;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiLocalVariable;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiType;
-import java.util.Collections;
-import java.util.List;
-import org.jetbrains.uast.UBinaryExpressionWithType;
-import org.jetbrains.uast.UCallExpression;
-import org.jetbrains.uast.UElement;
-import org.jetbrains.uast.UExpression;
-import org.jetbrains.uast.UMethod;
-import org.jetbrains.uast.UParenthesizedExpression;
-import org.jetbrains.uast.UQualifiedReferenceExpression;
-import org.jetbrains.uast.UReferenceExpression;
-import org.jetbrains.uast.UastUtils;
-import org.jetbrains.uast.util.UastExpressionUtils;
+import com.android.SdkConstants
+import com.android.tools.lint.detector.api.Category
+import com.android.tools.lint.detector.api.Detector
+import com.android.tools.lint.detector.api.Implementation
+import com.android.tools.lint.detector.api.Incident
+import com.android.tools.lint.detector.api.Issue
+import com.android.tools.lint.detector.api.JavaContext
+import com.android.tools.lint.detector.api.LintFix
+import com.android.tools.lint.detector.api.Scope
+import com.android.tools.lint.detector.api.Severity
+import com.android.tools.lint.detector.api.SourceCodeScanner
+import com.android.tools.lint.detector.api.UastLintUtils.Companion.findLastAssignment
+import com.android.tools.lint.detector.api.getMethodName
+import com.android.tools.lint.detector.api.minSdkLessThan
+import com.google.common.annotations.VisibleForTesting
+import com.intellij.psi.PsiClassType
+import com.intellij.psi.PsiField
+import com.intellij.psi.PsiLocalVariable
+import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiParameter
+import com.intellij.psi.PsiType
+import org.jetbrains.uast.UBinaryExpressionWithType
+import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UElement
+import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.UParenthesizedExpression
+import org.jetbrains.uast.UQualifiedReferenceExpression
+import org.jetbrains.uast.UReferenceExpression
+import org.jetbrains.uast.getParentOfType
+import org.jetbrains.uast.getQualifiedParentOrThis
+import org.jetbrains.uast.skipParenthesizedExprDown
+import org.jetbrains.uast.skipParenthesizedExprUp
+import org.jetbrains.uast.util.isTypeCast
 
 /**
  * Detector looking for casts on the result of context.getSystemService which are suspect.
  *
- * <p>TODO: As of O we can start looking for the @SystemService annotation on the target interface
- * class, and the value attribute will map back to the expected constant. This should let us get rid
- * of the hardcoded lookup table below.
+ * TODO: As of O we can start looking for the @SystemService annotation on the target interface
+ *   class, and the value attribute will map back to the expected constant. This should let us get
+ *   rid of the hardcoded lookup table below.
  */
-public class ServiceCastDetector extends Detector implements SourceCodeScanner {
-    public static final Implementation IMPLEMENTATION =
-            new Implementation(ServiceCastDetector.class, Scope.JAVA_FILE_SCOPE);
+class ServiceCastDetector : Detector(), SourceCodeScanner {
+  override fun getApplicableMethodNames(): List<String> = listOf("getSystemService")
+
+  override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
+    val args = node.valueArguments
+    if (args.size != 1) {
+      return
+    }
+
+    val argument = args[0].skipParenthesizedExprDown() as? UReferenceExpression ?: return
+    val resolvedServiceConst = argument.resolve() as? PsiField ?: return
+    val name = resolvedServiceConst.name
+
+    // Check WIFI_SERVICE context origin
+    if (WIFI_SERVICE == name) {
+      checkWifiService(context, node)
+    }
+
+    val parent = skipParenthesizedExprUp(node.getQualifiedParentOrThis().uastParent)
+    if (parent != null && parent.isTypeCast()) {
+      val cast = parent as UBinaryExpressionWithType
+
+      // Check cast
+      var expectedClass = getExpectedType(name)
+      if (expectedClass != null) {
+        val castType = cast.type.canonicalText
+        if (castType.indexOf('.') == -1) {
+          expectedClass = stripPackage(expectedClass)
+        }
+        if (castType != expectedClass) {
+          // It's okay to mix and match
+          // android.content.ClipboardManager and android.text.ClipboardManager
+          if (isClipboard(castType) && isClipboard(expectedClass)) {
+            return
+          }
+
+          var actual = stripPackage(castType)
+          var expected: String? = stripPackage(expectedClass)
+          if (actual == expected && expectedClass.contains(".")) {
+            actual = castType
+            expected = expectedClass
+          }
+          val message = "Suspicious cast to `$actual` for a `$name`: expected `$expected`"
+          context.report(ISSUE, node, context.getLocation(cast), message)
+        }
+      }
+    }
+  }
+
+  /**
+   * Checks that the given call to `Context#getSystemService(WIFI_SERVICE)` is using the application
+   * context
+   */
+  private fun checkWifiService(context: JavaContext, call: UCallExpression) {
+    val evaluator = context.evaluator
+    val qualifier = call.receiver
+    val resolvedMethod = call.resolve()
+    if (
+      resolvedMethod != null &&
+        (evaluator.isMemberInSubClassOf(resolvedMethod, SdkConstants.CLASS_ACTIVITY, false) ||
+          (evaluator.isMemberInSubClassOf(resolvedMethod, SdkConstants.CLASS_VIEW, false)))
+    ) {
+      reportWifiServiceLeak(WIFI_MANAGER, context, call)
+      return
+    }
+    if (qualifier == null) {
+      // Implicit: check surrounding class
+      val currentMethod = call.getParentOfType(UMethod::class.java, true)
+      if (
+        currentMethod != null &&
+          !evaluator.isMemberInSubClassOf(currentMethod, SdkConstants.CLASS_APPLICATION, true)
+      ) {
+        reportWifiServiceLeak(WIFI_MANAGER, context, call)
+      }
+    } else {
+      checkContextReference(context, qualifier, call)
+    }
+  }
+
+  /**
+   * Given a reference to a context, check to see if the context is an application context (in which
+   * case, return quietly), or known to not be an application context (in which case, report an
+   * error), or is of an unknown context type (in which case, report a warning).
+   *
+   * @param context the lint analysis context
+   * @param element the reference to be checked
+   * @param call the original getSystemService call to report an error against
+   */
+  private fun checkContextReference(
+    context: JavaContext,
+    element: UElement?,
+    call: UCallExpression,
+  ): Boolean {
+    if (element == null) {
+      return false
+    }
+    if (element is UCallExpression) {
+      val resolvedMethod = element.resolve()
+      if (resolvedMethod != null && GET_APPLICATION_CONTEXT != resolvedMethod.name) {
+        reportWifiServiceLeak(WIFI_MANAGER, context, call)
+        return true
+      }
+    } else if (element is UQualifiedReferenceExpression) {
+      val resolved = element.resolve()
+      if (resolved is PsiMethod && GET_APPLICATION_CONTEXT != element.resolvedName) {
+        reportWifiServiceLeak(WIFI_MANAGER, context, call)
+        return true
+      }
+    } else if (element is UReferenceExpression) {
+      // Check variable references backwards
+      val resolved = element.resolve()
+      if (resolved is PsiField) {
+        val type = resolved.type
+        return checkWifiContextType(context, call, type, true)
+      } else if (resolved is PsiParameter) {
+        // Parameter: is the parameter type something other than just "Context"
+        // or some subclass of Application?
+        val type = resolved.type
+        return checkWifiContextType(context, call, type, true)
+      } else if (resolved is PsiLocalVariable) {
+        val type = resolved.type
+        if (!type.isValid) {
+          return false
+        }
+        if (checkWifiContextType(context, call, type, false)) {
+          return true
+        }
+
+        // Walk backwards through assignments to find the most recent initialization
+        // of this variable
+        val lastAssignment = findLastAssignment(resolved, call)
+        if (lastAssignment != null) {
+          return checkContextReference(context, lastAssignment, call)
+        }
+      }
+    } else if (element is UParenthesizedExpression) {
+      return checkContextReference(context, element.expression, call)
+    }
+
+    return false
+  }
+
+  /**
+   * Given a context type (of a parameter or field), check to see if that type implies that the
+   * context is not the application context (for example because it's an Activity rather than a
+   * plain context).
+   *
+   * Returns true if it finds and reports a problem.
+   */
+  private fun checkWifiContextType(
+    context: JavaContext,
+    call: UCallExpression,
+    type: PsiType,
+    flagPlainContext: Boolean,
+  ): Boolean {
+    val evaluator = context.evaluator
+    if (type is PsiClassType) {
+      val psiClass = type.resolve()
+      if (evaluator.extendsClass(psiClass, SdkConstants.CLASS_APPLICATION, false)) {
+        return false
+      }
+    }
+    if (evaluator.typeMatches(type, SdkConstants.CLASS_CONTEXT)) {
+      if (flagPlainContext) {
+        reportWifiServiceLeak(WIFI_MANAGER_UNCERTAIN, context, call)
+        return true
+      }
+      return false
+    }
+
+    reportWifiServiceLeak(WIFI_MANAGER, context, call)
+    return true
+  }
+
+  private fun reportWifiServiceLeak(issue: Issue, context: JavaContext, call: UCallExpression) {
+    if (context.project.minSdk >= 24) {
+      // Bug is fixed in Nougat
+      return
+    }
+
+    var message =
+      "The WIFI_SERVICE must be looked up on the " +
+        "Application context or memory will leak on devices < Android N. "
+
+    val fix: LintFix
+    if (call.receiver != null) {
+      val qualifier = call.receiver!!.asSourceString()
+      message += "Try changing `$qualifier` to `$qualifier.getApplicationContext()`"
+      fix =
+        fix()
+          .name("Add getApplicationContext()")
+          .replace()
+          .text(qualifier)
+          .with("$qualifier.getApplicationContext()")
+          .build()
+    } else {
+      val qualifier = getMethodName(call)
+      message += "Try changing `$qualifier` to `getApplicationContext().$qualifier`"
+      fix =
+        fix()
+          .name("Add getApplicationContext()")
+          .replace()
+          .text(qualifier)
+          .with("getApplicationContext().$qualifier")
+          .build()
+    }
+
+    val incident = Incident(issue, call, context.getLocation(call), message, fix)
+    context.report(incident, minSdkLessThan(24))
+  }
+
+  private fun isClipboard(cls: String): Boolean {
+    return cls == "android.content.ClipboardManager" || cls == "android.text.ClipboardManager"
+  }
+
+  private fun stripPackage(fqcn: String): String = fqcn.substringAfterLast('.')
+
+  companion object {
+    val IMPLEMENTATION: Implementation =
+      Implementation(ServiceCastDetector::class.java, Scope.JAVA_FILE_SCOPE)
 
     /** Invalid cast to a type from the service constant */
-    public static final Issue ISSUE =
-            Issue.create(
-                            "ServiceCast",
-                            "Wrong system service casts",
-                            "When you call `Context#getSystemService()`, the result is typically cast to "
-                                    + "a specific interface. This lint check ensures that the cast is compatible with "
-                                    + "the expected type of the return value.",
-                            Category.CORRECTNESS,
-                            6,
-                            Severity.ERROR,
-                            IMPLEMENTATION)
-                    .setAndroidSpecific(true);
+    @JvmField
+    val ISSUE: Issue =
+      Issue.create(
+        id = "ServiceCast",
+        briefDescription = "Wrong system service casts",
+        explanation =
+          """
+          When you call `Context#getSystemService()`, the result is typically cast to \
+          a specific interface. This lint check ensures that the cast is compatible with \
+          the expected type of the return value.
+          """,
+        category = Category.CORRECTNESS,
+        priority = 6,
+        severity = Severity.ERROR,
+        implementation = IMPLEMENTATION,
+        androidSpecific = true,
+      )
 
-    /** Using wifi manager from the wrong context */
-    public static final Issue WIFI_MANAGER =
-            Issue.create(
-                            "WifiManagerLeak",
-                            "WifiManager Leak",
-                            "On versions prior to Android N (24), initializing the `WifiManager` via "
-                                    + "`Context#getSystemService` can cause a memory leak if the context is not "
-                                    + "the application context. Change `context.getSystemService(...)` to "
-                                    + "`context.getApplicationContext().getSystemService(...)`.",
-                            Category.CORRECTNESS,
-                            6,
-                            Severity.ERROR,
-                            IMPLEMENTATION)
-                    .setAndroidSpecific(true);
+    /** Using Wi-Fi manager from the wrong context */
+    @JvmField
+    val WIFI_MANAGER: Issue =
+      Issue.create(
+        id = "WifiManagerLeak",
+        briefDescription = "WifiManager Leak",
+        explanation =
+          """
+          On versions prior to Android N (24), initializing the `WifiManager` via \
+          `Context#getSystemService` can cause a memory leak if the context is not \
+          the application context. Change `context.getSystemService(...)` to \
+          `context.getApplicationContext().getSystemService(...)`.
+          """,
+        category = Category.CORRECTNESS,
+        priority = 6,
+        severity = Severity.ERROR,
+        implementation = IMPLEMENTATION,
+        androidSpecific = true,
+      )
 
-    /** Using wifi manager from the wrong context: unknown Context origin */
-    public static final Issue WIFI_MANAGER_UNCERTAIN =
-            Issue.create(
-                            "WifiManagerPotentialLeak",
-                            "WifiManager Potential Leak",
-                            "On versions prior to Android N (24), initializing the `WifiManager` via "
-                                    + "`Context#getSystemService` can cause a memory leak if the context is not "
-                                    + "the application context.\n"
-                                    + "\n"
-                                    + "In many cases, it's not obvious from the code where the `Context` is "
-                                    + "coming from (e.g. it might be a parameter to a method, or a field initialized "
-                                    + "from various method calls). It's possible that the context being passed in "
-                                    + "is the application context, but to be on the safe side, you should consider "
-                                    + "changing `context.getSystemService(...)` to "
-                                    + "`context.getApplicationContext().getSystemService(...)`.",
-                            Category.CORRECTNESS,
-                            6,
-                            Severity.WARNING,
-                            IMPLEMENTATION)
-                    .setAndroidSpecific(true);
+    /** Using Wi-Fi manager from the wrong context: unknown Context origin */
+    @JvmField
+    val WIFI_MANAGER_UNCERTAIN: Issue =
+      Issue.create(
+        id = "WifiManagerPotentialLeak",
+        briefDescription = "WifiManager Potential Leak",
+        explanation =
+          """
+          On versions prior to Android N (24), initializing the `WifiManager` \
+          via `Context#getSystemService` can cause a memory leak if the context \
+          is not the application context.
 
-    private static final String GET_APPLICATION_CONTEXT = "getApplicationContext";
-    private static final String WIFI_SERVICE = "WIFI_SERVICE";
+          In many cases, it's not obvious from the code where the `Context` is \
+          coming from (e.g. it might be a parameter to a method, or a field \
+          initialized from various method calls). It's possible that the context \
+          being passed in is the application context, but to be on the safe side, \
+          you should consider changing `context.getSystemService(...)` to \
+          `context.getApplicationContext().getSystemService(...)`.
+          """,
+        category = Category.CORRECTNESS,
+        priority = 6,
+        severity = Severity.WARNING,
+        implementation = IMPLEMENTATION,
+        androidSpecific = true,
+      )
 
-    /** Constructs a new {@link ServiceCastDetector} check */
-    public ServiceCastDetector() {}
-
-    // ---- implements SourceCodeScanner ----
-
-    @Override
-    public List<String> getApplicableMethodNames() {
-        return Collections.singletonList("getSystemService");
-    }
-
-    @Override
-    public void visitMethodCall(
-            @NonNull JavaContext context,
-            @NonNull UCallExpression call,
-            @NonNull PsiMethod method) {
-        List<UExpression> args = call.getValueArguments();
-        if (args.size() != 1) {
-            return;
-        }
-
-        UExpression argument = skipParenthesizedExprDown(args.get(0));
-        if (!(argument instanceof UReferenceExpression)) {
-            return;
-        }
-        PsiElement resolvedServiceConst = ((UReferenceExpression) argument).resolve();
-        if (!(resolvedServiceConst instanceof PsiField)) {
-            return;
-        }
-        String name = ((PsiField) resolvedServiceConst).getName();
-
-        // Check WIFI_SERVICE context origin
-        if (WIFI_SERVICE.equals(name)) {
-            checkWifiService(context, call);
-        }
-
-        UElement parent =
-                skipParenthesizedExprUp(UastUtils.getQualifiedParentOrThis(call).getUastParent());
-        if (parent != null && UastExpressionUtils.isTypeCast(parent)) {
-            UBinaryExpressionWithType cast = (UBinaryExpressionWithType) parent;
-
-            // Check cast
-            String expectedClass = getExpectedType(name);
-            if (expectedClass != null) {
-                String castType = cast.getType().getCanonicalText();
-                if (castType.indexOf('.') == -1) {
-                    expectedClass = stripPackage(expectedClass);
-                }
-                if (!castType.equals(expectedClass)) {
-                    // It's okay to mix and match
-                    // android.content.ClipboardManager and android.text.ClipboardManager
-                    if (isClipboard(castType) && isClipboard(expectedClass)) {
-                        return;
-                    }
-
-                    String actual = stripPackage(castType);
-                    String expected = stripPackage(expectedClass);
-                    if (actual.equals(expected) && expectedClass.contains(".")) {
-                        actual = castType;
-                        expected = expectedClass;
-                    }
-                    String message =
-                            String.format(
-                                    "Suspicious cast to `%1$s` for a `%2$s`: expected `%3$s`",
-                                    actual, name, expected);
-                    context.report(ISSUE, call, context.getLocation(cast), message);
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks that the given call to {@code Context#getSystemService(WIFI_SERVICE)} is using the
-     * application context
-     */
-    private void checkWifiService(@NonNull JavaContext context, @NonNull UCallExpression call) {
-        JavaEvaluator evaluator = context.getEvaluator();
-        UExpression qualifier = call.getReceiver();
-        PsiMethod resolvedMethod = call.resolve();
-        if (resolvedMethod != null
-                && (evaluator.isMemberInSubClassOf(resolvedMethod, CLASS_ACTIVITY, false)
-                        || (evaluator.isMemberInSubClassOf(resolvedMethod, CLASS_VIEW, false)))) {
-            reportWifiServiceLeak(WIFI_MANAGER, context, call);
-            return;
-        }
-        if (qualifier == null) {
-            // Implicit: check surrounding class
-            UMethod currentMethod = UastUtils.getParentOfType(call, UMethod.class, true);
-            if (currentMethod != null
-                    && !evaluator.isMemberInSubClassOf(currentMethod, CLASS_APPLICATION, true)) {
-                reportWifiServiceLeak(WIFI_MANAGER, context, call);
-            }
-        } else {
-            checkContextReference(context, qualifier, call);
-        }
-    }
-
-    /**
-     * Given a reference to a context, check to see if the context is an application context (in
-     * which case, return quietly), or known to not be an application context (in which case, report
-     * an error), or is of an unknown context type (in which case, report a warning).
-     *
-     * @param context the lint analysis context
-     * @param element the reference to be checked
-     * @param call the original getSystemService call to report an error against
-     */
-    private boolean checkContextReference(
-            @NonNull JavaContext context,
-            @Nullable UElement element,
-            @NonNull UCallExpression call) {
-        if (element == null) {
-            return false;
-        }
-        if (element instanceof UCallExpression) {
-            PsiMethod resolvedMethod = ((UCallExpression) element).resolve();
-            if (resolvedMethod != null
-                    && !GET_APPLICATION_CONTEXT.equals(resolvedMethod.getName())) {
-                reportWifiServiceLeak(WIFI_MANAGER, context, call);
-                return true;
-            }
-        } else if (element instanceof UQualifiedReferenceExpression) {
-            UQualifiedReferenceExpression refExp = (UQualifiedReferenceExpression) element;
-            PsiElement resolved = refExp.resolve();
-            if (resolved instanceof PsiMethod
-                    && !GET_APPLICATION_CONTEXT.equals(refExp.getResolvedName())) {
-                reportWifiServiceLeak(WIFI_MANAGER, context, call);
-                return true;
-            }
-        } else if (element instanceof UReferenceExpression) {
-            // Check variable references backwards
-            PsiElement resolved = ((UReferenceExpression) element).resolve();
-            if (resolved instanceof PsiField) {
-                PsiType type = ((PsiField) resolved).getType();
-                return checkWifiContextType(context, call, type, true);
-            } else if (resolved instanceof PsiParameter) {
-                // Parameter: is the parameter type something other than just "Context"
-                // or some subclass of Application?
-                PsiType type = ((PsiParameter) resolved).getType();
-                return checkWifiContextType(context, call, type, true);
-            } else if (resolved instanceof PsiLocalVariable) {
-                PsiLocalVariable variable = (PsiLocalVariable) resolved;
-                PsiType type = variable.getType();
-                if (!type.isValid()) {
-                    return false;
-                }
-                if (checkWifiContextType(context, call, type, false)) {
-                    return true;
-                }
-
-                // Walk backwards through assignments to find the most recent initialization
-                // of this variable
-                UExpression lastAssignment = UastLintUtils.findLastAssignment(variable, call);
-                if (lastAssignment != null) {
-                    return checkContextReference(context, lastAssignment, call);
-                }
-            }
-        } else if (element instanceof UParenthesizedExpression) {
-            return checkContextReference(
-                    context, ((UParenthesizedExpression) element).getExpression(), call);
-        }
-
-        return false;
-    }
-
-    /**
-     * Given a context type (of a parameter or field), check to see if that type implies that the
-     * context is not the application context (for example because it's an Activity rather than a
-     * plain context).
-     *
-     * <p>Returns true if it finds and reports a problem.
-     */
-    private boolean checkWifiContextType(
-            @NonNull JavaContext context,
-            @NonNull UCallExpression call,
-            @NonNull PsiType type,
-            boolean flagPlainContext) {
-        JavaEvaluator evaluator = context.getEvaluator();
-        if (type instanceof PsiClassType) {
-            PsiClass psiClass = ((PsiClassType) type).resolve();
-            if (evaluator.extendsClass(psiClass, CLASS_APPLICATION, false)) {
-                return false;
-            }
-        }
-        if (evaluator.typeMatches(type, CLASS_CONTEXT)) {
-            if (flagPlainContext) {
-                reportWifiServiceLeak(WIFI_MANAGER_UNCERTAIN, context, call);
-                return true;
-            }
-            return false;
-        }
-
-        reportWifiServiceLeak(WIFI_MANAGER, context, call);
-        return true;
-    }
-
-    private void reportWifiServiceLeak(
-            @NonNull Issue issue, @NonNull JavaContext context, @NonNull UCallExpression call) {
-        if (context.getProject().getMinSdk() >= 24) {
-            // Bug is fixed in Nougat
-            return;
-        }
-
-        String message =
-                "The WIFI_SERVICE must be looked up on the "
-                        + "Application context or memory will leak on devices < Android N. ";
-
-        LintFix fix;
-        if (call.getReceiver() != null) {
-            String qualifier = call.getReceiver().asSourceString();
-            message +=
-                    String.format(
-                            "Try changing `%1$s` to `%1$s.getApplicationContext()`", qualifier);
-            fix =
-                    fix().name("Add getApplicationContext()")
-                            .replace()
-                            .text(qualifier)
-                            .with(qualifier + ".getApplicationContext()")
-                            .build();
-        } else {
-            String qualifier = getMethodName(call);
-            message +=
-                    String.format(
-                            "Try changing `%1$s` to `getApplicationContext().%1$s`", qualifier);
-            fix =
-                    fix().name("Add getApplicationContext()")
-                            .replace()
-                            .text(qualifier)
-                            .with("getApplicationContext()." + qualifier)
-                            .build();
-        }
-
-        Incident incident = new Incident(issue, call, context.getLocation(call), message, fix);
-        context.report(incident, minSdkLessThan(24));
-    }
-
-    private static boolean isClipboard(@NonNull String cls) {
-        return cls.equals("android.content.ClipboardManager")
-                || cls.equals("android.text.ClipboardManager");
-    }
-
-    private static String stripPackage(@NonNull String fqcn) {
-        int index = fqcn.lastIndexOf('.');
-        if (index != -1) {
-            fqcn = fqcn.substring(index + 1);
-        }
-
-        return fqcn;
-    }
+    private const val GET_APPLICATION_CONTEXT = "getApplicationContext"
+    private const val WIFI_SERVICE = "WIFI_SERVICE"
 
     @VisibleForTesting
-    @Nullable
-    static String getExpectedType(@Nullable String value) {
-        if (value == null) {
-            return null;
-        }
+    fun getExpectedType(value: String?): String? {
+      value ?: return null
 
-        // Populated from the Context#getSystemService implementation in the framework.
-        // This requires manually inspecting the sources; the documentation is the easiest
-        // place. For example, for MEDIA_COMMUNICATION_SERVICE, locate the field declaration and
-        // docs like
-        // this:
-        //
-        //    /**
-        //     * Use with {@link #getSystemService(String)} to retrieve a
-        //     * {@link android.media.MediaCommunicationManager}
-        //     * for managing {@link android.media.MediaSession2}.
-        //     *
-        //     * @see #getSystemService(String)
-        //     * @see android.media.MediaCommunicationManager
-        //     */
-        //    public static final String MEDIA_COMMUNICATION_SERVICE = "media_communication";
-        //
-        // From this we can conclude that MEDIA_COMMUNICATION_SERVICE maps to
-        // android.media.MediaCommunicationManager.
-        // Make sure to skip constants marked @hide or @SystemApi (or cross check what is in
-        // android.jar).
-
-        switch (value) {
-            case "ACCESSIBILITY_SERVICE":
-                return "android.view.accessibility.AccessibilityManager";
-            case "ACCOUNT_SERVICE":
-                return "android.accounts.AccountManager";
-            case "ACTIVITY_SERVICE":
-                return "android.app.ActivityManager";
-            case "ALARM_SERVICE":
-                return "android.app.AlarmManager";
-            case "APPWIDGET_SERVICE":
-                return "android.appwidget.AppWidgetManager";
-            case "APP_OPS_SERVICE":
-                return "android.app.AppOpsManager";
-            case "AUDIO_SERVICE":
-                return "android.media.AudioManager";
-            case "BATTERY_SERVICE":
-                return "android.os.BatteryManager";
-            case "BIOMETRIC_SERVICE":
-                return "android.hardware.biometrics.BiometricManager";
-            case "BLUETOOTH_SERVICE":
-                return "android.bluetooth.BluetoothManager";
-            case "CAMERA_SERVICE":
-                return "android.hardware.camera2.CameraManager";
-            case "CAPTIONING_SERVICE":
-                return "android.view.accessibility.CaptioningManager";
-            case "CARRIER_CONFIG_SERVICE":
-                return "android.telephony.CarrierConfigManager";
-                // also allow @Deprecated android.content.ClipboardManager, see isClipboard
-            case "CLIPBOARD_SERVICE":
-                return "android.text.ClipboardManager";
-            case "COMPANION_DEVICE_SERVICE":
-                return "android.companion.CompanionDeviceManager";
-            case "CONNECTIVITY_SERVICE":
-                return "android.net.ConnectivityManager";
-            case "CONSUMER_IR_SERVICE":
-                return "android.hardware.ConsumerIrManager";
-            case "CROSS_PROFILE_APPS_SERVICE":
-                return "android.content.pm.CrossProfileApps";
-            case "EUICC_SERVICE":
-                return "android.telephony.euicc.EuiccManager";
-            case "DEVICE_POLICY_SERVICE":
-                return "android.app.admin.DevicePolicyManager";
-            case "DISPLAY_HASH_SERVICE":
-                return "android.view.displayhash.DisplayHashManager";
-            case "DISPLAY_SERVICE":
-                return "android.hardware.display.DisplayManager";
-            case "DOMAIN_VERIFICATION_SERVICE":
-                return "android.content.pm.verify.domain.DomainVerificationManager";
-            case "DOWNLOAD_SERVICE":
-                return "android.app.DownloadManager";
-            case "DROPBOX_SERVICE":
-                return "android.os.DropBoxManager";
-            case "FINGERPRINT_SERVICE":
-                return "android.hardware.fingerprint.FingerprintManager";
-            case "HARDWARE_PROPERTIES_SERVICE":
-                return "android.os.HardwarePropertiesManager";
-            case "INPUT_METHOD_SERVICE":
-                return "android.view.inputmethod.InputMethodManager";
-            case "INPUT_SERVICE":
-                return "android.hardware.input.InputManager";
-            case "IPSEC_SERVICE":
-                return "android.net.IpSecManager";
-            case "JOB_SCHEDULER_SERVICE":
-                return "android.app.job.JobScheduler";
-            case "KEYGUARD_SERVICE":
-                return "android.app.KeyguardManager";
-            case "LAUNCHER_APPS_SERVICE":
-                return "android.content.pm.LauncherApps";
-            case "LAYOUT_INFLATER_SERVICE":
-                return "android.view.LayoutInflater";
-            case "LOCALE_SERVICE":
-                return "android.app.LocaleManager";
-            case "LOCATION_SERVICE":
-                return "android.location.LocationManager";
-            case "MEDIA_COMMUNICATION_SERVICE":
-                return "android.media.MediaCommunicationManager";
-            case "MEDIA_METRICS_SERVICE":
-                return "android.media.metrics.MediaMetricsManager";
-            case "MEDIA_PROJECTION_SERVICE":
-                return "android.media.projection.MediaProjectionManager";
-            case "MEDIA_ROUTER_SERVICE":
-                return "android.media.MediaRouter";
-            case "MEDIA_SESSION_SERVICE":
-                return "android.media.session.MediaSessionManager";
-            case "MIDI_SERVICE":
-                return "android.media.midi.MidiManager";
-            case "NETWORK_STATS_SERVICE":
-                return "android.app.usage.NetworkStatsManager";
-            case "NFC_SERVICE":
-                return "android.nfc.NfcManager";
-            case "NOTIFICATION_SERVICE":
-                return "android.app.NotificationManager";
-            case "NSD_SERVICE":
-                return "android.net.nsd.NsdManager";
-            case "POWER_SERVICE":
-                return "android.os.PowerManager";
-            case "PRINT_SERVICE":
-                return "android.print.PrintManager";
-            case "RESTRICTIONS_SERVICE":
-                return "android.content.RestrictionsManager";
-            case "ROLE_SERVICE":
-                return "android.app.role.RoleManager";
-            case "SEARCH_SERVICE":
-                return "android.app.SearchManager";
-            case "SENSOR_SERVICE":
-                return "android.hardware.SensorManager";
-            case "SHORTCUT_SERVICE":
-                return "android.content.pm.ShortcutManager";
-            case "STORAGE_SERVICE":
-                return "android.os.storage.StorageManager";
-            case "STORAGE_STATS_SERVICE":
-                return "android.app.usage.StorageStatsManager";
-            case "SYSTEM_HEALTH_SERVICE":
-                return "android.os.health.SystemHealthManager";
-            case "TELECOM_SERVICE":
-                return "android.telecom.TelecomManager";
-            case "TELEPHONY_SERVICE":
-                return "android.telephony.TelephonyManager";
-            case "TELEPHONY_SUBSCRIPTION_SERVICE":
-                return "android.telephony.SubscriptionManager";
-            case "TEXT_CLASSIFICATION_SERVICE":
-                return "android.view.textclassifier.TextClassificationManager";
-            case "TEXT_SERVICES_MANAGER_SERVICE":
-                return "android.view.textservice.TextServicesManager";
-            case "TV_INPUT_SERVICE":
-                return "android.media.tv.TvInputManager";
-            case "TV_INTERACTIVE_APP_SERVICE":
-                return "android.media.tv.interactive.TvInteractiveAppManager";
-            case "UI_MODE_SERVICE":
-                return "android.app.UiModeManager";
-            case "USAGE_STATS_SERVICE":
-                return "android.app.usage.UsageStatsManager";
-            case "USB_SERVICE":
-                return "android.hardware.usb.UsbManager";
-            case "USER_SERVICE":
-                return "android.os.UserManager";
-            case "VIBRATOR_MANAGER_SERVICE":
-                return "android.os.VibratorManager";
-            case "VIBRATOR_SERVICE":
-                return "android.os.Vibrator";
-            case "VPN_MANAGEMENT_SERVICE":
-                return "android.net.VpnManager";
-            case "WALLPAPER_SERVICE":
-                return "android.app.WallpaperManager";
-            case "WIFI_AWARE_SERVICE":
-                return "android.net.wifi.aware.WifiAwareManager";
-            case "WIFI_P2P_SERVICE":
-                return "android.net.wifi.p2p.WifiP2pManager";
-            case "WIFI_RTT_RANGING_SERVICE":
-                return "android.net.wifi.rtt.WifiRttManager";
-            case "WIFI_SERVICE":
-                return "android.net.wifi.WifiManager";
-            case "WINDOW_SERVICE":
-                return "android.view.WindowManager";
-            default:
-                return null;
-        }
+      return when (value) {
+        "ACCESSIBILITY_SERVICE" -> "android.view.accessibility.AccessibilityManager"
+        "ACCOUNT_SERVICE" -> "android.accounts.AccountManager"
+        "ACTIVITY_SERVICE" -> "android.app.ActivityManager"
+        "ALARM_SERVICE" -> "android.app.AlarmManager"
+        "APPWIDGET_SERVICE" -> "android.appwidget.AppWidgetManager"
+        "APP_OPS_SERVICE" -> "android.app.AppOpsManager"
+        "AUDIO_SERVICE" -> "android.media.AudioManager"
+        "BATTERY_SERVICE" -> "android.os.BatteryManager"
+        "BIOMETRIC_SERVICE" -> "android.hardware.biometrics.BiometricManager"
+        "BLUETOOTH_SERVICE" -> "android.bluetooth.BluetoothManager"
+        "CAMERA_SERVICE" -> "android.hardware.camera2.CameraManager"
+        "CAPTIONING_SERVICE" -> "android.view.accessibility.CaptioningManager"
+        "CARRIER_CONFIG_SERVICE" -> "android.telephony.CarrierConfigManager"
+        // also allow @Deprecated android.content.ClipboardManager, see isClipboard
+        "CLIPBOARD_SERVICE" -> "android.text.ClipboardManager"
+        "COMPANION_DEVICE_SERVICE" -> "android.companion.CompanionDeviceManager"
+        "CONNECTIVITY_SERVICE" -> "android.net.ConnectivityManager"
+        "CONSUMER_IR_SERVICE" -> "android.hardware.ConsumerIrManager"
+        "CROSS_PROFILE_APPS_SERVICE" -> "android.content.pm.CrossProfileApps"
+        "EUICC_SERVICE" -> "android.telephony.euicc.EuiccManager"
+        "DEVICE_POLICY_SERVICE" -> "android.app.admin.DevicePolicyManager"
+        "DISPLAY_HASH_SERVICE" -> "android.view.displayhash.DisplayHashManager"
+        "DISPLAY_SERVICE" -> "android.hardware.display.DisplayManager"
+        "DOMAIN_VERIFICATION_SERVICE" ->
+          "android.content.pm.verify.domain.DomainVerificationManager"
+        "DOWNLOAD_SERVICE" -> "android.app.DownloadManager"
+        "DROPBOX_SERVICE" -> "android.os.DropBoxManager"
+        "FINGERPRINT_SERVICE" -> "android.hardware.fingerprint.FingerprintManager"
+        "HARDWARE_PROPERTIES_SERVICE" -> "android.os.HardwarePropertiesManager"
+        "INPUT_METHOD_SERVICE" -> "android.view.inputmethod.InputMethodManager"
+        "INPUT_SERVICE" -> "android.hardware.input.InputManager"
+        "IPSEC_SERVICE" -> "android.net.IpSecManager"
+        "JOB_SCHEDULER_SERVICE" -> "android.app.job.JobScheduler"
+        "KEYGUARD_SERVICE" -> "android.app.KeyguardManager"
+        "LAUNCHER_APPS_SERVICE" -> "android.content.pm.LauncherApps"
+        "LAYOUT_INFLATER_SERVICE" -> "android.view.LayoutInflater"
+        "LOCALE_SERVICE" -> "android.app.LocaleManager"
+        "LOCATION_SERVICE" -> "android.location.LocationManager"
+        "MEDIA_COMMUNICATION_SERVICE" -> "android.media.MediaCommunicationManager"
+        "MEDIA_METRICS_SERVICE" -> "android.media.metrics.MediaMetricsManager"
+        "MEDIA_PROJECTION_SERVICE" -> "android.media.projection.MediaProjectionManager"
+        "MEDIA_ROUTER_SERVICE" -> "android.media.MediaRouter"
+        "MEDIA_SESSION_SERVICE" -> "android.media.session.MediaSessionManager"
+        "MIDI_SERVICE" -> "android.media.midi.MidiManager"
+        "NETWORK_STATS_SERVICE" -> "android.app.usage.NetworkStatsManager"
+        "NFC_SERVICE" -> "android.nfc.NfcManager"
+        "NOTIFICATION_SERVICE" -> "android.app.NotificationManager"
+        "NSD_SERVICE" -> "android.net.nsd.NsdManager"
+        "POWER_SERVICE" -> "android.os.PowerManager"
+        "PRINT_SERVICE" -> "android.print.PrintManager"
+        "RESTRICTIONS_SERVICE" -> "android.content.RestrictionsManager"
+        "ROLE_SERVICE" -> "android.app.role.RoleManager"
+        "SEARCH_SERVICE" -> "android.app.SearchManager"
+        "SENSOR_SERVICE" -> "android.hardware.SensorManager"
+        "SHORTCUT_SERVICE" -> "android.content.pm.ShortcutManager"
+        "STORAGE_SERVICE" -> "android.os.storage.StorageManager"
+        "STORAGE_STATS_SERVICE" -> "android.app.usage.StorageStatsManager"
+        "SYSTEM_HEALTH_SERVICE" -> "android.os.health.SystemHealthManager"
+        "TELECOM_SERVICE" -> "android.telecom.TelecomManager"
+        "TELEPHONY_SERVICE" -> "android.telephony.TelephonyManager"
+        "TELEPHONY_SUBSCRIPTION_SERVICE" -> "android.telephony.SubscriptionManager"
+        "TEXT_CLASSIFICATION_SERVICE" -> "android.view.textclassifier.TextClassificationManager"
+        "TEXT_SERVICES_MANAGER_SERVICE" -> "android.view.textservice.TextServicesManager"
+        "TV_INPUT_SERVICE" -> "android.media.tv.TvInputManager"
+        "TV_INTERACTIVE_APP_SERVICE" -> "android.media.tv.interactive.TvInteractiveAppManager"
+        "UI_MODE_SERVICE" -> "android.app.UiModeManager"
+        "USAGE_STATS_SERVICE" -> "android.app.usage.UsageStatsManager"
+        "USB_SERVICE" -> "android.hardware.usb.UsbManager"
+        "USER_SERVICE" -> "android.os.UserManager"
+        "VIBRATOR_MANAGER_SERVICE" -> "android.os.VibratorManager"
+        "VIBRATOR_SERVICE" -> "android.os.Vibrator"
+        "VPN_MANAGEMENT_SERVICE" -> "android.net.VpnManager"
+        "WALLPAPER_SERVICE" -> "android.app.WallpaperManager"
+        "WIFI_AWARE_SERVICE" -> "android.net.wifi.aware.WifiAwareManager"
+        "WIFI_P2P_SERVICE" -> "android.net.wifi.p2p.WifiP2pManager"
+        "WIFI_RTT_RANGING_SERVICE" -> "android.net.wifi.rtt.WifiRttManager"
+        "WIFI_SERVICE" -> "android.net.wifi.WifiManager"
+        "WINDOW_SERVICE" -> "android.view.WindowManager"
+        else -> null
+      }
     }
+  }
 }
