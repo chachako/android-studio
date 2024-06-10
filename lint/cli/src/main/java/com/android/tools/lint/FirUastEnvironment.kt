@@ -372,6 +372,13 @@ private object Helper {
   fun getSourceFilePaths(
     javaSourceRoots: Collection<File>,
     includeDirectoryRoot: Boolean = false,
+  ): PathCollection =
+    getFilePaths(javaSourceRoots, sourceFileExtensions::contains, includeDirectoryRoot)
+
+  fun getFilePaths(
+    roots: Collection<File>,
+    isExtensionWanted: (String?) -> Boolean,
+    includeDirectoryRoot: Boolean = false,
   ): PathCollection {
     val physicalPaths = hashSetOf<Path>()
     val virtualFiles = hashSetOf<VirtualFile>()
@@ -380,7 +387,7 @@ private object Helper {
       val path = Paths.get(root.path)
       when {
         Files.isDirectory(path) -> {
-          collectSourceFilePaths(path, physicalPaths) // E.g., project/app/src
+          collectFilePaths(path, physicalPaths, isExtensionWanted) // E.g., project/app/src
           if (includeDirectoryRoot) physicalPaths.add(path)
         }
         else -> physicalPaths.add(path) // E.g., project/app/src/some/pkg/main.kt
@@ -388,21 +395,18 @@ private object Helper {
     }
 
     fun fromVirtualFile(root: VirtualFile) {
-      /**
-       * This mirrors [collectSourceFilePaths] below with something equivalent to
-       * [Files.walkFileTree]
-       */
+      /** This mirrors [collectFilePaths] below with something equivalent to [Files.walkFileTree] */
       fun visit(file: VirtualFile) {
         when {
           file.isDirectory -> file.children?.forEach(::visit)
-          file.extension in sourceFileExtensions -> virtualFiles.add(file)
+          isExtensionWanted(file.extension) -> virtualFiles.add(file)
         }
       }
       visit(root)
       if (root.isDirectory && includeDirectoryRoot) virtualFiles.add(root)
     }
 
-    for (root in javaSourceRoots) {
+    for (root in roots) {
       when (root) {
         is UastEnvironment.VirtualFileWrapper -> fromVirtualFile(root.file)
         else -> fromFile(root)
@@ -419,7 +423,11 @@ private object Helper {
    *
    * Note that this util gracefully skips [IOException] during file tree traversal.
    */
-  private fun collectSourceFilePaths(root: Path, result: MutableSet<Path>) {
+  private fun collectFilePaths(
+    root: Path,
+    result: MutableSet<Path>,
+    isExtensionWanted: (String?) -> Boolean,
+  ) {
     // NB: [Files#walk] throws an exception if there is an issue during IO.
     // With [Files#walkFileTree] with a custom visitor, we can take control of exception handling.
     Files.walkFileTree(
@@ -432,7 +440,7 @@ private object Helper {
 
         override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
           if (!Files.isRegularFile(file) || !Files.isReadable(file)) return FileVisitResult.CONTINUE
-          if (GoogleFiles.getFileExtension(file.fileName.toString()) in sourceFileExtensions) {
+          if (isExtensionWanted(GoogleFiles.getFileExtension(file.fileName.toString()))) {
             result.add(file)
           }
           return FileVisitResult.CONTINUE
