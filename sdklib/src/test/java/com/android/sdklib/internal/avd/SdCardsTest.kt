@@ -15,6 +15,7 @@
  */
 package com.android.sdklib.internal.avd
 
+import com.android.sdklib.devices.Storage
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
@@ -27,5 +28,21 @@ class SdCardsTest {
     assertThat(parseSdCard("4")).isEqualTo(ExternalSdCard("4"))
     assertThat(runCatching { parseSdCard("1K") }.exceptionOrNull())
       .isInstanceOf(IllegalArgumentException::class.java)
+  }
+
+  @Test
+  fun testSdCardFromConfig() {
+    assertThat(
+        sdCardFromConfig(
+          mapOf(
+            AvdManager.AVD_INI_SDCARD_PATH to "/tmp/sdcard",
+            AvdManager.AVD_INI_SDCARD_SIZE to "300M",
+          )
+        )
+      )
+      .isEqualTo(ExternalSdCard("/tmp/sdcard"))
+
+    assertThat(sdCardFromConfig(mapOf(AvdManager.AVD_INI_SDCARD_SIZE to "300M")))
+      .isEqualTo(InternalSdCard(Storage(300, Storage.Unit.MiB).size))
   }
 }

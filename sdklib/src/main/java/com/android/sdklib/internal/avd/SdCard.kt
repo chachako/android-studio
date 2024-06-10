@@ -47,6 +47,20 @@ data class ExternalSdCard(val path: String) : SdCard {
   override fun configEntries(): Map<String, String> = mapOf(AvdManager.AVD_INI_SDCARD_PATH to path)
 }
 
+fun sdCardFromConfig(config: Map<String, String>): SdCard? {
+    val path = config[AvdManager.AVD_INI_SDCARD_PATH]
+    if (path != null) {
+        return ExternalSdCard(path)
+    }
+
+    val size = Storage.getStorageFromString(config[AvdManager.AVD_INI_SDCARD_SIZE])
+    if (size != null) {
+        return InternalSdCard(size.size)
+    }
+
+    return null
+}
+
 /** Pattern for matching SD card sizes, e.g. "4K" or "16M". */
 private val SDCARD_SIZE_PATTERN = "(\\d+)([KMG])".toRegex()
 

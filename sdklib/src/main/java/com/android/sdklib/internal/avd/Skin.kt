@@ -16,6 +16,7 @@
 package com.android.sdklib.internal.avd
 
 import java.nio.file.Path
+import java.nio.file.Paths
 
 sealed class Skin {
   abstract val name: String
@@ -37,4 +38,23 @@ data class GenericSkin(val x: Int, val y: Int) : Skin() {
  */
 data class OnDiskSkin(val path: Path) : Skin() {
   override val name = path.fileName.toString()
+}
+
+private val GENERIC_SKIN_PATTERN = "(\\d+)x(\\d+)(x\\d+)?".toRegex()
+
+fun skinFromConfig(config: Map<String, String>): Skin? {
+  val path = config[AvdManager.AVD_INI_SKIN_PATH]
+  if (path != null && path != "_no_skin") {
+    return OnDiskSkin(Paths.get(path))
+  }
+
+  val name = config[AvdManager.AVD_INI_SKIN_NAME]
+  if (name != null) {
+    val match = GENERIC_SKIN_PATTERN.matchEntire(name)
+    if (match != null) {
+      return GenericSkin(match.groupValues[1].toInt(), match.groupValues[2].toInt())
+    }
+  }
+
+  return null
 }
