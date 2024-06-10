@@ -1,15 +1,15 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
+load("//tools/base/bazel:expand_template.bzl", "expand_template")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library")
-load(":sdk.bzl", "combine_licenses", "sdk_java_binary", "sdk_package")
-load("//tools/base/repository:xjc.bzl", "xsd_to_java")
 load(
     "//tools/base/common:version.bzl",
     "BASE_VERSION",
     "DEV_COMMANDLINE_TOOLS_VERSION",
     "RELEASE_COMMANDLINE_TOOLS_VERSION",
 )
-load("//tools/base/bazel:expand_template.bzl", "expand_template")
+load("//tools/base/repository:xjc.bzl", "xsd_to_java")
+load(":sdk.bzl", "combine_licenses", "sdk_java_binary", "sdk_package")
 
 # managed by go/iml_to_build
 iml_module(
@@ -22,8 +22,8 @@ iml_module(
     test_data = ["//prebuilts/studio/sdk:platforms/latest"],
     test_resources = ["src/test/resources"],
     test_srcs = [
-        "src/test/java",
         "src/integrationTest/java",
+        "src/test/java",
     ],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
@@ -75,6 +75,7 @@ kotlin_library(
         "@maven//:org.apache.httpcomponents.httpcore",
         "@maven//:org.apache.httpcomponents.httpmime",
         "@maven//:org.glassfish.jaxb.jaxb-runtime",
+        "@maven//:org.jetbrains.kotlin.kotlin-reflect",
     ],
 )
 

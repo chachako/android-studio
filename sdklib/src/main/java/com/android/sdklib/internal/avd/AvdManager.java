@@ -15,6 +15,8 @@
  */
 package com.android.sdklib.internal.avd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 
 import static java.util.stream.Collectors.joining;
@@ -492,6 +494,40 @@ public class AvdManager {
             }
         }
         return newInfo;
+    }
+
+    /**
+     * Initializes an AvdBuilder based on a Device. This is used to set defaults for a device that
+     * is under construction for the first time.
+     */
+    public AvdBuilder createAvdBuilder(Device device) {
+        String avdName =
+                AvdNamesKt.uniquifyAvdName(this, AvdNames.cleanAvdName(device.getDisplayName()));
+        Path avdFolder = AvdInfo.getDefaultAvdFolder(this, avdName, true);
+        AvdBuilder builder =
+                new AvdBuilder(mBaseAvdFolder.resolve(avdName + ".ini"), avdFolder, device);
+        builder.initializeFromDevice();
+        builder.setDisplayName(AvdNamesKt.uniquifyDisplayName(this, device.getDisplayName()));
+        return builder;
+    }
+
+    @Nullable
+    @Slow
+    public AvdInfo createAvd(@NonNull AvdBuilder builder) {
+        checkArgument(Files.notExists(builder.getAvdFolder()), "AVD already exists");
+        Device device = checkNotNull(builder.getDevice(), "device is required");
+        return createAvd(
+                checkNotNull(builder.getAvdFolder(), "avdFolder is required"),
+                checkNotNull(builder.getAvdName(), "avdName is required"),
+                checkNotNull(builder.getSystemImage(), "systemImage is required"),
+                builder.getSkin(),
+                builder.getSdCard(),
+                builder.configProperties(),
+                builder.getUserSettings(),
+                device.getBootProps(),
+                device.hasPlayStore(),
+                true,
+                true);
     }
 
     /**

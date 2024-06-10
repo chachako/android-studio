@@ -17,6 +17,7 @@
 @file:JvmName("Skins")
 package com.android.sdklib.internal.avd
 
+import com.android.sdklib.devices.Device
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -61,3 +62,8 @@ fun skinFromConfig(config: Map<String, String>): Skin? {
 
   return null
 }
+
+fun Device.defaultGenericSkin(): Skin? =
+    getScreenSize(defaultState.orientation)?.let {
+        GenericSkin(it.width, it.height)
+    }
