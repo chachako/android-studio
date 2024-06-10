@@ -227,7 +227,7 @@ build:ci --worker_verbose
 build:ci --worker_quit_after_build
 # The CI runs a lot of targets and when they are all cached the BES upload
 # may take a long time.
-build:ci --bes_timeout=600s
+build:ci --bes_timeout=1200s
 # Capture network stats in CI runs.
 build:ci --experimental_collect_system_network_usage
 # Limit the progress avoid spammy build logs.
