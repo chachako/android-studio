@@ -70,4 +70,14 @@ class AnalysisApiFe10ServicesTest : AnalysisApiServicesTestBase() {
   fun testCancellation() {
     checkCancellation()
   }
+
+  @Test
+  fun testAnalysisAPIOnPsiElement() {
+    checkAnalysisAPIOnPsiElement(isK2 = false)
+  }
+
+  @Test
+  fun testAnalysisAPIOnJava() {
+    checkAnalysisAPIOnJava(isK2 = false)
+  }
 }

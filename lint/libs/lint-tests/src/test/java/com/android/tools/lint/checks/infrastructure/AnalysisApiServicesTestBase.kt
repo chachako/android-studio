@@ -15,11 +15,16 @@
  */
 package com.android.tools.lint.checks.infrastructure
 
+import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
+import com.android.tools.lint.detector.api.JavaContext
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.psi.PsiField
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.annotations.annotations
 import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
@@ -27,6 +32,7 @@ import org.jetbrains.kotlin.analysis.api.calls.symbol
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolWithVisibility
 import org.jetbrains.kotlin.analysis.api.types.KtDynamicType
 import org.jetbrains.kotlin.analysis.api.types.KtFunctionalType
+import org.jetbrains.kotlin.analysis.project.structure.ProjectStructureProvider
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -39,6 +45,7 @@ import org.jetbrains.uast.UClass
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UParameter
+import org.jetbrains.uast.USimpleNameReferenceExpression
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 abstract class AnalysisApiServicesTestBase {
@@ -262,5 +269,84 @@ abstract class AnalysisApiServicesTestBase {
           }
         )
       }
+  }
+
+  @OptIn(KtAnalysisApiInternals::class)
+  protected fun checkAnalysisAPIOnPsiElement(isK2: Boolean) {
+    listOf(
+        kotlin(
+          """
+          fun test(i : JavaClass) {
+              val c = i.count
+          }
+        """
+        ),
+        java(
+          """
+          public class JavaClass {
+              public Integer count = 0;
+          }
+        """
+        ),
+      )
+      .use { context -> checkJavaSymbol(context, isK2) }
+  }
+
+  protected fun checkAnalysisAPIOnJava(isK2: Boolean) {
+    listOf(
+        java(
+          """
+          class Test {
+              static void test(JavaClass i) {
+                  Integer c = i.count;
+              }
+          }
+        """
+        ),
+        java(
+          """
+          public class JavaClass {
+              public Integer count = 0;
+          }
+        """
+        ),
+      )
+      .use { context -> checkJavaSymbol(context, isK2) }
+  }
+
+  private fun checkJavaSymbol(context: JavaContext, isK2: Boolean) {
+    context.uastFile!!.accept(
+      object : AbstractUastVisitor() {
+        override fun visitSimpleNameReferenceExpression(
+          node: USimpleNameReferenceExpression
+        ): Boolean {
+          val c = node.resolve()
+          assertNotNull(c)
+
+          if (node.resolvedName != "count") {
+            // parameter i
+            return super.visitSimpleNameReferenceExpression(node)
+          }
+
+          assertTrue(c is PsiField)
+          assertEquals("JavaClass", c.containingClass?.qualifiedName)
+
+          if (!isK2) {
+            return super.visitSimpleNameReferenceExpression(node)
+          }
+
+          val projectStructureProvider = c.project.getService(ProjectStructureProvider::class.java)
+          val module = projectStructureProvider.getModule(c, null)
+          analyze(module) {
+            val symbolFromPsiElement = c.getCallableSymbol()
+            val callableId = symbolFromPsiElement?.callableIdIfNonLocal
+            assertEquals("JavaClass", callableId?.classId?.asFqNameString())
+            assertEquals("count", callableId?.callableName?.identifier)
+          }
+
+          return super.visitSimpleNameReferenceExpression(node)
+        }
+      }
+    )
   }
 }
