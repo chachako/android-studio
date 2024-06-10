@@ -23,6 +23,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
@@ -65,6 +66,10 @@ abstract class PreviewScreenshotValidationTask : Test() {
     @get:Internal
     abstract val analyticsService: Property<AnalyticsService>
 
+    @get:Input
+    @get:Optional
+    abstract val threshold: Property<String>
+
     @TaskAction
     override fun executeTests() {
         analyticsService.get().recordTaskAction(path) {
@@ -83,7 +88,18 @@ abstract class PreviewScreenshotValidationTask : Test() {
             setTestEngineParam("renderResultsFilePath", renderTaskOutputFile.get().asFile.absolutePath)
             setTestEngineParam("renderTaskOutputDir", renderTaskOutputDir.get().asFile.absolutePath)
             setTestEngineParam("resultsDirPath", resultsDir.get().asFile.absolutePath)
+            threshold.orNull?.let {
+                validateFloat(it)
+                setTestEngineParam("threshold", it)
+            }
             super.executeTests()
+        }
+    }
+
+    private fun validateFloat(value: String) {
+        val floatValue = value.toFloatOrNull()
+        if (floatValue == null || floatValue < 0 || floatValue > 1) {
+            throw GradleException("Invalid threshold provided. Please provide a float value between 0.0 and 1.0")
         }
     }
 }

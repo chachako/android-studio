@@ -40,7 +40,7 @@ class PreviewScreenshotTestEngine : TestEngine {
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
         val engineDescriptor = EngineDescriptor(uniqueId, "Preview Screenshot Test Engine")
-        val screenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")).reader())
+        val screenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")!!).reader())
         val testMap = mutableMapOf<String, MutableSet<String>>()
         for (screenshot in screenshots) {
             val methodName = screenshot.methodFQN.split(".").last()
@@ -68,9 +68,9 @@ class PreviewScreenshotTestEngine : TestEngine {
         val listener = request.engineExecutionListener
         val resultsToSave = mutableListOf<PreviewResult>()
         if (request.rootTestDescriptor.children.isEmpty()) return
-        val resultFile = File(getParam("renderResultsFilePath"))
+        val resultFile = File(getParam("renderResultsFilePath")!!)
         val screenshotResults = readComposeRenderingResultJson(resultFile.reader()).screenshotResults
-        val composeScreenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")).reader())
+        val composeScreenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")!!).reader())
         // Method descriptors are created as type CONTAINER_AND_TEST. For single method tests,
         // replace the method descriptor with one of type TEST.
         for (classDescriptor in request.rootTestDescriptor.children) {
@@ -81,7 +81,7 @@ class PreviewScreenshotTestEngine : TestEngine {
                 val methodName: String = methodDescriptor.methodName
                 val methodScreenshotResults = getScreenshotResultsForMethod(className, methodName, composeScreenshots, screenshotResults)
                 if (methodScreenshotResults.size == 1) {
-                    val previewName = composeScreenshots.single { it.methodFQN == "$className.$methodName" && methodScreenshotResults.first().imageName!!.contains(it.previewId) }.previewParams["name"]
+                    val previewName = composeScreenshots.single { it.methodFQN == "$className.$methodName" && methodScreenshotResults.first().imageName.contains(it.previewId) }.previewParams["name"]
                     val testMethodDescriptor = TestMethodTestDescriptor(methodDescriptor.uniqueId, methodName, className, previewName)
                     methodsToAdd.add(testMethodDescriptor)
                     methodsToRemove.add(methodDescriptor)
@@ -104,7 +104,7 @@ class PreviewScreenshotTestEngine : TestEngine {
                     val previewName: String? = methodDescriptor.previewName
                     val screenshots =
                         screenshotResults.filter {
-                            getpreviewIdWithoutSuffix(it.previewId, previewName) == "$className.${methodName}"
+                            getPreviewIdWithoutSuffix(it.previewId, previewName) == "$className.${methodName}"
                         }
                     var displayName = "$className.${methodName}"
                     if (!previewName.isNullOrEmpty()) { displayName += "_$previewName"}
@@ -115,8 +115,8 @@ class PreviewScreenshotTestEngine : TestEngine {
                     val methodName: String = methodDescriptor.methodName
                     val methodScreenshotResults = getScreenshotResultsForMethod(className, methodName, composeScreenshots, screenshotResults)
                     for ((run, screenshot) in methodScreenshotResults.withIndex()) {
-                        val currentComposePreview = composeScreenshots.single() {
-                            it.methodFQN == "$className.$methodName" && screenshot.imageName!!.contains(it.previewId)
+                        val currentComposePreview = composeScreenshots.single {
+                            it.methodFQN == "$className.$methodName" && screenshot.imageName.contains(it.previewId)
                         }
                         var suffix = ""
                         if (currentComposePreview.previewParams.containsKey("name")) {
@@ -153,13 +153,18 @@ class PreviewScreenshotTestEngine : TestEngine {
 
     private fun compareImages(composeScreenshot: ComposeScreenshotResult, testDisplayName: String, startTime: Long): PreviewResult {
         // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
-        val imageDiffer = ImageDiffer.MSSIMMatcher()
-        var referencePath = File(getParam("referenceImageDirPath")).toPath().resolve(composeScreenshot.imageName)
+        var referencePath = File(getParam("referenceImageDirPath")!!).toPath().resolve(composeScreenshot.imageName)
         var referenceMessage: String? = null
         val actualPath = File(getParam("renderTaskOutputDir"), composeScreenshot.imageName).toPath()
-        var diffPath = File(getParam("diffImageDirPath")).toPath().resolve(composeScreenshot.imageName)
+        var diffPath = File(getParam("diffImageDirPath")!!).toPath().resolve(composeScreenshot.imageName)
         var diffMessage: String? = null
         var code = 0
+        val threshold = getParam("threshold")?.toFloat()
+        val imageDiffer = if (threshold != null) {
+            ImageDiffer.MSSIMMatcher(threshold)
+        } else {
+            ImageDiffer.MSSIMMatcher()
+        }
         val verifier = Verify(imageDiffer, diffPath)
 
         //If the CLI tool could not render the preview, return the preview result with the
@@ -216,7 +221,7 @@ class PreviewScreenshotTestEngine : TestEngine {
         )
     }
 
-    private fun getParam(key: String): String {
+    private fun getParam(key: String): String? {
         return System.getProperty("com.android.tools.preview.screenshot.junit.engine.${key}")
     }
 
@@ -235,7 +240,7 @@ class PreviewScreenshotTestEngine : TestEngine {
         return imageComparison
     }
 
-    private fun getpreviewIdWithoutSuffix(previewId: String, previewName: String?): String {
+    private fun getPreviewIdWithoutSuffix(previewId: String, previewName: String?): String {
         val previewIdWithoutHash = previewId.substringBeforeLast('_').substringBeforeLast('_')
         return if (previewName.isNullOrEmpty()) previewIdWithoutHash else previewIdWithoutHash.removeSuffix("_${previewName}")
     }
@@ -261,7 +266,7 @@ class PreviewScreenshotTestEngine : TestEngine {
                 ""
             }}.distinct()
         matchingComposeScreenshotPreviewNames.forEach {previewName ->
-            screenshotResults.addAll(allScreenshotResults.filter { getpreviewIdWithoutSuffix(it.previewId, previewName) == "$className.${methodName}" })
+            screenshotResults.addAll(allScreenshotResults.filter { getPreviewIdWithoutSuffix(it.previewId, previewName) == "$className.${methodName}" })
         }
         return screenshotResults.toList()
     }
