@@ -17,9 +17,9 @@
 package com.android.build.gradle.integration.application
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
-import com.android.build.gradle.integration.common.fixture.SUPPORT_LIB_VERSION
 import com.android.build.gradle.integration.common.truth.GradleTaskSubject.assertThat
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalArtifactType.MERGED_RES
 import com.android.build.gradle.internal.scope.getOutputDir
 import com.android.build.gradle.options.BooleanOption
@@ -132,16 +132,7 @@ class MergeResourcesTest {
         /*
          * Now, modify the library's and check that nothing changed.
          */
-        val apUnderscore = FileUtils.join(
-            project.getSubproject("app").projectDir,
-            "build",
-            "intermediates",
-            "processed_res",
-            "debug",
-            "processDebugResources",
-            "out",
-            "resources-debug.ap_"
-        )
+        val apUnderscore = project.getSubproject("app").getLinkedResourcesFile()
 
         assertThat(apUnderscore).exists()
 
@@ -177,16 +168,7 @@ class MergeResourcesTest {
                 "debug/mergeDebugResources/raw_me.raw.flat")
         assertThat(inIntermediate).exists()
 
-        val apUnderscore = FileUtils.join(
-            project.getSubproject("app").projectDir,
-            "build",
-            "intermediates",
-            "processed_res",
-            "debug",
-            "processDebugResources",
-            "out",
-            "resources-debug.ap_"
-        )
+        val apUnderscore = project.getSubproject("app").getLinkedResourcesFile()
 
         assertThat(apUnderscore).exists()
         assertThat(apUnderscore) {
@@ -227,16 +209,7 @@ class MergeResourcesTest {
                 "debug/mergeDebugResources/raw_me.raw.flat")
         assertThat(inIntermediate).exists()
 
-        val apUnderscore = FileUtils.join(
-            project.getSubproject("app").projectDir,
-            "build",
-            "intermediates",
-            "processed_res",
-            "debug",
-            "processDebugResources",
-            "out",
-            "resources-debug.ap_"
-        )
+        val apUnderscore = project.getSubproject("app").getLinkedResourcesFile()
 
         assertThat(apUnderscore) {
             it.exists()
@@ -326,16 +299,7 @@ class MergeResourcesTest {
                 "debug/mergeDebugResources/raw_me.raw.flat")
         assertThat(inIntermediate).exists()
 
-        val apUnderscore = FileUtils.join(
-            project.getSubproject("app").projectDir,
-            "build",
-            "intermediates",
-            "processed_res",
-            "debug",
-            "processDebugResources",
-            "out",
-            "resources-debug.ap_"
-        )
+        val apUnderscore = project.getSubproject("app").getLinkedResourcesFile()
 
         assertThat(apUnderscore).exists()
         assertThat(apUnderscore) {
@@ -551,5 +515,9 @@ class MergeResourcesTest {
 
         project.execute(":app:mergeReleaseResources")
     }
+
+    private fun GradleTestProject.getLinkedResourcesFile(): File =
+        InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT.getOutputDir(buildDir)
+            .resolve("debug/processDebugResources/linked-resources-binary-format-debug.ap_")
 }
 

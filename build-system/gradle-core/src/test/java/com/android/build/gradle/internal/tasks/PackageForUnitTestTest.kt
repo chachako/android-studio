@@ -184,7 +184,7 @@ class PackageForDslDefinedHostTestTest {
     )
 
     private fun createBuiltArtifacts(artifacts: Collection<BuiltArtifactImpl>) = BuiltArtifactsImpl(
-        artifactType = InternalArtifactType.PROCESSED_RES,
+        artifactType = InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT,
         applicationId = "com.app.example",
         variantName = "debug",
         elements = artifacts)

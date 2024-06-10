@@ -65,7 +65,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType.FEATURE_RESO
 import com.android.build.gradle.internal.scope.InternalArtifactType.JAVAC
 import com.android.build.gradle.internal.scope.InternalArtifactType.MERGED_RES
 import com.android.build.gradle.internal.scope.InternalArtifactType.PACKAGED_RES
-import com.android.build.gradle.internal.scope.InternalArtifactType.PROCESSED_RES
+import com.android.build.gradle.internal.scope.InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT
 import com.android.build.gradle.internal.scope.InternalArtifactType.RUNTIME_R_CLASS_CLASSES
 import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
 import com.android.build.gradle.internal.scope.Java8LangSupport
@@ -740,7 +740,7 @@ abstract class TaskManager(
                         )
                 )
                 if (packageOutputType != null) {
-                    creationConfig.artifacts.republish(PROCESSED_RES, packageOutputType)
+                    creationConfig.artifacts.republish(LINKED_RESOURCES_BINARY_FORMAT, packageOutputType)
                 }
 
                 // TODO: also support stable IDs for the bundle (does it matter?)

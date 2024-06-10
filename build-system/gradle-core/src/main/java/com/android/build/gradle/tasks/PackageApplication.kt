@@ -130,7 +130,7 @@ abstract class PackageApplication : PackageAndroidArtifact() {
                 )
 
                 else -> operationRequest.toTransformMany(
-                    InternalArtifactType.PROCESSED_RES,
+                    InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT,
                     SingleArtifact.APK,
                     outputDirectory.absolutePath,
                     ::customizeBuiltArtifacts

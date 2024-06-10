@@ -159,7 +159,7 @@ abstract class ProcessAndroidAppResourcesTask : NonIncrementalTask() {
             creationConfig.artifacts.setInitialProvider(
                 taskProvider,
                 ProcessAndroidAppResourcesTask::resourceApUnderscoreDirectory
-            ).withName("out").on(InternalArtifactType.PROCESSED_RES)
+            ).on(InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT)
         }
 
         override fun configure(

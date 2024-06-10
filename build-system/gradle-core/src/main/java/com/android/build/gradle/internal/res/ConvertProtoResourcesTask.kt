@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.res
 
+import com.android.SdkConstants
 import com.android.build.api.artifact.ArtifactTransformationRequest
 import com.android.build.api.variant.BuiltArtifact
 import com.android.build.api.variant.MultiOutputHandler
@@ -85,7 +86,7 @@ abstract class ConvertProtoResourcesTask : NonIncrementalTask() {
                     outputDir.asFile,
                     multiOutputHandler.get().getOutputNameForSplit(
                         prefix = "shrunk-resources",
-                        suffix = "binary-format.ap_",
+                        suffix = "binary-format${SdkConstants.DOT_RES}",
                         outputType = builtArtifact.outputType,
                         filters = builtArtifact.filters
                     )

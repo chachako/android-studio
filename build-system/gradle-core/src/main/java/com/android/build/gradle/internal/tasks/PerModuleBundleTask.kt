@@ -332,7 +332,7 @@ abstract class PerModuleBundleTask: NonIncrementalTask() {
                 creationConfig.artifacts.get(SingleArtifact.ASSETS)
             )
 
-            task.resFiles.set(artifacts.get(InternalArtifactType.LINKED_RES_FOR_BUNDLE))
+            task.resFiles.set(artifacts.get(InternalArtifactType.LINKED_RESOURCES_FOR_BUNDLE_PROTO_FORMAT))
             task.resFiles.disallowChanges()
 
             task.dexFiles.from(

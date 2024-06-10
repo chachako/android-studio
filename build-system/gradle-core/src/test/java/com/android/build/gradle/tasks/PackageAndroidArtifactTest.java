@@ -30,8 +30,15 @@ import com.android.builder.files.IncrementalRelativeFileSets;
 import com.android.builder.files.RelativeFile;
 import com.android.ide.common.resources.FileStatus;
 import com.android.tools.build.apkzlib.zip.compress.Zip64NotSupportedException;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,10 +47,6 @@ import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link PackageAndroidArtifact} */
 public class PackageAndroidArtifactTest {
@@ -155,7 +158,7 @@ public class PackageAndroidArtifactTest {
         PackageAndroidArtifact.checkFileNameUniqueness(
                 new BuiltArtifactsImpl(
                         BuiltArtifacts.METADATA_FILE_VERSION,
-                        InternalArtifactType.PROCESSED_RES.INSTANCE,
+                        InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT.INSTANCE,
                         "com.app.example",
                         "debug",
                         outputFiles));
@@ -192,15 +195,16 @@ public class PackageAndroidArtifactTest {
             PackageAndroidArtifact.checkFileNameUniqueness(
                     new BuiltArtifactsImpl(
                             BuiltArtifacts.METADATA_FILE_VERSION,
-                            InternalArtifactType.PROCESSED_RES.INSTANCE,
+                            InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT.INSTANCE,
                             "com.app.example",
                             "debug",
                             outputFiles));
         } catch (Exception e) {
             assertThat(e.getMessage())
                     .contains(
-                            "\"file.out\", filters : FilterConfiguration(filterType=LANGUAGE, "
-                                    + "identifier=fr):FilterConfiguration(filterType=LANGUAGE, identifier=en)");
+                            "\"file.out\", filters : "
+                                    + "FilterConfiguration(filterType=LANGUAGE, identifier=fr):"
+                                    + "FilterConfiguration(filterType=LANGUAGE, identifier=en)");
         }
     }
 

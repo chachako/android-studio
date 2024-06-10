@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.transforms
 
+import com.android.SdkConstants
 import com.android.build.api.artifact.ArtifactTransformationRequest
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.variant.BuiltArtifact
@@ -48,7 +49,6 @@ import com.android.builder.internal.aapt.AaptConvertConfig
 import com.android.build.gradle.tasks.PackageAndroidArtifact
 import com.android.buildanalyzer.common.TaskCategory
 import com.android.utils.FileUtils
-import com.google.common.io.Files
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
@@ -133,7 +133,7 @@ abstract class ShrinkResourcesNewShrinkerTask : NonIncrementalTask() {
                     directory.asFile,
                     outputsHandler.get().getOutputNameForSplit(
                         prefix = "shrunk-resources",
-                        suffix = "proto-format.ap_",
+                        suffix = "proto-format${SdkConstants.DOT_RES}",
                         outputType = builtArtifact.outputType,
                         filters = builtArtifact.filters
                     )
@@ -192,7 +192,7 @@ abstract class ShrinkResourcesNewShrinkerTask : NonIncrementalTask() {
                     ShrinkResourcesNewShrinkerTask::shrunkResources
                 )
                 .toTransformMany(
-                    InternalArtifactType.PROCESSED_RES,
+                    InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT,
                     InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT
                 )
         }
@@ -222,7 +222,7 @@ abstract class ShrinkResourcesNewShrinkerTask : NonIncrementalTask() {
                 (creationConfig.outputs.variantOutputs.size == 1 &&
                         creationConfig.outputs.variantOutputs.all { it.filters.isEmpty() })) {
                 creationConfig.artifacts.setTaskInputToFinalProduct(
-                    InternalArtifactType.LINKED_RES_FOR_BUNDLE,
+                    InternalArtifactType.LINKED_RESOURCES_FOR_BUNDLE_PROTO_FORMAT,
                     task.originalResourcesForBundle
                 )
             }

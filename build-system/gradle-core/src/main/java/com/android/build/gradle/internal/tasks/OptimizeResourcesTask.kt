@@ -58,7 +58,8 @@ import javax.inject.Inject
  * OptimizeResourceTask attempts to use AAPT2's optimize sub-operation to reduce the size of the
  * final apk. There are a number of potential optimizations performed such as resource obfuscation,
  * path shortening and sparse encoding. If the optimized apk file size is less than before, then
- * the optimized resources content is made identical to [InternalArtifactType.PROCESSED_RES].
+ * the optimized resources content is made identical to
+ * [InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT].
  */
 @CacheableTask
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.OPTIMIZATION, secondaryTaskCategories = [TaskCategory.ANDROID_RESOURCES])
@@ -146,7 +147,7 @@ abstract class OptimizeResourcesTask : NonIncrementalTask() {
                     InternalArtifactType.OPTIMIZED_PROCESSED_RES)
             } else {
                 operationRequest.toTransformMany(
-                        InternalArtifactType.PROCESSED_RES,
+                        InternalArtifactType.LINKED_RESOURCES_BINARY_FORMAT,
                         InternalArtifactType.OPTIMIZED_PROCESSED_RES)
             }
         }
