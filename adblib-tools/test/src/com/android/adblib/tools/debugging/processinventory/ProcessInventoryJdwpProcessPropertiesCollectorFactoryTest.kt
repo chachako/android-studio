@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.job
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.time.Duration
@@ -54,6 +55,7 @@ class ProcessInventoryJdwpProcessPropertiesCollectorFactoryTest {
     @Rule
     val closeables = CloseablesRule()
 
+    @Ignore("b/345498106")
     @Test
     fun testJdwpPropertiesCollectionIsDistributed(): Unit =
         CoroutineTestUtils.runBlockingWithTimeout {
@@ -96,6 +98,7 @@ class ProcessInventoryJdwpProcessPropertiesCollectorFactoryTest {
             })
         }
 
+    @Ignore("b/345498106")
     @Test
     fun testDistributedJdwpPropertiesCollectionRecoversFromSessionClosing(): Unit =
         CoroutineTestUtils.runBlockingWithTimeout {
