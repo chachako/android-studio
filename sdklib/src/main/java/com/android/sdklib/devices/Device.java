@@ -22,10 +22,13 @@ import com.android.dvlib.DeviceSchema;
 import com.android.resources.ScreenOrientation;
 import com.android.resources.ScreenRound;
 import com.android.sdklib.SystemImageTags;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -69,12 +72,10 @@ public final class Device {
     private final boolean mHasPlayStore;
 
     /** A list of software capabilities, one for each API level range */
-    @NonNull
-    private final List<Software> mSoftware;
+    @NonNull private final ImmutableList<Software> mSoftware;
 
     /** A list of phone states (landscape, portrait with keyboard out, etc.) */
-    @NonNull
-    private final List<State> mState;
+    @NonNull private final ImmutableList<State> mState;
 
     /** Meta information such as icon files and device frames */
     @NonNull
@@ -85,15 +86,13 @@ public final class Device {
     private final State mDefaultState;
 
     /** Optional tag-id of the device. */
-    @Nullable
-    private String mTagId;
+    @Nullable private final String mTagId;
 
     /** Optional boot.props of the device. */
-    @NonNull
-    private Map<String, String> mBootProps;
+    @NonNull private final ImmutableMap<String, String> mBootProps;
 
     /** If the device should be hidden during AVD creation */
-    private boolean mIsDeprecated;
+    private final boolean mIsDeprecated;
 
     /**
      * Returns the name of the {@link Device}. This is intended to be displayed by the user and
@@ -321,10 +320,6 @@ public final class Device {
         return getDefaultHardware().getScreen().getChin();
     }
 
-    public void setIsDeprecated(boolean isDeprecated) {
-        this.mIsDeprecated = isDeprecated;
-    }
-
     /**
      * Returns true if this device should be hidden during AVD creation.
      * @return true if this device should be hidden during AVD creation.
@@ -349,7 +344,7 @@ public final class Device {
         public Builder() { }
 
         public Builder(Device d) {
-            mTagId = null;
+            mTagId = d.getTagId();
             mName = d.getDisplayName();
             mId = d.getId();
             mManufacturer = d.getManufacturer();
@@ -439,7 +434,7 @@ public final class Device {
             mMeta = meta;
         }
 
-        void setDeprecated(boolean deprecated) {
+        public void setDeprecated(boolean deprecated) {
             mDeprecated = deprecated;
         }
 
@@ -504,12 +499,12 @@ public final class Device {
         mId = b.mId;
         mManufacturer = b.mManufacturer;
         mHasPlayStore = b.mHasPlayStore;
-        mSoftware = Collections.unmodifiableList(b.mSoftware);
-        mState = Collections.unmodifiableList(b.mState);
+        mSoftware = ImmutableList.copyOf(b.mSoftware);
+        mState = ImmutableList.copyOf(b.mState);
         mMeta = b.mMeta;
         mDefaultState = b.mDefaultState;
         mTagId = b.mTagId;
-        mBootProps = Collections.unmodifiableMap(b.mBootProps);
+        mBootProps = ImmutableMap.copyOf(b.mBootProps);
         mIsDeprecated = b.mDeprecated;
     }
 

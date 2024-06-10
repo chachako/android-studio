@@ -65,6 +65,7 @@ import com.android.sdklib.repository.LoggerProgressIndicatorWrapper;
 import com.android.sdklib.repository.PkgProps;
 import com.android.sdklib.repository.meta.DetailsTypes;
 import com.android.utils.ILogger;
+
 import com.google.common.base.Charsets;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
@@ -72,6 +73,9 @@ import com.google.common.collect.Table;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
+
+import org.xml.sax.SAXException;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -92,10 +96,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-import org.xml.sax.SAXException;
 
 /**
  * Manager class for interacting with {@link Device}s within the SDK
@@ -107,6 +111,7 @@ public class DeviceManager {
     @Nullable private final Path mAndroidFolder;
     private final ILogger mLog;
     private final VendorDevices mVendorDevices;
+    // These are keyed by (device ID, manufacturer)
     private Table<String, String, Device> mSdkVendorDevices;
     private Table<String, String, Device> mSysImgDevices;
     private Table<String, String, Device> mUserDevices;
@@ -371,20 +376,23 @@ public class DeviceManager {
                                 Path deviceXml =
                                         pkg.getLocation().resolve(SdkConstants.FN_DEVICES_XML);
                                 if (CancellableFileIo.isRegularFile(deviceXml)) {
-                                    mSysImgDevices.putAll(loadDevices(deviceXml));
+                                    for (Device device : loadDevices(deviceXml).values()) {
+                                        if (isDeprecatedWearSkin(device)) {
+                                            Device.Builder builder = new Device.Builder(device);
+                                            builder.setDeprecated(true);
+                                            device = builder.build();
+                                        }
+                                        mSysImgDevices.put(
+                                                device.getId(), device.getManufacturer(), device);
+                                    }
                                 }
                             });
-            markDeprecatedWearSkins();
             return true;
         }
     }
 
-    private void markDeprecatedWearSkins() {
-        mSysImgDevices.values().forEach(device -> {
-            if ("android-wear".equals(device.getTagId())) {
-                device.setIsDeprecated(!device.getId().startsWith("wearos"));
-            }
-        });
+    private static boolean isDeprecatedWearSkin(Device device) {
+        return "android-wear".equals(device.getTagId()) && !device.getId().startsWith("wearos");
     }
 
     /**
@@ -677,7 +685,8 @@ public class DeviceManager {
         if (d.getId().equals("resizable")) {
             props.put(
                     AVD_INI_RESIZABLE_CONFIG,
-                    "phone-0-1080-2400-420, foldable-1-2208-1840-420, tablet-2-1920-1200-240, desktop-3-1920-1080-160");
+                    "phone-0-1080-2400-420, foldable-1-2208-1840-420, tablet-2-1920-1200-240,"
+                            + " desktop-3-1920-1080-160");
         }
         // TODO: Remove hard coded config when the runtime configuration is available (b/337978287,
         // b/337980217)
