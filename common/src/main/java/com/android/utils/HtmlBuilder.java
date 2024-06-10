@@ -17,6 +17,7 @@ package com.android.utils;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+
 import java.awt.Color;
 import java.net.URL;
 
@@ -367,14 +368,22 @@ public class HtmlBuilder {
         return this;
     }
 
-    public HtmlBuilder beginTable(@Nullable String tdExtra) {
-        mStringBuilder.append("<table>");
+    public HtmlBuilder beginTable(@Nullable String tdExtra, @Nullable String style) {
+        mStringBuilder.append("<table");
+        if (style != null) {
+            mStringBuilder.append(" style=\"").append(style).append("\"");
+        }
+        mStringBuilder.append(">");
         mTableDataExtra = tdExtra;
         return this;
     }
 
+    public HtmlBuilder beginTable(@Nullable String tdExtra) {
+        return beginTable(tdExtra, null);
+    }
+
     public HtmlBuilder beginTable() {
-        return beginTable(null);
+        return beginTable(null, null);
     }
 
     public HtmlBuilder endTable() {

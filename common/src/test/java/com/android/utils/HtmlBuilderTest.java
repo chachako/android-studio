@@ -15,10 +15,11 @@
  */
 package com.android.utils;
 
+import junit.framework.TestCase;
+
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
-import junit.framework.TestCase;
 
 public class HtmlBuilderTest extends TestCase {
 
@@ -93,8 +94,8 @@ public class HtmlBuilderTest extends TestCase {
           .addTableRow("Data1", "Data2")
           .endTable();
         assertEquals(
-          "<table><tr><th>Header1</th><th>Header2</th></tr><tr><td>Data1</td><td>Data2</td></tr></table>",
-          builder.getHtml());
+                "<table><tr><th>Header1</th><th>Header2</th></tr><tr><td>Data1</td><td>Data2</td></tr></table>",
+                builder.getHtml());
     }
 
     public void testAddTableWithAlignment() {
@@ -192,5 +193,44 @@ public class HtmlBuilderTest extends TestCase {
         assertEquals(
           "<font style=\"font-weight:bold; color:black;\">Welcome to Android Studio!</font>",
           builder.getHtml());
+    }
+
+    public void testTable() {
+        {
+            HtmlBuilder builder = new HtmlBuilder();
+            builder.beginTable()
+                    .addTableRow("Header1", "Header2")
+                    .addTableRow("Data1", "Data2")
+                    .endTable();
+            assertEquals(
+                    "<table><tr><td>Header1</td><td>Header2</td></tr><tr><td>Data1</td><td>Data2</td></tr></table>",
+                    builder.getHtml());
+        }
+
+        {
+            HtmlBuilder builder = new HtmlBuilder();
+            builder.beginTable("align=\"vtop\"")
+                    .addTableRow("Header1", "Header2")
+                    .addTableRow("Data1", "Data2")
+                    .endTable();
+            assertEquals(
+                    "<table><tr><td align=\"vtop\">Header1</td><td"
+                        + " align=\"vtop\">Header2</td></tr><tr><td align=\"vtop\">Data1</td><td"
+                        + " align=\"vtop\">Data2</td></tr></table>",
+                    builder.getHtml());
+        }
+
+        {
+            HtmlBuilder builder = new HtmlBuilder();
+            builder.beginTable("align=\"vtop\"", "white-space: nowrap;")
+                    .addTableRow("Header1", "Header2")
+                    .addTableRow("Data1", "Data2")
+                    .endTable();
+            assertEquals(
+                    "<table style=\"white-space: nowrap;\"><tr><td align=\"vtop\">Header1</td><td"
+                        + " align=\"vtop\">Header2</td></tr><tr><td align=\"vtop\">Data1</td><td"
+                        + " align=\"vtop\">Data2</td></tr></table>",
+                    builder.getHtml());
+        }
     }
 }
