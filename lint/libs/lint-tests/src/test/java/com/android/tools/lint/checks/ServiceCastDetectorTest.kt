@@ -342,6 +342,36 @@ class ServiceCastDetectorTest : AbstractCheckTest() {
       )
   }
 
+  fun testAndroid14() {
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import android.content.Context
+            import android.health.connect.HealthConnectManager
+            import android.os.health.SystemHealthManager
+
+            fun test(context: Context) {
+                context.getSystemService(Context.SYSTEM_HEALTH_SERVICE) as HealthConnectManager // ERROR
+                context.getSystemService(Context.SYSTEM_HEALTH_SERVICE) as SystemHealthManager // OK
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/test.kt:8: Error: Suspicious cast to HealthConnectManager for a SYSTEM_HEALTH_SERVICE: expected SystemHealthManager [ServiceCast]
+            context.getSystemService(Context.SYSTEM_HEALTH_SERVICE) as HealthConnectManager // ERROR
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        1 errors, 0 warnings
+        """
+      )
+  }
+
   fun testLookup() {
     assertEquals(
       "android.view.accessibility.AccessibilityManager",

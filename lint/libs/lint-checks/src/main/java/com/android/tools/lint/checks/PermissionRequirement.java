@@ -744,6 +744,7 @@ public abstract class PermissionRequirement {
                 "android.permission.READ_MEDIA_AUDIO",
                 "android.permission.READ_MEDIA_IMAGES",
                 "android.permission.READ_MEDIA_VIDEO",
+                "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
                 "android.permission.READ_PHONE_NUMBERS",
                 "android.permission.READ_PHONE_STATE",
                 "android.permission.READ_SMS",

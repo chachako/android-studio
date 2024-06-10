@@ -289,7 +289,10 @@ public class SystemPermissionsDetectorTest extends AbstractCheckTest {
                         + "AndroidManifest.xml:100: Error: Permission is only granted to system apps [ProtectedPermissions]\n"
                         + "    <uses-permission android:name=\"android.permission.WRITE_SECURE_SETTINGS\" />\n"
                         + "                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-                        + "86 errors, 0 warnings\n";
+                        + "AndroidManifest.xml:101: Error: Permission is only granted to system apps [ProtectedPermissions]\n"
+                        + "    <uses-permission android:name=\"android.permission.BIND_CALL_STREAMING_SERVICE\" />\n"
+                        + "                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+                        + "87 errors, 0 warnings\n";
         lint().files(
                         xml(
                                 "AndroidManifest.xml",
@@ -394,6 +397,7 @@ public class SystemPermissionsDetectorTest extends AbstractCheckTest {
                                         + "    <uses-permission android:name=\"android.permission.WRITE_GSERVICES\" />\n"
                                         + "    <uses-permission android:name=\"android.permission.WRITE_MEDIA_STORAGE\" />\n"
                                         + "    <uses-permission android:name=\"android.permission.WRITE_SECURE_SETTINGS\" />\n"
+                                        + "    <uses-permission android:name=\"android.permission.BIND_CALL_STREAMING_SERVICE\" />\n"
                                         + "\n"
                                         + "    <application\n"
                                         + "        android:icon=\"@drawable/ic_launcher\"\n"
