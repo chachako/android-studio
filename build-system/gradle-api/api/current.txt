@@ -336,7 +336,7 @@ package com.android.build.api.dsl {
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getResources();
     method public String getRuntimeOnlyConfigurationName();
     method public com.android.build.api.dsl.AndroidSourceDirectorySet getShaders();
-    method public String getWearAppConfigurationName();
+    method @Deprecated public String getWearAppConfigurationName();
     method public void java(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     method @Deprecated @org.gradle.api.Incubating public void jni(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
     method public void jniLibs(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AndroidSourceDirectorySet,kotlin.Unit> action);
@@ -367,7 +367,7 @@ package com.android.build.api.dsl {
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet resources;
     property public abstract String runtimeOnlyConfigurationName;
     property public abstract com.android.build.api.dsl.AndroidSourceDirectorySet shaders;
-    property public abstract String wearAppConfigurationName;
+    property @Deprecated public abstract String wearAppConfigurationName;
   }
 
   @org.gradle.api.Incubating public interface AndroidTest {

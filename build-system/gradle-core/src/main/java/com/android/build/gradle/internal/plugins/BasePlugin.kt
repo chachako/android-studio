@@ -797,6 +797,9 @@ To learn more, go to https://d.android.com/r/tools/java-8-support-message.html
         // Make sure no SourceSets were added through the DSL without being properly configured
         variantInputModel.sourceSetManager.checkForUnconfiguredSourceSets()
 
+        // Check for usage of deprecated configuration - wearApp
+        variantInputModel.sourceSetManager.checkForWearAppConfigurationUsage()
+
         // configure compose related tasks.
         taskManager.createPostApiTasks()
 

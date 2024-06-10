@@ -3,6 +3,8 @@ Deprecated Android Gradle Plugin API.
 ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 are announced on go/as-release-notes.
 -------------------------------------------------------------------------
+Deprecated from AGP 8.6.0
+  * com.android.build.api.dsl.AndroidSourceSet.getWearAppConfigurationName: java.lang.String ()
 Deprecated from AGP 8.5.0
   * com.android.build.api.dsl.Ndk.getCFlags: java.lang.String ()
   * com.android.build.api.dsl.Ndk.getJobs: java.lang.Integer ()
