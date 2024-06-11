@@ -36,7 +36,6 @@ import com.android.tools.build.gradle.internal.profile.GradleTaskExecutionType
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.GradleBuildProfileSpan.ExecutionType
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -471,7 +470,6 @@ class ScreenshotTest {
     }
 
     @Test
-    @Ignore("b/340362066")
     fun runUpdateScreenshotTestWithMultiModuleProjectBySingleWorker() {
         // Set the max workers to 1 to let Gradle reuse the same worker daemon process for
         // running PreviewRenderWorkAction more than once. See b/340362066 for more details.
