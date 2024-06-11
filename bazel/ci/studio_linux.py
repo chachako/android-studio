@@ -134,6 +134,14 @@ def studio_linux(build_env: bazel.BuildEnv):
     (dist_path / 'artifacts').mkdir(parents=True, exist_ok=True)
     studio.copy_artifacts(build_env, _ARTIFACTS)
 
+    # TODO(b/342237310): Write owners zip.
+
+    # TODO(b/342237310): Return if --very-flaky is specified.
+    if test_result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
+      return
+
+  raise studio.BazelTestError(exit_code=test_result.exit_code)
+
 
 def copy_worker_logs(build_env: bazel.BuildEnv) -> None:
   """Copies worker logs into output."""

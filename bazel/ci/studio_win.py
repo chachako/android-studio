@@ -46,4 +46,12 @@ def studio_win(build_env: bazel.BuildEnv):
       ],
   )
 
-  # TODO(b/342237310): Build Windows installer.
+  # TODO(b/342237310): Build Windows launcher.
+
+  if test_result.exit_code in {
+      bazel.EXITCODE_SUCCESS,
+      bazel.EXITCODE_TEST_FAILURES,
+  }:
+    return
+
+  raise studio.BazelTestError(test_result.exit_code)

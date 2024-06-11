@@ -8,6 +8,17 @@ from typing import Iterable, Sequence, Tuple
 import uuid
 
 from tools.base.bazel.ci import bazel
+from tools.base.bazel.ci import errors
+
+
+@dataclasses.dataclass(frozen=True,kw_only=True)
+class BazelTestError(errors.CIError):
+  """Represents an error originating from the bazel test."""
+
+  exit_code: int
+
+  def __str__(self) -> str:
+    return f'Bazel test exited with code {self.exit_code}'
 
 
 class BuildType(enum.Enum):

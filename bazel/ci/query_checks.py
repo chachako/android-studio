@@ -1,22 +1,25 @@
 """Implements checks on the build graph using 'bazel query'."""
-import bazel
 
-class BuildGraphException(BaseException):
+import dataclasses
+
+from tools.base.bazel.ci import bazel
+from tools.base.bazel.ci import errors
+
+
+@dataclasses.dataclass(frozen=True,kw_only=True)
+class BuildGraphException(errors.CIError):
   """Represents a build graph exception."""
   title: str
   go_link: str
   body: str
-
-  def __init__(self, title: str, go_link: str, body: str):
-    self.title = title
-    self.go_link = go_link
-    self.body = body
+  exit_code: int = 1
 
   def __str__(self) -> str:
     return f"""#############################
 # {self.title} - {self.go_link}
 {self.body}
 """
+
 
 def no_local_genrules(build_env: bazel.BuildEnv):
   """Verify targets are not using local=True.

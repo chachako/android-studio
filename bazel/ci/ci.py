@@ -9,6 +9,7 @@ import sys
 from typing import Callable, List
 
 from tools.base.bazel.ci import bazel
+from tools.base.bazel.ci import errors
 from tools.base.bazel.ci import query_checks
 from tools.base.bazel.ci import studio_linux
 from tools.base.bazel.ci import studio_win
@@ -31,20 +32,24 @@ class CI:
     """Runs callables that might raise exceptions."""
     try:
       func(self.build_env)
-    except query_checks.BuildGraphException as e:
+    except errors.CIError as e:
       self.exceptions.append(e)
     except subprocess.CalledProcessError as e:
       msg = f'#### internal subprocess error\n{e}\n{e.stderr.decode("utf8")}'
       self.exceptions.append(RuntimeError(msg))
 
-  def has_errors(self) -> int:
+  def has_errors(self) -> bool:
     """Returns true if there were exceptions."""
-    return 1 if self.exceptions else 0
+    return bool(self.exceptions)
 
   def print_errors(self):
     """Write CI exceptions to stderr."""
     for err in self.exceptions:
       print(err, file=sys.stderr)
+
+  def exit_code(self):
+    """Returns the exit code of the last known exception, otherwise 0."""
+    return self.exceptions[-1].exit_code if self.exceptions else 0
 
 
 def find_workspace() -> str:
@@ -76,7 +81,11 @@ def studio_build_checks(ci: CI):
 
 
 def main():
-  """Runs the CI target command."""
+  """Runs the CI target command.
+
+  If any commands raise a CIError, this exits with the exit code of the last
+  exception raised.
+  """
   parser = argparse.ArgumentParser()
   parser.add_argument("target", help="The name of the CI target")
   args = parser.parse_args()
@@ -98,7 +107,7 @@ def main():
 
   if ci.has_errors():
     ci.print_errors()
-    sys.exit(1)
+    sys.exit(ci.exit_code())
 
 
 if __name__ == "__main__":
