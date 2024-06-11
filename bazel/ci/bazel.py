@@ -4,6 +4,11 @@ import subprocess
 import os
 
 
+EXITCODE_SUCCESS = 0
+EXITCODE_TEST_FAILURES = 3
+EXITCODE_NO_TESTS_FOUND = 4
+
+
 class BuildEnv:
   """Represents the build environment."""
   build_number: str

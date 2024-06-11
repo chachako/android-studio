@@ -10,7 +10,8 @@ from typing import Callable, List
 
 from tools.base.bazel.ci import bazel
 from tools.base.bazel.ci import query_checks
-from tools.base.bazel.ci import studio
+from tools.base.bazel.ci import studio_linux
+from tools.base.bazel.ci import studio_win
 
 
 class CI:
@@ -74,14 +75,6 @@ def studio_build_checks(ci: CI):
   ci.run(validate_coverage_graph)
 
 
-def studio_linux(ci: CI):
-  ci.run(studio.studio_linux)
-
-
-def studio_win(ci: CI):
-  ci.run(studio.studio_win)
-
-
 def main():
   """Runs the CI target command."""
   parser = argparse.ArgumentParser()
@@ -97,9 +90,9 @@ def main():
     case "studio-build-checks":
       studio_build_checks(ci)
     case "studio-linux":
-      studio_linux(ci)
+      ci.run(studio_linux.studio_linux)
     case "studio-win":
-      studio_win(ci)
+      ci.run(studio_win.studio_win)
     case _:
       raise NotImplementedError(f'target: "{args.target}" does not exist')
 
