@@ -21,17 +21,27 @@ import com.android.tools.lint.detector.api.Issue
 
 class ComposeDesktopIssueRegistry : IssueRegistry() {
 
-    override val api: Int = com.android.tools.lint.detector.api.CURRENT_API
+  override val api: Int = com.android.tools.lint.detector.api.CURRENT_API
 
-    override val issues: List<Issue> = (androidx.compose.runtime.lint.RuntimeIssueRegistry().issues
-            + androidx.compose.animation.core.lint.AnimationCoreIssueRegistry().issues
-            + androidx.compose.animation.lint.AnimationIssueRegistry().issues
-            + androidx.compose.foundation.lint.FoundationIssueRegistry().issues
-            + androidx.compose.material.lint.MaterialIssueRegistry().issues
-            + androidx.compose.material3.lint.Material3IssueRegistry().issues
-            + androidx.compose.runtime.saveable.lint.RuntimeSaveableIssueRegistry().issues
-            + androidx.compose.ui.graphics.lint.UiGraphicsIssueRegistry().issues
-            + androidx.compose.ui.lint.UiIssueRegistry().issues
-            + androidx.compose.ui.test.manifest.lint.TestManifestIssueRegistry().issues
-            ).filter { !it.isAndroidSpecific() }
+  private val isK2: Boolean = System.getProperty("lint.use.fir.uast", "false").toBoolean()
+
+  override val issues: List<Issue> =
+    buildList {
+        // TODO(b/346573590): re-enable for K2 when checks with safe cast are available
+        androidx.compose.runtime.lint
+          .RuntimeIssueRegistry()
+          .issues
+          .takeUnless { isK2 }
+          ?.let { addAll(it) }
+        addAll(androidx.compose.animation.core.lint.AnimationCoreIssueRegistry().issues)
+        addAll(androidx.compose.animation.lint.AnimationIssueRegistry().issues)
+        addAll(androidx.compose.foundation.lint.FoundationIssueRegistry().issues)
+        addAll(androidx.compose.material.lint.MaterialIssueRegistry().issues)
+        addAll(androidx.compose.material3.lint.Material3IssueRegistry().issues)
+        addAll(androidx.compose.runtime.saveable.lint.RuntimeSaveableIssueRegistry().issues)
+        addAll(androidx.compose.ui.graphics.lint.UiGraphicsIssueRegistry().issues)
+        addAll(androidx.compose.ui.lint.UiIssueRegistry().issues)
+        addAll(androidx.compose.ui.test.manifest.lint.TestManifestIssueRegistry().issues)
+      }
+      .filter { !it.isAndroidSpecific() }
 }
