@@ -599,8 +599,8 @@ class ResourceShrinkerTest {
                 InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
                     .resolve("release/shrinkReleaseRes/original-resources-$splitName-release-proto-format.ap_")
             } else {
-                InternalArtifactType.LINKED_RESOURCES_FOR_BUNDLE_PROTO_FORMAT.getOutputDir(buildDir)
-                    .resolve("release/bundleReleaseResources/linked-resources-proto-format.ap_")
+                InternalArtifactType.SHRUNK_RESOURCES_PROTO_FORMAT.getOutputDir(buildDir)
+                    .resolve("release/shrinkReleaseRes/original-resources-release-proto-format.ap_")
             }
 
     private fun GradleTestProject.getShrunkProtoResources(splitName: String? = null): File =
