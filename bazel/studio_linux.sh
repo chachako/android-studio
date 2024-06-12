@@ -87,6 +87,7 @@ function copy_bazel_artifacts() {(
   cp -a ${bin_dir}/tools/base/build-system/documentation.zip ${artifacts_dir}/android_gradle_plugin_reference_docs.zip
   cp -a ${bin_dir}/tools/base/firebase/testlab/testlab-gradle-plugin/testlab-gradle-plugin.zip ${artifacts_dir}
   cp -a ${bin_dir}/tools/base/preview/screenshot/preview_screenshot_maven_repo.zip ${artifacts_dir}
+  cp -a ${bin_dir}/tools/vendor/google3/aswb/third_party/intellij/bazel/plugin/aswb/aswb_bazel.zip ${artifacts_dir}
 )}
 
 ####################################
@@ -193,6 +194,7 @@ function run_bazel_test() {
       //tools/vendor/google/asfp/studio:asfp.deb
       //tools/vendor/intel:android-studio-intel-haxm.zip
       //tools/vendor/google/ml:aiplugin
+      //tools/vendor/google3/aswb/third_party/intellij/bazel/plugin/aswb:aswb_bazel_zip
     )
   fi
 
