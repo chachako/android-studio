@@ -75,7 +75,7 @@ private val mavenRepo = MavenRepoGenerator(
                                 // language=xml
                                 manifest = """
                                          <manifest package="com.externaldex.externalaar" xmlns:android="http://schemas.android.com/apk/res/android">
-                                             <uses-sdk android:minSdkVersion="21" />
+                                             <uses-sdk android:targetSdkVersion="34" android:minSdkVersion="21" />
                                              <!-- Permission that needs to be removed before ASB packaging -->
                                              <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
                                          </manifest>

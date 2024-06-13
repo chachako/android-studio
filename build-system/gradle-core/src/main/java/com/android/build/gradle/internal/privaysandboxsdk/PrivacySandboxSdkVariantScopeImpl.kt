@@ -70,23 +70,17 @@ class PrivacySandboxSdkVariantScopeImpl(
     }
 
     override val compileSdkVersion: String by lazy {
-        "android-${getCompileSdkApiVersion(extension).apiString}"
+        extension.compileSdkPreview?.let { validatePreviewTargetValue(it) }?.let { "android-$it" } ?:
+        extension.compileSdkExtension?.let { "android-${extension.compileSdk}-ext$it" } ?:
+        extension.compileSdk?.let {"android-$it"} ?: throw RuntimeException(
+            "compileSdk version is not set"
+        )
     }
-
     override val minSdkVersion: ApiVersion by lazy {
         extension.minSdkPreview?.let { DefaultApiVersion(it) } ?:
         extension.minSdk?.let { DefaultApiVersion(it) } ?:
         DefaultApiVersion(34)
     }
-
-    override val targetSdkVersion: ApiVersion by lazy {
-        extension.targetSdk?.let {
-            DefaultApiVersion(
-                it
-            )
-        } ?: getCompileSdkApiVersion(extension)
-    }
-
     override val bootClasspath: Provider<List<RegularFile>>
             get() = bootClasspathConfigProvider.invoke().bootClasspath
     override val bundle: PrivacySandboxSdkBundleImpl
@@ -106,20 +100,4 @@ class PrivacySandboxSdkVariantScopeImpl(
                 projectServices.projectOptions,
                 namespacedAndroidResources = NAMESPACED_ANDROID_RESOURCES_FOR_PRIVACY_SANDBOX_ENABLED
         )
-
-    private fun getCompileSdkApiVersion(extension: PrivacySandboxSdkExtension): ApiVersion {
-        return maybeGetCompileSdkPreview(extension)
-            ?: maybeGetCompileSdk(extension)
-            ?: throw RuntimeException("compileSdk version is not set")
-    }
-
-    private fun maybeGetCompileSdk(extension: PrivacySandboxSdkExtension): ApiVersion? {
-        return (extension.compileSdkExtension ?: extension.compileSdk)
-            ?.let { DefaultApiVersion(it) }
-    }
-
-    private fun maybeGetCompileSdkPreview(extension: PrivacySandboxSdkExtension): ApiVersion? {
-        return extension.compileSdkPreview?.let { validatePreviewTargetValue(it) }
-            ?.let { DefaultApiVersion(it) }
-    }
 }
