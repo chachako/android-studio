@@ -275,7 +275,7 @@
             <d:power-type>battery</d:power-type>
         </d:hardware>
         <d:software>
-            <d:api-level>30</d:api-level>
+            <d:api-level>34-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles> </d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -379,7 +379,7 @@
             <d:power-type>battery</d:power-type>
         </d:hardware>
         <d:software>
-            <d:api-level>30</d:api-level>
+            <d:api-level>34-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles> </d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
@@ -573,7 +573,7 @@
             <d:power-type>battery</d:power-type>
         </d:hardware>
         <d:software>
-            <d:api-level>30</d:api-level>
+            <d:api-level>34-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles> </d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
