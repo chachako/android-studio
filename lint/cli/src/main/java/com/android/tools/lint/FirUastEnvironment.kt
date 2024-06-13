@@ -19,27 +19,16 @@ import com.android.tools.lint.UastEnvironment.Companion.getKlibPaths
 import com.android.tools.lint.UastEnvironment.Module.Variant.Companion.toTargetPlatform
 import com.android.tools.lint.detector.api.GraphUtils
 import com.android.tools.lint.detector.api.Project
-import com.google.common.io.Files as GoogleFiles
 import com.intellij.core.CoreApplicationEnvironment
-import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSetFactory
 import com.intellij.pom.java.InternalPersistentJavaLanguageLevelReaderService
 import com.intellij.pom.java.LanguageLevel
-import com.intellij.psi.PsiFileSystemItem
-import com.intellij.psi.PsiManager
 import java.io.File
-import java.io.IOException
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
 import kotlin.concurrent.withLock
 import org.jetbrains.kotlin.analysis.api.impl.base.util.LibraryUtils
 import org.jetbrains.kotlin.analysis.api.resolve.extensions.KtResolveExtensionProvider
@@ -48,16 +37,12 @@ import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISe
 import org.jetbrains.kotlin.analysis.decompiled.light.classes.ClsJavaStubByVirtualFileCache
 import org.jetbrains.kotlin.analysis.project.structure.KtModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.KtModuleBuilder
-import org.jetbrains.kotlin.analysis.project.structure.builder.KtSourceModuleBuilder
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtLibraryModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSdkModule
 import org.jetbrains.kotlin.analysis.project.structure.builder.buildKtSourceModule
-import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreProjectEnvironment
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.idea.KotlinFileType
-import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.platform.CommonPlatforms
 import org.jetbrains.kotlin.platform.has
 import org.jetbrains.kotlin.platform.jvm.JvmPlatform
@@ -274,10 +259,7 @@ private fun createAnalysisSession(
           }
 
           val scripts =
-            Helper.getSourceFilePaths(
-                m.sourceRoots + m.gradleBuildScripts,
-                includeDirectoryRoot = true,
-              )
+            getSourceFilePaths(m.sourceRoots + m.gradleBuildScripts, includeDirectoryRoot = true)
               .filter<KtFile>(kotlinCoreProjectEnvironment, KtFile::isScript)
           // TODO: https://youtrack.jetbrains.com/issue/KT-62161
           //   This must be [KtScriptModule], but until the above YT resolved
@@ -325,7 +307,7 @@ private fun createAnalysisSession(
 
             // NB: This should include both .kt and .java sources if any,
             //  and thus we don't need to specify the reified type for the return file type.
-            addSourcePaths(Helper.getSourceFilePaths(m.sourceRoots, includeDirectoryRoot = true))
+            addSourcePaths(getSourceFilePaths(m.sourceRoots, includeDirectoryRoot = true))
           }
 
           addModule(ktModule)
@@ -364,133 +346,3 @@ private fun configureFirApplicationEnvironment(appEnv: CoreApplicationEnvironmen
     )
   }
 }
-
-// Copied over from `org.jetbrains.kotlin.analysis.project.structure.impl.KtModuleUtils.kt`
-private object Helper {
-
-  fun getSourceFilePaths(
-    javaSourceRoots: Collection<File>,
-    includeDirectoryRoot: Boolean = false,
-  ): PathCollection =
-    getFilePaths(javaSourceRoots, sourceFileExtensions::contains, includeDirectoryRoot)
-
-  fun getFilePaths(
-    roots: Collection<File>,
-    isExtensionWanted: (String?) -> Boolean,
-    includeDirectoryRoot: Boolean = false,
-  ): PathCollection {
-    val physicalPaths = hashSetOf<Path>()
-    val virtualFiles = hashSetOf<VirtualFile>()
-
-    fun fromFile(root: File) {
-      val path = Paths.get(root.path)
-      when {
-        Files.isDirectory(path) -> {
-          collectFilePaths(path, physicalPaths, isExtensionWanted) // E.g., project/app/src
-          if (includeDirectoryRoot) physicalPaths.add(path)
-        }
-        else -> physicalPaths.add(path) // E.g., project/app/src/some/pkg/main.kt
-      }
-    }
-
-    fun fromVirtualFile(root: VirtualFile) {
-      /** This mirrors [collectFilePaths] below with something equivalent to [Files.walkFileTree] */
-      fun visit(file: VirtualFile) {
-        when {
-          file.isDirectory -> file.children?.forEach(::visit)
-          isExtensionWanted(file.extension) -> virtualFiles.add(file)
-        }
-      }
-      visit(root)
-      if (root.isDirectory && includeDirectoryRoot) virtualFiles.add(root)
-    }
-
-    for (root in roots) {
-      when (root) {
-        is UastEnvironment.VirtualFileWrapper -> fromVirtualFile(root.file)
-        else -> fromFile(root)
-      }
-    }
-    return PathCollection(physicalPaths, virtualFiles)
-  }
-
-  /**
-   * Collect source file path from the given [root] store them in [result].
-   *
-   * E.g., for `project/app/src` as a [root], this will walk the file tree and collect all `.kt`,
-   * `.kts`, and `.java` files under that folder.
-   *
-   * Note that this util gracefully skips [IOException] during file tree traversal.
-   */
-  private fun collectFilePaths(
-    root: Path,
-    result: MutableSet<Path>,
-    isExtensionWanted: (String?) -> Boolean,
-  ) {
-    // NB: [Files#walk] throws an exception if there is an issue during IO.
-    // With [Files#walkFileTree] with a custom visitor, we can take control of exception handling.
-    Files.walkFileTree(
-      root,
-      object : SimpleFileVisitor<Path>() {
-        override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult {
-          return if (Files.isReadable(dir)) FileVisitResult.CONTINUE
-          else FileVisitResult.SKIP_SUBTREE
-        }
-
-        override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-          if (!Files.isRegularFile(file) || !Files.isReadable(file)) return FileVisitResult.CONTINUE
-          if (isExtensionWanted(GoogleFiles.getFileExtension(file.fileName.toString()))) {
-            result.add(file)
-          }
-          return FileVisitResult.CONTINUE
-        }
-
-        override fun visitFileFailed(file: Path, exc: IOException?): FileVisitResult {
-          // TODO: report or log [IOException]?
-          // NB: this intentionally swallows the exception, hence fail-safe.
-          // Skipping subtree doesn't make any sense, since this is not a directory.
-          // Skipping sibling may drop valid file paths afterward, so we just continue.
-          return FileVisitResult.CONTINUE
-        }
-      },
-    )
-  }
-}
-
-private class PathCollection(val physical: Collection<Path>, val virtual: Collection<VirtualFile>) {
-  fun isEmpty(): Boolean = physical.isEmpty() && virtual.isEmpty()
-
-  /** Retain the paths that can be retrieved as [F] satisfying [keepFile] */
-  inline fun <reified F : PsiFileSystemItem> filter(
-    kotlinCoreProjectEnvironment: KotlinCoreProjectEnvironment,
-    crossinline keepFile: (F) -> Boolean,
-  ): PathCollection {
-    val keepVirtual: (VirtualFile) -> Boolean =
-      with(PsiManager.getInstance(kotlinCoreProjectEnvironment.project)) {
-        { vFile ->
-          val file = if (vFile.isDirectory) findDirectory(vFile) else findFile(vFile)
-          file is F && keepFile(file)
-        }
-      }
-    val keepPhysical: (Path) -> Boolean =
-      with(kotlinCoreProjectEnvironment.environment.localFileSystem) {
-        { path ->
-          val vFile = findFileByPath(path.toString())
-          vFile != null && keepVirtual(vFile)
-        }
-      }
-    return PathCollection(physical.filter(keepPhysical), virtual.filter(keepVirtual))
-  }
-}
-
-private fun KtSourceModuleBuilder.addSourcePaths(paths: PathCollection) {
-  addSourceRoots(paths.physical)
-  addSourceVirtualFiles(paths.virtual)
-}
-
-private val sourceFileExtensions =
-  arrayOf(
-    KotlinFileType.EXTENSION,
-    KotlinParserDefinition.STD_SCRIPT_SUFFIX,
-    JavaFileType.DEFAULT_EXTENSION,
-  )

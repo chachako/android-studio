@@ -18,7 +18,6 @@ package com.android.tools.lint
 
 import com.android.SdkConstants
 import com.android.SdkConstants.EXT_JAR
-import com.android.tools.lint.UastEnvironment.Companion.disposeApplicationEnvironment
 import com.android.tools.lint.UastEnvironment.Module.Variant.Companion.toModuleVariant
 import com.android.tools.lint.detector.api.Project
 import com.android.tools.lint.detector.api.Project.DependencyKind
@@ -26,7 +25,6 @@ import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.impl.ZipHandler
 import com.intellij.pom.java.LanguageLevel
 import java.io.File
@@ -341,8 +339,6 @@ interface UastEnvironment {
     val kotlinLanguageLevel: LanguageVersionSettings
       get() = project.kotlinLanguageLevel
   }
-
-  class VirtualFileWrapper(internal val file: VirtualFile) : File(file.path)
 }
 
 // Return set of merged elements in the order they appear
