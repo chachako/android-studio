@@ -596,7 +596,7 @@ package com.android.build.api.dsl {
     method public Boolean? getRenderscriptSupportModeBlasEnabled();
     method public Boolean? getRenderscriptSupportModeEnabled();
     method public Integer? getRenderscriptTargetApi();
-    method public java.util.Set<java.lang.String> getResourceConfigurations();
+    method @Deprecated public java.util.Set<java.lang.String> getResourceConfigurations();
     method public String? getTestApplicationId();
     method public Boolean? getTestFunctionalTest();
     method public Boolean? getTestHandleProfiling();
@@ -638,7 +638,7 @@ package com.android.build.api.dsl {
     property public abstract Boolean? renderscriptSupportModeBlasEnabled;
     property public abstract Boolean? renderscriptSupportModeEnabled;
     property public abstract Integer? renderscriptTargetApi;
-    property public abstract java.util.Set<java.lang.String> resourceConfigurations;
+    property @Deprecated public abstract java.util.Set<java.lang.String> resourceConfigurations;
     property public abstract String? testApplicationId;
     property public abstract Boolean? testFunctionalTest;
     property public abstract Boolean? testHandleProfiling;

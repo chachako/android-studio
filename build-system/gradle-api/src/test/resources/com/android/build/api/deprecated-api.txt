@@ -3,6 +3,8 @@ Deprecated Android Gradle Plugin API.
 ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 are announced on go/as-release-notes.
 -------------------------------------------------------------------------
+Deprecated from AGP 8.8.0
+  * com.android.build.api.dsl.BaseFlavor.getResourceConfigurations: java.util.Set<java.lang.String> ()
 Deprecated from AGP 8.7.0
   * com.android.build.api.dsl.ComposeOptions.getUseLiveLiterals: boolean ()
   * com.android.build.api.dsl.ComposeOptions.setUseLiveLiterals: void (boolean)
