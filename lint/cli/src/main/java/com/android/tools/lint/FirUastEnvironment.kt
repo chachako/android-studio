@@ -62,7 +62,6 @@ import org.jetbrains.kotlin.platform.CommonPlatforms
 import org.jetbrains.kotlin.platform.has
 import org.jetbrains.kotlin.platform.jvm.JvmPlatform
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
-import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.scripting.compiler.plugin.ScriptingK2CompilerPluginRegistrar
 import org.jetbrains.uast.UastLanguagePlugin
@@ -217,8 +216,8 @@ private fun createAnalysisSession(
 
           fun KtModuleBuilder.addModuleDependencies(moduleName: String) {
             val classPaths =
-              if (mPlatform.isJvm()) {
-                // Include boot classpath in [config.classPaths]
+              if (mPlatform.has<JvmPlatform>()) {
+                // Include boot classpath in [config.classPaths], except for non-JVM modules
                 m.classpathRoots + config.classPaths
               } else {
                 m.classpathRoots
