@@ -33,8 +33,13 @@ import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreProjectEnvironment
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 
-// TODO(b/347072049): might be confused with upstream IntelliJ's VirtualFileWrapper
-class VirtualFileWrapper(internal val file: VirtualFile) : File(file.path)
+private class VirtualFileWrapper(val file: VirtualFile) : File(file.path)
+
+/**
+ * Convert [VirtualFile] into [File] without losing information, as far as [UastEnvironment] is
+ * concerned
+ */
+fun VirtualFile.asFile(): File = VirtualFileWrapper(this)
 
 // Copied over from `org.jetbrains.kotlin.analysis.project.structure.impl.KtModuleUtils.kt`
 
