@@ -214,14 +214,19 @@ class ScreenshotTest {
                         "Primary text", "Secondary text"
                     )
                 }
-
-                class AnotherPreviewParameterProvider : PreviewParameterProvider<String> {
-                    override val values = sequenceOf(
-                        "text 1", "text 2"
-                    )
-                }
             """.trimIndent()
         )
+        addFile("src/screenshotTest/java/com/AnotherPreviewParameterProvider.kt", """
+            package pkg.name
+
+            import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+
+            class AnotherPreviewParameterProvider : PreviewParameterProvider<String> {
+                override val values = sequenceOf(
+                    "text 1", "text 2"
+                )
+            }
+        """.trimIndent())
         addFile(
                 "src/screenshotTest/java/com/ExampleTest.kt", """
 
@@ -541,6 +546,7 @@ class ScreenshotTest {
         // Delete test classes so that there are no source files in screenshotTest source set
         appProject.projectDir.resolve("src/screenshotTest/java/com/ExampleTest.kt").toPath().deleteExisting()
         appProject.projectDir.resolve("src/screenshotTest/java/com/TopLevelPreviewTest.kt").toPath().deleteExisting()
+        appProject.projectDir.resolve("src/screenshotTest/java/com/AnotherPreviewParameterProvider.kt").toPath().deleteExisting()
 
         getExecutor().run(":app:updateDebugScreenshotTest")
 

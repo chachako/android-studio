@@ -367,7 +367,7 @@ class PreviewScreenshotGradlePlugin : Plugin<Project> {
                         //  adding custom information become available
                         task.reports { it.html.required.set(false) }
                         task.testClassesDirs = project.files(renderTaskProvider.flatMap { it.testClassesDirAll })
-                        task.classpath = task.project.configurations.getByName(previewScreenshotTestEngineConfigurationName) + task.testClassesDirs
+                        task.classpath = task.project.configurations.getByName(previewScreenshotTestEngineConfigurationName) + task.testClassesDirs + project.files(renderTaskProvider.flatMap { it.testClasspathAll })
                     }
 
                     val screenshotHtmlTask = project.tasks.register(
