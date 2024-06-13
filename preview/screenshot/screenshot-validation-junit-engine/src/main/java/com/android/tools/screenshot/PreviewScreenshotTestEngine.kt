@@ -97,52 +97,22 @@ class PreviewScreenshotTestEngine : TestEngine {
         for (classDescriptor in request.rootTestDescriptor.children) {
             listener.executionStarted(classDescriptor)
             for (methodDescriptor in classDescriptor.children) {
-                val methodResults = mutableListOf<PreviewResult>()
                 if (methodDescriptor is TestMethodTestDescriptor) {
-                    val className: String = methodDescriptor.className
-                    val methodName: String = methodDescriptor.methodName
-                    val previewName: String? = methodDescriptor.previewName
-                    val screenshots =
-                        screenshotResults.filter {
-                            getPreviewIdWithoutSuffix(it.previewId, previewName) == "$className.${methodName}"
-                        }
-                    var displayName = "$className.${methodName}"
-                    if (!previewName.isNullOrEmpty()) { displayName += "_$previewName"}
-                    methodResults.add(reportResult(listener, screenshots.single(), methodDescriptor, displayName))
+                    resultsToSave.add(
+                        runTestMethodThatGeneratesASingleScreenshotTest(
+                            methodDescriptor,
+                            listener,
+                            screenshotResults))
                 } else if (methodDescriptor is TestMethodDescriptor) {
-                    listener.executionStarted(methodDescriptor)
-                    val className: String = methodDescriptor.className
-                    val methodName: String = methodDescriptor.methodName
-                    val methodScreenshotResults = getScreenshotResultsForMethod(className, methodName, composeScreenshots, screenshotResults)
-                    for ((run, screenshot) in methodScreenshotResults.withIndex()) {
-                        val currentComposePreview = composeScreenshots.single {
-                            it.methodFQN == "$className.$methodName" && screenshot.imageName.contains(it.previewId)
-                        }
-                        var suffix = ""
-                        if (currentComposePreview.previewParams.containsKey("name")) {
-                            suffix += "_${currentComposePreview.previewParams["name"]}"
-                        }
-                        val previewParamsSuffix = currentComposePreview.previewParams.filter { it.key != "name" }
-                        if (previewParamsSuffix.isNotEmpty()) {
-                            // Skip "name" parameter because it is added to the suffix above
-                            suffix += "_${previewParamsSuffix}"
-                        }
-                        if (currentComposePreview.methodParams.isNotEmpty()) {
-                            // Method parameters can generate multiple screenshots from one preview,
-                            // add the method parameters and the count indicated by the previewId
-                            suffix += "_${currentComposePreview.methodParams}"
-                            val paramIndex = screenshot.imageName.substringBeforeLast(".").substringAfterLast("_")
-                            suffix += "_$paramIndex"
-                        }
-                        val previewTestDescriptor = PreviewTestDescriptor(methodDescriptor, methodName, run, suffix)
-                        methodDescriptor.addChild(previewTestDescriptor)
-                        listener.dynamicTestRegistered(previewTestDescriptor)
-                        listener.executionStarted(previewTestDescriptor)
-                        methodResults.add(reportResult(listener, screenshot, previewTestDescriptor,"${className}.${methodName}$suffix"))
-                    }
-                    listener.executionFinished(methodDescriptor, TestExecutionResult.successful())
+                    resultsToSave.addAll(
+                        runTestMethodThatGeneratesMultipleScreenshotTests(
+                            methodDescriptor,
+                            listener,
+                            composeScreenshots,
+                            screenshotResults
+                        )
+                    )
                 }
-                resultsToSave.addAll(methodResults)
             }
             listener.executionFinished(classDescriptor, TestExecutionResult.successful())
         }
@@ -274,5 +244,60 @@ class PreviewScreenshotTestEngine : TestEngine {
     private fun isPreviewNameValidFileName(previewName: String): Boolean {
         val invalidCharacters = Regex("""[\u0000-\u001F\\/:*?"<>|]+""")
         return !(invalidCharacters.containsMatchIn(previewName))
+    }
+
+    private fun runTestMethodThatGeneratesASingleScreenshotTest(methodDescriptor: TestMethodTestDescriptor,
+        listener: EngineExecutionListener,
+        screenshotResults: List<ComposeScreenshotResult>): PreviewResult {
+        val className: String = methodDescriptor.className
+        val methodName: String = methodDescriptor.methodName
+        val previewName: String? = methodDescriptor.previewName
+        val screenshots =
+            screenshotResults.filter {
+                getPreviewIdWithoutSuffix(it.previewId, previewName) == "$className.${methodName}"
+            }
+        var displayName = "$className.${methodName}"
+        if (!previewName.isNullOrEmpty()) { displayName += "_$previewName"}
+        return reportResult(listener, screenshots.single(), methodDescriptor, displayName)
+    }
+
+    private fun runTestMethodThatGeneratesMultipleScreenshotTests(
+        methodDescriptor: TestMethodDescriptor,
+        listener: EngineExecutionListener,
+        composeScreenshots: List<ComposeScreenshot>,
+        screenshotResults: List<ComposeScreenshotResult>): List<PreviewResult> {
+        val results = mutableListOf<PreviewResult>()
+        listener.executionStarted(methodDescriptor)
+        val className: String = methodDescriptor.className
+        val methodName: String = methodDescriptor.methodName
+        val methodScreenshotResults = getScreenshotResultsForMethod(className, methodName, composeScreenshots, screenshotResults)
+        for ((run, screenshot) in methodScreenshotResults.withIndex()) {
+            val currentComposePreview = composeScreenshots.single {
+                it.methodFQN == "$className.$methodName" && screenshot.imageName.contains(it.previewId)
+            }
+            var suffix = ""
+            if (currentComposePreview.previewParams.containsKey("name")) {
+                suffix += "_${currentComposePreview.previewParams["name"]}"
+            }
+            val previewParamsSuffix = currentComposePreview.previewParams.filter { it.key != "name" }
+            if (previewParamsSuffix.isNotEmpty()) {
+                // Skip "name" parameter because it is added to the suffix above
+                suffix += "_${previewParamsSuffix}"
+            }
+            if (currentComposePreview.methodParams.isNotEmpty()) {
+                // Method parameters can generate multiple screenshots from one preview,
+                // add the method parameters and the count indicated by the previewId
+                suffix += "_${currentComposePreview.methodParams}"
+                val paramIndex = screenshot.imageName.substringBeforeLast(".").substringAfterLast("_")
+                suffix += "_$paramIndex"
+            }
+            val previewTestDescriptor = PreviewTestDescriptor(methodDescriptor, methodName, run, suffix)
+            methodDescriptor.addChild(previewTestDescriptor)
+            listener.dynamicTestRegistered(previewTestDescriptor)
+            listener.executionStarted(previewTestDescriptor)
+            results.add(reportResult(listener, screenshot, previewTestDescriptor,"${className}.${methodName}$suffix"))
+        }
+        listener.executionFinished(methodDescriptor, TestExecutionResult.successful())
+        return results
     }
 }
