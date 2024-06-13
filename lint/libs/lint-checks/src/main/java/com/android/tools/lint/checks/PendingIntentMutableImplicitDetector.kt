@@ -46,6 +46,7 @@ import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionLikeSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KtTypeParameterSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolKind
+import org.jetbrains.kotlin.analysis.api.symbols.typeParameters
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.uast.UArrayAccessExpression
@@ -478,7 +479,7 @@ class PendingIntentMutableImplicitDetector : Detector(), SourceCodeScanner {
       return packageName == StandardClassIds.BASE_KOTLIN_PACKAGE &&
         symbol.symbolKind == KtSymbolKind.TOP_LEVEL &&
         methodName == arrayOfMethodName &&
-        returnType.isArrayOrPrimitiveArray()
+        returnType.isArrayOrPrimitiveArray
     }
 
     private fun KtAnalysisSession.isListOf(symbol: KtFunctionLikeSymbol): Boolean {

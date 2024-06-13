@@ -42,8 +42,8 @@ import com.intellij.psi.util.InheritanceUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiTreeUtil.getNonStrictParentOfType
 import org.jetbrains.kotlin.analysis.api.analyze
-import org.jetbrains.kotlin.analysis.api.calls.singleFunctionCallOrNull
-import org.jetbrains.kotlin.analysis.api.calls.symbol
+import org.jetbrains.kotlin.analysis.api.resolution.singleFunctionCallOrNull
+import org.jetbrains.kotlin.analysis.api.resolution.symbol
 import org.jetbrains.kotlin.asJava.elements.FakeFileForLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.kotlin.asJava.elements.KtLightParameter
@@ -776,7 +776,7 @@ fun UElement.isIncorrectImplicitReturnInLambda(): Boolean {
   // `suspend` lambda's return type is modeled as `Any?`, i.e., nullable `Object`.
   if (lambdaReturnType != "java.lang.Object") return false
   val ktLambda = lambda.sourcePsi as? KtLambdaExpression ?: return false
-  return analyze(ktLambda) { ktLambda.getExpectedType()?.isSuspendFunctionType ?: false }
+  return analyze(ktLambda) { ktLambda.expectedType?.isSuspendFunctionType ?: false }
 }
 
 // Copied from `...codeInspection.analysisUastUtil`
