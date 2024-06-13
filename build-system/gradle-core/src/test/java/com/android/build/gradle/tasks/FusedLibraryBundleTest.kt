@@ -39,13 +39,6 @@ internal class FusedLibraryBundleTest {
     }
 
     @Test
-    fun testJarClasses() {
-        testCreationConfig<FusedLibraryBundleClasses, FusedLibraryBundleClasses.CreationAction>(
-            "classes.jar"
-        )
-    }
-
-    @Test
     fun testAarBundle() {
         testCreationConfig<FusedLibraryBundleAar, FusedLibraryBundleAar.CreationAction>(
             "bundle.aar"

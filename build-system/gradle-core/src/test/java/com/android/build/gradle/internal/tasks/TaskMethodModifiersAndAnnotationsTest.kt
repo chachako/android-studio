@@ -165,7 +165,6 @@ class TaskMethodModifiersAndAnnotationsTest {
                 "com.android.build.gradle.tasks.ExternalNativeBuildTask",
                 "com.android.build.gradle.tasks.FusedLibraryBundle",
                 "com.android.build.gradle.tasks.FusedLibraryBundleAar",
-                "com.android.build.gradle.tasks.FusedLibraryBundleClasses",
                 "com.android.build.gradle.tasks.FusedLibraryMergeClasses",
                 "com.android.build.gradle.tasks.PrivacySandboxSdkGenerateJarStubsTask",
             )

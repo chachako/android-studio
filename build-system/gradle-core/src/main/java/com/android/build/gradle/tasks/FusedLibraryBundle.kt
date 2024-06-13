@@ -19,12 +19,19 @@ package com.android.build.gradle.tasks
 import com.android.SdkConstants
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScope
+import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.AarMetadataTask
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
+import com.android.build.gradle.internal.tasks.NonIncrementalGlobalTask
 import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.buildanalyzer.common.TaskCategory
+import com.android.builder.packaging.JarFlinger
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
@@ -81,6 +88,7 @@ abstract class FusedLibraryBundleAar: FusedLibraryBundle() {
             super.configure(task)
             task.archiveFileName.set("bundle.aar")
             task.from(
+                creationConfig.artifacts.get(FusedLibraryInternalArtifactType.CLASSES_JAR),
                 creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_MANIFEST),
                 creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_RES),
 
@@ -107,23 +115,50 @@ abstract class FusedLibraryBundleAar: FusedLibraryBundle() {
 
 @DisableCachingByDefault(because = "Task does not calculate anything, only creates a jar.")
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.COMPILED_CLASSES, secondaryTaskCategories = [TaskCategory.ZIPPING])
-abstract class FusedLibraryBundleClasses: FusedLibraryBundle() {
+abstract class FusedLibraryBundleClasses: NonIncrementalGlobalTask() {
+
+    @get:InputFiles
+    @get:Classpath
+    abstract val include: ConfigurableFileCollection
+
+    @get:OutputFile
+    abstract val classesJar: RegularFileProperty
+
+    override fun doTaskAction() {
+        JarFlinger(classesJar.get().asFile.toPath()).use { jarFlinger ->
+            for (artifact in include) {
+                when {
+                    artifact.isDirectory -> jarFlinger.addDirectory(artifact.toPath())
+                    artifact.extension == SdkConstants.EXT_JAR -> jarFlinger.addJar(artifact.toPath())
+                    else -> jarFlinger.addFile(artifact.name, artifact.toPath())
+                }
+            }
+        }
+    }
 
     class CreationAction(
-        creationConfig: FusedLibraryVariantScope,
-    ): FusedLibraryBundle.CreationAction<FusedLibraryBundleClasses>(
-            creationConfig,
-            FusedLibraryInternalArtifactType.CLASSES_JAR
-    ) {
+        val creationConfig: FusedLibraryVariantScope,
+    ): TaskCreationAction<FusedLibraryBundleClasses>() {
         override val name: String
             get() = "packageJar"
         override val type: Class<FusedLibraryBundleClasses>
             get() = FusedLibraryBundleClasses::class.java
 
+        override fun handleProvider(taskProvider: TaskProvider<FusedLibraryBundleClasses>) {
+            super.handleProvider(taskProvider)
+
+            creationConfig.artifacts.setInitialProvider(
+                taskProvider,
+                FusedLibraryBundleClasses::classesJar
+            ).withName("classes.jar").on(FusedLibraryInternalArtifactType.CLASSES_JAR)
+        }
+
         override fun configure(task: FusedLibraryBundleClasses) {
             super.configure(task)
-            task.archiveFileName.set("classes.jar")
-            task.from(
+            task.analyticsService.setDisallowChanges(
+                getBuildService(task.project.gradle.sharedServices)
+            )
+            task.include.from(
                 creationConfig.artifacts.get(FusedLibraryInternalArtifactType.CLASSES_WITH_REWRITTEN_R_CLASS_REFS),
                 creationConfig.artifacts.get(FusedLibraryInternalArtifactType.FUSED_R_CLASS),
                 creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_JAVA_RES)
