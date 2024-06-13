@@ -18,8 +18,12 @@ package com.android.tools.perflogger
 import com.google.gson.stream.JsonWriter
 
 /** Analyzer used to compare a series of runs from a different metric. */
-class UTestAnalyzer(
-    private val baselineMetric: String,
+class UTestAnalyzer private constructor(
+    // There are two types of comparisons
+    // 1. To compare baseline metric X to metric Y in the same branch
+    private val baselineMetric: String?,
+    // 2. To compare metric X to the main branch metric X
+    private val compareWithMainBranch: Boolean,
     // Following are optional, can be used if needed
     // How many runs will be fetched to be used as the baseline
     private val runInfoQueryLimit: Int = 20,
@@ -32,10 +36,32 @@ class UTestAnalyzer(
     override fun outputJson(writer: JsonWriter) {
         writer.beginObject()
         writer.name("type").value("UTestAnalyzer")
-        writer.name("baselineMetric").value(baselineMetric)
+        if (compareWithMainBranch) {
+            writer.name("compareWithMainBranch").value(true)
+        } else {
+            checkNotNull(baselineMetric) {
+                "baselineMetric must be set when not comparing with main branch"
+            }
+            writer.name("baselineMetric").value(baselineMetric)
+        }
+
         writer.name("runInfoQueryLimit").value(runInfoQueryLimit)
         writer.name("significance").value(significance)
         writer.name("relativeShiftValue").value(relativeShiftValue)
         writer.endObject()
+    }
+
+    companion object {
+        fun forComparingWithMainBranch() = UTestAnalyzer(
+            baselineMetric = null,
+            compareWithMainBranch = true
+        )
+
+        fun forMetricComparison(
+            baselineMetric: String,
+        ) = UTestAnalyzer(
+            baselineMetric = baselineMetric,
+            compareWithMainBranch = false
+        )
     }
 }
