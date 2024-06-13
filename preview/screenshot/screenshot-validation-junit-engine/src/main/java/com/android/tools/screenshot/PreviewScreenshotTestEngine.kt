@@ -41,14 +41,31 @@ class PreviewScreenshotTestEngine : TestEngine {
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
         val engineDescriptor = EngineDescriptor(uniqueId, "Preview Screenshot Test Engine")
         val screenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")!!).reader())
-        val testMap = mutableMapOf<String, MutableSet<String>>()
+        val screenshotResults = readComposeRenderingResultJson(File(getParam("renderResultsFilePath")!!).reader()).screenshotResults
+        val testMap = mutableMapOf<String, MutableSet<Tests.TestMethod>>()
         for (screenshot in screenshots) {
             val methodName = screenshot.methodFQN.split(".").last()
             val className = screenshot.methodFQN.substring(0, screenshot.methodFQN.lastIndexOf("."))
+            val previewName = screenshot.previewParams["name"]
+            val previewNameList = if (previewName != null) mutableListOf(previewName) else mutableListOf()
             if (testMap.contains(className)) {
-                testMap[className]!!.add(methodName)
+                val testMethodSet = testMap[className]!!
+                val existingEntry = testMethodSet.find { it.methodName == methodName}
+                if (existingEntry != null) {
+                    if (previewName != null) {
+                        existingEntry.previewNames.add(previewName)
+                    }
+                } else {
+                    testMethodSet.add(
+                        Tests.TestMethod(methodName,
+                            getScreenshotResultsForMethod(className, methodName, screenshots, screenshotResults).size > 1,
+                            previewNameList))
+                }
             } else {
-                testMap[className] = mutableSetOf(methodName)
+                testMap[className] = mutableSetOf(
+                    Tests.TestMethod(methodName,
+                        getScreenshotResultsForMethod(className, methodName, screenshots, screenshotResults).size > 1,
+                        previewNameList))
             }
         }
         val tests = Tests(testMap)
@@ -71,28 +88,6 @@ class PreviewScreenshotTestEngine : TestEngine {
         val resultFile = File(getParam("renderResultsFilePath")!!)
         val screenshotResults = readComposeRenderingResultJson(resultFile.reader()).screenshotResults
         val composeScreenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")!!).reader())
-        // Method descriptors are created as type CONTAINER_AND_TEST. For single method tests,
-        // replace the method descriptor with one of type TEST.
-        for (classDescriptor in request.rootTestDescriptor.children) {
-            val methodsToRemove = mutableListOf<TestMethodDescriptor>()
-            val methodsToAdd = mutableListOf<TestMethodTestDescriptor>()
-            for (methodDescriptor in classDescriptor.children) {
-                val className: String = (methodDescriptor as TestMethodDescriptor).className
-                val methodName: String = methodDescriptor.methodName
-                val methodScreenshotResults = getScreenshotResultsForMethod(className, methodName, composeScreenshots, screenshotResults)
-                if (methodScreenshotResults.size == 1) {
-                    val previewName = composeScreenshots.single { it.methodFQN == "$className.$methodName" && methodScreenshotResults.first().imageName.contains(it.previewId) }.previewParams["name"]
-                    val testMethodDescriptor = TestMethodTestDescriptor(methodDescriptor.uniqueId, methodName, className, previewName)
-                    methodsToAdd.add(testMethodDescriptor)
-                    methodsToRemove.add(methodDescriptor)
-                }
-            }
-            methodsToAdd.forEach {
-                classDescriptor.addChild(it)
-                listener.dynamicTestRegistered(it)
-            }
-            methodsToRemove.forEach { classDescriptor.removeChild(it) }
-        }
 
         for (classDescriptor in request.rootTestDescriptor.children) {
             listener.executionStarted(classDescriptor)

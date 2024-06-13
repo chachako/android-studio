@@ -16,13 +16,15 @@
 
 package com.android.tools.screenshot
 
-internal class Tests(private val testMethods: Map<String, MutableSet<String>>) {
+internal class Tests(private val testMethods: Map<String, MutableSet<TestMethod>>) {
 
     val classes: Set<String>
         get() = testMethods.keys
 
-    fun getMethods(className: String): MutableSet<String> {
+    fun getMethods(className: String): MutableSet<TestMethod> {
         val methods = testMethods[className]
         return methods ?: mutableSetOf()
     }
+
+    data class TestMethod(val methodName: String, val generatesMultipleScreenshotTests: Boolean, val previewNames: MutableList<String>)
 }

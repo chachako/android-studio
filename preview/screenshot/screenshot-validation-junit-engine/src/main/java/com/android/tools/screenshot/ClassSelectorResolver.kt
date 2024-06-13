@@ -74,7 +74,7 @@ internal class ClassSelectorResolver(
 
     private fun getMethodSelectors(className: String): Set<MethodSelector?> {
         return tests.getMethods(className).stream()
-            .map { methodName -> selectMethod(className, methodName) }
+            .map { testMethod -> selectMethod(className, testMethod.methodName) }
             .collect(toSet())
     }
 

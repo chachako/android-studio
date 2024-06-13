@@ -48,7 +48,10 @@ internal class MethodSelectorResolver(private val tests: Tests) : SelectorResolv
     }
 
     private fun resolve(className: String, methodName: String, context: Context): Resolution {
-        return if (tests.getMethods(className).contains(methodName)) {
+        val testMethod = tests.getMethods(className).firstOrNull { it.methodName == methodName }
+        return if (testMethod == null) {
+            Resolution.unresolved()
+        } else if (testMethod.generatesMultipleScreenshotTests) {
             context.addToParent({ selectClass(className) }) { parent ->
                 createTestMethodDescriptor(
                     className,
@@ -59,7 +62,19 @@ internal class MethodSelectorResolver(private val tests: Tests) : SelectorResolv
                 .map(Match::exact)
                 .map(Resolution::match)
                 .orElseGet(Resolution::unresolved)
-        } else Resolution.unresolved()
+        } else {
+            context.addToParent({ selectClass(className) }) { parent ->
+                createTestMethodTestDescriptor(
+                    className,
+                    methodName,
+                    testMethod.previewNames.singleOrNull(),
+                    parent
+                )
+            }
+                .map(Match::exact)
+                .map(Resolution::match)
+                .orElseGet(Resolution::unresolved)
+        }
     }
 
     private fun createTestMethodDescriptor(
@@ -73,6 +88,23 @@ internal class MethodSelectorResolver(private val tests: Tests) : SelectorResolv
                 uniqueId,
                 methodName,
                 className
+            )
+        )
+    }
+
+    private fun createTestMethodTestDescriptor(
+        className: String,
+        methodName: String,
+        previewName: String?,
+        parent: TestDescriptor
+    ): Optional<TestMethodTestDescriptor> {
+        val uniqueId: UniqueId = parent.uniqueId.append(SEGMENT_TYPE, methodName)
+        return Optional.of<TestMethodTestDescriptor>(
+            TestMethodTestDescriptor(
+                uniqueId,
+                methodName,
+                className,
+                previewName
             )
         )
     }
