@@ -46,6 +46,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
       unmodifiableList(
         listOf(
           AccessibilityDetector.ISSUE,
+          AccessibilityForceFocusDetector.ISSUE,
           ActionsXmlDetector.ISSUE,
           ActivityIconColorDetector.ISSUE,
           AddJavascriptInterfaceDetector.ISSUE,
