@@ -17,6 +17,7 @@ package com.android.tools.idea.wizard.template
 
 import com.android.ide.common.repository.AgpVersion
 import java.io.File
+import java.net.URL
 
 /**
  * Data which is required for template rendering.
@@ -95,6 +96,7 @@ data class ApiTemplateData(
 data class ProjectTemplateData(
   val androidXSupport: Boolean,
   val agpVersion: AgpVersion,
+  val additionalMavenRepos: List<URL>,
   val sdkDir: File?,
   val language: Language,
   val kotlinVersion: String,
