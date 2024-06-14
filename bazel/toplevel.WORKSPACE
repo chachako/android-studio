@@ -253,13 +253,3 @@ http_archive(
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
 
 rules_pkg_dependencies()
-
-vendor_repository(
-    name = "aswb_test_deps",
-    bzl = "@//tools/vendor/google3/aswb/test_deps:deps.bzl",
-    function = "aswb_test_deps_dependencies",
-)
-
-load("@aswb_test_deps//:vendor.bzl", "aswb_test_deps_dependencies")
-
-aswb_test_deps_dependencies()
