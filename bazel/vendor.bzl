@@ -12,5 +12,8 @@ load("@rules_android_ndk//:rules.bzl", "android_ndk_repository")
 def setup_vendor_repositories():
     setup_vendor_repos()
 
-    android_ndk_repository(name = "androidndk")
+    android_ndk_repository(
+      name = "androidndk",
+      api_level = 26,
+    )
     native.register_toolchains("@androidndk//:all")
