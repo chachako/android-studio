@@ -4117,4 +4117,176 @@ class UastTest : TestCase() {
       )
     }
   }
+
+  fun testGetJavaClass() {
+    val source =
+      kotlin(
+        """
+          class Test {
+            fun test() {
+              val x = Test::class.java
+            }
+          }
+        """
+      )
+    check(source) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitSimpleNameReferenceExpression(
+            node: USimpleNameReferenceExpression
+          ): Boolean {
+            if (node.sourcePsi?.text != "java") {
+              return super.visitSimpleNameReferenceExpression(node)
+            }
+
+            val resolved = node.resolve() as? PsiMethod
+            assertNotNull(resolved)
+            // With @JvmName("getJavaClass") on getter
+            assertEquals("getJavaClass", resolved?.name)
+            // Java Class, not KClass
+            assertEquals("java.lang.Class<T>", resolved?.returnType?.canonicalText)
+
+            return super.visitSimpleNameReferenceExpression(node)
+          }
+        }
+      )
+    }
+  }
+
+  fun testResolveJvmNameOnFunctionFromLibrary() {
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            import test.pkg.LibObj
+
+            fun test() {
+              LibObj.foo()
+            }
+          """
+        ),
+        bytecode(
+          "libs/lib.jar",
+          kotlin(
+            """
+              package test.pkg
+
+              object LibObj {
+                @JvmName("notFoo")
+                fun foo() {}
+              }
+            """
+          ),
+          0x399fe321,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S5RYtBiAABz6lUC
+                JAAAAA==
+                """,
+          """
+                test/pkg/LibObj.class:
+                H4sIAAAAAAAA/2VQ227TQBA9u04cx0nJhUKTlnu5FJBwWvHWgFQqKlwZI9Eq
+                EsrTJjFhE19QvIl4zBMfwh9UPFQCCUXwxkchZt0IULHkmXPOzpydnZ+/vnwD
+                8BhbDBUVpMp5Px46nuy96o0KYAzVkZgJJxTx0CEp6KsCDAazLWOpnjIYW/c7
+                ZeRh2sihwJBT72TKUPPOee1ST5yogyRhWPXGiQpl7IxmkXM4i3wRBXSeiykz
+                WO1+mJnb4NrRcv2j4z1//3kZVdhFEmsMm14yGTqjQPUmQsapI2IyF0omhP1E
+                +dMw3NVTLC96GSgxEEqQxqOZQQ9mOhR1AAMbk/5BatYiNNhmaC/mdZs3uM2r
+                i7nNLQ24vZhbPz7yxmK+w1vsWcHi3z+ZpB+uVI113sq9KGhu5bXHDtPOxlv9
+                4OLZDh6NFcPG62msZBS48UymshcGe39Hpx3sJwPaQcWTceBPo14wORZUw1D3
+                kr4IO2IiNV+K9lEynfSDA6lJc2nc+c8W27S0XPbSpt4h5VvETMoXKRt0ms/Y
+                JjFH74Ny/sEprBMCHLeXxSCTOxTLZwUokhVQQ4lOedb8MLuE/vON5j+NbNmo
+                ZygR0+pKStDChT9jrFG7/kpfwd+covIZ9ZNM4LibxZu4R/kJla/SKJe6MFxc
+                drHmooEmQay72MCVLliKq7jWhZnCTnE91eBGBkq/ASHyr2b9AgAA
+                """,
+        ),
+      )
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitCallExpression(node: UCallExpression): Boolean {
+            val resolved = node.resolve()
+            assertNotNull(resolved)
+            assertEquals("notFoo", resolved?.name)
+            return super.visitCallExpression(node)
+          }
+        }
+      )
+    }
+  }
+
+  fun testResolveJvmNameOnGetterFromLibrary() {
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            import test.pkg.*
+
+            fun test() {
+              42.prop
+            }
+          """
+        ),
+        bytecode(
+          "libs/lib.jar",
+          kotlin(
+            """
+              package test.pkg
+
+              val Int.prop: Int
+                  @JvmName("ownPropGetter")
+                  get() = this * 31
+            """
+          ),
+          0x4413c592,
+          """
+                META-INF/main.kotlin_module:
+                H4sIAAAAAAAA/2NgYGBmYGBgBGJOBijg4uJiEGILSS0u8S7hEuLiKAGy9Aqy
+                02FiSgxaDACtE4vTOAAAAA==
+                """,
+          """
+                TestKt.class:
+                H4sIAAAAAAAA/zVOTU/CQBScbaGVClLEL/Dr4AU8WDDePBkTTSN+RAkeOC2w
+                IUthS9oFPfKXvBkPhrM/yvhW4zu8N/NmJpmv749PAGc4ZHDaItU32gVj8Ed8
+                zoMxV8PgvjcSffraDBlNDga7Vu8wFA0JptEw+M+5DIX4RT0k8fRaaC0SStTC
+                ephHDp6HFawylFpRrMdSBbdC8wHX/JzBmsxtKsHMypkFBhYZYJH4Kg1qEBo0
+                GcrLheMtF57lW1XHXy6qVoMZ6ZSZlGs6nUTUMXMZDwSVbEkl7maTnkjavDem
+                j/cUz5K+uJKGVB5nSsuJ6MhUknqhVKy5lrFK0YSFDP7KVJCFQ3eX2BFdM65/
+                /I7889uvYY+2RwH8Gh1C+6Y9qjig2yRHgZS1LuwQxRB+iBLWQ5SxEWITW12w
+                FNvY6cJKkU1R+QEBzkCulwEAAA==
+                """,
+          """
+                test/pkg/TestKt.class:
+                H4sIAAAAAAAA/2WPT08TQRjGn5mWpSxgFwSxBcUYEv8cXDAkmngiJpLVCkYJ
+                l56m7QSm7c42O9OFI5/Fs5/AAyEe/VDGZyiePLz/fvPMzPv8/vPzGsA+ngg0
+                vXY+nYzO0hM2n/w8hEAyVJVKx8qepce9oe6T1gSWiwv7pSwmh9p7XQrUn2cv
+                MoG1zqjwY2PTYZWnH6v8SOX6HU8tq0C848+N25nwnoCgfOWf/LP2aqC8olbm
+                VY0LiZAWQgK1o9BIHl6a0O2yG+wJPLu5imOGTBqxbMin68nNVVvuipeMt4e/
+                vkdRu96QSS3IX3ON2c98cD44fTXyZO+LAVdrdozVR9O8p8sT1RuTrHaKvhqf
+                qtKE+Q5ufp1ab3Kd2co4Q3RgbeGVN4V19PetmJZ9/cEEaetOevqfEHuQqGNm
+                rYU5RJzbnFJWroe5drJ9/iM4xiZzdAsjbDEvzQRYQMz6iLEY7DAajlji8e21
+                FrZZ3xAvki51UcuwnOFehiaSDCtYzXAfa10Ih3U86KLusOHwkG84RH8BOGOs
+                DhQCAAA=
+                """,
+        ),
+      )
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitSimpleNameReferenceExpression(
+            node: USimpleNameReferenceExpression
+          ): Boolean {
+            if (node.sourcePsi?.text != "prop") {
+              return super.visitSimpleNameReferenceExpression(node)
+            }
+
+            val resolved = node.resolve() as? PsiMethod
+            assertNotNull(resolved)
+            assertEquals("ownPropGetter", resolved?.name)
+
+            return super.visitSimpleNameReferenceExpression(node)
+          }
+        }
+      )
+    }
+  }
 }
