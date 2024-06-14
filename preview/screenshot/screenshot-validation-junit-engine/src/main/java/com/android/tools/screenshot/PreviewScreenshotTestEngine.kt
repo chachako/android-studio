@@ -34,14 +34,36 @@ import org.junit.platform.engine.support.discovery.EngineDiscoveryRequestResolve
 
 class PreviewScreenshotTestEngine : TestEngine {
 
+    private data class Parameters(
+        val diffImageDirPath: String,
+        val previewsDiscovered: String,
+        val referenceImageDirPath: String,
+        val renderResultsFilePath: String,
+        val renderTaskOutputDir: String?,
+        val resultsDirPath: String?,
+        val threshold: String?
+    )
+
+    private val parameters: Parameters by lazy {
+        Parameters(
+            requireNotNull(getParam("diffImageDirPath")) { "diffImageDirPath param must not be null" },
+            requireNotNull(getParam("previews-discovered")) { "previews-discovered param must not be null" },
+            requireNotNull(getParam("referenceImageDirPath")) { "referenceImageDirPath param must not be null" },
+            requireNotNull(getParam("renderResultsFilePath")) { "renderResultsFilePath param must not be null" },
+            getParam("renderTaskOutputDir"),
+            getParam("resultsDirPath"),
+            getParam("threshold"),
+        )
+    }
+
     override fun getId(): String {
         return "preview-screenshot-test-engine"
     }
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
         val engineDescriptor = EngineDescriptor(uniqueId, "Preview Screenshot Test Engine")
-        val screenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")!!).reader())
-        val screenshotResults = readComposeRenderingResultJson(File(getParam("renderResultsFilePath")!!).reader()).screenshotResults
+        val screenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(parameters.previewsDiscovered).reader())
+        val screenshotResults = readComposeRenderingResultJson(File(parameters.renderResultsFilePath).reader()).screenshotResults
         val testMap = mutableMapOf<String, MutableSet<Tests.TestMethod>>()
         for (screenshot in screenshots) {
             val methodName = screenshot.methodFQN.split(".").last()
@@ -85,9 +107,9 @@ class PreviewScreenshotTestEngine : TestEngine {
         val listener = request.engineExecutionListener
         val resultsToSave = mutableListOf<PreviewResult>()
         if (request.rootTestDescriptor.children.isEmpty()) return
-        val resultFile = File(getParam("renderResultsFilePath")!!)
+        val resultFile = File(parameters.renderResultsFilePath)
         val screenshotResults = readComposeRenderingResultJson(resultFile.reader()).screenshotResults
-        val composeScreenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(getParam("previews-discovered")!!).reader())
+        val composeScreenshots: List<ComposeScreenshot> = readComposeScreenshotsJson(File(parameters.previewsDiscovered).reader())
 
         for (classDescriptor in request.rootTestDescriptor.children) {
             listener.executionStarted(classDescriptor)
@@ -112,19 +134,19 @@ class PreviewScreenshotTestEngine : TestEngine {
             listener.executionFinished(classDescriptor, TestExecutionResult.successful())
         }
         if (resultsToSave.isNotEmpty()) {
-            saveResults(resultsToSave, "${getParam("resultsDirPath")}/TEST-results.xml")
+            saveResults(resultsToSave, "${parameters.resultsDirPath}/TEST-results.xml")
         }
     }
 
     private fun compareImages(composeScreenshot: ComposeScreenshotResult, testDisplayName: String, startTime: Long): PreviewResult {
         // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
-        var referencePath = File(getParam("referenceImageDirPath")!!).toPath().resolve(composeScreenshot.imageName)
+        var referencePath = File(parameters.referenceImageDirPath).toPath().resolve(composeScreenshot.imageName)
         var referenceMessage: String? = null
-        val actualPath = File(getParam("renderTaskOutputDir"), composeScreenshot.imageName).toPath()
-        var diffPath = File(getParam("diffImageDirPath")!!).toPath().resolve(composeScreenshot.imageName)
+        val actualPath = File(parameters.renderTaskOutputDir, composeScreenshot.imageName).toPath()
+        var diffPath = File(parameters.diffImageDirPath).toPath().resolve(composeScreenshot.imageName)
         var diffMessage: String? = null
         var code = 0
-        val threshold = getParam("threshold")?.toFloat()
+        val threshold = parameters.threshold?.toFloat()
         val imageDiffer = if (threshold != null) {
             ImageDiffer.MSSIMMatcher(threshold)
         } else {
