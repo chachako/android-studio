@@ -436,6 +436,10 @@ public final class SdkConstants {
     public static final String FD_TEST_FIXTURES = "testFixtures";
     /** Default java code folder name, i.e. "java" */
     public static final String FD_JAVA = "java";
+
+    /** Default kotlin code folder name, i.e. "kotlin" */
+    public static final String FD_KOTLIN = "kotlin";
+
     /** Default native code folder name, i.e. "jni" */
     public static final String FD_JNI = "jni";
     /** Default gradle folder name, i.e. "gradle" */
@@ -1750,7 +1754,8 @@ public final class SdkConstants {
     public static final String ATTR_LAYOUT_CONSTRAINTSET = "constraintSet";
     public static final String ATTR_LAYOUT_CONSTRAINT_CIRCLE = "layout_constraintCircle";
     public static final String ATTR_LAYOUT_CONSTRAINT_CIRCLE_ANGLE = "layout_constraintCircleAngle";
-    public static final String ATTR_LAYOUT_CONSTRAINT_CIRCLE_RADIUS = "layout_constraintCircleRadius";
+    public static final String ATTR_LAYOUT_CONSTRAINT_CIRCLE_RADIUS =
+            "layout_constraintCircleRadius";
     public static final String ATTR_LAYOUT_CONSTRAINED_HEIGHT = "layout_constrainedHeight";
     public static final String ATTR_LAYOUT_CONSTRAINED_WIDTH = "layout_constrainedWidth";
     public static final String ATTR_CONSTRAINT_SET_START = "constraintSetStart";
@@ -3008,8 +3013,8 @@ public final class SdkConstants {
     @Deprecated
     public static String androidCmdName() {
         throw new UnsupportedOperationException(
-                "The \"android\" command is no longer included in the SDK. Any references to it (e.g. "
-                        + "by third-party plugins) should be removed.");
+                "The \"android\" command is no longer included in the SDK. Any references to it"
+                        + " (e.g. by third-party plugins) should be removed.");
     }
 
     public static final String META_INF = "meta-inf";
