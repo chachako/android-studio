@@ -33,6 +33,7 @@ internal class AndroidProjectBuilderImpl(
     override var compileSdkPreview: String? = null
     override var buildToolsRevision: String? = null
     override var compileSdk: Int? = null
+    override var compileSdkExtension: Int? = null
     override var minSdk: Int? = null
     override var minSdkPreview: String? = null
     override var targetProjectPath: String? = null
@@ -139,6 +140,12 @@ internal class AndroidProjectBuilderImpl(
             compileSdk?.let {
                 sb.append("  compileSdk = $it\n")
             }
+            compileSdkExtension?.let {
+                if (compileSdk == null) error("compileSdk must be set with compileSdkExtension.")
+
+                sb.append("  compileSdkExtension = $it\n")
+            }
+
         }
         buildToolsRevision?.let {
             sb.append("  buildToolsVersion = \"$it\"\n")

@@ -174,6 +174,7 @@ interface AndroidProjectBuilder {
     var compileSdkPreview: String?
     var buildToolsRevision: String?
     var compileSdk: Int?
+    var compileSdkExtension: Int?
     var minSdk: Int?
     var minSdkPreview: String?
     var targetProjectPath: String?
