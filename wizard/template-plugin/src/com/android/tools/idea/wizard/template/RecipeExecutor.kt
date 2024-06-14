@@ -124,7 +124,8 @@ interface RecipeExecutor {
     configuration: String = "implementation",
     minRev: String? = null,
     moduleDir: File? = null,
-    toBase: Boolean = false
+    toBase: Boolean = false,
+    sourceSetName: String? = null
   )
 
   /**
