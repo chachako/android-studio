@@ -16,11 +16,11 @@
 package com.android.utils
 
 import com.android.utils.sleep.TestThreadSleeper
-import com.android.utils.time.TestTimeSource
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TestTimeSource
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4

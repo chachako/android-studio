@@ -16,9 +16,9 @@
 package com.android.utils
 
 import com.android.utils.sleep.ThreadSleeper
-import com.android.utils.time.TimeSource
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlin.time.TimeSource
 
 /**
  * Executes [block] at least once and up to [maxRetries] additional times, retrying if it throws

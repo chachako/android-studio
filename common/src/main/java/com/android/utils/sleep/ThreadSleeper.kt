@@ -15,11 +15,11 @@
  */
 package com.android.utils.sleep
 
-import com.android.utils.time.toDurationUnit
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
+import kotlin.time.toDurationUnit
 
 /** Object that wraps calls to `Thread.sleep` so they can be tested. See [TestThreadSleeper]. */
 sealed class ThreadSleeper {
