@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
 import com.android.build.gradle.integration.common.fixture.app.MultiModuleTestProject
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.testutils.apk.Zip
+import com.android.testutils.truth.PathSubject
 import com.android.tools.profgen.ArtProfile
 import com.android.tools.profgen.HumanReadableProfile
 import com.android.utils.FileUtils
@@ -358,10 +359,11 @@ class ArtProfileMultipleLibrariesTest(
             SdkConstants.FD_INTERMEDIATES,
             InternalArtifactType.BINARY_ART_PROFILE_METADATA.getFolderName(),
             "release",
+            "compileReleaseArtProfile",
             SdkConstants.FN_BINARY_ART_PROFILE_METADATA,
         )
 
-        Truth.assertThat(binaryProfileMetadata.exists())
+        PathSubject.assertThat(binaryProfileMetadata).exists()
 
         // check APK packaging.
         project.getSubproject(":app").getApk(GradleTestProject.ApkType.RELEASE).also {

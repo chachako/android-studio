@@ -22,6 +22,7 @@ import com.android.build.gradle.integration.common.fixture.app.HelloWorldLibrary
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.testutils.apk.Zip
+import com.android.testutils.truth.PathSubject
 import com.android.tools.profgen.ArtProfile
 import com.android.tools.profgen.HumanReadableProfile
 import com.android.utils.FileUtils
@@ -215,7 +216,7 @@ class ArtProfileSingleLibraryTest {
             SdkConstants.FN_BINARY_ART_PROFILE_METADATA,
         )
 
-        Truth.assertThat(binaryProfileMetadata.exists())
+        PathSubject.assertThat(binaryProfileMetadata).exists()
 
         // check contents of dex metadata properties file produced in CompileArtProfileTask
         val dexMetadataProperties = FileUtils.join(

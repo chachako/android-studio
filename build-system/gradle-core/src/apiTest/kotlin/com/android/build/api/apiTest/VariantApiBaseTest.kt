@@ -339,7 +339,7 @@ ${
         }
 
         internal open fun writeModule(folder: File) {
-            Truth.assertThat(buildFile != null)
+            Truth.assertThat(buildFile).isNotNull()
 
             addBuildFile(folder)
 

@@ -304,7 +304,7 @@ class TableExtractorTest {
     assertThat(str.toString()).isEqualTo("?123")
     assertThat(str.untranslatables).isEmpty()
 
-    assertThat(testParse("""<string name="bar">This isn\'t a bad string</string>"""))
+    assertThat(testParse("""<string name="bar">This isn\'t a bad string</string>""")).isTrue()
     str = getValue("string/bar") as BasicString
     assertThat(str.toString()).isEqualTo("This isn't a bad string")
   }
@@ -363,21 +363,19 @@ class TableExtractorTest {
 
   @Test
   fun testParseStringWithWhitespace() {
-    assertThat(testParse("""<string name="foo">  This is what   I think  </string>"""))
+    assertThat(testParse("""<string name="foo">  This is what   I think  </string>""")).isTrue()
 
     var str = getValue("string/foo") as BasicString
     assertThat(str.toString()).isEqualTo("This is what I think")
     assertThat(str.untranslatables).isEmpty()
 
-    assertThat(
-      testParse("""<string name="foo2">"  This is what   I think  "</string>"""))
+    assertThat(testParse("""<string name="foo2">"  This is what   I think  "</string>""")).isTrue()
 
     str = getValue("string/foo2") as BasicString
     assertThat(str.toString()).isEqualTo("  This is what   I think  ")
     assertThat(str.untranslatables).isEmpty()
 
-    assertThat(
-      testParse("""<string name="foo3">"\nHello world\n\n"</string>"""))
+    assertThat(testParse("""<string name="foo3">"\nHello world\n\n"</string>""")).isTrue()
 
     str = getValue("string/foo3") as BasicString
     assertThat(str.toString()).isEqualTo("\nHello world\n\n")
@@ -386,19 +384,19 @@ class TableExtractorTest {
 
   @Test
   fun testParseStringWithExplicitNewLines() {
-    assertThat(testParse("""<string name="foo">\n\nTest\n\n</string>"""))
+    assertThat(testParse("""<string name="foo">\n\nTest\n\n</string>""")).isTrue()
 
     var str = getValue("string/foo") as BasicString
     assertThat(str.toString()).isEqualTo("\n\nTest\n\n")
     assertThat(str.untranslatables).isEmpty()
 
-    assertThat(testParse("""<string name="foo2">      \n      </string>"""))
+    assertThat(testParse("""<string name="foo2">      \n      </string>""")).isTrue()
 
     str = getValue("string/foo2") as BasicString
     assertThat(str.toString()).isEqualTo("\n")
     assertThat(str.untranslatables).isEmpty()
 
-     assertThat(testParse("""<string name="foo3">\n\n\n\n\n\n\n\n\n</string>"""))
+     assertThat(testParse("""<string name="foo3">\n\n\n\n\n\n\n\n\n</string>""")).isTrue()
 
     str = getValue("string/foo3") as BasicString
     assertThat(str.toString()).isEqualTo("\n\n\n\n\n\n\n\n\n")
@@ -423,7 +421,7 @@ class TableExtractorTest {
 
   @Test
   fun testStringOfWhitespaces() {
-    assertThat(testParse("""<string name="foo">      </string>"""))
+    assertThat(testParse("""<string name="foo">      </string>""")).isTrue()
 
     var str = getValue("string/foo") as BasicString
     assertThat(str.toString()).isEmpty()
@@ -444,7 +442,7 @@ class TableExtractorTest {
 
   @Test
   fun testEmptyString() {
-    assertThat(testParse("""<string name="foo"></string>"""))
+    assertThat(testParse("""<string name="foo"></string>""")).isTrue()
 
     val str = getValue("string/foo") as BasicString
     assertThat(str.toString()).isEmpty()
@@ -453,19 +451,19 @@ class TableExtractorTest {
 
   @Test
   fun testShortStrings() {
-    assertThat(testParse("""<string name="foo">a</string>"""))
+    assertThat(testParse("""<string name="foo">a</string>""")).isTrue()
 
     var str = getValue("string/foo") as BasicString
     assertThat(str.toString()).isEqualTo("a")
     assertThat(str.untranslatables).isEmpty()
 
-    assertThat(testParse("""<string name="foo2">\n</string>"""))
+    assertThat(testParse("""<string name="foo2">\n</string>""")).isTrue()
 
     str = getValue("string/foo2") as BasicString
     assertThat(str.toString()).isEqualTo("\n")
     assertThat(str.untranslatables).isEmpty()
 
-    assertThat(testParse("""<string name="foo3">"</string>"""))
+    assertThat(testParse("""<string name="foo3">"</string>""")).isTrue()
 
     str = getValue("string/foo3") as BasicString
     //AAPT2 removes the single quotes, so should be empty.
@@ -475,19 +473,19 @@ class TableExtractorTest {
 
   @Test
   fun testStringWithSlash() {
-    assertThat(testParse("""<string name="foo">\</string>"""))
+    assertThat(testParse("""<string name="foo">\</string>""")).isTrue()
 
     var str = getValue("string/foo") as BasicString
     assertThat(str.toString()).isEqualTo("")
     assertThat(str.untranslatables).isEmpty()
 
-    assertThat(testParse("""<string name="foo2">\woo\</string>"""))
+    assertThat(testParse("""<string name="foo2">\woo\</string>""")).isTrue()
 
     str = getValue("string/foo2") as BasicString
     assertThat(str.toString()).isEqualTo("woo")
     assertThat(str.untranslatables).isEmpty()
 
-    assertThat(testParse("""<string name="foo3">\@\'\\</string>"""))
+    assertThat(testParse("""<string name="foo3">\@\'\\</string>""")).isTrue()
 
     str = getValue("string/foo3") as BasicString
     assertThat(str.toString()).isEqualTo("@'\\")

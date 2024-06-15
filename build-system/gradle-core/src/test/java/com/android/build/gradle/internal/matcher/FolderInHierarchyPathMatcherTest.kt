@@ -43,7 +43,7 @@ class FolderInHierarchyPathMatcherTest {
     @Test
     fun testSingleCharacterFolder() {
         val matcher = FolderInHierarchyPathMatcher.factory().pattern().matcher("**/c/**")
-        assertThat(matcher.matches())
+        assertThat(matcher.matches()).isTrue()
         val folderInHierarchyPathMatcher = FolderInHierarchyPathMatcher(matcher)
         assertThat(folderInHierarchyPathMatcher.matches(Paths.get("/a/b/c/d/e"))).isTrue()
         assertThat(folderInHierarchyPathMatcher.matches(Paths.get("/b/c/d"))).isTrue()
@@ -59,7 +59,7 @@ class FolderInHierarchyPathMatcherTest {
     @Test
     fun testSingleCharacterPrefixFolder() {
         val matcher = FolderInHierarchyPathMatcher.factory().pattern().matcher("**/_*/**")
-        assertThat(matcher.matches())
+        assertThat(matcher.matches()).isTrue()
         val folderInHierarchyPathMatcher = FolderInHierarchyPathMatcher(matcher)
         assertThat(folderInHierarchyPathMatcher.matches(Paths.get("/a/b/c/d/e"))).isFalse()
         assertThat(folderInHierarchyPathMatcher.matches(Paths.get("/a/b/c_c/d/e"))).isFalse()
@@ -74,7 +74,7 @@ class FolderInHierarchyPathMatcherTest {
     @Test
     fun testSuffixFolder() {
         val matcher = FolderInHierarchyPathMatcher.factory().pattern().matcher("**/*bar/**")
-        assertThat(matcher.matches())
+        assertThat(matcher.matches()).isTrue()
         val folderInHierarchyPathMatcher = FolderInHierarchyPathMatcher(matcher)
         assertThat(folderInHierarchyPathMatcher.matches(Paths.get("/a/b/bar/d/e"))).isTrue()
         assertThat(folderInHierarchyPathMatcher.matches(Paths.get("/a/b/abar/d/e"))).isTrue()
@@ -89,7 +89,7 @@ class FolderInHierarchyPathMatcherTest {
     @Test
     fun testPrefixFolder() {
         val matcher = FolderInHierarchyPathMatcher.factory().pattern().matcher("**/bar*/**")
-        assertThat(matcher.matches())
+        assertThat(matcher.matches()).isTrue()
         val folderInHierarchyPathMatcher = FolderInHierarchyPathMatcher(matcher)
         assertThat(folderInHierarchyPathMatcher.matches(Paths.get("/a/b/bar/d/e"))).isTrue()
         assertThat(folderInHierarchyPathMatcher.matches(Paths.get("/a/b/barb/d/e"))).isTrue()
@@ -104,7 +104,7 @@ class FolderInHierarchyPathMatcherTest {
     @Test
     fun testFolderName() {
         val matcher = FolderInHierarchyPathMatcher.factory().pattern().matcher("**/SCCS/**")
-        assertThat(matcher.matches())
+        assertThat(matcher.matches()).isTrue()
         val folderInHierarchyPathMatcher = FolderInHierarchyPathMatcher(matcher)
         assertThat(folderInHierarchyPathMatcher.matches(Paths.get("/a/b/SCCS/d/e"))).isTrue()
         assertThat(folderInHierarchyPathMatcher.matches(Paths.get("/a/b/SCCS.1/d/e"))).isFalse()

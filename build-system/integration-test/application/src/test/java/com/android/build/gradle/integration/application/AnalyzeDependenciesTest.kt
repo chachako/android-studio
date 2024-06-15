@@ -9,6 +9,7 @@ import com.android.build.gradle.tasks.DependenciesUsageReport
 import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.testutils.generateAarWithContent
+import com.android.testutils.truth.PathSubject
 import com.android.utils.usLocaleCapitalize
 import com.google.common.io.Resources
 import com.google.common.truth.Truth.assertThat
@@ -213,7 +214,7 @@ class AnalyzeDependenciesTest {
             "analyzeDependencies",
             "dependenciesReport.json"
         )
-        assertThat(dependencyAnalysisReport.exists())
+        PathSubject.assertThat(dependencyAnalysisReport).exists()
 
         val dependencyReportJson = dependencyAnalysisReport.readText()
         val parsedJson =

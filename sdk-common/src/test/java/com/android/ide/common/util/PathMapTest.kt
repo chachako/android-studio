@@ -52,7 +52,7 @@ class PathMapTest(val mapType: PathMapType) {
     fun testEmptyMap() {
         val map = buildMap(mapOf<PathString, PathString>())
 
-        Truth.assertThat(map.values.toList().isEmpty())
+        Truth.assertThat(map.values.toList()).isEmpty()
         Truth.assertThat(map.findAllStartingWith(PathString("/")).toList().isEmpty()).isTrue()
         Truth.assertThat(map.containsKeyStartingWith(PathString(""))).isFalse()
         Truth.assertThat(map[PathString("foo")]).isNull()

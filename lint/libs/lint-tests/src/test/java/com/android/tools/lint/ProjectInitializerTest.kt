@@ -315,13 +315,13 @@ class ProjectInitializerTest {
             REGISTERED_PROJECT -> {
               assertThat(project).isNotNull()
               project!!
-              assertThat(project.name == "App")
+              assertThat(project.name).isEqualTo("$appProjectPath:App")
               assertThat(project.buildSdk).isEqualTo(18)
               assertionsChecked++
 
               // Lib project
               val libProject = project.directLibraries[0]
-              assertThat(libProject.name == "Library")
+              assertThat(libProject.name).isEqualTo("Library")
 
               val manifest = client.getMergedManifest(libProject)
               assertThat(manifest).isNotNull()

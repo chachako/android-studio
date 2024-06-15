@@ -188,7 +188,7 @@ class ParseIntegrityConfigTaskTest {
         // Under test
         taskAction.configure(task)
 
-        assertThat(task.integrityConfigDir.isPresent)
+        assertThat(task.integrityConfigDir.isPresent).isTrue()
         val configDir = task.integrityConfigDir.asFile.get()
         assertThat(configDir).exists()
         val configFile = configDir.resolve(configFileName)

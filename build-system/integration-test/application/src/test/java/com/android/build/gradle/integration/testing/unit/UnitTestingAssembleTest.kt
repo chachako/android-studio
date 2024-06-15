@@ -34,7 +34,7 @@ class UnitTestingAssembleTest {
     fun testAssembleTasks() {
         // android resources related tasks should not run but the rest should.
         var result = project.executor().run("assembleUnitTest")
-        Truth.assertThat(result.didWorkTasks.contains("compileDebugUnitTest"))
+        Truth.assertThat(result.didWorkTasks).contains("compileDebugUnitTest")
         Truth.assertThat(result.didWorkTasks).doesNotContain(":packageDebugUnitTestForUnitTest")
 
         TestFileUtils.appendToFile(project.buildFile,

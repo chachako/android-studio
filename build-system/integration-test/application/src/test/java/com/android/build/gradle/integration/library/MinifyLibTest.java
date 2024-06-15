@@ -29,12 +29,14 @@ import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.builder.model.v2.ide.SyncIssue;
 import com.android.testutils.apk.Apk;
 import com.android.utils.FileUtils;
+
+import org.junit.Rule;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.zip.ZipFile;
-import org.junit.Rule;
-import org.junit.Test;
 
 /** Assemble tests for minifyLib. */
 public class MinifyLibTest {
@@ -70,7 +72,8 @@ public class MinifyLibTest {
         TestFileUtils.appendToFile(
                 project.getSubproject(":lib").getBuildFile(),
                 "android {\n"
-                        + "defaultConfig.consumerProguardFiles getDefaultProguardFile('proguard-android.txt')\n"
+                        + "defaultConfig.consumerProguardFiles"
+                        + " getDefaultProguardFile('proguard-android.txt')\n"
                         + "}\n");
 
         Collection<SyncIssue> syncIssues = project.modelV2()
@@ -83,7 +86,9 @@ public class MinifyLibTest {
         SyncIssue issue = syncIssues.iterator().next();
         assertThat(issue.getType()).isEqualTo(SyncIssue.TYPE_GENERIC);
         assertThat(issue.getSeverity()).isEqualTo(SyncIssue.SEVERITY_ERROR);
-        assertThat(issue.getMessage()).contains("proguard-android.txt should not be used as a consumer configuration file");
+        assertThat(issue.getMessage())
+                .contains(
+                        "proguard-android.txt should not be used as a consumer configuration file");
     }
 
     @Test
@@ -111,7 +116,7 @@ public class MinifyLibTest {
                         "/intermediates/runtime_library_classes_jar/release/bundleLibRuntimeToJarRelease/classes.jar");
 
         try (ZipFile jar = new ZipFile(minifiedClassesJar)) {
-            assertThat(jar.getEntry("c/a/t/b/SP.class") != null);
+            assertThat(jar.getEntry("c/a/t/b/SP.class")).isNotNull();
         }
         // Check library classes are packaged in apk
         try (Apk apk = project.getSubproject(":app").getApk(RELEASE)) {
@@ -187,7 +192,8 @@ public class MinifyLibTest {
                         + buildType
                         + " {\n"
                         + "        minifyEnabled true\n"
-                        + "        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'config.pro'\n"
+                        + "        proguardFiles getDefaultProguardFile('proguard-android.txt'),"
+                        + " 'config.pro'\n"
                         + "    }\n"
                         + "}");
         TestFileUtils.appendToFile(

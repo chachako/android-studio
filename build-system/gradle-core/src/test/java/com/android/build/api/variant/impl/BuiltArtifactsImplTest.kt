@@ -24,6 +24,7 @@ import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.ide.common.build.BaselineProfileDetails
 import com.android.ide.common.build.GenericBuiltArtifactsLoader
 import com.android.ide.common.build.ListingFileRedirect
+import com.android.testutils.truth.PathSubject
 import com.android.utils.NullLogger
 import com.google.common.truth.Truth
 import org.junit.Rule
@@ -59,7 +60,7 @@ class BuiltArtifactsImplTest {
         ).save(FakeGradleDirectory(outputFolder))
 
         val outputJsonFile = File(outputFolder, BuiltArtifactsImpl.METADATA_FILE_NAME)
-        Truth.assertThat(outputJsonFile.exists())
+        PathSubject.assertThat(outputJsonFile).exists()
         val jsonContent = outputJsonFile.readText(Charsets.UTF_8)
         Truth.assertThat(jsonContent).isEqualTo(
             """{
@@ -103,7 +104,7 @@ class BuiltArtifactsImplTest {
         ).save(FakeGradleDirectory(outputFolder))
 
         val outputJsonFile = File(outputFolder, BuiltArtifactsImpl.METADATA_FILE_NAME)
-        Truth.assertThat(outputJsonFile.exists())
+        PathSubject.assertThat(outputJsonFile).exists()
         val jsonContent = outputJsonFile.readText(Charsets.UTF_8)
         Truth.assertThat(jsonContent).isEqualTo(
                 """{
@@ -171,7 +172,7 @@ class BuiltArtifactsImplTest {
         ).save(FakeGradleDirectory(outputFolder))
 
         val outputJsonFile = File(outputFolder, BuiltArtifactsImpl.METADATA_FILE_NAME)
-        Truth.assertThat(outputJsonFile.exists())
+        PathSubject.assertThat(outputJsonFile).exists()
         val jsonContent = outputJsonFile.readText(Charsets.UTF_8)
         Truth.assertThat(jsonContent).isEqualTo(
             """{
@@ -238,7 +239,7 @@ class BuiltArtifactsImplTest {
             )).save(FakeGradleDirectory(outputFolder))
 
         val outputJsonFile = File(outputFolder, BuiltArtifactsImpl.METADATA_FILE_NAME)
-        Truth.assertThat(outputJsonFile.exists())
+        PathSubject.assertThat(outputJsonFile).exists()
         val jsonContent = outputJsonFile.readText(Charsets.UTF_8)
         Truth.assertThat(jsonContent).isEqualTo(
             """{
@@ -279,7 +280,7 @@ class BuiltArtifactsImplTest {
             )).save(FakeGradleDirectory(outputFolder))
 
         val outputJsonFile = File(outputFolder, BuiltArtifactsImpl.METADATA_FILE_NAME)
-        Truth.assertThat(outputJsonFile.exists())
+        PathSubject.assertThat(outputJsonFile).exists()
         val jsonContent = outputJsonFile.readText(Charsets.UTF_8)
         Truth.assertThat(jsonContent).isEqualTo(
             """{
@@ -348,7 +349,7 @@ class BuiltArtifactsImplTest {
         ).save(FakeGradleDirectory(outputFolder))
 
         val outputJsonFile = File(outputFolder, BuiltArtifactsImpl.METADATA_FILE_NAME)
-        Truth.assertThat(outputJsonFile.exists())
+        PathSubject.assertThat(outputJsonFile).exists()
         val jsonContent = outputJsonFile.readText(Charsets.UTF_8)
         Truth.assertThat(jsonContent).isEqualTo(
             """

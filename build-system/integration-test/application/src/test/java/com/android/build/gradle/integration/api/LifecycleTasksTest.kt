@@ -18,6 +18,7 @@ package com.android.build.gradle.integration.api
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.app.HelloWorldApp
+import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.google.common.truth.Truth
 import org.junit.Rule
 import org.junit.Test
@@ -61,6 +62,6 @@ class LifecycleTasksTest {
 
         val buildResult = project.executor().run("preDebugBuild")
         Truth.assertThat(buildResult.didWorkTasks).contains(":customPreBuild")
-        Truth.assertThat(buildResult.stdout.findAll("PreBuildCustomTask ran !"))
+        ScannerSubject.assertThat(buildResult.stdout).contains("PreBuildCustomTask ran !")
     }
 }

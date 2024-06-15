@@ -47,7 +47,7 @@ class BootClasspathBuilderTest {
 
     @After
     fun checkIssues() {
-        assertThat(issueReporter.messages.isEmpty())
+        assertThat(issueReporter.messages).isEmpty()
     }
 
     /** Regression test for b/139780810 */

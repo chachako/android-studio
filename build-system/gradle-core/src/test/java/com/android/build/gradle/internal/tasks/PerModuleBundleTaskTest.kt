@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.testutils.TestInputsGenerator
+import com.android.testutils.truth.PathSubject
 import com.android.testutils.truth.ZipFileSubject.assertThat
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
@@ -155,7 +156,7 @@ class PerModuleBundleTaskTest {
 
     private fun verifyOutputZip(zipFile: File, expectedNumberOfDexFiles: Int) {
         assertThat(expectedNumberOfDexFiles).isGreaterThan(0)
-        assertThat(zipFile.exists())
+        PathSubject.assertThat(zipFile).exists()
         assertThat(zipFile) {
             it.contains("dex/classes.dex")
             for (index in 2..expectedNumberOfDexFiles) {

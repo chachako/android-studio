@@ -159,7 +159,7 @@ class AppAndLibWithLintPublishModelTest {
         val androidProject = result.container.getProject(":lib").androidProject
             ?: throw RuntimeException("No AndroidProject model for :lib")
 
-        Truth.assertThat(androidProject.lintChecksJars.isEmpty())
+        Truth.assertThat(androidProject.lintChecksJars).isEmpty()
     }
 }
 
