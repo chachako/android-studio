@@ -64,7 +64,6 @@ import com.android.sdklib.SdkVersionInfo
 import com.android.tools.lint.checks.ApiLookup.equivalentName
 import com.android.tools.lint.checks.ApiLookup.startsWithEquivalentPrefix
 import com.android.tools.lint.checks.DesugaredMethodLookup.Companion.canBeDesugaredLater
-import com.android.tools.lint.checks.DesugaredMethodLookup.Companion.isDesugaredClass
 import com.android.tools.lint.checks.DesugaredMethodLookup.Companion.isDesugaredField
 import com.android.tools.lint.checks.DesugaredMethodLookup.Companion.isDesugaredMethod
 import com.android.tools.lint.checks.RtlDetector.ATTR_SUPPORTS_RTL
@@ -1028,8 +1027,18 @@ class ApiDetector : ResourceXmlDetector(), SourceCodeScanner, ResourceFolderScan
               return false
             }
           } else {
-            if (isDesugaredClass(owner, sourceSet, mainProject)) {
+            val lookup = DesugaredMethodLookup.getLookup(mainProject, sourceSet)
+            if (lookup.isDesugaredClass(owner)) {
               return false
+            } else {
+              val message = map.getString(KEY_MESSAGE, "") ?: ""
+              if (message.startsWith("Implicit cast ")) {
+                if (lookup.isClassPartiallyDesugared(owner)) {
+                  // For implicit casts we're also okay with classes that are partially
+                  // mentioned; the assumption is it's probably okay
+                  return false
+                }
+              }
             }
           }
         }

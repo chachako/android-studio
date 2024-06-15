@@ -48,7 +48,38 @@ class DesugaredMethodLookup(val methodDescriptors: Array<String>, val names: Set
       // parameters passed in
       compare(owner, name, desc, o1)
     }
-    return Arrays.binarySearch(methodDescriptors, "placeholder", signatureComparator) >= 0
+    val index = Arrays.binarySearch(methodDescriptors, "placeholder", signatureComparator)
+    if (index < 0 && name == "<init>") {
+      // Constructors seem to be missing from the desugaring files;
+      // see b/347167978 so work around that with the assumption that
+      // constructors are supported if any methods in the class are desugared.
+      // (This is a temporary workaround until updated desugaring
+      // files contain constructors *and* are widely used, since users
+      // have to update their core library desugaring library versions.)
+      if (isClassPartiallyDesugared(owner)) {
+        return true
+      }
+    }
+    return index >= 0
+  }
+
+  /**
+   * The [isDesugaredClass] method returns true if a class is **fully** desugared. But there are
+   * scenarios where we want to know if a class is at least partially desugared. This method returns
+   * true in that case.
+   */
+  fun isClassPartiallyDesugared(owner: String): Boolean {
+    val target = owner.replace('.', '/')
+    return Arrays.binarySearch(methodDescriptors, "placeholder") { o1, _ ->
+      // We're not really comparing the two lambda parameters;
+      // we're looking at the combination of o1 and the pair of
+      // parameters passed in
+      if (o1.startsWith(target)) {
+        0
+      } else {
+        o1.compareTo(target)
+      }
+    } >= 0
   }
 
   fun isDesugaredField(owner: String, name: String): Boolean {
@@ -147,6 +178,11 @@ class DesugaredMethodLookup(val methodDescriptors: Array<String>, val names: Set
     }
 
     fun getBundledLibraryDesugaringRules(minSdk: Int): List<String> {
+      // To update this prebuilt, go to maven.google.com and search for
+      //   desugar_jdk_libs_configuration_nio
+      // and download the jar file, and you can extract the text files within.
+      // Diff them to figure out the delta for any higher SDK versions and handle
+      // that similarly to what is done below.
       return DesugaredMethodLookup::class
         .java
         .getResourceAsStream("/desugared_apis_30_1.txt")
@@ -247,7 +283,7 @@ class DesugaredMethodLookup(val methodDescriptors: Array<String>, val names: Set
      * null (or if dealing with an older project definition not specifying desugaring files), falls
      * back to the default.
      */
-    private fun getLookup(project: Project?, sourceSetType: SourceSetType): DesugaredMethodLookup {
+    fun getLookup(project: Project?, sourceSetType: SourceSetType): DesugaredMethodLookup {
       if (project != null) {
         val model = project.buildVariant
         if (model != null) {

@@ -509,6 +509,38 @@ class ApiDetectorDesugaringTest : AbstractCheckTest() {
       .expectClean()
   }
 
+  fun testLibraryDesugaredCasts() {
+    // Regression test for b/347167978
+    lint()
+      .files(
+        manifest().minSdk(1),
+        kotlin(
+            """
+            package test.pkg
+
+            import java.time.chrono.IsoChronology
+            import java.time.format.DateTimeFormatter
+            import java.time.format.DateTimeFormatterBuilder
+            import java.util.Locale
+
+            fun test(
+                locale: Locale,
+                pattern: String
+            ): DateTimeFormatter {
+                return DateTimeFormatterBuilder()
+                    .appendPattern(pattern)
+                    .toFormatter(locale)
+                    .withChronology(IsoChronology.INSTANCE)
+            }
+            """
+          )
+          .indented(),
+      )
+      .desugaring(Desugaring.FULL)
+      .run()
+      .expectClean()
+  }
+
   fun testLibraryDesugaringFields() {
     try {
       val project =
