@@ -16,9 +16,12 @@
 
 package com.android.compose.screenshot.report
 
-data class ScreenshotTestImages(val reference: Image?, val actual: Image?, val diff: Image?)
+data class ScreenshotTestImages(val reference: ImagePathOrMessage, val actual: ImagePathOrMessage, val diff: ImagePathOrMessage)
 
 /**
  * In case of empty image path, the message will contain the text to be displayed instead
  */
-data class Image(val path: String, val message: String)
+sealed class ImagePathOrMessage {
+    data class ImagePath(val path: String) : ImagePathOrMessage()
+    data class ErrorMessage(val message: String) : ImagePathOrMessage()
+}

@@ -102,37 +102,37 @@ class TestReport(private val resultDir: File, private val reportDir: File) {
                 // block to parse screenshot test images/texts
                 var ssImages: ScreenshotTestImages? = null
                 val imagePropertyList = testCase.getElementsByTagName("properties")
-                var referenceImage: Image?
-                var actualImage: Image?
-                var diffImage: Image?
+                var referenceImagePathOrMessage: ImagePathOrMessage?
+                var actualImagePathOrMessage: ImagePathOrMessage?
+                var diffImagePathOrMessage: ImagePathOrMessage?
                 for (j in 0 until imagePropertyList.length) {
                     val image = imagePropertyList.item(j) as Element
                     val xPath = XPathFactory.newInstance().newXPath()
                     val ref = xPath.evaluate("property[@name='reference']/@value", image)
                     val actual = xPath.evaluate("property[@name='actual']/@value", image)
                     val diff = xPath.evaluate("property[@name='diff']/@value", image)
-                    referenceImage = if (isImage(ref)) {
-                        Image(ref, "")
+                    referenceImagePathOrMessage = if (isImage(ref)) {
+                        ImagePathOrMessage.ImagePath(ref)
                     } else {
-                        Image("", ref)
+                        ImagePathOrMessage.ErrorMessage(ref)
                     }
 
-                    actualImage = if (isImage(actual)) {
-                        Image(actual, "")
+                    actualImagePathOrMessage = if (isImage(actual)) {
+                        ImagePathOrMessage.ImagePath(actual)
                     } else {
-                        Image("", actual)
+                        ImagePathOrMessage.ErrorMessage(actual)
                     }
 
-                    diffImage = if (isImage(diff)) {
-                        Image(diff, "")
+                    diffImagePathOrMessage = if (isImage(diff)) {
+                        ImagePathOrMessage.ImagePath(diff)
                     } else {
-                        Image("", diff)
+                        ImagePathOrMessage.ErrorMessage(diff)
                     }
 
                     ssImages = ScreenshotTestImages(
-                            referenceImage,
-                            actualImage,
-                            diffImage
+                            referenceImagePathOrMessage,
+                            actualImagePathOrMessage,
+                            diffImagePathOrMessage
                         )
                 }
                 val testResult: TestResult = model.addTest(
