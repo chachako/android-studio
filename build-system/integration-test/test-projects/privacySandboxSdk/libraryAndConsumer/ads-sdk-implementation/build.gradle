@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace 'com.example.ads_sdk_implementation'
-    compileSdk = 34
+    compileSdk = libs.versions.latestCompileSdk.get().toInteger()
 
     defaultConfig {
         minSdk = 33

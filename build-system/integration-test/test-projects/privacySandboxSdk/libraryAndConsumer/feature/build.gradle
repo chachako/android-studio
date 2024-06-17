@@ -4,7 +4,7 @@ plugins {
 }
 android {
     namespace 'com.example.feature'
-    compileSdk 33
+    compileSdk libs.versions.latestCompileSdk.get().toInteger()
 
     defaultConfig {
         minSdk 33

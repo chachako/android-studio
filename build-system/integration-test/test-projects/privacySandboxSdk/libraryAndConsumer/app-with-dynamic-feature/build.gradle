@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace 'com.example.rubidumconsumer'
-    compileSdk= 34
+    compileSdk= libs.versions.latestCompileSdk.get().toInteger()
 
     defaultConfig {
         applicationId "com.example.rubidumconsumer"

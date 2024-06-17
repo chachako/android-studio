@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    compileSdk 33
+    compileSdk libs.versions.latestCompileSdk.get().toInteger()
     minSdk = 33
     namespace = "com.example.adssdk"
 
