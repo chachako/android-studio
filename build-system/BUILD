@@ -124,6 +124,22 @@ maven_repository(
 )
 
 filegroup(
+    name = "gradle-distrib-8.7",
+    srcs = ["//tools/external/gradle:gradle-distrib-8.7"],
+    visibility = ["//visibility:public"],
+)
+
+maven_repository(
+    name = "gradle-8.7-runtime-maven",
+    # keep sorted
+    artifacts = [
+        "@maven//:org.jetbrains.kotlin.kotlin-reflect_1.9.20",
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.9.20",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "gradle-distrib-8.6",
     srcs = ["//tools/external/gradle:gradle-distrib-8.6"],
     visibility = ["//visibility:public"],
