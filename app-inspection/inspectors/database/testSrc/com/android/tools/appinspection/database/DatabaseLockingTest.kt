@@ -28,8 +28,14 @@ import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.ACQ
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.ERROR_OCCURRED
 import androidx.sqlite.inspection.SqliteInspectorProtocol.Response.OneOfCase.RELEASE_DATABASE_LOCK
 import com.android.tools.appinspection.common.testing.LogPrinterRule
-import com.android.tools.appinspection.database.testing.*
+import com.android.tools.appinspection.database.testing.Column
+import com.android.tools.appinspection.database.testing.Database
+import com.android.tools.appinspection.database.testing.MessageFactory
 import com.android.tools.appinspection.database.testing.MessageFactory.createTrackDatabasesCommand
+import com.android.tools.appinspection.database.testing.SqliteInspectorTestEnvironment
+import com.android.tools.appinspection.database.testing.Table
+import com.android.tools.appinspection.database.testing.displayName
+import com.android.tools.appinspection.database.testing.issueQuery
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
@@ -39,7 +45,11 @@ import java.util.concurrent.TimeUnit.SECONDS
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern.CASE_INSENSITIVE
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -314,7 +324,7 @@ class DatabaseLockingTest {
     assertThat(latch.await(2, SECONDS)).isTrue()
     assertThat(insertCount.get()).isGreaterThan(countWhenLocked)
     active.set(false)
-    assertThat(insertTask.get(2, SECONDS))
+    insertTask.get(2, SECONDS)
   }
 
   @Test
