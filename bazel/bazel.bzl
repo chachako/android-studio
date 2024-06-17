@@ -1070,6 +1070,8 @@ def _gen_split_test_excludes(split_name, split_test_targets):
     If a split_test_target has no 'test_filter', it will generate a
     list of excludes based on all the other test filters.
 
+    If two targets have different additional JVM args, they will not exclude each other.
+
     Args:
         split_name: The name of the split_test_target to generate excludes for.
         split_test_targets: All the defined split_test_targets.
@@ -1079,6 +1081,7 @@ def _gen_split_test_excludes(split_name, split_test_targets):
     """
     split_target = split_test_targets[split_name]
     test_filter = split_target.get("test_filter")
+    jvm_args = split_target.get("additional_jvm_args", default = [])
     excludes = []
     for other_split_name in split_test_targets:
         # pass over the split_test_target we're generating excludes for
@@ -1087,6 +1090,7 @@ def _gen_split_test_excludes(split_name, split_test_targets):
 
         other = split_test_targets[other_split_name]
         other_test_filter = other.get("test_filter")
+        other_jvm_args = other.get("additional_jvm_args", default = [])
         if not other_test_filter:
             if not test_filter:
                 fail("Cannot have more than one split_test_targets without a 'test_filter'.")
@@ -1097,7 +1101,7 @@ def _gen_split_test_excludes(split_name, split_test_targets):
             excludes.append(other_test_filter)
             continue
 
-        if other_test_filter.startswith(test_filter):
+        if other_test_filter.startswith(test_filter) and other_jvm_args == jvm_args:
             excludes.append(other_test_filter)
 
     return excludes
