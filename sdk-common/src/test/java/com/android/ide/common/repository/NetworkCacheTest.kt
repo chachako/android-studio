@@ -38,6 +38,24 @@ class NetworkCacheTest {
     }
 
     @Test
+    fun testParallelCounter() {
+        val cache = object : TestCache(networkEnabled = true) {
+            fun getCounter() = findDataParallelism
+            fun getLockMapSize() = locks.size
+            fun loadExtraArtifact() = findData("artifactExt.xml")
+            override fun readUrlData(url: String, timeout: Int, lastModified: Long) =
+                ReadUrlDataResult(null, true)
+        }
+        cache.loadArtifact()
+        assertEquals(cache.getCounter(), 0)
+        assertEquals(cache.getLockMapSize(), 1)
+
+        cache.loadExtraArtifact()
+        assertEquals(cache.getCounter(), 0)
+        assertEquals(cache.getLockMapSize(), 0) // cleaned
+    }
+
+    @Test
     fun testNetworkEnabled() {
         var networkCalls = 0
         val networkEnabledCache = object : TestCache(networkEnabled = true) {
@@ -239,5 +257,6 @@ class NetworkCacheTest {
         override fun error(throwable: Throwable, message: String?) =
                 fail("No error calls expected")
     }
+
 }
 
