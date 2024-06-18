@@ -33,11 +33,15 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.gradle.internal.fixtures.FakeArtifactCollection
+import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
 import com.android.build.gradle.internal.fixtures.FakeResolutionResult
 import com.android.build.gradle.internal.fixtures.addDependencyEdge
 import com.android.build.gradle.internal.fixtures.createModuleComponent
 import com.android.build.gradle.internal.fixtures.createProjectComponent
+import com.android.build.gradle.internal.profile.AnalyticsService
+import com.android.build.gradle.internal.services.getBuildServiceName
 import com.android.build.gradle.internal.tasks.bundle.appDependencies
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.testutils.MockitoKt.mock
 import com.android.tools.build.libraries.metadata.AppDependencies
 import com.google.common.truth.Truth.assertThat
@@ -76,6 +80,11 @@ class PerModuleReportDependenciesTaskTest {
         task = project.tasks.create("taskUnderTest", PerModuleReportDependenciesTask::class.java)
         task.moduleName.set("base")
         task.dependencyReport.set(project.file("dependencies.pb"))
+        val analyticsService = project.gradle.sharedServices.registerIfAbsent(
+            getBuildServiceName(AnalyticsService::class.java),
+            FakeNoOpAnalyticsService::class.java
+        )
+        task.analyticsService.setDisallowChanges(analyticsService)
     }
 
     @Test

@@ -17,6 +17,9 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.gradle.internal.core.dsl.ComponentDslInfo
+import com.android.build.gradle.internal.tasks.factory.GlobalTaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.TaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
 import com.android.build.gradle.tasks.PackageAndroidArtifact
 import com.android.ide.common.workers.WorkerExecutorFacade
 import com.google.common.reflect.ClassPath
@@ -111,31 +114,125 @@ class TaskMethodModifiersAndAnnotationsTest {
     }
 
     @Test
-    fun `check for tasks that don't implement VariantTask or GlobalTask`() {
-        val doesNotImplementVariantOrGlobalTask = tasks.filter {
+    fun `check that tasks should extend a set of base tasks`() {
+        // There are 2 types of tasks:
+        //   1. Tasks extending com.android.build.gradle.internal.tasks.BaseTask
+        //   2. Tasks extending org.gradle.api.DefaultTask
+        val (tasksExtendingBaseTask, tasksExtendingDefaultTask) = tasks.partition {
+            BaseTask::class.java.isAssignableFrom(it)
+        }
+
+        // For type 1, they need to extend one of the 3 following subtypes
+        val type1Violations = tasksExtendingBaseTask.filter {
+            !NewIncrementalTask::class.java.isAssignableFrom(it)
+                    && !NonIncrementalTask::class.java.isAssignableFrom(it)
+                    && !NonIncrementalGlobalTask::class.java.isAssignableFrom(it)
+        }.minus(
+            setOf(
+                BaseTask::class.java,
+                AndroidVariantTask::class.java,
+                UnsafeOutputsTask::class.java,
+                AndroidGlobalTask::class.java,
+                UnsafeOutputsGlobalTask::class.java
+            )
+        ).map { it.name }.sorted()
+
+        // For type 2, they need to implement one of the 2 following interfaces
+        val type2Violations = tasksExtendingDefaultTask.filter {
             !VariantTask::class.java.isAssignableFrom(it)
                     && !GlobalTask::class.java.isAssignableFrom(it)
-        }.map { it.name }
+        }.map { it.name }.sorted()
+
         assertWithMessage(
-            "All AGP tasks should generally extend ${NewIncrementalTask::class.java.simpleName}," +
-                    " ${NonIncrementalTask::class.java.simpleName}," +
-                    " or ${NonIncrementalGlobalTask::class.java.simpleName}," +
-                    " or manually implement ${VariantTask::class.java.simpleName}/${GlobalTask::class.java.simpleName}" +
-                    " if using a Gradle task type."
+            "All AGP tasks should extend ${NewIncrementalTask::class.java.simpleName}, " +
+                    "${NonIncrementalTask::class.java.simpleName}, or " +
+                    "${NonIncrementalGlobalTask::class.java.simpleName}. " +
+                    "For AGP tasks that extend a Gradle task (e.g., Zip, Test) directly, " +
+                    "they should implement ${VariantTask::class.java.simpleName} or " +
+                    "${GlobalTask::class.java.simpleName}."
         )
-            .that(doesNotImplementVariantOrGlobalTask).containsExactly(
+            .that(type1Violations + type2Violations).containsExactly(
                 // Don't add new tasks to this list
+                "com.android.build.gradle.internal.lint.AndroidLintCopyReportTask",
+                "com.android.build.gradle.internal.lint.AndroidLintGlobalTask",
                 "com.android.build.gradle.internal.tasks.AndroidReportTask",
-                "com.android.build.gradle.internal.tasks.BaseTask",
                 "com.android.build.gradle.internal.tasks.DependencyReportTask",
                 "com.android.build.gradle.internal.tasks.DeviceSerialTestTask",
+                "com.android.build.gradle.internal.tasks.ManagedDeviceSetupTask",
                 "com.android.build.gradle.internal.tasks.SigningReportTask",
                 "com.android.build.gradle.internal.tasks.SourceSetsTask",
+                "com.android.build.gradle.tasks.ExternalNativeBuildJsonTask",
+                "com.android.build.gradle.tasks.ExternalNativeBuildTask",
                 "com.android.build.gradle.tasks.FusedLibraryBundle",
                 "com.android.build.gradle.tasks.FusedLibraryBundleAar",
                 "com.android.build.gradle.tasks.FusedLibraryBundleClasses",
                 "com.android.build.gradle.tasks.FusedLibraryMergeClasses",
                 "com.android.build.gradle.tasks.PrivacySandboxSdkGenerateJarStubsTask",
+            )
+    }
+
+    @Test
+    fun `check that task creation actions should extend a set of base task creation actions`() {
+        val violations = taskCreationActions.filter {
+            !VariantTaskCreationAction::class.java.isAssignableFrom(it)
+                    && !GlobalTaskCreationAction::class.java.isAssignableFrom(it)
+        }
+            .minus(TaskCreationAction::class.java)
+            .map { it.name }.sorted()
+
+        assertWithMessage(
+            "All AGP task creation actions should extend ${VariantTaskCreationAction::class.java.simpleName} or " +
+                    "${GlobalTaskCreationAction::class.java.simpleName}."
+        )
+            .that(violations).containsExactly(
+                // Don't add new items to this list
+                "com.android.build.gradle.internal.res.PrivacySandboxSdkLinkAndroidResourcesTask\$CreationAction",
+                "com.android.build.gradle.internal.res.namespaced.CompileRClassTaskCreationAction",
+                "com.android.build.gradle.internal.tasks.AndroidReportTask\$CreationAction",
+                "com.android.build.gradle.internal.tasks.AppClasspathCheckTask\$CreationAction",
+                "com.android.build.gradle.internal.tasks.AppMetadataTask\$CreationForAssetPackBundleAction",
+                "com.android.build.gradle.internal.tasks.AppMetadataTask\$PrivacySandboxSdkCreationAction",
+                "com.android.build.gradle.internal.tasks.AssetPackPreBundleTask\$CreationForAssetPackBundleAction",
+                "com.android.build.gradle.internal.tasks.BaseTask\$CreationAction",
+                "com.android.build.gradle.internal.tasks.FinalizeBundleTask\$CreationForAssetPackBundleAction",
+                "com.android.build.gradle.internal.tasks.GeneratePrivacySandboxProguardRulesTask\$CreationAction",
+                "com.android.build.gradle.internal.tasks.LinkManifestForAssetPackTask\$CreationForAssetPackBundleAction",
+                "com.android.build.gradle.internal.tasks.ListingFileRedirectTask\$CreationAction",
+                "com.android.build.gradle.internal.tasks.MergeJavaResourceTask\$FusedLibraryCreationAction",
+                "com.android.build.gradle.internal.tasks.MergeJavaResourceTask\$PrivacySandboxSdkCreationAction",
+                "com.android.build.gradle.internal.tasks.PackageBundleTask\$CreationForAssetPackBundleAction",
+                "com.android.build.gradle.internal.tasks.PerModuleBundleTask\$PrivacySandboxSdkCreationAction",
+                "com.android.build.gradle.internal.tasks.ProcessAssetPackManifestTask\$CreationForAssetPackBundleAction",
+                "com.android.build.gradle.internal.tasks.ProguardConfigurableTask\$PrivacySandboxSdkCreationAction",
+                "com.android.build.gradle.internal.tasks.R8Task\$PrivacySandboxSdkCreationAction",
+                "com.android.build.gradle.internal.tasks.SignAsbTask\$CreationActionPrivacySandboxSdk",
+                "com.android.build.gradle.internal.tasks.SourceSetsTask\$CreationAction",
+                "com.android.build.gradle.internal.tasks.ValidateSigningTask\$CreationForAssetPackBundleAction",
+                "com.android.build.gradle.internal.tasks.ValidateSigningTask\$PrivacySandboxSdkCreationAction",
+                "com.android.build.gradle.internal.tasks.factory.AndroidVariantTaskCreationAction",
+                "com.android.build.gradle.internal.tasks.factory.TaskConfigurationActionsTest\$createTaskAction\$creationAction$1",
+                "com.android.build.gradle.tasks.ExternalNativeBuildTaskKt\$createWorkingCxxBuildTask$1",
+                "com.android.build.gradle.tasks.FusedLibraryBundle\$CreationAction",
+                "com.android.build.gradle.tasks.FusedLibraryBundleAar\$CreationAction",
+                "com.android.build.gradle.tasks.FusedLibraryBundleClasses\$CreationAction",
+                "com.android.build.gradle.tasks.FusedLibraryClassesRewriteTask\$CreationAction",
+                "com.android.build.gradle.tasks.FusedLibraryManifestMergerTask\$CreationAction",
+                "com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask\$CreateActionFusedLibrary",
+                "com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask\$CreateActionPrivacySandboxSdk",
+                "com.android.build.gradle.tasks.FusedLibraryMergeClasses\$FusedLibraryCreationAction",
+                "com.android.build.gradle.tasks.FusedLibraryMergeClasses\$PrivacySandboxSdkCreationAction",
+                "com.android.build.gradle.tasks.FusedLibraryMergeResourcesTask\$CreationAction",
+                "com.android.build.gradle.tasks.GeneratePrivacySandboxAsar\$CreationAction",
+                "com.android.build.gradle.tasks.JavaCompileCreationAction",
+                "com.android.build.gradle.tasks.PackagePrivacySandboxSdkBundle\$CreationAction",
+                "com.android.build.gradle.tasks.PrivacySandboxSdkDexTask\$CreationAction",
+                "com.android.build.gradle.tasks.PrivacySandboxSdkGenerateJarStubsTask\$CreationAction",
+                "com.android.build.gradle.tasks.PrivacySandboxSdkGenerateRClassTask\$CreationAction",
+                "com.android.build.gradle.tasks.PrivacySandboxSdkManifestGeneratorTask\$CreationAction",
+                "com.android.build.gradle.tasks.PrivacySandboxSdkManifestMergerTask\$CreationAction",
+                "com.android.build.gradle.tasks.PrivacySandboxSdkMergeDexTask\$CreationAction",
+                "com.android.build.gradle.tasks.PrivacySandboxSdkMergeResourcesTask\$CreationAction",
+                "com.android.build.gradle.tasks.PrivacySandboxValidateConfigurationTask\$CreationAction",
             )
     }
 
@@ -358,6 +455,14 @@ class TaskMethodModifiersAndAnnotationsTest {
 
         private val tasks: List<Class<out Task>> by lazy(LazyThreadSafetyMode.PUBLICATION) {
             comAndroidBuildClasses.filterIsInstance<Class<out Task>>().filter { Task::class.java.isAssignableFrom(it) }
+        }
+
+        private val taskCreationActions: List<Class<out TaskCreationAction<out Task>>> by lazy(LazyThreadSafetyMode.PUBLICATION) {
+            classPath.allClasses
+                .filter { it.name.startsWith("com.android.build") }
+                .map { classInfo -> classInfo.load() as Class<*> }
+                .filterIsInstance<Class<out TaskCreationAction<out Task>>>()
+                .filter { TaskCreationAction::class.java.isAssignableFrom(it) }
         }
     }
 }

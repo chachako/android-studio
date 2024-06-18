@@ -28,6 +28,7 @@ import com.android.build.gradle.internal.services.TaskCreationServices
 import com.android.build.gradle.internal.services.createProjectServices
 import com.android.build.gradle.internal.services.createTaskCreationServices
 import com.android.build.gradle.internal.services.getBuildServiceName
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.android.ide.common.build.ListingFileRedirect
 import com.google.common.truth.Truth
 import org.gradle.api.Project
@@ -50,7 +51,10 @@ internal class ListingFileRedirectTaskTest {
     val temporaryFolder = TemporaryFolder()
 
     private lateinit var project: Project
+
     private lateinit var taskCreationServices: TaskCreationServices
+    private lateinit var analyticsService: Provider<FakeNoOpAnalyticsService>
+
     private lateinit var taskProvider: TaskProvider<ListingFileRedirectTask>
     private lateinit var task: ListingFileRedirectTask
 
@@ -59,16 +63,12 @@ internal class ListingFileRedirectTaskTest {
         project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
 
         taskCreationServices = createTaskCreationServices(createProjectServices(project = project))
-
-        @Suppress("UnstableApiUsage")
-        project.gradle.sharedServices.registerIfAbsent(
+        analyticsService = project.gradle.sharedServices.registerIfAbsent(
             getBuildServiceName(AnalyticsService::class.java),
             FakeNoOpAnalyticsService::class.java
-        ) {}
-        taskProvider = project.tasks.register(
-            "listingFileTest",
-            ListingFileRedirectTask::class.java,
         )
+
+        taskProvider = project.tasks.register("listingFileTest", ListingFileRedirectTask::class.java)
         task = taskProvider.get()
     }
 
@@ -85,6 +85,7 @@ internal class ListingFileRedirectTaskTest {
         task.redirectFile.set(project.objects.fileProperty().also {
             it.set(redirectFile)
         })
+        task.analyticsService.setDisallowChanges(analyticsService)
         task.taskAction()
         // test main case with relative path between redirectFile and listingFile
         Truth.assertThat(redirectFile.readLines()[1]).isEqualTo("listingFile=../folder1/listingFile")
@@ -119,6 +120,7 @@ internal class ListingFileRedirectTaskTest {
         spyTask.listingFile.set(project.objects.fileProperty().also {
             it.set(listingFile)
         })
+        spyTask.analyticsService.setDisallowChanges(analyticsService)
 
         spyTask.taskAction()
         // test edge case when redirectFile and listingFile has different roots

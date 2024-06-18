@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.google.common.truth.Truth.assertThat
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
@@ -41,7 +42,7 @@ class AndroidVariantTaskTest {
         private val called: AtomicBoolean): AndroidVariantTask() {
 
         fun entryPoint() {
-            recordTaskAction(FakeNoOpAnalyticsService()) { actualAction() }
+            recordTaskAction { actualAction() }
         }
 
         private fun actualAction() {
@@ -52,7 +53,8 @@ class AndroidVariantTaskTest {
     @Before
     fun setup() {
         val project = ProjectBuilder.builder().withProjectDir(temporaryFolder.newFolder()).build()
-        task= project.tasks.create("test", TestTask::class.java, called)
+        task = project.tasks.create("test", TestTask::class.java, called)
+        task.analyticsService.setDisallowChanges(FakeNoOpAnalyticsService())
     }
 
     @Test

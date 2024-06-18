@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,23 @@
 
 package com.android.build.gradle.internal.tasks
 
+import com.android.build.gradle.internal.profile.AnalyticsService
+import com.android.build.gradle.internal.services.getBuildService
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import org.gradle.api.Task
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Internal
 
-/** Represents a variant-specific task. */
-interface VariantTask {
+/** Common interface for tasks that use [AnalyticsService]. */
+interface UsesAnalytics {
 
-    /** the name of the variant */
-    var variantName: String
-
-    object ConfigureAction {
-
-        fun <TaskT> configure(task: TaskT, variantName: String) where TaskT : Task, TaskT : VariantTask {
-            task.variantName = variantName
-        }
-    }
-}
-
-/** Represents a global (non variant-specific) task. */
-interface GlobalTask {
+    @get:Internal
+    val analyticsService: Property<AnalyticsService>
 
     object ConfigureAction {
 
-        fun <TaskT> configure(task: TaskT) where TaskT : Task, TaskT : GlobalTask {
-            // Nothing to do currently
+        fun <TaskT> configure(task: TaskT) where TaskT: Task, TaskT: UsesAnalytics {
+            task.analyticsService.setDisallowChanges(getBuildService(task.project.gradle.sharedServices))
         }
     }
 }

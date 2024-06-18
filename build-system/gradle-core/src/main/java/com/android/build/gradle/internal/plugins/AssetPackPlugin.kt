@@ -20,6 +20,7 @@ import com.android.SdkConstants
 import com.android.build.api.dsl.AssetPackExtension
 import com.android.build.gradle.internal.dsl.AssetPackExtensionImpl
 import com.android.build.gradle.internal.tasks.AssetPackManifestGenerationTask
+import com.android.build.gradle.internal.tasks.UsesAnalytics
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -32,7 +33,7 @@ class AssetPackPlugin : Plugin<Project> {
             "generateAssetPackManifest",
             AssetPackManifestGenerationTask::class.java
         ) { manifestGenerationTask ->
-            manifestGenerationTask.variantName = ""
+            UsesAnalytics.ConfigureAction.configure(manifestGenerationTask)
             manifestGenerationTask.manifestFile.setDisallowChanges(
                 project.layout.buildDirectory.get().dir(
                     SdkConstants.FD_INTERMEDIATES

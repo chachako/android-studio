@@ -168,6 +168,7 @@ abstract class ValidateSigningTask : NonIncrementalTask() {
         }
 
         override fun configure(task: ValidateSigningTask) {
+            UsesAnalytics.ConfigureAction.configure(task)
             task.signingConfigData.set(SigningConfigData.fromDslSigningConfig(signingConfig))
             task.outputs.upToDateWhen { !task.forceRerun() }
         }

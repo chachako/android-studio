@@ -17,6 +17,10 @@
 package com.android.build.gradle.tasks
 
 import com.android.SdkConstants
+import com.android.build.gradle.internal.fixtures.FakeNoOpAnalyticsService
+import com.android.build.gradle.internal.profile.AnalyticsService
+import com.android.build.gradle.internal.services.getBuildServiceName
+import com.android.build.gradle.internal.utils.setDisallowChanges
 import com.google.common.truth.Truth
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
@@ -46,6 +50,11 @@ internal class ProcessLibraryArtProfileTaskTest {
                 "processLibraryArtProfile", ProcessLibraryArtProfileTask::class.java
         )
         task = taskProvider.get()
+        val analyticsService = project.gradle.sharedServices.registerIfAbsent(
+            getBuildServiceName(AnalyticsService::class.java),
+            FakeNoOpAnalyticsService::class.java
+        )
+        task.analyticsService.setDisallowChanges(analyticsService)
     }
 
     @Test

@@ -33,7 +33,7 @@ import java.io.File
  */
 @DisableCachingByDefault
 @BuildAnalyzer(primaryTaskCategory = TaskCategory.MANIFEST, secondaryTaskCategories = [TaskCategory.SOURCE_GENERATION])
-abstract class AssetPackManifestGenerationTask : NonIncrementalTask() {
+abstract class AssetPackManifestGenerationTask : NonIncrementalGlobalTask() {
     /**
      * The generated manifest file for the asset pack module.
      */
