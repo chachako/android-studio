@@ -120,7 +120,7 @@ private fun extractError(renderResult: RenderResult, imageRendered: BufferedImag
         return null
     }
     val errorMessage = when {
-        imageRendered != null && renderResult.renderResult.status == Result.Status.SUCCESS -> "Nothing to render in Preview. Cannot generate image"
+        imageRendered == null && renderResult.renderResult.status == Result.Status.SUCCESS -> "Nothing to render in Preview. Cannot generate image"
         else -> renderResult.renderResult.errorMessage ?: ""
     }
     return ScreenshotError(
