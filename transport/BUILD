@@ -3,7 +3,6 @@ load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "ANDROID_LINKOPTS", "and
 
 cc_binary(
     name = "transport_main",
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [":transport_main_lib"],
 )
@@ -19,7 +18,10 @@ cc_library(
     linkopts = ANDROID_LINKOPTS + [
         "-ldl",  # Needed for dladdr referenced in TermincationService
     ],
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/dynamic-layout-inspector/foreground-process-detection:foreground_process_tracker",

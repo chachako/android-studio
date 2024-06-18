@@ -10,6 +10,9 @@ cc_library(
         "-I$(GENDIR)/tools/base/profiler",
     ],
     include_prefix = "test",
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )

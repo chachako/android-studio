@@ -29,7 +29,6 @@ cc_library(
         "-Itools/base/profiler/native/perfd/common",
         "-I$(GENDIR)/external/perfetto_repo",
     ],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/profiler/native/perfd:perfd_internal_headers",
@@ -64,7 +63,6 @@ cc_test(
         "-ldl",  # Needed for dladdr referenced in TerminationService
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":profiler_cpu",
         "//tools/base/profiler/native/perfd",

@@ -12,9 +12,6 @@ cc_library(
         "-Itools/base/profiler/native/agent",
     ],
     include_prefix = "agent",
-    tags = [
-        "no_windows",
-    ],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/profiler/native/agent:memory_component",
@@ -29,9 +26,10 @@ cc_library(
     srcs = ["jni_wrappers.h"],
     hdrs = ["jni_wrappers.h"],
     include_prefix = "agent",
-    tags = [
-        "no_windows",
-    ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",
@@ -52,9 +50,6 @@ cc_binary(
     ],
     linkopts = ANDROID_LINKOPTS,
     linkshared = 1,
-    tags = [
-        "no_windows",
-    ],
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",

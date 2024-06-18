@@ -19,7 +19,10 @@ cc_grpc_proto_library(
     name = "cc_proto",
     srcs = glob(["**/*.proto"]),
     grpc_support = True,
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     include_prefix = "proto",
-    tags = ["no_windows"],
     deps = ["@perfetto_repo//:cc_proto"],
 )

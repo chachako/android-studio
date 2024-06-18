@@ -7,7 +7,6 @@ cc_library(
     copts = ANDROID_COPTS + [
         "-Itools/base/profiler/native",
     ],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/profiler/native/perfd/common:trace_manager",
@@ -25,7 +24,6 @@ cc_test(
         "-Itools/base/profiler/native",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":profileable_detector",
         "//tools/base/transport/native/utils",

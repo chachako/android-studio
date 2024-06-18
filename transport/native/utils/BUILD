@@ -111,7 +111,10 @@ cc_library(
         "-std=c++11",
     ],
     include_prefix = "utils",
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = [
         "//tools/base/transport/proto:cc_proto",
     ],
@@ -149,7 +152,6 @@ cc_test(
         "-ldl",  # Needed for dladdr referenced in TermincationService
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":utils",
         "//tools/base/transport/native/daemon",
@@ -171,7 +173,6 @@ cc_test(
         "thread_name.h",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":utils",
         "@googletest//:gtest_main",

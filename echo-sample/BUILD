@@ -11,7 +11,6 @@ cc_library(
         "echo.h",
     ],
     copts = ANDROID_COPTS,
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/transport/native/daemon",
@@ -34,7 +33,6 @@ cc_library(
         "-Itools/base/echo-sample",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",
@@ -56,7 +54,6 @@ cc_library(
         "-Itools/base/profiler/native/agent",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",

@@ -32,7 +32,10 @@ cc_library(
         "-Itools/base/profiler/native",
         "-I$(GENDIR)/tools/base/profiler",
     ],
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )
 
@@ -71,7 +74,6 @@ cc_library(
         "-Itools/base/profiler/native",
         "-I$(GENDIR)/tools/base/profiler/native/perfd",
     ],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/profiler/native/perfd/common:trace_commands",
@@ -103,7 +105,6 @@ cc_test(
         "//tools/base/profiler/native/testdata:perfd/cpu",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":perfd",
         "//tools/base/profiler/native/perfd/common:perfd_atrace_tests",

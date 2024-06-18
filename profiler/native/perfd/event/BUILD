@@ -19,7 +19,6 @@ cc_library(
         "-Itools/base/profiler/native",
         "-Itools/base/profiler/native/perfd",
     ],
-    tags = ["no_windows"],
     deps = [
         "//tools/base/profiler/native/perfd:perfd_internal_headers",
         "//tools/base/transport/native/utils",

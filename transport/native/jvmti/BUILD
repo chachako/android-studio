@@ -17,9 +17,10 @@ cc_library(
     ],
     copts = ANDROID_COPTS,
     include_prefix = "jvmti",
-    tags = [
-        "no_windows",
-    ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",

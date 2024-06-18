@@ -22,7 +22,10 @@ cc_binary(
     copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
     linkshared = 1,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",

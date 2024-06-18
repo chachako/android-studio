@@ -4,7 +4,6 @@ cc_binary(
     name = "sample_client",
     srcs = ["sample_client.cc"],
     copts = ANDROID_COPTS,
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/transport/proto:cc_proto",

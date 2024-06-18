@@ -26,9 +26,10 @@ cc_library(
         "//conditions:default": ["-std=c++11"],
     }),
     includes = ["export"],
-    tags = [
-        "no_windows",
-    ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "@zlib_repo//:zlib",

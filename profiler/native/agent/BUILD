@@ -1,12 +1,10 @@
-load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "ANDROID_LINKOPTS")
-load("//tools/base/bazel:android.bzl", "jni_library")
+load("//tools/base/bazel:android.bzl", "ANDROID_COPTS", "ANDROID_LINKOPTS", "jni_library")
 
 cc_binary(
     name = "libsupportjni.so",
     copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
     linkshared = 1,
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         ":support",
@@ -29,7 +27,6 @@ cc_library(
         "-Itools/base/profiler/native/agent",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",
@@ -44,7 +41,10 @@ cc_library(
 
 jni_library(
     name = "supportjni",
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = select({
         "@platforms//os:windows": [],
@@ -57,7 +57,6 @@ cc_library(
     srcs = ["memory_component.cc"],
     hdrs = ["memory_component.h"],
     copts = ANDROID_COPTS,
-    tags = ["no_windows"],
     visibility = ["//tools/base/transport/native/agent:__pkg__"],
     deps = [
         "//tools/base/transport/native/utils",

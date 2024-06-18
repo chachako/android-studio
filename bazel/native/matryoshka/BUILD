@@ -10,7 +10,10 @@ cc_library(
     ],
     copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )
 
@@ -21,7 +24,6 @@ cc_binary(
     ],
     copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [":libmatryoshka"],
 )
@@ -40,5 +42,4 @@ sh_test(
     size = "medium",
     srcs = ["simple_test.sh"],
     data = [":test_exec"],
-    tags = ["no_windows"],
 )

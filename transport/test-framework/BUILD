@@ -37,7 +37,10 @@ cc_library(
         "-Itools/base/profiler/native/agent/",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",
@@ -51,10 +54,7 @@ cc_library(
 cc_binary(
     name = "libagentrule-jni.dylib",
     linkshared = 1,
-    tags = [
-        "no_linux",
-        "no_windows",
-    ],
+    target_compatible_with = ["@platforms//os:macos"],
     visibility = ["//visibility:public"],
     deps = [
         ":native_test_support",
@@ -64,10 +64,7 @@ cc_binary(
 cc_binary(
     name = "libagentrule-jni.so",
     linkshared = 1,
-    tags = [
-        "no_mac",
-        "no_windows",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
     visibility = ["//visibility:public"],
     deps = [
         ":native_test_support",

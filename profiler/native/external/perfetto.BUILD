@@ -20,5 +20,8 @@ cc_grpc_proto_library(
     name = "cc_proto",
     srcs = ["protos/perfetto/config/perfetto_config.proto"],
     grpc_support = 1,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )

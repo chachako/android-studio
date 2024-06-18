@@ -51,8 +51,5 @@ genrule(
 
       rm -rf "$$tempdir"
     """,
-    tags = [
-        "no_mac",
-        "no_windows",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
 )

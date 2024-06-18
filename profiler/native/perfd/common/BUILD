@@ -13,7 +13,6 @@ cc_library(
     copts = ANDROID_COPTS + [
         "-Itools/base/profiler/native",
     ],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/profiler/native/perfd:perfd_internal_headers",
@@ -36,7 +35,6 @@ cc_library(
     copts = ANDROID_COPTS + [
         "-Itools/base/profiler/native",
     ],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/transport/native/utils",
@@ -56,7 +54,6 @@ cc_library(
         "-Itools/base/profiler/native",
         "-Itools/base/profiler/native/perfd/common",
     ],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         ":atrace",
@@ -82,7 +79,6 @@ cc_library(
         "-Itools/base/profiler/native",
         "-Itools/base/profiler/native/perfd/common",
     ],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         ":trace_utils",
@@ -111,7 +107,6 @@ cc_library(
         "-Itools/base/profiler/native",
         "-I$(GENDIR)/external/perfetto_repo",
     ],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         ":trace_utils",
@@ -133,7 +128,6 @@ cc_library(
     copts = ANDROID_COPTS + [
         "-Itools/base/profiler/native",
     ],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         ":trace_utils",
@@ -152,7 +146,6 @@ cc_test(
         "-ldl",  # Needed for dladdr referenced in TerminationService
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":trace_commands",
         "//tools/base/profiler/native/perfd",
@@ -173,7 +166,6 @@ cc_test(
         "-ldl",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":perfetto",
         ":simpleperf",
@@ -198,7 +190,6 @@ cc_test(
         "-ldl",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         ":atrace",
@@ -220,7 +211,6 @@ cc_test(
         "-ldl",  # Needed for dladdr referenced in TerminationService
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":perfetto",
         "@googletest//:gtest_main",
@@ -241,7 +231,6 @@ cc_test(
         "-ldl",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":simpleperf",
         "@googletest//:gtest_main",

@@ -73,7 +73,10 @@ cc_binary(
 
 jni_library(
     name = "inspectorjni",
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = select({
         "@platforms//os:windows": [],

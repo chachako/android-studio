@@ -203,10 +203,6 @@ cc_library(
         ".",
     ],
     linkopts = ANDROID_LINKOPTS,
-    target_compatible_with = select({
-        "@platforms//os:windows": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/bazel/native/matryoshka:libmatryoshka",

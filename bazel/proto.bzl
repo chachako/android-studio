@@ -258,6 +258,7 @@ def cc_grpc_proto_library(
         grpc_support = False,
         protoc_version = PROTOC_VERSION,
         tags = None,
+        target_compatible_with = [],
         include_prefix = None):
     outs = []
     hdrs = []
@@ -284,6 +285,7 @@ def cc_grpc_proto_library(
         grpc_plugin = "//external:grpc_cpp_plugin" if grpc_support else None,
         target_language = proto_languages.CPP,
         tags = tags,
+        target_compatible_with = target_compatible_with,
     )
     native.cc_library(
         name = name,
@@ -296,6 +298,7 @@ def cc_grpc_proto_library(
         copts = select_android(["-std=c++11"], []),
         strip_include_prefix = ".",
         include_prefix = include_prefix,
+        target_compatible_with = target_compatible_with,
     )
 
 def maven_proto_library(

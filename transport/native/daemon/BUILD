@@ -40,7 +40,10 @@ cc_library(
     ],
     copts = ANDROID_COPTS,
     include_prefix = "daemon",
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/transport/native/utils",
@@ -63,7 +66,6 @@ cc_test(
         "-ldl",  # Needed for dladdr referenced in TermincationService
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":daemon",
         "//tools/base/profiler/native/perfd",
@@ -84,10 +86,7 @@ cc_test(
         "-ldl",  # Needed for dladdr referenced in TermincationService
     ],
     linkstatic = 1,
-    tags = [
-        "no_mac",
-        "no_windows",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
     deps = [
         ":daemon",
         "//tools/base/profiler/native/perfd",

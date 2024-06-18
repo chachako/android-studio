@@ -11,6 +11,5 @@ cc_library(
         "-Itools/base/transport/native/daemon",
     ],
     include_prefix = "test",
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
 )

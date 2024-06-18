@@ -20,7 +20,6 @@ cc_library(
     copts = ANDROID_COPTS + [
         "-Itools/base/profiler/native",
     ],
-    tags = ["no_windows"],
     deps = [
         "//tools/base/profiler/native/perfd:perfd_internal_headers",
         "//tools/base/transport/native/daemon",
@@ -41,7 +40,6 @@ cc_test(
         "//tools/base/profiler/native/testdata:perfd/graphics",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":profiler_graphics",
         "//tools/base/profiler/native/test:testutils",

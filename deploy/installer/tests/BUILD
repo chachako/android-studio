@@ -8,7 +8,6 @@ filegroup(
         ":fake_runas",
         ":fake_shell",
     ],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
 )
 
@@ -17,7 +16,10 @@ cc_grpc_proto_library(
     srcs = ["fake_device.proto"],
     grpc_support = 1,
     include_prefix = "proto",
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 android_java_proto_library(
@@ -40,7 +42,10 @@ cc_binary(
         "fake_vm.h",
     ],
     linkopts = ["-ldl"],
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         ":proto",
@@ -54,7 +59,6 @@ cc_binary(
 cc_binary(
     name = "fake_shell",
     srcs = ["fake_shell.cc"],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         ":fake_device",
@@ -66,7 +70,6 @@ cc_binary(
 cc_binary(
     name = "fake_runas",
     srcs = ["fake_runas.cc"],
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         ":fake_device",
@@ -79,7 +82,6 @@ cc_library(
     name = "fake_device",
     srcs = ["fake_device.cc"],
     hdrs = ["fake_device.h"],
-    tags = ["no_windows"],
     deps = [
         ":proto",
         "//tools/base/deploy/common:log",
@@ -96,7 +98,6 @@ cc_test(
         "data/patchTest.txt",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/deploy/installer:installer_lib",

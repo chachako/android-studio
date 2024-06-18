@@ -27,7 +27,6 @@ cc_library(
     copts = ANDROID_COPTS + [
         "-Itools/base/profiler/native",
     ],
-    tags = ["no_windows"],
     deps = [
         "//tools/base/profiler/native/perfd:perfd_internal_headers",
         "//tools/base/profiler/native/perfd/common:atrace",
@@ -58,7 +57,6 @@ cc_test(
         "-ldl",  # Needed for dladdr referenced in TerminationService
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":profiler_memory",
         "//tools/base/profiler/native/perfd",

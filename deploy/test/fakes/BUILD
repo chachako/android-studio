@@ -10,7 +10,6 @@ cc_library(
     ],
     copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
-    tags = ["no_windows"],
     visibility = ["//visibility:public"],
     deps = [
         "//tools/base/deploy/common:common_lib",

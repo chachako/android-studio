@@ -19,7 +19,10 @@ cc_library(
         "-Itools/base/profiler/native/agent",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         ":common",
@@ -51,7 +54,10 @@ cc_library(
         "-Itools/base/profiler/native/agent",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         ":common",
@@ -76,7 +82,10 @@ cc_library(
         "-Itools/base/app-inspection/native/include/common",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//prebuilts/studio/jdk:jni_headers",

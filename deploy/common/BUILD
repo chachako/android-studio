@@ -24,7 +24,6 @@ cc_library(
     ],
     copts = ANDROID_COPTS,
     linkopts = ANDROID_LINKOPTS,
-    tags = ["no_windows"],
     visibility = ["//tools/base/deploy:__subpackages__"],
     deps = [
         ":log",
@@ -48,7 +47,6 @@ cc_library(
         "@platforms//os:windows": [],
         "//conditions:default": ["-std=c++11"],
     }),
-    tags = ["no_windows"],
     visibility = ["//tools/base/deploy:__subpackages__"],
     deps = [
         ":env",
@@ -64,7 +62,10 @@ cc_library(
     hdrs = [
         "env.h",
     ],
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//tools/base/deploy:__subpackages__"],
 )
 
