@@ -16,18 +16,25 @@
 package com.android.ddmlib.internal;
 
 import static com.android.ddmlib.IntegrationTest.getPathToAdb;
+
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertNotNull;
 
 import com.android.annotations.NonNull;
+import com.android.ddmlib.AdbInitOptions;
 import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.Client;
 import com.android.ddmlib.DdmPreferences;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.JdwpHandshake;
+import com.android.ddmlib.idevicemanager.IDeviceManagerFactory;
 import com.android.fakeadbserver.DeviceState;
 import com.android.fakeadbserver.FakeAdbServer;
 import com.android.sdklib.AndroidVersion;
+
+import org.junit.rules.ExternalResource;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
@@ -35,7 +42,7 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.junit.rules.ExternalResource;
+import java.util.function.Supplier;
 
 public class FakeAdbTestRule extends ExternalResource {
 
@@ -56,6 +63,7 @@ public class FakeAdbTestRule extends ExternalResource {
     private FakeAdbServer myServer;
 
     private final String sdk;
+    private Supplier<IDeviceManagerFactory> iDeviceManagerFactoryFactory;
 
     public FakeAdbTestRule() {
         this("26");
@@ -69,6 +77,12 @@ public class FakeAdbTestRule extends ExternalResource {
         this(Integer.toString(androidVersion.getApiLevel()));
     }
 
+    public FakeAdbTestRule withIDeviceManagerFactoryFactory(
+            Supplier<IDeviceManagerFactory> iDeviceManagerFactoryFactory) {
+        this.iDeviceManagerFactoryFactory = iDeviceManagerFactoryFactory;
+        return this;
+    }
+
     @Override
     public void before() throws Throwable {
         FakeAdbServer.Builder builder = new FakeAdbServer.Builder();
@@ -80,7 +94,14 @@ public class FakeAdbTestRule extends ExternalResource {
         AndroidDebugBridge.terminate();
         AndroidDebugBridge.enableFakeAdbServerMode(myServer.getPort());
         DdmPreferences.setJdwpProxyPort(getFreePort());
-        AndroidDebugBridge.init(true);
+
+        AdbInitOptions.Builder adbInitOptions =
+                AdbInitOptions.builder().setClientSupportEnabled(true);
+        if (iDeviceManagerFactoryFactory != null) {
+            adbInitOptions.setIDeviceManagerFactory(iDeviceManagerFactoryFactory.get());
+        }
+        AndroidDebugBridge.init(adbInitOptions.build());
+
         AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(getPathToAdb().toString(),
                                                                     false);
         assertNotNull("Debug bridge", bridge);
