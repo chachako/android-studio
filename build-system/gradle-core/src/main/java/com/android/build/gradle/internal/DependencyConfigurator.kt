@@ -530,7 +530,7 @@ class DependencyConfigurator(
                     params.bootstrapClasspath.from(bootstrapCreationConfig.fullBootClasspath)
 
                     val kotlinEmbeddableCompiler =
-                        ModulePropertyKey.Dependencies.ANDROID_PRIVACY_SANDBOX_SDK_API_GENERATOR_GENERATED_RUNTIME_DEPENDENCIES.getValue(
+                        ModulePropertyKey.Dependencies.ANDROID_PRIVACY_SANDBOX_SDK_KOTLIN_COMPILER_EMBEDDABLE.getValue(
                             experimentalProperties
                         )?.single()
                     val kotlinCompiler: Configuration =
