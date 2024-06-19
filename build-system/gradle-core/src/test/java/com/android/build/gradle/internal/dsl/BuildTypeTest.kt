@@ -78,7 +78,7 @@ class BuildTypeTest {
         Truth.assertThat(debugBuildType).isNotNull()
         debugBuildType.buildConfigField("String", "name", "sensitiveValue")
         debugBuildType.buildConfigField("String", "name", sensitiveValueOverride)
-        Truth.assertThat(debugBuildType.buildConfigFields["name"]?.equals(sensitiveValueOverride))
+        Truth.assertThat(debugBuildType.buildConfigFields["name"]?.value).isEqualTo(sensitiveValueOverride)
     }
 
     @Test

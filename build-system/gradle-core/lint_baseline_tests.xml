@@ -2325,17 +2325,6 @@
     <issue
         id="CheckResult"
         message="The result of `assertThat` is not used"
-        errorLine1="        Truth.assertThat(debugBuildType.buildConfigFields[&quot;name&quot;]?.equals(sensitiveValueOverride))"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="src/test/java/com/android/build/gradle/internal/dsl/BuildTypeTest.kt"
-            line="81"
-            column="9"/>
-    </issue>
-
-    <issue
-        id="CheckResult"
-        message="The result of `assertThat` is not used"
         errorLine1="        Truth.assertThat(outputJsonFile.exists())"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
