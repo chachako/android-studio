@@ -17,17 +17,18 @@
 package com.android.build.gradle.integration.privacysandbox
 
 import com.android.SdkConstants
-import com.android.build.api.artifact.SingleArtifact
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSampleProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.testutils.TestUtils
 import com.android.testutils.apk.Apk
+import com.android.testutils.apk.Dex
 import com.android.tools.apk.analyzer.AaptInvoker
 import com.android.utils.FileUtils
 import com.android.utils.StdLogger
 import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
@@ -85,6 +86,8 @@ class PrivacySandboxSdkToSdkTest {
             }
         }
 
+        assertGeneratedConsumptionShimFromSdkB("privacy-sandbox-sdk")
+
         executor().run(":example-app:buildPrivacySandboxSdkApksForDebug")
 
         val standaloneSdkApk =
@@ -123,5 +126,42 @@ class PrivacySandboxSdkToSdkTest {
         buildFailureDuringResourceLinking.assertErrorContains(
             "error: resource string/string_from_sdk_impl_b (aka com.example.privacysandboxsdk:string/string_from_sdk_impl_b) not found.")
         Files.delete(sdkImplAResValues.resolve("strings.xml").toPath())
+    }
+
+    private fun assertGeneratedConsumptionShimFromSdkB(sdkProjectName: String) {
+        executor().run(":$sdkProjectName:minifyBundleWithR8")
+        val dexLocation = project.getSubproject(":$sdkProjectName")
+            .getIntermediateFile("dex", "single", "minifyBundleWithR8", "classes.dex")
+
+        Dex(dexLocation).also { dex ->
+            assertThat(dex.classes.keys).containsAtLeast(
+                "Lcom/example/sdkImplB/MySdkB;",
+                "Lcom/example/sdkImplB/ICancellationSignal;",
+                "Lcom/example/sdkImplB/ICancellationSignal\$Default;",
+                "Lcom/example/sdkImplB/ICancellationSignal\$Stub\$Proxy;",
+                "Lcom/example/sdkImplB/ICancellationSignal\$Stub;",
+                "Lcom/example/sdkImplB/IIntTransactionCallback;",
+                "Lcom/example/sdkImplB/IIntTransactionCallback\$Default;",
+                "Lcom/example/sdkImplB/IIntTransactionCallback\$Stub\$Proxy;",
+                "Lcom/example/sdkImplB/IIntTransactionCallback\$Stub;",
+                "Lcom/example/sdkImplB/IIntTransactionCallback\$_Parcel;",
+                "Lcom/example/sdkImplB/IMySdkB;",
+                "Lcom/example/sdkImplB/IMySdkB\$Default;",
+                "Lcom/example/sdkImplB/IMySdkB\$Stub\$Proxy;",
+                "Lcom/example/sdkImplB/IMySdkB\$Stub;",
+                "Lcom/example/sdkImplB/MySdkBClientProxy\$f1\$2\$1;",
+                "Lcom/example/sdkImplB/MySdkBClientProxy\$f1\$2\$transactionCallback\$1;",
+                "Lcom/example/sdkImplB/MySdkBClientProxy;",
+                "Lcom/example/sdkImplB/MySdkBFactory;",
+                "Lcom/example/sdkImplB/ParcelableStackFrame\$1;",
+                "Lcom/example/sdkImplB/ParcelableStackFrame;",
+                "Lcom/example/sdkImplB/PrivacySandboxCancellationException;",
+                "Lcom/example/sdkImplB/PrivacySandboxException;",
+                "Lcom/example/sdkImplB/PrivacySandboxThrowableParcel\$1;",
+                "Lcom/example/sdkImplB/PrivacySandboxThrowableParcel;",
+                "Lcom/example/sdkImplB/PrivacySandboxThrowableParcelConverter;",
+                "Lcom/example/sdkImplB/TransportCancellationCallback;",
+            )
+        }
     }
 }

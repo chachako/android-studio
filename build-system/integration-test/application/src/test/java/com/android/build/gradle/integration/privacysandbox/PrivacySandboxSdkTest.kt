@@ -156,6 +156,7 @@ class PrivacySandboxSdkTest {
                 """
                 <?xml version="1.0" encoding="utf-8"?>
                 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                    xmlns:tools="http://schemas.android.com/tools"
                     package="com.example.privacysandboxsdk" >
 
                     <uses-sdk
@@ -163,6 +164,9 @@ class PrivacySandboxSdkTest {
                         android:targetSdkVersion="34" />
 
                     <uses-permission android:name="android.permission.INTERNET" />
+                    <uses-permission
+                        android:name="com.example.privacysandboxsdkb.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+                        tools:requiredByPrivacySandboxSdk="true" />
 
                     <permission
                         android:name="com.example.privacysandboxsdk.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
