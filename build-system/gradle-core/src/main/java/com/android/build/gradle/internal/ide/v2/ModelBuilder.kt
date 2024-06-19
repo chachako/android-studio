@@ -987,31 +987,15 @@ class ModelBuilder<
         component: ComponentCreationConfig,
         libraryService: LibraryService,
         graphEdgeCache: GraphEdgeCache? = null,
-    ): FullDependencyGraphBuilder {
-        if (dontBuildRuntimeClasspath && component.variantDependencies.isLibraryConstraintsApplied) {
-            variantModel.syncIssueReporter.reportWarning(
-                IssueReporter.Type.GENERIC, """
-                    You have experimental IDE flag gradle.ide.gradle.skip.runtime.classpath.for.libraries enabled,
-                    but AGP boolean option ${BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS.propertyName} is not used.
-
-                    Please set below in gradle.properties:
-
-                    ${BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS.propertyName}=true
-
-                """.trimIndent()
-            )
-        }
-
-        return FullDependencyGraphBuilder(
-            { configType, root ->  getArtifactsForModelBuilder(component, configType, root) },
-            project.path,
-            component.variantDependencies,
-            libraryService,
-            graphEdgeCache,
-            component.services.projectOptions.get(BooleanOption.ADDITIONAL_ARTIFACTS_IN_MODEL),
-            dontBuildRuntimeClasspath
-        )
-    }
+    ) = FullDependencyGraphBuilder(
+        { configType, root ->  getArtifactsForModelBuilder(component, configType, root) },
+        project.path,
+        component.variantDependencies,
+        libraryService,
+        graphEdgeCache,
+        component.services.projectOptions.get(BooleanOption.ADDITIONAL_ARTIFACTS_IN_MODEL),
+        dontBuildRuntimeClasspath
+    )
 
     private fun getBundleInfo(
         component: ComponentCreationConfig
