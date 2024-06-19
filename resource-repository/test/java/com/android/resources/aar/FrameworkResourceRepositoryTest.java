@@ -60,6 +60,7 @@ public class FrameworkResourceRepositoryTest {
   private static final boolean PRINT_STATS = false;
 
   private Path myResourceFolder;
+  private Path myOverlaysFolder;
   private Path myTempDir;
 
   @NonNull
@@ -80,11 +81,20 @@ public class FrameworkResourceRepositoryTest {
     return TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib/data/res");
   }
 
+  /** Returns the path of the framework overlays directory in prebuilts. */
+  @NonNull
+  private static Path getFrameworkOverlaysDir() {
+    return TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib/data/overlays");
+  }
+
   /** Returns the path of a freshly built framework_res.jar. */
   @NonNull
   private Path getFrameworkResJar() throws IOException {
     Path path = myTempDir.resolve("framework_res.jar");
-    FrameworkResJarCreator.createJar(getFrameworkResDir(), path);
+    String jarPath = path.toString();
+    String baseResPath = getFrameworkResDir().toString();
+    String overlaysPath = getFrameworkOverlaysDir().toString();
+    FrameworkResJarCreator.main(new String[]{baseResPath, overlaysPath, jarPath});
     return path;
   }
 
@@ -219,6 +229,7 @@ public class FrameworkResourceRepositoryTest {
   @Before
   public void setUp() throws Exception {
     myResourceFolder = getFrameworkResDir();
+    myOverlaysFolder = getFrameworkOverlaysDir();
     myTempDir = Files.createTempDirectory("temp");
   }
 
@@ -290,6 +301,40 @@ public class FrameworkResourceRepositoryTest {
           assertThat(fromJar.isLoadedFromCache()).isFalse();
           compareContents(fromSourceFiles, fromJar);
           checkContents(fromJar);
+        }
+      }
+
+      if (PRINT_STATS) {
+        String type = "Load time with " + (languages == null ? "all" : languages.size()) + " languages";
+        System.out.println(type + " from source files: " + loadTimeFromSources / (count * 1000.)
+                           + " sec, from framework_res.jar file " + loadTimeFromJar / (count * 1000.) + " sec");
+      }
+    }
+  }
+
+  @Test
+  public void testLoadingOverlayFromSourcesAndJar() throws Exception {
+    Path frameworkResJar = getFrameworkResJar();
+    String overlay = "AvoidAppsInCutoutOverlay";
+    for (Set<String> languages : Arrays.asList(ImmutableSet.<String>of(), ImmutableSet.of("fr", "de"), null)) {
+      long loadTimeFromSources = 0;
+      long loadTimeFromJar = 0;
+      int count = PRINT_STATS ? 100 : 1;
+      for (int i = 0; i < count; ++i) {
+        long start = System.currentTimeMillis();
+        FrameworkResourceRepository fromSourceFiles = FrameworkResourceRepository.create(myOverlaysFolder.resolve(overlay).resolve("res"), languages, null, false);
+        loadTimeFromSources += System.currentTimeMillis() - start;
+        checkLanguages(fromSourceFiles, languages);
+          if (i == 0) {
+            assertThat(fromSourceFiles.isLoadedFromCache()).isFalse();
+          }
+        start = System.currentTimeMillis();
+        FrameworkResourceRepository fromJar = FrameworkResourceRepository.createForOverlay(frameworkResJar, overlay, languages, null, false);
+        loadTimeFromJar += System.currentTimeMillis() - start;
+        checkLanguages(fromSourceFiles, languages);
+        if (i == 0) {
+          assertThat(fromJar.isLoadedFromCache()).isFalse();
+          compareContents(fromSourceFiles, fromJar);
         }
       }
 

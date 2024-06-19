@@ -38,6 +38,7 @@ kotlin_test(
         "//prebuilts/studio/layoutlib/data/fonts",
         "//prebuilts/studio/layoutlib/data/icu",
         "//prebuilts/studio/layoutlib/data/keyboards",
+        "//prebuilts/studio/layoutlib/data/overlays",
         "//prebuilts/studio/layoutlib/data/res",
         "//tools/base/standalone-render/lib/testData",
     ],

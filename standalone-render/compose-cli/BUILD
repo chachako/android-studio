@@ -128,6 +128,7 @@ kotlin_test(
         "//prebuilts/studio/layoutlib/data/fonts",
         "//prebuilts/studio/layoutlib/data/icu",
         "//prebuilts/studio/layoutlib/data/keyboards",
+        "//prebuilts/studio/layoutlib/data/overlays",
         "//prebuilts/studio/layoutlib/data/res",
         "//prebuilts/studio/sdk:build-tools/34.0.0",
         "//prebuilts/studio/sdk:platforms/android-34",

@@ -8,6 +8,7 @@ iml_module(
     iml_files = ["android.sdktools.resource-repository.iml"],
     test_data = [
         "//prebuilts/studio/layoutlib/data:framework_res.jar",
+        "//prebuilts/studio/layoutlib/data/overlays",
         "//prebuilts/studio/layoutlib/data/res",
         "//prebuilts/studio/sdk:platforms/latest",
         "//tools/base/resource-repository/test/resources",
@@ -50,11 +51,12 @@ java_binary(
 genrule(
     name = "framework_res",
     srcs = [
+        "//prebuilts/studio/layoutlib/data/overlays",
         "//prebuilts/studio/layoutlib/data/res",
         "//prebuilts/studio/layoutlib/data/res:version",
     ],
     outs = ["framework_res.jar"],
-    cmd = "$(JAVA) -classpath $(location :framework-res-jar-creator_deploy.jar) " + "com.android.resources.aar.FrameworkResJarCreator " + "$(location //prebuilts/studio/layoutlib/data/res:version)/.. $(OUTS)",
+    cmd = "$(JAVA) -classpath $(location :framework-res-jar-creator_deploy.jar) " + "com.android.resources.aar.FrameworkResJarCreator " + "$(location //prebuilts/studio/layoutlib/data/res:version)/.. $(location //prebuilts/studio/layoutlib/data/res:version)/../../overlays $(OUTS)",
     toolchains = ["//prebuilts/studio/jdk/jdk17:jdk17_runtime"],
     tools = [
         ":framework-res-jar-creator",

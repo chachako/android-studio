@@ -22,7 +22,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,11 +52,20 @@ public class FrameworkResJarTest {
     return TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib/data/res");
   }
 
+  /** Returns the path of the framework overlays directory in prebuilts. */
+  @NonNull
+  private static Path getFrameworkOverlaysDir() {
+    return TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib/data/overlays");
+  }
+
   /** Returns the path of a freshly built framework_res.jar. */
   @NonNull
-  private Path getExpectedFrameworkResJar() throws IOException {
+  private Path getExpectedFrameworkResJar() {
     Path path = myTempDir.resolve("framework_res.jar");
-    FrameworkResJarCreator.createJar(getFrameworkResDir(), path);
+    String jarPath = path.toString();
+    String baseResPath = getFrameworkResDir().toString();
+    String overlaysPath = getFrameworkOverlaysDir().toString();
+    FrameworkResJarCreator.main(new String[]{baseResPath, overlaysPath, jarPath});
     return path;
   }
 
@@ -86,7 +94,7 @@ public class FrameworkResJarTest {
       Enumeration<? extends ZipEntry> entries2 = zip2.entries();
       while (true) {
         boolean hasMore1 = entries1.hasMoreElements();
-        boolean hasMore2 = entries1.hasMoreElements();
+        boolean hasMore2 = entries2.hasMoreElements();
         if (hasMore1 != hasMore2) {
           frameworkResJarIsOutOfDate(file);
         }

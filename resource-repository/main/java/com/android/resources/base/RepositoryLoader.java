@@ -273,7 +273,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
   }
 
   @NonNull
-  public final String getResourcePathPrefix() {
+  public String getResourcePathPrefix() {
     if (myLoadingFromZipArchive) {
       return portableFileName(myResourceDirectoryOrFile.toString()) + JAR_SEPARATOR + "res/";
     }
@@ -283,7 +283,7 @@ public abstract class RepositoryLoader<T extends LoadableResourceRepository> imp
   }
 
   @NonNull
-  public final String getResourceUrlPrefix() {
+  public String getResourceUrlPrefix() {
     if (myLoadingFromZipArchive) {
       return JAR_PROTOCOL + "://" + portableFileName(myResourceDirectoryOrFile.toString()) + JAR_SEPARATOR + "res/";
     }

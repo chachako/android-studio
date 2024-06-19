@@ -17,6 +17,8 @@ package com.android.resources.aar;
 
 import static com.android.SdkConstants.DOT_9PNG;
 import static com.android.SdkConstants.FD_RES_RAW;
+import static com.android.SdkConstants.JAR_PROTOCOL;
+import static com.android.SdkConstants.JAR_SEPARATOR;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
@@ -77,6 +79,7 @@ import java.util.zip.ZipFile;
  * @see FrameworkResJarCreator
  */
 public final class FrameworkResourceRepository extends AarSourceResourceRepository {
+  public static final String OVERLAYS_DIR = "overlays/";
   private static final ResourceNamespace ANDROID_NAMESPACE = ResourceNamespace.ANDROID;
   /** Mapping from languages to language groups, e.g. Romansh is mapped to Italian. */
   private static final Map<String, String> LANGUAGE_TO_GROUP = ImmutableMap.of("rm", "it");
@@ -89,9 +92,17 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
   private final Set<String> myLanguageGroups = new TreeSet<>();
   private int myNumberOfLanguageGroupsLoadedFromCache;
   private final boolean myUseCompiled9Patches;
+  private final String myResourceSubDir;
 
-  private FrameworkResourceRepository(@NonNull RepositoryLoader<FrameworkResourceRepository> loader, boolean useCompiled9Patches) {
+  private FrameworkResourceRepository(@NonNull RepositoryLoader<FrameworkResourceRepository> loader,
+          boolean useCompiled9Patches) {
+      this(loader, "", useCompiled9Patches);
+  }
+
+  private FrameworkResourceRepository(@NonNull RepositoryLoader<FrameworkResourceRepository> loader,
+          @NonNull String overlaySubDir, boolean useCompiled9Patches) {
     super(loader, null);
+    myResourceSubDir = overlaySubDir;
     myUseCompiled9Patches = useCompiled9Patches;
   }
 
@@ -127,6 +138,43 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     return repository;
   }
 
+    /**
+     * Creates an Android framework resource repository.
+     *
+     * @param resourceDirectoryOrFile the res directory or a jar file containing resources of the Android framework
+     * @param overlayName the name of the overlay represented by this repository
+     * @param languagesToLoad the set of ISO 639 language codes, or null to load all available languages
+     * @param cachingData data used to validate and create a persistent cache file
+     * @param useCompiled9Patches whether to provide the compiled or non-compiled version of the framework 9-patches
+     * @return the created resource repository
+     */
+    @NonNull
+    public static FrameworkResourceRepository createForOverlay(@NonNull Path resourceDirectoryOrFile,
+            @NonNull String overlayName,
+            @Nullable Set<String> languagesToLoad,
+            @Nullable CachingData cachingData,
+            boolean useCompiled9Patches) {
+        long start = LOG.isDebugEnabled() ? System.currentTimeMillis() : 0;
+        Set<String> languageGroups = languagesToLoad == null ? null : getLanguageGroups(languagesToLoad);
+
+        String overlaySubDir = OVERLAYS_DIR + overlayName + "/";
+        Loader loader = new Loader(resourceDirectoryOrFile, overlaySubDir, languageGroups);
+        FrameworkResourceRepository repository = new FrameworkResourceRepository(loader, overlaySubDir, useCompiled9Patches);
+
+        repository.load(null, cachingData, loader, languageGroups, loader.myLoadedLanguageGroups);
+
+        if (LOG.isDebugEnabled()) {
+            String source = repository.getNumberOfLanguageGroupsLoadedFromOrigin() == 0 ?
+                            "cache" :
+                            repository.myNumberOfLanguageGroupsLoadedFromCache == 0 ?
+                            resourceDirectoryOrFile.toString() :
+                            "cache and " + resourceDirectoryOrFile;
+            LOG.debug("Loaded from " + source + " with " + (repository.myLanguageGroups.size() - 1) + " languages in " +
+                      (System.currentTimeMillis() - start) / 1000. + " sec");
+        }
+        return repository;
+    }
+
   /**
    * Checks if the repository contains resources for the given set of languages.
    *
@@ -159,7 +207,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
 
     long start = LOG.isDebugEnabled() ? System.currentTimeMillis() : 0;
     Loader loader = new Loader(this, languageGroups);
-    FrameworkResourceRepository newRepository = new FrameworkResourceRepository(loader, myUseCompiled9Patches);
+    FrameworkResourceRepository newRepository = new FrameworkResourceRepository(loader, myResourceSubDir, myUseCompiled9Patches);
 
     newRepository.load(this, cachingData, loader, languageGroups, loader.myLoadedLanguageGroups);
 
@@ -409,18 +457,28 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
   private static class Loader extends RepositoryLoader<FrameworkResourceRepository> {
     @NonNull private final List<String> myPublicFileNames = ImmutableList.of("public.xml", "public-final.xml", "public-staging.xml");
     @NonNull private final Set<String> myLoadedLanguageGroups;
+    @NonNull private final String myResourceSubDir;
     @Nullable private Set<String> myLanguageGroups;
 
     Loader(@NonNull Path resourceDirectoryOrFile, @Nullable Set<String> languageGroups) {
+        super(resourceDirectoryOrFile, null, ANDROID_NAMESPACE);
+        myLanguageGroups = languageGroups;
+        myLoadedLanguageGroups = new TreeSet<>();
+        myResourceSubDir = "";
+    }
+
+    Loader(@NonNull Path resourceDirectoryOrFile, @NonNull String subDir, @Nullable Set<String> languageGroups) {
       super(resourceDirectoryOrFile, null, ANDROID_NAMESPACE);
       myLanguageGroups = languageGroups;
       myLoadedLanguageGroups = new TreeSet<>();
+      myResourceSubDir = subDir;
     }
 
     Loader(@NonNull FrameworkResourceRepository sourceRepository, @Nullable Set<String> languageGroups) {
       super(sourceRepository.myResourceDirectoryOrFile, null, ANDROID_NAMESPACE);
       myLanguageGroups = languageGroups;
       myLoadedLanguageGroups = new TreeSet<>(sourceRepository.myLanguageGroups);
+      myResourceSubDir = sourceRepository.myResourceSubDir;
     }
 
     public List<String> getPublicXmlFileNames() {
@@ -431,7 +489,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     protected void loadFromZip(@NonNull FrameworkResourceRepository repository) {
       try (ZipFile zipFile = new ZipFile(myResourceDirectoryOrFile.toFile())) {
         if (myLanguageGroups == null) {
-          myLanguageGroups = readLanguageGroups(zipFile);
+          myLanguageGroups = readLanguageGroups(zipFile, myResourceSubDir);
         }
 
         Map<String, String> stringCache = Maps.newHashMapWithExpectedSize(10000);
@@ -439,7 +497,7 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
 
         for (String language : myLanguageGroups) {
           if (!myLoadedLanguageGroups.contains(language)) {
-            String entryName = getResourceTableNameForLanguage(language);
+            String entryName = myResourceSubDir + getResourceTableNameForLanguage(language);
             ZipEntry zipEntry = zipFile.getEntry(entryName);
             if (zipEntry == null) {
               if (language.isEmpty()) {
@@ -466,16 +524,41 @@ public final class FrameworkResourceRepository extends AarSourceResourceReposito
     }
 
     @NonNull
-    private static Set<String> readLanguageGroups(@NonNull ZipFile zipFile) {
+    @Override
+    public String getResourcePathPrefix() {
+      if (isLoadingFromZipArchive()) {
+        return portableFileName(myResourceDirectoryOrFile.toString())
+               + JAR_SEPARATOR + myResourceSubDir + "res/";
+      }
+      else {
+        return portableFileName(myResourceDirectoryOrFile.toString()) + '/';
+      }
+    }
+
+    @NonNull
+    @Override
+    public String getResourceUrlPrefix() {
+      if (isLoadingFromZipArchive()) {
+        return JAR_PROTOCOL + "://" + portableFileName(myResourceDirectoryOrFile.toString())
+               + JAR_SEPARATOR + myResourceSubDir + "res/";
+      }
+      else {
+        return portableFileName(myResourceDirectoryOrFile.toString()) + '/';
+      }
+    }
+
+    @NonNull
+    private static Set<String> readLanguageGroups(@NonNull ZipFile zipFile, @NonNull String subDir) {
       ImmutableSortedSet.Builder<String> result = ImmutableSortedSet.naturalOrder();
       result.add("");
+      String prefix = subDir + RESOURCES_TABLE_PREFIX;
       zipFile.stream().forEach(entry -> {
         String name = entry.getName();
-        if (name.startsWith(RESOURCES_TABLE_PREFIX) && name.endsWith(RESOURCE_TABLE_SUFFIX) &&
-            name.length() == RESOURCES_TABLE_PREFIX.length() + RESOURCE_TABLE_SUFFIX.length() + 2 &&
-            Character.isLetter(name.charAt(RESOURCES_TABLE_PREFIX.length())) &&
-            Character.isLetter(name.charAt(RESOURCES_TABLE_PREFIX.length() + 1))) {
-          result.add(name.substring(RESOURCES_TABLE_PREFIX.length(), RESOURCES_TABLE_PREFIX.length() + 2));
+        if (name.startsWith(prefix) && name.endsWith(RESOURCE_TABLE_SUFFIX) &&
+            name.length() == prefix.length() + RESOURCE_TABLE_SUFFIX.length() + 2 &&
+            Character.isLetter(name.charAt(prefix.length())) &&
+            Character.isLetter(name.charAt(prefix.length() + 1))) {
+          result.add(name.substring(prefix.length(), prefix.length() + 2));
         }
       });
       return result.build();

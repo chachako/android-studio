@@ -15,6 +15,8 @@
  */
 package com.android.resources.aar;
 
+import static com.android.resources.aar.FrameworkResourceRepository.OVERLAYS_DIR;
+
 import com.android.annotations.NonNull;
 import com.android.utils.Base128OutputStream;
 import com.google.common.annotations.VisibleForTesting;
@@ -30,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -44,42 +47,54 @@ import java.util.zip.ZipOutputStream;
 @SuppressWarnings({"UseOfSystemOutOrSystemErr", "CallToPrintStackTrace"})
 public class FrameworkResJarCreator {
   public static void main(@NonNull String[] args) {
-    if (args.length != 2) {
+    if (args.length != 3) {
       printUsage(FrameworkResJarCreator.class.getName());
       System.exit(1);
     }
 
     Path resDirectory = Paths.get(args[0]).toAbsolutePath().normalize();
-    Path jarFile = Paths.get(args[1]).toAbsolutePath().normalize();
-    try {
-      createJar(resDirectory, jarFile);
-    }
-    catch (IOException e) {
+    Path overlaysDirectory = Paths.get(args[1]).toAbsolutePath().normalize();
+    Path jarFile = Paths.get(args[2]).toAbsolutePath().normalize();
+    try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(jarFile))) {
+      createJar(resDirectory, zip, "");
+
+      try (Stream<Path> overlays = Files.list(overlaysDirectory)) {
+        overlays.sorted().forEach(path -> {
+          if (!Files.isDirectory(path)) {
+            return;
+          }
+          String overlayName = path.getFileName().toString();
+          try {
+            createJar(path.resolve("res"), zip, OVERLAYS_DIR + overlayName  + "/");
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        });
+      }
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }
 
   @VisibleForTesting
-  static void createJar(@NonNull Path resDirectory, @NonNull Path jarFile) throws IOException {
+  static void createJar(@NonNull Path resDirectory, @NonNull ZipOutputStream zip, @NonNull String subDir) throws IOException {
     FrameworkResourceRepository repository = FrameworkResourceRepository.create(resDirectory, null, null, false);
     Set<String> languages = repository.getLanguageGroups();
 
-    try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(jarFile))) {
-      for (String language : languages) {
-        String entryName = FrameworkResourceRepository.getResourceTableNameForLanguage(language);
-        createZipEntry(entryName, getEncodedResources(repository, language), zip);
-      }
+    for (String language : languages) {
+      String entryName = FrameworkResourceRepository.getResourceTableNameForLanguage(language);
+      createZipEntry(subDir + entryName, getEncodedResources(repository, language), zip);
+    }
 
-      Path parentDir = resDirectory.getParent();
-      List<Path> files = getContainedFiles(resDirectory);
+    Path parentDir = resDirectory.getParent();
+    List<Path> files = getContainedFiles(resDirectory);
 
-      for (Path file : files) {
-        // When running on Windows, we need to make sure that the file entries are correctly encoded
-        // with the Unix path separator since the ZIP file spec only allows for that one.
-        String relativePath = parentDir.relativize(file).toString().replace('\\', '/');
-        if (!relativePath.equals("res/version") && !relativePath.equals("res/BUILD")) { // Skip "version" and "BUILD" files.
-          createZipEntry(relativePath, Files.readAllBytes(file), zip);
-        }
+    for (Path file : files) {
+      // When running on Windows, we need to make sure that the file entries are correctly encoded
+      // with the Unix path separator since the ZIP file spec only allows for that one.
+      String relativePath = parentDir.relativize(file).toString().replace('\\', '/');
+      if (!relativePath.equals("res/version") && !relativePath.equals("res/BUILD")) { // Skip "version" and "BUILD" files.
+        createZipEntry(subDir + relativePath, Files.readAllBytes(file), zip);
       }
     }
   }
@@ -116,6 +131,6 @@ public class FrameworkResJarCreator {
   }
 
   private static void printUsage(@NonNull String programName) {
-    System.out.printf("Usage: %s <res_directory> <jar_file>%n", programName);
+    System.out.printf("Usage: %s <base_res_directory> <overlays_directory> <jar_file>%n", programName);
   }
 }
