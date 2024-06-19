@@ -101,7 +101,7 @@ def studio_linux(build_env: bazel.BuildEnv):
       f'--profile={profile_path}',
 
       '--build_tag_filters=-no_linux',
-      '--test_tag_filters=-no_linux,-no_test_linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate,-very_flaky',
+      '--test_tag_filters=-no_linux,-no_test_linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate,-perfgate-release,-very_flaky',
 
       '--tool_tag=studio_linux.sh',
       f'--embed_label={as_build_number}',

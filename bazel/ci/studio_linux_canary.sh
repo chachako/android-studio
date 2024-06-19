@@ -31,7 +31,7 @@ readonly BUILD_TARGETS="//tools/... -//tools/adt/idea/studio/..."
   --build_metadata=ab_target=studio-linux_canary \
   --define=meta_android_build_number="${BUILD_NUMBER}" \
   --tool_tag=studio-linux-canary \
-  --test_tag_filters="-no_test_linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate,-very_flaky" \
+  --test_tag_filters="-no_test_linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate,-perfgate-release,-very_flaky" \
   --verbose_failures \
   -- \
   //tools/adt/idea/...

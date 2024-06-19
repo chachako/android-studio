@@ -38,7 +38,7 @@ setlocal
     set CONDITIONAL_FLAGS=!NOCACHE! !FLAKY_ATTEMPTS! !ANTS! !AB_POSTSUBMIT!
   )
 
-  set TESTTAGFILTERS=qa_smoke,ui_test,-no_windows,-no_test_windows,-qa_fast,-qa_unreliable,-perfgate
+  set TESTTAGFILTERS=qa_smoke,ui_test,-no_windows,-no_test_windows,-qa_fast,-qa_unreliable,-perfgate,-perfgate-release
 
   @rem Generate a UUID for use as the Bazel invocation ID
   for /f "tokens=*" %%f in ('uuidgen') do (
