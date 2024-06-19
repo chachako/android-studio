@@ -369,11 +369,11 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
     }
 
     private fun getCurrentAndroidUser(deviceController: DeviceController): String {
-        val currentUser = deviceController.deviceShellAndCheckSuccess("am get-current-user")
-            .output.joinToString("").trim()
-        return currentUser.ifBlank {
-            "0"  // Default primary android user.
-        }
+        return deviceController.deviceShellAndCheckSuccess("am get-current-user")
+            .output.asSequence()
+            .map(String::trim)
+            .filter(String::isNotBlank)
+            .firstOrNull() ?: "0"  // Default primary android user.
     }
 
     override fun canRun(): Boolean = true
