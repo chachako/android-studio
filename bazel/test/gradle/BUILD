@@ -7,7 +7,7 @@ gradle_build(
     build_file = "library/build.gradle",
     data = [
         "//tools/base/build-system:gradle-distrib",
-        "//prebuilts/studio/sdk:platforms/latest",
+        "//prebuilts/studio/sdk:platforms/android-34",
         "//prebuilts/studio/sdk:platform-tools",
         "//prebuilts/studio/sdk:build-tools/latest",
     ] + glob(["library/**"]),
