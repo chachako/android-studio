@@ -74,6 +74,7 @@ _vendor_git = [
     {
         "name": "androidsdk",
         "build_tools_version": "30.0.3",
+        "api_level": 34,
     },
     {
         "name": "freetype_repo",
