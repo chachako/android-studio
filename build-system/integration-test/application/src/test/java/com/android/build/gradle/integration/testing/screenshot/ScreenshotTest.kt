@@ -162,6 +162,32 @@ class ScreenshotTest {
                 experimentalProperties["android.experimental.enableScreenshotTest"] = true
 
             }
+            // Add test listener to log additional test results for easier debugging when tests failed.
+            tasks.withType(Test) {
+                addTestListener(new TestListener() {
+                    @Override
+                    void beforeSuite(TestDescriptor suite) {
+                        println "Starting test suite: " + suite.getName()
+                    }
+
+                    @Override
+                    void afterSuite(TestDescriptor suite, TestResult result) {
+                        println "Finished test suite: " + suite.getName() + " with result: " + result.getResultType()
+                        result.exception?.printStackTrace()
+                    }
+
+                    @Override
+                    void beforeTest(TestDescriptor testDescriptor) {
+                        println "Starting test: " + testDescriptor.getName()
+                    }
+
+                    @Override
+                    void afterTest(TestDescriptor testDescriptor, TestResult result) {
+                        println "Finished test: " + testDescriptor.getName() + " with result: " + result.getResultType()
+                        result.exception?.printStackTrace()
+                    }
+                })
+            }
             """.trimIndent()
         }
         addFile(
