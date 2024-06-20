@@ -33,7 +33,6 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactSco
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ArtifactType.JAR
 import com.android.build.gradle.internal.publishing.AndroidArtifacts.ConsumedConfigType.ANNOTATION_PROCESSOR
 import com.android.build.gradle.internal.services.getBuildService
-import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.builder.errors.DefaultIssueReporter
 import com.android.builder.errors.IssueReporter
@@ -100,17 +99,13 @@ fun JavaCompile.configureProperties(creationConfig: ComponentCreationConfig) {
             // through classpath
             creationConfig.global.bootClasspath,
             creationConfig.compileClasspath,
-            creationConfig.artifacts
-                .get(InternalArtifactType.KOTLINC)
-                .takeIf { creationConfig.useBuiltInKotlinSupport },
+            creationConfig.getBuiltInKotlincOutput(),
         )
     } else {
         this.options.bootstrapClasspath = this.project.files(creationConfig.global.bootClasspath)
         this.classpath = project.files(
             creationConfig.compileClasspath,
-            creationConfig.artifacts
-                .get(InternalArtifactType.KOTLINC)
-                .takeIf { creationConfig.useBuiltInKotlinSupport },
+            creationConfig.getBuiltInKotlincOutput()
         )
     }
 

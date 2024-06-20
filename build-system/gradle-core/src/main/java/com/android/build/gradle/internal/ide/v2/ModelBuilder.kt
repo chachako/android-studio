@@ -75,7 +75,6 @@ import com.android.build.gradle.internal.utils.getDesugaredMethods
 import com.android.build.gradle.internal.utils.toImmutableSet
 import com.android.build.gradle.internal.variant.VariantModel
 import com.android.build.gradle.options.BooleanOption
-import com.android.build.gradle.options.ProjectOptionService
 import com.android.build.gradle.options.ProjectOptions
 import com.android.build.gradle.tasks.BuildPrivacySandboxSdkApks
 import com.android.builder.core.ComponentTypeImpl
@@ -788,11 +787,7 @@ class ModelBuilder<
         component.androidResourcesCreationConfig?.compiledRClassArtifact?.get()?.asFile?.let {
             classesFolders.add(it)
         }
-        if (component.useBuiltInKotlinSupport) {
-            classesFolders.add(
-                component.artifacts.get(InternalArtifactType.KOTLINC).get().asFile
-            )
-        }
+        component.getBuiltInKotlincOutput()?.orNull?.asFile?.let { classesFolders.add(it) }
 
         val generatedClassPaths = addGeneratedClassPaths(component, classesFolders)
 
@@ -938,9 +933,7 @@ class ModelBuilder<
             classesFolders.addAll(it.variantData.allPreJavacGeneratedBytecode.files)
             classesFolders.addAll(it.variantData.allPostJavacGeneratedBytecode.files)
         }
-        if (component.useBuiltInKotlinSupport) {
-            classesFolders.add(component.artifacts.get(InternalArtifactType.KOTLINC).get().asFile)
-        }
+        component.getBuiltInKotlincOutput()?.orNull?.asFile?.let { classesFolders.add(it) }
         // The separately compile R class, if applicable.
         if (extension.testOptions.unitTests.isIncludeAndroidResources ||
             component.componentType.isForScreenshotPreview) {
