@@ -66,7 +66,7 @@ class BasicKotlinDslTest {
     }
 
     @Test
-    fun testGenerateLocaleConfig() {
+    fun testApplicationAndroidResources() {
         project.buildFile.delete()
 
         project.file("build.gradle.kts").writeText("""
@@ -80,6 +80,7 @@ class BasicKotlinDslTest {
                 compileSdkVersion(${GradleTestProject.DEFAULT_COMPILE_SDK_VERSION})
                 androidResources {
                     generateLocaleConfig = true
+                    localeFilters += listOf("fr")
                 }
             }
         """.trimIndent())

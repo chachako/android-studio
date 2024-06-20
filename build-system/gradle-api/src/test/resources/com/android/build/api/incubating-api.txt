@@ -716,6 +716,9 @@ https://issuetracker.google.com/337766642
 https://issuetracker.google.com/341235113
   * com.android.build.api.dsl.FusedLibraryExtension.aarMetadata: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AarMetadata, kotlin.Unit>)
   * com.android.build.api.dsl.FusedLibraryExtension.getAarMetadata: com.android.build.api.dsl.AarMetadata ()
+https://issuetracker.google.com/349614565
+  * com.android.build.api.dsl.ApplicationAndroidResources.getLocaleFilters: java.util.Set<java.lang.String> ()
+  * com.android.build.api.variant.ApplicationAndroidResources.getLocaleFilters: org.gradle.api.provider.SetProperty<java.lang.String> ()
 https://issuetracker.google.com/350672659
   * com.android.build.api.dsl.AiPackExtension
   * com.android.build.api.dsl.AiPackExtension.dynamicDelivery: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DynamicDelivery, kotlin.Unit>)

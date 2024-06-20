@@ -62,7 +62,8 @@ data class AaptPackageConfig(
     val consumeStableIdsFile: File? = null,
     val mergeBlameDirectory: File? = null,
     val manifestMergeBlameFile: File? = null,
-    val identifiedSourceSetMap: Map<String, String> = emptyMap()
+    val identifiedSourceSetMap: Map<String, String> = emptyMap(),
+    val localeFilters: Set<String> = emptySet()
 ) : Serializable {
 
     init {
@@ -115,6 +116,7 @@ data class AaptPackageConfig(
         private var mergeBlameDirectory: File? = null
         private var manifestMergeBlameFile: File? = null
         private var identifiedSourceSetMap: Map<String, String> = emptyMap()
+        private var localeFilters: ImmutableSet<String> = ImmutableSet.of()
         /**
          * Creates a new [AaptPackageConfig] from the data already placed in the builder.
          *
@@ -156,7 +158,8 @@ data class AaptPackageConfig(
                 consumeStableIdsFile = consumeStableIdsFile,
                 mergeBlameDirectory = mergeBlameDirectory,
                 manifestMergeBlameFile = manifestMergeBlameFile,
-                identifiedSourceSetMap = identifiedSourceSetMap
+                identifiedSourceSetMap = identifiedSourceSetMap,
+                localeFilters = localeFilters
             )
         }
 
@@ -352,6 +355,11 @@ data class AaptPackageConfig(
 
         fun setIdentifiedSourceSetMap(identifiedSourceSetMap: Map<String, String>) : Builder {
             this.identifiedSourceSetMap = identifiedSourceSetMap
+            return this
+        }
+
+        fun setLocaleFilters(localeFilters: Collection<String>): Builder {
+            this.localeFilters = ImmutableSet.copyOf(localeFilters)
             return this
         }
     }

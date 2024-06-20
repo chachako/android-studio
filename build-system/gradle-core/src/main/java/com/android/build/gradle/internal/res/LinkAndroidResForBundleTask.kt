@@ -20,6 +20,7 @@ import com.android.SdkConstants
 import com.android.build.api.variant.impl.BuiltArtifactsLoaderImpl
 import com.android.build.gradle.internal.AndroidJarInput
 import com.android.build.gradle.internal.component.ApkCreationConfig
+import com.android.build.gradle.internal.component.ApplicationCreationConfig
 import com.android.build.gradle.internal.component.DynamicFeatureCreationConfig
 import com.android.build.gradle.internal.initialize
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -32,8 +33,8 @@ import com.android.build.gradle.internal.services.getErrorFormatMode
 import com.android.build.gradle.internal.services.registerAaptService
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
 import com.android.build.gradle.internal.tasks.NonIncrementalTask
-import com.android.build.gradle.internal.tasks.factory.features.AndroidResourcesTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.VariantTaskCreationAction
+import com.android.build.gradle.internal.tasks.factory.features.AndroidResourcesTaskCreationAction
 import com.android.build.gradle.internal.tasks.factory.features.AndroidResourcesTaskCreationActionImpl
 import com.android.build.gradle.internal.utils.fromDisallowChanges
 import com.android.build.gradle.internal.utils.setDisallowChanges
@@ -55,6 +56,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
@@ -167,6 +169,7 @@ abstract class LinkAndroidResForBundleTask : NonIncrementalTask() {
             mergeBlameDirectory = mergeBlameLogFolder.get().asFile,
             manifestMergeBlameFile = manifestMergeBlameFile.orNull?.asFile,
             identifiedSourceSetMap = identifiedSourceSetMap,
+            localeFilters = ImmutableSet.copyOf(localeFilters.get())
         )
         if (logger.isInfoEnabled) {
             logger.info("Aapt output file {}", outputFile.absolutePath)
@@ -192,6 +195,9 @@ abstract class LinkAndroidResForBundleTask : NonIncrementalTask() {
 
     @get:Input
     lateinit var resConfig: Collection<String> private set
+
+    @get:Input
+    abstract val localeFilters: SetProperty<String>
 
     @get:Input
     abstract val noCompress: ListProperty<String>
@@ -287,6 +293,18 @@ abstract class LinkAndroidResForBundleTask : NonIncrementalTask() {
             task.minSdkVersion = creationConfig.minSdk.apiLevel
 
             task.resConfig = androidResourcesCreationConfig.resourceConfigurations
+
+            when (creationConfig) {
+                is ApplicationCreationConfig -> {
+                    task.localeFilters.setDisallowChanges(creationConfig.androidResources.localeFilters)
+                }
+                is DynamicFeatureCreationConfig -> {
+                    task.localeFilters.setDisallowChanges(creationConfig.baseModuleLocaleFilters)
+                }
+                else -> {
+                    task.localeFilters.setDisallowChanges(ImmutableSet.of())
+                }
+            }
 
             task.manifestMergeBlameFile.setDisallowChanges(creationConfig.artifacts.get(
                 InternalArtifactType.MANIFEST_MERGE_BLAME_FILE

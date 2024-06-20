@@ -123,6 +123,7 @@ open class ApplicationVariantImpl @Inject constructor(
             getAndroidResources(dslInfo.androidResourcesDsl.androidResources),
             buildFeatures,
             variantBuilder.androidResources.generateLocaleConfig,
+            internalServices.setPropertyOf(String::class.java, dslInfo.localeFilters)
         )
     }
 

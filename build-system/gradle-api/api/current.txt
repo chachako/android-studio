@@ -430,8 +430,10 @@ package com.android.build.api.dsl {
 
   public interface ApplicationAndroidResources extends com.android.build.api.dsl.AndroidResources {
     method @org.gradle.api.Incubating public boolean getGenerateLocaleConfig();
+    method @org.gradle.api.Incubating public java.util.Set<java.lang.String> getLocaleFilters();
     method @org.gradle.api.Incubating public void setGenerateLocaleConfig(boolean);
     property @org.gradle.api.Incubating public abstract boolean generateLocaleConfig;
+    property @org.gradle.api.Incubating public abstract java.util.Set<java.lang.String> localeFilters;
   }
 
   public interface ApplicationBaseFlavor extends com.android.build.api.dsl.BaseFlavor com.android.build.api.dsl.ApplicationVariantDimension {
@@ -2539,7 +2541,9 @@ package com.android.build.api.variant {
 
   @org.gradle.api.Incubating public interface ApplicationAndroidResources extends com.android.build.api.variant.AndroidResources {
     method @org.gradle.api.Incubating public boolean getGenerateLocaleConfig();
+    method @org.gradle.api.Incubating public org.gradle.api.provider.SetProperty<java.lang.String> getLocaleFilters();
     property @org.gradle.api.Incubating public abstract boolean generateLocaleConfig;
+    property @org.gradle.api.Incubating public abstract org.gradle.api.provider.SetProperty<java.lang.String> localeFilters;
   }
 
   @org.gradle.api.Incubating public interface ApplicationAndroidResourcesBuilder extends com.android.build.api.variant.AndroidResourcesBuilder {
