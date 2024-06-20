@@ -17,6 +17,7 @@
 package com.android.testutils;
 
 import static com.android.SdkConstants.FD_PLATFORMS;
+
 import static org.junit.Assume.assumeFalse;
 
 import com.android.SdkConstants;
@@ -24,6 +25,12 @@ import com.android.annotations.NonNull;
 import com.android.annotations.concurrency.GuardedBy;
 import com.android.utils.FileUtils;
 import com.android.utils.PathUtils;
+
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.UnixStat;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,10 +45,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.UnixStat;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
 /**
  * Utility methods to deal with loading the test data.
@@ -55,7 +58,10 @@ public class TestUtils {
      * <p>This version needs to be present in prebuilts for tests to pass (see
      * tools/base/bazel/README.md).
      */
-    public static final String KOTLIN_VERSION_FOR_TESTS = "2.0.0-RC2";
+    public static final String KOTLIN_VERSION_FOR_TESTS = "2.0.20-Beta1";
+
+    /** KSP version used by AGP integration tests. */
+    public static final String KSP_VERSION_FOR_TESTS = "2.0.20-Beta1-1.0.22";
 
     /**
      * Kotlin version used in AGP integration tests for Compose.

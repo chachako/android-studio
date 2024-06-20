@@ -91,7 +91,7 @@ abstract class DumpAndroidTargetTask: DefaultTask() {
                         value is AndroidTarget -> JsonParser.parseString(jsonFormat.print(value))
                         value is AndroidCompilation -> JsonParser.parseString(jsonFormat.print(value))
                         value is AndroidSourceSet -> JsonParser.parseString(jsonFormat.print(value))
-                        value.javaClass.name == "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage" -> {
+                        value?.javaClass?.name == "org.jetbrains.kotlin.gradle.utils.StoredPropertyStorage" -> {
                             // This class uses the default toString() method which contains a hash
                             // code, so we need to normalize it.
                             JsonPrimitive("${value.javaClass.name}@{HASH_CODE}")

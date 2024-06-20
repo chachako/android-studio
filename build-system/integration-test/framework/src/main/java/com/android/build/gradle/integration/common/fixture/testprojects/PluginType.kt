@@ -70,7 +70,7 @@ sealed class PluginType(
             isKotlin = true,
             useNewDsl = true,
             last = true,
-            version = "${TestUtils.KOTLIN_VERSION_FOR_TESTS}-1.0.20"
+            version = TestUtils.KSP_VERSION_FOR_TESTS
     )
     object KOTLIN_MPP: PluginType(
         id = "org.jetbrains.kotlin.multiplatform",
