@@ -127,7 +127,6 @@ public class IotInstallCheckerTest {
 
     @Test
     public void testIntentListReceiver() {
-        System.out.println(StringUtil.join(DUMPSYS_RESULT_WITH_THIRD_PARTY_LAUNCHERS));
         IotInstallChecker.LauncherPackagesReceiver receiver =
                 new IotInstallChecker.LauncherPackagesReceiver();
         receiver.processNewLines(DUMPSYS_RESULT_WITH_THIRD_PARTY_LAUNCHERS);
