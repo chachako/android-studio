@@ -125,7 +125,7 @@ coverage_java_test(
     tags = [
         "no_mac",
         "no_rbe_windows",
-        "no_test_windows",  # b/116693861
+        "noci:studio-win",  # b/116693861
     ],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [

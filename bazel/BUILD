@@ -143,7 +143,7 @@ java_test(
     local = True,
     tags = [
         "no-cache",  # As this test doesn't model all of its inputs.
-        "no_test_windows",
+        "noci:studio-win",
     ],
     test_class = "com.android.tools.binaries.ImlToBazelConsistencyTest",
     deps = [
@@ -215,7 +215,7 @@ coverage_java_test(
     srcs = ["testSrc/com/android/tools/binaries/PomGeneratorTest.java"],
     data = ["//tools/base/bazel/test:pom_generator"],
     tags = [
-        "no_test_windows",
+        "noci:studio-win",
     ],
     test_class = "com.android.tools.binaries.PomGeneratorTest",
     deps = [
@@ -420,7 +420,7 @@ coverage_java_test(
     srcs = ["testSrc/com/android/tools/binaries/ImlToBazelTest.java"],
     data = ["//tools/base/bazel/test:iml_to_bazel"],
     tags = [
-        "no_test_windows",
+        "noci:studio-win",
     ],
     test_class = "com.android.tools.binaries.ImlToBazelTest",
     deps = [
@@ -516,7 +516,7 @@ coverage_java_test(
     srcs = ["testSrc/com/android/tools/binaries/LocalMavenRepositoryGeneratorTest.java"],
     data = ["//tools/base/bazel/test:local_maven_repository_generator"],
     tags = [
-        "no_test_windows",
+        "noci:studio-win",
     ],
     test_class = "com.android.tools.binaries.LocalMavenRepositoryGeneratorTest",
     deps = [
@@ -546,7 +546,7 @@ coverage_java_test(
         "MAVEN_OUTPUT_FILE": "tools/base/bazel/maven/BUILD.maven",
     },
     tags = [
-        "no_test_windows",
+        "noci:studio-win",
     ],
     test_class = "com.android.tools.binaries.MavenConsistencyTest",
     deps = [

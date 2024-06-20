@@ -76,7 +76,7 @@ gradle_integration_test(
     resources = glob(["src/test/resources/**"]),
     shard_count = 4,
     tags = [
-        "no_test_windows",  # b/128839160
+        "noci:studio-win",  # b/128839160
     ],
     deps = TEST_DEPS,
 )

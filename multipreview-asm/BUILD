@@ -40,7 +40,7 @@ kotlin_test(
     srcs = glob(["perf/testSrc/**/*.kt"]),
     tags = [
         "no_mac",
-        "no_test_windows",
+        "noci:studio-win",
         "perfgate",
     ],
     test_class = "com.android.tools.preview.multipreview.PerfArtificialDataMultipreviewTest",

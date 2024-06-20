@@ -12,7 +12,7 @@ java_test(
     jvm_flags = ["-Djava.security.debug=all"],
     tags = [
         "no_test_mac",
-        "no_test_windows",
+        "noci:studio-win",
     ],
     test_class = "DockerImageTest",
     deps = [

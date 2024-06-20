@@ -66,7 +66,7 @@ kotlin_test(
             "manifest-merger/src/test/java/**/*.kt",
         ],
     ),
-    tags = ["no_test_windows"],  # b/77288863
+    tags = ["noci:studio-win"],  # b/77288863
     test_class = "com.android.testutils.JarTestSuite",
     runtime_deps = ["//tools/base/testutils:tools.testutils"],
     deps = [
