@@ -22,12 +22,15 @@ import static com.android.tools.agent.app.inspection.NativeTransport.*;
 import android.app.Application;
 import android.os.Looper;
 import android.util.Log;
+
 import androidx.inspection.ArtTooling;
 import androidx.inspection.ArtTooling.EntryHook;
 import androidx.inspection.ArtTooling.ExitHook;
+
 import com.android.tools.agent.app.inspection.version.CompatibilityChecker;
 import com.android.tools.agent.app.inspection.version.CompatibilityCheckerResult;
 import com.android.tools.agent.app.inspection.version.LibraryCompatibility;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,7 +122,11 @@ public class AppInspectionService {
                                 + inspectorId
                                 + " already exists. It was launched by project: "
                                 + alreadyLaunchedProjectName
-                                + "\n\nThis could happen if you launched the same inspector from two different projects at the same time, or if a previous run of the current project crashed unexpectedly and didn't shut down properly.");
+                                + "\n\n"
+                                + "This could happen if you launched the same inspector from two"
+                                + " different projects at the same time, or if a previous run of"
+                                + " the current project crashed unexpectedly and didn't shut down"
+                                + " properly.");
                 return;
             }
 
@@ -421,7 +428,11 @@ public class AppInspectionService {
         if (applications.isEmpty()) {
             return looperClassLoader;
         }
-        ClassLoader classLoader = applications.get(0).getClassLoader();
+        Application application = applications.get(0);
+        if (application == null) {
+            return looperClassLoader;
+        }
+        ClassLoader classLoader = application.getClassLoader();
         return classLoader == null ? looperClassLoader : classLoader;
     }
 
