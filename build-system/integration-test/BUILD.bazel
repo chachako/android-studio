@@ -122,6 +122,23 @@ maven_repository(
     visibility = ["//visibility:public"],
 )
 
+LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS = "2.0.20-dev-6897"
+
+maven_repository(
+    name = "latest_kotlin_gradle_plugin_prebuilts_for_sync_benchmarks",
+    # keep sorted
+    artifacts = [
+        "@maven//:org.jetbrains.kotlin.android.org.jetbrains.kotlin.android.gradle.plugin_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
+        "@maven//:org.jetbrains.kotlin.kotlin-gradle-plugin_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
+        "@maven//:org.jetbrains.kotlin.jvm.org.jetbrains.kotlin.jvm.gradle.plugin_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
+        "@maven//:org.jetbrains.kotlin.kapt.org.jetbrains.kotlin.kapt.gradle.plugin_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
+        "@maven//:org.jetbrains.kotlin.plugin.compose.org.jetbrains.kotlin.plugin.compose.gradle.plugin_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-common_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_" + LATEST_KOTLIN_VERSION_FOR_SYNC_BENCHMARKS,
+    ],
+    visibility = ["//visibility:public"],
+)
+
 maven_repository(
     name = "ksp_gradle_plugin",
     artifacts = [
