@@ -34,15 +34,12 @@ class SdCardsTest {
   fun testSdCardFromConfig() {
     assertThat(
         sdCardFromConfig(
-          mapOf(
-            AvdManager.AVD_INI_SDCARD_PATH to "/tmp/sdcard",
-            AvdManager.AVD_INI_SDCARD_SIZE to "300M",
-          )
+          mapOf(ConfigKey.SDCARD_PATH to "/tmp/sdcard", ConfigKey.SDCARD_SIZE to "300M")
         )
       )
       .isEqualTo(ExternalSdCard("/tmp/sdcard"))
 
-    assertThat(sdCardFromConfig(mapOf(AvdManager.AVD_INI_SDCARD_SIZE to "300M")))
+    assertThat(sdCardFromConfig(mapOf(ConfigKey.SDCARD_SIZE to "300M")))
       .isEqualTo(InternalSdCard(Storage(300, Storage.Unit.MiB).size))
   }
 }

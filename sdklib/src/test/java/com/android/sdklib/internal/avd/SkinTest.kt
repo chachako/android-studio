@@ -24,12 +24,7 @@ class SkinTest {
   fun testSkinFromConfig_noSkin() {
     assertThat(skinFromConfig(emptyMap())).isNull()
     assertThat(
-        skinFromConfig(
-          mapOf(
-            AvdManager.AVD_INI_SKIN_PATH to "_no_skin",
-            AvdManager.AVD_INI_SKIN_NAME to "_no_skin",
-          )
-        )
+        skinFromConfig(mapOf(ConfigKey.SKIN_PATH to "_no_skin", ConfigKey.SKIN_NAME to "_no_skin"))
       )
       .isNull()
   }
@@ -40,10 +35,7 @@ class SkinTest {
 
     assertThat(
         skinFromConfig(
-          mapOf(
-            AvdManager.AVD_INI_SKIN_PATH to skinPath.toString(),
-            AvdManager.AVD_INI_SKIN_NAME to "pixel_6",
-          )
+          mapOf(ConfigKey.SKIN_PATH to skinPath.toString(), ConfigKey.SKIN_NAME to "pixel_6")
         )
       )
       .isEqualTo(OnDiskSkin(skinPath))
@@ -51,7 +43,7 @@ class SkinTest {
 
   @Test
   fun testSkinFromConfig_genericSkin() {
-    assertThat(skinFromConfig(mapOf(AvdManager.AVD_INI_SKIN_NAME to "1000x1400")))
+    assertThat(skinFromConfig(mapOf(ConfigKey.SKIN_NAME to "1000x1400")))
       .isEqualTo(GenericSkin(1000, 1400))
   }
 }

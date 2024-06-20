@@ -16,13 +16,13 @@
 
 package com.android.sdklib.devices;
 
-import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_CLUSTER_HEIGHT;
-import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_CLUSTER_WIDTH;
-import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_DISPLAY_SETTINGS_FILE;
-import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_DISTANT_DISPLAY_HEIGHT;
-import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_DISTANT_DISPLAY_WIDTH;
-import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_RESIZABLE_CONFIG;
-import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ROLL;
+import static com.android.sdklib.internal.avd.ConfigKey.CLUSTER_HEIGHT;
+import static com.android.sdklib.internal.avd.ConfigKey.CLUSTER_WIDTH;
+import static com.android.sdklib.internal.avd.ConfigKey.DISPLAY_SETTINGS_FILE;
+import static com.android.sdklib.internal.avd.ConfigKey.DISTANT_DISPLAY_HEIGHT;
+import static com.android.sdklib.internal.avd.ConfigKey.DISTANT_DISPLAY_WIDTH;
+import static com.android.sdklib.internal.avd.ConfigKey.RESIZABLE_CONFIG;
+import static com.android.sdklib.internal.avd.ConfigKey.ROLL;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -710,21 +710,20 @@ public class DeviceManagerTest {
     public void testGetFreeformHardwareProperties() {
         Device device = dm.getDevice("13.5in Freeform", "Generic");
         String settingsFile =
-                DeviceManager.getHardwareProperties(device).get(AVD_INI_DISPLAY_SETTINGS_FILE);
+                DeviceManager.getHardwareProperties(device).get(DISPLAY_SETTINGS_FILE);
         assertThat(settingsFile).isEqualTo("freeform");
     }
 
     @Test
     public void testGetRollableHardwareProperties() {
         Device device = dm.getDevice("7.4in Rollable", "Generic");
-        assertThat(DeviceManager.getHardwareProperties(device).get(AVD_INI_ROLL)).isEqualTo("yes");
+        assertThat(DeviceManager.getHardwareProperties(device).get(ROLL)).isEqualTo("yes");
     }
 
     @Test
     public void testResizableHardwareProperties() {
         Device device = dm.getDevice("resizable", "Generic");
-        assertThat(DeviceManager.getHardwareProperties(device).get(AVD_INI_RESIZABLE_CONFIG))
-                .isNotEmpty();
+        assertThat(DeviceManager.getHardwareProperties(device).get(RESIZABLE_CONFIG)).isNotEmpty();
     }
 
     @Test
@@ -735,10 +734,8 @@ public class DeviceManagerTest {
                         .collect(toList());
         assertThat(automotiveDevices).isNotEmpty();
         for (Device device : automotiveDevices) {
-            assertThat(DeviceManager.getHardwareProperties(device))
-                    .containsKey(AVD_INI_CLUSTER_HEIGHT);
-            assertThat(DeviceManager.getHardwareProperties(device))
-                    .containsKey(AVD_INI_CLUSTER_WIDTH);
+            assertThat(DeviceManager.getHardwareProperties(device)).containsKey(CLUSTER_HEIGHT);
+            assertThat(DeviceManager.getHardwareProperties(device)).containsKey(CLUSTER_WIDTH);
         }
     }
 
@@ -751,9 +748,9 @@ public class DeviceManagerTest {
         assertThat(automotiveDistantDisplayDevices).isNotEmpty();
         for (Device device : automotiveDistantDisplayDevices) {
             assertThat(DeviceManager.getHardwareProperties(device))
-                    .containsKey(AVD_INI_DISTANT_DISPLAY_HEIGHT);
+                    .containsKey(DISTANT_DISPLAY_HEIGHT);
             assertThat(DeviceManager.getHardwareProperties(device))
-                    .containsKey(AVD_INI_DISTANT_DISPLAY_WIDTH);
+                    .containsKey(DISTANT_DISPLAY_WIDTH);
         }
     }
 

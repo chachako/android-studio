@@ -27,14 +27,12 @@ import com.android.annotations.concurrency.Slow;
 import com.android.io.CancellableFileIo;
 import com.android.io.IAbstractFile;
 import com.android.io.StreamException;
-import com.android.prefs.AbstractAndroidLocations;
 import com.android.prefs.AndroidLocationsException;
 import com.android.repository.api.ConsoleProgressIndicator;
 import com.android.repository.api.ProgressIndicator;
 import com.android.repository.io.FileOpUtils;
 import com.android.sdklib.AndroidTargetHash;
 import com.android.sdklib.AndroidVersion;
-import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.ISystemImage;
 import com.android.sdklib.PathFileWrapper;
 import com.android.sdklib.SystemImageTags;
@@ -109,295 +107,6 @@ public class AvdManager {
         Pattern.compile("^([a-zA-Z0-9._-]+)\\s*=\\s*(.*)\\s*$");        //$NON-NLS-1$
 
     public static final String AVD_FOLDER_EXTENSION = ".avd";           //$NON-NLS-1$
-
-    /** Charset encoding used by the avd.ini/config.ini. */
-    public static final String AVD_INI_ENCODING = "avd.ini.encoding";   //$NON-NLS-1$
-
-    /**
-     * The *absolute* path to the AVD folder (which contains the #CONFIG_INI file).
-     */
-    public static final String AVD_INFO_ABS_PATH = "path";              //$NON-NLS-1$
-
-    /**
-     * The path to the AVD folder (which contains the #CONFIG_INI file) relative to the {@link
-     * AbstractAndroidLocations#FOLDER_DOT_ANDROID}. This information is written in the avd ini
-     * <b>only</b> if the AVD folder is located under the .android path (that is the relative that
-     * has no backward {@code ..} references).
-     */
-    public static final String AVD_INFO_REL_PATH = "path.rel"; // $NON-NLS-1$
-
-    /**
-     * The {@link IAndroidTarget#hashString()} of the AVD.
-     */
-    public static final String AVD_INFO_TARGET = "target";     //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the tag id of the specific avd
-     */
-    public static final String AVD_INI_TAG_ID = "tag.id"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name for the tag ids of the AVD's system image, represented as a
-     * comma-separated list
-     */
-    public static final String AVD_INI_TAG_IDS = "tag.ids"; // $NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the tag display of the specific avd
-     */
-    public static final String AVD_INI_TAG_DISPLAY = "tag.display"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name for the display names of the tags of the AVD's system image,
-     * represented as a comma-separated list
-     */
-    public static final String AVD_INI_TAG_DISPLAYNAMES = "tag.displaynames"; // $NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the abi type of the specific avd
-     */
-    public static final String AVD_INI_ABI_TYPE = "abi.type"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the name of the AVD
-     */
-    public static final String AVD_INI_AVD_ID = "AvdId";
-
-    /**
-     * AVD/config.ini key name representing the name of the AVD
-     */
-    public static final String AVD_INI_PLAYSTORE_ENABLED = "PlayStore.enabled";
-
-    /**
-     * AVD/config.ini key name representing the CPU architecture of the specific avd
-     */
-    public static final String AVD_INI_CPU_ARCH = "hw.cpu.arch"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the CPU architecture of the specific avd
-     */
-    public static final String AVD_INI_CPU_MODEL = "hw.cpu.model"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the number of processors to emulate when SMP is supported.
-     */
-    public static final String AVD_INI_CPU_CORES = "hw.cpu.ncore"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the manufacturer of the device this avd was based on.
-     */
-    public static final String AVD_INI_DEVICE_MANUFACTURER = "hw.device.manufacturer"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the name of the device this avd was based on.
-     */
-    public static final String AVD_INI_DEVICE_NAME = "hw.device.name"; //$NON-NLS-1$
-
-    /** AVD/config.ini key name representing if it's Chrome OS (App Runtime for Chrome). */
-    public static final String AVD_INI_ARC = "hw.arc";
-
-    /**
-     * AVD/config.ini key name representing the display name of the AVD
-     */
-    public static final String AVD_INI_DISPLAY_NAME = "avd.ini.displayname";
-
-    /**
-     * AVD/config.ini key name representing the SDK-relative path of the skin folder, if any,
-     * or a 320x480 like constant for a numeric skin size.
-     *
-     * @see #NUMERIC_SKIN_SIZE
-     */
-    public static final String AVD_INI_SKIN_PATH = "skin.path"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the SDK-relative path of the skin folder to be selected if
-     * skins for this device become enabled.
-     */
-    public static final String AVD_INI_BACKUP_SKIN_PATH = "skin.path.backup"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing an UI name for the skin.
-     * This config key is ignored by the emulator. It is only used by the SDK manager or
-     * tools to give a friendlier name to the skin.
-     * If missing, use the {@link #AVD_INI_SKIN_PATH} key instead.
-     */
-    public static final String AVD_INI_SKIN_NAME = "skin.name"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing whether a dynamic skin should be displayed.
-     */
-    public static final String AVD_INI_SKIN_DYNAMIC = "skin.dynamic"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the path to the sdcard file.
-     * If missing, the default name "sdcard.img" will be used for the sdcard, if there's such
-     * a file.
-     *
-     * @see #SDCARD_IMG
-     */
-    public static final String AVD_INI_SDCARD_PATH = "sdcard.path"; //$NON-NLS-1$
-    /**
-     * AVD/config.ini key name representing the size of the SD card. This property is for UI
-     * purposes only. It is not used by the emulator.
-     *
-     * @see SdCards#SDCARD_SIZE_PATTERN
-     * @see SdCards#parseSdCard
-     */
-    public static final String AVD_INI_SDCARD_SIZE = "sdcard.size"; // $NON-NLS-1$
-    /**
-     * AVD/config.ini key name representing the first path where the emulator looks
-     * for system images. Typically this is the path to the add-on system image or
-     * the path to the platform system image if there's no add-on.
-     * <p>
-     * The emulator looks at {@link #AVD_INI_IMAGES_1} before {@link #AVD_INI_IMAGES_2}.
-     */
-    public static final String AVD_INI_IMAGES_1 = "image.sysdir.1"; //$NON-NLS-1$
-    /**
-     * AVD/config.ini key name representing the second path where the emulator looks
-     * for system images. Typically this is the path to the platform system image.
-     *
-     * @see #AVD_INI_IMAGES_1
-     */
-    public static final String AVD_INI_IMAGES_2 = "image.sysdir.2"; //$NON-NLS-1$
-    /**
-     * AVD/config.ini key name representing the presence of the snapshots file.
-     * This property is for UI purposes only. It is not used by the emulator.
-     */
-    public static final String AVD_INI_SNAPSHOT_PRESENT = "snapshot.present"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing whether hardware OpenGLES emulation is enabled
-     */
-    public static final String AVD_INI_GPU_EMULATION = "hw.gpu.enabled"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing which software OpenGLES should be used
-     */
-    public static final String AVD_INI_GPU_MODE = "hw.gpu.mode";
-
-    /**
-     * AVD/config.ini key name representing whether to boot from a snapshot
-     */
-    public static final String AVD_INI_FORCE_COLD_BOOT_MODE = "fastboot.forceColdBoot";
-
-    public static final String AVD_INI_FORCE_CHOSEN_SNAPSHOT_BOOT_MODE =
-            "fastboot.forceChosenSnapshotBoot";
-    public static final String AVD_INI_FORCE_FAST_BOOT_MODE = "fastboot.forceFastBoot";
-    public static final String AVD_INI_CHOSEN_SNAPSHOT_FILE = "fastboot.chosenSnapshotFile";
-
-    /**
-     * AVD/config.ini key name representing how to emulate the front facing camera
-     */
-    public static final String AVD_INI_CAMERA_FRONT = "hw.camera.front"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing how to emulate the rear facing camera
-     */
-    public static final String AVD_INI_CAMERA_BACK = "hw.camera.back"; //$NON-NLS-1$
-
-    /**
-     * AVD/config.ini key name representing the amount of RAM the emulated device should have
-     */
-    public static final String AVD_INI_RAM_SIZE = "hw.ramSize";
-
-    /**
-     * AVD/config.ini key name representing the amount of memory available to applications by default
-     */
-    public static final String AVD_INI_VM_HEAP_SIZE = "vm.heapSize";
-
-    /**
-     * AVD/config.ini key name representing the size of the data partition
-     */
-    public static final String AVD_INI_DATA_PARTITION_SIZE = "disk.dataPartition.size";
-
-    /**
-     * AVD/config.ini key name representing the hash of the device this AVD is based on. <br>
-     * This old hash is deprecated and shouldn't be used anymore.
-     * It represents the Device.hashCode() and is not stable accross implementations.
-     * @see #AVD_INI_DEVICE_HASH_V2
-     */
-    public static final String AVD_INI_DEVICE_HASH_V1 = "hw.device.hash";
-
-    /**
-     * AVD/config.ini key name representing the hash of the device hardware properties
-     * actually present in the config.ini. This replaces {@link #AVD_INI_DEVICE_HASH_V1}.
-     * <p>
-     * To find this hash, use
-     * {@code DeviceManager.getHardwareProperties(device).get(AVD_INI_DEVICE_HASH_V2)}.
-     */
-    public static final String AVD_INI_DEVICE_HASH_V2 = "hw.device.hash2";
-
-    /** AVD/config.ini key name representing the Android display settings file */
-    public static final String AVD_INI_DISPLAY_SETTINGS_FILE = "display.settings.xml";
-
-    /** AVD/config.ini key name representing the hinge settings */
-    public static final String AVD_INI_HINGE = "hw.sensor.hinge";
-
-    public static final String AVD_INI_HINGE_COUNT = "hw.sensor.hinge.count";
-    public static final String AVD_INI_HINGE_TYPE = "hw.sensor.hinge.type";
-    public static final String AVD_INI_HINGE_SUB_TYPE = "hw.sensor.hinge.sub_type";
-    public static final String AVD_INI_HINGE_RANGES = "hw.sensor.hinge.ranges";
-    public static final String AVD_INI_HINGE_DEFAULTS = "hw.sensor.hinge.defaults";
-    public static final String AVD_INI_HINGE_AREAS = "hw.sensor.hinge.areas";
-    public static final String AVD_INI_POSTURE_LISTS = "hw.sensor.posture_list";
-    public static final String AVD_INI_FOLD_AT_POSTURE =
-            "hw.sensor.hinge.fold_to_displayRegion.0.1_at_posture";
-    public static final String AVD_INI_HINGE_ANGLES_POSTURE_DEFINITIONS =
-            "hw.sensor.hinge_angles_posture_definitions";
-
-    /** AVD/config.ini key name representing the resizable settings */
-    public static final String AVD_INI_RESIZABLE_CONFIG = "hw.resizable.configs";
-
-    /** AVD/config.ini key name representing the rollable settings */
-    public static final String AVD_INI_ROLL = "hw.sensor.roll";
-
-    public static final String AVD_INI_ROLL_COUNT = "hw.sensor.roll.count";
-    public static final String AVD_INI_ROLL_RANGES = "hw.sensor.roll.ranges";
-    public static final String AVD_INI_ROLL_DEFAULTS = "hw.sensor.roll.defaults";
-    public static final String AVD_INI_ROLL_RADIUS = "hw.sensor.roll.radius";
-    public static final String AVD_INI_ROLL_DIRECTION = "hw.sensor.roll.direction";
-
-    // Settings for Android Automotive instrument cluster display
-    public static final String AVD_INI_CLUSTER_WIDTH = "hw.display6.width";
-    public static final String AVD_INI_CLUSTER_HEIGHT = "hw.display6.height";
-    public static final String AVD_INI_CLUSTER_DENSITY = "hw.display6.density";
-    public static final String AVD_INI_CLUSTER_FLAG = "hw.display6.flag";
-    // Settings for Android Automotive distant display
-    public static final String AVD_INI_DISTANT_DISPLAY_WIDTH = "hw.display7.width";
-    public static final String AVD_INI_DISTANT_DISPLAY_HEIGHT = "hw.display7.height";
-    public static final String AVD_INI_DISTANT_DISPLAY_DENSITY = "hw.display7.density";
-    public static final String AVD_INI_DISTANT_DISPLAY_FLAG = "hw.display7.flag";
-
-    /** AVD/user-settings.ini key for Preferred ABI */
-    public static final String USER_SETTINGS_INI_PREFERRED_ABI = "abi.type.preferred";
-
-    public static final String AVD_INI_ROLL_RESIZE_1_AT_POSTURE =
-            "hw.sensor.roll.resize_to_displayRegion.0.1_at_posture";
-    public static final String AVD_INI_ROLL_RESIZE_2_AT_POSTURE =
-            "hw.sensor.roll.resize_to_displayRegion.0.2_at_posture";
-    public static final String AVD_INI_ROLL_RESIZE_3_AT_POSTURE =
-            "hw.sensor.roll.resize_to_displayRegion.0.3_at_posture";
-    public static final String AVD_INI_ROLL_PERCENTAGES_POSTURE_DEFINITIONS =
-            "hw.sensor.roll_percentages_posture_definitions";
-
-    /**
-     * The API level of this AVD. Derived from the target hash.
-     */
-    public static final String AVD_INI_ANDROID_API = "image.androidVersion.api";
-
-    /** The Sdk Extension level of this AVD. Derived from the target hash. */
-    public static final String AVD_INI_ANDROID_EXTENSION = "image.androidVersion.extension";
-
-    /** Whether the AVD's target Sdk Extension is the base extension */
-    public static final String AVD_INI_ANDROID_IS_BASE_EXTENSION =
-            "image.androidVersion.isBaseExtension";
-
-    /**
-     * The API codename of this AVD. Derived from the target hash.
-     */
-    public static final String AVD_INI_ANDROID_CODENAME = "image.androidVersion.codename";
-
-    public static final String AVD_INI_ANDROID_EXTENSION_LEVEL = "image.androidVersion.ext";
 
     /**
      * Pattern to match pixel-sized skin "names", e.g. "320x480".
@@ -843,12 +552,12 @@ public class AvdManager {
                 // If the hardware config includes an SD Card path in the old directory,
                 // update the path to the new directory
                 if (hardwareConfig != null) {
-                    String oldSdCardPath = hardwareConfig.get(AVD_INI_SDCARD_PATH);
+                    String oldSdCardPath = hardwareConfig.get(ConfigKey.SDCARD_PATH);
                     if (oldSdCardPath != null && oldSdCardPath.startsWith(oldAvdFolderPath)) {
                         // The hardware config points to the old directory. Substitute the new
                         // directory.
                         hardwareConfig.put(
-                                AVD_INI_SDCARD_PATH,
+                                ConfigKey.SDCARD_PATH,
                                 oldSdCardPath.replace(
                                         oldAvdFolderPath,
                                         newAvdInfo.getDataFolderPath().toString()));
@@ -868,18 +577,18 @@ public class AvdManager {
 
             // Tag and abi type
             IdDisplay tag = systemImage.getTag();
-            configValues.put(AVD_INI_TAG_ID, tag.getId());
-            configValues.put(AVD_INI_TAG_DISPLAY, tag.getDisplay());
+            configValues.put(ConfigKey.TAG_ID, tag.getId());
+            configValues.put(ConfigKey.TAG_DISPLAY, tag.getDisplay());
             List<IdDisplay> tags = systemImage.getTags();
             configValues.put(
-                    AVD_INI_TAG_IDS, tags.stream().map(IdDisplay::getId).collect(joining(",")));
+                    ConfigKey.TAG_IDS, tags.stream().map(IdDisplay::getId).collect(joining(",")));
             configValues.put(
-                    AVD_INI_TAG_DISPLAYNAMES,
+                    ConfigKey.TAG_DISPLAYNAMES,
                     tags.stream().map(IdDisplay::getDisplay).collect(joining(",")));
-            configValues.put(AVD_INI_ABI_TYPE, systemImage.getPrimaryAbiType());
-            configValues.put(AVD_INI_PLAYSTORE_ENABLED, Boolean.toString(deviceHasPlayStore && systemImage.hasPlayStore()));
+            configValues.put(ConfigKey.ABI_TYPE, systemImage.getPrimaryAbiType());
+            configValues.put(ConfigKey.PLAYSTORE_ENABLED, Boolean.toString(deviceHasPlayStore && systemImage.hasPlayStore()));
             configValues.put(
-                    AVD_INI_ARC, Boolean.toString(SystemImageTags.CHROMEOS_TAG.equals(tag)));
+                    ConfigKey.ARC, Boolean.toString(SystemImageTags.CHROMEOS_TAG.equals(tag)));
 
             if (sdcard != null) {
                 configValues.putAll(sdcard.configEntries());
@@ -1004,8 +713,8 @@ public class AvdManager {
             Map<String, String> configVals = parseIniFile(new PathFileWrapper(configIni), mLog);
             Map<String, String> userSettingsVals =
                     AvdInfo.parseUserSettingsFile(destAvdFolder, mLog);
-            configVals.put(AVD_INI_AVD_ID, newAvdName);
-            configVals.put(AVD_INI_DISPLAY_NAME, newAvdName);
+            configVals.put(ConfigKey.AVD_ID, newAvdName);
+            configVals.put(ConfigKey.DISPLAY_NAME, newAvdName);
             writeIniFile(configIni, configVals, true);
 
             // Update the AVD name and paths in the new copies of config.ini and hardware-qemu.ini
@@ -1156,10 +865,10 @@ public class AvdManager {
 
         HashMap<String, String> values = new HashMap<>();
         if (relPath != null) {
-            values.put(AVD_INFO_REL_PATH, relPath);
+            values.put(MetadataKey.REL_PATH, relPath);
         }
-        values.put(AVD_INFO_ABS_PATH, absPath);
-        values.put(AVD_INFO_TARGET, AndroidTargetHash.getPlatformHashString(version));
+        values.put(MetadataKey.ABS_PATH, absPath);
+        values.put(MetadataKey.TARGET, AndroidTargetHash.getPlatformHashString(version));
         writeIniFile(iniFile, values, true);
 
         return iniFile;
@@ -1415,12 +1124,12 @@ public class AvdManager {
 
         Path avdPath = null;
         if (map != null) {
-            String path = map.get(AVD_INFO_ABS_PATH);
+            String path = map.get(MetadataKey.ABS_PATH);
             avdPath = path == null ? null : iniPath.resolve(path);
             if (avdPath == null
                     || !(CancellableFileIo.isDirectory(mBaseAvdFolder.resolve(avdPath)))) {
                 // Try to fallback on the relative path, if present.
-                String relPath = map.get(AVD_INFO_REL_PATH);
+                String relPath = map.get(MetadataKey.REL_PATH);
                 if (relPath != null) {
                     Path androidFolder = mSdkHandler.getAndroidFolder();
                     Path f =
@@ -1462,7 +1171,7 @@ public class AvdManager {
         String imageSysDir = null;
         ISystemImage sysImage = null;
         if (properties != null) {
-            imageSysDir = properties.get(AVD_INI_IMAGES_1);
+            imageSysDir = properties.get(ConfigKey.IMAGES_1);
             if (imageSysDir != null) {
                 Path sdkLocation = mSdkHandler.getLocation();
                 Path imageDir =
@@ -1478,8 +1187,8 @@ public class AvdManager {
         DeviceStatus deviceStatus = null;
         boolean updateHashV2 = false;
         if (properties != null) {
-            String deviceName = properties.get(AVD_INI_DEVICE_NAME);
-            String deviceMfctr = properties.get(AVD_INI_DEVICE_MANUFACTURER);
+            String deviceName = properties.get(ConfigKey.DEVICE_NAME);
+            String deviceMfctr = properties.get(ConfigKey.DEVICE_MANUFACTURER);
 
             Device d;
 
@@ -1489,20 +1198,20 @@ public class AvdManager {
 
                 if (d != null) {
                     updateHashV2 = true;
-                    String hashV2 = properties.get(AVD_INI_DEVICE_HASH_V2);
+                    String hashV2 = properties.get(ConfigKey.DEVICE_HASH_V2);
                     if (hashV2 != null) {
                         String newHashV2 = DeviceManager.hasHardwarePropHashChanged(d, hashV2);
                         if (newHashV2 == null) {
                             updateHashV2 = false;
                         } else {
-                            properties.put(AVD_INI_DEVICE_HASH_V2, newHashV2);
+                            properties.put(ConfigKey.DEVICE_HASH_V2, newHashV2);
                         }
                     }
 
-                    String hashV1 = properties.get(AVD_INI_DEVICE_HASH_V1);
+                    String hashV1 = properties.get(ConfigKey.DEVICE_HASH_V1);
                     if (hashV1 != null) {
                         // will recompute a hash v2 and save it below
-                        properties.remove(AVD_INI_DEVICE_HASH_V1);
+                        properties.remove(ConfigKey.DEVICE_HASH_V1);
                     }
                 }
             }
@@ -1529,27 +1238,27 @@ public class AvdManager {
             properties = new HashMap<>();
         }
 
-        if (!properties.containsKey(AVD_INI_ANDROID_API)
-                && !properties.containsKey(AVD_INI_ANDROID_CODENAME)) {
-            String targetHash = map.get(AVD_INFO_TARGET);
+        if (!properties.containsKey(ConfigKey.ANDROID_API)
+                && !properties.containsKey(ConfigKey.ANDROID_CODENAME)) {
+            String targetHash = map.get(MetadataKey.TARGET);
             if (targetHash != null) {
                 AndroidVersion version = AndroidTargetHash.getVersionFromHash(targetHash);
                 if (version != null) {
-                    properties.put(AVD_INI_ANDROID_API, Integer.toString(version.getApiLevel()));
+                    properties.put(ConfigKey.ANDROID_API, Integer.toString(version.getApiLevel()));
                     if (version.getExtensionLevel() != null) {
                         properties.put(
-                                AVD_INI_ANDROID_EXTENSION,
+                                ConfigKey.ANDROID_EXTENSION,
                                 Integer.toString(version.getExtensionLevel()));
                         properties.put(
-                                AVD_INI_ANDROID_IS_BASE_EXTENSION,
+                                ConfigKey.ANDROID_IS_BASE_EXTENSION,
                                 Boolean.toString(version.isBaseExtension()));
                     }
                     if (version.getCodename() != null) {
-                        properties.put(AVD_INI_ANDROID_CODENAME, version.getCodename());
+                        properties.put(ConfigKey.ANDROID_CODENAME, version.getCodename());
                     }
                     if (!version.isBaseExtension() && version.getExtensionLevel() != null) {
                         properties.put(
-                                AVD_INI_ANDROID_EXTENSION_LEVEL,
+                                ConfigKey.ANDROID_EXTENSION_LEVEL,
                                 Integer.toString(version.getExtensionLevel()));
                     }
                 }
@@ -1575,7 +1284,7 @@ public class AvdManager {
      *
      * @param iniFile The file to generate.
      * @param values The properties to place in the ini file.
-     * @param addEncoding When true, add a property {@link #AVD_INI_ENCODING} indicating the
+     * @param addEncoding When true, add a property {@link ConfigKey#ENCODING} indicating the
      *     encoding used to write the file.
      * @throws IOException if {@link FileWriter} fails to open, write or close the file.
      */
@@ -1588,15 +1297,15 @@ public class AvdManager {
             if (addEncoding) {
                 // Write down the charset we're using in case we want to use it later.
                 values = new HashMap<>(values);
-                values.put(AVD_INI_ENCODING, charset.name());
+                values.put(ConfigKey.ENCODING, charset.name());
             }
 
             ArrayList<String> keys = new ArrayList<>(values.keySet());
             // Do not save these values (always recompute)
-            keys.remove(AVD_INI_ANDROID_API);
-            keys.remove(AVD_INI_ANDROID_EXTENSION);
-            keys.remove(AVD_INI_ANDROID_IS_BASE_EXTENSION);
-            keys.remove(AVD_INI_ANDROID_CODENAME);
+            keys.remove(ConfigKey.ANDROID_API);
+            keys.remove(ConfigKey.ANDROID_EXTENSION);
+            keys.remove(ConfigKey.ANDROID_IS_BASE_EXTENSION);
+            keys.remove(ConfigKey.ANDROID_CODENAME);
             Collections.sort(keys);
 
             for (String key : keys) {
@@ -1614,7 +1323,7 @@ public class AvdManager {
      * <p>If the file is not present, null is returned with no error messages sent to the log.
      *
      * <p>Charset encoding will be either the system's default or the one specified by the {@link
-     * #AVD_INI_ENCODING} key if present.
+     * ConfigKey#ENCODING} key if present.
      *
      * @param propFile the property file to parse
      * @param logger the ILogger object receiving warning/error from the parsing.
@@ -1634,7 +1343,7 @@ public class AvdManager {
      * @param log the ILogger object receiving warning/error from the parsing.
      * @param charset When a specific charset is specified, this will be used as-is.
      *   When null, the default charset will first be used and if the key
-     *   {@link #AVD_INI_ENCODING} is found the parsing will restart using that specific
+     *   {@link ConfigKey#ENCODING} is found the parsing will restart using that specific
      *   charset.
      * @return the map of (key,value) pairs, or null if the parsing failed.
      */
@@ -1666,10 +1375,10 @@ public class AvdManager {
 
                         // If we find the charset encoding and it's not the same one and
                         // it's a valid one, re-read the file using that charset.
-                        if (canChangeCharset &&
-                                AVD_INI_ENCODING.equals(key) &&
-                                !charset.name().equals(value) &&
-                                Charset.isSupported(value)) {
+                        if (canChangeCharset
+                                && ConfigKey.ENCODING.equals(key)
+                                && !charset.name().equals(value)
+                                && Charset.isSupported(value)) {
                             charset = Charset.forName(value);
                             return parseIniFileImpl(propFile, log, charset);
                         }
@@ -1761,8 +1470,8 @@ public class AvdManager {
         Map<String, String> properties = new HashMap<>(avd.getProperties());
 
         Collection<Device> devices = mDeviceManager.getDevices(DeviceManager.ALL_DEVICES);
-        String name = properties.get(AvdManager.AVD_INI_DEVICE_NAME);
-        String manufacturer = properties.get(AvdManager.AVD_INI_DEVICE_MANUFACTURER);
+        String name = properties.get(ConfigKey.DEVICE_NAME);
+        String manufacturer = properties.get(ConfigKey.DEVICE_MANUFACTURER);
 
         if (name != null && manufacturer != null) {
             for (Device d : devices) {
@@ -1770,7 +1479,7 @@ public class AvdManager {
                     // The device has a RAM size, but we don't want to use it.
                     // Instead, we'll keep the AVD's existing RAM size setting.
                     final Map<String, String> deviceHwProperties = DeviceManager.getHardwareProperties(d);
-                    deviceHwProperties.remove(AVD_INI_RAM_SIZE);
+                    deviceHwProperties.remove(ConfigKey.RAM_SIZE);
                     properties.putAll(deviceHwProperties);
                     try {
                         return updateAvd(avd, properties);
@@ -1793,11 +1502,11 @@ public class AvdManager {
      * @return true if success, false if some path are missing.
      */
     private boolean setImagePathProperties(ISystemImage image, Map<String, String> properties) {
-        properties.remove(AVD_INI_IMAGES_1);
-        properties.remove(AVD_INI_IMAGES_2);
+        properties.remove(ConfigKey.IMAGES_1);
+        properties.remove(ConfigKey.IMAGES_2);
 
         try {
-            String property = AVD_INI_IMAGES_1;
+            String property = ConfigKey.IMAGES_1;
 
             // First the image folders of the target itself
             String imagePath = getImageRelativePath(image);
@@ -1908,11 +1617,11 @@ public class AvdManager {
                     && SystemImageTags.CHROMEOS_TAG.equals(systemImage.getTag())) {
                 arch = SdkConstants.CPU_ARCH_INTEL_ATOM64;
             }
-            values.put(AVD_INI_CPU_ARCH, arch);
+            values.put(ConfigKey.CPU_ARCH, arch);
 
             String model = abi.getCpuModel();
             if (model != null) {
-                values.put(AVD_INI_CPU_MODEL, model);
+                values.put(ConfigKey.CPU_MODEL, model);
             }
         } else {
             log.warning("ABI %1$s is not supported by this version of the SDK Tools", abiType);
@@ -1957,8 +1666,8 @@ public class AvdManager {
 
     // Set skin.name for display purposes in the AVD manager and
     // set skin.path for use by the emulator.
-    values.put(AVD_INI_SKIN_NAME, skinName);
-    values.put(AVD_INI_SKIN_PATH, skinPath);
+    values.put(ConfigKey.SKIN_NAME, skinName);
+    values.put(ConfigKey.SKIN_PATH, skinPath);
   }
 
     /**

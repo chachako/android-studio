@@ -16,8 +16,8 @@
 
 package com.android.sdklib.internal.avd;
 
-import static com.android.sdklib.internal.avd.AvdManager.AVD_INI_ENCODING;
-import static com.android.sdklib.internal.avd.AvdManager.USER_SETTINGS_INI_PREFERRED_ABI;
+import static com.android.sdklib.internal.avd.ConfigKey.ENCODING;
+import static com.android.sdklib.internal.avd.UserSettingsKey.PREFERRED_ABI;
 import static com.android.sdklib.internal.avd.SdCards.SDCARD_MIN_BYTE_SIZE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -393,7 +393,7 @@ public final class AvdManagerTest {
     @Test
     public void createAvdWithNullValueUserSettings() {
         Map<String, String> userSettings = new HashMap<>();
-        userSettings.put(USER_SETTINGS_INI_PREFERRED_ABI, null);
+        userSettings.put(PREFERRED_ABI, null);
         mAvdManager.createAvd(
                 mAvdFolder,
                 name.getMethodName(),
@@ -592,19 +592,19 @@ public final class AvdManagerTest {
 
         Map<String, String> movedBootProps =
                 AvdManager.parseIniFile(new PathFileWrapper(newAvdPath.resolve("boot.prop")), null);
-        movedBootProps.remove(AVD_INI_ENCODING);
+        movedBootProps.remove(ENCODING);
         assertThat(movedBootProps).isEqualTo(bootProps);
 
         Map<String, String> movedUserSettings =
                 AvdManager.parseIniFile(
                         new PathFileWrapper(newAvdPath.resolve("user-settings.ini")), null);
-        movedUserSettings.remove(AVD_INI_ENCODING);
+        movedUserSettings.remove(ENCODING);
         assertThat(movedUserSettings).isEqualTo(userSettings);
 
         Map<String, String> movedConfig =
                 AvdManager.parseIniFile(
                         new PathFileWrapper(newAvdPath.resolve("config.ini")), null);
-        movedConfig.remove(AVD_INI_ENCODING);
+        movedConfig.remove(ENCODING);
         assertThat(movedConfig)
                 .containsEntry("ro.build.display.id", "sdk-eng 4.3 JB_MR2 774058 test-keys");
     }
@@ -1056,8 +1056,8 @@ public final class AvdManagerTest {
         PathSubject.assertThat(avdInfo.getDataFolderPath()).isEqualTo(mAvdFolder);
 
         // check that the properties of the AVD contain the extension
-        String extension = avdInfo.getProperty(AvdManager.AVD_INI_ANDROID_EXTENSION);
-        String isBaseExtension = avdInfo.getProperty(AvdManager.AVD_INI_ANDROID_IS_BASE_EXTENSION);
+        String extension = avdInfo.getProperty(ConfigKey.ANDROID_EXTENSION);
+        String isBaseExtension = avdInfo.getProperty(ConfigKey.ANDROID_IS_BASE_EXTENSION);
 
         assertThat(extension).isEqualTo("4");
         assertThat(isBaseExtension).isEqualTo("false");

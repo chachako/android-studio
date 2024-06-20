@@ -39,26 +39,26 @@ data class InternalSdCard(val size: Long) : SdCard {
 
   override fun configEntries(): Map<String, String> =
     // This property is only used for display purposes when invoking 'avdmanager list avd'
-    mapOf(AvdManager.AVD_INI_SDCARD_SIZE to sizeSpec())
+    mapOf(ConfigKey.SDCARD_SIZE to sizeSpec())
 }
 
 /** An SD card image stored at an arbitrary path, managed by the user. */
 data class ExternalSdCard(val path: String) : SdCard {
-  override fun configEntries(): Map<String, String> = mapOf(AvdManager.AVD_INI_SDCARD_PATH to path)
+  override fun configEntries(): Map<String, String> = mapOf(ConfigKey.SDCARD_PATH to path)
 }
 
 fun sdCardFromConfig(config: Map<String, String>): SdCard? {
-    val path = config[AvdManager.AVD_INI_SDCARD_PATH]
-    if (path != null) {
-        return ExternalSdCard(path)
-    }
+  val path = config[ConfigKey.SDCARD_PATH]
+  if (path != null) {
+    return ExternalSdCard(path)
+  }
 
-    val size = Storage.getStorageFromString(config[AvdManager.AVD_INI_SDCARD_SIZE])
-    if (size != null) {
-        return InternalSdCard(size.size)
-    }
+  val size = Storage.getStorageFromString(config[ConfigKey.SDCARD_SIZE])
+  if (size != null) {
+    return InternalSdCard(size.size)
+  }
 
-    return null
+  return null
 }
 
 /** Pattern for matching SD card sizes, e.g. "4K" or "16M". */

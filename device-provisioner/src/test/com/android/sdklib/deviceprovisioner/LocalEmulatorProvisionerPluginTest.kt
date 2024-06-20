@@ -26,8 +26,8 @@ import com.android.sdklib.deviceprovisioner.DeviceState.Disconnected
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
-import com.android.sdklib.internal.avd.AvdManager
-import com.android.sdklib.internal.avd.AvdManager.USER_SETTINGS_INI_PREFERRED_ABI
+import com.android.sdklib.internal.avd.ConfigKey
+import com.android.sdklib.internal.avd.UserSettingsKey.PREFERRED_ABI
 import com.google.common.truth.Truth.assertThat
 import com.google.wireless.android.sdk.stats.DeviceInfo
 import com.google.wireless.android.sdk.stats.DeviceInfo.ApplicationBinaryInterface
@@ -423,7 +423,7 @@ class LocalEmulatorProvisionerPluginTest {
 
     // Editing metadata while running shouldn't have problems.
     avdManager.avdEditor = { avdInfo: AvdInfo ->
-      avdInfo.copy(userSettings = mapOf(USER_SETTINGS_INI_PREFERRED_ABI to "arm64-v8a"))
+      avdInfo.copy(userSettings = mapOf(PREFERRED_ABI to "arm64-v8a"))
     }
     handle.editAction?.edit()
     channel.receiveUntilPassing { newState ->
@@ -467,7 +467,7 @@ class LocalEmulatorProvisionerPluginTest {
 
   private fun checkProperties(properties: LocalEmulatorProperties) {
     assertThat(properties.manufacturer).isEqualTo(MANUFACTURER)
-    assertThat(properties.avdConfigProperties[AvdManager.AVD_INI_DEVICE_MANUFACTURER])
+    assertThat(properties.avdConfigProperties[ConfigKey.DEVICE_MANUFACTURER])
       .isEqualTo(MANUFACTURER)
     assertThat(properties.model).isEqualTo(MODEL)
     assertThat(properties.androidVersion).isEqualTo(API_LEVEL)

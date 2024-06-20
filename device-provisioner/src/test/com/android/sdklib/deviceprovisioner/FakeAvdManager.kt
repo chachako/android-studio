@@ -27,7 +27,7 @@ import com.android.sdklib.AndroidVersion
 import com.android.sdklib.ISystemImage
 import com.android.sdklib.SystemImageTags
 import com.android.sdklib.internal.avd.AvdInfo
-import com.android.sdklib.internal.avd.AvdManager
+import com.android.sdklib.internal.avd.ConfigKey
 import com.android.sdklib.repository.IdDisplay
 import java.nio.file.Path
 
@@ -38,8 +38,7 @@ class FakeAvdManager(val session: FakeAdbSession, val avdRoot: Path) :
   var avdIndex = 1
   var avdEditor: (AvdInfo) -> AvdInfo = { avdInfo: AvdInfo ->
     avdInfo.copy(
-      properties =
-        avdInfo.properties + (AvdManager.AVD_INI_DISPLAY_NAME to avdInfo.displayName + " Edited")
+      properties = avdInfo.properties + (ConfigKey.DISPLAY_NAME to avdInfo.displayName + " Edited")
     )
   }
 
@@ -190,14 +189,14 @@ fun makeAvdInfo(
     avdRoot.resolve("fake_avd_${index}.avd"),
     null,
     mapOf(
-      AvdManager.AVD_INI_DEVICE_MANUFACTURER to LocalEmulatorProvisionerPluginTest.MANUFACTURER,
-      AvdManager.AVD_INI_DEVICE_NAME to LocalEmulatorProvisionerPluginTest.MODEL,
-      AvdManager.AVD_INI_ANDROID_API to androidVersion.apiStringWithoutExtension,
-      AvdManager.AVD_INI_ABI_TYPE to LocalEmulatorProvisionerPluginTest.ABI.toString(),
-      AvdManager.AVD_INI_DISPLAY_NAME to "Fake Device $index",
-      AvdManager.AVD_INI_PLAYSTORE_ENABLED to hasPlayStore.toString(),
-      AvdManager.AVD_INI_TAG_ID to tag.id,
-      AvdManager.AVD_INI_TAG_DISPLAY to tag.display,
+      ConfigKey.DEVICE_MANUFACTURER to LocalEmulatorProvisionerPluginTest.MANUFACTURER,
+      ConfigKey.DEVICE_NAME to LocalEmulatorProvisionerPluginTest.MODEL,
+      ConfigKey.ANDROID_API to androidVersion.apiStringWithoutExtension,
+      ConfigKey.ABI_TYPE to LocalEmulatorProvisionerPluginTest.ABI.toString(),
+      ConfigKey.DISPLAY_NAME to "Fake Device $index",
+      ConfigKey.PLAYSTORE_ENABLED to hasPlayStore.toString(),
+      ConfigKey.TAG_ID to tag.id,
+      ConfigKey.TAG_DISPLAY to tag.display,
     ),
     null,
     avdStatus,

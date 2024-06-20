@@ -36,8 +36,8 @@ import com.android.sdklib.deviceprovisioner.LocalEmulatorProvisionerPlugin.Compa
 import com.android.sdklib.devices.Abi
 import com.android.sdklib.internal.avd.AvdInfo
 import com.android.sdklib.internal.avd.AvdInfo.AvdStatus
-import com.android.sdklib.internal.avd.AvdManager.USER_SETTINGS_INI_PREFERRED_ABI
 import com.android.sdklib.internal.avd.HardwareProperties
+import com.android.sdklib.internal.avd.UserSettingsKey.PREFERRED_ABI
 import com.google.wireless.android.sdk.stats.DeviceInfo
 import com.intellij.icons.AllIcons
 import java.io.IOException
@@ -861,7 +861,7 @@ data class LocalEmulatorProperties(
       density = avdInfo.density
       resolution = avdInfo.resolution
       isDebuggable = !avdInfo.hasPlayStore()
-      preferredAbi = avdInfo.userSettings[USER_SETTINGS_INI_PREFERRED_ABI]
+      preferredAbi = avdInfo.userSettings[PREFERRED_ABI]
       avdConfigProperties.putAll(avdInfo.properties)
     }
 

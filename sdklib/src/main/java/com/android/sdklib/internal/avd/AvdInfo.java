@@ -144,7 +144,7 @@ public final class AvdInfo {
     /** Returns the name of the AVD for use in UI. */
     @NonNull
     public String getDisplayName() {
-        String name = getProperties().get(AvdManager.AVD_INI_DISPLAY_NAME);
+        String name = getProperties().get(ConfigKey.DISPLAY_NAME);
         return name == null ? getName().replace('_', ' ') : name;
     }
 
@@ -157,21 +157,20 @@ public final class AvdInfo {
     /** Returns the tag id/display of the AVD. */
     @NonNull
     public IdDisplay getTag() {
-        String id = getProperties().get(AvdManager.AVD_INI_TAG_ID);
+        String id = getProperties().get(ConfigKey.TAG_ID);
         if (id == null) {
             return SystemImageTags.DEFAULT_TAG;
         }
-        String display = getProperties().get(AvdManager.AVD_INI_TAG_DISPLAY);
+        String display = getProperties().get(ConfigKey.TAG_DISPLAY);
         return IdDisplay.create(id, display == null ? id : display);
     }
 
     public ImmutableList<IdDisplay> getTags() {
-        String ids = getProperties().get(AvdManager.AVD_INI_TAG_IDS);
+        String ids = getProperties().get(ConfigKey.TAG_IDS);
         if (ids == null) {
             return ImmutableList.of(getTag());
         }
-        String displays =
-                Strings.nullToEmpty(getProperties().get(AvdManager.AVD_INI_TAG_DISPLAYNAMES));
+        String displays = Strings.nullToEmpty(getProperties().get(ConfigKey.TAG_DISPLAYNAMES));
         return Streams.zip(
                         Splitter.on(",").splitToStream(ids),
                         Stream.concat(
@@ -184,12 +183,12 @@ public final class AvdInfo {
     /** Returns the processor type of the AVD. */
     @NonNull
     public String getAbiType() {
-        return getProperties().get(AvdManager.AVD_INI_ABI_TYPE);
+        return getProperties().get(ConfigKey.ABI_TYPE);
     }
 
     /** Returns true if this AVD supports Google Play Store */
     public boolean hasPlayStore() {
-        String psString = mProperties.get(AvdManager.AVD_INI_PLAYSTORE_ENABLED);
+        String psString = mProperties.get(ConfigKey.PLAYSTORE_ENABLED);
         return "true".equalsIgnoreCase(psString) || "yes".equalsIgnoreCase(psString);
     }
 
@@ -197,8 +196,8 @@ public final class AvdInfo {
     public AndroidVersion getAndroidVersion() {
         Map<String, String> properties = getProperties();
 
-        String apiStr = properties.get(AvdManager.AVD_INI_ANDROID_API);
-        String codename = properties.get(AvdManager.AVD_INI_ANDROID_CODENAME);
+        String apiStr = properties.get(ConfigKey.ANDROID_API);
+        String codename = properties.get(ConfigKey.ANDROID_CODENAME);
         int api = 1;
         if (!Strings.isNullOrEmpty(apiStr)) {
             try {
@@ -209,7 +208,7 @@ public final class AvdInfo {
             }
         }
 
-        String extStr = properties.get(AvdManager.AVD_INI_ANDROID_EXTENSION);
+        String extStr = properties.get(ConfigKey.ANDROID_EXTENSION);
         int extension = 1;
         if (!Strings.isNullOrEmpty(extStr)) {
             try {
@@ -219,7 +218,7 @@ public final class AvdInfo {
             }
         }
 
-        String isBaseStr = properties.get(AvdManager.AVD_INI_ANDROID_IS_BASE_EXTENSION);
+        String isBaseStr = properties.get(ConfigKey.ANDROID_IS_BASE_EXTENSION);
         boolean isBase = true;
         if (!Strings.isNullOrEmpty(isBaseStr)) {
             isBase = Boolean.parseBoolean(isBaseStr);
@@ -230,7 +229,7 @@ public final class AvdInfo {
 
     @NonNull
     public String getCpuArch() {
-        String cpuArch = mProperties.get(AvdManager.AVD_INI_CPU_ARCH);
+        String cpuArch = mProperties.get(ConfigKey.CPU_ARCH);
         if (cpuArch != null) {
             return cpuArch;
         }
@@ -241,7 +240,7 @@ public final class AvdInfo {
 
     @NonNull
     public String getDeviceManufacturer() {
-        String deviceManufacturer = mProperties.get(AvdManager.AVD_INI_DEVICE_MANUFACTURER);
+        String deviceManufacturer = mProperties.get(ConfigKey.DEVICE_MANUFACTURER);
         if (deviceManufacturer != null && !deviceManufacturer.isEmpty()) {
             return deviceManufacturer;
         }
@@ -251,7 +250,7 @@ public final class AvdInfo {
 
     @NonNull
     public String getDeviceName() {
-        String deviceName = mProperties.get(AvdManager.AVD_INI_DEVICE_NAME);
+        String deviceName = mProperties.get(ConfigKey.DEVICE_NAME);
         if (deviceName != null && !deviceName.isEmpty()) {
             return deviceName;
         }
@@ -402,9 +401,10 @@ public final class AvdInfo {
                         getAbiType(),
                         getDisplayName());
             case ERROR_DEVICE_MISSING:
-                return String.format("%1$s %2$s no longer exists as a device",
-                        mProperties.get(AvdManager.AVD_INI_DEVICE_MANUFACTURER),
-                        mProperties.get(AvdManager.AVD_INI_DEVICE_NAME));
+                return String.format(
+                        "%1$s %2$s no longer exists as a device",
+                        mProperties.get(ConfigKey.DEVICE_MANUFACTURER),
+                        mProperties.get(ConfigKey.DEVICE_NAME));
             case ERROR_CORRUPTED_INI:
                 return String.format("Corrupted AVD ini file: %1$s", getIniFile());
             case OK:

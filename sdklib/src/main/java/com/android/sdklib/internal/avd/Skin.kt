@@ -43,12 +43,12 @@ data class OnDiskSkin(val path: Path) : Skin() {
 private val GENERIC_SKIN_PATTERN = "(\\d+)x(\\d+)(x\\d+)?".toRegex()
 
 fun skinFromConfig(config: Map<String, String>): Skin? {
-  val path = config[AvdManager.AVD_INI_SKIN_PATH]
+  val path = config[ConfigKey.SKIN_PATH]
   if (path != null && path != "_no_skin") {
     return OnDiskSkin(Paths.get(path))
   }
 
-  val name = config[AvdManager.AVD_INI_SKIN_NAME]
+  val name = config[ConfigKey.SKIN_NAME]
   if (name != null) {
     val match = GENERIC_SKIN_PATTERN.matchEntire(name)
     if (match != null) {

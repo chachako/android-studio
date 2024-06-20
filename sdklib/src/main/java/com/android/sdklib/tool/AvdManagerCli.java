@@ -33,7 +33,6 @@ import com.android.sdklib.AndroidVersionUtils;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.ISystemImage;
 import com.android.sdklib.OptionalLibrary;
-import com.android.sdklib.PathFileWrapper;
 import com.android.sdklib.SystemImageTags;
 import com.android.sdklib.devices.Device;
 import com.android.sdklib.devices.DeviceManager;
@@ -43,6 +42,7 @@ import com.android.sdklib.internal.avd.AvdInfo;
 import com.android.sdklib.internal.avd.AvdManager;
 import com.android.sdklib.internal.avd.AvdNetworkLatency;
 import com.android.sdklib.internal.avd.AvdNetworkSpeed;
+import com.android.sdklib.internal.avd.ConfigKey;
 import com.android.sdklib.internal.avd.EmulatedProperties;
 import com.android.sdklib.internal.avd.EmulatorPackage;
 import com.android.sdklib.internal.avd.EmulatorPackages;
@@ -459,8 +459,8 @@ class AvdManagerCli extends CommandLineParser {
             }
             mSdkLog.info("    Name: %s\n", info.getName());
 
-            String deviceName = info.getProperties().get(AvdManager.AVD_INI_DEVICE_NAME);
-            String deviceMfctr = info.getProperties().get(AvdManager.AVD_INI_DEVICE_MANUFACTURER);
+            String deviceName = info.getProperties().get(ConfigKey.DEVICE_NAME);
+            String deviceMfctr = info.getProperties().get(ConfigKey.DEVICE_MANUFACTURER);
             if (deviceName != null) {
                 mSdkLog.info("  Device: %s", deviceName);
                 if (deviceMfctr != null) {
@@ -497,18 +497,18 @@ class AvdManagerCli extends CommandLineParser {
 
             // display some extra values.
             Map<String, String> properties = info.getProperties();
-            String skin = properties.get(AvdManager.AVD_INI_SKIN_NAME);
+            String skin = properties.get(ConfigKey.SKIN_NAME);
             if (skin != null) {
                 mSdkLog.info("    Skin: %s\n", skin);
             }
-            String sdcard = properties.get(AvdManager.AVD_INI_SDCARD_SIZE);
+            String sdcard = properties.get(ConfigKey.SDCARD_SIZE);
             if (sdcard == null) {
-                sdcard = properties.get(AvdManager.AVD_INI_SDCARD_PATH);
+                sdcard = properties.get(ConfigKey.SDCARD_PATH);
             }
             if (sdcard != null) {
                 mSdkLog.info("  Sdcard: %s\n", sdcard);
             }
-            String snapshot = properties.get(AvdManager.AVD_INI_SNAPSHOT_PRESENT);
+            String snapshot = properties.get(ConfigKey.SNAPSHOT_PRESENT);
             if (snapshot != null) {
                 mSdkLog.info("Snapshot: %s\n", snapshot);
             }
@@ -1056,7 +1056,7 @@ class AvdManagerCli extends CommandLineParser {
 
             if (newName != null) {
                 Map<String, String> properties = new HashMap<>(info.getProperties());
-                properties.put(AvdManager.AVD_INI_DISPLAY_NAME, newName);
+                properties.put(ConfigKey.DISPLAY_NAME, newName);
                 avdManager.updateAvd(info, properties);
             }
             avdManager.moveAvd(info, newName, paramFolderPath);
