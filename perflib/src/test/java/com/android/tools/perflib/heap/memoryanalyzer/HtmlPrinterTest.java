@@ -59,7 +59,7 @@ public final class HtmlPrinterTest {
         mPrinter.addHeading(1, "test heading");
 
         // assert
-        String out = new String(mByteStream.toByteArray(), StandardCharsets.UTF_8);
+        String out = mByteStream.toString(StandardCharsets.UTF_8);
         assertEquals("<h1>test heading</h1>\n", out);
     }
 
@@ -69,7 +69,7 @@ public final class HtmlPrinterTest {
         mPrinter.addParagraph("test paragraph");
 
         // assert
-        String out = new String(mByteStream.toByteArray(), StandardCharsets.UTF_8);
+        String out = mByteStream.toString(StandardCharsets.UTF_8);
         assertEquals("<p>test paragraph</p>\n", out);
     }
 
@@ -81,7 +81,7 @@ public final class HtmlPrinterTest {
         mPrinter.endTable();
 
         // assert
-        String out = new String(mByteStream.toByteArray(), StandardCharsets.UTF_8);
+        String out = mByteStream.toString(StandardCharsets.UTF_8);
         assertEquals("<table>\n"
                      + "<tr style='border: 1px solid black;'>\n"
                      + "<th style='border: 1px solid black;'>test row heading</th>\n"
@@ -100,7 +100,7 @@ public final class HtmlPrinterTest {
         mPrinter.endTable();
 
         // assert
-        String out = new String(mByteStream.toByteArray(), StandardCharsets.UTF_8);
+        String out = mByteStream.toString(StandardCharsets.UTF_8);
         assertEquals("<table>\n"
                      + "<tr>\n"
                      + "<td>test data</td>\n"
@@ -117,10 +117,9 @@ public final class HtmlPrinterTest {
         Mockito.when(mBufferMock.getLength()).thenReturn(4);
         List<ClassInstance.FieldValue> fields = new ArrayList<>();
         fields.add(new ClassInstance.FieldValue(new Field(Type.OBJECT, "mBuffer"), mBufferMock));
-        fields.add(new ClassInstance.FieldValue(new Field(Type.BOOLEAN, "mIsMutable"),
-                new Boolean(true)));
-        fields.add(new ClassInstance.FieldValue(new Field(Type.INT, "mWidth"), new Integer(1)));
-        fields.add(new ClassInstance.FieldValue(new Field(Type.INT, "mHeight"), new Integer(1)));
+        fields.add(new ClassInstance.FieldValue(new Field(Type.BOOLEAN, "mIsMutable"), true));
+        fields.add(new ClassInstance.FieldValue(new Field(Type.INT, "mWidth"), 1));
+        fields.add(new ClassInstance.FieldValue(new Field(Type.INT, "mHeight"), 1));
         ClassObj bitmapClassObj = new ClassObj(0L, new StackTrace(0, 0, new StackFrame[0]),
                 BitmapDecoder.BITMAP_FQCN, 0L);
         Mockito.when(mBitmapClassInstanceMock.getClassObj()).thenReturn(bitmapClassObj);
@@ -130,7 +129,7 @@ public final class HtmlPrinterTest {
         mPrinter.addImage(mBitmapClassInstanceMock);
 
         // assert
-        String out = new String(mByteStream.toByteArray(), StandardCharsets.UTF_8);
+        String out = mByteStream.toString(StandardCharsets.UTF_8);
         assertEquals("<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR"
                      + "4XmNgAAIAAAUAAQYUdaMAAAAASUVORK5CYII=' \\>\n", out);
     }
