@@ -703,9 +703,11 @@ def iml_module(
         fail("lint_baseline set for iml_module that has no sources")
 
     if lint_srcs and lint_enabled:
-        lint_tags = tags if tags else []
-        if "no_windows" not in lint_tags:
-            lint_tags.append("no_windows")
+        lint_tags = []
+        if tags:
+            lint_tags.extend(tags)
+        if "noci:studio-win" not in lint_tags:
+            lint_tags.append("noci:studio-win")
 
         lint_test(
             name = name + "_lint_test",
