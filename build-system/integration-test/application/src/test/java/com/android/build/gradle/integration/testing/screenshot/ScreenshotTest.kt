@@ -624,6 +624,18 @@ class ScreenshotTest {
     }
 
     @Test
+    fun runScreenshotTestWithEmptyPreview() {
+        val testFile = appProject.projectDir.resolve("src/screenshotTest/java/com/TopLevelPreviewTest.kt")
+        TestFileUtils.searchAndReplace(testFile, "SimpleComposable()", "")
+        getExecutor().run(":app:tasks")
+
+        val result =
+            getExecutor().expectFailure().run(":app:updateDebugScreenshotTest")
+
+        result.assertErrorContains("Rendering failed for one or more previews. For more details, check") //Exception thrown in Render task
+    }
+
+    @Test
     fun runPreviewScreenshotTestsOnMultipleFlavors() {
         TestFileUtils.appendToFile(
             appProject.buildFile,
