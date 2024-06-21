@@ -351,7 +351,8 @@ enum class DeviceType(val stringValue: String) {
   HANDHELD("Phone and Tablet"),
   WEAR("Wear"),
   TV("TV"),
-  AUTOMOTIVE("Automotive");
+  AUTOMOTIVE("Automotive"),
+  DESKTOP("Desktop");
 
   override fun toString() = stringValue
 }

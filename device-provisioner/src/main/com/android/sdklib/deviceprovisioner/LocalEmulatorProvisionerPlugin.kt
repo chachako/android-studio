@@ -837,11 +837,9 @@ data class LocalEmulatorProperties(
     fun isPairable(): Boolean {
       val apiLevel = androidVersion?.apiLevel ?: return false
       return when (deviceType) {
-        DeviceType.TV,
-        DeviceType.AUTOMOTIVE,
-        null -> false
         DeviceType.HANDHELD -> apiLevel >= 30 && hasPlayStore
         DeviceType.WEAR -> apiLevel >= 28
+        else -> false
       }
     }
 
@@ -965,6 +963,7 @@ private fun AvdInfo.toDeviceType(): DeviceType {
     SystemImageTags.isTvImage(tags) -> DeviceType.TV
     SystemImageTags.isAutomotiveImage(tags) -> DeviceType.AUTOMOTIVE
     SystemImageTags.isWearImage(tags) -> DeviceType.WEAR
+    SystemImageTags.isDesktopImage(tags) -> DeviceType.DESKTOP
     else -> DeviceType.HANDHELD
   }
 }
