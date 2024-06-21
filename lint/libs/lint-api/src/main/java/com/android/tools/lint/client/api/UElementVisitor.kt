@@ -124,9 +124,11 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
   private val referenceDetectors =
     Maps.newHashMapWithExpectedSize<String, MutableList<SourceCodeScanner>>(12)
   private val resourceFieldDetectors = ArrayList<SourceCodeScanner>()
-  private val allDetectors = ArrayList<VisitingDetector>(detectors.size)
-  private val nodePsiTypeDetectors =
-    Maps.newHashMapWithExpectedSize<Class<out UElement>, MutableList<VisitingDetector>>(25)
+  private val allDetectors = ArrayList<SourceCodeScannerWithContext>(detectors.size)
+  private val uastHandlerDetectors =
+    Maps.newHashMapWithExpectedSize<Class<out UElement>, MutableList<SourceCodeScannerWithContext>>(
+      25
+    )
   private val superClassDetectors = HashMap<String, MutableList<SourceCodeScanner>>(40)
   private val annotationHandler: AnnotationHandler?
   private val callGraphDetectors = ArrayList<SourceCodeScanner>()
@@ -145,7 +147,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
     val annotationScanners = HashMap<String, MutableList<SourceCodeScanner>>()
 
     for (detector in detectors) {
-      val v = VisitingDetector(detector as SourceCodeScanner)
+      val v = SourceCodeScannerWithContext(detector as SourceCodeScanner)
 
       allDetectors.add(v)
       if (detector.appliesToResourceRefs()) resourceFieldDetectors.add(detector)
@@ -154,7 +156,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
       with(detector) {
         getApplicableMethodNames()?.ensureNotAll()?.associateWith(detector, methodDetectors)
         applicableSuperClasses()?.associateWith(detector, superClassDetectors)
-        getApplicableUastTypes()?.associateWith(v, nodePsiTypeDetectors)
+        getApplicableUastTypes()?.associateWith(v, uastHandlerDetectors)
         getApplicableConstructorTypes()
           ?.ensureNotAll()
           ?.associateWith(detector, constructorDetectors)
@@ -189,13 +191,13 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
         client.runReadAction {
           for (v in allDetectors) {
             v.setContext(context)
-            v.uastScanner.beforeCheckFile(context)
+            v.beforeCheckFile(context)
           }
         }
 
         if (superClassDetectors.isNotEmpty()) {
           client.runReadAction {
-            val visitor = SuperclassPsiVisitor(context)
+            val visitor = SuperclassUastVisitor(context)
             uFile.acceptSourceFile(visitor)
           }
         }
@@ -209,15 +211,15 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
         ) {
           client.runReadAction {
             // TODO: Do we need to break this one up into finer grain locking units
-            val visitor = DelegatingPsiVisitor(context)
+            val visitor = DelegatingUastVisitor(context)
             uFile.acceptSourceFile(visitor)
           }
         } else {
           // Note that the DelegatingPsiVisitor is a subclass of DispatchPsiVisitor
           // so the above includes the below as well (through super classes)
-          if (nodePsiTypeDetectors.isNotEmpty()) {
+          if (uastHandlerDetectors.isNotEmpty()) {
             client.runReadAction {
-              val visitor = DispatchPsiVisitor()
+              val visitor = DispatchUastVisitor()
               uFile.acceptSourceFile(visitor)
             }
           }
@@ -226,7 +228,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
         client.runReadAction {
           for (v in allDetectors) {
             ProgressManager.checkCanceled()
-            v.uastScanner.afterCheckFile(context)
+            v.afterCheckFile(context)
           }
         }
       } finally {
@@ -314,31 +316,31 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
     }
   }
 
-  private class VisitingDetector(val uastScanner: SourceCodeScanner) {
-    private var mVisitor: UElementHandler? = null
-    private var mContext: JavaContext? = null
+  /**
+   * A stateful [SourceCodeScanner] that can [setContext] then remember a (lazily created)
+   * [uastHandler]. (In contrast, a vanilla [SourceCodeScanner] would [createUastHandler] each
+   * time).
+   */
+  private class SourceCodeScannerWithContext(private val uastScanner: SourceCodeScanner) :
+    SourceCodeScanner by uastScanner {
+    private var cache: UElementHandler? = null
+    private lateinit var context: JavaContext
 
-    val visitor: UElementHandler
+    val uastHandler: UElementHandler
       get() {
-        if (mVisitor == null) {
-          mVisitor = uastScanner.createUastHandler(mContext!!)
-          if (mVisitor == null) {
-            mVisitor = UElementHandler.NONE
-          }
+        if (cache == null) {
+          cache = uastScanner.createUastHandler(context) ?: UElementHandler.NONE
         }
-        return mVisitor!!
+        return cache!!
       }
 
     fun setContext(context: JavaContext) {
-      mContext = context
-
-      // The visitors are one-per-context, so clear them out here and construct
-      // lazily only if needed
-      mVisitor = null
+      this.context = context
+      cache = null
     }
   }
 
-  private inner class SuperclassPsiVisitor(private val context: JavaContext) :
+  private inner class SuperclassUastVisitor(private val context: JavaContext) :
     AbstractUastVisitor() {
 
     override fun visitLambdaExpression(node: ULambdaExpression): Boolean {
@@ -373,7 +375,7 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
     }
   }
 
-  private open inner class DispatchPsiVisitor : AbstractUastVisitor() {
+  private open inner class DispatchUastVisitor : AbstractUastVisitor() {
 
     override fun visitAnnotation(node: UAnnotation): Boolean {
       eachDetectorVisit(node, UElementHandler::visitAnnotation)
@@ -651,15 +653,15 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
     private inline fun <reified Node : UElement> eachDetectorVisit(
       node: Node,
       visit: UElementHandler.(Node) -> Unit,
-    ) = nodePsiTypeDetectors[Node::class.java]?.forEach { it.visitor.visit(node) }
+    ) = uastHandlerDetectors[Node::class.java]?.forEach { it.uastHandler.visit(node) }
   }
 
   /**
    * Performs common AST searches for method calls and R-type-field references. Note that this is a
-   * specialized form of the [DispatchPsiVisitor].
+   * specialized form of the [DispatchUastVisitor].
    */
-  private inner class DelegatingPsiVisitor constructor(private val mContext: JavaContext) :
-    DispatchPsiVisitor() {
+  private inner class DelegatingUastVisitor constructor(private val mContext: JavaContext) :
+    DispatchUastVisitor() {
     private val mVisitResources: Boolean = resourceFieldDetectors.isNotEmpty()
     private val mVisitMethods: Boolean = methodDetectors.isNotEmpty()
     private val mVisitConstructors: Boolean = constructorDetectors.isNotEmpty()
