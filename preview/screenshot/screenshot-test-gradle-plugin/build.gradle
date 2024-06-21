@@ -102,3 +102,10 @@ sourceSets {
 
 project.ext.pomName = 'Screenshot testing for Compose Previews'
 project.ext.pomDesc = 'Adding screenshot testing support for Compose Previews'
+
+tasks.register('zipPlugin', Zip) {
+    it.from(project(':base').localRepo)
+    it.destinationDirectory = project(':base').androidHostDist
+    it.archiveFileName = "repo.zip"
+    it.dependsOn('publish')
+}

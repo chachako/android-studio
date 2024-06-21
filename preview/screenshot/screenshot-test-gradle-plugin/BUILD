@@ -74,7 +74,7 @@ gradle_build(
         "//tools/base:agp_artifacts",
         "//tools/base:agp_dependencies",
     ],
-    tasks = [":zipPlugin"],
+    tasks = [":base:preview:screenshot:screenshot-test-gradle-plugin:zipPlugin"],
     visibility = [
         "//tools/base/build-system/integration-test:__subpackages__",
         "//tools/base/preview/screenshot:__pkg__",

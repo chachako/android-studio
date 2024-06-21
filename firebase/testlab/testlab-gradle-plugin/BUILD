@@ -1,5 +1,5 @@
-load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:gradle.bzl", "gradle_build", "gradle_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_repository")
 load("//tools/base/build-system:hybrid_build.bzl", "GRADLE_PROPERTIES")
 
@@ -84,7 +84,7 @@ gradle_build(
         "//tools/base:agp_artifacts",
         "//tools/base:agp_dependencies",
     ],
-    tasks = [":zipPlugin"],
+    tasks = [":base:firebase:testlab:testlab-gradle-plugin:zipPlugin"],
     visibility = [
         "//tools/base/build-system/integration-test:__subpackages__",
         "//tools/base/gmaven:__pkg__",

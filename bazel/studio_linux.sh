@@ -177,6 +177,7 @@ function run_bazel_test() {
       //tools/base/profiler/native/trace_processor_daemon
       //tools/base/deploy/deployer:deployer.runner_deploy.jar
       //tools/base/preview/screenshot:preview_screenshot_maven_repo.zip
+      //tools/base/firebase/testlab/testlab-gradle-plugin:testlab-gradle-plugin.zip
       //tools/adt/idea/studio:test_studio
       //tools/vendor/google/game-tools/packaging:packaging-linux
       //tools/vendor/google/game-tools/packaging:packaging-win
