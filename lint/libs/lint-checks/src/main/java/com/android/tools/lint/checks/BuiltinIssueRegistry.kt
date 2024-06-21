@@ -127,6 +127,7 @@ open class BuiltinIssueRegistry : IssueRegistry() {
           ConstraintLayoutDetector.ISSUE,
           CordovaVersionDetector.ISSUE,
           CredentialManagerDependencyDetector.CREDENTIAL_DEP,
+          CredentialManagerDigitalAssetLinkDetector.ISSUE,
           CustomViewDetector.ISSUE,
           CutPasteDetector.ISSUE,
           DataBindingDetector.ESCAPE_XML,
