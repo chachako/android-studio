@@ -279,6 +279,17 @@ package com.android.build.api.dsl {
   @Deprecated public interface AdbOptions extends com.android.build.api.dsl.Installation {
   }
 
+  @org.gradle.api.Incubating public interface AiPackExtension {
+    method @org.gradle.api.Incubating public void dynamicDelivery(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DynamicDelivery,kotlin.Unit> action);
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.DynamicDelivery getDynamicDelivery();
+    method @org.gradle.api.Incubating public com.android.build.api.dsl.ModelDependency getModelDependency();
+    method @org.gradle.api.Incubating public org.gradle.api.provider.Property<java.lang.String> getPackName();
+    method @org.gradle.api.Incubating public void modelDependency(kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ModelDependency,kotlin.Unit> action);
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.DynamicDelivery dynamicDelivery;
+    property @org.gradle.api.Incubating public abstract com.android.build.api.dsl.ModelDependency modelDependency;
+    property @org.gradle.api.Incubating public abstract org.gradle.api.provider.Property<java.lang.String> packName;
+  }
+
   public interface AndroidResources {
     method @Deprecated public void additionalParameters(String params);
     method @Deprecated public void additionalParameters(java.lang.String... params);
@@ -1698,6 +1709,13 @@ package com.android.build.api.dsl {
     property public abstract String device;
     property public abstract boolean require64Bit;
     property public abstract String systemImageSource;
+  }
+
+  @org.gradle.api.Incubating public interface ModelDependency {
+    method @org.gradle.api.Incubating public org.gradle.api.provider.Property<java.lang.String> getAiModelName();
+    method @org.gradle.api.Incubating public org.gradle.api.provider.Property<java.lang.String> getAiModelPackageName();
+    property @org.gradle.api.Incubating public abstract org.gradle.api.provider.Property<java.lang.String> aiModelName;
+    property @org.gradle.api.Incubating public abstract org.gradle.api.provider.Property<java.lang.String> aiModelPackageName;
   }
 
   @org.gradle.api.Incubating public interface MultiDexConfig {
@@ -3297,6 +3315,11 @@ package com.android.build.api.variant {
 }
 
 package com.android.build.gradle {
+
+  @org.gradle.api.Incubating public final class AiPackPlugin implements org.gradle.api.Plugin<org.gradle.api.Project> {
+    ctor public AiPackPlugin();
+    method public void apply(org.gradle.api.Project project);
+  }
 
   public final class AppPlugin extends com.android.build.gradle.BasePlugin {
     ctor public AppPlugin();

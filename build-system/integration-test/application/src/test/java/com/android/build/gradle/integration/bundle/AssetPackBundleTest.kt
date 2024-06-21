@@ -24,6 +24,7 @@ import com.android.bundle.Config
 import com.android.ide.common.signing.KeystoreHelper
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject.assertThat
+import com.android.tools.build.bundletool.model.AndroidManifest.MODULE_TYPE_AI_VALUE
 import com.android.tools.build.bundletool.model.AppBundle
 import com.android.tools.build.bundletool.model.BundleModule
 import com.android.tools.build.bundletool.model.BundleModuleName
@@ -33,6 +34,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.util.Optional
 import java.util.zip.ZipFile
 
 class AssetPackBundleTest {
@@ -43,6 +45,7 @@ class AssetPackBundleTest {
 
     private val assetFileOneContent = "This is an asset file from asset pack one."
     private val assetFileTwoContent = "This is an asset file from asset pack two."
+    private val onDemandAiPackContent = "This is a state-of-the-art machine learning model."
 
     private val assetPackBundleTestApp = MultiModuleTestProject.builder().apply {
         val bundle = MinimalSubProject.assetPackBundle()
@@ -54,7 +57,7 @@ class AssetPackBundleTest {
 
                       versionTag = '$versionTag'
                       versionCodes = $versionCodes
-                      assetPacks = [':assetPackOne', ':assetPackTwo']
+                      assetPacks = [':assetPackOne', ':assetPackTwo', ':onDemandAiPack']
 
                       deviceTier {
                         enableSplit = true
@@ -96,9 +99,23 @@ class AssetPackBundleTest {
             )
             .withFile("src/main/assets/assetFileTwo.txt", assetFileTwoContent)
 
+        val onDemandAiPack = MinimalSubProject.aiPack()
+            .appendToBuild(
+                """
+                    aiPack {
+                      packName = "onDemandAiPack"
+                      dynamicDelivery {
+                        deliveryType = "on-demand"
+                      }
+                    }
+                """.trimIndent()
+            )
+            .withFile("src/main/assets/customModel.tflite", onDemandAiPackContent)
+
         subproject(":assetPackBundle", bundle)
         subproject(":assetPackOne", assetPackOne)
         subproject(":assetPackTwo", assetPackTwo)
+        subproject(":onDemandAiPack", onDemandAiPack)
     }
         .build()
 
@@ -119,8 +136,13 @@ class AssetPackBundleTest {
         assertThat(bundleFile) {
             it.containsFileWithContent("assetPackOne/assets/assetFileOne.txt", assetFileOneContent)
             it.containsFileWithContent("assetPackTwo/assets/assetFileTwo.txt", assetFileTwoContent)
+            it.containsFileWithContent(
+                "onDemandAiPack/assets/customModel.tflite",
+                onDemandAiPackContent
+            )
             it.contains("assetPackOne/manifest/AndroidManifest.xml")
             it.contains("assetPackTwo/manifest/AndroidManifest.xml")
+            it.contains("onDemandAiPack/manifest/AndroidManifest.xml")
             it.contains("BundleConfig.pb")
             it.doesNotContain("META-INF/KEY0.SF")
             it.doesNotContain("META-INF/KEY0.RSA")
@@ -156,7 +178,11 @@ class AssetPackBundleTest {
             )
 
             val moduleNames = appBundle.assetModules.keys.map { it.name }
-            assertThat(moduleNames).containsExactly("assetPackOne", "assetPackTwo")
+            assertThat(moduleNames).containsExactly(
+                "assetPackOne",
+                "assetPackTwo",
+                "onDemandAiPack"
+            )
 
             val assetPackOneManifest =
                 appBundle.assetModules[BundleModuleName.create("assetPackOne")]!!.androidManifest
@@ -174,6 +200,21 @@ class AssetPackBundleTest {
             )
             assertThat(assetPackTwoManifest.packageName).isEqualTo(packageName)
             assertThat(assetPackTwoManifest.manifestDeliveryElement.get().hasFastFollowElement())
+                .isTrue()
+
+            val onDemandAiPackManifest =
+                appBundle.assetModules[BundleModuleName.create("onDemandAiPack")]!!.androidManifest
+            assertThat(onDemandAiPackManifest.moduleType).isEqualTo(
+                BundleModule.ModuleType.ASSET_MODULE
+            )
+            assertThat(onDemandAiPackManifest.optionalModuleTypeAttributeValue).isEqualTo(
+                Optional.of(MODULE_TYPE_AI_VALUE)
+            )
+            assertThat(onDemandAiPackManifest.packageName).isEqualTo(packageName)
+            assertThat(
+                onDemandAiPackManifest.manifestDeliveryElement.get()
+                    .hasOnDemandElement()
+            )
                 .isTrue()
         }
     }

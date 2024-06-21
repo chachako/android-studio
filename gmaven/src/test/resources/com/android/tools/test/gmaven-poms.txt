@@ -84,6 +84,12 @@ com.android:zipflinger
   dependencies:
     com.android.tools:annotations (runtime)
 
+com.android.ai-pack:com.android.ai-pack.gradle.plugin
+  pomName=com.android.tools.build.gradle
+  description=Gradle plug-in to build Android applications.
+  dependencies:
+    com.android.tools.build:gradle ()
+
 com.android.application:com.android.application.gradle.plugin
   pomName=com.android.tools.build.gradle
   description=Gradle plug-in to build Android applications.

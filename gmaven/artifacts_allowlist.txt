@@ -5,6 +5,7 @@
   androidx/databinding:databinding-ktx
   androidx/databinding:databinding-runtime
   androidx/databinding:viewbinding
+  com/android/ai-pack:com.android.ai-pack.gradle.plugin
   com/android/application:com.android.application.gradle.plugin
   com/android/asset-pack-bundle:com.android.asset-pack-bundle.gradle.plugin
   com/android/asset-pack:com.android.asset-pack.gradle.plugin

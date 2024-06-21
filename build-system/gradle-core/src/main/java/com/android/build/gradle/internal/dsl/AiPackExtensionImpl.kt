@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.build.api.dsl.AssetPackExtension
+import com.android.build.api.dsl.AiPackExtension
 import com.android.build.api.dsl.DynamicDelivery
+import com.android.build.api.dsl.ModelDependency
 import org.gradle.api.Action
 import org.gradle.api.model.ObjectFactory
 import javax.inject.Inject
 
-abstract class AssetPackExtensionImpl @Inject constructor(objectFactory: ObjectFactory) : AssetPackExtension {
+abstract class AiPackExtensionImpl @Inject constructor(objectFactory: ObjectFactory) : AiPackExtension{
     override val dynamicDelivery: DynamicDelivery = objectFactory.newInstance(
         DynamicDeliveryImpl::class.java)
 
@@ -32,5 +33,15 @@ abstract class AssetPackExtensionImpl @Inject constructor(objectFactory: ObjectF
 
     fun dynamicDelivery(action: Action<DynamicDelivery>) {
         action.execute(dynamicDelivery)
+    }
+
+    override val modelDependency: ModelDependency = objectFactory.newInstance(ModelDependencyImpl::class.java)
+
+    override fun modelDependency(action: ModelDependency.() -> Unit) {
+        action.invoke(modelDependency)
+    }
+
+    fun modelDependency(action: Action<ModelDependency>) {
+        action.execute(modelDependency)
     }
 }

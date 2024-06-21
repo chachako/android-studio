@@ -17,38 +17,40 @@
 package com.android.build.gradle.internal.plugins
 
 import com.android.SdkConstants
-import com.android.build.api.dsl.AssetPackExtension
-import com.android.build.gradle.internal.dsl.AssetPackExtensionImpl
+import com.android.build.api.dsl.AiPackExtension
+import com.android.build.gradle.internal.dsl.AiPackExtensionImpl
 import com.android.build.gradle.internal.tasks.AssetPackManifestGenerationTask
 import com.android.build.gradle.internal.tasks.UsesAnalytics
 import com.android.build.gradle.internal.utils.setDisallowChanges
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-class AssetPackPlugin : Plugin<Project> {
+class AiPackPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        val extension = project.extensions.create(AssetPackExtension::class.java, "assetPack", AssetPackExtensionImpl::class.java)
+        val aiPackExtension = project.extensions.create(AiPackExtension::class.java, "aiPack", AiPackExtensionImpl::class.java)
 
         val manifestGenerationTaskProvider = project.tasks.register(
-            "generateAssetPackManifest",
+            "generateAiPackManifest",
             AssetPackManifestGenerationTask::class.java
         ) { manifestGenerationTask ->
             UsesAnalytics.ConfigureAction.configure(manifestGenerationTask)
             manifestGenerationTask.manifestFile.setDisallowChanges(
                 project.layout.buildDirectory.get().dir(
                     SdkConstants.FD_INTERMEDIATES
-                ).dir("asset_pack_manifest").file(SdkConstants.FN_ANDROID_MANIFEST_XML)
+                ).dir("ai_pack_manifest").file(SdkConstants.FN_ANDROID_MANIFEST_XML)
             )
-            manifestGenerationTask.aiPack.setDisallowChanges(false)
-            manifestGenerationTask.packName.setDisallowChanges(extension.packName)
-            manifestGenerationTask.deliveryType.setDisallowChanges(extension.dynamicDelivery.deliveryType)
-            manifestGenerationTask.instantDeliveryType.setDisallowChanges(extension.dynamicDelivery.instantDeliveryType)
+            manifestGenerationTask.aiPack.setDisallowChanges(true)
+            manifestGenerationTask.packName.setDisallowChanges(aiPackExtension.packName)
+            manifestGenerationTask.deliveryType.setDisallowChanges(aiPackExtension.dynamicDelivery.deliveryType)
+            manifestGenerationTask.instantDeliveryType.setDisallowChanges(aiPackExtension.dynamicDelivery.instantDeliveryType)
+            manifestGenerationTask.aiModelDependencyName.setDisallowChanges(aiPackExtension.modelDependency.aiModelName)
+            manifestGenerationTask.aiModelDependencyPackageName.setDisallowChanges(aiPackExtension.modelDependency.aiModelPackageName)
         }
 
-        val assetPackFiles = project.configurations.maybeCreate("packElements")
-        val assetPackManifest = project.configurations.maybeCreate("manifestElements")
-        assetPackFiles.isCanBeConsumed = true
-        assetPackManifest.isCanBeConsumed = true
+        val aiPackFiles = project.configurations.maybeCreate("packElements")
+        val aiPackManifest = project.configurations.maybeCreate("manifestElements")
+        aiPackFiles.isCanBeConsumed = true
+        aiPackManifest.isCanBeConsumed = true
         project.artifacts.add("manifestElements", manifestGenerationTaskProvider.flatMap { it.manifestFile })
         project.artifacts.add("packElements", project.layout.projectDirectory.dir("src/main/assets"))
     }

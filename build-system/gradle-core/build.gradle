@@ -105,6 +105,10 @@ gradlePlugin {
             id = "com.android.asset-pack-bundle"
             implementationClass = "com.android.build.gradle.AssetPackBundlePlugin"
         }
+        comAndroidAiPack {
+            id = "com.android.ai-pack"
+            implementationClass = "com.android.build.gradle.AiPackPlugin"
+        }
         comAndroidLint {
             id = "com.android.lint"
             implementationClass = "com.android.build.gradle.LintPlugin"

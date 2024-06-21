@@ -718,3 +718,13 @@ https://issuetracker.google.com/337766642
 https://issuetracker.google.com/341235113
   * com.android.build.api.dsl.FusedLibraryExtension.aarMetadata: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.AarMetadata, kotlin.Unit>)
   * com.android.build.api.dsl.FusedLibraryExtension.getAarMetadata: com.android.build.api.dsl.AarMetadata ()
+https://issuetracker.google.com/350672659
+  * com.android.build.api.dsl.AiPackExtension
+  * com.android.build.api.dsl.AiPackExtension.dynamicDelivery: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.DynamicDelivery, kotlin.Unit>)
+  * com.android.build.api.dsl.AiPackExtension.getDynamicDelivery: com.android.build.api.dsl.DynamicDelivery ()
+  * com.android.build.api.dsl.AiPackExtension.getModelDependency: com.android.build.api.dsl.ModelDependency ()
+  * com.android.build.api.dsl.AiPackExtension.getPackName: org.gradle.api.provider.Property<java.lang.String> ()
+  * com.android.build.api.dsl.AiPackExtension.modelDependency: void (kotlin.jvm.functions.Function1<? super com.android.build.api.dsl.ModelDependency, kotlin.Unit>)
+  * com.android.build.api.dsl.ModelDependency
+  * com.android.build.api.dsl.ModelDependency.getAiModelName: org.gradle.api.provider.Property<java.lang.String> ()
+  * com.android.build.api.dsl.ModelDependency.getAiModelPackageName: org.gradle.api.provider.Property<java.lang.String> ()

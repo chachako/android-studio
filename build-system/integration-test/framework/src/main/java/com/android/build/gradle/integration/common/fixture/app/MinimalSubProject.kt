@@ -168,6 +168,17 @@ class MinimalSubProject private constructor(
             )
         }
 
+        fun aiPack(): MinimalSubProject {
+            return MinimalSubProject(
+                path = null,
+                plugin = "com.android.ai-pack",
+                addCompileAndSdkVersionToBuildFile = false,
+                addVersionCodeToBuildFile = false,
+                addManifestFile = false,
+                namespace = null,
+            )
+        }
+
         fun assetPack(): MinimalSubProject {
             return MinimalSubProject(
                 path = null,
