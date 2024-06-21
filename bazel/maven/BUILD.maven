@@ -35820,26 +35820,26 @@ maven_artifact(
 )
 
 maven_artifact(
-    name = "com.android.tools.layoutlib.layoutlib-resources_14.0.4",
-    pom = "repository/com/android/tools/layoutlib/layoutlib-resources/14.0.4/layoutlib-resources-14.0.4.pom",
+    name = "com.android.tools.layoutlib.layoutlib-resources_14.0.9",
+    pom = "repository/com/android/tools/layoutlib/layoutlib-resources/14.0.9/layoutlib-resources-14.0.9.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/layoutlib/layoutlib-resources/14.0.4",
+    repo_path = "com/android/tools/layoutlib/layoutlib-resources/14.0.9",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.android.tools.layoutlib.layoutlib-runtime_14.0.6",
-    pom = "repository/com/android/tools/layoutlib/layoutlib-runtime/14.0.6/layoutlib-runtime-14.0.6.pom",
+    name = "com.android.tools.layoutlib.layoutlib-runtime_14.0.9",
+    pom = "repository/com/android/tools/layoutlib/layoutlib-runtime/14.0.9/layoutlib-runtime-14.0.9.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/layoutlib/layoutlib-runtime/14.0.6",
+    repo_path = "com/android/tools/layoutlib/layoutlib-runtime/14.0.9",
     visibility = ["//visibility:public"],
 )
 
 maven_artifact(
-    name = "com.android.tools.layoutlib.layoutlib_14.0.4",
-    pom = "repository/com/android/tools/layoutlib/layoutlib/14.0.4/layoutlib-14.0.4.pom",
+    name = "com.android.tools.layoutlib.layoutlib_14.0.9",
+    pom = "repository/com/android/tools/layoutlib/layoutlib/14.0.9/layoutlib-14.0.9.pom",
     repo_root_path = "repository",
-    repo_path = "com/android/tools/layoutlib/layoutlib/14.0.4",
+    repo_path = "com/android/tools/layoutlib/layoutlib/14.0.9",
     visibility = ["//visibility:public"],
 )
 
