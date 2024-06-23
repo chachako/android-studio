@@ -77,49 +77,47 @@ class CallSuperDetector : Detector(), SourceCodeScanner {
 
       if (evaluator.isAbstract(method)) return null
 
-      val directSuper = evaluator.getSuperMethod(method) ?: return null
+      for (directSuper in method.findSuperMethods()) {
+        if (evaluator.isAbstract(directSuper)) continue
 
-      if (evaluator.isAbstract(directSuper)) return null
-
-      val name = method.name
-      if (ON_DETACHED_FROM_WINDOW == name) {
-        // No longer annotated on the framework method since it's
-        // now handled via onDetachedFromWindowInternal, but overriding
-        // is still dangerous if supporting older versions so flag
-        // this for now (should make annotation carry metadata like
-        // compileSdkVersion >= N).
-        if (!evaluator.isMemberInSubClassOf(method, CLASS_VIEW, false)) {
-          return null
+        val name = method.name
+        if (ON_DETACHED_FROM_WINDOW == name) {
+          // No longer annotated on the framework method since it's
+          // now handled via onDetachedFromWindowInternal, but overriding
+          // is still dangerous if supporting older versions so flag
+          // this for now (should make annotation carry metadata like
+          // compileSdkVersion >= N).
+          if (evaluator.isMemberInSubClassOf(method, CLASS_VIEW, false)) {
+            return directSuper
+          }
+        } else if (ON_VISIBILITY_CHANGED == name) {
+          // From Android Wear API; doesn't yet have an annotation
+          // but we want to enforce this right away until the AAR
+          // is updated to supply it once @CallSuper is available in
+          // the support library
+          if (
+            evaluator.isMemberInSubClassOf(
+              method,
+              "android.support.wearable.watchface.WatchFaceService.Engine",
+              false,
+            )
+          ) {
+            return directSuper
+          }
         }
-        return directSuper
-      } else if (ON_VISIBILITY_CHANGED == name) {
-        // From Android Wear API; doesn't yet have an annotation
-        // but we want to enforce this right away until the AAR
-        // is updated to supply it once @CallSuper is available in
-        // the support library
-        if (
-          !evaluator.isMemberInSubClassOf(
-            method,
-            "android.support.wearable.watchface.WatchFaceService.Engine",
-            false,
-          )
-        ) {
-          return null
-        }
-        return directSuper
-      }
 
-      val annotations = evaluator.getAnnotations(directSuper, true)
-      for (annotation in annotations) {
-        val signature = annotation.qualifiedName
-        if (
-          CALL_SUPER_ANNOTATION.isEquals(signature) ||
+        val annotations = evaluator.getAnnotations(directSuper, true)
+        for (annotation in annotations) {
+          val signature = annotation.qualifiedName
+          if (
+            CALL_SUPER_ANNOTATION.isEquals(signature) ||
             signature == AOSP_CALL_SUPER_ANNOTATION ||
             signature != null &&
-              (signature.endsWith(".OverrideMustInvoke") ||
+            (signature.endsWith(".OverrideMustInvoke") ||
                 signature.endsWith(".OverridingMethodsMustInvokeSuper"))
-        ) {
-          return directSuper
+          ) {
+            return directSuper
+          }
         }
       }
 

@@ -15,7 +15,6 @@
  */
 package com.android.tools.lint.checks
 
-import com.android.tools.lint.checks.infrastructure.LintDetectorTest.compiled
 import com.android.tools.lint.detector.api.Detector
 
 class CallSuperDetectorTest : AbstractCheckTest() {
@@ -390,6 +389,41 @@ class CallSuperDetectorTest : AbstractCheckTest() {
                 """
           )
           .indented()
+      )
+      .run()
+      .expect(expected)
+  }
+
+  fun testMultipleOverrides() {
+    val expected =
+      """
+        src/Bar.kt:13: Error: Overriding method should call super.foo [MissingSuperCall]
+            override fun foo() { // ERROR: Missing super call
+                         ~~~
+        1 errors, 0 warnings
+      """
+    lint()
+      .files(
+        kotlin(
+          """
+          import androidx.annotation.CallSuper
+
+          open class Bar {
+              open fun foo() {}
+          }
+
+          interface Foo {
+              @CallSuper
+              fun foo() {}
+          }
+
+          class FooImpl : Bar(), Foo {
+              override fun foo() { // ERROR: Missing super call
+              }
+          }
+        """
+        ).indented(),
+        SUPPORT_ANNOTATIONS_JAR,
       )
       .run()
       .expect(expected)
