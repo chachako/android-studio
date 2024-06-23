@@ -10,6 +10,9 @@ iml_module(
     # do not sort: must match IML order
     deps = [
         "@intellij//:intellij-sdk",
+        "//tools/adt/idea/.idea/libraries:jimfs[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
+        "//tools/base/adblib:studio.android.sdktools.adblib[module]",
+        "//tools/base/environment-services:studio.intellij.android.environment-services[module]",
     ],
 )
