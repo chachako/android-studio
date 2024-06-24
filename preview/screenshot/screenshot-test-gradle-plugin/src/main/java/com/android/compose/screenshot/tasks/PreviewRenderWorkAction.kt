@@ -67,8 +67,12 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
         }
         val composeRenderingResult = readComposeRenderingResultJson(resultFile.reader())
         val outputFolder = readComposeRenderingJson(parameters.cliToolArgumentsFile.get().asFile.reader()).outputFolder
+
         val renderingErrors =
-            composeRenderingResult.screenshotResults.count { !File(outputFolder, it.imageName).exists() || (it.error != null && it.error!!.status != "SUCCESS") }
+            composeRenderingResult.screenshotResults.count {
+                val imagePath = "$outputFolder/${it.methodFQN.substringBeforeLast(".").replace(".", "/")}"
+                !File(imagePath, it.imageName).exists() || (it.error != null && it.error!!.status != "SUCCESS")
+            }
         if (composeRenderingResult.globalError != null || renderingErrors > 0) {
             throw GradleException("Rendering failed for one or more previews. For more details, check ${resultFile.absolutePath}")
         }

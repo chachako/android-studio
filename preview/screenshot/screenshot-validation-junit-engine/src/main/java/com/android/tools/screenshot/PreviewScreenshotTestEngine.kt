@@ -31,6 +31,8 @@ import org.junit.platform.engine.TestEngine
 import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.support.discovery.EngineDiscoveryRequestResolver
+import java.nio.file.Files
+import kotlin.io.path.Path
 
 class PreviewScreenshotTestEngine : TestEngine {
 
@@ -149,10 +151,12 @@ class PreviewScreenshotTestEngine : TestEngine {
         startTime: Long
     ): PreviewResult {
         // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
-        var referencePath = File(parameters.referenceImageDirPath).toPath().resolve(composeScreenshot.imageName)
+        var referencePath = Path(calculateImagePath(parameters.referenceImageDirPath, composeScreenshot.methodFQN)).resolve(composeScreenshot.imageName)
         var referenceMessage: String? = null
-        val actualPath = File(parameters.renderTaskOutputDir, composeScreenshot.imageName).toPath()
-        var diffPath = File(parameters.diffImageDirPath).toPath().resolve(composeScreenshot.imageName)
+        val actualPath = Path(calculateImagePath(parameters.renderTaskOutputDir, composeScreenshot.methodFQN)).resolve(composeScreenshot.imageName)
+        val diffPathDirs = Path(calculateImagePath(parameters.diffImageDirPath, composeScreenshot.methodFQN))
+        Files.createDirectories(diffPathDirs)
+        var diffPath = diffPathDirs.resolve(composeScreenshot.imageName)
         var diffMessage: String? = null
         var code = 0
         val threshold = parameters.threshold?.toFloat()
@@ -275,7 +279,7 @@ class PreviewScreenshotTestEngine : TestEngine {
             }
         for ((run, screenshot) in screenshots.withIndex()) {
             val currentComposePreview = composeScreenshots.single {
-                it.methodFQN == "$className.$methodName" && screenshot.imageName.contains(it.previewId)
+                it.methodFQN == "$className.$methodName" && screenshot.previewId == it.previewId
             }
             var suffix = ""
             if (currentComposePreview.previewParams.containsKey("name")) {
@@ -301,5 +305,9 @@ class PreviewScreenshotTestEngine : TestEngine {
         }
         listener.executionFinished(methodDescriptor, TestExecutionResult.successful())
         return results
+    }
+
+    private fun calculateImagePath(outputDir: String?, methodFqn: String): String {
+        return outputDir + "/" + methodFqn.substringBeforeLast(".").replace(".", "/")
     }
 }

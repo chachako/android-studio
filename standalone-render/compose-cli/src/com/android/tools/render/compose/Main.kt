@@ -28,6 +28,7 @@ import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import kotlin.io.path.Path
 import java.io.File
+import java.nio.file.Files
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
@@ -67,9 +68,10 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
         renderer.render(requestToScreenshotInfo.keys.asSequence()) { request, config, i, result, usedPaths ->
             val requestToScreenshotInfoValue = requestToScreenshotInfo[request]!!
             val previewId = requestToScreenshotInfoValue.previewId
-            val resultId = "${previewId}_$i"
+            val resultId = "${previewId.substringAfterLast(".")}_$i"
             val imageName = "$resultId.png"
             val methodFQN = requestToScreenshotInfoValue.methodFQN
+            val imagePackageStructure = methodFQN.substringBeforeLast(".").replace(".", "/")
             val screenshotResult = try {
                 val imageRendered = result.renderedImage.copy
                 imageRendered?.let { image ->
@@ -88,9 +90,9 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
                         }
                         newImage
                     } ?: image
-                    val imgFile =
-                        Path(composeRendering.outputFolder).resolve(imageName)
-                            .toFile()
+                    val imagePath = Path("${composeRendering.outputFolder}/$imagePackageStructure")
+                    Files.createDirectories(imagePath)
+                    val imgFile = imagePath.resolve(imageName).toFile()
 
                     imgFile.createNewFile()
                     ImageIO.write(shapedImage, "png", imgFile)

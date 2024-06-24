@@ -125,7 +125,7 @@ private fun serializePreviews(
             method.methodFqn,
             convertListMap(method.parameters),
             convertMap(annotation.parameters),
-            calcImageName(method, annotation)
+            calcPreviewId(method, annotation)
         )
     }
     writeComposeScreenshotsToJson(fileWriter, composeScreenshots.sortedBy { it.previewId })
@@ -197,8 +197,8 @@ fun sortListOfSortedMaps(listToSort: List<SortedMap<String, String>>): List<Sort
     }
 }
 
-private fun calcImageName(method: MethodRepresentation, annotation: BaseAnnotationRepresentation): String {
-    var imageName = method.methodFqn
+private fun calcPreviewId(method: MethodRepresentation, annotation: BaseAnnotationRepresentation): String {
+    var previewId = method.methodFqn
     if (annotation.parameters.containsKey("name")) {
         val previewName = annotation.parameters["name"].toString()
         val invalidCharacters = Regex("""[\u0000-\u001F\\/:*?"<>|]+""")
@@ -210,7 +210,7 @@ private fun calcImageName(method: MethodRepresentation, annotation: BaseAnnotati
                         "ignored in image file names for screenshot test results."
             )
         } else {
-            imageName += "_${previewName}"
+            previewId += "_${previewName}"
         }
     }
     val digest = MessageDigest.getInstance("SHA-1")
@@ -226,5 +226,5 @@ private fun calcImageName(method: MethodRepresentation, annotation: BaseAnnotati
         }
     }
     val methodParamHash = calcHexString(digest.digest())
-    return "${imageName}_${previewSettingsHash}_$methodParamHash"
+    return "${previewId}_${previewSettingsHash}_$methodParamHash"
 }

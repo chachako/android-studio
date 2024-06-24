@@ -34,6 +34,8 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.Path
 
 /**
  * Update reference images of a variant.
@@ -73,7 +75,7 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
     private fun verifyRender(results: List<ComposeScreenshotResult>) {
         if (results.isNotEmpty()) {
             for (result in results) {
-                if (!File(renderTaskOutputDir.get().asFile, result.imageName).exists())
+                if (!File(calculateImagePath(renderTaskOutputDir.get().asFile.absolutePath, result.methodFQN), result.imageName).exists())
                     throw GradleException("Cannot update reference images. Rendering failed for ${result.imageName.substringBeforeLast(".")}. " +
                             "Error: ${result.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
             }
@@ -81,15 +83,20 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
     }
 
     private fun saveReferenceImage(composeScreenshot: ComposeScreenshotResult) {
-        val renderedFile = File(renderTaskOutputDir.get().asFile, composeScreenshot.imageName)
+        val renderedFile = File(calculateImagePath(renderTaskOutputDir.get().asFile.absolutePath, composeScreenshot.methodFQN), composeScreenshot.imageName)
         if (renderedFile.exists()) {
             if (composeScreenshot.error != null) {
                 logger.warn("Rendering preview ${composeScreenshot.imageName.substringBeforeLast(".")} encountered some problems: ${composeScreenshot.error!!.message}. " +
                         "Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
             }
 
-            val referenceImagePath = referenceImageDir.asFile.get().toPath().resolve(composeScreenshot.imageName)
-            FileUtils.copyFile(renderedFile, referenceImagePath.toFile())
+            val referenceImagePath = Path(calculateImagePath(referenceImageDir.asFile.get().absolutePath, composeScreenshot.methodFQN))
+            Files.createDirectories(referenceImagePath)
+            FileUtils.copyFile(renderedFile, referenceImagePath.resolve(composeScreenshot.imageName).toFile())
         }
+    }
+
+    private fun calculateImagePath(outputDirPath: String, methodFQN: String): String {
+        return outputDirPath + "/" + methodFQN.substringBeforeLast(".").replace(".", "/")
     }
 }
