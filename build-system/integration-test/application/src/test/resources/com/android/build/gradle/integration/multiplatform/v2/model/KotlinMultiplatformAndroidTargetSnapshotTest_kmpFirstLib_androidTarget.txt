@@ -205,6 +205,10 @@
           {
             "flag": "BUILD_FEATURE_ANDROID_RESOURCES",
             "value": false
+          },
+          {
+            "flag": "EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS",
+            "value": false
           }
         ]
       },

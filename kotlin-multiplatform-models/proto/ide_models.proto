@@ -101,6 +101,9 @@ message AndroidGradlePluginProjectFlags {
 
         // Whether Android resources are enabled in this project
         BUILD_FEATURE_ANDROID_RESOURCES = 8;
+
+        // Whether constraints for library components are disabled
+        EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS = 9;
     }
 
     message BooleanFlagValue {

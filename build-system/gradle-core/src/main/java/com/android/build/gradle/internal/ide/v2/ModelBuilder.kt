@@ -1212,6 +1212,10 @@ class ModelBuilder<
                 BooleanFlag.BUILD_FEATURE_ANDROID_RESOURCES,
                 variants.any { it.buildFeatures.androidResources }
             )
+            flags.put(
+                BooleanFlag.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS,
+                projectOptions[BooleanOption.EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS]
+            )
 
             return AndroidGradlePluginProjectFlagsImpl(flags.build())
         }
