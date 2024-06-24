@@ -46,16 +46,16 @@ import com.intellij.psi.PsiTypeParameter
 import org.jetbrains.kotlin.analysis.api.KtStarTypeProjection
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.renderer.types.impl.KtTypeRendererForSource
-import org.jetbrains.kotlin.analysis.api.renderer.types.renderers.KtFlexibleTypeRenderer
+import org.jetbrains.kotlin.analysis.api.renderer.types.renderers.KaFlexibleTypeRenderer
 import org.jetbrains.kotlin.analysis.api.types.KtDynamicType
 import org.jetbrains.kotlin.analysis.api.types.KtFlexibleType
 import org.jetbrains.kotlin.analysis.api.types.KtNonErrorClassType
 import org.jetbrains.kotlin.analysis.api.types.KtType
-import org.jetbrains.kotlin.analysis.utils.printer.prettyPrint
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtFunction
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
+import org.jetbrains.kotlin.types.Variance
 import org.jetbrains.uast.UAnnotated
 import org.jetbrains.uast.UAnonymousClass
 import org.jetbrains.uast.UClass
@@ -301,15 +301,14 @@ class InteroperabilityDetector : Detector(), SourceCodeScanner {
           // Rather, type arguments could be flexible, e.g., Lazy<(String..String?)>
           val typeString =
             if (ktType is KtFlexibleType) null
-            else
-              prettyPrint {
-                KtTypeRendererForSource.WITH_SHORT_NAMES.with {
-                    // By default, nullability flexible type is rendered with ! at the end,
-                    // e.g., Lazy<String!>
-                    flexibleTypeRenderer = KtFlexibleTypeRenderer.AS_RANGE
-                  }
-                  .renderType(ktType, this@prettyPrint)
+            else {
+              val renderer = KtTypeRendererForSource.WITH_SHORT_NAMES.with {
+                // By default, nullability flexible type is rendered with ! at the end,
+                // e.g., Lazy<String!>
+                flexibleTypeRenderer = KaFlexibleTypeRenderer.AS_RANGE
               }
+              ktType.render(renderer, position = Variance.INVARIANT)
+            }
           reportMissingExplicitType(node, typeString)
         }
       }
