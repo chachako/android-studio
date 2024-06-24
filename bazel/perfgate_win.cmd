@@ -8,7 +8,7 @@ set OUTDIR=%1
 set DISTDIR=%2
 set BUILDNUMBER=%3
 
-set TESTTAGFILTERS=perfgate,-no_windows,-no_test_windows
+set TESTTAGFILTERS=ci:perfgate-win,-no_windows
 
 @rem The current directory the executing script is in.
 set SCRIPTDIR=%~dp0

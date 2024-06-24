@@ -6,7 +6,7 @@ readonly out_dir="$1"
 readonly dist_dir="$2"
 readonly build_number="$3"
 # Default to perfgate, unless a test tag is specified
-readonly test_tag="${4:-perfgate}"
+readonly test_tag="${4:-ci:perfgate-linux}"
 
 readonly script_dir="$(dirname "$0")"
 readonly script_name="$(basename "$0")"
@@ -17,7 +17,7 @@ then
 fi
 
 build_tag_filters=-no_linux
-test_tag_filters=$test_tag,-no_linux,-no_test_linux
+test_tag_filters=$test_tag,-no_linux,
 
 config_options="--config=ci"
 

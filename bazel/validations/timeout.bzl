@@ -9,7 +9,7 @@ FAILURE_MESSAGE = """Test target {} has timeout set to eternal.
 We do not want any new target with eternal timeout (b/162943254).
 If this is intentional, contact android-devtools-infra@ to relax the restriction on the target."""
 
-IGNORE_TAG = ["perfgate", "perfgate-release"]
+IGNORE_TAG = ["ci:perfgate-linux", "ci:perfgate-win", "perfgate-release"]
 
 def _has_intersect(this, other):
     for item in this:

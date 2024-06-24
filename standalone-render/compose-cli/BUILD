@@ -137,7 +137,8 @@ kotlin_test(
     ],
     tags = [
         "noci:studio-win",
-        "perfgate",
+        "noci:studio-linux",
+        "ci:perfgate-linux",
     ],
     test_class = "com.android.tools.render.compose.PerfMainTest",
     deps = [

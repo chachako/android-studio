@@ -116,7 +116,7 @@ function run_bazel_test() {
   fi
 
   local build_tag_filters=-no_linux
-  local test_tag_filters=-no_linux,-no_test_linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate,-perfgate-release,-very_flaky
+  local test_tag_filters=-no_linux,-no_test_linux,-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky
   local target_name="studio-linux"
 
   if [[ "${IS_K2}" == "true" ]]; then
