@@ -112,26 +112,6 @@ class FakeListProperty<T>(
         return this
     }
 
-    override fun appendAll(provider: Provider<out MutableIterable<T>>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun appendAll(elements: MutableIterable<T>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun appendAll(vararg elements: T) {
-        TODO("Not yet implemented")
-    }
-
-    override fun append(provider: Provider<out T>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun append(element: T) {
-        TODO("Not yet implemented")
-    }
-
     override fun add(p0: T) {
         values?.add(p0)
     }

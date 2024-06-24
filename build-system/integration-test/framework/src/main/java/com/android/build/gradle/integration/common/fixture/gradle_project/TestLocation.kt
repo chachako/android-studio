@@ -19,6 +19,7 @@ package com.android.build.gradle.integration.common.fixture.gradle_project
 import com.android.build.gradle.integration.BazelIntegrationTestsSuite
 import com.android.testutils.TestUtils
 import com.android.utils.FileUtils
+import org.gradle.util.GradleVersion
 import java.io.File
 import java.nio.file.Path
 
@@ -75,7 +76,11 @@ fun initializeTestLocation() : TestLocation {
         outDir,
         File(buildDir, "ANDROID_SDK_HOME"),
         gradleUserHome,
-        FileUtils.join(gradleUserHome.toFile(), "caches", "transforms-4")
+        FileUtils.join(gradleUserHome.toFile(),
+            "caches",
+            GradleVersion.current().version,
+            "transforms"
+        )
     )
 }
 

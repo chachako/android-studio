@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.fixtures
 
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.provider.SupportsConvention
 
 /**
  * A fake [ConfigurableFileCollection] that can be created without [Project].
@@ -47,6 +48,14 @@ class FakeConfigurableFileCollection(vararg files : Any?)
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun convention(paths: MutableIterable<*>): ConfigurableFileCollection {
+        TODO("Not yet implemented")
+    }
+
+    override fun convention(vararg paths: Any?): ConfigurableFileCollection {
+        TODO("Not yet implemented")
+    }
+
     override fun builtBy(vararg tasks: Any?): ConfigurableFileCollection {
         tasks.forEach { _builtBy.add(it) }
         return this
@@ -70,6 +79,14 @@ class FakeConfigurableFileCollection(vararg files : Any?)
     }
 
     override fun disallowUnsafeRead() {
+        TODO("Not yet implemented")
+    }
+
+    override fun unset(): SupportsConvention {
+        TODO("Not yet implemented")
+    }
+
+    override fun unsetConvention(): SupportsConvention {
         TODO("Not yet implemented")
     }
 }

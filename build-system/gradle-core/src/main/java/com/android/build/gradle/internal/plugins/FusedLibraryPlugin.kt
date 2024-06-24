@@ -311,17 +311,18 @@ class FusedLibraryPlugin @Inject constructor(
         }
         // This is the configuration that will contain all the JAVA_API dependencies that are not
         // fused in the resulting aar library.
-        val includedApiUnmerged = project.configurations.create("includeApiUnmerged").also {
-            it.isCanBeConsumed = false
-            it.isCanBeResolved = true
-            it.incoming.beforeResolve(
+        val includedApiUnmerged =
+            project.configurations.create("includeApiUnmerged").also { targetConfiguration ->
+                targetConfiguration.isCanBeConsumed = false
+                targetConfiguration.isCanBeResolved = true
+
+                targetConfiguration.withDependencies {
                     SegregatingConstraintHandler(
-                            includeApiClasspath,
-                            it,
-                            variantScope.mergeSpec,
-                            project,
+                        includeApiClasspath,
+                        variantScope.mergeSpec,
+                        project
                     )
-            )
+                }
         }
         // This is the internal configuration that will be used to feed tasks that require access
         // to the resolved 'include' dependency. It is for JAVA_RUNTIME usage which mean all transitive
@@ -346,17 +347,17 @@ class FusedLibraryPlugin @Inject constructor(
                 }
         // This is the configuration that will contain all the JAVA_RUNTIME dependencies that are
         // not fused in the resulting aar library.
-        val includeRuntimeUnmerged = project.configurations.create("includeRuntimeUnmerged").also {
-            it.isCanBeConsumed = false
-            it.isCanBeResolved = true
-            it.incoming.beforeResolve(
+        val includeRuntimeUnmerged =
+            project.configurations.create("includeRuntimeUnmerged").also { targetConfiguration ->
+                targetConfiguration.isCanBeConsumed = false
+                targetConfiguration.isCanBeResolved = true
+                targetConfiguration.withDependencies {
                     SegregatingConstraintHandler(
-                            includeConfigurations,
-                            it,
-                            variantScope.mergeSpec,
-                            project,
+                        includeConfigurations,
+                        variantScope.mergeSpec,
+                        project,
                     )
-            )
+                }
         }
         // this is the outgoing configuration for JAVA_API scoped declarations, it will contain
         // this module and all transitive non merged dependencies

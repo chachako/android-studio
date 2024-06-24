@@ -41,11 +41,6 @@ class FirebaseTestLabDeviceTest {
                     classpath "com.google.firebase.testlab:testlab-gradle-plugin:+"
                 }
             }
-            project.buildscript {
-                dependencies {
-                    classpath "com.google.firebase.testlab:testlab-gradle-plugin:+"
-                }
-            }
         """.trimIndent())
 
         val appBuildFileContent = project.getSubproject("app").buildFile.readText()

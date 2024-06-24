@@ -18,7 +18,7 @@ package com.android.build.gradle.integration.dependencies
 
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils.appendToFile
-import org.gradle.internal.component.AmbiguousGraphVariantsException
+import org.gradle.api.internal.tasks.TaskDependencyResolveException
 import org.gradle.tooling.BuildException
 import org.junit.Before
 import org.junit.Rule
@@ -76,7 +76,7 @@ class MisplacedMissingDimensionStrategyTest {
             project.executor().run(":app:assembleDebug")
         }
 
-        exception.checkCause(AmbiguousGraphVariantsException::class.java)
+        exception.checkCause(TaskDependencyResolveException::class.java)
     }
 }
 

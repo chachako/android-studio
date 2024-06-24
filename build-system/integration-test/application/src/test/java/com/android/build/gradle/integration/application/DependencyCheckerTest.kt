@@ -30,7 +30,8 @@ class DependencyCheckerTest {
 
     private val testProject =
         MinimalSubProject.app("com.example.app").apply {
-            appendToBuild("afterEvaluate { configurations.debugRuntimeClasspath.files() }")
+            appendToBuild("afterEvaluate { configurations.debugRuntimeClasspath." +
+                    "incoming.getArtifacts().getArtifactFiles().getFiles() }")
         }
 
     @get:Rule

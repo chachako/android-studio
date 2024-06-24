@@ -46,11 +46,6 @@ class FirebaseTestLabIntegrationTest {
                     classpath "com.google.firebase.testlab:testlab-gradle-plugin:+"
                 }
             }
-            project.buildscript {
-                dependencies {
-                    classpath "com.google.firebase.testlab:testlab-gradle-plugin:+"
-                }
-            }
         """.trimIndent())
 
         val ftlBuildScriptResource =
