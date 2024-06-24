@@ -109,6 +109,7 @@ open class GradleTestProject @JvmOverloads constructor(
     private val withAndroidGradlePlugin: Boolean,
     private val withKotlinGradlePlugin: Boolean,
     private val withExtraPluginClasspath: String?,
+    private val withBuiltInKotlinSupport: Boolean,
     private val withPluginManagementBlock: Boolean,
     private val withDependencyManagementBlock: Boolean,
     private val withIncludedBuilds: List<String>,
@@ -454,6 +455,7 @@ open class GradleTestProject @JvmOverloads constructor(
             withAndroidGradlePlugin = rootProject.withAndroidGradlePlugin,
             withKotlinGradlePlugin = rootProject.withKotlinGradlePlugin,
             withExtraPluginClasspath = rootProject.withExtraPluginClasspath,
+            withBuiltInKotlinSupport = rootProject.withBuiltInKotlinSupport,
             withPluginManagementBlock = rootProject.withPluginManagementBlock,
             withDependencyManagementBlock = rootProject.withDependencyManagementBlock,
             withIncludedBuilds = ImmutableList.of(),
@@ -713,7 +715,11 @@ allprojects { proj ->
     fun generateCommonBuildScript(): String {
         return BuildSystem.get()
             .getCommonBuildScriptContent(
-                withAndroidGradlePlugin, withKotlinGradlePlugin, withDeviceProvider, withExtraPluginClasspath
+                withAndroidGradlePlugin,
+                withKotlinGradlePlugin,
+                withDeviceProvider,
+                withExtraPluginClasspath,
+                withBuiltInKotlinSupport
             )
     }
 

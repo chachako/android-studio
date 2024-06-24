@@ -54,6 +54,7 @@ internal enum class BuildSystem {
         withKotlinGradlePlugin: Boolean,
         withDeviceProvider: Boolean,
         withExtraPluginClasspath: String?,
+        withBuiltInKotlinSupport: Boolean,
     ): String {
         val script = StringBuilder()
         script.append("def commonScriptFolder = buildscript.sourceFile.parent\n")
@@ -87,6 +88,11 @@ internal enum class BuildSystem {
         if (!withExtraPluginClasspath.isNullOrBlank()) {
             script.append(
                 "        classpath '$withExtraPluginClasspath'\n"
+            )
+        }
+        if (withBuiltInKotlinSupport) {
+            script.append(
+                "        classpath \"com.android.tools.build:gradle-kotlin:\$rootProject.buildVersion\"\n"
             )
         }
         script.append("    }\n")

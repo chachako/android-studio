@@ -17,6 +17,7 @@
 package com.android.build.gradle.integration.common.fixture.testprojects
 
 import com.android.Version
+import com.android.build.gradle.internal.utils.ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID
 import com.android.testutils.TestUtils
 
 sealed class PluginType(
@@ -122,6 +123,11 @@ sealed class PluginType(
     )
     object JAVA_GRADLE_PLUGIN: PluginType(
         id="java-gradle-plugin"
+    )
+    object ANDROID_BUILT_IN_KOTLIN: PluginType(
+        id = ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID,
+        isAndroid = true,
+        useNewDsl = true,
     )
     class Custom(id: String): PluginType(id)
 }

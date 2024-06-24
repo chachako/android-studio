@@ -581,6 +581,25 @@ com/android/tools/build/gradle-api
   com/android/build/gradle/
   com/android/build/gradle/api/
 
+com/android/tools/build/gradle-kotlin
+  META-INF/
+  META-INF/MANIFEST.MF
+  META-INF/gradle-kotlin.kotlin_module
+  META-INF/gradle-plugins/
+  META-INF/gradle-plugins/com.android.experimental.built-in-kotlin.properties
+  NOTICE
+  com/
+  com/android/
+  com/android/build/
+  com/android/build/gradle/
+  com/android/build/gradle/internal/
+  com/android/build/gradle/internal/plugins/
+
+com/android/tools/build/gradle-kotlin:api
+  META-INF/
+  META-INF/MANIFEST.MF
+  NOTICE
+
 com/android/tools/build/gradle-settings
   META-INF/
   META-INF/MANIFEST.MF

@@ -13,6 +13,7 @@
   com/android/databinding:library
   com/android/databinding:viewbinding
   com/android/dynamic-feature:com.android.dynamic-feature.gradle.plugin
+  com/android/experimental/built-in-kotlin:com.android.experimental.built-in-kotlin.gradle.plugin
   com/android/fused-library:com.android.fused-library.gradle.plugin
   com/android/internal/settings:com.android.internal.settings.gradle.plugin
   com/android/kotlin/multiplatform/library:com.android.kotlin.multiplatform.library.gradle.plugin
@@ -42,6 +43,7 @@
   com/android/tools/build:builder-test-api
   com/android/tools/build:gradle
   com/android/tools/build:gradle-api
+  com/android/tools/build:gradle-kotlin
   com/android/tools/build:gradle-settings
   com/android/tools/build:gradle-settings-api
   com/android/tools/build:manifest-merger

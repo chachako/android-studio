@@ -386,6 +386,7 @@ ANDROID_GRADLE_PLUGIN_SOURCE_FILES = [
     "//tools/base/build-system/builder-test-api:agp_gradle_build_files",
     "//tools/base/build-system/gradle-api:agp_gradle_build_files",
     "//tools/base/build-system/gradle-core:agp_gradle_build_files",
+    "//tools/base/build-system/gradle-kotlin:agp_gradle_build_files",
     "//tools/base/build-system/gradle-settings:agp_gradle_build_files",
     "//tools/base/build-system/gradle-settings-api:agp_gradle_build_files",
     "//tools/base/build-system/profile:agp_gradle_build_files",

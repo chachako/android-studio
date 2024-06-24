@@ -188,4 +188,22 @@ class BuiltInKotlinForTestFixturesTest {
             "The current Kotlin Gradle plugin version (1.8.10) is below the required"
         )
     }
+
+    @Test
+    fun testLowKotlinVersionWithNoBuiltInKotlinSupport() {
+        TestFileUtils.searchAndReplace(
+            project.projectDir.parentFile.resolve(VERSION_CATALOG),
+            "version('kotlinVersion', '${TestUtils.KOTLIN_VERSION_FOR_TESTS}')",
+            "version('kotlinVersion', '1.8.10')"
+        )
+        val lib = project.getSubproject(":lib")
+        lib.buildFile.appendText(
+            """
+                android.testFixtures.enable = true
+                """.trimIndent()
+        )
+        // We expect no build failure in this case.
+        // Set failOnWarning to false because Gradle warns about deprecated feature(s) used by KGP 1.8.10.
+        lib.executor().withFailOnWarning(false).run(":lib:assembleDebugTestFixtures")
+    }
 }

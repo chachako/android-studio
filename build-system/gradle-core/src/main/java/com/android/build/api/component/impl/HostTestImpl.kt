@@ -184,7 +184,7 @@ abstract class HostTestImpl @Inject constructor(
         when(dslInfo.componentType) {
             ComponentTypeImpl.UNIT_TEST -> {
                 hostTestName = HostTestBuilder.UNIT_TEST_TYPE
-                useBuiltInKotlinSupport = false
+                useBuiltInKotlinSupport = mainVariant.useBuiltInKotlinSupport
             }
             ComponentTypeImpl.SCREENSHOT_TEST -> {
                 hostTestName = HostTestBuilder.SCREENSHOT_TEST_TYPE

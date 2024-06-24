@@ -28,11 +28,13 @@ import com.android.build.gradle.integration.common.utils.SdkHelper;
 import com.android.build.gradle.integration.common.utils.TestFileUtils;
 import com.android.testutils.MavenRepoGenerator;
 import com.android.testutils.TestUtils;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -85,6 +87,7 @@ public class GradleTestProjectBuilder {
     @Nullable
     private String withExtraPluginClasspath;
     private boolean withKotlinGradlePlugin = false;
+    private boolean withBuiltInKotlinSupport = false;
     private boolean withPluginManagementBlock = false;
     private boolean withDependencyManagementBlock = true;
     // list of included builds, relative to the main projectDir
@@ -173,6 +176,7 @@ public class GradleTestProjectBuilder {
                 withAndroidGradlePlugin,
                 withKotlinGradlePlugin,
                 withExtraPluginClasspath,
+                withBuiltInKotlinSupport,
                 withPluginManagementBlock,
                 withDependencyManagementBlock,
                 withIncludedBuilds,
@@ -312,6 +316,11 @@ public class GradleTestProjectBuilder {
 
     public GradleTestProjectBuilder withExtraPluginClasspath(String classpath) {
         this.withExtraPluginClasspath = classpath;
+        return this;
+    }
+
+    public GradleTestProjectBuilder withBuiltInKotlinSupport(boolean withBuiltInKotlinSupport) {
+        this.withBuiltInKotlinSupport = withBuiltInKotlinSupport;
         return this;
     }
 
