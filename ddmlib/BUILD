@@ -222,7 +222,7 @@ iml_module(
     name = "studio.android.sdktools.ddmlib.integration.tests",
     iml_files = ["android.sdktools.ddmlib.integration.tests.iml"],
     tags = [
-        "no_windows",
+        "noci:studio-win",
     ],
     test_data = [
         ":avd",

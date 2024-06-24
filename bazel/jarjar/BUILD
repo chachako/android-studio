@@ -8,7 +8,7 @@ py_test(
     name = "rename_jar_services_test",
     srcs = ["rename_jar_services_test.py"],
     tags = [
-        "no_windows",
+        "noci:studio-win",
     ],
     deps = [":rename_jar_services"],
 )

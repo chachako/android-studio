@@ -23,7 +23,7 @@ java_test(
     tags = [
         "ci:studio-mac-arm",
         "cpu:2",
-        "no_windows",
+        "noci:studio-win",
     ],
     test_class = "EmulatorTest",
     deps = [

@@ -53,7 +53,7 @@ sh_test(
         ":trace_test",
     ],
     tags = [
-        "no_windows",
+        "noci:studio-win",
     ],
 )
 

@@ -76,7 +76,6 @@ cc_test(
         "native/foreground_process_tracker_test.cc",
     ],
     linkstatic = 1,
-    tags = ["no_windows"],
     deps = [
         ":foreground_process_tracker",
         "@googletest//:gtest_main",

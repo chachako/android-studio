@@ -93,7 +93,7 @@ java_test(
 
     # Does not seem to be able to locate
     # the two data dependencies on Windows.
-    tags = ["no_windows"],
+    tags = ["noci:studio-win"],
     deps = [
         "//tools/base/deploy/deployer:tools.deployer",
         "@maven//:junit.junit",

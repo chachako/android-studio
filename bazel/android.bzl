@@ -114,7 +114,7 @@ def _name(file):
 
     return file.split("/")[-1]
 
-def aidl_library(name, srcs = [], visibility = None, tags = [], deps = []):
+def aidl_library(name, srcs = [], **kwargs):
     """Builds a Java library out of .aidl files."""
     gen_dir = name + "_gen_aidl"
     for src in srcs:
@@ -125,8 +125,9 @@ def aidl_library(name, srcs = [], visibility = None, tags = [], deps = []):
             name = gen_name,
             srcs = [src],
             outs = [java_file],
-            tags = tags,
             cmd = cmd,
+            tags = kwargs.get("tags", []),
+            target_compatible_with = kwargs.get("target_compatible_with", []),
             tools = ["@androidsdk//:aidl_binary"],
         )
 
@@ -134,9 +135,7 @@ def aidl_library(name, srcs = [], visibility = None, tags = [], deps = []):
     native.java_library(
         name = name,
         srcs = intermediates,
-        visibility = visibility,
-        tags = tags,
-        deps = deps,
+        **kwargs,
     )
 
 def dex_library(name, jars = [], output = None, visibility = None, tags = [], flags = []):

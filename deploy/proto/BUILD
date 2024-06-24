@@ -7,7 +7,10 @@ cc_grpc_proto_library(
     name = "cc_proto",
     srcs = glob(["*.proto"]),
     include_prefix = "proto",
-    tags = ["no_windows"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 android_java_proto_library(
@@ -20,8 +23,7 @@ cc_binary(
     name = "proto_tool",
     srcs = ["proto_tool.cc"],
     copts = ["-I$(GENDIR)/tools/base/deploy/proto"],
-    tags = ["no_windows"],
-    deps = ["//tools/base/deploy/proto:cc_proto"],
+    deps = [":cc_proto"],
 )
 
 filegroup(

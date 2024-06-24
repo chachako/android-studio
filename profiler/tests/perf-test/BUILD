@@ -55,7 +55,7 @@ coverage_java_test(
         "//tools/base/transport/native/agent:android/x86_64/libjvmtiagent.so",
     ],
     jvm_flags = ["-Dtest.suite.jar=NativeBinarySizeTest.jar"],
-    tags = ["no_windows"],
+    tags = ["noci:studio-win"],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         "//tools/base/perf-logger:studio.perf-logger_testlib",

@@ -4,7 +4,7 @@ load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 
 tags = [
-    "no_windows",
+    "noci:studio-win",
 ]
 
 kotlin_library(

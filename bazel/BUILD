@@ -312,7 +312,7 @@ py_test(
     name = "status_reader_test",
     srcs = ["status_reader_test.py"],
     tags = [
-        "no_windows",
+        "noci:studio-win",
     ],
     visibility = ["//visibility:public"],
     deps = [":status_reader"],
