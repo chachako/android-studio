@@ -58,7 +58,7 @@
             <d:skin>nexus_one</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>7-10</d:api-level>
+            <d:api-level>7-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>2.0</d:gl-version>
@@ -142,7 +142,7 @@
             <d:skin>nexus_s</d:skin>
         </d:hardware>
         <d:software>
-            <d:api-level>9-16</d:api-level>
+            <d:api-level>9-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>2.0</d:gl-version>
@@ -2772,7 +2772,7 @@
         </d:hardware>
         <d:software>
             <!-- The 4a shipped with 29 but the code enforces a minimum of 30  -->
-            <d:api-level>30-33</d:api-level>
+            <d:api-level>30-</d:api-level>
             <d:live-wallpaper-support>true</d:live-wallpaper-support>
             <d:bluetooth-profiles></d:bluetooth-profiles>
             <d:gl-version>3.2</d:gl-version>
