@@ -29,16 +29,14 @@ def coverage_baseline(name, srcs, jar = None, tags = None):
     # some rules produce multiple jars under their base name so this lets us overload if necessary
     if not jar:
         jar = name
+    if tags == None:
+        tags = []
 
     native.alias(
         name = name + "_coverage.baseline.jar",
         actual = jar,
         visibility = ["@baseline//:__pkg__"],
     )
-
-    tags = tags if tags else []
-    tags += [] if "no_mac" in tags else ["no_mac"]
-    tags += [] if "no_windows" in tags else ["no_windows"]
 
     cov_sources_tags = tags + ([] if "coverage-sources" in tags else ["coverage-sources"])
     native.genrule(
@@ -56,6 +54,7 @@ def coverage_baseline(name, srcs, jar = None, tags = None):
         srcs = [name + "_coverage.baseline.srcs"],
         outs = [name + ".coverage.baseline.srcs.filtered"],
         tags = tags,
+        target_compatible_with = ["@platforms//os:linux"],
         cmd = "python3 $(location @cov//:ignore_files_filter) <$< >$@",
         visibility = ["@baseline//:__pkg__"],
     )
@@ -65,6 +64,7 @@ def coverage_baseline(name, srcs, jar = None, tags = None):
         srcs = srcs,
         outs = [name + ".coverage.baseline.exempt_markers"],
         tags = tags + ["coverage-exempt"],
+        target_compatible_with = ["@platforms//os:linux"],
         # grep has an exit code of 1 if no results are found so use `true` to avoid failure
         cmd = "grep -rn '//[[:blank:]]*@coverage:' $(SRCS) >$@ || true",
         visibility = ["@baseline//:__pkg__"],

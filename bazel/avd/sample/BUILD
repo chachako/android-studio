@@ -21,8 +21,8 @@ java_test(
         "//prebuilts/studio/sdk:platform-tools",
     ],
     tags = [
-        # This test passes on mac-arm64, but there is no label to make it run only on mac-arm64.
-        "no_mac",
+        "ci:studio-mac-arm",
+        "cpu:2",
         "no_windows",
     ],
     test_class = "EmulatorTest",

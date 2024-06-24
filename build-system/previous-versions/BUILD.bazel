@@ -262,10 +262,7 @@ gradle_build(
     repos = [
         ":3.5.0",
     ],
-    tags = [
-        "no_mac",
-        "no_windows",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
     tasks = ["assembleRelease"],
 )
 
@@ -296,10 +293,7 @@ gradle_build(
     repos = [
         ":3.3.2",
     ],
-    tags = [
-        "no_mac",
-        "no_windows",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
     tasks = ["assembleRelease"],
 )
 
@@ -330,9 +324,6 @@ gradle_build(
     repos = [
         ":3.0.0",
     ],
-    tags = [
-        "no_mac",
-        "no_windows",
-    ],
+    target_compatible_with = ["@platforms//os:linux"],
     tasks = ["listDependencies"],
 )

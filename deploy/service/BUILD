@@ -40,7 +40,6 @@ java_test(
     ],
     jvm_flags = ["-Dtest.suite.jar=service_test.jar"],
     tags = [
-        "no_mac",
         "no_windows",
     ],
     test_class = "com.android.testutils.JarTestSuite",

@@ -136,7 +136,6 @@ kotlin_test(
         "//tools/base/standalone-render/compose-cli/testData",
     ],
     tags = [
-        "no_mac",
         "noci:studio-win",
         "perfgate",
     ],

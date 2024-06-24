@@ -39,7 +39,6 @@ kotlin_test(
     name = "perfgate-compose-preview-detector-tests",
     srcs = glob(["perf/testSrc/**/*.kt"]),
     tags = [
-        "no_mac",
         "noci:studio-win",
         "perfgate",
     ],

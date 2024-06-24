@@ -5,7 +5,6 @@ load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 
 tags = [
     "no_windows",
-    "no_mac",
 ]
 
 kotlin_library(
