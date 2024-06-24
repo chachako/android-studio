@@ -2,6 +2,8 @@
 
 import dataclasses
 import enum
+import json
+import os
 import pathlib
 import shutil
 from typing import Iterable, List, Sequence, Tuple
@@ -142,6 +144,10 @@ def copy_artifacts(build_env: bazel.BuildEnv, files: Iterable[Tuple[str,str]]) -
   result = bazel_cmd.info('--config=ci', 'bazel-bin')
   bin_path = pathlib.Path(result.stdout.decode('utf-8').strip())
 
+  binary_sizes = {}
   for src_glob, dest in files:
     for src in bin_path.glob(src_glob):
       shutil.copy2(src, dist_path / dest)
+      binary_sizes[f'{src}[bytes]'] = os.stat(src).st_size
+  with open(dist_path / 'bloatbuster_report.binary_sizes.json', 'w') as f:
+    json.dump(binary_sizes, f)
