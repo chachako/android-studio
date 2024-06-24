@@ -106,12 +106,16 @@ maven_library(
     srcs = glob([
         "libs/lint-api/src/main/java/**/*.kt",
         "libs/lint-api/src/main/java/**/*.java",
+        # Temporary compatibility layer for IntelliJ 2024.1:
+        "libs/lint-api/sdkcompat/api241/**/*.kt",
+        "libs/lint-api/sdkcompat/api241/**/*.java",
     ]),
     bundled_deps = [
         ":groovy_neverlink",
     ],
     coordinates = "com.android.tools.lint:lint-api",
     description = "API to build lint checks",
+    kotlinc_opts = ["-Xcontext-receivers"],  # Temporarily needed for compatibility layer.
     module_name = "lint-api",
     notice = "libs/lint-api/NOTICE",
     resource_strip_prefix = "tools/base/lint/libs/lint-api",
