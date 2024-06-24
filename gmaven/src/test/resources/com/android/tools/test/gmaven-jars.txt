@@ -259,6 +259,7 @@ com/android/tools/build/apksig
   com/android/apksig/internal/util/
   com/android/apksig/internal/x509/
   com/android/apksig/internal/zip/
+  com/android/apksig/kms/
   com/android/apksig/util/
   com/android/apksig/zip/
 
