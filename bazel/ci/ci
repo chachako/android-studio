@@ -1,2 +1,16 @@
 #!/bin/bash
-"$(dirname "$0")/../bazel" --max_idle_secs=60 run //tools/base/bazel/ci -- $1
+
+if [[ "$OSTYPE" = "linux"* ]]; then
+  PLATFORM="linux-x86_64"
+elif [[ "$OSTYPE" = "darwin"* && "$(arch)" == "x86_64" ]]; then
+  PLATFORM="darwin-x86_64"
+elif [[ "$OSTYPE" = "darwin"* && "$(arch)" == "arm64" ]]; then
+  PLATFORM="darwin-arm64"
+else
+  echo "Unsupported platform: $OSTYPE"
+  exit 1
+fi
+
+WORKSPACE="$(dirname $0)/../../../.."
+BAZELISK="$WORKSPACE/prebuilts/tools/$PLATFORM/bazel/bazelisk"
+"$BAZELISK" --max_idle_secs=60 run //tools/base/bazel/ci -- $1

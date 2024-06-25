@@ -1,4 +1,5 @@
 """A module providing a BazelCmd object."""
+
 from typing import List
 import subprocess
 import os
@@ -13,6 +14,7 @@ class BuildEnv:
   """Represents the build environment."""
   build_number: str
   build_target_name: str
+  workspace_dir: str
   dist_dir: str
   tmp_dir: str
   bazel_path: str
@@ -20,6 +22,7 @@ class BuildEnv:
   def __init__(self, bazel_path: str):
     self.build_number = os.environ.get("BUILD_NUMBER", "SNAPSHOT")
     self.build_target_name = os.environ.get("BUILD_TARGET_NAME", "")
+    self.workspace_dir = os.environ.get("BUILD_WORKSPACE_DIRECTORY", "")
     self.dist_dir = os.environ.get("DIST_DIR", "")
     self.tmp_dir = os.environ.get("TMPDIR", "")
     self.bazel_path = bazel_path
@@ -69,6 +72,10 @@ class BazelCmd:
       CalledProcessError: If the command fails.
     """
     return self._run(True, True, "info", *info_args)
+
+  def shutdown(self) -> subprocess.CompletedProcess:
+    """Runs a 'bazel shutdown' command."""
+    return self._run(False, False, "shutdown")
 
   def _run(self, capture_output: bool, check: bool, *args: List[str]) -> subprocess.CompletedProcess:
     """Runs a Bazel command with the given args."""

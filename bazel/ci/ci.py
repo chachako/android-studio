@@ -3,10 +3,10 @@
 import argparse
 import os
 import platform
-import uuid
 import subprocess
 import sys
 from typing import Callable, List
+import uuid
 
 from tools.base.bazel.ci import bazel
 from tools.base.bazel.ci import errors
@@ -27,6 +27,7 @@ class CI:
 
   def __init__(self, build_env: bazel.BuildEnv):
     self.build_env = build_env
+    self.exit_code = 0
 
   def run(self, func: Callable[[bazel.BuildEnv], None]):
     """Runs callables that might raise exceptions."""
@@ -34,9 +35,12 @@ class CI:
       func(self.build_env)
     except errors.CIError as e:
       self.exceptions.append(e)
+      self.exit_code = e.exit_code
     except subprocess.CalledProcessError as e:
-      msg = f'#### internal subprocess error\n{e}\n{e.stderr.decode("utf8")}'
+      stderr = (e.stderr or b'').decode('utf-8')
+      msg = f'#### internal subprocess error\n{e}\n{stderr}'
       self.exceptions.append(RuntimeError(msg))
+      self.exit_code = 1
 
   def has_errors(self) -> bool:
     """Returns true if there were exceptions."""
@@ -46,10 +50,6 @@ class CI:
     """Write CI exceptions to stderr."""
     for err in self.exceptions:
       print(err, file=sys.stderr)
-
-  def exit_code(self):
-    """Returns the exit code of the last known exception, otherwise 0."""
-    return self.exceptions[-1].exit_code if self.exceptions else 0
 
 
 def find_workspace() -> str:
@@ -107,7 +107,7 @@ def main():
 
   if ci.has_errors():
     ci.print_errors()
-    sys.exit(ci.exit_code())
+    sys.exit(ci.exit_code)
 
 
 if __name__ == "__main__":

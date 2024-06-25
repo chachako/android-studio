@@ -1,9 +1,10 @@
 """Implements studio-linux CI scripts."""
 
-import os
+import itertools
 import pathlib
 import shutil
 import tempfile
+import zipfile
 
 from tools.base.bazel.ci import bazel
 from tools.base.bazel.ci import studio
@@ -119,7 +120,7 @@ def studio_linux(build_env: bazel.BuildEnv):
 
   # TODO(b/342237310): Implement --very_flaky.
 
-  workspace_path = pathlib.Path(os.environ.get('BUILD_WORKSPACE_DIRECTORY'))
+  workspace_path = pathlib.Path(build_env.workspace_dir)
   shutil.copy2(
       workspace_path / 'tools/base/build-system/supported-versions.properties',
       dist_path / 'agp-supported-versions.properties',
@@ -133,8 +134,7 @@ def studio_linux(build_env: bazel.BuildEnv):
   }:
     (dist_path / 'artifacts').mkdir(parents=True, exist_ok=True)
     studio.copy_artifacts(build_env, _ARTIFACTS)
-
-    # TODO(b/342237310): Write owners zip.
+    write_owners_zip(build_env)
 
     # TODO(b/342237310): Return if --very-flaky is specified.
     if test_result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
@@ -152,3 +152,17 @@ def copy_worker_logs(build_env: bazel.BuildEnv) -> None:
   dest_path.mkdir(parents=True, exist_ok=True)
   for path in src_path.glob('*.log'):
     shutil.copy2(path, dest_path / path.name)
+
+
+def write_owners_zip(build_env: bazel.BuildEnv) -> None:
+  """Writes all OWNERS files to an owners.zip file."""
+  workspace_path = pathlib.Path(build_env.workspace_dir)
+  dist_path = pathlib.Path(build_env.dist_dir)
+
+  with zipfile.ZipFile(dist_path / 'owners.zip', 'w') as owners_zip:
+    owners_paths = itertools.chain(
+        workspace_path.glob('tools/**/OWNERS'),
+        workspace_path.glob('prebuilts/**/OWNERS'),
+    )
+    for path in owners_paths:
+      owners_zip.write(path, arcname=path.relative_to(workspace_path))
