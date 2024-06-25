@@ -44082,6 +44082,17 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin.com.google.android.libraries.mapsplatform.secrets-gradle-plugin.gradle.plugin_2.0.1",
+    pom = "repository/com/google/android/libraries/mapsplatform/secrets-gradle-plugin/com.google.android.libraries.mapsplatform.secrets-gradle-plugin.gradle.plugin/2.0.1/com.google.android.libraries.mapsplatform.secrets-gradle-plugin.gradle.plugin-2.0.1.pom",
+    repo_root_path = "repository",
+    repo_path = "com/google/android/libraries/mapsplatform/secrets-gradle-plugin/com.google.android.libraries.mapsplatform.secrets-gradle-plugin.gradle.plugin/2.0.1",
+    deps = [
+        "com.google.android.libraries.mapsplatform.secrets-gradle-plugin.secrets-gradle-plugin_2.0.1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin.secrets-gradle-plugin_2.0.1",
     pom = "repository/com/google/android/libraries/mapsplatform/secrets-gradle-plugin/secrets-gradle-plugin/2.0.1/secrets-gradle-plugin-2.0.1.pom",
     repo_root_path = "repository",

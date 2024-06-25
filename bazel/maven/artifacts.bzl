@@ -651,6 +651,7 @@ DATA = [
     "com.google.android.gms:play-services-wearable:18.0.0",
     "com.google.android.horologist:horologist-compose-tools:0.4.8",
     "com.google.android.horologist:horologist-tiles:0.4.8",
+    "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:com.google.android.libraries.mapsplatform.secrets-gradle-plugin.gradle.plugin:pom:2.0.1",
     "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1",
     "com.google.android.material:material:1.1.0",
     "com.google.android.material:material:1.10.0",
