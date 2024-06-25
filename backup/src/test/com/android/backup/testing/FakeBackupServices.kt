@@ -67,15 +67,11 @@ internal class FakeBackupServices(serialNumber: String) :
     }
   }
 
-  override suspend fun syncRecv(
-    outputStream: OutputStream,
-    remoteFilePaths: Collection<String>,
-    perFileSetup: (String) -> Unit,
-  ) {
-    remoteFilePaths.forEach { file ->
-      perFileSetup(file)
-      outputStream.write("Contents of $file".toByteArray())
-    }
+  @Suppress("BlockingMethodInNonBlockingContext")
+  override suspend fun syncRecv(outputStream: OutputStream, remoteFilePath: String) {
+    outputStream.write(remoteFilePath.toByteArray())
+    // AdbLib closes the stream after a recv, so we do as well.
+    outputStream.close()
   }
 
   override suspend fun syncSend(inputStream: InputStream, remoteFilePath: String) {

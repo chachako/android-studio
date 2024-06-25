@@ -16,12 +16,13 @@
 package com.android.backup
 
 import com.android.adblib.AdbSession
+import com.android.backup.BackupServices.Companion.BACKUP_DIR
 import com.android.backup.BackupServices.Companion.BACKUP_METADATA_FILES
 import com.android.tools.environment.Logger
+import java.io.OutputStream
 import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import kotlin.io.path.name
 import kotlin.io.path.outputStream
 
 private const val TRANSPORT = "com.google.android.gms/.backup.migrate.service.D2dTransport"
@@ -76,9 +77,23 @@ internal constructor(
   }
 
   private suspend fun pullBackup() {
-    val files = BACKUP_METADATA_FILES + applicationId
     ZipOutputStream(path.outputStream()).use { zip ->
-      backupServices.syncRecv(zip, files) { file -> zip.putNextEntry(ZipEntry(Path.of(file).name)) }
+      (BACKUP_METADATA_FILES + applicationId).forEach {
+        zip.putNextEntry(ZipEntry(it))
+        backupServices.syncRecv(KeepOpenOutputStream(zip), "$BACKUP_DIR/$it")
+      }
+    }
+  }
+
+  /** A [OutputStream] wrapper that doesn't close the underlying stream. */
+  private class KeepOpenOutputStream(private val delegate: OutputStream) : OutputStream() {
+
+    override fun write(b: Int) {
+      delegate.write(b)
+    }
+
+    override fun close() {
+      // Do not close
     }
   }
 }

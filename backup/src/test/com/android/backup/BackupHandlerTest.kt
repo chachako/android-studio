@@ -59,7 +59,12 @@ class BackupHandlerTest {
       .inOrder()
     assertThat(backupServices.testMode).isEqualTo(0)
     assertThat(backupFile.exists()).isTrue()
-    assertThat(backupFile.zipInfo()).containsExactly("@pm@", "restore_token_file", "com.app")
+    assertThat(backupFile.unzip())
+      .containsExactly(
+        "@pm@" to "${BackupServices.BACKUP_DIR}/@pm@",
+        "restore_token_file" to "${BackupServices.BACKUP_DIR}/restore_token_file",
+        "com.app" to "${BackupServices.BACKUP_DIR}/com.app",
+      )
   }
 
   @Test
@@ -136,6 +141,12 @@ class BackupHandlerTest {
   }
 }
 
-private fun Path.zipInfo(): List<String> {
-  return ZipFile(pathString).entries().asSequence().map { it.name }.toList()
+private fun Path.unzip(): List<Pair<String, String>> {
+  ZipFile(pathString).use { zip ->
+    return zip
+      .entries()
+      .asSequence()
+      .map { it.name to zip.getInputStream(it).reader().readText() }
+      .toList()
+  }
 }

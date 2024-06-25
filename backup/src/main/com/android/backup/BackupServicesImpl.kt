@@ -54,16 +54,9 @@ internal class BackupServicesImpl(
     return output.stdout.trimEnd('\n')
   }
 
-  override suspend fun syncRecv(
-    outputStream: OutputStream,
-    remoteFilePaths: Collection<String>,
-    perFileSetup: (String) -> Unit,
-  ) {
+  override suspend fun syncRecv(outputStream: OutputStream, remoteFilePath: String) {
     adbSession.channelFactory.wrapOutputStream(outputStream).use { channel ->
-      remoteFilePaths.forEach { remotePath ->
-        perFileSetup(remotePath)
-        adbSession.deviceServices.syncRecv(deviceSelector, remotePath, channel)
-      }
+      adbSession.deviceServices.syncRecv(deviceSelector, remoteFilePath, channel)
     }
   }
 

@@ -54,14 +54,9 @@ internal interface BackupServices {
    * Pulls a file from a device
    *
    * @param outputStream An [outputStream] to write files to
-   * @param perFileSetup A lambda to execute for each file before receiving
-   * @param remoteFilePaths Paths of the files on the device
+   * @param remoteFilePath Path of the file on the device
    */
-  suspend fun syncRecv(
-    outputStream: OutputStream,
-    remoteFilePaths: Collection<String>,
-    perFileSetup: (String) -> Unit,
-  )
+  suspend fun syncRecv(outputStream: OutputStream, remoteFilePath: String)
 
   /**
    * Pushes a file to a device
