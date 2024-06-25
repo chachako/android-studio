@@ -88,7 +88,6 @@ setlocal
   --build_metadata=ab_build_id=%BUILDNUMBER% ^
   --build_metadata=ab_target=studio-win ^
   --experimental_enable_execution_graph_log ^
-  --experimental_stream_log_file_uploads ^
   --experimental_execution_graph_log_dep_type=all ^
   --profile=%DISTDIR%\winprof%BUILDNUMBER%.json.gz ^
   %CONDITIONAL_FLAGS% ^

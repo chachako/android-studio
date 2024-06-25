@@ -87,7 +87,6 @@ def run_bazel_test(
       f'--worker_max_instances={worker_instances}',
 
       '--experimental_enable_execution_graph_log',
-      '--experimental_stream_log_file_uploads',
       '--experimental_execution_graph_log_dep_type=all',
   ])
 

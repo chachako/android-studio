@@ -215,7 +215,6 @@ function run_bazel_test() {
     --build_metadata=ab_target="${target_name}" \
     --test_tag_filters=${test_tag_filters} \
     --experimental_enable_execution_graph_log \
-    --experimental_stream_log_file_uploads \
     --experimental_execution_graph_log_dep_type=all \
     --tool_tag=${SCRIPT_NAME} \
     --embed_label="${AS_BUILD_NUMBER}" \
