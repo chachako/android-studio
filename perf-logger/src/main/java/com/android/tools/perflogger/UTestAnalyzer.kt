@@ -26,11 +26,11 @@ class UTestAnalyzer private constructor(
     private val compareWithMainBranch: Boolean,
     // Following are optional, can be used if needed
     // How many runs will be fetched to be used as the baseline
-    private val runInfoQueryLimit: Int = 20,
+    private val runInfoQueryLimit: Int?,
     // Significance level to be used for the test, i.e. P value
-    private val significance: Double = 0.05,
+    private val significance: Double?,
     // How much change from the baseline metric will be considered as significant
-    private val relativeShiftValue: Double = 0.1 // 10%
+    private val relativeShiftValue: Double?
 ) : Analyzer {
 
     override fun outputJson(writer: JsonWriter) {
@@ -45,23 +45,36 @@ class UTestAnalyzer private constructor(
             writer.name("baselineMetric").value(baselineMetric)
         }
 
-        writer.name("runInfoQueryLimit").value(runInfoQueryLimit)
-        writer.name("significance").value(significance)
-        writer.name("relativeShiftValue").value(relativeShiftValue)
+        writer.name("runInfoQueryLimit").value(runInfoQueryLimit ?: 20)
+        writer.name("significance").value(significance ?: 0.05)
+        writer.name("relativeShiftValue").value(relativeShiftValue ?: 0.1) // 10%
         writer.endObject()
     }
 
     companion object {
-        fun forComparingWithMainBranch() = UTestAnalyzer(
+        fun forComparingWithMainBranch(
+            runInfoQueryLimit: Int? = null,
+            significance: Double? = null,
+            relativeShiftValue: Double? = null
+        ) = UTestAnalyzer(
             baselineMetric = null,
-            compareWithMainBranch = true
+            compareWithMainBranch = true,
+            runInfoQueryLimit = runInfoQueryLimit,
+            significance = significance,
+            relativeShiftValue = relativeShiftValue
         )
 
         fun forMetricComparison(
             baselineMetric: String,
+            runInfoQueryLimit: Int? = null,
+            significance: Double? = null,
+            relativeShiftValue: Double? = null
         ) = UTestAnalyzer(
             baselineMetric = baselineMetric,
-            compareWithMainBranch = false
+            compareWithMainBranch = false,
+            runInfoQueryLimit = runInfoQueryLimit,
+            significance = significance,
+            relativeShiftValue = relativeShiftValue
         )
     }
 }
