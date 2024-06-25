@@ -29,6 +29,8 @@ import javax.imageio.ImageIO
 import kotlin.io.path.Path
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
@@ -71,7 +73,7 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
             val resultId = "${previewId.substringAfterLast(".")}_$i"
             val imageName = "$resultId.png"
             val methodFQN = requestToScreenshotInfoValue.methodFQN
-            val imagePackageStructure = methodFQN.substringBeforeLast(".").replace(".", "/")
+            val relativeImagePath = (methodFQN.substringBeforeLast(".").replace(".", File.separator)) + File.separator + imageName
             val screenshotResult = try {
                 val imageRendered = result.renderedImage.copy
                 imageRendered?.let { image ->
@@ -90,17 +92,17 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
                         }
                         newImage
                     } ?: image
-                    val imagePath = Path("${composeRendering.outputFolder}/$imagePackageStructure")
-                    Files.createDirectories(imagePath)
-                    val imgFile = imagePath.resolve(imageName).toFile()
+                    val imagePath = Paths.get(composeRendering.outputFolder, relativeImagePath)
+                    Files.createDirectories(imagePath.parent)
+                    val imgFile = imagePath.toFile()
 
                     imgFile.createNewFile()
                     ImageIO.write(shapedImage, "png", imgFile)
                 }
                 val screenshotError = extractError(result, imageRendered, composeRendering.outputFolder)
-                ComposeScreenshotResult(previewId, methodFQN, imageName, screenshotError)
+                ComposeScreenshotResult(previewId, methodFQN, relativeImagePath, screenshotError)
             } catch (t: Throwable) {
-                ComposeScreenshotResult(previewId, methodFQN, imageName, ScreenshotError(t))
+                ComposeScreenshotResult(previewId, methodFQN, relativeImagePath, ScreenshotError(t))
             }
             screenshotResults.add(screenshotResult)
             val classesUsed = Path(composeRendering.metaDataFolder).resolve("$resultId.classes.txt").toFile()
@@ -111,7 +113,7 @@ fun renderCompose(composeRendering: ComposeRendering): ComposeRenderingResult = 
             }
         }
     }
-    ComposeRenderingResult(null, screenshotResults.sortedBy {it.imageName})
+    ComposeRenderingResult(null, screenshotResults.sortedBy {it.imagePath})
 } catch (t: Throwable) {
     ComposeRenderingResult(t.stackTraceToString(), emptyList())
 }

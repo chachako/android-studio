@@ -39,7 +39,7 @@ private const val RESULTS_FILE_PATH = "resultsFilePath"
 private const val PREVIEW_ID = "previewId"
 private const val GLOBAL_ERROR = "globalError"
 private const val SCREENSHOT_RESULTS = "screenshotResults"
-private const val IMAGE_NAME = "imageName"
+private const val IMAGE_PATH = "imagePath"
 private const val SCREENSHOT_ERROR = "error"
 private const val STATUS = "status"
 private const val MESSAGE = "message"
@@ -334,16 +334,16 @@ private fun readScreenshotError(reader: JsonReader): ScreenshotError {
 }
 
 private fun readComposeScreenshotResult(reader: JsonReader): ComposeScreenshotResult {
-    var imageName: String? = null
     var screenshotError: ScreenshotError? = null
     var previewId: String? = null
     var methodFQN: String? = null
+    var imagePath: String? = null
     reader.beginObject()
     while (reader.hasNext()) {
         when (reader.nextName()) {
             PREVIEW_ID -> { previewId = reader.nextString() }
             METHOD_FQN -> { methodFQN = reader.nextString() }
-            IMAGE_NAME -> { imageName = reader.nextString() }
+            IMAGE_PATH -> { imagePath = reader.nextString() }
             SCREENSHOT_ERROR -> {
                 screenshotError = readScreenshotError(reader)
             }
@@ -353,7 +353,7 @@ private fun readComposeScreenshotResult(reader: JsonReader): ComposeScreenshotRe
     return ComposeScreenshotResult(
         previewId ?: throw IllegalArgumentException("Preview Id is missing"),
         methodFQN ?: throw IllegalArgumentException("Method FQN is missing"),
-        imageName ?: throw IllegalArgumentException("Image name missing"),
+        imagePath ?: throw IllegalArgumentException("Image path missing"),
         screenshotError
     )
 }
@@ -393,9 +393,7 @@ private fun writeComposeScreenshotResultToJson(
     writer.beginObject()
     writer.name(PREVIEW_ID).value(screenshotResult.previewId)
     writer.name(METHOD_FQN).value(screenshotResult.methodFQN)
-    screenshotResult.imageName?.let {
-        writer.name(IMAGE_NAME).value(it)
-    }
+    writer.name(IMAGE_PATH).value(screenshotResult.imagePath)
     screenshotResult.error?.let { screenshotError ->
         writer.name(SCREENSHOT_ERROR)
         writer.beginObject()

@@ -52,12 +52,13 @@ class PreviewScreenshotUpdateTaskTest {
         val referenceImageDir = tempDirRule.newFolder("references")
 
         val renderTaskOutputDir = tempDirRule.newFolder("rendered")
-        val renderTaskOutputPath = Path(renderTaskOutputDir.absolutePath + "/com/example/agptest/ExampleInstrumentedTest")
+        val imagePath = "com/example/agptest/ExampleInstrumentedTest"
+        val renderTaskOutputPath = Path(renderTaskOutputDir.absolutePath + "/" + imagePath)
         Files.createDirectories(renderTaskOutputPath)
         val resultsFile = tempDirRule.newFile("results.json")
-        val image1 = "preview_a45d2556_da39a3ee_0.png"
-        val image2 = "preview1_da39a3ee_4c0e9d96_0.png"
-        val image3 = "preview1_da39a3ee_4c0e9d96_1.png"
+        val image1 = "com/example/agptest/ExampleInstrumentedTest/preview_a45d2556_da39a3ee_0.png"
+        val image2 = "com/example/agptest/ExampleInstrumentedTest/preview1_da39a3ee_4c0e9d96_0.png"
+        val image3 = "com/example/agptest/ExampleInstrumentedTest/preview1_da39a3ee_4c0e9d96_1.png"
         val composeResults = listOf(
             ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", "com.example.agptest.ExampleInstrumentedTest.preview",
                 image1, null ),
@@ -67,9 +68,9 @@ class PreviewScreenshotUpdateTaskTest {
                 image3, null ))
         val result = ComposeRenderingResult(globalError = null, screenshotResults = composeResults)
         writeComposeRenderingResult(resultsFile.writer(), result)
-        Files.createFile(renderTaskOutputPath.resolve(image1))
-        Files.createFile(renderTaskOutputPath.resolve(image2))
-        Files.createFile(renderTaskOutputPath.resolve(image3))
+        Files.createFile(renderTaskOutputDir.toPath().resolve(image1))
+        Files.createFile(renderTaskOutputDir.toPath().resolve(image2))
+        Files.createFile(renderTaskOutputDir.toPath().resolve(image3))
         task.referenceImageDir.set(referenceImageDir)
         task.renderTaskOutputDir.set(renderTaskOutputDir)
         task.renderTaskResultFile.set(resultsFile)
@@ -81,7 +82,7 @@ class PreviewScreenshotUpdateTaskTest {
 
         task.run()
 
-        val referenceImages = File(referenceImageDir.absolutePath + "/com/example/agptest/ExampleInstrumentedTest")
+        val referenceImages = File(referenceImageDir.absolutePath + "/" + imagePath)
         assert(referenceImages.listFiles().isNotEmpty())
         assert(referenceImages.listFiles().size == 3)
     }
@@ -102,30 +103,31 @@ class PreviewScreenshotUpdateTaskTest {
         })
 
         task.run()
-        assert(referenceImageDir.listFiles().isEmpty())
+        referenceImageDir.listFiles()?.let { assert(it.isEmpty()) }
     }
 
     @Test
     fun testPreviewScreenshotUpdateWithErrors() {
         val referenceImageDir = tempDirRule.newFolder("references")
-        val referenceImageDirPath = Path(referenceImageDir.absolutePath + "/com/example/agptest/ExampleInstrumentedTest")
+        val imagePath = "com/example/agptest/ExampleInstrumentedTest"
+        val referenceImageDirPath = Path(referenceImageDir.absolutePath + "/" + imagePath)
         Files.createDirectories(referenceImageDirPath)
         val renderTaskOutputDir = tempDirRule.newFolder("rendered")
-        val renderTaskOutputPath = Path(renderTaskOutputDir.absolutePath + "/com/example/agptest/ExampleInstrumentedTest")
+        val renderTaskOutputPath = Path(renderTaskOutputDir.absolutePath + "/" + imagePath)
         Files.createDirectories(renderTaskOutputPath)
         val resultsFile = tempDirRule.newFile("results.json")
-        val image1 = "preview_a45d2556_da39a3ee_0.png"
-        val image2 = "preview1_da39a3ee_4c0e9d96_0.png"
-        val image1Ref = "preview_a45d2556_da39a3ee_0.png"
-        val image2Ref = "preview1_da39a3ee_4c0e9d96_0.png"
-        val composeRenderingResult = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", "com.example.agptest.ExampleInstrumentedTest.preview", image1, null ),
+        val image1 = "com/example/agptest/ExampleInstrumentedTest/preview_a45d2556_da39a3ee_0.png"
+        val image2 = "com/example/agptest/ExampleInstrumentedTest/preview1_da39a3ee_4c0e9d96_0.png"
+        val image1Ref = "com/example/agptest/ExampleInstrumentedTest/preview_a45d2556_da39a3ee_0.png"
+        val image2Ref = "com/example/agptest/ExampleInstrumentedTest/preview1_da39a3ee_4c0e9d96_0.png"
+        val composeRenderingResult = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", "com.example.agptest.ExampleInstrumentedTest.preview", image1,null ),
             ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_0", "com.example.agptest.ExampleInstrumentedTest.preview1", image2, null ),
             ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview1_da39a3ee_4c0e9d96_1", "com.example.agptest.ExampleInstrumentedTest.preview1","preview1_da39a3ee_4c0e9d96_1.png", ScreenshotError("ERROR", "MESSAGE", "STACK_TRACE", listOf(), listOf(), listOf())))
         writeComposeRenderingResult(resultsFile.writer(), ComposeRenderingResult(null, composeRenderingResult))
-        Files.createFile(renderTaskOutputPath.resolve(image1))
-        Files.createFile(renderTaskOutputPath.resolve(image2))
-        Files.createFile(referenceImageDirPath.resolve(image2Ref))
-        Files.createFile(referenceImageDirPath.resolve(image1Ref))
+        Files.createFile(renderTaskOutputDir.toPath().resolve(image1))
+        Files.createFile(renderTaskOutputDir.toPath().resolve(image2))
+        Files.createFile(referenceImageDir.toPath().resolve(image2Ref))
+        Files.createFile(referenceImageDir.toPath().resolve(image1Ref))
         task.referenceImageDir.set(referenceImageDir)
         task.renderTaskOutputDir.set(renderTaskOutputDir)
         task.renderTaskResultFile.set(resultsFile)
@@ -135,11 +137,12 @@ class PreviewScreenshotUpdateTaskTest {
             override fun getParameters(): Params = mock()
         })
         val composeScreenshot = composeRenderingResult[2]
+
         assertFailsWith<GradleException>("Cannot update reference images. Rendering failed for ${composeScreenshot.previewId}. Error: ${composeScreenshot.error!!.message}. Check ${resultsFile.absolutePath} for additional info") {
-        task.run()
+            task.run()
         }
 
-        val referenceImages = File(referenceImageDir.absolutePath + "/com/example/agptest/ExampleInstrumentedTest")
+        val referenceImages = File(referenceImageDir.absolutePath + "/" + imagePath)
         assert(referenceImages.listFiles().size == 2)
     }
 
@@ -148,9 +151,9 @@ class PreviewScreenshotUpdateTaskTest {
         val referenceImageDir = tempDirRule.newFolder("references")
         val renderTaskOutputDir = tempDirRule.newFolder("rendered")
         val resultsFile = tempDirRule.newFile("results.json")
-        val path1 = "com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0.png"
+        val imagePath = "com/example/agptest/com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0.png"
         val composeRenderingResult = listOf(ComposeScreenshotResult("com.example.agptest.ExampleInstrumentedTest.preview_a45d2556_da39a3ee_0", "com.example.agptest.ExampleInstrumentedTest.preview",
-            path1, ScreenshotError("SUCCESS", "Nothing to render in Preview. Cannot generate image", "", listOf(), listOf(), listOf())) )
+            imagePath, ScreenshotError("SUCCESS", "Nothing to render in Preview. Cannot generate image", "", listOf(), listOf(), listOf())) )
         writeComposeRenderingResult(resultsFile.writer(), ComposeRenderingResult(null, composeRenderingResult))
         task.referenceImageDir.set(referenceImageDir)
         task.renderTaskOutputDir.set(renderTaskOutputDir)
@@ -161,9 +164,9 @@ class PreviewScreenshotUpdateTaskTest {
             override fun getParameters(): Params = mock()
         })
         val composeScreenshot = composeRenderingResult[0]
-        assertFailsWith<GradleException>("Cannot update reference images. Rendering failed for ${composeScreenshot.imageName.substringBeforeLast(".")}. Error: ${composeScreenshot.error!!.message}. Check ${resultsFile.absolutePath} for additional info") {
+        assertFailsWith<GradleException>("Cannot update reference images. Rendering failed for ${composeScreenshot.imagePath.substringBeforeLast(".")}. Error: ${composeScreenshot.error!!.message}. Check ${resultsFile.absolutePath} for additional info") {
             task.run()
         }
-        assert(referenceImageDir.listFiles().isEmpty())
+        referenceImageDir.listFiles()?.let { assert(it.isEmpty()) }
     }
 }

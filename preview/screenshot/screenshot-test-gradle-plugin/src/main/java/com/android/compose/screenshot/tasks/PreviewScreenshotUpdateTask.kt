@@ -33,9 +33,9 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 import java.nio.file.Files
-import kotlin.io.path.Path
+import java.nio.file.Paths
+import kotlin.io.path.exists
 
 /**
  * Update reference images of a variant.
@@ -75,28 +75,24 @@ abstract class PreviewScreenshotUpdateTask : DefaultTask() {
     private fun verifyRender(results: List<ComposeScreenshotResult>) {
         if (results.isNotEmpty()) {
             for (result in results) {
-                if (!File(calculateImagePath(renderTaskOutputDir.get().asFile.absolutePath, result.methodFQN), result.imageName).exists())
-                    throw GradleException("Cannot update reference images. Rendering failed for ${result.imageName.substringBeforeLast(".")}. " +
+                if (!Paths.get(renderTaskOutputDir.get().asFile.absolutePath, result.imagePath).exists())
+                    throw GradleException("Cannot update reference images. Rendering failed for ${result.imagePath.substringBeforeLast(".")}. " +
                             "Error: ${result.error!!.message}. Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
             }
         }
     }
 
     private fun saveReferenceImage(composeScreenshot: ComposeScreenshotResult) {
-        val renderedFile = File(calculateImagePath(renderTaskOutputDir.get().asFile.absolutePath, composeScreenshot.methodFQN), composeScreenshot.imageName)
-        if (renderedFile.exists()) {
+        val renderedPath = Paths.get(renderTaskOutputDir.get().asFile.absolutePath, composeScreenshot.imagePath)
+        if (renderedPath.exists()) {
             if (composeScreenshot.error != null) {
-                logger.warn("Rendering preview ${composeScreenshot.imageName.substringBeforeLast(".")} encountered some problems: ${composeScreenshot.error!!.message}. " +
+                logger.warn("Rendering preview ${composeScreenshot.imagePath.substringBeforeLast(".")} encountered some problems: ${composeScreenshot.error!!.message}. " +
                         "Check ${renderTaskResultFile.get().asFile.absolutePath} for additional info")
             }
 
-            val referenceImagePath = Path(calculateImagePath(referenceImageDir.asFile.get().absolutePath, composeScreenshot.methodFQN))
-            Files.createDirectories(referenceImagePath)
-            FileUtils.copyFile(renderedFile, referenceImagePath.resolve(composeScreenshot.imageName).toFile())
+            val referenceImagePath = Paths.get(referenceImageDir.asFile.get().absolutePath, composeScreenshot.imagePath)
+            Files.createDirectories(referenceImagePath.parent)
+            FileUtils.copyFile(renderedPath.toFile(), referenceImagePath.toFile())
         }
-    }
-
-    private fun calculateImagePath(outputDirPath: String, methodFQN: String): String {
-        return outputDirPath + "/" + methodFQN.substringBeforeLast(".").replace(".", "/")
     }
 }

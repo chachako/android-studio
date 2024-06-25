@@ -242,12 +242,12 @@ class JsonSerializationTest {
                 {
                   "previewId": "previewId1",
                   "methodFQN": "methodFQN1",
-                  "imageName": "image1.png"
+                  "imagePath": "pkg/class/image1.png"
                 },
                 {
                   "previewId": "previewId2",
                   "methodFQN": "methodFQN2",
-                  "imageName": "image2.png",
+                  "imagePath": "pkg/class/image2.png",
                   "error": {
                       "status": "ERROR_RENDER_TASK",
                       "message": "Error message",
@@ -281,7 +281,7 @@ class JsonSerializationTest {
                       ],
                       "missingClasses": ["com.foo.Bar"]
                   },
-                  "imageName": "image3.png"
+                  "imagePath": "pkg/class/image3.png"
                 }
               ]
             }
@@ -292,8 +292,8 @@ class JsonSerializationTest {
         val expectedComposeRenderingResult = ComposeRenderingResult(
             null,
             listOf(
-                ComposeScreenshotResult("previewId1", "methodFQN1", "image1.png", null),
-                ComposeScreenshotResult("previewId2", "methodFQN2", "image2.png", ScreenshotError(
+                ComposeScreenshotResult("previewId1", "methodFQN1", "pkg/class/image1.png", null),
+                ComposeScreenshotResult("previewId2", "methodFQN2", "pkg/class/image2.png", ScreenshotError(
                     "ERROR_RENDER_TASK",
                     "Error message",
                     """
@@ -305,7 +305,7 @@ class JsonSerializationTest {
                     emptyList(),
                     emptyList(),
                 )),
-                ComposeScreenshotResult("previewId3", "methodFQN3", "image3.png", ScreenshotError(
+                ComposeScreenshotResult("previewId3", "methodFQN3", "pkg/class/image3.png", ScreenshotError(
                     "SUCCESS", "", "",
                     listOf(
                         RenderProblem("<html>Some error description</html>", null),
@@ -357,8 +357,8 @@ class JsonSerializationTest {
         val composeRenderingResult = ComposeRenderingResult(
             null,
             listOf(
-                ComposeScreenshotResult("previewId1", "methodFQN1", "image.png", null),
-                ComposeScreenshotResult("previewId2", "methodFQN2", "image2.png", ScreenshotError(
+                ComposeScreenshotResult("previewId1", "methodFQN1", "pkg/class/image.png", null),
+                ComposeScreenshotResult("previewId2", "methodFQN2", "pkg/class/image2.png", ScreenshotError(
                     "ERROR_RENDER_TASK",
                     "Error message",
                     """
@@ -370,7 +370,7 @@ class JsonSerializationTest {
                     emptyList(),
                     emptyList(),
                 )),
-                ComposeScreenshotResult("previewId3", "methodFQN3", "image3.png", ScreenshotError(
+                ComposeScreenshotResult("previewId3", "methodFQN3", "pkg/class/image3.png", ScreenshotError(
                     "SUCCESS", "", "",
                     listOf(
                         RenderProblem("<html>Some error description</html>", null),

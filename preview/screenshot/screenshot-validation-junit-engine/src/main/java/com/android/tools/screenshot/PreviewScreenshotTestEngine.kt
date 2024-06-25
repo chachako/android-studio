@@ -32,7 +32,9 @@ import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.support.discovery.EngineDiscoveryRequestResolver
 import java.nio.file.Files
+import java.nio.file.Paths
 import kotlin.io.path.Path
+import kotlin.io.path.exists
 
 class PreviewScreenshotTestEngine : TestEngine {
 
@@ -151,12 +153,11 @@ class PreviewScreenshotTestEngine : TestEngine {
         startTime: Long
     ): PreviewResult {
         // TODO(b/296430073) Support custom image difference threshold from DSL or task argument
-        var referencePath = Path(calculateImagePath(parameters.referenceImageDirPath, composeScreenshot.methodFQN)).resolve(composeScreenshot.imageName)
+        var referencePath = Path(parameters.referenceImageDirPath).resolve(composeScreenshot.imagePath)
         var referenceMessage: String? = null
-        val actualPath = Path(calculateImagePath(parameters.renderTaskOutputDir, composeScreenshot.methodFQN)).resolve(composeScreenshot.imageName)
-        val diffPathDirs = Path(calculateImagePath(parameters.diffImageDirPath, composeScreenshot.methodFQN))
-        Files.createDirectories(diffPathDirs)
-        var diffPath = diffPathDirs.resolve(composeScreenshot.imageName)
+        val actualPath = Path("${parameters.renderTaskOutputDir}").resolve(composeScreenshot.imagePath)
+        var diffPath = Paths.get(parameters.diffImageDirPath, composeScreenshot.imagePath)
+        Files.createDirectories(diffPath.parent)
         var diffMessage: String? = null
         var code = 0
         val threshold = parameters.threshold?.toFloat()
@@ -294,7 +295,7 @@ class PreviewScreenshotTestEngine : TestEngine {
                 // Method parameters can generate multiple screenshots from one preview,
                 // add the method parameters and the count indicated by the previewId
                 suffix += "_${currentComposePreview.methodParams}"
-                val paramIndex = screenshot.imageName.substringBeforeLast(".").substringAfterLast("_")
+                val paramIndex = screenshot.imagePath.substringBeforeLast(".").substringAfterLast("_")
                 suffix += "_$paramIndex"
             }
             val previewTestDescriptor = PreviewTestDescriptor(methodDescriptor, methodName, run, suffix)
@@ -305,9 +306,5 @@ class PreviewScreenshotTestEngine : TestEngine {
         }
         listener.executionFinished(methodDescriptor, TestExecutionResult.successful())
         return results
-    }
-
-    private fun calculateImagePath(outputDir: String?, methodFqn: String): String {
-        return outputDir + "/" + methodFqn.substringBeforeLast(".").replace(".", "/")
     }
 }

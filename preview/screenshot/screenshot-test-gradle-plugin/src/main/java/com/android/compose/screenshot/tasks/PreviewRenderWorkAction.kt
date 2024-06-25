@@ -25,10 +25,11 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.process.ExecOperations
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
-import java.io.File
+import java.nio.file.Paths
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.inject.Inject
+import kotlin.io.path.exists
 
 abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.RenderWorkActionParameters> {
     companion object {
@@ -70,8 +71,7 @@ abstract class PreviewRenderWorkAction: WorkAction<PreviewRenderWorkAction.Rende
 
         val renderingErrors =
             composeRenderingResult.screenshotResults.count {
-                val imagePath = "$outputFolder/${it.methodFQN.substringBeforeLast(".").replace(".", "/")}"
-                !File(imagePath, it.imageName).exists() || (it.error != null && it.error!!.status != "SUCCESS")
+                !Paths.get(outputFolder, it.imagePath).exists() || (it.error != null && it.error!!.status != "SUCCESS")
             }
         if (composeRenderingResult.globalError != null || renderingErrors > 0) {
             throw GradleException("Rendering failed for one or more previews. For more details, check ${resultFile.absolutePath}")
