@@ -25,7 +25,7 @@ internal class FakeProgressListener : BackupProgressListener {
 
   fun getSteps(): List<String> = steps
 
-  override suspend fun onStep(description: String) {
-    steps.add(description)
+  override suspend fun onStep(step: Int, totalSteps: Int, description: String) {
+    steps.add("$step/$totalSteps: $description")
   }
 }

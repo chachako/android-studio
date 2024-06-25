@@ -18,5 +18,5 @@ package com.android.backup
 
 /** A listener that reports progress of a backup/restore operation */
 fun interface BackupProgressListener {
-  suspend fun onStep(description: String)
+  suspend fun onStep(step: Int, totalSteps: Int, description: String)
 }

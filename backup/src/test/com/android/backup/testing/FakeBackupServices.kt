@@ -32,8 +32,8 @@ private const val RESTORE = "bmgr restore "
 private const val DELETE_FILES = "rm -rf "
 
 /** A fake [com.android.backup.BackupServices] */
-internal class FakeBackupServices(serialNumber: String) :
-  AbstractBackupServices(serialNumber, NoopLogger(), FakeProgressListener()) {
+internal class FakeBackupServices(serialNumber: String, totalSteps: Int) :
+  AbstractBackupServices(serialNumber, NoopLogger(), FakeProgressListener(), totalSteps) {
 
   var bmgrEnabled = false
   var testMode = 0

@@ -37,7 +37,10 @@ internal constructor(private val backupServices: BackupServices, private val pat
     serialNumber: String,
     progressListener: BackupProgressListener?,
     path: Path,
-  ) : this(BackupServicesImpl(adbSession, serialNumber, logger, progressListener), path)
+  ) : this(
+    BackupServicesImpl(adbSession, serialNumber, logger, progressListener, NUMBER_OF_STEPS),
+    path,
+  )
 
   suspend fun restore() {
     val (token, applicationId) = pushBackup()
@@ -45,11 +48,12 @@ internal constructor(private val backupServices: BackupServices, private val pat
       try {
         withSetup(TRANSPORT) {
           reportProgress("Restoring $applicationId")
-          executeCommand("bmgr restore $token $applicationId")
+          restore(token, applicationId)
         }
       } finally {
         deleteBackupDir()
       }
+      reportProgress("Done")
     }
   }
 
@@ -64,6 +68,7 @@ internal constructor(private val backupServices: BackupServices, private val pat
 
   private suspend fun pushBackup(): Metadata {
     with(backupServices) {
+      reportProgress("Pushing backup file")
       ZipFile(path.pathString).use { zip ->
         val token = zip.getRestoreToken()
         val applicationId = zip.getApplicationId()
@@ -80,6 +85,11 @@ internal constructor(private val backupServices: BackupServices, private val pat
     operator fun component1(): String = token
 
     operator fun component2(): String = applicationId
+  }
+
+  companion object {
+
+    const val NUMBER_OF_STEPS = 8
   }
 }
 

@@ -33,7 +33,7 @@ class RestoreHandlerTest {
 
   @get:Rule val temporaryFolder = TemporaryFolder()
 
-  private val backupServices = FakeBackupServices("serial")
+  private val backupServices = FakeBackupServices("serial", RestoreHandler.NUMBER_OF_STEPS)
 
   @Test
   fun restore(): Unit = runBlocking {
@@ -113,13 +113,16 @@ class RestoreHandlerTest {
 
     assertThat(backupServices.getProgress())
       .containsExactly(
-        "Checking if BMGR is enabled",
-        "Enabling BMGR",
-        "Enabling test mode",
-        "Setting backup transport",
-        "Restoring com.app",
-        "Disabling test mode",
-        "Disabling BMGR",
+        "1/8: Pushing backup file",
+        "2/8: Checking if BMGR is enabled",
+        "3/10: Enabling BMGR",
+        "4/10: Enabling test mode",
+        "5/10: Setting backup transport",
+        "6/10: Restoring com.app",
+        "7/10: Disabling test mode",
+        "8/10: Disabling BMGR",
+        "9/10: Deleting backup directory",
+        "10/10: Done",
       )
       .inOrder()
   }

@@ -27,13 +27,19 @@ abstract class AbstractBackupServices(
   protected val serialNumber: String,
   protected val logger: Logger,
   protected val progressListener: BackupProgressListener?,
+  private var totalSteps: Int,
 ) : BackupServices {
+
+  private var step = 0
 
   protected val deviceSelector = DeviceSelector.fromSerialNumber(serialNumber)
 
-  override suspend fun reportProgress(step: String) {
-    logger.info(step)
-    progressListener?.onStep(step)
+  override suspend fun reportProgress(description: String) {
+    logger.info(description)
+    if (step > totalSteps) {
+      totalSteps = step
+    }
+    progressListener?.onStep(++step, totalSteps, description)
   }
 
   override suspend fun withSetup(transport: String, block: suspend () -> Unit) {
@@ -41,6 +47,7 @@ abstract class AbstractBackupServices(
   }
 
   override suspend fun deleteBackupDir() {
+    reportProgress("Deleting backup directory")
     executeCommand("rm -rf $BACKUP_DIR")
   }
 
@@ -55,6 +62,7 @@ abstract class AbstractBackupServices(
     reportProgress("Checking if BMGR is enabled")
     val bmgrEnabled = isBmgrEnabled()
     if (!bmgrEnabled) {
+      totalSteps += 2
       reportProgress("Enabling BMGR")
       enableBmgr(true)
     }
@@ -82,6 +90,9 @@ abstract class AbstractBackupServices(
   private suspend fun withTransport(transport: String, block: suspend () -> Unit) {
     reportProgress("Setting backup transport")
     val oldTransport = setTransport(transport)
+    if (oldTransport != transport) {
+      totalSteps++
+    }
     try {
       block()
     } finally {

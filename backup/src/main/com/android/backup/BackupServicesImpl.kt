@@ -33,7 +33,8 @@ internal class BackupServicesImpl(
   serialNumber: String,
   logger: Logger,
   progressListener: BackupProgressListener?,
-) : AbstractBackupServices(serialNumber, logger, progressListener) {
+  totalSteps: Int,
+) : AbstractBackupServices(serialNumber, logger, progressListener, totalSteps) {
 
   override suspend fun executeCommand(command: String): String {
     val output =

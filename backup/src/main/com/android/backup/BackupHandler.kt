@@ -43,7 +43,7 @@ internal constructor(
     path: Path,
     applicationId: String,
   ) : this(
-    BackupServicesImpl(adbSession, serialNumber, logger, progressListener),
+    BackupServicesImpl(adbSession, serialNumber, logger, progressListener, NUMBER_OF_STEPS),
     path,
     applicationId,
   )
@@ -95,5 +95,9 @@ internal constructor(
     override fun close() {
       // Do not close
     }
+  }
+
+  companion object {
+    const val NUMBER_OF_STEPS = 10
   }
 }
