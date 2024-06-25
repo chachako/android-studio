@@ -1074,6 +1074,72 @@ abstract class ViewLayoutInspectorTestBase {
     }
 
     @Test
+    fun textPropertyCaptured() = createViewInspector { viewInspector ->
+        val eventQueue = ArrayBlockingQueue<ByteArray>(10)
+        inspectorRule.connection.eventListeners.add { bytes ->
+            eventQueue.add(bytes)
+        }
+
+        val packageName = "view.inspector.test"
+        val resources = createResources(packageName)
+        val context = Context(packageName, resources)
+        val mainScreen = ViewGroup(context).apply {
+            setAttachInfo(View.AttachInfo())
+            width = 400
+            height = 800
+            addView(TextView(context, null))
+            addView(TextView(context, "Placeholder Text"))
+            addView(AppCompatButton(context, "Button", 0xFF0000, 0x00FF88))
+        }
+        WindowManagerGlobal.getInstance().rootViews.addAll(listOf(mainScreen))
+
+        val startFetchCommand = Command.newBuilder().apply {
+            startFetchCommandBuilder.apply {
+                continuous = true
+            }
+        }.build()
+        val enableBitmapScreenshotCommand = Command.newBuilder().apply {
+            enableBitmapScreenshotCommandBuilder.apply {
+                enable = true
+            }
+        }.build()
+        viewInspector.onReceiveCommand(
+            startFetchCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
+        viewInspector.onReceiveCommand(
+            enableBitmapScreenshotCommand.toByteArray(),
+            inspectorRule.commandCallback
+        )
+
+        ThreadUtils.runOnMainThread { }.get() // Wait for startCommand to finish initializing
+
+        val fakeBitmapHeader = byteArrayOf(1, 2, 3) // trailed by 0s
+
+        mainScreen.viewRootImpl = ViewRootImpl()
+        mainScreen.viewRootImpl!!.mSurface = Surface()
+        mainScreen.viewRootImpl!!.mSurface.bitmapBytes = fakeBitmapHeader
+        mainScreen.forcePictureCapture(Picture(byteArrayOf(1)))
+
+        checkNonProgressEvent(eventQueue) { event ->
+            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.ROOTS_EVENT)
+        }
+        val check = { event: Event ->
+            assertThat(event.specializedCase).isEqualTo(Event.SpecializedCase.LAYOUT_EVENT)
+            val strings = StringTable.fromStringEntries(event.layoutEvent.stringsList)
+            val root = event.layoutEvent.rootView
+            assertThat(root.getChildrenCount()).isEqualTo(3)
+            val text1 = root.getChildren(0)
+            val text2 = root.getChildren(1)
+            val button = root.getChildren(2)
+            assertThat(strings[text1.textValue]).isNull()
+            assertThat(strings[text2.textValue]).isEqualTo("Placeholder Text")
+            assertThat(strings[button.textValue]).isEqualTo("Button")
+        }
+        checkNonProgressEvent(eventQueue, check)
+    }
+
+    @Test
     fun correctBitmapTypesCaptured() = createViewInspector { viewInspector ->
         val eventQueue = ArrayBlockingQueue<ByteArray>(5)
         inspectorRule.connection.eventListeners.add { bytes ->

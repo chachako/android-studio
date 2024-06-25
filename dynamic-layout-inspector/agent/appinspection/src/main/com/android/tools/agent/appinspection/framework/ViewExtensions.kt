@@ -38,7 +38,7 @@ fun ViewGroup.getChildren(): List<View> {
  */
 fun View.getTextValue(): String? {
     if (this !is TextView) return null
-    return text.toString()
+    return text?.toString()
 }
 
 /**
