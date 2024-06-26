@@ -24,7 +24,7 @@ import com.android.build.gradle.integration.common.fixture.model.normalizeVersio
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.options.Option
 import com.android.builder.model.v2.ide.SyncIssue
-import com.android.builder.model.v2.models.ClasspathParameterConfig
+import com.android.builder.model.v2.models.ModelBuilderParameter
 import com.google.common.collect.Sets
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
@@ -112,7 +112,7 @@ class ModelBuilderV2 internal constructor(
      */
     fun fetchModels(
         variantName: String? = null,
-        classpathParameterConfig: ClasspathParameterConfig = ClasspathParameterConfig.ALL,
+        parameterMutator: (ModelBuilderParameter) -> Unit = { it.buildAllRuntimeClasspaths() },
         nativeParams: NativeModuleParams? = null
     ): FetchResult<ModelContainerV2> {
         val container =
@@ -120,7 +120,7 @@ class ModelBuilderV2 internal constructor(
                     buildModelV2(
                         GetAndroidModelV2Action(
                             variantName,
-                            classpathParameterConfig,
+                            parameterMutator,
                             nativeParams
                         )
                     )
@@ -133,13 +133,13 @@ class ModelBuilderV2 internal constructor(
     }
 
     /** Java interop friendly signature, as default parameters are not respected. */
-    fun fetchModels() = fetchModels(null, ClasspathParameterConfig.ALL, null)
+    fun fetchModels() = fetchModels(null, parameterMutator = { it.buildAllRuntimeClasspaths() }, null)
 
     /** Java interop friendly signature, as default parameters are not respected. */
     fun fetchModels(
         variantName: String?,
         nativeParams: NativeModuleParams?
-    ) = fetchModels(variantName, ClasspathParameterConfig.ALL, nativeParams)
+    ) = fetchModels(variantName, parameterMutator = { it.buildAllRuntimeClasspaths() }, nativeParams)
 
     /**
      * Fetches the [AndroidProject], [VariantDependencies] and [ProjectSyncIssues] for each project
@@ -496,4 +496,14 @@ fun File.relativeToOrNull(
     }
 
     return null
+}
+
+
+fun ModelBuilderParameter.buildAllRuntimeClasspaths() {
+    dontBuildRuntimeClasspath = false
+    dontBuildUnitTestRuntimeClasspath = false
+    dontBuildScreenshotTestRuntimeClasspath = false
+    dontBuildAndroidTestRuntimeClasspath = false
+    dontBuildTestFixtureRuntimeClasspath = false
+    dontBuildHostTestRuntimeClasspath = mapOf("UnitTest" to false, "ScreenshotTest" to false)
 }

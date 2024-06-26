@@ -19,7 +19,7 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.GradleTestProject.Companion.builder
 import com.android.build.gradle.integration.common.fixture.model.ModelComparator
 import com.android.builder.model.v2.ide.SyncIssue
-import com.android.builder.model.v2.models.ClasspathParameterConfig
+import com.android.builder.model.v2.models.ModelBuilderParameter
 import org.junit.Rule
 import org.junit.Test
 
@@ -45,7 +45,7 @@ class BasicModelV2Test: ModelComparator() {
     fun `test models no java runtime classpath`() {
         val result = project.modelV2()
             .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
-            .fetchModels(variantName = "debug", classpathParameterConfig = ClasspathParameterConfig.ANDROID_TEST_ONLY)
+            .fetchModels(variantName = "debug", parameterMutator = { it.buildOnlyTestRuntimeClasspaths(buildUnitTestsRuntime = false, buildScreenshotTestsRuntime = false) })
 
         with(result).compareBasicAndroidProject(goldenFile = "basicAndroidProject")
         with(result).compareAndroidProject(goldenFile = "testProject")
@@ -54,14 +54,27 @@ class BasicModelV2Test: ModelComparator() {
     }
 
     @Test
-    fun `test models no runtime classpath`() {
+    fun `test models no main runtime classpath, but screenshot and unit tests are present`() {
         val result = project.modelV2()
             .ignoreSyncIssues(SyncIssue.SEVERITY_WARNING)
-            .fetchModels(variantName = "debug", classpathParameterConfig = ClasspathParameterConfig.NONE)
+            .fetchModels(variantName = "debug", parameterMutator = { it.buildOnlyTestRuntimeClasspaths(buildUnitTestsRuntime = true, buildScreenshotTestsRuntime = true) })
 
         with(result).compareBasicAndroidProject(goldenFile = "basicAndroidProject")
         with(result).compareAndroidProject(goldenFile = "testProject")
         with(result).compareAndroidDsl(goldenFile = "AndroidDsl")
-        with(result).compareVariantDependencies(goldenFile = "testDepNoRuntime")
+        with(result).compareVariantDependencies(goldenFile = "testDepAndroidRuntimeWithScreenShotAndUnit")
     }
+}
+
+
+fun ModelBuilderParameter.buildOnlyTestRuntimeClasspaths(
+    buildUnitTestsRuntime: Boolean,
+    buildScreenshotTestsRuntime: Boolean
+) {
+    dontBuildRuntimeClasspath = true
+    dontBuildUnitTestRuntimeClasspath = !buildUnitTestsRuntime
+    dontBuildScreenshotTestRuntimeClasspath = !buildScreenshotTestsRuntime
+    dontBuildAndroidTestRuntimeClasspath = false
+    dontBuildTestFixtureRuntimeClasspath = true
+    dontBuildHostTestRuntimeClasspath = mapOf("UnitTest" to dontBuildUnitTestRuntimeClasspath, "ScreenshotTest" to dontBuildScreenshotTestRuntimeClasspath)
 }

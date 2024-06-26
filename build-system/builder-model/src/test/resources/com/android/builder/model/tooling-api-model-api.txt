@@ -4,7 +4,7 @@ ATTENTION REVIEWER: If this needs to be changed, please make sure changes
 below are backwards compatible.
 -------------------------------------------------------------------------
 Sha256 of below classes:
-2a1c300ed85649332655a8811b142564b8321f020ef4df169795038385a80cba
+72c98a8f671bd21885c6435972db221005aa0f1bae818de72fd1cf18de0655c2
 -------------------------------------------------------------------------
 com.android.builder.model.AaptOptions
 com.android.builder.model.AaptOptions$Namespacing extends java.lang.Enum
@@ -845,11 +845,6 @@ com.android.builder.model.v2.models.BasicAndroidProject.getPath: java.lang.Strin
 com.android.builder.model.v2.models.BasicAndroidProject.getProductFlavorSourceSets: java.util.Collection<com.android.builder.model.v2.ide.SourceSetContainer> ()
 com.android.builder.model.v2.models.BasicAndroidProject.getProjectType: com.android.builder.model.v2.ide.ProjectType ()
 com.android.builder.model.v2.models.BasicAndroidProject.getVariants: java.util.Collection<com.android.builder.model.v2.ide.BasicVariant> ()
-com.android.builder.model.v2.models.ClasspathParameterConfig extends java.lang.Enum
-com.android.builder.model.v2.models.ClasspathParameterConfig.applyTo: void (com.android.builder.model.v2.models.ModelBuilderParameter)
-com.android.builder.model.v2.models.ClasspathParameterConfig.getEntries: kotlin.enums.EnumEntries<com.android.builder.model.v2.models.ClasspathParameterConfig> ()
-com.android.builder.model.v2.models.ClasspathParameterConfig.valueOf: com.android.builder.model.v2.models.ClasspathParameterConfig (java.lang.String)
-com.android.builder.model.v2.models.ClasspathParameterConfig.values: com.android.builder.model.v2.models.ClasspathParameterConfig[] ()
 com.android.builder.model.v2.models.ModelBuilderParameter
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildAndroidTestRuntimeClasspath: boolean ()
 com.android.builder.model.v2.models.ModelBuilderParameter.getDontBuildHostTestRuntimeClasspath: java.util.Map<java.lang.String, java.lang.Boolean> ()
