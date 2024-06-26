@@ -2,8 +2,6 @@ load("//tools/base/bazel/avd:avd.bzl", "avd", "DEFAULT_AVD_IMAGE")
 
 # This test demonstrates running an emulator on RBE and using it for a Java
 # test.
-# Note the attribute: tags = ["no_mac", "no_windows"]. This is because emulator
-# tests only run on Linux.
 avd(
     name = "emulator_test_device",
     image = select({
