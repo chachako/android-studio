@@ -17,6 +17,8 @@
 package com.android.backup
 
 import com.android.adblib.AdbSession
+import com.android.backup.BackupResult.Error
+import com.android.backup.BackupResult.Success
 import com.android.backup.BackupServices.Companion.BACKUP_DIR
 import com.android.backup.BackupServices.Companion.BACKUP_METADATA_FILES
 import com.android.tools.environment.Logger
@@ -24,12 +26,19 @@ import java.math.BigInteger
 import java.nio.file.Path
 import java.util.zip.ZipFile
 import kotlin.io.path.pathString
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 
 private const val TRANSPORT = "com.google.android.gms/.backup.BackupTransportService"
 
 /** Restores an app on a device */
 class RestoreHandler
-internal constructor(private val backupServices: BackupServices, private val path: Path) {
+internal constructor(
+  private val scope: CoroutineScope,
+  private val backupServices: BackupServices,
+  private val path: Path,
+) {
 
   constructor(
     adbSession: AdbSession,
@@ -38,22 +47,32 @@ internal constructor(private val backupServices: BackupServices, private val pat
     progressListener: BackupProgressListener?,
     path: Path,
   ) : this(
+    adbSession.scope,
     BackupServicesImpl(adbSession, serialNumber, logger, progressListener, NUMBER_OF_STEPS),
     path,
   )
 
-  suspend fun restore() {
-    val (token, applicationId) = pushBackup()
-    with(backupServices) {
-      try {
-        withSetup(TRANSPORT) {
-          reportProgress("Restoring $applicationId")
-          restore(token, applicationId)
+  fun restoreAsync(): Deferred<BackupResult> {
+    return scope.async { restore() }
+  }
+
+  suspend fun restore(): BackupResult {
+    return try {
+      val (token, applicationId) = pushBackup()
+      with(backupServices) {
+        try {
+          withSetup(TRANSPORT) {
+            reportProgress("Restoring $applicationId")
+            restore(token, applicationId)
+          }
+        } finally {
+          deleteBackupDir()
         }
-      } finally {
-        deleteBackupDir()
+        reportProgress("Done")
+        Success
       }
-      reportProgress("Done")
+    } catch (e: Throwable) {
+      Error(e)
     }
   }
 

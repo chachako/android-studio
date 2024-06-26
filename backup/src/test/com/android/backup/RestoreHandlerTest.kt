@@ -16,6 +16,7 @@
 
 package com.android.backup
 
+import com.android.backup.BackupResult.Success
 import com.android.backup.testing.FakeBackupServices
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Path
@@ -38,10 +39,11 @@ class RestoreHandlerTest {
   @Test
   fun restore(): Unit = runBlocking {
     val backupFile = createBackupFile("com.app", "11223344556677889900")
-    val handler = RestoreHandler(backupServices, backupFile)
+    val handler = RestoreHandler(this, backupServices, backupFile)
 
-    handler.restore()
+    val deferred = handler.restoreAsync()
 
+    assertThat(deferred.await()).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
         "bmgr enabled",
@@ -61,11 +63,12 @@ class RestoreHandlerTest {
   @Test
   fun restore_bmgrAlreadyEnabled(): Unit = runBlocking {
     val backupFile = createBackupFile("com.app", "11223344556677889900")
-    val handler = RestoreHandler(backupServices, backupFile)
+    val handler = RestoreHandler(this, backupServices, backupFile)
     backupServices.bmgrEnabled = true
 
-    handler.restore()
+    val deferred = handler.restoreAsync()
 
+    assertThat(deferred.await()).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
         "bmgr enabled",
@@ -82,11 +85,12 @@ class RestoreHandlerTest {
   @Test
   fun restore_transportNotSet(): Unit = runBlocking {
     val backupFile = createBackupFile("com.app", "11223344556677889900")
-    val handler = RestoreHandler(backupServices, backupFile)
+    val handler = RestoreHandler(this, backupServices, backupFile)
     backupServices.activeTransport = "com.android.localtransport/.LocalTransport"
 
-    handler.restore()
+    val deferred = handler.restoreAsync()
 
+    assertThat(deferred.await()).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
         "bmgr enabled",
@@ -107,10 +111,11 @@ class RestoreHandlerTest {
   @Test
   fun restore_assertProgress(): Unit = runBlocking {
     val backupFile = createBackupFile("com.app", "11223344556677889900")
-    val handler = RestoreHandler(backupServices, backupFile)
+    val handler = RestoreHandler(this, backupServices, backupFile)
 
-    handler.restore()
+    val deferred = handler.restoreAsync()
 
+    assertThat(deferred.await()).isEqualTo(Success)
     assertThat(backupServices.getProgress())
       .containsExactly(
         "1/8: Pushing backup file",

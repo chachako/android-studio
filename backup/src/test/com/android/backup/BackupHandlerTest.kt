@@ -16,6 +16,7 @@
 
 package com.android.backup
 
+import com.android.backup.BackupResult.Success
 import com.android.backup.testing.FakeBackupServices
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Path
@@ -37,10 +38,11 @@ class BackupHandlerTest {
   @Test
   fun backup(): Unit = runBlocking {
     val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
-    val handler = BackupHandler(backupServices, backupFile, "com.app")
+    val handler = BackupHandler(this, backupServices, backupFile, "com.app")
 
-    handler.backup()
+    val deferred = handler.backupAsync()
 
+    assertThat(deferred.await()).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
         "bmgr enabled",
@@ -70,11 +72,12 @@ class BackupHandlerTest {
   @Test
   fun backup_bmgrAlreadyEnabled(): Unit = runBlocking {
     val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
-    val handler = BackupHandler(backupServices, backupFile, "com.app")
+    val handler = BackupHandler(this, backupServices, backupFile, "com.app")
     backupServices.bmgrEnabled = true
 
-    handler.backup()
+    val deferred = handler.backupAsync()
 
+    assertThat(deferred.await()).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
         "bmgr enabled",
@@ -94,11 +97,12 @@ class BackupHandlerTest {
   @Test
   fun backup_transportAlreadySelected(): Unit = runBlocking {
     val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
-    val handler = BackupHandler(backupServices, backupFile, "com.app")
+    val handler = BackupHandler(this, backupServices, backupFile, "com.app")
     backupServices.activeTransport = "com.google.android.gms/.backup.migrate.service.D2dTransport"
 
-    handler.backup()
+    val deferred = handler.backupAsync()
 
+    assertThat(deferred.await()).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
         "bmgr enabled",
@@ -118,9 +122,9 @@ class BackupHandlerTest {
   @Test
   fun backup_assertProgress(): Unit = runBlocking {
     val backupFile = Path.of(temporaryFolder.root.path, "file.backup")
-    val handler = BackupHandler(backupServices, backupFile, "com.app")
+    val handler = BackupHandler(this, backupServices, backupFile, "com.app")
 
-    handler.backup()
+    handler.backupAsync().await()
 
     assertThat(backupServices.getProgress())
       .containsExactly(

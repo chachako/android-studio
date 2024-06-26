@@ -16,6 +16,8 @@
 package com.android.backup
 
 import com.android.adblib.AdbSession
+import com.android.backup.BackupResult.Error
+import com.android.backup.BackupResult.Success
 import com.android.backup.BackupServices.Companion.BACKUP_DIR
 import com.android.backup.BackupServices.Companion.BACKUP_METADATA_FILES
 import com.android.tools.environment.Logger
@@ -24,12 +26,16 @@ import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.outputStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 
 private const val TRANSPORT = "com.google.android.gms/.backup.migrate.service.D2dTransport"
 
 /** Performs an app backup on a device */
 class BackupHandler
 internal constructor(
+  private val scope: CoroutineScope,
   private val backupServices: BackupServices,
   private val path: Path,
   private val applicationId: String,
@@ -43,27 +49,37 @@ internal constructor(
     path: Path,
     applicationId: String,
   ) : this(
+    adbSession.scope,
     BackupServicesImpl(adbSession, serialNumber, logger, progressListener, NUMBER_OF_STEPS),
     path,
     applicationId,
   )
 
-  suspend fun backup() {
-    with(backupServices) {
-      withSetup(TRANSPORT) {
-        reportProgress("Initializing backup transport")
-        initializeTransport(TRANSPORT)
+  fun backupAsync(): Deferred<BackupResult> {
+    return scope.async { backup() }
+  }
 
-        reportProgress("Running backup")
-        doBackup()
+  suspend fun backup(): BackupResult {
+    return try {
+      with(backupServices) {
+        withSetup(TRANSPORT) {
+          reportProgress("Initializing backup transport")
+          initializeTransport(TRANSPORT)
 
-        reportProgress("Fetching backup")
-        pullBackup()
+          reportProgress("Running backup")
+          doBackup()
 
-        reportProgress("Cleaning up")
-        deleteBackupDir()
+          reportProgress("Fetching backup")
+          pullBackup()
+
+          reportProgress("Cleaning up")
+          deleteBackupDir()
+        }
+        reportProgress("Done")
       }
-      reportProgress("Done")
+      Success
+    } catch (e: Throwable) {
+      Error(e)
     }
   }
 
