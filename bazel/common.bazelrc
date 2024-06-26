@@ -19,37 +19,37 @@ build --nobuild_runfile_links
 build --define=always_true=true
 
 # Enforces UTF-8 encoding in bazel tests.
-test --test_env='LC_ALL=en_US.UTF-8'
-test --jvmopt='-Dsun.jnu.encoding=UTF-8'
-test --jvmopt='-Dfile.encoding=UTF-8'
-test --jvmopt='-Xmx4G'
-test --jvmopt='-XX:+UseG1GC'
-test --jvmopt='-XX:+ErrorFileToStderr'
-test --verbose_failures
+build --test_env='LC_ALL=en_US.UTF-8'
+build --jvmopt='-Dsun.jnu.encoding=UTF-8'
+build --jvmopt='-Dfile.encoding=UTF-8'
+build --jvmopt='-Xmx4G'
+build --jvmopt='-XX:+UseG1GC'
+build --jvmopt='-XX:+ErrorFileToStderr'
+build --verbose_failures
 
 # TODO(b/242203555) cleanup opens/exports that was added for JDK17 migration
-test --jvmopt='--add-opens=java.base/java.io=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.base/java.lang=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.base/java.nio.charset=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.base/java.util=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.base/java.util.concurrent=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.desktop/java.awt=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.desktop/java.awt.event=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.desktop/javax.swing=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.desktop/javax.swing.text=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.desktop/javax.swing.text.html=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.desktop/sun.awt=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.desktop/sun.font=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.base/java.time=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.base/java.lang.ref=ALL-UNNAMED'
-test --jvmopt='--add-opens=java.base/sun.nio.fs=ALL-UNNAMED'
-test --jvmopt='--add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.base/java.io=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.base/java.lang=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.base/java.nio.charset=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.base/java.util=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.base/java.util.concurrent=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.desktop/java.awt=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.desktop/java.awt.event=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.desktop/javax.swing=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.desktop/javax.swing.text=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.desktop/javax.swing.text.html=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.desktop/sun.awt=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.desktop/sun.font=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.base/java.time=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.base/java.lang.ref=ALL-UNNAMED'
+build --jvmopt='--add-opens=java.base/sun.nio.fs=ALL-UNNAMED'
+build --jvmopt='--add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED'
 
 # TODO(b/270757509) remove after tests switched to flags from product-info.json (//tools/adt/idea/studio:default_user_jvm_args)
-test --jvmopt='-XX:CompileCommand=quiet -XX:CompileCommand=exclude,com/intellij/openapi/vfs/impl/FilePartNodeRoot,trieDescend'
+build --jvmopt='-XX:CompileCommand=quiet -XX:CompileCommand=exclude,com/intellij/openapi/vfs/impl/FilePartNodeRoot,trieDescend'
 
 build --jvmopt='--add-exports java.base/jdk.internal.vm=ALL-UNNAMED'
 build --jvmopt='--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED'
@@ -60,7 +60,7 @@ build --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED'
 build --jvmopt='--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED'
 
 # TODO(b/26372639): Remove this after updating to IntelliJ 2024.1.
-test --jvmopt='-Dstudio.internal.enable.new.kotlin.code.style=true'
+build --jvmopt='-Dstudio.internal.enable.new.kotlin.code.style=true'
 
 # JetBrainsRuntime version to bundle into Android Studio
 # and java runtime for running tests
