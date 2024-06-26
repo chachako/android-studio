@@ -319,7 +319,10 @@ def _maven_repository_impl(ctx):
 
     ctx.actions.write(ctx.outputs.manifest, manifest_content)
     build_manifest = create_option_file(ctx, ctx.label.name + ".build.manifest", build_manifest_content)
-    _zipper(ctx.actions, ctx.executable._zipper, "Creating repo zip", build_manifest, files, ctx.outputs.zip)
+
+    zip_manifest_content = "".join([ctx.attr.zip_prefix + k + "=" + v.path + "\n" for k, v in rel_paths])
+    zip_manifest = create_option_file(ctx, ctx.label.name + ".zip.manifest", zip_manifest_content)
+    _zipper(ctx.actions, ctx.executable._zipper, "Creating repo zip", zip_manifest, files, ctx.outputs.zip)
 
     runfiles = ctx.runfiles(files = [ctx.outputs.manifest] + files)
     return [
@@ -354,6 +357,7 @@ maven_repository = rule(
         "artifacts": attr.label_list(providers = [MavenInfo]),
         "include_transitive_deps": attr.bool(default = True),
         "allow_duplicates": attr.bool(default = True),
+        "zip_prefix": attr.string(default = ""),
         "_zipper": attr.label(
             default = Label("@bazel_tools//tools/zip:zipper"),
             cfg = "exec",
