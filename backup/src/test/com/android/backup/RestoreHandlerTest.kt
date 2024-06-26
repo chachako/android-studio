@@ -17,14 +17,17 @@
 package com.android.backup
 
 import com.android.backup.BackupResult.Success
+import com.android.backup.RestoreHandler.Companion.validateBackupFile
 import com.android.backup.testing.FakeBackupServices
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Path
 import java.util.zip.ZipEntry
+import java.util.zip.ZipException
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.createFile
 import kotlin.io.path.outputStream
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -132,16 +135,80 @@ class RestoreHandlerTest {
       .inOrder()
   }
 
+  @Test
+  fun validateBackupFile() {
+    validateBackupFile(createBackupFile("com.app", "11223344556677889900"))
+  }
+
+  @Test
+  fun validateBackupFile_noApplicationId() {
+    assertThrows(BackupException::class.java) {
+      validateBackupFile(
+        createZipFile(FileInfo("@pm@", ""), FileInfo("restore_token_file", "11223344556677889900"))
+      )
+    }
+  }
+
+  @Test
+  fun validateBackupFile_invalidToken() {
+    assertThrows(BackupException::class.java) {
+      validateBackupFile(createBackupFile("com.app", "foobar"))
+    }
+  }
+
+  @Test
+  fun validateBackupFile_notZipFile() {
+    assertThrows(ZipException::class.java) {
+      val path = Path.of(temporaryFolder.root.path, "file.backup").createFile()
+      validateBackupFile(path)
+    }
+  }
+
+  @Test
+  fun validateBackupFile_unexpectedFile() {
+    assertThrows(BackupException::class.java) {
+      validateBackupFile(
+        createZipFile(
+          FileInfo("@pm@", ""),
+          FileInfo("restore_token_file", "11223344556677889900"),
+          FileInfo("com.app", ""),
+          FileInfo("extra file", ""),
+        )
+      )
+    }
+  }
+
+  @Test
+  fun validateBackupFile_missingPmFile() {
+    assertThrows(BackupException::class.java) {
+      validateBackupFile(
+        createZipFile(
+          FileInfo("restore_token_file", "11223344556677889900"),
+          FileInfo("com.app", ""),
+        )
+      )
+    }
+  }
+
   @Suppress("SameParameterValue")
-  private fun createBackupFile(applicationId: String, token: String): Path {
+  private fun createBackupFile(applicationId: String, token: String) =
+    createZipFile(
+      FileInfo("@pm@", ""),
+      FileInfo(applicationId, ""),
+      FileInfo("restore_token_file", token),
+    )
+
+  @Suppress("SameParameterValue")
+  private fun createZipFile(vararg files: FileInfo): Path {
     val path = Path.of(temporaryFolder.root.path, "file.backup")
-    path.createFile()
     ZipOutputStream(path.outputStream()).use { zip ->
-      zip.putNextEntry(ZipEntry("@pm@"))
-      zip.putNextEntry(ZipEntry(applicationId))
-      zip.putNextEntry(ZipEntry("restore_token_file"))
-      zip.write(token.toByteArray())
+      files.forEach {
+        zip.putNextEntry(ZipEntry(it.name))
+        zip.write(it.contents.toByteArray())
+      }
     }
     return path
   }
+
+  private class FileInfo(val name: String, val contents: String)
 }

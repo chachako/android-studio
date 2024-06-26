@@ -109,11 +109,42 @@ internal constructor(
   companion object {
 
     const val NUMBER_OF_STEPS = 8
+
+    /**
+     * Verifies a backup file is valid and returns the application id of the associated app
+     *
+     * @param backupFile The path of a backup file to validate
+     * @return The application id of the associated app
+     * @throws Exception `backupFile` is not valid
+     */
+    fun validateBackupFile(backupFile: Path): String {
+      ZipFile(backupFile.pathString).use { zip ->
+        val applicationId = zip.getApplicationId()
+        zip.getRestoreToken()
+        val filenames = zip.entries().asSequence().mapTo(mutableSetOf()) { it.name }
+        if (filenames != BACKUP_METADATA_FILES + applicationId) {
+          throw BackupException(
+            "File is not a valid backup file: ${backupFile.pathString} ($filenames)"
+          )
+        }
+        return applicationId
+      }
+    }
   }
 }
 
-private fun ZipFile.getRestoreToken() =
-  BigInteger(getInputStream(getEntry("restore_token_file")).reader().readText()).toString(16)
+private fun ZipFile.getRestoreToken(): String {
+  return try {
+    BigInteger(getInputStream(getEntry("restore_token_file")).reader().readText()).toString(16)
+  } catch (e: Exception) {
+    throw BackupException("Backup file does not contain a valid token: $name", e)
+  }
+}
 
-private fun ZipFile.getApplicationId() =
-  entries().asSequence().map { it.name }.first { it !in BACKUP_METADATA_FILES }
+private fun ZipFile.getApplicationId(): String {
+  return try {
+    entries().asSequence().map { it.name }.first { it !in BACKUP_METADATA_FILES }
+  } catch (e: Exception) {
+    throw BackupException("Backup file does not contain an application file: $name", e)
+  }
+}
