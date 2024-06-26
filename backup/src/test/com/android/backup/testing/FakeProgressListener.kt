@@ -17,6 +17,7 @@
 package com.android.backup.testing
 
 import com.android.backup.BackupProgressListener
+import com.android.backup.BackupProgressListener.Step
 
 /** A fake [BackupProgressListener] */
 internal class FakeProgressListener : BackupProgressListener {
@@ -25,7 +26,7 @@ internal class FakeProgressListener : BackupProgressListener {
 
   fun getSteps(): List<String> = steps
 
-  override suspend fun onStep(step: Int, totalSteps: Int, description: String) {
-    steps.add("$step/$totalSteps: $description")
+  override suspend fun onStep(step: Step) {
+    steps.add(step.toString())
   }
 }

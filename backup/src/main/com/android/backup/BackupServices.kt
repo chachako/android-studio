@@ -22,7 +22,7 @@ import java.io.OutputStream
 internal interface BackupServices {
 
   /** Report progress of backup/restore */
-  suspend fun reportProgress(description: String)
+  suspend fun reportProgress(text: String)
 
   /**
    * Execute a block of code after setting up the device for a backup/restore

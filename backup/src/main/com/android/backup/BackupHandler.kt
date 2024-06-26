@@ -26,16 +26,12 @@ import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.io.path.outputStream
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
 
 private const val TRANSPORT = "com.google.android.gms/.backup.migrate.service.D2dTransport"
 
 /** Performs an app backup on a device */
 class BackupHandler
 internal constructor(
-  private val scope: CoroutineScope,
   private val backupServices: BackupServices,
   private val path: Path,
   private val applicationId: String,
@@ -49,15 +45,10 @@ internal constructor(
     path: Path,
     applicationId: String,
   ) : this(
-    adbSession.scope,
     BackupServicesImpl(adbSession, serialNumber, logger, progressListener, NUMBER_OF_STEPS),
     path,
     applicationId,
   )
-
-  fun backupAsync(): Deferred<BackupResult> {
-    return scope.async { backup() }
-  }
 
   suspend fun backup(): BackupResult {
     return try {

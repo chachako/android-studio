@@ -18,5 +18,11 @@ package com.android.backup
 
 /** A listener that reports progress of a backup/restore operation */
 fun interface BackupProgressListener {
-  suspend fun onStep(step: Int, totalSteps: Int, description: String)
+
+  suspend fun onStep(step: Step)
+
+  class Step(val step: Int, val totalSteps: Int, val text: String) {
+
+    override fun toString() = "$step/$totalSteps: $text"
+  }
 }

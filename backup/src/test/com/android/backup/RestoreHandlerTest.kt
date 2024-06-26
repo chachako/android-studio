@@ -42,11 +42,11 @@ class RestoreHandlerTest {
   @Test
   fun restore(): Unit = runBlocking {
     val backupFile = createBackupFile("com.app", "11223344556677889900")
-    val handler = RestoreHandler(this, backupServices, backupFile)
+    val handler = RestoreHandler(backupServices, backupFile)
 
-    val deferred = handler.restoreAsync()
+    val result = handler.restore()
 
-    assertThat(deferred.await()).isEqualTo(Success)
+    assertThat(result).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
         "bmgr enabled",
@@ -66,12 +66,11 @@ class RestoreHandlerTest {
   @Test
   fun restore_bmgrAlreadyEnabled(): Unit = runBlocking {
     val backupFile = createBackupFile("com.app", "11223344556677889900")
-    val handler = RestoreHandler(this, backupServices, backupFile)
+    val handler = RestoreHandler(backupServices, backupFile)
     backupServices.bmgrEnabled = true
 
-    val deferred = handler.restoreAsync()
+    handler.restore()
 
-    assertThat(deferred.await()).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
         "bmgr enabled",
@@ -88,12 +87,11 @@ class RestoreHandlerTest {
   @Test
   fun restore_transportNotSet(): Unit = runBlocking {
     val backupFile = createBackupFile("com.app", "11223344556677889900")
-    val handler = RestoreHandler(this, backupServices, backupFile)
+    val handler = RestoreHandler(backupServices, backupFile)
     backupServices.activeTransport = "com.android.localtransport/.LocalTransport"
 
-    val deferred = handler.restoreAsync()
+    handler.restore()
 
-    assertThat(deferred.await()).isEqualTo(Success)
     assertThat(backupServices.getCommands())
       .containsExactly(
         "bmgr enabled",
@@ -114,11 +112,10 @@ class RestoreHandlerTest {
   @Test
   fun restore_assertProgress(): Unit = runBlocking {
     val backupFile = createBackupFile("com.app", "11223344556677889900")
-    val handler = RestoreHandler(this, backupServices, backupFile)
+    val handler = RestoreHandler(backupServices, backupFile)
 
-    val deferred = handler.restoreAsync()
+    handler.restore()
 
-    assertThat(deferred.await()).isEqualTo(Success)
     assertThat(backupServices.getProgress())
       .containsExactly(
         "1/8: Pushing backup file",

@@ -17,6 +17,7 @@ package com.android.backup
 
 import ai.grazie.utils.dropPrefix
 import com.android.adblib.DeviceSelector
+import com.android.backup.BackupProgressListener.Step
 import com.android.backup.BackupServices.Companion.BACKUP_DIR
 import com.android.tools.environment.Logger
 
@@ -34,12 +35,12 @@ abstract class AbstractBackupServices(
 
   protected val deviceSelector = DeviceSelector.fromSerialNumber(serialNumber)
 
-  override suspend fun reportProgress(description: String) {
-    logger.info(description)
+  override suspend fun reportProgress(text: String) {
+    logger.info(text)
     if (step > totalSteps) {
       totalSteps = step
     }
-    progressListener?.onStep(++step, totalSteps, description)
+    progressListener?.onStep(Step(++step, totalSteps, text))
   }
 
   override suspend fun withSetup(transport: String, block: suspend () -> Unit) {
