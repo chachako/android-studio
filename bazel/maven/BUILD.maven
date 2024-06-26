@@ -59473,6 +59473,14 @@ maven_artifact(
 )
 
 maven_artifact(
+    name = "org.jetbrains.annotations-java5_24.0.0",
+    pom = "repository/org/jetbrains/annotations-java5/24.0.0/annotations-java5-24.0.0.pom",
+    repo_root_path = "repository",
+    repo_path = "org/jetbrains/annotations-java5/24.0.0",
+    visibility = ["//visibility:public"],
+)
+
+maven_artifact(
     name = "org.jetbrains.annotations_13.0",
     pom = "repository/org/jetbrains/annotations/13.0/annotations-13.0.pom",
     repo_root_path = "repository",

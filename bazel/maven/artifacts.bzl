@@ -780,6 +780,7 @@ DATA = [
     "org.javassist:javassist:3.26.0-GA",
     "org.jdeferred:jdeferred-android-aar:1.2.2",
     "org.jdeferred:jdeferred-android-aar:1.2.3",
+    "org.jetbrains:annotations-java5:jar:24.0.0",
     "org.jetbrains.compose.ui:ui-test-junit4-desktop:1.6.20-dev1663",
     "org.jetbrains.dokka:dokka-base:1.4.32",
     "org.jetbrains.dokka:javadoc-plugin:1.4.32",
