@@ -20,17 +20,21 @@ import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.dsl.FusedLibraryExtension
 import com.android.build.gradle.internal.dsl.AarMetadataImpl
 import org.gradle.api.artifacts.component.ComponentIdentifier
-import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.ProjectLayout
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.specs.Spec
 
 interface FusedLibraryVariantScope {
     val aarMetadata: AarMetadataImpl
-    val layout: ProjectLayout
+    val projectLayout: ProjectLayout
     val artifacts: ArtifactsImpl
     val incomingConfigurations: FusedLibraryConfigurations
     val outgoingConfigurations: FusedLibraryConfigurations
     val dependencies: FusedLibraryDependencies
     val extension: FusedLibraryExtension
     val mergeSpec: Spec<ComponentIdentifier>
+    val objectFactory: ObjectFactory
+
+    fun getLocalJars(): FileCollection
 }

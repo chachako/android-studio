@@ -16,13 +16,18 @@
 
 package com.android.build.gradle.internal.fusedlibrary
 
+import com.android.SdkConstants.EXT_JAR
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.dsl.FusedLibraryExtension
+import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.AarMetadataImpl
 import org.gradle.api.Project
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.attributes.Usage
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.ProjectLayout
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.specs.Spec
 
 open class FusedLibraryVariantScopeImpl(
@@ -32,7 +37,6 @@ open class FusedLibraryVariantScopeImpl(
 
     override val aarMetadata: AarMetadataImpl
         get() = extension.aarMetadata as AarMetadataImpl
-    override val layout: ProjectLayout = project.layout
     override val artifacts= ArtifactsImpl(project, "single")
     override val incomingConfigurations = FusedLibraryConfigurations()
     override val outgoingConfigurations = FusedLibraryConfigurations()
@@ -45,5 +49,16 @@ open class FusedLibraryVariantScopeImpl(
     override val mergeSpec = Spec { componentIdentifier: ComponentIdentifier ->
         println("In mergeSpec -> $componentIdentifier, type is ${componentIdentifier.javaClass}, merge = ${componentIdentifier is ProjectComponentIdentifier}")
         componentIdentifier is ProjectComponentIdentifier
+    }
+
+    override val projectLayout: ProjectLayout = project.layout
+    override val objectFactory: ObjectFactory = project.objects
+
+    override fun getLocalJars(): FileCollection {
+        return VariantDependencies.computeLocalFileDependencies(
+            incomingConfigurations.getConfiguration(Usage.JAVA_RUNTIME),
+            { files -> objectFactory.fileCollection().from(files) },
+            { file -> file.extension == EXT_JAR }
+        )
     }
 }

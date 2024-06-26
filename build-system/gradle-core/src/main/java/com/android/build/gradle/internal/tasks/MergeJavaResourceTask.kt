@@ -304,7 +304,7 @@ abstract class MergeJavaResourceTask
             task.pickFirsts.setDisallowChanges(emptySet())
             task.merges.setDisallowChanges(emptySet())
 
-            task.intermediateDir = creationConfig.layout.buildDirectory
+            task.intermediateDir = creationConfig.projectLayout.buildDirectory
                     .dir(SdkConstants.FD_INTERMEDIATES)
                     .map { it.dir("mergeJavaRes") }.get().asFile
             task.cacheDir = File(task.intermediateDir, "zip-cache")

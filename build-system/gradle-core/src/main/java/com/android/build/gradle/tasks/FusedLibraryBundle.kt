@@ -17,6 +17,7 @@
 package com.android.build.gradle.tasks
 
 import com.android.SdkConstants
+import com.android.SdkConstants.FD_AAR_LIBS
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScope
 import com.android.build.gradle.internal.services.getBuildService
@@ -63,7 +64,7 @@ abstract class FusedLibraryBundle: Jar() {
 
             // manually resets the output value to the one this task will use.
             task.outputFile.set(task.archiveFile)
-            task.destinationDirectory.set(creationConfig.layout.buildDirectory.dir(task.name))
+            task.destinationDirectory.set(creationConfig.projectLayout.buildDirectory.dir(task.name))
         }
     }
 }
@@ -108,6 +109,10 @@ abstract class FusedLibraryBundleAar: FusedLibraryBundle() {
             }
             task.from(creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_ASSETS)) {
                 it.into(SdkConstants.FD_ASSETS)
+            }
+
+            task.from(creationConfig.getLocalJars()) {
+                it.into(FD_AAR_LIBS)
             }
         }
     }

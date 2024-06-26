@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.internal.plugins
 
+import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.artifact.impl.InternalScopedArtifacts
 import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.dsl.FusedLibraryExtension
 import com.android.build.gradle.internal.dsl.FusedLibraryExtensionImpl
@@ -28,6 +30,8 @@ import com.android.build.gradle.internal.fusedlibrary.configureTransformsForFuse
 import com.android.build.gradle.internal.fusedlibrary.createTasks
 import com.android.build.gradle.internal.fusedlibrary.getDslServices
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
+import com.android.build.gradle.internal.services.Aapt2DaemonBuildService
+import com.android.build.gradle.internal.services.Aapt2ThreadPoolBuildService
 import com.android.build.gradle.internal.services.DslServices
 import com.android.build.gradle.internal.tasks.MergeJavaResourceTask
 import com.android.build.gradle.options.BooleanOption
@@ -90,6 +94,10 @@ class FusedLibraryPlugin @Inject constructor(
     }
 
     override fun configureProject(project: Project) {
+        Aapt2DaemonBuildService
+            .RegistrationAction(project, projectServices.projectOptions).execute()
+        Aapt2ThreadPoolBuildService
+            .RegistrationAction(project, projectServices.projectOptions).execute()
     }
 
     override fun configureExtension(project: Project) {
@@ -398,6 +406,13 @@ class FusedLibraryPlugin @Inject constructor(
                 includeApiElements,
                 includeRuntimeElements,
                 includeRuntimeUnmerged
+        )
+
+        variantScope.artifacts.forScope(
+            InternalScopedArtifacts.InternalScope.LOCAL_DEPS
+        ).setInitialContent(
+            ScopedArtifact.CLASSES,
+            variantScope.getLocalJars()
         )
     }
 }

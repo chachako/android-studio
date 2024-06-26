@@ -125,7 +125,7 @@ abstract class FusedLibraryMergeResourcesTask : NonIncrementalGlobalTask() {
 
         override fun configure(task: FusedLibraryMergeResourcesTask) {
 
-            task.projectFilepath.set(creationConfig.layout.projectDirectory.asFile.absolutePath)
+            task.projectFilepath.set(creationConfig.projectLayout.projectDirectory.asFile.absolutePath)
             task.analyticsService.setDisallowChanges(
                     getBuildService(task.project.gradle.sharedServices)
             )

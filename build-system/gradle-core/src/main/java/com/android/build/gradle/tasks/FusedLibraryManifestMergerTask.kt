@@ -167,7 +167,7 @@ abstract class FusedLibraryManifestMergerTask : ManifestProcessorTask() {
                     taskProvider,
                     FusedLibraryManifestMergerTask::reportFile
             ).atLocation(
-                    creationConfig.layout.buildDirectory
+                    creationConfig.projectLayout.buildDirectory
                             .dir("${SdkConstants.FD_OUTPUTS}/${SdkConstants.FD_LOGS}")
             ).withName("manifest-merger-$name-report.txt")
                     .on(FusedLibraryInternalArtifactType.MANIFEST_MERGE_REPORT)
@@ -185,7 +185,7 @@ abstract class FusedLibraryManifestMergerTask : ManifestProcessorTask() {
             task.minSdkVersion.setDisallowChanges(creationConfig.extension.minSdk.toString())
             task.namespace.set(creationConfig.extension.namespace)
             task.tmpDir.setDisallowChanges(
-                    creationConfig.layout.buildDirectory.dir("tmp/FusedLibraryManifestMerger")
+                    creationConfig.projectLayout.buildDirectory.dir("tmp/FusedLibraryManifestMerger")
             )
         }
     }
