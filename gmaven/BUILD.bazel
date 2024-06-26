@@ -70,7 +70,6 @@ sh_test(
         ":maven_artifact_list",
     ],
     tags = [
-        "no_test_mac",
         "noci:studio-win",
     ],
 )

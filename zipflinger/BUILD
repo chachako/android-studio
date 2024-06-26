@@ -99,7 +99,6 @@ java_test(
         "test/resource/zip_with_directories.zip",
     ],
     jvm_flags = ["-Dtest.suite.jar=testsZipFlinger.jar"],
-    tags = ["no_test_mac"],
     test_class = "com.android.testutils.JarTestSuite",
     deps = [
         ":test_utils",
@@ -204,7 +203,6 @@ iml_module(
     srcs = ["src"],
     iml_files = ["android.sdktools.zipflinger.iml"],
     lint_baseline = "lint_baseline.xml",
-    tags = ["no_test_mac"],
     test_data = glob(["test/resource/**"]),
     test_srcs = ["test/src/java"],
     visibility = ["//visibility:public"],

@@ -32,7 +32,6 @@ readonly config_options="--config=local --config=rcache --config=release --confi
         --invocation_id=${invocation_id} \
         --build_metadata=ab_target=studio-mac \
         --build_metadata=ab_build_id=${build_number} \
-        --build_tag_filters=-no_mac \
         --build_event_binary_file="${dist_dir}/bazel-${build_number}.bes" \
         --test_tag_filters="ci:studio-mac" \
         --tool_tag=${script_name} \

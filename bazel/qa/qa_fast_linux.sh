@@ -18,7 +18,7 @@ config_options="--config=ci"
 readonly invocation_id="$(uuidgen)"
 
 # Run FAST Bazel tests, no tests using emulator here
-target_filters=qa_fast,qa_unreliable,-no_linux,-no_test_linux,-requires_emulator
+target_filters=qa_fast,qa_unreliable,-requires_emulator
 "${script_dir}/../bazel" \
   --max_idle_secs=60 \
   test \
@@ -47,7 +47,7 @@ if [[ -d "${dist_dir}" ]]; then
 #readonly invocation_id_emu="$(uuidgen)"
 #
 ## Run Bazel tests, which only those requiring emulator
-#target_filters=qa_fast_emu,-qa_unreliable,-qa_fast_unreliable_emu,-no_linux,-no_test_linux
+#target_filters=qa_fast_emu,-qa_unreliable,-qa_fast_unreliable_emu
 #QA_ANDROID_SDK_ROOT=${HOME}/Android_emulator/sdk "${script_dir}/../bazel" \
 #  --max_idle_secs=60 \
 #  test \

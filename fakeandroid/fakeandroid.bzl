@@ -29,5 +29,5 @@ def fake_android_test(name, srcs = [], deps = [], data = [], runtime_deps = [], 
             "//tools/base/fakeandroid:art-runner",
         ],
         srcs = srcs,
-        tags = tags + ["no_windows", "no_test_mac"],
+        tags = tags + ["noci:studio-win"],
     )

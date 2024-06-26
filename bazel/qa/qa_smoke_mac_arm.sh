@@ -14,7 +14,7 @@ readonly invocation_id=$(uuidgen | tr A-F a-f)
 
 # TODO(b/267533769) Add --config=rcache once RBE creds are available
 readonly config_options="--config=release --config=ants"
-readonly target_filters="qa_smoke,ui_test,-qa_unreliable,-no_mac,-no_test_mac,-requires_emulator"
+readonly target_filters="qa_smoke,ui_test,-qa_unreliable,-no_test_mac,-requires_emulator"
 
 # Use test strategy to run 1 test at a time after all build dependencies are built
 # (b/301490683) Use strategy as local for UI tests to run in mac arm machines

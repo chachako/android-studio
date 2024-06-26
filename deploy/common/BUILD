@@ -78,9 +78,6 @@ cc_test(
         "socket_test.cc",
     ],
     linkstatic = 1,
-    tags = [
-        "no_test_mac",
-    ],
     visibility = ["//tools/base/deploy:__subpackages__"],
     deps = [
         ":common_lib",

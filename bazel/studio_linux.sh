@@ -115,8 +115,7 @@ function run_bazel_test() {
     local -r worker_instances=auto
   fi
 
-  local build_tag_filters=-no_linux
-  local test_tag_filters=-no_linux,-no_test_linux,-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky
+  local test_tag_filters=-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky
   local target_name="studio-linux"
 
   if [[ "${IS_K2}" == "true" ]]; then
@@ -139,7 +138,7 @@ function run_bazel_test() {
   then
     conditional_flags+=(--build_tests_only)
     target_name="studio-linux_very_flaky"
-    test_tag_filters=-no_linux,-no_test_linux,very_flaky
+    test_tag_filters=very_flaky
   fi
 
   if [[ $BUILD_TYPE == "POSTSUBMIT" ]]; then

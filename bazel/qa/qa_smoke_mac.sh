@@ -13,7 +13,7 @@ readonly script_name="$(basename "$0")"
 readonly invocation_id=$(uuidgen | tr A-F a-f)
 
 readonly config_options="--config=local --config=_remote_base --config=sponge"
-readonly target_filters="qa_smoke,ui_test,-qa_unreliable,-no_mac,-no_test_mac,-requires_emulator"
+readonly target_filters="qa_smoke,ui_test,-qa_unreliable,-no_test_mac,-requires_emulator"
 
 # The BAZEL_* variable is configured on the Mac Host.
 export GOOGLE_APPLICATION_CREDENTIALS=$BAZEL_GOOGLE_APPLICATION_CREDENTIALS

@@ -33,7 +33,6 @@ readonly config_options="--config=release --config=ants --config=rcache"
         --invocation_id=${invocation_id} \
         --build_metadata=ab_target=studio-mac-arm \
         --build_metadata=ab_build_id=${build_number} \
-        --build_tag_filters=-no_mac \
         --test_tag_filters="ci:studio-mac-arm" \
         --tool_tag=${script_name} \
         --worker_quit_after_build \

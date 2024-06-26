@@ -4,7 +4,6 @@
 # integreation system is configurated properly and builds successfully.
 
 readonly BUILD_NUMBER="${BUILD_NUMBER:-SNAPSHOT}"
-readonly BUILD_TAG_FILTERS=-no_linux
 readonly SCRIPT_DIR="$(dirname "$0")/.."
 readonly INVOCATION_ID="$(uuidgen)"
 
@@ -25,13 +24,12 @@ readonly BUILD_TARGETS="//tools/... -//tools/adt/idea/studio/..."
   --config=ci \
   --config=ants \
   --invocation_id=${INVOCATION_ID} \
-  --build_tag_filters=${BUILD_TAG_FILTERS} \
   --build_event_binary_file="${DIST_DIR:-/tmp}/bazel-${BUILD_NUMBER}.bes" \
   --build_metadata=ab_build_id="${BUILD_NUMBER}" \
   --build_metadata=ab_target=studio-linux_canary \
   --define=meta_android_build_number="${BUILD_NUMBER}" \
   --tool_tag=studio-linux-canary \
-  --test_tag_filters="-no_test_linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate,-perfgate-release,-very_flaky" \
+  --test_tag_filters="-qa_smoke,-qa_fast,-qa_unreliable,-perfgate,-perfgate-release,-very_flaky" \
   --verbose_failures \
   -- \
   //tools/adt/idea/...
