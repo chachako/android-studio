@@ -29,6 +29,7 @@ import com.android.tools.lint.detector.api.Scope
 import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.android.tools.lint.detector.api.findSelector
+import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UCallExpression
@@ -38,6 +39,8 @@ import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UastBinaryOperator
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.isNullLiteral
+import org.jetbrains.uast.skipParenthesizedExprDown
+import org.jetbrains.uast.tryResolve
 import org.jetbrains.uast.visitor.AbstractUastVisitor
 
 /**
@@ -162,26 +165,40 @@ class WakelockDetector : Detector(), ClassScanner, SourceCodeScanner {
 
         hasAcquireCall = true
 
-        val location = context.getLocation(node)
-        val fix =
-          fix()
-            .name("Set timeout to 10 minutes")
-            .replace()
-            .pattern("acquire\\s*\\(()\\s*\\)")
-            .with("10*60*1000L /*10 minutes*/")
-            .build()
+        if (context.isEnabled(TIMEOUT)) {
+          val location = context.getLocation(node)
+          val fix =
+            fix()
+              .name("Set timeout to 10 minutes")
+              .replace()
+              .pattern("acquire\\s*\\(()\\s*\\)")
+              .with("10*60*1000L /*10 minutes*/")
+              .build()
 
-        context.report(
-          TIMEOUT,
-          node,
-          location,
-          "" +
-            "Provide a timeout when requesting a wakelock with " +
-            "`PowerManager.Wakelock.acquire(long timeout)`. This will ensure the OS will " +
-            "cleanup any wakelocks that last longer than you intend, and will save your " +
-            "user's battery.",
-          fix,
-        )
+          context.report(
+            TIMEOUT,
+            node,
+            location,
+            "" +
+              "Provide a timeout when requesting a wakelock with " +
+              "`PowerManager.Wakelock.acquire(long timeout)`. This will ensure the OS will " +
+              "cleanup any wakelocks that last longer than you intend, and will save your " +
+              "user's battery.",
+            fix,
+          )
+        }
+
+        // If the wakelock is a field, it's quite possible/likely that the release is
+        // in a different method, even if we have a local release. (Previously, the
+        // code assumed that if we see both an acquire and a release in the same method,
+        // this was a local use of the wakelock which was always intended to be cleaned
+        // up, but as b/349491177 shows, another possible scenario is releasing locks
+        // if some operation failed but otherwise leaving it for another method.)
+
+        val lockDeclaration = node.receiver?.skipParenthesizedExprDown()?.tryResolve()
+        if (lockDeclaration is PsiField) {
+          return
+        }
 
         // Perform flow analysis in this method to see if we're
         // performing an acquire/release block, where there are code paths

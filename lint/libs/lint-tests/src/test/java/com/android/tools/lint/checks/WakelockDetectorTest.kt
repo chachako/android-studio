@@ -719,4 +719,54 @@ class WakelockDetectorTest : AbstractCheckTest() {
         """
       )
   }
+
+  fun testNoWarningsForFieldLocks() {
+    // Regression test for 349491177
+    lint()
+      .files(
+        java(
+            """
+            package test.pkg;
+
+            import android.app.PendingIntent;
+            import android.app.Service;
+            import android.content.Context;
+            import android.content.Intent;
+            import android.os.Bundle;
+            import android.os.PowerManager;
+
+            public abstract class ConnectivityService extends Service implements PendingIntent.OnFinished {
+                private final PowerManager.WakeLock mPendingIntentWakeLock;
+                private static final String TAG = ConnectivityService.class.getSimpleName();
+
+                public ConnectivityService(Context context) {
+                    PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                    mPendingIntentWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+                }
+
+                private void sendIntent(PendingIntent pendingIntent, Intent intent) {
+                    mPendingIntentWakeLock.acquire();
+                    //noinspection EmptyTryBlock
+                    try {
+                        // Code to send intent here
+                    } catch (RuntimeException e) {
+                        // Intent not sent, it was canceled
+                        mPendingIntentWakeLock.release();
+                    }
+                    // ...otherwise, mPendingIntentWakeLock.release() gets called by onSendFinished()
+                }
+
+                @Override
+                public void onSendFinished(PendingIntent pendingIntent, Intent intent, int resultCode, String resultData, Bundle resultExtras) {
+                    mPendingIntentWakeLock.release();
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      .issues(WakelockDetector.ISSUE)
+      .run()
+      .expectClean()
+  }
 }
