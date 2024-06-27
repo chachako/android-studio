@@ -83,6 +83,7 @@ def run_bazel_test(
       f'--build_metadata=ANDROID_TEST_INVESTIGATE="http://ab/tests/bazel/{invocation_id}"',
       f'--build_metadata=ab_build_id={build_env.build_number}',
       f'--build_metadata=ab_target={build_env.build_target_name}',
+      f'--//tools/base/bazel/ci:ab_target="{build_env.build_target_name}"',
 
       f'--worker_max_instances={worker_instances}',
 

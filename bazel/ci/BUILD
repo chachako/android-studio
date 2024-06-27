@@ -1,4 +1,11 @@
 """Continuous Integration scripts."""
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+
+string_flag(
+    name = "ab_target",
+    build_setting_default = "",
+    visibility = ["//tools/base/bazel/ci:__subpackages__"],
+)
 
 py_library(
     name = "bazel",
