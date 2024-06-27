@@ -148,11 +148,6 @@ class ScreenshotTest {
                 composeOptions {
                     useLiveLiterals false
                 }
-                kotlinOptions {
-                    freeCompilerArgs += [
-                      "-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
-                    ]
-                }
                 composeOptions {
                     kotlinCompilerExtensionVersion = "${TestUtils.COMPOSE_COMPILER_FOR_TESTS}"
                 }

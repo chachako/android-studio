@@ -19,12 +19,12 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.truth.ScannerSubject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
+import com.android.build.gradle.internal.utils.ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID
 import com.android.build.gradle.internal.utils.COMPOSE_COMPILER_PLUGIN_ID
 import com.android.builder.model.SyncIssue
 import com.android.builder.model.v2.ide.AndroidGradlePluginProjectFlags
 import com.android.builder.model.v2.models.ProjectSyncIssues
 import com.android.testutils.truth.PathSubject.assertThat
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assume
 import org.junit.Before
@@ -44,7 +44,11 @@ class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean)
 
     @JvmField
     @Rule
-    val project = GradleTestProject.builder().fromTestProject("composeHelloWorld").create()
+    val project =
+        GradleTestProject.builder()
+            .fromTestProject("composeHelloWorld")
+            .withBuiltInKotlinSupport(true)
+            .create()
 
     @Before
     fun before() {
@@ -190,5 +194,27 @@ class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean)
         }?.single()
         assertThat(syncIssue).isNotNull()
         assertThat(syncIssue?.data).contains("buildFeatures.compose")
+    }
+
+    @Test
+    fun testWithBuiltInKotlin() {
+        // TODO(b/341765853) Fix Compose Compiler Gradle plugin to support Built-in Kotlin
+        Assume.assumeFalse(useComposeCompilerGradlePlugin)
+        val buildFile = project.getSubproject(":app").buildFile
+        TestFileUtils.searchAndReplace(
+            buildFile,
+            "apply plugin: 'kotlin-android'",
+            "apply plugin: '$ANDROID_BUILT_IN_KOTLIN_PLUGIN_ID'"
+        )
+        TestFileUtils.searchAndReplace(
+            buildFile,
+            "kotlinOptions.jvmTarget = \"1.8\"",
+            ""
+        )
+
+        val tasks = listOf("clean", "assembleDebug", "assembleDebugAndroidTest")
+        project.executor().run(tasks)
+        // run once again to test configuration caching
+        project.executor().run(tasks)
     }
 }

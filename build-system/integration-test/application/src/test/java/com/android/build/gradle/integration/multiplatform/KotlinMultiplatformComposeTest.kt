@@ -47,10 +47,6 @@ class KotlinMultiplatformComposeTest {
                     kotlin {
                         android {
                            compilations.all {
-                              it.compilerOptions.options.freeCompilerArgs.addAll(
-                                  "-P",
-                                  "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
-                              )
                               it.compilerOptions.options.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
                            }
                         }
