@@ -21,8 +21,7 @@ def studio_win(build_env: bazel.BuildEnv):
   flags = [
       f'--profile={profile_path}',
 
-      '--build_tag_filters=-no_windows',
-      '--test_tag_filters=-no_windows,-noci:studio-win,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release',
+      '--test_tag_filters=-noci:studio-win,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release',
 
       '--tool_tag=studio_win.cmd',
   ]

@@ -57,7 +57,7 @@ setlocal
     set CONDITIONAL_FLAGS=!NOCACHE! !ANTS! !AB_POSTSUBMIT!
   )
 
-  set TESTTAGFILTERS=-no_windows,-noci:studio-win,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release
+  set TESTTAGFILTERS=-noci:studio-win,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release
 
   @rem Generate a UUID for use as the Bazel invocation ID
   for /f "tokens=*" %%f in ('uuidgen') do (
@@ -79,7 +79,6 @@ setlocal
   --config=ci ^
   --config=ants ^
   --tool_tag=studio_win.cmd ^
-  --build_tag_filters=-no_windows ^
   --invocation_id=%INVOCATIONID% ^
   --build_event_binary_file=%DISTDIR%\bazel-%BUILDNUMBER%.bes ^
   --test_tag_filters=%TESTTAGFILTERS% ^

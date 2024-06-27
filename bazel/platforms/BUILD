@@ -6,6 +6,19 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
+# Hack to select on the host platform. It should be avoided whenever possible.
+# https://bazel.build/docs/configurable-attributes#what_if_i_really_really_want_to_select_on_the_platform
+config_setting(
+    name = "windows_host",
+    values = {
+        "host_platform": "//tools/base/bazel/platforms:windows",
+    },
+    visibility = [
+        "//tools/adt/idea/streaming/integration/event-logger:__pkg__",
+        "//tools/adt/idea/streaming/testSrc/testApp/src/main:__pkg__",
+    ]
+)
+
 config_setting(
     name = "macos-arm64",
     constraint_values = [

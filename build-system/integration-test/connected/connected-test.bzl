@@ -49,7 +49,7 @@ def gradle_connected_test(
         maven_repos = maven_repos,
         runtime_deps = runtime_deps,
         tags = tags + [
-            "no_windows",
+            "noci:studio-win",
         ],
         timeout = timeout,
         jvm_flags = jvm_flags,

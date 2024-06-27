@@ -50,7 +50,7 @@ def deployer_test(name, srcs):
             "-Dapk2.location=$(location //tools/base/deploy/test/data/apk2:apk)",
         ],
         # Live Edit uses JNI which does not compile on Windows because of log target (sys/time.h)
-        tags = ["no_windows"],
+        tags = ["noci:studio-win"],
         deps = [
             ":original_java",
             ":original_kotlin",
