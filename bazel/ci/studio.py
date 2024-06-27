@@ -4,7 +4,7 @@ import dataclasses
 import enum
 import pathlib
 import shutil
-from typing import Iterable, Sequence, Tuple
+from typing import Iterable, List, Sequence, Tuple
 import uuid
 
 from tools.base.bazel.ci import bazel
@@ -34,7 +34,7 @@ class BuildType(enum.Enum):
       return BuildType.LOCAL
     if build_number.startswith('P'):
       return BuildType.PRESUBMIT
-    build_type = BuildType.POSTSUBMIT
+    return BuildType.POSTSUBMIT
 
 
 @dataclasses.dataclass(frozen=True)
@@ -46,7 +46,7 @@ class BazelTestResult:
 
 def run_bazel_test(
     build_env: bazel.BuildEnv,
-    flags: Sequence[str] = [],
+    flags: List[str] = [],
     targets: Sequence[str] = [],
 ) -> BazelTestResult:
   """Runs the bazel test invocation."""

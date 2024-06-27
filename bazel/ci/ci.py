@@ -54,10 +54,10 @@ class CI:
 
 def find_workspace() -> str:
   """Returns the path of the WORKSPACE directory."""
-  bazel_workspace = os.environ.get("BUILD_WORKSPACE_DIRECTORY")
+  bazel_workspace = os.environ.get('BUILD_WORKSPACE_DIRECTORY')
   if bazel_workspace:
     return bazel_workspace
-  raise RuntimeError("Missing environment variable: BUILD_WORKSPACE_DIRECTORY")
+  raise RuntimeError('Missing environment variable: BUILD_WORKSPACE_DIRECTORY')
 
 
 def studio_build_checks(ci: CI):
@@ -87,20 +87,24 @@ def main():
   exception raised.
   """
   parser = argparse.ArgumentParser()
-  parser.add_argument("target", help="The name of the CI target")
+  parser.add_argument('target', help='The name of the CI target')
   args = parser.parse_args()
 
-  bazel_name = "bazel.cmd" if platform.system() == "Windows" else "bazel"
-  bazel_path = os.path.join(find_workspace(), f"tools/base/bazel/{bazel_name}")
+  bazel_name = 'bazel.cmd' if platform.system() == 'Windows' else 'bazel'
+  bazel_path = os.path.join(find_workspace(), f'tools/base/bazel/{bazel_name}')
   build_env = bazel.BuildEnv(bazel_path=bazel_path)
   ci = CI(build_env=build_env)
 
   match args.target:
-    case "studio-build-checks":
+    case 'studio-build-checks':
       studio_build_checks(ci)
-    case "studio-linux":
+    case 'studio-linux':
       ci.run(studio_linux.studio_linux)
-    case "studio-win":
+    case 'studio-linux_very_flaky':
+      ci.run(studio_linux.studio_linux_very_flaky)
+    case 'studio-linux-k2':
+      ci.run(studio_linux.studio_linux_k2)
+    case 'studio-win':
       ci.run(studio_win.studio_win)
     case _:
       raise NotImplementedError(f'target: "{args.target}" does not exist')
@@ -110,5 +114,5 @@ def main():
     sys.exit(ci.exit_code)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()

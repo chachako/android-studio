@@ -4,13 +4,21 @@ import itertools
 import pathlib
 import shutil
 import tempfile
+from typing import List, Sequence
 import zipfile
 
 from tools.base.bazel.ci import bazel
 from tools.base.bazel.ci import studio
 
 
-_TARGETS = [
+_BASE_TARGETS = [
+    '//prebuilts/studio/...',
+    '//prebuilts/tools/...',
+    '//tools/...',
+]
+
+
+_EXTRA_TARGETS = [
     '//tools/adt/idea/studio:android-studio',
     '//tools/adt/idea/studio:updater_deploy.jar',
     '//tools/vendor/google/aswb:aswb.linux.zip',
@@ -36,9 +44,6 @@ _TARGETS = [
     '//tools/vendor/google/asfp/studio:asfp.deb',
     '//tools/vendor/intel:android-studio-intel-haxm.zip',
     '//tools/vendor/google/ml:aiplugin',
-    '//prebuilts/studio/...',
-    '//prebuilts/tools/...',
-    '//tools/...',
     '//tools/vendor/google3/aswb/java/com/google/devtools/intellij/g3plugins:aswb_build_test',
 ]
 
@@ -84,24 +89,82 @@ _ARTIFACTS = [
 ]
 
 
-def studio_linux(build_env: bazel.BuildEnv):
-  """Runs Linux pre/postsubmit tests."""
+def studio_linux(build_env: bazel.BuildEnv) -> None:
+  """Runs studio-linux target."""
+  setup_environment(build_env)
+  flags = build_flags(
+      build_env,
+      '-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky',
+  )
+  result = run_tests(build_env, flags, _BASE_TARGETS + _EXTRA_TARGETS)
+  copy_agp_supported_versions(build_env)
+  if is_build_successful(result):
+    copy_artifacts(build_env)
+    if result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
+      return
+
+  raise studio.BazelTestError(exit_code=result.exit_code)
+
+
+def studio_linux_very_flaky(build_env: bazel.BuildEnv) -> None:
+  """Runs studio-linux_very_flaky target."""
+  setup_environment(build_env)
+  flags = build_flags(
+      build_env,
+      'very_flaky',
+  ) + [
+      '--build_tests_only',
+  ]
+  result = run_tests(build_env, flags, _BASE_TARGETS + _EXTRA_TARGETS)
+  if is_build_successful(result):
+    copy_artifacts(build_env)
+    return
+
+  raise studio.BazelTestError(exit_code=result.exit_code)
+
+
+def studio_linux_k2(build_env: bazel.BuildEnv) -> None:
+  """Runs studio-linux-k2 target."""
+  setup_environment(build_env)
+  flags = build_flags(
+      build_env,
+      '-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky,-no_k2,-kotlin-plugin-k2',
+  ) + [
+      '--bes_keywords=k2',
+      '--jvmopt="-Didea.kotlin.plugin.use.k2=true -Dlint.use.fir.uast=true"',
+  ]
+  result = run_tests(build_env, flags, _BASE_TARGETS)
+  copy_agp_supported_versions(build_env)
+  if is_build_successful(result) and result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
+    return
+
+  raise studio.BazelTestError(exit_code=result.exit_code)
+
+
+def setup_environment(build_env: bazel.BuildEnv) -> None:
+  """Sets up the environment for the build."""
   # If DIST_DIR does not exist, create one.
   if not build_env.dist_dir:
     build_env.dist_dir = tempfile.mkdtemp('dist-dir')
-  dist_path = pathlib.Path(build_env.dist_dir)
 
+
+def build_flags(
+    build_env: bazel.BuildEnv,
+    test_tag_filters: str = '',
+  ) -> List[str]:
+  """Returns the flags to use for testing."""
+  dist_path = pathlib.Path(build_env.dist_dir)
   as_build_number = build_env.build_number.replace('P', '0')
   profile_path = dist_path / f'profile-{build_env.build_number}.json.gz'
 
-  flags = [
+  return [
       '--build_manual_tests',
 
       f'--define=meta_android_build_number={build_env.build_number}',
 
       f'--profile={profile_path}',
 
-      '--test_tag_filters=-noci:studio-linux,-qa_smoke,-qa_fast,-qa_unreliable,-perfgate-release,-very_flaky',
+      f'--test_tag_filters={test_tag_filters}',
 
       '--tool_tag=studio_linux.sh',
       f'--embed_label={as_build_number}',
@@ -111,35 +174,22 @@ def studio_linux(build_env: bazel.BuildEnv):
       '--jobs=500',
   ]
 
-  test_result = studio.run_bazel_test(build_env, flags, _TARGETS)
+
+def run_tests(
+    build_env: bazel.BuildEnv,
+    flags: Sequence[str],
+    targets: Sequence[str],
+  ) -> studio.BazelTestResult:
+  """Runs the bazel test invocation."""
+  result = studio.run_bazel_test(build_env, flags, targets)
 
   # If an uncommon exit code happens, copy extra worker logs.
-  if test_result.exit_code > 9:
+  if result.exit_code > 9:
     copy_worker_logs(build_env)
 
-  # TODO(b/342237310): Implement --very_flaky.
+  studio.collect_logs(build_env, result.bes_path)
 
-  workspace_path = pathlib.Path(build_env.workspace_dir)
-  shutil.copy2(
-      workspace_path / 'tools/base/build-system/supported-versions.properties',
-      dist_path / 'agp-supported-versions.properties',
-  )
-  studio.collect_logs(build_env, test_result.bes_path)
-
-  if test_result.exit_code in {
-      bazel.EXITCODE_SUCCESS,
-      bazel.EXITCODE_TEST_FAILURES,
-      bazel.EXITCODE_NO_TESTS_FOUND
-  }:
-    (dist_path / 'artifacts').mkdir(parents=True, exist_ok=True)
-    studio.copy_artifacts(build_env, _ARTIFACTS)
-    write_owners_zip(build_env)
-
-    # TODO(b/342237310): Return if --very-flaky is specified.
-    if test_result.exit_code != bazel.EXITCODE_NO_TESTS_FOUND:
-      return
-
-  raise studio.BazelTestError(exit_code=test_result.exit_code)
+  return result
 
 
 def copy_worker_logs(build_env: bazel.BuildEnv) -> None:
@@ -151,6 +201,16 @@ def copy_worker_logs(build_env: bazel.BuildEnv) -> None:
   dest_path.mkdir(parents=True, exist_ok=True)
   for path in src_path.glob('*.log'):
     shutil.copy2(path, dest_path / path.name)
+
+
+def copy_agp_supported_versions(build_env: bazel.BuildEnv) -> None:
+  """Copies the agp-supported-versions file to the dist directory."""
+  workspace_path = pathlib.Path(build_env.workspace_dir)
+  dist_path = pathlib.Path(build_env.dist_dir)
+  shutil.copy2(
+      workspace_path / 'tools/base/build-system/supported-versions.properties',
+      dist_path / 'agp-supported-versions.properties',
+  )
 
 
 def write_owners_zip(build_env: bazel.BuildEnv) -> None:
@@ -165,3 +225,21 @@ def write_owners_zip(build_env: bazel.BuildEnv) -> None:
     )
     for path in owners_paths:
       owners_zip.write(path, arcname=path.relative_to(workspace_path))
+
+
+def copy_artifacts(build_env: bazel.BuildEnv) -> None:
+  """Copies artifacts to the dist directory."""
+  dist_path = pathlib.Path(build_env.dist_dir)
+  (dist_path / 'artifacts').mkdir(parents=True, exist_ok=True)
+  studio.copy_artifacts(build_env, _ARTIFACTS)
+  write_owners_zip(build_env)
+
+
+def is_build_successful(result: studio.BazelTestResult) -> bool:
+  """Returns True if the build portion of the bazel test was successful."""
+  return result.exit_code in {
+      bazel.EXITCODE_SUCCESS,
+      # Test failures are handled elsewhere, so build is considered successful.
+      bazel.EXITCODE_TEST_FAILURES,
+      bazel.EXITCODE_NO_TESTS_FOUND,
+  }
