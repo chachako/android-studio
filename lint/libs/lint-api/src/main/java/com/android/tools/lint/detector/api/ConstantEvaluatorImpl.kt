@@ -50,9 +50,9 @@ import com.intellij.psi.PsiVariable
 import com.intellij.psi.util.PsiTreeUtil
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.experimental.inv
+import org.jetbrains.kotlin.asJava.elements.KtLightElementBase
 import org.jetbrains.kotlin.asJava.elements.KtLightField
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
-import org.jetbrains.kotlin.asJava.elements.KtLightPsiLiteral
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
 import org.jetbrains.kotlin.psi.KtProperty
@@ -368,7 +368,7 @@ internal class ConstantEvaluatorImpl(private val evaluator: ConstantEvaluator) {
       null -> null
       is PsiLiteral ->
         node.value
-          ?: (node as? KtLightPsiLiteral)?.kotlinOrigin?.let { origin ->
+          ?: (node as? KtLightElementBase)?.kotlinOrigin?.let { origin ->
             (convertElement(origin, null, UExpression::class.java) as? UExpression)?.evaluate()
           }
       is PsiPrefixExpression ->

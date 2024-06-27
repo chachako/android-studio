@@ -27,6 +27,7 @@ import com.intellij.codeInsight.AnnotationTargetUtil
 import com.intellij.openapi.util.Disposer
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiAnnotation.TargetType
+import com.intellij.psi.PsiArrayInitializerMemberValue
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
@@ -4386,6 +4387,62 @@ class UastTest : TestCase() {
             assertEquals("ownPropGetter", resolved?.name)
 
             return super.visitSimpleNameReferenceExpression(node)
+          }
+        }
+      )
+    }
+  }
+
+  fun disabledTestStringConcatInAnnotationValue() {
+    // TODO: https://youtrack.jetbrains.com/issue/KT-69452
+    // Regression test from b/347629388
+    val testFiles =
+      arrayOf(
+        kotlin(
+          """
+            @MyAnnotation(
+              password = [
+                "nananananana, " +
+                  "batman"
+              ]
+            )
+            fun test() {}
+          """
+            .trimIndent()
+        ),
+        java(
+          """
+            import java.lang.annotation.ElementType;
+            import java.lang.annotation.Retention;
+            import java.lang.annotation.RetentionPolicy;
+            import java.lang.annotation.Target;
+
+            @Retention(RetentionPolicy.CLASS)
+            @Target({ElementType.METHOD})
+            public @interface MyAnnotation {
+              String[] password() default {};
+            }
+          """
+        ),
+      )
+    check(*testFiles) { file ->
+      file.accept(
+        object : AbstractUastVisitor() {
+          override fun visitMethod(node: UMethod): Boolean {
+            val psiAnnotation = node.annotations.single()
+            val attributeValue = psiAnnotation.findAttributeValue("password")
+            assertNotNull(attributeValue)
+            val initializer =
+              (attributeValue as PsiArrayInitializerMemberValue).initializers.single()
+
+            val uExpression = initializer.toUElementOfType<UExpression>()
+            val uEval = uExpression?.evaluate()
+            assertEquals("nananananana, batman", uEval)
+
+            val eval = ConstantEvaluator().evaluate(initializer)
+            assertEquals("nananananana, batman", eval)
+
+            return super.visitMethod(node)
           }
         }
       )
