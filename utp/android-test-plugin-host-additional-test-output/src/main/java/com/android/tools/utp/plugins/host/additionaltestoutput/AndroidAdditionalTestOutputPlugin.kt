@@ -198,7 +198,7 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
         benchmarkFileRelativePaths.forEach { relativeFilePath ->
             val deviceFilePath = "${benchmarkOutputDir}/${relativeFilePath}"
             val hostFilePath =
-                "${File(config.additionalOutputDirectoryOnHost).absolutePath}" +
+                File(config.additionalOutputDirectoryOnHost).absolutePath +
                         "${File.separator}${relativeFilePath}"
             deviceController.pull(TestArtifactProto.Artifact.newBuilder().apply {
                 destinationPathBuilder.path = deviceFilePath
@@ -384,7 +384,7 @@ class AndroidAdditionalTestOutputPlugin(private val logger: Logger = getLogger()
             logger.warning {
                 "Shell command failed (${result.statusCode}): " +
                         "${commands.joinToString(" ")}\n" +
-                        "${result.output.joinToString("\n")}"
+                        result.output.joinToString("\n")
             }
         }
         return result
