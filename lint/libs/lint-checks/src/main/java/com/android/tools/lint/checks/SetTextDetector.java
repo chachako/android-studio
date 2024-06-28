@@ -138,7 +138,10 @@ public class SetTextDetector extends Detector implements SourceCodeScanner {
             checkNode(context, expression.getSelector());
         } else if (node instanceof UPolyadicExpression) {
             UPolyadicExpression expression = (UPolyadicExpression) node;
-            if (expression.getOperator() == UastBinaryOperator.PLUS) {
+            if (expression.getOperator() == UastBinaryOperator.PLUS
+                    && expression.getOperands().size() > 1) {
+                // (UAST will model KtStringTemplateExpression as a polyadic expression with one
+                // operand even when there are no substitutions...)
                 context.report(
                         SET_TEXT_I18N,
                         node,

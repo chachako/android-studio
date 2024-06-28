@@ -49,6 +49,7 @@ class SetTextDetectorTest : AbstractCheckTest() {
                     Button btn = new Button(context);
                     btn.setText("User " + getUserName());
                     btn.setText(String.format("%s of %s users", Integer.toString(5), Integer.toString(10)));
+                    view.setText("");
                   }
 
                   private static String getUserName() {
@@ -88,6 +89,48 @@ class SetTextDetectorTest : AbstractCheckTest() {
                             ~~~~~~~
             0 errors, 8 warnings
             """
+      )
+  }
+
+  fun test347356457() {
+    // Regression test for b/347356457
+    lint()
+      .files(
+        kotlin(
+            """
+            package test.pkg
+
+            import android.content.Context
+            import android.widget.TextView
+
+            class SetTextExample(val textView: TextView, private val first: String, private val last: String) {
+                fun test() {
+                    textView.text = "" // OK 1
+                    textView.text = "Hello ＄first ＄last!" // WARN 1 & 2
+                }
+            }
+
+            @Suppress("AppCompatCustomView")
+            class MyCustomTextView(context: Context) : TextView(context) {
+                init {
+                    text = "" // OK 2
+                }
+            }
+            """
+          )
+          .indented()
+      )
+      .run()
+      .expect(
+        """
+        src/test/pkg/SetTextExample.kt:9: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+                textView.text = "Hello ＄first ＄last!" // WARN 1 & 2
+                                ~~~~~~~~~~~~~~~~~~~~~
+        src/test/pkg/SetTextExample.kt:9: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+                textView.text = "Hello ＄first ＄last!" // WARN 1 & 2
+                                 ~~~~~~
+        0 errors, 2 warnings
+        """
       )
   }
 }
