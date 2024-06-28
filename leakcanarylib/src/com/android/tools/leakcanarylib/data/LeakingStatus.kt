@@ -13,15 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.tools.leakcanarylib.data
 
-package com.android.leakcanarylib
-
-class LeakCanarySerializer {
-    var logcatMessage: String = ""
-
-    /** Test function **/
-    fun test(logcatMessage: String): String {
-        return logcatMessage
-    }
+enum class LeakingStatus {
+    YES,
+    NO,
+    UNKNOWN
 }
-
