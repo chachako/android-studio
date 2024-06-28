@@ -21,6 +21,7 @@ import com.android.tools.lint.checks.infrastructure.TestFiles.bytecode
 import com.android.tools.lint.checks.infrastructure.TestFiles.java
 import com.android.tools.lint.checks.infrastructure.TestFiles.kotlin
 import com.android.tools.lint.checks.infrastructure.TestLintTask.lint
+import com.android.tools.lint.checks.infrastructure.TestMode
 import com.android.tools.lint.checks.infrastructure.parse
 import com.android.tools.lint.checks.infrastructure.use
 import com.android.tools.lint.client.api.UElementHandler
@@ -404,6 +405,9 @@ class DefaultJavaEvaluatorTest {
           .indented()
       )
       .sdkHome(TestUtils.getSdk().toFile())
+      // We're looking for a specific signature here, and we've altered it with this
+      // test mode
+      .skipTestModes(TestMode.JVM_OVERLOADS)
       .issues(MethodMatchesDetector.ISSUE)
       .run()
       .expect(

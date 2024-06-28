@@ -319,6 +319,8 @@ open class TestMode(
 
     @JvmField val CDATA: TestMode = CharacterDataTestMode()
 
+    @JvmField val JVM_OVERLOADS: TestMode = JvmOverloadsTestMode()
+
     @JvmField
     val SOURCE_TRANSFORMATION_GROUP: TestMode =
       UastSourceTransformationTestModeGroup(
@@ -329,6 +331,7 @@ open class TestMode(
         TYPE_ALIAS,
         IMPORT_ALIAS,
         IF_TO_WHEN,
+        JVM_OVERLOADS,
         WHITESPACE,
       )
 

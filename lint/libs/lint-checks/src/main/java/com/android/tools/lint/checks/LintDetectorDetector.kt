@@ -32,6 +32,7 @@ import com.android.tools.lint.detector.api.Severity.WARNING
 import com.android.tools.lint.detector.api.TextFormat
 import com.android.tools.lint.detector.api.TextFormat.Companion.HTTPS_PREFIX
 import com.android.tools.lint.detector.api.TextFormat.Companion.HTTP_PREFIX
+import com.android.tools.lint.detector.api.isDuplicatedOverload
 import com.android.tools.lint.detector.api.isJava
 import com.android.tools.lint.detector.api.isKotlin
 import com.android.tools.lint.detector.api.isPolyadicFromStringTemplate
@@ -552,6 +553,9 @@ class LintDetectorDetector : Detector(), UastScanner {
     }
 
     override fun visitMethod(node: UMethod): Boolean {
+      if (node.isDuplicatedOverload()) {
+        return true
+      }
       if (node.name == "getIssues") {
         checkGetIssues(node)
       }

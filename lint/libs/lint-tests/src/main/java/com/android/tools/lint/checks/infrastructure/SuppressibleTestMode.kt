@@ -443,11 +443,6 @@ class SuppressibleTestMode :
     return edits
   }
 
-  private fun getIndent(source: String, offset: Int): String {
-    val lineBegin = source.lastIndexOf('\n', offset) + 1
-    return source.substring(lineBegin, offset)
-  }
-
   override fun sameOutput(expected: String, actual: String, type: OutputKind): Boolean {
     return getIncidents(actual).none {
       val path = it.path

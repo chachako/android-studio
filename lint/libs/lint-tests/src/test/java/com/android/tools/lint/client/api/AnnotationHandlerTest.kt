@@ -1640,6 +1640,9 @@ class AnnotationHandlerTest {
           .indented(),
         kotlinAnnotation,
       )
+      // We don't get a METHOD_OVERRIDE on line 14 of Kotlin.kt here since we're
+      // messing with the parameter signatures.
+      .skipTestModes(TestMode.JVM_OVERLOADS)
       .run()
       .expect(
         """

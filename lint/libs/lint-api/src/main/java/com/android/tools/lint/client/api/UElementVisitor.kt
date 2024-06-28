@@ -29,6 +29,7 @@ import com.android.tools.lint.detector.api.interprocedural.CallGraphResult
 import com.android.tools.lint.detector.api.interprocedural.CallGraphVisitor
 import com.android.tools.lint.detector.api.interprocedural.ClassHierarchyVisitor
 import com.android.tools.lint.detector.api.interprocedural.IntraproceduralDispatchReceiverVisitor
+import com.android.tools.lint.detector.api.isDuplicatedOverload
 import com.google.common.base.Joiner
 import com.google.common.collect.Lists
 import com.google.common.collect.Maps
@@ -528,6 +529,9 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
     }
 
     override fun visitMethod(node: UMethod): Boolean {
+      if (node.isDuplicatedOverload()) {
+        return true
+      }
       eachDetectorVisit(node, UElementHandler::visitMethod)
       return super.visitMethod(node)
     }
@@ -807,6 +811,9 @@ constructor(driver: LintDriver, private val parser: UastParser, detectors: List<
     // (visitCallExpression handled above)
 
     override fun visitMethod(node: UMethod): Boolean {
+      if (node.isDuplicatedOverload()) {
+        return true
+      }
       annotationHandler?.visitMethod(mContext, node)
       return super.visitMethod(node)
     }

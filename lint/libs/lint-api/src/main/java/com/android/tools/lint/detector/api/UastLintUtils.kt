@@ -49,11 +49,14 @@ import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.kotlin.asJava.elements.KtLightParameter
 import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
+import org.jetbrains.kotlin.name.JvmStandardClassIds.JVM_MULTIFILE_CLASS_SHORT
+import org.jetbrains.kotlin.name.JvmStandardClassIds.JVM_OVERLOADS_FQ_NAME
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtFunction
 import org.jetbrains.kotlin.psi.KtLambdaExpression
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
@@ -67,6 +70,7 @@ import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UBinaryExpression
 import org.jetbrains.uast.UBlockExpression
 import org.jetbrains.uast.UCallExpression
+import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UDeclaration
 import org.jetbrains.uast.UElement
 import org.jetbrains.uast.UExpression
@@ -76,6 +80,7 @@ import org.jetbrains.uast.UIfExpression
 import org.jetbrains.uast.ULabeledExpression
 import org.jetbrains.uast.ULambdaExpression
 import org.jetbrains.uast.ULiteralExpression
+import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.UParenthesizedExpression
 import org.jetbrains.uast.UPrefixExpression
 import org.jetbrains.uast.UQualifiedReferenceExpression
@@ -929,12 +934,39 @@ fun UFile.acceptSourceFile(visitor: UastVisitor) {
   val sourcePsi = this.sourcePsi
   if (
     sourcePsi is KtFile &&
-      sourcePsi.annotationEntries.any { it.shortName.toString() == "JvmMultifileClass" }
+      sourcePsi.annotationEntries.any { it.shortName?.asString() == JVM_MULTIFILE_CLASS_SHORT }
   ) {
     acceptMultiFileClass(visitor)
   } else {
     accept(visitor)
   }
+}
+
+/**
+ * When methods are overloaded using `@JvmOverloads`, UAST will duplicate the whole inlined method
+ * (instead of creating trampoline methods as the compiler appears to do). This means we can come
+ * across the same method body implementations multiple times, and report duplicated warnings (or
+ * even draw other wrong conclusions).
+ *
+ * This tries to counteract this a bit; we'll only visit the first declaration in this case.
+ *
+ * See https://youtrack.jetbrains.com/issue/KTIJ-30476.
+ */
+fun UMethod.isDuplicatedOverload(): Boolean {
+  val method = sourcePsi as? KtFunction ?: return false
+  if (
+    method.annotationEntries.any {
+      it.shortName?.asString() == JVM_OVERLOADS_FQ_NAME.shortName().asString()
+    }
+  ) {
+    // The first method is the one that has all the arguments (isn't a duplicated
+    // method omitting some of the arguments)
+    val firstMethod =
+      (uastParent as? UClass)?.uastDeclarations?.firstOrNull { it.sourcePsi == method }
+    return firstMethod != this
+  }
+
+  return false
 }
 
 /** Skips down across labeled expressions */

@@ -138,7 +138,6 @@ class IfToWhenTestMode :
             sb.setLength(sb.length - 1)
           }
           sb.append("\n$indent}")
-          source.substring(startOffset, endOffset)
           edits.add(replace(startOffset, endOffset, sb.toString()))
         }
       }
@@ -146,22 +145,22 @@ class IfToWhenTestMode :
 
     return edits
   }
+}
 
-  /** Computes the indent string for the line containing the given offset. */
-  private fun getIndent(source: String, offset: Int): String {
-    val sb = StringBuilder()
-    var curr = offset - 1
-    while (curr >= 0) {
-      val c = source[curr]
-      if (c == '\n') {
-        break
-      } else if (c.isWhitespace()) {
-        sb.append(c)
-      } else {
-        sb.clear()
-      }
-      curr--
+/** Computes the indent string for the line containing the given offset. */
+fun getIndent(source: String, offset: Int): String {
+  val sb = StringBuilder()
+  var curr = offset - 1
+  while (curr >= 0) {
+    val c = source[curr]
+    if (c == '\n') {
+      break
+    } else if (c.isWhitespace()) {
+      sb.append(c)
+    } else {
+      sb.clear()
     }
-    return sb.toString()
+    curr--
   }
+  return sb.toString()
 }
