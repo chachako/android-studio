@@ -365,7 +365,7 @@ class SdkIntDetector : Detector(), SourceCodeScanner {
     }
 
     private fun getSdkConstant(context: JavaContext, sdkId: Int): String {
-      return ApiLookup.getSdkExtensionField(context.client, sdkId, true)
+      return ApiLookup.getSdkExtensionField(context, sdkId, true)
     }
 
     private fun getBuildCode(api: Int, sdkId: Int, constant: UElement?): String {

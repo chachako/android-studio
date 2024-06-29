@@ -32,6 +32,7 @@ import com.android.tools.lint.detector.api.ApiConstraint;
 import com.android.tools.lint.detector.api.ApiConstraint.MultiSdkApiConstraint;
 import com.android.tools.lint.detector.api.ExtensionSdk;
 import com.android.tools.lint.detector.api.ExtensionSdkRegistry;
+import com.android.tools.lint.detector.api.JavaContext;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -1273,8 +1274,11 @@ public class ApiLookup extends ApiDatabase {
     }
 
     public static String getSdkExtensionField(
-            @NonNull LintClient client, int sdkId, boolean fullyQualified) {
-        return getSdkExtensionField(ApiLookup.get(client), sdkId, fullyQualified);
+            @NonNull JavaContext context, int sdkId, boolean fullyQualified) {
+        return getSdkExtensionField(
+                ApiLookup.get(context.getClient(), context.getProject().getBuildTarget()),
+                sdkId,
+                fullyQualified);
     }
 
     public static String getSdkExtensionField(
