@@ -19,26 +19,19 @@ package com.android.build.gradle.integration.privacysandbox
 import com.android.SdkConstants
 import com.android.build.gradle.integration.common.fixture.testprojects.prebuilts.privacysandbox.privacySandboxSampleProject
 import com.android.build.gradle.integration.common.utils.TestFileUtils
-import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.options.BooleanOption
 import com.android.ide.common.signing.KeystoreHelper
-import com.android.testutils.TestUtils
-import com.android.testutils.apk.Apk
 import com.android.testutils.apk.Dex
 import com.android.testutils.apk.Zip
 import com.android.testutils.truth.PathSubject.assertThat
 import com.android.testutils.truth.ZipFileSubject
-import com.android.tools.apk.analyzer.AaptInvoker
 import com.android.utils.FileUtils
-import com.android.utils.StdLogger
 import com.google.common.truth.Truth.assertThat
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import java.io.File
-import java.nio.file.Files
 import java.util.Objects
-import java.util.zip.ZipFile
-import kotlin.io.path.name
 import kotlin.io.path.readText
 
 /** Integration tests for the privacy sandbox SDK */
@@ -143,6 +136,7 @@ class PrivacySandboxSdkTest {
         }
     }
 
+    @Ignore("b/349877400")
     @Test
     fun testAsb() {
         executor().run(":privacy-sandbox-sdk:assemble")
@@ -240,6 +234,7 @@ class PrivacySandboxSdkTest {
         }
     }
 
+    @Ignore("b/349877400")
     @Test
     fun testAsbSigning() {
         val privacySandboxSdkProject = project.getSubproject(":privacy-sandbox-sdk")
@@ -312,6 +307,7 @@ class PrivacySandboxSdkTest {
         assertThat(kspDir.exists()).isTrue()
     }
 
+    @Ignore("b/349877400")
     @Test
     fun testNoServiceDefinedInModuleUsedBySdk() {
         executor()

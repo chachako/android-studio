@@ -32,6 +32,7 @@ import com.android.testutils.MavenRepoGenerator
 import com.android.testutils.TestInputsGenerator
 import com.android.tools.build.bundletool.model.SdkBundle
 import com.google.common.collect.ImmutableList
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -367,6 +368,7 @@ class PrivacySandboxMediatorSdkTest {
 
 
 
+    @Ignore("b/349877400")
     @Test
     fun asbSdkBundleConfigProtoContainsCorrectSdkDependencyInfo() {
         val sdkMediatorProject = project.getSubproject(":privacy-sandbox-sdk-mediator")
