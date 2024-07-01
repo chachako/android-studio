@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.readLines
+import java.nio.file.Paths
 
 class PerfMainTest {
     private val tmpFolder = TemporaryFolder()
@@ -74,7 +75,7 @@ class PerfMainTest {
                 "com.example.composeapplication.PreviewsKt.PreviewSmall",
                 emptyList(),
                 emptyMap(),
-                "screenshot"
+                "com.example.composeapplication.PreviewsKt.PreviewSmall_screenshot"
             )
         )
         commonTest(
@@ -92,7 +93,7 @@ class PerfMainTest {
                 "com.example.composeapplication.PreviewsKt.PreviewSmall",
                 emptyList(),
                 emptyMap(),
-                "screenshot${it}"
+                "com.example.composeapplication.PreviewsKt.PreviewSmall_screenshot${it}"
             )
         }
         commonTest(
@@ -110,7 +111,7 @@ class PerfMainTest {
                 "com.example.composeapplication.PreviewsKt.PreviewSmall",
                 emptyList(),
                 emptyMap(),
-                "screenshot${it}"
+                "com.example.composeapplication.PreviewsKt.PreviewSmall_screenshot${it}"
             )
         }
         commonTest(
@@ -128,7 +129,7 @@ class PerfMainTest {
                 "com.example.composeapplication.PreviewsKt.PreviewLarge",
                 emptyList(),
                 emptyMap(),
-                "screenshot"
+                "com.example.composeapplication.PreviewsKt.PreviewLarge_screenshot"
             )
         )
         commonTest(
@@ -146,7 +147,7 @@ class PerfMainTest {
                 "com.example.composeapplication.PreviewsKt.PreviewLarge",
                 emptyList(),
                 emptyMap(),
-                "screenshot${it}"
+                "com.example.composeapplication.PreviewsKt.PreviewLarge_screenshot${it}"
             )
         }
         commonTest(
@@ -164,7 +165,7 @@ class PerfMainTest {
                 "com.example.composeapplication.PreviewsKt.PreviewLarge",
                 emptyList(),
                 emptyMap(),
-                "screenshot${it}"
+                "com.example.composeapplication.PreviewsKt.PreviewLarge_screenshot${it}"
             )
         }
         commonTest(
@@ -197,7 +198,10 @@ class PerfMainTest {
                 assertNull(it.error)
             }
             screenshots.forEach { screenshot ->
-                val img = ImageIO.read(outputFolder.resolve("${screenshot.previewId}_0.png"))
+                val imageName = "${screenshot.previewId.substringAfterLast(".")}_0.png"
+                val relativeImagePath = (screenshot.methodFQN.substringBeforeLast(".").replace(".", "/")) + "/" + imageName
+                val imageFile = Paths.get(outputFolder.absolutePath, relativeImagePath).toFile()
+                val img = ImageIO.read(imageFile)
                 ImageDiffUtil.assertImageSimilar(
                     TestUtils.resolveWorkspacePathUnchecked("tools/base/standalone-render/compose-cli/testData/goldens/$goldenName.png"),
                     img
@@ -223,7 +227,7 @@ private fun runComposeCliRender(settingsFile: File): String {
     val javaHome = System.getProperty("java.home")
     val layoutlibJar = TestUtils.resolveWorkspacePath("prebuilts/studio/layoutlib/data/layoutlib-mvn.jar")
     val composeCliRenderFolder = TestUtils.resolveWorkspacePath("tools/base/standalone-render/compose-cli")
-    val command = listOf("$javaHome/bin/java", "-Dlayoutlib.thread.profile.timeoutms=10000", "-cp", "compose-preview-renderer.jar:${layoutlibJar.absolutePathString()}", "com.android.tools.render.compose.MainKt", settingsFile.absolutePath)
+    val command = listOf("$javaHome/bin/java", "-Dlayoutlib.thread.profile.timeoutms=10000", "-Djava.security.manager=allow", "-cp", "compose-preview-renderer.jar:${layoutlibJar.absolutePathString()}", "com.android.tools.render.compose.MainKt", settingsFile.absolutePath)
     val procBuilder = ProcessBuilder(command)
         .directory(composeCliRenderFolder.toFile())
         .redirectOutput(ProcessBuilder.Redirect.PIPE)
