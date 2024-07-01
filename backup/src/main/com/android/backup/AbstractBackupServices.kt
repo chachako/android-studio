@@ -90,7 +90,7 @@ abstract class AbstractBackupServices(
 
   private suspend fun withTransport(transport: String, block: suspend () -> Unit) {
     reportProgress("Setting backup transport")
-    val oldTransport = setTransport(transport)
+    val oldTransport = setTransport(transport, verify = true)
     if (oldTransport != transport) {
       totalSteps++
     }
@@ -99,7 +99,12 @@ abstract class AbstractBackupServices(
     } finally {
       if (oldTransport != transport) {
         reportProgress("Restoring backup transport")
-        setTransport(oldTransport)
+        // It's possible to set to a "transport" that does not exist. If the device was already in
+        // this state, trying to restore to it will result in the "transport" being set but not
+        // marked as "current" (prefix of "*" in list transports.
+        // In order to not fail the entire operation when this happens, we do not verify that the
+        // "transport" is set when we restore it.
+        setTransport(oldTransport, verify = false)
       }
     }
   }
@@ -112,16 +117,18 @@ abstract class AbstractBackupServices(
     }
   }
 
-  private suspend fun setTransport(transport: String): String {
+  private suspend fun setTransport(transport: String, verify: Boolean): String {
     val out = executeCommand("bmgr transport $transport").trim()
     val result =
       TRANSPORT_COMMAND_REGEX.matchEntire(out)
         ?: throw BackupException("Unexpected result from 'bmgr transport' command: $out")
 
-    val transports = executeCommand("bmgr list transports").lines()
-    val currentTransport = transports.find { it.startsWith("  *") }?.dropPrefix("  * ")
-    if (currentTransport != transport) {
-      throw throw BackupException("Requested transport was not set: $out")
+    if (verify) {
+      val transports = executeCommand("bmgr list transports").lines()
+      val currentTransport = transports.find { it.startsWith("  *") }?.dropPrefix("  * ")
+      if (currentTransport != transport) {
+        throw throw BackupException("Requested transport was not set: $out")
+      }
     }
     return result.getGroup("old")
   }

@@ -101,7 +101,6 @@ class RestoreHandlerTest {
         "bmgr list transports",
         "bmgr restore 9bc1546914997f6c com.app",
         "bmgr transport com.android.localtransport/.LocalTransport",
-        "bmgr list transports",
         "settings put secure backup_enable_android_studio_mode 0",
         "bmgr enable false",
         "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",

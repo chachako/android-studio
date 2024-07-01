@@ -54,7 +54,6 @@ class BackupHandlerTest {
         "bmgr backupnow com.app",
         "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
-        "bmgr list transports",
         "settings put secure backup_enable_android_studio_mode 0",
         "bmgr enable false",
       )
@@ -88,7 +87,6 @@ class BackupHandlerTest {
         "bmgr backupnow com.app",
         "rm -rf /sdcard/Android/data/com.google.android.gms/files/android_studio_backup_data",
         "bmgr transport com.google.android.gms/.backup.BackupTransportService",
-        "bmgr list transports",
         "settings put secure backup_enable_android_studio_mode 0",
       )
       .inOrder()
