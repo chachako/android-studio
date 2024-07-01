@@ -959,13 +959,13 @@ package com.android.build.api.dsl {
   public interface ComposeOptions {
     method public String? getKotlinCompilerExtensionVersion();
     method @Deprecated public String? getKotlinCompilerVersion();
-    method public boolean getUseLiveLiterals();
+    method @Deprecated public boolean getUseLiveLiterals();
     method public void setKotlinCompilerExtensionVersion(String?);
     method @Deprecated public void setKotlinCompilerVersion(String?);
-    method public void setUseLiveLiterals(boolean);
+    method @Deprecated public void setUseLiveLiterals(boolean);
     property public abstract String? kotlinCompilerExtensionVersion;
     property @Deprecated public abstract String? kotlinCompilerVersion;
-    property public abstract boolean useLiveLiterals;
+    property @Deprecated public abstract boolean useLiveLiterals;
   }
 
   @org.gradle.api.Incubating public interface ConfigurableFiles {

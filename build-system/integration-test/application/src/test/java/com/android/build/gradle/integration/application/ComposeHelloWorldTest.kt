@@ -99,7 +99,8 @@ class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean)
             project.getSubproject("app").buildFile,
             "android.composeOptions.useLiveLiterals = true"
         )
-        project.executor().run("assembleDebug")
+        val result = project.executor().run("assembleDebug")
+        result.assertOutputContains("ComposeOptions.useLiveLiterals is deprecated and will be removed in AGP 9.0.")
 
         // Turn off live literals and run again
         TestFileUtils.searchAndReplace(
@@ -107,8 +108,9 @@ class ComposeHelloWorldTest(private val useComposeCompilerGradlePlugin: Boolean)
             "android.composeOptions.useLiveLiterals = true",
             "android.composeOptions.useLiveLiterals = false"
         )
-        val result = project.executor().run("assembleDebug")
-        assertThat(result.didWorkTasks).contains(":app:compileDebugKotlin")
+        val result2 = project.executor().run("assembleDebug")
+        assertThat(result2.didWorkTasks).contains(":app:compileDebugKotlin")
+        result2.assertOutputContains("ComposeOptions.useLiveLiterals is deprecated and will be removed in AGP 9.0.")
     }
 
     @Test
