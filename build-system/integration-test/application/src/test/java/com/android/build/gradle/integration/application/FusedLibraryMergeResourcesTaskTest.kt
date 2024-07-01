@@ -19,11 +19,17 @@ package com.android.build.gradle.integration.application
 import com.android.build.gradle.integration.common.fixture.GradleTestProject
 import com.android.build.gradle.integration.common.fixture.testprojects.PluginType
 import com.android.build.gradle.integration.common.fixture.testprojects.createGradleProject
+import com.android.build.gradle.integration.common.truth.ApkSubject
 import com.android.build.gradle.internal.scope.InternalArtifactType
+import com.android.build.gradle.options.BooleanOption
+import com.android.ide.common.symbols.SymbolTableBuilder
+import com.android.ide.common.symbols.readAarRTxt
 import com.android.testutils.MavenRepoGenerator
+import com.android.testutils.apk.Aar
 import com.android.testutils.generateAarWithContent
 import com.android.utils.FileUtils
 import com.google.common.truth.Truth.assertThat
+import org.gradle.api.JavaVersion
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -31,6 +37,7 @@ import java.io.File
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.zip.ZipFile
+import kotlin.io.path.inputStream
 
 class FusedLibraryMergeResourcesTaskTest {
 
@@ -56,7 +63,7 @@ class FusedLibraryMergeResourcesTaskTest {
             addFile(
                 "src/main/res/values/strings.xml",
                 """<resources>
-                <string name="string_from_androidLib1">androidLib1</string>
+                <string name="string_from_android_lib_1">androidLib1</string>
                 <string name="string_overridden">androidLib1</string>
               </resources>"""
             )
@@ -121,10 +128,19 @@ class FusedLibraryMergeResourcesTaskTest {
         }
         subProject(":app") {
             plugins.add(PluginType.ANDROID_APP)
+            plugins.add(PluginType.KOTLIN_ANDROID)
+
             android {
                 defaultCompileSdk()
                 namespace = "com.example.app"
-                minSdk = 1
+                minSdk = 19
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_1_8
+                    targetCompatibility = JavaVersion.VERSION_1_8
+                }
+                kotlinOptions {
+                    jvmTarget = "1.8"
+                }
             }
             addFile("src/main/res/values/strings.xml",
                     """<resources>
@@ -132,8 +148,16 @@ class FusedLibraryMergeResourcesTaskTest {
                 <string name="string_overridden">app</string>
               </resources>"""
                     )
+            appendToBuildFile {
+                "\nandroid.defaultConfig { testInstrumentationRunner = \"androidx.test.runner.AndroidJUnitRunner\" }\n"
+            }
             // Add a dependency on the fused library aar in the test if needed.
         }
+        gradleProperties {
+            set(BooleanOption.FUSED_LIBRARY_SUPPORT, true)
+            set(BooleanOption.USE_ANDROID_X, true)
+        }
+        withKotlinPlugin = true
     }
 
     @Test
@@ -148,7 +172,7 @@ class FusedLibraryMergeResourcesTaskTest {
             assertThat(mergedValuesContents).isEqualTo(
                     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                             "<resources>\n" +
-                            "    <string name=\"string_from_androidLib1\">androidLib1</string>\n" +
+                            "    <string name=\"string_from_android_lib_1\">androidLib1</string>\n" +
                             "    <string name=\"string_from_android_lib_2\">androidLib2</string>\n" +
                             "    <string name=\"string_from_android_lib_3\">androidLib3</string>\n" +
                             "    <string name=\"string_from_remote_lib\">Remote String</string>\n" +
@@ -196,7 +220,7 @@ class FusedLibraryMergeResourcesTaskTest {
                 .containsExactly(
                         "<?xml version=\"1.0\" encoding=\"utf-8\"?>",
                         "<resources>",
-                        "<string name=\"string_from_androidLib1\">androidLib1</string>",
+                        "<string name=\"string_from_android_lib_1\">androidLib1</string>",
                         "<string name=\"string_from_android_lib_2\">androidLib2</string>",
                         "<string name=\"string_from_android_lib_3\">androidLib3</string>",
                         "<string name=\"string_from_app\">app</string>",
@@ -205,6 +229,49 @@ class FusedLibraryMergeResourcesTaskTest {
                         "</resources>"
                 )
         assertThat(apk.entries.map(Path::toString)).contains("/res/layout/layout.xml")
+    }
+
+    @Test
+    fun testFusedLibraryResourcesAccessibleFromApp() {
+        val appProject = project.getSubproject(":app")
+        appProject.buildFile.appendText(
+            """dependencies {
+                        implementation(project(':fusedLib1'))
+              }
+              """
+        )
+
+        project.executor().run(":app:assembleDebug")
+
+        val rTxtContent = Aar(getFusedLibraryAar()).getEntryAsFile("R.txt").inputStream()
+        val symbolTableFromRTxt = SymbolTableBuilder("com.example.fusedLib1")
+        rTxtContent.bufferedReader().use {
+            readAarRTxt(it.lines().iterator(), symbolTableFromRTxt)
+        }
+        assertThat(symbolTableFromRTxt.symbolTable.symbols.columnKeySet())
+            .containsExactly(
+                "androidlib3_textview",
+                "layout",
+                "string_from_android_lib_2",
+                "string_from_android_lib_3",
+                "string_from_android_lib_1",
+                "string_overridden"
+        )
+
+        ApkSubject.assertThat(appProject.getApk(GradleTestProject.ApkType.DEBUG))
+            .hasClass("Lcom/example/fusedLib1/R\$string;")
+        appProject.getApk(GradleTestProject.ApkType.DEBUG).use {
+            val classes = it.mainDexFile.get().classes
+            val rClassStrings =
+                classes.get("Lcom/example/fusedLib1/R\$string;")?.fields
+
+            assertThat(rClassStrings?.map { it.name }).containsExactly(
+                "string_from_android_lib_2",
+                "string_from_android_lib_3",
+                "string_from_android_lib_1",
+                "string_overridden"
+            )
+        }
     }
 
     private fun getFusedLibraryAar(): File {

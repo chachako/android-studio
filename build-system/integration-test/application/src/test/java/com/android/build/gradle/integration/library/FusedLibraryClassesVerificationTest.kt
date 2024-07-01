@@ -230,7 +230,7 @@ class FusedLibraryClassesVerificationTest {
             "com/example/androidlib1/ClassFromAndroidLib1.class",
         )
 
-        assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies + FUSED_LIBRARY_R_CLASS)
+        assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies)
     }
 
     @Test
@@ -248,7 +248,7 @@ class FusedLibraryClassesVerificationTest {
             "com/example/androidlib1/ClassFromAndroidLib1.class" // From :androidLib1
         )
 
-        assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies + FUSED_LIBRARY_R_CLASS)
+        assertFusedLibAarContainsExpectedClasses(classesFromDirectDependencies)
     }
 
     @Test

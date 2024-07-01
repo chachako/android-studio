@@ -17,9 +17,10 @@
 package com.android.build.gradle.tasks
 
 import com.android.SdkConstants
+import com.android.SdkConstants.EXT_JAR
 import com.android.SdkConstants.FD_AAR_LIBS
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
-import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScope
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.build.gradle.internal.tasks.AarMetadataTask
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
@@ -48,7 +49,7 @@ abstract class FusedLibraryBundle: Jar() {
     abstract val outputFile: RegularFileProperty
 
     abstract class CreationAction<T: FusedLibraryBundle>(
-        val creationConfig: FusedLibraryVariantScope,
+        val creationConfig: FusedLibraryGlobalScope,
         val artifactType: FusedLibraryInternalArtifactType<RegularFile>
     ) : TaskCreationAction<T>() {
 
@@ -74,7 +75,7 @@ abstract class FusedLibraryBundle: Jar() {
 abstract class FusedLibraryBundleAar: FusedLibraryBundle() {
 
     class CreationAction(
-        creationConfig: FusedLibraryVariantScope,
+        creationConfig: FusedLibraryGlobalScope,
     ) : FusedLibraryBundle.CreationAction<FusedLibraryBundleAar>(
             creationConfig,
             FusedLibraryInternalArtifactType.BUNDLED_LIBRARY,
@@ -99,6 +100,8 @@ abstract class FusedLibraryBundleAar: FusedLibraryBundle() {
                 creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_PREFAB_PACKAGE_CONFIGURATION),
                 creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_JNI),
                 creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_NAVIGATION_JSON),
+
+                creationConfig.artifacts.get(FusedLibraryInternalArtifactType.COMPILE_SYMBOL_LIST),
             )
 
             task.from(creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_AAR_METADATA)) {
@@ -134,7 +137,7 @@ abstract class FusedLibraryBundleClasses: NonIncrementalGlobalTask() {
             for (artifact in include) {
                 when {
                     artifact.isDirectory -> jarFlinger.addDirectory(artifact.toPath())
-                    artifact.extension == SdkConstants.EXT_JAR -> jarFlinger.addJar(artifact.toPath())
+                    artifact.extension == EXT_JAR -> jarFlinger.addJar(artifact.toPath())
                     else -> jarFlinger.addFile(artifact.name, artifact.toPath())
                 }
             }
@@ -142,7 +145,7 @@ abstract class FusedLibraryBundleClasses: NonIncrementalGlobalTask() {
     }
 
     class CreationAction(
-        val creationConfig: FusedLibraryVariantScope,
+        val creationConfig: FusedLibraryGlobalScope,
     ): TaskCreationAction<FusedLibraryBundleClasses>() {
         override val name: String
             get() = "packageJar"
@@ -165,7 +168,6 @@ abstract class FusedLibraryBundleClasses: NonIncrementalGlobalTask() {
             )
             task.include.from(
                 creationConfig.artifacts.get(FusedLibraryInternalArtifactType.CLASSES_WITH_REWRITTEN_R_CLASS_REFS),
-                creationConfig.artifacts.get(FusedLibraryInternalArtifactType.FUSED_R_CLASS),
                 creationConfig.artifacts.get(FusedLibraryInternalArtifactType.MERGED_JAVA_RES)
             )
         }

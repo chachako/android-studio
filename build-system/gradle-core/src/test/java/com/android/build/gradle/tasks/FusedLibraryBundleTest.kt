@@ -20,8 +20,8 @@ import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.artifact.impl.SingleInitialProviderRequestImpl
 import com.android.build.gradle.internal.fixtures.FakeConfigurableFileCollection
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryConfigurations
-import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScope
-import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScopeImpl
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScopeImpl
 import com.google.common.truth.Truth
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -57,7 +57,7 @@ internal class FusedLibraryBundleTest {
         val project: Project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         val taskProvider = project.tasks.register("bundle", T::class.java)
 
-        val variantScope = Mockito.mock(FusedLibraryVariantScopeImpl::class.java)
+        val variantScope = Mockito.mock(FusedLibraryGlobalScopeImpl::class.java)
         val artifacts = Mockito.mock(ArtifactsImpl::class.java)
         val incomingConfigurations = Mockito.mock(FusedLibraryConfigurations::class.java)
         val configuration = Mockito.mock(Configuration::class.java)
@@ -80,7 +80,7 @@ internal class FusedLibraryBundleTest {
         Mockito.`when`(artifacts.setInitialProvider(taskProvider, FusedLibraryBundle::outputFile))
                 .thenReturn(request)
 
-        val creationAction = U::class.java.getDeclaredConstructor(FusedLibraryVariantScope::class.java)
+        val creationAction = U::class.java.getDeclaredConstructor(FusedLibraryGlobalScope::class.java)
             .newInstance(variantScope)
         creationAction.handleProvider(taskProvider)
 

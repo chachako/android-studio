@@ -220,6 +220,7 @@ class TaskMethodModifiersAndAnnotationsTest {
                 "com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask\$CreateActionPrivacySandboxSdk",
                 "com.android.build.gradle.tasks.FusedLibraryMergeClasses\$FusedLibraryCreationAction",
                 "com.android.build.gradle.tasks.FusedLibraryMergeClasses\$PrivacySandboxSdkCreationAction",
+                "com.android.build.gradle.tasks.FusedLibraryMergeResourceCompileSymbolsTask\$CreationAction",
                 "com.android.build.gradle.tasks.FusedLibraryMergeResourcesTask\$CreationAction",
                 "com.android.build.gradle.tasks.GeneratePrivacySandboxAsar\$CreationAction",
                 "com.android.build.gradle.tasks.JavaCompileCreationAction",

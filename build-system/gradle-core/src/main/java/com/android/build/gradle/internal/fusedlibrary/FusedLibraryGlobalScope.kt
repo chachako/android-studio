@@ -19,22 +19,23 @@ package com.android.build.gradle.internal.fusedlibrary
 import com.android.build.api.artifact.impl.ArtifactsImpl
 import com.android.build.api.dsl.FusedLibraryExtension
 import com.android.build.gradle.internal.dsl.AarMetadataImpl
+import com.android.build.gradle.internal.services.TaskCreationServices
 import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.ProjectLayout
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.specs.Spec
 
-interface FusedLibraryVariantScope {
+interface FusedLibraryGlobalScope {
     val aarMetadata: AarMetadataImpl
-    val projectLayout: ProjectLayout
     val artifacts: ArtifactsImpl
-    val incomingConfigurations: FusedLibraryConfigurations
-    val outgoingConfigurations: FusedLibraryConfigurations
-    val dependencies: FusedLibraryDependencies
     val extension: FusedLibraryExtension
     val mergeSpec: Spec<ComponentIdentifier>
-    val objectFactory: ObjectFactory
+    val projectLayout: ProjectLayout
+    val services: TaskCreationServices
+
+    val dependencies: FusedLibraryDependencies
+    val incomingConfigurations: FusedLibraryConfigurations
+    val outgoingConfigurations: FusedLibraryConfigurations
 
     fun getLocalJars(): FileCollection
 }

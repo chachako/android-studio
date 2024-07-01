@@ -22,8 +22,8 @@ import com.android.build.api.attributes.BuildTypeAttr
 import com.android.build.api.dsl.FusedLibraryExtension
 import com.android.build.gradle.internal.dsl.FusedLibraryExtensionImpl
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
-import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScope
-import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScopeImpl
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScopeImpl
 import com.android.build.gradle.internal.fusedlibrary.SegregatingConstraintHandler
 import com.android.build.gradle.internal.fusedlibrary.configureElements
 import com.android.build.gradle.internal.fusedlibrary.configureTransformsForFusedLibrary
@@ -34,6 +34,7 @@ import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.services.Aapt2DaemonBuildService
 import com.android.build.gradle.internal.services.Aapt2ThreadPoolBuildService
 import com.android.build.gradle.internal.services.DslServices
+import com.android.build.gradle.internal.services.SymbolTableBuildService
 import com.android.build.gradle.internal.tasks.MergeJavaResourceTask
 import com.android.build.gradle.options.BooleanOption
 import com.android.build.gradle.tasks.FusedLibraryBundleAar
@@ -42,6 +43,7 @@ import com.android.build.gradle.tasks.FusedLibraryClassesRewriteTask
 import com.android.build.gradle.tasks.FusedLibraryManifestMergerTask
 import com.android.build.gradle.tasks.FusedLibraryMergeArtifactTask
 import com.android.build.gradle.tasks.FusedLibraryMergeClasses
+import com.android.build.gradle.tasks.FusedLibraryMergeResourceCompileSymbolsTask
 import com.android.build.gradle.tasks.FusedLibraryMergeResourcesTask
 import com.google.wireless.android.sdk.stats.GradleBuildProject
 import groovy.namespace.QName
@@ -80,11 +82,13 @@ class FusedLibraryPlugin @Inject constructor(
         }
     }
 
-    private val variantScope: FusedLibraryVariantScope by lazy(LazyThreadSafetyMode.NONE) {
+    private val variantScope: FusedLibraryGlobalScope by lazy(LazyThreadSafetyMode.NONE) {
         withProject("variantScope") { project ->
-            FusedLibraryVariantScopeImpl(
-                    project
-            ) { extension }
+            FusedLibraryGlobalScopeImpl(
+                    project,
+                    projectServices,
+                    { extension }
+            )
         }
     }
 
@@ -99,6 +103,7 @@ class FusedLibraryPlugin @Inject constructor(
             .RegistrationAction(project, projectServices.projectOptions).execute()
         Aapt2ThreadPoolBuildService
             .RegistrationAction(project, projectServices.projectOptions).execute()
+        SymbolTableBuildService.RegistrationAction(project).execute()
     }
 
     override fun configureExtension(project: Project) {
@@ -273,7 +278,8 @@ class FusedLibraryPlugin @Inject constructor(
                         FusedLibraryMergeClasses.FusedLibraryCreationAction(variantScope),
                         FusedLibraryBundleClasses.CreationAction(variantScope),
                         FusedLibraryBundleAar.CreationAction(variantScope),
-                        MergeJavaResourceTask.FusedLibraryCreationAction(variantScope)
+                        MergeJavaResourceTask.FusedLibraryCreationAction(variantScope),
+                        FusedLibraryMergeResourceCompileSymbolsTask.CreationAction(variantScope)
                 ) + FusedLibraryMergeArtifactTask.getCreationActions(variantScope),
         )
     }

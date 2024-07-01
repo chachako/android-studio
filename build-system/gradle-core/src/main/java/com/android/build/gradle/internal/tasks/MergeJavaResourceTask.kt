@@ -22,7 +22,7 @@ import com.android.build.gradle.internal.TaskManager
 import com.android.build.gradle.internal.component.ApkCreationConfig
 import com.android.build.gradle.internal.component.ComponentCreationConfig
 import com.android.build.gradle.internal.fusedlibrary.FusedLibraryInternalArtifactType
-import com.android.build.gradle.internal.fusedlibrary.FusedLibraryVariantScope
+import com.android.build.gradle.internal.fusedlibrary.FusedLibraryGlobalScope
 import com.android.build.gradle.internal.packaging.defaultExcludes
 import com.android.build.gradle.internal.privaysandboxsdk.PrivacySandboxSdkVariantScope
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
@@ -271,7 +271,7 @@ abstract class MergeJavaResourceTask
     }
 
     class FusedLibraryCreationAction(
-            val creationConfig: FusedLibraryVariantScope
+            val creationConfig: FusedLibraryGlobalScope
     ) : AndroidVariantTaskCreationAction<MergeJavaResourceTask>() {
 
         override val name: String
